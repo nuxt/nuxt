@@ -39,13 +39,13 @@ await setup({
 
 describe('application secret', () => {
   it('provides the application secret only on the server', async () => {
-    expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ secret: appSecret })
+    expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret })
     expect(await $fetch<string>('/')).not.toContain(appSecret)
 
     const page = await createPage('/')
     try {
       const config = await page.evaluate(() => window.useNuxtApp!().$config)
-      expect(config.app).not.toHaveProperty('secret')
+      expect(config).not.toHaveProperty('appSecret')
       expect(JSON.stringify(config)).not.toContain(appSecret)
     } finally {
       await page.close()
@@ -57,7 +57,7 @@ describe('application secret', () => {
   ])('preserves the runtime environment secret %j', async (value) => {
     try {
       await startServer({ env: { NUXT_APP_SECRET: value, NITRO_APP_SECRET: undefined } })
-      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ secret: value ?? '' })
+      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret: value ?? '' })
     } finally {
       await startServer()
     }

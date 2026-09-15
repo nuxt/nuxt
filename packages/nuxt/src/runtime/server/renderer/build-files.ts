@@ -104,10 +104,9 @@ export function createBuildFiles (options: NuxtRendererOptions): BuildFiles {
       const config = ssrContext.runtimeConfig
       ssrContext.modules ||= new Set<string>()
       ssrContext.payload.serverRendered = false
-      const { secret: _secret, ...app } = config.app
       ssrContext.config = {
         public: config.public,
-        app,
+        app: config.app,
       }
       return Promise.resolve(result)
     }

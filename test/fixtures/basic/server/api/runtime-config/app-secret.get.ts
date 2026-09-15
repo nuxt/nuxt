@@ -1,1 +1,1 @@
-export default defineEventHandler(() => ({ secret: useRuntimeConfig().app.secret }))
+export default defineEventHandler(() => ({ appSecret: useRuntimeConfig().appSecret }))

@@ -60,11 +60,11 @@ export interface RuntimeConfigApp extends RuntimeConfigNamespace {
   cdnURL: string
   /** Identifier of the current build, regenerated on every build. */
   buildId: string
-  /** The application's root secret. Server-only: it is never sent to the client. */
-  secret: string
 }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
+  /** The application's root secret, overridable at runtime with `NUXT_APP_SECRET`. */
+  appSecret: string
   public: PublicRuntimeConfig
   app: RuntimeConfigApp
 }
