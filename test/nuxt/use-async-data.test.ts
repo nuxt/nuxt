@@ -1013,6 +1013,24 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
+  it('should resolve immediately when awaiting useLazyAsyncData outside of component setup', async () => {
+    vi.useFakeTimers()
+
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('test'), 10)))
+    const { data, status } = await useLazyAsyncData(uniqueKey, promiseFn)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('pending')
+
+    vi.advanceTimersByTime(10)
+    await flushPromises()
+
+    expect(data.value).toBe('test')
+    expect(status.value).toBe('success')
+
+    vi.useRealTimers()
+  })
+
   it('should not execute with immediate: false and be executable', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const { data, status, execute } = useAsyncData(promiseFn, { immediate: false })

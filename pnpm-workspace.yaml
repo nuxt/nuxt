@@ -11,7 +11,6 @@ packages:
 patchedDependencies:
   # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
   nitropack@2.13.4: patches/nitropack@2.13.4.patch
-  unimport@6.4.0: patches/unimport@6.4.0.patch
 
 publicHoistPattern:
   - '*-loader'
@@ -66,6 +65,7 @@ minimumReleaseAgeExclude:
   - unstorage
   - unwasm
   - fetchdts@0.2.0
+  - pkg-types@2.3.3
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
@@ -97,7 +97,7 @@ catalogs:
   # imported in the server runtime (packages/nuxt/src/runtime/server, packages/nitro-server/src/runtime)
   nitro-runtime:
     destr: ^2.0.5
-    lru-cache: ^11.5.2
+    flru: ^1.0.2
     nitro: ^3.0.260903-beta
     srvx: ^1.0.3
     unstorage: ^2.0.0-alpha.10
@@ -107,7 +107,7 @@ catalogs:
     '@vitejs/plugin-vue': ^6.0.8
     # kept in lockstep with the vue override above
     '@vue/compiler-sfc': 3.5.42
-    rspack-vue-loader: ^17.6.2
+    rspack-vue-loader: ^17.7.0
     vue-component-type-helpers: ^3.3.11
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
@@ -142,7 +142,7 @@ catalogs:
     ts-checker-rspack-plugin: ^1.6.1
     url-loader: ^4.1.1
     webpack: ^5.110.3
-    webpack-bundle-analyzer: ^5.3.2
+    webpack-bundle-analyzer: ^5.3.3
     webpack-dev-middleware: ^8.3.0
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
@@ -207,7 +207,7 @@ catalogs:
     unctx: ^3.0.1
     undici: ^8.10.2
     unenv: ^2.0.0-rc.24
-    unimport: 6.4.0 # pinned: patched in patches/unimport@6.4.0.patch
+    unimport: ^7.0.1
     unplugin: ^3.3.0
     unrouting: ^0.2.3
     untyped: ^2.0.0

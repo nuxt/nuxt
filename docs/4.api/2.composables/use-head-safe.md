@@ -10,7 +10,7 @@ links:
 
 ## Usage
 
-The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/4.x/api/composables/use-head) composable that restricts the input to only allow safe values. This is the recommended way to manage head data when working with user input, as it prevents XSS attacks by sanitizing potentially dangerous attributes.
+The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/api/composables/use-head) composable that restricts the input to only allow safe values. This is the recommended way to manage head data when working with user input, as it prevents XSS attacks by sanitizing potentially dangerous attributes.
 
 ::warning
 When using `useHeadSafe`, potentially dangerous attributes like `innerHTML` in scripts or `http-equiv` in meta tags are automatically stripped out to prevent XSS attacks. Use this composable whenever you're working with user-generated content.
@@ -42,7 +42,7 @@ See [@unhead/vue](https://github.com/unjs/unhead/blob/main/packages/vue/src/type
 
 ## Parameters
 
-`input`: A `MaybeComputedRef<HeadSafe>` object containing head data. You can pass all the same values as [`useHead`](/docs/4.x/api/composables/use-head), but only safe attributes will be rendered.
+`input`: A `MaybeComputedRef<HeadSafe>` object containing head data. You can pass all the same values as [`useHead`](/docs/api/composables/use-head), but only safe attributes will be rendered.
 
 ## Return Values
 
