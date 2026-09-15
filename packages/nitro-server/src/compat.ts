@@ -540,7 +540,7 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * Returns a callback that absorbs registrations made after the build config was assembled;
  * call it once the nitro instance exists.
  */
-export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, legacy: ResolvedNitroLegacyOptions, modulePresets: LegacyImportsPreset[], installedModules: InstalledModule[] = [], unusedVariants: string[] = []): Promise<(nitro: { options: NitroOptions }) => Promise<void>> {
+export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, legacy: ResolvedNitroLegacyOptions, modulePresets: LegacyImportsPreset[], installedModules: InstalledModule[] = [], unusedVariants: string[] = []): Promise<(nitro: { options: NitroOptions }) => void> {
   // a module may register its handler through an alias it added for the server build only
   const aliases: Record<string, string> = { ...nitroConfig.alias as Record<string, string>, ...nuxt.options.alias }
   const files = new Map<string, CompatScope>()
@@ -988,18 +988,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
 
   // modules pushing straight into `nitro.options` from `nitro:init` are too late for the
   // pass above, but the transform only consults the scope at build time
-  const registerLateScope = async (nitro: { options: NitroOptions }) => {
-    for (const [id, template] of deferredVirtuals.splice(0)) {
-      try {
-        const code = await trackPendingTemplate(id, template)
-        if (typeof code === 'string') {
-          virtualSources.set(id, code)
-        }
-      } catch {
-        // reported by the bundler when it renders the template itself
-      }
-    }
-
+  const registerLateScope = (nitro: { options: NitroOptions }) => {
     for (const handler of nitro.options.handlers || []) {
       const entry = handler as { handler?: unknown }
       if (isMigrated(serverApiOf(entry)) || typeof entry.handler !== 'string') {
@@ -1025,6 +1014,31 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
 
     rescan(nitro.options.plugins as string[], nitro.options.handlers, nitro.options.virtual)
     invalidateScopeCache()
+
+    // a template may equally await an event that first fires inside `buildNuxt`, such
+    // as `pages:resolved`: rendering it here deadlocks, because `buildNuxt` runs only
+    // after `nuxt.ready()` — the step that invokes this — resolves. Rendered once the
+    // app is generated instead, still ahead of the nitro build, so the rescan below
+    // fills `virtualSources` in before the scope is read.
+    let rendered = false
+    nuxt.hook('build:done', async () => {
+      if (rendered) {
+        return
+      }
+      rendered = true
+      for (const [id, template] of deferredVirtuals.splice(0)) {
+        try {
+          const code = await trackPendingTemplate(id, template)
+          if (typeof code === 'string') {
+            virtualSources.set(id, code)
+          }
+        } catch {
+          // reported by the bundler when it renders the template itself
+        }
+      }
+      rescan(nitro.options.plugins as string[], nitro.options.handlers, nitro.options.virtual)
+      invalidateScopeCache()
+    })
   }
 
   // baked in at build time, so that an app with no v2 code keeps Nitro's error semantics

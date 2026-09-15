@@ -60,6 +60,13 @@ describe.skipIf(!shouldRun)('nitro v2 module compatibility without `nitroLegacy`
     })
   })
 
+  it('transforms a module virtual whose contents need the generated app', async () => {
+    expect(await $fetch<Record<string, unknown>>('/api/app-dependent')).toMatchObject({
+      flavour: 'earl-grey',
+      templates: expect.any(Number),
+    })
+  })
+
   it('transforms a utility registered through `addServerImports`', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/via-imports')).toEqual({
       flavour: 'earl-grey',
