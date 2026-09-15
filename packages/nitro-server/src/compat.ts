@@ -1177,7 +1177,8 @@ function createLegacyResolvePlugin (
       // once the bundler has had its own go, so nitro keeps resolving itself
       if (source === 'nitro' || source.startsWith('nitro/')) {
         const fallback = nitroResolutions[source]
-        if (fallback && !await this.resolve(source, importer, { skipSelf: true })) {
+        const rootless = !!importer && !isAbsolute(importer)
+        if (fallback && (rootless || !await this.resolve(source, importer, { skipSelf: true }))) {
           return fallback
         }
         return
