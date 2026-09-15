@@ -69,6 +69,12 @@ class NodeResponseHeaders {
     this.res.removeHeader(name)
   }
 
+  getSetCookie (): string[] {
+    const value = this.res.getHeader('set-cookie')
+    if (value === undefined) { return [] }
+    return Array.isArray(value) ? value.map(String) : [String(value)]
+  }
+
   * entries (): IterableIterator<[string, string]> {
     for (const [name, value] of Object.entries(this.res.getHeaders())) {
       if (value === undefined) { continue }

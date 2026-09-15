@@ -225,7 +225,7 @@ describe('errors', () => {
 describe('the event the surface is typed against', () => {
   it('is the web-standard event, never a runtime\'s own', () => {
     expectTypeOf<Parameters<typeof getRequestURL>[0]>().toEqualTypeOf<RequestEvent>()
-    expectTypeOf<Parameters<typeof getCookie>[0]>().toEqualTypeOf<RequestEvent>()
+    expectTypeOf<Parameters<typeof getCookie>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'>>()
     expectTypeOf<Parameters<typeof readBody>[0]>().toEqualTypeOf<RequestEvent>()
   })
 

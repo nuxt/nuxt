@@ -12,6 +12,12 @@ import type {
   RequestEvent,
   RequestEventContext,
   ServerRoutes,
+  Session,
+  SessionConfig,
+  SessionData,
+  SessionEvent,
+  SessionManager,
+  SessionUpdate,
 } from '../src/server/index.ts'
 
 /**
@@ -41,6 +47,11 @@ interface MainSurface {
   sendRedirect: (event: RequestEvent, location: string, status?: number) => string
   getRouteRules: (event: RequestEvent) => AppRouteRules
   useRuntimeConfig: () => RuntimeConfig
+  useSession: <T extends SessionData>(event: SessionEvent, config?: SessionConfig) => Promise<SessionManager<T>>
+  getSession: <T extends SessionData>(event: SessionEvent, config?: SessionConfig) => Promise<Session<T>>
+  updateSession: <T extends SessionData>(event: SessionEvent, config?: SessionConfig, update?: SessionUpdate<T>) => Promise<Session<T>>
+  clearSession: (event: SessionEvent, config?: SessionConfig) => Promise<void>
+  deriveSecret: (purpose: string) => Promise<string>
 }
 
 /** Value exports `main` has. */
@@ -64,6 +75,11 @@ const MAIN_VALUE_EXPORTS = [
   'sendRedirect',
   'getRouteRules',
   'useRuntimeConfig',
+  'useSession',
+  'getSession',
+  'updateSession',
+  'clearSession',
+  'deriveSecret',
 ]
 
 /** Value exports only `main` has. */

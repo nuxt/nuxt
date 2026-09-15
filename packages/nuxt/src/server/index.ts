@@ -18,6 +18,10 @@ import { useRuntimeConfig as _useRuntimeConfig } from 'nuxt/internal/server-runt
 import { NUXT_ERROR_SIGNATURE, createError } from '../app/error'
 import type { NuxtError } from '../app/error'
 
+export { clearSession, getSession, updateSession, useSession } from './session'
+export { deriveSecret } from './secret'
+export type { Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate } from './session'
+
 export type { AppRouteRules, RequestEvent, RequestEventContext, ServerRoutes } from 'nuxt/schema'
 export type { NuxtErrorDetails } from '../app/error'
 export type { NuxtErrorJSON } from '../app/types'
@@ -252,7 +256,7 @@ function collectEntries (entries: Iterable<[string, string]>): Record<string, st
  *
  * @since 5.0.0
  */
-export function getCookie (event: RequestEvent, name: string): string | undefined {
+export function getCookie (event: Pick<RequestEvent, 'req'>, name: string): string | undefined {
   const header = event.req.headers.get('cookie')
   return header ? parse(header)[name] : undefined
 }
@@ -263,7 +267,7 @@ export function getCookie (event: RequestEvent, name: string): string | undefine
  *
  * @since 5.0.0
  */
-export function setCookie (event: RequestEvent, name: string, value: string, options?: CookieSerializeOptions): void {
+export function setCookie (event: Pick<RequestEvent, 'res'>, name: string, value: string, options?: CookieSerializeOptions): void {
   event.res.headers.append('set-cookie', serialize(name, value, { path: '/', ...options }))
 }
 
@@ -273,7 +277,7 @@ export function setCookie (event: RequestEvent, name: string, value: string, opt
  *
  * @since 5.0.0
  */
-export function deleteCookie (event: RequestEvent, name: string, options?: CookieSerializeOptions): void {
+export function deleteCookie (event: Pick<RequestEvent, 'res'>, name: string, options?: CookieSerializeOptions): void {
   setCookie(event, name, '', { ...options, maxAge: 0 })
 }
 
