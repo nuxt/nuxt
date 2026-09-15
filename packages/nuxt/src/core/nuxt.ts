@@ -35,6 +35,7 @@ import importsModule from '../imports/module.ts'
 import compilerModule from '../compiler/module.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 
+import { resolveDevAppSecret } from './app-secret.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -1094,6 +1095,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])
   const serverTsConfig = defu(options.typescript.serverTsConfig, nitroOptions.typescript?.tsConfig)
   createPortalProperties(serverTsConfig, options, ['nitro.typescript.tsConfig', 'typescript.serverTsConfig'])
+
+  // must follow the `runtimeConfig` portal, which repoints `options.runtimeConfig`
+  if (options.dev) {
+    await resolveDevAppSecret(options)
+  }
 
   // prevent replacement of options.nitro
   Object.defineProperties(options, {

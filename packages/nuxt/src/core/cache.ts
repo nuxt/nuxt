@@ -344,7 +344,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
 
 async function writeCache (cwd: string, sources: string | string[], cacheFile: string) {
   const fileEntries = await readFilesRecursive(sources, {
-    patterns: ['**/*', '!analyze/**'],
+    patterns: ['**/*', '!analyze/**', '!app-secret'],
     cwd,
   })
   const tarData = createTar(fileEntries)

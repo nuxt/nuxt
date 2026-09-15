@@ -5,18 +5,23 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, isDev, isRenderingJson, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { asyncContext, isDev, isRenderingJson, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
+
+const appSecret = 'nuxt-runtime-app-secret-test-value'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: isDev,
   server: true,
   browser: true,
+  env: {
+    NUXT_APP_SECRET: appSecret,
+  },
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     hooks: {
@@ -30,6 +35,33 @@ await setup({
       },
     },
   },
+})
+
+describe('application secret', () => {
+  it('provides the application secret only on the server', async () => {
+    expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret })
+    expect(await $fetch<string>('/')).not.toContain(appSecret)
+
+    const page = await createPage('/')
+    try {
+      const config = await page.evaluate(() => window.useNuxtApp!().$config)
+      expect(config).not.toHaveProperty('appSecret')
+      expect(JSON.stringify(config)).not.toContain(appSecret)
+    } finally {
+      await page.close()
+    }
+  })
+
+  it.skipIf(isDev || !runsOncePerBuilderInMatrix).each([
+    undefined, '', '123', 'true', 'null', '4848e0', '"quoted-secret"', '{"key":"secret"}',
+  ])('preserves the runtime environment secret %j', async (value) => {
+    try {
+      await startServer({ env: { NUXT_APP_SECRET: value, NITRO_APP_SECRET: undefined } })
+      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret: value ?? '' })
+    } finally {
+      await startServer()
+    }
+  })
 })
 
 describe.skipIf(!runsOnceInMatrix)('server api', () => {
