@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { Diagnostic } from 'nostics'
 import { findPath, getLayerDirectories, normalizePlugin, normalizeTemplate, resolveFiles, resolvePath } from '@nuxt/kit'
-import { buildDiagnostics, pageDiagnostics, pluginDiagnostics } from '@nuxt/kit/internal'
+import { buildDiagnostics, pageDiagnostics, pluginDiagnostics, trackPendingTemplate } from '@nuxt/kit/internal'
 
 import { linkToAlias, logger } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
@@ -90,7 +90,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
     const start = performance.now()
     const oldContents = nuxt.vfs[fullPath]
-    const contents = await compileTemplate(template, templateContext).catch((e) => {
+    const contents = await trackPendingTemplate(template.filename!, () => compileTemplate(template, templateContext)).catch((e) => {
       // already-coded template failures (e.g. B1002/B1003) were reported in `compileTemplate`
       if (!(e instanceof Diagnostic)) {
         buildDiagnostics.NUXT_B1001({ filename: template.filename!, src: template.src, cause: e })

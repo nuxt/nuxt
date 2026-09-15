@@ -164,13 +164,15 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
   return blocks
 }
 
+const ISLAND_TELEPORT_TARGET_SELECTOR = '[data-island-slot],[data-island-component]'
+
 function getElementHTML (element: RendererNode, withoutSlots: boolean) {
-  if (!withoutSlots || !element.querySelector?.('[data-island-slot]')) {
+  if (!withoutSlots || !element.querySelector?.(ISLAND_TELEPORT_TARGET_SELECTOR)) {
     return element.outerHTML
   }
   const template = element.ownerDocument.createElement('template')
   template.innerHTML = element.outerHTML
-  template.content.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
+  template.content.querySelectorAll(ISLAND_TELEPORT_TARGET_SELECTOR).forEach((n: Element) => { n.innerHTML = '' })
   return template.innerHTML
 }
 
