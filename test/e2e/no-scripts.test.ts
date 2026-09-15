@@ -23,6 +23,14 @@ test.describe('noScripts route rules', () => {
     expect(html).not.toContain('__NUXT_DATA__')
   })
 
+  test('preloads a non-script resource registered for a noScripts page', async ({ fetch }) => {
+    const html = await (await fetch('/no-scripts')).text()
+
+    expect(html).toContain('rel="preload" as="font" type="font/woff2" crossorigin href="/_nuxt/fonts/no-scripts.woff2"')
+    expect(html).not.toContain('rel="modulepreload"')
+    expect(html).not.toContain('type="module"')
+  })
+
   test('scopes noScripts-page speculation rules to page routes and emits a view transition', async ({ fetch }) => {
     const html = await (await fetch('/no-scripts')).text()
 
