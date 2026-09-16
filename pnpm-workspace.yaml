@@ -52,7 +52,6 @@ minimumReleaseAgeExclude:
   - impound@1.2.0
   - vue
   - '@vue/*'
-  - '@flakiness/vitest@1.9.2'
   - fetchdts@0.2.0
 
 catalogs:
