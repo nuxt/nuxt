@@ -20,6 +20,8 @@ export const NUXT_PRERENDER_NO_SSR_ROUTES: string[] = []
 export const NUXT_EARLY_HINTS: boolean = false
 /** Whether every route is served without scripts. */
 export const NUXT_NO_SCRIPTS: boolean = false
+/** Whether any route rule serves its route without scripts. */
+export const NUXT_HAS_NO_SCRIPTS_ROUTES: boolean = false
 /** Whether scripts will be stripped in production only (dev-only diagnostics). */
 export const NUXT_NO_SCRIPTS_PROD: boolean = false
 /** Whether CSS is inlined into the document. */

@@ -1,6 +1,13 @@
+<script setup lang="ts">
+import '~/assets/scripted.css'
+</script>
+
 <template>
   <div>
-    <h1>Scripted index</h1>
+    <h1 class="scripted-imported-css">
+      Scripted index
+    </h1>
+    <SharedWidget />
     <NuxtLink
       id="link-no-scripts"
       to="/no-scripts"
@@ -27,3 +34,9 @@
     </NuxtLink>
   </div>
 </template>
+
+<style scoped>
+h1 {
+  color: rgb(20, 21, 22);
+}
+</style>
