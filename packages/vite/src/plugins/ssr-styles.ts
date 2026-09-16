@@ -164,8 +164,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     // separately-tracked `chunksWithInlinedCSS` being populated yet.
     for (const [id, { cssIds, files, inBundle }] of Object.entries(cssMap)) {
       if (!inBundle || !files.length) { continue }
-      // island-only CSS is not inlined on regular page renders, so its link must remain
-      if (islandExtractedIds.has(id)) { continue }
+      // this CSS is not inlined on regular page renders, so its link must remain
+      if (inlineOnlyExtractedIds.has(id)) { continue }
       chunksWithInlinedCSS.add(id)
       if (!cssIds) { continue }
       for (const cssId of cssIds) {
@@ -258,14 +258,21 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   )
   const islandPaths = new Set(islands.map(c => c.filePath))
 
-  // server-side importers (query stripped) of each module
-  const ssrImporters = new Map<string, Set<string>>()
+  // server-side imports (query stripped) of each module
+  const ssrImports = new Map<string, Set<string>>()
 
-  // CSS sources extracted only because they are reachable from an island
-  const islandExtractedIds = new Set<string>()
+  /**
+   * Modules reachable from a render with no stylesheet link to fall back to: an island's
+   * response, or a page served without scripts. CSS reachable only from one of those is
+   * absent from the client build entirely. Filled in as the graph is parsed.
+   */
+  const inlineOnlyReachable = new Set<string>()
 
-  // modules whose island reachability was still unknown when they were transformed
-  const deferredExtractions = new Map<string, string>()
+  // CSS sources extracted *only* because they are reachable from such a render
+  const inlineOnlyExtractedIds = new Set<string>()
+
+  // modules whose reachability was still unknown when they were transformed
+  const deferredExtractions = new Map<string, Map<string, string>>()
 
   // Server pages (.server.vue) are not in the components list but still need
   // their CSS extracted for inline delivery via the island handler.
@@ -277,26 +284,31 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
   let entry: string
 
-  const isIslandModule = (path: string) => islandPaths.has(path) || serverPagePaths.has(path)
+  // stubbed out of the client build, so like an island they have no chunk to link from
+  const noScriptsPagePaths = new Set(nuxt.options._noScriptsPageSources.map(src => resolve(nuxt.options.srcDir, src)))
+
+  const isInlineOnlyModule = (path: string) => islandPaths.has(path) || serverPagePaths.has(path) || noScriptsPagePaths.has(path)
 
   /**
-   * Whether a module is reachable from an island. An island's CSS is only ever delivered
-   * inline in its response: there is no stylesheet link to fall back to, and a server-only
-   * component's CSS is absent from the client build entirely.
+   * Extract the styles of modules passed over before their reachability was known, and
+   * propagate to their imports. This runs per parse because reachability needs the importer
+   * parsed, and chunks can no longer be emitted once the whole graph is known.
    */
-  const isIslandDescendant = (path: string) => {
-    const seen = new Set<string>()
-    const queue = [path]
+  async function markInlineOnlyReachable (ctx: Rollup.PluginContext, paths: Iterable<string>): Promise<void> {
+    const queue = [...paths]
     while (queue.length) {
-      const current = queue.shift()!
-      if (seen.has(current)) { continue }
-      seen.add(current)
-      for (const importer of ssrImporters.get(current) ?? []) {
-        if (isIslandModule(importer)) { return true }
-        queue.push(importer)
+      const path = queue.shift()!
+      if (inlineOnlyReachable.has(path)) { continue }
+      inlineOnlyReachable.add(path)
+      const deferred = deferredExtractions.get(path)
+      if (deferred) {
+        deferredExtractions.delete(path)
+        for (const [id, code] of deferred) {
+          await extractInlineStyles(ctx, id, code)
+        }
       }
+      queue.push(...ssrImports.get(path) ?? [])
     }
-    return false
   }
 
   /**
@@ -306,33 +318,35 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   async function extractInlineStyles (ctx: Rollup.PluginContext, id: string, code: string, mayDefer = false): Promise<void> {
     const { pathname, search } = parseModuleId(id)
 
-    if (!(id in clientCSSMap) && !isIslandModule(pathname) && !isVue(pathname)) { return }
+    if (!(id in clientCSSMap) && !isInlineOnlyModule(pathname) && !isVue(pathname)) { return }
 
     if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
 
     const isEntryModule = pathname === entry
 
-    let islandExtracted = false
-    if (!isEntryModule && !isIslandModule(pathname)) {
+    let inlineOnlyExtracted = false
+    if (!isEntryModule && !isInlineOnlyModule(pathname)) {
       if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) {
-        if (!isIslandDescendant(pathname)) {
+        if (!inlineOnlyReachable.has(pathname)) {
           // a module shared with a normal page is transformed on first import, which can
-          // precede the parse of an island that also imports it, so retry once the whole
-          // server module graph is known
+          // precede the parse of the island or scriptless page that also imports it, so retry
+          // once the whole server module graph is known
           if (mayDefer) {
-            deferredExtractions.set(id, code)
+            const deferred = deferredExtractions.get(pathname) ?? new Map()
+            deferredExtractions.set(pathname, deferred)
+            deferred.set(id, code)
           }
           return
         }
-        islandExtracted = true
+        inlineOnlyExtracted = true
       }
     }
 
     if (isEntryModule && options.shouldInline === false) { return }
 
     const relativeId = relativeToSrcDir(stripQuery(id))
-    if (islandExtracted) {
-      islandExtractedIds.add(relativeId)
+    if (inlineOnlyExtracted) {
+      inlineOnlyExtractedIds.add(relativeId)
     }
     const idMap = cssMap[relativeId] ||= { files: [] }
     const idCssIds = idMap.cssIds ||= new Set()
@@ -584,21 +598,19 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             ].join('\n'), nuxt)
           }
         },
-        async buildEnd () {
-          if (environment.name !== 'ssr') { return }
-          const deferred = [...deferredExtractions]
-          deferredExtractions.clear()
-          await Promise.all(deferred.map(([id, code]) => extractInlineStyles(this, id, code)))
-        },
-        moduleParsed (info) {
+        async moduleParsed (info) {
           if (environment.name !== 'ssr') { return }
           const importerId = stripQuery(info.id)
+          const imports = ssrImports.get(importerId) ?? new Set()
+          ssrImports.set(importerId, imports)
           for (const imported of [...info.importedIds, ...info.dynamicallyImportedIds]) {
             const id = stripQuery(imported)
-            if (id === importerId) { continue }
-            const importers = ssrImporters.get(id) ?? new Set()
-            ssrImporters.set(id, importers)
-            importers.add(importerId)
+            if (id !== importerId) {
+              imports.add(id)
+            }
+          }
+          if (isInlineOnlyModule(importerId) || inlineOnlyReachable.has(importerId)) {
+            await markInlineOnlyReachable(this, imports)
           }
         },
         renderChunk (_code, chunk) {

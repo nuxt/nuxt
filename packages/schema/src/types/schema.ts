@@ -1086,6 +1086,8 @@ export interface ConfigSchema {
    * Inline styles when rendering HTML (currently vite only).
    *
    * You can also pass a function that receives the path of a Vue component and returns a boolean indicating whether to inline the styles for that component.
+   *
+   * Pages covered by a `noScripts` route rule always have their styles inlined.
    */
     inlineStyles: boolean | ((id?: string) => boolean)
 

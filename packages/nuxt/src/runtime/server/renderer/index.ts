@@ -30,7 +30,7 @@ import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
-import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -255,8 +255,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     throw _err
   })
 
-  // Render inline styles
-  const inlinedStyles = NUXT_INLINE_STYLES && !ssrContext['~renderResponse'] && !isRenderingPayload
+  // A scriptless response has no chunk to link a stylesheet from, so it always inlines.
+  // Both flags are build-time constants, so writing them out folds the branch away.
+  const inlinedStyles = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) && !ssrContext['~renderResponse'] && !isRenderingPayload
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
@@ -326,7 +327,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   const link: Link[] = []
   const inlinedHrefs: string[] = []
-  const isCSSInlined = NUXT_INLINE_STYLES ? await createInlinedCSSFilter(ssrContext.modules) : undefined
+  const isCSSInlined = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) ? await createInlinedCSSFilter(ssrContext.modules) : undefined
   for (const resource of Object.values(styles)) {
     // Do not add links to resources that are inlined (vite v5+)
     if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
@@ -686,14 +687,15 @@ async function renderStreamedResponse (ctx: {
   const inlinedCss = new Set<string>(entryInlineStyles.map(s => String(s.innerHTML)))
   const renderRouteStyles = async (): Promise<string> => {
     let tags = ''
-    if (NUXT_INLINE_STYLES) {
+    if (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) {
       for (const style of await renderInlineStyles(ssrContext.modules ?? [])) {
         const css = String(style.innerHTML)
         if (!css || inlinedCss.has(css)) { continue }
         inlinedCss.add(css)
         tags += `<style${nonceAttr}>${css}</style>`
       }
-      return tags
+      // a scriptless render inlines only its own modules; the rest still need links
+      if (NUXT_INLINE_STYLES) { return tags }
     }
     for (const resource of Object.values(getRequestDependencies(ssrContext, renderer.rendererContext).styles)) {
       if (emittedStyles.has(resource.file)) { continue }

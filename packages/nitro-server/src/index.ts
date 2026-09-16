@@ -210,6 +210,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         NUXT_PRERENDER_ERROR_PAGES: JSON.stringify(errorPages),
         NUXT_PRERENDER_NO_SSR_ROUTES: JSON.stringify(noSSRRoutes),
         NUXT_NO_SCRIPTS_PATTERNS: JSON.stringify(noScriptsPatterns),
+        NUXT_HAS_NO_SCRIPTS_ROUTES: String(noScriptsPatterns.length > 0),
         NUXT_PAGE_PATTERNS: JSON.stringify(pagePatterns),
         NUXT_EARLY_404: String(early404Patterns.length > 0),
         NUXT_PAGE_MATCHER: compilePageMatcher(early404Patterns),

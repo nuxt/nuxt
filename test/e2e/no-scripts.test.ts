@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
+import { pageStyles } from './no-scripts-page-styles'
 import { expect, test } from './test-utils'
 
 const fixtureDir = fileURLToPath(new URL('../fixtures/no-scripts', import.meta.url))
@@ -29,6 +30,28 @@ test.describe('noScripts route rules', () => {
     expect(html).toContain('rel="preload" as="font" type="font/woff2" crossorigin href="/_nuxt/fonts/no-scripts.woff2"')
     expect(html).not.toContain('rel="modulepreload"')
     expect(html).not.toContain('type="module"')
+  })
+
+  test('inlines every style source of a noScripts page and links none of them', async ({ fetch }) => {
+    const html = await (await fetch('/no-scripts')).text()
+
+    for (const style of Object.values(pageStyles)) {
+      expect(html).toMatch(style)
+    }
+
+    for (const href of html.matchAll(/<link rel="stylesheet"[^>]*href="([^"]+)"/g)) {
+      const stylesheet = await (await fetch(href[1]!)).text()
+      for (const style of Object.values(pageStyles)) {
+        expect(stylesheet).not.toMatch(style)
+      }
+    }
+  })
+
+  test('keeps the stylesheet of a component shared with a scripted route', async ({ fetch }) => {
+    const html = await (await fetch('/')).text()
+
+    expect(html).toMatch(pageStyles.sharedComponent)
+    expect(html).not.toMatch(pageStyles.importedStylesheet)
   })
 
   test('scopes noScripts-page speculation rules to page routes and emits a view transition', async ({ fetch }) => {

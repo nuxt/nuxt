@@ -26,8 +26,8 @@ function testBuilderFor (entry: typeof e2eMatrix[number]) {
 }
 
 const devOnlyTests = ['**/hmr.test.ts']
-const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/server-page-css.test.ts', '**/chunk-error.test.ts', '**/no-scripts.test.ts']
-const viteOnlyTests = ['**/server-page-css.test.ts', '**/no-scripts.test.ts']
+const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/server-page-css.test.ts', '**/chunk-error.test.ts', '**/no-scripts*.test.ts']
+const viteOnlyTests = ['**/server-page-css.test.ts', '**/no-scripts*.test.ts']
 const rspackExcludedTests = ['**/chunk-error.test.ts']
 
 function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
