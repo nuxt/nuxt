@@ -1912,6 +1912,8 @@ describe.skipIf(isDev)('inlining component styles', () => {
     ...nonGlobalCSS,
     '{--server-only-child:"server-only-child"}', // child of a server-only component
     '{--server-only:"server-only"}', // server-only component not in client build
+    // webpack recovers a server-only component's styles from its SFC blocks alone
+    ...isWebpack ? [] : ['{--server-only-imported:"server-only-imported"}'], // CSS imported by a server-only component
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
     // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
