@@ -225,6 +225,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const emittedFileRefs: Record<string, string> = {}
   // map for source file to a unique chunk-name prefix
   const chunkNamePrefixes = new Map<string, string>()
+  // A component's styles can be extracted over several calls (its `.vue` id and its
+  // `?vue&type=script` sub-request), so the chunk names they emit share one counter.
+  const styleCounters = new Map<string, number>()
   const usedChunkNamePrefixes = new Set<string>()
 
   const options = {
@@ -343,7 +346,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       chunkNamePrefixes.set(relativeId, chunkNamePrefix)
     }
 
-    let styleCtr = 0
+    const nextChunkName = () => {
+      const styleCtr = (styleCounters.get(relativeId) ?? 0) + 1
+      styleCounters.set(relativeId, styleCtr)
+      return `${chunkNamePrefix}-styles-${styleCtr}.mjs`
+    }
+
     const ids = clientCSSMap[id] || []
     for (const file of ids) {
       if (isEntryModule && typeof options.shouldInline === 'function' && !options.shouldInline(file)) { continue }
@@ -368,7 +376,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       if (!ref) {
         ref = ctx.emitFile({
           type: 'chunk',
-          name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
+          name: nextChunkName(),
           id: fileInline,
         })
         emittedFileRefs[resolvedInlineId] = ref
@@ -404,7 +412,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       if (!ref) {
         ref = ctx.emitFile({
           type: 'chunk',
-          name: `${chunkNamePrefix}-styles-${++styleCtr}.mjs`,
+          name: nextChunkName(),
           id: resolvedIdInline,
         })
         emittedFileRefs[resolvedInlineId] = ref
