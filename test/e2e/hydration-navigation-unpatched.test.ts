@@ -23,7 +23,7 @@ test.use({
 })
 
 for (const path of ['/slow', '/slow-other-layout', '/slow-inline']) {
-  test(`a completed boot navigation from ${path} renders without the Vue patch`, async ({ page }) => {
+  test(`a completed boot navigation from ${path} renders with Vue 3.5.42`, async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', error => errors.push(error.message))
     page.on('console', (message) => {

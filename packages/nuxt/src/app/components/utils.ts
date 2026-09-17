@@ -10,9 +10,8 @@ import { START_LOCATION } from '#build/pages'
 
 const [vueMajor = 0, vueMinor = 0, vuePatch = 0] = version.split('.').map(v => Number.parseInt(v, 10))
 
-// Freezing the SSR route requires Vue's fix for updates to a hydrating Suspense.
-// TODO: Confirm the first Vue release containing the fix and adjust this version threshold accordingly. (now > 3.5.42)
-export const vueSupportsHydrationNavigation = vueMajor > 3 || (vueMajor === 3 && (vueMinor > 5 || (vueMinor === 5 && vuePatch > 42)))
+// Freezing the SSR route requires Vue 3.5.43's fix for updates to a hydrating Suspense.
+export const vueSupportsHydrationNavigation = vueMajor > 3 || (vueMajor === 3 && (vueMinor > 5 || (vueMinor === 5 && vuePatch >= 43)))
 
 /**
  * Internal utility
