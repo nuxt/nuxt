@@ -50,7 +50,6 @@ minimumReleaseAgeExclude:
   - impound@1.2.0
   - vue
   - '@vue/*'
-  - '@flakiness/vitest@1.9.2'
   # nitro betas and the unjs/h3 packages they pin are released in lockstep
   - nitro
   - crossws
