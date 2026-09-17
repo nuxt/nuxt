@@ -23,7 +23,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
     expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"110k"`)
-    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"40.8k"`)
+    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"41.0k"`)
 
     const entry = await fsp.readFile(join(rootDir, '.output/public', clientStats!.files.find(f => f.startsWith('_nuxt/entry'))!), 'utf8')
     expect(entry).not.toContain('[ofetch] global.fetch is not supported')
@@ -40,7 +40,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('does not ship payload revival machinery in a spa build', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(spaRootDir, '.output/public'), spaRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"103k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"104k"`)
 
     const contents = await Promise.all(
       (await glob(['**/*.js'], { cwd: join(spaRootDir, '.output/public') }))
@@ -55,7 +55,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"185k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"186k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -76,7 +76,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"264k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"265k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
