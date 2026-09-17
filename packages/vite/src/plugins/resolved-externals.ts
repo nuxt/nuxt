@@ -8,6 +8,11 @@ import escapeStringRegexp from 'escape-string-regexp'
 
 const BARE_ID_RE = /^(?!\.{0,2}[/\\]|[A-Z]:[/\\]|[\0#~]|virtual:)/i
 
+function pkgName (id: string) {
+  const segments = id.split('/')
+  return id[0] === '@' ? segments.slice(0, 2).join('/') : segments[0]!
+}
+
 export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:resolve-externals',
@@ -32,6 +37,9 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
         ? undefined
         : new RegExp('^' + escapeStringRegexp(rootDir.replace(/\/$/, '') + '/') + '(?!.*node_modules)')
 
+      // a deduped package must resolve to a single copy for the whole app
+      const deduped = new Set(environment.config.resolve.dedupe)
+
       const conditions = [...new Set([...environment.config.resolve.conditions, 'import', 'default'])]
         .map(c => c === 'development|production' ? 'production' : c)
 
@@ -42,7 +50,7 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
             id: BARE_ID_RE,
           },
           async handler (id, importer) {
-            if (!importer || isBuiltin(id) || localImporterRE?.test(importer)) { return }
+            if (!importer || isBuiltin(id) || deduped.has(pkgName(id)) || localImporterRE?.test(importer)) { return }
             const res = await this.resolve?.(id, importer, { skipSelf: true })
             if (!res || res.external !== true || res.id !== id) { return res }
             // every file in a package resolves a bare id the same way, so resolving from the
