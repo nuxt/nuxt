@@ -55,15 +55,18 @@ export const v2ImportsPreset = [
 export const nuxtServerImportsPreset = {
   from: 'nuxt/server',
   imports: [
+    'clearSession',
     'createError',
     'defineEventHandler',
     'deleteCookie',
+    'deriveSecret',
     'getCookie',
     'getQuery',
     'getRequestHeader',
     'getRequestHeaders',
     'getRequestURL',
     'getRouteRules',
+    'getSession',
     'isNuxtError',
     'readBody',
     'sendRedirect',
@@ -72,7 +75,9 @@ export const nuxtServerImportsPreset = {
     'setResponseHeaders',
     'setResponseStatus',
     'toNuxtRequestEvent',
+    'updateSession',
     'useRuntimeConfig',
+    'useSession',
   ],
 }
 

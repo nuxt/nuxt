@@ -35,6 +35,7 @@ import importsModule from '../imports/module.ts'
 import compilerModule from '../compiler/module.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 
+import { resolveDevAppSecret } from './app-secret.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -577,6 +578,15 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
   }
 
+  // Registered before `installModules` so module `build:manifest` hooks can attach to these
+  if (!nuxt.options.dev) {
+    nuxt.hook('build:manifest', (manifest) => {
+      for (const src of nuxt.options._noScriptsPageSources) {
+        manifest[src] ||= { file: '', src }
+      }
+    })
+  }
+
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
   if (nuxt.options.features.noScripts && !nuxt.options.dev) {
     nuxt.hook('build:manifest', async (manifest) => {
@@ -1073,6 +1083,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])
   const serverTsConfig = defu(options.typescript.serverTsConfig, nitroOptions.typescript?.tsConfig)
   createPortalProperties(serverTsConfig, options, ['nitro.typescript.tsConfig', 'typescript.serverTsConfig'])
+
+  // must follow the `runtimeConfig` portal, which repoints `options.runtimeConfig`
+  if (options.dev) {
+    await resolveDevAppSecret(options)
+  }
 
   // prevent replacement of options.nitro
   Object.defineProperties(options, {

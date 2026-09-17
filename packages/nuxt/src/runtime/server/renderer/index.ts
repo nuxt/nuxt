@@ -30,7 +30,7 @@ import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
-import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -148,6 +148,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
   const routeOptions = runtime.getRouteRules(event)
+  const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions.noScripts
 
   if (!routeOptions.ssr) {
     ssrContext.noSSR = true
@@ -195,7 +196,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   // Render 103 Early Hints
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
-    const { link } = renderResourceHeaders({}, renderer.rendererContext)
+    const { link } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS })
     if (link) {
       runtime.writeEarlyHints?.(event, { link })
     }
@@ -254,8 +255,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     throw _err
   })
 
-  // Render inline styles
-  const inlinedStyles = NUXT_INLINE_STYLES && !ssrContext['~renderResponse'] && !isRenderingPayload
+  // A scriptless response has no chunk to link a stylesheet from, so it always inlines.
+  // Both flags are build-time constants, so writing them out folds the branch away.
+  const inlinedStyles = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) && !ssrContext['~renderResponse'] && !isRenderingPayload
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
@@ -295,8 +297,6 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     await runtime.prerender!.payloadCache.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext, event))
   }
 
-  const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
-
   if (import.meta.dev && NUXT_NO_SCRIPTS_PROD && !NO_SCRIPTS && !ssrError) {
     warnNoScriptsClientReliance(ssrContext, event.url.pathname)
   }
@@ -327,7 +327,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   const link: Link[] = []
   const inlinedHrefs: string[] = []
-  const isCSSInlined = NUXT_INLINE_STYLES ? await createInlinedCSSFilter(ssrContext.modules) : undefined
+  const isCSSInlined = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) ? await createInlinedCSSFilter(ssrContext.modules) : undefined
   for (const resource of Object.values(styles)) {
     // Do not add links to resources that are inlined (vite v5+)
     if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
@@ -347,38 +347,42 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     ssrContext.head.push({ link })
   }
 
-  if (!NO_SCRIPTS) {
-    // 4. Resource Hints
-    // Excluding lazy hydrated modules keeps their JS chunks from being preloaded, but also
-    // resurfaces their CSS as hints, so filter out anything already linked as a stylesheet.
-    const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
-      ? { exclude: ssrContext['~lazyHydratedModules'] }
-      : undefined
-    // exclude hrefs already linked as stylesheets (or delivered as inline styles),
-    // plus never-hydrated chunks which the client can never fetch
-    const excludeHrefs = new Set(link.map(l => l.href))
-    for (const href of inlinedHrefs) {
-      excludeHrefs.add(href)
+  // 4. Resource Hints
+  // Excluding lazy hydrated modules keeps their JS chunks from being preloaded, but also
+  // resurfaces their CSS as hints, so filter out anything already linked as a stylesheet.
+  const dependencyOptions = {
+    exclude: ssrContext['~lazyHydratedModules']?.size ? ssrContext['~lazyHydratedModules'] : undefined,
+    scripts: !NO_SCRIPTS,
+  }
+  // exclude hrefs already linked as stylesheets (or delivered as inline styles),
+  // plus never-hydrated chunks which the client can never fetch
+  const excludeHrefs = new Set(link.map(l => l.href))
+  for (const href of inlinedHrefs) {
+    excludeHrefs.add(href)
+  }
+  for (const id of ssrContext['~neverHydratedModules'] ?? []) {
+    const file = renderer.rendererContext.manifest?.[id]?.file
+    if (file) {
+      excludeHrefs.add(renderer.rendererContext.buildAssetsURL(file))
     }
-    for (const id of ssrContext['~neverHydratedModules'] ?? []) {
-      const file = renderer.rendererContext.manifest?.[id]?.file
-      if (file) {
-        excludeHrefs.add(renderer.rendererContext.buildAssetsURL(file))
-      }
+  }
+  const hints: Link[] = []
+  for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+    if (!excludeHrefs.has(l.href)) {
+      hints.push(l)
     }
-    const hints: Link[] = []
-    for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
-      if (!excludeHrefs.has(l.href)) {
-        hints.push(l)
-      }
+  }
+  for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+    if (!excludeHrefs.has(l.href)) {
+      hints.push(l)
     }
-    for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
-      if (!excludeHrefs.has(l.href)) {
-        hints.push(l)
-      }
-    }
+  }
+  if (hints.length) {
     ssrContext.head.push({ link: hints })
-    // 5. Payloads
+  }
+
+  // 5. Payloads
+  if (!NO_SCRIPTS) {
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
         // Inline full payload in HTML (payloadExtraction: 'client' | false, or non-cached route)
@@ -455,7 +459,7 @@ async function renderStreamedResponse (ctx: {
   pushNoScriptsHints(ssrContext, NO_SCRIPTS)
 
   // 1. Set HTTP Link headers with entry-point preload hints (fastest resource hinting)
-  const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext)
+  const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS })
   if (linkHeader) {
     event.res.headers.append('link', linkHeader)
   }
@@ -496,13 +500,12 @@ async function renderStreamedResponse (ctx: {
   }
 
   // Entry preload/prefetch links
-  if (!NO_SCRIPTS) {
-    ssrContext.head.push({
-      link: getPreloadLinks({}, renderer.rendererContext) as Link[],
-    })
-    ssrContext.head.push({
-      link: getPrefetchLinks({}, renderer.rendererContext) as Link[],
-    })
+  const entryHints = [
+    ...getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
+    ...getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
+  ]
+  if (entryHints.length) {
+    ssrContext.head.push({ link: entryHints })
   }
 
   // Entry scripts
@@ -684,14 +687,15 @@ async function renderStreamedResponse (ctx: {
   const inlinedCss = new Set<string>(entryInlineStyles.map(s => String(s.innerHTML)))
   const renderRouteStyles = async (): Promise<string> => {
     let tags = ''
-    if (NUXT_INLINE_STYLES) {
+    if (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) {
       for (const style of await renderInlineStyles(ssrContext.modules ?? [])) {
         const css = String(style.innerHTML)
         if (!css || inlinedCss.has(css)) { continue }
         inlinedCss.add(css)
         tags += `<style${nonceAttr}>${css}</style>`
       }
-      return tags
+      // a scriptless render inlines only its own modules; the rest still need links
+      if (NUXT_INLINE_STYLES) { return tags }
     }
     for (const resource of Object.values(getRequestDependencies(ssrContext, renderer.rendererContext).styles)) {
       if (emittedStyles.has(resource.file)) { continue }

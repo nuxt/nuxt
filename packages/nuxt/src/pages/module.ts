@@ -803,6 +803,10 @@ export default defineNuxtModule({
         pageDiagnostics.NUXT_B4021({ paths: conflicting.map(path => `\`${path}\``).join(', ') })
       }
 
+      nuxt.options._noScriptsPageSources = [...restrictedPages]
+        .filter(([page, stub]) => stub === 'noScripts' && page.file)
+        .map(([page]) => relative(nuxt.options.srcDir, page.file!))
+
       return restrictedPages
     }
 
