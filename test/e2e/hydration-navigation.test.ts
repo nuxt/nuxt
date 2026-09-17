@@ -40,7 +40,11 @@ async function gotoMidHydration (page: Page, path: string) {
   await page.goto(path, { waitUntil: 'domcontentloaded' })
   // the app has booted (`$router` means the router plugin has run), but
   // hydration is suspended on the `__releaseHydration` test gate
-  await page.waitForFunction(() => !!window.useNuxtApp?.().$router && window.useNuxtApp?.().isHydrating === true)
+  await page.waitForFunction(() =>
+    !!window.useNuxtApp?.().$router &&
+    window.useNuxtApp?.().isHydrating === true &&
+    typeof window.__releaseHydration === 'function',
+  )
 }
 
 test.describe('navigation during initial hydration', () => {
