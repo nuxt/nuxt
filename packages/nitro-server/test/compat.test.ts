@@ -188,6 +188,9 @@ describe('setupNitroCompat', () => {
       for (const [source, pkg] of [['nitro', 'nitro'], ['h3', 'h3'], ['h3/rules', 'h3'], ['srvx', 'srvx'], ['defu', 'defu'], ['consola', 'consola'], ['ofetch', 'ofetch'], ['crossws', 'crossws']]) {
         await expect(resolveId(source!), source).resolves.toMatch(new RegExp(`[\\\\/]${pkg}[\\\\/]`))
       }
+      // builder-only nitro subpaths must not become bundleable
+      await expect(resolveId('nitro/builder')).resolves.toBeUndefined()
+      await expect(resolveId('nitro/vite')).resolves.toBeUndefined()
       await expect(resolveId('nitropack/runtime')).resolves.toBeUndefined()
       await expect(resolveId('h3x')).resolves.toBeUndefined()
 

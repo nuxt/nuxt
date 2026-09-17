@@ -1127,6 +1127,7 @@ interface ResolvePluginContext {
   resolve: (source: string, importer?: string, options?: { skipSelf?: boolean }) => Promise<{ id: string, external?: boolean | 'absolute' | 'relative' } | null>
 }
 
+const NITRO_SPECIFIER_RE = /^nitro(?:\/|$)/
 const NITRO_IMPLICIT_DEPENDENCY_RE = new RegExp(`^(?:${nitroImplicitDependencies.map(escapeRE).join('|')})(?:/|$)`)
 
 /**
@@ -1148,7 +1149,7 @@ function createNitroFallbackResolvePlugin (nitroResolutions: Record<string, stri
       filter: { id: NITRO_IMPLICIT_DEPENDENCY_RE },
       handler (source: string) {
         if (!resolutions.has(source)) {
-          resolutions.set(source, resolveModulePath(source, { from, conditions: conditions(), try: true }))
+          resolutions.set(source, NITRO_SPECIFIER_RE.test(source) ? undefined : resolveModulePath(source, { from, conditions: conditions(), try: true }))
         }
         return resolutions.get(source)
       },
@@ -1209,7 +1210,7 @@ function createLegacyResolvePlugin (
     enforce: 'pre' as const,
     resolveId: { order: 'pre' as const, async handler (this: ResolvePluginContext, source: string, importer?: string) {
       // a virtual importer has no location to resolve from, so nitro's own copy answers
-      if (importer && !isAbsolute(importer) && (source === 'nitro' || source.startsWith('nitro/'))) {
+      if (importer && !isAbsolute(importer) && NITRO_SPECIFIER_RE.test(source)) {
         return nitroResolutions[source]
       }
 
