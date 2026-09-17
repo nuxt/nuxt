@@ -30,7 +30,7 @@ overrides:
   oxc-parser: "0.149.0"
   rolldown: "1.2.8"
   vite: "8.3.0"
-  vue: "3.5.42"
+  vue: "3.5.43"
 
 allowBuilds:
   '@parcel/watcher': true
@@ -71,7 +71,7 @@ catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
   app-runtime:
     '@unhead/vue': ^3.4.0
-    '@vue/shared': ^3.5.42
+    '@vue/shared': ^3.5.43
     consola: ^3.4.2
     cookie-es: ^3.1.1
     defu: ^6.1.7
@@ -91,7 +91,7 @@ catalogs:
     uncrypto: ^0.1.3
     unctx: ^3.0.1
     unhead: ^3.4.0
-    vue: ^3.5.42
+    vue: ^3.5.43
     vue-bundle-renderer: ^2.4.0
     vue-router: ^5.3.1
 
@@ -107,7 +107,7 @@ catalogs:
   vue:
     '@vitejs/plugin-vue': ^6.0.8
     # kept in lockstep with the vue override above
-    '@vue/compiler-sfc': 3.5.42
+    '@vue/compiler-sfc': 3.5.43
     rspack-vue-loader: ^17.7.0
     vue-component-type-helpers: ^3.3.11
     vue-devtools-stub: ^0.1.0
@@ -155,7 +155,7 @@ catalogs:
     '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260907-104727-9e18028
     '@nuxt/devtools': ^4.0.0-alpha.19
     '@nuxt/telemetry': ^2.9.1
-    '@vue/shared': ^3.5.42
+    '@vue/shared': ^3.5.43
     autoprefixer: ^10.6.0
     c12: 4.0.0-rc.1
     chokidar: ^5.0.0
@@ -247,7 +247,7 @@ catalogs:
     '@unocss/reset': 66.10.2
     '@vitejs/plugin-vue-jsx': 5.1.6
     '@vitest/coverage-v8': 5.0.0
-    '@vue/compiler-core': 3.5.42
+    '@vue/compiler-core': 3.5.43
     '@vue/devtools-api': 8.2.1
     '@vue/language-core': 3.3.11
     '@vue/test-utils': 2.5.0
@@ -288,6 +288,7 @@ catalogs:
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.3.0
     vue-tsc: 3.3.11
+    vue-unpatched: npm:vue@3.5.42
 
 catalogPrune: true
 minimumReleaseAgeExcludePrune: true
