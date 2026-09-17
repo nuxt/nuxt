@@ -1,3 +1,6 @@
+import { fileURLToPath } from 'node:url'
+import { readFileSync } from 'node:fs'
+import { glob } from 'tinyglobby'
 import { describe, expect, it } from 'vitest'
 
 // Build-time (NUXT_B) catalogs.
@@ -14,6 +17,8 @@ import { manifestDiagnostics } from '../src/app/diagnostics/manifest.ts'
 import { unheadDiagnostics } from '../src/app/diagnostics/head.ts'
 import { stateDiagnostics } from '../src/app/diagnostics/state.ts'
 import { serverDiagnostics } from '../../nitro-server/src/runtime/diagnostics.ts'
+import { nitroBuildDiagnostics } from '../../nitro-server/src/diagnostics.ts'
+import { rendererDiagnostics } from '../src/runtime/server/renderer/diagnostics.ts'
 
 // Schema continues kit's B5xxx configuration range, so it has to be swept too.
 import { schemaDiagnostics } from '../../schema/src/diagnostics.ts'
@@ -35,8 +40,12 @@ const catalogs = {
   unheadDiagnostics,
   stateDiagnostics,
   serverDiagnostics,
+  nitroBuildDiagnostics,
+  rendererDiagnostics,
   schemaDiagnostics,
 }
+
+const packagesDir = fileURLToPath(new URL('../..', import.meta.url))
 
 describe('diagnostics catalog', () => {
   it('has no duplicate codes across every catalog', () => {
@@ -61,5 +70,22 @@ describe('diagnostics catalog', () => {
     // claiming the same number without anyone noticing in review.
     const codes = Object.keys(catalog)
     expect(codes).toStrictEqual([...codes].sort((a, b) => a.localeCompare(b, 'en', { numeric: true })))
+  })
+
+  it('sweeps every catalog defined in the repo', async () => {
+    const files = await glob('*/src/**/*.ts', { cwd: packagesDir, absolute: true, ignore: ['**/node_modules/**'] })
+
+    const defined = new Set<string>()
+    for (const file of files) {
+      const contents = readFileSync(file, 'utf-8')
+      if (!contents.includes('defineDiagnostics(')) {
+        continue
+      }
+      for (const match of contents.matchAll(/export const (\w+) =[\s\S]{0,120}?defineDiagnostics\(/g)) {
+        defined.add(match[1]!)
+      }
+    }
+
+    expect([...defined].filter(name => !(name in catalogs)).sort()).toStrictEqual([])
   })
 })
