@@ -76,7 +76,7 @@ describe('publicPathTemplate', () => {
   it('omits the runtime-config import entirely in dev mode', async () => {
     const contents = await publicPathTemplate.getContents!({ nuxt: makeNuxt({ dev: true }), app: makeApp(), options: {} })
 
-    expect(contents).not.toMatch(/runtime-config/)
+    expect(contents).not.toMatch(/import \{ useRuntimeConfig \}/)
     expect(contents).toMatch(/getAppConfig = \(\) => \(/)
   })
 })

@@ -157,18 +157,48 @@ describe('setupNitroCompat', () => {
     await expect(plugin.resolveId.handler.call(context, 'ofetch', '/modules/handler.ts')).resolves.toBeUndefined()
   })
 
-  it('resolves nitro for module code only where the bundler cannot', async () => {
+  it('resolves nitro and its implicit dependencies for an importer that cannot reach them, on both server build paths', async () => {
+    const nuxt = createNuxt({ experimental: { nitroViteEnvironment: true } })
     const nitroConfig: NitroConfig = { handlers: [] }
-    await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
 
-    const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
-    const unresolvable = { resolve: () => Promise.resolve(null) }
-    const resolvable = { resolve: () => Promise.resolve({ id: '/project/node_modules/nitro/dist/app.mjs' }) }
+    const vitePlugins = nuxt.options.vite.plugins as any[]
+    for (const resolvers of [
+      nitroConfig.rollupConfig!.plugins as any[],
+      vitePlugins.filter(plugin => plugin.applyToEnvironment?.({ name: 'nitro' })),
+    ]) {
+      // rolldown asks more than once per specifier, answering a `this.resolve` probe with
+      // whatever an earlier call resolved
+      let cached: string | undefined
+      const context = { resolve: () => Promise.resolve(cached ? { id: cached } : null) }
+      const resolveId = async (source: string) => {
+        for (const plugin of resolvers) {
+          const filter = plugin.resolveId?.filter?.id
+          if (filter && !filter.test(source)) { continue }
+          const id = await plugin.resolveId?.handler?.call(context, source, '/project/.nuxt/paths.mjs')
+          if (id) {
+            cached = id
+            return id
+          }
+        }
+      }
 
-    await expect(plugin.resolveId.handler.call(unresolvable, 'nitro/app', '/modules/handler.ts')).resolves.toMatch(/nitro/)
-    // nitro resolving itself must win, or the dev server and the app get separate instances
-    await expect(plugin.resolveId.handler.call(resolvable, 'nitro/app', '/modules/handler.ts')).resolves.toBeUndefined()
-    await expect(plugin.resolveId.handler.call(unresolvable, 'nitro/builder', '/modules/handler.ts')).resolves.toBeUndefined()
+      await expect(resolveId('nitro/runtime-config')).resolves.toMatch(/runtime-config/)
+      await expect(resolveId('nitro/runtime-config')).resolves.toMatch(/runtime-config/)
+      for (const [source, pkg] of [['nitro', 'nitro'], ['h3', 'h3'], ['h3/rules', 'h3'], ['srvx', 'srvx'], ['defu', 'defu'], ['consola', 'consola'], ['ofetch', 'ofetch'], ['crossws', 'crossws']]) {
+        await expect(resolveId(source!), source).resolves.toMatch(new RegExp(`[\\\\/]${pkg}[\\\\/]`))
+      }
+      // builder-only nitro subpaths must not become bundleable
+      await expect(resolveId('nitro/builder')).resolves.toBeUndefined()
+      await expect(resolveId('nitro/vite')).resolves.toBeUndefined()
+      await expect(resolveId('nitropack/runtime')).resolves.toBeUndefined()
+      await expect(resolveId('h3x')).resolves.toBeUndefined()
+
+      const fallback = resolvers.find(plugin => plugin.name === 'nuxt:nitro-resolve-fallback')
+      expect([fallback.enforce, fallback.resolveId.order]).toEqual(['post', 'post'])
+    }
+
+    expect(vitePlugins.filter(plugin => plugin.applyToEnvironment?.({ name: 'client' }))).toEqual([])
   })
 
   it('resolves nitro for a virtual importer', async () => {
