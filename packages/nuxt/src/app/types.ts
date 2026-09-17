@@ -6,12 +6,23 @@ import type { SerializableHead } from '@unhead/vue'
 import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { Hookable } from 'hookable'
-import type { NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
+import type { NuxtHookRegistry, NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
 
 export type { NuxtLinkOptions } from '@nuxt/schema'
 
 type HookResult = Promise<void> | void
+
+/** A log recorded during server rendering and replayed in the browser by `dev:ssr-logs`. */
+export interface DevServerLog {
+  level: number
+  type: string
+  tag: string
+  args: any[]
+  date: Date
+  message?: string
+  additional?: string | string[]
+  [key: string]: unknown
+}
 
 export interface NuxtAppLiterals {
   [key: string]: string
@@ -47,11 +58,11 @@ export interface NuxtServerRuntimeHooks {
  * The part of the runtime Nuxt app addressable from the server runtime
  * (`ssrContext.nuxt`). The full `NuxtApp` in `./nuxt.ts` is assignable to
  * this shape; `hooks` is deliberately narrowed to the members the server
- * runtime calls, as `Hookable` instantiations over different hook maps are
+ * runtime calls, as hook registries over different hook maps are
  * not mutually assignable.
  */
 export interface NuxtServerApp {
-  hooks: Pick<Hookable<NuxtServerRuntimeHooks>, 'hook' | 'callHook'>
+  hooks: Pick<NuxtHookRegistry<NuxtServerRuntimeHooks>, 'hook' | 'callHook'>
   payload: NuxtPayload
   ssrContext?: NuxtSSRContext
   [key: string]: unknown
