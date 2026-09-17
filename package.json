@@ -68,6 +68,7 @@
     "@typescript-eslint/parser": "catalog:dev",
     "@unhead/vue": "catalog:app-runtime",
     "@vitest/coverage-v8": "catalog:dev",
+    "@vue/server-renderer": "catalog:vue",
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
     "case-police": "catalog:dev",

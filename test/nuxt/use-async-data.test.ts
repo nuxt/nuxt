@@ -1657,12 +1657,17 @@ describe('useAsyncData', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/32154
-  it.fails('should not cause error with v-once after navigation', async () => {
+  it('should not cause error with v-once after navigation', async () => {
     const router = useRouter()
+    const renders = ref(0)
+    const unmounted = vi.fn()
+    let fetchCount = 0
+    const handler = vi.fn(() => Promise.resolve({ foo: `bar-${++fetchCount}` }))
 
     const WrapperComponent = defineComponent({
       name: 'WrapperComponent',
       setup (_, { slots }) {
+        onUnmounted(unmounted)
         return () => h('div', slots.default?.())
       },
     })
@@ -1671,11 +1676,11 @@ describe('useAsyncData', () => {
       name: 'HomePage',
       components: { WrapperComponent },
       async setup () {
-        const { data } = await useAsyncData('v-once-home-page', () => Promise.resolve({ foo: 'bar' }))
+        const { data } = await useAsyncData('v-once-home-page', handler)
         const foo = computed(() => data.value!.foo)
-        return { foo }
+        return { foo, renders }
       },
-      template: `<div><WrapperComponent v-once>{{ foo }}</WrapperComponent></div>`,
+      template: `<div :data-render="renders"><WrapperComponent v-once>{{ foo }}</WrapperComponent></div>`,
     })
 
     const OtherPage = defineComponent({
@@ -1701,23 +1706,40 @@ describe('useAsyncData', () => {
           },
         },
       })
+      onTestFinished(() => el.unmount())
 
       await navigateTo('/v-once-home')
       await flushPromises()
-      expect(el.html()).toContain('bar')
+      expect(el.html()).toContain('bar-1')
+      expect(handler).toHaveBeenCalledTimes(1)
+
+      renders.value++
+      await nextTick()
+      expect(el.html()).toContain('data-render="1"')
 
       await navigateTo('/v-once-other')
       await flushPromises()
       expect(el.html()).toContain('Other Page')
+      expect(unmounted).toHaveBeenCalledTimes(1)
+      expect(useNuxtApp().payload.data['v-once-home-page']).toBeUndefined()
+      expect(errors).toEqual([])
 
       await navigateTo('/v-once-home')
       await flushPromises()
 
       // we should not get 'TypeError: Cannot read properties of undefined (reading 'foo')'
-      expect(errors[0]).toBeUndefined()
-      expect(el.html()).toContain('bar')
+      expect(errors).toEqual([])
+      expect(el.html()).toContain('bar-2')
+      expect(handler).toHaveBeenCalledTimes(2)
 
-      el.unmount()
+      renders.value++
+      await nextTick()
+
+      await navigateTo('/v-once-other')
+      await flushPromises()
+      expect(unmounted).toHaveBeenCalledTimes(2)
+      expect(useNuxtApp().payload.data['v-once-home-page']).toBeUndefined()
+      expect(errors).toEqual([])
     } finally {
       // Clean up routes
       router.removeRoute('v-once-home')

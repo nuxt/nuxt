@@ -22,6 +22,10 @@ verifyDepsBeforeRun: install
 
 ignoreWorkspaceCycles: true
 
+# pkg.pr.new Vue packages depend on other commit-pinned tarballs.
+# Remove this setting together with the temporary Vue build below.
+blockExoticSubdeps: false
+
 overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
@@ -30,7 +34,17 @@ overrides:
   oxc-parser: "0.149.0"
   rolldown: "1.2.8"
   vite: "8.3.0"
-  vue: "3.5.42"
+  # Temporary build containing vuejs/core#15435; replace with its first release.
+  vue: https://pkg.pr.new/vuejs/core/vue@3d713f7
+  '@vue/compiler-core': https://pkg.pr.new/vuejs/core/@vue/compiler-core@3d713f7
+  '@vue/compiler-dom': https://pkg.pr.new/vuejs/core/@vue/compiler-dom@3d713f7
+  '@vue/compiler-sfc': https://pkg.pr.new/vuejs/core/@vue/compiler-sfc@3d713f7
+  '@vue/compiler-ssr': https://pkg.pr.new/vuejs/core/@vue/compiler-ssr@3d713f7
+  '@vue/reactivity': https://pkg.pr.new/vuejs/core/@vue/reactivity@3d713f7
+  '@vue/runtime-core': https://pkg.pr.new/vuejs/core/@vue/runtime-core@3d713f7
+  '@vue/runtime-dom': https://pkg.pr.new/vuejs/core/@vue/runtime-dom@3d713f7
+  '@vue/server-renderer': https://pkg.pr.new/vuejs/core/@vue/server-renderer@3d713f7
+  '@vue/shared': https://pkg.pr.new/vuejs/core/@vue/shared@3d713f7
 
 allowBuilds:
   '@parcel/watcher': true
@@ -71,7 +85,7 @@ catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
   app-runtime:
     '@unhead/vue': ^3.4.0
-    '@vue/shared': ^3.5.42
+    '@vue/shared': https://pkg.pr.new/vuejs/core/@vue/shared@3d713f7
     consola: ^3.4.2
     cookie-es: ^3.1.1
     defu: ^6.1.7
@@ -91,7 +105,7 @@ catalogs:
     uncrypto: ^0.1.3
     unctx: ^3.0.1
     unhead: ^3.4.0
-    vue: ^3.5.42
+    vue: https://pkg.pr.new/vuejs/core/vue@3d713f7
     vue-bundle-renderer: ^2.4.0
     vue-router: ^5.3.1
 
@@ -107,7 +121,8 @@ catalogs:
   vue:
     '@vitejs/plugin-vue': ^6.0.8
     # kept in lockstep with the vue override above
-    '@vue/compiler-sfc': 3.5.42
+    '@vue/compiler-sfc': https://pkg.pr.new/vuejs/core/@vue/compiler-sfc@3d713f7
+    '@vue/server-renderer': https://pkg.pr.new/vuejs/core/@vue/server-renderer@3d713f7
     rspack-vue-loader: ^17.7.0
     vue-component-type-helpers: ^3.3.11
     vue-devtools-stub: ^0.1.0
@@ -155,7 +170,7 @@ catalogs:
     '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260907-104727-9e18028
     '@nuxt/devtools': ^4.0.0-alpha.19
     '@nuxt/telemetry': ^2.9.1
-    '@vue/shared': ^3.5.42
+    '@vue/shared': https://pkg.pr.new/vuejs/core/@vue/shared@3d713f7
     autoprefixer: ^10.6.0
     c12: 4.0.0-rc.1
     chokidar: ^5.0.0
@@ -247,7 +262,7 @@ catalogs:
     '@unocss/reset': 66.10.2
     '@vitejs/plugin-vue-jsx': 5.1.6
     '@vitest/coverage-v8': 5.0.0
-    '@vue/compiler-core': 3.5.42
+    '@vue/compiler-core': https://pkg.pr.new/vuejs/core/@vue/compiler-core@3d713f7
     '@vue/devtools-api': 8.2.1
     '@vue/language-core': 3.3.11
     '@vue/test-utils': 2.5.0
