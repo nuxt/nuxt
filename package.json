@@ -70,7 +70,7 @@
     "@vitest/coverage-v8": "catalog:dev",
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
-    "autoprefixer": "10.6.0",
+    "autoprefixer": "10.6.1",
     "case-police": "catalog:dev",
     "consola": "catalog:build",
     "cssnano": "9.0.4",
@@ -116,6 +116,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@12.4.1",
+  "packageManager": "pnpm@12.4.2",
   "version": ""
 }
