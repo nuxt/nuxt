@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
 import type { Page } from '@playwright/test'
 import type { Router } from 'vue-router'
+import { NavigationFailureType } from 'vue-router'
 import { expect, test } from './test-utils'
 
 // Browser back navigation must replace the SSR branch even while root hydration is pending.
@@ -45,6 +46,44 @@ async function gotoMidHydration (page: Page, path: string) {
     window.useNuxtApp?.().isHydrating === true &&
     typeof window.__releaseHydration === 'function',
   )
+}
+
+async function startBootNavigation (page: Page, to: string, outcome: 'success' | 'abort' | 'throw' = 'success') {
+  await page.evaluate(async ({ to, outcome }) => {
+    const nuxtApp = window.useNuxtApp!()
+    const router = nuxtApp.$router as Router
+    const initialPath = router.currentRoute.value.fullPath
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    const started = new Promise<void>((resolve) => {
+      router.beforeEach(async (target) => {
+        if (target.fullPath === initialPath) {
+          bootNavigation.initialNavigations++
+        }
+        if (target.fullPath !== to) { return }
+        resolve()
+        await gate
+        if (outcome === 'abort') { return false }
+        if (outcome === 'throw') { throw new Error('boot navigation failed') }
+      })
+    })
+    const removeHook = nuxtApp.hooks.beforeEach(({ name }) => {
+      if (name === 'app:created') {
+        bootNavigation.created = true
+        removeHook()
+      }
+    })
+    const bootNavigation = {
+      created: false,
+      initialNavigations: 0,
+      release,
+      finished: router.push(to).then(failure => failure?.type ?? null, error => error.message),
+    }
+    window.__bootNavigation = bootNavigation
+    await started
+  }, { to, outcome })
+  await page.evaluate(() => window.__releaseBoot?.())
+  await page.waitForFunction(() => window.__bootNavigation?.created)
 }
 
 test.describe('navigation during initial hydration', () => {
@@ -132,14 +171,57 @@ test.describe('navigation during initial hydration', () => {
     await page.goto('/slow?bootgate', { waitUntil: 'domcontentloaded' })
     await page.waitForFunction(() => typeof window.__releaseBoot === 'function')
 
-    await page.evaluate(() => { (window.useNuxtApp?.().$router as Router).push('/') })
-    await page.evaluate(() => window.__releaseBoot?.())
+    await startBootNavigation(page, '/')
+    await page.evaluate(() => window.__bootNavigation!.release())
 
     await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
     await expect(page.getByTestId('index-title')).toBeVisible()
     await expect(page.getByTestId('slow-title')).not.toBeAttached()
     await expect(page.getByTestId('default-layout')).toHaveCount(1)
     await expect(() => page.evaluate(() => window.useNuxtApp?.().isHydrating)).toBeWithPolling(false)
+    expect(await page.evaluate(() => window.__bootNavigation!.initialNavigations)).toBe(0)
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  for (const outcome of ['abort', 'throw'] as const) {
+    test(`a pending boot navigation that ${outcome}s falls back to the initial route`, async ({ page }) => {
+      await page.goto('/?bootgate', { waitUntil: 'domcontentloaded' })
+      await page.waitForFunction(() => typeof window.__releaseBoot === 'function')
+
+      await startBootNavigation(page, '/slow', outcome)
+      const result = await page.evaluate(() => {
+        window.__bootNavigation!.release()
+        return window.__bootNavigation!.finished
+      })
+
+      expect(result).toBe(outcome === 'abort' ? NavigationFailureType.aborted : 'boot navigation failed')
+      await expect(() => page.evaluate(() => window.useNuxtApp?.().isHydrating)).toBeWithPolling(false)
+      expect(await page.evaluate(() => window.__bootNavigation!.initialNavigations)).toBe(1)
+      expect(await page.evaluate(() => (window.useNuxtApp?.().$router as Router).currentRoute.value.fullPath)).toBe('/?bootgate')
+      await expect(page.getByTestId('index-title')).toBeVisible()
+      await expect(page.getByTestId('slow-title')).not.toBeAttached()
+
+      expect(page).toHaveNoErrorsOrWarnings()
+    })
+  }
+
+  test('a cancelled boot navigation does not replace a newer navigation', async ({ page }) => {
+    await page.goto('/?bootgate', { waitUntil: 'domcontentloaded' })
+    await page.waitForFunction(() => typeof window.__releaseBoot === 'function')
+
+    await startBootNavigation(page, '/slow')
+    await page.evaluate(() => (window.useNuxtApp?.().$router as Router).push('/?newer'))
+    const result = await page.evaluate(() => {
+      window.__bootNavigation!.release()
+      return window.__bootNavigation!.finished
+    })
+
+    expect(result).toBe(NavigationFailureType.cancelled)
+    await expect(() => page.evaluate(() => window.useNuxtApp?.().isHydrating)).toBeWithPolling(false)
+    expect(await page.evaluate(() => window.__bootNavigation!.initialNavigations)).toBe(0)
+    expect(await page.evaluate(() => (window.useNuxtApp?.().$router as Router).currentRoute.value.fullPath)).toBe('/?newer')
+    await expect(page.getByTestId('index-title')).toBeVisible()
 
     expect(page).toHaveNoErrorsOrWarnings()
   })
@@ -214,6 +296,12 @@ test.describe('navigation during initial hydration', () => {
 
 declare global {
   interface Window {
+    __bootNavigation?: {
+      created: boolean
+      initialNavigations: number
+      release: () => void
+      finished: Promise<unknown>
+    }
     __releaseBoot?: () => void
     __releaseHydration?: () => void
     __releaseTarget?: () => void

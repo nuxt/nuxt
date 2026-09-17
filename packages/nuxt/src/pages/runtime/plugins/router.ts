@@ -196,6 +196,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // Track non-aborted navigations during boot so the initial router.replace does not cancel one in flight.
     let pendingBootNavigation: RouteLocationNormalizedGeneric | null = null
     let completedBootNavigation = false
+    let resolveBootNavigation: (() => void) | undefined
     let stopBootNavigationTracker: (() => void) | undefined
     if (import.meta.client) {
       const removeGuard = router.beforeEach((to) => {
@@ -208,10 +209,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         if (!failure) {
           completedBootNavigation = true
         }
+        if (!pendingBootNavigation || completedBootNavigation) {
+          resolveBootNavigation?.()
+        }
       })
       const removeErrorHandler = router.onError((_error, to) => {
         if (pendingBootNavigation === to) {
           pendingBootNavigation = null
+          resolveBootNavigation?.()
         }
       })
       stopBootNavigationTracker = () => {
@@ -381,10 +386,13 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
+      if (pendingBootNavigation && !completedBootNavigation) {
+        await new Promise<void>((resolve) => { resolveBootNavigation = resolve })
+      }
       stopBootNavigationTracker?.()
       try {
         // respect a plugin or the user navigating away during boot
-        const navigatedDuringBoot = import.meta.client && (completedBootNavigation || pendingBootNavigation !== null)
+        const navigatedDuringBoot = import.meta.client && completedBootNavigation
 
         // clear the resolved route name so `router.replace` re-resolves it only when replacing.
         if (!navigatedDuringBoot && 'name' in resolvedInitialRoute) {
