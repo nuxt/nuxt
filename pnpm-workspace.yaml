@@ -38,6 +38,7 @@ overrides:
   esbuild: "0.28.2"
   nuxt: "workspace:*"
   oxc-parser: "0.150.0"
+  rolldown: "~1.2.8"
   vite: "8.3.0"
   vue: "3.5.42"
 
@@ -95,7 +96,7 @@ catalogs:
     magic-string: ^1.4.1
     oxc-walker: ^1.1.1
     # needs to match vite's own `~1.2.0` pin
-    rolldown: ^1.2.7
+    rolldown: ~1.2.8
     rolldown-string: ^0.3.1
     vite: ^8.3.0
     vite-node: ^6.0.0
