@@ -3,7 +3,7 @@ import { relative } from 'pathe'
 import { resolveAlias } from 'pathe/utils'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { genImport } from 'knitwork'
-import { isJS, isVue } from '../../core/utils/index.ts'
+import { JS_ID_RE, VUE_SCRIPT_TEMPLATE_ID_FILTER } from '../../core/utils/index.ts'
 import type { ComponentsOptions } from 'nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
@@ -34,18 +34,12 @@ export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => cre
   return {
     name: 'nuxt:lazy-hydration-macro',
     enforce: 'post',
-    transformInclude (id) {
-      if (exclude.some(pattern => pattern.test(id))) {
-        return false
-      }
-      if (include.some(pattern => pattern.test(id))) {
-        return true
-      }
-      return isVue(id, { type: ['template', 'script'] }) || isJS(id)
-    },
-
     transform: {
       filter: {
+        id: {
+          include: [...include, ...VUE_SCRIPT_TEMPLATE_ID_FILTER, JS_ID_RE],
+          exclude,
+        },
         code: {
           include: LAZY_HYDRATION_MACRO_RE,
         },

@@ -1,5 +1,5 @@
 import type { Compilation, Compiler } from 'webpack'
-import { bundlerDiagnostics } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { extractQueryPartJS, isJS, validate } from './util.ts'
 import { webpack } from '../../builder.ts'
 

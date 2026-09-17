@@ -11,7 +11,7 @@ export function isBotUserAgent (userAgent: string): boolean {
   return BOT_RE.test(userAgent)
 }
 
-const distURL = import.meta.url.replace(/\/app\/.*$/, '/')
+const distURL = import.meta.dev ? import.meta.url.replace(/\/app\/.*$/, '/') : ''
 type Trace = { source: string, line?: number, column?: number }
 
 export function getUserTrace (): Trace[] {
@@ -21,11 +21,11 @@ export function getUserTrace (): Trace[] {
 
   const trace = captureStackTrace()
   const start = trace.findIndex(entry => !entry.source.startsWith(distURL))
-  const end = trace.toReversed().findIndex(entry => !entry.source.includes('node_modules') && !entry.source.startsWith(distURL))
+  const end = trace.findLastIndex(entry => !entry.source.includes('node_modules') && !entry.source.startsWith(distURL))
   if (start === -1 || end === -1) {
     return []
   }
-  return trace.slice(start, end > 0 ? -end : undefined).map(i => ({
+  return trace.slice(start, end + 1).map(i => ({
     ...i,
     source: i.source.replace(/^file:\/\//, ''),
   }))

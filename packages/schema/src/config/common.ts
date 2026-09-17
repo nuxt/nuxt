@@ -79,6 +79,14 @@ export default defineResolvers({
       return resolve(rootDir, val && typeof val === 'string' ? val : '.nuxt')
     },
   },
+  typesDir: {
+    $resolve: async (val, get) => {
+      if (val && typeof val === 'string') {
+        return resolve(await get('rootDir'), val)
+      }
+      return get('buildDir')
+    },
+  },
   appId: {
     $resolve: val => val && typeof val === 'string' ? val : 'nuxt-app',
   },
@@ -294,6 +302,7 @@ export default defineResolvers({
       const [app, buildId] = await Promise.all([get('app'), get('buildId')])
       provideFallbackValues(val)
       return defu(val, {
+        appSecret: '',
         public: {},
         app: {
           buildId,

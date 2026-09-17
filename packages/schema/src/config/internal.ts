@@ -2,6 +2,7 @@ import { defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   _majorVersion: 4,
+  _nitroMajor: 3,
   _legacyGenerate: false,
   _start: false,
   _build: false,
@@ -15,4 +16,5 @@ export default defineResolvers({
   appDir: '',
   _installedModules: [],
   _modules: [],
+  _noScriptsPageSources: [],
 })

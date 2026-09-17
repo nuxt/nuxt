@@ -3,17 +3,18 @@ import process from 'node:process'
 import { describe, expect, it } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
 import { UnheadImportsPlugin } from '../src/head/plugins/unhead-imports.ts'
+import { matchesIdFilter } from './utils.ts'
 
 describe('UnheadImportsPlugin', () => {
   // Helper function to transform code
   function transform (code: string, id = 'app.vue') {
     const plugin = UnheadImportsPlugin({ rootDir: import.meta.dirname }).raw({}, {} as any) as any
-    return plugin.transformInclude(id) ? Promise.resolve(plugin.transform.handler(code, id)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
+    return matchesIdFilter(plugin.transform.filter.id, id) ? Promise.resolve(plugin.transform.handler(code, id)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
   }
 
-  describe('transformInclude', () => {
-    // @ts-expect-error untyped
-    const transformInclude = UnheadImportsPlugin({ rootDir: process.cwd() }).raw({}, {} as any).transformInclude
+  describe('id filter', () => {
+    const plugin = UnheadImportsPlugin({ rootDir: process.cwd() }).raw({}, {} as any) as any
+    const transformInclude = (id: string) => matchesIdFilter(plugin.transform.filter.id, id)
 
     it('should include JS files', () => {
       expect(transformInclude('/project/components/MyComponent.js')).toBe(true)

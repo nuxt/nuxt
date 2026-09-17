@@ -6,7 +6,7 @@ import type { SSRContext } from 'vue-bundle-renderer/runtime'
  * be passed to `createRenderer()` without a cast.
  */
 const stub: (ssrContext: SSRContext) => Promise<App> = () => {
-  throw new Error('[nuxt] nuxt/entry was not replaced by a builder. Ensure a Nuxt builder (Vite, Webpack, or Rspack) is configured.')
+  throw new Error('[nuxt] nuxt/internal/entry was not replaced by a builder. Ensure a Nuxt builder (Vite, Webpack, or Rspack) is configured.')
 }
 
 export default stub

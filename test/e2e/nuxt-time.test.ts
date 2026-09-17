@@ -26,10 +26,12 @@ test.describe('nuxt-time', () => {
 
     expect(await page.getByTestId('switchable').textContent()).toBe('11 February at 8')
     expect(await page.getByTestId('fixed').textContent()).toBe('11 February')
+    expect(await page.getByTestId('no-locale').textContent()).toBe('11 February at 8')
 
     await page.getByText('Switch locale').click()
     expect(await page.getByTestId('switchable').textContent()).toBe('11 février à 8')
     expect(await page.getByTestId('fixed').textContent()).toBe('11 février')
+    expect(await page.getByTestId('no-locale').textContent()).toBe('11 February at 8')
 
     await page.getByText('Update time').click()
     expect(await page.getByTestId('switchable').textContent()).not.toEqual('11 février à 8')

@@ -26,8 +26,8 @@ function testBuilderFor (entry: typeof e2eMatrix[number]) {
 }
 
 const devOnlyTests = ['**/hmr.test.ts']
-const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/server-page-css.test.ts', '**/chunk-error.test.ts', '**/no-scripts.test.ts']
-const viteOnlyTests = ['**/server-page-css.test.ts', '**/no-scripts.test.ts']
+const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/server-page-css.test.ts', '**/chunk-error.test.ts', '**/no-scripts*.test.ts']
+const viteOnlyTests = ['**/server-page-css.test.ts', '**/no-scripts*.test.ts']
 const rspackExcludedTests = ['**/chunk-error.test.ts']
 
 function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
@@ -58,7 +58,10 @@ export default defineConfig<E2eConfigOptions>({
   forbidOnly: !!isCI,
   retries: isCI ? 2 : 0,
   workers: isCI ? 1 : undefined,
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    ['@flakiness/playwright', { flakinessProject: 'nuxt/nuxt' }],
+  ],
   projects: [
     {
       name: 'setup fixtures',
@@ -74,6 +77,7 @@ export default defineConfig<E2eConfigOptions>({
       return {
         name,
         testIgnore: testIgnoreForProject(entry),
+        fullyParallel: !entry.isDev && !isCI,
         use: {
           ...devices['Desktop Chrome'],
           isDev: entry.isDev,
@@ -83,6 +87,8 @@ export default defineConfig<E2eConfigOptions>({
           defaults: {
             nuxt: {
               dev: entry.isDev,
+              setupTimeout: (isWindows ? 360 : 120) * 1000,
+              serverStartTimeout: (isWindows ? 300 : 120) * 1000,
               nuxtConfig: {
                 builder: entry.builder,
                 devtools: { enabled: false },

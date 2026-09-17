@@ -1,6 +1,6 @@
 import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
-import { configDiagnostics } from '@nuxt/kit'
+import { configDiagnostics } from '@nuxt/kit/internal'
 import { toArray } from './index.ts'
 
 export interface WebpackConfigContext {

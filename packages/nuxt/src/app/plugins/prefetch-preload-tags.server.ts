@@ -10,6 +10,8 @@ interface SerialisablePrefetchLink {
 }
 
 const FORWARDED_RELS = new Set(['preload', 'modulepreload'])
+// anything outside this set (`video`, `audio`, `track`, ...) can be arbitrarily large
+const FORWARDED_AS = new Set(['image', 'font', 'style', 'script', 'fetch'])
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:prefetch-preload-tags',
@@ -33,6 +35,8 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         const href = props.href
         if (typeof rel !== 'string' || typeof href !== 'string') { continue }
         if (!FORWARDED_RELS.has(rel)) { continue }
+        // `modulepreload` has no `as`
+        if (rel === 'preload' && (typeof props.as !== 'string' || !FORWARDED_AS.has(props.as))) { continue }
         const link: SerialisablePrefetchLink = { rel, href }
         for (const key in props) {
           if (key === 'rel' || key === 'href') { continue }

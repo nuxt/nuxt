@@ -57,11 +57,34 @@ describe('useFetch', () => {
     await useFetch('/api/test', { query: { id: '3' } }, '')
     /* @ts-expect-error Overriding auto-key */
     await useFetch('/api/test', { query: { id: ref('3') } }, '')
-    /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { params: { id: '3' } }, '')
-    /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { params: { id: ref('3') } }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
+  })
+
+  it('drops `params` rather than sending a value the key does not cover', async () => {
+    const requested: string[] = []
+    registerEndpoint('/api/params-dropped', defineEventHandler((event) => {
+      requested.push(event.url.search)
+      return { ok: true }
+    }))
+
+    /* @ts-expect-error `params` is no longer an option */
+    await useFetch('/api/params-dropped', { key: 'params-a', params: { id: '1' } })
+    /* @ts-expect-error `params` is no longer an option */
+    await useFetch('/api/params-dropped', { key: 'params-b', params: { id: '2' } })
+
+    expect(requested).toStrictEqual(['', ''])
+  })
+
+  it('drops `routes`, which describes the route set for the types only', async () => {
+    const seen: string[] = []
+    registerEndpoint('/api/routes-dropped', defineEventHandler((event) => {
+      seen.push(event.url.search)
+      return { ok: true }
+    }))
+
+    await useFetch('/api/routes-dropped', { key: 'routes-a', routes: {} as { '/x': never } })
+
+    expect(seen).toStrictEqual([''])
   })
 
   it('does not write resolved data to the payload with `serialize: false`', async () => {
@@ -185,7 +208,7 @@ describe('useFetch', () => {
     const searchTerm = ref('')
 
     const { data } = await useFetch('/api/watchable-fetch', {
-      params: { q: searchTerm },
+      query: { q: searchTerm },
     })
 
     for (const value of [undefined, 'pre', 'post', 'sync'] as const) {

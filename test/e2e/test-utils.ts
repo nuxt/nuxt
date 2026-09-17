@@ -1,7 +1,9 @@
-import { waitForHydration } from '@nuxt/test-utils/e2e'
+import { createTest, waitForHydration } from '@nuxt/test-utils/e2e'
 import { test as base, expect as baseExpect } from '@nuxt/test-utils/playwright'
 import type { Page } from '@playwright/test'
+import defu from 'defu'
 import { fetch } from 'ofetch'
+import { isWindows } from 'std-env'
 import { joinURL } from 'ufo'
 
 export interface MatrixOptions {
@@ -11,11 +13,42 @@ export interface MatrixOptions {
   builder: 'vite' | 'rspack' | 'webpack'
 }
 
+// TODO: remove custom _nuxtHooks below when upgrading nuxt/test-utils
+const FIXTURE_TIMEOUT = (isWindows ? 420 : 180) * 1000
+const DEFAULT_SETUP_TIMEOUT = (isWindows ? 360 : 120) * 1000
+
 const test = base.extend<{ fetch: (path: string) => Promise<Response> } & MatrixOptions>({
   isDev: [false, { option: true }],
   isBuilt: [true, { option: true }],
   isWebpack: [false, { option: true }],
   builder: ['vite' as const, { option: true }],
+  _nuxtHooks: [async ({ nuxt, defaults }, use) => {
+    const hooks = createTest(defu(nuxt || {}, defaults.nuxt || {}))
+    const setupTimeout = hooks.ctx.options.setupTimeout || DEFAULT_SETUP_TIMEOUT
+
+    const setup = hooks.beforeAll()
+
+    try {
+      let timer: NodeJS.Timeout | undefined
+      await Promise.race([
+        setup,
+        new Promise((_resolve, reject) => {
+          timer = setTimeout(() => reject(new Error(`Nuxt fixture setup did not complete within ${setupTimeout}ms`)), setupTimeout)
+        }),
+      ]).finally(() => clearTimeout(timer))
+    } catch (error) {
+      await hooks.afterAll().catch(() => {})
+      // a timed-out setup may still spawn a dev server after teardown has run
+      await Promise.race([setup.catch(() => {}), new Promise(resolve => setTimeout(resolve, 30_000))])
+      await hooks.afterAll().catch(() => {})
+      const logs = hooks.ctx.serverLogs?.join('\n')
+      throw new Error(`Nuxt fixture setup failed for ${hooks.ctx.options.rootDir}: ${error instanceof Error ? error.message : error}${logs ? `\n\nServer output:\n${logs}` : ''}`, { cause: error })
+    }
+
+    await use(hooks)
+
+    await hooks.afterAll()
+  }, { scope: 'worker', timeout: FIXTURE_TIMEOUT }],
   fetch: ({ request, _nuxtHooks }, use) => {
     use(async (path) => {
       let res: Response | undefined
@@ -52,10 +85,27 @@ test.use({
     use(async (path, options) => {
       const result = await page.goto(path, options as any)
       await waitForHydration(page, path, 'hydration')
+      const overlay = await getViteErrorOverlay(page)
+      if (overlay) {
+        throw new Error(`Vite error overlay shown after navigating to ${path}:\n${overlay}`)
+      }
       return result
     })
   },
 })
+
+// The overlay renders into a shadow root, so its text is invisible to normal locators and
+// would otherwise only show up as "intercepts pointer events" in a click timeout.
+function getViteErrorOverlay (page: Page) {
+  return page.evaluate(() => {
+    const root = document.querySelector('vite-error-overlay')?.shadowRoot
+    if (!root) { return null }
+    return ['.message-body', '.file', '.frame', '.stack']
+      .map(selector => root.querySelector(selector)?.textContent?.trim())
+      .filter(Boolean)
+      .join('\n')
+  })
+}
 
 const expect = baseExpect.extend({
   // Utility function to wait for a condition to be true

@@ -1,4 +1,4 @@
-export { isVue, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
+export { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER, isVue, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
 export { toVirtualId } from '../../../nuxt/src/core/plugins/virtual.ts'
 
 // Copied from vue-bundle-renderer utils

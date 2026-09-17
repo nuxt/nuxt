@@ -1,23 +1,27 @@
-import { readdir } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
+import type { Route } from 'playwright-core'
 import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
+import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
-const itFailsIf = (condition: boolean) => condition ? it.fails : it
+const appSecret = 'nuxt-runtime-app-secret-test-value'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: isDev,
   server: true,
   browser: true,
+  env: {
+    NUXT_APP_SECRET: appSecret,
+  },
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     hooks: {
@@ -31,6 +35,33 @@ await setup({
       },
     },
   },
+})
+
+describe('application secret', () => {
+  it('provides the application secret only on the server', async () => {
+    expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret })
+    expect(await $fetch<string>('/')).not.toContain(appSecret)
+
+    const page = await createPage('/')
+    try {
+      const config = await page.evaluate(() => window.useNuxtApp!().$config)
+      expect(config).not.toHaveProperty('appSecret')
+      expect(JSON.stringify(config)).not.toContain(appSecret)
+    } finally {
+      await page.close()
+    }
+  })
+
+  it.skipIf(isDev || !runsOncePerBuilderInMatrix).each([
+    undefined, '', '123', 'true', 'null', '4848e0', '"quoted-secret"', '{"key":"secret"}',
+  ])('preserves the runtime environment secret %j', async (value) => {
+    try {
+      await startServer({ env: { NUXT_APP_SECRET: value, NITRO_APP_SECRET: undefined } })
+      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret: value ?? '' })
+    } finally {
+      await startServer()
+    }
+  })
 })
 
 describe.skipIf(!runsOnceInMatrix)('server api', () => {
@@ -54,6 +85,47 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     expect(await $fetch('/api/counter')).toEqual({ count: 1 })
     expect(await $fetch('/api/counter')).toEqual({ count: 2 })
     expect(await $fetch('/api/counter')).toEqual({ count: 3 })
+  })
+
+  it('should serve a handler written against `nuxt/server`', async () => {
+    const response = await fetch('/api/portable', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'nuxt' }),
+      headers: { 'content-type': 'application/json', 'cookie': 'incoming=here' },
+    })
+
+    expect(response.status).toBe(201)
+    expect(response.headers.get('x-portable')).toBe('yes')
+    expect(response.headers.getSetCookie()).toEqual([
+      'portable=set; Path=/',
+      'stale=; Max-Age=0; Path=/',
+    ])
+    expect(await response.json()).toMatchObject({
+      name: 'nuxt',
+      path: '/api/portable',
+      incoming: 'here',
+      publicKey: 123,
+    })
+  })
+
+  it('should read the body from both `nuxt/server` and nitro in one request', async () => {
+    const response = await fetch('/api/portable-body', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'nuxt' }),
+      headers: { 'content-type': 'application/json' },
+    })
+
+    expect(await response.json()).toMatchObject({
+      middleware: { cloned: 'nuxt', parsed: 'nuxt' },
+      handler: 'nuxt',
+    })
+  })
+
+  it('should map an error created with `nuxt/server` to its status', async () => {
+    const response = await fetch('/api/portable?fail=yes', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
+
+    expect(response.status).toBe(418)
+    expect(await response.json()).toMatchObject({ status: 418, statusText: 'Teapot', data: { fail: 'yes' } })
   })
 
   it('should auto-import', async () => {
@@ -113,6 +185,11 @@ describe('route rules', () => {
 
   it('should run middleware defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/middleware')
+    expect(html).toContain('Hello from routeRules!')
+  })
+
+  it('should run appMiddleware from a decoded route rule key on a unicode page', async () => {
+    const html = await $fetch<string>(`/route-rules/${encodeURIComponent('测试')}`)
     expect(html).toContain('Hello from routeRules!')
   })
 
@@ -423,7 +500,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  itFailsIf(isWebpack && isDev)('/client-only-components', async () => {
+  it('/client-only-components', async () => {
     const html = await $fetch<string>('/client-only-components')
     expect(html).toContain('<div>Fallback</div>')
     // ensure components are not rendered server-side
@@ -666,10 +743,39 @@ describe('pages', () => {
     expect(html).toContain('should be prerendered: true')
   })
 
+  it.skipIf(isDev)('substitutes the server compile-time constants in the prerenderer', async () => {
+    const html = await $fetch<string>('/prerender/import-meta-test')
+    expect(html).toContain('server test flag: true')
+  })
+
   it('renders pages with special characters in route', async () => {
     const html = await $fetch('/non-ascii/ç')
     // Verify page renders successfully with layout
     expect(html).toContain('Extended layout from foo')
+  })
+
+  it('renders pages with sub-delimiters in route', async () => {
+    expect(await $fetch<string>('/non-ascii/a&b')).toContain('sub-delimiter page: a&amp;b')
+    expect(await $fetch<string>('/non-ascii/a+b')).toContain('sub-delimiter page: a+b')
+  })
+
+  it('navigates to pages with sub-delimiters in route', async () => {
+    const { page } = await renderPage('/non-ascii/navigate')
+
+    for (const [id, path, content] of [
+      ['#navigate-ampersand', '/non-ascii/a&b', 'sub-delimiter page: a&b'],
+      ['#navigate-plus', '/non-ascii/a+b', 'sub-delimiter page: a+b'],
+    ] as const) {
+      await page.locator(id).click()
+      await page.waitForFunction(p => window.useNuxtApp?.()._route.path === p, path)
+      expect(await page.evaluate(() => window.useNuxtApp?.()._route.matched.length)).toBe(1)
+      expect(await page.evaluate(() => window.location.pathname)).toBe(path)
+      expect(await page.innerText('body')).toContain(content)
+      await page.goBack()
+      await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/non-ascii/navigate')
+    }
+
+    await page.close()
   })
 
   it.skipIf(isDev)('prerenders pages with special characters', async () => {
@@ -719,6 +825,50 @@ describe('pages', () => {
     await page.close()
   })
 
+  it.skipIf(isDev).each([
+    ['/prerender/query-reactivity'],
+    ['/prerender/%C3%A7'],
+  ])('does not rewrite the URL when hydrating prerendered %s requested with a trailing slash', async (path) => {
+    const page = await createPage()
+    await page.addInitScript(() => {
+      const paths: string[] = []
+      Object.assign(window, { __historyPaths: paths })
+      const replaceState = history.replaceState.bind(history)
+      history.replaceState = (...args: Parameters<History['replaceState']>) => {
+        const result = replaceState(...args)
+        paths.push(window.location.pathname)
+        return result
+      }
+    })
+
+    await page.goto(url(path + '/'))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    const paths = await page.evaluate(() => (window as unknown as { __historyPaths: string[] }).__historyPaths)
+    expect(paths).not.toContain(path)
+    expect(new URL(page.url()).pathname).toBe(path + '/')
+
+    await page.close()
+  })
+
+  it.skipIf(isDev)('awaited useAsyncData resolves with data when a catch-all remounts during the deferred route restore', async () => {
+    const { page, pageErrors, consoleLogs } = await renderPage('/prerender/catchall/a/b/?test=true')
+
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    const states = await page.evaluate(() => (window as unknown as { __asyncDataStates: Array<{ path: string, status: string, hasData: boolean }> }).__asyncDataStates)
+    expect(states.length).toBeGreaterThan(0)
+    for (const state of states) {
+      expect.soft(state).toMatchObject({ status: 'success', hasData: true })
+    }
+
+    expect(await page.innerText('#catchall-async-data')).toBe('/prerender/catchall/a/b/')
+    expect(pageErrors).toEqual([])
+    expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
+
+    await page.close()
+  })
+
   it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
     const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
 
@@ -730,6 +880,22 @@ describe('pages', () => {
 })
 
 describe('nuxt composables', () => {
+  it('forwards request headers from `useFetch` to relative urls only', async () => {
+    const html = await $fetch<string>('/forwarded-headers', {
+      headers: {
+        cookie: 'session=alice',
+        authorization: 'Bearer alice-token',
+      },
+    })
+
+    const [forwarded, absolute] = [...html.matchAll(/<pre id="(?:forwarded|absolute)">([^<]*)<\/pre>/g)].map(m => JSON.parse(m[1]!.replaceAll('&quot;', '"')))
+
+    expect(forwarded).toMatchObject({ cookie: 'session=alice', authorization: 'Bearer alice-token' })
+    // `accept` is not replayed, so the subrequest is free to negotiate its own response type
+    expect(forwarded.accept).not.toBe('text/html')
+    expect(absolute).toMatchObject({ cookie: null, authorization: null })
+  })
+
   it('has useRequestURL()', async () => {
     const html = await $fetch<string>('/url')
     expect(html).toContain('path: /url')
@@ -749,6 +915,32 @@ describe('nuxt composables', () => {
     const cookies = res.headers.get('set-cookie')
     expect(cookies).toMatchInlineSnapshot('"set-in-plugin=%22true%22; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
+  it('reads cookies written earlier in the same request on the server', async () => {
+    const res = await fetch('/cookies-read-after-write')
+    const html = await res.text()
+    expect(html).toContain('<div id="from-plugin">true</div>')
+    expect(html).toContain('<div id="written">written</div>')
+    expect(html).toContain('<div id="from-default">from-default</div>')
+    expect(html).toContain('<div id="deleted">empty</div>')
+    expect(html).toContain('<div id="after-readonly">empty</div>')
+    expect(html).toContain('<div id="from-h3">h3-value</div>')
+    expect(html).toContain('<div id="h3-then-deleted">empty</div>')
+
+    const setCookies = res.headers.getSetCookie()
+    expect(setCookies.filter(c => c.startsWith('set-via-h3-then-deleted='))).toEqual([
+      expect.stringContaining('set-via-h3-then-deleted=; Max-Age=0'),
+    ])
+  })
+
+  it('does not write a readonly cookie with a default value, on server or client', async () => {
+    const res = await fetch('/cookies')
+    expect(res.headers.get('set-cookie')).not.toContain('readonly-with-default')
+
+    const { page } = await renderPage('/cookies')
+    expect(await page.evaluate(() => document.cookie)).not.toContain('readonly-with-default')
+    await page.close()
+  })
+
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
     async function extractCookie () {
@@ -1044,6 +1236,24 @@ describe.skipIf(!runsOnceInMatrix)('navigate', () => {
     expect(status).toEqual(301)
   })
 
+  it('stops running setup code after `await navigateTo()`', async () => {
+    const { headers, status } = await fetch('/navigate-to-early-return', { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual('/')
+    expect(status).toEqual(301)
+  })
+
+  it('stops running setup code after `await navigateTo()` on client-side navigation', async () => {
+    const { page } = await renderPage('/')
+
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/navigate-to-early-return'))
+    await page.waitForFunction(() => window.useNuxtApp?.()?._route.fullPath === '/')
+    await page.waitForTimeout(200)
+
+    expect(new URL(page.url()).pathname).toBe('/')
+    await page.close()
+  })
+
   it('respects redirects + headers in middleware', async () => {
     const res = await fetch('/navigate-some-path/', { redirect: 'manual', headers: { 'trailing-slash': 'true' } })
     expect(res.headers.get('location')).toEqual('/navigate-some-path')
@@ -1267,6 +1477,18 @@ describe('errors', () => {
     expect(error).not.toHaveProperty('url')
   })
 
+  it('should render the app error page when accessing error route directly', async () => {
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.status).toBe(404)
+    const html = await res.text()
+    expect(html).toContain('This is the error page 😱')
+    expect(html).toContain('Page Not Found: /__nuxt_error')
+  })
+
   it('should not recursively throw an error when there is an error rendering the error page', async () => {
     const res = await $fetch<string>('/', {
       headers: {
@@ -1276,6 +1498,23 @@ describe('errors', () => {
     })
     expect(typeof res).toBe('string')
     expect(res).toContain('Hello Nuxt 3!')
+  })
+
+  it.skipIf(isDev)('should server-render the static error page', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
+    const html = await readFile(join(publicDir, '404.html'), 'utf-8')
+
+    expect(html).toContain('This is the error page 😱')
+    expect(html).toContain('<title>Error: 404 - Fixture</title>')
+
+    const { script, attrs } = parseData(html)
+    expect(attrs['data-ssr']).toBe('true')
+    expect(script.error).toMatchObject({ status: 404, statusText: 'Page Not Found' })
+    // the same file is served for every missing path, so it must not claim to
+    // be a prerender of `/404.html`
+    expect(script.path).toBeUndefined()
+    expect(script.error.url).toBeUndefined()
   })
 
   it('should allow catching errors within error boundaries', async () => {
@@ -1377,7 +1616,7 @@ describe('middlewares', () => {
     const html = await $fetch<string>('/middleware-abort')
     expect(html).not.toContain('This is the error page')
     const { page } = await renderPage('/middleware-abort')
-    expect(await page.innerHTML('body')).toContain('This is the error page')
+    await page.waitForFunction(() => document.body.innerHTML.includes('This is the error page'))
     await page.close()
   })
 
@@ -1406,6 +1645,18 @@ describe('middlewares', () => {
     const html = await fetch('/navigate-to-redirect', { redirect: 'manual' })
     expect(html.headers.get('location')).toEqual('/')
     expect(html.status).toEqual(307)
+  })
+
+  it('should preserve percent-encoding in redirect query with navigateTo on server side', async () => {
+    const res = await fetch('/navigate-to-encoded-query', { redirect: 'manual' })
+    expect(res.headers.get('location')).toEqual('/?callback=%2Fother')
+    expect(res.status).toEqual(302)
+  })
+
+  it('should preserve percent-encoded spaces in redirect query with navigateTo on server side', async () => {
+    const res = await fetch('/navigate-to-encoded-space', { redirect: 'manual' })
+    expect(res.headers.get('location')).toEqual('/?q=a%20b')
+    expect(res.status).toEqual(302)
   })
 })
 
@@ -1526,6 +1777,14 @@ describe('server tree shaking', () => {
   })
 })
 
+describe('dependencies of code in node_modules', () => {
+  // https://github.com/nuxt/nuxt/issues/22077
+  it('resolves them from the importing package rather than the project', async () => {
+    const html = await $fetch<string>('/foo')
+    expect(html).toContain('Plugin | nested dependency: nested dependency of foo')
+  })
+})
+
 describe.skipIf(!runsOnceInMatrix)('extends support', () => {
   it('renders layer layout, page, component, middleware, composable and plugin together', async () => {
     const html = await $fetch<string>('/foo')
@@ -1573,7 +1832,7 @@ describe('layout change not load page twice', () => {
     '/internal-layout/with-layout': '/internal-layout/with-layout2',
   }
 
-  it.each(Object.entries(cases))('should not cause run of page setup to repeat if layout changed', async (path1, path2) => {
+  it.each(Object.entries(cases))('should not cause run of page setup to repeat if layout changed (%s)', async (path1, path2) => {
     const { page, consoleLogs } = await renderPage(path1)
     await page.click(`[href="${path2}"]`)
     await page.waitForSelector('#with-layout2')
@@ -1653,6 +1912,8 @@ describe.skipIf(isDev)('inlining component styles', () => {
     ...nonGlobalCSS,
     '{--server-only-child:"server-only-child"}', // child of a server-only component
     '{--server-only:"server-only"}', // server-only component not in client build
+    // webpack recovers a server-only component's styles from its SFC blocks alone
+    ...isWebpack ? [] : ['{--server-only-imported:"server-only-imported"}'], // CSS imported by a server-only component
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
     // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
@@ -1785,7 +2046,7 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should forward destination preload tags as prefetch hints on link prefetch', async () => {
+  it.skipIf(!isTestingAppManifest)('should preserve image preloads and downgrade other preload hints on link prefetch', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
@@ -1793,32 +2054,108 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     // prefetching should trigger loading its payload, which includes the
     // forwarded preload links registered via `useHead` on that page.
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => document.head.querySelector('link[rel="preload"][as="image"][href$="/public.svg"]')
+        && document.head.querySelector('link[rel="prefetch"][as="fetch"][href$="/prefetch-resource.txt"]'),
     )
 
-    // Confirm the rel was downgraded from preload to prefetch.
-    const preloadCount = await page.evaluate(
-      () => document.head.querySelectorAll('link[rel="preload"][href$="/public.svg"]').length,
-    )
-    expect(preloadCount).toBe(0)
+    const hints = await page.evaluate(() => Array.from(document.head.querySelectorAll('link'))
+      .filter(link => link.href.endsWith('/public.svg') || link.href.endsWith('/prefetch-resource.txt'))
+      .map(link => ({
+        as: link.as,
+        fetchpriority: link.getAttribute('fetchpriority'),
+        href: new URL(link.href).pathname,
+        rel: link.rel,
+      })))
+    expect(hints).toContainEqual({
+      as: 'image',
+      fetchpriority: null,
+      href: '/public.svg',
+      rel: 'preload',
+    })
+    expect(hints).toContainEqual({
+      as: 'fetch',
+      fetchpriority: null,
+      href: '/prefetch-resource.txt',
+      rel: 'prefetch',
+    })
 
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should evict forwarded prefetch hints for routes that are never visited', async () => {
+  it.skipIf(!isTestingAppManifest)('should not forward hints for resources that could be arbitrarily large', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href$="/never-forwarded.mp4"]').length,
+    )).toBe(0)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should forward a limited number of hints per prefetched route', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href*="/hint-"]').length,
+    )).toBe(2)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should throttle forwarded hints and prioritise recently prefetched routes', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    for (let route = 1; route <= 4; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+      await page.waitForFunction(
+        route => document.head.querySelector(`link[href$="/hint-b.svg?route=${route}"]`),
+        route,
+      )
+    }
+
+    await expect.poll(() => pendingRequests.length).toBe(8)
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/5'))
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/6'))
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect(pendingRequests).toHaveLength(8)
+    expect(await page.locator('link[href*="?route=5"], link[href*="?route=6"]').count()).toBe(0)
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(8)
+    expect(pendingRequests.at(-1)!.request().url()).toMatch(/\/hint-a\.svg\?route=6$/)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should evict forwarded resource hints for routes that are never visited', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => Array.from(document.head.querySelectorAll('link'))
         .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
     )
 
     await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
     await page.waitForFunction(
-      () => !Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => !Array.from(document.head.querySelectorAll('link'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg') || (l as HTMLLinkElement).href.endsWith('/prefetch-resource.txt')),
     )
 
     await page.close()
@@ -1874,6 +2211,21 @@ describe.skipIf(!runsOnceInMatrix)('public directories', () => {
 
     const greek = await $fetch<string>('/Ελληνικά.html')
     expect(greek).toContain('Ελληνικά')
+  })
+})
+
+// runs in dev as well as built, as nitro serves `publicAssets` via separate code paths in each
+describe.skipIf(!runsOncePerEnvInMatrix)('nitro publicAssets dirs', () => {
+  it('should serve assets from a relative `nitro.publicAssets` dir', async () => {
+    const res = await fetch('/custom/file.svg')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('image/svg')
+  })
+
+  it('should serve assets from an aliased `nitro.publicAssets` dir', async () => {
+    const res = await fetch('/aliased/file.svg')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('image/svg')
   })
 })
 
@@ -2125,12 +2477,10 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 })
 
 describe.runIf(isDev)('component testing', () => {
-  itFailsIf(isWebpack && isDev)('should work', async () => {
-    // TODO: fix in nuxt/test-utils
+  it('should work', async () => {
     const comp1 = await $fetchComponent('app/components/Counter.vue', { multiplier: 2 })
     expect(comp1).toContain('12 x 2 = 24')
 
-    // TODO: fix in nuxt/test-utils
     const comp2 = await $fetchComponent('app/components/Counter.vue', { multiplier: 4 })
     expect(comp2).toContain('12 x 4 = 48')
   })
@@ -2171,7 +2521,7 @@ describe('experimental', () => {
 describe('import components', () => {
   let html = ''
 
-  it('fetch import-components page', { sequential: true }, async () => {
+  it('fetch import-components page', { concurrent: false }, async () => {
     html = await $fetch<string>('/import-components')
   })
 
@@ -2195,7 +2545,7 @@ describe('import components', () => {
 describe('lazy import components', () => {
   let html = ''
 
-  it('fetch lazy-import-components page', { sequential: true }, async () => {
+  it('fetch lazy-import-components page', { concurrent: false }, async () => {
     html = await $fetch<string>('/lazy-import-components')
   })
 

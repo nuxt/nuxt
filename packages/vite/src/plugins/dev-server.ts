@@ -4,13 +4,14 @@ import { getPort } from 'get-port-please'
 import { defu } from 'defu'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type { H3Event as H3V1Event } from 'h3'
-import { useNitro } from '@nuxt/kit'
+import { tryUseNitro } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
   let useViteCors = false
-  const nitro = useNitro()
+  const nitro = tryUseNitro()
   return {
     name: 'nuxt:dev-server',
     async config (config) {
@@ -67,12 +68,12 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
     async configureServer (viteServer) {
       await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
 
-      if (nuxt.options.experimental.nitroViteEnvironment) {
+      if (!useServerBuild(nuxt).buildsSeparately) {
         return
       }
 
       const staticBases: string[] = []
-      for (const folder of nitro.options.publicAssets) {
+      for (const folder of nitro?.options.publicAssets || []) {
         if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(nuxt.options.app.buildAssetsDir)) {
           staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
         }

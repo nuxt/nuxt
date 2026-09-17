@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nuxt-vite-server-cloudflare",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    // rewritten by the plugin to the directory the builder wrote
+    "directory": ".nuxt/dist/client",
+    // an unmatched path is a route the worker renders, not a missing asset
+    "not_found_handling": "none"
+  }
+}

@@ -1,12 +1,12 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { flushPromises } from '@vue/test-utils'
-import { Transition } from 'vue'
+import { Transition, isShallow, triggerRef, watch } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
@@ -77,6 +77,40 @@ describe('useAsyncData', () => {
     expect(res.data.value).toBe(undefined)
     await res
     expect(res.data.value).toBe('test')
+  })
+
+  it('should expose shallow data as a shallow ref', async () => {
+    const { data } = await useAsyncData(uniqueKey, () => Promise.resolve({ nested: { value: 'test' } }), { deep: false })
+
+    expect(isShallow(data)).toBe(true)
+  })
+
+  it('should expose shallow data as a shallow ref with a reactive key', async () => {
+    const key = shallowRef(`${uniqueKey}-a`)
+    const { data } = await useAsyncData(key, () => Promise.resolve({ nested: { value: key.value } }), { deep: false })
+    const onChange = vi.fn()
+    const stop = watch(data, onChange)
+    onTestFinished(stop)
+
+    expect(isShallow(data)).toBe(true)
+    expect(data.value.nested.value).toBe(`${uniqueKey}-a`)
+
+    data.value.nested.value = 'mutated'
+    await nextTick()
+    expect(onChange).not.toHaveBeenCalled()
+
+    triggerRef(data)
+    await nextTick()
+    expect(onChange).toHaveBeenCalledOnce()
+
+    data.value = { nested: { value: 'assigned' } }
+    expect(data.value.nested.value).toBe('assigned')
+
+    key.value = `${uniqueKey}-b`
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value.nested.value).toBe(`${uniqueKey}-b`)
   })
 
   it('should throw TypeError when key is empty', () => {
@@ -270,28 +304,6 @@ describe('useAsyncData', () => {
     expect(status.value).toBe('idle')
   })
 
-  it('should reset mounted asyncData when clearNuxtData is called', async () => {
-    const handler = vi.fn(() => Promise.resolve('test'))
-    const res = await mountWithAsyncData(uniqueKey, handler)
-
-    expect(handler).toHaveBeenCalledTimes(1)
-    expect(res.data.value).toBe('test')
-    expect(res.status.value).toBe('success')
-
-    clearNuxtData(uniqueKey)
-
-    expect(res.data.value).toBe(undefined)
-    expect(res.error.value).toBe(undefined)
-    expect(res.pending.value).toBe(false)
-    expect(res.status.value).toBe('idle')
-
-    await res.execute()
-    expect(handler).toHaveBeenCalledTimes(2)
-    expect(res.data.value).toBe('test')
-    expect(res.status.value).toBe('success')
-    res.unmount()
-  })
-
   it('should not overwrite cleared data when in-flight request completes', async () => {
     vi.useFakeTimers()
 
@@ -375,9 +387,7 @@ describe('useAsyncData', () => {
 
     await flushPromises()
 
-    // Silent dispose clear can leave held computed wrappers transiently stale until invalidation.
-    // Assert via a fresh access path instead.
-    expect(useNuxtData(route.fullPath).data.value).toBe(undefined)
+    expect(res.data.value).toBe(undefined)
     expect(res.status.value).toBe('idle')
     expect(res.pending.value).toBe(false)
 
@@ -790,32 +800,6 @@ describe('useAsyncData', () => {
     expect(comp2.html()).toMatchInlineSnapshot(`"<div>second</div>"`)
   })
 
-  it('should keep ref internals consistent after silent dispose clear', async () => {
-    const res = await mountWithAsyncData(uniqueKey, () => Promise.resolve('test'))
-    const dataRef = useNuxtApp()._asyncData[uniqueKey]!.data as { value: string | undefined }
-
-    expect(dataRef.value).toBe('test')
-
-    res.unmount()
-    await nextTick()
-
-    expect(dataRef.value).toBe(undefined)
-    dataRef.value = 'test'
-    expect(dataRef.value).toBe('test')
-  })
-
-  it('exposes dep.subs on a subscribed asyncData ref (pins the vue internal used for v-once teardown)', async () => {
-    const res = await mountWithAsyncData(uniqueKey, () => Promise.resolve('test'))
-    const dataRef = useNuxtApp()._asyncData[uniqueKey]!.data as { dep?: { subs?: unknown } }
-
-    expect(dataRef.dep?.subs).toBeTruthy()
-
-    res.unmount()
-    await nextTick()
-
-    expect(dataRef.dep?.subs).toBeFalsy()
-  })
-
   // https://github.com/nuxt/nuxt/issues/35322
   it('should not leave a new subscriber stuck at idle when the previous subscriber unregisters during an in-flight deferred request', async () => {
     const key = `stranded-idle-${++counter}`
@@ -1029,6 +1013,24 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
+  it('should resolve immediately when awaiting useLazyAsyncData outside of component setup', async () => {
+    vi.useFakeTimers()
+
+    const promiseFn = vi.fn(() => new Promise(resolve => setTimeout(() => resolve('test'), 10)))
+    const { data, status } = await useLazyAsyncData(uniqueKey, promiseFn)
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe(undefined)
+    expect(status.value).toBe('pending')
+
+    vi.advanceTimersByTime(10)
+    await flushPromises()
+
+    expect(data.value).toBe('test')
+    expect(status.value).toBe('success')
+
+    vi.useRealTimers()
+  })
+
   it('should not execute with immediate: false and be executable', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const { data, status, execute } = useAsyncData(promiseFn, { immediate: false })
@@ -1065,6 +1067,104 @@ describe('useAsyncData', () => {
     expect(data.value).toBe('server-renderered')
     expect(status.value).toBe('success')
     useNuxtApp().isHydrating = false
+  })
+
+  // https://github.com/nuxt/nuxt/issues/36111
+  describe('hydration', () => {
+    let previousHydrating: boolean
+    let previousServerRendered: boolean
+
+    beforeEach(() => {
+      const nuxtApp = useNuxtApp()
+      previousHydrating = nuxtApp.isHydrating!
+      previousServerRendered = nuxtApp.payload.serverRendered!
+      nuxtApp.isHydrating = true
+      nuxtApp.payload.serverRendered = true
+    })
+
+    afterEach(() => {
+      const nuxtApp = useNuxtApp()
+      nuxtApp.isHydrating = previousHydrating
+      nuxtApp.payload.serverRendered = previousServerRendered
+    })
+
+    /** Records what an `await useAsyncData()` within component setup sees at first synchronous use. */
+    async function mountAwaitingAsyncData (...args: any[]) {
+      const observed: { status?: string, data?: unknown } = {}
+      const wrapper = await mountSuspended(defineComponent({
+        async setup () {
+          const { data, status } = await useAsyncData(...args as [any])
+          observed.status = status.value
+          observed.data = data.value
+          return () => h('div')
+        },
+      }))
+      return { wrapper, observed }
+    }
+
+    it('should reuse the payload without fetching when the server rendered the key', async () => {
+      useNuxtApp().payload.data[uniqueKey] = 'server'
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn)
+
+      expect(observed).toMatchObject({ status: 'success', data: 'server' })
+      expect(promiseFn).not.toHaveBeenCalled()
+      wrapper.unmount()
+    })
+
+    it('should reuse a cached value without fetching when there is no payload entry', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+      const getCachedData = vi.fn(() => 'cached')
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn, { getCachedData })
+
+      expect(observed).toMatchObject({ status: 'success', data: 'cached' })
+      expect(promiseFn).not.toHaveBeenCalled()
+      wrapper.unmount()
+    })
+
+    it('should fetch before resolving when there is no payload entry for the key', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn)
+
+      expect(observed).toMatchObject({ status: 'success', data: 'client' })
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+    })
+
+    it('should fetch before resolving when a default is set but there is no payload entry for the key', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn, { default: () => null })
+
+      expect(observed).toMatchObject({ status: 'success', data: 'client' })
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+    })
+
+    it('should still defer the fetch to mount for `server: false`', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn, { server: false })
+
+      expect(observed).toMatchObject({ status: 'idle', data: undefined })
+      await flushPromises()
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+    })
+
+    it('should still defer the fetch to mount for `lazy: true`', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData(uniqueKey, promiseFn, { lazy: true })
+
+      expect(observed).toMatchObject({ status: 'idle', data: undefined })
+      await flushPromises()
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+    })
   })
 
   it('should retain the old data when a computed key changes', async () => {
@@ -1559,10 +1659,15 @@ describe('useAsyncData', () => {
   // https://github.com/nuxt/nuxt/issues/32154
   it('should not cause error with v-once after navigation', async () => {
     const router = useRouter()
+    const renders = ref(0)
+    const unmounted = vi.fn()
+    let fetchCount = 0
+    const handler = vi.fn(() => Promise.resolve({ foo: `bar-${++fetchCount}` }))
 
     const WrapperComponent = defineComponent({
       name: 'WrapperComponent',
       setup (_, { slots }) {
+        onUnmounted(unmounted)
         return () => h('div', slots.default?.())
       },
     })
@@ -1571,11 +1676,11 @@ describe('useAsyncData', () => {
       name: 'HomePage',
       components: { WrapperComponent },
       async setup () {
-        const { data } = await useAsyncData('v-once-home-page', () => Promise.resolve({ foo: 'bar' }))
+        const { data } = await useAsyncData('v-once-home-page', handler)
         const foo = computed(() => data.value!.foo)
-        return { foo }
+        return { foo, renders }
       },
-      template: `<div><WrapperComponent v-once>{{ foo }}</WrapperComponent></div>`,
+      template: `<div :data-render="renders"><WrapperComponent v-once>{{ foo }}</WrapperComponent></div>`,
     })
 
     const OtherPage = defineComponent({
@@ -1601,23 +1706,40 @@ describe('useAsyncData', () => {
           },
         },
       })
+      onTestFinished(() => el.unmount())
 
       await navigateTo('/v-once-home')
       await flushPromises()
-      expect(el.html()).toContain('bar')
+      expect(el.html()).toContain('bar-1')
+      expect(handler).toHaveBeenCalledTimes(1)
+
+      renders.value++
+      await nextTick()
+      expect(el.html()).toContain('data-render="1"')
 
       await navigateTo('/v-once-other')
       await flushPromises()
       expect(el.html()).toContain('Other Page')
+      expect(unmounted).toHaveBeenCalledTimes(1)
+      expect(useNuxtApp().payload.data['v-once-home-page']).toBeUndefined()
+      expect(errors).toEqual([])
 
       await navigateTo('/v-once-home')
       await flushPromises()
 
       // we should not get 'TypeError: Cannot read properties of undefined (reading 'foo')'
-      expect(errors[0]).toBeUndefined()
-      expect(el.html()).toContain('bar')
+      expect(errors).toEqual([])
+      expect(el.html()).toContain('bar-2')
+      expect(handler).toHaveBeenCalledTimes(2)
 
-      el.unmount()
+      renders.value++
+      await nextTick()
+
+      await navigateTo('/v-once-other')
+      await flushPromises()
+      expect(unmounted).toHaveBeenCalledTimes(2)
+      expect(useNuxtApp().payload.data['v-once-home-page']).toBeUndefined()
+      expect(errors).toEqual([])
     } finally {
       // Clean up routes
       router.removeRoute('v-once-home')

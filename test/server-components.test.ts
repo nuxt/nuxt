@@ -1,18 +1,17 @@
+import { connect } from 'node:net'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { withQuery } from 'ufo'
 import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
-import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch, setup, startServer, url } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
-import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
+import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
-
-const itFailsIf = (condition: boolean) => condition ? it.fails : it
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
   const serializedProps = serializeIslandProps(opts.props)
@@ -257,6 +256,34 @@ describe('server components/islands', () => {
     expect(html).toContain('id="server-page-with-nuxtpage"')
     expect(html).toContain('Parent body')
   })
+
+  // https://github.com/nuxt/nuxt/issues/31510
+  it.skipIf(isWebpack)('applies scoped styles to server component slots', async () => {
+    const { page } = await renderPage('/slotted-styles')
+
+    try {
+      const slotted = page.locator('#slotted-style-in-server')
+      expect(await slotted.count()).toBe(1)
+
+      const slottedStyles = await slotted.evaluate((element) => {
+        const scopeIds = element.getAttributeNames().filter(attribute => attribute.startsWith('data-v-'))
+        return {
+          backgroundColor: getComputedStyle(element).backgroundColor,
+          color: getComputedStyle(element).color,
+          hasParentScopeId: scopeIds.some(attribute => !attribute.endsWith('-s')),
+          hasSlottedScopeId: scopeIds.some(attribute => attribute.endsWith('-s')),
+        }
+      })
+      expect(slottedStyles).toEqual({
+        backgroundColor: 'rgb(4, 5, 6)',
+        color: 'rgb(1, 2, 3)',
+        hasParentScopeId: true,
+        hasSlottedScopeId: true,
+      })
+    } finally {
+      await page.close()
+    }
+  })
 })
 
 describe('component islands', () => {
@@ -264,10 +291,6 @@ describe('component islands', () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/RouteComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     delete result.id
@@ -286,10 +309,6 @@ describe('component islands', () => {
 
   it('render async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
@@ -320,13 +339,13 @@ describe('component islands', () => {
             "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><!--teleport anchor-->",
             "props": [
               {
-                "t": 0,
-              },
-              {
                 "t": 1,
               },
               {
                 "t": 2,
+              },
+              {
+                "t": 3,
               },
             ],
           },
@@ -344,10 +363,6 @@ describe('component islands', () => {
 
   it('render .server async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
-    if (isDev) {
-      result.head.link = result.head.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent')))
-    }
-
     result.head.link ||= []
     result.head.style ||= []
     result.props = {}
@@ -373,13 +388,6 @@ describe('component islands', () => {
   if (!isWebpack) {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>(islandURL('ServerWithClient'))
-      if (isDev) {
-        result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */))
-
-        if (!result.head.link) {
-          delete result.head.link
-        }
-      }
       const { components } = result
       result.components = {}
       result.slots = {}
@@ -412,7 +420,7 @@ describe('component islands', () => {
     })
   }
 
-  itFailsIf(isWebpack && isDev)('renders pure components', async () => {
+  it('renders pure components', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', {
       props: {
         bool: false,
@@ -445,10 +453,12 @@ describe('component islands', () => {
           ],
         }
       `)
+    } else if (isWebpack) {
+      // island CSS is delivered by the vite dev server module graph, which webpack/rspack have no
+      // equivalent for in dev: https://github.com/nuxt/nuxt/issues/35573
+      expect(result.head.link).toBeUndefined()
+      expect(result.head.style).toBeUndefined()
     } else {
-      // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
-      // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/handlers/renderer.ts#L139
-      result.head.link = result.head.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent'))
       if (result.head.link?.[0]?.href) {
         result.head.link[0].href = result.head.link[0].href.replace(/scoped=[^?&]+/, 'scoped=xxxxx')
       }
@@ -667,6 +677,41 @@ describe('denial-of-service protections', () => {
     expect(res.status).toBe(413)
   })
 
+  it('keeps the connection usable after rejecting an oversized body', async () => {
+    const { hostname, port } = new URL(url('/'))
+    const oversized = 'x'.repeat(MAX_ISLAND_DRAIN_BYTES)
+    const nested = `{"props":${'['.repeat(500)}${']'.repeat(500)}}`
+    const request = (body: string) => [
+      'POST /__nuxt_island/PureComponent_deadbeef.json HTTP/1.1',
+      `Host: ${hostname}:${port}`,
+      'Content-Type: application/json',
+      `Content-Length: ${Buffer.byteLength(body)}`,
+      '',
+      body,
+    ].join('\r\n')
+
+    const statuses = await new Promise<string[]>((resolve, reject) => {
+      const socket = connect(Number(port), hostname)
+      let received = ''
+      socket.on('data', (chunk) => {
+        received += chunk.toString()
+        const statuses = [...received.matchAll(/^HTTP\/1\.1 (\d{3})/gm)].map(m => m[1]!)
+        if (statuses.length === 2) {
+          socket.end()
+          resolve(statuses)
+        }
+      })
+      socket.on('error', reject)
+      socket.on('close', () => reject(new Error(`connection closed after: ${received.split('\r\n')[0]}`)))
+      socket.on('connect', () => {
+        socket.write(request(oversized))
+        socket.write(request(nested))
+      })
+    })
+
+    expect(statuses).toEqual(['413', '400'])
+  })
+
   it('rejects an oversized chunked island body without content-length', async () => {
     const chunk = JSON.stringify(Object.fromEntries(Array.from({ length: 10_000 }, (_, i) => [`k${i}`, i])))
     const body = new ReadableStream<Uint8Array>({
@@ -688,11 +733,10 @@ describe('denial-of-service protections', () => {
   })
 
   it('rejects a deeply nested island body before hashing', async () => {
-    const props = '['.repeat(500) + ']'.repeat(500)
     const res = await fetch('/__nuxt_island/PureComponent_deadbeef.json', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ props }),
+      body: `{"props":${'['.repeat(500)}${']'.repeat(500)}}`,
     })
     expect(res.status).toBe(400)
   })
@@ -803,6 +847,31 @@ describe('page-island middleware', () => {
     expect(res.status).toBe(400)
     const body = await res.text()
     expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
+  })
+})
+
+describe('island request headers', () => {
+  it('forwards the page request headers to the island subrequest', async () => {
+    const html = await $fetch<string>('/island-headers', {
+      headers: {
+        cookie: 'session=alice',
+        authorization: 'Bearer alice-token',
+      },
+    })
+
+    expect(html).toContain('<span id="page-cookie">session=alice</span>')
+    expect(html).toContain('<span id="island-cookie">session=alice</span>')
+    expect(html).toContain('<span id="island-authorization">Bearer alice-token</span>')
+  })
+
+  it('does not forward headers from a different request', async () => {
+    const html = await $fetch<string>('/island-headers', { headers: { cookie: 'session=bob' } })
+    expect(html).toContain('<span id="island-cookie">session=bob</span>')
+    expect(html).toContain('<span id="island-authorization">none</span>')
+
+    const anonymous = await $fetch<string>('/island-headers')
+    expect(anonymous).toContain('<span id="island-cookie">none</span>')
+    expect(anonymous).toContain('<span id="island-authorization">none</span>')
   })
 })
 

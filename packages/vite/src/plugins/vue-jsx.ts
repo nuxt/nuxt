@@ -1,5 +1,6 @@
 import type { Plugin, ResolvedConfig } from 'vite'
-import { bundlerDiagnostics, ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
+import { ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import type { Options } from '@vitejs/plugin-vue-jsx'
 

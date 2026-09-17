@@ -137,8 +137,57 @@ describe('loadNuxtConfig onConfigResolved', () => {
     await loadNuxtConfig({ cwd: tempDir, onConfigResolved: ctx => void (second = ctx.rawConfig) })
 
     const entries = diffNuxtConfig(first!, second!)
-    expect(entries.map(entry => entry.key).sort()).toEqual(['modules', 'ssr'])
-    expect(entries.find(entry => entry.key === 'ssr')).toMatchObject({ type: 'changed', oldValue: true, newValue: false })
+    expect(entries.map(entry => entry.label).sort()).toEqual(['modules', 'ssr'])
+    expect(entries.find(entry => entry.label === 'ssr')).toMatchObject({ type: 'changed', oldValue: true, newValue: false })
+  })
+
+  it('should report a structured path for keys containing a dot', async () => {
+    await writeFile(
+      join(tempDir, 'nuxt.config.ts'),
+      'export default defineNuxtConfig({ nitro: { routeRules: { \'/index.html\': { ssr: true } } } })',
+    )
+    let first: NuxtConfig | undefined
+    await loadNuxtConfig({ cwd: tempDir, onConfigResolved: ctx => void (first = ctx.rawConfig) })
+
+    await writeFile(
+      join(tempDir, 'nuxt.config.ts'),
+      'export default defineNuxtConfig({ nitro: { routeRules: { \'/index.html\': { ssr: false } } } })',
+    )
+    let second: NuxtConfig | undefined
+    await loadNuxtConfig({ cwd: tempDir, onConfigResolved: ctx => void (second = ctx.rawConfig) })
+
+    expect(diffNuxtConfig(first!, second!)).toMatchObject([
+      {
+        path: ['nitro', 'routeRules', '/index.html', 'ssr'],
+        label: 'nitro.routeRules["/index.html"].ssr',
+        type: 'changed',
+        oldValue: true,
+        newValue: false,
+      },
+    ])
+  })
+
+  it('should produce a parseable label for keys containing quotes and line terminators', async () => {
+    await writeFile(
+      join(tempDir, 'nuxt.config.ts'),
+      'export default defineNuxtConfig({ vite: { define: { \'a\\nb\': 1, \'it\\\'s\': 1, \'back\\\\slash\': 1 } } })',
+    )
+    let first: NuxtConfig | undefined
+    await loadNuxtConfig({ cwd: tempDir, onConfigResolved: ctx => void (first = ctx.rawConfig) })
+
+    await writeFile(
+      join(tempDir, 'nuxt.config.ts'),
+      'export default defineNuxtConfig({ vite: { define: { \'a\\nb\': 2, \'it\\\'s\': 2, \'back\\\\slash\': 2 } } })',
+    )
+    let second: NuxtConfig | undefined
+    await loadNuxtConfig({ cwd: tempDir, onConfigResolved: ctx => void (second = ctx.rawConfig) })
+
+    const entries = diffNuxtConfig(first!, second!)
+    expect(entries).toHaveLength(3)
+    for (const entry of entries) {
+      expect(() => new Function(`return (config) => config.${entry.label}`)).not.toThrow()
+    }
+    expect(entries.map(entry => entry.label)).toContain('vite.define["a\\nb"]')
   })
 
   it('should not be required', async () => {
@@ -224,5 +273,23 @@ describe('loadNuxtConfig onConfigResolved', () => {
       },
     })
     expect(done).toBe(true)
+  })
+})
+
+describe('loadNuxtConfig confbox formats', () => {
+  const tempDir = join(repoRoot, 'temp', 'confbox-config')
+
+  beforeAll(async () => {
+    await mkdir(tempDir, { recursive: true })
+  })
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  it('loads a yaml `nuxt.config`', async () => {
+    await writeFile(join(tempDir, 'nuxt.config.yaml'), 'ssr: false\n')
+    const config = await loadNuxtConfig({ cwd: tempDir })
+    expect(config.ssr).toBe(false)
   })
 })
