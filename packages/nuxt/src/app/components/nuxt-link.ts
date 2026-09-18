@@ -12,11 +12,12 @@ import type {
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { ComponentSlots } from 'vue-component-type-helpers'
 import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
-import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { prefetchRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { sanitizeAnchorHref } from '../utils'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
@@ -29,29 +30,6 @@ import { hashMode } from '#build/router.options.mjs'
 import type { NuxtLinkOptions } from '../types'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
-
-/**
- * Reject URL strings that would resolve to a script-capable protocol when used as the
- * `href` of an anchor element. Returns the value unchanged when safe, or `null`.
- *
- * The denylist is delegated to `ufo`'s `isScriptProtocol` so it stays in sync with the
- * check used by `navigateTo` (currently `javascript:`, `data:`, `vbscript:`, `blob:`).
- * ASCII whitespace and control characters are stripped first because browser URL
- * parsers tolerate them before the scheme, and `view-source:` is peeled recursively
- * because Chromium resolves it transparently to the inner URL.
- */
-function sanitizeExternalHref (value: string): string | null {
-  // eslint-disable-next-line no-control-regex
-  let candidate = value.replace(/[\u0000-\u001F\s]+/g, '')
-  while (candidate.toLowerCase().startsWith('view-source:')) {
-    candidate = candidate.slice('view-source:'.length)
-  }
-  const colon = candidate.indexOf(':')
-  if (colon > 0 && isScriptProtocol(candidate.slice(0, colon + 1))) {
-    return null
-  }
-  return value
-}
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
@@ -238,14 +216,14 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       const effectiveTrailingSlash = unref(props.trailingSlash) ?? options.trailingSlash
       if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value)) {
         const raw = to.value as string
-        return typeof raw === 'string' ? sanitizeExternalHref(raw) : raw
+        return typeof raw === 'string' ? sanitizeAnchorHref(raw) : raw
       }
 
       if (isExternal.value) {
         const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
         // separately resolve route objects with a 'name' property and without 'path'
         const href = typeof path === 'object' ? router.resolve(path).href : path
-        const safe = typeof href === 'string' ? sanitizeExternalHref(href) : href
+        const safe = typeof href === 'string' ? sanitizeAnchorHref(href) : href
         return safe === null ? null : applyTrailingSlashBehavior(safe, effectiveTrailingSlash)
       }
 
@@ -331,9 +309,10 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     }
 
     const routerOptions = router.options
+    const href = sanitizeAnchorHref(route.href)
     return h('a', {
       'aria-current': isExactActive ? (props.ariaCurrentValue ?? 'page') : null,
-      'href': route.href,
+      href,
       'class': {
         [getLinkClass(props.activeClass || options.activeClass, routerOptions.linkActiveClass, 'router-link-active')]: isActive,
         [getLinkClass(props.exactActiveClass || options.exactActiveClass, routerOptions.linkExactActiveClass, 'router-link-exact-active')]: isExactActive,
@@ -342,7 +321,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       'data-internal': dataInternal,
     }, slots.default?.({
       route,
-      href: route.href,
+      href,
       isActive,
       isExactActive,
       navigate: () => navigateTo(route.href, { replace: props.replace }),
@@ -585,6 +564,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           isActive: false,
           isExactActive: false,
           ...routerLinkSlotProps,
+          href: typeof routerLinkSlotProps?.href === 'string' ? sanitizeAnchorHref(routerLinkSlotProps.href) : href.value,
           prefetch,
           prefetched: prefetched.value,
           shouldPrefetch,

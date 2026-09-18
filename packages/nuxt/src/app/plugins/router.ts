@@ -8,6 +8,7 @@ import { clearError, createError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 import type { RouteMiddleware } from '../composables/router'
 import { navigationDiagnostics } from '../diagnostics/navigation'
+import { sanitizeAnchorHref } from '../utils'
 
 import { globalMiddleware } from '#build/middleware'
 import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
@@ -230,7 +231,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         return () => {
           const route = router.resolve(props.to!)
           const isExternal = hasProtocol(props.to!, { acceptRelative: true })
-          const href = isExternal ? props.to! : joinURL(baseURL, props.to!)
+          const href = sanitizeAnchorHref(isExternal ? props.to! : joinURL(baseURL, props.to!))
           if (props.custom) {
             return slots.default?.({ href, navigate, route })
           }

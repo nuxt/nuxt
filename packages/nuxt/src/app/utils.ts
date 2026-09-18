@@ -1,4 +1,21 @@
 import { captureStackTrace } from 'errx'
+import { isScriptProtocol } from 'ufo'
+
+/** Returns the value unchanged when safe to use as an anchor `href`, or `null`. */
+export function sanitizeAnchorHref (value: string): string | null {
+  // browser URL parsers ignore whitespace and control characters around a scheme
+  // eslint-disable-next-line no-control-regex
+  let candidate = value.replace(/[\u0000-\u001F\s]+/g, '')
+  // Chromium resolves `view-source:` transparently to the inner URL
+  while (candidate.toLowerCase().startsWith('view-source:')) {
+    candidate = candidate.slice('view-source:'.length)
+  }
+  const colon = candidate.indexOf(':')
+  if (colon > 0 && isScriptProtocol(candidate.slice(0, colon + 1))) {
+    return null
+  }
+  return value
+}
 
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
