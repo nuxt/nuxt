@@ -1,9 +1,8 @@
-import type { LogObject } from 'consola'
 import type { ParsedTrace } from 'errx'
 
 import { h } from 'vue'
 import { defineNuxtPlugin } from '../nuxt'
-import type { ObjectPlugin, Plugin } from '../nuxt'
+import type { DevServerLog, ObjectPlugin, Plugin } from '../nuxt'
 
 import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
 
@@ -44,7 +43,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin(async (nuxtApp) => {
     const content = nuxtLogsElement?.textContent
     if (content) {
       const { parse } = await import('devalue')
-      const logs = parse(content, { ...devRevivers, ...nuxtApp._payloadRevivers }) as LogObject[]
+      const logs = parse(content, { ...devRevivers, ...nuxtApp._payloadRevivers }) as DevServerLog[]
       await nuxtApp.hooks.callHook('dev:ssr-logs', logs)
     }
   }
@@ -66,7 +65,7 @@ function normalizeFilenames (stack?: ParsedTrace[]) {
   return message
 }
 
-function normalizeServerLog (log: LogObject) {
+function normalizeServerLog (log: DevServerLog) {
   log.additional = normalizeFilenames(log.stack as ParsedTrace[])
   log.tag = 'ssr'
   delete log.stack
