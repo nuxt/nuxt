@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
-import { hasProtocol, isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
+import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
@@ -8,7 +8,7 @@ import { clearError, createError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 import type { RouteMiddleware } from '../composables/router'
 import { navigationDiagnostics } from '../diagnostics/navigation'
-import { sanitizeAnchorHref } from '../utils'
+import { isAbsoluteHref, sanitizeAnchorHref } from '../utils'
 
 import { globalMiddleware } from '#build/middleware'
 import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
@@ -230,7 +230,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         const navigate = () => handleNavigation(props.to!, props.replace)
         return () => {
           const route = router.resolve(props.to!)
-          const isExternal = hasProtocol(props.to!, { acceptRelative: true })
+          const isExternal = isAbsoluteHref(props.to!)
           const href = sanitizeAnchorHref(isExternal ? props.to! : joinURL(baseURL, props.to!))
           if (props.custom) {
             return slots.default?.({ href, navigate, route })

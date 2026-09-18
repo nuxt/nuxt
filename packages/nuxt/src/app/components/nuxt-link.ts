@@ -17,7 +17,7 @@ import { prefetchRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
-import { sanitizeAnchorHref } from '../utils'
+import { isAbsoluteHref, sanitizeAnchorHref } from '../utils'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
@@ -183,7 +183,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     // Lazily check whether to.value has a protocol
     const isAbsoluteUrl = computed(() => {
       const path = unref(props.to) || unref(props.href) || ''
-      return typeof path === 'string' && hasProtocol(path, { acceptRelative: true })
+      return typeof path === 'string' && isAbsoluteHref(path)
     })
 
     // Resolving link type
@@ -425,7 +425,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       // prefetching setup below.
       if (import.meta.server && !props.custom) {
         const rawTo = props.to || props.href || ''
-        const isExternalLink = props.external || (typeof rawTo === 'string' && (rawTo === '' || hasProtocol(rawTo, { acceptRelative: true })))
+        const isExternalLink = props.external || (typeof rawTo === 'string' && (rawTo === '' || isAbsoluteHref(rawTo)))
         if (!isExternalLink && !isHashLinkWithoutHashMode(rawTo) && (!props.target || props.target === '_self')) {
           if (import.meta.dev) {
             checkNuxtLinkNesting()
