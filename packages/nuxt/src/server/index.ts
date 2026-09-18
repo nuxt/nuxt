@@ -10,7 +10,7 @@
  * @module nuxt/server
  */
 import { parse, serialize } from 'cookie-es'
-import type { CookieSerializeOptions } from 'cookie-es'
+import type { CookieSerializeOptions } from '../app/types/cookie'
 import { parseQuery } from 'ufo'
 import type { AppRouteRules, NuxtRequestEvent, RequestEvent, RuntimeConfig } from 'nuxt/schema'
 import { useRuntimeConfig as _useRuntimeConfig } from 'nuxt/internal/server-runtime-config'

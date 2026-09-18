@@ -1,5 +1,5 @@
 import { onScopeDispose } from 'vue'
-import type { HookCallback } from 'hookable'
+import type { NuxtHookCallback } from 'nuxt/schema'
 import { useNuxtApp } from '../nuxt'
 import type { RuntimeNuxtHooks } from '../nuxt'
 
@@ -11,7 +11,7 @@ import type { RuntimeNuxtHooks } from '../nuxt'
  */
 export function useRuntimeHook<THookName extends keyof RuntimeNuxtHooks> (
   name: THookName,
-  fn: RuntimeNuxtHooks[THookName] extends HookCallback ? RuntimeNuxtHooks[THookName] : never,
+  fn: RuntimeNuxtHooks[THookName] extends NuxtHookCallback ? RuntimeNuxtHooks[THookName] : never,
 ): void {
   const nuxtApp = useNuxtApp()
 
