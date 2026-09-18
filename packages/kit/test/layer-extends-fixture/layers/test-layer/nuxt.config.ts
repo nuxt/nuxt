@@ -1,1 +1,7 @@
-export default defineNuxtConfig({})
+export default defineNuxtConfig({
+  runtimeConfig: {
+    public: {
+      fromTestLayer: true,
+    },
+  },
+})
