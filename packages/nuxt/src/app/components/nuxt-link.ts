@@ -539,7 +539,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         ) || null
 
         const getCustomSlotProps = (routerLinkSlotProps?: RouterLinkSlotProps): NuxtLinkSlotProps<true> => ({
-          href: href.value,
           navigate,
           get route () {
             if (!href.value) { return undefined }

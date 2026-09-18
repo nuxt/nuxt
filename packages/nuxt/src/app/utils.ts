@@ -12,13 +12,14 @@ function parseAnchorURL (value: string, base: string = PROBE_BASE_A): URL | null
   }
 }
 
+/** Whether a URL string is a path rooted at the current origin, so carries no protocol. */
+export function isRootedPath (value: string): boolean {
+  return value[0] === '/' && value[1] !== '/' && value[1] !== '\\'
+}
+
 /** Whether a URL string carries its own protocol or authority. */
 export function isAbsoluteHref (value: string): boolean {
-  if (!value) {
-    return false
-  }
-  // fast path for rooted paths
-  if (value[0] === '/' && value[1] !== '/' && value[1] !== '\\') {
+  if (!value || isRootedPath(value)) {
     return false
   }
   // a relative value inherits whichever base it resolves against; an absolute one ignores both
@@ -28,6 +29,9 @@ export function isAbsoluteHref (value: string): boolean {
 
 /** The script-capable protocol a URL string would navigate to, or `null` when it is safe. */
 export function getScriptProtocol (value: string): string | null {
+  if (!value || isRootedPath(value)) {
+    return null
+  }
   // browser URL parsers ignore whitespace and control characters around a scheme
   // eslint-disable-next-line no-control-regex
   let resolved = parseAnchorURL(value.replace(/[\u0000-\u001F\u007F\s]+/g, ''))

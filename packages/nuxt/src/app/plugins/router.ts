@@ -8,7 +8,7 @@ import { clearError, createError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 import type { RouteMiddleware } from '../composables/router'
 import { navigationDiagnostics } from '../diagnostics/navigation'
-import { isAbsoluteHref, sanitizeAnchorHref } from '../utils'
+import { isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../utils'
 
 import { globalMiddleware } from '#build/middleware'
 import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
@@ -38,7 +38,27 @@ interface Route {
   matched: never[]
 }
 
-function getRouteFromPath (fullPath: string | Partial<Route>) {
+// characters the `URL` parser leaves untouched in a pathname
+const LITERAL_PATH_RE = /^\/[\w\-./~!$&'()*+,;=:@]*$/
+
+/** Split a rooted path as the `URL` parser would, or `undefined` if it needs the parser. */
+function splitLiteralPath (fullPath: string) {
+  const hashIndex = fullPath.indexOf('#')
+  const withoutHash = hashIndex === -1 ? fullPath : fullPath.slice(0, hashIndex)
+  const searchIndex = withoutHash.indexOf('?')
+  const path = searchIndex === -1 ? withoutHash : withoutHash.slice(0, searchIndex)
+  if (path.includes('/.') || !LITERAL_PATH_RE.test(path)) {
+    return
+  }
+  return {
+    path,
+    search: searchIndex === -1 ? '' : withoutHash.slice(searchIndex),
+    // the parser reports no hash for a bare trailing `#`
+    hash: hashIndex === -1 || hashIndex === fullPath.length - 1 ? '' : fullPath.slice(hashIndex),
+  }
+}
+
+function getRouteFromPath (fullPath: string | Partial<Route>, baseURL: string = '/') {
   const route = fullPath && typeof fullPath === 'object' ? fullPath : {}
 
   if (typeof fullPath === 'object') {
@@ -49,19 +69,25 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
     })
   }
 
-  const url = new URL(fullPath.toString(), import.meta.client ? window.location.href : 'http://localhost')
+  const isRooted = isRootedPath(fullPath)
+  let parts = isRooted ? splitLiteralPath(fullPath) : undefined
+  if (!parts) {
+    const url = new URL(fullPath, import.meta.client ? window.location.href : 'http://localhost')
+    parts = { path: url.pathname, search: url.search, hash: url.hash }
+  }
+
   return {
-    path: url.pathname,
+    path: parts.path,
     fullPath,
-    query: parseQuery(url.search),
-    hash: url.hash,
+    query: parts.search ? parseQuery(parts.search) : {},
+    hash: parts.hash,
     // stub properties for compat with vue-router
     params: route.params || {},
     name: undefined,
     matched: route.matched || [],
     redirectedFrom: undefined,
     meta: route.meta || {},
-    href: fullPath,
+    href: isRooted ? (baseURL === '/' ? fullPath : joinURL(baseURL, fullPath)) : sanitizeAnchorHref(fullPath),
   }
 }
 
@@ -128,13 +154,13 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
     }
     const baseURL = useRuntimeConfig().app.baseURL
 
-    const route: Route = reactive(getRouteFromPath(initialURL))
+    const route: Route = reactive(getRouteFromPath(initialURL, baseURL))
     let navigationCounter = 0
     async function handleNavigation (url: string | Partial<Route>, replace?: boolean): Promise<void> {
       const navigationId = ++navigationCounter
       try {
         // Resolve route
-        const to = getRouteFromPath(url)
+        const to = getRouteFromPath(url, baseURL)
 
         // Run beforeEach hooks, bailing if a later navigation supersedes this one (#31762)
         for (const middleware of hooks['navigate:before']) {
@@ -200,7 +226,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
       afterEach: (guard: RouterHooks['navigate:after']) => registerHook('navigate:after', guard),
       onError: (handler: RouterHooks['error']) => registerHook('error', handler),
       // Routes
-      resolve: getRouteFromPath,
+      resolve: (url: string | Partial<Route>) => getRouteFromPath(url, baseURL),
       addRoute: (parentName: string, route: Route) => { routes.push(route) },
       getRoutes: () => routes,
       hasRoute: (name: string) => routes.some(route => route.name === name),
@@ -228,14 +254,14 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
       },
       setup: (props, { slots }) => {
         const navigate = () => handleNavigation(props.to!, props.replace)
+        const resolved = computed(() => router.resolve(props.to!))
+        const isExternal = computed(() => isAbsoluteHref(props.to!))
         return () => {
-          const route = router.resolve(props.to!)
-          const isExternal = isAbsoluteHref(props.to!)
-          const href = sanitizeAnchorHref(isExternal ? props.to! : joinURL(baseURL, props.to!))
+          const href = resolved.value.href
           if (props.custom) {
-            return slots.default?.({ href, navigate, route })
+            return slots.default?.({ href, navigate, route: resolved.value })
           }
-          if (isExternal) {
+          if (isExternal.value) {
             return h('a', { href }, slots)
           }
           return h('a', { href, onClick: (e: MouseEvent) => { e.preventDefault(); return navigate() } }, slots)
