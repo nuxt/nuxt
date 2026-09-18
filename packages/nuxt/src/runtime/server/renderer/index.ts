@@ -297,6 +297,10 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     await runtime.prerender!.payloadCache.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext, event))
   }
 
+  if (import.meta.dev && !ssrError && !ssrContext.error) {
+    runtime.onRenderSuccess?.(event)
+  }
+
   if (import.meta.dev && NUXT_NO_SCRIPTS_PROD && !NO_SCRIPTS && !ssrError) {
     warnNoScriptsClientReliance(ssrContext, event.url.pathname)
   }
