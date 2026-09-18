@@ -340,6 +340,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       'nuxt/dist',
       'nuxt3/dist',
       'nuxt-nightly/dist',
+      // Vite dev matches `noExternal` against the package name, not the path
+      /^(?:nuxt|nuxt3|nuxt-nightly)$/,
       distDir,
       // Ensure app config files have auto-imports injected even if they are pure .js files
       ...layerDirs.map(dirs => join(dirs.app, 'app.config')),

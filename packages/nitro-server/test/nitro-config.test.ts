@@ -49,6 +49,15 @@ describe('nitro config', () => {
     })
   })
 
+  it('keeps the nuxt package from being externalized in the vite dev environment', async () => {
+    await withNitro({ dev: true, experimental: { nitroViteEnvironment: true } }, (_nitro, nitroConfig) => {
+      const noExternals = nitroConfig.noExternals as Array<string | RegExp>
+      for (const pkg of ['nuxt', 'nuxt3', 'nuxt-nightly']) {
+        expect(noExternals.some(pattern => pattern instanceof RegExp && pattern.test(pkg))).toBe(true)
+      }
+    })
+  })
+
   it.for([true, false])('passes the server replacements to the prerenderer when nitroViteEnvironment is %s', async (nitroViteEnvironment) => {
     await withNitro({ experimental: { nitroViteEnvironment } }, async (nitro) => {
       // nitro creates the prerenderer from a copy of this config
