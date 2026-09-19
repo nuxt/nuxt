@@ -14,9 +14,48 @@ import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
 import { collectGlobalCss, toFsUrl } from '../utils/css.ts'
 
+const QUERY_RE = /\?.+$/
+
+export interface FacadelessChunkInfo {
+  /** Chunk file name, as emitted in the bundle and as used in manifest `file` values. */
+  file: string
+  /** Source module ids bundled into the chunk, relative to the vite root (like other manifest keys). */
+  modules: string[]
+}
+
+/**
+ * Alias source modules bundled into chunks without a facade module to their
+ * chunk's manifest entry, so the SSR renderer can resolve their stylesheets
+ * (https://github.com/nuxt/nuxt/issues/36343).
+ *
+ * Must run before the `buildAssetsDir` prefix is stripped from `file` values
+ * in `finalizeBuildManifest`, so chunk file names line up with manifest entries.
+ */
+export function aliasFacadelessChunkModules (clientManifest: ViteClientManifest, facadelessChunks: FacadelessChunkInfo[]): void {
+  const manifestEntries = Object.values(clientManifest)
+  for (const { file, modules } of facadelessChunks) {
+    const chunkEntry = manifestEntries.find(entry => entry.file === file)
+    // Without CSS there is nothing for the SSR renderer to resolve.
+    if (!chunkEntry?.css?.length) { continue }
+    const { css, assets, imports, dynamicImports } = chunkEntry
+    for (const id of modules) {
+      // Never overwrite an existing (more specific) manifest entry.
+      if (id in clientManifest) { continue }
+      clientManifest[id] = {
+        file,
+        css: [...css],
+        ...(assets && { assets: [...assets] }),
+        ...(imports && { imports: [...imports] }),
+        ...(dynamicImports && { dynamicImports: [...dynamicImports] }),
+      }
+    }
+  }
+}
+
 export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let clientEntry: string
   let key: string
+  let root: string
   let disableCssCodeSplit: boolean
   let manifestFileName: string
   let manifestFile: string
@@ -27,6 +66,12 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
 
   // captured in-memory from the client env's bundle under env-API
   let rawClientManifest: ViteClientManifest | undefined
+
+  // Source modules bundled into chunks without a facade module, grouped by
+  // chunk file name. Vite only emits manifest entries for facade modules, so
+  // without this the SSR renderer cannot resolve the stylesheets of these
+  // modules (https://github.com/nuxt/nuxt/issues/36343).
+  const facadelessChunkModules: FacadelessChunkInfo[] = []
 
   let clientBundleGenerated = false
 
@@ -84,6 +129,18 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       handler (_options, bundle) {
         if (nuxt.options.dev || this.environment?.name !== 'client') { return }
         clientBundleGenerated = true
+        for (const chunk of Object.values(bundle)) {
+          // Chunks without a facade module get no manifest entry of their own,
+          // so record their source modules (keyed like other manifest entries)
+          // to alias them to the chunk entry when finalising the manifest.
+          if (chunk.type !== 'chunk' || chunk.facadeModuleId) { continue }
+          facadelessChunkModules.push({
+            file: chunk.fileName,
+            modules: chunk.moduleIds
+              .filter(id => !id.startsWith('\0'))
+              .map(id => relative(root, id.replace(QUERY_RE, ''))),
+          })
+        }
         if (!envApi) { return }
         const asset = bundle[manifestFileName]
         if (asset?.type === 'asset') {
@@ -94,6 +151,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     configResolved (config) {
       clientEntry = resolveClientEntry(config)
       key = relative(config.root, clientEntry)
+      root = config.root
       disableCssCodeSplit = config.build?.cssCodeSplit === false
       if (!nuxt.options.dev) {
         const clientBuild = config.environments.client?.build ?? config.build
@@ -137,10 +195,17 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
         : JSON.parse(readManifestFromDisk()) as ViteClientManifest
     const manifestEntries = Object.values(clientManifest)
 
+    // Chunks without a facade module have no manifest entry keyed by their
+    // source modules, so the SSR renderer cannot resolve the stylesheets of
+    // the components bundled into them (https://github.com/nuxt/nuxt/issues/36343).
+    // Alias each of their source modules to the chunk entry so their CSS is
+    // linked in the SSR HTML like any other component's.
+    aliasFacadelessChunkModules(clientManifest, facadelessChunkModules)
+
     const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(nuxt.options.app.buildAssetsDir))
     const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
 
-    for (const entry of manifestEntries) {
+    for (const entry of Object.values(clientManifest)) {
       entry.file &&= entry.file.replace(BASE_RE, '')
       for (const item of ['css', 'assets'] as const) {
         entry[item] &&= entry[item].map((i: string) => i.replace(BASE_RE, ''))
