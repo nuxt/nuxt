@@ -501,14 +501,15 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     const helperModule = resolveModulePath('unctx', { from: import.meta.url, try: true }) ?? 'unctx'
-    // Add unctx transform
+    // server-only: the `executeAsync` wrappers restore context across `await`, which a
+    // browser's set-once Nuxt app does not need
     addBuildPlugin(UnctxTransformPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
         helperModule,
       },
-    }))
+    }), { client: false })
 
     // Add composable tree-shaking optimisations
     if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {

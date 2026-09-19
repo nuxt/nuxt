@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { appConfigTemplate, dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
@@ -27,6 +27,22 @@ function makeNuxt (overrides: Partial<Nuxt['options']> = {}, serverBuild?: Parti
 function makeApp (configs: string[] = []): NuxtApp {
   return { configs } as unknown as NuxtApp
 }
+
+describe('appConfigTemplate', () => {
+  it('does not merge at runtime when there are no app config layers', async () => {
+    const contents = await appConfigTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+
+    expect(contents).not.toContain('defuFn')
+    expect(contents).toContain('export default inlineConfig')
+  })
+
+  it('merges the layers it is given at runtime', async () => {
+    const contents = await appConfigTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(['/app/app.config.ts']), options: {} })
+
+    expect(contents).toContain(`import { defuFn } from 'defu'`)
+    expect(contents).toContain('export default /*@__PURE__*/ defuFn(cfg0, inlineConfig)')
+  })
+})
 
 describe('sharedAppConfigDeclarationTemplate', () => {
   it('augments only the shared app config', async () => {
