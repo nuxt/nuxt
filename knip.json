@@ -63,7 +63,7 @@
         "~/*": ["./*"],
         "#shared/*": ["./shared/*"]
       },
-      "ignoreUnresolved": ["#compat-virtual/nitro-dependent"]
+      "ignoreUnresolved": ["#compat-virtual/nitro-dependent", "#compat-virtual/app-dependent"]
     },
     "test/fixtures/basic": {
       "entry": [

@@ -84,6 +84,24 @@ export default defineNuxtModule({
       handler: resolver.resolve('./runtime/nitro-dependent-handler'),
     })
 
+    // a module virtual whose contents are only knowable once the app has been generated:
+    // rendering it any earlier than `build:done` deadlocks the build, because the event
+    // it awaits first fires inside `buildNuxt`, which runs after `nuxt.ready()` resolves
+    let appReady: (count: number) => void
+    const templateCount = new Promise<number>((resolve) => { appReady = resolve })
+    nuxt.hook('nitro:config', (nitroConfig) => {
+      nitroConfig.virtual ||= {}
+      nitroConfig.virtual['#compat-virtual/app-dependent'] = async () => `export const templates = ${JSON.stringify(await templateCount)}`
+    })
+    nuxt.hook('app:templatesGenerated', (app) => {
+      appReady(app.templates.length)
+    })
+
+    addServerHandler({
+      route: '/api/app-dependent',
+      handler: resolver.resolve('./runtime/app-dependent-handler'),
+    })
+
     // some modules bypass kit entirely and push into `nitro.options` directly
     nuxt.hook('nitro:init', (nitro) => {
       nitro.options.handlers.push({
