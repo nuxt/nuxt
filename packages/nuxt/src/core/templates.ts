@@ -538,9 +538,11 @@ export const appConfigTemplate: NuxtTemplate = {
   dependsOn: [],
   write: true,
   getContents ({ app, nuxt }) {
-    return `
+    return `${app.configs.length
+      ? `
 import { defuFn } from ${JSON.stringify(defuPath)}
-
+`
+      : ''}
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
 /** client **/
@@ -558,7 +560,7 @@ if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
-export default /*@__PURE__*/ defuFn(${app.configs.map((_id: string, index: number) => `cfg${index}`).concat(['inlineConfig']).join(', ')})
+export default ${app.configs.length ? `/*@__PURE__*/ defuFn(${app.configs.map((_id: string, index: number) => `cfg${index}`).concat(['inlineConfig']).join(', ')})` : 'inlineConfig'}
 `
   },
 }

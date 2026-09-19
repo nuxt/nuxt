@@ -4,8 +4,8 @@ import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, 
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { createHooks } from 'hookable'
-import { getContext } from 'unctx'
 
+import { getContext } from './internal/context'
 import type { NuxtAppContext } from './internal/context'
 import type { DevServerLog, NuxtPayload, NuxtSSRContext, NuxtServerRuntimeHooks, PluginMeta } from './types'
 import type { RouteMiddleware } from './composables/router'
