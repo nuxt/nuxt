@@ -550,6 +550,11 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
+  // the app markup is sent as rendered chunks unless a `render:html` listener changed the body
+  const chunks = ssrContext['~htmlChunks']
+  if (runtime.createDocumentResponse && chunks && htmlContext.body.length === 2 && htmlContext.body[0] === _rendered.html) {
+    return runtime.createDocumentResponse(renderHTMLDocumentChunks(htmlContext, chunks), event.res)
+  }
   return runtime.createResponse(renderHTMLDocument(htmlContext), event.res)
 }
 
@@ -1108,6 +1113,16 @@ function joinTags (tags: Array<string | undefined>) {
 function joinAttrs (chunks: string[]) {
   if (chunks.length === 0) { return '' }
   return ' ' + chunks.join(' ')
+}
+
+function renderHTMLDocumentChunks (html: NuxtRenderHTMLContext, appChunks: string[]): string[] {
+  const chunks: string[] = ['<!DOCTYPE html>' +
+    `<html${joinAttrs(html.htmlAttrs)}>` +
+    `<head>${joinTags(html.head)}</head>` +
+    `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}`]
+  for (const chunk of appChunks) { chunks.push(chunk) }
+  chunks.push(`${html.body[1]}${joinTags(html.bodyAppend)}</body></html>`)
+  return chunks
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {

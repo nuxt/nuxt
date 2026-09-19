@@ -1,6 +1,7 @@
 import { joinURL, withQuery } from 'ufo'
 import { SSR_ERROR_PARAM, appendVary, describeError, encodeSSRError, isExpectedError, isJsonRequest } from 'nuxt/internal/renderer/error'
 import type { DescribedError } from 'nuxt/internal/renderer/error'
+import { encodeDocument } from 'nuxt/internal/renderer/encode'
 import { mergeHeaders } from 'nuxt/internal/renderer/headers'
 import { createError, useServerHooks } from 'nuxt/server'
 import type { NuxtRendererOptions } from 'nuxt/internal/renderer/runtime'
@@ -42,6 +43,7 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     getRouteRules: event => ({ ssr: true, ...matchRouteRules(event.url.pathname, event.req.method) }),
     hooks: useServerHooks,
     createResponse: (body, init) => new Response(body, init),
+    createDocumentResponse: (chunks, init) => new Response(encodeDocument(chunks), init),
     createError: init => createError(init),
     prerender,
     onRenderSuccess: devErrors
