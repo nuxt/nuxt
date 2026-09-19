@@ -216,4 +216,33 @@ describe('loadNuxtConfig', () => {
     const config = await loadNuxtConfig({ cwd, envName: 'staging' })
     expect(config.envName).toBe('staging')
   })
+
+  it('should discover layers from an extended config', async () => {
+    const baseCwd = fileURLToPath(new URL('./layer-extends-fixture', import.meta.url)).replace(/\\/g, '/')
+    const cwd = fileURLToPath(new URL('./layer-extends-fixture/app', import.meta.url)).replace(/\\/g, '/')
+    const config = await loadNuxtConfig({ cwd })
+
+    // the discovered layer sits directly below the layer it was found in
+    expect(config._layers.map(l => basename(l.cwd!))).toEqual(['app', 'layer-extends-fixture', 'test-layer'])
+    expect(config.alias['#layers/test-layer']).toBe(baseCwd + '/layers/test-layer/')
+    // and its config takes part in the merge
+    expect(config.runtimeConfig.public.fromTestLayer).toBe(true)
+  })
+
+  it('should discover nested layers inside a layer', async () => {
+    const cwd = fileURLToPath(new URL('./layer-nested-fixture', import.meta.url)).replace(/\\/g, '/')
+    const config = await loadNuxtConfig({ cwd })
+
+    // nested layers follow their parent, and bring their own `extends` chain with them
+    expect(config._layers.map(l => basename(l.cwd!))).toEqual(['layer-nested-fixture', 'a', 'b', 'shared'])
+    expect(config.alias['#layers/a']).toBe(cwd + '/layers/a/')
+    expect(config.alias['#layers/b']).toBe(cwd + '/layers/a/layers/b/')
+    expect(config.alias['#layers/shared']).toBeUndefined()
+
+    // a nested layer has lower priority than its parent, but its config is merged
+    expect(config.runtimeConfig.public).toMatchObject({ who: 'a', fromB: true, fromShared: true })
+    // the re-merge does not leak layer bookkeeping into the resolved options
+    expect(config).not.toHaveProperty('_extends')
+    expect(config.extends).toBeUndefined()
+  })
 })

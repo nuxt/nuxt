@@ -9,7 +9,7 @@ import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
 import { klona } from 'klona'
 import microdiff from 'microdiff'
-import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
+import { basename, dirname, join, normalize, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm.ts'
@@ -198,6 +198,10 @@ function isSameFunction (a: unknown, b: unknown) {
 // resolves the same way whether or not the fallback is in play.
 const CONFIG_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs', '.mts', '.cts', '.json', '.jsonc', '.json5', '.yaml', '.yml', '.toml'] as const
 
+const LAYER_EXTEND_KEYS = ['theme', '_extends', 'extends']
+
+type LoadLayerConfigOptions = Parameters<typeof loadConfig<NuxtConfig>>[0]
+
 // Process-wide, so that a second `loadNuxtConfig` for the same project produces a different URL
 // and re-reads the file rather than getting the cached module back
 let configImportCounter = 0
@@ -241,11 +245,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   const configFileName = opts.configFile || 'nuxt.config'
 
   // Automatically detect and import layers from `~~/layers/` directory
-  const localLayers = (await glob('layers/*', {
-    onlyDirectories: true, cwd: rootCwd,
-  }))
-    .map((d: string) => withTrailingSlash(d))
-    .sort((a, b) => b.localeCompare(a))
+  const localLayers = (await scanLayerDirs(rootCwd)).map(dir => withTrailingSlash(dir))
   opts.overrides = defu(opts.overrides, { _extends: localLayers })
 
   // Identity of the auto-scan `_extends` injections (so the root project's own `extends`
@@ -352,20 +352,20 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     }
   }
 
-  const loadRootConfig = () => withDefineNuxtConfig(
-    () => loadConfig<NuxtConfig>({
+  // Directories of auto-discovered layers (root-level and nested), as c12 spells their `cwd`
+  const autoDiscoveredLayers = new Set(localLayers.map(dir => resolve(rootCwd, dir)))
+
+  // Shared by the root load and nested layer loads, so nested `extends` get the same resolver
+  const loadLayerConfig = (options: LoadLayerConfigOptions) =>
+    loadConfig<NuxtConfig>({
       name: 'nuxt',
       configFile: configFileName,
-      rcFile: opts.rcFile ?? '.nuxtrc',
-      extend: { extendKey: ['theme', '_extends', 'extends'] },
-      globalRc: opts.globalRc ?? true,
+      extend: { extendKey: LAYER_EXTEND_KEYS },
       merger: merger as (...sources: Array<NuxtConfig | null | undefined>) => NuxtConfig,
-      cwd: opts.cwd,
-      overrides: opts.overrides,
-      defaults: opts.defaults,
       envName: opts.envName,
       import: opts.import ?? importConfigFile,
       dotenv: false, // already loaded above
+      ...options,
       async resolve (source, resolveOptions) {
         // Respect a user-provided resolver
         const custom = await opts.resolve?.(source, resolveOptions)
@@ -416,8 +416,52 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
             : { config: {}, cwd: aliased, source }
         }
       },
-    }),
-  )
+    })
+
+  const loadRootConfig = () => withDefineNuxtConfig(async () => {
+    const resolved = await loadLayerConfig({
+      cwd: opts.cwd,
+      rcFile: opts.rcFile ?? '.nuxtrc',
+      globalRc: opts.globalRc ?? true,
+      overrides: opts.overrides,
+      defaults: opts.defaults,
+    })
+    const layers = resolved.layers ??= []
+
+    // Discover `layers/*` in every resolved layer (local, npm or remote). Discovered layers are
+    // inserted below their parent and scanned in turn; the root's `layers/` is already in `_extends`.
+    const scannedDirs = new Set([rootCwd])
+    let discovered = false
+    for (let i = 0; i < layers.length; i++) {
+      const { cwd, configFile } = layers[i]!
+      if (!cwd || !configFile || scannedDirs.has(cwd)) { continue }
+      scannedDirs.add(cwd)
+
+      const nested: typeof layers = []
+      for (const dir of await scanLayerDirs(cwd)) {
+        const nestedCwd = resolve(cwd, dir)
+        autoDiscoveredLayers.add(nestedCwd)
+        // Already merged if reachable through `extends`; loading marks it seen via c12's own `.` resolve
+        if (seenLayerDirs.has(canonicalLayerDir(nestedCwd))) { continue }
+        const loaded = await loadLayerConfig({ cwd: nestedCwd, rcFile: false })
+        const [main, ...chain] = loaded.layers ?? []
+        if (main) {
+          nested.push({ ...main, configFile: loaded.configFile, meta: loaded.meta }, ...chain)
+        }
+      }
+      layers.splice(i + 1, 0, ...nested)
+      discovered ||= nested.length > 0
+    }
+
+    // c12 merged before the nested layers were inserted, so merge again and strip extend keys as it does
+    if (discovered) {
+      resolved.config = merger({}, ...layers.map(layer => layer.config), opts.defaults)
+      for (const key of LAYER_EXTEND_KEYS) {
+        delete resolved.config[key as keyof NuxtConfig]
+      }
+    }
+    return resolved
+  })
 
   const resolved = await loadRootConfig().catch(async (error) => {
     if (!isMissingConfbox(error)) {
@@ -494,7 +538,6 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const _layers: LoadedConfigLayer[] = []
   const processedLayers = new Set<string>()
-  const localRelativePaths = new Set(localLayers.map(layer => layer.replace(/\/$/, '')))
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     // Create a shallow copy to avoid mutating the cached ESM config object
@@ -514,8 +557,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // Filter layers
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
-    // Add layer name for local layers
-    if (layer.cwd && cwd && localRelativePaths.has(relative(cwd, layer.cwd))) {
+    // Add layer name for auto-discovered layers
+    if (layer.cwd && autoDiscoveredLayers.has(layer.cwd)) {
       layer.meta ||= {}
       layer.meta.name ||= basename(layer.cwd)
     }
@@ -576,6 +619,13 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
  */
 function canonicalLayerDir (path: string): string {
   return normalize(realpathSync(statSync(path).isDirectory() ? path : dirname(path)))
+}
+
+/** Subdirectories of `<cwd>/layers`, highest priority (later name) first. */
+async function scanLayerDirs (cwd: string): Promise<string[]> {
+  if (!existsSync(join(cwd, 'layers'))) { return [] }
+  const dirs = await glob('layers/*', { onlyDirectories: true, cwd })
+  return dirs.sort((a, b) => b.localeCompare(a))
 }
 
 function withTrailingSlash (path: string | undefined): string {
