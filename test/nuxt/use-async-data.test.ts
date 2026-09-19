@@ -475,6 +475,54 @@ describe('useAsyncData', () => {
     expect(data.value).toBe('watch')
   })
 
+  it('handler should receive cause on initial fetch', async () => {
+    const promiseFn = vi.fn((_nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause | undefined }) => Promise.resolve(ctx.cause))
+    const { data } = await useAsyncData(uniqueKey, promiseFn, { getCachedData: () => undefined })
+    expect(data.value).toBe('initial')
+  })
+
+  it('handler should receive an explicit cause passed to refresh', async () => {
+    const promiseFn = vi.fn((_nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause | undefined }) => Promise.resolve(ctx.cause))
+    const { data, refresh } = await useAsyncData(uniqueKey, promiseFn, { getCachedData: () => undefined })
+    await refresh({ cause: 'refresh:manual' })
+    expect(data.value).toBe('refresh:manual')
+  })
+
+  it('handler should receive an undefined cause when refresh is called without one', async () => {
+    const promiseFn = vi.fn((_nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause | undefined }) => Promise.resolve(ctx.cause ?? 'no-cause'))
+    const { data, refresh } = await useAsyncData(uniqueKey, promiseFn, { getCachedData: () => undefined })
+    await refresh()
+    expect(data.value).toBe('no-cause')
+  })
+
+  it('handler should receive cause on refreshNuxtData', async () => {
+    const promiseFn = vi.fn((_nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause | undefined }) => Promise.resolve(ctx.cause))
+    const { data } = await useAsyncData(uniqueKey, promiseFn, { getCachedData: () => undefined })
+    await refreshNuxtData(uniqueKey)
+    expect(data.value).toBe('refresh:hook')
+  })
+
+  it('handler should receive cause on watch', async () => {
+    const number = ref(0)
+    const promiseFn = vi.fn((_nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause | undefined }) => Promise.resolve(ctx.cause))
+    const { data } = await useAsyncData(uniqueKey, promiseFn, { getCachedData: () => undefined, watch: [number] })
+    number.value = 1
+    await flushPromises()
+    expect(data.value).toBe('watch')
+  })
+
+  it('handler should receive both signal and cause', async () => {
+    let captured: { signal?: AbortSignal, cause?: AsyncDataRefreshCause } = {}
+    const promiseFn = vi.fn((_nuxtApp: NuxtApp, ctx: { signal: AbortSignal, cause: AsyncDataRefreshCause | undefined }) => {
+      captured = { signal: ctx.signal, cause: ctx.cause }
+      return Promise.resolve('ok')
+    })
+    await useAsyncData(uniqueKey, promiseFn, { getCachedData: () => undefined })
+    expect(captured.signal).toBeInstanceOf(AbortSignal)
+    expect(captured.signal!.aborted).toBe(false)
+    expect(captured.cause).toBe('initial')
+  })
+
   it('should use default while pending', async () => {
     const promise = useAsyncData(() => Promise.resolve('test'), { default: () => 'default' })
     const { data, pending } = promise
