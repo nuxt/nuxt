@@ -11,7 +11,7 @@ import type {
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import type { ComponentSlots } from 'vue-component-type-helpers'
-import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
+import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteLocationResolvedGeneric, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { prefetchRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -27,6 +27,7 @@ import { navigationDiagnostics } from '../diagnostics/navigation'
 import { componentIslands, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
+import { isPlainAbsolutePath, mayMatchCurrentRoute } from './route-match'
 import type { NuxtLinkOptions } from '../types'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
@@ -296,15 +297,26 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       checkPropConflicts(props, 'noRel', 'rel')
     }
 
-    const route = router.resolve(resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash))
     const currentRoute = router.currentRoute.value
-    const index = activeRecordIndex(route, currentRoute)
+    let route: RouteLocationResolvedGeneric | undefined
+    let href: string
+    let isActive = false
+    let isExactActive = false
+    if (typeof rawTo === 'string' && isPlainAbsolutePath(rawTo) && !hashMode && !props.trailingSlash && !options.trailingSlash && !mayMatchCurrentRoute(currentRoute, rawTo)) {
+      href = router.options.history.base + rawTo
+    } else {
+      route = router.resolve(resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash))
+      href = route.href
+      const index = activeRecordIndex(route, currentRoute)
+      isActive = index > -1 && includesParams(currentRoute.params, route.params)
+      isExactActive = index > -1 && index === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.params)
+    }
     return {
-      route,
-      href: sanitizeAnchorHref(route.href),
-      isActive: index > -1 && includesParams(currentRoute.params, route.params),
-      isExactActive: index > -1 && index === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.params),
-      navigate: async () => { await navigateTo(route.href, { replace: props.replace }) },
+      get route () { return route ??= router.resolve(rawTo) },
+      href: sanitizeAnchorHref(href),
+      isActive,
+      isExactActive,
+      navigate: async () => { await navigateTo(href, { replace: props.replace }) },
     }
   }
 
