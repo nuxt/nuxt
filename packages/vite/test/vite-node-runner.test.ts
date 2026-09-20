@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer'
 import vm from 'node:vm'
 import { describe, expect, it } from 'vitest'
-import runner, { buildViteError, getCode, getCompiledPosition } from '../src/vite-node-runner.ts'
+import runner, { buildViteError, getCode, getCompiledPosition, prepareStackTrace } from '../src/vite-node-runner.ts'
 import { serializeViteNodeError } from '../src/plugins/vite-node.ts'
 
 // transformed output of `export function useBoom () {\n  throw new Error('boom')\n}`,
@@ -24,6 +24,11 @@ const charsetFile = '/src/useBoomCharset.ts'
 runner.moduleCache.update(viteFile, { code: inlineSourceMap(viteFile, false) })
 runner.moduleCache.update(charsetFile, { code: inlineSourceMap(charsetFile, true) })
 
+const rootAbsoluteFile = '/D:/src/useBoomRootAbsolute.ts'
+const driveFile = 'D:/src/useBoomDrive.ts'
+runner.moduleCache.update(rootAbsoluteFile, { code: inlineSourceMap(rootAbsoluteFile, false) })
+runner.moduleCache.update(driveFile, { code: inlineSourceMap(driveFile, false) })
+
 describe('vite-node runner sourcemaps', () => {
   it('exposes the transformed code with its inline sourcemap comment intact', () => {
     expect(getCode(viteFile)).toBe(inlineSourceMap(viteFile, false))
@@ -34,6 +39,19 @@ describe('vite-node runner sourcemaps', () => {
     expect(getCompiledPosition(viteFile, 2, 9)).toEqual({ file: viteFile, line: 3, column: 9 })
     expect(getCompiledPosition(charsetFile, 2, 9)).toEqual({ file: charsetFile, line: 3, column: 9 })
     expect(getCompiledPosition('/src/unknown.ts', 2, 9)).toBeUndefined()
+  })
+
+  it.each([
+    ['a native path', 'D:\\src\\useBoomDrive.ts', driveFile],
+    ['a root-absolute path', '/D:/src/useBoomDrive.ts', driveFile],
+    ['a path without the runner\'s leading slash', 'D:/src/useBoomRootAbsolute.ts', rootAbsoluteFile],
+    ['a lowercase drive letter', 'd:/src/useBoomDrive.ts', driveFile],
+  ])('finds a module the runner holds under a different id for %s', (_, lookup, stored) => {
+    expect(getCode(lookup)).toBe(inlineSourceMap(stored, false))
+  })
+
+  it('does not invent a module for a drive path the runner never evaluated', () => {
+    expect(getCode('D:/src/unknown.ts')).toBeUndefined()
   })
 })
 
@@ -99,5 +117,31 @@ describe('vite-node runner stacks', () => {
     const stack = raise('/src/not-evaluated.ts')
     expect(stack).toContain('    at useBoom (/src/not-evaluated.ts:3:9)')
     expect(runner.moduleCache.has('/src/not-evaluated.ts')).toBe(false)
+  })
+
+  it('maps a frame of a module the runner holds under a drive-lettered id', () => {
+    expect(raise('D:\\src\\useBoomDrive.ts')).toContain(':2:9')
+  })
+
+  it('maps a frame whose call site spells its file differently from the name it reports', () => {
+    const callSite = {
+      toString: () => 'useBoom (D:\\src\\useBoomDrive.ts:3:9)',
+      getFileName: () => driveFile,
+      getLineNumber: () => 3,
+      getColumnNumber: () => 9,
+    } as unknown as NodeJS.CallSite
+
+    expect(prepareStackTrace(new Error('boom'), [callSite])).toBe(`Error: boom\n    at useBoom (${driveFile}:2:9)`)
+  })
+
+  it('leaves a frame alone when its reported position is not in the text', () => {
+    const callSite = {
+      toString: () => 'useBoom (<anonymous>)',
+      getFileName: () => driveFile,
+      getLineNumber: () => 3,
+      getColumnNumber: () => 9,
+    } as unknown as NodeJS.CallSite
+
+    expect(prepareStackTrace(new Error('boom'), [callSite])).toBe('Error: boom\n    at useBoom (<anonymous>)')
   })
 })

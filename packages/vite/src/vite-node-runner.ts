@@ -18,10 +18,38 @@ export function getCode (file: string): string | undefined {
   return moduleCacheFor(file)?.code
 }
 
+/** A path led by a drive letter, optionally root-absolute. */
+const DRIVE_LETTER_RE = /^\/?[a-z]:\//i
+
 /** The runner's entry for `file`, without creating one for a file it never evaluated. */
 function moduleCacheFor (file: string): ReturnType<ViteNodeRunner['moduleCache']['get']> | undefined {
-  const id = runner.moduleCache.normalizePath(file)
-  return runner.moduleCache.has(id) ? runner.moduleCache.getByModuleId(id) : undefined
+  for (const id of moduleIds(file)) {
+    if (runner.moduleCache.has(id)) {
+      return runner.moduleCache.getByModuleId(id)
+    }
+  }
+  return undefined
+}
+
+/**
+ * Ids the runner may hold `file` under. V8 names a module by the path the evaluator was
+ * given, which for a windows drive differs from the runner's own id in its leading slash
+ * and in the case of the drive letter.
+ */
+function* moduleIds (file: string): Generator<string> {
+  const id = runner.moduleCache.normalizePath(file).replaceAll('\\', '/')
+  yield id
+  if (!DRIVE_LETTER_RE.test(id)) {
+    return
+  }
+  const bare = id.startsWith('/') ? id.slice(1) : id
+  const drive = bare[0]!
+  const flipped = (drive === drive.toUpperCase() ? drive.toLowerCase() : drive.toUpperCase()) + bare.slice(1)
+  for (const candidate of [bare, `/${bare}`, flipped, `/${flipped}`]) {
+    if (candidate !== id) {
+      yield candidate
+    }
+  }
 }
 
 const parsedMaps = new WeakMap<object, { code: string, map: RawSourceMap | undefined }>()
@@ -81,14 +109,27 @@ export function prepareStackTrace (error: Error, callSites: NodeJS.CallSite[]): 
       return text
     }
     const mapped = getOriginalPosition(file, line, column)
-    if (!mapped) {
-      return text
-    }
-    const compiled = `${file}:${line}:${column}`
-    const index = text.lastIndexOf(compiled)
-    return index === -1 ? text : `${text.slice(0, index)}${mapped.file}:${mapped.line}:${mapped.column}${text.slice(index + compiled.length)}`
+    return mapped ? withLocation(text, line, column, mapped) : text
   })
   return [headerOf(error), ...frames].join('\n')
+}
+
+/**
+ * `text` with the location of its frame replaced by `mapped`. The location is found by its
+ * `:line:column` suffix rather than by the file name, which a call site may spell
+ * differently from the name it reports.
+ */
+function withLocation (text: string, line: number, column: number, mapped: SourcePosition): string {
+  const position = `:${line}:${column}`
+  const index = text.lastIndexOf(position)
+  if (index === -1) {
+    return text
+  }
+  const open = text.lastIndexOf('(', index)
+  const start = open === -1 ? text.indexOf(' at ') + ' at '.length : open + 1
+  return start < index
+    ? `${text.slice(0, start)}${mapped.file}:${mapped.line}:${mapped.column}${text.slice(index + position.length)}`
+    : text
 }
 
 function headerOf (error: Error): string {
