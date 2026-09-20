@@ -1,10 +1,6 @@
-import type { ParsedTrace } from 'errx'
-
 import { h } from 'vue'
 import { defineNuxtPlugin } from '../nuxt'
 import type { DevServerLog, ObjectPlugin, Plugin } from '../nuxt'
-
-import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
 
 const devRevivers: Record<string, (data: any) => any> = import.meta.server
   ? {}
@@ -22,22 +18,6 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin(async (nuxtApp) => {
     return
   }
 
-  // Show things in console
-  if (devLogs !== 'silent') {
-    const { createConsola } = await import('consola')
-    const logger = createConsola({
-      formatOptions: {
-        colors: true,
-        date: true,
-      },
-    })
-    nuxtApp.hook('dev:ssr-logs', (logs) => {
-      for (const log of logs) {
-        logger.log(normalizeServerLog({ ...log }))
-      }
-    })
-  }
-
   if (typeof window !== 'undefined') {
     const nuxtLogsElement = document.querySelector(`[data-nuxt-logs="${nuxtApp._id}"]`)
     const content = nuxtLogsElement?.textContent
@@ -48,28 +28,5 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin(async (nuxtApp) => {
     }
   }
 })
-
-function normalizeFilenames (stack?: ParsedTrace[]) {
-  if (!stack) {
-    return ''
-  }
-  let message = ''
-  for (const item of stack) {
-    const source = item.source.replace(`${devRootDir}/`, '')
-    if (item.function) {
-      message += `  at ${item.function} (${source})\n`
-    } else {
-      message += `  at ${source}\n`
-    }
-  }
-  return message
-}
-
-function normalizeServerLog (log: DevServerLog) {
-  log.additional = normalizeFilenames(log.stack as ParsedTrace[])
-  log.tag = 'ssr'
-  delete log.stack
-  return log
-}
 
 export default plugin

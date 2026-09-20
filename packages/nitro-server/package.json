@@ -56,6 +56,7 @@
     "klona": "catalog:app-runtime",
     "magic-string": "catalog:vite",
     "mocked-exports": "catalog:build",
+    "my-bad": "catalog:nitro-runtime",
     "nitro": "catalog:nitro-runtime",
     "nostics": "catalog:app-runtime",
     "ofetch": "catalog:app-runtime",

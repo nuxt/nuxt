@@ -5,10 +5,11 @@ import type { NuxtApp, NuxtPayload } from '../nuxt'
 import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
 import { appDiagnostics } from '../diagnostics/core'
-import { NUXT_ERROR_SIGNATURE, NuxtError, createError, isNuxtError } from '../error'
+import { NUXT_ERROR_SIGNATURE, NuxtError, THROWN_CONTEXT, THROWN_VALUE, createError, createErrorFromThrown, isNuxtError } from '../error'
 import type { NuxtErrorDetails } from '../error'
 
-export { NUXT_ERROR_SIGNATURE, NuxtError, createError, isNuxtError }
+export { NUXT_ERROR_SIGNATURE, NuxtError, THROWN_CONTEXT, THROWN_VALUE, createError, createErrorFromThrown, isNuxtError }
+export type { ThrownContext } from '../error'
 export type { NuxtErrorDetails }
 
 /** @since 3.0.0 */

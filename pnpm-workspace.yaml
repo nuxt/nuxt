@@ -44,7 +44,10 @@ allowBuilds:
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
+  - clickable-path
+  - errx
   - fnv1a-64
+  - my-bad
   - vue-bundle-renderer
   - unrouting
   - unimport
@@ -98,8 +101,10 @@ catalogs:
 
   # imported in the server runtime (packages/nuxt/src/runtime/server, packages/nitro-server/src/runtime)
   nitro-runtime:
+    '@jridgewell/trace-mapping': ^0.3.31
     destr: ^2.0.5
     flru: ^1.0.2
+    my-bad: ^0.2.5
     nitro: ^3.0.260903-beta
     srvx: ^1.0.3
     unstorage: ^2.0.0-alpha.10
@@ -294,3 +299,4 @@ catalogs:
 
 catalogPrune: true
 minimumReleaseAgeExcludePrune: true
+

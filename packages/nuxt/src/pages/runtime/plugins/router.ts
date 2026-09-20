@@ -178,6 +178,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       })
     }
 
+    // vue-router logs a navigation failure to the console when no error handler is registered
+    router.onError(async () => {
+      delete nuxtApp._processingMiddleware
+      if (import.meta.server) {
+        delete nuxtApp._middlewareTo
+      }
+      await nuxtApp.callHook('page:loading:end')
+    })
+
     try {
       if (import.meta.server) {
         await router.push(initialURL)
@@ -334,14 +343,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
       })
     }
-
-    router.onError(async () => {
-      delete nuxtApp._processingMiddleware
-      if (import.meta.server) {
-        delete nuxtApp._middlewareTo
-      }
-      await nuxtApp.callHook('page:loading:end')
-    })
 
     router.afterEach((to) => {
       if (to.matched.length === 0 && !error.value) {
