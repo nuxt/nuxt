@@ -7,7 +7,7 @@ import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { readPackageJSON, resolvePackageDir } from '../internal/package-json.ts'
 import { read as readRc, update as updateRc } from 'rc9'
-import { isGreater, satisfies } from 'verkit'
+import { isGreaterThan, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
 import { interopDefault } from '../internal/interop.ts'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from '../internal/node-module.ts'
@@ -467,7 +467,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
   try {
     if (!previousVersion) {
       await nuxtModule.onInstall?.(nuxt)
-    } else if (isGreater(meta.version, previousVersion)) {
+    } else if (isGreaterThan(meta.version, previousVersion)) {
       await nuxtModule.onUpgrade?.(nuxt, inlineOptions, previousVersion)
     }
     if (previousVersion !== meta.version) {
