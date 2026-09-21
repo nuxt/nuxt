@@ -5,7 +5,7 @@ import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
-import { isGreaterOrEqual } from 'verkit'
+import { isGreaterThanOrEqual } from 'verkit'
 import { readPackageJSON } from './internal/package-json.ts'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
@@ -455,7 +455,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   let hasTypescriptVersionWithModulePreserve
   for (const parent of nestedModulesDirs) {
     hasTypescriptVersionWithModulePreserve ??= await readPackageJSON('typescript', { parent })
-      .then(r => r?.version && isGreaterOrEqual(r.version, '5.4.0'))
+      .then(r => r?.version && isGreaterThanOrEqual(r.version, '5.4.0'))
       .catch(() => undefined)
   }
   hasTypescriptVersionWithModulePreserve ??= true
