@@ -498,7 +498,7 @@ exports[`template > produces correct output for loading template 1`] = `
   --nuxt-mint: #00dc82;
   --nuxt-mist: #e8fff4e0;
   --nuxt-dim: #00dc828c;
-  --nuxt-logo: min(10vw, 68px);
+  --nuxt-logo: calc(min(10vw, 68px));
 }
 *,
 :after,
@@ -627,7 +627,7 @@ exports[`template > produces correct output for loading template 2`] = `
   --nuxt-mint: #00dc82;
   --nuxt-mist: #e8fff4e0;
   --nuxt-dim: #00dc828c;
-  --nuxt-logo: min(10vw, 68px);
+  --nuxt-logo: calc(min(10vw, 68px));
 }
 *,
 :after,
