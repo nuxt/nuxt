@@ -24,6 +24,7 @@
     "play:build": "nuxt build playground",
     "play:generate": "nuxt generate playground",
     "play:preview": "nuxt preview playground",
+    "prepare": "simple-git-hooks",
     "test": "pnpm test:prepare && vitest run && pnpm test:types && pnpm typecheck",
     "test:prepare": "node ./test/prepare.ts",
     "test:fixtures": "pnpm test:prepare && vitest run --project 'fixtures:*'",
@@ -89,6 +90,7 @@
     "knip": "catalog:dev",
     "magic-regexp": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
+    "nano-staged": "catalog:dev",
     "nitro": "catalog:nitro-runtime",
     "nitropack": "catalog:dev",
     "nuxt": "workspace:*",
@@ -99,6 +101,7 @@
     "playwright-core": "catalog:dev",
     "rollup": "catalog:dev",
     "sherif": "catalog:dev",
+    "simple-git-hooks": "catalog:dev",
     "srvx": "catalog:nitro-runtime",
     "std-env": "catalog:build",
     "tinyexec": "catalog:dev",
@@ -116,5 +119,8 @@
     "webpack": "catalog:webpack"
   },
   "packageManager": "pnpm@12.4.2",
+  "simple-git-hooks": {
+    "pre-commit": "pnpm nano-staged"
+  },
   "version": ""
 }
