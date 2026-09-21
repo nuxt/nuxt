@@ -24,6 +24,7 @@
     "play:build": "nuxt build playground",
     "play:generate": "nuxt generate playground",
     "play:preview": "nuxt preview playground",
+    "prepare": "simple-git-hooks",
     "test": "pnpm test:prepare && vitest run && pnpm test:types && pnpm typecheck",
     "test:prepare": "node ./test/prepare.ts",
     "test:fixtures": "pnpm test:prepare && vitest run --project 'fixtures:*'",
@@ -35,7 +36,7 @@
     "test:no-jiti": "vitest run --project no-jiti",
     "test:unit": "vitest run --project unit --project renderer",
     "test:attw": "pnpm --filter './packages/**' test:attw",
-    "test:public-api": "pnpm --filter @nuxt/kit --filter @nuxt/schema build && node ./scripts/check-public-api.ts",
+    "test:public-api": "pnpm --filter @nuxt/kit --filter @nuxt/schema --filter nuxt build && node ./scripts/check-public-api.ts",
     "test:e2e": "playwright test",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:ui": "playwright test --ui",
@@ -89,6 +90,7 @@
     "knip": "catalog:dev",
     "magic-regexp": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
+    "nano-staged": "catalog:dev",
     "nitro": "catalog:nitro-runtime",
     "nitropack": "catalog:dev",
     "nuxt": "workspace:*",
@@ -99,6 +101,7 @@
     "playwright-core": "catalog:dev",
     "rollup": "catalog:dev",
     "sherif": "catalog:dev",
+    "simple-git-hooks": "catalog:dev",
     "srvx": "catalog:nitro-runtime",
     "std-env": "catalog:build",
     "tinyexec": "catalog:dev",
@@ -115,6 +118,9 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@12.4.2",
+  "packageManager": "pnpm@12.5.1",
+  "simple-git-hooks": {
+    "pre-commit": "pnpm nano-staged"
+  },
   "version": ""
 }

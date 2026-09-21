@@ -1,4 +1,4 @@
-import type { CookieSerializeOptions } from 'cookie-es'
+import type { CookieSerializeOptions } from '../app/types/cookie'
 import { serialize } from 'cookie-es'
 import type { RequestEvent } from 'nuxt/schema'
 

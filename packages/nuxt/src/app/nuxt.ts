@@ -3,13 +3,11 @@ import './types/augments'
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
-import { getContext } from 'unctx'
-import type { UseContext } from 'unctx'
-import type { LogObject } from 'consola'
 
-import type { NuxtPayload, NuxtSSRContext, NuxtServerRuntimeHooks, PluginMeta } from './types'
+import { getContext } from './internal/context'
+import type { NuxtAppContext } from './internal/context'
+import type { DevServerLog, NuxtPayload, NuxtSSRContext, NuxtServerRuntimeHooks, PluginMeta } from './types'
 import type { RouteMiddleware } from './composables/router'
 import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
@@ -17,14 +15,14 @@ import { traceAsync } from './internal/tracing'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
-import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
+import type { AppConfig, AppConfigInput, NuxtHookCallback, NuxtHookRegistry, RuntimeConfig } from 'nuxt/schema'
 
 import { appDiagnostics } from './diagnostics/core'
 import { appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
-export type { NuxtPayload, NuxtSSRContext, PluginMeta } from './types'
+export type { DevServerLog, NuxtPayload, NuxtSSRContext, PluginMeta } from './types'
 
-export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): UseContext<NuxtApp> {
+export function getNuxtAppCtx (id: string = appId || 'nuxt-app'): NuxtAppContext<NuxtApp> {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -45,7 +43,7 @@ export interface RuntimeNuxtHooks extends NuxtServerRuntimeHooks {
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
   'app:manifest:update': (meta?: NuxtAppManifestMeta) => HookResult
-  'dev:ssr-logs': (logs: LogObject[]) => HookResult
+  'dev:ssr-logs': (logs: DevServerLog[]) => HookResult
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
@@ -61,7 +59,7 @@ interface _NuxtApp {
   'vueApp': App<Element>
   'versions': Record<string, string>
 
-  'hooks': Hookable<RuntimeNuxtHooks>
+  'hooks': NuxtHookRegistry<RuntimeNuxtHooks>
   'hook': _NuxtApp['hooks']['hook']
   'callHook': _NuxtApp['hooks']['callHook']
 
@@ -336,7 +334,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
   nuxtApp.hook = nuxtApp.hooks.hook
 
   if (import.meta.server) {
-    const contextCaller = async function (hooks: HookCallback[], args: any[]) {
+    const contextCaller = async function (hooks: NuxtHookCallback[], args: any[]) {
       for (const hook of hooks) {
         await nuxtApp.runWithContext(() => hook(...args))
       }
