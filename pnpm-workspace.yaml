@@ -27,8 +27,8 @@ overrides:
   "@nuxt/schema": "workspace:*"
   "@types/node": "24.13.5"
   nuxt: "workspace:*"
-  oxc-parser: "0.149.0"
-  rolldown: "1.2.8"
+  oxc-parser: "0.150.0"
+  rolldown: "1.2.9"
   vite: "8.3.0"
   vue: "3.5.42"
 
@@ -118,7 +118,7 @@ catalogs:
     magic-string: ^1.4.1
     oxc-walker: ^1.1.1
     # needs to match vite's own `~1.1.5` pin
-    rolldown: ~1.2.8
+    rolldown: ~1.2.9
     rolldown-string: ^0.3.1
     # resolution is pinned via the vite override above
     vite: ^8.3.0
@@ -188,7 +188,7 @@ catalogs:
     nypm: ^0.6.10
     ohash: ^2.0.12
     on-change: ^6.0.2
-    oxc-parser: ^0.149.0
+    oxc-parser: ^0.150.0
     pathe: ^2.0.3
     picomatch: ^4.0.7
     pkg-types: ^2.3.3
