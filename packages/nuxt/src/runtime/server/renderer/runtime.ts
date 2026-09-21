@@ -75,6 +75,8 @@ export interface NuxtRendererOptions {
   writeEarlyHints?: (event: RendererEvent, hints: { link: string }) => void
   /** Render an island request, when the runtime serves islands. */
   renderIsland?: (event: RendererEvent) => Promise<Response> | Response
+  /** Dev-only: called once a route has rendered without an error. */
+  onRenderSuccess?: (event: RendererEvent) => void
   /** Prerender-only capabilities, absent from a runtime build. */
   prerender?: {
     payloadCache: PayloadCache

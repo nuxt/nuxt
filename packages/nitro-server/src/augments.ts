@@ -13,7 +13,29 @@ import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, Serv
  */
 export type NuxtTracingChannelOptions = TracingChannelOptions
 
+/**
+ * Dev-only access to the SSR bundle's transformed modules, registered by the bundler that
+ * evaluates them in the Nitro process.
+ *
+ * @experimental
+ */
+export interface SSRSourceMaps {
+  /** Transformed code of an SSR module as it was evaluated. */
+  getCode: (file: string) => string | undefined
+  /** Position in generated code a source position was mapped from. */
+  getCompiledPosition?: (file: string, line: number, column?: number) => { file: string, line: number, column: number } | undefined
+}
+
 declare module 'nitro/types' {
+  interface NitroApp {
+    /**
+     * Only set in development, by bundlers that evaluate the SSR bundle within
+     * the Nitro process.
+     *
+     * @experimental
+     */
+    ssrSourceMaps?: SSRSourceMaps
+  }
   /** The channel `addServerImports()` and `addServerImportsDir()` write to through `nitro:config`. */
   interface NitroConfig {
     imports?: false | ServerImportsOptions
