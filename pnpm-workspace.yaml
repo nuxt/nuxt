@@ -36,6 +36,7 @@ allowBuilds:
   '@parcel/watcher': true
   esbuild: true
   sharp: false
+  simple-git-hooks: false
   unrs-resolver: false
   workerd: true
 
@@ -269,6 +270,7 @@ catalogs:
     knip: 6.35.1
     magic-regexp: 0.11.0
     markdownlint-cli: 0.49.1
+    nano-staged: 1.0.2
     nitropack: 2.13.4
     nuxt-content-twoslash: 0.4.0
     oxc-transform: 0.150.0
@@ -278,6 +280,7 @@ catalogs:
     rollup: 4.63.3
     rollup-plugin-visualizer: 7.1.1
     sherif: 1.13.0
+    simple-git-hooks: 2.14.0
     svgo: 4.1.0
     tinyexec: 1.3.1
     tsdown: 0.23.0
