@@ -54,3 +54,27 @@ test('reloads the error page once the file compiles again', async ({ page }) => 
   await expect(page.locator('.mb-message')).toHaveCount(0, { timeout: 15_000 })
   await expect(page.locator('body')).toContainText('rendered without error')
 })
+
+test('opens a frame through the channel, and through the editor URL when the channel refuses the page', async ({ page }) => {
+  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
+  const opens: string[] = []
+  // answered here so a run never launches the editor of the machine it is on
+  await page.route('**/__nuxt_dev__/error/open', (route) => {
+    opens.push(route.request().url())
+    return route.fulfill({ status: 200, body: '' })
+  })
+  const frame = () => page.locator('nuxt-error-overlay').locator('.mb-loc').first()
+
+  await page.goto('/boom-page')
+  await expect(frame()).toHaveCount(1)
+  await frame().evaluate((el: HTMLElement) => el.click())
+  await expect.poll(() => opens.length).toBe(1)
+
+  // a peer the channel will not talk to still gets the frame, and must not ask it to open
+  await page.route('**/__nuxt_dev__/error/events*', route => route.fulfill({ status: 403, body: '' }))
+  await page.reload()
+  await expect(frame()).toHaveCount(1)
+  await frame().evaluate((el: HTMLElement) => el.click())
+  await page.waitForTimeout(1000)
+  expect(opens).toHaveLength(1)
+})
