@@ -20,7 +20,7 @@ function createNuxt () {
   } as unknown as Nuxt & { close: () => void }
 }
 
-type OverlayRoute = { path: string, handle: (req: { url?: string, headers?: Record<string, string> }, res: { setHeader: (name: string, value: string) => void, end: (body: string) => void }, next: () => void) => void }
+type OverlayRoute = { path: string, handle: (req: { url?: string, headers?: Record<string, string>, socket?: { remoteAddress?: string } }, res: { setHeader: (name: string, value: string) => void, end: (body: string) => void }, next: () => void) => void }
 
 /** A stand-in dev server, capturing the overlay route and the messages pushed over hmr. */
 function devServer (options: { graph?: unknown } = {}) {
@@ -33,14 +33,14 @@ function devServer (options: { graph?: unknown } = {}) {
     environments: { client: { hot: { send, on: (event: string, fn: (data?: any) => void) => { listeners[event] = fn } }, moduleGraph: options.graph } },
   } as unknown as ViteDevServer
 
-  /** Request the overlay the last pushed payload points at. */
-  async function overlay (headers: Record<string, string> = { 'sec-fetch-site': 'same-origin' }): Promise<string | undefined> {
+  /** Request the overlay the last pushed payload points at, as a page on this machine. */
+  async function overlay (headers: Record<string, string> = { 'sec-fetch-site': 'same-origin' }, remoteAddress = '127.0.0.1'): Promise<string | undefined> {
     const { data } = send.mock.lastCall![0] as { data: { url: string } }
     const route = routes[0]!
     let body: string | undefined
     await new Promise<void>((resolve) => {
       route.handle(
-        { url: data.url.slice(route.path.length), headers },
+        { url: data.url.slice(route.path.length), headers, socket: { remoteAddress } },
         { setHeader: () => {}, end: (html: string) => { body = html; resolve() } },
         resolve,
       )
@@ -140,7 +140,7 @@ describe('createDevErrorReporter', () => {
     nuxt.close()
   })
 
-  it('does not serve the overlay to a cross-site request', async () => {
+  it('serves the overlay only to a same-origin request from this machine', async () => {
     const nuxt = createNuxt()
     const reporter = createDevErrorReporter(nuxt, { print: () => {} })
     const { server, send, overlay } = devServer()
@@ -150,6 +150,8 @@ describe('createDevErrorReporter', () => {
     await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
 
     expect(await overlay({ 'sec-fetch-site': 'cross-site' })).toBeUndefined()
+    expect(await overlay({ 'sec-fetch-site': 'same-origin' }, '192.168.1.24')).toBeUndefined()
+    expect(await overlay({ 'sec-fetch-site': 'same-origin' }, '::ffff:127.0.0.1')).toContain('<nuxt-error-overlay>')
     expect(await overlay()).toContain('<nuxt-error-overlay>')
 
     nuxt.close()

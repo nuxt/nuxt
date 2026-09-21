@@ -3,6 +3,7 @@ import type { ViteDevServer } from 'vite'
 import type { ErrorReport } from 'my-bad'
 import { ERROR_CHANNEL_ENV, createErrorReport, publishErrorReport, renderErrorAnsi, renderErrorPage, requestIdOf, serializeErrorCause, setErrorChannelForwarding, useErrorChannel, withErrorOverlay } from 'nuxt/internal/dev-error'
 import type { SerializedErrorCause } from 'nuxt/internal/dev-error'
+import { isLoopbackAddress } from 'nuxt/internal/dev/peer'
 
 export { clearErrorReport } from 'nuxt/internal/dev-error'
 
@@ -46,8 +47,17 @@ export function isErrorChannelRequest (pathname: string): boolean {
   return pathname === base || pathname.startsWith(`${base}/`)
 }
 
-/** Serve the live error channel: the SSE stream, report lookups and "open in editor". */
+/**
+ * Serve the live error channel: the SSE stream, report lookups and "open in editor".
+ *
+ * The channel answers for reports other requests produced, so it requires a loopback peer:
+ * the origin headers it checks itself are all forgeable over a direct connection, and a
+ * dev server started with `--host` is reachable from the network.
+ */
 export async function fetchErrorChannel (request: Request): Promise<Response> {
+  if (!isLoopbackAddress((request as { ip?: string }).ip)) {
+    return new Response('Forbidden', { status: 403 })
+  }
   const response = await (await useErrorChannel()).fetchHandler(request)
   return response ?? new Response('Not Found', { status: 404 })
 }

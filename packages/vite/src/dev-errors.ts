@@ -3,6 +3,7 @@ import type { Nuxt } from '@nuxt/schema'
 import type { ErrorReport } from 'my-bad'
 import type { BuildProgress } from 'my-bad/channel'
 import type { ViteDevServer, Plugin as VitePlugin } from 'vite'
+import { isLoopbackAddress } from 'nuxt/internal/dev/peer'
 import { joinURL } from 'ufo'
 
 const ERROR_CHANNEL_BROADCAST = 'nuxt:dev:error'
@@ -160,9 +161,10 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       server = devServer
       devServer.middlewares.use(overlayPath, (req, res, next) => {
         const id = req.url?.split('?')[0]?.replace(/^\//, '')
-        // a report quotes source, so it is only served to the page that was told about it
+        // a report quotes source, so it is only served to the page that was told about it,
+        // and only over loopback, since a request header is forgeable over a direct connection
         const site = req.headers['sec-fetch-site']
-        if (!id || !current || current.id !== id || (site !== undefined && site !== 'same-origin')) {
+        if (!id || !current || current.id !== id || (site !== undefined && site !== 'same-origin') || !isLoopbackAddress(req.socket?.remoteAddress)) {
           return next()
         }
         renderOverlayFor(current).then((html) => {
