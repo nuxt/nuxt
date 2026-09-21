@@ -62,7 +62,7 @@ catalogs:
     consola: ^3.4.2
     cookie-es: ^3.1.1
     defu: ^6.1.7
-    devalue: ^5.9.2
+    devalue: ^6.0.0
     errx: ^0.2.0
     fnv1a-64: ^0.1.2
     hookable: ^6.1.1
