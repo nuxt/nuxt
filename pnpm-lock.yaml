@@ -180,8 +180,8 @@ catalogs:
       specifier: ^6.1.7
       version: 6.1.7
     devalue:
-      specifier: ^5.9.4
-      version: 5.9.4
+      specifier: ^6.0.0
+      version: 6.0.0
     errx:
       specifier: ^0.2.2
       version: 0.2.2
@@ -848,7 +848,7 @@ importers:
         version: 6.1.7
       devalue:
         specifier: catalog:app-runtime
-        version: 5.9.4
+        version: 6.0.0
       eslint:
         specifier: catalog:dev
         version: 10.11.0(jiti@2.7.0)(supports-color@10.2.2)
@@ -1106,7 +1106,7 @@ importers:
         version: 2.0.5
       devalue:
         specifier: catalog:app-runtime
-        version: 5.9.4
+        version: 6.0.0
       errx:
         specifier: catalog:app-runtime
         version: 0.2.2
@@ -1269,7 +1269,7 @@ importers:
         version: 6.1.7
       devalue:
         specifier: catalog:app-runtime
-        version: 5.9.4
+        version: 6.0.0
       errx:
         specifier: catalog:app-runtime
         version: 0.2.2
@@ -7571,8 +7571,9 @@ packages:
   dettle@1.0.5:
     resolution: {integrity: sha512-ZVyjhAJ7sCe1PNXEGveObOH9AC8QvMga3HJIghHawtG7mE4K5pW9nz/vDGAr/U7a3LWgdOzEE7ac9MURnyfaTA==}
 
-  devalue@5.9.4:
-    resolution: {integrity: sha512-sPAT4pztbu6586/hrhOnMKS17IJrvg12mXiSPSS3W5qDeN2RGgvZ0diZCm31dBbnevfVmujNO3IM2wrS4Y2Rhg==}
+  devalue@6.0.0:
+    resolution: {integrity: sha512-jITRGmc7d+UInNVsQxcz3zsbDwP1MvvVzlNto94FAeieVO5oAk3lupptFvTVBcB+rM2BAagsKtTjgVKFsddCkA==}
+    engines: {node: '>=22.17'}
 
   devframe@0.9.19:
     resolution: {integrity: sha512-8r76kTDuZb9vJgC6TI+1T9Bw0wxZx4K854/RT3Ocaz02nwgjwFfp701B8H8F2WkBTtKPq/FY8lvGmNbUjsJS8A==}
@@ -18236,7 +18237,7 @@ snapshots:
 
   dettle@1.0.5: {}
 
-  devalue@5.9.4: {}
+  devalue@6.0.0: {}
 
   devframe@0.9.19(@modelcontextprotocol/client@2.0.0)(cac@7.0.0)(ocache@0.3.0)(srvx@1.0.4):
     dependencies:
