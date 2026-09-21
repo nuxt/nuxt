@@ -35,6 +35,7 @@ overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
   "@types/node": "24.13.6"
+  "@vue/compiler-sfc": "3.5.43"
   esbuild: "0.28.2"
   nuxt: "workspace:*"
   oxc-parser: "0.150.0"
