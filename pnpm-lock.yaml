@@ -568,6 +568,9 @@ catalogs:
     markdownlint-cli:
       specifier: 0.49.1
       version: 0.49.1
+    nano-staged:
+      specifier: 1.0.2
+      version: 1.0.2
     nitropack:
       specifier: 2.13.4
       version: 2.13.4
@@ -595,6 +598,9 @@ catalogs:
     sherif:
       specifier: 1.13.0
       version: 1.13.0
+    simple-git-hooks:
+      specifier: 2.14.0
+      version: 2.14.0
     svgo:
       specifier: 4.1.0
       version: 4.1.0
@@ -880,6 +886,9 @@ importers:
       markdownlint-cli:
         specifier: catalog:dev
         version: 0.49.1(supports-color@10.2.2)
+      nano-staged:
+        specifier: catalog:dev
+        version: 1.0.2
       nitro:
         specifier: catalog:nitro-runtime
         version: 3.0.260903-beta
@@ -910,6 +919,9 @@ importers:
       sherif:
         specifier: catalog:dev
         version: 1.13.0
+      simple-git-hooks:
+        specifier: catalog:dev
+        version: 2.14.0
       srvx:
         specifier: catalog:nitro-runtime
         version: 1.0.3
@@ -9225,6 +9237,11 @@ packages:
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
 
+  nano-staged@1.0.2:
+    resolution: {integrity: sha512-Fytar3zHLY99nlMfqPPbraxZodqQAHPpdPRyYaplL+lB9DCR6pUrafxbG+Btz4+7fO5Rm/+DO4ZeDO/nLSUMhw==}
+    engines: {node: ^22 || >= 24}
+    hasBin: true
+
   nanoid@3.3.18:
     resolution: {integrity: sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -10737,6 +10754,10 @@ packages:
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
+
+  simple-git-hooks@2.14.0:
+    resolution: {integrity: sha512-kkTORPAuxQz2g1QUuN0J8yGWT28tjGBfPOdJ4xT7Vbeu30veKUZQIoID2qGgCDAakaQn59UeZJJ4cFGB8PVP2A==}
+    hasBin: true
 
   simple-git@3.36.0:
     resolution: {integrity: sha512-cGQjLjK8bxJw4QuYT7gxHw3/IouVESbhahSsHrX97MzCL1gu2u7oy38W6L2ZIGECEfIBG4BabsWDPjBxJENv9Q==}
@@ -19791,6 +19812,8 @@ snapshots:
       object-assign: 4.1.1
       thenify-all: 1.6.0
 
+  nano-staged@1.0.2: {}
+
   nanoid@3.3.18: {}
 
   nanotar@0.3.0: {}
@@ -21642,6 +21665,8 @@ snapshots:
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
+
+  simple-git-hooks@2.14.0: {}
 
   simple-git@3.36.0(supports-color@10.2.2):
     dependencies:
