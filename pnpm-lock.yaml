@@ -629,12 +629,18 @@ catalogs:
       specifier: 3.3.11
       version: 3.3.11
   nitro-runtime:
+    '@jridgewell/trace-mapping':
+      specifier: ^0.3.31
+      version: 0.3.31
     destr:
       specifier: ^2.0.5
       version: 2.0.5
     flru:
       specifier: ^1.0.2
       version: 1.0.2
+    my-bad:
+      specifier: ^0.2.5
+      version: 0.2.5
     nitro:
       specifier: ^3.0.260903-beta
       version: 3.0.260903-beta
@@ -886,6 +892,9 @@ importers:
       markdownlint-cli:
         specifier: catalog:dev
         version: 0.49.1(supports-color@10.2.2)
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: 0.2.5(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
       nano-staged:
         specifier: catalog:dev
         version: 1.0.2
@@ -1120,6 +1129,9 @@ importers:
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: 0.2.5(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
       nitropack:
         specifier: ^2.13.4
         version: 2.13.4(patch_hash=14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8)(@electric-sql/pglite@0.3.16)(@parcel/watcher@2.6.0)(@rsbuild/core@2.2.7)(@rspack/core@2.2.6(@swc/helpers@0.5.23))(oxc-parser@0.150.0)(rolldown@1.2.9)(srvx@1.0.3)(supports-color@10.2.2)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.111.1(cssnano@9.0.5(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
@@ -1187,6 +1199,9 @@ importers:
       '@dxup/nuxt':
         specifier: catalog:build
         version: 0.5.10(@rsbuild/core@2.2.7)(@rspack/core@2.2.6(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.9)(rollup@4.63.4)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(webpack@5.111.1(cssnano@9.0.5(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
+      '@jridgewell/trace-mapping':
+        specifier: catalog:nitro-runtime
+        version: 0.3.31
       '@nuxt/cli':
         specifier: catalog:build
         version: '@nuxt/cli-nightly@4.0.0-20260921-120049-000c43c(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.150.0)(rolldown@1.2.9)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))'
@@ -1286,6 +1301,9 @@ importers:
       magic-string:
         specifier: catalog:vite
         version: 1.4.1
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: 0.2.5(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
       nanotar:
         specifier: catalog:build
         version: 0.3.0
@@ -1775,6 +1793,9 @@ importers:
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: 0.2.5(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
       nuxt:
         specifier: workspace:*
         version: link:../nuxt
@@ -1872,6 +1893,9 @@ importers:
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1
+      my-bad:
+        specifier: catalog:nitro-runtime
+        version: 0.2.5(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))
       pathe:
         specifier: catalog:build
         version: 2.0.3
@@ -2150,6 +2174,30 @@ importers:
         specifier: catalog:dev
         version: 6.0.3
 
+  test/fixtures/dev-error-client:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/dev-error-default-page:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/dev-error-plugin:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/dev-error-sourcemap:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/dynamic-paths:
     dependencies:
       '@nuxt/rspack-builder':
@@ -2400,6 +2448,12 @@ importers:
       wrangler:
         specifier: ^4.127.1
         version: 4.129.0
+
+  test/fixtures/vite-server-dev-error:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/vite-server-generate:
     dependencies:

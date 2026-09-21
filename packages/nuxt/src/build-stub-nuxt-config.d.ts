@@ -27,7 +27,6 @@ export {
   anyValue as componentIslands,
   anyValue as cookieStore,
   anyValue as crawlLinks,
-  anyValue as devLogs,
   anyValue as devPagesDir,
   anyValue as devRootDir,
   anyValue as fetchDefaults,

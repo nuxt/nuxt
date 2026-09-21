@@ -34,6 +34,11 @@ export const rendererOptions: NuxtRendererOptions = {
     data: init.data,
   }),
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints.link),
+  onRenderSuccess: import.meta.dev
+    ? () => {
+        import('../error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+      }
+    : undefined,
   prerender: import.meta.prerender
     ? {
         payloadCache: payloadCache as unknown as NonNullable<NuxtRendererOptions['prerender']>['payloadCache'],

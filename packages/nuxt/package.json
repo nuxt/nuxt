@@ -30,6 +30,8 @@
     "./meta": "./meta.js",
     "./app": "./src/app/index.ts",
     "./server": "./src/server/index.ts",
+    "./internal/dev-error": "./src/runtime/server/dev-error/index.ts",
+    "./internal/dev-error/sourcemap": "./src/runtime/server/dev-error/sourcemap.ts",
     "./internal/renderer": "./src/runtime/server/renderer/index.ts",
     "./internal/*": "./src/runtime/server/*.ts",
     "./entry": "./src/runtime/server/entry.ts",
@@ -63,6 +65,12 @@
       "server": [
         "./dist/server/index.d.ts"
       ],
+      "internal/dev-error": [
+        "./dist/runtime/server/dev-error/index.d.ts"
+      ],
+      "internal/dev-error/sourcemap": [
+        "./dist/runtime/server/dev-error/sourcemap.d.ts"
+      ],
       "internal/renderer": [
         "./dist/runtime/server/renderer/index.d.ts"
       ],
@@ -95,6 +103,7 @@
   },
   "dependencies": {
     "@dxup/nuxt": "catalog:build",
+    "@jridgewell/trace-mapping": "catalog:nitro-runtime",
     "@nuxt/cli": "catalog:build",
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/devtools": "catalog:build",
@@ -127,6 +136,7 @@
     "klona": "catalog:app-runtime",
     "knitwork": "catalog:build",
     "magic-string": "catalog:vite",
+    "my-bad": "catalog:nitro-runtime",
     "nanotar": "catalog:build",
     "nostics": "catalog:app-runtime",
     "object-identity": "catalog:app-runtime",
@@ -206,6 +216,8 @@
       "./meta": "./meta.js",
       "./app": "./dist/app/index.js",
       "./server": "./dist/server/index.js",
+      "./internal/dev-error": "./dist/runtime/server/dev-error/index.js",
+      "./internal/dev-error/sourcemap": "./dist/runtime/server/dev-error/sourcemap.js",
       "./internal/renderer": "./dist/runtime/server/renderer/index.js",
       "./internal/*": "./dist/runtime/server/*.js",
       "./entry": "./dist/runtime/server/entry.js",

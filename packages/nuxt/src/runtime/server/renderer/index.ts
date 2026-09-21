@@ -311,6 +311,10 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     }
   }
 
+  if (import.meta.dev && !ssrError && !ssrContext.error) {
+    runtime.onRenderSuccess?.(event)
+  }
+
   if (import.meta.dev && NUXT_NO_SCRIPTS_PROD && !NO_SCRIPTS && !ssrError) {
     warnNoScriptsClientReliance(ssrContext, event.url.pathname)
   }

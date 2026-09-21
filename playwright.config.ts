@@ -13,9 +13,9 @@ const e2eMatrix = [
   { builder: 'vite', isDev: false },
 ] as const
 
-const devOnlyTests = ['**/hmr.test.ts']
+const devOnlyTests = ['**/hmr.test.ts', '**/dev-error-overlay.test.ts', '**/dev-error-client.test.ts', '**/dev-error-recovery.test.ts', '**/dev-error-compile.test.ts', '**/dev-error-expected.test.ts']
 const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/server-page-css.test.ts', '**/chunk-error.test.ts', '**/no-scripts*.test.ts']
-const viteOnlyTests = ['**/server-page-css.test.ts', '**/no-scripts*.test.ts']
+const viteOnlyTests = ['**/server-page-css.test.ts', '**/no-scripts*.test.ts', '**/dev-error-overlay.test.ts', '**/dev-error-client.test.ts', '**/dev-error-recovery.test.ts', '**/dev-error-compile.test.ts', '**/dev-error-expected.test.ts']
 const rspackExcludedTests = ['**/chunk-error.test.ts']
 
 function testIgnoreForProject (entry: typeof e2eMatrix[number]) {

@@ -9,6 +9,7 @@ import { getPort } from 'get-port-please'
 
 import type { ViteBuildContext } from './vite.ts'
 import { createViteLogger } from './utils/logger.ts'
+import { getDevErrorReporter, reportTransformError } from './dev-errors.ts'
 import { writeManifest } from './manifest.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
@@ -75,7 +76,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     ...ssrEnvironment(nuxt, serverEntry),
   } satisfies vite.InlineConfig, nuxt.options.vite.$server || {}))
 
-  serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !nuxt.options.dev })
+  serverConfig.customLogger = createViteLogger(serverConfig, { hideOutput: !nuxt.options.dev, onTransformError: reportTransformError(getDevErrorReporter(nuxt)) })
 
   await nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 

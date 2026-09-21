@@ -20,6 +20,19 @@ interface NitroTracingChannels {
  */
 export type NuxtTracingChannelOptions = TracingChannelOptions
 
+/**
+ * Dev-only access to the SSR bundle's transformed modules, registered by the bundler that
+ * evaluates them in the Nitro process.
+ *
+ * @experimental
+ */
+export interface SSRSourceMaps {
+  /** Transformed code of an SSR module as it was evaluated. */
+  getCode: (file: string) => string | undefined
+  /** Position in generated code a source position was mapped from. */
+  getCompiledPosition?: (file: string, line: number, column?: number) => { file: string, line: number, column: number } | undefined
+}
+
 declare global {
   interface ImportMeta {
     dev: boolean
@@ -57,6 +70,15 @@ declare module 'nitropack/types' {
 
 // Note: Keep in sync with packages/nuxt/src/core/templates.ts
 declare module 'nitropack' {
+  interface NitroApp {
+    /**
+     * Only set in development, by bundlers that evaluate the SSR bundle within
+     * the Nitro process.
+     *
+     * @experimental
+     */
+    ssrSourceMaps?: SSRSourceMaps
+  }
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   // rules Nuxt generates types for are declared on `@nuxt/schema`, and bridged here so that
@@ -80,6 +102,15 @@ declare module 'nitropack' {
   }
 }
 declare module 'nitropack/types' {
+  interface NitroApp {
+    /**
+     * Only set in development, by bundlers that evaluate the SSR bundle within
+     * the Nitro process.
+     *
+     * @experimental
+     */
+    ssrSourceMaps?: SSRSourceMaps
+  }
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type

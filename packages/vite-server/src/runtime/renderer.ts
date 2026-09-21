@@ -65,6 +65,11 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     createResponse: (body, init) => new Response(body, init),
     createError: init => new NuxtServerError(init),
     prerender,
+    onRenderSuccess: import.meta.dev
+      ? () => {
+          import('./dev-error.ts').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+        }
+      : undefined,
   }
 }
 
@@ -76,10 +81,17 @@ const PRERENDER_HINTS_HEADER = 'x-nuxt-prerender'
 
 /**
  * A web-standard handler over the renderer: it renders the request, and renders the app's
- * error page for a request the render refused.
+ * error page for a request the render refused. In development it also serves the live
+ * error channel and publishes what it failed on to it.
  */
 export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: MatchRouteRules): (request: Request) => Promise<Response> {
   return async function fetch (request: Request): Promise<Response> {
+    if (import.meta.dev) {
+      const devErrors = await import('./dev-error.ts')
+      if (devErrors.isErrorChannelRequest(new URL(request.url).pathname)) {
+        return devErrors.fetchErrorChannel(request)
+      }
+    }
     const event = createRequestEvent(request)
     const rules = matchRouteRules(event.url.pathname)
     if (rules.redirect) {
@@ -162,8 +174,12 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
   const { status, statusText, message, headers } = describeError(error)
   const url = new URL(request.url)
 
+  const devErrors = import.meta.dev ? await import('./dev-error.ts') : undefined
+  const report = devErrors ? await devErrors.observeError(error, request, { expected: status < 500 && !devErrors.isThrownValue(error) }) : undefined
+
   // the renderer reads the error off the query, as the error page's props
   const data = (error as { data?: unknown })?.data
+  const stack = (error as { stack?: string })?.stack
   const errorEvent = createRequestEvent(new Request(withQuery(new URL('/__nuxt_error', url).href, {
     status: String(status),
     statusCode: String(status),
@@ -172,11 +188,18 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
     message,
     url: request.url,
     ...data === undefined ? {} : { data: typeof data === 'string' ? data : JSON.stringify(data) },
+    ...import.meta.dev && stack ? { stack } : {},
   }), { headers: request.headers }))
   // while prerendering the two renders share one state, so routes the error page asks for
   // are reported alongside those the failed render collected before it threw
   const state = (import.meta.prerender ? (event.context as { nuxt?: Record<string, unknown> }).nuxt : undefined) || {}
   state['~rendering-error'] = true
+  if (devErrors) {
+    const cause = devErrors.errorCause(error)
+    if (cause !== undefined) {
+      state['~error-cause'] = cause
+    }
+  }
   ;(errorEvent.context as { nuxt?: Record<string, unknown> }).nuxt = state
   if (import.meta.prerender) {
     ;(event.context as { nuxt?: Record<string, unknown> }).nuxt = state
@@ -189,7 +212,20 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
       responseHeaders.set(name, value)
     }
     responseHeaders.set('content-type', 'text/html;charset=utf-8')
+    if (devErrors && report && !import.meta.test) {
+      const html = await rendered.text()
+      // the overlay is a development aid; never let it replace the real error
+      const body = await devErrors.overlayErrorReport(html, report, request).catch(() => html)
+      return new Response(body, { status, statusText, headers: responseHeaders })
+    }
     return new Response(rendered.body, { status, statusText, headers: responseHeaders })
+  }
+
+  if (devErrors && report) {
+    const page = await devErrors.renderReportPage(report, request).catch(() => undefined)
+    if (page) {
+      return new Response(page, { status, statusText, headers: { ...headers, 'content-type': 'text/html;charset=utf-8' } })
+    }
   }
 
   return new Response(message, {

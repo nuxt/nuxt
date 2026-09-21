@@ -42,11 +42,11 @@ export const isNuxtError = <DataT = unknown>(
 export const createError = <DataT = unknown>(error: string | Error | Partial<NuxtError<DataT>>): NuxtError<DataT> => {
   if (isNuxtError<DataT>(error)) { return error }
 
-  if (typeof error !== 'string' && (error as Partial<NuxtError<DataT>>).statusText) {
+  if (typeof error !== 'string' && (error as Partial<NuxtError<DataT>> | null)?.statusText) {
     error.message ??= (error as Partial<NuxtError<DataT>>).statusText
   }
 
-  const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
+  const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error ?? {})
 
   Object.defineProperty(nuxtError, NUXT_ERROR_SIGNATURE, {
     value: true,
@@ -68,3 +68,37 @@ export const createError = <DataT = unknown>(error: string | Error | Partial<Nux
 
   return nuxtError
 }
+
+/** Set in development on an error created from a thrown value that was not an `Error`. */
+export const THROWN_VALUE = Symbol.for('nuxt:dev:thrown')
+
+/** Set in development to where the app was when it threw. */
+export const THROWN_CONTEXT = Symbol.for('nuxt:dev:context')
+
+/** Where the app was when it threw. */
+export interface ThrownContext {
+  /** The component instance that raised or captured the error. */
+  instance?: unknown
+  /** The route being rendered. */
+  route?: unknown
+}
+
+/**
+ * Wrap whatever the app threw, remembering in development the thrown value and where the
+ * app was, for the error report. Outside development this is {@link createError}, so the
+ * wrapper leaves no trace in a production bundle.
+ *
+ * @internal
+ */
+export const createErrorFromThrown: (thrown: unknown, context?: ThrownContext) => NuxtError = import.meta.dev
+  ? function createErrorFromThrown (thrown: unknown, context?: ThrownContext): NuxtError {
+    const error = createError(thrown as string | Error | NuxtErrorDetails)
+    if (error !== thrown && !(thrown instanceof Error)) {
+      Object.defineProperty(error, THROWN_VALUE, { value: thrown, configurable: true })
+    }
+    if (context && (context.instance || context.route) && !(THROWN_CONTEXT in error)) {
+      Object.defineProperty(error, THROWN_CONTEXT, { value: context, configurable: true })
+    }
+    return error
+  }
+  : createError as (thrown: unknown) => NuxtError

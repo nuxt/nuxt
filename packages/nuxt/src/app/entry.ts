@@ -7,7 +7,7 @@ import '#build/global-polyfills.mjs'
 import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
-import { createError } from './composables/error'
+import { createError, createErrorFromThrown } from './composables/error'
 import { appDiagnostics } from './diagnostics/core'
 
 import '#build/css'
@@ -30,7 +30,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:created', vueApp)
     } catch (error) {
       await nuxt.hooks.callHook('app:error', error)
-      nuxt.payload.error ||= createError(error as any)
+      nuxt.payload.error ||= import.meta.dev ? createErrorFromThrown(error, { route: nuxt._route }) : createError(error as Error)
     }
     // TODO: remove _renderResponse in nuxt v5
     if (ssrContext && (ssrContext['~renderResponse'] || ssrContext._renderResponse)) { throw new Error('skipping render') }
@@ -62,7 +62,7 @@ if (import.meta.client) {
 
     async function handleVueError (error: any) {
       await nuxt.callHook('app:error', error)
-      nuxt.payload.error ||= createError(error as any)
+      nuxt.payload.error ||= import.meta.dev ? createErrorFromThrown(error, { route: nuxt._route }) : createError(error)
     }
     // marker so nuxt-root.vue can skip re-invoking the default handler from
     // its onErrorCaptured (which already calls `app:error` via showError)

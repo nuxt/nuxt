@@ -46,6 +46,8 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           hmr: {
             protocol: nuxt.options.devServer.https ? 'wss' : undefined,
             server: hmrServer,
+            // compile errors are shown by Nuxt's own overlay
+            overlay: false,
           },
         }
         /* eslint-disable-next-line @typescript-eslint/no-deprecated */

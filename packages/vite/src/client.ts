@@ -13,6 +13,7 @@ import { TypeCheckPlugin } from './plugins/type-check.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
 import { createViteLogger } from './utils/logger.ts'
+import { DevErrorsPlugin, getDevErrorReporter, reportTransformError } from './dev-errors.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks } from './plugins/optimize-deps-hint.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
@@ -78,7 +79,12 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, nuxt.options.vite.$client || {}))
 
   const callbacks = optimizerCallbacks.get(nuxt)
-  clientConfig.customLogger = createViteLogger(clientConfig, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep })
+  const devErrors = getDevErrorReporter(nuxt)
+  clientConfig.customLogger = createViteLogger(clientConfig, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep, onTransformError: reportTransformError(devErrors) })
+  // the overlay and the reports it shows are served from the server the browser talks to
+  if (devErrors) {
+    clientConfig.plugins!.push(DevErrorsPlugin(devErrors))
+  }
 
   await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
