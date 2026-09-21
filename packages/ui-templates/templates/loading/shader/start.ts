@@ -79,17 +79,24 @@ function start () {
   // several dev servers should only pay for the one in front of them, and hidden
   // tabs are not enough: browsers keep animating an unfocused but visible window.
   const setIdle = (idle: boolean) => renderer.setPaused(idle)
-  window.addEventListener('blur', () => setIdle(true))
-  window.addEventListener('focus', () => setIdle(false))
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
+  const embedded = window !== window.top
+  if (embedded) {
+    // Preview iframes are usually unfocused; still draw so the grid stays useful.
+    document.addEventListener('visibilitychange', () => setIdle(document.hidden))
+    if (document.hidden) { setIdle(true) }
+  } else {
+    window.addEventListener('blur', () => setIdle(true))
+    window.addEventListener('focus', () => setIdle(false))
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        setIdle(true)
+      } else if (document.hasFocus()) {
+        setIdle(false)
+      }
+    })
+    if (document.hidden || !document.hasFocus()) {
       setIdle(true)
-    } else if (document.hasFocus()) {
-      setIdle(false)
     }
-  })
-  if (document.hidden || !document.hasFocus()) {
-    setIdle(true)
   }
 }
 
