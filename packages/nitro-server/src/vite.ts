@@ -152,7 +152,11 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
     // for `upgrade` before the vite server exists, hence the early assignment.
     const upgrade = (req: IncomingMessage, socket: Duplex, head: Buffer) => {
       const env = devServer?.environments.nitro as { devServer?: { upgrade?: (context: unknown) => void } } | undefined
-      env?.devServer?.upgrade?.({ node: { req, socket, head } })
+      if (!env?.devServer?.upgrade) {
+        socket.destroy()
+        return
+      }
+      env.devServer.upgrade({ node: { req, socket, head } })
     }
     nuxt.server = { upgrade }
 
