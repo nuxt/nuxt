@@ -337,11 +337,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             nuxt.options.buildDir,
           ]),
       ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
+      // path entries apply when nitro bundles with rollup; in the vite dev
+      // environment `noExternal` is matched against the bare package name
       'nuxt/dist',
       'nuxt3/dist',
       'nuxt-nightly/dist',
-      // Vite dev matches `noExternal` against the package name, not the path
-      /^(?:nuxt|nuxt3|nuxt-nightly)$/,
+      /^nuxt(?:3|-nightly)?$/,
       distDir,
       // Ensure app config files have auto-imports injected even if they are pure .js files
       ...layerDirs.map(dirs => join(dirs.app, 'app.config')),
