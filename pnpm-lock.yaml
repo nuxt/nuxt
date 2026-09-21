@@ -277,8 +277,8 @@ catalogs:
       specifier: ^2.0.5
       version: 2.0.5
     dotenv:
-      specifier: ^17.4.2
-      version: 17.4.2
+      specifier: ^18.0.1
+      version: 18.0.1
     errx:
       specifier: ^0.2.0
       version: 0.2.0
@@ -1013,7 +1013,7 @@ importers:
         version: link:../schema
       c12:
         specifier: catalog:build
-        version: 4.0.0-rc.1(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4)
+        version: 4.0.0-rc.1(chokidar@5.0.0)(dotenv@18.0.1)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4)
       chokidar:
         specifier: catalog:build
         version: 5.0.0
@@ -1022,7 +1022,7 @@ importers:
         version: 0.3.1
       dotenv:
         specifier: catalog:build
-        version: 17.4.2
+        version: 18.0.1
       giget:
         specifier: catalog:build
         version: 3.3.1
@@ -7121,6 +7121,11 @@ packages:
   dotenv@17.4.2:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
+
+  dotenv@18.0.1:
+    resolution: {integrity: sha512-0eR4m4D/jH5eaI3evo2ZqqMii5mrTCR12v12VChdie6O1gPHs7XAjzTep0CWc1Bd+oNx3vVfbi734dK4zghigw==}
+    engines: {node: '>=12'}
+    hasBin: true
 
   dts-resolver@3.0.0:
     resolution: {integrity: sha512-1T1f+z+4tl9XD+m+0HBgWoL/nm0bOIffyWaUuUSBlFg/86IWvfx+wjNaO/ybU0AJzG9/Mi5hBUgGV6zCmWEN7Q==}
@@ -16345,7 +16350,7 @@ snapshots:
     optionalDependencies:
       magicast: 0.5.4
 
-  c12@4.0.0-rc.1(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4):
+  c12@4.0.0-rc.1(chokidar@5.0.0)(dotenv@18.0.1)(giget@3.3.1)(jiti@2.7.0)(magicast@0.5.4):
     dependencies:
       confbox: 0.3.1
       defu: 6.1.7
@@ -16355,7 +16360,7 @@ snapshots:
       rc9: 3.1.0
     optionalDependencies:
       chokidar: 5.0.0
-      dotenv: 17.4.2
+      dotenv: 18.0.1
       giget: 3.3.1
       jiti: 2.7.0
       magicast: 0.5.4
@@ -17107,6 +17112,8 @@ snapshots:
   dotenv@16.6.1: {}
 
   dotenv@17.4.2: {}
+
+  dotenv@18.0.1: {}
 
   dts-resolver@3.0.0(oxc-resolver@11.24.2):
     optionalDependencies:
