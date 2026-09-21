@@ -73,7 +73,7 @@
     "autoprefixer": "10.6.1",
     "case-police": "catalog:dev",
     "consola": "catalog:build",
-    "cssnano": "9.0.4",
+    "cssnano": "9.0.5",
     "defu": "catalog:build",
     "devalue": "catalog:app-runtime",
     "eslint": "catalog:dev",
@@ -116,6 +116,6 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@12.4.2",
+  "packageManager": "pnpm@12.5.1",
   "version": ""
 }
