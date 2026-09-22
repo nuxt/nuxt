@@ -1,5 +1,5 @@
 /** drained in this order */
-const PREFETCH_PRIORITIES = ['payload', 'island', 'hint'] as const
+const PREFETCH_PRIORITIES = ['route', 'payload', 'island', 'hint'] as const
 
 export type PrefetchPriority = typeof PREFETCH_PRIORITIES[number]
 
@@ -26,7 +26,7 @@ interface PrefetchSchedulerOptions {
   /** Consulted before each drain; queued tasks are held, not dropped, when it returns `false`. */
   canPrefetch?: () => boolean
   /** Hands a started task to the event loop. Slots are accounted for before this is called. */
-  defer?: (run: () => void, promoted: boolean) => void
+  defer?: (run: () => void, promoted: boolean, priority: PrefetchPriority) => void
 }
 
 export interface PrefetchScheduler {
@@ -48,6 +48,7 @@ export interface PrefetchScheduler {
 const DEFAULT_TOTAL_CONCURRENCY = 12
 
 const DEFAULT_CONCURRENCY: Record<PrefetchPriority, number> = {
+  route: 8,
   payload: 8,
   island: 4,
   hint: 8,
@@ -60,12 +61,12 @@ export function createPrefetchScheduler (options: PrefetchSchedulerOptions = {})
   const defer = options.defer
 
   // queued newest-first within each priority, so the most recently seen link is served next
-  const queues: Record<PrefetchPriority, PrefetchTask[]> = { payload: [], island: [], hint: [] }
+  const queues: Record<PrefetchPriority, PrefetchTask[]> = { route: [], payload: [], island: [], hint: [] }
   const lists = PREFETCH_PRIORITIES.map(priority => queues[priority])
   const promoted = new WeakSet<PrefetchTask>()
   // tracks which task owns a key, so that one settling late cannot release the key of its replacement
   const keys = new Map<string, PrefetchTask>()
-  const active: Record<PrefetchPriority, number> = { payload: 0, island: 0, hint: 0 }
+  const active: Record<PrefetchPriority, number> = { route: 0, payload: 0, island: 0, hint: 0 }
   let activeTotal = 0
   const activeNavigationTasks = new Map<PrefetchTask, AbortController>()
 
@@ -113,7 +114,7 @@ export function createPrefetchScheduler (options: PrefetchSchedulerOptions = {})
       .then(() => task.run(controller.signal, isPromoted))
       .then(complete, complete)
     if (defer) {
-      defer(run, isPromoted)
+      defer(run, isPromoted, task.priority)
     } else {
       run()
     }

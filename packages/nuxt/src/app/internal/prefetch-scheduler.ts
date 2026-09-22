@@ -1,6 +1,6 @@
 import type { Router } from 'vue-router'
 import { createPrefetchScheduler } from './prefetch'
-import type { PrefetchScheduler } from './prefetch'
+import type { PrefetchPriority, PrefetchScheduler } from './prefetch'
 import { canPrefetch, prefetchGroup } from './prefetch-util'
 import { requestIdleCallback } from '../compat/idle-callback'
 import { useNuxtApp } from '../nuxt'
@@ -15,11 +15,12 @@ interface SchedulerLike {
 }
 
 /**
- * Speculative work yields to user input; work the user has shown intent in does not.
+ * Speculative work yields to user input. Work the user has shown intent in does not, and
+ * neither do route chunks, whose start latency is what a navigation ends up waiting on.
  * https://developer.mozilla.org/en-US/docs/Web/API/Prioritized_Task_Scheduling_API
  */
-function defer (run: () => void, promoted: boolean) {
-  if (promoted) { return run() }
+function defer (run: () => void, promoted: boolean, priority: PrefetchPriority) {
+  if (promoted || priority === 'route') { return run() }
   const scheduler = (globalThis as { scheduler?: SchedulerLike }).scheduler
   // no `postTask` signal: a cancelled task still has to run to settle and free its slot, and
   // reads the abort from its own signal

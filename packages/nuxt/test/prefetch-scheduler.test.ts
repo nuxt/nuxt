@@ -172,6 +172,23 @@ describe('prefetch scheduler', () => {
     expect(promotedStarts).toEqual([false, true])
   })
 
+  it('should tell the deferral hook the priority of each start', async () => {
+    const { run } = tracker()
+    const deferrals: Array<[boolean, PrefetchPriority]> = []
+    const scheduler = createPrefetchScheduler({
+      defer: (start, promoted, priority) => {
+        deferrals.push([promoted, priority])
+        start()
+      },
+    })
+
+    scheduler.schedule(task('route:/a', 'route', run('route')))
+    scheduler.schedule(task('payload:/a', 'payload', run('payload')))
+    await tick()
+
+    expect(deferrals).toEqual([[false, 'route'], [false, 'payload']])
+  })
+
   it('should never drop an accepted task', async () => {
     const { started, run, finish, fail } = tracker()
     const scheduler = createPrefetchScheduler({ concurrency: { hint: 1 } })
@@ -304,6 +321,7 @@ describe('prefetch scheduler', () => {
       return new Promise(() => {})
     }
 
+    scheduler.schedule(task('route:/wanted', 'route', run('route:wanted'), { scope: 'navigation', group: '/wanted' }))
     scheduler.schedule(task('payload:/wanted', 'payload', run('wanted'), { scope: 'navigation', group: '/wanted' }))
     scheduler.schedule(task('payload:/other', 'payload', run('other'), { scope: 'navigation', group: '/other' }))
     scheduler.schedule(task('hint:/wanted', 'hint', run('hint:wanted'), { scope: 'navigation', group: '/wanted' }))
