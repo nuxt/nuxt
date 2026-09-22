@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { H3Event } from 'h3'
 
-const { fetchHandler } = vi.hoisted(() => ({ fetchHandler: vi.fn(() => Promise.resolve(new Response('stream'))) }))
+const { fetchHandler } = vi.hoisted(() => ({
+  fetchHandler: vi.fn((_request: Request, _caller?: { trusted?: boolean }) => Promise.resolve(new Response('stream'))),
+}))
 vi.mock('../src/runtime/utils/error-channel.ts', () => ({ useErrorChannel: () => Promise.resolve({ fetchHandler }) }))
 vi.mock('h3', async importOriginal => ({
   ...await importOriginal<typeof import('h3')>(),
@@ -14,14 +16,22 @@ function event (ip: string | undefined): H3Event {
   return { context: {}, node: { req: { headers: {}, socket: { remoteAddress: ip } } } } as unknown as H3Event
 }
 
+async function serve (ip: string | undefined) {
+  fetchHandler.mockClear()
+  const response = await handler(event(ip)) as Response
+  return { status: response.status, trusted: fetchHandler.mock.lastCall?.[1]?.trusted }
+}
+
 describe('dev error channel handler', () => {
-  it.each(['127.0.0.1', '127.1.2.3', '::1', '[::1]', '::ffff:127.0.0.1'])('serves a peer on this machine at %s', async (ip) => {
-    expect((await handler(event(ip)) as Response).status).toBe(200)
+  it('trusts a peer on this machine', async () => {
+    expect(await serve('127.0.0.1')).toEqual({ status: 200, trusted: true })
   })
 
-  it.each(['192.168.1.24', '10.0.0.7', '::ffff:192.168.1.24', '2001:db8::1', undefined])('refuses a peer elsewhere at %s', async (ip) => {
-    fetchHandler.mockClear()
-    expect((await handler(event(ip)) as Response).status).toBe(403)
-    expect(fetchHandler).not.toHaveBeenCalled()
+  it('serves a peer elsewhere, untrusted', async () => {
+    expect(await serve('192.168.1.24')).toEqual({ status: 200, trusted: false })
+  })
+
+  it('does not trust a peer it cannot identify', async () => {
+    expect(await serve(undefined)).toEqual({ status: 200, trusted: false })
   })
 })

@@ -90,7 +90,7 @@ catalogs:
     '@jridgewell/trace-mapping': ^0.3.31
     destr: ^2.0.5
     flru: ^1.0.2
-    my-bad: ^0.2.5
+    my-bad: ^0.2.7
     nitro: ^3.0.260903-beta
     srvx: 1.0.3
     unstorage: ^1.17.5

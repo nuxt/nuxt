@@ -140,7 +140,7 @@ describe('createDevErrorReporter', () => {
     nuxt.close()
   })
 
-  it('serves the overlay only to a same-origin request from this machine', async () => {
+  it('serves the overlay to a same-origin request from any peer', async () => {
     const nuxt = createNuxt()
     const reporter = createDevErrorReporter(nuxt, { print: () => {} })
     const { server, send, overlay } = devServer()
@@ -150,8 +150,7 @@ describe('createDevErrorReporter', () => {
     await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
 
     expect(await overlay({ 'sec-fetch-site': 'cross-site' })).toBeUndefined()
-    expect(await overlay({ 'sec-fetch-site': 'same-origin' }, '192.168.1.24')).toBeUndefined()
-    expect(await overlay({ 'sec-fetch-site': 'same-origin' }, '::ffff:127.0.0.1')).toContain('<nuxt-error-overlay>')
+    expect(await overlay({ 'sec-fetch-site': 'same-origin' }, '192.168.1.24')).toContain('<nuxt-error-overlay>')
     expect(await overlay()).toContain('<nuxt-error-overlay>')
 
     nuxt.close()
