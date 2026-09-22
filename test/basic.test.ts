@@ -52,12 +52,22 @@ describe('application secret', () => {
     }
   })
 
+  // Nitro 2 parses every environment override with `destr`, so a secret that looks like
+  // JSON does not survive as a string. `deriveSecret()` rejects a non-string secret
+  // rather than deriving from a mangled one.
   it.skipIf(isDev || !runsOncePerBuilderInMatrix).each([
-    undefined, '', '123', 'true', 'null', '4848e0', '"quoted-secret"', '{"key":"secret"}',
-  ])('preserves the runtime environment secret %j', async (value) => {
+    [undefined, ''],
+    ['', ''],
+    ['123', 123],
+    ['true', true],
+    ['null', ''],
+    ['4848e0', 4848],
+    ['"quoted-secret"', 'quoted-secret'],
+    ['{"key":"secret"}', { key: 'secret' }],
+  ])('preserves the runtime environment secret %j', async (value, expected) => {
     try {
       await startServer({ env: { NUXT_APP_SECRET: value, NITRO_APP_SECRET: undefined } })
-      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret: value ?? '' })
+      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret: expected })
     } finally {
       await startServer()
     }
