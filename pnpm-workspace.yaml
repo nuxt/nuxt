@@ -104,7 +104,7 @@ catalogs:
     '@jridgewell/trace-mapping': ^0.3.31
     destr: ^2.0.5
     flru: ^1.0.2
-    my-bad: ^0.2.5
+    my-bad: ^0.2.7
     nitro: ^3.0.260903-beta
     srvx: ^1.0.3
     unstorage: ^2.0.0-alpha.10
@@ -158,7 +158,7 @@ catalogs:
   build:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260921-232502-8fbadc0
+    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260922-145010-cf0e756
     '@nuxt/devtools': ^4.0.0-beta.1
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.43

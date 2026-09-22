@@ -5,17 +5,14 @@ import { useErrorChannel } from '../utils/error-channel'
 /**
  * Serves the live error channel: the SSE stream, report lookups and "open in editor".
  *
- * The channel answers for reports other requests produced, so it requires a loopback peer:
- * the origin headers it checks itself are all forgeable over a direct connection, and a
- * dev server started with `--host` is reachable from the network.
+ * Trust follows the socket, since a request's origin headers are forgeable over a direct
+ * connection.
  */
 export default {
   async fetch (request: ServerRequest): Promise<Response> {
-    if (!isLoopbackAddress(request.ip)) {
-      return new Response('Forbidden', { status: 403 })
-    }
     const channel = await useErrorChannel()
-    const response = await channel.fetchHandler(request as unknown as Request)
+    const trusted = isLoopbackAddress(request.ip)
+    const response = await channel.fetchHandler(request as unknown as Request, { trusted })
     return response ?? new Response('Not Found', { status: 404 })
   },
 }
