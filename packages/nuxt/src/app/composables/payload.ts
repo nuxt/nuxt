@@ -28,9 +28,43 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
     // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
     // cannot invalidate them - defer to normal HTTP cache semantics instead
     const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
-    return await _importPayload(payloadURL, cache, opts.signal, opts.promoted) || null
+    if (opts.fresh) {
+      return await _importPayload(payloadURL, cache, opts.signal, opts.promoted) || null
+    }
+    return await _sharedImportPayload(payloadURL, cache, opts.signal, opts.promoted) || null
   }
   return null
+}
+
+interface PayloadAttempt { payload: Record<string, any> | null, aborted: boolean }
+
+const inFlightPayloads = new Map<string, Promise<PayloadAttempt>>()
+
+/**
+ * Concurrent identical `GET`s are not coalesced by the browser, and `force-cache` cannot help
+ * until the first response is stored, so a navigation joins a speculative fetch instead.
+ */
+function _sharedImportPayload (payloadURL: string, cache: RequestCache, signal?: AbortSignal, promoted?: boolean): Promise<Record<string, any> | null> {
+  const running = inFlightPayloads.get(payloadURL)
+  if (running) {
+    return running.then((attempt) => {
+      // an abort belongs to the caller that asked for it; anyone still interested fetches again
+      if (attempt.aborted && !signal?.aborted) {
+        return _sharedImportPayload(payloadURL, cache, signal, promoted)
+      }
+      return attempt.payload
+    })
+  }
+
+  const attempt = _importPayload(payloadURL, cache, signal, promoted)
+    .then(payload => ({ payload, aborted: !payload && !!signal?.aborted }))
+  attempt.finally(() => {
+    if (inFlightPayloads.get(payloadURL) === attempt) {
+      inFlightPayloads.delete(payloadURL)
+    }
+  })
+  inFlightPayloads.set(payloadURL, attempt)
+  return attempt.then(result => result.payload)
 }
 let linkRelType: 'preload' | 'prefetch' | undefined
 function detectLinkRelType (): 'preload' | 'prefetch' {
