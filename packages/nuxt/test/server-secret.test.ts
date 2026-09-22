@@ -21,11 +21,19 @@ describe('`deriveSecret`', () => {
     expect(a).not.toBe(c)
   })
 
-  it.for([[''], ['short'], [undefined], [42]])('rejects an unusable `appSecret`: %j', async ([value]) => {
+  it.for([[''], ['short'], [undefined]])('rejects an unusable `appSecret`: %j', async ([value]) => {
     runtimeConfig.appSecret = value
     await expect(deriveSecret('purpose')).rejects.toMatchObject({
       status: 500,
-      message: expect.stringContaining('NUXT_APP_SECRET'),
+      message: expect.stringContaining('is not set'),
+    })
+  })
+
+  it.for([[42], [true], [{ key: 'secret' }]])('explains that Nitro parsed the `appSecret`: %j', async ([value]) => {
+    runtimeConfig.appSecret = value
+    await expect(deriveSecret('purpose')).rejects.toMatchObject({
+      status: 500,
+      message: expect.stringContaining('parses environment overrides'),
     })
   })
 })

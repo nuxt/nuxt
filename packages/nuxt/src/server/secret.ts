@@ -23,9 +23,14 @@ let warnedGenerated = false
 export async function deriveSecret (purpose: string): Promise<string> {
   const root = useRuntimeConfig().appSecret
   if (typeof root !== 'string' || root.length < MIN_LENGTH) {
+    // Nitro parses environment overrides, so a digits-only or JSON-looking secret arrives
+    // as a number, boolean or object, and the original string cannot be recovered here.
+    const parsed = root !== undefined && root !== '' && typeof root !== 'string'
     throw createError({
       status: 500,
-      message: `\`appSecret\` is not set. Set \`NUXT_APP_SECRET\` to at least ${MIN_LENGTH} characters, or pass a secret explicitly.`,
+      message: parsed
+        ? `\`appSecret\` was set to a ${Array.isArray(root) ? 'array' : typeof root}, because Nitro parses environment overrides. Quote the value (\`NUXT_APP_SECRET='"…"'\`) or set \`runtimeConfig.appSecret\` in \`nuxt.config\`.`
+        : `\`appSecret\` is not set. Set \`NUXT_APP_SECRET\` to at least ${MIN_LENGTH} characters, or pass a secret explicitly.`,
     })
   }
 
