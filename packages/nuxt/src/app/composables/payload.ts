@@ -7,7 +7,9 @@ import type { NuxtPayload } from '../nuxt'
 import { useHead } from './head'
 
 import { useRoute } from './router'
+import { useRequestURL } from './url'
 import { getAppManifest, getRouteRules } from './manifest'
+import { isCrossOriginURL } from '../internal/origin'
 import { stateDiagnostics } from '../diagnostics/state'
 
 import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.config.mjs'
@@ -40,13 +42,15 @@ function detectLinkRelType (): 'preload' | 'prefetch' {
 /** @since 3.0.0 */
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
   const nuxtApp = useNuxtApp()
+  const requestURL = nuxtApp.runWithContext(() => useRequestURL()) as URL
   const promise = shouldLoadPayload(url).then(async (shouldPreload) => {
     if (!shouldPreload) {
       return
     }
     const payloadURL = await _getPayloadURL(url, opts)
     const rel = detectLinkRelType()
-    const crossorigin = _isCrossOriginPayload(payloadURL)
+    // `crossorigin` must match the credentials mode of the `fetch` in `_importPayload`, or the prefetched response is not reused
+    const crossorigin = isCrossOriginURL(payloadURL, requestURL)
     const link = defineLink({ rel, as: 'fetch', ...(crossorigin ? { crossorigin: 'anonymous' as const } : {}), href: payloadURL })
 
     if (import.meta.server) {
@@ -101,21 +105,6 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   }
 
   return payloadURL + u.search
-}
-
-// `crossorigin` must match the credentials mode of the `fetch` in `_importPayload`, or the prefetched response is not reused
-function _isCrossOriginPayload (payloadURL: string) {
-  if (!hasProtocol(payloadURL, { acceptRelative: true })) {
-    return false
-  }
-  if (import.meta.server) {
-    return true
-  }
-  try {
-    return new URL(payloadURL, window.location.href).origin !== window.location.origin
-  } catch {
-    return true
-  }
 }
 
 async function _importPayload (payloadURL: string, cache: RequestCache) {

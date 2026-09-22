@@ -1,6 +1,6 @@
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import { renderToWebStream } from 'vue/server-renderer'
-import { getQuery as getURLQuery, hasProtocol, joinURL } from 'ufo'
+import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell, renderStreamBodyTags } from '@unhead/vue/stream/server'
@@ -13,6 +13,7 @@ import type { SSRError } from './error'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '../../../app/internal/tracing'
+import { isCrossOriginURL } from '../../../app/internal/origin'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG } from './build-files'
 
@@ -319,7 +320,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   if (_PAYLOAD_EXTRACTION && !_PAYLOAD_INLINE && !NO_SCRIPTS) {
     ssrContext.head.push({
       link: [
-        payloadPreloadLink(payloadURL),
+        payloadPreloadLink(payloadURL!, event.url),
       ],
     })
   }
@@ -498,7 +499,7 @@ async function renderStreamedResponse (ctx: {
   if (_PAYLOAD_EXTRACTION && !_PAYLOAD_INLINE && !NO_SCRIPTS) {
     ssrContext.head.push({
       link: [
-        payloadPreloadLink(payloadURL),
+        payloadPreloadLink(payloadURL!, event.url),
       ],
     })
   }
@@ -974,8 +975,8 @@ function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: strin
 }
 
 // `crossorigin` must match the credentials mode of the client's payload `fetch`, or the preloaded response is not reused
-function payloadPreloadLink (payloadURL: string | undefined): Link {
-  const crossorigin = !!payloadURL && hasProtocol(payloadURL, { acceptRelative: true })
+function payloadPreloadLink (payloadURL: string, requestURL: URL): Link {
+  const crossorigin = isCrossOriginURL(payloadURL, requestURL)
   return { rel: 'preload', as: 'fetch', ...(crossorigin ? { crossorigin: 'anonymous' as const } : {}), href: payloadURL }
 }
 
