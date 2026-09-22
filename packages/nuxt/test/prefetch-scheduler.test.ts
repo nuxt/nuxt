@@ -350,6 +350,24 @@ describe('prefetch scheduler', () => {
     expect(dropped).toEqual(['third'])
   })
 
+  it('should expose queue state in dev only', async () => {
+    expect(createPrefetchScheduler().inspect).toBeUndefined()
+
+    vi.stubGlobal('__TEST_DEV__', true)
+    try {
+      const { run } = tracker()
+      const scheduler = createPrefetchScheduler({ concurrency: { hint: 1 } })
+
+      scheduler.schedule(task('hint:a', 'hint', run('a')))
+      scheduler.schedule(task('hint:b', 'hint', run('b')))
+      await tick()
+
+      expect(scheduler.inspect!()).toEqual({ active: 1, pending: ['hint:b'] })
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
   it('should hold queued tasks while prefetching is unaffordable', async () => {
     const { started, dropped, run, finish } = tracker()
     const canPrefetch = vi.fn(() => true)

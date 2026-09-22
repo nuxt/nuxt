@@ -41,6 +41,8 @@ export interface PrefetchScheduler {
   reset: (retainGroup?: string) => void
   /** Drain again, once something that was holding work back has changed. */
   resume: () => void
+  /** @internal */
+  inspect?: () => { active: number, pending: string[] }
 }
 
 const DEFAULT_TOTAL_CONCURRENCY = 12
@@ -168,6 +170,10 @@ export function createPrefetchScheduler (options: PrefetchSchedulerOptions = {})
       drain()
     },
     resume: drain,
+  }
+
+  if (import.meta.dev) {
+    scheduler.inspect = () => ({ active: activeTotal, pending: lists.flatMap(list => list.map(task => task.key)) })
   }
 
   return scheduler
