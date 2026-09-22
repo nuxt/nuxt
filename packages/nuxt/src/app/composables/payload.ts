@@ -46,7 +46,8 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
     }
     const payloadURL = await _getPayloadURL(url, opts)
     const rel = detectLinkRelType()
-    const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
+    const crossorigin = _isCrossOriginPayload(payloadURL)
+    const link = defineLink({ rel, as: 'fetch', ...(crossorigin ? { crossorigin: 'anonymous' as const } : {}), href: payloadURL })
 
     if (import.meta.server) {
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
@@ -54,7 +55,9 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
       const linkEl = document.createElement('link')
       linkEl.rel = rel
       linkEl.setAttribute('as', 'fetch')
-      linkEl.crossOrigin = 'anonymous'
+      if (crossorigin) {
+        linkEl.crossOrigin = 'anonymous'
+      }
       linkEl.href = payloadURL
       document.head.appendChild(linkEl)
       return new Promise<void>((resolve, reject) => {
@@ -98,6 +101,21 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   }
 
   return payloadURL + u.search
+}
+
+// `crossorigin` must match the credentials mode of the `fetch` in `_importPayload`, or the prefetched response is not reused
+function _isCrossOriginPayload (payloadURL: string) {
+  if (!hasProtocol(payloadURL, { acceptRelative: true })) {
+    return false
+  }
+  if (import.meta.server) {
+    return true
+  }
+  try {
+    return new URL(payloadURL, window.location.href).origin !== window.location.origin
+  } catch {
+    return true
+  }
 }
 
 async function _importPayload (payloadURL: string, cache: RequestCache) {

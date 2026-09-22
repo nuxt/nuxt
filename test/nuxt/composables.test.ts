@@ -22,7 +22,7 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
+import { loadPayload, preloadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 
 import { isTestingAppManifest } from '../matrix'
@@ -743,6 +743,16 @@ describe('compiled route rules', () => {
     } finally {
       fetchSpy.mockRestore()
     }
+  })
+
+  it('should not prefetch same-origin payloads anonymously', async () => {
+    // settles on the link's load event, which never fires in this environment
+    preloadPayload('/pre/thing').catch(() => {})
+    await vi.waitUntil(() => document.head.querySelector('link[as="fetch"]'))
+
+    const link = document.head.querySelector('link[as="fetch"][href^="/pre/thing/_payload.json"]')
+    expect(link).toBeTruthy()
+    expect(link!.getAttribute('crossorigin')).toBe(null)
   })
 })
 

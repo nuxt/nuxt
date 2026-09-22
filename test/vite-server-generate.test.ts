@@ -151,7 +151,8 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
     const html = await read('about/index.html')
 
     expect(html).toContain('data-src="/about/_payload.json')
-    expect(html).toContain('rel="preload" as="fetch" crossorigin="anonymous" href="/about/_payload.json')
+    expect(html).toContain('rel="preload" as="fetch" href="/about/_payload.json')
+    expect(html).not.toContain('crossorigin="anonymous" href="/about/_payload.json')
   })
 
   it('writes the spa fallbacks a static host serves unknown paths from', async () => {

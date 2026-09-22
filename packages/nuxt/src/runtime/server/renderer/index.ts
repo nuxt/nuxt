@@ -1,6 +1,6 @@
 import { getPrefetchLinks, getPreloadLinks, getRequestDependencies, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import { renderToWebStream } from 'vue/server-renderer'
-import { getQuery as getURLQuery, joinURL } from 'ufo'
+import { getQuery as getURLQuery, hasProtocol, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell, renderStreamBodyTags } from '@unhead/vue/stream/server'
@@ -319,7 +319,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   if (_PAYLOAD_EXTRACTION && !_PAYLOAD_INLINE && !NO_SCRIPTS) {
     ssrContext.head.push({
       link: [
-        { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL },
+        payloadPreloadLink(payloadURL),
       ],
     })
   }
@@ -498,7 +498,7 @@ async function renderStreamedResponse (ctx: {
   if (_PAYLOAD_EXTRACTION && !_PAYLOAD_INLINE && !NO_SCRIPTS) {
     ssrContext.head.push({
       link: [
-        { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL },
+        payloadPreloadLink(payloadURL),
       ],
     })
   }
@@ -971,6 +971,12 @@ function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: strin
       },
     }],
   })
+}
+
+// `crossorigin` must match the credentials mode of the client's payload `fetch`, or the preloaded response is not reused
+function payloadPreloadLink (payloadURL: string | undefined): Link {
+  const crossorigin = !!payloadURL && hasProtocol(payloadURL, { acceptRelative: true })
+  return { rel: 'preload', as: 'fetch', ...(crossorigin ? { crossorigin: 'anonymous' as const } : {}), href: payloadURL }
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext): string {
