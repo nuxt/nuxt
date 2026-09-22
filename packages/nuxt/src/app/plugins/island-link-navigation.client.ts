@@ -2,7 +2,7 @@ import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { useRouter } from '../composables/router'
 import { onNuxtReady } from '../composables/ready'
-import { preloadRouteComponents } from '../composables/preload'
+import { prefetchRouteComponents } from '../composables/preload'
 import { useObserver } from '../components/nuxt-link'
 import { canPrefetch } from '../internal/prefetch-util'
 
@@ -78,7 +78,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           if (!route) { return }
           nuxtApp.hooks.callHook('link:prefetch', route.fullPath)?.catch(() => {})
           if (!import.meta.dev) {
-            preloadRouteComponents(route.fullPath, router).catch(() => {})
+            prefetchRouteComponents(route.fullPath, router)
           }
         })
         unobservers.set(anchor, unobserve)

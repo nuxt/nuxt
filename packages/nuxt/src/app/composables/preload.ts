@@ -1,7 +1,8 @@
 import type { Component } from 'vue'
-import type { RouteLocationRaw, Router } from 'vue-router'
+import type { RouteLocationRaw, RouteRecordNormalized, Router } from 'vue-router'
 import type { NuxtAppLiterals } from '../types'
-import { useNuxtApp } from '../nuxt'
+import { tryUseNuxtApp, useNuxtApp } from '../nuxt'
+import { prefetchGroup } from '../internal/prefetch-util'
 import { toArray } from '../utils'
 import { useRouter } from './router'
 
@@ -43,35 +44,45 @@ export function _loadAsyncComponent (component: Component): unknown {
   }
 }
 
+function loadRouteComponents (matched: RouteRecordNormalized[]): Promise<unknown> {
+  return Promise.all(matched.map((route) => {
+    const component = route.components?.default
+    return typeof component === 'function' ? Promise.resolve((component as () => unknown)()).catch(() => {}) : undefined
+  }))
+}
+
 /** @since 3.0.0 */
-export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>, _preloadPromises?: Array<Promise<unknown>> } = useRouter()): Promise<void> {
+export async function preloadRouteComponents (to: RouteLocationRaw, router: Router = useRouter()): Promise<void> {
   if (import.meta.server) { return }
 
+  const { matched } = router.resolve(to)
+
+  if (matched.length) {
+    await loadRouteComponents(matched)
+  }
+}
+
+/**
+ * Queued form of `preloadRouteComponents`, throttled and promoted with the destination's other work.
+ * @internal
+ */
+export function prefetchRouteComponents (to: RouteLocationRaw, router: Router): void {
   const { path, matched } = router.resolve(to)
 
   if (!matched.length) { return }
-  router._routePreloaded ||= new Set()
-  if (router._routePreloaded.has(path)) { return }
 
-  const promises = router._preloadPromises ||= []
-
-  if (promises.length > 4) {
-    // Defer adding new preload requests until the existing ones have resolved
-    return Promise.all(promises).then(() => preloadRouteComponents(to, router))
+  const scheduler = tryUseNuxtApp()?._prefetch
+  if (!scheduler) {
+    void loadRouteComponents(matched)
+    return
   }
 
-  router._routePreloaded.add(path)
-
-  for (const route of matched) {
-    const component = route.components?.default
-    if (typeof component !== 'function') {
-      continue
-    }
-    const promise = Promise.resolve((component as () => unknown)())
-      .catch(() => {})
-      .finally(() => promises.splice(promises.indexOf(promise), 1))
-    promises.push(promise)
-  }
-
-  await Promise.all(promises)
+  scheduler.schedule({
+    key: `route:${path}`,
+    priority: 'route',
+    scope: 'navigation',
+    group: prefetchGroup(path),
+    // a duplicate or dequeued task does not load again; the first one owns the work
+    run: signal => signal.aborted ? undefined : loadRouteComponents(matched),
+  })
 }

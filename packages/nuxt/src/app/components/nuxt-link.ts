@@ -13,7 +13,7 @@ import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provi
 import type { ComponentSlots } from 'vue-component-type-helpers'
 import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
 import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
-import { preloadRouteComponents } from '../composables/preload'
+import { prefetchRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -506,7 +506,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         const normalizedPath = resolvedPath()
         await Promise.all([
           nuxtApp.hooks.callHook('link:prefetch', normalizedPath)?.catch(() => {}),
-          !import.meta.dev && !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
+          !import.meta.dev && !isExternal.value && !hasTarget.value && prefetchRouteComponents(to.value as string, router),
         ])
       }
 

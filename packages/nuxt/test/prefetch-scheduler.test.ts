@@ -253,14 +253,14 @@ describe('prefetch scheduler', () => {
       task('hint:wanted-b', 'hint', run('wanted-b'), { group: '/wanted' }),
     ])
     scheduler.schedule(task('hint:other', 'hint', run('other'), { group: '/other' }))
-    scheduler.schedule(task('payload:/other', 'payload', run('payload:other'), { group: '/other' }))
+    scheduler.schedule(task('route:/other', 'route', run('route:other'), { group: '/other' }))
     scheduler.promote('/wanted')
     await tick()
 
-    for (const key of ['blocker', 'payload:other', 'wanted-a', 'wanted-b']) {
+    for (const key of ['blocker', 'route:other', 'wanted-a', 'wanted-b']) {
       await finish(key)
     }
-    expect(started).toEqual(['blocker', 'payload:other', 'wanted-a', 'wanted-b', 'other'])
+    expect(started).toEqual(['blocker', 'route:other', 'wanted-a', 'wanted-b', 'other'])
   })
 
   it('should queue a batch ahead of earlier work but keep its own order', async () => {

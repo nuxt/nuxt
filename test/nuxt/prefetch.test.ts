@@ -2,6 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { useNuxtApp } from '#app/nuxt'
+import { preloadRouteComponents } from '#app/composables/preload'
 import { useRouter } from '#app/composables/router'
 import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
 import type { PrefetchScheduler } from '#app/internal/prefetch'
@@ -54,6 +55,22 @@ describe('prefetch scheduler navigation state', () => {
     await tick()
 
     expect(started).toEqual(['payload:/held'])
+    removeGuard()
+  })
+
+  it('should settle an awaited route preload while the queue is held', async () => {
+    const router = useRouter()
+    let release: () => void
+    const blocked = new Promise<void>((resolve) => { release = resolve })
+    const removeGuard = router.beforeEach(() => blocked)
+
+    const navigation = router.push('/index')
+    await tick()
+
+    await expect(preloadRouteComponents('/index')).resolves.toBeUndefined()
+
+    release!()
+    await navigation
     removeGuard()
   })
 
