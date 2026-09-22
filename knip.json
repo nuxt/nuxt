@@ -6,7 +6,12 @@
   "ignoreExportsUsedInFile": true,
   "tags": ["-knipignore"],
   "ignoreIssues": {
-    "**/.nuxt/**": ["unlisted", "unresolved"]
+    "**/.nuxt/**": ["unlisted", "unresolved"],
+    "**/.nuxt-*/**": ["unlisted", "unresolved"],
+    "**/.output/**": ["unlisted", "unresolved"],
+    "**/.output-*/**": ["unlisted", "unresolved"],
+    "**/.netlify/**": ["unlisted", "unresolved"],
+    "packages/*/dist/**": ["unlisted", "unresolved"]
   },
   "ignoreDependencies": [
     "bing",
