@@ -8,7 +8,7 @@ import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext, tryUseNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addRspackPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext, tryUseNitro } from '@nuxt/kit'
 import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -503,13 +503,19 @@ async function initNuxt (nuxt: Nuxt) {
     const helperModule = resolveModulePath('unctx', { from: import.meta.url, try: true }) ?? 'unctx'
     // server-only: the `executeAsync` wrappers restore context across `await`, which a
     // browser's set-once Nuxt app does not need
-    addBuildPlugin(UnctxTransformPlugin({
+    const unctxTransform = UnctxTransformPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
         helperModule,
       },
-    }), { client: false })
+    })
+    // an environment-scoped vite plugin is appended to the server config, which lands after
+    // the page-meta macro modules are emitted, leaving `navigateTo()` after an `await`
+    // without a Nuxt context. The other bundlers transform each module once either way.
+    addVitePlugin(unctxTransform.vite, { client: false, prepend: true })
+    addWebpackPlugin(unctxTransform.webpack, { client: false })
+    addRspackPlugin(unctxTransform.rspack, { client: false })
 
     // Add composable tree-shaking optimisations
     if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
