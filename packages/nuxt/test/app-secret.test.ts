@@ -25,6 +25,7 @@ async function createOptions (appSecret = '', test = true) {
 afterEach(async () => {
   delete process.env.NUXT_APP_SECRET
   delete process.env.NITRO_APP_SECRET
+  delete process.env.NUXT_APP_SECRET_GENERATED
   await Promise.all(buildDirs.splice(0).map(dir => rm(dir, { recursive: true, force: true })))
 })
 
@@ -37,17 +38,19 @@ describe('resolveDevAppSecret', () => {
 
     expect(options.runtimeConfig.appSecret).toMatch(/^[0-9a-f]{64}$/)
     expect(await readFile(join(options.buildDir, 'app-secret'), 'utf8')).toBe(options.runtimeConfig.appSecret)
-    expect(env).toStrictEqual({})
+    expect(env).toStrictEqual({ NUXT_APP_SECRET_GENERATED: '1' })
   })
 
   it('should reuse a persisted secret', async () => {
     const options = await createOptions()
     const persisted = 'a'.repeat(64)
     await writeFile(join(options.buildDir, 'app-secret'), persisted, 'utf8')
+    const env: Record<string, string> = {}
 
-    await resolveDevAppSecret(options, {})
+    await resolveDevAppSecret(options, env)
 
     expect(options.runtimeConfig.appSecret).toBe(persisted)
+    expect(env.NUXT_APP_SECRET_GENERATED).toBe('1')
   })
 
   it('should regenerate a persisted secret that is not 32 hex-encoded bytes', async () => {
@@ -72,33 +75,66 @@ describe('resolveDevAppSecret', () => {
 
   it('should leave a long enough environment secret alone', async () => {
     const options = await createOptions()
-    const env = { NUXT_APP_SECRET: 'y'.repeat(40) }
+    const env: Record<string, string> = { NUXT_APP_SECRET: 'y'.repeat(40), NUXT_APP_SECRET_GENERATED: '1' }
 
     await resolveDevAppSecret(options, env)
+
+    expect(env.NUXT_APP_SECRET_GENERATED).toBeUndefined()
 
     expect(options.runtimeConfig.appSecret).toBe('')
     expect(env.NUXT_APP_SECRET).toBe('y'.repeat(40))
     expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
   })
 
-  it('should replace a short environment secret', async () => {
+  it('should preserve a configured secret that is too short', async () => {
+    const options = await createOptions('too-short')
+
+    await resolveDevAppSecret(options, {})
+
+    expect(options.runtimeConfig.appSecret).toBe('too-short')
+    expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
+  })
+
+  it('should preserve a configured secret that is not a string', async () => {
+    const options = await createOptions(12345 as unknown as string)
+
+    await resolveDevAppSecret(options, {})
+
+    expect(options.runtimeConfig.appSecret).toBe(12345)
+    expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
+  })
+
+  it('should preserve a configured environment secret when another is empty', async () => {
+    const options = await createOptions()
+    const env: Record<string, string> = { NITRO_APP_SECRET: '', NUXT_APP_SECRET: 'z'.repeat(40) }
+
+    await resolveDevAppSecret(options, env)
+
+    expect(env).toStrictEqual({ NITRO_APP_SECRET: '', NUXT_APP_SECRET: 'z'.repeat(40) })
+    expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
+  })
+
+  it('should preserve an environment secret that is too short', async () => {
     const options = await createOptions()
     const env: Record<string, string> = { NUXT_APP_SECRET: 'too-short' }
 
     await resolveDevAppSecret(options, env)
 
-    expect(options.runtimeConfig.appSecret).toMatch(/^[0-9a-f]{64}$/)
-    expect(env.NUXT_APP_SECRET).toBe(options.runtimeConfig.appSecret)
+    expect(options.runtimeConfig.appSecret).toBe('')
+    expect(env.NUXT_APP_SECRET).toBe('too-short')
+    expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
   })
 
-  it('should replace a short `NITRO_` secret, which nitro reads in preference', async () => {
+  it('should generate a secret and update the environment when it is empty', async () => {
     const options = await createOptions()
-    const env: Record<string, string> = { NITRO_APP_SECRET: 'short', NUXT_APP_SECRET: 'z'.repeat(40) }
+    const env: Record<string, string> = { NITRO_APP_SECRET: '', NUXT_APP_SECRET: '' }
 
     await resolveDevAppSecret(options, env)
 
-    expect(env.NITRO_APP_SECRET).toMatch(/^[0-9a-f]{64}$/)
-    expect(env.NUXT_APP_SECRET).toBe(env.NITRO_APP_SECRET)
+    expect(options.runtimeConfig.appSecret).toMatch(/^[0-9a-f]{64}$/)
+    expect(env.NITRO_APP_SECRET).toBe(options.runtimeConfig.appSecret)
+    expect(env.NUXT_APP_SECRET).toBe(options.runtimeConfig.appSecret)
+    expect(await readFile(join(options.buildDir, 'app-secret'), 'utf8')).toBe(options.runtimeConfig.appSecret)
   })
 
   it('should be applied when loading Nuxt in development', async () => {
@@ -124,17 +160,17 @@ describe('resolveDevAppSecret', () => {
     const nuxt = await loadNuxt({ cwd: rootDir, ready: false, overrides: { dev: false } })
 
     expect(nuxt.options.runtimeConfig.appSecret).toBe('')
+    expect(process.env.NUXT_APP_SECRET_GENERATED).toBeUndefined()
     expect(existsSync(join(nuxt.options.buildDir, 'app-secret'))).toBe(false)
   })
 
-  it('should warn once outside test mode', async () => {
+  it('should not warn when generating a secret', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const options = await createOptions('', false)
 
     await resolveDevAppSecret(options, {})
 
-    expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn.mock.calls[0]!.join(' ')).toContain('NUXT_B5028')
+    expect(warn).not.toHaveBeenCalled()
     warn.mockRestore()
   })
 })

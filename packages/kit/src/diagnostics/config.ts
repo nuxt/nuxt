@@ -104,7 +104,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B5028: {
-      why: (p: { minLength: number }) => `\`runtimeConfig.appSecret\` is unset or shorter than ${p.minLength} characters, so a random development secret is being used.`,
+      why: 'A generated development secret is being used because `runtimeConfig.appSecret` is unset.',
       fix: 'Set `NUXT_APP_SECRET` in your `.env` to the output of `openssl rand -base64 32`. Builds do not generate a secret.',
       docs: false,
     },

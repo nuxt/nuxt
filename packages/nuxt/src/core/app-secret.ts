@@ -2,10 +2,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import process from 'node:process'
 
 import { dirname, join } from 'pathe'
-import { configDiagnostics } from '@nuxt/kit/internal'
 import type { NuxtOptions } from '@nuxt/schema'
 
-const MIN_LENGTH = 32
 const GENERATED_BYTES = 32
 const APP_SECRET_FILE = 'app-secret'
 
@@ -17,14 +15,10 @@ function generateSecret () {
 }
 
 export async function resolveDevAppSecret (options: NuxtOptions, env = process.env): Promise<void> {
-  const configured = env.NITRO_APP_SECRET ?? env.NUXT_APP_SECRET ?? options.runtimeConfig.appSecret
-
-  if (typeof configured === 'string' && configured.length >= MIN_LENGTH) {
+  const configured = [env.NITRO_APP_SECRET, env.NUXT_APP_SECRET, options.runtimeConfig.appSecret]
+  if (configured.some(value => value !== undefined && value !== null && value !== '')) {
+    delete env.NUXT_APP_SECRET_GENERATED
     return
-  }
-
-  if (!options.test) {
-    configDiagnostics.NUXT_B5028({ minLength: MIN_LENGTH })
   }
 
   const secretFile = join(options.buildDir, APP_SECRET_FILE)
@@ -37,6 +31,7 @@ export async function resolveDevAppSecret (options: NuxtOptions, env = process.e
   }
 
   options.runtimeConfig.appSecret = secret
+  env.NUXT_APP_SECRET_GENERATED = '1'
 
   // nitro reapplies the environment over the resolved config at runtime
   if (env.NUXT_APP_SECRET !== undefined) {

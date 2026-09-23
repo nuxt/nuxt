@@ -5,6 +5,8 @@ import { createError } from '../app/error'
 const MIN_LENGTH = 32
 const SALT = new TextEncoder().encode('nuxt')
 
+let warnedGenerated = false
+
 /**
  * A secret for one purpose, derived from `appSecret` with HKDF-SHA256: 32 bytes,
  * hex-encoded. Stable while `appSecret` is unchanged; distinct for every purpose.
@@ -25,6 +27,12 @@ export async function deriveSecret (purpose: string): Promise<string> {
       status: 500,
       message: `\`appSecret\` is not set. Set \`NUXT_APP_SECRET\` to at least ${MIN_LENGTH} characters, or pass a secret explicitly.`,
     })
+  }
+
+  if (import.meta.dev && !warnedGenerated && globalThis.process?.env?.NUXT_APP_SECRET_GENERATED === '1') {
+    warnedGenerated = true
+    // eslint-disable-next-line no-restricted-syntax
+    console.warn('[nuxt] [NUXT_B5028] A generated development `appSecret` is being used. Set `NUXT_APP_SECRET` in your `.env` to the output of `openssl rand -base64 32`. Builds do not generate a secret.')
   }
 
   const encoder = new TextEncoder()
