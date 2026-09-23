@@ -1,6 +1,6 @@
 import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack/types'
-import { H3Error, appendResponseHeader, getResponseHeader, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
+import { appendResponseHeader, getResponseHeader, isError, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 import type { H3Event } from 'h3'
 import type { ErrorReport } from 'my-bad'
 import type { NuxtRequestContext } from 'nuxt/schema'
@@ -25,7 +25,9 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     const errorChannel = await import('../utils/error-channel')
     // a handled client error (a 404, a failed validation) is the app working as intended,
     // unless the app threw a bare value that was given a status on its way here
-    const isHTTPError = error instanceof H3Error
+    // branded rather than `instanceof`, so an error raised against another copy of h3
+    // still reads as an HTTP error
+    const isHTTPError = isError(error)
     const isExpected = !(error as { unhandled?: boolean }).unhandled && isHTTPError && (error.statusCode || 500) < 500 && !(THROWN_VALUE in error)
     report = isExpected ? undefined : await errorChannel.createErrorReport(error, event).catch(() => undefined)
     errorCause = errorChannel.serializeErrorCause(error.cause)
