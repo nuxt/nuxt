@@ -3,7 +3,7 @@ import type {} from 'nitropack'
 import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRouteConfig, NitroRouteRules, NitroRuntimeConfig } from 'nitropack/types'
 import type { EventHandler, H3Event } from 'h3'
 import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, TracingChannelOptions } from 'nuxt/schema'
+import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, RuntimeConfigApp, TracingChannelOptions } from 'nuxt/schema'
 
 /** The channels this package's runtime forwards, alongside the Nuxt-owned ones. */
 interface NitroTracingChannels {
@@ -81,6 +81,8 @@ declare module 'nitropack' {
   }
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface NitroRuntimeConfigApp extends RuntimeConfigApp {}
   // rules Nuxt generates types for are declared on `@nuxt/schema`, and bridged here so that
   // configuration typed by nitro accepts them too
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -113,6 +115,8 @@ declare module 'nitropack/types' {
   }
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface NitroRuntimeConfigApp extends RuntimeConfigApp {}
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRouteConfig extends RouteRuleConfigExtensions {}
   interface NitroRouteConfig {

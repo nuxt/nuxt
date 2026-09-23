@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { NitroInstance, NitroInstanceOptions } from '@nuxt/kit'
-import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, RouteRuleConfig as SchemaRouteRuleConfig, TSReference } from '@nuxt/schema'
-import type { Nitro, NitroConfig, NitroOptions, NitroRouteConfig } from 'nitropack/types'
+import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, RuntimeConfig, RouteRuleConfig as SchemaRouteRuleConfig, TSReference } from '@nuxt/schema'
+import type { Nitro, NitroConfig, NitroOptions, NitroRouteConfig, NitroRuntimeConfig } from 'nitropack/types'
 import type { EventHandler, H3Event } from 'h3'
 import type { NuxtSSRContext } from '#app/types'
 
@@ -17,6 +17,13 @@ describe('contributed nitro instance types', () => {
     expectTypeOf<NitroInstanceOptions['dev']>().toEqualTypeOf<boolean>()
     expectTypeOf<NitroInstanceOptions['_config']>().toEqualTypeOf<NitroOptions['_config']>()
     expectTypeOf<NitroInstanceOptions['handlers']>().toEqualTypeOf<NitroOptions['handlers']>()
+  })
+})
+
+describe('contributed runtime config type', () => {
+  it('is assignable to the runtime config Nuxt declares', () => {
+    expectTypeOf<NitroRuntimeConfig>().toExtend<RuntimeConfig>()
+    expectTypeOf<NitroRuntimeConfig['app']['buildAssetsDir']>().toEqualTypeOf<string>()
   })
 })
 
