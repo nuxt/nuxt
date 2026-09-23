@@ -973,6 +973,7 @@ export interface ConfigSchema {
    * The value of this object is accessible from server only using `useRuntimeConfig`.
    * It mainly should hold _private_ configuration which is not exposed on the frontend. This could include a reference to your API secret tokens.
    * Anything under `public` and `app` will be exposed to the frontend as well.
+   * Keys prefixed with `app` (such as `app` and `appSecret`) are reserved for Nuxt.
    * Values are automatically replaced by matching env variables at runtime, e.g. setting an environment variable `NUXT_API_KEY=my-api-key NUXT_PUBLIC_BASE_URL=/foo/` would overwrite the two values in the example below.
    *
    * @example
