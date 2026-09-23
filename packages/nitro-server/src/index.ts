@@ -285,6 +285,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // Dev-only per-request CSS source; overridden by the builder in dev to
       // read its module graph (see `dev-client-css` middleware).
       '#internal/nuxt/dev-client-css': () => `export const getDevClientCss = () => []`,
+      '#internal/nuxt/error-channel': () => nuxt.options.dev
+        ? `export * from ${JSON.stringify(resolve(distDir, 'runtime/utils/error-channel'))}`
+        : 'export {}',
       '#internal/nuxt/nitro-config.mjs': () => [
         `export const NUXT_ERROR_CHANNEL = ${JSON.stringify(nuxt.options.devServer.errorChannel)}`,
         `export const NUXT_DEV_LOGS = ${!!nuxt.options.features.devLogs}`,
