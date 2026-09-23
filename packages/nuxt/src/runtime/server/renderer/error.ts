@@ -72,9 +72,37 @@ export interface DescribedError {
   status: number
   statusText: string
   message: string
+  /** The error's `data`, present only where it is safe to expose. */
+  data: unknown
   headers: Record<string, string>
   /** Whether the error named an HTTP status itself, rather than being given 500. */
   isHTTPError: boolean
+}
+
+/**
+ * Whether the error is one the app raised deliberately, as h3 recognises its own: by name and
+ * status rather than by shape. Anything else reached the response by accident, so its message,
+ * data and headers are the server's own and are not exposed.
+ */
+function isRaisedByApp (error: unknown): boolean {
+  const candidate = error as { name?: unknown, status?: unknown, unhandled?: boolean } | null
+  return error instanceof Error
+    && candidate!.name === 'HTTPError'
+    && typeof candidate!.status === 'number'
+    && candidate!.status > 99
+    && !candidate!.unhandled
+}
+
+/** Reduce `data` to what JSON carries; a value the payload cannot serialise takes the error page down with it. */
+function jsonSafeData (data: unknown): unknown {
+  if (data === undefined) {
+    return undefined
+  }
+  try {
+    return JSON.parse(JSON.stringify(data))
+  } catch {
+    return undefined
+  }
 }
 
 // a reason phrase is limited to HTAB / SP / VCHAR / obs-text, and `Response` throws on anything else
@@ -87,16 +115,17 @@ const INVALID_REASON_PHRASE_RE = /[^\t\x20-\x7E\x80-\xFF]/g
  * @internal
  */
 export function describeError (error: unknown): DescribedError {
-  const { status, statusCode, statusText, message, headers } = (error || {}) as { status?: number, statusCode?: number, statusText?: string, message?: string, headers?: unknown }
+  const { status, statusCode, statusText, message, headers, data } = (error || {}) as { status?: number, statusCode?: number, statusText?: string, message?: string, headers?: unknown, data?: unknown }
   const named = status ?? statusCode
   const isHTTPError = typeof named === 'number' && named >= 400 && named <= 599
-  const exposed = isHTTPError || import.meta.dev
-  const reason = (exposed && (statusText || message)) || (isHTTPError ? 'Request failed' : 'Internal Server Error')
+  const exposed = import.meta.dev || (isHTTPError && isRaisedByApp(error))
+  const reason = (isHTTPError && statusText) || (exposed && message) || (isHTTPError ? 'Request failed' : 'Internal Server Error')
   return {
     status: isHTTPError ? named : 500,
     statusText: reason.replace(INVALID_REASON_PHRASE_RE, '') || 'Error',
     message: (exposed && message) || reason,
-    headers: headers instanceof Headers ? Object.fromEntries(headers) : (headers as Record<string, string> | undefined) ?? {},
+    data: exposed ? jsonSafeData(data) : undefined,
+    headers: exposed ? (headers instanceof Headers ? Object.fromEntries(headers) : (headers as Record<string, string> | undefined) ?? {}) : {},
     isHTTPError,
   }
 }
@@ -111,8 +140,7 @@ const THROWN_VALUE = Symbol.for('nuxt:dev:thrown')
  * @internal
  */
 export function isExpectedError (error: unknown, described: DescribedError): boolean {
-  const candidate = (error || {}) as { unhandled?: boolean }
-  return !candidate.unhandled && described.isHTTPError && described.status < 500 && !(typeof error === 'object' && error !== null && THROWN_VALUE in error)
+  return isRaisedByApp(error) && described.isHTTPError && described.status < 500 && !(typeof error === 'object' && error !== null && THROWN_VALUE in error)
 }
 
 /**

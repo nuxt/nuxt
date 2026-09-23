@@ -1216,6 +1216,17 @@ export interface ConfigSchema {
     payloadExtraction: 'client' | boolean | undefined
 
     /**
+     * Render the error page in the Nuxt renderer itself when a server render fails, rather than
+     * handing the error to the server runtime and re-entering the renderer over an internal request.
+     *
+     * The error page is rendered in process, on the same request event, so the response keeps the
+     * headers and cookies the failed render had already written.
+     *
+     * @default true (when compatibilityVersion >= 5)
+     */
+    inlineErrorRendering: boolean
+
+    /**
      * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
      *
      * Pass an array of status codes between 400 and 599 to control which error pages are generated. `true` is equivalent to `[404]`.

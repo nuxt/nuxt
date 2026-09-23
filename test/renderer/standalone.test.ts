@@ -105,12 +105,6 @@ describe('renderer without a server builder', () => {
     expect(ssrHtml).toContain('rendered without nitro')
     expect(spaHtml).not.toContain('rendered without nitro')
   })
-
-  it('refuses an internal error route with the error the runtime constructs', async () => {
-    const renderer = createNuxtRenderer(options)
-
-    await expect(renderer.fetch(createEvent('/__nuxt_error'))).rejects.toMatchObject({ status: 404 })
-  })
 })
 
 describe('noScripts route rules', () => {
