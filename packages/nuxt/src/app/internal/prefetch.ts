@@ -103,13 +103,18 @@ export function createPrefetchScheduler (options: PrefetchSchedulerOptions = {})
     }
     active[task.priority]++
     activeTotal++
+    let settled = false
     const complete = () => {
+      if (settled) { return }
+      settled = true
       active[task.priority]--
       activeTotal--
       activeNavigationTasks.delete(task)
       release(task)
       drain()
     }
+    // a task that ignores its signal would otherwise hold its slot for ever
+    controller.signal.addEventListener('abort', complete, { once: true })
     const run = () => Promise.resolve()
       .then(() => task.run(controller.signal, isPromoted))
       .then(complete, complete)
@@ -161,11 +166,8 @@ export function createPrefetchScheduler (options: PrefetchSchedulerOptions = {})
           }
         }
       }
-      for (const [task, controller] of activeNavigationTasks) {
+      for (const [task, controller] of [...activeNavigationTasks]) {
         if (isRetained(task, retainGroup)) { continue }
-        // an aborted task may never settle, so release its key immediately
-        release(task)
-        activeNavigationTasks.delete(task)
         controller.abort()
       }
       drain()

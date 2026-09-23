@@ -335,6 +335,22 @@ describe('prefetch scheduler', () => {
     expect(dropped).toEqual([])
   })
 
+  it('should free the slot of a task that ignores its abort signal', async () => {
+    const { started, run } = tracker()
+    const scheduler = createPrefetchScheduler({ concurrency: { payload: 1 } })
+
+    scheduler.schedule(task('payload:/stuck', 'payload', () => new Promise(() => {}), { scope: 'navigation' }))
+    await tick()
+
+    scheduler.reset()
+    await tick()
+
+    scheduler.schedule(task('payload:/next', 'payload', run('next')))
+    await tick()
+
+    expect(started).toEqual(['next'])
+  })
+
   it('should let a navigation-scoped task be rescheduled after reset', async () => {
     const started: string[] = []
     const dropped: string[] = []
