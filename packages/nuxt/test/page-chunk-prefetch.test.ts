@@ -19,7 +19,8 @@ async function buildApp (extendsPath: string) {
 
   await mkdir(join(appDir, 'app/pages'), { recursive: true })
   await mkdir(join(appDir, 'node_modules'), { recursive: true })
-  await symlink(layerDir, join(appDir, 'node_modules/my-layer'), 'dir')
+  // `junction` so this also works on Windows CI without elevated permissions
+  await symlink(layerDir, join(appDir, 'node_modules/my-layer'), 'junction')
   await writeFile(join(appDir, 'app/pages/index.vue'), '<template><div>home</div></template>')
 
   const nuxt = await loadNuxt({
