@@ -152,7 +152,7 @@ export async function publishErrorReport (report: ErrorReport, request?: ErrorRe
 }
 
 /** The id a dev server in front gave the request. */
-export function requestIdOf (request?: Pick<ErrorRequestInfo, 'headers'>): string | undefined {
+function requestIdOf (request?: Pick<ErrorRequestInfo, 'headers'>): string | undefined {
   return request?.headers.get(REQUEST_ID_HEADER) ?? undefined
 }
 
@@ -212,7 +212,7 @@ export async function createErrorReport (error: unknown, options: ErrorReportOpt
   }))
 }
 
-export interface ErrorRenderOptions {
+interface ErrorRenderOptions {
   /** Project root, which report paths are relative to. */
   cwd: string
   /** Base path the live channel is served at. */
@@ -222,7 +222,7 @@ export interface ErrorRenderOptions {
 }
 
 /** Add the error overlay to an already-rendered page. */
-export async function withErrorOverlay (html: string, report: ErrorReport, options: ErrorRenderOptions & { startMinimized?: boolean }): Promise<string> {
+async function withErrorOverlay (html: string, report: ErrorReport, options: ErrorRenderOptions & { startMinimized?: boolean }): Promise<string> {
   const [{ injectOverlay }, { nuxtTheme }] = await Promise.all([
     import('my-bad'),
     import('my-bad/presets'),
@@ -238,7 +238,7 @@ export async function withErrorOverlay (html: string, report: ErrorReport, optio
 }
 
 /** Render a standalone error page, for when the app itself cannot render one. */
-export async function renderErrorPage (report: ErrorReport, options: ErrorRenderOptions): Promise<string> {
+async function renderErrorPage (report: ErrorReport, options: ErrorRenderOptions): Promise<string> {
   const [{ renderPage }, { nuxtTheme }] = await Promise.all([
     import('my-bad'),
     import('my-bad/presets'),
@@ -252,7 +252,7 @@ export async function renderErrorPage (report: ErrorReport, options: ErrorRender
 }
 
 /** Render a report for the terminal. It carries its own icon and colours. */
-export async function renderErrorAnsi (report: ErrorReport, options: { cwd: string }): Promise<string> {
+async function renderErrorAnsi (report: ErrorReport, options: { cwd: string }): Promise<string> {
   const { renderAnsi } = await import('my-bad')
   return renderAnsi(withoutEchoingCauses(report), { cwd: options.cwd })
 }
