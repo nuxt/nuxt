@@ -2002,6 +2002,9 @@ export interface ConfigSchema {
     /**
      * Options for configuring PostCSS plugins.
      *
+     * No plugins are configured by default with the Vite builder. A plugin named here is resolved
+     * from your project, so `autoprefixer` and `cssnano` have to be installed to be used.
+     *
      * @see [PostCSS docs](https://postcss.org/)
      */
     plugins: Record<string, unknown> & { autoprefixer?: false | AutoprefixerOptions, cssnano?: false | CssnanoOptions }
