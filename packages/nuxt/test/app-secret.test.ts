@@ -86,6 +86,18 @@ describe('resolveDevAppSecret', () => {
     expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
   })
 
+  it('should keep the generated marker when resolving again', async () => {
+    const options = await createOptions()
+    const env: Record<string, string> = { NUXT_APP_SECRET: '' }
+
+    await resolveDevAppSecret(options, env)
+    const secret = options.runtimeConfig.appSecret
+    await resolveDevAppSecret(options, env)
+
+    expect(options.runtimeConfig.appSecret).toBe(secret)
+    expect(env).toStrictEqual({ NUXT_APP_SECRET: secret, NUXT_APP_SECRET_GENERATED: '1' })
+  })
+
   it('should preserve a configured secret that is too short', async () => {
     const options = await createOptions('too-short')
 

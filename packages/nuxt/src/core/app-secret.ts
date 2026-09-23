@@ -15,14 +15,15 @@ function generateSecret () {
 }
 
 export async function resolveDevAppSecret (options: NuxtOptions, env = process.env): Promise<void> {
+  const secretFile = join(options.buildDir, APP_SECRET_FILE)
+  let secret = await readFile(secretFile, 'utf8').then(contents => contents.trim()).catch(() => '')
+  const generated = env.NUXT_APP_SECRET_GENERATED === '1' && GENERATED_RE.test(secret) ? secret : undefined
+
   const configured = [env.NITRO_APP_SECRET, env.NUXT_APP_SECRET, options.runtimeConfig.appSecret]
-  if (configured.some(value => value !== undefined && value !== null && value !== '')) {
+  if (configured.some(value => value !== undefined && value !== null && value !== '' && value !== generated)) {
     delete env.NUXT_APP_SECRET_GENERATED
     return
   }
-
-  const secretFile = join(options.buildDir, APP_SECRET_FILE)
-  let secret = await readFile(secretFile, 'utf8').then(contents => contents.trim()).catch(() => '')
 
   if (!GENERATED_RE.test(secret)) {
     secret = generateSecret()
