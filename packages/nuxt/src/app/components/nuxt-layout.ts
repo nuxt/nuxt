@@ -107,9 +107,12 @@ export default defineComponent({
         {
           onBeforeLeave () {
             // Create the transition promise when the leave animation starts.
-            // This overrides any page transition promise since the layout
-            // is the outermost transition wrapper.
-            nuxtApp['~transitionPromise'] = new Promise((resolve) => {
+            // If the incoming page's suspense already created one, reuse it:
+            // work may already be waiting on it (e.g. deferred head entry
+            // disposal), and replacing it would leave that work pending forever.
+            // `onAfterLeave` resolves it either way, as the layout is the
+            // outermost transition wrapper.
+            nuxtApp['~transitionPromise'] ||= new Promise((resolve) => {
               nuxtApp['~transitionFinish'] = resolve
             })
           },
