@@ -24,7 +24,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitropack/runtime/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, getLayerNodeModulesExcludePattern, toArray, toFsDriverIgnorePatterns } from './utils.ts'
+import { distDir, getLayerNodeModulesExcludePattern, resolveNitroCommand, toArray, toFsDriverIgnorePatterns } from './utils.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
@@ -871,7 +871,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       runtimeConfig: 'nitropack/runtime',
       server: resolve(distDir, 'runtime/server'),
     },
-    preview: { command: () => nitro.options.commands.preview },
+    preview: { command: () => resolveNitroCommand(nitro.options.commands.preview, nitro.options) },
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)
 

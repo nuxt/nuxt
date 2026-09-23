@@ -1,6 +1,6 @@
 import { matchesGlob } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern, toFsDriverIgnorePatterns } from '../src/utils.ts'
+import { getLayerNodeModulesExcludePattern, resolveNitroCommand, toFsDriverIgnorePatterns } from '../src/utils.ts'
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
@@ -102,5 +102,24 @@ describe('toFsDriverIgnorePatterns', () => {
   it('keeps a pattern declared after the negated pattern it overlaps', () => {
     expect(toFsDriverIgnorePatterns(['!important.log', '*.log'], base)).toEqual(['**/*.log'])
     expect(toFsDriverIgnorePatterns(['*.log', '!important.log', '**/*.log'], base)).toEqual(['**/*.log'])
+  })
+})
+
+describe('resolveNitroCommand', () => {
+  const options = { baseURL: '/', output: { dir: '/proj/.output', serverDir: '/proj/.output/server', publicDir: '/proj/.output/public' } }
+
+  it('resolves placeholders relative to the output directory', () => {
+    expect(resolveNitroCommand('node {{ output.serverDir }}/index.mjs', options)).toBe('node server/index.mjs')
+    expect(resolveNitroCommand('npx serve {{output.publicDir}}', options)).toBe('npx serve public')
+    expect(resolveNitroCommand('npx serve {{ output.dir }}', options)).toBe('npx serve .')
+  })
+
+  it('returns commands without placeholders unchanged', () => {
+    expect(resolveNitroCommand('node ./server/index.mjs', options)).toBe('node ./server/index.mjs')
+    expect(resolveNitroCommand(undefined, options)).toBeUndefined()
+  })
+
+  it('leaves the key in place for an unknown placeholder', () => {
+    expect(resolveNitroCommand('node {{ output.missing }}/index.mjs', options)).toBe('node output.missing/index.mjs')
   })
 })

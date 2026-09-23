@@ -1,7 +1,23 @@
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, join } from 'pathe'
+import { dirname, join, relative } from 'pathe'
 import escapeRE from 'escape-string-regexp'
+
+const TEMPLATE_PARAM_RE = /\{\{ ?([\w.]+) ?\}\}/g
+
+/**
+ * Resolve the `{{ path.to.option }}` placeholders in a Nitro command against the Nitro
+ * options, as paths relative to the output directory the command runs in.
+ */
+export function resolveNitroCommand (command: string | undefined, options: Record<string, any> & { output: { dir: string } }): string | undefined {
+  if (!command?.includes('{{')) {
+    return command
+  }
+  return command.replace(TEMPLATE_PARAM_RE, (_, key: string) => {
+    const value = key.split('.').reduce<any>((obj, segment) => obj?.[segment], options)
+    return typeof value === 'string' && value ? relative(options.output.dir, value) || '.' : key
+  })
+}
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
