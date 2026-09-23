@@ -152,7 +152,7 @@ export async function publishErrorReport (report: ErrorReport, request?: ErrorRe
 }
 
 /** The id a dev server in front gave the request. */
-export function requestIdOf (request?: Pick<ErrorRequestInfo, 'headers'>): string | undefined {
+function requestIdOf (request?: Pick<ErrorRequestInfo, 'headers'>): string | undefined {
   return request?.headers.get(REQUEST_ID_HEADER) ?? undefined
 }
 
@@ -212,7 +212,7 @@ export async function createErrorReport (error: unknown, options: ErrorReportOpt
   }))
 }
 
-export interface ErrorRenderOptions {
+interface ErrorRenderOptions {
   /** Project root, which report paths are relative to. */
   cwd: string
   /** Base path the live channel is served at. */
@@ -222,7 +222,7 @@ export interface ErrorRenderOptions {
 }
 
 /** Add the error overlay to an already-rendered page. */
-export async function withErrorOverlay (html: string, report: ErrorReport, options: ErrorRenderOptions & { startMinimized?: boolean }): Promise<string> {
+async function withErrorOverlay (html: string, report: ErrorReport, options: ErrorRenderOptions & { startMinimized?: boolean }): Promise<string> {
   const [{ injectOverlay }, { nuxtTheme }] = await Promise.all([
     import('my-bad'),
     import('my-bad/presets'),
@@ -238,7 +238,7 @@ export async function withErrorOverlay (html: string, report: ErrorReport, optio
 }
 
 /** Render a standalone error page, for when the app itself cannot render one. */
-export async function renderErrorPage (report: ErrorReport, options: ErrorRenderOptions): Promise<string> {
+async function renderErrorPage (report: ErrorReport, options: ErrorRenderOptions): Promise<string> {
   const [{ renderPage }, { nuxtTheme }] = await Promise.all([
     import('my-bad'),
     import('my-bad/presets'),
@@ -252,9 +252,78 @@ export async function renderErrorPage (report: ErrorReport, options: ErrorRender
 }
 
 /** Render a report for the terminal. It carries its own icon and colours. */
-export async function renderErrorAnsi (report: ErrorReport, options: { cwd: string }): Promise<string> {
+async function renderErrorAnsi (report: ErrorReport, options: { cwd: string }): Promise<string> {
   const { renderAnsi } = await import('my-bad')
   return renderAnsi(withoutEchoingCauses(report), { cwd: options.cwd })
+}
+
+/** Print a report to the terminal, falling back to the raw error when it cannot be rendered. */
+async function printErrorReport (report: ErrorReport, options: { cwd: string, error?: unknown, request?: ErrorRequestInfo }): Promise<void> {
+  const label = options.request ? ` [${options.request.method}] ${options.request.url.href}` : ''
+  const rendered = await renderErrorAnsi(report, { cwd: options.cwd }).catch(() => undefined)
+  if (rendered) {
+    console.log(`[request error]${label}\n\n${rendered}`)
+  } else {
+    console.error(`[request error]${label}\n\n`, options.error ?? report.message)
+  }
+}
+
+/** What the builder provides so errors raised while it serves the app can be reported. */
+export interface DevErrorReporterOptions<E> {
+  /** Project root, which report paths are relative to. */
+  cwd: string
+  /** Base path the live channel is reachable at, read per report. */
+  channel: () => string
+  /** Build a report for an error, mapping frames through the builder's sourcemaps. */
+  createReport: (error: unknown, event?: E) => Promise<ErrorReport>
+  /** The request a report is about, as read from the builder's own event. */
+  requestInfo: (event: E) => ErrorRequestInfo
+  /** Rewrite the error's stack in place with source positions, once the report is built. */
+  mapStack?: (error: unknown) => void
+}
+
+export interface DevErrorObserveOptions {
+  /** The error is the app working as intended, so no report is built for it. */
+  expected?: boolean
+  /** Defaults to `true`. */
+  publish?: boolean
+  /** Defaults to `true`, and never prints when a dev server in front owns the channel. */
+  print?: boolean
+}
+
+export interface DevErrorReport {
+  report: ErrorReport
+  /** Add the report to a page the app rendered, a click away. */
+  overlay: (html: string) => Promise<string>
+  /** Render the report as a standalone page, for when the app cannot render its own. */
+  page: () => Promise<string>
+}
+
+/**
+ * Build the reporter a builder hands the renderer as `onDevError`. The report is built on the
+ * stack as raised, so this must run before anything rewrites it.
+ */
+export function createDevErrorReporter<E> (options: DevErrorReporterOptions<E>): (error: unknown, event?: E, observe?: DevErrorObserveOptions) => Promise<DevErrorReport | undefined> {
+  return async function observeDevError (error, event, observe = {}) {
+    const request = event && options.requestInfo(event)
+    const report = observe.expected ? undefined : await options.createReport(error, event).catch(() => undefined)
+    options.mapStack?.(error)
+    if (!report) {
+      return undefined
+    }
+    if (observe.publish !== false) {
+      await publishErrorReport(report, request).catch(() => {})
+    }
+    if (observe.print !== false && !isForwarding()) {
+      await printErrorReport(report, { cwd: options.cwd, error, request })
+    }
+    const requestId = requestIdOf(request)
+    return {
+      report,
+      overlay: html => withErrorOverlay(html, report, { cwd: options.cwd, channel: options.channel(), requestId, startMinimized: true }),
+      page: () => renderErrorPage(report, { cwd: options.cwd, channel: options.channel(), requestId }),
+    }
+  }
 }
 
 /** A line of a code frame, as a compiler embeds one in a message. */

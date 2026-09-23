@@ -28,7 +28,7 @@ export default createConfigForNuxt({
         'packages/nuxt/src/app/components/welcome.vue',
         'packages/nuxt/src/app/components/error-*.vue',
         'packages/nuxt/src/core/runtime/nitro/templates/error-*',
-        'packages/nitro-server/src/runtime/templates/error-*',
+        'packages/nuxt/src/runtime/server/renderer/error-template.ts',
         'packages/nitro-server/src/templates/spa-loading-icon.ts',
         'packages/vite-server/src/templates/spa-loading-icon.ts',
         'packages/schema/src/templates/loading.ts',
