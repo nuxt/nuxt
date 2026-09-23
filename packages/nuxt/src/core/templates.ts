@@ -276,15 +276,11 @@ export const schemaNodeTemplate: NuxtTemplate = {
   dependsOn: [],
   getContents: ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
-    // The `node` environment resolves as `nodenext` from v5, which will not retry extensions for
+    // The `node` environment resolves as `nodenext`, which will not retry extensions for
     // a path that does not name a file, so a module's own entry has to be named in full.
-    const keepExtension = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
     const moduleExtensions = [...nuxt.options.extensions, '.mjs', '.cjs']
     const getImportName = (name: string) => {
       const specifier = name[0] === '.' ? './' + join(relativeRoot, name) : name
-      if (!keepExtension) {
-        return specifier.replace(IMPORT_NAME_RE, '')
-      }
       if (IMPORT_NAME_RE.test(specifier) || (name[0] !== '.' && !isAbsolute(name))) {
         return specifier
       }

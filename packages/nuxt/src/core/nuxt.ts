@@ -20,7 +20,7 @@ import escapeRE from 'escape-string-regexp'
 import { withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import { defu } from 'defu'
-import { coerce, satisfies } from 'verkit'
+import { satisfies } from 'verkit'
 import { hasTTY, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
@@ -958,12 +958,6 @@ export default defineNuxtPlugin({
     if (nuxt.options.experimental.prefetchPreloadTags) {
       addPlugin(resolve(nuxt.options.appDir, 'plugins/prefetch-preload-tags.server'))
     }
-  }
-
-  // Show compatibility version banner when Nuxt is running with a compatibility version
-  // that is different from the current major version
-  if (!(satisfies(coerce(nuxt._version) ?? nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
-    logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
   await nuxt.callHook('ready', nuxt)

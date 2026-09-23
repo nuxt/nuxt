@@ -80,9 +80,6 @@ const nuxtTestProjects: Record<string, NuxtConfig> = {
     },
   },
   'nuxt-legacy': {
-    future: {
-      compatibilityVersion: 4,
-    },
     experimental: {
       alwaysRunFetchOnKeyChange: true,
     },
