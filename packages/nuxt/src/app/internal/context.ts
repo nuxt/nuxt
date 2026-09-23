@@ -11,7 +11,8 @@ export interface NuxtAppContext<T> {
   callAsync: <R> (instance: T, callback: () => R | Promise<R>) => Promise<R>
 }
 
-const clientContexts: Record<string, NuxtAppContext<any>> = {}
+// keyed on `globalThis` so duplicate module instances (e.g. in vitest) share the active app
+const clientContexts: Record<string, NuxtAppContext<any>> = (globalThis as { __nuxt_app_ctx__?: Record<string, NuxtAppContext<any>> }).__nuxt_app_ctx__ ||= {}
 
 /** Singleton stand-in for `unctx` in the browser, which has no `AsyncLocalStorage`. */
 function getClientContext<T> (key: string): NuxtAppContext<T> {
