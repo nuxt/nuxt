@@ -2,7 +2,7 @@ import { joinURL, withQuery, withoutBase } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack/types'
 import { appendResponseHeader, getResponseHeader, isError, send, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
 import type { H3Event } from 'h3'
-import type { ErrorReport } from 'my-bad'
+import type { DevErrorReport } from 'nuxt/internal/dev-error'
 import type { NuxtRequestContext } from 'nuxt/schema'
 import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 
@@ -19,7 +19,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // Skip SSR error rendering if we're already inside one, to avoid recursion.
   const isRenderingError = !!(event.context.nuxt?.['~rendering-error'] || getFetchedRequestContext(event)?.['~rendering-error'])
 
-  let report: ErrorReport | undefined
+  let devError: DevErrorReport | undefined
   let errorCause: SerializedErrorCause | undefined
   if (import.meta.dev) {
     const errorChannel = await import('#internal/nuxt/error-channel')
@@ -29,20 +29,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     // still reads as an HTTP error
     const isHTTPError = isError(error)
     const isExpected = !(error as { unhandled?: boolean }).unhandled && isHTTPError && (error.statusCode || 500) < 500 && !(THROWN_VALUE in error)
-    report = isExpected ? undefined : await errorChannel.createErrorReport(error, event).catch(() => undefined)
+    devError = await errorChannel.observeDevError(error, event, {
+      expected: isExpected,
+      publish: !isRenderingError && !import.meta.test,
+      print: !isRenderingError && ((error as { unhandled?: boolean }).unhandled ?? !isHTTPError),
+    })
     errorCause = errorChannel.serializeErrorCause(error.cause)
-    if (report && !isRenderingError && !import.meta.test) {
-      await errorChannel.publishErrorReport(report, event).catch(() => {})
-    }
-    // a dev server that owns the channel prints the reports it is sent
-    if (report && !isRenderingError && !errorChannel.shouldForwardReports() && ((error as { unhandled?: boolean }).unhandled ?? !isHTTPError)) {
-      const rendered = await errorChannel.renderErrorAnsi(report).catch(() => undefined)
-      if (rendered) {
-        console.log(`[request error] [${event.method}] ${event.path}\n\n${rendered}`)
-      } else {
-        console.error(`[request error] [${event.method}] ${event.path}\n\n`, error)
-      }
-    }
   }
 
   // a cached module evaluation rethrows the same error, so it must still parse as a stack
@@ -50,7 +42,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
   if (isJsonRequest(event)) {
     // let Nitro render and log JSON errors, unless the report has already been printed
-    if (!report) {
+    if (!devError) {
       return
     }
     const { headers, status, statusText, body } = await defaultHandler(error, event, { json: true, silent: true })
@@ -62,7 +54,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
 
   // invoke default Nitro error handler (which will log appropriately if required)
-  const defaultRes = await defaultHandler(error, event, { json: true, silent: import.meta.dev && !!report })
+  const defaultRes = await defaultHandler(error, event, { json: true, silent: import.meta.dev && !!devError })
   stacks?.restore()
 
   // the render that failed may have collected hints before it threw
@@ -133,15 +125,14 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
 
     if (import.meta.dev && isRenderingError) {
       setResponseHeader(event, ERROR_PAGE_HEADER, '1')
-    } else if (import.meta.dev && report) {
-      const { renderErrorPage } = await import('#internal/nuxt/error-channel')
-      const body = await renderErrorPage(report, event).catch(() => undefined)
+    } else if (import.meta.dev && devError) {
+      const body = await devError.page().catch(() => undefined)
       if (body) {
         return send(event, body)
       }
     }
 
-    const { template } = await import('../templates/error-500')
+    const { template } = await import('nuxt/internal/renderer/error-template')
     if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
@@ -161,13 +152,12 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   }
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultRes.status, res.statusText || defaultRes.statusText)
 
-  if (import.meta.dev && !import.meta.test && report && typeof html === 'string') {
-    const { renderErrorPage, withErrorOverlay } = await import('#internal/nuxt/error-channel')
+  if (import.meta.dev && !import.meta.test && devError && typeof html === 'string') {
     try {
       html = res.headers.has(ERROR_PAGE_HEADER)
         // the app's own error page did not render, so the report is the page
-        ? await renderErrorPage(report, event)
-        : await withErrorOverlay(html, report, { startMinimized: true, event })
+        ? await devError.page()
+        : await devError.overlay(html)
     } catch {
       // the overlay is a development aid; never let it replace the real error
     }

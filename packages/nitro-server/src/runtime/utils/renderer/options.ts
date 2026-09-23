@@ -1,4 +1,5 @@
 import { createError, writeEarlyHints } from 'h3'
+import type { H3Event } from 'h3'
 import { getRouteRules, useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { createRendererInstance } from 'nuxt/internal/renderer/instance'
 import type { NuxtRendererInstance } from 'nuxt/internal/renderer/instance'
@@ -59,6 +60,10 @@ export const rendererOptions: NuxtRendererOptions = {
         },
       }
     : undefined,
+}
+
+if (import.meta.dev) {
+  rendererOptions.onDevError = (error, event, options) => import('#internal/nuxt/error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
 }
 
 /**

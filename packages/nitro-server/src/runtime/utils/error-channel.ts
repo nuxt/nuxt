@@ -105,21 +105,10 @@ function lineCount (file: string): number {
   }
 }
 
-/** Add the error overlay to an already-rendered page. */
-export function withErrorOverlay (html: string, report: ErrorReport, options: { startMinimized?: boolean, event?: H3Event } = {}): Promise<string> {
-  return devError.withErrorOverlay(html, report, { cwd: rootDir, channel: getErrorChannelPath(), requestId: requestIdOf(options.event), startMinimized: options.startMinimized })
-}
-
-/** Render a standalone error page, for when the app itself cannot render one. */
-export function renderErrorPage (report: ErrorReport, event?: H3Event): Promise<string> {
-  return devError.renderErrorPage(report, { cwd: rootDir, channel: getErrorChannelPath(), requestId: requestIdOf(event) })
-}
-
-function requestIdOf (event?: H3Event): string | undefined {
-  return event && devError.requestIdOf({ headers: event.headers })
-}
-
-/** Render a report for the terminal. */
-export function renderErrorAnsi (report: ErrorReport): Promise<string> {
-  return devError.renderErrorAnsi(report, { cwd: rootDir })
-}
+/** Report an error raised while serving a request. */
+export const observeDevError: (error: unknown, event?: H3Event, observe?: devError.DevErrorObserveOptions) => Promise<devError.DevErrorReport | undefined> = devError.createDevErrorReporter<H3Event>({
+  cwd: rootDir,
+  channel: getErrorChannelPath,
+  createReport: (error, event) => createErrorReport(error, event),
+  requestInfo: event => ({ method: event.method, url: getRequestURL(event), headers: event.headers }),
+})

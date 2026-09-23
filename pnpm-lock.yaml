@@ -1090,9 +1090,6 @@ importers:
       '@unhead/vue':
         specifier: catalog:app-runtime
         version: 3.4.1(@oxc-project/types@0.148.0)(@rsbuild/core@2.2.7)(@rspack/core@2.2.6(@swc/helpers@0.5.23))(esbuild@0.28.2)(lightningcss@1.33.0)(oxc-parser@0.150.0)(rolldown@1.2.9)(rollup@4.63.4)(vite@8.3.0(@types/node@24.13.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.0))(vue@3.5.43(typescript@6.0.3))(webpack@5.111.1(cssnano@9.0.5(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.2)(svgo@4.1.0))
-      '@vue/shared':
-        specifier: catalog:app-runtime
-        version: 3.5.43
       consola:
         specifier: catalog:app-runtime
         version: 3.4.2

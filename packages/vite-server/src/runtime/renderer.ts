@@ -70,6 +70,15 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
           import('./dev-error.ts').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
         }
       : undefined,
+    captureError: (error) => {
+      // in development the live error channel reports and prints the error itself
+      if (!import.meta.dev) {
+        console.error(error)
+      }
+    },
+    onDevError: import.meta.dev
+      ? (error, event, options) => import('./dev-error.ts').then(({ observeDevError }) => observeDevError(error, event.req, options))
+      : undefined,
   }
 }
 
@@ -175,7 +184,7 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
   const url = new URL(request.url)
 
   const devErrors = import.meta.dev ? await import('./dev-error.ts') : undefined
-  const report = devErrors ? await devErrors.observeError(error, request, { expected: status < 500 && !devErrors.isThrownValue(error) }) : undefined
+  const report = devErrors ? await devErrors.observeDevError(error, request, { expected: status < 500 && !devErrors.isThrownValue(error) }) : undefined
 
   // the renderer reads the error off the query, as the error page's props
   const data = (error as { data?: unknown })?.data
@@ -212,17 +221,17 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
       responseHeaders.set(name, value)
     }
     responseHeaders.set('content-type', 'text/html;charset=utf-8')
-    if (devErrors && report && !import.meta.test) {
+    if (report && !import.meta.test) {
       const html = await rendered.text()
       // the overlay is a development aid; never let it replace the real error
-      const body = await devErrors.overlayErrorReport(html, report, request).catch(() => html)
+      const body = await report.overlay(html).catch(() => html)
       return new Response(body, { status, statusText, headers: responseHeaders })
     }
     return new Response(rendered.body, { status, statusText, headers: responseHeaders })
   }
 
-  if (devErrors && report) {
-    const page = await devErrors.renderReportPage(report, request).catch(() => undefined)
+  if (report) {
+    const page = await report.page().catch(() => undefined)
     if (page) {
       return new Response(page, { status, statusText, headers: { ...headers, 'content-type': 'text/html;charset=utf-8' } })
     }
