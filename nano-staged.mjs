@@ -8,7 +8,7 @@ const generatedOutputs = [
   'packages/nuxt/src/app/components/error-404.vue',
   'packages/nuxt/src/app/components/error-500.vue',
   'packages/nuxt/src/app/components/welcome.vue',
-  'packages/nitro-server/src/runtime/templates/error-500.ts',
+  'packages/nuxt/src/runtime/server/renderer/error-template.ts',
   'packages/nitro-server/src/templates/spa-loading-icon.ts',
   'packages/vite-server/src/templates/spa-loading-icon.ts',
   'packages/schema/src/templates/loading.ts',

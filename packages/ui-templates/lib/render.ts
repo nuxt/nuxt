@@ -222,8 +222,7 @@ export const RenderPlugin = () => {
       for (const file of ['error-404.vue', 'error-500.vue', 'welcome.vue']) {
         await copyFile(join(outputDir, 'templates', file), join(nuxtRoot, 'src/app/components', file))
       }
-      await mkdir(join(nitroRoot, 'src/runtime/templates'), { recursive: true })
-      await copyFile(join(outputDir, 'templates/error-500.ts'), join(nitroRoot, 'src/runtime/templates/error-500.ts'))
+      await copyFile(join(outputDir, 'templates/error-500.ts'), join(nuxtRoot, 'src/runtime/server/renderer/error-template.ts'))
       await mkdir(join(nitroRoot, 'src/templates'), { recursive: true })
       await copyFile(join(outputDir, 'templates/spa-loading-icon.ts'), join(nitroRoot, 'src/templates/spa-loading-icon.ts'))
       await mkdir(join(viteServerRoot, 'src/templates'), { recursive: true })

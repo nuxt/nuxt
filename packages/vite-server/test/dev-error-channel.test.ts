@@ -8,12 +8,8 @@ vi.mock('nuxt/internal/dev-error', () => ({
   setErrorChannelForwarding: () => {},
   useErrorChannel: () => Promise.resolve({ fetchHandler }),
   createErrorReport: () => Promise.resolve({}),
-  publishErrorReport: () => Promise.resolve(),
-  renderErrorAnsi: () => Promise.resolve(''),
-  renderErrorPage: () => Promise.resolve(''),
-  requestIdOf: () => undefined,
+  createDevErrorReporter: () => () => Promise.resolve(undefined),
   serializeErrorCause: () => undefined,
-  withErrorOverlay: () => Promise.resolve(''),
 }))
 
 const { fetchErrorChannel } = await import('../src/runtime/dev-error.ts')
