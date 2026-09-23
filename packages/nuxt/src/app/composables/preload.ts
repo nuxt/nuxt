@@ -67,7 +67,7 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
  * @internal
  */
 export function prefetchRouteComponents (to: RouteLocationRaw, router: Router): void {
-  const { path, matched } = router.resolve(to)
+  const { fullPath, path, matched } = router.resolve(to)
 
   if (!matched.length) { return }
 
@@ -78,10 +78,11 @@ export function prefetchRouteComponents (to: RouteLocationRaw, router: Router): 
   }
 
   scheduler.schedule({
+    // query variants share one component load, but belong to their own destination
     key: `route:${path}`,
     priority: 'route',
     scope: 'navigation',
-    group: prefetchGroup(path),
+    group: prefetchGroup(fullPath),
     // a duplicate or dequeued task does not load again; the first one owns the work
     run: signal => signal.aborted ? undefined : loadRouteComponents(matched),
   })
