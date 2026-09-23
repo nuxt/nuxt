@@ -2,12 +2,13 @@ import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
 import type { H3Event } from 'nitro/h3'
 import { HTTPError } from 'nitro/h3'
+import { FastURL } from 'srvx'
 import type { DevErrorReport } from 'nuxt/internal/dev-error'
 import type { SerializedErrorCause } from '#app/types'
 import { serverFetch } from 'nitro'
 
-import type { SSRErrorInput } from '../utils/error'
-import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
+import type { SSRErrorInput } from 'nuxt/internal/renderer/error'
+import { SSR_ERROR_PARAM, appendVary, encodeSSRError, isJsonRequest } from 'nuxt/internal/renderer/error'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
 import { toLegacyError } from '../compat/error-shape'
@@ -50,7 +51,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
   if (import.meta.prerender && 'context' in event) {
     applyPrerenderHints(event as H3Event, headers)
   }
-  if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
+  if (isJsonRequest(event.req as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
     const setCookies = new Set(headers.getSetCookie())
     const headerEntries = [
       new Headers(defaultRes.headers),
@@ -124,7 +125,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
       }
     }
 
-    const { template } = await import('../templates/error-500')
+    const { template } = await import('nuxt/internal/renderer/error-template')
     if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
@@ -211,34 +212,4 @@ function mergeHeaders (target: Headers, overrides: Headers | [string, string][] 
     }
   }
   return target
-}
-
-/**
- * Add `value`'s tokens to the `vary` header, keeping any already present. `*`
- * absorbs everything else, since it means the response varies on all headers.
- */
-function appendVary (headers: Headers, value: string): void {
-  const incoming = parseVary(value)
-  if (!incoming.length) {
-    return
-  }
-  const existing = parseVary(headers.get('vary'))
-  if (existing.includes('*')) {
-    return
-  }
-  if (incoming.includes('*')) {
-    headers.set('vary', '*')
-    return
-  }
-  const merged = existing.slice()
-  for (const token of incoming) {
-    if (!merged.includes(token)) {
-      merged.push(token)
-    }
-  }
-  headers.set('vary', merged.join(', '))
-}
-
-function parseVary (value: string | null): string[] {
-  return value ? value.split(',').map(token => token.trim().toLowerCase()).filter(Boolean) : []
 }
