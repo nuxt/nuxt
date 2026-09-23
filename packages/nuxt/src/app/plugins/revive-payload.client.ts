@@ -42,21 +42,25 @@ if (componentIslands) {
           key: `island:${key}`,
           priority: 'island',
           scope: 'app',
-          run: signal => fetch(url, { signal }).then((r) => {
-            if (!r.ok) {
-              throw createError({ status: r.status, statusText: r.statusText })
-            }
-            return r.json()
-          }).then((r) => {
-            nuxtApp.payload.data[key] = r
-            resolve(r)
-          }, (error) => {
-            // allow a later prefetch to retry
-            if (nuxtApp.payload.data[key] === promise) {
-              delete nuxtApp.payload.data[key]
-            }
-            reject(error)
-          }),
+          run: (signal) => {
+            // `<NuxtIsland>` fetches for itself if it mounts before this runs
+            if (nuxtApp.payload.data[key] !== promise) { return resolve(nuxtApp.payload.data[key]) }
+            return fetch(url, { signal }).then((r) => {
+              if (!r.ok) {
+                throw createError({ status: r.status, statusText: r.statusText })
+              }
+              return r.json()
+            }).then((r) => {
+              nuxtApp.payload.data[key] = r
+              resolve(r)
+            }, (error) => {
+              // allow a later prefetch to retry
+              if (nuxtApp.payload.data[key] === promise) {
+                delete nuxtApp.payload.data[key]
+              }
+              reject(error)
+            })
+          },
         })
       })
       // an unobserved rejection here is not an app error; `<NuxtIsland>` refetches on mount
