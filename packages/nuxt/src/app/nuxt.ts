@@ -13,6 +13,7 @@ import type { RouteMiddleware } from './composables/router'
 import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
+import type { PrefetchScheduler } from './internal/prefetch'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
@@ -157,6 +158,9 @@ interface _NuxtApp {
 
   /** @internal */
   '_payloadRevivers': Record<string, (data: any) => any>
+
+  /** @internal */
+  '_prefetch'?: PrefetchScheduler
 
   /** @internal */
   '_routeAnnouncer'?: RouteAnnouncer

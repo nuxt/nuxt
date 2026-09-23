@@ -3,6 +3,7 @@ import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
 import { createError } from '../composables/error'
 import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
+import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
 import { componentIslands } from '#build/nuxt.config.mjs'
@@ -31,14 +32,37 @@ const revivers: [string, (data: any) => any][] = [
 if (componentIslands) {
   revivers.push(['Island', ({ key, params, result }: any) => {
     const nuxtApp = useNuxtApp()
-    if (!nuxtApp.isHydrating) {
-      nuxtApp.payload.data[key] ||= $fetch(`/__nuxt_island/${key}.json`, {
-        responseType: 'json',
-        ...params ? { params } : {},
-      }).then((r) => {
-        nuxtApp.payload.data[key] = r
-        return r
+    if (!nuxtApp.isHydrating && !nuxtApp.payload.data[key]) {
+      // an island-heavy payload has one of these per island, and each is a server render
+      // rather than a static asset
+      const promise = new Promise((resolve, reject) => {
+        usePrefetchScheduler(nuxtApp).schedule({
+          key: `island:${key}`,
+          priority: 'island',
+          scope: 'app',
+          run: (signal) => {
+            // `<NuxtIsland>` fetches for itself if it mounts before this runs
+            if (nuxtApp.payload.data[key] !== promise) { return resolve(nuxtApp.payload.data[key]) }
+            return $fetch(`/__nuxt_island/${key}.json`, {
+              responseType: 'json',
+              signal,
+              ...params ? { params } : {},
+            }).then((r) => {
+              nuxtApp.payload.data[key] = r
+              resolve(r)
+            }, (error) => {
+              // allow a later prefetch to retry
+              if (nuxtApp.payload.data[key] === promise) {
+                delete nuxtApp.payload.data[key]
+              }
+              reject(error)
+            })
+          },
+        })
       })
+      // an unobserved rejection here is not an app error; `<NuxtIsland>` refetches on mount
+      promise.catch(() => {})
+      nuxtApp.payload.data[key] = promise
     }
     return {
       html: '',
