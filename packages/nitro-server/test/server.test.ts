@@ -128,6 +128,32 @@ describe('parity between the shipped implementations and h3', () => {
     }
   })
 
+  const schema = {
+    '~standard': {
+      version: 1 as const,
+      vendor: 'test',
+      validate: (value: unknown) => (value as { name?: unknown })?.name === 'nuxt' ? { value: { ok: true } } : { issues: [{ message: 'no', path: ['name'] }] },
+    },
+  }
+
+  it.for<[string, unknown, Record<string, string>]>([
+    ['a schema accepting', schema, { name: 'nuxt' }],
+    ['a schema refusing', schema, { name: 'vue' }],
+    ['a function returning a value', () => ({ ok: 1 }), {}],
+    ['a function returning `true`', () => true, { name: 'nuxt' }],
+    ['a function refusing', () => false, {}],
+    ['a function throwing', () => { throw new Error('bad') }, {}],
+  ])('validates a body with %s the same way', async ([, validate, body]) => {
+    const settle = (promise: Promise<unknown>) => promise.then(value => ({ value }), (error: any) => ({ error: { status: error.status, statusText: error.statusText, message: error.message, data: error.data } }))
+    const { fallback, h3: h3Event } = events(post(JSON.stringify(body), 'application/json'))
+    expect(await settle(shipped.readValidatedBody(fallback, validate as never)))
+      .toEqual(await settle(h3.readValidatedBody(h3Event, validate as never)))
+
+    const query = events(new Request(`https://nuxt.com/api?${new URLSearchParams(body as Record<string, string>)}`))
+    expect(await settle(shipped.getValidatedQuery(query.fallback, validate as never)))
+      .toEqual(await settle(h3.getValidatedQuery(query.h3, validate as never)))
+  })
+
   it.for([
     ['an h3 error', () => new h3.HTTPError({ status: 404 })],
     ['a Nuxt error', () => shipped.createError({ status: 404 })],

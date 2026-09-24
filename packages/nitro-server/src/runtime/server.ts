@@ -24,7 +24,9 @@ export {
   getRequestURL,
   getRouterParam,
   getRouterParams,
+  getValidatedQuery,
   readBody,
+  readValidatedBody,
   setCookie,
 } from 'nitro/h3'
 
