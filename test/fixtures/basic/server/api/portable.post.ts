@@ -1,4 +1,4 @@
-import { createError, defineEventHandler, deleteCookie, getCookie, getQuery, getRequestHeader, getRequestURL, isNuxtError, readBody, sendRedirect, setCookie, setResponseHeader, setResponseStatus, useRuntimeConfig } from 'nuxt/server'
+import { createError, defineEventHandler, deleteCookie, getCookie, getQuery, getRequestHeader, getRequestURL, isNuxtError, readBody, sendRedirect, setCookie, setResponseStatus, useRuntimeConfig } from 'nuxt/server'
 
 export default defineEventHandler(async (event) => {
   const { fail, redirect } = getQuery<{ fail?: string, redirect?: string }>(event)
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<{ name?: string }>(event)
 
   setResponseStatus(event, 201)
-  setResponseHeader(event, 'x-portable', 'yes')
+  event.res.headers.set('x-portable', 'yes')
   setCookie(event, 'portable', 'set')
   deleteCookie(event, 'stale')
 

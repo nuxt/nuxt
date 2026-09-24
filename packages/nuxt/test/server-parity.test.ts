@@ -39,8 +39,6 @@ interface MainSurface {
   getRequestHeader: (event: RequestEvent, name: string) => string | undefined
   getRequestHeaders: (event: RequestEvent) => Record<string, string>
   setResponseStatus: (event: RequestEvent, status: number, statusText?: string) => void
-  setResponseHeader: (event: RequestEvent, name: string, value: string) => void
-  setResponseHeaders: (event: RequestEvent, headers: Record<string, string>) => void
   getQuery: <T extends Record<string, unknown> = Record<string, string | string[]>>(event: RequestEvent) => T
   readBody: <T = unknown>(event: RequestEvent) => Promise<T>
   getCookie: (event: RequestEvent, name: string) => string | undefined
@@ -74,8 +72,6 @@ const MAIN_VALUE_EXPORTS = [
   'getRequestHeader',
   'getRequestHeaders',
   'setResponseStatus',
-  'setResponseHeader',
-  'setResponseHeaders',
   'getQuery',
   'readBody',
   'getCookie',

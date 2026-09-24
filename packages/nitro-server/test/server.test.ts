@@ -192,8 +192,8 @@ describe('the shape of what it reads off an h3 v1 event', () => {
       expect(portable.node).toBe(e.node)
       expect(portable.path).toBe('/api/hello?name=nuxt')
       expect(delegate.getQuery(portable)).toEqual({ name: 'nuxt' })
-      delegate.setResponseHeader(portable, 'x-from-h3', 'yes')
-      expect(e.node.res.getHeader('x-from-h3')).toBe('yes')
+      delegate.setResponseStatus(portable, 204)
+      expect(e.node.res.statusCode).toBe(204)
     })
 
     it('resolves through `toNuxtRequestEvent` to the h3 v1 event it is a view of', () => {

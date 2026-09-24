@@ -20,7 +20,6 @@ import {
   readBody,
   setCookie,
   setResponseHeader,
-  setResponseHeaders,
   setResponseStatus,
 } from 'h3'
 import type { H3Event } from 'h3'
@@ -39,8 +38,6 @@ export {
   getRequestURL,
   readBody,
   setCookie,
-  setResponseHeader,
-  setResponseHeaders,
   setResponseStatus,
 }
 
