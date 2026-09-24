@@ -8,7 +8,10 @@ import {
   getQuery,
   getRequestHeader,
   getRequestHeaders,
+  getRequestIP,
   getRequestURL,
+  getRouterParam,
+  getRouterParams,
   isNuxtError,
   readBody,
   sendRedirect,
@@ -73,6 +76,48 @@ describe('request', () => {
   it('parses the query, resolving a repeated parameter to an array', () => {
     const e = event(new Request('https://nuxt.com/?name=nuxt&tag=a&tag=b'))
     expect(getQuery(e)).toEqual({ name: 'nuxt', tag: ['a', 'b'] })
+  })
+})
+
+describe('router params', () => {
+  function routed (params?: Record<string, string | undefined>): RequestEvent {
+    const e = event(new Request('https://nuxt.com/'))
+    return { ...e, context: { params } }
+  }
+
+  it('reads the params the server builder matched, still encoded', () => {
+    const e = routed({ id: 'a%20b' })
+    expect(getRouterParams(e)).toEqual({ id: 'a%20b' })
+    expect(getRouterParam(e, 'id')).toBe('a%20b')
+    expect(getRouterParam(e, 'missing')).toBeUndefined()
+  })
+
+  it('reads no params for a route without any', () => {
+    expect(getRouterParams(routed())).toEqual({})
+  })
+
+  it('decodes on request, keeping encoded path separators', () => {
+    const e = routed({ path: 'a%20b%2Fc%5Cd%252Fe', name: 'caf%C3%A9' })
+    expect(getRouterParam(e, 'path', { decode: true })).toBe('a b%2Fc%5Cd%252Fe')
+    expect(getRouterParams(e, { decode: true })).toEqual({ path: 'a b%2Fc%5Cd%252Fe', name: 'café' })
+  })
+})
+
+describe('`getRequestIP`', () => {
+  const forwarded = () => new Request('https://nuxt.com/', { headers: { 'x-forwarded-for': ' 203.0.113.1 , 10.0.0.1' } })
+
+  it('trusts no forwarded header by default', () => {
+    expect(getRequestIP(event(forwarded()))).toBeUndefined()
+  })
+
+  it('reads the first forwarded hop when opted in', () => {
+    expect(getRequestIP(event(forwarded()), { xForwardedFor: true })).toBe('203.0.113.1')
+  })
+
+  it('reads the address the runtime reports for the connection', () => {
+    const request = Object.assign(forwarded(), { ip: '198.51.100.7' })
+    expect(getRequestIP(event(request))).toBe('198.51.100.7')
+    expect(getRequestIP(event(new Request('https://nuxt.com/')), { xForwardedFor: true })).toBeUndefined()
   })
 })
 

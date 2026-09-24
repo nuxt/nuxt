@@ -51,6 +51,9 @@ interface FourXSurface {
   updateSession: <T extends SessionData>(event: SessionEvent, config?: SessionConfig, update?: SessionUpdate<T>) => Promise<Session<T>>
   clearSession: (event: SessionEvent, config?: SessionConfig) => Promise<void>
   deriveSecret: (purpose: string) => Promise<string>
+  getRouterParams: (event: RequestEvent, options?: { decode?: boolean }) => Record<string, string | undefined>
+  getRouterParam: (event: RequestEvent, name: string, options?: { decode?: boolean }) => string | undefined
+  getRequestIP: (event: RequestEvent, options?: { xForwardedFor?: boolean }) => string | undefined
 }
 
 /** Value exports 4.x has. */
@@ -78,6 +81,9 @@ const FOURX_VALUE_EXPORTS = [
   'updateSession',
   'clearSession',
   'deriveSecret',
+  'getRouterParams',
+  'getRouterParam',
+  'getRequestIP',
 ]
 
 /** Value exports only this branch has. */

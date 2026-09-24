@@ -20,7 +20,10 @@ export {
   deleteCookie,
   getCookie,
   getQuery,
+  getRequestIP,
   getRequestURL,
+  getRouterParam,
+  getRouterParams,
   readBody,
   setCookie,
 } from 'nitro/h3'

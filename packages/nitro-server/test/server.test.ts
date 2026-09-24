@@ -105,6 +105,30 @@ describe('parity between the shipped implementations and h3', () => {
   })
 
   it.for([
+    ['no params', undefined],
+    ['encoded params', { id: 'a%20b', path: 'x%2Fy%5Cz%252Fw' }],
+  ] as const)('reads %s the same way', ([, params]) => {
+    const { fallback, h3: h3Event } = events(new Request('https://nuxt.com/api'))
+    fallback.context.params = params
+    h3Event.context.params = params
+    for (const decode of [false, true]) {
+      expect(shipped.getRouterParams(fallback, { decode })).toEqual(h3.getRouterParams(h3Event, { decode }))
+      expect(shipped.getRouterParam(fallback, 'id', { decode })).toEqual(h3.getRouterParam(h3Event, 'id', { decode }))
+    }
+  })
+
+  it.for([
+    ['no header', {}],
+    ['a forwarded chain', { 'x-forwarded-for': ' 203.0.113.1 , 10.0.0.1' }],
+    ['an empty forwarded header', { 'x-forwarded-for': ' ' }],
+  ] as const)('reads the client IP from %s the same way', async ([, headers]) => {
+    for (const xForwardedFor of [false, true]) {
+      const { shipped: a, h3: b } = await compare(new Request('https://nuxt.com/api', { headers }), (api, event) => api.getRequestIP(event, { xForwardedFor }))
+      expect(a).toEqual(b)
+    }
+  })
+
+  it.for([
     ['an h3 error', () => new h3.HTTPError({ status: 404 })],
     ['a Nuxt error', () => shipped.createError({ status: 404 })],
     ['a plain error', () => new Error('oops')],
