@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { glob } from 'tinyglobby'
@@ -45,6 +46,36 @@ const catalogs = {
 }
 
 const packagesDir = fileURLToPath(new URL('../..', import.meta.url))
+const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
+
+const CATALOG_GLOB = '*/src/**/*.ts'
+const CODE_WHY_RE = /\b(NUXT_[A-Z]\d{4}):\s*\{\s*why:\s*([^\n]*)/g
+
+function extractCodes (sources: string[]) {
+  const codes = new Map<string, string>()
+  for (const source of sources) {
+    if (!source.includes('defineDiagnostics(')) {
+      continue
+    }
+    for (const [, code, why] of source.matchAll(CODE_WHY_RE)) {
+      codes.set(code!, why!.trim())
+    }
+  }
+  return codes
+}
+
+function git (...args: string[]) {
+  return execFileSync('git', args, { cwd: repoRoot, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] })
+}
+
+function hasRef (ref: string) {
+  try {
+    git('rev-parse', '--verify', '--quiet', `${ref}^{commit}`)
+    return true
+  } catch {
+    return false
+  }
+}
 
 describe('diagnostics catalog', () => {
   it('has no duplicate codes across every catalog', () => {
@@ -72,7 +103,7 @@ describe('diagnostics catalog', () => {
   })
 
   it('sweeps every catalog defined in the repo', async () => {
-    const files = await glob('*/src/**/*.ts', { cwd: packagesDir, absolute: true, ignore: ['**/node_modules/**'] })
+    const files = await glob(CATALOG_GLOB, { cwd: packagesDir, absolute: true, ignore: ['**/node_modules/**'] })
 
     const defined = new Set<string>()
     for (const file of files) {
@@ -86,5 +117,30 @@ describe('diagnostics catalog', () => {
     }
 
     expect([...defined].filter(name => !(name in catalogs)).sort()).toStrictEqual([])
+  })
+
+  it('assigns every code shared with `origin/main` to the same diagnostic', async (ctx) => {
+    const ref = 'origin/main'
+    if (!hasRef(ref)) {
+      ctx.skip(`\`${ref}\` is not available; fetch it (for example \`git fetch origin main\`) to compare catalogs across branches`)
+    }
+
+    const files = await glob(CATALOG_GLOB, { cwd: packagesDir, absolute: true, ignore: ['**/node_modules/**'] })
+    const current = extractCodes(files.map(file => readFileSync(file, 'utf-8')))
+
+    const otherFiles = git('grep', '-l', 'defineDiagnostics(', ref, '--', 'packages/*/src/**.ts')
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+    const other = extractCodes(otherFiles.map(file => git('show', file)))
+
+    expect(current.size).toBeGreaterThan(0)
+    expect(other.size).toBeGreaterThan(0)
+
+    const mismatches = [...other]
+      .filter(([code, why]) => current.has(code) && current.get(code) !== why)
+      .map(([code, why]) => `${code}\n  ${ref}: ${why}\n  HEAD: ${current.get(code)}`)
+
+    expect(mismatches).toStrictEqual([])
   })
 })
