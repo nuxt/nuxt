@@ -1,11 +1,11 @@
 import { fileURLToPath } from 'node:url'
 import { isWindows } from 'std-env'
 import type { Router } from 'vue-router'
-import { unpatchedVue } from '../fixtures/hydration-navigation/unpatched-vue'
+import { vue3542 } from '../fixtures/hydration-navigation/vue-3-5-42'
 import { expect, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
-test.skip(({ builder }) => builder !== 'vite', 'The unpatched client runtime is configured through Vite.')
+test.skip(({ builder }) => builder !== 'vite', 'The Vue 3.5.42 client runtime is configured through Vite.')
 
 test.use({
   nuxt: {
@@ -14,10 +14,10 @@ test.use({
     browser: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
     // The dev subprocess reloads nuxt.config; production builds use nuxtConfig below.
-    env: { TEST_UNPATCHED_VUE: '1' },
+    env: { TEST_VUE_3_5_42: '1' },
     nuxtConfig: {
-      buildDir: `.nuxt-unpatched-${process.pid}`,
-      vite: { plugins: [unpatchedVue()] },
+      buildDir: `.nuxt-vue-3-5-42-${process.pid}`,
+      vite: { plugins: [vue3542()] },
     },
   },
 })

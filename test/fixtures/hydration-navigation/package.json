@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "typescript": "catalog:dev",
-    "vue-unpatched": "catalog:dev"
+    "vue-3-5-42": "catalog:dev"
   },
   "engines": {
     "node": "^22.19.0 || ^24.11.0 || >=26.0.0"

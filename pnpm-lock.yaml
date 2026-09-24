@@ -634,15 +634,15 @@ catalogs:
     vitest-environment-nuxt:
       specifier: 2.0.0
       version: 2.0.0
+    vue-3-5-42:
+      specifier: npm:vue@3.5.42
+      version: 3.5.42
     vue-sfc-transformer:
       specifier: 0.3.0
       version: 0.3.0
     vue-tsc:
       specifier: 3.3.11
       version: 3.3.11
-    vue-unpatched:
-      specifier: npm:vue@3.5.42
-      version: 3.5.42
   nitro-runtime:
     '@jridgewell/trace-mapping':
       specifier: ^0.3.31
@@ -2263,7 +2263,7 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
-      vue-unpatched:
+      vue-3-5-42:
         specifier: catalog:dev
         version: vue@3.5.42(typescript@6.0.3)
 
