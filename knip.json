@@ -139,7 +139,7 @@
     },
     "packages/ui-templates": {
       "entry": [
-        "lib/*.ts",
+        "lib/*.{ts,mjs}",
         "templates/**/shader/start.ts!"
       ],
       "ignoreDependencies": [
