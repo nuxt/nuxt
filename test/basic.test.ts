@@ -178,6 +178,13 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     expect(await response.text()).toContain('url=/login')
   })
 
+  it('should explain when an h3 handler calls a `nuxt/server` helper', async () => {
+    const response = await fetch('/api/portable-mixed')
+
+    expect(response.status).toBe(500)
+    expect(await response.json()).toMatchObject({ message: expect.stringContaining('NUXT_E8012') })
+  })
+
   it('should auto-import', async () => {
     const res = await $fetch('/api/auto-imports')
     expect(res).toMatchInlineSnapshot(`

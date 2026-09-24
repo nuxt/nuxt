@@ -231,4 +231,12 @@ describe('the shape of what it reads off an h3 v1 event', () => {
       expect(handler(e)).toBe(handler(e))
     })
   })
+
+  it('explains when given the event of a handler defined with h3\'s `defineEventHandler`', () => {
+    const e = event('/api/mixed?name=nuxt')
+
+    expect(() => delegate.getValidatedQuery(e as never, query => query)).toThrow(/NUXT_E8012.*getValidatedQuery.*import `defineEventHandler` from `nuxt\/server`/is)
+    expect(() => delegate.handleCors(e as never)).toThrow(expect.objectContaining({ statusCode: 500 }))
+    expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012/)
+  })
 })

@@ -35,5 +35,10 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Rename the prop (e.g. `templateName`), or disable `vue.runtimeCompiler` if you do not need runtime template compilation.',
       docs: false,
     },
+    NUXT_E8012: {
+      why: (p: { helper: string }) => `\`${p.helper}\` from \`nuxt/server\` was called with an h3 event. The handler was defined with h3's \`defineEventHandler\` (auto-imported), which passes a different event.`,
+      fix: 'Import `defineEventHandler` from `nuxt/server` alongside the helpers. See `https://nuxt.com/docs/4.x/getting-started/upgrade#moving-to-nuxtserver`.',
+      docs: false,
+    },
   },
 })

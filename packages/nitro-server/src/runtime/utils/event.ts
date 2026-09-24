@@ -184,6 +184,8 @@ function toBufferedBodyStream (event: H3Event): ReadableStream<Uint8Array> {
   })
 }
 
+export const PORTABLE_EVENT = '~portable'
+
 const portableEvents = new WeakMap<H3Event, RequestEvent>()
 
 /**
@@ -200,6 +202,9 @@ export function toPortableEvent (event: H3Event): RequestEvent {
   const web = toWebView(event)
   const portable = new Proxy(event, {
     get (target, property) {
+      if (property === PORTABLE_EVENT) {
+        return true
+      }
       return WEB_PROPERTIES.has(property as string)
         ? web[property as keyof RendererEvent]
         : Reflect.get(target, property, target)

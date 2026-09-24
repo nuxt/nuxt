@@ -27,10 +27,20 @@ import { getRouteRules as getNitroRouteRules, useRuntimeConfig as useNitroRuntim
 import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
 import type { EventHandler, NuxtErrorLike } from 'nuxt/server'
 
-import { getRouterParams as getPortableRouterParams } from 'nuxt/internal/server-default'
+import {
+  clearSession as clearPortableSession,
+  getRouterParams as getPortableRouterParams,
+  getSession as getPortableSession,
+  getValidatedQuery as getPortableValidatedQuery,
+  handleCors as handlePortableCors,
+  readValidatedBody as readPortableValidatedBody,
+  updateSession as updatePortableSession,
+  useSession as usePortableSession,
+} from 'nuxt/internal/server-default'
 
 import { NUXT_ERROR_SIGNATURE } from '#app/error'
-import { toPortableEvent } from './utils/event'
+import { PORTABLE_EVENT, toPortableEvent } from './utils/event'
+import { serverDiagnostics } from './diagnostics'
 
 export {
   deleteCookie,
@@ -42,17 +52,28 @@ export {
 }
 
 export {
-  clearSession,
   deriveSecret,
-  getSession,
-  getValidatedQuery,
-  handleCors,
-  readValidatedBody,
   toNuxtRequestEvent,
-  updateSession,
   useAppConfig,
-  useSession,
 } from 'nuxt/internal/server-default'
+
+export const clearSession = /* #__PURE__ */ requirePortableEvent('clearSession', clearPortableSession)
+export const getSession = /* #__PURE__ */ requirePortableEvent('getSession', getPortableSession)
+export const getValidatedQuery = /* #__PURE__ */ requirePortableEvent('getValidatedQuery', getPortableValidatedQuery)
+export const handleCors = /* #__PURE__ */ requirePortableEvent('handleCors', handlePortableCors)
+export const readValidatedBody = /* #__PURE__ */ requirePortableEvent('readValidatedBody', readPortableValidatedBody)
+export const updateSession = /* #__PURE__ */ requirePortableEvent('updateSession', updatePortableSession)
+export const useSession = /* #__PURE__ */ requirePortableEvent('useSession', usePortableSession)
+
+function requirePortableEvent<F extends (event: any, ...args: any[]) => any> (helper: string, fn: F): F {
+  return function (this: unknown, event: Record<string, unknown>, ...args: unknown[]) {
+    if (event?.[PORTABLE_EVENT] !== true && event && 'node' in event) {
+      const diagnostic = serverDiagnostics.NUXT_E8012({ helper })
+      throw createError({ status: 500, statusText: 'Server Error', message: `[${diagnostic.code}] ${diagnostic.message} ${diagnostic.fix}` })
+    }
+    return fn.call(this, event, ...args)
+  } as F
+}
 
 export type { AppRouteRules, ServerRoutes } from 'nuxt/schema'
 export type { CorsOptions, EventHandler, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent, Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate, ValidateResult } from 'nuxt/server'
