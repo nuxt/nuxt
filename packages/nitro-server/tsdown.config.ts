@@ -29,6 +29,7 @@ export default defineConfig([
         '#internal/nuxt/app-config',
         '#internal/nuxt/entry-ids.mjs',
         '#internal/nuxt/nitro-config.mjs',
+        '#internal/nuxt/error-channel',
       ],
     },
   },

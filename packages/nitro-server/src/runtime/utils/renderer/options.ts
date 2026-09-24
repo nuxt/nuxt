@@ -36,7 +36,7 @@ export const rendererOptions: NuxtRendererOptions = {
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints.link),
   onRenderSuccess: import.meta.dev
     ? () => {
-        import('../error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
       }
     : undefined,
   prerender: import.meta.prerender

@@ -22,7 +22,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   let report: ErrorReport | undefined
   let errorCause: SerializedErrorCause | undefined
   if (import.meta.dev) {
-    const errorChannel = await import('../utils/error-channel')
+    const errorChannel = await import('#internal/nuxt/error-channel')
     // a handled client error (a 404, a failed validation) is the app working as intended,
     // unless the app threw a bare value that was given a status on its way here
     // branded rather than `instanceof`, so an error raised against another copy of h3
@@ -134,7 +134,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
     if (import.meta.dev && isRenderingError) {
       setResponseHeader(event, ERROR_PAGE_HEADER, '1')
     } else if (import.meta.dev && report) {
-      const { renderErrorPage } = await import('../utils/error-channel')
+      const { renderErrorPage } = await import('#internal/nuxt/error-channel')
       const body = await renderErrorPage(report, event).catch(() => undefined)
       if (body) {
         return send(event, body)
@@ -162,7 +162,7 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : defaultRes.status, res.statusText || defaultRes.statusText)
 
   if (import.meta.dev && !import.meta.test && report && typeof html === 'string') {
-    const { renderErrorPage, withErrorOverlay } = await import('../utils/error-channel')
+    const { renderErrorPage, withErrorOverlay } = await import('#internal/nuxt/error-channel')
     try {
       html = res.headers.has(ERROR_PAGE_HEADER)
         // the app's own error page did not render, so the report is the page
