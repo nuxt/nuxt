@@ -52,11 +52,11 @@ describe('the shape of what it reads off an h3 v1 event', () => {
     const res = {
       statusCode: 200,
       statusMessage: undefined as string | undefined,
-      setHeader: (name: string, value: string | string[]) => { headers[name] = value },
-      getHeader: (name: string) => headers[name],
-      getHeaders: () => headers,
-      hasHeader: (name: string) => name in headers,
-      removeHeader: (name: string) => { delete headers[name] },
+      setHeader: (name: string, value: string | string[]) => { headers[name.toLowerCase()] = value },
+      getHeader: (name: string) => headers[name.toLowerCase()],
+      getHeaders: () => ({ ...headers }),
+      hasHeader: (name: string) => name.toLowerCase() in headers,
+      removeHeader: (name: string) => { delete headers[name.toLowerCase()] },
     }
     return createEvent(req as never, res as never)
   }
@@ -181,6 +181,27 @@ describe('the shape of what it reads off an h3 v1 event', () => {
       portable.res.headers.set('x-from-portable', 'yes')
       expect(e.node.res.statusCode).toBe(418)
       expect(e.node.res.getHeader('x-from-portable')).toBe('yes')
+    })
+
+    it('writes response headers the way a standard `Headers` object does', () => {
+      const portable = delegate.defineEventHandler(portable => portable)(event('/'))
+      const standard = new Headers()
+      for (const target of [portable.res.headers, standard]) {
+        target.set('X-B', 'one')
+        target.append('x-b', 'two')
+        target.set('x-a', 'first')
+        target.append('set-cookie', 'a=1')
+        target.append('set-cookie', 'b=2')
+        target.set('x-removed', 'yes')
+        target.delete('X-Removed')
+      }
+
+      const read = (headers: Headers) => {
+        const visited: string[][] = []
+        headers.forEach((value, name) => visited.push([name, value]))
+        return { entries: [...headers], keys: [...headers.keys()], values: [...headers.values()], visited, cookies: headers.getSetCookie(), b: headers.get('x-b'), removed: headers.has('x-removed') }
+      }
+      expect(read(portable.res.headers)).toEqual(read(standard))
     })
 
     it('is still the runtime event, so h3\'s own helpers work on it', () => {

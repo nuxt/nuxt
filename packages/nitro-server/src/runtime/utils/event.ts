@@ -76,15 +76,35 @@ class NodeResponseHeaders {
   }
 
   * entries (): IterableIterator<[string, string]> {
-    for (const [name, value] of Object.entries(this.res.getHeaders())) {
+    const headers = this.res.getHeaders()
+    for (const name of Object.keys(headers).sort()) {
+      const value = headers[name]
       if (value === undefined) { continue }
-      if (Array.isArray(value)) {
+      if (name === 'set-cookie' && Array.isArray(value)) {
         for (const entry of value) {
           yield [name, entry]
         }
       } else {
-        yield [name, String(value)]
+        yield [name, Array.isArray(value) ? value.join(', ') : String(value)]
       }
+    }
+  }
+
+  * keys (): IterableIterator<string> {
+    for (const [name] of this.entries()) {
+      yield name
+    }
+  }
+
+  * values (): IterableIterator<string> {
+    for (const [, value] of this.entries()) {
+      yield value
+    }
+  }
+
+  forEach (callback: (value: string, name: string, parent: Headers) => void, thisArg?: unknown): void {
+    for (const [name, value] of this.entries()) {
+      callback.call(thisArg, value, name, this as unknown as Headers)
     }
   }
 
