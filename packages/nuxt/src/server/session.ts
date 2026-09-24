@@ -73,6 +73,13 @@ interface SessionEntry {
 
 const sessionCache = new WeakMap<object, Map<string, SessionEntry>>()
 
+/** Tags a sealed payload as a Nuxt session, so values sealed by other libraries with the same password are rejected. */
+const PAYLOAD_VERSION = 1
+
+interface SealedSession<T extends SessionData> extends Session<T> {
+  nuxt: typeof PAYLOAD_VERSION
+}
+
 /**
  * The session for the request, with the operations that write it back.
  *
@@ -87,6 +94,8 @@ const sessionCache = new WeakMap<object, Map<string, SessionEntry>>()
  *   return { visits: session.data.visits }
  * })
  * ```
+ *
+ * @remarks The sealed cookie format may change in a minor release; existing sessions are read in the old format and resealed in the new one on their next write.
  *
  * @since 4.6.0
  */
@@ -187,15 +196,16 @@ async function unsealSession<T extends SessionData> (sealed: string, config: Ses
   const password = await resolvePassword(config)
   const unsealed = await unseal(sealed, password, {
     ttl: config.maxAge ? config.maxAge * 1000 : 0,
-  }).catch(() => undefined) as Session<T> | undefined
-  if (unsealed && typeof unsealed.id === 'string' && unsealed.data) {
-    return unsealed
+  }).catch(() => undefined) as SealedSession<T> | undefined
+  if (unsealed?.nuxt === PAYLOAD_VERSION && typeof unsealed.id === 'string' && unsealed.data) {
+    return { id: unsealed.id, data: unsealed.data }
   }
 }
 
 async function sealSession (event: SessionEvent, config: SessionConfig, session: Session<any>): Promise<void> {
   const name = config.name ?? DEFAULT_NAME
-  const sealed = await seal(session, await resolvePassword(config), {
+  const payload: SealedSession<any> = { nuxt: PAYLOAD_VERSION, id: session.id, data: session.data }
+  const sealed = await seal(payload, await resolvePassword(config), {
     ttl: config.maxAge ? config.maxAge * 1000 : 0,
   })
 
