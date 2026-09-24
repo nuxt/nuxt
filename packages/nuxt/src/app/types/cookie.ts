@@ -2,7 +2,7 @@
  * Options for writing a cookie, covering the `Set-Cookie` attributes of RFC 6265 and its
  * extensions.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export interface CookieSerializeOptions {
   maxAge?: number

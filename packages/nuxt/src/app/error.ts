@@ -29,7 +29,7 @@ export interface NuxtError<DataT = unknown> extends Error {
 /**
  * Details accepted when constructing a {@link NuxtError}, as `createError()` reads them.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export type NuxtErrorDetails<DataT = unknown> = Partial<NuxtError<DataT>>
 

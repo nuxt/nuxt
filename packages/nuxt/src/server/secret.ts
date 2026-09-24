@@ -18,7 +18,7 @@ let warnedGenerated = false
  * ```
  *
  * @throws a `500` when `appSecret` is unset or shorter than 32 characters.
- * @since 5.0.0
+ * @since 4.6.0
  */
 export async function deriveSecret (purpose: string): Promise<string> {
   const root = useRuntimeConfig().appSecret
