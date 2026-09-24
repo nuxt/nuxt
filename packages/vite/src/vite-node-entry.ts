@@ -7,6 +7,12 @@ import runner from '#vite-node-runner'
 
 let render: (ssrContext: NuxtSSRContext) => Promise<any>
 
+// evaluates module bodies only: the entry is not called, so no plugin, component or route
+// code runs. A failure here is left for the first render to surface.
+if (viteNodeOptions.warmupPath) {
+  setTimeout(() => runner.executeFile(viteNodeOptions.warmupPath!).catch(() => {}), 0)
+}
+
 export default async (ssrContext: NuxtSSRContext): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983

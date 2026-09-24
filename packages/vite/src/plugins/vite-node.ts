@@ -285,6 +285,12 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
         ? await resolvePath(join(nuxt.options.appDir, 'entry-spa'))
         : undefined
 
+      // the dev SSR entry only imports the app entry as it renders, so the runner is given
+      // the app entry directly and evaluates the shared graph before the first request
+      const warmupPath = nuxt.options.ssr && nuxt.options.vite.warmupEntry !== false
+        ? await resolvePath(join(nuxt.options.appDir, 'entry'))
+        : undefined
+
       // The SSR module graph isn't reachable from the file watcher or the
       // `app:templatesGenerated` hook for modules invalidated by user plugins
       // (e.g. virtual modules invalidated via `handleHotUpdate`). Track the
@@ -378,6 +384,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
           socketPath,
           root: nuxt.options.srcDir,
           entryPath: spaEntryPath ?? resolveServerEntry(ssrServer.config),
+          warmupPath,
           base: '/',
           maxRetryAttempts: nuxt.options.vite.viteNode?.maxRetryAttempts,
           baseRetryDelay: nuxt.options.vite.viteNode?.baseRetryDelay,
@@ -737,6 +744,7 @@ export type ViteNodeServerOptions = {
   socketPath: string
   root: string
   entryPath: string
+  warmupPath?: string
   base: string
   maxRetryAttempts?: number
   baseRetryDelay?: number

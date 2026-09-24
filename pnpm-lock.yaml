@@ -2198,6 +2198,12 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/dev-warmup:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/dynamic-paths:
     dependencies:
       '@nuxt/rspack-builder':
