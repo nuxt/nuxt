@@ -27,6 +27,7 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands
 import { rendererDiagnostics } from './diagnostics'
 import { warnNoScriptsClientReliance } from './no-scripts'
 import { extractCspNonce } from './csp-nonce'
+import { PAYLOAD_BUILD_ID_PARAM, PAYLOAD_FILENAME, parseRequestPath, payloadRequestToRoute } from './url'
 import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
@@ -43,8 +44,6 @@ const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToSt
 const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/
-const PAYLOAD_FILENAME = '_payload.json'
-const PAYLOAD_BUILD_ID_PARAM = '_b'
 
 // Bot detection regex for SSR streaming.
 const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
@@ -295,11 +294,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
-    const payloadURL = new URL(ssrContext.url, 'http://localhost')
-    const url = payloadURL.pathname.slice(0, -`/${PAYLOAD_FILENAME}`.length) || '/'
-
-    payloadURL.searchParams.delete(PAYLOAD_BUILD_ID_PARAM)
-    ssrContext.url = url + payloadURL.search
+    ssrContext.url = payloadRequestToRoute(ssrContext.url)
 
     if (import.meta.prerender && await runtime.prerender!.payloadCache.hasItem(ssrContext.url + '.json')) {
       event.res.headers.set('content-type', 'application/json')
@@ -1100,7 +1095,7 @@ function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: strin
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext): string {
-  const url = new URL(ssrContext.url, 'http://localhost')
+  const url = parseRequestPath(ssrContext.url)
   const baseURL = ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL
   const payloadURL = joinURL(baseURL, url.pathname, PAYLOAD_FILENAME)
 
