@@ -35,6 +35,7 @@ import importsModule from '../imports/module.ts'
 import compilerModule from '../compiler/module.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 
+import { resolveDevAppSecret } from './app-secret.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -481,14 +482,15 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     const helperModule = resolveModulePath('unctx', { from: import.meta.url, try: true }) ?? 'unctx'
-    // Add unctx transform
+    // server-only: the `executeAsync` wrappers restore context across `await`, which a
+    // browser's set-once Nuxt app does not need
     addBuildPlugin(UnctxTransformPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
         helperModule,
       },
-    }))
+    }), { client: false })
 
     // Add composable tree-shaking optimisations
     if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
@@ -575,6 +577,15 @@ async function initNuxt (nuxt: Nuxt) {
 
     // add plugin to make warnings less verbose in dev mode
     addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
+  }
+
+  // Registered before `installModules` so module `build:manifest` hooks can attach to these
+  if (!nuxt.options.dev) {
+    nuxt.hook('build:manifest', (manifest) => {
+      for (const src of nuxt.options._noScriptsPageSources) {
+        manifest[src] ||= { file: '', src }
+      }
+    })
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
@@ -1073,6 +1084,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])
   const serverTsConfig = defu(options.typescript.serverTsConfig, nitroOptions.typescript?.tsConfig)
   createPortalProperties(serverTsConfig, options, ['nitro.typescript.tsConfig', 'typescript.serverTsConfig'])
+
+  // must follow the `runtimeConfig` portal, which repoints `options.runtimeConfig`
+  if (options.dev) {
+    await resolveDevAppSecret(options)
+  }
 
   // prevent replacement of options.nitro
   Object.defineProperties(options, {

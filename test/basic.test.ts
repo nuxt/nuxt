@@ -5,18 +5,23 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
+
+const appSecret = 'nuxt-runtime-app-secret-test-value'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: isDev,
   server: true,
   browser: true,
+  env: {
+    NUXT_APP_SECRET: appSecret,
+  },
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     hooks: {
@@ -30,6 +35,33 @@ await setup({
       },
     },
   },
+})
+
+describe('application secret', () => {
+  it('provides the application secret only on the server', async () => {
+    expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret })
+    expect(await $fetch<string>('/')).not.toContain(appSecret)
+
+    const page = await createPage('/')
+    try {
+      const config = await page.evaluate(() => window.useNuxtApp!().$config)
+      expect(config).not.toHaveProperty('appSecret')
+      expect(JSON.stringify(config)).not.toContain(appSecret)
+    } finally {
+      await page.close()
+    }
+  })
+
+  it.skipIf(isDev || !runsOncePerBuilderInMatrix).each([
+    undefined, '', '123', 'true', 'null', '4848e0', '"quoted-secret"', '{"key":"secret"}',
+  ])('preserves the runtime environment secret %j', async (value) => {
+    try {
+      await startServer({ env: { NUXT_APP_SECRET: value, NITRO_APP_SECRET: undefined } })
+      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret: value ?? '' })
+    } finally {
+      await startServer()
+    }
+  })
 })
 
 describe.skipIf(!runsOnceInMatrix)('server api', () => {
@@ -1880,6 +1912,8 @@ describe.skipIf(isDev)('inlining component styles', () => {
     ...nonGlobalCSS,
     '{--server-only-child:"server-only-child"}', // child of a server-only component
     '{--server-only:"server-only"}', // server-only component not in client build
+    // webpack recovers a server-only component's styles from its SFC blocks alone
+    ...isWebpack ? [] : ['{--server-only-imported:"server-only-imported"}'], // CSS imported by a server-only component
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
     // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
@@ -2105,6 +2139,76 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await pendingRequests.shift()!.continue()
     await expect.poll(() => pendingRequests.length).toBe(8)
     expect(pendingRequests.at(-1)!.request().url()).toMatch(/\/hint-a\.svg\?route=6$/)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should free hint slots when navigating to a route whose hints are in flight', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/1'))
+    await expect.poll(() => pendingRequests.length).toBe(2)
+
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/prefetch/hints/1'))
+    await page.waitForFunction(() => window.useNuxtApp!()._route.path === '/prefetch/hints/1')
+
+    for (let route = 2; route <= 5; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+    }
+
+    await expect.poll(() => pendingRequests.length).toBe(10)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should promote queued prefetch work for a link the user interacts with', async () => {
+    const { page, requests } = await renderPage('/prefetch/ladder')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    for (let route = 1; route <= 4; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+    }
+    await expect.poll(() => pendingRequests.length).toBe(8)
+
+    const payloadRequested = (route: number) => requests.some(req => req.startsWith(`/prefetch/hints/${route}/_payload.json`))
+
+    await page.hover('#ladder-link')
+    await expect.poll(() => payloadRequested(5)).toBe(true)
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/6'))
+    await expect.poll(() => payloadRequested(6)).toBe(true)
+
+    await page.dispatchEvent('#ladder-link', 'pointerdown')
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(8)
+    expect(pendingRequests.at(-1)!.request().url()).toMatch(/\/hint-a\.svg\?route=5$/)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should bound concurrent island requests when prefetching an island-heavy payload', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/__nuxt_island\/AsyncServerComponent/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/many-islands'))
+
+    await expect.poll(() => pendingRequests.length).toBe(4)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect(pendingRequests).toHaveLength(4)
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(4)
 
     await page.close()
   })

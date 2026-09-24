@@ -42,7 +42,7 @@ describe('nitro v2 runtime hook bridge', () => {
   })
 
   it('reports a streamed body read once per hook', async () => {
-    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8009').mockImplementation(() => ({}) as any)
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8011').mockImplementation(() => ({}) as any)
     const { hooks, handlers } = createNitroApp()
 
     const seen: unknown[] = []

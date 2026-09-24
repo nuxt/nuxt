@@ -27,6 +27,7 @@
         "scripts/*",
         "test/*.ts",
         "test/e2e/*.ts",
+        "test/renderer/*.ts",
         "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
         "test/mocks/app-config.ts",
@@ -100,9 +101,6 @@
       ]
     },
     "packages/vite": {
-      "entry": [
-        "src/fix-stacktrace.ts"
-      ],
       "ignoreDependencies": [
         "mocked-exports",
         "nitropack",
@@ -141,7 +139,8 @@
     },
     "packages/ui-templates": {
       "entry": [
-        "lib/*.ts"
+        "lib/*.ts",
+        "templates/**/shader/start.ts!"
       ],
       "ignoreDependencies": [
         "@vue/shared"

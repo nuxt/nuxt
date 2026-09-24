@@ -37,6 +37,7 @@ export type RendererConfigName =
   | 'NUXT_PRERENDER_NO_SSR_ROUTES'
   | 'NUXT_EARLY_HINTS'
   | 'NUXT_NO_SCRIPTS'
+  | 'NUXT_HAS_NO_SCRIPTS_ROUTES'
   | 'NUXT_NO_SCRIPTS_PROD'
   | 'NUXT_INLINE_STYLES'
   | 'NUXT_VIEW_TRANSITIONS'
@@ -44,6 +45,7 @@ export type RendererConfigName =
   | 'NUXT_PAGE_PATTERNS'
   | 'NUXT_EARLY_404'
   | 'NUXT_PAGE_MATCHER'
+  | 'NUXT_INLINE_ERROR_RENDERING'
   | 'PARSE_ERROR_DATA'
   | 'NUXT_PAYLOAD_EXTRACTION'
   | 'NUXT_PAYLOAD_INLINE'
@@ -98,6 +100,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_PRERENDER_NO_SSR_ROUTES: '[]',
     NUXT_EARLY_HINTS: String(nuxt.options.experimental.writeEarlyHints !== false),
     NUXT_NO_SCRIPTS: String(noScripts === 'all' || (!!noScripts && !nuxt.options.dev)),
+    NUXT_HAS_NO_SCRIPTS_ROUTES: 'false',
     NUXT_NO_SCRIPTS_PROD: String(noScripts === 'production'),
     NUXT_INLINE_STYLES: String(!!nuxt.options.features.inlineStyles),
     NUXT_VIEW_TRANSITIONS: String(!!(app.viewTransition && typeof app.viewTransition === 'object' && app.viewTransition.enabled)),
@@ -105,6 +108,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_PAGE_PATTERNS: '[]',
     NUXT_EARLY_404: 'false',
     NUXT_PAGE_MATCHER: 'undefined',
+    NUXT_INLINE_ERROR_RENDERING: String(!!nuxt.options.experimental.inlineErrorRendering),
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     PARSE_ERROR_DATA: String(!!nuxt.options.experimental.parseErrorData),
     NUXT_PAYLOAD_EXTRACTION: String(payloadExtraction !== false),

@@ -973,6 +973,7 @@ export interface ConfigSchema {
    * The value of this object is accessible from server only using `useRuntimeConfig`.
    * It mainly should hold _private_ configuration which is not exposed on the frontend. This could include a reference to your API secret tokens.
    * Anything under `public` and `app` will be exposed to the frontend as well.
+   * Keys prefixed with `app` (such as `app` and `appSecret`) are reserved for Nuxt.
    * Values are automatically replaced by matching env variables at runtime, e.g. setting an environment variable `NUXT_API_KEY=my-api-key NUXT_PUBLIC_BASE_URL=/foo/` would overwrite the two values in the example below.
    *
    * @example
@@ -1041,6 +1042,16 @@ export interface ConfigSchema {
     loadingTemplate: (data: { loading?: string }) => string
 
     /**
+     * Base path of the live error channel served in development.
+     *
+     * Error pages and overlays subscribe to it to update in place, dismiss
+     * themselves when the problem is fixed, and open a frame in the editor.
+     *
+     * @experimental
+     */
+    errorChannel: string
+
+    /**
      * Set CORS options for the dev server
      */
     cors: 'origin' extends keyof H3CorsOptions
@@ -1086,6 +1097,8 @@ export interface ConfigSchema {
    * Inline styles when rendering HTML (currently vite only).
    *
    * You can also pass a function that receives the path of a Vue component and returns a boolean indicating whether to inline the styles for that component.
+   *
+   * Pages covered by a `noScripts` route rule always have their styles inlined.
    */
     inlineStyles: boolean | ((id?: string) => boolean)
 
@@ -1201,6 +1214,17 @@ export interface ConfigSchema {
      * `@default` true (or 'client' when compatibilityVersion >= 5)
      */
     payloadExtraction: 'client' | boolean | undefined
+
+    /**
+     * Render the error page in the Nuxt renderer itself when a server render fails, rather than
+     * handing the error to the server runtime and re-entering the renderer over an internal request.
+     *
+     * The error page is rendered in process, on the same request event, so the response keeps the
+     * headers and cookies the failed render had already written.
+     *
+     * @default true (when compatibilityVersion >= 5)
+     */
+    inlineErrorRendering: boolean
 
     /**
      * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
@@ -1903,6 +1927,13 @@ export interface ConfigSchema {
   _modules: Array<any>
 
   /**
+   * Sources of the pages that are served without scripts, as registered in `ssrContext.modules`.
+   *
+   * @private
+   */
+  _noScriptsPageSources: Array<string>
+
+  /**
    * Configuration for Nuxt's server builder.
    *
    * `'nitro'` and `'vite'` are shorthands for `'@nuxt/nitro-server'` (a full server
@@ -1981,6 +2012,9 @@ export interface ConfigSchema {
 
     /**
      * Options for configuring PostCSS plugins.
+     *
+     * No plugins are configured by default with the Vite builder. A plugin named here is resolved
+     * from your project, so `autoprefixer` and `cssnano` have to be installed to be used.
      *
      * @see [PostCSS docs](https://postcss.org/)
      */

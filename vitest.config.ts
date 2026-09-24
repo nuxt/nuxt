@@ -95,6 +95,7 @@ interface FixtureMatrixEntry {
   builder: 'vite' | 'rspack' | 'webpack' | 'nitro-vite'
   context: 'async' | 'default'
   manifest: 'manifest-on' | 'manifest-off'
+  legacyErrors?: boolean
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
@@ -120,8 +121,18 @@ const fixtureMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on' },
 ]
 
+// The matrix above runs with `experimental.inlineErrorRendering` at its default, which is on from
+// compatibility version 5. These re-run every suite asserting on an error response with it off.
+const legacyErrorMatrix: FixtureMatrixEntry[] = [
+  { env: 'built', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
+  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
+]
+
+const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
+
 function fixtureProjectName (entry: FixtureMatrixEntry) {
-  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}`
+  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}${entry.legacyErrors ? '-legacy-errors' : ''}`
 }
 
 function fixtureProjectEnv (entry: FixtureMatrixEntry) {
@@ -130,10 +141,49 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_BUILDER: entry.builder,
     TEST_CONTEXT: entry.context,
     TEST_MANIFEST: entry.manifest,
+    ...entry.legacyErrors ? { TEST_ERROR_RENDERING: 'legacy-errors' } : {},
   }
 }
 
 const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js']
+
+// stands in for the defines and aliases a server builder applies in its own bundle
+function rendererProject (name: string, include: string[], rendererConfig: string) {
+  return {
+    define: {
+      'import.meta.dev': 'false',
+      'import.meta.server': 'true',
+      'import.meta.client': 'false',
+      'import.meta.prerender': 'false',
+    },
+    resolve: {
+      alias: {
+        'nuxt/internal/renderer-config': resolve(rendererConfig),
+        'nuxt/internal/entry': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry.mjs'),
+        'nuxt/internal/manifest': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/manifest.mjs'),
+        'nuxt/internal/precomputed': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/precomputed.mjs'),
+        'nuxt/internal/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
+        'nuxt/internal/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
+        'nuxt/internal/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
+        '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
+        // provided by the server builder in a real build; the fixture writes them out
+        '#internal/nuxt/paths': resolve('./test/fixtures/standalone-renderer/.nuxt/paths.mjs'),
+      },
+    },
+    test: {
+      name,
+      include,
+      globalSetup: ['./test/setup-renderer-prepare.ts'],
+      testTimeout: 60_000,
+      benchmark: { include: [] },
+    },
+  }
+}
+
+const rendererProjects = [
+  rendererProject('renderer', ['test/renderer/*.test.ts', '!test/renderer/legacy-errors.test.ts'], './test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
+  rendererProject('renderer-legacy-errors', ['test/renderer/legacy-errors.test.ts'], './test/fixtures/standalone-renderer/renderer-config-legacy-errors.mjs'),
+]
 
 export default defineConfig({
   test: {
@@ -162,11 +212,11 @@ export default defineConfig({
           },
         },
       },
-      ...fixtureMatrix.map(entry => ({
+      ...[...fixtureMatrix, ...legacyErrorMatrix].map(entry => ({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
-          include: ['test/*.test.ts'],
+          include: entry.legacyErrors ? legacyErrorInclude : ['test/*.test.ts'],
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
@@ -176,36 +226,7 @@ export default defineConfig({
           env: fixtureProjectEnv(entry),
         },
       })),
-      {
-        // stands in for the defines and aliases a server builder applies in its own bundle
-        define: {
-          'import.meta.dev': 'false',
-          'import.meta.server': 'true',
-          'import.meta.client': 'false',
-          'import.meta.prerender': 'false',
-        },
-        resolve: {
-          alias: {
-            'nuxt/internal/renderer-config': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
-            'nuxt/internal/entry': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry.mjs'),
-            'nuxt/internal/manifest': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/manifest.mjs'),
-            'nuxt/internal/precomputed': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/precomputed.mjs'),
-            'nuxt/internal/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
-            'nuxt/internal/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
-            'nuxt/internal/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
-            '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
-            // provided by the server builder in a real build; the fixture writes them out
-            '#internal/nuxt/paths': resolve('./test/fixtures/standalone-renderer/.nuxt/paths.mjs'),
-          },
-        },
-        test: {
-          name: 'renderer',
-          include: ['test/renderer/*.test.ts'],
-          globalSetup: ['./test/setup-renderer-prepare.ts'],
-          testTimeout: 60_000,
-          benchmark: { include: [] },
-        },
-      },
+      ...rendererProjects,
       {
         test: {
           name: 'bundle',
@@ -245,6 +266,7 @@ export default defineConfig({
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
+            '#internal/nuxt/error-channel': resolve('./packages/nitro-server/src/runtime/utils/error-channel'),
             '#nuxt-compat/import-meta': resolve('./test/mocks/nitro-compat-import-meta'),
             '#nuxt-compat/flags': resolve('./test/mocks/nitro-compat-flags'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),

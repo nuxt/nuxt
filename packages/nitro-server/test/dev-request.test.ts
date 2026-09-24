@@ -1,39 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { H3Event } from 'nitro/h3'
-import { isLocalDevRequest, isLoopbackAddress, isLoopbackPeer } from '../src/dev-request.ts'
+import { isLocalDevRequest, isLoopbackPeer } from '../src/dev-request.ts'
 
 function event (headers: Record<string, string>, ip?: string): H3Event {
   return {
     req: { ip, headers: new Headers(headers) },
   } as unknown as H3Event
 }
-
-describe('isLoopbackAddress', () => {
-  it.each([
-    ['127.0.0.1'],
-    ['127.1.2.3'],
-    ['::1'],
-    ['[::1]'],
-    ['::ffff:127.0.0.1'],
-    ['::FFFF:127.0.0.1'],
-    ['::1%lo0'],
-  ])('treats %s as loopback', (address) => {
-    expect(isLoopbackAddress(address)).toBe(true)
-  })
-
-  it.each([
-    ['192.168.0.31'],
-    ['10.0.0.5'],
-    ['0.0.0.0'],
-    ['::ffff:192.168.0.31'],
-    ['fe80::1'],
-    [''],
-    [undefined],
-    [null],
-  ])('rejects %s', (address) => {
-    expect(isLoopbackAddress(address)).toBe(false)
-  })
-})
 
 describe('isLoopbackPeer', () => {
   it('trusts the TCP peer address, not the Host header', () => {

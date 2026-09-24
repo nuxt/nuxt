@@ -1,7 +1,7 @@
 import type { Ref, WatchHandle } from 'vue'
 import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
-import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, parseSetCookie, serialize } from 'cookie-es'
+import type { CookieSerializeOptions } from '../types/cookie'
 import type { NuxtRequestEvent } from '@nuxt/schema'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
@@ -22,7 +22,7 @@ function parseCookieValue (value: string) {
   } catch { return value }
 }
 
-type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode' | 'expires'>
+type _CookieOptions = Omit<CookieSerializeOptions, 'encode' | 'expires'>
 
 export interface CookieOptions<T = any> extends _CookieOptions {
   decode?(value: string | null | undefined): T
@@ -30,6 +30,8 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
   readonly?: boolean
+  /** Whether this ref reads the named cookie from the jar. Defaults to an exact name match. */
+  filter?(key: string): boolean
 
   /**
    * Expiration date for the cookie, or a getter that returns one.

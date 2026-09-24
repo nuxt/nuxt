@@ -10,13 +10,17 @@
  * @module nuxt/server
  */
 import { parse, serialize } from 'cookie-es'
-import type { CookieSerializeOptions } from 'cookie-es'
+import type { CookieSerializeOptions } from '../app/types/cookie'
 import { parseQuery } from 'ufo'
 import type { AppRouteRules, NuxtRequestEvent, RequestEvent, RuntimeConfig } from 'nuxt/schema'
 import { useRuntimeConfig as _useRuntimeConfig } from 'nuxt/internal/server-runtime-config'
 
 import { NUXT_ERROR_SIGNATURE, NuxtError, createError } from '../app/error'
 import type { NuxtError as NuxtErrorContract } from '../app/types'
+
+export { clearSession, getSession, updateSession, useSession } from './session'
+export { deriveSecret } from './secret'
+export type { Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate } from './session'
 
 export type { AppRouteRules, RequestEvent, RequestEventContext, ServerRoutes } from 'nuxt/schema'
 export type { NuxtErrorDetails } from '../app/error'

@@ -25,24 +25,29 @@ ignoreWorkspaceCycles: true
 overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
-  "@types/node": "24.13.3"
+  "@types/node": "24.13.6"
+  "@vue/compiler-sfc": "3.5.43"
   nuxt: "workspace:*"
-  oxc-parser: "0.148.0"
-  rolldown: "1.2.7"
-  vite: "8.2.2"
+  oxc-parser: "0.150.0"
+  rolldown: "1.2.9"
+  vite: "8.3.0"
   vue: "3.5.43"
 
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
   sharp: false
+  simple-git-hooks: false
   unrs-resolver: false
   workerd: true
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
+  - clickable-path
+  - errx
   - fnv1a-64
+  - my-bad
   - vue-bundle-renderer
   - unrouting
   - unimport
@@ -50,7 +55,6 @@ minimumReleaseAgeExclude:
   - impound@1.2.0
   - vue
   - '@vue/*'
-  - '@flakiness/vitest@1.9.2'
   # nitro betas and the unjs/h3 packages they pin are released in lockstep
   - nitro
   - crossws
@@ -70,15 +74,16 @@ minimumReleaseAgeExclude:
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
   app-runtime:
-    '@unhead/vue': ^3.4.0
+    '@unhead/vue': ^3.4.1
     '@vue/shared': ^3.5.43
     consola: ^3.4.2
     cookie-es: ^3.1.1
     defu: ^6.1.7
-    devalue: ^5.9.2
-    errx: ^0.2.0
+    devalue: ^6.0.0
+    errx: ^0.2.2
     fnv1a-64: ^0.1.2
-    hookable: ^6.1.1
+    hookable: ^6.1.2
+    iron-webcrypto: ^2.0.0
     klona: ^2.0.6
     nostics: ^1.2.0
     object-identity: ^0.2.3
@@ -89,22 +94,24 @@ catalogs:
     ufo: ^1.6.4
     uncrypto: ^0.1.3
     unctx: ^3.0.1
-    unhead: ^3.4.0
+    unhead: ^3.4.1
     vue: ^3.5.43
-    vue-bundle-renderer: ^2.3.2
+    vue-bundle-renderer: ^2.4.0
     vue-router: ^5.3.1
 
   # imported in the server runtime (packages/nuxt/src/runtime/server, packages/nitro-server/src/runtime)
   nitro-runtime:
+    '@jridgewell/trace-mapping': ^0.3.31
     destr: ^2.0.5
     flru: ^1.0.2
+    my-bad: ^0.2.7
     nitro: ^3.0.260903-beta
     srvx: ^1.0.3
     unstorage: ^2.0.0-alpha.10
 
   # vue compiler/tooling
   vue:
-    '@vitejs/plugin-vue': ^6.0.8
+    '@vitejs/plugin-vue': ^6.0.9
     # kept in lockstep with the vue override above
     '@vue/compiler-sfc': 3.5.43
     rspack-vue-loader: ^17.7.0
@@ -114,35 +121,35 @@ catalogs:
 
   # vite/rolldown/oxc toolchain
   vite:
-    magic-string: ^1.2.3
+    magic-string: ^1.4.1
     oxc-walker: ^1.1.1
     # needs to match vite's own `~1.1.5` pin
-    rolldown: ~1.2.7
+    rolldown: ~1.2.9
     rolldown-string: ^0.3.1
     # resolution is pinned via the vite override above
-    vite: ^8.2.2
+    vite: ^8.3.0
     vite-node: ^6.0.0
     vite-plugin-checker: ^0.14.5
 
   # webpack/rspack pipeline
   webpack:
     '@nuxt/friendly-errors-webpack-plugin': ^2.6.0
-    '@rsbuild/core': ~2.2.3
+    '@rsbuild/core': ~2.2.8
     css-loader: ^7.1.5
     css-minimizer-webpack-plugin: ^8.0.0
     esbuild-loader: ^4.5.0
     file-loader: ^6.2.0
     fork-ts-checker-webpack-plugin: ^9.1.0
     hash-sum: ^2.0.0
-    memfs: ^4.71.0
+    memfs: ^4.78.1
     mini-css-extract-plugin: ^2.10.2
     pug-plain-loader: ^1.1.0
     raw-loader: ^4.0.2
     time-fix-plugin: ^2.0.7
     ts-checker-rspack-plugin: ^1.6.1
     url-loader: ^4.1.1
-    webpack: ^5.110.3
-    webpack-bundle-analyzer: ^5.3.3
+    webpack: ^5.111.1
+    webpack-bundle-analyzer: ^5.4.0
     webpack-dev-middleware: ^8.3.0
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
@@ -151,29 +158,29 @@ catalogs:
   build:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260907-104727-9e18028
-    '@nuxt/devtools': ^4.0.0-alpha.17
+    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-20260922-145010-cf0e756
+    '@nuxt/devtools': ^4.0.0-beta.1
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.43
-    autoprefixer: ^10.5.5
+    autoprefixer: ^10.6.1
     c12: 4.0.0-rc.1
     chokidar: ^5.0.0
     clickable-path: ^0.1.1
     compatx: ^0.2.0
     confbox: ^0.3.1
     consola: ^3.4.2
-    cssnano: ^9.0.3
+    cssnano: ^9.0.5
     defu: ^6.1.7
     destr: ^2.0.5
-    dotenv: ^17.4.2
-    errx: ^0.2.0
+    dotenv: ^18.0.1
+    errx: ^0.2.2
     escape-string-regexp: ^5.0.0
     exsolve: ^1.1.1
     fetchdts: ^0.2.0
     generic-names: ^4.0.0
     get-port-please: ^3.2.0
     giget: ^3.3.1
-    ignore: ^7.0.8
+    ignore: ^7.0.9
     impound: ^1.2.0
     jiti: ^2.7.0
     js-tokens: ^10.0.0
@@ -184,13 +191,13 @@ catalogs:
     mocked-exports: ^0.1.1
     nanotar: ^0.3.0
     nostics: ^1.2.0
-    nypm: ^0.6.9
+    nypm: ^0.6.10
     ohash: ^2.0.12
     on-change: ^6.0.2
-    oxc-parser: ^0.148.0
+    oxc-parser: ^0.150.0
     pathe: ^2.0.3
     picomatch: ^4.0.7
-    pkg-types: ^2.3.2
+    pkg-types: ^2.3.3
     postcss: ^8.5.28
     postcss-import: ^17.0.0
     postcss-import-resolver: ^2.0.0
@@ -198,7 +205,7 @@ catalogs:
     postcss-url: ^10.1.4
     rc9: ^3.1.0
     scule: ^1.3.0
-    seroval: ^1.6.4
+    seroval: ^1.6.7
     std-env: ^4.2.0
     tinyglobby: ^0.2.17
     ufo: ^1.6.4
@@ -207,17 +214,17 @@ catalogs:
     unctx: ^3.0.1
     undici: ^8.10.2
     unenv: ^2.0.0-rc.24
-    unimport: ^7.0.1
-    unplugin: ^3.3.0
+    unimport: ^7.0.2
+    unplugin: ^3.4.0
     unrouting: ^0.2.3
     untyped: ^2.0.0
-    verkit: ^0.4.0
-    vue-bundle-renderer: ^2.3.2
+    verkit: ^0.5.0
+    vue-bundle-renderer: ^2.4.0
 
   # dev/test/workspace tooling (pinned)
   dev:
     '@arethetypeswrong/cli': 0.18.5
-    '@babel/core': 8.0.1
+    '@babel/core': 8.0.6
     '@babel/plugin-proposal-decorators': 8.0.2
     '@babel/plugin-syntax-jsx': 8.0.1
     '@babel/plugin-syntax-typescript': 8.0.3
@@ -225,65 +232,67 @@ catalogs:
     '@codspeed/vitest-plugin': 5.7.1
     '@eslint/markdown': 8.0.3
     '@flakiness/playwright': 2.0.2
-    '@flakiness/vitest': 1.9.2
+    '@flakiness/vitest': 1.10.1
     '@nuxt/eslint-config': 1.17.0
-    '@nuxt/scripts': 1.3.8
+    '@nuxt/scripts': 1.3.9
     '@nuxt/test-utils': 4.3.2
     '@parcel/watcher': 2.6.0
     '@playwright/test': 1.63.0
     '@rollup/plugin-babel': 7.1.0
-    '@rspack/core': 2.2.2
+    '@rspack/core': 2.2.6
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5
     '@types/estree': 1.0.9
     '@types/hash-sum': 1.0.2
-    '@types/node': 24.13.3
+    '@types/node': 24.13.6
     '@types/picomatch': 4.0.3
     '@types/pug': 2.0.10
     '@types/webpack-bundle-analyzer': 4.7.0
     '@types/webpack-hot-middleware': 2.25.12
-    '@typescript-eslint/parser': 8.69.0
-    '@unocss/reset': 66.10.0
+    '@typescript-eslint/parser': 8.70.0
+    '@unocss/reset': 66.10.5
     '@vitejs/plugin-vue-jsx': 5.1.6
-    '@vitest/coverage-v8': 5.0.0
+    '@vitest/coverage-v8': 5.0.1
     '@vue/compiler-core': 3.5.43
     '@vue/devtools-api': 8.2.1
     '@vue/language-core': 3.3.11
-    '@vue/test-utils': 2.5.0
+    '@vue/test-utils': 2.5.1
     acorn: 8.18.0
     beasties: 0.5.4
     case-police: 2.2.1
     esbuild: 0.28.2
-    eslint: 10.10.0
+    eslint: 10.11.0
     eslint-plugin-import-x: 4.17.1
     eslint-plugin-no-only-tests: 3.4.0
-    eslint-plugin-perfectionist: 5.11.0
+    eslint-plugin-perfectionist: 5.11.1
     eslint-typegen: 2.3.1
-    fast-check: 4.9.0
+    fast-check: 4.10.2
     h3: ^2.0.1-rc.31
     h3-next: 'npm:h3@^2.0.1-rc.31'
-    happy-dom: 20.14.0
-    html-validate: 11.14.0
-    htmlnano: 3.4.1
+    happy-dom: 20.14.5
+    html-validate: 11.16.0
+    htmlnano: 3.5.1
     installed-check: 11.0.0
-    knip: 6.34.0
+    knip: 6.37.0
     magic-regexp: 0.11.0
     markdownlint-cli: 0.49.1
+    nano-staged: 1.0.2
     nitropack: 2.13.4
     nuxt-content-twoslash: 0.4.0
-    oxc-transform: 0.148.0
+    oxc-transform: 0.150.0
     pkg-pr-new: 0.0.88
     playwright-core: 1.63.0
-    prettier: 3.9.6
-    rollup: 4.63.1
+    prettier: 3.9.8
+    rollup: 4.63.4
     rollup-plugin-visualizer: 7.1.1
     sherif: 1.13.0
+    simple-git-hooks: 2.14.0
     svgo: 4.1.0
     tinyexec: 1.3.1
     tsdown: 0.23.0
     typescript: 6.0.3
-    unocss: 66.10.0
-    vitest: 5.0.0
+    unocss: 66.10.5
+    vitest: 5.0.1
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.3.0
     vue-tsc: 3.3.11
@@ -291,3 +300,4 @@ catalogs:
 
 catalogPrune: true
 minimumReleaseAgeExcludePrune: true
+
