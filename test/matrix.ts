@@ -12,6 +12,10 @@ export const builder = _builder === 'vite-env-api' ? 'vite' : (_builder ?? 'vite
 export const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 
 export const asyncContext = process.env.TEST_CONTEXT === 'async'
+
+/** Whether to opt in to the renderer rendering the error page itself. */
+export const inlineErrorRendering = process.env.TEST_ERROR_RENDERING === 'inline-errors'
+
 export const typescriptBundlerResolution = process.env.MODULE_RESOLUTION !== 'node'
 
 export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
@@ -25,6 +29,7 @@ export const projectSuffix = [
   process.env.TEST_CONTEXT,
   process.env.TEST_MANIFEST,
   process.env.TEST_PAYLOAD,
+  process.env.TEST_ERROR_RENDERING,
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER
@@ -63,6 +68,7 @@ export function withMatrix (config: NuxtConfig) {
       appManifest: isTestingAppManifest,
       renderJsonPayloads: isRenderingJson,
       viteEnvironmentApi: _builder === 'vite-env-api',
+      ...inlineErrorRendering ? { inlineErrorRendering: true } : {},
     },
     compatibilityDate: 'latest',
   })

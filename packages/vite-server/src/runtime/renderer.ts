@@ -1,5 +1,6 @@
 import { joinURL, withQuery } from 'ufo'
 import { createHooks } from 'hookable'
+import { describeError, isExpectedError } from 'nuxt/internal/renderer/error'
 import type { NuxtRendererOptions, RendererHooks } from 'nuxt/internal/renderer/runtime'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -180,11 +181,12 @@ function applyPrerenderHints (event: ReturnType<typeof createRequestEvent>, resp
 }
 
 async function renderError (renderer: NuxtRenderer, request: Request, error: unknown, event: ReturnType<typeof createRequestEvent>): Promise<Response> {
-  const { status, statusText, message, headers } = describeError(error)
+  const described = describeError(error)
+  const { status, statusText, message, headers } = described
   const url = new URL(request.url)
 
   const devErrors = import.meta.dev ? await import('./dev-error.ts') : undefined
-  const report = devErrors ? await devErrors.observeDevError(error, request, { expected: status < 500 && !devErrors.isThrownValue(error) }) : undefined
+  const report = devErrors ? await devErrors.observeDevError(error, request, { expected: isExpectedError(error, described) }) : undefined
 
   // the renderer reads the error off the query, as the error page's props
   const data = (error as { data?: unknown })?.data
@@ -242,20 +244,4 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
     statusText,
     headers: { ...headers, 'content-type': 'text/plain;charset=utf-8' },
   })
-}
-
-// a reason phrase is limited to HTAB / SP / VCHAR / obs-text, and `Response` throws on anything else
-const INVALID_REASON_PHRASE_RE = /[^\t\x20-\x7E\x80-\xFF]/g
-
-function describeError (error: unknown) {
-  const { status, statusText, message, headers } = (error || {}) as { status?: number, statusText?: string, message?: string, headers?: unknown }
-  const isHTTPError = typeof status === 'number' && status >= 400 && status <= 599
-  // an error without a status is the server's own, whose message is only exposed in development
-  const text = ((isHTTPError || import.meta.dev) && (statusText || message)) || (isHTTPError ? 'Request failed' : 'Internal Server Error')
-  return {
-    status: isHTTPError ? status : 500,
-    statusText: text.replace(INVALID_REASON_PHRASE_RE, '') || 'Error',
-    message: text,
-    headers: headers instanceof Headers ? Object.fromEntries(headers) : (headers as Record<string, string> | undefined) ?? {},
-  }
 }

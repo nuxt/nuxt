@@ -74,6 +74,7 @@ interface FixtureMatrixEntry {
   context: 'async' | 'default'
   manifest: 'manifest-on' | 'manifest-off'
   payload: 'json' | 'js'
+  inlineErrors?: boolean
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
@@ -104,8 +105,18 @@ const fixtureMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on', payload: 'json' },
 ]
 
+// The matrix above runs with `experimental.inlineErrorRendering` at its default, which is off
+// below compatibility version 5. These re-run every suite asserting on an error response with it on.
+const inlineErrorMatrix: FixtureMatrixEntry[] = [
+  { env: 'built', builder: 'vite-env-api', context: 'default', manifest: 'manifest-on', payload: 'json', inlineErrors: true },
+  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', inlineErrors: true },
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', inlineErrors: true },
+]
+
+const inlineErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
+
 function fixtureProjectName (entry: FixtureMatrixEntry) {
-  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}-${entry.payload}`
+  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}-${entry.payload}${entry.inlineErrors ? '-inline-errors' : ''}`
 }
 
 function fixtureProjectEnv (entry: FixtureMatrixEntry) {
@@ -115,10 +126,47 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_CONTEXT: entry.context,
     TEST_MANIFEST: entry.manifest,
     TEST_PAYLOAD: entry.payload,
+    ...entry.inlineErrors ? { TEST_ERROR_RENDERING: 'inline-errors' } : {},
   }
 }
 
 const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js']
+
+// stands in for the defines and aliases a server builder applies in its own bundle
+function rendererProject (name: string, include: string[], rendererConfig: string) {
+  return {
+    define: {
+      'import.meta.dev': 'false',
+      'import.meta.server': 'true',
+      'import.meta.client': 'false',
+      'import.meta.prerender': 'false',
+    },
+    resolve: {
+      alias: {
+        'nuxt/internal/renderer-config': resolve(rendererConfig),
+        'nuxt/internal/entry': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry.mjs'),
+        'nuxt/internal/manifest': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/manifest.mjs'),
+        'nuxt/internal/precomputed': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/precomputed.mjs'),
+        'nuxt/internal/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
+        'nuxt/internal/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
+        'nuxt/internal/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
+        '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
+      },
+    },
+    test: {
+      name,
+      include,
+      globalSetup: ['./test/setup-renderer-prepare.ts'],
+      testTimeout: 60_000,
+      benchmark: { include: [] },
+    },
+  }
+}
+
+const rendererProjects = [
+  rendererProject('renderer', ['test/renderer/*.test.ts', '!test/renderer/inline-errors.test.ts'], './test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
+  rendererProject('renderer-inline-errors', ['test/renderer/inline-errors.test.ts'], './test/fixtures/standalone-renderer/renderer-config-inline-errors.mjs'),
+]
 
 export default defineConfig({
   test: {
@@ -148,11 +196,11 @@ export default defineConfig({
           },
         },
       },
-      ...fixtureMatrix.map(entry => ({
+      ...[...fixtureMatrix, ...inlineErrorMatrix].map(entry => ({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
-          include: ['test/*.test.ts'],
+          include: entry.inlineErrors ? inlineErrorInclude : ['test/*.test.ts'],
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
@@ -162,34 +210,7 @@ export default defineConfig({
           env: fixtureProjectEnv(entry),
         },
       })),
-      {
-        // stands in for the defines and aliases a server builder applies in its own bundle
-        define: {
-          'import.meta.dev': 'false',
-          'import.meta.server': 'true',
-          'import.meta.client': 'false',
-          'import.meta.prerender': 'false',
-        },
-        resolve: {
-          alias: {
-            'nuxt/internal/renderer-config': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
-            'nuxt/internal/entry': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry.mjs'),
-            'nuxt/internal/manifest': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/manifest.mjs'),
-            'nuxt/internal/precomputed': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/precomputed.mjs'),
-            'nuxt/internal/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
-            'nuxt/internal/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
-            'nuxt/internal/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
-            '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
-          },
-        },
-        test: {
-          name: 'renderer',
-          include: ['test/renderer/*.test.ts'],
-          globalSetup: ['./test/setup-renderer-prepare.ts'],
-          testTimeout: 60_000,
-          benchmark: { include: [] },
-        },
-      },
+      ...rendererProjects,
       {
         test: {
           name: 'bundle',
