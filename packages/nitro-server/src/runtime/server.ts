@@ -25,6 +25,7 @@ export {
   getRouterParam,
   getRouterParams,
   getValidatedQuery,
+  handleCors,
   readBody,
   readValidatedBody,
   setCookie,

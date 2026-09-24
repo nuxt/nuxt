@@ -154,6 +154,26 @@ describe('parity between the shipped implementations and h3', () => {
       .toEqual(await settle(h3.getValidatedQuery(query.h3, validate as never)))
   })
 
+  const origin = 'https://nuxt.com'
+  const preflight = { origin, 'access-control-request-method': 'PUT', 'access-control-request-headers': 'x-custom' }
+
+  it.for([
+    ['defaults on a request', 'GET', { origin }, undefined],
+    ['defaults on a preflight', 'OPTIONS', preflight, undefined],
+    ['an allowed origin with credentials', 'GET', { origin }, { origin: [origin], credentials: true }],
+    ['a refused origin', 'GET', { origin: 'https://evil.test' }, { origin: [/^https:\/\/nuxt\.com$/] }],
+    ['a missing origin', 'GET', {}, { origin: () => true }],
+    ['a credentialed preflight', 'OPTIONS', preflight, { origin: [origin], credentials: true, maxAge: '600', preflight: { statusCode: 200 } }],
+    ['an explicit preflight', 'OPTIONS', preflight, { origin: [origin], methods: ['GET', 'PUT'], allowHeaders: ['x-custom'], exposeHeaders: ['x-exposed'] }],
+    ['an OPTIONS request that is not a preflight', 'OPTIONS', { origin }, undefined],
+  ] as const)('applies CORS for %s the same way', ([, method, headers, options]) => {
+    const { fallback, h3: h3Event } = events(new Request('https://nuxt.com/api', { method, headers }))
+    const a = shipped.handleCors(fallback, options as never)
+    const b = h3.handleCors(h3Event, (options ?? {}) as never)
+    expect(a && a.status).toEqual(b && b.status)
+    expect([...fallback.res.headers]).toEqual([...h3Event.res.headers])
+  })
+
   it.for([
     ['an h3 error', () => new h3.HTTPError({ status: 404 })],
     ['a Nuxt error', () => shipped.createError({ status: 404 })],

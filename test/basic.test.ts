@@ -134,6 +134,16 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     })
   })
 
+  it('should answer a CORS preflight with `nuxt/server`', async () => {
+    const response = await fetch('/api/portable-extras/a', {
+      method: 'OPTIONS',
+      headers: { 'origin': 'https://nuxt.com', 'access-control-request-method': 'PUT' },
+    })
+    expect(response.status).toBe(204)
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://nuxt.com')
+    expect(response.headers.get('access-control-allow-methods')).toBe('*')
+  })
+
   it('should map an error created with `nuxt/server` to its status', async () => {
     const response = await fetch('/api/portable?fail=yes', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
 

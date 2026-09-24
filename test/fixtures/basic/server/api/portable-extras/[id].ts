@@ -1,6 +1,11 @@
-import { defineEventHandler, getRequestIP, getRouterParam, getRouterParams, getValidatedQuery } from 'nuxt/server'
+import { defineEventHandler, getRequestIP, getRouterParam, getRouterParams, getValidatedQuery, handleCors } from 'nuxt/server'
 
 export default defineEventHandler(async (event) => {
+  const preflight = handleCors(event, { origin: ['https://nuxt.com'] })
+  if (preflight) {
+    return preflight
+  }
+
   const { page } = await getValidatedQuery(event, query => typeof query.page === 'string' && { page: Number(query.page) })
 
   return {
