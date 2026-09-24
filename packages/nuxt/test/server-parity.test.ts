@@ -18,6 +18,7 @@ import type {
   SessionEvent,
   SessionManager,
   SessionUpdate,
+  ValidateResult,
 } from '../src/server/index.ts'
 
 /**
@@ -55,6 +56,8 @@ interface MainSurface {
   getRouterParams: (event: RequestEvent, options?: { decode?: boolean }) => Record<string, string | undefined>
   getRouterParam: (event: RequestEvent, name: string, options?: { decode?: boolean }) => string | undefined
   getRequestIP: (event: RequestEvent, options?: { xForwardedFor?: boolean }) => string | undefined
+  getValidatedQuery: <Output>(event: RequestEvent, validate: (data: Record<string, string | string[]>) => ValidateResult<Output>) => Promise<Output>
+  readValidatedBody: <Output>(event: RequestEvent, validate: (data: unknown) => ValidateResult<Output>) => Promise<Output>
 }
 
 /** Value exports `main` has. */
@@ -86,6 +89,8 @@ const MAIN_VALUE_EXPORTS = [
   'getRouterParams',
   'getRouterParam',
   'getRequestIP',
+  'getValidatedQuery',
+  'readValidatedBody',
 ]
 
 /** Value exports only `main` has. */

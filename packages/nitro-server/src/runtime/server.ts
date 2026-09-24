@@ -48,13 +48,15 @@ export {
   clearSession,
   deriveSecret,
   getSession,
+  getValidatedQuery,
+  readValidatedBody,
   toNuxtRequestEvent,
   updateSession,
   useSession,
 } from 'nuxt/internal/server-default'
 
 export type { AppRouteRules, ServerRoutes } from 'nuxt/schema'
-export type { EventHandler, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent, Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate } from 'nuxt/server'
+export type { EventHandler, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent, Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate, ValidateResult } from 'nuxt/server'
 
 /**
  * @see {@link import('nuxt/server').defineEventHandler}
