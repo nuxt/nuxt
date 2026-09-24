@@ -243,7 +243,7 @@ export default defineConfig({
         },
       },
       {
-        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)' })],
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)', test: '(globalThis.__TEST_TEST__ ?? false)' })],
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
