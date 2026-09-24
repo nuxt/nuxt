@@ -1,5 +1,6 @@
 import type { FetchOptions, FetchRequest } from 'ofetch'
-import type { ServerRoutes } from '@nuxt/schema'
+import type { ServerRoutes as AugmentedServerRoutes } from '@nuxt/schema'
+import type { Endpoint } from 'fetchdts'
 import type { ServerRouteMethod } from './fetch'
 
 /**
@@ -10,6 +11,25 @@ import type { ServerRouteMethod } from './fetch'
  * Reached through the conditionals in `./fetch`, which pick this family or the generated route set
  * according to the engine the build resolved. Nothing here is part of the public API.
  */
+
+/**
+ * A route entry declared in the `fetchdts` shape (`{ [Endpoint]: { GET: { response: T } } }`),
+ * rewritten to the `{ get: T }` shape nitro's `InternalApi` uses.
+ *
+ * @internal
+ */
+type NormalizeRouteEntry<Entry> = Entry extends { [Endpoint]: infer Methods }
+  ? Omit<Entry, typeof Endpoint> & {
+    [M in keyof Methods as Lowercase<M & string>]: Methods[M] extends { response: infer R } ? R : unknown
+  }
+  : Entry
+
+/**
+ * The augmentable route registry with every entry in the `{ get: T }` shape.
+ *
+ * @internal
+ */
+type ServerRoutes = { [Route in keyof AugmentedServerRoutes]: NormalizeRouteEntry<AugmentedServerRoutes[Route]> }
 
 /**
  * A request accepted by `$fetch`: a route registered in {@link ServerRoutes}, any non-string
