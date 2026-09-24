@@ -343,7 +343,7 @@ export async function writeAppManifest (nuxt: Nuxt, publicDir: string, routes: s
   const dir = resolve(publicDir, joinURL(nuxt.options.app.buildAssetsDir, 'builds').replace(/^\//, ''))
   await mkdir(join(dir, 'meta'), { recursive: true })
   await writeFile(join(dir, 'latest.json'), JSON.stringify({ id: buildId, timestamp }))
-  await writeFile(join(dir, `meta/${buildId}.json`), JSON.stringify({ id: buildId, timestamp, prerendered: [...prerendered] }))
+  await writeFile(join(dir, `meta/${buildId}.json`), JSON.stringify({ id: buildId, timestamp, prerendered: [...prerendered].sort() }))
 }
 
 const PAYLOAD_SUFFIX = '/_payload.json'
