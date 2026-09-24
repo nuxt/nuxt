@@ -816,7 +816,7 @@ export const routeRulesTemplate: NuxtTemplate = {
   // from configuration
   dependsOn: (_change, { nuxt }) => !!nuxt.options.experimental.inlineRouteRules,
   getContents ({ nuxt }) {
-    const { routes, baseURL } = resolveRouteRulesRoutes(nuxt)
+    const { routes } = resolveRouteRulesRoutes(nuxt)
     if (!routes.length) {
       return `export default () => ({})`
     }
@@ -827,7 +827,7 @@ export const routeRulesTemplate: NuxtTemplate = {
     // matcher and pick at runtime.
     const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
     const warned = warnedKeyCollisions.get(nuxt) ?? warnedKeyCollisions.set(nuxt, new Set()).get(nuxt)!
-    const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routes, baseURL, fold, (existing, route, key) => {
+    const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routes, '', fold, (existing, route, key) => {
       // Only the matcher that will actually be used at runtime should report collisions.
       if (fold === caseSensitiveRouteRules || warned.has(key)) { return }
       warned.add(key)
