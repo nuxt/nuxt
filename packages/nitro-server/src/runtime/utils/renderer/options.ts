@@ -1,10 +1,12 @@
-import { createError, writeEarlyHints } from 'h3'
+import { createError, getRequestURL, writeEarlyHints } from 'h3'
 import type { H3Event } from 'h3'
 import { getRouteRules, useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { createRendererInstance } from 'nuxt/internal/renderer/instance'
 import type { NuxtRendererInstance } from 'nuxt/internal/renderer/instance'
 import { appEvent } from 'nuxt/internal/renderer/runtime'
 import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/internal/renderer/runtime'
+import { describeError, isExpectedError } from 'nuxt/internal/renderer/error'
+import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import type { NuxtSSRContext } from '#app/types'
 
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
@@ -60,6 +62,17 @@ export const rendererOptions: NuxtRendererOptions = {
         },
       }
     : undefined,
+}
+
+if (NUXT_INLINE_ERROR_RENDERING) {
+  rendererOptions.captureError = (error, { event, tags }) => {
+    const h3Event = appEvent(event) as H3Event
+    // an error rendered in process never reaches nitro's error handler, which is what logs it
+    if (!import.meta.dev && !isExpectedError(error, describeError(error))) {
+      console.error(`[request error] [unhandled] [${h3Event.method}] ${getRequestURL(h3Event)}\n`, error)
+    }
+    useNitroApp().captureError?.(error as Error, { event: h3Event, tags: ['ssr', ...tags ?? []] })
+  }
 }
 
 if (import.meta.dev) {
