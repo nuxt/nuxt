@@ -7,9 +7,10 @@ import { SERVER_RUNTIME_VERSION, getRendererConfig, getRendererDefines, getServe
 import { createServerBuild } from '../src/internal/server-build.ts'
 
 function nuxt (options: Record<string, any> = {}): Nuxt {
-  const { buildOutputs, ...rest } = options
+  const { buildOutputs, vfs = {}, ...rest } = options
   return {
     buildOutputs,
+    vfs,
     options: {
       dev: false,
       ssr: true,
@@ -114,6 +115,22 @@ describe('getServerRuntime', () => {
     const { modules } = getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() }))
 
     expect(Object.keys(modules).sort()).toEqual([...stubs, 'nuxt/server'].sort())
+  })
+
+  it('reads the app config from the app build, without the part only the Vue app runs', async () => {
+    const template = [
+      'const inlineConfig = {}',
+      '/** client **/',
+      'import { _replaceAppConfig } from \'#app/config\'',
+      '/** client-end **/',
+      'export default inlineConfig',
+    ].join('\n')
+    const instance = nuxt({ buildOutputs: buildOutputs(), vfs: { '#build/app.config.mjs': template } })
+
+    const code = await getServerRuntime({}, instance).modules['nuxt/internal/server-app-config']!.code()
+    expect(code).toContain('export default inlineConfig')
+    expect(code).not.toContain('#app/config')
+    expect(await getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() })).modules['nuxt/internal/server-app-config']!.code()).toBe('export default {}')
   })
 
   it('reads each module body lazily, and names the build output backing it', async () => {

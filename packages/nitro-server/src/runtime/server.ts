@@ -53,6 +53,7 @@ export {
   readValidatedBody,
   toNuxtRequestEvent,
   updateSession,
+  useAppConfig,
   useSession,
 } from 'nuxt/internal/server-default'
 

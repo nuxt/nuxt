@@ -1,4 +1,4 @@
-import { defineEventHandler, getRequestIP, getRouterParam, getRouterParams, getValidatedQuery, handleCors } from 'nuxt/server'
+import { defineEventHandler, getRequestIP, getRouterParam, getRouterParams, getValidatedQuery, handleCors, useAppConfig } from 'nuxt/server'
 
 export default defineEventHandler(async (event) => {
   const preflight = handleCors(event, { origin: ['https://nuxt.com'] })
@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
     params: getRouterParams(event),
     decoded: getRouterParam(event, 'id', { decode: true }),
     page,
+    appConfig: useAppConfig(event).fromLayer ?? null,
     forwardedIP: getRequestIP(event, { xForwardedFor: true }) ?? null,
   }
 })

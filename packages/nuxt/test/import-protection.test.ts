@@ -26,6 +26,8 @@ const testsToTriggerOn = [
   ['src/server/api/test.ts', 'components/Component.vue', true],
   ['node_modules/nitropack/node_modules/crossws/dist/adapters/bun.mjs', 'node_modules/nitropack/dist/presets/bun/runtime/bun.mjs', false],
   ['node_modules/some-pkg/server/api/helper.ts', 'components/Component.vue', false],
+  ['nuxt/server', 'components/Component.vue', true],
+  ['nuxt/internal/server-app-config', 'components/Component.vue', true],
 ] as const
 
 describe('import protection', () => {

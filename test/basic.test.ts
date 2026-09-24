@@ -139,13 +139,14 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     })
   })
 
-  it('should read router params, a validated query and the client IP with `nuxt/server`', async () => {
+  it('should read router params, a validated query, the client IP and the app config with `nuxt/server`', async () => {
     const invalid = await fetch('/api/portable-extras/a')
     expect(invalid.status).toBe(400)
 
     const response = await fetch('/api/portable-extras/a%20b%2Fc?page=2', { headers: { 'x-forwarded-for': '203.0.113.1, 10.0.0.1' } })
     expect(await response.json()).toMatchObject({
       page: 2,
+      appConfig: true,
       params: { id: 'a%20b%2Fc' },
       decoded: 'a b%2Fc',
       forwardedIP: '203.0.113.1',
