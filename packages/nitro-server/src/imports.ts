@@ -77,8 +77,6 @@ export const nuxtServerImportsPreset = {
     'readValidatedBody',
     'sendRedirect',
     'setCookie',
-    'setResponseHeader',
-    'setResponseHeaders',
     'setResponseStatus',
     'toNuxtRequestEvent',
     'updateSession',

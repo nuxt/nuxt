@@ -263,27 +263,6 @@ export function setResponseStatus (event: EventWithResponse, status: number, sta
 }
 
 /**
- * Set one response header, replacing any value already set for it.
- *
- * @since 4.6.0
- */
-export function setResponseHeader (event: EventWithResponse, name: string, value: string): void {
-  event.res.headers.set(name, value)
-}
-
-/**
- * Set several response headers, replacing any values already set for them.
- *
- * @since 4.6.0
- */
-export function setResponseHeaders (event: EventWithResponse, headers: Record<string, string>): void {
-  const target = event.res.headers
-  for (const name in headers) {
-    target.set(name, headers[name]!)
-  }
-}
-
-/**
  * Read the query string of the request. A repeated parameter resolves to an
  * array, so a type parameter should account for that.
  *
@@ -385,8 +364,8 @@ export function deleteCookie (event: EventWithResponse, name: string, options?: 
  */
 export function sendRedirect (event: EventWithResponse, location: string, status = 302): string {
   setResponseStatus(event, status)
-  setResponseHeader(event, 'location', location)
-  setResponseHeader(event, 'content-type', 'text/html')
+  event.res.headers.set('location', location)
+  event.res.headers.set('content-type', 'text/html')
   const encoded = location.replace(REDIRECT_UNSAFE_RE, char => REDIRECT_ESCAPES[char]!)
   return `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encoded}"></head></html>`
 }

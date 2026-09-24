@@ -16,8 +16,6 @@ import {
   readBody,
   sendRedirect,
   setCookie,
-  setResponseHeader,
-  setResponseHeaders,
   setResponseStatus,
   toNuxtRequestEvent,
 } from '../src/server/index'
@@ -168,15 +166,6 @@ describe('response', () => {
     setResponseStatus(e, 418, 'Teapot')
     expect(response(e)).toMatchObject({ status: 418, statusText: 'Teapot' })
   })
-
-  it('replaces a header already set', () => {
-    const e = event(new Request('https://nuxt.com/'))
-    setResponseHeader(e, 'x-custom', 'first')
-    setResponseHeader(e, 'x-custom', 'second')
-    setResponseHeaders(e, { 'x-other': 'value' })
-    expect(response(e).headers.get('x-custom')).toBe('second')
-    expect(response(e).headers.get('x-other')).toBe('value')
-  })
 })
 
 describe('cookies', () => {
@@ -281,7 +270,7 @@ describe('the event the surface is typed against', () => {
     expectTypeOf<Parameters<typeof getRequestURL>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'> & { url?: URL }>()
     expectTypeOf<Parameters<typeof getCookie>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'>>()
     expectTypeOf<Parameters<typeof readBody>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'>>()
-    expectTypeOf<Parameters<typeof setResponseHeader>[0]>().toEqualTypeOf<Pick<RequestEvent, 'res'>>()
+    expectTypeOf<Parameters<typeof setResponseStatus>[0]>().toEqualTypeOf<Pick<RequestEvent, 'res'>>()
   })
 
   it('describes the request, its URL and the response, and nothing a runtime adds', () => {

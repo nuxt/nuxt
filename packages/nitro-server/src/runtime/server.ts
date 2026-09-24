@@ -44,8 +44,6 @@ export {
   isNuxtError,
   NuxtError,
   sendRedirect,
-  setResponseHeader,
-  setResponseHeaders,
   setResponseStatus,
   toNuxtRequestEvent,
   updateSession,
