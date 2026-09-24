@@ -4,6 +4,7 @@ import type { CookieSerializeOptions } from 'cookie-es'
 import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
 
 import type {
+  CorsOptions,
   EventHandler,
   NuxtErrorDetails,
   NuxtErrorJSON,
@@ -58,6 +59,7 @@ interface MainSurface {
   getRequestIP: (event: RequestEvent, options?: { xForwardedFor?: boolean }) => string | undefined
   getValidatedQuery: <Output>(event: RequestEvent, validate: (data: Record<string, string | string[]>) => ValidateResult<Output>) => Promise<Output>
   readValidatedBody: <Output>(event: RequestEvent, validate: (data: unknown) => ValidateResult<Output>) => Promise<Output>
+  handleCors: (event: RequestEvent, options?: CorsOptions) => Response | false
 }
 
 /** Value exports `main` has. */
@@ -91,6 +93,7 @@ const MAIN_VALUE_EXPORTS = [
   'getRequestIP',
   'getValidatedQuery',
   'readValidatedBody',
+  'handleCors',
 ]
 
 /** Value exports only `main` has. */

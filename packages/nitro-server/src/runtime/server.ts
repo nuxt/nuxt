@@ -49,6 +49,7 @@ export {
   deriveSecret,
   getSession,
   getValidatedQuery,
+  handleCors,
   readValidatedBody,
   toNuxtRequestEvent,
   updateSession,
@@ -56,7 +57,7 @@ export {
 } from 'nuxt/internal/server-default'
 
 export type { AppRouteRules, ServerRoutes } from 'nuxt/schema'
-export type { EventHandler, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent, Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate, ValidateResult } from 'nuxt/server'
+export type { CorsOptions, EventHandler, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent, Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate, ValidateResult } from 'nuxt/server'
 
 /**
  * @see {@link import('nuxt/server').defineEventHandler}

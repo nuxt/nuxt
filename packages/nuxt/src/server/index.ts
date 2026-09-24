@@ -20,6 +20,8 @@ import type { NuxtError } from '../app/error'
 
 export { clearSession, getSession, updateSession, useSession } from './session'
 export { deriveSecret } from './secret'
+export { handleCors } from './cors'
+export type { CorsOptions } from './cors'
 export { getValidatedQuery, readValidatedBody } from './validate'
 export type { ValidateResult } from './validate'
 export type { Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate } from './session'

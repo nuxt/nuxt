@@ -14,6 +14,7 @@ vi.mock('nitropack/runtime', () => ({
 }))
 
 const delegate = await import('../src/runtime/server.ts')
+const { toPortableEvent } = await import('../src/runtime/utils/event.ts')
 
 const delegatePath = resolve(import.meta.dirname, '../src/runtime/server.ts')
 
@@ -94,6 +95,16 @@ describe('the shape of what it reads off an h3 v1 event', () => {
     expect(delegate.getRequestIP(e)).toBe('198.51.100.7')
     expect(delegate.getRequestIP(e, { xForwardedFor: true })).toBe('203.0.113.1')
     expect(delegate.getRequestIP(event('/'))).toBeUndefined()
+  })
+
+  it('applies CORS through the node response, merging `vary`', () => {
+    const e = event('/', { method: 'OPTIONS', headers: { 'origin': 'https://nuxt.com', 'access-control-request-method': 'PUT', 'access-control-request-headers': 'x-custom' } })
+    const response = delegate.handleCors(toPortableEvent(e), { origin: ['https://nuxt.com'], credentials: true })
+
+    expect(response && response.status).toBe(204)
+    expect(e.node.res.getHeader('access-control-allow-origin')).toBe('https://nuxt.com')
+    expect(e.node.res.getHeader('access-control-allow-methods')).toBe('PUT')
+    expect(e.node.res.getHeader('vary')).toBe('origin, access-control-request-method, access-control-request-headers')
   })
 
   it('reads a missing header as undefined rather than as an empty string', () => {
