@@ -269,6 +269,9 @@ jobs:
           node-version: lts
           cache: true
 
+      - name: Fetch 4.x for cross-branch diagnostics check
+        run: git fetch --no-tags --depth=1 origin 4.x:refs/remotes/origin/4.x
+
       - name: Prepare
         run: vp run dev:prepare && vp run test:prepare && vp run build:kit
 
