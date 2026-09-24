@@ -45,9 +45,9 @@ describe('the shape of what it reads off an h3 v1 event', () => {
     }
   }
 
-  function event (path: string, options: { method?: string, headers?: Record<string, string> } = {}): H3Event {
+  function event (path: string, options: { method?: string, headers?: Record<string, string>, ip?: string } = {}): H3Event {
     const headers: Record<string, string | string[] | undefined> = {}
-    const req = { method: options.method || 'GET', url: path, headers: { host: 'nuxt.com', ...options.headers } }
+    const req = { method: options.method || 'GET', url: path, headers: { host: 'nuxt.com', ...options.headers }, socket: { remoteAddress: options.ip } }
     const res = {
       statusCode: 200,
       statusMessage: undefined as string | undefined,
@@ -67,6 +67,33 @@ describe('the shape of what it reads off an h3 v1 event', () => {
     expect(delegate.getRequestHeader(e, 'X-Custom')).toBe('value')
     expect(delegate.getRequestHeaders(e)).toMatchObject({ 'x-custom': 'value' })
     expect(delegate.getQuery(e)).toEqual({ name: 'nuxt', tag: ['a', 'b'] })
+  })
+
+  it('reads router params as they appear in the request URL, which nitropack routes decoded', () => {
+    const e = event('/base/api/users/a%20b%2Fc/x%25y/z?page=1')
+    Object.assign(e, { _path: '/api/users/a b%2Fc/x%25y/z?page=1' })
+    e.context.matchedRoute = { path: '/api/users/:id/**:rest' } as never
+    e.context.params = { id: 'a b%2Fc', rest: 'x%25y/z' }
+
+    expect(delegate.getRouterParams(e)).toEqual({ id: 'a%20b%2Fc', rest: 'x%25y/z' })
+    expect(delegate.getRouterParam(e, 'id', { decode: true })).toBe('a b%2Fc')
+    expect(delegate.getRouterParam(e, 'rest', { decode: true })).toBe('x%y/z')
+  })
+
+  it('reads router params as h3 matched them when it cannot line them up with the URL', () => {
+    const e = event('/api/users/a%20b')
+    e.context.params = { id: 'a b' }
+    expect(delegate.getRouterParams(e)).toEqual({ id: 'a b' })
+
+    e.context.matchedRoute = { path: '/api/other/:id/:extra' } as never
+    expect(delegate.getRouterParams(e)).toEqual({ id: 'a b' })
+  })
+
+  it('reads the client IP from the socket, and the first forwarded hop only when opted in', () => {
+    const e = event('/', { headers: { 'x-forwarded-for': '203.0.113.1, 10.0.0.1' }, ip: '198.51.100.7' })
+    expect(delegate.getRequestIP(e)).toBe('198.51.100.7')
+    expect(delegate.getRequestIP(e, { xForwardedFor: true })).toBe('203.0.113.1')
+    expect(delegate.getRequestIP(event('/'))).toBeUndefined()
   })
 
   it('reads a missing header as undefined rather than as an empty string', () => {

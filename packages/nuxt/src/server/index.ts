@@ -167,6 +167,84 @@ export function getRequestHeaders (event: EventWithRequest): Record<string, stri
 }
 
 /**
+ * The dynamic segments matched for the request, as they appear in the URL:
+ * percent-encoded, as `URLPattern` reports them. Set `decode` to decode them,
+ * apart from encoded path separators (`%2F`, `%5C`), so a segment cannot be
+ * read as a path it did not match.
+ *
+ * @example
+ * ```ts
+ * // server/api/users/[id].ts
+ * export default defineEventHandler((event) => {
+ *   const { id } = getRouterParams(event, { decode: true })
+ *   return { id }
+ * })
+ * ```
+ *
+ * @since 4.6.0
+ */
+export function getRouterParams (event: Pick<RequestEvent, 'context'>, options: { decode?: boolean } = {}): Record<string, string | undefined> {
+  const params = event.context.params || {}
+  if (!options.decode) {
+    return params
+  }
+  const decoded: Record<string, string | undefined> = {}
+  for (const key in params) {
+    const value = params[key]
+    decoded[key] = value === undefined ? value : decodePreservingSeparators(value)
+  }
+  return decoded
+}
+
+/**
+ * One dynamic segment matched for the request, or `undefined` when the route
+ * has none of that name. See {@link getRouterParams}.
+ *
+ * @since 4.6.0
+ */
+export function getRouterParam (event: Pick<RequestEvent, 'context'>, name: string, options?: { decode?: boolean }): string | undefined {
+  return getRouterParams(event, options)[name]
+}
+
+const ENCODED_SEPARATOR_RE = /%(?:25)*(?:2f|5c)/gi
+
+function decodePreservingSeparators (value: string): string {
+  if (!value.includes('%')) {
+    return value
+  }
+  let result = ''
+  let lastIndex = 0
+  for (const match of value.matchAll(ENCODED_SEPARATOR_RE)) {
+    result += decodeURIComponent(value.slice(lastIndex, match.index)) + match[0]
+    lastIndex = match.index + match[0].length
+  }
+  return result + decodeURIComponent(value.slice(lastIndex))
+}
+
+/**
+ * The IP address of the client, or `undefined` when it cannot be determined.
+ *
+ * By default no forwarded header is trusted: the address is the one the
+ * server runtime reports for the connection, and a runtime that reports none
+ * resolves `undefined`. Set `xForwardedFor` to read the first entry of the
+ * `X-Forwarded-For` header instead, only behind a proxy you control that
+ * overwrites that header; one that appends to it leaves a client-sent value
+ * first.
+ *
+ * @since 4.6.0
+ */
+export function getRequestIP (event: EventWithRequest, options: { xForwardedFor?: boolean } = {}): string | undefined {
+  if (options.xForwardedFor) {
+    const forwarded = event.req.headers.get('x-forwarded-for')?.split(',')[0]!.trim()
+    if (forwarded) {
+      return forwarded
+    }
+  }
+  const request = event.req as Request & { ip?: string, context?: { clientAddress?: string } }
+  return request.context?.clientAddress || request.ip || undefined
+}
+
+/**
  * Set the status, and optionally the reason phrase, of the response.
  *
  * @since 4.6.0

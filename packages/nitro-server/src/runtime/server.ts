@@ -28,6 +28,8 @@ import { getRouteRules as getNitroRouteRules, useRuntimeConfig as useNitroRuntim
 import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
 import type { EventHandler, NuxtErrorLike } from 'nuxt/server'
 
+import { getRouterParams as getPortableRouterParams } from 'nuxt/internal/server-default'
+
 import { NUXT_ERROR_SIGNATURE } from '#app/error'
 import { toPortableEvent } from './utils/event'
 
@@ -145,6 +147,66 @@ export function getRequestHeaders (event: H3Event): Record<string, string> {
     }
   }
   return headers
+}
+
+/**
+ * @see {@link import('nuxt/server').getRequestIP}
+ *
+ * The connection address comes from the node socket.
+ */
+export function getRequestIP (event: H3Event, options: { xForwardedFor?: boolean } = {}): string | undefined {
+  if (options.xForwardedFor) {
+    const forwarded = getH3RequestHeader(event, 'x-forwarded-for')?.split(',')[0]!.trim()
+    if (forwarded) {
+      return forwarded
+    }
+  }
+  return event.context.clientAddress || event.node.req.socket?.remoteAddress || undefined
+}
+
+/**
+ * @see {@link import('nuxt/server').getRouterParams}
+ *
+ * nitropack v2 routes the decoded path, so h3 v1 matches decoded params. They are read back
+ * from the same segments of the request URL, so they are percent-encoded as they appear in it.
+ */
+export function getRouterParams (event: H3Event, options?: { decode?: boolean }): Record<string, string | undefined> {
+  return getPortableRouterParams({ context: { params: getEncodedParams(event) } }, options)
+}
+
+/** @see {@link import('nuxt/server').getRouterParam} */
+export function getRouterParam (event: H3Event, name: string, options?: { decode?: boolean }): string | undefined {
+  return getRouterParams(event, options)[name]
+}
+
+function getEncodedParams (event: H3Event): Record<string, string | undefined> {
+  const params = event.context.params || {}
+  const route = (event.context.matchedRoute as { path?: string } | undefined)?.path
+  if (!route) {
+    return params
+  }
+  const pattern = route.split('/')
+  const decoded = event.path.split('?')[0]!.split('/')
+  const raw = (event.node.req.originalUrl || event.node.req.url || '').split('?')[0]!.split('/')
+  const offset = raw.length - decoded.length
+  if (offset < 0 || (pattern.length !== decoded.length && !pattern.some(segment => segment.startsWith('**')))) {
+    return params
+  }
+  const encoded: Record<string, string | undefined> = { ...params }
+  let unnamed = 0
+  for (let index = 0; index < pattern.length; index++) {
+    const segment = pattern[index]!
+    if (segment.startsWith('**')) {
+      encoded[segment.slice(3) || '_'] = raw.slice(offset + index).join('/')
+      break
+    }
+    if (segment === '*') {
+      encoded[`_${unnamed++}`] = raw[offset + index]
+    } else if (segment.startsWith(':')) {
+      encoded[segment.slice(1)] = raw[offset + index]
+    }
+  }
+  return encoded
 }
 
 /** @see {@link import('nuxt/server').getQuery} */
