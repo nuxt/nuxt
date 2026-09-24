@@ -1,7 +1,7 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import { resolveModuleExportNames } from '@nuxt/kit/internal'
 import type { CookieSerializeOptions } from 'cookie-es'
-import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
+import type { AppRouteRules, RuntimeConfig, SharedAppConfig } from 'nuxt/schema'
 
 import type {
   CorsOptions,
@@ -59,6 +59,7 @@ interface FourXSurface {
   getValidatedQuery: <Output>(event: RequestEvent, validate: (data: Record<string, string | string[]>) => ValidateResult<Output>) => Promise<Output>
   readValidatedBody: <Output>(event: RequestEvent, validate: (data: unknown) => ValidateResult<Output>) => Promise<Output>
   handleCors: (event: RequestEvent, options?: CorsOptions) => Response | false
+  useAppConfig: (event?: RequestEvent) => SharedAppConfig
 }
 
 /** Value exports 4.x has. */
@@ -92,6 +93,7 @@ const FOURX_VALUE_EXPORTS = [
   'getValidatedQuery',
   'readValidatedBody',
   'handleCors',
+  'useAppConfig',
 ]
 
 /** Value exports only this branch has. */

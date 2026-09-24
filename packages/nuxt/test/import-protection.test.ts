@@ -35,6 +35,7 @@ const testsToTriggerOn = [
   ['nitro', 'components/Component.vue', false],
   ['node_modules/some-pkg/server/api/helper.ts', 'components/Component.vue', false],
   ['nuxt/server', 'components/Component.vue', true],
+  ['nuxt/internal/server-app-config', 'components/Component.vue', true],
   ['nuxt/app', 'components/Component.vue', false],
 ] as const
 

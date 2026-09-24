@@ -49,6 +49,7 @@ export {
   setResponseStatus,
   toNuxtRequestEvent,
   updateSession,
+  useAppConfig,
   useSession,
 } from 'nuxt/internal/server-default'
 

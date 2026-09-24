@@ -12,8 +12,10 @@
 import { parse, serialize } from 'cookie-es'
 import type { CookieSerializeOptions } from '../app/types/cookie'
 import { parseQuery } from 'ufo'
-import type { AppRouteRules, NuxtRequestEvent, RequestEvent, RuntimeConfig } from 'nuxt/schema'
+import type { AppRouteRules, NuxtRequestEvent, RequestEvent, RuntimeConfig, SharedAppConfig } from 'nuxt/schema'
 import { useRuntimeConfig as _useRuntimeConfig } from 'nuxt/internal/server-runtime-config'
+import _appConfig from 'nuxt/internal/server-app-config'
+import { klona } from 'klona'
 
 import { NUXT_ERROR_SIGNATURE, NuxtError, createError } from '../app/error'
 import type { NuxtError as NuxtErrorContract } from '../app/types'
@@ -409,4 +411,32 @@ export function getRouteRules (_event: Pick<RequestEvent, 'context'>): AppRouteR
  */
 export function useRuntimeConfig (): RuntimeConfig {
   return _useRuntimeConfig() as RuntimeConfig
+}
+
+let sharedAppConfig: SharedAppConfig | undefined
+
+/**
+ * The app config, as `app.config.ts` and the layers define it.
+ *
+ * Called with the event, it returns a copy for that request, which changes
+ * made while handling it do not leak out of. Called without, it returns a
+ * frozen copy shared by every request.
+ *
+ * @since 4.6.0
+ */
+export function useAppConfig (event?: Pick<RequestEvent, 'context'>): SharedAppConfig {
+  if (!event) {
+    return sharedAppConfig ||= deepFreeze(klona(_appConfig))
+  }
+  const state = event.context.nuxt ||= {}
+  return state.appConfig ||= klona(_appConfig)
+}
+
+function deepFreeze<T extends object> (object: T): T {
+  for (const value of Object.values(object)) {
+    if (value && typeof value === 'object') {
+      deepFreeze(value)
+    }
+  }
+  return Object.freeze(object)
 }
