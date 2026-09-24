@@ -22,3 +22,17 @@ export function payloadRequestToRoute (path: string): string {
   payloadURL.searchParams.delete(PAYLOAD_BUILD_ID_PARAM)
   return url + payloadURL.search
 }
+
+const LEADING_SLASHES_RE = /^\/+/
+const TRAILING_SLASHES_RE = /\/*$/
+
+/** The same-origin `_payload.json` URL for a page route, tagged with the build id. */
+export function routeToPayloadURL (baseURL: string, path: string, buildId: string): string {
+  const request = parseRequestPath(path)
+  const base = new URL(baseURL.replace(TRAILING_SLASHES_RE, '/'), 'http://localhost')
+  const route = request.pathname.replace(LEADING_SLASHES_RE, '').replace(TRAILING_SLASHES_RE, '/')
+  const url = new URL('./' + (route === '/' ? '' : route) + PAYLOAD_FILENAME, base)
+  url.search = request.search
+  url.searchParams.set(PAYLOAD_BUILD_ID_PARAM, buildId)
+  return URL.canParse(baseURL) ? url.href : url.pathname + url.search
+}

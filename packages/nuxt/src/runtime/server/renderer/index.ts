@@ -27,7 +27,7 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands
 import { rendererDiagnostics } from './diagnostics'
 import { warnNoScriptsClientReliance } from './no-scripts'
 import { extractCspNonce } from './csp-nonce'
-import { PAYLOAD_BUILD_ID_PARAM, PAYLOAD_FILENAME, parseRequestPath, payloadRequestToRoute } from './url'
+import { PAYLOAD_FILENAME, payloadRequestToRoute, routeToPayloadURL } from './url'
 import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
@@ -1095,13 +1095,8 @@ function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: strin
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext): string {
-  const url = parseRequestPath(ssrContext.url)
   const baseURL = ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL
-  const payloadURL = joinURL(baseURL, url.pathname, PAYLOAD_FILENAME)
-
-  url.searchParams.set(PAYLOAD_BUILD_ID_PARAM, ssrContext.runtimeConfig.app.buildId)
-
-  return payloadURL + url.search
+  return routeToPayloadURL(baseURL, ssrContext.url, ssrContext.runtimeConfig.app.buildId)
 }
 
 function normalizeChunks (chunks: (string | undefined)[]) {
