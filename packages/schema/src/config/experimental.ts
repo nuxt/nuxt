@@ -114,6 +114,22 @@ export default defineResolvers({
       },
     },
     /**
+     * Render the error page in the Nuxt renderer itself when a server render fails, rather than
+     * handing the error to the server runtime and re-entering the renderer over an internal request.
+     *
+     * The error page is rendered in process, on the same request event, so the response keeps the
+     * headers and cookies the failed render had already written.
+     *
+     * Defaults to `true` when `future.compatibilityVersion` is `5` or higher.
+     */
+    inlineErrorRendering: {
+      $resolve: async (val, get) => {
+        if (typeof val === 'boolean') { return val }
+        return (await get('future.compatibilityVersion')) >= 5
+      },
+    },
+
+    /**
      * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
      *
      * Pass an array of status codes between 400 and 599 to control which error pages are generated. `true` is equivalent to `[404]`.

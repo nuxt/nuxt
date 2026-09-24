@@ -31,13 +31,6 @@ export function setDevErrorContext (next: DevErrorContext): void {
   useErrorChannel().catch(() => {})
 }
 
-const THROWN_VALUE = Symbol.for('nuxt:dev:thrown')
-
-/** Whether the app threw a bare value, which was given its status on the way here. */
-export function isThrownValue (error: unknown): boolean {
-  return typeof error === 'object' && error !== null && THROWN_VALUE in error
-}
-
 /** Whether `pathname` is a live channel route this process serves. */
 export function isErrorChannelRequest (pathname: string): boolean {
   if (!context || forwarding()) {

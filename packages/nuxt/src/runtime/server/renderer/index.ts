@@ -8,8 +8,9 @@ import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import { relative } from 'pathe'
 
-import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from './error'
-import type { SSRError } from './error'
+import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, appendVary, decodeSSRError, describeError, isExpectedError, isJsonRequest, stringifyErrorData } from './error'
+import type { DescribedError, SSRError } from './error'
+import type { DevErrorReport } from '../dev-error'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '../../../app/internal/tracing'
@@ -30,7 +31,7 @@ import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
-import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -71,11 +72,18 @@ function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<R
   // Whether we're rendering an error page
   const isErrorRoute = event.url.pathname.startsWith('/__nuxt_error')
 
+  // a render the runtime re-entered to build *its* error page keeps throwing back to it, and a
+  // request that asked for JSON must never be answered with a page
+  const inlineErrors = NUXT_INLINE_ERROR_RENDERING
+    && !getRequestState(event)?.['~rendering-error']
+    && !isJsonRequest(event.req as Request, event.url.pathname)
+
   if (isErrorRoute && !getRequestState(event)?.['~rendering-error'] /* allow internal fetch from the error handler */) {
-    return Promise.reject(runtime.createError({
+    const error = runtime.createError({
       status: 404,
       statusText: 'Page Not Found: /__nuxt_error',
-    }))
+    })
+    return inlineErrors ? renderErrorResponse(instance, event, error) : Promise.reject(error)
   }
 
   const ssrError = isErrorRoute
@@ -87,8 +95,122 @@ function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<R
   const render = () => renderRoute(instance, event, ssrError)
 
   const wrapRender = import.meta.prerender ? runtime.prerender?.wrapRender : undefined
+  const rendering = wrapRender ? wrapRender(event, render) : render()
 
-  return (wrapRender ? wrapRender(event, render) : render()).catch(error => rethrowWithResponseHeaders(event, error))
+  return inlineErrors
+    ? rendering.catch(error => renderErrorResponse(instance, event, error))
+    : rendering.catch(error => rethrowWithResponseHeaders(event, error))
+}
+
+/**
+ * Answer a failed render with the app's own error page, rendered on the same event so the
+ * headers and cookies the failed render wrote survive. There is one attempt: an error page
+ * that throws is answered with the static template, carrying the status the app failed with.
+ */
+async function renderErrorResponse (instance: NuxtRendererInstance, event: RendererEvent, error: unknown): Promise<Response> {
+  const runtime = instance.options
+  const described = describeError(error)
+
+  await captureError(runtime, event, error)
+  const devError = import.meta.dev
+    ? await runtime.onDevError?.(error, event, { expected: isExpectedError(error, described) }).catch(() => undefined)
+    : undefined
+
+  // the failed render shares this event, so its status line must not outlive it
+  event.res.status = undefined
+  event.res.statusText = undefined
+
+  let rendered: Response
+  try {
+    rendered = await renderRoute(instance, event, await toSSRError(described, error, event))
+  } catch (nested) {
+    await captureError(runtime, event, nested, ['error-page'])
+    return staticErrorResponse(runtime, event, described, devError)
+  }
+
+  const headers = new Headers(rendered.headers)
+  applyErrorHeaders(headers, described.headers)
+  headers.set('content-type', 'text/html;charset=utf-8')
+
+  let body: BodyInit | null = rendered.body
+  if (import.meta.dev && devError && !import.meta.test) {
+    const html = await rendered.text()
+    // the overlay is a development aid; never let it replace the real error
+    body = await devError.overlay(html).catch(() => html)
+  }
+
+  // a redirect from the error page carries its own status; anything else answers with the error's
+  return runtime.createResponse(body, {
+    status: rendered.status && rendered.status !== 200 ? rendered.status : described.status,
+    statusText: rendered.statusText || described.statusText,
+    headers,
+  })
+}
+
+/** Hand the error to the server runtime's error sink, which must never replace the error. */
+async function captureError (runtime: NuxtRendererOptions, event: RendererEvent, error: unknown, tags?: string[]): Promise<void> {
+  try {
+    await runtime.captureError?.(error, { event, tags })
+  } catch {
+    // a sink that throws has nothing left to report it through
+  }
+}
+
+/** The error page of last resort, for when the app's own error page cannot render either. */
+async function staticErrorResponse (runtime: NuxtRendererOptions, event: RendererEvent, described: DescribedError, devError: DevErrorReport | undefined): Promise<Response> {
+  const headers = new Headers(event.res.headers)
+  applyErrorHeaders(headers, described.headers)
+  headers.set('content-type', 'text/html;charset=utf-8')
+  const init = { status: described.status, statusText: described.statusText, headers }
+
+  if (import.meta.dev && devError) {
+    const page = await devError.page().catch(() => undefined)
+    if (page) {
+      return runtime.createResponse(page, init)
+    }
+  }
+
+  const { template } = await import('./error-template')
+  return runtime.createResponse(template({
+    status: described.status,
+    statusText: described.statusText,
+    ...(import.meta.dev && { description: described.message }),
+  }), init)
+}
+
+/** Apply the headers the error asked for, keeping the cookies the render already set. */
+function applyErrorHeaders (headers: Headers, overrides: Record<string, string>): void {
+  for (const name in overrides) {
+    if (name.toLowerCase() === 'set-cookie') {
+      headers.append(name, overrides[name]!)
+    } else {
+      headers.set(name, overrides[name]!)
+    }
+  }
+  appendVary(headers, 'accept, sec-fetch-mode')
+}
+
+/** The caught error in the shape `error.vue` receives through the payload. */
+async function toSSRError (described: DescribedError, error: unknown, event: RendererEvent): Promise<SSRError> {
+  const candidate = (error || {}) as { fatal?: boolean, unhandled?: boolean, stack?: string, cause?: unknown }
+  const ssrError = {
+    status: described.status,
+    statusText: described.statusText,
+    message: described.message,
+    data: described.data,
+    fatal: candidate.fatal ?? false,
+    unhandled: candidate.unhandled,
+    url: event.url.href,
+    ...(import.meta.dev && { stack: candidate.stack }),
+    [NUXT_ERROR_SIGNATURE]: true,
+  } as unknown as SSRError
+
+  if (import.meta.dev && candidate.cause !== undefined) {
+    const { serializeErrorCause } = await import('../dev-error')
+    ;(ssrError as { cause?: unknown }).cause = serializeErrorCause(candidate.cause)
+  }
+
+  return ssrError
 }
 
 const ERROR_PAGE_RE = /^\/(\d{3})\.html$/
@@ -150,7 +272,8 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   const routeOptions = runtime.getRouteRules(event)
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions.noScripts
 
-  if (!routeOptions.ssr) {
+  // an error page rendered as an empty SPA shell shows the visitor nothing
+  if (!routeOptions.ssr && !ssrError) {
     ssrContext.noSSR = true
   }
 
@@ -841,6 +964,9 @@ async function renderStreamedResponse (ctx: {
         // error via hydration - set `payload.error` so the client renders
         // the error page once it picks up the SSR data, then emit a
         // well-formed closing so HTML parsing doesn't choke.
+        if (NUXT_INLINE_ERROR_RENDERING) {
+          await captureError(runtime, event, error, ['streaming'])
+        }
         await Promise.resolve(ssrContext.nuxt?.hooks.callHook('app:error', error)).catch(() => {})
         ssrContext.payload ||= {} as NuxtPayload
         ssrContext.payload.error ||= error as any
