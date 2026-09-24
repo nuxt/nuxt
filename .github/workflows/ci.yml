@@ -153,7 +153,7 @@ jobs:
 
       - name: Fail if committed output is stale
         run: |
-          paths="packages/nuxt/src/app/components packages/nuxt/src/runtime/server/renderer/error-template.ts packages/nitro-server/src/templates packages/schema/src/templates"
+          paths=$(node -e "import('./packages/ui-templates/lib/paths.mjs').then(m => console.log(Object.keys(m.generatedTemplateCopies).join(' ')))")
           git add -N -- $paths
           if ! git diff --exit-code -- $paths; then
             echo "::error::Committed ui-templates output is out of date. Run 'pnpm --filter @nuxt/ui-templates build' and commit the result."
