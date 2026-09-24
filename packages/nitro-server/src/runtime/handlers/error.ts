@@ -26,7 +26,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
   let devError: DevErrorReport | undefined
   let errorCause: SerializedErrorCause | undefined
   if (import.meta.dev) {
-    const errorChannel = await import('../utils/error-channel')
+    const errorChannel = await import('#internal/nuxt/error-channel')
     // a handled client error (a 404, a failed validation) is the app working as intended,
     // unless the app threw a bare value that was given a status on its way here
     const isExpected = !error.unhandled && HTTPError.isError(error) && (error.status || 500) < 500 && !(THROWN_VALUE in error)

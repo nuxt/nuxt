@@ -45,14 +45,14 @@ export const rendererOptions: NuxtRendererOptions = {
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
   onRenderSuccess: import.meta.dev
     ? () => {
-        import('../error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
       }
     : undefined,
   captureError: (error, { event, tags }) => {
     useNitroApp().captureError?.(error as Error, { event: appEvent(event) as H3Event, tags: ['ssr', ...tags ?? []] })
   },
   onDevError: import.meta.dev
-    ? (error, event, options) => import('../error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
+    ? (error, event, options) => import('#internal/nuxt/error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
     : undefined,
   prerender: import.meta.prerender
     ? {
