@@ -1078,18 +1078,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.serverTsConfig.compilerOptions ||= {}
     opts.serverTsConfig.compilerOptions.paths ||= {}
     const serverPaths = opts.serverTsConfig.compilerOptions.paths
-    // TODO: remove support for baseUrl in nuxt v5
-    const serverBaseUrl = nuxt.options.future.compatibilityVersion >= 5
-      ? undefined
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      : opts.serverTsConfig.compilerOptions.baseUrl
-    const aliasBasePath = serverBaseUrl ? resolve(typesDir, serverBaseUrl) : typesDir
     for (const alias in nitro.options.alias) {
       if (alias in nuxt.options.alias || alias in serverPaths) { continue }
       if (excludedServerAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))) { continue }
 
       const target = nitro.options.alias[alias]!
-      let absolutePath = resolve(aliasBasePath, target)
+      let absolutePath = resolve(typesDir, target)
       let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
       if (!stats) {
         const resolvedModule = resolveModulePath(target, {
