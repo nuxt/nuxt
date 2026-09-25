@@ -1,5 +1,6 @@
 import { createUnplugin } from 'unplugin'
 import type { Unimport } from 'unimport'
+import type { EnvironmentModuleGraph, EnvironmentModuleNode } from 'vite'
 import { normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 
@@ -19,6 +20,14 @@ interface TransformPluginOptions {
    * one we scan for imports.
    */
   refreshImports?: (file: string) => void | Promise<void>
+}
+
+function invalidateImporters (moduleGraph: EnvironmentModuleGraph, modules: Iterable<EnvironmentModuleNode> | undefined) {
+  for (const mod of modules || []) {
+    for (const importer of mod.importers) {
+      moduleGraph.invalidateModule(importer)
+    }
+  }
 }
 
 export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: TransformPluginOptions) => createUnplugin(() => {
@@ -78,12 +87,20 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: Tra
 
           // The injected imports live in the consumers' transform output, which is only
           // regenerated if their modules are invalidated as well.
-          for (const mod of modules) {
-            for (const importer of mod.importers) {
-              this.environment.moduleGraph.invalidateModule(importer)
-            }
-          }
+          invalidateImporters(this.environment.moduleGraph, modules)
         },
+      },
+      configureServer (server) {
+        // `hotUpdate` does not run on a server without HMR, so its graphs are invalidated from the watcher
+        if (server.config.server.hmr !== false) { return }
+        server.watcher.on('change', async (file) => {
+          const pending = refreshImports?.(normalize(file))
+          if (!pending) { return }
+          await pending
+          for (const environment of Object.values(server.environments)) {
+            invalidateImporters(environment.moduleGraph, environment.moduleGraph.getModulesByFile(normalize(file)))
+          }
+        })
       },
     },
   }
