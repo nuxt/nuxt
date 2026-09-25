@@ -1,4 +1,5 @@
 import { describe, expect, expectTypeOf, it, vi } from 'vitest'
+import { defaults, seal as ironSeal } from 'iron-webcrypto'
 
 import { clearSession, getSession, updateSession, useSession } from '../src/server/index'
 import type { RequestEvent, Session, SessionConfig, SessionPassword } from '../src/server/index'
@@ -156,6 +157,60 @@ describe('an untrustworthy cookie', () => {
     const tampered = sessionCookie(first).slice(0, -4) + 'aaaa'
     const session = await getSession(event(tampered), config)
     expect(session.data).toEqual({})
+  })
+})
+
+describe('a cookie that cannot be unsealed', () => {
+  it.each([
+    ['garbage', 'not-a-seal'],
+    ['another format prefix', 'Fe27.1**abc*def*ghi*0*jkl*mno'],
+    ['an empty value', ''],
+  ])('starts an empty session for %s', async (_, value) => {
+    const e = event(`nuxt-session=${value}`)
+    const session = await useSession(e, config)
+    expect(session.data).toEqual({})
+    expect(sessionCookie(e)).toMatch(/^nuxt-session=Fe26\.2\*/)
+  })
+
+  it('starts an empty session when the seal has expired', async () => {
+    vi.useFakeTimers()
+    try {
+      const first = event()
+      await updateSession(first, { ...config, maxAge: 60 }, { user: 'daniel' })
+      vi.advanceTimersByTime(121_000)
+      const session = await getSession(event(sessionCookie(first)), { ...config, maxAge: 60 })
+      expect(session.data).toEqual({})
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('starts an empty session for a value sealed by h3 v1 with the same password', async () => {
+    const sealed = await ironSeal({ id: globalThis.crypto.randomUUID(), createdAt: Date.now(), data: { role: 'admin' } }, password, defaults)
+    const session = await getSession(event(`nuxt-session=${sealed}`), config)
+    expect(session.data).toEqual({})
+  })
+})
+
+describe('a session read from a cookie', () => {
+  it('is sealed afresh when it is written', async () => {
+    const first = event()
+    await updateSession(first, config, { user: 'daniel' })
+    const original = sessionCookie(first)
+
+    const second = event(original)
+    await updateSession(second, config, {})
+    const resealed = sessionCookie(second)
+    expect(resealed).toMatch(/^nuxt-session=Fe26\.2\*/)
+    expect(resealed).not.toBe(original)
+    expect((await getSession(event(resealed), config)).data).toEqual({ user: 'daniel' })
+  })
+
+  it('round-trips with a custom password', async () => {
+    const custom = { password: new TextEncoder().encode('c'.repeat(32)) }
+    const first = event()
+    await updateSession(first, custom, { user: 'daniel' })
+    expect((await getSession(event(sessionCookie(first)), custom)).data).toEqual({ user: 'daniel' })
   })
 })
 
