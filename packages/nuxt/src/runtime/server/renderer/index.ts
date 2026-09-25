@@ -25,7 +25,7 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands
 import { rendererDiagnostics } from './diagnostics'
 import { warnNoScriptsClientReliance } from './no-scripts'
 import { extractCspNonce } from './csp-nonce'
-import { urlHash } from './url'
+import { payloadRequestToRoute, routeToPayloadURL, urlHash, withRequestPath } from './url'
 import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
@@ -45,7 +45,6 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
 const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
-const PAYLOAD_BUILD_ID_PARAM = '_b'
 
 // Bot detection regex for SSR streaming.
 const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
@@ -320,14 +319,10 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
-    const payloadURL = new URL(ssrContext.url, 'http://localhost')
-    const url = payloadURL.pathname.slice(0, -`/${PAYLOAD_FILENAME}`.length) || '/'
-
-    payloadURL.searchParams.delete(PAYLOAD_BUILD_ID_PARAM)
-    ssrContext.url = url + payloadURL.search
+    ssrContext.url = payloadRequestToRoute(ssrContext.url, PAYLOAD_FILENAME)
 
     // the app renders the page the payload belongs to, not the payload URL it was requested at
-    event.url = new URL(ssrContext.url, event.url)
+    event.url = withRequestPath(event.url, ssrContext.url)
     // Replay a cached payload only during prerender. At runtime the cache is keyed by path
     // alone, so serving it would return one principal's SSR data to another and skip route
     // middleware / page guards; runtime payload requests must fall through to a full render.
@@ -1179,13 +1174,8 @@ function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: strin
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext): string {
-  const url = new URL(ssrContext.url, 'http://localhost')
   const baseURL = ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL
-  const payloadURL = joinURL(baseURL, url.pathname, PAYLOAD_FILENAME)
-
-  url.searchParams.set(PAYLOAD_BUILD_ID_PARAM, ssrContext.runtimeConfig.app.buildId)
-
-  return payloadURL + url.search
+  return routeToPayloadURL(baseURL, ssrContext.url, ssrContext.runtimeConfig.app.buildId, PAYLOAD_FILENAME)
 }
 
 function normalizeChunks (chunks: (string | undefined)[]) {
