@@ -64,6 +64,34 @@ function extractCodes (sources: string[]) {
   return codes
 }
 
+const STOP_WORDS = new Set(['the', 'and', 'for', 'with', 'that', 'this', 'was', 'not', 'are', 'but', 'from', 'its', 'has', 'have', 'into', 'when', 'which', 'will', 'been', 'being', 'than', 'then', 'they', 'them', 'their', 'there', 'what', 'your', 'you', 'can', 'use', 'set'])
+const PARAMS_RE = /^\([^)]*\)\s*=>/
+const PLACEHOLDER_RE = /\$\{[^}]*\}/g
+const WORD_RE = /[a-z][a-z0-9]{2,}/g
+
+function words (why: string) {
+  const text = why.replace(PARAMS_RE, ' ').replace(PLACEHOLDER_RE, ' ').toLowerCase()
+  return new Set((text.match(WORD_RE) ?? []).filter(word => !STOP_WORDS.has(word)))
+}
+
+/**
+ * The share of the shorter `why` whose words also appear in the other. A reworded diagnostic
+ * keeps most of its vocabulary; an unrelated one sharing the code does not.
+ */
+function wordOverlap (a: string, b: string) {
+  const left = words(a)
+  const right = words(b)
+  let shared = 0
+  for (const word of left) {
+    if (right.has(word)) {
+      shared++
+    }
+  }
+  return shared / Math.max(1, Math.min(left.size, right.size))
+}
+
+const MIN_WORD_OVERLAP = 1 / 3
+
 function git (...args: string[]) {
   return execFileSync('git', args, { cwd: repoRoot, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] })
 }
@@ -138,9 +166,18 @@ describe('diagnostics catalog', () => {
     expect(other.size).toBeGreaterThan(0)
 
     const mismatches = [...other]
-      .filter(([code, why]) => current.has(code) && current.get(code) !== why)
+      .filter(([code, why]) => current.has(code) && current.get(code) !== why && wordOverlap(current.get(code)!, why) < MIN_WORD_OVERLAP)
       .map(([code, why]) => `${code}\n  ${ref}: ${why}\n  HEAD: ${current.get(code)}`)
 
     expect(mismatches).toStrictEqual([])
+  })
+
+  it('tells a reworded diagnostic apart from a different one sharing its code', () => {
+    const before = '(p: { minLength: number }) => `\\`runtimeConfig.appSecret\\` is unset or shorter than ${p.minLength} characters, so a random development secret is being used.`'
+    const reworded = '\'A generated development secret is being used because `runtimeConfig.appSecret` is unset.\''
+    const unrelated = '(p: { helper: string }) => `\\`${p.helper}\\` from \\`nuxt/server\\` was called with an h3 event.`'
+
+    expect(wordOverlap(before, reworded)).toBeGreaterThanOrEqual(MIN_WORD_OVERLAP)
+    expect(wordOverlap(before, unrelated)).toBeLessThan(MIN_WORD_OVERLAP)
   })
 })
