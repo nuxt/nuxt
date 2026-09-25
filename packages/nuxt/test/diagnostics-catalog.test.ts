@@ -48,6 +48,19 @@ const catalogs = {
 const packagesDir = fileURLToPath(new URL('../..', import.meta.url))
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
 
+/** Codes defined on `origin/main` that 4.x does not define, each with the reason. */
+const MAIN_ONLY: Record<string, string> = {
+  NUXT_B5016: '`experimental.parseErrorData` is still supported on 4.x',
+  NUXT_B5029: 'validates `future.compatibilityVersion` against Nuxt 5',
+  NUXT_B9001: 'Nitro v2 compatibility layer',
+  NUXT_B9002: 'Nitro v2 compatibility layer',
+  NUXT_B9003: 'Nitro v2 compatibility layer',
+  NUXT_B9004: 'Nitro v2 compatibility layer',
+  NUXT_E8008: 'Nitro v2 compatibility layer',
+  NUXT_E8010: 'Nitro v2 compatibility layer',
+  NUXT_E8011: 'Nitro v2 compatibility layer',
+}
+
 const CATALOG_GLOB = '*/src/**/*.ts'
 const CODE_WHY_RE = /\b(NUXT_[A-Z]\d{4}):\s*\{\s*why:\s*([^\n]*)/g
 
@@ -145,6 +158,21 @@ describe('diagnostics catalog', () => {
     }
 
     expect([...defined].filter(name => !(name in catalogs)).sort()).toStrictEqual([])
+  })
+
+  it('defines every `origin/main` code unless it is listed as main-only', async (ctx) => {
+    const ref = 'origin/main'
+    if (!hasRef(ref)) {
+      ctx.skip(`\`${ref}\` is not available; fetch it (for example \`git fetch origin main\`) to compare catalogs across branches`)
+    }
+
+    const files = await glob(CATALOG_GLOB, { cwd: packagesDir, absolute: true, ignore: ['**/node_modules/**'] })
+    const current = extractCodes(files.map(file => readFileSync(file, 'utf-8')))
+    const other = extractCodes(git('grep', '-l', 'defineDiagnostics(', ref, '--', 'packages/*/src/**.ts').trim().split('\n').filter(Boolean).map(file => git('show', file)))
+
+    expect(other.size).toBeGreaterThan(0)
+    expect([...other.keys()].filter(code => !current.has(code) && !(code in MAIN_ONLY))).toStrictEqual([])
+    expect(Object.keys(MAIN_ONLY).filter(code => !other.has(code) || current.has(code))).toStrictEqual([])
   })
 
   it('assigns every code shared with `origin/main` to the same diagnostic', async (ctx) => {
