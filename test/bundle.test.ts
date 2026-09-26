@@ -55,7 +55,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"185k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"186k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -172,6 +172,31 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   })
 })
 
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('server path fallback', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/server-path-fallback', import.meta.url))
+  const disabledRootDir = fileURLToPath(new URL('./fixtures/server-path-fallback-disabled', import.meta.url))
+  let enabled: string
+  let disabled: string
+
+  beforeAll(async () => {
+    await Promise.all([
+      exec('pnpm', ['nuxt', 'build', rootDir]),
+      exec('pnpm', ['nuxt', 'build', disabledRootDir]),
+    ])
+    enabled = await readClientBundle(join(rootDir, '.output/public'))
+    disabled = await readClientBundle(join(disabledRootDir, '.output/public'))
+  }, 240 * 1000)
+
+  it('ships the fallback when enabled', () => {
+    // the `noScripts` document load, plus this one
+    expect(enabled.match(/location\.assign/g)).toHaveLength(2)
+  })
+
+  it('ships nothing when disabled', () => {
+    expect(disabled.match(/location\.assign/g)).toHaveLength(1)
+  })
+})
+
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('ssr: false route rules', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/spa-only', import.meta.url))
 
@@ -282,4 +307,10 @@ function allForms (value: string) {
 
 function roundToKilobytes (bytes: number) {
   return (bytes / 1024).toFixed(bytes > (100 * 1024) ? 0 : 1) + 'k'
+}
+
+async function readClientBundle (dir: string) {
+  const files = await glob(['**/*.js'], { cwd: dir })
+  const contents = await Promise.all(files.map(file => fsp.readFile(join(dir, file), 'utf8')))
+  return contents.join('\n')
 }
