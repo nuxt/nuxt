@@ -216,7 +216,8 @@ async function toSSRError (described: DescribedError, error: unknown, event: Ren
   } as unknown as NuxtPayload['error'] & { url: string }
 
   if (import.meta.dev && candidate.cause !== undefined) {
-    const { serializeErrorCause } = await import('../dev-error')
+    // imported by specifier so a production build can alias it away; a relative path cannot be
+    const { serializeErrorCause } = await import('nuxt/internal/dev-error')
     ;(ssrError as { cause?: unknown }).cause = serializeErrorCause(candidate.cause)
   }
 
