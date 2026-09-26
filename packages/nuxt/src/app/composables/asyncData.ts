@@ -21,7 +21,7 @@ export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output | Promise<Output>
 
-export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>
+export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal, cause: AsyncDataRefreshCause | undefined }) => Promise<ResT>
 
 export type PickFrom<T, K extends Array<string>> = KeysOf<T> extends K
   ? T // Nothing to pick; short-circuit so a generic `T` stays resolvable
@@ -909,7 +909,7 @@ function buildAsyncData<
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
             }, { once: true, signal: cleanupController.signal })
 
-            return Promise.resolve(handler(nuxtApp, { signal: mergedSignal })).then(resolve, reject)
+            return Promise.resolve(handler(nuxtApp, { signal: mergedSignal, cause: opts.cause })).then(resolve, reject)
           } catch (err) {
             reject(err)
           }
