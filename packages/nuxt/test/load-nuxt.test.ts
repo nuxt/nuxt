@@ -1,6 +1,9 @@
-import { fileURLToPath } from 'node:url'
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { normalize } from 'pathe'
+import { dirname, join, normalize, resolve } from 'pathe'
+import { resolveModulePath } from 'exsolve'
 import { withoutTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
@@ -189,6 +192,24 @@ describe('loadNuxt', () => {
     expect(tsConfigPaths).toHaveProperty('#server/*')
 
     await nuxt.close()
+  })
+
+  it('resolves crossws types from the copy nitro uses', async () => {
+    const modulesDir = mkdtempSync(join(tmpdir(), 'nuxt-modules-dir-'))
+    mkdirSync(join(modulesDir, 'crossws'), { recursive: true })
+    writeFileSync(join(modulesDir, 'crossws/package.json'), JSON.stringify({ name: 'crossws', version: '0.0.0', types: './index.d.ts' }))
+    writeFileSync(join(modulesDir, 'crossws/index.d.ts'), 'export {}')
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true, overrides: { modulesDir: [modulesDir] } })
+    const { tsConfig, serverTsConfig } = await _generateTypes(nuxt)
+
+    const nitroDir = dirname(resolveModulePath('nitro/package.json', { from: pathToFileURL(resolve(repoRoot, 'packages/nitro-server') + '/') }))
+    const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
+    const expected = realpathSync(resolve(nitroDir, '../crossws'))
+    expect(resolve(typesDir, serverTsConfig.compilerOptions?.paths?.crossws?.[0] ?? '')).toBe(expected)
+    expect(resolve(typesDir, tsConfig.compilerOptions?.paths?.crossws?.[0] ?? '')).toBe(expected)
+
+    await nuxt.close()
+    rmSync(modulesDir, { recursive: true, force: true })
   })
 
   it('resolves nitro aliases pointing at bare module specifiers', async () => {
