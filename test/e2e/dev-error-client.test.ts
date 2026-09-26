@@ -54,20 +54,36 @@ test('overlays a script syntax error introduced while the page is open', async (
   await expect(page.locator('body')).toContainText('rendered without error')
 })
 
-test('does not overlay when browser dispatches an error event with null error (e.g. ResizeObserver loop)', async ({ page, goto }) => {
+test('does not overlay a ResizeObserver loop notice', async ({ page, goto }) => {
   writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
   await goto('/')
-  await expect(page.locator('nuxt-error-overlay')).toHaveCount(0)
 
-  // Dispatch an ErrorEvent whose error is null (matching browser ResizeObserver notice)
-  await page.evaluate(() => {
-    window.dispatchEvent(new ErrorEvent('error', {
-      error: null,
-      message: 'ResizeObserver loop completed with undelivered notifications.',
-    }))
-  })
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    window.addEventListener('error', () => resolve(), { once: true })
+    const box = document.createElement('div')
+    document.body.append(box)
+    let resized = false
+    new ResizeObserver(() => {
+      if (resized) { return }
+      resized = true
+      box.style.height = '120px'
+    }).observe(box)
+  }))
+  await page.getByRole('button', { name: 'throw' }).click()
 
-  // Ensure overlay is never shown
-  await expect(page.locator('nuxt-error-overlay')).toHaveCount(0)
-  await expect(page.locator('body')).toContainText('rendered without error')
+  const overlay = page.locator('nuxt-error-overlay')
+  await expect(overlay).toHaveCount(1)
+  await expect(overlay.locator('.mb-message')).toContainText('boom from a click')
+  await expect(overlay).not.toContainText('Thrown value: null')
+})
+
+test('overlays a thrown null', async ({ page, goto }) => {
+  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
+  await goto('/')
+
+  await page.addScriptTag({ content: 'setTimeout(() => { throw null })' })
+
+  const overlay = page.locator('nuxt-error-overlay')
+  await expect(overlay).toHaveCount(1)
+  await expect(overlay.locator('.mb-message')).toContainText('Thrown value: null')
 })
