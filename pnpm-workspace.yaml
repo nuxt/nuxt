@@ -294,6 +294,7 @@ catalogs:
     unocss: 66.10.5
     vitest: 5.0.1
     vitest-environment-nuxt: 2.0.0
+    vue-3-5-42: npm:vue@3.5.42
     vue-sfc-transformer: 0.3.0
     vue-tsc: 3.3.11
 

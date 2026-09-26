@@ -1,6 +1,6 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
-import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
+import type { RouteLocationNormalizedGeneric, RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { isSamePath, withoutBase } from 'ufo'
 
@@ -202,9 +202,38 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       ? router.resolve(initialURL)
       : router.currentRoute.value
 
-    // snapshot the starting route so a plugin that calls `navigateTo`
-    // during `applyPlugins` is not clobbered later on
-    const prePluginRoutePath = import.meta.client ? router.currentRoute.value.fullPath : ''
+    // Track non-aborted navigations during boot so the initial router.replace does not cancel one in flight.
+    let pendingBootNavigation: RouteLocationNormalizedGeneric | null = null
+    let completedBootNavigation = false
+    let resolveBootNavigation: (() => void) | undefined
+    let stopBootNavigationTracker: (() => void) | undefined
+    if (import.meta.client) {
+      const removeGuard = router.beforeEach((to) => {
+        pendingBootNavigation = to
+      })
+      const removeAfterEach = router.afterEach((to, _from, failure) => {
+        if (pendingBootNavigation === to) {
+          pendingBootNavigation = null
+        }
+        if (!failure) {
+          completedBootNavigation = true
+        }
+        if (!pendingBootNavigation || completedBootNavigation) {
+          resolveBootNavigation?.()
+        }
+      })
+      const removeErrorHandler = router.onError((_error, to) => {
+        if (pendingBootNavigation === to) {
+          pendingBootNavigation = null
+          resolveBootNavigation?.()
+        }
+      })
+      stopBootNavigationTracker = () => {
+        removeGuard()
+        removeAfterEach()
+        removeErrorHandler()
+      }
+    }
 
     // Detect if we're hydrating a prerendered page that doesn't match the current URL
     // (for example, if the browser URL has different query params than the
@@ -358,16 +387,20 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
+      if (pendingBootNavigation && !completedBootNavigation) {
+        await new Promise<void>((resolve) => { resolveBootNavigation = resolve })
+      }
+      stopBootNavigationTracker?.()
       try {
-        if ('name' in resolvedInitialRoute) {
-          // clear the resolved route name so `router.replace` re-resolves it
+        // respect a plugin or the user navigating away during boot
+        const navigatedDuringBoot = import.meta.client && completedBootNavigation
+
+        // clear the resolved route name so `router.replace` re-resolves it only when replacing.
+        if (!navigatedDuringBoot && 'name' in resolvedInitialRoute) {
           ;(resolvedInitialRoute as { name: unknown }).name = undefined
         }
 
-        // respect a plugin that navigated away during boot
-        const pluginNavigatedAway = import.meta.client && router.currentRoute.value.fullPath !== prePluginRoutePath
-
-        if (pluginNavigatedAway) {
+        if (navigatedDuringBoot) {
           // we don't need to push the previous route
         } else if (hasDeferredRoute) {
           // Hydrate against the query-less prerendered route to avoid a mismatch, then restore the

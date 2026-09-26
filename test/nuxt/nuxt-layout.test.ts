@@ -304,6 +304,53 @@ describe('layout switching', () => {
 })
 
 describe('layout hydration', () => {
+  it('should use payload layout metadata until the next tick', async () => {
+    const nuxtApp = useNuxtApp()
+    const router = useRouter()
+    const original = { payload: nuxtApp.payload, isHydrating: nuxtApp.isHydrating }
+    const originalPath = router.currentRoute.value.fullPath
+    let el: VueWrapper | undefined
+
+    layouts['layout-hydration'] = defineComponent({
+      props: { title: String },
+      setup: props => () => h('div', props.title),
+    })
+    const removeRoutes = ['payload', 'destination'].map(title => router.addRoute({
+      path: `/layout-hydration-${title}`,
+      component: { render: () => null },
+      meta: {
+        // @ts-expect-error dynamically-added layout is not typed
+        layout: 'layout-hydration',
+        layoutProps: { title },
+        layoutTransition: { name: title },
+      },
+    }))
+    await router.push('/layout-hydration-destination')
+    const deferHydration = vi.spyOn(nuxtApp, 'deferHydration').mockReturnValue(() => {})
+
+    try {
+      nuxtApp.isHydrating = true
+      nuxtApp.payload = { ...original.payload, path: '/layout-hydration-payload', serverRendered: true, state: {} }
+      el = nuxtApp.runWithContext(() => mount(NuxtLayout))
+
+      expect.soft(el.text()).toBe('payload')
+      expect.soft(el.get('transition-stub').attributes('name')).toBe('payload')
+
+      await nextTick()
+      await nextTick()
+
+      expect(el.text()).toBe('destination')
+      expect(el.get('transition-stub').attributes('name')).toBe('destination')
+    } finally {
+      el?.unmount()
+      Object.assign(nuxtApp, original)
+      deferHydration.mockRestore()
+      await router.push(originalPath)
+      for (const removeRoute of removeRoutes) { removeRoute() }
+      delete layouts['layout-hydration']
+    }
+  })
+
   it('should release the hydration guard when unmounted before its suspense resolves', async () => {
     const nuxtApp = useNuxtApp()
     const done = vi.fn()

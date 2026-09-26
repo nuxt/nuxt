@@ -8,7 +8,7 @@ import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
-import { _mergeTransitionProps, _wrapInTransition, isVaporSlot } from './utils'
+import { _mergeTransitionProps, _wrapInTransition, isVaporSlot, vueSupportsHydrationNavigation } from './utils'
 import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
 import { useRoute as useVueRouterRoute } from '#build/pages'
@@ -54,9 +54,32 @@ export default defineComponent({
       || injectedRoute === useRoute() /* this is only true if we are not within `<NuxtPage>` */
     const route = shouldUseEagerRoute ? useVueRouterRoute() as ReturnType<typeof useRoute> : injectedRoute
 
+    // use the payload route during deferred hydration to match the SSR DOM.
+    const frozenHydrationRoute = shallowRef<Pick<RouteLocationNormalizedLoaded, 'path' | 'meta'>>()
+    if (import.meta.client && vueSupportsHydrationNavigation && nuxtApp.isHydrating && shouldUseEagerRoute && nuxtApp.payload.serverRendered && nuxtApp.payload.path) {
+      const router = useRouter()
+      const { fullPath, path, meta } = router.resolve(nuxtApp.payload.path)
+      // only freeze if navigation has moved past the payload route.
+      if (fullPath !== router.currentRoute.value.fullPath) {
+        const initialLayout = nuxtApp.payload.state._layout as typeof meta.layout
+        frozenHydrationRoute.value = {
+          path,
+          meta: {
+            ...meta,
+            // resolved meta does not auto-unwrap ref layouts.
+            layout: initialLayout ?? unref(meta.layout),
+            layoutProps: initialLayout !== undefined ? nuxtApp.payload.state._layoutProps : meta.layoutProps,
+          },
+        }
+        nextTick(() => {
+          frozenHydrationRoute.value = undefined
+        })
+      }
+    }
+
     const layout = computed(() => {
       type LayoutName = keyof NuxtLayouts | false | 'default'
-      let layout = resolveLayoutName(route, props.name) as LayoutName
+      let layout = resolveLayoutName(frozenHydrationRoute.value ?? route, props.name) as LayoutName
       if (layout && !(layout in layouts)) {
         if (import.meta.dev && layout !== 'default') {
           renderDiagnostics.NUXT_E4001({ layout, available: Object.keys(layouts).join(', ') || 'none' })
@@ -97,12 +120,13 @@ export default defineComponent({
     let lastLayout: string | boolean | undefined
 
     return () => {
+      const routeMeta = (frozenHydrationRoute.value ?? route).meta
       const hasLayout = !!layout.value && layout.value in layouts
 
-      const hasTransition = hasLayout && !!(route?.meta.layoutTransition ?? defaultLayoutTransition)
+      const hasTransition = hasLayout && !!(routeMeta.layoutTransition ?? defaultLayoutTransition)
 
       const transitionProps = hasTransition && _mergeTransitionProps([
-        route?.meta.layoutTransition,
+        routeMeta.layoutTransition,
         defaultLayoutTransition,
         {
           onBeforeLeave () {
@@ -135,7 +159,7 @@ export default defineComponent({
           default: () => h(
             LayoutProvider,
             {
-              layoutProps: mergeProps(context.attrs, route.meta.layoutProps ?? {}, { ref: layoutRef }),
+              layoutProps: mergeProps(context.attrs, routeMeta.layoutProps ?? {}, { ref: layoutRef }),
               key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
