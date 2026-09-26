@@ -1008,6 +1008,7 @@ describe('pages', () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/prerender/catchall/a/b/?test=true')
 
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+    await expect.poll(() => page.innerText('#catchall-async-data')).toBe('/prerender/catchall/a/b/')
 
     const states = await page.evaluate(() => (window as unknown as { __asyncDataStates: Array<{ path: string, status: string, hasData: boolean }> }).__asyncDataStates)
     expect(states.length).toBeGreaterThan(0)
@@ -1015,7 +1016,6 @@ describe('pages', () => {
       expect.soft(state).toMatchObject({ status: 'success', hasData: true })
     }
 
-    expect(await page.innerText('#catchall-async-data')).toBe('/prerender/catchall/a/b/')
     expect(pageErrors).toEqual([])
     expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
 
