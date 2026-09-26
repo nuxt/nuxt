@@ -307,23 +307,28 @@ test.describe('vite-only HMR tests', () => {
     expect(filteredLogs).toStrictEqual([])
   })
 
-  test.fail('should support renaming files to same import name', async ({ page, goto }) => {
+  test('should support renaming files to same import name', async ({ page, goto }) => {
     await goto('/rename-component')
 
     await expect(page.getByTestId('example')).toHaveText('test.vue')
 
-    renameSync(join(fixtureDir, 'app/components/example/test.vue'), join(fixtureDir, 'app/components/example/example-test.vue'))
+    const original = join(fixtureDir, 'app/components/example/test.vue')
+    const renamed = join(fixtureDir, 'app/components/example/example-test.vue')
+    const contents = readFileSync(original, 'utf8')
 
-    writeFileSync(
-      join(fixtureDir, 'app/components/example/example-test.vue'),
-      `<template><div data-testid="example">example-test.vue</div></template>`,
-    )
+    renameSync(original, renamed)
+    try {
+      writeFileSync(renamed, `<template><div data-testid="example">example-test.vue</div></template>`)
 
-    await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
+      await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
 
-    await page.reload()
+      await page.reload()
 
-    await expect(page.getByTestId('example')).toHaveText('example-test.vue')
+      await expect(page.getByTestId('example')).toHaveText('example-test.vue')
+    } finally {
+      await rm(renamed, { force: true })
+      writeFileSync(original, contents)
+    }
   })
 
   test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
