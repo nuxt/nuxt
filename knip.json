@@ -5,6 +5,7 @@
   },
   "ignoreExportsUsedInFile": true,
   "tags": ["-knipignore"],
+  "ignore": ["**/.nuxt-*/**", "packages/*/dist/**"],
   "ignoreIssues": {
     "**/.nuxt/**": ["unlisted", "unresolved"],
     "**/.nuxt-*/**": ["unlisted", "unresolved"],
