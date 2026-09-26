@@ -118,5 +118,10 @@ export const renderDiagnostics = !import.meta.dev
           fix: 'Use a vdom component for `nuxtClient` islands.',
           docs: false,
         },
+        NUXT_E4023: {
+          why: (p: { name: string }) => `\`${p.name}\` is not a globally registered component, so preloading it did nothing. Only global components can be preloaded, as a local import is resolved by the component that imports it.`,
+          fix: (p: { name: string }) => `Register \`${p.name}\` globally (\`components/global/\`, or \`global: true\` when adding it from a module), or remove the call.`,
+          docs: false,
+        },
       },
     })

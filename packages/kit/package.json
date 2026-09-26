@@ -51,12 +51,12 @@
     "verkit": "catalog:build"
   },
   "peerDependencies": {
-    "@nuxt/schema": "^4.6.0 || ^5.0.0-0",
-    "confbox": "catalog:build",
-    "dotenv": "catalog:build",
-    "giget": "catalog:build",
-    "jiti": "catalog:build",
-    "mlly": "catalog:build",
+    "@nuxt/schema": "^3.0.0 || ^4.0.0 || ^5.0.0-0",
+    "confbox": ">=0.1.0",
+    "dotenv": "*",
+    "giget": ">=3.1.0",
+    "jiti": "^2.0.0",
+    "mlly": "^1.2.0",
     "oxc-parser": ">=0.56.0",
     "rolldown": ">=1.0.0"
   },

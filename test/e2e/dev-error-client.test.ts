@@ -53,3 +53,37 @@ test('overlays a script syntax error introduced while the page is open', async (
   await expect(overlay).toHaveCount(0, { timeout: 15_000 })
   await expect(page.locator('body')).toContainText('rendered without error')
 })
+
+test('does not overlay a ResizeObserver loop notice', async ({ page, goto }) => {
+  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
+  await goto('/')
+
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    window.addEventListener('error', () => resolve(), { once: true })
+    const box = document.createElement('div')
+    document.body.append(box)
+    let resized = false
+    new ResizeObserver(() => {
+      if (resized) { return }
+      resized = true
+      box.style.height = '120px'
+    }).observe(box)
+  }))
+  await page.getByRole('button', { name: 'throw' }).click()
+
+  const overlay = page.locator('nuxt-error-overlay')
+  await expect(overlay).toHaveCount(1)
+  await expect(overlay.locator('.mb-message')).toContainText('boom from a click')
+  await expect(overlay).not.toContainText('Thrown value: null')
+})
+
+test('overlays a thrown null', async ({ page, goto }) => {
+  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
+  await goto('/')
+
+  await page.addScriptTag({ content: 'setTimeout(() => { throw null })' })
+
+  const overlay = page.locator('nuxt-error-overlay')
+  await expect(overlay).toHaveCount(1)
+  await expect(overlay.locator('.mb-message')).toContainText('Thrown value: null')
+})
