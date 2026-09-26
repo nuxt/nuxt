@@ -82,9 +82,13 @@ for (const scenario of cases) {
     await page.goto('/compile-target')
     await expectCompileOverlay(page, scenario)
 
+    // the error page reloads itself once the report clears
+    const reloaded = page.waitForEvent('load', { timeout: 30_000 }).then(() => true, () => false)
     fixture.write(TARGET, healthy)
     await expect(overlayOf(page)).toHaveCount(0, { timeout: 30_000 })
-    await page.reload()
+    if (!await reloaded) {
+      await page.goto('/compile-target')
+    }
     await expect(page.locator('body')).toContainText('compile target healthy', { timeout: 30_000 })
   })
 
