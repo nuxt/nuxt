@@ -40,10 +40,10 @@ export default defineNuxtPlugin({
     let mounted = false
     nuxtApp.hook('app:mounted', () => { mounted = true })
     const report = (error: unknown, fatal: boolean) => {
-      if (isExpected(error)) { return }
+      if (error == null || isExpected(error)) { return }
       const raw = unwrap(error)
       const reported = typeof raw === 'object' && raw !== null ? reportedObjects : reportedValues
-      if (raw === undefined || reported.has(raw as object)) { return }
+      if (raw == null || reported.has(raw as object)) { return }
       reported.add(raw as object)
       hot.send('nuxt:dev:client-error', {
         ...raw instanceof Error
@@ -55,8 +55,14 @@ export default defineNuxtPlugin({
 
     nuxtApp.hook('vue:error', error => report(error, isNuxtError(error) && !!(error.fatal || error.unhandled)))
     nuxtApp.hook('app:error', error => report(error, true))
-    window.addEventListener('error', event => report(event.error, false))
-    window.addEventListener('unhandledrejection', event => report(event.reason, false))
+    window.addEventListener('error', (event) => {
+      if (event.error == null) { return }
+      report(event.error, false)
+    })
+    window.addEventListener('unhandledrejection', (event) => {
+      if (event.reason == null) { return }
+      report(event.reason, false)
+    })
 
     // the report this error page was rendered with may have been retired before it connected
     if (nuxtApp.payload.error) {

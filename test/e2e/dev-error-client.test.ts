@@ -53,3 +53,21 @@ test('overlays a script syntax error introduced while the page is open', async (
   await expect(overlay).toHaveCount(0, { timeout: 15_000 })
   await expect(page.locator('body')).toContainText('rendered without error')
 })
+
+test('does not overlay when browser dispatches an error event with null error (e.g. ResizeObserver loop)', async ({ page, goto }) => {
+  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
+  await goto('/')
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(0)
+
+  // Dispatch an ErrorEvent whose error is null (matching browser ResizeObserver notice)
+  await page.evaluate(() => {
+    window.dispatchEvent(new ErrorEvent('error', {
+      error: null,
+      message: 'ResizeObserver loop completed with undelivered notifications.',
+    }))
+  })
+
+  // Ensure overlay is never shown
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(0)
+  await expect(page.locator('body')).toContainText('rendered without error')
+})
