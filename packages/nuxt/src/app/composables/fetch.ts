@@ -4,8 +4,10 @@ import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { isPlainObject } from '@vue/shared'
 import { hashKey } from '../utils/hash'
-import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
+import type { AsyncData, AsyncDataOptions, AugmentedAsyncData, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
 import { useAsyncData } from './asyncData'
+import { applyUseFetchAddons } from './addons'
+import type { MergedAddonsExtensions, MergedAddonsOptions, UseFetchAddon } from './addons'
 import { useRequestFetch } from './ssr'
 import { dataDiagnostics } from '../diagnostics/data'
 import type { NuxtError } from './error'
@@ -114,7 +116,7 @@ function generateOptionSegments (opts: Record<string, any>) {
 type FetchFactoryDataT<FDataT, _ResT> = [unknown] extends [FDataT] ? _ResT : FDataT
 type FetchFactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
 type FetchFactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
-export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined, FBaseURL extends string = ''> {
+export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined, FBaseURL extends string = '', FAddonOpts = {}, FAddonExt = {}> {
   // the registered paths come first: an editor takes string-literal completions from the first
   // applicable signature. Their request parameter is left un-intersected, because intersecting a
   // validator onto it stops a template literal argument from inferring as one; a path the route set
@@ -141,9 +143,9 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts,
     ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, opts with transform, default = DataT
   <
     ResT = void,
@@ -165,9 +167,9 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts,
     ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, default = undefined
   <
     ResT = void,
@@ -189,9 +191,9 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts,
     ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
-  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, default = DataT
   <
     ResT = void,
@@ -213,9 +215,9 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts,
     ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
-  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined, FAddonExt>
   // Explicit auto-key as positional arg
   <
     ResT = void,
@@ -237,10 +239,10 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = undefined,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    arg1?: string | (UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>),
+    arg1?: string | (UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts),
     arg2?: string,
     ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // the same five for a path known only at runtime, carrying the validator so an unregistered
   // path is named, and picking up the query strings and trailing slashes a constraint cannot express
   // Auto-key, opts with transform, default = undefined
@@ -264,8 +266,8 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, opts with transform, default = DataT
   <
     ResT = void,
@@ -287,8 +289,8 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
-    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+    opts: UseFetchOptionsWithTransform<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, default = undefined
   <
     ResT = void,
@@ -310,8 +312,8 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
-    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
-  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, default = DataT
   <
     ResT = void,
@@ -333,8 +335,8 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
-    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>,
-  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+    opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts,
+  ): AugmentedAsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined, FAddonExt>
   // Explicit auto-key as positional arg
   <
     ResT = void,
@@ -356,9 +358,9 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     DefaultT = undefined,
   >(
     request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
-    arg1?: string | (UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method>),
+    arg1?: string | (UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, _ReqT & string, Method, BaseURL> & RequiredFetchBody<_ReqT, Method> & FAddonOpts),
     arg2?: string,
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
 }
 
 /** The response a request to `ReqT` resolves to, against a route set a client declares. */
@@ -419,7 +421,7 @@ export interface DeclaredUseFetchOptionsWithTransform<
  * away by the trailing `UnmatchedDeclaredRouteArgs`, exactly as an unregistered path is for the
  * app's own routes.
  */
-export interface DeclaredUseFetch<Schema, FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined> {
+export interface DeclaredUseFetch<Schema, FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined, FAddonOpts = {}, FAddonExt = {}> {
   // Auto-key, opts with transform, default = undefined
   <
     ResT = void,
@@ -432,9 +434,9 @@ export interface DeclaredUseFetch<Schema, FDataT = unknown, FPickKeys extends Ke
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: DeclaredUseFetchOptionsWithTransform<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>,
+    opts: DeclaredUseFetchOptionsWithTransform<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method> & FAddonOpts,
     ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, opts with transform, default = DataT
   <
     ResT = void,
@@ -447,9 +449,9 @@ export interface DeclaredUseFetch<Schema, FDataT = unknown, FPickKeys extends Ke
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts: DeclaredUseFetchOptionsWithTransform<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>,
+    opts: DeclaredUseFetchOptionsWithTransform<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method> & FAddonOpts,
     ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, default = undefined
   <
     ResT = void,
@@ -462,9 +464,9 @@ export interface DeclaredUseFetch<Schema, FDataT = unknown, FPickKeys extends Ke
     DefaultT = FetchFactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts?: DeclaredUseFetchOptions<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>,
+    opts?: DeclaredUseFetchOptions<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method> & FAddonOpts,
     ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
-  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined, FAddonExt>
   // Auto-key, default = DataT
   <
     ResT = void,
@@ -477,9 +479,9 @@ export interface DeclaredUseFetch<Schema, FDataT = unknown, FPickKeys extends Ke
     DefaultT = FetchFactoryDefaultT<FDefaultT, DataT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts?: DeclaredUseFetchOptions<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>,
+    opts?: DeclaredUseFetchOptions<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method> & FAddonOpts,
     ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
-  ): AsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, FetchFactoryPickKeys<FPickKeys, PickKeys, DataT>> | DefaultT, ErrorT | undefined, FAddonExt>
   // Explicit auto-key as positional arg
   <
     ResT = void,
@@ -492,10 +494,10 @@ export interface DeclaredUseFetch<Schema, FDataT = unknown, FPickKeys extends Ke
     DefaultT = undefined,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    arg1?: string | (DeclaredUseFetchOptions<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method>),
+    arg1?: string | (DeclaredUseFetchOptions<Schema, _ResT, DataT, PickKeys, DefaultT, ReqT, Method> & RequiredDeclaredBody<Schema, ReqT, Method> & FAddonOpts),
     arg2?: string,
     ...unmatched: UnmatchedDeclaredRouteArgs<Schema, ReqT, Method>
-  ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
+  ): AugmentedAsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined, FAddonExt>
   // Last, and only applicable where the path does not resolve, so a call the signatures above turned
   // away is reported as the path and method that matched nothing rather than as the argument count
   // their trailing tuple asked for. The guard keeps it out of the way of a resolving call, which
@@ -511,6 +513,17 @@ export interface DeclaredUseFetch<Schema, FDataT = unknown, FPickKeys extends Ke
   ): AsyncData<unknown, NuxtError<unknown> | undefined>
 }
 
+type CreateUseFetchOptions<
+  ResT,
+  DataT = ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = undefined,
+  R extends string = string,
+  M extends AnyServerRouteMethod = 'get',
+  B extends string = string,
+  Addons extends ReadonlyArray<UseFetchAddon<any, any>> = [],
+> = Partial<UseFetchOptions<ResT, DataT, PickKeys, DefaultT, R, M, B>> & { addons?: Addons }
+
 export interface CreateUseFetch {
   // a client for another API: `routes` is required here, so this signature is only reached by a call
   // that declares one, and every other call resolves against the app's own routes as before
@@ -523,9 +536,10 @@ export interface CreateUseFetch {
     FDataT = F_ResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
     FDefaultT = undefined,
+    const FAddons extends ReadonlyArray<UseFetchAddon<any, any>> = [],
   >(
-    options: Partial<DeclaredUseFetchOptions<FSchema, F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>> & { routes: FSchema },
-  ): DeclaredUseFetch<FSchema, FDataT, FPickKeys, FDefaultT>
+    options: Partial<DeclaredUseFetchOptions<FSchema, F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>> & { routes: FSchema, addons?: FAddons },
+  ): DeclaredUseFetch<FSchema, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
   <
     FResT = void,
     FReqT extends TypedFetchRequest = TypedFetchRequest,
@@ -538,31 +552,42 @@ export interface CreateUseFetch {
     FDataT = F_ResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
     FDefaultT = undefined,
+    const FAddons extends ReadonlyArray<UseFetchAddon<any, any>> = [],
   >(
     options?:
-      | Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod, FBaseURL>>
+      | CreateUseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod, FBaseURL, FAddons>
       | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod, FBaseURL>>),
-  ): UseFetch<FDataT, FPickKeys, FDefaultT, FBaseURL>
+  ): UseFetch<FDataT, FPickKeys, FDefaultT, FBaseURL, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 }
 
 /**
  * A factory function to create a custom `useFetch` composable with pre-defined default options.
- * @since 4.2.0
+ * @since 4.4.0
  */
-export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateUseFetch>({
+export const createUseFetch: CreateUseFetch = /* @__PURE__ */ defineKeyedFunctionFactory<CreateUseFetch>({
   name: 'createUseFetch',
-  factory<
-    FResT = void,
-    FReqT extends TypedFetchRequest = TypedFetchRequest,
-    const FMethod extends AnyServerRouteMethod = 'get',
-    F_ResT = FResT extends void ? FetchResult<FReqT, FMethod> : FResT,
-    FDataT = F_ResT,
-    FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
-    FDefaultT = undefined,
-  >(options:
-      Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod>>
-      | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod>>) = {},
-  ): UseFetch<FDataT, FPickKeys, FDefaultT> {
+  factory: ((options: Record<string, any> | ((callerOptions: Record<string, any>) => Record<string, any>) = {}) => {
+    if (typeof options !== 'function' && options.addons?.length) {
+      return applyUseFetchAddons(_createUseFetch as (options: Record<string, any>) => UseFetch, options)
+    }
+    return _createUseFetch(options as Parameters<typeof _createUseFetch>[0])
+  }) as CreateUseFetch,
+})
+
+/** @internal */
+export function _createUseFetch<
+  FResT = void,
+  FReqT extends TypedFetchRequest = TypedFetchRequest,
+  const FMethod extends AnyServerRouteMethod = 'get',
+  F_ResT = FResT extends void ? FetchResult<FReqT, FMethod> : FResT,
+  FDataT = F_ResT,
+  FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+  FDefaultT = undefined,
+> (options:
+  Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod>>
+  | ((callerOptions: UseFetchOptions<unknown>) => Partial<UseFetchOptions<F_ResT, FDataT, FPickKeys, FDefaultT, FReqT & string, FMethod>>) = {},
+): UseFetch<FDataT, FPickKeys, FDefaultT> {
+  {
     /**
      * Fetch data from an API endpoint with an SSR-friendly composable.
      * See {@link https://nuxt.com/docs/4.x/api/composables/use-fetch}
@@ -657,12 +682,14 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         timeout,
         enabled,
         serialize,
+        middleware,
+        _keySegments: keySegments,
         ...fetchOptions
       } = {
         ...(typeof options === 'function' ? {} : factoryOptions),
         ...opts,
         ...(typeof options === 'function' ? factoryOptions : {}),
-      }
+      } as typeof opts & { _keySegments?: MaybeRefOrGetter<unknown>[] }
 
       if ('params' in fetchOptions) {
         delete (fetchOptions as { params?: unknown }).params
@@ -673,7 +700,12 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
 
       const _request = computed(() => toValue(request))
 
-      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(fetchOptions)])))
+      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([
+        autoKey,
+        typeof _request.value === 'string' ? _request.value : '',
+        ...generateOptionSegments(fetchOptions),
+        ...keySegments ? keySegments.map(segment => toValue(segment)) : [],
+      ])))
 
       if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
         throw dataDiagnostics.NUXT_E3001({ url: _request.value })
@@ -685,7 +717,7 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         cache: typeof fetchOptions.cache === 'boolean' ? undefined : fetchOptions.cache,
       })
 
-      const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> = {
+      const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> & { _functionName?: string, _keyTriggersExecute?: boolean } = {
         server,
         lazy,
         default: defaultFn,
@@ -698,17 +730,18 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
         timeout,
         enabled,
         serialize,
+        middleware,
         watch: watchSources === false ? [] : [...(watchSources || []), _fetchOptions],
       }
 
       if (import.meta.dev) {
         // private property
-        (_asyncDataOptions as typeof _asyncDataOptions & { _functionName?: string })._functionName ||= (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useFetch'
+        _asyncDataOptions._functionName ||= (factoryOptions as typeof factoryOptions & { _functionName?: string })._functionName || 'useFetch'
       }
 
       if (watchSources === false) {
         // opt-out of automatic re-execution while keeping key reactive
-        ;(_asyncDataOptions as typeof _asyncDataOptions & { _keyTriggersExecute?: boolean })._keyTriggersExecute = false
+        _asyncDataOptions._keyTriggersExecute = false
       }
 
       if (alwaysRunFetchOnKeyChange && !immediate) {
@@ -737,15 +770,15 @@ export const createUseFetch: CreateUseFetch = defineKeyedFunctionFactory<CreateU
     }
 
     return useFetch as unknown as UseFetch<FDataT, FPickKeys, FDefaultT>
-  },
-})
+  }
+}
 
-export const useFetch: UseFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory()
+export const useFetch: UseFetch = _createUseFetch()
 
-export const useLazyFetch: UseFetch = (createUseFetch as unknown as { __nuxt_factory: typeof createUseFetch }).__nuxt_factory({
+export const useLazyFetch: UseFetch = _createUseFetch({
   lazy: true,
   // @ts-expect-error private property
   _functionName: 'useLazyFetch',
-}) as ReturnType<typeof createUseFetch>
+})
 
 export type { AnyServerRouteMethod, AvailableServerRouteMethod, ServerRouteMethod, ServerRouteMethods, TypedFetch, TypedFetch as $Fetch, TypedFetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from '../types/fetch'

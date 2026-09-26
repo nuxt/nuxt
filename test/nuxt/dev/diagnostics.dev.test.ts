@@ -83,6 +83,18 @@ describe('useAsyncData diagnostics (dev)', () => {
     warn.mockClear()
     count++
 
+    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { middleware: [(next: () => Promise<unknown>) => next()] })
+    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'), { middleware: [(next: () => Promise<unknown>) => next()] })
+    expect(warn).not.toHaveBeenCalled()
+    await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(
+        new RegExp(`\\[NUXT_E3004\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different \`middleware\` option\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\\d+:\\d+`),
+      ))
+
+    warn.mockClear()
+    count++
+
     await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('test'))
     expect(warn).not.toHaveBeenCalled()
     await mountWithAsyncData(`${uniqueKey}-${count}`, () => Promise.resolve('bob'))

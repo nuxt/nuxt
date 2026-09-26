@@ -844,6 +844,43 @@ describe('useAsyncData', () => {
     scopeB.stop()
   })
 
+  it('should run middleware around the handler on every execution', async () => {
+    const calls: string[] = []
+    const { data, refresh } = await useAsyncData(uniqueKey, () => {
+      calls.push('handler')
+      return Promise.resolve('value')
+    }, {
+      middleware: [
+        async (next, { signal }) => {
+          calls.push(`outer:${signal instanceof AbortSignal}`)
+          return (await next()) + '!'
+        },
+        async (next) => {
+          calls.push('inner')
+          return next()
+        },
+      ],
+    })
+
+    expect(data.value).toBe('value!')
+    expect(calls).toEqual(['outer:true', 'inner', 'handler'])
+
+    await refresh()
+    expect(calls).toEqual(['outer:true', 'inner', 'handler', 'outer:true', 'inner', 'handler'])
+  })
+
+  it('should surface an error thrown by middleware without running the handler', async () => {
+    const handler = vi.fn(() => Promise.resolve('value'))
+    const { data, error, status } = await useAsyncData(uniqueKey, handler, {
+      middleware: [() => { throw new Error('blocked') }],
+    })
+
+    expect(handler).not.toHaveBeenCalled()
+    expect(data.value).toBeUndefined()
+    expect(error.value?.message).toBe('blocked')
+    expect(status.value).toBe('error')
+  })
+
   it('should abort the in-flight request when the last subscriber unmounts', () => {
     const key = `abort-on-unmount-${++counter}`
 
