@@ -2,6 +2,7 @@ import type { Component } from 'vue'
 import type { RouteLocationRaw, RouteRecordNormalized, Router } from 'vue-router'
 import type { NuxtAppLiterals } from '../types'
 import { tryUseNuxtApp, useNuxtApp } from '../nuxt'
+import { renderDiagnostics } from '../diagnostics/render'
 import { prefetchGroup } from '../internal/prefetch-util'
 import { toArray } from '../utils'
 import { useRouter } from './router'
@@ -20,6 +21,9 @@ export const preloadComponents = async (components: NuxtAppLiterals['componentNa
     const component = nuxtApp.vueApp._context.components[name]
     if (component) {
       return _loadAsyncComponent(component)
+    }
+    if (import.meta.dev) {
+      renderDiagnostics.NUXT_E4023({ name })
     }
   }))
 }
