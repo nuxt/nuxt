@@ -496,6 +496,13 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   const processedLayers = new Set<string>()
   const localRelativePaths = new Set(localLayers.map(layer => layer.replace(/\/$/, '')))
   for (const layer of layers) {
+    const layerCwd = layer.cwd
+    // Bundler module ids are realpaths, so address extended layers by their symlink target
+    if (layer.cwd && layer.cwd !== cwd) {
+      layer.cwd = tryRealPath(layer.cwd)
+      layer.configFile &&= tryRealPath(layer.configFile)
+    }
+
     // Resolve `rootDir` & `srcDir` of layers
     // Create a shallow copy to avoid mutating the cached ESM config object
     const resolvedRootDir = layer.config?.rootDir ?? layer.cwd!
@@ -515,9 +522,9 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
     // Add layer name for local layers
-    if (layer.cwd && cwd && localRelativePaths.has(relative(cwd, layer.cwd))) {
+    if (layerCwd && cwd && localRelativePaths.has(relative(cwd, layerCwd))) {
       layer.meta ||= {}
-      layer.meta.name ||= basename(layer.cwd)
+      layer.meta.name ||= basename(layerCwd)
     }
 
     // Add layer alias
@@ -576,6 +583,14 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
  */
 function canonicalLayerDir (path: string): string {
   return normalize(realpathSync(statSync(path).isDirectory() ? path : dirname(path)))
+}
+
+function tryRealPath (path: string): string {
+  try {
+    return normalize(realpathSync(path))
+  } catch {
+    return path
+  }
 }
 
 function withTrailingSlash (path: string | undefined): string {

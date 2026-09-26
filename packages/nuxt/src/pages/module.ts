@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, realpathSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, statSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
@@ -742,41 +742,25 @@ export default defineNuxtModule({
     // Add router plugin
     addPlugin(resolve(runtimeDir, 'plugins/router'))
 
-    // Vite resolves symlinks when it builds manifest keys, so page files reached
-    // through a symlinked layer must be resolved the same way before comparing.
-    const realPathCache = new Map<string, string>()
-    const toRealPath = (path: string): string => {
-      let resolved = realPathCache.get(path)
-      if (resolved === undefined) {
-        try {
-          resolved = realpathSync.native(path)
-        } catch {
-          resolved = path
-        }
-        realPathCache.set(path, resolved)
-      }
-      return resolved
-    }
-
     const getSources = (pages: NuxtPage[]): string[] => pages
       .filter(p => Boolean(p.file))
       .flatMap(p =>
-        [toRealPath(p.file as string), ...(p.children?.length ? getSources(p.children) : [])],
+        [relative(nuxt.options.srcDir, p.file as string), ...(p.children?.length ? getSources(p.children) : [])],
       )
 
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', (manifest) => {
       if (nuxt.options.dev) { return }
-      const sourceFiles = new Set(nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : [])
+      const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
 
       for (const [key, chunk] of Object.entries(manifest)) {
-        if (chunk.src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && !!page.file && toRealPath(page.file) === toRealPath(join(nuxt.options.srcDir, chunk.src!))))) {
+        if (chunk.src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, chunk.src!)))) {
           delete manifest[key]
           continue
         }
         if (chunk.isEntry) {
           chunk.dynamicImports =
-            chunk.dynamicImports?.filter(i => !sourceFiles.has(toRealPath(join(nuxt.options.srcDir, i))))
+            chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
         }
       }
     })
