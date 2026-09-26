@@ -19,7 +19,7 @@ interface LoaderOptions {
   clientDelayedComponentRuntime: string
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
-  refreshComponents?: (file: string) => void | Promise<void>
+  refreshComponents?: (file: string, timestamp: number) => void | Promise<void>
 }
 
 // Match both:
@@ -47,9 +47,9 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
     vite: {
       hotUpdate: {
         order: 'pre',
-        async handler ({ type, file, modules }) {
+        async handler ({ type, file, timestamp, modules }) {
           if (type === 'update' || !options.refreshComponents) { return }
-          const pending = options.refreshComponents(normalize(file))
+          const pending = options.refreshComponents(normalize(file), timestamp)
           if (!pending) { return }
           await pending
 

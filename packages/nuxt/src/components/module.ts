@@ -11,7 +11,7 @@ import { DECLARATION_EXTENSIONS, isDirectorySync, linkToAlias, logger } from '..
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
-import { getAppStructureVersion, invalidateAppStructure } from '../core/app.ts'
+import { getAppStructureVersion } from '../core/app.ts'
 
 import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
@@ -199,15 +199,8 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Scan components and add to plugin
     const scannedStructureVersions = new WeakMap<Nuxt, number>()
-    nuxt.hook('app:templates', async (app) => {
-      // Component discovery depends only on which files exist, so it can be reused
-      // until a file is added or removed.
+    async function resolveComponents () {
       const structureVersion = getAppStructureVersion(nuxt)
-      if (nuxt.options.dev && context.components && scannedStructureVersions.get(nuxt) === structureVersion) {
-        app.components = context.components
-        return
-      }
-
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
       const modesByName = new Map<string, Set<string | undefined>>()
@@ -240,8 +233,16 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       }
       context.components = newComponents
-      app.components = newComponents
       scannedStructureVersions.set(nuxt, structureVersion)
+    }
+
+    nuxt.hook('app:templates', async (app) => {
+      // Component discovery depends only on which files exist, so it can be reused
+      // until a file is added or removed.
+      if (!nuxt.options.dev || scannedStructureVersions.get(nuxt) !== getAppStructureVersion(nuxt)) {
+        await resolveComponents()
+      }
+      app.components = context.components
     })
 
     nuxt.hook('prepare:types', ({ tsConfig }) => {
@@ -283,40 +284,28 @@ export default defineNuxtModule<ComponentsOptions>({
       })
     }
 
-    const componentTemplates = new Set([
-      componentsDeclarationTemplate,
-      componentsTypeTemplate,
-      componentsPluginTemplate,
-      componentNamesTemplate,
-      componentsIslandsTemplate,
-      componentsMetadataTemplate,
-    ].map(t => t.filename))
-
     let pendingRefresh: Promise<void> | undefined
     let rerunRefresh = false
-    const refreshedFiles = new Set<string>()
+    const refreshedEvents = new Map<string, Promise<void>>()
     /** Rescan components after a component file is added or removed, deduping concurrent requests. */
-    function refreshComponents (file: string) {
+    function refreshComponents (file: string, timestamp: number) {
       if (!isComponentFile(file)) { return }
+      // each environment reports the same file event with the same timestamp
+      const event = `${timestamp}:${file}`
+      const refreshed = refreshedEvents.get(event)
+      if (refreshed) { return refreshed }
       if (pendingRefresh) {
-        // each environment reports the same file event, so only rescan again for a new file
-        if (!refreshedFiles.has(file)) {
-          refreshedFiles.add(file)
-          rerunRefresh = true
-        }
-        return pendingRefresh
+        rerunRefresh = true
+      } else {
+        refreshedEvents.clear()
+        pendingRefresh = (async () => {
+          do {
+            rerunRefresh = false
+            await resolveComponents()
+          } while (rerunRefresh)
+        })().finally(() => { pendingRefresh = undefined })
       }
-      refreshedFiles.add(file)
-      pendingRefresh = (async () => {
-        do {
-          rerunRefresh = false
-          invalidateAppStructure(nuxt)
-          await nuxt.callHook('builder:generateApp', { filter: t => componentTemplates.has(t.filename) })
-        } while (rerunRefresh)
-      })().finally(() => {
-        pendingRefresh = undefined
-        refreshedFiles.clear()
-      })
+      refreshedEvents.set(event, pendingRefresh)
       return pendingRefresh
     }
 
