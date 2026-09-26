@@ -855,7 +855,7 @@ describe('useAsyncData', () => {
           calls.push(`outer:${signal instanceof AbortSignal}`)
           return (await next()) + '!'
         },
-        async (next) => {
+        (next) => {
           calls.push('inner')
           return next()
         },
