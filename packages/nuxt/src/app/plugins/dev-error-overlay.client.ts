@@ -55,7 +55,11 @@ export default defineNuxtPlugin({
 
     nuxtApp.hook('vue:error', error => report(error, isNuxtError(error) && !!(error.fatal || error.unhandled)))
     nuxtApp.hook('app:error', error => report(error, true))
-    window.addEventListener('error', event => report(event.error, false))
+    window.addEventListener('error', (event) => {
+      // browser notices such as the ResizeObserver loop limit have no error and no source location
+      if (event.error === null && !event.lineno) { return }
+      report(event.error, false)
+    })
     window.addEventListener('unhandledrejection', event => report(event.reason, false))
 
     // the report this error page was rendered with may have been retired before it connected
