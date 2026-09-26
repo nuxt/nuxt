@@ -8,7 +8,7 @@ import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
-import { _mergeTransitionProps, _wrapInTransition, isVaporSlot } from './utils'
+import { _finishTransition, _mergeTransitionProps, _startTransition, _wrapInTransition, isVaporSlot } from './utils'
 import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
 import { useRoute as useVueRouterRoute } from '#build/pages'
@@ -106,14 +106,10 @@ export default defineComponent({
         defaultLayoutTransition,
         {
           onBeforeLeave () {
-            nuxtApp['~transitionPromise'] ||= new Promise((resolve) => {
-              nuxtApp['~transitionFinish'] = resolve
-            })
+            _startTransition(nuxtApp)
           },
           onAfterLeave () {
-            nuxtApp['~transitionFinish']?.()
-            delete nuxtApp['~transitionFinish']
-            delete nuxtApp['~transitionPromise']
+            _finishTransition(nuxtApp)
           },
         },
       ])
