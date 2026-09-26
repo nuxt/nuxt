@@ -1,6 +1,9 @@
-import { fileURLToPath } from 'node:url'
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { normalize, resolve } from 'pathe'
+import { dirname, join, normalize, resolve } from 'pathe'
+import { resolveModulePath } from 'exsolve'
 import { withoutTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
@@ -189,6 +192,27 @@ describe('loadNuxt', () => {
     expect(tsConfigPaths).toHaveProperty('#server/*')
 
     await nuxt.close()
+  })
+
+  it('resolves h3 and crossws types from the copy nitro-server depends on', async () => {
+    const modulesDir = mkdtempSync(join(tmpdir(), 'nuxt-modules-dir-'))
+    for (const pkg of ['h3', 'crossws']) {
+      mkdirSync(join(modulesDir, pkg), { recursive: true })
+      writeFileSync(join(modulesDir, pkg, 'package.json'), JSON.stringify({ name: pkg, version: '2.0.0', types: './index.d.ts' }))
+      writeFileSync(join(modulesDir, pkg, 'index.d.ts'), 'export {}')
+    }
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true, overrides: { modulesDir: [modulesDir] } })
+
+    const nitroServerDir = resolve(repoRoot, 'packages/nitro-server')
+    const h3Dir = dirname(resolveModulePath('h3/package.json', { from: pathToFileURL(nitroServerDir + '/') }))
+    const crosswsDir = realpathSync(resolve(h3Dir, '../crossws'))
+
+    const nitroPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+    expect(nitroPaths.h3?.[0]).toBe(h3Dir)
+    expect(nitroPaths.crossws?.[0]).toBe(crosswsDir)
+
+    await nuxt.close()
+    rmSync(modulesDir, { recursive: true, force: true })
   })
 
   it('resolves nitro aliases pointing at bare module specifiers', async () => {

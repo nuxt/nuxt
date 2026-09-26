@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
@@ -7,12 +7,12 @@ import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtOptions, ServerRouteSegment } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
-import { isAbsolute, join, relative, resolve } from 'pathe'
+import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitropack/types'
-import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { bundlerDiagnostics, getServerRuntime, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -735,16 +735,23 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     // Nitro auto-imported/augmented dependencies
     'nitro/types',
     'nitro/runtime',
-    // TODO: remove in v5
-    'nitropack/types',
-    'nitropack/runtime',
-    'nitropack',
     'defu',
-    'h3',
     'consola',
     'ofetch',
-    'crossws',
   )
+
+  // `h3`, `crossws` and `nitropack` are not dependencies of `nuxt`, so their types are resolved
+  // from this package rather than from `modulesDir`, where a package manager that does not hoist
+  // may expose an unrelated version.
+  const [ownTypePaths, ownNodeTypePaths] = await Promise.all([
+    resolveOwnTypePaths(h3PackageJson),
+    resolveOwnTypePaths(h3PackageJson, { entry: true }),
+  ])
+  nitroConfig.typescript!.tsConfig!.compilerOptions ||= {}
+  nitroConfig.typescript!.tsConfig!.compilerOptions.paths = {
+    ...nitroConfig.typescript!.tsConfig!.compilerOptions.paths,
+    ...ownTypePaths,
+  }
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
@@ -1113,6 +1120,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.tsConfig.compilerOptions ||= {}
     opts.tsConfig.compilerOptions.paths ||= {}
     opts.tsConfig.compilerOptions.paths[REQUEST_TYPES_MODULE] = [resolve(distDir, 'request-types')]
+    Object.assign(opts.tsConfig.compilerOptions.paths, ownTypePaths)
+
+    opts.nodeTsConfig.compilerOptions ||= {}
+    opts.nodeTsConfig.compilerOptions.paths ||= {}
+    Object.assign(opts.nodeTsConfig.compilerOptions.paths, ownNodeTypePaths)
 
     // ensure aliases shared between nuxt + nitro are included in shared tsconfig
     opts.sharedTsConfig.compilerOptions ||= {}
@@ -1128,6 +1140,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         }
       }
     }
+    Object.assign(opts.sharedTsConfig.compilerOptions.paths, ownTypePaths)
   })
 
   if (nitro.options.static) {
@@ -1329,4 +1342,12 @@ function toRouteSegments (nodeKey: string): ServerRouteSegment[] {
   }
 
   return segments.length ? segments : [{ type: 'static', value: '/' }]
+}
+
+async function resolveOwnTypePaths (h3PackageJson: string, options?: { entry?: boolean }): Promise<Record<string, [string]>> {
+  const [own, crossws] = await Promise.all([
+    resolveTypePaths(['nitropack/types', 'nitropack/runtime', 'nitropack', 'h3'], [fileURLToPath(new URL('.', import.meta.url))], options),
+    resolveTypePaths(['crossws'], [dirname(h3PackageJson)], options),
+  ])
+  return Object.fromEntries([...own, ...crossws].map(([pkg, path]) => [pkg, [path]]))
 }
