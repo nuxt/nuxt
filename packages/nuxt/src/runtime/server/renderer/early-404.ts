@@ -1,7 +1,5 @@
-import type { RequestEvent } from '@nuxt/schema'
-
 import { NUXT_PAGE_MATCHER } from 'nuxt/internal/renderer-config'
-import type { NuxtRendererOptions, RendererRouteRules } from './runtime'
+import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
 
 const TRAILING_SLASHES_RE = /\/+$/
 const PAYLOAD_SUFFIX = '/_payload.json'
@@ -38,7 +36,7 @@ function matchesPageRoute (pathname: string): boolean {
  * When a `cache` route rule covers the path, its `maxAge` is advertised on
  * GET/HEAD misses too, so CDNs can absorb repeat probes for unknown paths.
  */
-export function throwIfUnmatchedPagePath (options: NuxtRendererOptions, event: RequestEvent, routeOptions: Pick<RendererRouteRules, 'cache'>): void {
+export function throwIfUnmatchedPagePath (options: NuxtRendererOptions, event: RendererEvent, routeOptions: Pick<RendererRouteRules, 'cache'>): void {
   if (matchesPageRoute(event.url.pathname)) {
     return
   }

@@ -9,30 +9,23 @@ import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
 import { injectHead } from '../composables/head'
 import { stateDiagnostics } from '../diagnostics/state'
+import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
+import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
 
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
-// track the active head entry per path for forwarded preload hints
 interface ActiveHeadEntryLike { dispose: () => void }
-const forwardedHintEntries = new Map<string, ActiveHeadEntryLike>()
+
+const forwardedHintEntries = new Set<ActiveHeadEntryLike>()
 const forwardedHintHrefs = new Set<string>()
-// bumped on navigation, so payloads that resolve afterwards are discarded
-let hintGeneration = 0
-let forwardedHintCount = 0
 
 const MAX_HINTS_PER_ROUTE = 2
-const MAX_FORWARDED_HINTS = 8
+const FORWARDED_HINT_TIMEOUT_MS = 30_000
 
-const SLOW_CONNECTION_TYPES = new Set(['slow-2g', '2g'])
-
-// `navigator.connection` is not part of the standard TS DOM lib
-interface NetworkInformationLike { saveData?: boolean, effectiveType?: string }
-type NavigatorWithConnection = Navigator & { connection?: NetworkInformationLike }
-
-function canAffordHints (): boolean {
-  const connection = (navigator as NavigatorWithConnection).connection
-  if (!connection) { return true }
-  return !connection.saveData && !SLOW_CONNECTION_TYPES.has(connection.effectiveType!)
+function disposeHint (entry: ActiveHeadEntryLike) {
+  if (forwardedHintEntries.delete(entry)) {
+    entry.dispose()
+  }
 }
 
 function documentHrefs (): Set<string> {
@@ -43,17 +36,29 @@ function documentHrefs (): Set<string> {
   return hrefs
 }
 
-function selectHints (prefetchLinks: Array<Record<string, string | boolean>>) {
+interface SelectedHint { href: string, link: ResolvableLink }
+
+function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): SelectedHint[] {
   const existingHrefs = documentHrefs()
-  const selected: Array<Record<string, string | boolean>> = []
+  const selected: SelectedHint[] = []
 
   for (const link of prefetchLinks) {
-    if (selected.length >= MAX_HINTS_PER_ROUTE || forwardedHintCount + selected.length >= MAX_FORWARDED_HINTS) { break }
+    if (selected.length >= MAX_HINTS_PER_ROUTE) { break }
     if (typeof link.href !== 'string') { continue }
     const href = new URL(link.href, window.location.href).href
     if (existingHrefs.has(href) || forwardedHintHrefs.has(href)) { continue }
     forwardedHintHrefs.add(href)
-    selected.push(link)
+    if (link.as === 'image') {
+      // `rel="prefetch"` has no request destination, so image hints stay as
+      // `rel="preload"`, with any `fetchpriority` dropped so that they
+      // cannot outrank the current page
+      const { fetchpriority: _fetchpriority, ...rest } = link
+      selected.push({ href, link: rest as ResolvableLink })
+    } else {
+      // Downgrade preload (and modulepreload) to prefetch.
+      const { rel: _rel, ...rest } = link
+      selected.push({ href, link: { ...rest, rel: 'prefetch' } as ResolvableLink })
+    }
   }
 
   return selected
@@ -65,15 +70,13 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     // Load payload after middleware & once final route is resolved
     const staticKeysToRemove = new Set<string>()
     const router = useRouter()
+    const { schedule } = usePrefetchScheduler(nuxtApp)
     if (prefetchPreloadTags) {
       // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
-        hintGeneration++
-        forwardedHintCount = 0
-        for (const entry of forwardedHintEntries.values()) {
-          entry.dispose()
+        for (const entry of [...forwardedHintEntries]) {
+          disposeHint(entry)
         }
-        forwardedHintEntries.clear()
         forwardedHintHrefs.clear()
       })
     }
@@ -101,41 +104,63 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     // Load payload into cache
     const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
-    nuxtApp.hooks.hook('link:prefetch', (url) => {
-      onNuxtReady(async () => {
-        const generation = hintGeneration
-        const { hostname, pathname } = new URL(url, window.location.href)
-        if (hostname !== window.location.hostname) { return }
-        // TODO: use preloadPayload instead once we can support preloading islands too
-        const payload = await loadPayload(url).catch(() => {
-          stateDiagnostics.NUXT_E7003({ url })
-        })
-        if (head && generation === hintGeneration && payload?.prefetchLinks?.length && !forwardedHintEntries.has(pathname) && canAffordHints()) {
-          const selected = selectHints(payload.prefetchLinks)
-          if (!selected.length) { return }
-          forwardedHintCount += selected.length
-          const entry = head.push({
-            // payload serialisation erases the attribute types the destination resolved
-            link: selected.map((link) => {
-              if (link.as === 'image') {
-                // `rel="prefetch"` has no request destination, so image hints stay as
-                // `rel="preload"`, with any `fetchpriority` dropped so that they
-                // cannot outrank the current page
-                const { fetchpriority: _fetchpriority, ...rest } = link
-                return rest
-              }
-              // Downgrade preload (and modulepreload) to prefetch.
-              const { rel: _rel, ...rest } = link
-              return { ...rest, rel: 'prefetch' }
-            }) as ResolvableLink[],
-          })
-          forwardedHintEntries.set(pathname, entry)
+    const forwardHint = (link: ResolvableLink) => (signal: AbortSignal) => new Promise<void>((resolve) => {
+      if (signal.aborted) { return resolve() }
+      const hint: { entry?: ActiveHeadEntryLike, timeout?: ReturnType<typeof setTimeout> } = {}
+      const complete = (dispose: boolean) => {
+        clearTimeout(hint.timeout)
+        signal.removeEventListener('abort', onAbort)
+        if (dispose && hint.entry) {
+          disposeHint(hint.entry)
         }
+        resolve()
+      }
+      const onAbort = () => complete(true)
+      signal.addEventListener('abort', onAbort)
+
+      hint.entry = head!.push({
+        link: [{
+          ...link,
+          onerror: () => complete(true),
+          onload: () => complete(false),
+        }],
+      })
+      forwardedHintEntries.add(hint.entry)
+      hint.timeout = setTimeout(() => complete(true), FORWARDED_HINT_TIMEOUT_MS)
+    })
+
+    nuxtApp.hooks.hook('link:prefetch', (url) => {
+      onNuxtReady(() => {
+        const { hostname } = new URL(url, window.location.href)
+        if (hostname !== window.location.hostname) { return }
+        const group = prefetchGroup(url)
+        schedule({
+          key: `payload:${url}`,
+          priority: 'payload',
+          scope: 'navigation',
+          group,
+          run: async (signal, promoted) => {
+            if (signal.aborted) { return }
+            // TODO: use preloadPayload instead once we can support preloading islands too
+            const payload = await loadPayload(url, { signal, promoted }).catch(() => {
+              stateDiagnostics.NUXT_E7003({ url })
+            })
+            // a retained payload resolves onto its own route, which renders these hints itself
+            if (signal.aborted || !head || !payload?.prefetchLinks?.length || group === prefetchGroup(router.currentRoute.value.fullPath)) { return }
+            schedule(selectHints(payload.prefetchLinks).map(({ href, link }) => ({
+              key: `hint:${href}`,
+              priority: 'hint',
+              scope: 'navigation',
+              group,
+              run: forwardHint(link),
+            })))
+          },
+        })
       })
     })
 
     onNuxtReady(() => {
-      if (isAppManifestEnabled && (navigator as NavigatorWithConnection).connection?.effectiveType !== 'slow-2g') {
+      if (isAppManifestEnabled && canPrefetch()) {
         setTimeout(getAppManifest, 1000)
       }
     })

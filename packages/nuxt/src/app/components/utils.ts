@@ -6,6 +6,7 @@ import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
 import { renderDiagnostics } from '../diagnostics/render'
 import { MAX_VFOR_LENGTH } from './vfor'
+import type { NuxtApp } from '../nuxt'
 import { START_LOCATION } from '#build/pages'
 
 /**
@@ -164,13 +165,15 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
   return blocks
 }
 
+const ISLAND_TELEPORT_TARGET_SELECTOR = '[data-island-slot],[data-island-component]'
+
 function getElementHTML (element: RendererNode, withoutSlots: boolean) {
-  if (!withoutSlots || !element.querySelector?.('[data-island-slot]')) {
+  if (!withoutSlots || !element.querySelector?.(ISLAND_TELEPORT_TARGET_SELECTOR)) {
     return element.outerHTML
   }
   const template = element.ownerDocument.createElement('template')
   template.innerHTML = element.outerHTML
-  template.content.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
+  template.content.querySelectorAll(ISLAND_TELEPORT_TARGET_SELECTOR).forEach((n: Element) => { n.innerHTML = '' })
   return template.innerHTML
 }
 
@@ -215,4 +218,16 @@ export function _mergeTransitionProps (routeProps: TransitionProps[]): Transitio
     })
   }
   return defu(..._props as [TransitionProps, TransitionProps])
+}
+
+export function _startTransition (nuxtApp: NuxtApp): void {
+  nuxtApp['~transitionPromise'] ||= new Promise((resolve) => {
+    nuxtApp['~transitionFinish'] = resolve
+  })
+}
+
+export function _finishTransition (nuxtApp: NuxtApp): void {
+  nuxtApp['~transitionFinish']?.()
+  delete nuxtApp['~transitionFinish']
+  delete nuxtApp['~transitionPromise']
 }

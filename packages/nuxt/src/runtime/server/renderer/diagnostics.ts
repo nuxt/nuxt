@@ -49,5 +49,9 @@ export const rendererDiagnostics = /* #__PURE__ */ defineDiagnostics({
       why: (p: { path: string, reasons: string }) => `\`${p.path}\` relies on client-side JavaScript, but \`features.noScripts: 'production'\` will strip scripts from this route in production:\n  - ${p.reasons}`,
       fix: 'Remove the client-side dependency from this route, or scope script stripping with the `noScripts` route rule instead of enabling it globally.',
     },
+    NUXT_E8009: {
+      why: (p: { path: string, what: string, cause: string }) => `A page error interrupted the stream for \`${p.path}\`, and ${p.what} also failed while rendering the error response.\n  ${p.cause}`,
+      fix: 'Fix the page error first. If it keeps happening, report the failure below - the browser will show a blank or partial page instead of the error page.',
+    },
   },
 })

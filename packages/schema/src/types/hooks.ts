@@ -14,7 +14,8 @@ import type { NuxtImport, NuxtImportPreset, NuxtImportPresetSource } from './imp
 import type { NuxtManifest } from './manifest.ts'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt.ts'
 import type { ModuleMeta } from './module.ts'
-import type { ServerRequestTypes, ServerRouteHandler } from './server.ts'
+import type { ServerEventHandler, ServerRequestTypes, ServerRouteHandler } from './server.ts'
+import type { NitroConfig, NitroInstance, RouteRuleConfig } from './nitro.ts'
 
 export type HookResult = Promise<void> | void
 
@@ -58,6 +59,8 @@ export interface NuxtPage {
    * `client` means that page will render on the client-side only.
    */
   mode?: 'client' | 'server' | 'all'
+  /** Route rules for the route this page is served at, as declared with `defineRouteRules()`. */
+  rules?: RouteRuleConfig
   /** @internal */
   _sync?: boolean
 }
@@ -199,6 +202,45 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'server:routes': (routes: ServerRouteHandler[], context: { requestTypes?: ServerRequestTypes }) => HookResult
+  /**
+   * Called when the dev middleware is being registered on the server builder's dev server.
+   * @param handler the Vite or Webpack event handler
+   * @returns Promise
+   */
+  'server:devHandler': (handler: ServerEventHandler, options: { cors: (path: string) => boolean }) => HookResult
+
+  /**
+   * Called before the server builder writes `.nuxt/tsconfig.server.json`, allowing addition of custom references and declarations.
+   * @param options Objects containing `references`, `declarations`
+   * @param options.references Array of TypeScript references to add
+   * @param options.declarations Array of declaration strings to add
+   * @returns Promise
+   */
+  'nitro:prepare:types': (options: { references: TSReference[], declarations: string[] }) => HookResult
+  /**
+   * Called before initializing the server builder, allowing customization of its configuration.
+   * @param nitroConfig The server builder config to be extended
+   * @returns Promise
+   */
+  'nitro:config': (nitroConfig: NitroConfig) => HookResult
+  /**
+   * Called after the server instance is initialized, which allows registering its hooks and interacting directly with it.
+   * @param nitro The created server instance
+   * @returns Promise
+   */
+  'nitro:init': (nitro: NitroInstance) => HookResult
+  /**
+   * Called before building the server instance.
+   * @param nitro The created server instance
+   * @returns Promise
+   */
+  'nitro:build:before': (nitro: NitroInstance) => HookResult
+  /**
+   * Called after copying public assets. Allows modifying public assets before the server is built.
+   * @param nitro The created server instance
+   * @returns Promise
+   */
+  'nitro:build:public-assets': (nitro: NitroInstance) => HookResult
 
   /**
    * Called before Nuxt bundle builder.

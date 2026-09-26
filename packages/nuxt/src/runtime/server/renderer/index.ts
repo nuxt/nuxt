@@ -3,14 +3,14 @@ import { renderToWebStream } from 'vue/server-renderer'
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { SSRHeadPayload } from '@unhead/vue/server'
-import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell } from '@unhead/vue/stream/server'
+import { createBootstrapScript, renderSSRHeadSuspenseChunk, renderShell, renderStreamBodyTags } from '@unhead/vue/stream/server'
 import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import { relative } from 'pathe'
-import type { RequestEvent } from '@nuxt/schema'
 
-import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from './error'
-import type { SSRError } from './error'
+import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, appendVary, decodeSSRError, describeError, isExpectedError, isJsonRequest, stringifyErrorData } from './error'
+import type { DescribedError, SSRError } from './error'
+import type { DevErrorReport } from '../dev-error'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '../../../app/internal/tracing'
@@ -27,23 +27,23 @@ import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands
 import { rendererDiagnostics } from './diagnostics'
 import { warnNoScriptsClientReliance } from './no-scripts'
 import { extractCspNonce } from './csp-nonce'
-import { getRequestState } from './runtime'
+import { PAYLOAD_FILENAME, payloadRequestToRoute, routeToPayloadURL } from './url'
+import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
-import type { NuxtRendererOptions, RendererRouteRules } from './runtime'
-import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
+import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
-export type { NuxtRendererOptions, RendererHooks, RendererRouteRules, CachedResponse, PayloadCache, NuxtRequestState } from './runtime'
+export type { NuxtRendererOptions, RendererEvent, RendererHooks, RendererRouteRules, CachedResponse, PayloadCache, NuxtRequestState } from './runtime'
+export { appEvent } from './runtime'
 
 const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
 const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
 const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/
-const PAYLOAD_FILENAME = '_payload.json'
-const PAYLOAD_BUILD_ID_PARAM = '_b'
 
 // Bot detection regex for SSR streaming.
 const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
@@ -56,12 +56,12 @@ const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
  * may create as many as it needs. Pass an instance from `createRendererInstance()` to
  * render against the artifacts already loaded for another renderer.
  */
-export function createNuxtRenderer (optionsOrInstance: NuxtRendererOptions | NuxtRendererInstance): { fetch: (event: RequestEvent) => Promise<Response> } {
+export function createNuxtRenderer (optionsOrInstance: NuxtRendererOptions | NuxtRendererInstance): { fetch: (event: RendererEvent) => Promise<Response> } {
   const instance = 'getRenderer' in optionsOrInstance ? optionsOrInstance : createRendererInstance(optionsOrInstance)
   return { fetch: event => fetch(instance, event) }
 }
 
-function fetch (instance: NuxtRendererInstance, event: RequestEvent): Promise<Response> {
+function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<Response> {
   const runtime = instance.options
 
   if (componentIslands && runtime.renderIsland && event.url.pathname.startsWith('/__nuxt_island/')) {
@@ -71,11 +71,18 @@ function fetch (instance: NuxtRendererInstance, event: RequestEvent): Promise<Re
   // Whether we're rendering an error page
   const isErrorRoute = event.url.pathname.startsWith('/__nuxt_error')
 
+  // a render the runtime re-entered to build *its* error page keeps throwing back to it, and a
+  // request that asked for JSON must never be answered with a page
+  const inlineErrors = NUXT_INLINE_ERROR_RENDERING
+    && !getRequestState(event)?.['~rendering-error']
+    && !isJsonRequest(event.req as Request, event.url.pathname)
+
   if (isErrorRoute && !getRequestState(event)?.['~rendering-error'] /* allow internal fetch from the error handler */) {
-    return Promise.reject(runtime.createError({
+    const error = runtime.createError({
       status: 404,
       statusText: 'Page Not Found: /__nuxt_error',
-    }))
+    })
+    return inlineErrors ? renderErrorResponse(instance, event, error) : Promise.reject(error)
   }
 
   const ssrError = isErrorRoute
@@ -87,8 +94,122 @@ function fetch (instance: NuxtRendererInstance, event: RequestEvent): Promise<Re
   const render = () => renderRoute(instance, event, ssrError)
 
   const wrapRender = import.meta.prerender ? runtime.prerender?.wrapRender : undefined
+  const rendering = wrapRender ? wrapRender(event, render) : render()
 
-  return (wrapRender ? wrapRender(event, render) : render()).catch(error => rethrowWithResponseHeaders(event, error))
+  return inlineErrors
+    ? rendering.catch(error => renderErrorResponse(instance, event, error))
+    : rendering.catch(error => rethrowWithResponseHeaders(event, error))
+}
+
+/**
+ * Answer a failed render with the app's own error page, rendered on the same event so the
+ * headers and cookies the failed render wrote survive. There is one attempt: an error page
+ * that throws is answered with the static template, carrying the status the app failed with.
+ */
+async function renderErrorResponse (instance: NuxtRendererInstance, event: RendererEvent, error: unknown): Promise<Response> {
+  const runtime = instance.options
+  const described = describeError(error)
+
+  await captureError(runtime, event, error)
+  const devError = import.meta.dev
+    ? await runtime.onDevError?.(error, event, { expected: isExpectedError(error, described) }).catch(() => undefined)
+    : undefined
+
+  // the failed render shares this event, so its status line must not outlive it
+  event.res.status = undefined
+  event.res.statusText = undefined
+
+  let rendered: Response
+  try {
+    rendered = await renderRoute(instance, event, await toSSRError(described, error, event))
+  } catch (nested) {
+    await captureError(runtime, event, nested, ['error-page'])
+    return staticErrorResponse(runtime, event, described, devError)
+  }
+
+  const headers = new Headers(rendered.headers)
+  applyErrorHeaders(headers, described.headers)
+  headers.set('content-type', 'text/html;charset=utf-8')
+
+  let body: BodyInit | null = rendered.body
+  if (import.meta.dev && devError && !import.meta.test) {
+    const html = await rendered.text()
+    // the overlay is a development aid; never let it replace the real error
+    body = await devError.overlay(html).catch(() => html)
+  }
+
+  // a redirect from the error page carries its own status; anything else answers with the error's
+  return runtime.createResponse(body, {
+    status: rendered.status && rendered.status !== 200 ? rendered.status : described.status,
+    statusText: rendered.statusText || described.statusText,
+    headers,
+  })
+}
+
+/** Hand the error to the server runtime's error sink, which must never replace the error. */
+async function captureError (runtime: NuxtRendererOptions, event: RendererEvent, error: unknown, tags?: string[]): Promise<void> {
+  try {
+    await runtime.captureError?.(error, { event, tags })
+  } catch {
+    // a sink that throws has nothing left to report it through
+  }
+}
+
+/** The error page of last resort, for when the app's own error page cannot render either. */
+async function staticErrorResponse (runtime: NuxtRendererOptions, event: RendererEvent, described: DescribedError, devError: DevErrorReport | undefined): Promise<Response> {
+  const headers = new Headers(event.res.headers)
+  applyErrorHeaders(headers, described.headers)
+  headers.set('content-type', 'text/html;charset=utf-8')
+  const init = { status: described.status, statusText: described.statusText, headers }
+
+  if (import.meta.dev && devError) {
+    const page = await devError.page().catch(() => undefined)
+    if (page) {
+      return runtime.createResponse(page, init)
+    }
+  }
+
+  const { template } = await import('./error-template')
+  return runtime.createResponse(template({
+    status: described.status,
+    statusText: described.statusText,
+    ...(import.meta.dev && { description: described.message }),
+  }), init)
+}
+
+/** Apply the headers the error asked for, keeping the cookies the render already set. */
+function applyErrorHeaders (headers: Headers, overrides: Record<string, string>): void {
+  for (const name in overrides) {
+    if (name.toLowerCase() === 'set-cookie') {
+      headers.append(name, overrides[name]!)
+    } else {
+      headers.set(name, overrides[name]!)
+    }
+  }
+  appendVary(headers, 'accept, sec-fetch-mode')
+}
+
+/** The caught error in the shape `error.vue` receives through the payload. */
+async function toSSRError (described: DescribedError, error: unknown, event: RendererEvent): Promise<SSRError> {
+  const candidate = (error || {}) as { fatal?: boolean, unhandled?: boolean, stack?: string, cause?: unknown }
+  const ssrError = {
+    status: described.status,
+    statusText: described.statusText,
+    message: described.message,
+    data: described.data,
+    fatal: candidate.fatal ?? false,
+    unhandled: candidate.unhandled,
+    url: event.url.href,
+    ...(import.meta.dev && { stack: candidate.stack }),
+    [NUXT_ERROR_SIGNATURE]: true,
+  } as unknown as SSRError
+
+  if (import.meta.dev && candidate.cause !== undefined) {
+    const { serializeErrorCause } = await import('../dev-error')
+    ;(ssrError as { cause?: unknown }).cause = serializeErrorCause(candidate.cause)
+  }
+
+  return ssrError
 }
 
 const ERROR_PAGE_RE = /^\/(\d{3})\.html$/
@@ -112,7 +233,7 @@ function isPrerenderedErrorPage (pathname: string) {
  * with, so the page is server-rendered at build time rather than written out as
  * an empty SPA shell.
  */
-function getPrerenderedErrorPage (event: RequestEvent): SSRError | undefined {
+function getPrerenderedErrorPage (event: RendererEvent): SSRError | undefined {
   const status = isPrerenderedErrorPage(event.url.pathname)
   if (!status) { return undefined }
 
@@ -127,11 +248,12 @@ function getPrerenderedErrorPage (event: RequestEvent): SSRError | undefined {
   } as unknown as SSRError
 }
 
-async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<Response> {
+async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<Response> {
   const runtime = instance.options
 
   // Initialize ssr context
   const ssrContext: NuxtSSRContext = createSSRContext(runtime, event)
+  const hookEvent = appEvent(event)
 
   ssrContext.head.push(appHead)
 
@@ -147,8 +269,10 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
 
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
   const routeOptions = runtime.getRouteRules(event)
+  const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions.noScripts
 
-  if (!routeOptions.ssr) {
+  // an error page rendered as an empty SPA shell shows the visitor nothing
+  if (!routeOptions.ssr && !ssrError) {
     ssrContext.noSSR = true
   }
 
@@ -170,11 +294,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
 
   const isRenderingPayload = (_PAYLOAD_EXTRACTION || (import.meta.dev && routeOptions.prerender)) && PAYLOAD_URL_RE.test(ssrContext.url)
   if (isRenderingPayload) {
-    const payloadURL = new URL(ssrContext.url, 'http://localhost')
-    const url = payloadURL.pathname.slice(0, -`/${PAYLOAD_FILENAME}`.length) || '/'
-
-    payloadURL.searchParams.delete(PAYLOAD_BUILD_ID_PARAM)
-    ssrContext.url = url + payloadURL.search
+    ssrContext.url = payloadRequestToRoute(ssrContext.url)
 
     if (import.meta.prerender && await runtime.prerender!.payloadCache.hasItem(ssrContext.url + '.json')) {
       event.res.headers.set('content-type', 'application/json')
@@ -194,7 +314,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
 
   // Render 103 Early Hints
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
-    const { link } = renderResourceHeaders({}, renderer.rendererContext)
+    const { link } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS })
     if (link) {
       runtime.writeEarlyHints?.(event, { link })
     }
@@ -229,18 +349,18 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
       && !SSR_BOT_RE.test(event.req.headers.get('user-agent') || '')),
   }
   const hooks = runtime.hooks()
-  const renderRouteResult = hooks.callHook('render:route', renderRouteContext, { event })
+  const renderRouteResult = hooks.callHook('render:route', renderRouteContext, { event: hookEvent })
   if (renderRouteResult instanceof Promise) { await renderRouteResult }
 
   if (NUXT_SSR_STREAMING && canStream && renderRouteContext.prefersStream) {
     const streamArgs = { instance, event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION: _PAYLOAD_EXTRACTION!, _PAYLOAD_INLINE, payloadURL }
     return tracingChannelNuxt
-      ? traceAsync('nuxt.render', { event, ssrContext, streaming: true }, () => renderStreamedResponse(streamArgs))
+      ? traceAsync('nuxt.render', { event: hookEvent, ssrContext, streaming: true }, () => renderStreamedResponse(streamArgs))
       : renderStreamedResponse(streamArgs)
   }
 
   const _rendered = await (tracingChannelNuxt
-    ? traceAsync('nuxt.render', { event, ssrContext, streaming: false }, () => renderer.renderToString(ssrContext))
+    ? traceAsync('nuxt.render', { event: hookEvent, ssrContext, streaming: false }, () => renderer.renderToString(ssrContext))
     : renderer.renderToString(ssrContext)
   ).catch(async (error) => {
     // We use error to bypass full render if we have an early response we can make
@@ -253,8 +373,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
     throw _err
   })
 
-  // Render inline styles
-  const inlinedStyles = NUXT_INLINE_STYLES && !ssrContext['~renderResponse'] && !isRenderingPayload
+  // A scriptless response has no chunk to link a stylesheet from, so it always inlines.
+  // Both flags are build-time constants, so writing them out folds the branch away.
+  const inlinedStyles = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) && !ssrContext['~renderResponse'] && !isRenderingPayload
     ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
@@ -279,7 +400,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
 
   // Directly render payload routes
   if (isRenderingPayload) {
-    const response = renderPayloadResponse(ssrContext)
+    const response = renderPayloadResponse(ssrContext, event)
     if (import.meta.prerender) {
       await runtime.prerender!.payloadCache.setItem(ssrContext.url + '.json', response)
     }
@@ -288,13 +409,15 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
   }
 
   if (_PAYLOAD_EXTRACTION && import.meta.prerender) {
-    // Hint nitro to prerender payload for this route
-    event.res.headers.append('x-nitro-prerender', joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    // the payload for this route is prerendered alongside it
+    addPrerenderRoutes(event, joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
-    await runtime.prerender!.payloadCache.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext))
+    await runtime.prerender!.payloadCache.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext, event))
   }
 
-  const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
+  if (import.meta.dev && !ssrError && !ssrContext.error) {
+    runtime.onRenderSuccess?.(event)
+  }
 
   if (import.meta.dev && NUXT_NO_SCRIPTS_PROD && !NO_SCRIPTS && !ssrError) {
     warnNoScriptsClientReliance(ssrContext, event.url.pathname)
@@ -326,7 +449,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
 
   const link: Link[] = []
   const inlinedHrefs: string[] = []
-  const isCSSInlined = NUXT_INLINE_STYLES ? await createInlinedCSSFilter(ssrContext.modules) : undefined
+  const isCSSInlined = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) ? await createInlinedCSSFilter(ssrContext.modules) : undefined
   for (const resource of Object.values(styles)) {
     // Do not add links to resources that are inlined (vite v5+)
     if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
@@ -346,38 +469,42 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
     ssrContext.head.push({ link })
   }
 
-  if (!NO_SCRIPTS) {
-    // 4. Resource Hints
-    // Excluding lazy hydrated modules keeps their JS chunks from being preloaded, but also
-    // resurfaces their CSS as hints, so filter out anything already linked as a stylesheet.
-    const dependencyOptions = ssrContext['~lazyHydratedModules']?.size
-      ? { exclude: ssrContext['~lazyHydratedModules'] }
-      : undefined
-    // exclude hrefs already linked as stylesheets (or delivered as inline styles),
-    // plus never-hydrated chunks which the client can never fetch
-    const excludeHrefs = new Set(link.map(l => l.href))
-    for (const href of inlinedHrefs) {
-      excludeHrefs.add(href)
+  // 4. Resource Hints
+  // Excluding lazy hydrated modules keeps their JS chunks from being preloaded, but also
+  // resurfaces their CSS as hints, so filter out anything already linked as a stylesheet.
+  const dependencyOptions = {
+    exclude: ssrContext['~lazyHydratedModules']?.size ? ssrContext['~lazyHydratedModules'] : undefined,
+    scripts: !NO_SCRIPTS,
+  }
+  // exclude hrefs already linked as stylesheets (or delivered as inline styles),
+  // plus never-hydrated chunks which the client can never fetch
+  const excludeHrefs = new Set(link.map(l => l.href))
+  for (const href of inlinedHrefs) {
+    excludeHrefs.add(href)
+  }
+  for (const id of ssrContext['~neverHydratedModules'] ?? []) {
+    const file = renderer.rendererContext.manifest?.[id]?.file
+    if (file) {
+      excludeHrefs.add(renderer.rendererContext.buildAssetsURL(file))
     }
-    for (const id of ssrContext['~neverHydratedModules'] ?? []) {
-      const file = renderer.rendererContext.manifest?.[id]?.file
-      if (file) {
-        excludeHrefs.add(renderer.rendererContext.buildAssetsURL(file))
-      }
+  }
+  const hints: Link[] = []
+  for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+    if (!excludeHrefs.has(l.href)) {
+      hints.push(l)
     }
-    const hints: Link[] = []
-    for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
-      if (!excludeHrefs.has(l.href)) {
-        hints.push(l)
-      }
+  }
+  for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+    if (!excludeHrefs.has(l.href)) {
+      hints.push(l)
     }
-    for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
-      if (!excludeHrefs.has(l.href)) {
-        hints.push(l)
-      }
-    }
+  }
+  if (hints.length) {
     ssrContext.head.push({ link: hints })
-    // 5. Payloads
+  }
+
+  // 5. Payloads
+  if (!NO_SCRIPTS) {
     ssrContext.head.push({
       script: _PAYLOAD_INLINE
         // Inline full payload in HTML (payloadExtraction: 'client' | false, or non-cached route)
@@ -426,7 +553,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
   }
 
   // Allow hooking into the rendered result
-  const renderHtmlResult = hooks.callHook('render:html', htmlContext, { event })
+  const renderHtmlResult = hooks.callHook('render:html', htmlContext, { event: hookEvent })
   if (renderHtmlResult instanceof Promise) { await renderHtmlResult }
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
@@ -437,7 +564,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RequestEvent,
 
 async function renderStreamedResponse (ctx: {
   instance: NuxtRendererInstance
-  event: RequestEvent
+  event: RendererEvent
   ssrContext: NuxtSSRContext
   renderer: Awaited<ReturnType<NuxtRendererInstance['getRenderer']>>
   routeOptions: RendererRouteRules
@@ -448,12 +575,13 @@ async function renderStreamedResponse (ctx: {
 }): Promise<Response> {
   const { instance, event, ssrContext, renderer, routeOptions, ssrError, _PAYLOAD_EXTRACTION, _PAYLOAD_INLINE, payloadURL } = ctx
   const runtime = instance.options
+  const hookEvent = appEvent(event)
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
   pushNoScriptsHints(ssrContext, NO_SCRIPTS)
 
   // 1. Set HTTP Link headers with entry-point preload hints (fastest resource hinting)
-  const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext)
+  const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS })
   if (linkHeader) {
     event.res.headers.append('link', linkHeader)
   }
@@ -494,13 +622,12 @@ async function renderStreamedResponse (ctx: {
   }
 
   // Entry preload/prefetch links
-  if (!NO_SCRIPTS) {
-    ssrContext.head.push({
-      link: getPreloadLinks({}, renderer.rendererContext) as Link[],
-    })
-    ssrContext.head.push({
-      link: getPrefetchLinks({}, renderer.rendererContext) as Link[],
-    })
+  const entryHints = [
+    ...getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
+    ...getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
+  ]
+  if (entryHints.length) {
+    ssrContext.head.push({ link: entryHints })
   }
 
   // Entry scripts
@@ -548,67 +675,13 @@ async function renderStreamedResponse (ctx: {
     return returnRenderResponse(runtime, event, ssrContext['~renderResponse'])
   }
 
-  // 5. Render the shell head (atomically renders and clears entries pushed
-  // by both the shell-prep section above and the just-completed plugin phase).
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderShell(ssrContext.head)
-
-  // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
-  // (bootstrap queue, IIFE, mid-stream head-push chunks, island relocation), so
-  // a strict `script-src 'nonce-…'` policy would block them. Reuse whatever
-  // nonce a security module stamped onto the rendered head scripts; if none is
-  // present the attribute is omitted and behaviour is unchanged.
-  const cspNonce = extractCspNonce(headTags)
-  const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
-
-  // 6. Build the HTML shell context and fire `render:html` with `streaming: true`.
-  // Modules that mutate `htmlAttrs`/`head`/`bodyAttrs`/`bodyPrepend` see their
-  // changes land in the shell. `body`/`bodyAppend` mutations are silently
-  // dropped (the body is about to stream), and a dev warning is emitted if
-  // either array is touched.
-  const bootstrapScript = NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce)
-  let iifeScript = ''
-  if (!NO_SCRIPTS) {
-    if (!import.meta.dev && iifeChunkFileName) {
-      iifeScript = `<script async${nonceAttr} src="${runtime.buildAssetsURL(iifeChunkFileName)}"></script>`
-    } else {
-      iifeScript = `<script${nonceAttr}>${streamingIifeCode}</script>`
-    }
-  }
-  const shellContext: NuxtRenderHTMLContext = {
-    htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([bootstrapScript, headTags]),
-    bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
-    bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
-    body: [],
-    bodyAppend: [],
-  }
-  const hooks = runtime.hooks()
-  if (import.meta.dev) {
-    const initialBodyLen = shellContext.body.length
-    const initialAppendLen = shellContext.bodyAppend.length
-    const r = hooks.callHook('render:html', shellContext, { event, streaming: true })
-    if (r instanceof Promise) { await r }
-    if (shellContext.body.length !== initialBodyLen || shellContext.bodyAppend.length !== initialAppendLen) {
-      rendererDiagnostics.NUXT_E8001({ path: event.url.pathname })
-    }
-  } else {
-    const r = hooks.callHook('render:html', shellContext, { event, streaming: true })
-    if (r instanceof Promise) { await r }
-  }
-
-  const shellHtml = '<!DOCTYPE html>'
-    + `<html${joinAttrs(shellContext.htmlAttrs)}>`
-    + `<head>${joinTags(shellContext.head)}</head>`
-    + `<body${joinAttrs(shellContext.bodyAttrs)}>`
-    + joinTags(shellContext.bodyPrepend)
-
-  // 7. Create the Vue stream
+  // 5. Create the Vue stream and pre-read the first chunk. The shell head is
+  // rendered afterwards (step 6) so `useHead` calls in setup land in it.
   const vueStream = renderToWebStream(vueApp, ssrContext)
   const reader = vueStream.getReader()
 
-  // Pre-read the first chunk before committing any bytes. Three things can
-  // surface here that must short-circuit streaming, since once the shell is
-  // on the wire the response status is committed:
+  // Three things can surface in the first chunk that must short-circuit
+  // streaming, since once the shell is on the wire the status is committed:
   //   1. `navigateTo()` from a page `<script setup>` sets `~renderResponse`
   //      during Vue's setup phase - we must return that redirect instead.
   //   2. Fatal errors thrown during initial render - fall through to the
@@ -645,6 +718,60 @@ async function renderStreamedResponse (ctx: {
     throw ssrContext.payload.error
   }
 
+  // 6. Render the shell head (atomically renders and clears every entry
+  // pushed so far, including those from the synchronous part of setup).
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderShell(ssrContext.head)
+
+  // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
+  // (bootstrap queue, IIFE, mid-stream head-push chunks, island relocation), so
+  // a strict `script-src 'nonce-…'` policy would block them. Reuse whatever
+  // nonce a security module stamped onto the rendered head scripts; if none is
+  // present the attribute is omitted and behaviour is unchanged.
+  const cspNonce = extractCspNonce(headTags)
+  const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
+
+  // 7. Build the HTML shell context and fire `render:html` with `streaming: true`.
+  // Modules that mutate `htmlAttrs`/`head`/`bodyAttrs`/`bodyPrepend` see their
+  // changes land in the shell. `body`/`bodyAppend` mutations are silently
+  // dropped (the body is about to stream), and a dev warning is emitted if
+  // either array is touched.
+  const bootstrapScript = NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce)
+  let iifeScript = ''
+  if (!NO_SCRIPTS) {
+    if (!import.meta.dev && iifeChunkFileName) {
+      iifeScript = `<script async${nonceAttr} src="${runtime.buildAssetsURL(iifeChunkFileName)}"></script>`
+    } else {
+      iifeScript = `<script${nonceAttr}>${streamingIifeCode}</script>`
+    }
+  }
+  const shellContext: NuxtRenderHTMLContext = {
+    htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
+    head: normalizeChunks([bootstrapScript, headTags]),
+    bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
+    bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
+    body: [],
+    bodyAppend: [],
+  }
+  const hooks = runtime.hooks()
+  if (import.meta.dev) {
+    const initialBodyLen = shellContext.body.length
+    const initialAppendLen = shellContext.bodyAppend.length
+    const r = hooks.callHook('render:html', shellContext, { event: hookEvent, streaming: true })
+    if (r instanceof Promise) { await r }
+    if (shellContext.body.length !== initialBodyLen || shellContext.bodyAppend.length !== initialAppendLen) {
+      rendererDiagnostics.NUXT_E8001({ path: event.url.pathname })
+    }
+  } else {
+    const r = hooks.callHook('render:html', shellContext, { event: hookEvent, streaming: true })
+    if (r instanceof Promise) { await r }
+  }
+
+  const shellHtml = '<!DOCTYPE html>'
+    + `<html${joinAttrs(shellContext.htmlAttrs)}>`
+    + `<head>${joinTags(shellContext.head)}</head>`
+    + `<body${joinAttrs(shellContext.bodyAttrs)}>`
+    + joinTags(shellContext.bodyPrepend)
+
   // Snapshot status + headers before shell commit so we can warn in dev when
   // composables like `useCookie`, `setResponseStatus`, or `useResponseHeader`
   // mutate the response after the wire is closed. These mutations are
@@ -665,7 +792,7 @@ async function renderStreamedResponse (ctx: {
   // synchronous to preserve the TTFB gains.
   const enqueueChunk = (controller: ReadableStreamDefaultController<Uint8Array>, chunk: Uint8Array): void | Promise<void> => {
     const chunkContext = { chunk, index: chunkIndex++ }
-    const result = hooks.callHook('render:html:chunk', chunkContext, { event })
+    const result = hooks.callHook('render:html:chunk', chunkContext, { event: hookEvent })
     if (result instanceof Promise) {
       return result.then(() => { controller.enqueue(chunkContext.chunk) })
     }
@@ -682,14 +809,15 @@ async function renderStreamedResponse (ctx: {
   const inlinedCss = new Set<string>(entryInlineStyles.map(s => String(s.innerHTML)))
   const renderRouteStyles = async (): Promise<string> => {
     let tags = ''
-    if (NUXT_INLINE_STYLES) {
+    if (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) {
       for (const style of await renderInlineStyles(ssrContext.modules ?? [])) {
         const css = String(style.innerHTML)
         if (!css || inlinedCss.has(css)) { continue }
         inlinedCss.add(css)
         tags += `<style${nonceAttr}>${css}</style>`
       }
-      return tags
+      // a scriptless render inlines only its own modules; the rest still need links
+      if (NUXT_INLINE_STYLES) { return tags }
     }
     for (const resource of Object.values(getRequestDependencies(ssrContext, renderer.rendererContext).styles)) {
       if (emittedStyles.has(resource.file)) { continue }
@@ -770,9 +898,10 @@ async function renderStreamedResponse (ctx: {
         // Render any final head updates (payload scripts, etc.) and fire the
         // streaming `render:html:close` hook so modules can inject final
         // bodyAppend content (analytics tags, end-of-body scripts, etc.).
+        const streamBodyTags = renderStreamBodyTags(ssrContext.head)
         const closingHead = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
-        const closeContext = { bodyAppend: normalizeChunks([bodyTags, closingHead.bodyTags]) }
-        const closeResult = hooks.callHook('render:html:close', closeContext, { event })
+        const closeContext = { bodyAppend: normalizeChunks([streamBodyTags, bodyTags, closingHead.bodyTags]) }
+        const closeResult = hooks.callHook('render:html:close', closeContext, { event: hookEvent })
         if (closeResult instanceof Promise) { await closeResult }
 
         // Teleports + closing tags. `teleports.body` collects content from
@@ -830,6 +959,9 @@ async function renderStreamedResponse (ctx: {
         // error via hydration - set `payload.error` so the client renders
         // the error page once it picks up the SSR data, then emit a
         // well-formed closing so HTML parsing doesn't choke.
+        if (NUXT_INLINE_ERROR_RENDERING) {
+          await captureError(runtime, event, error, ['streaming'])
+        }
         await Promise.resolve(ssrContext.nuxt?.hooks.callHook('app:error', error)).catch(() => {})
         ssrContext.payload ||= {} as NuxtPayload
         ssrContext.payload.error ||= error as any
@@ -838,11 +970,32 @@ async function renderStreamedResponse (ctx: {
             ssrContext.head.push({
               script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload }),
             }, { tagPosition: 'bodyClose', tagPriority: 'high' })
-            const tail = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
-            controller.enqueue(encoder.encode(tail.bodyTags))
           }
-        } catch {
-          // best-effort
+          // a tag getter that throws on the error's broken state must not take
+          // the payload script with it - the client needs it to render the
+          // error page
+          let headChunk: string | undefined
+          try {
+            headChunk = renderSSRHeadSuspenseChunk(ssrContext.head)
+          } catch (error) {
+            rendererDiagnostics.NUXT_E8009({
+              path: event.url.pathname,
+              what: 'flushing the head tags registered after the shell',
+              cause: String(error),
+            })
+          }
+          if (headChunk && !NO_SCRIPTS) {
+            controller.enqueue(encoder.encode(`<script${nonceAttr}>${headChunk};document.currentScript.remove()</script>`))
+          }
+          const streamBodyTags = renderStreamBodyTags(ssrContext.head)
+          const tail = applyRenderOptions(ssrContext.head.render(), renderSSRHeadOptions)
+          controller.enqueue(encoder.encode(streamBodyTags + tail.bodyTags))
+        } catch (error) {
+          rendererDiagnostics.NUXT_E8009({
+            path: event.url.pathname,
+            what: 'rendering the closing HTML that carries the page error',
+            cause: String(error),
+          })
         }
         controller.enqueue(encoder.encode(APP_ROOT_CLOSE_TAG + '</body></html>'))
         controller.close()
@@ -900,7 +1053,7 @@ function pushNoScriptsHints (ssrContext: NuxtSSRContext, noScripts: boolean) {
 const entryPaths = new WeakMap<NuxtRendererInstance, string>()
 
 /** Import map pinning `#entry` to the hashed entry chunk, so chunk hashes stay stable across it. */
-function entryImportMap (instance: NuxtRendererInstance, event: RequestEvent, ssrContext: NuxtSSRContext): { script: Script[] } {
+function entryImportMap (instance: NuxtRendererInstance, event: RendererEvent, ssrContext: NuxtSSRContext): { script: Script[] } {
   let path = entryPaths.get(instance)
   if (!path) {
     path = instance.options.buildAssetsURL(entryFileName!)
@@ -942,13 +1095,8 @@ function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: strin
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext): string {
-  const url = new URL(ssrContext.url, 'http://localhost')
   const baseURL = ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL
-  const payloadURL = joinURL(baseURL, url.pathname, PAYLOAD_FILENAME)
-
-  url.searchParams.set(PAYLOAD_BUILD_ID_PARAM, ssrContext.runtimeConfig.app.buildId)
-
-  return payloadURL + url.search
+  return routeToPayloadURL(baseURL, ssrContext.url, ssrContext.runtimeConfig.app.buildId)
 }
 
 function normalizeChunks (chunks: (string | undefined)[]) {

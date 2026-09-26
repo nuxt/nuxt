@@ -1,6 +1,9 @@
+import { resolveModulePath } from 'exsolve'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import { useNuxt } from '../context.ts'
+import { directoryToURL } from './esm.ts'
+import { useServerBuild } from './server-build.ts'
 
 // This surface is experimental for as long as `NuxtServerBuild` is, and will change without
 // a major release until it has settled.
@@ -10,6 +13,18 @@ const RENDERER_CONFIG_SPECIFIER = 'nuxt/internal/renderer-config'
 
 /** Specifier a server builder imports `createNuxtRenderer` from. */
 const RENDERER_SPECIFIER = 'nuxt/internal/renderer'
+
+/** The portable server surface, whose implementations the configured server builder supplies. */
+const SERVER_SPECIFIER = 'nuxt/server'
+
+/** Specifier the shipped `nuxt/server` implementations read runtime configuration from. */
+const SERVER_RUNTIME_CONFIG_SPECIFIER = 'nuxt/internal/server-runtime-config'
+
+/** Specifier the shipped `nuxt/server` implementations read the app config from. */
+const SERVER_APP_CONFIG_SPECIFIER = 'nuxt/internal/server-app-config'
+
+/** The part of the app config template only the Vue app runs. */
+const APP_CONFIG_CLIENT_RE = /\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//
 
 /** The specifier the renderer imports each build artifact through, and the {@link NuxtBuildOutputs} key that provides it. */
 const BUILD_OUTPUT_SPECIFIERS: Record<string, keyof NuxtBuildOutputs> = {
@@ -28,6 +43,7 @@ export type RendererConfigName =
   | 'NUXT_PRERENDER_NO_SSR_ROUTES'
   | 'NUXT_EARLY_HINTS'
   | 'NUXT_NO_SCRIPTS'
+  | 'NUXT_HAS_NO_SCRIPTS_ROUTES'
   | 'NUXT_NO_SCRIPTS_PROD'
   | 'NUXT_INLINE_STYLES'
   | 'NUXT_VIEW_TRANSITIONS'
@@ -35,6 +51,7 @@ export type RendererConfigName =
   | 'NUXT_PAGE_PATTERNS'
   | 'NUXT_EARLY_404'
   | 'NUXT_PAGE_MATCHER'
+  | 'NUXT_INLINE_ERROR_RENDERING'
   | 'PARSE_ERROR_DATA'
   | 'NUXT_PAYLOAD_EXTRACTION'
   | 'NUXT_PAYLOAD_INLINE'
@@ -89,6 +106,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_PRERENDER_NO_SSR_ROUTES: '[]',
     NUXT_EARLY_HINTS: String(nuxt.options.experimental.writeEarlyHints !== false),
     NUXT_NO_SCRIPTS: String(noScripts === 'all' || (!!noScripts && !nuxt.options.dev)),
+    NUXT_HAS_NO_SCRIPTS_ROUTES: 'false',
     NUXT_NO_SCRIPTS_PROD: String(noScripts === 'production'),
     NUXT_INLINE_STYLES: String(!!nuxt.options.features.inlineStyles),
     NUXT_VIEW_TRANSITIONS: String(!!(app.viewTransition && typeof app.viewTransition === 'object' && app.viewTransition.enabled)),
@@ -96,6 +114,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_PAGE_PATTERNS: '[]',
     NUXT_EARLY_404: 'false',
     NUXT_PAGE_MATCHER: 'undefined',
+    NUXT_INLINE_ERROR_RENDERING: String(!!nuxt.options.experimental.inlineErrorRendering),
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     PARSE_ERROR_DATA: String(!!nuxt.options.experimental.parseErrorData),
     NUXT_PAYLOAD_EXTRACTION: String(payloadExtraction !== false),
@@ -146,6 +165,23 @@ export function getRendererDefines (phase: 'server' | 'prerender', nuxt: Nuxt = 
     'import.meta.client': 'false',
     'import.meta.prerender': String(phase === 'prerender'),
   }
+}
+
+/**
+ * The module backing `nuxt/server` in the server bundle: the one the configured server
+ * builder supplies, or the web-standard implementations Nuxt ships.
+ *
+ * The default is resolved to a file rather than left as `nuxt/server`, which the bundle
+ * resolves to the module being generated here.
+ */
+function getServerSurfaceModule (nuxt: Nuxt): string {
+  const delegate = useServerBuild(nuxt).runtime.server
+  if (delegate) {
+    return delegate
+  }
+  return resolveModulePath('nuxt/server', {
+    from: [...(nuxt.options.modulesDir || []).filter(Boolean).map(dir => directoryToURL(dir)), import.meta.url],
+  })
 }
 
 /**
@@ -224,6 +260,10 @@ export function getServerRuntime (options: ServerRuntimeOptions = {}, nuxt: Nuxt
     const output = BUILD_OUTPUT_SPECIFIERS[specifier]!
     modules[specifier] = { output, code: () => nuxt.buildOutputs[output]() }
   }
+
+  modules[SERVER_SPECIFIER] = { code: () => `export * from ${JSON.stringify(getServerSurfaceModule(nuxt))}` }
+  modules[SERVER_APP_CONFIG_SPECIFIER] = { code: () => nuxt.vfs['#build/app.config.mjs']?.replace(APP_CONFIG_CLIENT_RE, '') || 'export default {}' }
+  modules[SERVER_RUNTIME_CONFIG_SPECIFIER] = { code: () => `export { useRuntimeConfig } from ${JSON.stringify(useServerBuild(nuxt).runtime.runtimeConfig)}` }
 
   return {
     version: SERVER_RUNTIME_VERSION,

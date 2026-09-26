@@ -40,6 +40,16 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     expect(cssLinks).toEqual([])
   })
 
+  // https://github.com/nuxt/nuxt/issues/33041
+  it.runIf(isBuilt)('inlines child component styles before parent styles', async () => {
+    const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
+    const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
+    const childIndex = inlinedStyles.indexOf('--inline-some-component-token:some-component')
+    const parentIndex = inlinedStyles.indexOf('--inline-app-token:app')
+    expect(childIndex).toBeGreaterThan(-1)
+    expect(parentIndex).toBeGreaterThan(childIndex)
+  })
+
   // https://github.com/nuxt/nuxt/issues/35255
   it('drops duplicate stylesheet links for fully inlined CSS in a shared chunk', async () => {
     for (const page of ['shared-a', 'shared-b']) {

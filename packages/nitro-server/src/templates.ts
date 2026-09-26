@@ -18,23 +18,17 @@ export const nitroSchemaTemplate: NuxtTemplate = {
     return /* typescript */`
 ${lines.join('\n')}
 
-import type { RuntimeConfig } from 'nuxt/schema'
+import type { RouteRuleConfigExtensions, RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'nitro/h3'
-import type { LogObject } from 'consola'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
+import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 
 declare module 'nitro/types' {
   interface NitroImportMeta {
     test?: boolean
   }
-  interface NitroRuntimeConfigApp {
-    baseURL: string
-    buildAssetsDir: string
-    cdnURL: string
-  }
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRuntimeHooks {
-    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
+    'dev:ssr-logs': (ctx: { logs: DevServerLog[], path: string }) => void | Promise<void>
     'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event, streaming?: boolean }) => void | Promise<void>
     'render:html:chunk': (chunkContext: NuxtRenderChunkContext, context: { event: H3Event }) => void | Promise<void>
     'render:html:close': (closeContext: NuxtRenderCloseContext, context: { event: H3Event }) => void | Promise<void>
@@ -44,6 +38,7 @@ declare module 'nitro/types' {
 }
 
 declare module 'h3/rules' {
+  interface RouteRuleConfig extends RouteRuleConfigExtensions {}
   interface RouteRuleConfig {
     ssr?: boolean
     streaming?: boolean

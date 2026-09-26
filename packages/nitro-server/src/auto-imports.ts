@@ -3,16 +3,7 @@ import { createIsIgnored } from '@nuxt/kit'
 import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { Import, InjectImportsOptions, Unimport } from 'unimport'
-import type { Nuxt } from '@nuxt/schema'
-
-/** Options accepted on `nitro.imports`. */
-export interface ServerImportsOptions {
-  autoImport?: boolean
-  dirs?: string[]
-  imports?: Import[]
-  presets?: Array<{ from: string, imports: Array<string | { name: string, as?: string }>, typeFrom?: string }>
-  exclude?: Array<string | RegExp>
-}
+import type { Nuxt, ServerImportsOptions } from '@nuxt/schema'
 
 export interface ServerAutoImports {
   /** Inject auto-imports into a server module, or `undefined` when auto-imports are disabled. */
@@ -47,6 +38,12 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   const isIgnored = createIsIgnored(nuxt)
   const scanDirs = options.dirs ?? []
 
+  // the project comes first in `_layers`, so it gets the highest priority; the floor of 1 is
+  // unimport's default, so a scanned util still takes precedence over a preset of the same name
+  const layerPriorities = nuxt.options._layers
+    .map((layer, i) => [layer.config.rootDir, nuxt.options._layers.length - i] as const)
+    .sort(([a], [b]) => b.length - a.length)
+
   let initialised: Promise<void> | undefined
   function init () {
     initialised ??= (async () => {
@@ -62,6 +59,9 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       const scanned = await scanDirExports(scanDirs, {
         fileFilter: file => !isIgnored(file),
       })
+      for (const i of scanned) {
+        i.priority ??= layerPriorities.find(([dir]) => i.from === dir || i.from.startsWith(dir + '/'))?.[1]
+      }
       imports.push(...scanned)
       return imports
     })
@@ -104,13 +104,11 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     },
 
     async getImports () {
-      if (!enabled) { return [] }
       await init()
       return ctx.getImports()
     },
 
     async refresh () {
-      if (!enabled) { return }
       await init()
       resolvedTypePaths.clear()
       await ctx.modifyDynamicImports((imports) => {
@@ -123,27 +121,26 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     async writeTypes () {
       await mkdir(join(typesDir, 'types'), { recursive: true })
 
-      if (!enabled) {
-        await writeFile(importsModulePath + '.d.ts', 'export {}\n', 'utf8')
-        await writeFile(importsModulePath + '.mjs', 'export {}\n', 'utf8')
-        return
-      }
-
       await init()
       const imports = await ctx.getImports()
       resolveTypePaths(imports)
 
-      const declarations = await ctx.generateTypeDeclarations({
-        exportHelper: false,
-        resolvePath: i => resolvedTypePaths.get(i.typeFrom || i.from) ?? i.from,
-      })
+      // with `autoImport: false` nothing is injected, but the registered imports stay reachable
+      // through an explicit `import { x } from '#imports/server'`, so the module is still emitted;
+      // only the ambient global declarations are skipped
+      const declarations = enabled
+        ? await ctx.generateTypeDeclarations({
+            exportHelper: false,
+            resolvePath: i => resolvedTypePaths.get(i.typeFrom || i.from) ?? i.from,
+          })
+        : ''
 
       // the re-exports make this a module, so `import { x } from '#imports'` resolves as well as
       // the ambient `x` the declarations provide
       const reExports = toExports(imports, importsModuleDir, true)
 
       await Promise.all([
-        writeFile(importsModulePath + '.d.ts', [declarations.trim(), reExports.trim() || 'export {}', ''].join('\n'), 'utf8'),
+        writeFile(importsModulePath + '.d.ts', [declarations.trim(), reExports.trim() || 'export {}'].filter(Boolean).join('\n') + '\n', 'utf8'),
         writeFile(importsModulePath + '.mjs', (toExports(imports, importsModuleDir).trim() || 'export {}') + '\n', 'utf8'),
       ])
     },

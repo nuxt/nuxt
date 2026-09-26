@@ -1,4 +1,5 @@
-import type { AppRouteRules, RequestEvent } from '@nuxt/schema'
+import type { AppRouteRules, NuxtRequestEvent } from '@nuxt/schema'
+import { withoutBase } from 'ufo'
 import { useRuntimeConfig } from '../nuxt'
 import { manifestDiagnostics } from '../diagnostics/manifest'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
@@ -70,12 +71,12 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
 }
 
 /** @since 3.7.4 */
-export function getRouteRules (event: RequestEvent): AppRouteRules
+export function getRouteRules (event: NuxtRequestEvent): AppRouteRules
 export function getRouteRules (options: { path: string }): Record<string, any>
 /** @deprecated use `getRouteRules({ path })` instead */
 export function getRouteRules (url: string): Record<string, any>
-export function getRouteRules (arg: string | RequestEvent | { path: string }) {
-  const path = typeof arg === 'string' ? arg : 'url' in arg ? arg.url.pathname : arg.path
+export function getRouteRules (arg: string | NuxtRequestEvent | { path: string }) {
+  const path = typeof arg === 'string' ? arg : 'url' in arg ? withoutBase(arg.url.pathname, useRuntimeConfig().app.baseURL) : arg.path
   try {
     return routeRulesMatcher(path)
   } catch (e) {

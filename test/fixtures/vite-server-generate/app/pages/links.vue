@@ -1,0 +1,12 @@
+<template>
+  <div>
+    <a
+      id="malformed-link"
+      href="/price/100%"
+    >malformed</a>
+    <a
+      id="query-link"
+      href="/blog/crawled?page=2"
+    >query</a>
+  </div>
+</template>

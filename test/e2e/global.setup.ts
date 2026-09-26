@@ -1,32 +1,19 @@
-import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { cp, rm } from 'node:fs/promises'
 import { test as setup } from '@playwright/test'
 
 import { ensureFixturesPrepared } from '../fixture-prepare'
+import { copyFixture } from '../fixture-copy'
 
-const fixtures = [
-  {
-    sourceDir: fileURLToPath(new URL('../fixtures/hmr', import.meta.url)),
-    fixtureDir: fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url)),
-  },
-  {
-    sourceDir: fileURLToPath(new URL('../fixtures/hmr-sibling-layer', import.meta.url)),
-    fixtureDir: fileURLToPath(new URL('../fixtures-temp/hmr-sibling-layer', import.meta.url)),
-  },
+const fixtures: [source: string, dest: string][] = [
+  ['hmr', 'hmr'],
+  ['hmr-sibling-layer', 'hmr-sibling-layer'],
+  ['dev-error-client', 'dev-error-client'],
+  ...['dev-error-sourcemap', 'dev-error-recovery', 'dev-error-compile', 'dev-error-expected']
+    .map(dest => ['dev-error-sourcemap', dest] as [string, string]),
 ]
 
 setup('create temporary hmr fixture directory', async () => {
   await ensureFixturesPrepared()
-  for (const { sourceDir, fixtureDir } of fixtures) {
-    if (existsSync(fixtureDir)) {
-      await rm(fixtureDir, { force: true, recursive: true })
-    }
-    await cp(sourceDir, fixtureDir, {
-      recursive: true,
-      filter: (src) => {
-        return !src.includes('.cache') && !src.endsWith('.sock') && !src.includes('.output') && !src.includes('.nuxt-')
-      },
-    })
+  for (const [source, dest] of fixtures) {
+    copyFixture(source, dest)
   }
 })

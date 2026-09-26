@@ -1,21 +1,31 @@
 import { createHead } from '@unhead/vue/server'
-import type { RequestEvent } from '@nuxt/schema'
+import { createStreamableHead } from '@unhead/vue/stream/server'
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
-import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, unheadOptions } from 'nuxt/internal/renderer-config'
-import { getRequestState } from './runtime'
-import type { NuxtRendererOptions } from './runtime'
+import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SSR_STREAMING, unheadOptions } from 'nuxt/internal/renderer-config'
+import { appEvent, getRequestState } from './runtime'
+import type { NuxtRendererOptions, RendererEvent } from './runtime'
 import { urlHash } from './url'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
 
-export function createSSRContext (options: NuxtRendererOptions, event: RequestEvent): NuxtSSRContext {
+// a streamable head renders late JSON-LD, `noscript` and body-positioned tags
+// as markup before `</body>` rather than as client patches
+function createServerHead (): NuxtSSRContext['head'] {
+  if (!NUXT_SSR_STREAMING) {
+    return createHead(unheadOptions) as NuxtSSRContext['head']
+  }
+  const { head } = createStreamableHead({ ...unheadOptions, writesBodyTags: true })
+  return head as NuxtSSRContext['head']
+}
+
+export function createSSRContext (options: NuxtRendererOptions, event: RendererEvent): NuxtSSRContext {
   const url = event.url.pathname + event.url.search + urlHash(event.url)
   const ssrContext: NuxtSSRContext = {
     url,
-    event,
-    runtimeConfig: options.runtimeConfig(),
+    event: appEvent(event),
+    runtimeConfig: options.runtimeConfig(event),
     noSSR: !!(NUXT_NO_SSR) || getRequestState(event)?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
-    head: createHead(unheadOptions),
+    head: createServerHead(),
     error: false,
     nuxt: undefined!, /* NuxtApp */
     payload: {},
@@ -54,7 +64,7 @@ export function mergeHeaders (base: Headers, overlay: Headers): Headers {
   return base
 }
 
-export function returnRenderResponse (options: NuxtRendererOptions, event: RequestEvent, response: Response): Response {
+export function returnRenderResponse (options: NuxtRendererOptions, event: RendererEvent, response: Response): Response {
   const headers = mergeHeaders(new Headers(event.res.headers), response.headers)
   return options.createResponse(response.body, {
     status: response.status,
@@ -64,7 +74,7 @@ export function returnRenderResponse (options: NuxtRendererOptions, event: Reque
 }
 
 // TODO: rethink this before nuxt v5
-export function rethrowWithResponseHeaders (event: RequestEvent, error: any): never {
+export function rethrowWithResponseHeaders (event: RendererEvent, error: any): never {
   error.headers = mergeHeaders(error.headers instanceof Headers ? error.headers : new Headers(error.headers), event.res.headers)
   throw error
 }

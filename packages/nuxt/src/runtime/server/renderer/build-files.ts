@@ -101,7 +101,7 @@ export function createBuildFiles (options: NuxtRendererOptions): BuildFiles {
     const result = await renderer.renderToString({})
 
     const renderToString = (ssrContext: NuxtSSRContext) => {
-      const config = options.runtimeConfig()
+      const config = ssrContext.runtimeConfig
       ssrContext.modules ||= new Set<string>()
       ssrContext.payload.serverRendered = false
       ssrContext.config = {

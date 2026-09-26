@@ -20,12 +20,12 @@ import escapeRE from 'escape-string-regexp'
 import { withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import { defu } from 'defu'
-import { coerce, satisfies } from 'verkit'
+import { satisfies } from 'verkit'
 import { hasTTY, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 import { link } from 'clickable-path'
-import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
+import type { DevServerHandler, Nuxt, NuxtHooks, NuxtModule, NuxtOptions, ServerHandler } from 'nuxt/schema'
 
 import { installNuxtModule } from '../core/features.ts'
 import pagesModule from '../pages/module.ts'
@@ -35,6 +35,7 @@ import importsModule from '../imports/module.ts'
 import compilerModule from '../compiler/module.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 
+import { resolveDevAppSecret } from './app-secret.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -290,17 +291,12 @@ async function initNuxt (nuxt: Nuxt) {
     getContents: ({ app }) => {
       return [
         `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-        'declare module \'h3/rules\' {',
-        '  interface RouteRuleConfig {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '  interface RouteRules {',
-        '    appLayout?: LayoutKey | false',
-        '  }',
-        '}',
         ...['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
           `declare module '${module}' {`,
           '  interface AppRouteRulesExtensions {',
+          '    appLayout?: LayoutKey | false',
+          '  }',
+          '  interface RouteRuleConfigExtensions {',
           '    appLayout?: LayoutKey | false',
           '  }',
           '}',
@@ -486,14 +482,15 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     const helperModule = resolveModulePath('unctx', { from: import.meta.url, try: true }) ?? 'unctx'
-    // Add unctx transform
+    // server-only: the `executeAsync` wrappers restore context across `await`, which a
+    // browser's set-once Nuxt app does not need
     addBuildPlugin(UnctxTransformPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
         helperModule,
       },
-    }))
+    }), { client: false })
 
     // Add composable tree-shaking optimisations
     if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
@@ -580,6 +577,15 @@ async function initNuxt (nuxt: Nuxt) {
 
     // add plugin to make warnings less verbose in dev mode
     addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
+  }
+
+  // Registered before `installModules` so module `build:manifest` hooks can attach to these
+  if (!nuxt.options.dev) {
+    nuxt.hook('build:manifest', (manifest) => {
+      for (const src of nuxt.options._noScriptsPageSources) {
+        manifest[src] ||= { file: '', src }
+      }
+    })
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
@@ -954,12 +960,6 @@ export default defineNuxtPlugin({
     }
   }
 
-  // Show compatibility version banner when Nuxt is running with a compatibility version
-  // that is different from the current major version
-  if (!(satisfies(coerce(nuxt._version) ?? nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
-    logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
-  }
-
   await nuxt.callHook('ready', nuxt)
   nuxt._perf?.endPhase('ready')
 }
@@ -1065,17 +1065,25 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nitroOptions = options.nitro
   createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  createPortalProperties(nitroOptions.prerender, options, ['nitro.prerender', 'prerender'])
+  // an entry written straight into the builder's own config is typed by the builder, and is a
+  // superset of what Nuxt collects
   if (nitroOptions.handlers?.length && nitroOptions.handlers !== options.serverHandlers) {
-    options.serverHandlers.unshift(...nitroOptions.handlers)
+    options.serverHandlers.unshift(...nitroOptions.handlers as ServerHandler[])
   }
   createPortalProperties(options.serverHandlers, options, ['nitro.handlers', 'serverHandlers'])
   if (nitroOptions.devHandlers?.length && nitroOptions.devHandlers !== options.devServerHandlers) {
-    options.devServerHandlers.unshift(...nitroOptions.devHandlers)
+    options.devServerHandlers.unshift(...nitroOptions.devHandlers as DevServerHandler[])
   }
   createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
   createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])
   const serverTsConfig = defu(options.typescript.serverTsConfig, nitroOptions.typescript?.tsConfig)
   createPortalProperties(serverTsConfig, options, ['nitro.typescript.tsConfig', 'typescript.serverTsConfig'])
+
+  // must follow the `runtimeConfig` portal, which repoints `options.runtimeConfig`
+  if (options.dev) {
+    await resolveDevAppSecret(options)
+  }
 
   // prevent replacement of options.nitro
   Object.defineProperties(options, {

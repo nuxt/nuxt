@@ -8,7 +8,7 @@ import type { RouterViewSlotProps } from './utils'
 import { RouteProvider, defineRouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-import { _mergeTransitionProps, _wrapInTransition } from '#app/components/utils'
+import { _finishTransition, _mergeTransitionProps, _startTransition, _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
@@ -129,7 +129,9 @@ export default defineComponent({
                   return vnode
                 }
                 done()
-                return
+                const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
+                if (!hasTransition) { return }
+                return _wrapInTransition(_mergeTransitionProps([props.transition, routeProps.route.meta.pageTransition, defaultPageTransition]), null).default()
               }
 
               // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
@@ -173,9 +175,7 @@ export default defineComponent({
                 defaultPageTransition,
                 {
                   onAfterLeave () {
-                    nuxtApp['~transitionFinish']?.()
-                    delete nuxtApp['~transitionFinish']
-                    delete nuxtApp['~transitionPromise']
+                    _finishTransition(nuxtApp)
                     nuxtApp.callHook('page:transition:finish', routeProps.Component)
                   },
                 },
@@ -226,10 +226,8 @@ export default defineComponent({
                   suspensible: true,
                   onPending: () => {
                     isSuspensePending = true
-                    if (hasTransition && !nuxtApp['~transitionPromise']) {
-                      nuxtApp['~transitionPromise'] = new Promise((resolve) => {
-                        nuxtApp['~transitionFinish'] = resolve
-                      })
+                    if (hasTransition) {
+                      _startTransition(nuxtApp)
                     }
                     pageStartPromise = nuxtApp.callHook('page:start', routeProps.Component)
                   },

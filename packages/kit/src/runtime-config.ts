@@ -5,7 +5,7 @@ import { klona } from 'klona'
 
 import { defu } from 'defu'
 import { useNuxt } from './context.ts'
-import { useNitro } from './nitro.ts'
+import { tryUseNitro } from './nitro.ts'
 
 /**
  * Access 'resolved' Nuxt runtime configuration, with values updated from environment.
@@ -28,11 +28,7 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): vo
   const nuxt = useNuxt()
   Object.assign(nuxt.options.nitro.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nuxt.options.nitro.runtimeConfig))
 
-  try {
-    return useNitro().updateConfig({ runtimeConfig: runtimeConfig as any })
-  } catch {
-    // Nitro is not yet initialised - we can safely ignore this error
-  }
+  return tryUseNitro()?.updateConfig({ runtimeConfig: runtimeConfig as any })
 }
 
 /**

@@ -1,5 +1,7 @@
 import { fileURLToPath } from 'node:url'
-import { dirname } from 'pathe'
+import { matchesGlob } from 'node:path'
+import { dirname, normalize } from 'pathe'
+import { withTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
 
@@ -19,9 +21,19 @@ export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
  */
 export const PATHS_SPECIFIER = '#internal/nuxt/paths'
 
+/**
+ * Packages server code may import without the project depending on them, reaching them
+ * through `nitro` instead. A package manager that does not hoist leaves them out of the
+ * project's `node_modules`, so their types and their resolution are routed to the copy
+ * Nitro uses; a second copy would bypass its builder and duplicate state.
+ */
+export const nitroImplicitDependencies = ['nitro', 'h3', 'srvx', 'defu', 'consola', 'ofetch', 'crossws']
+
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
+
+const NODE_MODULES_SEGMENT = '/node_modules/'
 
 const NODE_MODULES_RE = /\/node_modules\//g
 
@@ -56,6 +68,53 @@ export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>)
 }
 
 /**
+ * Convert Nuxt's gitignore-style ignore patterns into globs for the unstorage `fs`
+ * driver, which matches them with `node:path` `matchesGlob` relative to the mount base.
+ *
+ * 1. A gitignore pattern without a slash matches at any depth, so it is prefixed with `**\/`
+ * 2. A trailing slash (directory-only) and a leading slash (anchored) have no meaning.
+ * 3. Re-inclusion cannot be expressed in a flat list of globs at all, we drop whatever
+ *    a negated pattern would 'undo'.
+ *
+ * Rules are order-sensitive (the last one to match a path wins), so a negated pattern
+ * only drops the patterns declared before it.
+ */
+export function toFsDriverIgnorePatterns (patterns: string[]): string[] {
+  const globs: string[] = []
+  for (const pattern of patterns) {
+    const negated = pattern[0] === '!'
+    const glob = toFsDriverGlob(negated ? pattern.slice(1) : pattern)
+    if (!glob) {
+      continue
+    }
+    if (!negated) {
+      if (!globs.includes(glob)) {
+        globs.push(glob)
+      }
+      continue
+    }
+    for (let i = globs.length - 1; i >= 0; i--) {
+      const ignored = globs[i]!
+      if (matchesGlob(glob, ignored) || matchesGlob(ignored, glob)) {
+        globs.splice(i, 1)
+      }
+    }
+  }
+  return globs
+}
+
+function toFsDriverGlob (pattern: string): string | undefined {
+  const trimmed = pattern.replace(/\/+$/, '')
+  const anchored = trimmed.includes('/')
+  const glob = trimmed.replace(/^\//, '')
+  // patterns resolved outside the mount base can never match a key within it
+  if (!glob || glob.startsWith('../')) {
+    return
+  }
+  return anchored ? glob : `**/${glob}`
+}
+
+/**
  * Build the `resolve.conditions` array applied to the SSR vite environment.
  *
  * `'import'` is required so that packages whose top-level `exports` map is
@@ -68,6 +127,35 @@ export function getSsrResolveConditions (exportConditions?: string[]): string[] 
     conditions.push('import')
   }
   return conditions
+}
+
+/**
+ * Recover the package directory of an installed module.
+ *
+ * `resolveNuxtModule` answers with the `node_modules` directory a module resolved from
+ * rather than the package root, so the package name has to be taken from the entry path
+ * for the module's runtime directories to be findable.
+ */
+export function toModulePackageDir (dir: string, entryPath: string): string {
+  const resolved = normalize(dir)
+  if (!withTrailingSlash(resolved).endsWith(NODE_MODULES_SEGMENT)) {
+    return resolved
+  }
+  const entry = normalize(entryPath)
+  const index = entry.lastIndexOf(NODE_MODULES_SEGMENT)
+  // a module installed under another module (or reached through a pnpm symlink) is named
+  // by its own path; a module named by a bare specifier is named by that specifier
+  const base = index === -1 ? withTrailingSlash(resolved) : entry.slice(0, index + NODE_MODULES_SEGMENT.length)
+  const rest = index === -1 ? entry : entry.slice(base.length)
+  // an entry that names no package under `dir` leaves only the entry itself to go by:
+  // `dir` is a bare `node_modules`, and scoping or attributing by that prefix would take
+  // in every other package installed beside the module
+  if (!rest || rest[0] === '.' || rest[0] === '/') {
+    return entry
+  }
+  const segments = rest.split('/')
+  const name = segments[0]![0] === '@' ? segments.slice(0, 2).join('/') : segments[0]!
+  return base + name
 }
 
 let _distDir = dirname(fileURLToPath(import.meta.url))

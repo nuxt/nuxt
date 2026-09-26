@@ -12,7 +12,7 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 /** Static hosts commonly map unknown paths to one of these files. */
 const SPA_FALLBACK_FILES = ['index.html', '200.html', '404.html']
 
-export async function writeStaticOutput (nuxt: Nuxt, publicDir: string, options: { ssr?: boolean } = {}): Promise<void> {
+export async function writeStaticOutput (nuxt: Nuxt, publicDir: string, options: { ssr?: boolean, prerender?: boolean } = {}): Promise<void> {
   const document = resolve(publicDir, 'index.html')
 
   if (!existsSync(document)) {
@@ -35,7 +35,9 @@ export async function writeStaticOutput (nuxt: Nuxt, publicDir: string, options:
   }
 
   if (options.ssr) {
-    logger.success(`Server output written to ${link(resolve(publicDir, '..'))}`)
+    if (!options.prerender) {
+      logger.success(`Server output written to ${link(resolve(publicDir, '..'))}`)
+    }
     return
   }
 
@@ -44,6 +46,13 @@ export async function writeStaticOutput (nuxt: Nuxt, publicDir: string, options:
   }
 
   logger.success(`Static SPA output written to ${link(publicDir)}`)
+}
+
+/** Drop the bundle the crawl rendered with, leaving the static site as the whole output. */
+export async function finishStaticOutput (outputDir: string, publicDir: string): Promise<void> {
+  await rm(join(outputDir, 'server'), { recursive: true, force: true })
+
+  logger.success(`Prerendered output written to ${link(publicDir)}`)
 }
 
 export async function spaLoadingTemplate (nuxt: Nuxt): Promise<string> {
