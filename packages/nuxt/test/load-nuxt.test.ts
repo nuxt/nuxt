@@ -10,7 +10,7 @@ import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
 import { _generateTypes } from '../../kit/src/template.ts'
 import { loadNuxt } from '../src/index.ts'
-import type { NuxtConfig } from '../schema.ts'
+import type { NitroConfig, NuxtConfig } from '../schema.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -324,7 +324,7 @@ describe('loadNuxt', () => {
         nitro: { typescript: { tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: false } } } },
       },
     })
-    expect(nuxt.options.typescript.serverTsConfig).toBe(nuxt.options.nitro.typescript!.tsConfig)
+    expect(nuxt.options.typescript.serverTsConfig).toBe((nuxt.options.nitro as NitroConfig).typescript!.tsConfig)
     expect(nuxt.options.typescript.serverTsConfig?.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(false)
     await nuxt.close()
   })

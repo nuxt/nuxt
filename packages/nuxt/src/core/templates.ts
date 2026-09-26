@@ -713,10 +713,10 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const nitro = tryUseNitro() as Nitro | undefined
     const hasCachedRoutes = !!nitro?.routing?.routeRules.routes.some(r => r.data.isr || r.data.cache)
     const isStatic = nitro ? nitro.options.static : !!ctx.nuxt.options.nitro.static
-    const prerenderRoutes = nitro ? nitro.options.prerender.routes : ctx.nuxt.options.nitro.prerender?.routes
+    const prerenderRoutes = nitro ? nitro.options.prerender.routes : ctx.nuxt.options.prerender.routes
     const hasPrerenderRules = nitro
       ? !!nitro.routing?.routeRules.routes.some(r => r.data.prerender)
-      : Object.values(ctx.nuxt.options.nitro.routeRules || {}).some(rules => rules?.prerender)
+      : Object.values(ctx.nuxt.options.routeRules || {}).some(rules => rules?.prerender)
     const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (isStatic || hasCachedRoutes || !!prerenderRoutes?.length || hasPrerenderRules)
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),

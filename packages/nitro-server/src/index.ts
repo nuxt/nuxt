@@ -177,8 +177,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const clientOnlyApp = !nuxt.options.ssr
   if (nuxt.options.experimental.componentIslands && clientOnlyApp && nuxt.options.experimental.componentIslands !== 'auto') {
     nuxt.options.ssr = true
-    nuxt.options.nitro.routeRules ||= {}
-    nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
+    nuxt.options.routeRules ||= {}
+    nuxt.options.routeRules['/**'] = defu(nuxt.options.routeRules['/**'], { ssr: false })
   }
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
@@ -237,7 +237,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     buildDir: nuxt.options.buildDir,
     experimental: {
       asyncContext: nuxt.options.experimental.asyncContext,
-      typescriptBundlerResolution: nuxt.options.future.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || nuxt.options.nitro.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
+      typescriptBundlerResolution: nuxt.options.future.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || nuxt.options.typescript.serverTsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
     },
     framework: {
       name: 'nuxt',
