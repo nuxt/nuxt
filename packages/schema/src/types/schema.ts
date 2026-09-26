@@ -1298,6 +1298,14 @@ export interface ConfigSchema {
     typedPages: boolean
 
     /**
+     * Load a client-side navigation that matches no page route as a full document, so the
+     * server can respond with a public asset, a server route or its 404 page.
+     *
+     * @default true
+     */
+    serverPathFallback: boolean
+
+    /**
      * Use app manifests to respect route rules on client-side.
      *
      * @default true

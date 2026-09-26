@@ -726,6 +726,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const prefetchPreloadTags = ${!!ctx.nuxt.options.experimental.prefetchPreloadTags}`,
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
+      `export const serverPathFallback = ${!!ctx.nuxt.options.experimental.serverPathFallback}`,
       `export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}`,
       `export const selectiveClient = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && Boolean(ctx.nuxt.options.experimental.componentIslands.selectiveClient)}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`,
