@@ -182,3 +182,18 @@ describe('parity between the shipped implementations and h3', () => {
     expect(shipped.isNuxtError(construct())).toBe(h3.HTTPError.isError(construct()))
   })
 })
+
+describe('session helpers given an h3 v1 event', () => {
+  it('throws NUXT_E8012 naming the helper', async () => {
+    const delegate = await import('../src/runtime/server')
+    const e = { node: { req: {}, res: {} }, context: {} }
+    expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012.*useSession.*import `defineEventHandler` from `nuxt\/server`/is)
+    expect(() => delegate.clearSession(e as never, { password: 'x'.repeat(32) })).toThrow(expect.objectContaining({ status: 500 }))
+  })
+
+  it('passes a request event through', async () => {
+    const delegate = await import('../src/runtime/server')
+    const event = new H3Event(new Request('http://127.0.0.1/'))
+    await expect(delegate.getSession(event as never, { password: 'x'.repeat(32) })).resolves.toMatchObject({ data: {} })
+  })
+})
