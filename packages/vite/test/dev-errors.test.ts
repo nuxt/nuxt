@@ -304,6 +304,51 @@ describe('createDevErrorReporter (errors reported elsewhere)', () => {
     channel.close()
     nuxt.close()
   })
+
+  it.each(['SyntaxError', 'TypeError', 'ReferenceError'])('keeps a %s the server reported over the hot update vite sends for the same file', async (name) => {
+    const nuxt = createNuxt()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    const { server, send } = devServer()
+    reporter.attach(server)
+    const { messages, channel } = listen()
+    const serverReport = {
+      id: 'from-server', kind: 'error', name: 'HTTPError', message: 'x', frames: [], sections: [], timestamp: 0,
+      causes: [{ id: 'c', kind: 'compile', name, message: 'x', frames: [{ type: 'app', file: '/src/app.vue', line: 8, column: 5 }], causes: [], sections: [], timestamp: 0 }],
+    }
+    channel.postMessage({ type: 'nuxt:dev:error:report', report: serverReport })
+    await vi.waitFor(() => expect(reporter.file).toBe('/src/app.vue'))
+
+    server.environments.client!.hot.send({ type: 'error', err: { ...transformError, stack: '    at parse (/src/node_modules/parser.js:1:1)' } })
+    expect(send).toHaveBeenCalledTimes(1)
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(messages).toEqual([])
+
+    channel.postMessage({ type: 'nuxt:dev:error:clear' })
+    await vi.waitFor(() => expect(reporter.file).toBeUndefined())
+    server.environments.client!.hot.send({ type: 'error', err: { ...transformError, stack: '' } })
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+
+    channel.close()
+    nuxt.close()
+  })
+})
+
+describe('createDevErrorReporter (error names)', () => {
+  it.each([
+    ['SyntaxError', SyntaxError],
+    ['TypeError', TypeError],
+    ['ReferenceError', ReferenceError],
+  ] as const)('names a %s whose position is recovered from its message', async (name, ErrorClass) => {
+    const nuxt = createNuxt()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    const cause = new Error('underlying')
+    const error = Object.assign(new ErrorClass('[vue/compiler-sfc] Unexpected token (2:9)', { cause }), { plugin: 'vite:vue', id: '/src/app.vue', loc: { line: 2, column: 9 } })
+
+    const report = await reporter.report(error)
+    expect(report).toMatchObject({ kind: 'compile', name, message: expect.stringContaining('Unexpected token'), frames: [{ file: '/src/app.vue', line: 2, column: 10 }] })
+
+    nuxt.close()
+  })
 })
 
 describe('DevErrorsPlugin', () => {
