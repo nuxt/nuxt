@@ -162,6 +162,24 @@ describe('loadNuxt', () => {
     await nuxt.close()
   })
 
+  it('includes nuxt.schema files relative to typesDir in the node tsconfig', async () => {
+    const layerFixtureDir = withoutTrailingSlash(
+      normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
+    )
+
+    const nuxt = await loadNuxt({
+      cwd: layerFixtureDir,
+      overrides: { buildDir: join(layerFixtureDir, 'node_modules/.cache/nuxt/.nuxt') },
+      ready: true,
+    })
+    const { nodeTsConfig } = await _generateTypes(nuxt)
+
+    expect(nodeTsConfig.include).toContain('../nuxt.schema.*')
+    expect(nodeTsConfig.include).toContain('../layers/*/nuxt.schema.*')
+
+    await nuxt.close()
+  })
+
   it('does not leak debug mutation proxies into resolved options', async () => {
     const nuxt = await loadNuxt({
       cwd: repoRoot,
