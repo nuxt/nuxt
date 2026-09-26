@@ -10,6 +10,7 @@ import { readPackageJSON } from './internal/package-json.ts'
 import { resolveModulePath } from 'exsolve'
 import { captureStackTrace } from 'errx'
 
+import { DEFAULT_JS_FILE_EXTENSIONS } from './constants.ts'
 import { distDirURL, filterInPlace } from './utils.ts'
 import { directoryToURL } from './internal/esm.ts'
 import { resolveDeclarationPath } from './types.ts'
@@ -186,7 +187,11 @@ interface LayerPaths {
   globalDeclarations: string[]
 }
 
-export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string): LayerPaths {
+function moduleFileGlobs (dir: string, extensions: string[]): string[] {
+  return extensions.map(ext => join(dir, `*${ext}`))
+}
+
+export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: string, extensions: string[] = DEFAULT_JS_FILE_EXTENSIONS): LayerPaths {
   const relativeRootDir = relativeWithDot(projectBuildDir, dirs.root)
   const relativeSrcDir = relativeWithDot(projectBuildDir, dirs.app)
   const relativeModulesDir = relativeWithDot(projectBuildDir, dirs.modules)
@@ -208,13 +213,13 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
       join(relativeRootDir, `layers/*/modules/*/runtime/server/**/*`),
     ],
     node: [
-      join(relativeModulesDir, `*.*`),
+      ...moduleFileGlobs(relativeModulesDir, extensions),
       join(relativeRootDir, `nuxt.config.*`),
       join(relativeRootDir, `.config/nuxt.*`),
       join(relativeRootDir, `layers/*/nuxt.config.*`),
       join(relativeRootDir, `layers/*/.config/nuxt.*`),
-      join(relativeRootDir, `layers/*/modules/*.*`),
-      join(relativeRootDir, `layers/*/modules/*/*.*`),
+      ...moduleFileGlobs(join(relativeRootDir, 'layers/*/modules'), extensions),
+      ...moduleFileGlobs(join(relativeRootDir, 'layers/*/modules/*'), extensions),
     ],
     shared: [
       join(relativeSharedDir, `**/*`),
@@ -344,7 +349,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   for (const dirs of layerDirs) {
     if (!dirs.app.startsWith(rootDirWithSlash) || dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) {
       const rootGlob = join(relativeWithDot(typesDir, dirs.root), '**/*')
-      const paths = resolveLayerPaths(dirs, typesDir)
+      const paths = resolveLayerPaths(dirs, typesDir, nuxt.options.extensions)
       for (const path of paths.nuxt) {
         include.add(path)
         legacyInclude.add(path)
@@ -405,10 +410,16 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   for (const path of modulePaths) {
     const relative = relativeWithDot(typesDir, path)
+    const entryGlobs = [
+      ...moduleFileGlobs(relative, nuxt.options.extensions),
+      ...moduleFileGlobs(join(relative, 'dist'), nuxt.options.extensions),
+    ]
     if (!path.includes('node_modules') && path.startsWith(rootDirWithSlash)) {
       include.add(join(relative, 'runtime'))
       include.add(join(relative, 'dist/runtime'))
-      nodeInclude.add(join(relative, '*.*'))
+      for (const glob of moduleFileGlobs(relative, nuxt.options.extensions)) {
+        nodeInclude.add(glob)
+      }
     }
 
     legacyInclude.add(join(relative, 'runtime'))
@@ -420,13 +431,15 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     serverInclude.add(join(relative, 'runtime/server'))
     serverInclude.add(join(relative, 'dist/runtime/server'))
 
-    serverExclude.add(join(relative, '*.*'))
-    serverExclude.add(join(relative, 'dist/*.*'))
+    for (const glob of entryGlobs) {
+      serverExclude.add(glob)
+    }
 
     exclude.add(join(relative, 'runtime/server'))
     exclude.add(join(relative, 'dist/runtime/server'))
-    exclude.add(join(relative, '*.*'))
-    exclude.add(join(relative, 'dist/*.*'))
+    for (const glob of entryGlobs) {
+      exclude.add(glob)
+    }
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
   }
