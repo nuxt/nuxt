@@ -422,3 +422,22 @@ describe('addon extensions wrapping promise methods', () => {
     })()).rejects.toThrow()
   })
 })
+
+describe('addon extension objects', () => {
+  it('does not mutate a shared extension object returned by setup', async () => {
+    const shared = {
+      then: (next: (...args: unknown[]) => Promise<unknown>, ...args: unknown[]) => next(...args),
+      marker: true,
+    }
+    const addon = defineUseAsyncDataAddon({ setup: () => () => shared })
+
+    const useSharedAsyncData = createUseAsyncData({ addons: [addon] })
+    const first = await useSharedAsyncData('addons:shared-ext-a', () => Promise.resolve(1))
+    const second = await useSharedAsyncData('addons:shared-ext-b', () => Promise.resolve(2))
+
+    expect(typeof shared.then).toBe('function')
+    expect(first.marker).toBe(true)
+    expect(second.marker).toBe(true)
+    expect('then' in second).toBe(false)
+  })
+})

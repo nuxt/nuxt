@@ -96,7 +96,7 @@ For example, an addon that refreshes the data whenever the window regains focus,
 
 ```ts [app/composables/useCustomAsyncData.ts]
 const refreshOnFocus = defineUseAsyncDataAddon({
-  // augment the call-site options for the custom useFetch instance 👇
+  // augment the call-site options for the custom useAsyncData instance 👇
   setup: (options: UseAsyncDataAddonOptions<{ refreshOnFocus?: boolean }>) => {
     // 👈 run code *before* creating the `useAsyncData` instance
     if (import.meta.server || !options.refreshOnFocus) { return }

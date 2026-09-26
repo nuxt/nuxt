@@ -128,14 +128,14 @@ function attachAddonExtensions (setups: ReadonlyArray<AsyncDataAddonSetup<any>>,
   for (const setup of setups) {
     const extension = setup(result)
     if (extension && typeof extension === 'object') {
+      const { then, catch: _catch, finally: _finally, ...members } = extension as Record<string, unknown> & Partial<Record<PromiseMethod, unknown>>
+      const methodWrappers = { then, catch: _catch, finally: _finally }
       for (const method of PROMISE_METHODS) {
-        const wrapper = (extension as Record<string, unknown>)[method]
-        if (typeof wrapper === 'function') {
-          ((wrappers ??= {})[method] ??= []).push(wrapper as PromiseMethodWrapper)
+        if (typeof methodWrappers[method] === 'function') {
+          ((wrappers ??= {})[method] ??= []).push(methodWrappers[method] as PromiseMethodWrapper)
         }
-        delete (extension as Record<string, unknown>)[method]
       }
-      Object.assign(extensions ??= {}, extension)
+      Object.assign(extensions ??= {}, members)
     }
   }
   if (extensions) {
