@@ -794,6 +794,13 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
   // auto-import types it generates, so ours is only written where nothing else claims the name
   const writesServerTsConfig = nuxt.options._nitroMajor !== 2
 
+  // a build into another `buildDir` only fills in missing configurations in `typesDir`
+  if (!nuxt.options._prepare && !nuxt.options.dev && typesDir !== nuxt.options.buildDir) {
+    const tsConfigPaths = [appTsConfigPath, legacyTsConfigPath, nodeTsConfigPath, sharedTsConfigPath]
+    if (writesServerTsConfig) { tsConfigPaths.push(serverTsConfigPath) }
+    if (tsConfigPaths.every(path => existsSync(path))) { return }
+  }
+
   await fsp.mkdir(typesDir, { recursive: true })
   await Promise.all([
     writeIfChanged(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),

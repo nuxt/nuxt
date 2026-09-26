@@ -1,12 +1,15 @@
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
+import { join } from 'pathe'
 
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../src/constants.ts'
 import { loadNuxtConfig } from '../src/loader/config.ts'
-import { _generateTypes, resolveLayerPaths } from '../src/template.ts'
+import { _generateTypes, resolveLayerPaths, writeTypes } from '../src/template.ts'
 import { getLayerDirectories } from 'nuxt/kit'
 
 const typesFixtureDir = fileURLToPath(new URL('./types-fixture', import.meta.url))
@@ -427,5 +430,45 @@ describe('resolveLayerPaths', async () => {
         ],
       }
     `)
+  })
+})
+
+describe('writeTypes', () => {
+  const generatedFiles = ['tsconfig.json', 'tsconfig.app.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json']
+
+  async function withRelocatedBuildDir (fn: (typesDir: string, nuxt: Nuxt) => Promise<void>) {
+    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
+    const typesDir = join(rootDir, '.nuxt')
+    await mkdir(typesDir, { recursive: true })
+    try {
+      await fn(typesDir, mockNuxtWithOptions({
+        rootDir,
+        srcDir: rootDir,
+        buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt'),
+        typesDir,
+        dev: false,
+      }))
+    } finally {
+      await rm(rootDir, { recursive: true, force: true })
+    }
+  }
+
+  it('should not overwrite existing types when building into a relocated build directory', async () => {
+    await withRelocatedBuildDir(async (typesDir, nuxt) => {
+      for (const file of generatedFiles) {
+        await writeFile(join(typesDir, file), '{}')
+      }
+      await writeTypes(nuxt)
+      for (const file of generatedFiles) {
+        expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
+      }
+    })
+  })
+
+  it('should write missing types when building into a relocated build directory', async () => {
+    await withRelocatedBuildDir(async (typesDir, nuxt) => {
+      await writeTypes(nuxt)
+      expect((await readdir(typesDir)).filter(file => file.startsWith('tsconfig')).sort()).toEqual([...generatedFiles].sort())
+    })
   })
 })
