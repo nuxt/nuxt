@@ -46,6 +46,14 @@ export default defineResolvers({
         }
       },
     },
+    prerender: {
+      $resolve: async (val, get) => {
+        return {
+          ...await get('prerender'),
+          ...(val && typeof val === 'object' ? val : {}),
+        }
+      },
+    },
     tracingChannel: {
       $resolve: async (val: unknown, get: ResolverGetter) => {
         if (val === false) {
@@ -62,6 +70,7 @@ export default defineResolvers({
     },
   },
   routeRules: {},
+  prerender: {},
   serverHandlers: [],
   devServerHandlers: [],
   _serverPlugins: [],

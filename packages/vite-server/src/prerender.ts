@@ -48,10 +48,11 @@ export function isPrerendering (nuxt: Nuxt): boolean {
 
 function resolvePrerenderConfig (nuxt: Nuxt): ResolvedPrerenderConfig {
   const config = nuxt.options.nitro.prerender || {}
+  const shared = nuxt.options.prerender || {}
   return {
-    routes: (config.routes || []).filter(Boolean) as string[],
-    ignore: (config.ignore || []) as IgnorePattern[],
-    crawlLinks: config.crawlLinks ?? true,
+    routes: (shared.routes || []).filter(Boolean),
+    ignore: shared.ignore || [],
+    crawlLinks: shared.crawlLinks ?? true,
     autoSubfolderIndex: config.autoSubfolderIndex ?? true,
     concurrency: config.concurrency || cpus().length * 4 || 4,
     interval: config.interval || 0,
