@@ -109,7 +109,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "devalue",
         "h3+rou3+srvx",
         "hookable",
-        "ofetch",
         "scule",
         "ufo",
         "vue",
