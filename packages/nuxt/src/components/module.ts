@@ -1,15 +1,17 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, getLayerDirectories, resolveAlias } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolveAlias } from '@nuxt/kit'
 import { componentDiagnostics } from '@nuxt/kit/internal'
 
 import { resolveModulePath } from 'exsolve'
+import picomatch from 'picomatch'
+import { withTrailingSlash } from 'ufo'
 import { distDir } from '../dirs.ts'
 import { DECLARATION_EXTENSIONS, isDirectorySync, linkToAlias, logger } from '../utils.ts'
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
-import { getAppStructureVersion } from '../core/app.ts'
+import { getAppStructureVersion, invalidateAppStructure } from '../core/app.ts'
 
 import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
@@ -267,13 +269,59 @@ export default defineNuxtModule<ComponentsOptions>({
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
-    const isComponentFile = (file: string) => {
-      const normalized = normalize(file)
-      return componentDirs.some(dir => normalized === dir.path || normalized.startsWith(dir.path.replace(/\/?$/, '/')))
+    const componentMatchers = new WeakMap<ComponentsDir, (path: string) => boolean>()
+    function isComponentFile (file: string) {
+      if (isIgnored(file)) { return false }
+      return componentDirs.some((dir) => {
+        if (!file.startsWith(withTrailingSlash(dir.path))) { return false }
+        let matcher = componentMatchers.get(dir)
+        if (!matcher) {
+          matcher = picomatch(dir.pattern!, { ignore: dir.ignore, dot: true })
+          componentMatchers.set(dir, matcher)
+        }
+        return matcher(relative(dir.path, file))
+      })
     }
 
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'client', isComponentFile }), { server: false })
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'server', isComponentFile }), { client: false })
+    const componentTemplates = new Set([
+      componentsDeclarationTemplate,
+      componentsTypeTemplate,
+      componentsPluginTemplate,
+      componentNamesTemplate,
+      componentsIslandsTemplate,
+      componentsMetadataTemplate,
+    ].map(t => t.filename))
+
+    let pendingRefresh: Promise<void> | undefined
+    let rerunRefresh = false
+    const refreshedFiles = new Set<string>()
+    /** Rescan components after a component file is added or removed, deduping concurrent requests. */
+    function refreshComponents (file: string) {
+      if (!isComponentFile(file)) { return }
+      if (pendingRefresh) {
+        // each environment reports the same file event, so only rescan again for a new file
+        if (!refreshedFiles.has(file)) {
+          refreshedFiles.add(file)
+          rerunRefresh = true
+        }
+        return pendingRefresh
+      }
+      refreshedFiles.add(file)
+      pendingRefresh = (async () => {
+        do {
+          rerunRefresh = false
+          invalidateAppStructure(nuxt)
+          await nuxt.callHook('builder:generateApp', { filter: t => componentTemplates.has(t.filename) })
+        } while (rerunRefresh)
+      })().finally(() => {
+        pendingRefresh = undefined
+        refreshedFiles.clear()
+      })
+      return pendingRefresh
+    }
+
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'client', refreshComponents: nuxt.options.dev ? refreshComponents : undefined }), { server: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'server', refreshComponents: nuxt.options.dev ? refreshComponents : undefined }), { client: false })
 
     if (nuxt.options.experimental.lazyHydration) {
       addBuildPlugin(LazyHydrationTransformPlugin({

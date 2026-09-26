@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { pascalCase } from 'scule'
-import { relative } from 'pathe'
+import { normalize, relative } from 'pathe'
 
 import { tryUseNuxt } from '@nuxt/kit'
 import { componentDiagnostics } from '@nuxt/kit/internal'
@@ -19,7 +19,7 @@ interface LoaderOptions {
   clientDelayedComponentRuntime: string
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
-  isComponentFile (file: string): boolean
+  refreshComponents?: (file: string) => void | Promise<void>
 }
 
 // Match both:
@@ -38,7 +38,8 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const nuxt = tryUseNuxt()
-  const transformedModules = new Set<string>()
+  /** Component names referenced by each transformed module, with the component each resolved to. */
+  const resolutions = new Map<string, Map<string, string | undefined>>()
 
   return {
     name: 'nuxt:components-loader',
@@ -46,15 +47,29 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
     vite: {
       hotUpdate: {
         order: 'pre',
-        async handler ({ type, file }) {
-          if (type === 'update' || !options.isComponentFile(file)) { return }
-          if (options.mode === 'client') {
-            await nuxt?.callHook('builder:generateApp')
+        async handler ({ type, file, modules }) {
+          if (type === 'update' || !options.refreshComponents) { return }
+          const pending = options.refreshComponents(normalize(file))
+          if (!pending) { return }
+          await pending
+
+          const components = options.getComponents()
+          const affected = new Set(modules)
+          for (const [id, names] of resolutions) {
+            for (const [name, resolved] of names) {
+              if (resolveComponentKey(components, name, options.mode) === resolved) { continue }
+              const mod = this.environment.moduleGraph.getModuleById(id)
+              if (mod) {
+                affected.add(mod)
+              } else {
+                resolutions.delete(id)
+              }
+              break
+            }
           }
-          return [...transformedModules].flatMap((id) => {
-            const module = this.environment.moduleGraph.getModuleById(id)
-            return module ? [module] : []
-          })
+          if (affected.size !== modules.length) {
+            return [...affected]
+          }
         },
       },
     },
@@ -71,6 +86,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
         let num = 0
         const imports = new Set<string>()
         const map = new Map<Component, string>()
+        const resolved = new Map<string, string | undefined>()
         const s = rolldownString(code, id, meta)
         // replace `_resolveComponent("...")` to direct import
         for (const match of code.matchAll(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE)) {
@@ -82,6 +98,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           const normalComponent = findComponent(components, name!, options.mode)
           const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
           const component = normalComponent || modifierComponent
+          resolved.set((modifier ?? '') + '|' + name, componentKey(components, component))
 
           if (component) {
             // TODO: refactor to @nuxt/cli
@@ -183,13 +200,15 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           s.prepend([...imports, ''].join('\n'))
         }
 
-        const result = generateTransform(s, id)
-        if (result) {
-          transformedModules.add(id)
-        } else {
-          transformedModules.delete(id)
+        if (options.refreshComponents) {
+          if (resolved.size) {
+            resolutions.set(id, resolved)
+          } else {
+            resolutions.delete(id)
+          }
         }
-        return result
+
+        return generateTransform(s, id)
       },
     },
   }
@@ -202,6 +221,20 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 function vaporReplacement (imports: Set<string>, identifier: string) {
   imports.add(genImport('vue', [{ name: 'createComponentWithFallback', as: '__nuxt_createComponentWithFallback' }]))
   return `__nuxt_createComponentWithFallback(${identifier}`
+}
+
+function componentKey (components: Component[], component: Component | null | undefined) {
+  if (!component) { return }
+  const hasClientVariant = components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
+  return `${component.filePath}#${component.export ?? 'default'}#${component.mode}#${!!component._raw}#${hasClientVariant}`
+}
+
+function resolveComponentKey (components: Component[], key: string, mode: LoaderOptions['mode']) {
+  const separator = key.indexOf('|')
+  const modifier = key.slice(0, separator)
+  const name = key.slice(separator + 1)
+  const component = findComponent(components, name, mode) || (modifier ? findComponent(components, modifier + name, mode) : null)
+  return componentKey(components, component)
 }
 
 function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {
