@@ -49,6 +49,9 @@ const catalogs = {
 const packagesDir = fileURLToPath(new URL('../..', import.meta.url))
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
 
+/** Codes defined on `origin/4.x` that main does not define, each with the reason. */
+const FOURX_ONLY: Record<string, string> = {}
+
 const CATALOG_GLOB = '*/src/**/*.ts'
 const CODE_WHY_RE = /\b(NUXT_[A-Z]\d{4}):\s*\{\s*why:\s*([^\n]*)/g
 
@@ -118,6 +121,21 @@ describe('diagnostics catalog', () => {
     }
 
     expect([...defined].filter(name => !(name in catalogs)).sort()).toStrictEqual([])
+  })
+
+  it('defines every `origin/4.x` code unless it is listed as 4.x-only', async (ctx) => {
+    const ref = 'origin/4.x'
+    if (!hasRef(ref)) {
+      ctx.skip(`\`${ref}\` is not available; fetch it (for example \`git fetch origin 4.x\`) to compare catalogs across branches`)
+    }
+
+    const files = await glob(CATALOG_GLOB, { cwd: packagesDir, absolute: true, ignore: ['**/node_modules/**'] })
+    const current = extractCodes(files.map(file => readFileSync(file, 'utf-8')))
+    const other = extractCodes(git('grep', '-l', 'defineDiagnostics(', ref, '--', 'packages/*/src/**.ts').trim().split('\n').filter(Boolean).map(file => git('show', file)))
+
+    expect(other.size).toBeGreaterThan(0)
+    expect([...other.keys()].filter(code => !current.has(code) && !(code in FOURX_ONLY))).toStrictEqual([])
+    expect(Object.keys(FOURX_ONLY).filter(code => !other.has(code) || current.has(code))).toStrictEqual([])
   })
 
   it('assigns every code shared with `origin/4.x` to the same diagnostic', async (ctx) => {
