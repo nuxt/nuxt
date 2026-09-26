@@ -1,4 +1,4 @@
-import { relative, resolve } from 'pathe'
+import { relative } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 import type { NuxtOptions } from 'nuxt/schema'
 
@@ -70,9 +70,9 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
   }
 
   if (options.context === 'nuxt-app' || options.context === 'shared') {
-    const serverRelative = escapeRE(relative(nuxt.options.rootDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server')))
+    // Block all server directory imports
     patterns.push([
-      new RegExp('^' + serverRelative + '\\/(api|routes|middleware|plugins)\\/'),
+      new RegExp('(^|\\/)' + escapeRE(relative(nuxt.options.rootDir, nuxt.options.serverDir)) + '(\\/|$)'),
       `Importing from server is not allowed in ${context}.`,
       ['Use `$fetch()` or `useFetch()` to fetch data from server routes.', 'Move shared logic to the `shared/` directory.'],
     ])
