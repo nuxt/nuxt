@@ -79,6 +79,8 @@ const { data } = await useCustomFetch('/public-endpoint', { auth: false })
 </script>
 ```
 
+Custom options stay in the merged options object, so they are also passed to `$fetch` along with the request options, which ignores keys it does not recognise.
+
 ## Extending the Return Value
 
 If `setup` returns a function, that function is called with the async data instance. Any object it returns is merged into the composable's return value:
@@ -132,20 +134,32 @@ Custom options are **not** part of the auto-generated key by default. If a custo
 
 ```ts
 const scoped = defineUseFetchAddon({
-  key: options => toValue(options.scope),
   setup: (options: UseFetchAddonOptions<{ scope?: string }>) => {
     options.scope ??= 'default'
     // ...
   },
+  key: options => toValue(options.scope),
 })
 ```
+
+::warning
+Declare `setup` before `key`. TypeScript infers the custom options from the `setup` parameter annotation, and a `key` resolver written before a `setup` that returns an extension function is checked first and typed with empty options.
+::
+
+## Wrapping `then`, `catch` and `finally`
+
+As an advanced escape hatch, the extension object may include `then`, `catch` or `finally` functions. These are not merged into the instance. Instead they wrap the corresponding method of the awaitable promise, receiving the original method as their first argument.
+
+::note
+When several addons wrap the same method, the wrappers are composed in the order of the `addons` array: the first addon's wrapper wraps all the following ones, just as its middleware would.
+::
 
 ## Type
 
 ```ts [Signature]
 function defineUseFetchAddon<Opts extends Record<string, any> = {}, Ext = {}> (addon: {
-  key?: (options: UseFetchAddonOptions<Opts>) => SerializableValue
   setup: (options: UseFetchAddonOptions<Opts>) => ((asyncData: AsyncDataAddonInstance) => Ext | void) | void
+  key?: (options: UseFetchAddonOptions<Opts>) => SerializableValue
 }): UseFetchAddon<Opts, Ext>
 ```
 

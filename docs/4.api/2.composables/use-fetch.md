@@ -177,6 +177,7 @@ type UseFetchOptions<ResT, DataT = ResT> = {
   timeout?: number
   enabled?: MaybeRefOrGetter<boolean>
   serialize?: boolean
+  middleware?: AsyncDataMiddleware<ResT>[]
   default?: () => DataT | Ref<DataT>
   transform?: (input: ResT) => DataT | Promise<DataT>
   pick?: string[]
@@ -236,6 +237,7 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | `dedupe` :badge[v3.9]{color="info" size="xs" class="align-middle"}        | `'cancel' \| 'defer'`                                                   | `'cancel'` | Avoid fetching same key more than once at a time.                                                                                                                                                                                                                                  |
 | `enabled` :badge[v4.5]{color="info" size="xs" class="align-middle"}       | `boolean`                                                               | `true`     | Barrier that gates whether the request may run. While `false`, every execution is blocked (initial fetch, `execute`/`refresh`, and watch triggers), and switching `true` → `false` cancels any in-flight request without clearing `data`. Re-enabling does not refetch on its own. |
 | `serialize` :badge[v4.6]{color="info" size="xs" class="align-middle"}     | `boolean`                                                               | `true`     | Whether to store resolved data in the Nuxt payload (`__NUXT_DATA__`). When `false`, server-fetched data is kept out of the payload and the client will refetch after hydration if a component renders it. Pair with [lazy hydration](/docs/guide/best-practices/performance#lazy-hydration) to avoid hydration mismatches and unnecessary client fetches. |
+| `middleware` :badge[v4.6]{color="info" size="xs" class="align-middle"}    | `AsyncDataMiddleware[]`                                                 | -          | Functions wrapping the execution of the request. Each receives `next`, which runs the rest of the chain and resolves to the data, and the handler context (`{ signal }`). The first entry is the outermost wrapper. Call `next()` to continue or throw to abort. |
 | `$fetch` :badge[v3.2]{color="info" size="xs" class="align-middle"}        | `typeof globalThis.$fetch`                                              | -          | Custom $fetch implementation. See [Custom useFetch in Nuxt](/docs/guide/recipes/custom-usefetch)                                                                                                                                                                               |
 
 ::note

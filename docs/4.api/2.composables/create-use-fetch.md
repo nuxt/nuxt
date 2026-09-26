@@ -1,7 +1,7 @@
 ---
 title: 'createUseFetch'
 description: A factory function to create a custom useFetch composable with pre-defined default options.
-minimalVersion: "4.2"
+minimalVersion: "4.4"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -39,12 +39,12 @@ function createUseFetch (
 ): typeof useFetch
 
 function createUseFetch (
-  options: (callerOptions: UseFetchOptions) => Partial<UseFetchOptions> & { addons?: UseFetchAddon[] },
+  options: (callerOptions: UseFetchOptions) => Partial<UseFetchOptions>,
 ): typeof useFetch
 
 // where the client declares the routes it serves
 function createUseFetch<Routes> (
-  options: Partial<UseFetchOptions> & { routes: Routes },
+  options: Partial<UseFetchOptions> & { routes: Routes, addons?: UseFetchAddon[] },
 ): DeclaredUseFetch<Routes>
 ```
 

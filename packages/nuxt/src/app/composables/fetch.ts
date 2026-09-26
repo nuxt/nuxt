@@ -562,7 +562,7 @@ export interface CreateUseFetch {
 
 /**
  * A factory function to create a custom `useFetch` composable with pre-defined default options.
- * @since 4.2.0
+ * @since 4.4.0
  */
 export const createUseFetch: CreateUseFetch = /* @__PURE__ */ defineKeyedFunctionFactory<CreateUseFetch>({
   name: 'createUseFetch',

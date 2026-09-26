@@ -168,7 +168,10 @@ type AsyncDataOptions<ResT, DataT = ResT> = {
   timeout?: number
   enabled?: MaybeRefOrGetter<boolean>
   serialize?: boolean
+  middleware?: AsyncDataMiddleware<ResT>[]
 }
+
+type AsyncDataMiddleware<ResT> = (next: () => Promise<ResT>, ctx: { signal: AbortSignal }) => Promise<ResT>
 
 type AsyncDataRequestContext = {
   /** The reason for this data request */
@@ -220,6 +223,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
 | `dedupe` :badge[v3.9]{color="info" size="xs" class="align-middle"}        | `'cancel' \| 'defer'`                       | `'cancel'` | Policy when triggering an execution more than once at a time.                                                                                                                                                                                                                        |
 | `enabled` :badge[v4.5]{color="info" size="xs" class="align-middle"}       | `boolean`                                   | `true`     | Barrier that gates whether the `handler` may run. While `false`, every execution is blocked (initial fetch, `execute`/`refresh`, and watch triggers), and switching `true` → `false` cancels any in-flight request without clearing `data`. Re-enabling does not refetch on its own. |
 | `serialize` :badge[v4.6]{color="info" size="xs" class="align-middle"}     | `boolean`                                   | `true`     | Whether to store resolved data in the Nuxt payload (`__NUXT_DATA__`). When `false`, server-fetched data is kept out of the payload and the client will refetch after hydration if a component renders it. Pair with [lazy hydration](/docs/guide/best-practices/performance#lazy-hydration) to avoid hydration mismatches and unnecessary client fetches. |
+| `middleware` :badge[v4.6]{color="info" size="xs" class="align-middle"}    | `AsyncDataMiddleware[]`                     | -          | Functions wrapping the execution of the `handler`. Each receives `next`, which runs the rest of the chain and resolves to the data, and the handler context (`{ signal }`). The first entry is the outermost wrapper. Call `next()` to continue or throw to abort. |
 
 ::note
 All options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -255,6 +259,7 @@ The following options **must be consistent** across all calls with the same key:
 - `pick` array
 - `getCachedData` function
 - `default` value
+- `middleware` array
 
 The following options **can differ** without triggering warnings:
 - `server`
