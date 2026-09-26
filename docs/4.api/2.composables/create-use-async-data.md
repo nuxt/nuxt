@@ -1,7 +1,7 @@
 ---
 title: 'createUseAsyncData'
 description: A factory function to create a custom useAsyncData composable with pre-defined default options.
-minimalVersion: "4.2"
+minimalVersion: "4.4"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -44,7 +44,7 @@ function createUseAsyncData (
 ): typeof useAsyncData
 
 function createUseAsyncData (
-  options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions> & { addons?: UseAsyncDataAddon[] },
+  options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions>,
 ): typeof useAsyncData
 ```
 
