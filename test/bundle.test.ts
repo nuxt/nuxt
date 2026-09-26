@@ -85,7 +85,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "devalue",
         "h3+rou3+srvx",
         "hookable",
-        "ofetch",
         "scule",
         "ufo",
         "vue",
@@ -247,7 +246,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
 // we strip packages that are small enough rolldown might inline them
 // depending on humidity or the time of day
-const MERGE_BOUNDARY_PACKAGES = new Set(['unctx'])
+const MERGE_BOUNDARY_PACKAGES = new Set(['ofetch', 'unctx'])
 
 function getVendorPackages (files: string[]) {
   return files
