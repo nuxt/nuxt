@@ -633,11 +633,11 @@ describe('components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
   })
 
-  it('types preloadComponents/prefetchComponents against global component names', () => {
-    expectTypeOf(preloadComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
-    expectTypeOf(prefetchComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
-    // @ts-expect-error not a global component
-    void preloadComponents('WithTypes')
+  it('suggests global component names to preloadComponents/prefetchComponents', () => {
+    type GlobalComponentName = 'GlobalComponent' | 'LazyGlobalComponent' | (string & {})
+    expectTypeOf(preloadComponents).parameter(0).toEqualTypeOf<GlobalComponentName | Array<GlobalComponentName>>()
+    expectTypeOf(prefetchComponents).parameter(0).toEqualTypeOf<GlobalComponentName | Array<GlobalComponentName>>()
+    void preloadComponents('RegisteredInAPlugin')
   })
 
   it('types NuxtIsland name against island component names', () => {
