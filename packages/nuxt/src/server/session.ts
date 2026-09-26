@@ -10,14 +10,14 @@ import { deriveSecret } from './secret'
 /**
  * The part of the event the session helpers use.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export type SessionEvent = Pick<RequestEvent, 'req' | 'res'>
 
-/** @since 5.0.0 */
+/** @since 4.6.0 */
 export type SessionData = Record<string, unknown>
 
-/** @since 5.0.0 */
+/** @since 4.6.0 */
 export interface Session<T extends SessionData = SessionData> {
   /** Generated when the session is created; stable across updates. */
   id: string
@@ -27,11 +27,11 @@ export interface Session<T extends SessionData = SessionData> {
 /**
  * 32 characters or more, or 32 bytes or more.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export type SessionPassword = string | Uint8Array
 
-/** @since 5.0.0 */
+/** @since 4.6.0 */
 export interface SessionConfig {
   /**
    * The secret to seal with. Defaults to one derived from `appSecret` for the
@@ -49,7 +49,7 @@ export interface SessionConfig {
 /**
  * A session with the operations that write it back, as {@link useSession} returns it.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export interface SessionManager<T extends SessionData = SessionData> {
   readonly id: string
@@ -58,7 +58,7 @@ export interface SessionManager<T extends SessionData = SessionData> {
   clear: () => Promise<SessionManager<T>>
 }
 
-/** @since 5.0.0 */
+/** @since 4.6.0 */
 export type SessionUpdate<T extends SessionData = SessionData> = Partial<T> | ((data: T) => Partial<T> | undefined)
 
 const DEFAULT_NAME = 'nuxt-session'
@@ -72,6 +72,13 @@ interface SessionEntry {
 }
 
 const sessionCache = new WeakMap<object, Map<string, SessionEntry>>()
+
+/** Tags a sealed payload as a Nuxt session, so values sealed by other libraries with the same password are rejected. */
+const PAYLOAD_VERSION = 1
+
+interface SealedSession<T extends SessionData> extends Session<T> {
+  nuxt: typeof PAYLOAD_VERSION
+}
 
 /**
  * The session for the request, with the operations that write it back.
@@ -88,7 +95,9 @@ const sessionCache = new WeakMap<object, Map<string, SessionEntry>>()
  * })
  * ```
  *
- * @since 5.0.0
+ * @remarks The sealed cookie format may change in a minor release; existing sessions are read in the old format and resealed in the new one on their next write.
+ *
+ * @since 4.6.0
  */
 export async function useSession<T extends SessionData = SessionData> (event: SessionEvent, config: SessionConfig = {}): Promise<SessionManager<T>> {
   await getSession<T>(event, config)
@@ -120,7 +129,7 @@ export async function useSession<T extends SessionData = SessionData> (event: Se
  * sealed into the response when there is no cookie or it cannot be unsealed.
  * Unsealed once per request.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export function getSession<T extends SessionData = SessionData> (event: SessionEvent, config: SessionConfig = {}): Promise<Session<T>> {
   const name = config.name ?? DEFAULT_NAME
@@ -149,7 +158,7 @@ async function loadSession<T extends SessionData> (event: SessionEvent, config: 
 /**
  * Merge data into the session and reseal it.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export async function updateSession<T extends SessionData = SessionData> (event: SessionEvent, config: SessionConfig = {}, update?: SessionUpdate<T>): Promise<Session<T>> {
   const session = await getSession<T>(event, config)
@@ -164,7 +173,7 @@ export async function updateSession<T extends SessionData = SessionData> (event:
 /**
  * Discard the session and expire its cookie.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export function clearSession (event: SessionEvent, config: SessionConfig = {}): Promise<void> {
   const name = config.name ?? DEFAULT_NAME
@@ -187,15 +196,16 @@ async function unsealSession<T extends SessionData> (sealed: string, config: Ses
   const password = await resolvePassword(config)
   const unsealed = await unseal(sealed, password, {
     ttl: config.maxAge ? config.maxAge * 1000 : 0,
-  }).catch(() => undefined) as Session<T> | undefined
-  if (unsealed && typeof unsealed.id === 'string' && unsealed.data) {
-    return unsealed
+  }).catch(() => undefined) as SealedSession<T> | undefined
+  if (unsealed?.nuxt === PAYLOAD_VERSION && typeof unsealed.id === 'string' && unsealed.data) {
+    return { id: unsealed.id, data: unsealed.data }
   }
 }
 
 async function sealSession (event: SessionEvent, config: SessionConfig, session: Session<any>): Promise<void> {
   const name = config.name ?? DEFAULT_NAME
-  const sealed = await seal(session, await resolvePassword(config), {
+  const payload: SealedSession<any> = { nuxt: PAYLOAD_VERSION, id: session.id, data: session.data }
+  const sealed = await seal(payload, await resolvePassword(config), {
     ttl: config.maxAge ? config.maxAge * 1000 : 0,
   })
 

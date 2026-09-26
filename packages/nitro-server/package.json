@@ -43,7 +43,6 @@
     "@ampproject/remapping": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "catalog:app-runtime",
-    "@vue/shared": "catalog:app-runtime",
     "consola": "catalog:app-runtime",
     "defu": "catalog:app-runtime",
     "destr": "catalog:nitro-runtime",

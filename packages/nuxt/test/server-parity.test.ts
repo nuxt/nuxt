@@ -1,9 +1,10 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import { resolveModuleExportNames } from '@nuxt/kit/internal'
 import type { CookieSerializeOptions } from 'cookie-es'
-import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
+import type { AppRouteRules, RuntimeConfig, SharedAppConfig } from 'nuxt/schema'
 
 import type {
+  CorsOptions,
   EventHandler,
   NuxtErrorDetails,
   NuxtErrorJSON,
@@ -18,6 +19,7 @@ import type {
   SessionEvent,
   SessionManager,
   SessionUpdate,
+  ValidateResult,
 } from '../src/server/index'
 
 /**
@@ -36,8 +38,6 @@ interface FourXSurface {
   getRequestHeader: (event: RequestEvent, name: string) => string | undefined
   getRequestHeaders: (event: RequestEvent) => Record<string, string>
   setResponseStatus: (event: RequestEvent, status: number, statusText?: string) => void
-  setResponseHeader: (event: RequestEvent, name: string, value: string) => void
-  setResponseHeaders: (event: RequestEvent, headers: Record<string, string>) => void
   getQuery: <T extends Record<string, unknown> = Record<string, string | string[]>>(event: RequestEvent) => T
   readBody: <T = unknown>(event: RequestEvent) => Promise<T>
   getCookie: (event: RequestEvent, name: string) => string | undefined
@@ -51,6 +51,13 @@ interface FourXSurface {
   updateSession: <T extends SessionData>(event: SessionEvent, config?: SessionConfig, update?: SessionUpdate<T>) => Promise<Session<T>>
   clearSession: (event: SessionEvent, config?: SessionConfig) => Promise<void>
   deriveSecret: (purpose: string) => Promise<string>
+  getRouterParams: (event: RequestEvent, options?: { decode?: boolean }) => Record<string, string | undefined>
+  getRouterParam: (event: RequestEvent, name: string, options?: { decode?: boolean }) => string | undefined
+  getRequestIP: (event: RequestEvent, options?: { xForwardedFor?: boolean }) => string | undefined
+  getValidatedQuery: <Output>(event: RequestEvent, validate: (data: Record<string, string | string[]>) => ValidateResult<Output>) => Promise<Output>
+  readValidatedBody: <Output>(event: RequestEvent, validate: (data: unknown) => ValidateResult<Output>) => Promise<Output>
+  handleCors: (event: RequestEvent, options?: CorsOptions) => Response | false
+  useAppConfig: (event?: RequestEvent) => SharedAppConfig
 }
 
 /** Value exports 4.x has. */
@@ -63,8 +70,6 @@ const FOURX_VALUE_EXPORTS = [
   'getRequestHeader',
   'getRequestHeaders',
   'setResponseStatus',
-  'setResponseHeader',
-  'setResponseHeaders',
   'getQuery',
   'readBody',
   'getCookie',
@@ -78,6 +83,13 @@ const FOURX_VALUE_EXPORTS = [
   'updateSession',
   'clearSession',
   'deriveSecret',
+  'getRouterParams',
+  'getRouterParam',
+  'getRequestIP',
+  'getValidatedQuery',
+  'readValidatedBody',
+  'handleCors',
+  'useAppConfig',
 ]
 
 /** Value exports only this branch has. */

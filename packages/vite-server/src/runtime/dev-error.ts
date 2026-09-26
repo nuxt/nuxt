@@ -1,8 +1,8 @@
 import process from 'node:process'
 import type { ViteDevServer } from 'vite'
 import type { ErrorReport } from 'my-bad'
-import { ERROR_CHANNEL_ENV, createErrorReport, publishErrorReport, renderErrorAnsi, renderErrorPage, requestIdOf, serializeErrorCause, setErrorChannelForwarding, useErrorChannel, withErrorOverlay } from 'nuxt/internal/dev-error'
-import type { SerializedErrorCause } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, createDevErrorReporter, createErrorReport, serializeErrorCause, setErrorChannelForwarding, useErrorChannel } from 'nuxt/internal/dev-error'
+import type { DevErrorObserveOptions, DevErrorReport, SerializedErrorCause } from 'nuxt/internal/dev-error'
 import { isLoopbackAddress } from 'nuxt/internal/dev/peer'
 
 export { clearErrorReport } from 'nuxt/internal/dev-error'
@@ -31,13 +31,6 @@ export function setDevErrorContext (next: DevErrorContext): void {
   useErrorChannel().catch(() => {})
 }
 
-const THROWN_VALUE = Symbol.for('nuxt:dev:thrown')
-
-/** Whether the app threw a bare value, which was given its status on the way here. */
-export function isThrownValue (error: unknown): boolean {
-  return typeof error === 'object' && error !== null && THROWN_VALUE in error
-}
-
 /** Whether `pathname` is a live channel route this process serves. */
 export function isErrorChannelRequest (pathname: string): boolean {
   if (!context || forwarding()) {
@@ -62,23 +55,22 @@ export async function fetchErrorChannel (request: Request & { ip?: string }): Pr
  * Build a report from the stack as raised, publish it, then rewrite the stack in place so
  * every later consumer sees source positions.
  */
-export async function observeError (error: unknown, request: Request, options: { expected?: boolean } = {}): Promise<ErrorReport | undefined> {
+export function observeDevError (error: unknown, request?: Request, observe?: DevErrorObserveOptions): Promise<DevErrorReport | undefined> {
   if (!context) {
-    return undefined
+    return Promise.resolve(undefined)
   }
-  const report = options.expected ? undefined : await buildReport(error).catch(() => undefined)
-  fixStacktraces(error, context.server)
-  if (report) {
-    const url = new URL(request.url)
-    await publishErrorReport(report, { method: request.method, url, headers: request.headers }).catch(() => {})
-    // a dev server that owns the channel prints the reports it is sent
-    if (!forwarding()) {
-      const rendered = await renderErrorAnsi(report, { cwd: context.cwd }).catch(() => undefined)
-      console.log(`[request error] [${request.method}] ${url.pathname}${url.search}\n\n${rendered ?? String((error as Error)?.stack || error)}`)
-    }
-  }
-  return report
+  return reporter(error, request, observe)
 }
+
+const reporter = createDevErrorReporter<Request>({
+  get cwd () {
+    return context!.cwd
+  },
+  channel: channelPath,
+  createReport: error => buildReport(error),
+  requestInfo: request => ({ method: request.method, url: new URL(request.url), headers: request.headers }),
+  mapStack: error => fixStacktraces(error, context!.server),
+})
 
 async function buildReport (error: unknown): Promise<ErrorReport> {
   const { viteLoader } = await import('my-bad/vite')
@@ -119,16 +111,6 @@ function fixStacktraces (error: unknown, server: ViteDevServer, seen = new Set<u
 /** The error's `cause` chain, as the error page receives it in the payload. */
 export function errorCause (error: unknown): SerializedErrorCause | undefined {
   return serializeErrorCause((error as { cause?: unknown } | undefined)?.cause)
-}
-
-/** Add the report to the error page the app rendered, a click away. */
-export function overlayErrorReport (html: string, report: ErrorReport, request?: Request): Promise<string> {
-  return withErrorOverlay(html, report, { cwd: context!.cwd, channel: channelPath(), requestId: requestIdOf(request), startMinimized: true })
-}
-
-/** Render the report as a standalone page, for when the app cannot render its error page. */
-export function renderReportPage (report: ErrorReport, request?: Request): Promise<string> {
-  return renderErrorPage(report, { cwd: context!.cwd, channel: channelPath(), requestId: requestIdOf(request) })
 }
 
 function channelPath (): string {

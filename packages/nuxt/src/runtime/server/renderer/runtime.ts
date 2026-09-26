@@ -1,4 +1,5 @@
 import type { NuxtRequestEvent, RequestEvent } from '@nuxt/schema'
+import type { DevErrorObserveOptions, DevErrorReport } from '../dev-error'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, NuxtSSRContext } from '#app/types'
 
 /**
@@ -77,6 +78,17 @@ export interface NuxtRendererOptions {
   renderIsland?: (event: RendererEvent) => Promise<Response> | Response
   /** Dev-only: called once a route has rendered without an error. */
   onRenderSuccess?: (event: RendererEvent) => void
+  /**
+   * Report an error to the server runtime, so it logs it and fires whatever error hooks it owns.
+   * Called once per error the renderer catches.
+   */
+  captureError?: (error: unknown, context: { event: RendererEvent, tags?: string[] }) => void | Promise<void>
+  /**
+   * Dev-only: publish an error to the builder's live error channel and print it, returning the
+   * report to show as an overlay or as a page. Resolves to `undefined` for an expected error,
+   * or when the builder has no channel open.
+   */
+  onDevError?: (error: unknown, event: RendererEvent, options?: DevErrorObserveOptions) => Promise<DevErrorReport | undefined>
   /** Prerender-only capabilities, absent from a runtime build. */
   prerender?: {
     payloadCache: PayloadCache

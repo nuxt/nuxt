@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Route } from 'playwright-core'
 import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
@@ -9,6 +10,7 @@ import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } fr
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
+import { sessionConfig } from './fixtures/basic/server/utils/session'
 import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
@@ -121,6 +123,30 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     })
   })
 
+  it('should read router params, a validated query, the client IP and the app config with `nuxt/server`', async () => {
+    const invalid = await fetch('/api/portable-extras/a')
+    expect(invalid.status).toBe(400)
+
+    const response = await fetch('/api/portable-extras/a%20b%2Fc?page=2', { headers: { 'x-forwarded-for': '203.0.113.1, 10.0.0.1' } })
+    expect(await response.json()).toMatchObject({
+      page: 2,
+      appConfig: true,
+      params: { id: 'a%20b%2Fc' },
+      decoded: 'a b%2Fc',
+      forwardedIP: '203.0.113.1',
+    })
+  })
+
+  it('should answer a CORS preflight with `nuxt/server`', async () => {
+    const response = await fetch('/api/portable-extras/a', {
+      method: 'OPTIONS',
+      headers: { 'origin': 'https://nuxt.com', 'access-control-request-method': 'PUT' },
+    })
+    expect(response.status).toBe(204)
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://nuxt.com')
+    expect(response.headers.get('access-control-allow-methods')).toBe('*')
+  })
+
   it('should map an error created with `nuxt/server` to its status', async () => {
     const response = await fetch('/api/portable?fail=yes', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
 
@@ -137,6 +163,53 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
         "thisIs": "serverAutoImported",
       }
     `)
+  })
+})
+
+describe.skipIf(!runsOnceInMatrix)('server sessions', () => {
+  const sessionCookie = (response: Response) => response.headers.getSetCookie().find(cookie => cookie.startsWith('nuxt-session='))?.split(';')[0]
+
+  it('should seal a new session into a cookie', async () => {
+    const response = await fetch('/api/session/read')
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({})
+    expect(sessionCookie(response)).toMatch(/^nuxt-session=Fe26\.2\*/)
+  })
+
+  it('should read updated data back from the cookie', async () => {
+    const updated = await fetch('/api/session/update?user=daniel')
+    const cookie = sessionCookie(updated)!
+    expect(cookie).toMatch(/^nuxt-session=Fe26\.2\*/)
+
+    const read = await fetch('/api/session/read', { headers: { cookie } })
+    expect(await read.json()).toEqual({ user: 'daniel' })
+  })
+
+  it('should empty the session when it is cleared', async () => {
+    const cookie = sessionCookie(await fetch('/api/session/update?user=daniel'))!
+    const cleared = await fetch('/api/session/clear', { headers: { cookie } })
+    expect(cleared.headers.getSetCookie().find(c => c.startsWith('nuxt-session='))).toMatch(/^nuxt-session=;.*Max-Age=0/)
+
+    const read = await fetch('/api/session/read', { headers: { cookie: sessionCookie(cleared)! } })
+    expect(await read.json()).toEqual({})
+  })
+
+  it('should start an empty session for a tampered cookie', async () => {
+    const cookie = sessionCookie(await fetch('/api/session/update?user=daniel'))!
+    const tampered = cookie.slice(0, -4) + (cookie.endsWith('AAAA') ? 'BBBB' : 'AAAA')
+
+    const read = await fetch('/api/session/read', { headers: { cookie: tampered } })
+    expect(read.status).toBe(200)
+    expect(await read.json()).toEqual({})
+  })
+
+  it('should start an empty session for a value sealed by h3 with the same password', async () => {
+    const { defaults, seal } = await import(pathToFileURL(createRequire(fileURLToPath(new URL('../packages/nuxt/package.json', import.meta.url))).resolve('iron-webcrypto')).href) as { defaults: object, seal: (value: unknown, password: string, options: object) => Promise<string> }
+    const sealed = await seal({ id: crypto.randomUUID(), createdAt: Date.now(), data: { role: 'admin' } }, sessionConfig.password as string, defaults)
+
+    const read = await fetch('/api/session/read', { headers: { cookie: `nuxt-session=${sealed}` } })
+    expect(read.status).toBe(200)
+    expect(await read.json()).toEqual({})
   })
 })
 

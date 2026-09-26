@@ -276,15 +276,11 @@ export const schemaNodeTemplate: NuxtTemplate = {
   dependsOn: [],
   getContents: ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
-    // The `node` environment resolves as `nodenext` from v5, which will not retry extensions for
+    // The `node` environment resolves as `nodenext`, which will not retry extensions for
     // a path that does not name a file, so a module's own entry has to be named in full.
-    const keepExtension = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
     const moduleExtensions = [...nuxt.options.extensions, '.mjs', '.cjs']
     const getImportName = (name: string) => {
       const specifier = name[0] === '.' ? './' + join(relativeRoot, name) : name
-      if (!keepExtension) {
-        return specifier.replace(IMPORT_NAME_RE, '')
-      }
       if (IMPORT_NAME_RE.test(specifier) || (name[0] !== '.' && !isAbsolute(name))) {
         return specifier
       }
@@ -816,7 +812,7 @@ export const routeRulesTemplate: NuxtTemplate = {
   // from configuration
   dependsOn: (_change, { nuxt }) => !!nuxt.options.experimental.inlineRouteRules,
   getContents ({ nuxt }) {
-    const { routes, baseURL } = resolveRouteRulesRoutes(nuxt)
+    const { routes } = resolveRouteRulesRoutes(nuxt)
     if (!routes.length) {
       return `export default () => ({})`
     }
@@ -827,7 +823,7 @@ export const routeRulesTemplate: NuxtTemplate = {
     // matcher and pick at runtime.
     const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
     const warned = warnedKeyCollisions.get(nuxt) ?? warnedKeyCollisions.set(nuxt, new Set()).get(nuxt)!
-    const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routes, baseURL, fold, (existing, route, key) => {
+    const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routes, '', fold, (existing, route, key) => {
       // Only the matcher that will actually be used at runtime should report collisions.
       if (fold === caseSensitiveRouteRules || warned.has(key)) { return }
       warned.add(key)

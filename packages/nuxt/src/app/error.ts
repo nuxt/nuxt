@@ -6,7 +6,7 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error' as const
 /**
  * Details accepted when constructing a {@link NuxtError}.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export type NuxtErrorDetails<DataT = unknown> = Partial<Omit<NuxtError<DataT>, 'headers' | 'name' | 'toJSON'>> & {
   /** @deprecated use `status` */

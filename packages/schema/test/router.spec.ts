@@ -9,23 +9,13 @@ vi.mock('node:fs', () => ({
 }))
 
 describe('router.options.sensitive default', () => {
-  it('defaults to `true` when compatibilityVersion is 5', async () => {
-    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 5 } })
+  it('defaults to `true`', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, {})
     expect((result as unknown as NuxtOptions).router.options.sensitive).toBe(true)
   })
 
-  it('defaults to `false` when compatibilityVersion is 4', async () => {
-    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 } })
+  it('respects an explicit `false` value', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, { router: { options: { sensitive: false } } })
     expect((result as unknown as NuxtOptions).router.options.sensitive).toBe(false)
-  })
-
-  it('respects an explicit `false` value in v5', async () => {
-    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 5 }, router: { options: { sensitive: false } } })
-    expect((result as unknown as NuxtOptions).router.options.sensitive).toBe(false)
-  })
-
-  it('respects an explicit `true` value in v4', async () => {
-    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 }, router: { options: { sensitive: true } } })
-    expect((result as unknown as NuxtOptions).router.options.sensitive).toBe(true)
   })
 })

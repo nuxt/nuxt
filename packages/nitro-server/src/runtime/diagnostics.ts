@@ -50,5 +50,10 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Read the body from the `Response` passed to the Nitro v3 `response` hook instead, or opt the route out of streaming with the `streaming: false` route rule if the hook has to see the whole body.',
       docs: false,
     },
+    NUXT_E8012: {
+      why: (p: { helper: string }) => `\`${p.helper}\` from \`nuxt/server\` was called with an h3 event. The handler was defined with h3's \`defineEventHandler\` (auto-imported), which passes a different event.`,
+      fix: 'Import `defineEventHandler` from `nuxt/server` alongside the helpers. See `https://nuxt.com/docs/4.x/getting-started/upgrade#moving-to-nuxtserver`.',
+      docs: false,
+    },
   },
 })

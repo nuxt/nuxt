@@ -2,12 +2,13 @@ import { withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
 import type { H3Event } from 'nitro/h3'
 import { HTTPError } from 'nitro/h3'
-import type { ErrorReport } from 'my-bad'
+import { FastURL } from 'srvx'
+import type { DevErrorReport } from 'nuxt/internal/dev-error'
 import type { SerializedErrorCause } from '#app/types'
 import { serverFetch } from 'nitro'
 
-import type { SSRErrorInput } from '../utils/error'
-import { SSR_ERROR_PARAM, encodeSSRError, isJsonRequest } from '../utils/error'
+import type { SSRErrorInput } from 'nuxt/internal/renderer/error'
+import { SSR_ERROR_PARAM, appendVary, encodeSSRError, isJsonRequest } from 'nuxt/internal/renderer/error'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
 import { toLegacyError } from '../compat/error-shape'
@@ -22,32 +23,24 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
   // an inner failure has already been logged and published by the outer request
   const isRenderingError = !!(event as H3Event).context.nuxt?.['~rendering-error']
 
-  let report: ErrorReport | undefined
+  let devError: DevErrorReport | undefined
   let errorCause: SerializedErrorCause | undefined
   if (import.meta.dev) {
-    const errorChannel = await import('../utils/error-channel')
+    const errorChannel = await import('#internal/nuxt/error-channel')
     // a handled client error (a 404, a failed validation) is the app working as intended,
     // unless the app threw a bare value that was given a status on its way here
     const isExpected = !error.unhandled && HTTPError.isError(error) && (error.status || 500) < 500 && !(THROWN_VALUE in error)
-    report = isExpected ? undefined : await errorChannel.createErrorReport(error, event as H3Event).catch(() => undefined)
+    devError = await errorChannel.observeDevError(error, event as H3Event, {
+      expected: isExpected,
+      publish: !isRenderingError && !import.meta.test,
+      print: !isRenderingError && (error.unhandled ?? !HTTPError.isError(error)),
+    })
     errorCause = errorChannel.serializeErrorCause(error.cause)
-    if (report && !isRenderingError && !import.meta.test) {
-      await errorChannel.publishErrorReport(report, event as H3Event).catch(() => {})
-    }
-    // a dev server that owns the channel prints the reports it is sent
-    if (report && !isRenderingError && !errorChannel.shouldForwardReports() && (error.unhandled ?? !HTTPError.isError(error))) {
-      const rendered = await errorChannel.renderErrorAnsi(report).catch(() => undefined)
-      if (rendered) {
-        console.log(`[request error] [${event.req.method}] ${event.req.url}\n\n${rendered}`)
-      } else {
-        console.error(`[request error] [${event.req.method}] ${event.req.url}\n\n`, error)
-      }
-    }
   }
 
   // invoke default Nitro error handler (which will log appropriately if required)
   const stacks = import.meta.dev ? snapshotStacks(error) : undefined
-  const defaultRes = await defaultHandler(error, event, { json: true, silent: import.meta.dev && !!report })
+  const defaultRes = await defaultHandler(error, event, { json: true, silent: import.meta.dev && !!devError })
   // a cached module evaluation rethrows the same error, so it must still parse as a stack
   stacks?.restore()
 
@@ -58,7 +51,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
   if (import.meta.prerender && 'context' in event) {
     applyPrerenderHints(event as H3Event, headers)
   }
-  if (isJsonRequest(event) || (status === 404 && defaultRes.status === 302)) {
+  if (isJsonRequest(event.req as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
     const setCookies = new Set(headers.getSetCookie())
     const headerEntries = [
       new Headers(defaultRes.headers),
@@ -121,9 +114,8 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
 
     if (import.meta.dev && isRenderingError) {
       headers.set(ERROR_PAGE_HEADER, '1')
-    } else if (import.meta.dev && report) {
-      const { renderErrorPage } = await import('../utils/error-channel')
-      const body = await renderErrorPage(report, event as H3Event).catch(() => undefined)
+    } else if (import.meta.dev && devError) {
+      const body = await devError.page().catch(() => undefined)
       if (body) {
         return new Response(body, {
           headers,
@@ -133,7 +125,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
       }
     }
 
-    const { template } = await import('../templates/error-500')
+    const { template } = await import('nuxt/internal/renderer/error-template')
     if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
@@ -148,13 +140,12 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
 
   let html = await res.text()
 
-  if (import.meta.dev && !import.meta.test && report && typeof html === 'string') {
-    const { renderErrorPage, withErrorOverlay } = await import('../utils/error-channel')
+  if (import.meta.dev && !import.meta.test && devError && typeof html === 'string') {
     try {
       html = res.headers.has(ERROR_PAGE_HEADER)
         // the app's own error page did not render, so the report is the page
-        ? await renderErrorPage(report, event as H3Event)
-        : await withErrorOverlay(html, report, { startMinimized: true, event: event as H3Event })
+        ? await devError.page()
+        : await devError.overlay(html)
     } catch {
       // the overlay is a development aid; never let it replace the real error
     }
@@ -221,34 +212,4 @@ function mergeHeaders (target: Headers, overrides: Headers | [string, string][] 
     }
   }
   return target
-}
-
-/**
- * Add `value`'s tokens to the `vary` header, keeping any already present. `*`
- * absorbs everything else, since it means the response varies on all headers.
- */
-function appendVary (headers: Headers, value: string): void {
-  const incoming = parseVary(value)
-  if (!incoming.length) {
-    return
-  }
-  const existing = parseVary(headers.get('vary'))
-  if (existing.includes('*')) {
-    return
-  }
-  if (incoming.includes('*')) {
-    headers.set('vary', '*')
-    return
-  }
-  const merged = existing.slice()
-  for (const token of incoming) {
-    if (!merged.includes(token)) {
-      merged.push(token)
-    }
-  }
-  headers.set('vary', merged.join(', '))
-}
-
-function parseVary (value: string | null): string[] {
-  return value ? value.split(',').map(token => token.trim().toLowerCase()).filter(Boolean) : []
 }

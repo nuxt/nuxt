@@ -8,13 +8,14 @@ import {
   getQuery,
   getRequestHeader,
   getRequestHeaders,
+  getRequestIP,
   getRequestURL,
+  getRouterParam,
+  getRouterParams,
   isNuxtError,
   readBody,
   sendRedirect,
   setCookie,
-  setResponseHeader,
-  setResponseHeaders,
   setResponseStatus,
   toNuxtRequestEvent,
 } from '../src/server/index'
@@ -76,6 +77,48 @@ describe('request', () => {
   })
 })
 
+describe('router params', () => {
+  function routed (params?: Record<string, string | undefined>): RequestEvent {
+    const e = event(new Request('https://nuxt.com/'))
+    return { ...e, context: { params } }
+  }
+
+  it('reads the params the server builder matched, still encoded', () => {
+    const e = routed({ id: 'a%20b' })
+    expect(getRouterParams(e)).toEqual({ id: 'a%20b' })
+    expect(getRouterParam(e, 'id')).toBe('a%20b')
+    expect(getRouterParam(e, 'missing')).toBeUndefined()
+  })
+
+  it('reads no params for a route without any', () => {
+    expect(getRouterParams(routed())).toEqual({})
+  })
+
+  it('decodes on request, keeping encoded path separators', () => {
+    const e = routed({ path: 'a%20b%2Fc%5Cd%252Fe', name: 'caf%C3%A9' })
+    expect(getRouterParam(e, 'path', { decode: true })).toBe('a b%2Fc%5Cd%252Fe')
+    expect(getRouterParams(e, { decode: true })).toEqual({ path: 'a b%2Fc%5Cd%252Fe', name: 'café' })
+  })
+})
+
+describe('`getRequestIP`', () => {
+  const forwarded = () => new Request('https://nuxt.com/', { headers: { 'x-forwarded-for': ' 203.0.113.1 , 10.0.0.1' } })
+
+  it('trusts no forwarded header by default', () => {
+    expect(getRequestIP(event(forwarded()))).toBeUndefined()
+  })
+
+  it('reads the first forwarded hop when opted in', () => {
+    expect(getRequestIP(event(forwarded()), { xForwardedFor: true })).toBe('203.0.113.1')
+  })
+
+  it('reads the address the runtime reports for the connection', () => {
+    const request = Object.assign(forwarded(), { ip: '198.51.100.7' })
+    expect(getRequestIP(event(request))).toBe('198.51.100.7')
+    expect(getRequestIP(event(new Request('https://nuxt.com/')), { xForwardedFor: true })).toBeUndefined()
+  })
+})
+
 describe('`readBody`', () => {
   function post (body: BodyInit, contentType?: string) {
     return event(new Request('https://nuxt.com/', {
@@ -122,15 +165,6 @@ describe('response', () => {
 
     setResponseStatus(e, 418, 'Teapot')
     expect(response(e)).toMatchObject({ status: 418, statusText: 'Teapot' })
-  })
-
-  it('replaces a header already set', () => {
-    const e = event(new Request('https://nuxt.com/'))
-    setResponseHeader(e, 'x-custom', 'first')
-    setResponseHeader(e, 'x-custom', 'second')
-    setResponseHeaders(e, { 'x-other': 'value' })
-    expect(response(e).headers.get('x-custom')).toBe('second')
-    expect(response(e).headers.get('x-other')).toBe('value')
   })
 })
 
@@ -236,7 +270,7 @@ describe('the event the surface is typed against', () => {
     expectTypeOf<Parameters<typeof getRequestURL>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'> & { url?: URL }>()
     expectTypeOf<Parameters<typeof getCookie>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'>>()
     expectTypeOf<Parameters<typeof readBody>[0]>().toEqualTypeOf<Pick<RequestEvent, 'req'>>()
-    expectTypeOf<Parameters<typeof setResponseHeader>[0]>().toEqualTypeOf<Pick<RequestEvent, 'res'>>()
+    expectTypeOf<Parameters<typeof setResponseStatus>[0]>().toEqualTypeOf<Pick<RequestEvent, 'res'>>()
   })
 
   it('describes the request, its URL and the response, and nothing a runtime adds', () => {

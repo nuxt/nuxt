@@ -237,25 +237,11 @@ describe('loadNuxt', () => {
     await nuxt.close()
   })
 
-  it.each([
-    {
-      compatibilityVersion: 4,
-      expectedAlias: './legacy-base/probe-target',
-      expectedBaseUrl: 'legacy-base',
-    },
-    {
-      compatibilityVersion: 5,
-      expectedAlias: './probe-target',
-      expectedBaseUrl: undefined,
-    },
-  ] as const)('resolves nitro aliases with compatibilityVersion $compatibilityVersion', async ({ compatibilityVersion, expectedAlias, expectedBaseUrl }) => {
+  it('resolves nitro aliases without a baseUrl', async () => {
     const nuxt = await loadNuxt({
       cwd: repoRoot,
       ready: true,
       overrides: {
-        future: {
-          compatibilityVersion,
-        },
         nitro: {
           alias: {
             '#probe/base-url': './probe-target',
@@ -276,8 +262,8 @@ describe('loadNuxt', () => {
     const aliasPath = compilerOptions.paths?.['#probe/base-url']?.[0]
     await nuxt.close()
 
-    expect(aliasPath).toBe(expectedAlias)
-    expect(Reflect.get(compilerOptions, 'baseUrl')).toBe(expectedBaseUrl)
+    expect(aliasPath).toBe('./probe-target')
+    expect(Reflect.get(compilerOptions, 'baseUrl')).toBeUndefined()
   })
 
   it('applies global typescript.tsConfig compiler options to the server tsconfig', async () => {

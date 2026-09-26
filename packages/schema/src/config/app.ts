@@ -22,11 +22,7 @@ export default defineResolvers({
       },
     },
     optionsApi: {
-      async $resolve (val, get) {
-        if (typeof val === 'boolean') { return val }
-        // Options API support is compiled out of the client bundle from v5 onwards.
-        return (await get('future.compatibilityVersion')) < 5
-      },
+      $resolve: val => typeof val === 'boolean' ? val : false,
     },
 
     /**
@@ -195,15 +191,11 @@ export default defineResolvers({
   },
   unhead: {
     legacy: {
-      $resolve: async (val, get) => {
-        if (typeof val !== 'boolean') { return false }
-        if ((await get('future.compatibilityVersion') as number) >= 5) {
-          if (val) {
-            schemaDiagnostics.NUXT_B5013()
-          }
-          return false
+      $resolve: (val) => {
+        if (val === true) {
+          schemaDiagnostics.NUXT_B5013()
         }
-        return val
+        return false
       },
     },
     vite: {},
