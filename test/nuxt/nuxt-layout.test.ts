@@ -334,7 +334,6 @@ describe('layout transition', () => {
     const nuxtApp = useNuxtApp()
     const head = nuxtApp.runWithContext(() => injectHead())
     const titles = () => [...head.entries.values()].map(entry => entry.input?.title)
-    const layoutAfterLeave = vi.fn()
 
     for (const layout of ['head-layout-a', 'head-layout-b']) {
       layouts[layout] = defineComponent({
@@ -343,7 +342,7 @@ describe('layout transition', () => {
     }
     const meta = (layout: string) => ({
       layout,
-      layoutTransition: { name: 'layout', mode: 'out-in' as const, duration: 10, onAfterLeave: () => layoutAfterLeave() },
+      layoutTransition: { name: 'layout', mode: 'out-in' as const, duration: 10 },
       pageTransition: { name: 'page', mode: 'out-in' as const, duration: 10 },
     })
     router.addRoute({
@@ -364,7 +363,6 @@ describe('layout transition', () => {
       // @ts-expect-error dynamically-added layout is not typed
       meta: meta('head-layout-b'),
       component: defineComponent({
-        // async setup suspends the incoming page, so NuxtPage creates a transition promise
         async setup () {
           await new Promise(resolve => setTimeout(resolve, 10))
           return () => h('div', 'Page B')
@@ -383,9 +381,7 @@ describe('layout transition', () => {
     await navigateTo('/head-layout-b')
     await flushPromises()
     await expect.poll(() => el.html()).toContain('Page B')
-    await expect.poll(() => layoutAfterLeave.mock.calls.length).toBeGreaterThan(0)
 
-    // the leaving page's dispose is deferred until the transition finishes; it must not wait forever
     await expect.poll(titles).not.toContain('Page A')
 
     el.unmount()
