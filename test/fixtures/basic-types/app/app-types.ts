@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import type { Ref, SlotsType } from 'vue'
+import type { ComputedRef, Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
 import type { DynamicParam, Endpoint, HTTPMethod, TypedFetch, TypedFetchRequest } from 'nuxt/app'
@@ -1088,6 +1088,68 @@ describe('composables', () => {
     })
     const f2 = useFetchBoth<Foo>('/api/foo')
     expectTypeOf(f2.data.value).toEqualTypeOf<{ count: number }>()
+  })
+
+  it('types addon options and extensions on created composables', () => {
+    const tenant = defineUseFetchAddon({
+      setup: (options: UseFetchAddonOptions<{ tenant?: string }>) => {
+        options.tenant ??= 'default'
+        return asyncData => ({ isSuccess: computed(() => asyncData.status.value === 'success') })
+      },
+      key: options => options.tenant,
+    })
+    const retries = defineUseFetchAddon({
+      setup: (options: UseFetchAddonOptions<{ retries?: number }>) => {
+        options.middleware.push(next => next())
+        return () => ({ attempts: ref(0) })
+      },
+    })
+
+    const useApi = createUseFetch({ addons: [tenant, retries] })
+    const r1 = useApi('/api/hello', { tenant: 'a', retries: 2 })
+    expectTypeOf(r1.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(r1.isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
+    expectTypeOf(r1.attempts).toEqualTypeOf<Ref<number>>()
+    // @ts-expect-error `tenant` is a string
+    useApi('/api/hello', { tenant: 1 })
+    // @ts-expect-error not an option any addon declares
+    useApi('/api/hello', { unknownOption: true })
+
+    const { isSuccess } = useApi('/api/hello')
+    expectTypeOf(isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
+    expectTypeOf(useApi('/api/hello').then(r => r.isSuccess)).toEqualTypeOf<Promise<ComputedRef<boolean>>>()
+
+    const useBare = createUseFetch({})
+    // @ts-expect-error `tenant` is not declared for this composable
+    useBare('/api/hello', { tenant: 'a' })
+    // @ts-expect-error nor is the extension present
+    void useBare('/api/hello').isSuccess
+
+    interface Pet { id: number, name: string }
+    interface PetStore {
+      '/pets': { [Endpoint]: { GET: { response: Pet[] } } }
+    }
+    const usePetStore = createUseFetch({ routes: {} as PetStore, addons: [tenant] })
+    const p1 = usePetStore('/pets', { tenant: 'a' })
+    expectTypeOf(p1.data).toEqualTypeOf<Ref<Pet[] | DefaultAsyncDataValue>>()
+    expectTypeOf(p1.isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
+    // @ts-expect-error `tenant` is a string
+    usePetStore('/pets', { tenant: 1 })
+    // @ts-expect-error no GET route matches '/pats'
+    usePetStore('/pats', { tenant: 'a' })
+
+    const polling = defineUseAsyncDataAddon({
+      setup: (options: UseAsyncDataAddonOptions<{ pollEvery?: number }>) => {
+        options.middleware.push(next => next())
+        return () => ({ polling: ref(Boolean(options.pollEvery)) })
+      },
+    })
+    const usePolled = createUseAsyncData({ addons: [polling] })
+    const a1 = usePolled('k', () => Promise.resolve(1), { pollEvery: 1000 })
+    expectTypeOf(a1.data.value).toEqualTypeOf<number | DefaultAsyncDataValue>()
+    expectTypeOf(a1.polling).toEqualTypeOf<Ref<boolean>>()
+    // @ts-expect-error `pollEvery` is a number
+    usePolled('k', () => Promise.resolve(1), { pollEvery: '1s' })
   })
 })
 
