@@ -25,7 +25,7 @@
   </div>
   <script>
     ;(() => {
-      if (!(window.history.state && window.history.state.back)) { return }
+      if (!(window.history.state && window.history.state.back) && !document.referrer.startsWith(window.location.origin + '/')) { return }
 
       const home = document.querySelector('[data-back-home]')
       const previous = document.querySelector('[data-back-previous]')

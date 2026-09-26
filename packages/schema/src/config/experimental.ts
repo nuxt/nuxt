@@ -194,6 +194,9 @@ export default defineResolvers({
     typedPages: {
       $resolve: val => typeof val === 'boolean' ? val : true,
     },
+    serverPathFallback: {
+      $resolve: val => typeof val === 'boolean' ? val : true,
+    },
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {
