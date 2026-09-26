@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -434,7 +434,7 @@ describe('resolveLayerPaths', async () => {
 })
 
 describe('writeTypes', () => {
-  const generatedFiles = ['tsconfig.json', 'tsconfig.app.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json']
+  const generatedFiles = ['tsconfig.app.json', 'tsconfig.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json', 'nuxt.d.ts', 'nuxt.node.d.ts', 'nuxt.shared.d.ts', 'nuxt.server.d.ts']
 
   async function withRelocatedBuildDir (fn: (typesDir: string, nuxt: Nuxt) => Promise<void>) {
     const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
@@ -465,10 +465,17 @@ describe('writeTypes', () => {
     })
   })
 
-  it('should write missing types when building into a relocated build directory', async () => {
+  it('should only write missing types when building into a relocated build directory', async () => {
     await withRelocatedBuildDir(async (typesDir, nuxt) => {
+      const [missing, ...existing] = generatedFiles
+      for (const file of existing) {
+        await writeFile(join(typesDir, file), '{}')
+      }
       await writeTypes(nuxt)
-      expect((await readdir(typesDir)).filter(file => file.startsWith('tsconfig')).sort()).toEqual([...generatedFiles].sort())
+      expect(await readFile(join(typesDir, missing!), 'utf8')).not.toBe('{}')
+      for (const file of existing) {
+        expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
+      }
     })
   })
 })

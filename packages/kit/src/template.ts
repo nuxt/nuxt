@@ -774,6 +774,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   }
 }
 
+/**
+ * Writes the generated `tsconfig` and declaration files to `typesDir`.
+ *
+ * When a production build uses a `buildDir` other than `typesDir`, existing files are left untouched.
+ */
 export async function writeTypes (nuxt: Nuxt): Promise<void> {
   const { tsConfig, nodeTsConfig, nodeDeclaration, declaration, legacyTsConfig, sharedDeclaration, sharedTsConfig, serverDeclaration, serverTsConfig } = await _generateTypes(nuxt)
 
@@ -794,24 +799,21 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
   // auto-import types it generates, so ours is only written where nothing else claims the name
   const writesServerTsConfig = nuxt.options._nitroMajor !== 2
 
-  // a build into another `buildDir` only fills in missing configurations in `typesDir`
-  if (!nuxt.options._prepare && !nuxt.options.dev && typesDir !== nuxt.options.buildDir) {
-    const tsConfigPaths = [appTsConfigPath, legacyTsConfigPath, nodeTsConfigPath, sharedTsConfigPath]
-    if (writesServerTsConfig) { tsConfigPaths.push(serverTsConfigPath) }
-    if (tsConfigPaths.every(path => existsSync(path))) { return }
-  }
+  const write = !nuxt.options._prepare && !nuxt.options.dev && typesDir !== nuxt.options.buildDir
+    ? writeIfMissing
+    : writeIfChanged
 
   await fsp.mkdir(typesDir, { recursive: true })
   await Promise.all([
-    writeIfChanged(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),
-    writeIfChanged(legacyTsConfigPath, JSON.stringify(legacyTsConfig, null, 2)),
-    writeIfChanged(nodeTsConfigPath, JSON.stringify(nodeTsConfig, null, 2)),
-    writeIfChanged(sharedTsConfigPath, JSON.stringify(sharedTsConfig, null, 2)),
-    writesServerTsConfig && writeIfChanged(serverTsConfigPath, JSON.stringify(serverTsConfig, null, 2)),
-    writeIfChanged(declarationPath, declaration),
-    writeIfChanged(nodeDeclarationPath, nodeDeclaration),
-    writeIfChanged(sharedDeclarationPath, sharedDeclaration),
-    writesServerTsConfig && writeIfChanged(serverDeclarationPath, serverDeclaration),
+    write(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),
+    write(legacyTsConfigPath, JSON.stringify(legacyTsConfig, null, 2)),
+    write(nodeTsConfigPath, JSON.stringify(nodeTsConfig, null, 2)),
+    write(sharedTsConfigPath, JSON.stringify(sharedTsConfig, null, 2)),
+    writesServerTsConfig && write(serverTsConfigPath, JSON.stringify(serverTsConfig, null, 2)),
+    write(declarationPath, declaration),
+    write(nodeDeclarationPath, nodeDeclaration),
+    write(sharedDeclarationPath, sharedDeclaration),
+    writesServerTsConfig && write(serverDeclarationPath, serverDeclaration),
   ])
 }
 
@@ -823,6 +825,11 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
 async function writeIfChanged (path: string, contents: string) {
   const existing = await fsp.readFile(path, 'utf8').catch(() => undefined)
   if (existing === contents) { return }
+  await fsp.writeFile(path, contents)
+}
+
+async function writeIfMissing (path: string, contents: string) {
+  if (existsSync(path)) { return }
   await fsp.writeFile(path, contents)
 }
 
