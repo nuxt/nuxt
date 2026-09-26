@@ -4,6 +4,8 @@ import { mountSuspended } from '@nuxt/test-utils/runtime'
 
 import { navigateTo } from '#app/composables/router'
 import { useAsyncData } from '#app/composables/asyncData'
+import { preloadComponents } from '#app/composables/preload'
+import { useNuxtApp } from '#app/nuxt'
 import { defineKeyedFunctionFactory } from '../../../packages/nuxt/src/compiler/runtime'
 
 describe('navigation diagnostics (dev)', () => {
@@ -102,5 +104,21 @@ describe('compiler macro diagnostics (dev)', () => {
     })
 
     expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[NUXT_E1007: \`createUseFetch\` is a compiler macro or compiler-hint helper and cannot be called at runtime. Its arguments are meant to be compiled away.]`)
+  })
+})
+
+describe('preload diagnostics (dev)', () => {
+  it('warns when preloading a component that is not globally registered', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const nuxtApp = useNuxtApp()
+    nuxtApp.vueApp.component('RegisteredGlobal', defineComponent({ setup: () => () => h('div') }))
+
+    await preloadComponents('RegisteredGlobal')
+    expect(warn).not.toHaveBeenCalled()
+
+    await preloadComponents(['RegisteredGlobal', 'NotRegistered'])
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[NUXT_E4023] `NotRegistered` is not a globally registered component'))
+
+    warn.mockReset()
   })
 })
