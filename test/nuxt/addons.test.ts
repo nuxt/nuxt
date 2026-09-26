@@ -4,7 +4,7 @@ import { defineEventHandler } from 'h3'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 import { computed, toValue } from 'vue'
 import { defineUseAsyncDataAddon, defineUseFetchAddon } from '#app/composables/addons'
-import type { UseAsyncDataAddonOptions, UseFetchAddonOptions } from '#app/composables/addons'
+import type { AsyncDataAddonInstance, UseAsyncDataAddonOptions, UseFetchAddonOptions } from '#app/composables/addons'
 import { createUseFetch as _createUseFetch } from '#app/composables/fetch'
 import { createUseAsyncData as _createUseAsyncData } from '#app/composables/asyncData'
 import type { AsyncDataExecuteOptions } from '#app/composables/asyncData'
@@ -159,24 +159,6 @@ describe('useFetch addons', () => {
     expect(getEntries()).toBe(base + 1)
   })
 
-  it('resolves addons from override-mode factory options', async () => {
-    const seen: boolean[] = []
-    const addon = defineUseFetchAddon({
-      setup: (options: UseFetchAddonOptions<{ flag?: boolean }>) => {
-        options.flag ??= false
-        options.middleware.push((next) => {
-          seen.push(toValue(options.flag)!)
-          return next()
-        })
-      },
-    })
-
-    const useOverrideFetch = createUseFetch(() => ({ addons: [addon] }))
-    await useOverrideFetch('/api/addons-test', { key: 'addons:override-mode', flag: true })
-
-    expect(seen).toEqual([true])
-  })
-
   it('deduplicates addons by reference', async () => {
     let setups = 0
     const addon = defineUseFetchAddon({ setup: () => { setups++ } })
@@ -185,6 +167,18 @@ describe('useFetch addons', () => {
     await useDedupedFetch('/api/addons-test', { key: 'addons:dedupe' })
 
     expect(setups).toBe(1)
+  })
+  it('does not mutate factory-provided hook arrays across calls', async () => {
+    const onRequest = [() => {}]
+    const addon = defineUseFetchAddon({
+      setup: (options) => { options.onRequest.push(() => {}) },
+    })
+
+    const useSharedFetch = createUseFetch({ onRequest, addons: [addon] })
+    await useSharedFetch('/api/addons-test', { key: 'addons:shared-hooks-a' })
+    await useSharedFetch('/api/addons-test', { key: 'addons:shared-hooks-b' })
+
+    expect(onRequest).toHaveLength(1)
   })
 })
 
@@ -229,7 +223,6 @@ describe('useAsyncData addons', () => {
       { immediate: false },
     )
 
-    // the overridden members survive destructuring from the promise-like return value
     const { execute, refresh } = result
 
     await execute()
@@ -239,7 +232,6 @@ describe('useAsyncData addons', () => {
     await expect(refresh()).rejects.toThrow('boom')
     expect(result.status.value).toBe('error')
 
-    // the awaited instance exposes the same overridden member
     const awaited = await result
     expect(awaited.execute).toBe(execute)
   })
@@ -260,5 +252,173 @@ describe('useAsyncData addons', () => {
     await result.refresh()
 
     expect(signals).toEqual([true, true])
+  })
+  it('does not mutate a factory-provided middleware array across calls', async () => {
+    const calls: string[] = []
+    const middleware = [(next: () => Promise<unknown>) => {
+      calls.push('factory')
+      return next()
+    }]
+    const addon = defineUseAsyncDataAddon({
+      setup: (options) => {
+        options.middleware.push((next) => {
+          calls.push('addon')
+          return next()
+        })
+      },
+    })
+
+    const useSharedAsyncData = createUseAsyncData({ middleware, addons: [addon] })
+    await useSharedAsyncData('addons:shared-mw-a', () => Promise.resolve(1))
+    await useSharedAsyncData('addons:shared-mw-b', () => Promise.resolve(1))
+
+    expect(middleware).toHaveLength(1)
+    expect(calls).toEqual(['factory', 'addon', 'factory', 'addon'])
+  })
+})
+
+describe('addon extensions and promise methods', () => {
+  it('does not merge `then`, `catch` or `finally` from an extension into the instance', async () => {
+    const addon = defineUseAsyncDataAddon({
+      setup: () => () => ({
+        then: (next: (...args: unknown[]) => Promise<unknown>, ...args: unknown[]) => next(...args),
+        marker: true,
+      }),
+    })
+
+    const useGuardedAsyncData = createUseAsyncData({ addons: [addon] })
+    const awaited = await useGuardedAsyncData('addons:no-thenable', () => Promise.resolve(1))
+
+    expect(awaited.data.value).toBe(1)
+    expect(awaited.marker).toBe(true)
+    expect('then' in awaited).toBe(false)
+  })
+})
+
+describe('addon extensions wrapping promise methods', () => {
+  const rejectOnError = (asyncData: AsyncDataAddonInstance) =>
+    (next: (...args: unknown[]) => Promise<unknown>, onFulfilled?: (value: unknown) => unknown, onRejected?: (reason: unknown) => unknown) =>
+      next(() => {
+        if (asyncData.error.value) { throw asyncData.error.value }
+        return asyncData
+      }).then(onFulfilled, onRejected)
+
+  it('applies a `then` wrapper to a plain `await` of the composable', async () => {
+    const addon = defineUseAsyncDataAddon({
+      setup: () => asyncData => ({ then: rejectOnError(asyncData) }),
+    })
+
+    const useThrowingAsyncData = createUseAsyncData({ addons: [addon] })
+
+    await expect((async () => {
+      await useThrowingAsyncData('addons:then-await', () => Promise.reject(new Error('boom')))
+    })()).rejects.toThrow('boom')
+  })
+
+  it('resolves `await` with the intact instance and does not merge the wrapper into it', async () => {
+    let captured: unknown
+    const addon = defineUseAsyncDataAddon({
+      setup: () => (asyncData) => {
+        captured = asyncData
+        return {
+          doubled: computed(() => Number(asyncData.data.value ?? 0) * 2),
+          then: rejectOnError(asyncData),
+        }
+      },
+    })
+
+    const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
+    const result = useWrappedAsyncData('addons:then-identity', () => Promise.resolve(21))
+    expect(result).toBeInstanceOf(Promise)
+    const awaited = await result
+
+    expect(awaited.data).toBe((captured as AsyncDataAddonInstance).data)
+    expect(awaited.data.value).toBe(21)
+    expect(awaited.doubled.value).toBe(42)
+    expect('then' in awaited).toBe(false)
+  })
+
+  it('applies a `catch` wrapper to explicit `.catch()` calls', async () => {
+    const seen: string[] = []
+    const addon = defineUseAsyncDataAddon({
+      setup: () => asyncData => ({
+        then: rejectOnError(asyncData),
+        catch: (next: (onRejected?: (reason: unknown) => unknown) => Promise<unknown>, onRejected?: (reason: unknown) => unknown) => {
+          seen.push('wrapper')
+          return next(onRejected)
+        },
+      }),
+    })
+
+    const useThrowingAsyncData = createUseAsyncData({ addons: [addon] })
+    const result = useThrowingAsyncData('addons:catch-wrap', () => Promise.reject(new Error('boom')))
+    await result.catch((error) => { seen.push((error as Error).message) })
+
+    expect(seen).toEqual(['wrapper', 'boom'])
+  })
+
+  it('applies a `finally` wrapper to explicit `.finally()` calls', async () => {
+    const seen: string[] = []
+    const addon = defineUseAsyncDataAddon({
+      setup: () => () => ({
+        finally: (next: (onFinally?: () => void) => Promise<unknown>, onFinally?: () => void) => {
+          seen.push('wrapper')
+          return next(onFinally)
+        },
+      }),
+    })
+
+    const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
+    const result = useWrappedAsyncData('addons:finally-wrap', () => Promise.resolve('ok'))
+    const awaited = await result.finally(() => { seen.push('finally') })
+
+    expect(seen).toEqual(['wrapper', 'finally'])
+    expect(awaited.data.value).toBe('ok')
+  })
+
+  it('composes `then` wrappers across addons (first addon outermost)', async () => {
+    const settled: string[] = []
+    const make = (name: string) => defineUseAsyncDataAddon({
+      setup: () => () => ({
+        then: (next: (...args: unknown[]) => Promise<unknown>, onFulfilled?: (value: unknown) => unknown, onRejected?: (reason: unknown) => unknown) =>
+          next((value: unknown) => {
+            settled.push(name)
+            return onFulfilled?.(value)
+          }, onRejected),
+      }),
+    })
+
+    const useComposedAsyncData = createUseAsyncData({ addons: [make('outer'), make('inner')] })
+    await useComposedAsyncData('addons:then-order', () => Promise.resolve('ok'))
+
+    expect(settled).toEqual(['inner', 'outer'])
+  })
+
+  it('does not cause an unhandled rejection when a rejecting wrapper is never awaited', async () => {
+    const addon = defineUseAsyncDataAddon({
+      setup: () => instance => ({ then: rejectOnError(instance) }),
+    })
+
+    const useThrowingAsyncData = createUseAsyncData({ addons: [addon] })
+    const { error } = useThrowingAsyncData('addons:then-unawaited', () => Promise.reject(new Error('boom')))
+
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(error.value).toBeTruthy()
+  })
+
+  it('supports promise-method wrappers via createUseFetch', async () => {
+    registerEndpoint('/api/addons-then-throw', defineEventHandler(() => {
+      throw new Error('fetch error')
+    }))
+
+    const addon = defineUseFetchAddon({
+      setup: () => asyncData => ({ then: rejectOnError(asyncData) }),
+    })
+
+    const useThrowingFetch = createUseFetch({ addons: [addon] })
+
+    await expect((async () => {
+      await useThrowingFetch('/api/addons-then-throw', { key: 'addons:fetch-then' })
+    })()).rejects.toThrow()
   })
 })

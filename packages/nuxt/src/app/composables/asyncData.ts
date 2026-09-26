@@ -12,8 +12,8 @@ import { onNuxtReady } from './ready'
 import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
 import { dataDiagnostics } from '../diagnostics/data'
-import { attachAddonExtensions, runAddonSetups } from './addons'
-import type { AsyncDataAddonSetup, MergedAddonsExtensions, MergedAddonsOptions, UseAsyncDataAddon } from './addons'
+import { applyUseAsyncDataAddons } from './addons'
+import type { MergedAddonsExtensions, MergedAddonsOptions, UseAsyncDataAddon } from './addons'
 
 import { neverHydratedSymbol } from './lazy-hydration'
 
@@ -120,10 +120,7 @@ interface BaseAsyncDataOptions<
    */
   serialize?: boolean
   /**
-   * AsyncData middleware wrapping the handler execution.
-   * Middleware is executed in the order of the array, with the first entry being the outermost wrapper.
-   *
-   * Call `next()` to continue the chain, or throw an error to abort.
+   * Functions wrapping the handler; the first entry is the outermost. Call `next()` to continue or throw to abort.
    */
   middleware?: AsyncDataMiddleware<NoInfer<ResT>>[]
 }
@@ -265,7 +262,7 @@ export interface CreateUseAsyncData {
   <FResT, FDataT = FResT, FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>, FDefaultT = undefined, const FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = []>(
     options?:
       | CreateUseAsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT, FAddons>
-      | ((callerOptions: AsyncDataOptions<unknown>) => CreateUseAsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT, FAddons>),
+      | ((callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>),
   ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 }
 
@@ -273,18 +270,27 @@ export interface CreateUseAsyncData {
  * A factory function to create a custom `useAsyncData` composable with pre-defined default options.
  * @since 4.4.0
  */
-export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory<CreateUseAsyncData>({
+export const createUseAsyncData: CreateUseAsyncData = /* @__PURE__ */ defineKeyedFunctionFactory<CreateUseAsyncData>({
   name: 'createUseAsyncData',
-  factory<
-    FResT,
-    FDataT = FResT,
-    FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
-    FDefaultT = undefined,
-    const FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = [],
-  >(options:
-    CreateUseAsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT, FAddons>
-    | ((callerOptions: AsyncDataOptions<unknown>) => CreateUseAsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT, FAddons>) = {},
-  ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>> {
+  factory: ((options: Record<string, any> | ((callerOptions: Record<string, any>) => Record<string, any>) = {}) => {
+    if (typeof options !== 'function' && options.addons?.length) {
+      return applyUseAsyncDataAddons(_createUseAsyncData as (options: Record<string, any>) => UseAsyncData, options)
+    }
+    return _createUseAsyncData(options as Parameters<typeof _createUseAsyncData>[0])
+  }) as CreateUseAsyncData,
+})
+
+/** @internal */
+export function _createUseAsyncData<
+  FResT,
+  FDataT = FResT,
+  FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+  FDefaultT = undefined,
+> (options:
+  Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>
+  | ((callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>) = {},
+): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT> {
+  {
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
      * See {@link https://nuxt.com/docs/4.x/api/composables/use-async-data}
@@ -394,7 +400,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       if (_isAutoKeyNeeded(args[0], args[1])) { args.unshift(autoKey) }
 
       // eslint-disable-next-line prefer-const
-      let [_key, _handler, opts = {}] = args as [MaybeRefOrGetter<string>, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT> & { _externalSetups?: AsyncDataAddonSetup<any>[] }]
+      let [_key, _handler, opts = {}] = args as [MaybeRefOrGetter<string>, AsyncDataHandler<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
       let keyChanging = false
       /** True if key is a Ref or getter; false for static string. When false, key watcher is skipped. */
       const isKeyReactive = isRef(_key) || typeof _key === 'function'
@@ -413,7 +419,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       // Setup nuxt instance payload
       const nuxtApp = useNuxtApp()
 
-      const { addons, ...factoryOptions } = shouldFactoryOptionsOverride ? options(opts as any) : options
+      const factoryOptions = shouldFactoryOptionsOverride ? options(opts as any) : options
       // assign factory defaults
       if (!shouldFactoryOptionsOverride) {
         for (const key in factoryOptions) {
@@ -444,18 +450,6 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         for (const key in factoryOptions) {
           if (factoryOptions[key as keyof typeof factoryOptions] === undefined) { continue }
           opts[key as keyof typeof opts] = factoryOptions[key as keyof typeof factoryOptions] as any
-        }
-      }
-
-      let setups = opts._externalSetups
-      if (addons?.length) {
-        const factorySetups = runAddonSetups(addons, opts).setups
-        if (factorySetups) {
-          if (setups) {
-            setups.push(...factorySetups)
-          } else {
-            setups = factorySetups
-          }
         }
       }
 
@@ -695,10 +689,6 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
         },
       }
 
-      if (setups?.length) {
-        attachAddonExtensions(setups, asyncReturn)
-      }
-
       // Allow directly awaiting on asyncData
       const asyncDataPromise = Promise.resolve(import.meta.client && opts.lazy ? undefined : nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
       Object.assign(asyncDataPromise, asyncReturn)
@@ -711,13 +701,13 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
     }
 
-    return useAsyncData as unknown as UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
-  },
-})
+    return useAsyncData as unknown as UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
+  }
+}
 
-export const useAsyncData: UseAsyncData = (createUseAsyncData as unknown as { __nuxt_factory: typeof createUseAsyncData }).__nuxt_factory()
+export const useAsyncData: UseAsyncData = _createUseAsyncData()
 
-export const useLazyAsyncData: UseAsyncData = (createUseAsyncData as unknown as { __nuxt_factory: typeof createUseAsyncData }).__nuxt_factory({
+export const useLazyAsyncData: UseAsyncData = _createUseAsyncData({
   lazy: true,
   // @ts-expect-error private property
   _functionName: 'useLazyAsyncData',
@@ -745,7 +735,8 @@ function writableComputedRef<T> (getter: () => Ref<T>, shallow = false): Ref<T> 
   return forwardedRef
 }
 
-function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string> | (() => any), fetcher: () => any): boolean {
+/** @internal */
+export function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string> | (() => any), fetcher: () => any): boolean {
   // string key
   if (typeof keyOrFetcher === 'string') {
     return false
