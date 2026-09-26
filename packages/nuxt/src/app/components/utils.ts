@@ -6,6 +6,7 @@ import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
 import { renderDiagnostics } from '../diagnostics/render'
 import { MAX_VFOR_LENGTH } from './vfor'
+import type { NuxtApp } from '../nuxt'
 import { START_LOCATION } from '#build/pages'
 
 /**
@@ -217,4 +218,16 @@ export function _mergeTransitionProps (routeProps: TransitionProps[]): Transitio
     })
   }
   return defu(..._props as [TransitionProps, TransitionProps])
+}
+
+export function _startTransition (nuxtApp: NuxtApp): void {
+  nuxtApp['~transitionPromise'] ||= new Promise((resolve) => {
+    nuxtApp['~transitionFinish'] = resolve
+  })
+}
+
+export function _finishTransition (nuxtApp: NuxtApp): void {
+  nuxtApp['~transitionFinish']?.()
+  delete nuxtApp['~transitionFinish']
+  delete nuxtApp['~transitionPromise']
 }
