@@ -36,8 +36,10 @@ describe('contributed request event type', () => {
 
 describe('contributed configuration types', () => {
   it('resolves the config keys Nuxt declares to this builder\'s own types', () => {
-    expectTypeOf<NuxtOptions['nitro']>().toEqualTypeOf<NitroConfig>()
-    expectTypeOf<NuxtConfig['nitro']>().toEqualTypeOf<NitroConfig | undefined>()
+    expectTypeOf<NuxtOptions['nitro']>().toExtend<NitroConfig>()
+    expectTypeOf<NonNullable<NuxtConfig['nitro']>>().toExtend<NitroConfig>()
+    expectTypeOf<NuxtOptions['nitro']['preset']>().toEqualTypeOf<NitroConfig['preset']>()
+    expectTypeOf<NonNullable<NuxtOptions['nitro']['prerender']>['concurrency']>().toEqualTypeOf<NonNullable<NitroConfig['prerender']>['concurrency']>()
     expectTypeOf<NuxtOptions['routeRules']>().toEqualTypeOf<Record<string, NitroRouteConfig> | undefined>()
     expectTypeOf<NuxtOptions['tracingChannel']>().toEqualTypeOf<boolean | ({ nuxt?: boolean } & { srvx?: boolean, h3?: boolean, unstorage?: boolean })>()
   })

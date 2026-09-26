@@ -2,6 +2,7 @@ import process from 'node:process'
 import destr from 'destr'
 import { snakeCase } from 'scule'
 import { klona } from 'klona'
+import type { NitroConfig } from '@nuxt/schema'
 
 import { defu } from 'defu'
 import { useNuxt } from './context.ts'
@@ -14,7 +15,7 @@ import { tryUseNitro } from './nitro.ts'
  */
 export function useRuntimeConfig (): Record<string, any> {
   const nuxt = useNuxt()
-  return applyEnv(klona(nuxt.options.nitro.runtimeConfig!), {
+  return applyEnv(klona((nuxt.options.nitro as NitroConfig).runtimeConfig!), {
     prefix: 'NITRO_',
     altPrefix: 'NUXT_',
     envExpansion: nuxt.options.nitro.experimental?.envExpansion ?? !!process.env.NITRO_ENV_EXPANSION,
@@ -26,7 +27,8 @@ export function useRuntimeConfig (): Record<string, any> {
  */
 export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): void | Promise<void> {
   const nuxt = useNuxt()
-  Object.assign(nuxt.options.nitro.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nuxt.options.nitro.runtimeConfig))
+  const nitroConfig: NitroConfig = nuxt.options.nitro
+  Object.assign(nitroConfig.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nitroConfig.runtimeConfig))
 
   return tryUseNitro()?.updateConfig({ runtimeConfig: runtimeConfig as any })
 }
