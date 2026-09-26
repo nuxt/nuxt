@@ -15,7 +15,7 @@ import { dataDiagnostics } from '../diagnostics/data'
 
 import { neverHydratedSymbol } from './lazy-hydration'
 
-import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -23,15 +23,17 @@ export type _Transform<Input = any, Output = any> = (input: Input) => Output | P
 
 export type AsyncDataHandler<ResT> = (nuxtApp: NuxtApp, options: { signal: AbortSignal }) => Promise<ResT>
 
-export type PickFrom<T, K extends Array<string>> = T extends Array<any>
-  ? T
-  : T extends Record<string, any>
-    ? keyof T extends K[number]
-      ? T // Exact same keys as the target, skip Pick
-      : K[number] extends never
-        ? T
-        : Pick<T, K[number]>
-    : T
+export type PickFrom<T, K extends Array<string>> = KeysOf<T> extends K
+  ? T // Nothing to pick; short-circuit so a generic `T` stays resolvable
+  : T extends Array<any>
+    ? T
+    : T extends Record<string, any>
+      ? keyof T extends K[number]
+        ? T // Exact same keys as the target, skip Pick
+        : K[number] extends never
+          ? T
+          : Pick<T, K[number]>
+      : T
 
 export type KeysOf<T> = Array<
   T extends T // Include all keys of union types, not just common keys
@@ -464,10 +466,19 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
 
       const fetchOnServer = opts.server !== false && nuxtApp.payload.serverRendered
 
+      // vapor components have no vdom instance, but their setup still runs within a
+      // dedicated effect scope (distinct from the nuxt app's own scope, which plugins
+      // run in) where vue lifecycle hooks can register
+      const isWithinVaporComponent = () => {
+        if (!vapor || getCurrentInstance()) { return false }
+        const scope = getCurrentScope()
+        return !!scope && scope !== nuxtApp._scope
+      }
+
       // Server side
       if (import.meta.server && fetchOnServer && opts.immediate) {
         const promise = initialFetch()
-        if (getCurrentInstance()) {
+        if (getCurrentInstance() || isWithinVaporComponent()) {
           onServerPrefetch(() => promise)
         } else {
           nuxtApp.hook('app:created', async () => { await promise })
@@ -478,13 +489,14 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       if (import.meta.client) {
         // Setup hook callbacks once per instance
         const instance = getCurrentInstance()
+        const inComponentSetup = !!instance || isWithinVaporComponent()
 
         // @ts-expect-error - instance.sp is an internal vue property
         if (instance && fetchOnServer && opts.immediate && !instance.sp) {
           // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
           instance.sp = []
         }
-        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
+        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!inComponentSetup || instance?.isMounted)) {
           dataDiagnostics.NUXT_E3003()
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {
@@ -497,18 +509,24 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
           onUnmounted(() => cbs.splice(0, cbs.length))
         }
 
-        const isWithinClientOnly = instance && (instance._nuxtClientOnly || inject(clientOnlySymbol, false))
+        const isWithinClientOnly = inComponentSetup && (instance?._nuxtClientOnly || inject(clientOnlySymbol, false))
 
-        if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || asyncData.data.value !== undefined)) {
+        const hasServerData = key.value in nuxtApp.payload.data
+
+        if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || (asyncData.data.value !== undefined && (hasServerData || asyncData._initialCachedData !== undefined)))) {
           // 1. Hydration (server: true): no fetch
           if (pendingWhenIdle) {
             asyncData.pending.value = false
           }
           asyncData.status.value = asyncData.error.value ? 'error' : 'success'
-        } else if (instance && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || opts.lazy) && opts.immediate) {
+        } else if (inComponentSetup && ((!isWithinClientOnly && nuxtApp.payload.serverRendered && nuxtApp.isHydrating && (!fetchOnServer || hasServerData)) || opts.lazy) && opts.immediate) {
           // 2. Initial load (server: false): fetch on mounted
           // 3. Initial load or navigation (lazy: true): fetch on mounted
-          instance._nuxtOnBeforeMountCbs.push(initialFetch)
+          if (instance) {
+            instance._nuxtOnBeforeMountCbs.push(initialFetch)
+          } else {
+            onBeforeMount(() => { initialFetch() })
+          }
         } else if (opts.immediate && asyncData.status.value !== 'success') {
           // 4. Navigation (lazy: false) - or plugin usage: await fetch
           initialFetch()
@@ -610,7 +628,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       }
 
       const asyncReturn: _AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)> = {
-        data: writableComputedRef(() => nuxtApp._asyncData[key.value]?.data as Ref<ResT>),
+        data: writableComputedRef(() => nuxtApp._asyncData[key.value]?.data as Ref<ResT>, !opts.deep),
         pending: writableComputedRef(() => nuxtApp._asyncData[key.value]?.pending as Ref<boolean>),
         status: writableComputedRef(() => nuxtApp._asyncData[key.value]?.status as Ref<AsyncDataRequestStatus>),
         error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
@@ -636,7 +654,7 @@ export const createUseAsyncData: CreateUseAsyncData = defineKeyedFunctionFactory
       }
 
       // Allow directly awaiting on asyncData
-      const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
+      const asyncDataPromise = Promise.resolve(import.meta.client && opts.lazy ? undefined : nuxtApp._asyncDataPromises[key.value]).then(() => asyncReturn) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
       Object.assign(asyncDataPromise, asyncReturn)
       // Allow destructuring without losing promise methods
       Object.defineProperties(asyncDataPromise, {
@@ -659,8 +677,8 @@ export const useLazyAsyncData: UseAsyncData = (createUseAsyncData as unknown as 
   _functionName: 'useLazyAsyncData',
 })
 
-function writableComputedRef<T> (getter: () => Ref<T>): Ref<T> {
-  return computed({
+function writableComputedRef<T> (getter: () => Ref<T>, shallow = false): Ref<T> {
+  const forwardedRef = computed({
     get () {
       return getter()?.value as T
     },
@@ -671,6 +689,14 @@ function writableComputedRef<T> (getter: () => Ref<T>): Ref<T> {
       }
     },
   }) as unknown as Ref<T>
+
+  if (shallow) {
+    // Give the forwarding ref the same reactivity depth as the ref it forwards to, so
+    // `isShallow()` reports correctly and `triggerRef()` on it forces watchers to re-run.
+    (forwardedRef as Ref<T> & { __v_isShallow?: boolean }).__v_isShallow = true
+  }
+
+  return forwardedRef
 }
 
 function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string> | (() => any), fetcher: () => any): boolean {

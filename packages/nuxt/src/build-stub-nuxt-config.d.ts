@@ -26,7 +26,6 @@ export {
   anyValue as componentIslands,
   anyValue as cookieStore,
   anyValue as crawlLinks,
-  anyValue as devLogs,
   anyValue as devPagesDir,
   anyValue as devRootDir,
   anyValue as fetchDefaults,
@@ -48,5 +47,6 @@ export {
   anyValue as stripNeverHydratedData,
   anyValue as tracingChannelNuxt,
   anyValue as useStateDefaults,
+  anyValue as vapor,
   anyValue as vueAppRootContainer,
 }

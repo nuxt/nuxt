@@ -1,5 +1,10 @@
 /**
  * h3 compatibility layer for Nuxt runtime code.
+ *
+ * @deprecated Removed in Nuxt 5. Import the portable server surface from `nuxt/server`,
+ * which is not tied to an h3 or Nitro major. For the helpers `nuxt/server` does not cover,
+ * import from `nitro/h3` directly and accept that the code is pinned to the h3 major the
+ * configured server builder ships.
  */
 
 // export named re-exports to help rolldown statically link consumers

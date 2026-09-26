@@ -1,5 +1,6 @@
-import { realpathSync } from 'node:fs'
+import { readFileSync, realpathSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
+import { dirname, join } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { directoryToURL } from './esm.ts'
 import { ensureDependencyInstalled } from '../dependency.ts'
@@ -11,32 +12,124 @@ type JitiModule = typeof import('jiti')
 // raises once it is running. Only the former are worth retrying through jiti.
 const LOADER_ERROR_CODES = new Set([
   'ERR_MODULE_NOT_FOUND',
+  'ERR_IMPORT_ATTRIBUTE_MISSING',
   'ERR_UNKNOWN_FILE_EXTENSION',
   'ERR_UNSUPPORTED_DIR_IMPORT',
   'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING',
   'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX',
   'ERR_REQUIRE_ESM',
+  'ERR_PACKAGE_IMPORT_NOT_DEFINED',
+  'ERR_PACKAGE_PATH_NOT_EXPORTED',
 ])
+
+// Anchored so an identifier ending in one of these (`myrequire`) cannot match. Only the prefix is
+// fixed, as the tail varies by node version and by binding.
+const CJS_GLOBAL_ERROR_RE = /^(__dirname|__filename|require|module|exports) is not defined\b/
 
 /**
  * Whether a failed `import()` failed because the runtime would not load the file, rather than
  * because the file threw once it was running.
  *
+ * A resolution failure anywhere in the imported file's static graph counts, not just one for the
+ * file itself.
+ *
  * @param error the error the failed `import()` rejected with
- * @param target the URL that was imported, used to tell an unresolved import of `target` itself
- * apart from one the file made after it had started running
  */
-export function isLoaderError (error: unknown, target?: string): boolean {
-  const { code, url } = (error ?? {}) as { code?: unknown, url?: unknown }
-  if (typeof code !== 'string' || !LOADER_ERROR_CODES.has(code)) {
+export function isLoaderError (error: unknown): boolean {
+  const { code } = (error ?? {}) as { code?: unknown }
+  return typeof code === 'string' && LOADER_ERROR_CODES.has(code)
+}
+
+/**
+ * The CJS global a failed `import()` reached for, or `undefined` if it failed for another reason.
+ * Unlike {@link isLoaderError} the file was loaded and threw on its own, but jiti supplies these
+ * globals so a retry is still worthwhile.
+ *
+ * Only covers the error raised while the module is evaluated: a `require()` inside a function
+ * called later throws long after the import settled.
+ *
+ * @param error the error the failed `import()` rejected with
+ */
+export function getMissingCjsGlobal (error: unknown): string | undefined {
+  const { name, message } = (error ?? {}) as { name?: unknown, message?: unknown }
+  if (name !== 'ReferenceError' || typeof message !== 'string') {
+    return undefined
+  }
+  return CJS_GLOBAL_ERROR_RE.exec(message)?.[1]
+}
+
+const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'] as const
+const declaredJitiCache = new Map<string, boolean>()
+const nuxtJitiCache = new Map<string, boolean>()
+const reportedFallbacks = new Set<string>()
+
+/**
+ * Whether to tell the user that `filePath` was loaded through jiti rather than by the runtime, and
+ * record that they have been told.
+ *
+ * Returns `true` at most once per file, so a dev server reloading a config does not repeat itself.
+ * Silent only where jiti is not something the project could lose.
+ *
+ * @param filePath the file that had to be loaded through jiti
+ * @param rootDir project root, where the search for a declared `jiti` starts
+ * @param compatibilityVersion resolved `future.compatibilityVersion`
+ */
+export function shouldReportJitiFallbackOnce (filePath: string, rootDir: string, compatibilityVersion: number): boolean {
+  if (reportedFallbacks.has(filePath) || jitiIsGuaranteed(rootDir, compatibilityVersion)) {
     return false
   }
-  // node sets `url` only when `target` itself could not be found; when a specifier inside the file
-  // could not be resolved it is left unset, and the file has already run
-  if (code === 'ERR_MODULE_NOT_FOUND' && target) {
-    return url === target
-  }
+  reportedFallbacks.add(filePath)
   return true
+}
+
+function jitiIsGuaranteed (rootDir: string, compatibilityVersion: number): boolean {
+  if (declaresJiti(rootDir)) {
+    return true
+  }
+  // Nuxt 4 depends on jiti, so a project on its defaults cannot lose it. Asking for the v5 defaults
+  // is asking for the Nuxt that will not.
+  return compatibilityVersion < 5 && nuxtDependsOnJiti(rootDir)
+}
+
+function readDependencies (path: string): Record<string, Record<string, string> | undefined> | undefined {
+  try {
+    return JSON.parse(readFileSync(path, 'utf-8'))
+  } catch {
+    // an unreadable or missing `package.json` says nothing either way
+    return undefined
+  }
+}
+
+// Walks to the filesystem root, so that a monorepo declaring `jiti` once for every package in the
+// workspace counts as having opted in
+function declaresJiti (dir: string): boolean {
+  let declared = declaredJitiCache.get(dir)
+  if (declared === undefined) {
+    declared = false
+    for (let current = dir, parent = dirname(dir); ; current = parent, parent = dirname(current)) {
+      const pkg = readDependencies(join(current, 'package.json'))
+      if (DEPENDENCY_FIELDS.some(field => !!pkg?.[field]?.jiti)) {
+        declared = true
+        break
+      }
+      if (parent === current) {
+        break
+      }
+    }
+    declaredJitiCache.set(dir, declared)
+  }
+  return declared
+}
+
+function nuxtDependsOnJiti (dir: string): boolean {
+  let depends = nuxtJitiCache.get(dir)
+  if (depends === undefined) {
+    const from = directoryToURL(dir)
+    const path = resolveModulePath('nuxt/package.json', { from, try: true }) ?? resolveModulePath('nuxt-nightly/package.json', { from, try: true })
+    depends = !!path && !!readDependencies(path)?.dependencies?.jiti
+    nuxtJitiCache.set(dir, depends)
+  }
+  return depends
 }
 
 export interface LoadJitiOptions {

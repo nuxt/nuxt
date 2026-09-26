@@ -5,5 +5,8 @@
  */
 export const DEFAULT_JSX_FILE_EXTENSIONS: string[] = ['.tsx', '.jsx']
 
-/** Default extensions for JavaScript/TypeScript files, in order of resolution priority. */
+/**
+ * Default extensions for JavaScript/TypeScript files, in order of resolution priority.
+ * @internal
+ */
 export const DEFAULT_JS_FILE_EXTENSIONS: string[] = ['.mjs', '.js', '.cjs', '.mts', '.ts', '.cts', ...DEFAULT_JSX_FILE_EXTENSIONS]

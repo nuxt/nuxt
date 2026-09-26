@@ -20,7 +20,7 @@
 <script setup>
 import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { _notifyCrawlerError, isNuxtError, showError, useError } from '../composables/error'
+import { _notifyCrawlerError, createErrorFromThrown, isNuxtError, showError, useError } from '../composables/error'
 import { isBotUserAgent } from '../utils'
 import { appDiagnostics } from '../diagnostics/core'
 import { useRoute, useRouter } from '../composables/router'
@@ -75,7 +75,7 @@ onErrorCaptured((err, target, info) => {
     return false
   }
   if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
-    const p = nuxtApp.runWithContext(() => showError(err))
+    const p = nuxtApp.runWithContext(() => showError(import.meta.dev ? createErrorFromThrown(err, { instance: target, route: nuxtApp._route }) : err))
     onServerPrefetch(() => p)
     invokeAppErrorHandler(err, target, info)
     return false // suppress error from breaking render

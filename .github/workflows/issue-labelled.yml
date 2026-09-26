@@ -56,14 +56,6 @@ jobs:
               console.error(`Error converting label to issue type: ${error}`);
             }
 
-  transfer-spam:
-    if: github.event.label.name == 'spam'
-    uses: nuxt/.github/.github/workflows/triage-spam-transfer.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github; pinning to SHA blocks central propagation
-    with:
-      spam-repo-id: ${{ vars.TRIAGE_SPAM_REPO_ID }}
-    permissions:
-      issues: write
-
   needs-reproduction:
     uses: nuxt/.github/.github/workflows/needs-reproduction.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github; pinning to SHA blocks central propagation
     permissions:

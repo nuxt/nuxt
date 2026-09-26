@@ -5,7 +5,7 @@ import { createBuilder, createServer, mergeConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, useNitro } from '@nuxt/kit'
+import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, tryUseNitro } from '@nuxt/kit'
 import type { PreRenderedAsset } from 'rolldown'
 import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
@@ -16,6 +16,7 @@ import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
+import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
 import { sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
@@ -44,6 +45,7 @@ import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 import { PerfPlugin } from './plugins/perf.ts'
 import { isNavigationRequest, warmupViteServer } from './utils/warmup.ts'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -51,13 +53,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.options.modulesDir.push(distDir)
 
-  // Register Nitro plugin to fix SSR error stacktraces in dev mode
-  if (nuxt.options.dev) {
-    const nitro = useNitro()
-    nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(resolve(distDir, 'fix-stacktrace'))}`
-    nitro.options.plugins.push('#internal/nitro/ssr-stacktrace')
+  const nitro = nuxt.options.dev ? tryUseNitro() : undefined
+  if (nitro) {
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
-    nitro.options.virtual['#internal/nuxt/vite-node-runner.mjs'] = () => `export { default } from ${JSON.stringify(resolve(distDir, 'vite-node-runner'))}`
   }
 
   let allowDirs = [
@@ -121,7 +119,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
       },
       // `nitro/vite`'s plugin runs the build process, including prerendering + asset copying
-      ...nuxt.options.experimental.nitroViteEnvironment
+      ...!useServerBuild(nuxt).buildsSeparately
         ? {}
         : {
             builder: {
@@ -274,8 +272,24 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await nuxt.callHook('vite:extend', ctx)
 
   const callbacks = optimizerCallbacks.get(nuxt)
-  config.customLogger = createViteLogger(config, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep })
+  const devErrors = nuxt.options.dev ? createDevErrorReporter(nuxt, { print: rendered => logger.log(rendered) }) : undefined
+  config.customLogger = createViteLogger(config, {
+    onNewDeps: callbacks?.onNewDeps,
+    onStaleDep: callbacks?.onStaleDep,
+    onTransformError: devErrors
+      ? (error) => {
+          if (!isTransformError(error)) {
+            return false
+          }
+          devErrors.report(error).catch(() => {})
+          return true
+        }
+      : undefined,
+  })
   config.configFile = false
+  if (devErrors) {
+    config.plugins!.push(DevErrorsPlugin(devErrors))
+  }
 
   for (const environment of ['client', 'ssr']) {
     const environments = { [environment]: config.environments![environment]! }
@@ -300,7 +314,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       return server.close()
     })
     await server.environments.ssr.pluginContainer.buildStart({})
-    startClientWarmup(nuxt, server, entry)
+    startWarmup(nuxt, server, entry, serverEntry)
   }, 'Vite dev server built')
   nuxt._perf?.endPhase('vite:dev-server')
 }
@@ -312,7 +326,7 @@ function warmupEntries (nuxt: Nuxt, entry: string) {
   return nuxt.options.vite.warmupEntry === false ? [] : [entry]
 }
 
-function startClientWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string) {
+function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, serverEntry: string) {
   if (nuxt.options.test || nuxt.options.vite.warmupEntry === false) { return }
 
   let stop = false
@@ -333,19 +347,32 @@ function startClientWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: strin
 
   nuxt.hook('close', () => { stop = true })
 
-  const run = async () => {
+  // both crawls share one budget so speculative work cannot outlive it twice over
+  let deadline = Number.POSITIVE_INFINITY
+
+  const crawl = async (label: string, environment: vite.DevEnvironment, entries: string[]) => {
     try {
-      const { modules, visited, duration, stopped } = await warmupViteServer(server.environments.client as vite.DevEnvironment, [entry], {
+      const { modules, visited, duration, stopped } = await warmupViteServer(environment, entries, {
         root: server.config.root,
         base: server.config.base,
         maxModules: WARMUP_MAX_MODULES,
-        maxDuration: WARMUP_MAX_DURATION,
+        maxDuration: Math.max(0, deadline - performance.now()),
         shouldStop: () => stop,
         shouldPause: () => inFlight > 0,
       })
-      logger.debug(`Vite client warmed up ${modules} of ${visited} modules in ${Math.round(duration)}ms${stopped ? ' (abandoned)' : ''}`)
+      logger.debug(`Vite ${label} warmed up ${modules} of ${visited} modules in ${Math.round(duration)}ms${stopped ? ' (abandoned)' : ''}`)
     } catch (error) {
-      logger.debug('Vite client warmup failed with:', error)
+      logger.debug(`Vite ${label} warmup failed with:`, error)
+    }
+  }
+
+  const run = async () => {
+    deadline = performance.now() + WARMUP_MAX_DURATION
+    try {
+      // the first visitor waits on the document before the browser asks for any
+      // client module, so the server graph is warmed first
+      await crawl('server', server.environments.ssr as vite.DevEnvironment, [serverEntry])
+      await crawl('client', server.environments.client as vite.DevEnvironment, [entry])
     } finally {
       const index = server.middlewares.stack.indexOf(observer)
       if (index !== -1) {
@@ -355,10 +382,11 @@ function startClientWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: strin
   }
 
   // we hook to avoid blocking nitro's build, and do not await crawl so we don't block the dev server
-  if (nuxt.options.experimental.nitroViteEnvironment) {
-    nuxt.hooks.hookOnce('build:done', () => { void run() })
+  const nitro = !useServerBuild(nuxt).buildsSeparately ? undefined : tryUseNitro()
+  if (nitro) {
+    nitro.hooks.hookOnce('compiled', () => { void run() })
   } else {
-    useNitro().hooks.hookOnce('compiled', () => { void run() })
+    nuxt.hooks.hookOnce('build:done', () => { void run() })
   }
 }
 

@@ -293,9 +293,7 @@ describe('clearNuxtState', () => {
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
     clearNuxtState(key)
-    // In v5 (resetOnClear: true), clearNuxtState resets to init value by default
-    // In v4 (resetOnClear: false), clearNuxtState sets to undefined
-    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
+    expect(state.value).toBe('test')
   })
 
   it('expect state in payload for array of keys to be removed', () => {
@@ -306,13 +304,11 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState([key1, 'other'])
-    // In v5, resetOnClear resets to init value; in v4, it sets to undefined
-    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
-    expect(state1.value).toBe(cleared)
+    expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState([key1, key2])
-    expect(state1.value).toBe(cleared)
-    expect(state2.value).toBe(cleared)
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
   })
 
   it('expect state in payload for function to be removed', () => {
@@ -322,7 +318,7 @@ describe('clearNuxtState', () => {
     clearNuxtState(() => false)
     expect(state.value).toBe('test')
     clearNuxtState(k => k === key)
-    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
+    expect(state.value).toBe('test')
   })
 
   it('expect all states to be removed when no key is provided', () => {
@@ -331,9 +327,8 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState(undefined)
-    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
-    expect(state1.value).toBe(cleared)
-    expect(state2.value).toBe(cleared)
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
   })
 
   it('expect state in payload for single key to reset', () => {
@@ -360,6 +355,21 @@ describe('clearNuxtState', () => {
     clearNuxtState([key1, key2], { reset: true })
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
+  })
+
+  it('expect ref-initialised state to reset', () => {
+    const key = 'clearNuxtState-ref'
+    const state = useState(key, () => ref('test'))
+    state.value = 'test-2'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('test')
+  })
+
+  it('expect ref-initialised state to clear', () => {
+    const key = 'clearNuxtState-ref-2'
+    const state = useState(key, () => ref('test'))
+    clearNuxtState(key, { reset: false })
+    expect(state.value).toBeUndefined()
   })
 
   it('expect state in payload for function to reset', () => {
@@ -647,13 +657,8 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     const spaRules = getRouteRules({ path: '/Pre/spa/thing' })
     const redirectRules = getRouteRules({ path: '/PRE/test' })
 
-    if (process.env.PROJECT === 'nuxt-legacy') {
-      expect(spaRules).toMatchObject({ prerender: true, ssr: false })
-      expect(redirectRules).toMatchObject({ redirect: '/' })
-    } else {
-      expect(spaRules).not.toHaveProperty('prerender')
-      expect(redirectRules).not.toHaveProperty('redirect')
-    }
+    expect(spaRules).not.toHaveProperty('prerender')
+    expect(redirectRules).not.toHaveProperty('redirect')
   })
 })
 
@@ -774,9 +779,9 @@ describe('routing utilities: `navigateTo`', () => {
     return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
   }
 
-  it('matches routes with compatibility-version casing', () => {
+  it('matches routes case-sensitively', () => {
     router.addRoute({ name: 'case-sensitive-test', path: '/case-sensitive-test', component: defineComponent({}) })
-    expect(router.resolve('/Case-Sensitive-Test').name === 'case-sensitive-test').toBe(process.env.PROJECT === 'nuxt-legacy')
+    expect(router.resolve('/Case-Sensitive-Test').name).not.toBe('case-sensitive-test')
     router.removeRoute('case-sensitive-test')
   })
 
@@ -819,6 +824,37 @@ describe('routing utilities: `navigateTo`', () => {
       open.mockRestore()
     }
   })
+
+  it('navigateTo should default `open.target` to `_blank`', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    try {
+      navigateTo('https://example.com', { open: {} })
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+    } finally {
+      open.mockRestore()
+    }
+  })
+
+  it('navigateTo should respect app.baseURL when opening internal routes', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    const config = useRuntimeConfig()
+    const originalBaseURL = config.app.baseURL
+    config.app.baseURL = '/docs/'
+    try {
+      navigateTo('/guide', { open: { target: '_blank' } })
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+
+      navigateTo({ path: '/guide' }, { open: { target: '_blank' } })
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+
+      navigateTo('https://example.com', { open: { target: '_blank' } })
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+    } finally {
+      config.app.baseURL = originalBaseURL
+      open.mockRestore()
+    }
+  })
+
   it('reloadNuxtApp should disallow paths with data/script URLs', () => {
     const urls = [
       'javascript:alert("hi")',
@@ -933,9 +969,15 @@ describe('routing utilities: `encodeRoutePath`', () => {
     expect(encodeRoutePath('/café?q=foo#bar')).toBe(`/${encodeURIComponent('café')}?q=foo#bar`)
   })
 
-  it('should encode special characters in path segments', () => {
-    expect(encodeRoutePath('/a&b')).toBe(`/a${encodeURIComponent('&')}b`)
+  it('should leave sub-delimiters literal, as vue-router does', () => {
+    expect(encodeRoutePath('/a&b')).toBe('/a&b')
+    expect(encodeRoutePath('/a+b')).toBe('/a+b')
+    expect(encodeRoutePath('/a[b]')).toBe('/a[b]')
     expect(encodeRoutePath('/normal')).toBe('/normal')
+  })
+
+  it('should preserve encoded slashes', () => {
+    expect(encodeRoutePath('/a%2Fb')).toBe('/a%2Fb')
   })
 })
 
@@ -1208,6 +1250,83 @@ describe('useCookie', () => {
     expect(computedVal.value).toBe(0)
   })
 
+  it('should not re-read `document.cookie` for every call', async () => {
+    document.cookie = 'read-count-a=1'
+    document.cookie = 'read-count-b=2'
+
+    let target: any = document
+    let descriptor: PropertyDescriptor | undefined
+    while (target && !descriptor) {
+      descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
+      if (!descriptor) { target = Object.getPrototypeOf(target) }
+    }
+
+    let reads = 0
+    let writes = 0
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get () {
+        reads++
+        return descriptor!.get!.call(document)
+      },
+      set (value) {
+        writes++
+        descriptor!.set!.call(document, value)
+      },
+    })
+
+    try {
+      for (let i = 0; i < 10; i++) {
+        useCookie('read-count-a')
+        useCookie('read-count-b')
+        useCookie('read-count-absent-' + i)
+      }
+      expect(reads).toBe(1)
+      expect(writes).toBe(0)
+
+      for (let i = 0; i < 10; i++) {
+        useCookie('read-count-default', { default: () => 'value' })
+      }
+      expect(reads).toBe(1)
+      expect(writes).toBe(1)
+
+      useCookie('read-count-scoped', { default: () => 'value', domain: 'example.com' })
+      useCookie('read-count-a')
+      expect(reads).toBe(2)
+
+      await nextTick()
+      useCookie('read-count-a')
+      expect(reads).toBe(3)
+    } finally {
+      delete (document as any).cookie
+    }
+  })
+
+  it('should invalidate the cached cookie jar after a write', async () => {
+    const cookie = useCookie<string>('invalidate-me', { default: () => 'initial' })
+    expect(useCookie<string>('invalidate-me').value).toBe('initial')
+
+    cookie.value = 'updated'
+    await nextTick()
+    expect(useCookie<string>('invalidate-me').value).toBe('updated')
+  })
+
+  it('should not read a cookie excluded by `filter`', () => {
+    document.cookie = 'filtered-out=set'
+
+    let decodeCallCount = 0
+    const cookie = useCookie<string>('filtered-out', {
+      default: () => 'default',
+      filter: () => false,
+      decode (value) {
+        decodeCallCount++
+        return value
+      },
+    })
+    expect(cookie.value).toBe('default')
+    expect(decodeCallCount).toBe(0)
+  })
+
   it('cookie decode function should be invoked once', () => {
     // Pre-set cookies
     document.cookie = 'foo=Foo'
@@ -1237,7 +1356,7 @@ describe('useCookie', () => {
     })
     quxCookie.value.s3++
     expect(quxCookie.value.s3).toBe(0)
-    expect(quxCallCount).toBe(2)
+    expect(quxCallCount).toBe(0)
   })
 
   it('should not watch custom cookie refs when shallow', () => {

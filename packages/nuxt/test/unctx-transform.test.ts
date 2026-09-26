@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { UnctxTransformPlugin } from '../src/core/plugins/unctx.ts'
+import { matchesIdFilter } from './utils.ts'
 
 describe('unctx transform in nuxt', () => {
   it('should transform nuxt plugins', async () => {
@@ -63,5 +64,5 @@ function transform (code: string, id = 'app.vue') {
     },
   }
   const plugin = UnctxTransformPlugin({ sourcemap: false, transformerOptions }).raw({}, {} as any) as any
-  return plugin.transformInclude(id) ? Promise.resolve(plugin.transform.handler(code)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
+  return matchesIdFilter(plugin.transform.filter.id, id) ? Promise.resolve(plugin.transform.handler(code)).then((r: any) => r?.code.replace(/^ {6}/gm, '').trim()) : null
 }

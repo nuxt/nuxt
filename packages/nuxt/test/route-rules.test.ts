@@ -1,4 +1,4 @@
-import { pageDiagnostics } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { globRouteRulesFromPages, removePagesRules } from '../src/pages/route-rules.ts'

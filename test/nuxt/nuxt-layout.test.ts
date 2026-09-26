@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
-import { flushPromises } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { NuxtLayout, NuxtPage } from '#components'
 import layouts from '#build/layouts.mjs'
 import { useRoute } from '#app/composables/router'
@@ -215,6 +215,26 @@ describe('NuxtLayout', () => {
     expect.soft(nestedEl.find('h3').text()).toBe('Current route: /layout-2')
   })
 
+  it('should not block navigation when name is overridden to the current meta layout', async () => {
+    const override = ref<string | undefined>(undefined)
+    const overrideEl = await mountSuspended({
+      // @ts-expect-error dynamically-added layout is not typed
+      setup: () => () => h(NuxtLayout, { name: override.value }, { default: () => h(NuxtPage) }),
+    })
+
+    await navigateTo('/layout-1')
+    await flushPromises()
+    expect.soft(overrideEl.find('h3').text()).toBe('Current route: /layout-1')
+
+    override.value = 'layout-1'
+    await nextTick()
+
+    await navigateTo('/no-layout')
+    await flushPromises()
+    expect.soft(overrideEl.find('h1').text()).toBe(`'layout-1' layout`)
+    expect.soft(overrideEl.find('h3').text()).toBe('Current route: /no-layout')
+  })
+
   it.todo('should not change layout before child page resolves', async () => {
     await navigateTo('/layout-1')
     await flushPromises()
@@ -280,5 +300,94 @@ describe('layout switching', () => {
     router.removeRoute('layout-switch-start')
     router.removeRoute('layout-switch-end')
     delete layouts['layout-async']
+  })
+})
+
+describe('layout hydration', () => {
+  it('should release the hydration guard when unmounted before its suspense resolves', async () => {
+    const nuxtApp = useNuxtApp()
+    const done = vi.fn()
+    const deferHydration = vi.spyOn(nuxtApp, 'deferHydration').mockReturnValue(done)
+
+    layouts['layout-pending'] = defineAsyncComponent(() => new Promise(() => {}))
+
+    const el = nuxtApp.runWithContext(() => mount({
+      setup: () => () => h(NuxtLayout, { name: 'layout-pending' }),
+    }))
+    await flushPromises()
+
+    expect(done).not.toHaveBeenCalled()
+
+    el.unmount()
+    await flushPromises()
+
+    expect(done).toHaveBeenCalled()
+
+    deferHydration.mockRestore()
+    delete layouts['layout-pending']
+  })
+})
+
+describe('layout transition', () => {
+  it('should dispose head entries of the leaving page when switching layout to a suspended page', async () => {
+    const router = useRouter()
+    const nuxtApp = useNuxtApp()
+    const head = nuxtApp.runWithContext(() => injectHead())
+    const titles = () => [...head.entries.values()].map(entry => entry.input?.title)
+
+    for (const layout of ['head-layout-a', 'head-layout-b']) {
+      layouts[layout] = defineComponent({
+        setup: (_, ctx) => () => h('div', { class: layout }, ctx.slots.default?.()),
+      })
+    }
+    const meta = (layout: string) => ({
+      layout,
+      layoutTransition: { name: 'layout', mode: 'out-in' as const, duration: 10 },
+      pageTransition: { name: 'page', mode: 'out-in' as const, duration: 10 },
+    })
+    router.addRoute({
+      name: 'head-layout-a',
+      path: '/head-layout-a',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: meta('head-layout-a'),
+      component: defineComponent({
+        setup () {
+          useHead({ title: 'Page A' })
+          return () => h('div', 'Page A')
+        },
+      }),
+    })
+    router.addRoute({
+      name: 'head-layout-b',
+      path: '/head-layout-b',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: meta('head-layout-b'),
+      component: defineComponent({
+        async setup () {
+          await new Promise(resolve => setTimeout(resolve, 10))
+          return () => h('div', 'Page B')
+        },
+      }),
+    })
+
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    }, { global: { stubs: { transition: false } } })
+
+    await navigateTo('/head-layout-a')
+    await flushPromises()
+    await expect.poll(titles).toContain('Page A')
+
+    await navigateTo('/head-layout-b')
+    await flushPromises()
+    await expect.poll(() => el.html()).toContain('Page B')
+
+    await expect.poll(titles).not.toContain('Page A')
+
+    el.unmount()
+    router.removeRoute('head-layout-a')
+    router.removeRoute('head-layout-b')
+    delete layouts['head-layout-a']
+    delete layouts['head-layout-b']
   })
 })

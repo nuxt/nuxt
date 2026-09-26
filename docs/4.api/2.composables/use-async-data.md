@@ -11,7 +11,7 @@ links:
 Within your pages, components, and plugins you can use useAsyncData to get access to data that resolves asynchronously.
 
 ::note
-[`useAsyncData`](/docs/4.x/api/composables/use-async-data) is a composable meant to be called directly in the [Nuxt context](/docs/4.x/guide/going-further/nuxt-app#the-nuxt-context). It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client **without re-fetching the data on client side** when the page hydrates.
+[`useAsyncData`](/docs/api/composables/use-async-data) is a composable meant to be called directly in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context). It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client **without re-fetching the data on client side** when the page hydrates.
 ::
 
 ## Usage
@@ -25,8 +25,8 @@ const { data, status, pending, error, refresh, clear } = await useAsyncData(
 </script>
 ```
 
-::tip{to="/docs/4.x/guide/recipes/custom-usefetch#custom-usefetch-with-createusefetch"}
-Need a custom `useAsyncData` with pre-defined defaults? Use `createUseAsyncData` to create a fully typed custom composable. See the [custom useFetch recipe](/docs/4.x/guide/recipes/custom-usefetch) for details.
+::tip{to="/docs/guide/recipes/custom-usefetch#custom-usefetch-with-createusefetch"}
+Need a custom `useAsyncData` with pre-defined defaults? Use `createUseAsyncData` to create a fully typed custom composable. See the [custom useFetch recipe](/docs/guide/recipes/custom-usefetch) for details.
 ::
 
 ::note
@@ -134,10 +134,10 @@ The handler signal will be aborted when:
 - The `options.timeout` duration is exceeded
 
 ::warning
-[`useAsyncData`](/docs/4.x/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/4.x/api/composables/use-async-data).
+[`useAsyncData`](/docs/api/composables/use-async-data) is a reserved function name transformed by the compiler, so you should not name your own function [`useAsyncData`](/docs/api/composables/use-async-data).
 ::
 
-:read-more{to="/docs/4.x/getting-started/data-fetching#useasyncdata"}
+:read-more{to="/docs/getting-started/data-fetching#useasyncdata"}
 
 ## Type
 
@@ -194,14 +194,14 @@ interface AsyncDataExecuteOptions {
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 ```
 
-:read-more{to="/docs/4.x/getting-started/data-fetching"}
+:read-more{to="/docs/getting-started/data-fetching"}
 
 ## Parameters
 
 - `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of `useAsyncData` will be generated for you.
 - `handler`: an asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
 ::warning
-The `handler` function should be **side-effect free** to ensure predictable behavior during SSR and CSR hydration. If you need to trigger side effects, use the [`callOnce`](/docs/4.x/api/utils/call-once) utility to do so.
+The `handler` function should be **side-effect free** to ensure predictable behavior during SSR and CSR hydration. If you need to trigger side effects, use the [`callOnce`](/docs/api/utils/call-once) utility to do so.
 ::
 - `options` (object): Configuration for the asynchronous function call. All options can be a static value, a `ref`, or a computed value.
 
@@ -219,7 +219,7 @@ The `handler` function should be **side-effect free** to ensure predictable beha
 | `deep` :badge[v3.8]{color="info" size="xs" class="align-middle"}          | `boolean`                                   | `false`    | Return data in a deep ref object. Defaults to `false` for improved performance (shallow ref object).                                                                                                                                                                                 |
 | `dedupe` :badge[v3.9]{color="info" size="xs" class="align-middle"}        | `'cancel' \| 'defer'`                       | `'cancel'` | Policy when triggering an execution more than once at a time.                                                                                                                                                                                                                        |
 | `enabled` :badge[v4.5]{color="info" size="xs" class="align-middle"}       | `boolean`                                   | `true`     | Barrier that gates whether the `handler` may run. While `false`, every execution is blocked (initial fetch, `execute`/`refresh`, and watch triggers), and switching `true` → `false` cancels any in-flight request without clearing `data`. Re-enabling does not refetch on its own. |
-| `serialize` :badge[v4.6]{color="info" size="xs" class="align-middle"}     | `boolean`                                   | `true`     | Whether to store resolved data in the Nuxt payload (`__NUXT_DATA__`). When `false`, server-fetched data is kept out of the payload and the client will refetch after hydration if a component renders it. Pair with [lazy hydration](/docs/4.x/guide/best-practices/performance#lazy-hydration) to avoid hydration mismatches and unnecessary client fetches. |
+| `serialize` :badge[v4.6]{color="info" size="xs" class="align-middle"}     | `boolean`                                   | `true`     | Whether to store resolved data in the Nuxt payload (`__NUXT_DATA__`). When `false`, server-fetched data is kept out of the payload and the client will refetch after hydration if a component renders it. Pair with [lazy hydration](/docs/guide/best-practices/performance#lazy-hydration) to avoid hydration mismatches and unnecessary client fetches. |
 
 ::note
 All options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -238,7 +238,7 @@ This only caches data when `experimental.payloadExtraction` in `nuxt.config` is 
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
 ::
 
-::read-more{to="/docs/4.x/api/composables/use-lazy-async-data"}
+::read-more{to="/docs/api/composables/use-lazy-async-data"}
 You can use `useLazyAsyncData` to have the same behavior as `lazy: true` with `useAsyncData`.
 ::
 
@@ -276,7 +276,7 @@ const { data: users2 } = useAsyncData('users', (_nuxtApp, { signal }) => $fetch(
 ```
 
 ::tip
-Keyed state created using `useAsyncData` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/4.x/api/composables/use-nuxt-data).
+Keyed state created using `useAsyncData` can be retrieved across your Nuxt application using [`useNuxtData`](/docs/api/composables/use-nuxt-data).
 ::
 
 ## Return Values
@@ -288,7 +288,7 @@ Even if you do not await the return value, during SSR Nuxt will wait for the req
 ::
 
 ::note
-If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useAsyncData`](/docs/4.x/api/composables/use-async-data) on the client side, `data` will remain `undefined` within `<script setup>`.
+If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await [`useAsyncData`](/docs/api/composables/use-async-data) on the client side, `data` will remain `undefined` within `<script setup>`.
 ::
 
 | Name      | Type                                                | Description                                                                                                                                                       |
@@ -298,7 +298,7 @@ If you have not fetched data on the server (for example, with `server: false`), 
 | `execute` | `(opts?: AsyncDataExecuteOptions) => Promise<void>` | Alias for `refresh`.                                                                                                                                              |
 | `error`   | `Ref<ErrorT \| undefined>`                          | Error object if the asynchronous function threw an error.                                                                                                         |
 | `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`  | Status of the asynchronous function call. Use it to distinguish `idle`, `pending`, `success`, and `error`.                                                        |
-| `pending` | `Ref<boolean>`                                      | `true` while a request is in flight. With [`experimental.pendingWhenIdle`](/docs/4.x/guide/going-further/experimental-features#pendingwhenidle), it is also `true` when `status` is `idle` and no cached data is available. |
+| `pending` | `Ref<boolean>`                                      | `true` while a request is in flight. With [`experimental.pendingWhenIdle`](/docs/guide/going-further/experimental-features#pendingwhenidle), it is also `true` when `status` is `idle` and no cached data is available. |
 | `clear`   | `() => void`                                        | Resets `data` to `undefined` (or the value of `options.default()` if provided), `error` to `undefined`, set `status` to `idle`, and cancels any pending calls.    |
 
 ::tip

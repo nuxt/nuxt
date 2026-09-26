@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: filter
         with:
           base: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha || github.event.before }}
@@ -89,7 +89,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: lts
           cache: true
@@ -99,6 +99,9 @@ jobs:
 
       - name: Build and check built types
         run: vp run test:attw
+
+      - name: Check public API type surface
+        run: vp run test:public-api
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -120,7 +123,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: 22
           cache: true
@@ -139,7 +142,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: 22
           cache: true
@@ -150,7 +153,7 @@ jobs:
 
       - name: Fail if committed output is stale
         run: |
-          paths="packages/nuxt/src/app/components packages/nitro-server/src/runtime/templates packages/nitro-server/src/templates packages/schema/src/templates"
+          paths=$(node -e "import('./packages/ui-templates/lib/paths.mjs').then(m => console.log(Object.keys(m.generatedTemplateCopies).join(' ')))")
           git add -N -- $paths
           if ! git diff --exit-code -- $paths; then
             echo "::error::Committed ui-templates output is out of date. Run 'pnpm --filter @nuxt/ui-templates build' and commit the result."
@@ -182,7 +185,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@d1ba80a13dd99fba24a470575428917156a28b43 # v4.37.5
+        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
         with:
           config: |
             paths:
@@ -199,7 +202,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@d1ba80a13dd99fba24a470575428917156a28b43 # v4.37.5
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -226,7 +229,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: lts
           cache: true
@@ -255,15 +258,19 @@ jobs:
     permissions:
       actions: write
       contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: lts
           cache: true
+
+      - name: Fetch 4.x for cross-branch diagnostics check
+        run: git fetch --no-tags --depth=1 origin 4.x:refs/remotes/origin/4.x
 
       - name: Prepare
         run: vp run dev:prepare && vp run test:prepare && vp run build:kit
@@ -274,12 +281,21 @@ jobs:
 
           - name: Test (nuxt runtime)
             run: vp run test:runtime
+            env:
+              FLAKINESS_OUTPUT_DIR: flakiness-report/runtime
+              FLAKINESS_TITLE: Nuxt runtime
 
           - name: Test (unit)
             run: vp run test:unit
+            env:
+              FLAKINESS_OUTPUT_DIR: flakiness-report/unit
+              FLAKINESS_TITLE: Unit
 
           - name: Test (no jiti)
             run: vp run test:no-jiti
+            env:
+              FLAKINESS_OUTPUT_DIR: flakiness-report/no-jiti
+              FLAKINESS_TITLE: No jiti
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -302,7 +318,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: lts
           cache: true
@@ -331,12 +347,13 @@ jobs:
     permissions:
       actions: write
       contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: lts
           cache: true
@@ -353,13 +370,14 @@ jobs:
   test-benchmark:
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.src == 'true' && github.event_name != 'merge_group' && github.repository_owner == 'nuxt'
+    # TODO: re-enable when `@codspeed/vitest-plugin` supports vitest 5 (peer range is `^3.2 || ^4`)
+    if: false
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: lts
           cache: true
@@ -368,7 +386,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@0ca9cbbf4623b599a6c3ed4fc8a922942705d9f1 # v5.0.2
+        uses: CodSpeedHQ/action@373d6868929f444bc08d901fd0eb0ad52a8875ea # v5.2.1
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -382,6 +400,7 @@ jobs:
     permissions:
       actions: write
       contents: read
+      id-token: write
 
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
@@ -408,7 +427,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: 22
           cache: true
@@ -428,7 +447,7 @@ jobs:
       - name: Test (fixtures)
         run: vp exec vitest run ${{ matrix.projects }}
 
-      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         if: github.event_name != 'push' && matrix.os == 'ubuntu-24.04-arm'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -447,6 +466,7 @@ jobs:
     permissions:
       actions: write
       contents: read
+      id-token: write
 
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
@@ -469,7 +489,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: 22
           cache: true
@@ -488,6 +508,15 @@ jobs:
 
       - name: Test (e2e)
         run: vp run test:e2e ${{ matrix.shard }}
+
+      - name: Upload e2e failure context
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-test-results-${{ matrix.os }}-${{ strategy.job-index }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -554,15 +583,15 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: latest
           cache: true
 
       - name: Release nightly
-        run: node scripts/release.ts --nightly
+        run: node scripts/release.ts
         env:
-          TAG: ${{ github.ref == 'refs/heads/main' && '5x' || github.ref == 'refs/heads/4.x' && 'latest' || '3x' }}
+          TAG: ${{ github.ref == 'refs/heads/main' && '5x' || 'latest' }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
@@ -575,9 +604,9 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@143f5f385f39b1b753ffed1a01ad443811855c8b # v1.16.1
+      - uses: voidzero-dev/setup-vp@24d870228786dc83ae73482406bdd1e7befaec14 # v1.21.0
         with:
           node-version: lts
           cache: true
 
-      - run: vp exec pkg-pr-new publish --compact --pnpm './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step
+      - run: vp exec pkg-pr-new publish --compact --pnpm --packageManager=pnpm,npm,yarn './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/vite-server' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step

@@ -1,4 +1,5 @@
-import { buildDiagnostics, resolveAlias } from '@nuxt/kit'
+import { resolveAlias } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, linkToAlias, logger, stripExtension } from '../../utils.ts'
 import type { ESTree } from 'rolldown/utils'

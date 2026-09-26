@@ -8,6 +8,7 @@ import { importX } from 'eslint-plugin-import-x'
 import parser from '@typescript-eslint/parser'
 import markdown from '@eslint/markdown'
 import { runtimeDependencies } from 'nuxt/meta'
+import { generatedTemplateCopies } from './packages/ui-templates/lib/paths.mjs'
 
 export default createConfigForNuxt({
   features: {
@@ -26,13 +27,11 @@ export default createConfigForNuxt({
         '.goff/**',
         'packages/schema/schema/**',
         'packages/nuxt/stubs/**',
-        'packages/nuxt/src/app/components/welcome.vue',
-        'packages/nuxt/src/app/components/error-*.vue',
-        'packages/nuxt/src/core/runtime/nitro/templates/error-*',
-        'packages/nitro-server/src/runtime/templates/error-*',
-        'packages/nitro-server/src/templates/spa-loading-icon.ts',
-        'packages/schema/src/templates/loading.ts',
+        ...Object.keys(generatedTemplateCopies),
         'packages/kit/test/types-fixture/**',
+        // deliberately does not compile
+        'test/fixtures/dev-error-sourcemap/app/components/Broken.vue',
+        'test/fixtures/vite-server-dev-error/app/components/Broken.vue',
       ],
     },
     {
@@ -207,6 +206,7 @@ export default createConfigForNuxt({
           {
             definedTags: [
               'experimental',
+              'knipignore',
               '__NO_SIDE_EFFECTS__',
             ],
           },
@@ -215,7 +215,7 @@ export default createConfigForNuxt({
     },
     {
       files: ['packages/*/src/**'],
-      ignores: ['packages/nuxt/src/app/**', '**/runtime/**/*'],
+      ignores: ['packages/nuxt/src/app/**', 'packages/nuxt/src/server/**', '**/runtime/**/*'],
       name: 'local/import-extensions',
       plugins: {
         'import-x': importX,
@@ -226,6 +226,19 @@ export default createConfigForNuxt({
           js: 'always',
           ts: 'always',
           vue: 'always',
+        }],
+      },
+    },
+    {
+      files: ['packages/{nuxt,kit,nitro-server,schema,vite,webpack,rspack}/src/**'],
+      // vite-node* files execute inside the nitro dev process rather than the
+      // Nuxt build process, so nostics catalogs do not apply there.
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**', '**/*.{spec,test}.{js,mjs,ts,mts}', 'packages/vite/src/vite-node*.ts'],
+      name: 'local/requires/nostics-diagnostics',
+      rules: {
+        'no-restricted-syntax': ['error', {
+          message: 'Use a nostics diagnostic (see packages/kit/src/diagnostics/) instead of logger/console for build-time warnings and errors.',
+          selector: 'CallExpression[callee.object.name=/^(logger|console)$/][callee.property.name=/^(warn|error)$/]',
         }],
       },
     },

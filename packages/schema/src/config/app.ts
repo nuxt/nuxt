@@ -22,10 +22,20 @@ export default defineResolvers({
       },
     },
     optionsApi: {
-      async $resolve (val, get) {
-        if (typeof val === 'boolean') { return val }
-        // Options API support is compiled out of the client bundle from v5 onwards.
-        return (await get('future.compatibilityVersion')) < 5
+      $resolve: val => typeof val === 'boolean' ? val : false,
+    },
+
+    /**
+     * Enable experimental support for Vue Vapor Mode (requires Vue 3.6+).
+     *
+     * This installs Vue's `vaporInteropPlugin` so that vapor components (SFCs using
+     * `<script setup vapor>` or `<template vapor>`) can be used alongside regular
+     * VDOM components.
+     * @see [Vue Vapor Mode release notes](https://github.com/vuejs/core/releases/tag/v3.6.0-rc.1)
+     */
+    vapor: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
     propsDestructure: true,
@@ -181,15 +191,11 @@ export default defineResolvers({
   },
   unhead: {
     legacy: {
-      $resolve: async (val, get) => {
-        if (typeof val !== 'boolean') { return false }
-        if ((await get('future.compatibilityVersion') as number) >= 5) {
-          if (val) {
-            schemaDiagnostics.NUXT_B5013()
-          }
-          return false
+      $resolve: (val) => {
+        if (val === true) {
+          schemaDiagnostics.NUXT_B5013()
         }
-        return val
+        return false
       },
     },
     vite: {},
