@@ -2264,11 +2264,17 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
 
     const payloadRequested = (route: number) => requests.some(req => req.startsWith(`/prefetch/hints/${route}/_payload.json`))
 
+    const payloadReceived = (route: number) => page.waitForResponse(response => response.url().includes(`/prefetch/hints/${route}/_payload.json`))
+
+    const hoveredPayload = payloadReceived(5)
     await page.hover('#ladder-link')
     await expect.poll(() => payloadRequested(5)).toBe(true)
 
+    const latestPayload = payloadReceived(6)
     await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/6'))
     await expect.poll(() => payloadRequested(6)).toBe(true)
+    await Promise.all([hoveredPayload, latestPayload])
+    await new Promise(resolve => setTimeout(resolve, 100))
 
     await page.dispatchEvent('#ladder-link', 'pointerdown')
 
