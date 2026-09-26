@@ -80,6 +80,8 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   let current: ErrorReport | undefined
   let file: string | undefined
   let isRuntime = false
+  // the file of a compile report another process published, which vite's hmr payload would replace without its name
+  let publishedFile: string | undefined
   // the same failure reaches the logger and the hot channel worded differently, at one position
   const keyOf = (error: ViteTransformError) => [error.loc?.file ?? error.id, error.loc?.line, error.loc?.column, error.loc ? '' : error.message].join(':')
 
@@ -99,9 +101,11 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
           const compiled = compileFile(message.report)
           file = compiled ?? file
           isRuntime ||= !compiled
+          publishedFile = compiled
         }
         return
       case 'nuxt:dev:error:clear':
+        publishedFile = undefined
         if (!current) {
           file = undefined
           isRuntime = false
@@ -118,6 +122,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       }
       lastKey = key
       isRuntime = false
+      publishedFile = undefined
       file = (error.loc?.file ?? error.id)?.split('?')[0]
       try {
         const [{ createReport, renderAnsi }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/presets')])
@@ -139,6 +144,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         return
       }
       lastKey = undefined
+      publishedFile = undefined
       clearedAt = Date.now()
       current = undefined
       file = undefined
@@ -175,7 +181,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         const send = environment.hot.send.bind(environment.hot) as (...args: unknown[]) => void
         environment.hot.send = ((...args: unknown[]) => {
           const payload = args[0] as { type?: string, err?: unknown } | string
-          if (typeof payload === 'object' && payload.type === 'error' && isTransformError(payload.err)) {
+          if (typeof payload === 'object' && payload.type === 'error' && isTransformError(payload.err) && !isPublished(payload.err)) {
             reporter.report(payload.err).catch(() => {})
           }
           send(...args)
@@ -198,6 +204,10 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
     },
   }
   return reporter
+
+  function isPublished (error: ViteTransformError): boolean {
+    return !!publishedFile && withMessageLocation(error).loc?.file?.split('?')[0] === publishedFile
+  }
 
   /** Report an error the browser raised, whose stack points at the modules Vite served. */
   async function reportRuntimeError (error: ClientRuntimeError): Promise<void> {
@@ -310,12 +320,18 @@ function withMessageLocation (error: ViteTransformError): ViteTransformError {
   if (error.loc) {
     // a parser counts columns from 0 in its message, and so in the position it attaches
     const zeroBased = match && Number(match[1]) === error.loc.line && Number(match[2]) === error.loc.column
-    return error.loc.file && !zeroBased ? error : { ...error, id: error.id ?? file, loc: { ...error.loc, file, column: zeroBased ? error.loc.column + 1 : error.loc.column } }
+    return error.loc.file && !zeroBased ? error : relocated(error, { id: error.id ?? file, loc: { ...error.loc, file, column: zeroBased ? error.loc.column + 1 : error.loc.column } })
   }
   if (error.frame || !match) {
     return error
   }
-  return { ...error, id: error.id ?? file, loc: { file, line: Number(match[1]), column: Number(match[2]) + 1 } }
+  return relocated(error, { id: error.id ?? file, loc: { file, line: Number(match[1]), column: Number(match[2]) + 1 } })
+}
+
+/** A copy of `error` at `location`, keeping the properties an `Error` does not enumerate. */
+function relocated (error: ViteTransformError, location: Pick<ViteTransformError, 'id' | 'loc'>): ViteTransformError {
+  const { name, stack, cause } = error as Partial<Error>
+  return { ...name !== undefined && { name }, ...stack !== undefined && { stack }, ...cause !== undefined && { cause }, ...error, ...location, message: error.message }
 }
 
 /** What browsers say when a served module responds with an error. */
