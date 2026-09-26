@@ -93,6 +93,17 @@ test.describe('server path fallback', () => {
     expect(loads).toEqual(['/definitely-not-a-route'])
   })
 
+  test('renders the error page for a protocol-relative path without leaving the origin', async ({ page, goto, baseURL }) => {
+    await goto('/')
+    const loads = trackDocumentLoads(page)
+
+    await page.click('#protocol-relative')
+    await expect.poll(() => page.textContent('body')).toContain('Page not found')
+
+    expect(loads).toEqual([])
+    expect(new URL(page.url()).origin).toBe(new URL(baseURL!).origin)
+  })
+
   test.describe('built', () => {
     test.skip(({ isDev }) => isDev, 'the SPA fallback shell is prerendered')
 

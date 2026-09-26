@@ -251,8 +251,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     if (import.meta.client && serverPathFallback && !hashMode) {
       router.beforeResolve((to) => {
         // never reload the path this document was served for, so an SPA fallback cannot loop
-        if (!to.matched.length && !isSamePath(to.path, documentPath)) {
-          window.location.assign(withBase(to.fullPath, routerBase))
+        if (to.matched.length || isSamePath(to.path, documentPath)) { return }
+        const url = new URL(withBase(to.fullPath, routerBase), window.location.href)
+        if (url.origin === window.location.origin) {
+          window.location.assign(url)
           return false
         }
       })

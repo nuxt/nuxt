@@ -21,5 +21,11 @@
       id="dynamic-server-route"
       to="/og/hello"
     >dynamic server route</NuxtLink>
+    <button
+      id="protocol-relative"
+      @click="$router.push('//example.com/')"
+    >
+      protocol-relative
+    </button>
   </div>
 </template>
