@@ -1065,6 +1065,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const nitroOptions = options.nitro
   createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  createPortalProperties(nitroOptions.prerender, options, ['nitro.prerender', 'prerender'])
   // an entry written straight into the builder's own config is typed by the builder, and is a
   // superset of what Nuxt collects
   if (nitroOptions.handlers?.length && nitroOptions.handlers !== options.serverHandlers) {

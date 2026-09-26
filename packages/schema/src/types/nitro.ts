@@ -196,6 +196,16 @@ export type ResolveTracingChannelOptions<T> = TracingChannelOptionsBase & (T ext
  */
 export type TracingChannelOptions = ResolveTracingChannelOptions<NitroTypes>
 
+/** Prerender options shared by every server builder. */
+export interface PrerenderOptions {
+  /** Routes to prerender, in addition to those discovered by crawling or matched by `prerender` route rules. */
+  routes?: string[]
+  /** Routes to skip. A string matches as a path prefix. */
+  ignore?: Array<string | RegExp | ((path: string) => boolean | undefined)>
+  /** Follow links in each rendered page to discover further routes. */
+  crawlLinks?: boolean
+}
+
 /**
  * Fallback configuration shape, limited to the keys Nuxt itself reads and writes. A server
  * builder typically accepts a far wider set, which it describes itself.
@@ -214,7 +224,7 @@ export interface NitroConfigFallback {
   imports?: false | ServerImportsOptions
   scanDirs?: string[]
   routeRules?: Record<string, RouteRuleConfigFallback>
-  prerender?: { routes?: string[], crawlLinks?: boolean, ignore?: unknown[], failOnError?: boolean }
+  prerender?: PrerenderOptions & { failOnError?: boolean }
   static?: boolean
   typescript?: { tsConfig?: Record<string, any>, generateTsConfig?: boolean, strict?: boolean }
   tracingChannel?: boolean | (TracingChannelOptionsBase & Record<string, boolean | undefined>)
