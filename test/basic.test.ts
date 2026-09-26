@@ -2203,8 +2203,20 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
 
     await expect.poll(() => pendingRequests.length).toBe(8)
 
+    let releaseLatestPayload!: () => void
+    const latestPayloadHeld = new Promise<void>((resolve) => { releaseLatestPayload = resolve })
+    await page.route(/\/prefetch\/hints\/6\/_payload\.json/, async (route) => {
+      await latestPayloadHeld
+      await route.continue()
+    })
+    const earlierPayload = page.waitForResponse(response => response.url().includes('/prefetch/hints/5/_payload.json'))
     await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/5'))
     await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/6'))
+    await earlierPayload
+    await new Promise(resolve => setTimeout(resolve, 100))
+    const latestPayload = page.waitForResponse(response => response.url().includes('/prefetch/hints/6/_payload.json'))
+    releaseLatestPayload()
+    await latestPayload
     await new Promise(resolve => setTimeout(resolve, 100))
     expect(pendingRequests).toHaveLength(8)
     expect(await page.locator('link[href*="?route=5"], link[href*="?route=6"]').count()).toBe(0)
