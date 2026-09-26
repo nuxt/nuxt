@@ -39,7 +39,7 @@ import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
-import type { DevServerHandler, NitroConfig, PrerenderOptions, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
+import type { DevServerHandler, NitroConfig, PrerenderOptions, ResolveNuxtNitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
 
 export interface ConfigSchema {
   /**
@@ -1925,7 +1925,7 @@ export interface ConfigSchema {
    *
    * @see [Nitro configuration docs](https://nitro.build/config)
    */
-  nitro: NitroConfig
+  nitro: ResolveNuxtNitroConfig<NitroConfig>
 
   /**
    * Global route options applied to matching server routes.

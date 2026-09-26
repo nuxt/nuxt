@@ -237,6 +237,34 @@ export type ResolveNitroConfig<T> = T extends { config: infer C } ? C : NitroCon
 /** The configuration of the server build, as accepted by the configured `server.builder`. */
 export type NitroConfig = ResolveNitroConfig<NitroTypes>
 
+interface DeprecatedNitroPrerenderOptions {
+  /** @deprecated Use the top-level `prerender.routes` option instead. */
+  routes?: PrerenderOptions['routes']
+  /** @deprecated Use the top-level `prerender.ignore` option instead. */
+  ignore?: PrerenderOptions['ignore']
+  /** @deprecated Use the top-level `prerender.crawlLinks` option instead. */
+  crawlLinks?: PrerenderOptions['crawlLinks']
+}
+
+type NitroConfigKey<T, K extends PropertyKey> = K extends keyof T ? T[K] : never
+
+interface DeprecatedNitroOptions<T> {
+  /** @deprecated Use the top-level `runtimeConfig` option instead. */
+  runtimeConfig?: NitroConfigKey<T, 'runtimeConfig'>
+  /** @deprecated Use the top-level `routeRules` option instead. */
+  routeRules?: NitroConfigKey<T, 'routeRules'>
+  /** @deprecated Use the top-level `tracingChannel` option instead. */
+  tracingChannel?: NitroConfigKey<T, 'tracingChannel'>
+  typescript?: Omit<NonNullable<NitroConfigKey<T, 'typescript'>>, 'tsConfig'> & {
+    /** @deprecated Use the top-level `typescript.serverTsConfig` option instead. */
+    tsConfig?: NonNullable<NitroConfigKey<T, 'typescript'>> extends { tsConfig?: infer C } ? C : never
+  }
+  prerender?: Omit<NonNullable<NitroConfigKey<T, 'prerender'>>, keyof PrerenderOptions> & DeprecatedNitroPrerenderOptions
+}
+
+/** @internal */
+export type ResolveNuxtNitroConfig<T> = Omit<T, keyof DeprecatedNitroOptions<T>> & DeprecatedNitroOptions<T>
+
 /**
  * Fallback options shape, describing the subset of resolved options common to the supported
  * nitro majors. Used when no server builder has contributed an instance type.
