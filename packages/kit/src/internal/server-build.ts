@@ -9,7 +9,8 @@ import { useNuxt } from '../context.ts'
 // without a major release until that has settled.
 // TODO: settle the shape, then decide whether it graduates to `@nuxt/kit`
 
-type PartialServerBuild = Partial<Omit<NuxtServerBuild, 'output' | 'capabilities'>> & {
+type PartialServerBuild = Partial<Omit<NuxtServerBuild, 'input' | 'output' | 'capabilities'>> & {
+  input?: Partial<NuxtServerBuild['input']>
   output?: Partial<NuxtServerBuild['output']>
   capabilities?: Partial<NuxtServerBuild['capabilities']>
 }
@@ -17,14 +18,16 @@ type PartialServerBuild = Partial<Omit<NuxtServerBuild, 'output' | 'capabilities
 /**
  * Describe the build the configured server builder produces. See {@link NuxtServerBuild}.
  *
- * Called by server builders, once they know their own output paths and target; anything
- * else should read the description with {@link useServerBuild}.
+ * Called by server builders, once they know their own output paths and target, and by app
+ * builders for the `input` paths they emit; anything else should read the description with
+ * {@link useServerBuild}.
  *
  * @internal
  */
 export function setServerBuild (build: PartialServerBuild, nuxt: Nuxt = useNuxt()): void {
-  const { output, capabilities, ...rest } = build
+  const { input, output, capabilities, ...rest } = build
   Object.assign(nuxt.serverBuild, rest)
+  Object.assign(nuxt.serverBuild.input, input)
   Object.assign(nuxt.serverBuild.output, output)
   Object.assign(nuxt.serverBuild.capabilities, capabilities)
 }
@@ -51,15 +54,25 @@ export function useServerBuild (nuxt: Nuxt = useNuxt()): NuxtServerBuild {
  */
 export function createServerBuild (options: NuxtOptions): NuxtServerBuild {
   const outputDir = () => options.nitro?.output?.dir || '.output'
+  const serverDir = () => join(options.buildDir, 'dist/server')
+  const clientDir = () => join(options.buildDir, 'dist/client')
   return {
     name: typeof options.server?.builder === 'string' ? options.server.builder : 'custom',
     buildsSeparately: !options.experimental?.nitroViteEnvironment,
+    input: {
+      serverEntry: () => join(serverDir(), 'server.mjs'),
+      serverDir,
+      clientDir,
+      clientManifest: () => join(clientDir(), '.vite/manifest.json'),
+    },
     output: {
       root: () => options.rootDir,
       dir: () => resolve(options.rootDir, outputDir()),
       publicDir: () => resolve(options.rootDir, options.nitro?.output?.publicDir || join(outputDir(), 'public')),
     },
     capabilities: { server: true, dev: true },
-    runtime: { fetch: 'nitro', runtimeConfig: 'nitro/runtime-config' },
+    runtime: options._nitroMajor === 3
+      ? { fetch: 'nitro', runtimeConfig: 'nitro/runtime-config' }
+      : { runtimeConfig: 'nitropack/runtime' },
   }
 }

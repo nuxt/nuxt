@@ -1,3 +1,5 @@
+import type { SharedAppConfig } from './config.ts'
+
 /**
  * Extension point through which the configured `server.builder` contributes the type of the
  * request event its runtime hands to the app layer.
@@ -10,24 +12,34 @@
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ServerTypes {}
 
+/** @internal */
+export type ResolveServerEventHandler<T> = T extends { eventHandler: infer H } ? H : (...args: any[]) => unknown
+
 /**
- * Extension point through which the configured `server.builder` contributes the response types
- * of the routes its runtime serves.
+ * A handler the server runtime can mount, which is why the runtime declares it: it is the
+ * shape a bundler's dev middleware is handed over in through `server:devHandler`.
+ */
+export type ServerEventHandler = ResolveServerEventHandler<ServerTypes>
+
+/**
+ * The route tree `$fetch` and `useFetch` resolve a request against.
  *
- * Keys are route patterns (as written by the server runtime, so they may contain `:param` and
- * `**` segments) and values map a lowercased HTTP method - or `default`, for handlers that
- * answer every method - to the type that route resolves to.
- *
- * `@nuxt/nitro-server` declares the routes Nitro has scanned here, and Nuxt references its
- * declarations from the generated `.nuxt` types. Declaring routes where they are scanned keeps
- * `$fetch` and `useFetch` typing accurate without the app layer depending on a particular
- * server runtime.
+ * The routes the configured `server.builder` reports are compiled into this interface through the
+ * generated `.nuxt` types, so `$fetch` and `useFetch` stay accurate without the app layer
+ * depending on a particular server runtime. A route the builder cannot report, such as one a
+ * plugin registers at runtime, can be declared by augmenting it in the same shape.
  *
  * @example
  * ```ts
+ * import type { Endpoint } from 'nuxt/app'
+ *
  * declare module '@nuxt/schema' {
  *   interface ServerRoutes {
- *     '/api/hello': { get: { message: string } }
+ *     '/api/hello': {
+ *       [Endpoint]: {
+ *         GET: { response: { message: string } }
+ *       }
+ *     }
  *   }
  * }
  * ```
@@ -93,10 +105,51 @@ export interface ServerRouteHandler {
 }
 
 /**
- * Fallback request event shape, described in web standards only. Used when no server builder
- * has contributed an event type.
+ * Nuxt-owned per-request state, carried on the request event's context under `nuxt`.
+ *
+ * This is the channel the app layer and the SSR renderer use to communicate with the
+ * configured `server.builder`, which is free to translate it into whatever its own runtime
+ * understands (Nitro turns {@link NuxtRequestContext.prerenderRoutes} into the response header
+ * its crawler reads).
  */
-export interface RequestEventFallback {
+export interface NuxtRequestContext {
+  'appConfig'?: SharedAppConfig
+  'noSSR'?: boolean
+  /**
+   * Routes to additionally prerender, as raw paths, collected from `prerenderRoutes()` and from
+   * the renderer's own hints while a route is prerendered.
+   */
+  'prerenderRoutes'?: string[]
+  /** @internal */
+  '~internal'?: boolean
+  /** @internal */
+  '~rendering-error'?: boolean
+  /**
+   * Dev-only: CSS module URLs the builder has loaded for this request, provided
+   * by a dev integration so the SSR renderer can emit the right stylesheet
+   * links / inline styles. @internal
+   */
+  '~devClientCss'?: string[]
+  /** @internal */
+  '~error-cause'?: unknown
+}
+
+/** The context of a {@link RequestEvent}, which carries Nuxt's own per-request state. */
+export interface RequestEventContext extends Record<string, unknown> {
+  nuxt?: NuxtRequestContext
+  /**
+   * The dynamic segments the server builder matched for the request. Read them with
+   * `getRouterParams()`, which returns them percent-encoded as they appear in the URL.
+   */
+  params?: Record<string, string | undefined>
+}
+
+/**
+ * The web-standard part of a request event, which every server runtime provides. Portable
+ * server code is written against this, and the event resolves to it when no server builder
+ * has contributed one.
+ */
+export interface RequestEvent {
   readonly req: Request
   url: URL
   readonly res: {
@@ -104,23 +157,25 @@ export interface RequestEventFallback {
     statusText?: string
     readonly headers: Headers
   }
-  readonly context: Record<string, unknown>
+  readonly context: RequestEventContext
 }
 
 /**
  * Resolves the event type contributed to a {@link ServerTypes} registry, or
- * {@link RequestEventFallback} when the registry does not declare one. Exported for type tests;
+ * {@link RequestEvent} when the registry does not declare one. Exported for type tests;
  * not part of the public API.
  *
  * @internal
  */
-export type ResolveRequestEvent<T> = T extends { event: infer E } ? E : RequestEventFallback
+export type ResolveRequestEvent<T> = T extends { event: infer E } ? E : RequestEvent
 
 /**
- * The request event handed to server-side composables such as `useRequestEvent()`, as declared
- * by the configured `server.builder`, or {@link RequestEventFallback} when none has declared it.
+ * The request event in the shape the configured `server.builder` provides (`H3Event` under
+ * `@nuxt/nitro-server`), or {@link RequestEvent} when none has contributed one.
+ *
+ * Returned by server-side composables such as `useRequestEvent()`.
  */
-export type RequestEvent = ResolveRequestEvent<ServerTypes>
+export type NuxtRequestEvent = ResolveRequestEvent<ServerTypes>
 
 /**
  * The route rules the app layer reads, as compiled into the route-rules matcher: keys the

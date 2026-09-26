@@ -6,11 +6,38 @@ import { isCI, isWindows, provider } from 'std-env'
 import { getV8Flags } from '@codspeed/core'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 import type { NuxtConfig } from 'nuxt/schema'
+import type { Plugin } from 'vite'
 import { defu } from 'defu'
+
+// vitest evaluates `define` entries for `import.meta.*` once when the worker starts, so a value
+// referencing a global no longer tracks changes made by a test. Replace the flags in source instead,
+// which keeps them readable at call time and lets tests toggle them with `vi.stubGlobal`.
+function runtimeImportMeta (flags: Record<string, string>): Plugin {
+  const pattern = new RegExp(`\\bimport\\.meta\\.(${Object.keys(flags).join('|')})\\b`, 'g')
+  return {
+    name: 'nuxt:test-runtime-import-meta',
+    enforce: 'pre',
+    transform (code) {
+      if (!pattern.test(code)) { return }
+      pattern.lastIndex = 0
+      const transformed = code.replace(pattern, (match, flag: string, index: number) => {
+        // `import.meta.*` also appears as a `define` key in build code, which must stay a literal
+        const quoted = /['"`]/.test(code[index - 1] || '') && /['"`]/.test(code[index + match.length] || '')
+        return quoted ? match : flags[flag]!
+      })
+      return { code: transformed, map: null }
+    },
+  }
+}
 
 // TODO: fix upstream in nuxt/test-utils
 function defineVitestProject (config: Parameters<typeof _defineVitestProject>[0]) {
   return _defineVitestProject(defu({
+    resolve: {
+      // `@nuxt/test-utils` still references the `vitest/environments` entrypoint removed in vitest 5
+      // https://github.com/nuxt/test-utils/blob/main/src/environments/vitest.ts
+      alias: { 'vitest/environments': 'vitest/runtime' },
+    },
     test: {
       environmentOptions: {
         nuxt: {
@@ -53,9 +80,6 @@ const nuxtTestProjects: Record<string, NuxtConfig> = {
     },
   },
   'nuxt-legacy': {
-    future: {
-      compatibilityVersion: 4,
-    },
     experimental: {
       alwaysRunFetchOnKeyChange: true,
     },
@@ -68,6 +92,7 @@ interface FixtureMatrixEntry {
   builder: 'vite' | 'rspack' | 'webpack' | 'nitro-vite'
   context: 'async' | 'default'
   manifest: 'manifest-on' | 'manifest-off'
+  legacyErrors?: boolean
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
@@ -93,8 +118,18 @@ const fixtureMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on' },
 ]
 
+// The matrix above runs with `experimental.inlineErrorRendering` at its default, which is on from
+// compatibility version 5. These re-run every suite asserting on an error response with it off.
+const legacyErrorMatrix: FixtureMatrixEntry[] = [
+  { env: 'built', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
+  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
+]
+
+const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
+
 function fixtureProjectName (entry: FixtureMatrixEntry) {
-  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}`
+  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}${entry.legacyErrors ? '-legacy-errors' : ''}`
 }
 
 function fixtureProjectEnv (entry: FixtureMatrixEntry) {
@@ -103,10 +138,49 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_BUILDER: entry.builder,
     TEST_CONTEXT: entry.context,
     TEST_MANIFEST: entry.manifest,
+    ...entry.legacyErrors ? { TEST_ERROR_RENDERING: 'legacy-errors' } : {},
   }
 }
 
 const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js']
+
+// stands in for the defines and aliases a server builder applies in its own bundle
+function rendererProject (name: string, include: string[], rendererConfig: string) {
+  return {
+    define: {
+      'import.meta.dev': 'false',
+      'import.meta.server': 'true',
+      'import.meta.client': 'false',
+      'import.meta.prerender': 'false',
+    },
+    resolve: {
+      alias: {
+        'nuxt/internal/renderer-config': resolve(rendererConfig),
+        'nuxt/internal/entry': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry.mjs'),
+        'nuxt/internal/manifest': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/manifest.mjs'),
+        'nuxt/internal/precomputed': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/precomputed.mjs'),
+        'nuxt/internal/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
+        'nuxt/internal/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
+        'nuxt/internal/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
+        '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
+        // provided by the server builder in a real build; the fixture writes them out
+        '#internal/nuxt/paths': resolve('./test/fixtures/standalone-renderer/.nuxt/paths.mjs'),
+      },
+    },
+    test: {
+      name,
+      include,
+      globalSetup: ['./test/setup-renderer-prepare.ts'],
+      testTimeout: 60_000,
+      benchmark: { include: [] },
+    },
+  }
+}
+
+const rendererProjects = [
+  rendererProject('renderer', ['test/renderer/*.test.ts', '!test/renderer/legacy-errors.test.ts'], './test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
+  rendererProject('renderer-legacy-errors', ['test/renderer/legacy-errors.test.ts'], './test/fixtures/standalone-renderer/renderer-config-legacy-errors.mjs'),
+]
 
 export default defineConfig({
   test: {
@@ -135,13 +209,11 @@ export default defineConfig({
           },
         },
       },
-      ...fixtureMatrix.map(entry => ({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+      ...[...fixtureMatrix, ...legacyErrorMatrix].map(entry => ({
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
-          include: ['test/*.test.ts'],
+          include: entry.legacyErrors ? legacyErrorInclude : ['test/*.test.ts'],
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],
@@ -151,6 +223,7 @@ export default defineConfig({
           env: fixtureProjectEnv(entry),
         },
       })),
+      ...rendererProjects,
       {
         test: {
           name: 'bundle',
@@ -183,17 +256,16 @@ export default defineConfig({
         },
       },
       {
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-          'import.meta.server': '(globalThis.__TEST_SERVER__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)', test: '(globalThis.__TEST_TEST__ ?? false)' })],
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
-            '#internal/nuxt/nitro-config.mjs': resolve('./test/mocks/nitro-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
+            '#internal/nuxt/error-channel': resolve('./packages/nitro-server/src/runtime/utils/error-channel'),
+            '#nuxt-compat/import-meta': resolve('./test/mocks/nitro-compat-import-meta'),
+            '#nuxt-compat/flags': resolve('./test/mocks/nitro-compat-flags'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),
             '#app': resolve('./packages/nuxt/src/app'),
           },
@@ -223,9 +295,7 @@ export default defineConfig({
         },
       }),
       ...await Promise.all(Object.entries(nuxtTestProjects).map(([project, config]) => defineVitestProject({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: project,
           dir: './test/nuxt',
@@ -244,9 +314,7 @@ export default defineConfig({
         },
       }))),
       await defineVitestProject({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: 'nuxt-insensitive',
           dir: './test/nuxt/insensitive',
@@ -268,9 +336,7 @@ export default defineConfig({
         },
       }),
       await defineVitestProject({
-        define: {
-          'import.meta.dev': '(globalThis.__TEST_DEV__ ?? false)',
-        },
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: 'nuxt-sensitive',
           dir: './test/nuxt/sensitive',

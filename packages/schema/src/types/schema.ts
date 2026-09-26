@@ -11,7 +11,6 @@ import type { CompatibilityDateSpec } from 'compatx'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
 import type { CorsOptions, H3CorsOptions } from 'h3'
-import type { NuxtLinkOptions } from '#app/types'
 import type { Options as AutoprefixerOptions } from 'autoprefixer'
 import type { Options as CssnanoOptions } from 'cssnano'
 import type { TSConfig } from 'pkg-types'
@@ -29,7 +28,7 @@ import type { AppConfig as VueAppConfig } from 'vue'
 import type { TransformOptions as OxcTransformOptions } from 'oxc-transform'
 import type { TransformOptions as EsbuildTransformOptions } from 'esbuild'
 
-import type { RouterConfigSerializable } from './router.ts'
+import type { NuxtLinkOptions, RouterConfigSerializable } from './router.ts'
 import type { NuxtHooks } from './hooks.ts'
 import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
@@ -40,6 +39,7 @@ import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
+import type { DevServerHandler, NitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
 
 export interface ConfigSchema {
   /**
@@ -126,7 +126,7 @@ export interface ConfigSchema {
      * Disabling this compiles out Vue's Options API runtime (via the `__VUE_OPTIONS_API__` feature
      * flag), shrinking the client bundle for apps that only use the Composition API / `<script setup>`.
      *
-     * Defaults to `false` when `future.compatibilityVersion` is `5` or higher, otherwise `true`.
+     * @default false
      */
     optionsApi: boolean
 
@@ -423,14 +423,7 @@ export interface ConfigSchema {
    */
   unhead: {
     /**
-     * Disables Capo.js head tag sorting.
-     *
-     * On compat v4, the unhead legacy plugin set (`DeprecationsPlugin`, `PromisesPlugin`,
-     * `TemplateParamsPlugin`, `AliasSortingPlugin`) is always loaded so existing head patterns
-     * (`hid`, `vmid`, `children`, `body: true`, promise values, `%s` template params)
-     * keep working.
-     *
-     * Forced to `false` when `future.compatibilityVersion` >= 5.
+     * No longer supported. Always resolved to `false`.
      *
      * @deprecated Will be removed. Migrate off the deprecated head patterns and resolve promise
      * values before passing to `useHead`.
@@ -448,8 +441,6 @@ export interface ConfigSchema {
      * minification, and validation.
      *
      * Set to `false` to disable the plugin entirely.
-     *
-     * Only applies when `future.compatibilityVersion` >= 5.
      *
      * @default {}
      */
@@ -973,6 +964,7 @@ export interface ConfigSchema {
    * The value of this object is accessible from server only using `useRuntimeConfig`.
    * It mainly should hold _private_ configuration which is not exposed on the frontend. This could include a reference to your API secret tokens.
    * Anything under `public` and `app` will be exposed to the frontend as well.
+   * Keys prefixed with `app` (such as `app` and `appSecret`) are reserved for Nuxt.
    * Values are automatically replaced by matching env variables at runtime, e.g. setting an environment variable `NUXT_API_KEY=my-api-key NUXT_PUBLIC_BASE_URL=/foo/` would overwrite the two values in the example below.
    *
    * @example
@@ -1041,6 +1033,16 @@ export interface ConfigSchema {
     loadingTemplate: (data: { loading?: string }) => string
 
     /**
+     * Base path of the live error channel served in development.
+     *
+     * Error pages and overlays subscribe to it to update in place, dismiss
+     * themselves when the problem is fixed, and open a frame in the editor.
+     *
+     * @experimental
+     */
+    errorChannel: string
+
+    /**
      * Set CORS options for the dev server
      */
     cors: 'origin' extends keyof H3CorsOptions
@@ -1054,10 +1056,9 @@ export interface ConfigSchema {
    * `future` is for early opting-in to new features that will become default in a future (possibly major) version of the framework.
    */
   future: {
-  /**
-   * Enable early access to future features or flags.
-   *
-   */
+    /**
+     * Always resolves to `5`. Any other value is ignored.
+     */
     compatibilityVersion: 4 | 5
 
     /**
@@ -1086,6 +1087,8 @@ export interface ConfigSchema {
    * Inline styles when rendering HTML (currently vite only).
    *
    * You can also pass a function that receives the path of a Vue component and returns a boolean indicating whether to inline the styles for that component.
+   *
+   * Pages covered by a `noScripts` route rule always have their styles inlined.
    */
     inlineStyles: boolean | ((id?: string) => boolean)
 
@@ -1198,9 +1201,20 @@ export interface ConfigSchema {
      * - `false` - Payload extraction is disabled entirely. Payload is always inlined in HTML and
      *   no `_payload.json` files are generated.
      *
-     * `@default` true (or 'client' when compatibilityVersion >= 5)
+     * @default 'client'
      */
     payloadExtraction: 'client' | boolean | undefined
+
+    /**
+     * Render the error page in the Nuxt renderer itself when a server render fails, rather than
+     * handing the error to the server runtime and re-entering the renderer over an internal request.
+     *
+     * The error page is rendered in process, on the same request event, so the response keeps the
+     * headers and cookies the failed render had already written.
+     *
+     * @default true
+     */
+    inlineErrorRendering: boolean
 
     /**
      * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
@@ -1279,9 +1293,7 @@ export interface ConfigSchema {
     /**
      * Enable the new experimental typed router using vue-router.
      *
-     * This is enabled by default with compatibility version 5.
-     *
-     * @default false
+     * @default true
      */
     typedPages: boolean
 
@@ -1313,7 +1325,7 @@ export interface ConfigSchema {
      *
      * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      *
-     * @default 'builder' if `future.compatibilityVersion` >= 5, otherwise 'chokidar-granular' if `srcDir` is the same as `rootDir`, otherwise 'chokidar'
+     * @default 'builder'
      */
     watcher: 'chokidar' | 'parcel' | 'chokidar-granular' | 'builder'
 
@@ -1330,8 +1342,7 @@ export interface ConfigSchema {
      *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way. - Uses the hash hydration plugin to reduce initial hydration
      *
-     * @deprecated CAPO sorting is now the default in unhead v3. Set `unhead.legacy: true` to opt out
-     * temporarily on compat v4.
+     * @deprecated CAPO sorting is now the default in unhead v3.
      * @default true
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */
@@ -1378,8 +1389,7 @@ export interface ConfigSchema {
      * This has no effect when `experimental.scanPageMeta` is `false`, as the route record does
      * not override the macro module in that case.
      *
-     * @default false
-     * @default true with compatibilityVersion >= 5
+     * @default true
      */
     extractSerializablePageMeta: boolean
 
@@ -1434,8 +1444,7 @@ export interface ConfigSchema {
 
       /**
        * Options that apply to `useState` and `clearNuxtState`.
-       * @default { resetOnClear: false }
-       * @default { resetOnClear: true } with compatibilityVersion >= 5
+       * @default { resetOnClear: true }
        */
       useState: {
         /**
@@ -1444,8 +1453,7 @@ export interface ConfigSchema {
          *
          * This aligns `clearNuxtState` behavior with `clearNuxtData`, which already resets to defaults.
          *
-         * @default false
-         * @default true with compatibilityVersion >= 5
+         * @default true
          */
         resetOnClear: boolean
       }
@@ -1494,8 +1502,7 @@ export interface ConfigSchema {
      * This stops execution of the rest of your setup code after a redirect, and renders
      * a placeholder comment while the navigation proceeds, rather than continuing to run
      * code (and potentially navigating again) after `navigateTo` has been called.
-     * @default false
-     * @default true with compatibilityVersion >= 5
+     * @default true
      * @see [Nuxt Issue #23698](https://github.com/nuxt/nuxt/issues/23698)
      */
     navigateToEarlyReturn: boolean
@@ -1521,8 +1528,7 @@ export interface ConfigSchema {
      * `<KeepAlive>` relies on the component `name` option to identify components.
      * Without this, page components may have generic names (like `index`) that don't
      * correspond to their route names, making name-based `<KeepAlive>` filtering unreliable.
-     * @default false
-     * @default true with compatibilityVersion >= 5
+     * @default true
      */
     normalizePageNames: boolean
 
@@ -1694,10 +1700,8 @@ export interface ConfigSchema {
      * Whether to parse `error.data` when rendering a server error page.
      *
      * @deprecated The error sent to the error page is JSON-encoded, so
-     * `error.data` keeps its original shape and is never stringified. With
-     * `compatibilityVersion: 5` this is forced on and setting it is ignored;
-     * before that, `false` stringifies `error.data` again for backwards
-     * compatibility.
+     * `error.data` keeps its original shape and is never stringified. This
+     * is forced on and setting it is ignored.
      * @default true
      */
     // TODO: remove this option before Nuxt 5 is released
@@ -1756,8 +1760,7 @@ export interface ConfigSchema {
     /**
      * Whether to enable a compatibility layer for Nitro auto imports.
      * We recommend migrating to direct imports instead.
-     * @default true
-     * @default false with compatibilityVersion >= 5
+     * @default false
      */
     nitroAutoImports: boolean
 
@@ -1767,9 +1770,9 @@ export interface ConfigSchema {
      * When enabled, the server sends the HTML shell (head, styles, preload hints)
      * immediately and streams the rendered body content progressively.
      *
-     * Streaming is automatically disabled for bot/crawler user agents to ensure
-     * search engines receive fully-rendered HTML. You can opt a route out of
-     * streaming via `routeRules` with `streaming: false`.
+     * Streaming is automatically disabled for bot/crawler user agents (see
+     * `botRegex`) to ensure search engines receive fully-rendered HTML. You can
+     * opt a route out of streaming via `routeRules` with `streaming: false`.
      *
      * Set to `true` to enable with defaults, or pass an object to configure options.
      *
@@ -1779,9 +1782,15 @@ export interface ConfigSchema {
     ssrStreaming: boolean | {
       enabled?: boolean
       /**
-       * A regular expression matching bot/crawler user agents. Requests matching
-       * the pattern are served fully-buffered (non-streamed) responses for SEO
-       * safety.
+       * A regular expression matching bot/crawler user agents that should *not*
+       * receive a streamed response.
+       *
+       * When the `user-agent` header of a request matches this pattern, streaming
+       * is disabled for that request and the fully-rendered (buffered) HTML is
+       * sent instead, for SEO safety. Requests that do not match are streamed.
+       *
+       * Setting this replaces the default pattern rather than extending it, so
+       * include any built-in crawlers you still want to opt out of streaming.
        *
        * @default /bot\b|crawl|spider|slurp|facebookexternalhit|google\b|bing\b|yandex\b|baidu\b|duckduck/i
        */
@@ -1805,8 +1814,7 @@ export interface ConfigSchema {
      * with `Promise.resolve()` so that `.then()` and `.catch()` chaining always works.
      *
      * Set to `false` for better performance if your code and modules use `await` with `callHook`.
-     * @default true
-     * @default false with compatibilityVersion >= 5
+     * @default false
      */
     asyncCallHook: boolean
 
@@ -1822,8 +1830,7 @@ export interface ConfigSchema {
      * Note: enabling this means attributes (class, style, etc.) passed to `.client.vue`
      * components will not be rendered in the SSR HTML. If you need styled placeholders,
      * use `<ClientOnly>` with a `#fallback` slot instead.
-     * @default false
-     * @default true with compatibilityVersion >= 5
+     * @default true
      */
     clientNodePlaceholder: boolean
 
@@ -1897,6 +1904,13 @@ export interface ConfigSchema {
   _modules: Array<any>
 
   /**
+   * Sources of the pages that are served without scripts, as registered in `ssrContext.modules`.
+   *
+   * @private
+   */
+  _noScriptsPageSources: Array<string>
+
+  /**
    * Configuration for Nuxt's server builder.
    *
    * `'nitro'` and `'vite'` are shorthands for `'@nuxt/nitro-server'` (a full server
@@ -1906,6 +1920,67 @@ export interface ConfigSchema {
     builder?: '@nuxt/nitro-server' | '@nuxt/vite-server' | 'nitro' | 'vite' | (string & {}) | { bundle: (nuxt: Nuxt) => Promise<void> }
   }
 
+  /**
+   * Configuration of the configured `server.builder`, whose shape that builder declares.
+   *
+   * @see [Nitro configuration docs](https://nitro.build/config)
+   */
+  nitro: NitroConfig
+
+  /**
+   * Global route options applied to matching server routes.
+   *
+   * @experimental This is an experimental feature and API may change in the future.
+   *
+   * @see [Nitro route rules documentation](https://nitro.build/config#routerules)
+   */
+  routeRules: Record<string, RouteRuleConfig> | undefined
+
+  /**
+   * Server handlers registered with the configured `server.builder`.
+   *
+   * Each handler accepts the following options:
+   * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
+   *
+   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
+   *
+   * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
+   *
+   * @example
+   * ```js
+   * serverHandlers: [
+   *   { route: '/path/foo/**:name', handler: '#server/foohandler.ts' }
+   * ]
+   * ```
+   */
+  serverHandlers: ServerHandler[]
+
+  /**
+   * Development-only server handlers registered with the configured `server.builder`.
+   *
+   * @see [Nitro server routes documentation](https://nitro.build/guide/routing)
+   */
+  devServerHandlers: DevServerHandler[]
+
+  /**
+   * Plugins registered with the configured `server.builder` through `addNitroPlugin()`,
+   * which run once when the server starts. Configure `nitro.plugins` instead.
+   *
+   * @private
+   */
+  _serverPlugins: ServerPlugin[]
+
+  /**
+   * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
+   * tracing for Nuxt-owned subsystems, and forward the channels the configured
+   * `server.builder` provides.
+   *
+   * @experimental Channel names, payload shapes, and option keys may change.
+   *
+   * @see [Untracing naming registry](https://github.com/unjs/untracing)
+   */
+  tracingChannel: boolean | TracingChannelOptions
+
   postcss: {
   /**
    * A strategy for ordering PostCSS plugins.
@@ -1914,6 +1989,9 @@ export interface ConfigSchema {
 
     /**
      * Options for configuring PostCSS plugins.
+     *
+     * No plugins are configured by default with the Vite builder. A plugin named here is resolved
+     * from your project, so `autoprefixer` and `cssnano` have to be installed to be used.
      *
      * @see [PostCSS docs](https://postcss.org/)
      */
@@ -1927,7 +2005,7 @@ export interface ConfigSchema {
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
    *
-   * @note `sensitive` defaults to `true` with `future.compatibilityVersion >= 5`.
+   * @note `sensitive` defaults to `true`.
    *
    * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */

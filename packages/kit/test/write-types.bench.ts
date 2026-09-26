@@ -1,5 +1,5 @@
 import { rm } from 'node:fs/promises'
-import { afterAll, beforeAll, bench, describe } from 'vitest'
+import { afterAll, beforeAll, describe, test } from 'vitest'
 import { join, resolve } from 'pathe'
 import type { Nuxt } from 'nuxt/schema'
 import { loadNuxt, writeTypes } from '@nuxt/kit'
@@ -20,7 +20,9 @@ describe('writeTypes', async () => {
     await nuxt.close()
   }, 20_000)
 
-  bench('writeTypes in the basic-types fixture', async () => {
-    await writeTypes(nuxt)
+  test('writeTypes in the basic-types fixture', async ({ bench }) => {
+    await bench('writeTypes in the basic-types fixture', async () => {
+      await writeTypes(nuxt)
+    }).run()
   })
 })

@@ -28,6 +28,9 @@ dist
 .nuxt-*
 .vercel
 .netlify
+# written by `@netlify/dev` into the project it emulates
+test/fixtures/vite-server-netlify/.gitignore
+.wrangler
 .output
 .output-*
 .gen

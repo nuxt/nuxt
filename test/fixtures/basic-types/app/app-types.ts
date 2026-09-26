@@ -9,7 +9,7 @@ import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHoo
 import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, NuxtSSRContext, PageMeta, RequestEvent } from '#app'
+import type { NuxtError, NuxtRequestEvent, NuxtSSRContext, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -86,6 +86,10 @@ describe('API routes', () => {
     // ofetch's plain `$fetch`, returning `Promise<any>` for every request
     expectTypeOf($fetch).toEqualTypeOf<TypedFetch>()
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+  })
+
+  it('types the response of a handler written against `nuxt/server`', () => {
+    expectTypeOf($fetch('/api/portable')).toEqualTypeOf<Promise<{ greeting: string }>>()
   })
 
   it('types responses of routes contributed by augmentation', () => {
@@ -169,6 +173,15 @@ describe('API routes', () => {
     expectTypeOf(useAsyncData('api-union-with-pick', () => $fetch('/api/union'), { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
+
+    // https://github.com/nuxt/nuxt/issues/28030
+    function useGenericAsyncData<T extends { id: number }> () {
+      const { data } = useAsyncData<T>('api-generic-param', () => Promise.resolve({ id: 1 } as T))
+      expectTypeOf(data.value?.id).toEqualTypeOf<number | undefined>()
+      const { data: fetched } = useFetch<T>('/api/hello')
+      expectTypeOf(fetched.value?.id).toEqualTypeOf<number | undefined>()
+    }
+    useGenericAsyncData()
 
     expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
@@ -1218,7 +1231,7 @@ describe('request event typing', () => {
   it('resolves the event to the one contributed by `@nuxt/nitro-server`', () => {
     expectTypeOf(useRequestEvent()).toEqualTypeOf<H3Event | undefined>()
     expectTypeOf<NuxtSSRContext['event']>().toEqualTypeOf<H3Event>()
-    expectTypeOf<RequestEvent>().toEqualTypeOf<H3Event>()
+    expectTypeOf<NuxtRequestEvent>().toEqualTypeOf<H3Event>()
   })
 })
 
@@ -1230,7 +1243,8 @@ describe('route rules typing', () => {
     expectTypeOf(rules.appMiddleware).toEqualTypeOf<Record<string, boolean> | undefined>()
     expectTypeOf(rules.payload).toEqualTypeOf<boolean | undefined>()
     expectTypeOf(rules.appLayout).toEqualTypeOf<LayoutKey | false | undefined>()
-    expectTypeOf(rules.swr).toBeAny()
-    expectTypeOf(rules.headers).toBeAny()
+    // rules the app layer does not describe are read through the index signature
+    expectTypeOf(rules.swr).toBeUnknown()
+    expectTypeOf(rules.headers).toBeUnknown()
   })
 })

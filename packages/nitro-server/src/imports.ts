@@ -1,19 +1,11 @@
-import { mkdir, writeFile } from 'node:fs/promises'
 import { resolveModuleExportNames } from '@nuxt/kit/internal'
-import { resolveModulePath } from 'exsolve'
-import { join, normalize, relative } from 'pathe'
-
-interface ImportPreset { from: string, imports: Array<string | { name: string, as?: string }>, typeFrom?: string }
 
 // TODO: defineRenderHandler and useEvent
 export const v2ImportsPreset = [
+  // `getRouteRules` and `useRuntimeConfig` are auto-imported from `nuxt/server`
   {
     from: 'nitro/app',
-    imports: ['useNitroApp', 'getRouteRules'],
-  },
-  {
-    from: 'nitro/runtime-config',
-    imports: ['useRuntimeConfig'],
+    imports: ['useNitroApp'],
   },
   {
     from: 'nitro',
@@ -53,55 +45,91 @@ export const v2ImportsPreset = [
   },
 ]
 
-export async function getH3ImportsPreset () {
-  const h3Exports = await resolveModuleExportNames('nitro/h3', {
-    url: import.meta.url,
-  })
-  return {
-    from: 'nitro/h3',
-    imports: h3Exports.filter(n => !/^[A-Z]/.test(n) && n !== 'use'),
-  }
+/**
+ * The portable server surface, auto-imported in preference to h3's equivalents, so that
+ * code written without an import statement is code that survives an h3 or Nitro major.
+ *
+ * An explicit list rather than one resolved from the module, because which names are
+ * auto-imported is a compatibility promise and should change deliberately.
+ */
+export const nuxtServerImportsPreset = {
+  from: 'nuxt/server',
+  imports: [
+    'clearSession',
+    'createError',
+    'defineEventHandler',
+    'deleteCookie',
+    'deriveSecret',
+    'getCookie',
+    'getQuery',
+    'getRequestHeader',
+    'getRequestHeaders',
+    'getRequestIP',
+    'getRequestURL',
+    'getRouteRules',
+    'getRouterParam',
+    'getRouterParams',
+    'getSession',
+    'getValidatedQuery',
+    'handleCors',
+    'isNuxtError',
+    'readBody',
+    'readValidatedBody',
+    'sendRedirect',
+    'setCookie',
+    'setResponseStatus',
+    'toNuxtRequestEvent',
+    'updateSession',
+    'useRuntimeConfig',
+    'useSession',
+  ],
 }
 
-const PACKAGE_SUBPATH_RE = /^(?:@[^/]+\/)?[^@./][^/]*\/.+$/
+/**
+ * The portable surface with individual names redirected to another module, for code
+ * that is given Nitro v2 semantics for some of them (the `nitroLegacy` toggles, and
+ * module code written for Nitro v2).
+ *
+ * @param overrides Name to module, for the names that should not come from `nuxt/server`.
+ */
+export function getNuxtServerImportsPreset (overrides: Record<string, string> = {}): Array<{ from: string, imports: string[] }> {
+  const grouped = new Map<string, string[]>()
+  for (const name of nuxtServerImportsPreset.imports) {
+    const from = overrides[name] ?? nuxtServerImportsPreset.from
+    const names = grouped.get(from)
+    if (names) {
+      names.push(name)
+    } else {
+      grouped.set(from, [name])
+    }
+  }
+  return [...grouped].map(([from, imports]) => ({ from, imports }))
+}
+
+let h3ExportNames: Promise<string[]> | undefined
+
+/** The lowercase helper names `nitro/h3` exports, resolved once per process. */
+export function getH3ExportNames (): Promise<string[]> {
+  return h3ExportNames ||= resolveModuleExportNames('nitro/h3', { url: import.meta.url })
+    .then(names => names.filter(n => !/^[A-Z]/.test(n) && n !== 'use'))
+}
+
+/** v1-only h3 helpers, which are provided by the compat shim rather than `nitro/h3`. */
+const h3V1Imports = ['send', 'sendError', 'splitCookiesString', 'isStream', 'isWebResponse', 'defineRequestMiddleware', 'defineResponseMiddleware']
 
 /**
- * Nitro derives the type import path of an auto-import from the resolved file's package `exports`
- * subpath, re-attached to the package directory. For a package whose `exports` map does not mirror
- * its file layout that names a file which does not exist, and under `skipLibCheck` TypeScript
- * silently widens every import from it to `any`.
+ * h3's remaining helpers, for code that reaches past the portable surface. Names
+ * `nuxt/server` provides are dropped, so which module a name resolves to does not depend
+ * on the order the presets are applied in.
  *
- * An absolute `typeFrom` bypasses that resolution entirely, so point it at a generated module that
- * re-exports the resolved file by relative path, extension intact, so the package's own declaration
- * file is found.
- *
- * TODO: remove once the next Nitro beta includes https://github.com/nitrojs/nitro/pull/4565
+ * @param from Module to import the helpers from, for cases where `h3` resolves
+ * to the h3 v1 compat shim rather than `nitro/h3`; the shim also carries the v1-only names.
  */
-export function withImportTypeShims (presets: ImportPreset[], shimDir: string): { presets: ImportPreset[], writeShims: () => Promise<void> } {
-  const shimmed: ImportPreset[] = []
-  const shims: Array<[path: string, contents: string]> = []
-
-  for (const preset of presets) {
-    const resolved = PACKAGE_SUBPATH_RE.test(preset.from) && resolveModulePath(preset.from, { try: true, from: import.meta.url })
-    if (!resolved) {
-      shimmed.push(preset)
-      continue
-    }
-
-    // the shim has to sit outside the generated types directory: Nitro relativises `typeFrom`
-    // against that directory without a leading `./`, and a bare specifier would not resolve
-    const shim = join(shimDir, preset.from.replace(/\W/g, '_') + '.ts')
-    const specifier = relative(shimDir, normalize(resolved))
-    shims.push([shim, `export * from '${specifier.startsWith('.') ? specifier : './' + specifier}'\n`])
-    shimmed.push({ ...preset, typeFrom: shim })
-  }
-
+export async function getH3ImportsPreset (from?: string): Promise<{ from: string, imports: string[] }> {
+  const portable = new Set(nuxtServerImportsPreset.imports)
+  const imports = (await getH3ExportNames()).filter(n => !portable.has(n))
   return {
-    presets: shimmed,
-    async writeShims () {
-      if (shims.length === 0) { return }
-      await mkdir(shimDir, { recursive: true })
-      await Promise.all(shims.map(([path, contents]) => writeFile(path, contents, 'utf-8')))
-    },
+    from: from ?? 'nitro/h3',
+    imports: from ? [...imports, ...h3V1Imports] : imports,
   }
 }

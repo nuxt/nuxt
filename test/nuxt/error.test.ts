@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { HTTPError } from 'h3'
 import { NUXT_ERROR_SIGNATURE, NuxtError, createError, isNuxtError } from '#app/composables/error'
 import { reducers } from '#app/plugins/revive-payload.server'
-import { decodeSSRError, encodeSSRError, NUXT_ERROR_SIGNATURE as nitroSignature, stringifyErrorData } from '../../packages/nitro-server/src/runtime/utils/error'
+import { decodeSSRError, encodeSSRError, NUXT_ERROR_SIGNATURE as rendererSignature, stringifyErrorData } from '../../packages/nuxt/src/runtime/server/renderer/error'
 
 const reduceNuxtError = reducers.find(([name]) => name === 'NuxtError')![1]
 
@@ -58,8 +58,8 @@ describe('NuxtError / h3 interop', () => {
     expect(createError('boom').status).toBe(500)
   })
 
-  it('should fall back to a 500 status where h3 yields NaN', () => {
-    expect(new HTTPError({ statusCode: 'abc' as unknown as number }).status).toBeNaN()
+  it('should fall back to a 500 status for a non-numeric status', () => {
+    expect(new HTTPError({ statusCode: 'abc' as unknown as number }).status).toBe(500)
     expect(createError({ statusCode: 'abc' as unknown as number }).status).toBe(500)
   })
 
@@ -136,8 +136,8 @@ describe('NuxtError / h3 interop', () => {
 })
 
 describe('error signature', () => {
-  it('should match the copy the nitro error handler sends', () => {
-    expect(nitroSignature).toBe(NUXT_ERROR_SIGNATURE)
+  it('should match the copy the renderer sends', () => {
+    expect(rendererSignature).toBe(NUXT_ERROR_SIGNATURE)
   })
 })
 

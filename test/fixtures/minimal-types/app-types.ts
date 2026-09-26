@@ -32,7 +32,7 @@ describe('config typings', () => {
       buildAssetsDir: string
       buildId: string
       cdnURL: string
-      [key: string]: any
+      [key: string]: unknown
     }>()
   })
 
