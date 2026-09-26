@@ -28,9 +28,6 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): vo
   const nuxt = useNuxt()
   Object.assign(nuxt.options.nitro.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nuxt.options.nitro.runtimeConfig))
 
-  // Nitro does not exist before the `ready` hook, and for the lifetime of a build
-  // whose server builder is not backed by Nitro. Both are fine here: the config
-  // above is what Nitro reads when it is created.
   return tryUseNitro()?.updateConfig({ runtimeConfig: runtimeConfig as any })
 }
 

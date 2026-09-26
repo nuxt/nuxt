@@ -210,9 +210,6 @@ describe('updateRuntimeConfig', () => {
     expect(updateConfig).toHaveBeenCalledWith({ runtimeConfig: { example: { foo: 'bar' } } })
   })
 
-  // Nitro is not created until the `ready` hook, and calling this before then is
-  // supported, so it should stay quiet.
-  // @see https://github.com/nuxt/nuxt/issues/36396
   it('should not warn when nitro is not initialized yet', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     stubNuxt()
