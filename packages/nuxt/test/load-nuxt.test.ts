@@ -8,6 +8,7 @@ import { withoutTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
+import { _generateTypes } from '../../kit/src/template.ts'
 import { loadNuxt } from '../src/index.ts'
 import type { NitroConfig, NuxtConfig } from '../schema.ts'
 import type { Nitro } from 'nitropack/types'
@@ -159,6 +160,24 @@ describe('loadNuxt', () => {
     )
 
     expect(hasLayerServer).toBe(true)
+
+    await nuxt.close()
+  })
+
+  it('includes nuxt.schema files relative to typesDir in the node tsconfig', async () => {
+    const layerFixtureDir = withoutTrailingSlash(
+      normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
+    )
+
+    const nuxt = await loadNuxt({
+      cwd: layerFixtureDir,
+      overrides: { buildDir: join(layerFixtureDir, 'node_modules/.cache/nuxt/.nuxt') },
+      ready: true,
+    })
+    const { nodeTsConfig } = await _generateTypes(nuxt)
+
+    expect(nodeTsConfig.include).toContain('../nuxt.schema.*')
+    expect(nodeTsConfig.include).toContain('../layers/*/nuxt.schema.*')
 
     await nuxt.close()
   })
