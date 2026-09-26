@@ -348,7 +348,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   let paths: Record<string, [string]> | undefined
   let nodePaths: Record<string, [string]> | undefined
-  const applyNitroTypePaths = async (nitroConfig: NuxtOptions['nitro']) => {
+  const applyNitroTypePaths = async (nitroConfig: NitroConfig) => {
     paths ||= await resolveTypescriptPaths(nuxt)
     nitroConfig.typescript = defu(nitroConfig.typescript, {
       tsConfig: { compilerOptions: { paths: { ...paths } } },
