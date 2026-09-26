@@ -21,6 +21,7 @@ import type { Nitro } from 'nitro/types'
 
 const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
 const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
+const ofetchPath = resolveModulePath('ofetch', { try: true, from: import.meta.url }) ?? 'ofetch'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -614,7 +615,7 @@ export const dollarFetchTemplate: NuxtTemplate = {
     const fetchModule = useServerBuild(nuxt).runtime.fetch
     if (!fetchModule) {
       return [
-        'import { $fetch as _$fetch } from \'ofetch\'',
+        `import { $fetch as _$fetch } from ${JSON.stringify(ofetchPath)}`,
         'import { baseURL } from \'#internal/nuxt/paths\'',
         'if (!globalThis.$fetch) {',
         '  globalThis.$fetch = _$fetch.create({',
@@ -625,7 +626,7 @@ export const dollarFetchTemplate: NuxtTemplate = {
       ].join('\n')
     }
     return [
-      'import { createFetch } from \'ofetch\'',
+      `import { createFetch } from ${JSON.stringify(ofetchPath)}`,
       'import { baseURL } from \'#internal/nuxt/paths\'',
       `import { fetch } from ${JSON.stringify(fetchModule)}`,
       'if (!globalThis.$fetch) {',

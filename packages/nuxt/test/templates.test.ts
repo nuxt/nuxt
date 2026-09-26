@@ -97,6 +97,7 @@ describe('dollarFetchTemplate', () => {
     })
 
     expect(contents).toMatch(/import \{ fetch \} from "\/runtime\/fetch\.mjs"/)
+    expect(contents).toMatch(/import \{ createFetch \} from "\/[^"]*ofetch[^"]*"/)
     expect(contents).toMatch(/createFetch\(\{\s*fetch,/)
   })
 
@@ -109,7 +110,7 @@ describe('dollarFetchTemplate', () => {
 
     expect(contents).not.toMatch(/import \{ fetch \}/)
     expect(contents).not.toMatch(/createFetch/)
-    expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from ['"]ofetch['"]/)
+    expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from "\/[^"]*ofetch[^"]*"/)
     expect(contents).toMatch(/globalThis\.\$fetch = _\$fetch\.create\(\{\s*baseURL: baseURL\(\)/)
   })
 })
