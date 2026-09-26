@@ -2,7 +2,7 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { isSamePath, withoutBase } from 'ufo'
+import { isSamePath, withBase, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin } from '#app/nuxt'
 import type { RouteMiddleware } from '#app/composables/router'
@@ -20,6 +20,7 @@ import _routeRulesMatcher from '#build/route-rules.mjs'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
+import { serverPathFallback } from '#build/nuxt.config.mjs'
 
 // matches a trailing slash on the path only, leaving query and hash significant
 const PATH_TRAILING_SLASH_RE = /\/(?=$|[?#])/
@@ -110,6 +111,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const initialURL = import.meta.server
       ? nuxtApp.ssrContext!.url
       : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
+
+    // the path this document was served for (`initialURL` is the path it was rendered for)
+    const documentPath = import.meta.client && serverPathFallback ? withoutBase(window.location.pathname, routerBase) : ''
 
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
@@ -239,6 +243,18 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         if (nuxtApp.isHydrating) { return }
         if ((_routeRulesMatcher(to.path) as { noScripts?: boolean }).noScripts) {
           window.location.assign(router.resolve(to.fullPath).href)
+          return false
+        }
+      })
+    }
+
+    if (import.meta.client && serverPathFallback && !hashMode) {
+      router.beforeResolve((to) => {
+        // never reload the path this document was served for, so an SPA fallback cannot loop
+        if (to.matched.length || isSamePath(to.path, documentPath)) { return }
+        const url = new URL(withBase(to.fullPath, routerBase), window.location.href)
+        if (url.origin === window.location.origin) {
+          window.location.assign(url)
           return false
         }
       })

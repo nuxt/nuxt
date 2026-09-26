@@ -211,6 +211,9 @@ export default defineResolvers({
         return (await get('future.compatibilityVersion')) >= 5
       },
     },
+    serverPathFallback: {
+      $resolve: val => typeof val === 'boolean' ? val : true,
+    },
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {

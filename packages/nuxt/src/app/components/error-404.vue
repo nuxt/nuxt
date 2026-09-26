@@ -36,7 +36,7 @@ useHead({
   title: `${ props.status } - ${ props.statusText } | ${ props.appName }`,
   script: [
     {
-      innerHTML: `(()=>{if(!window.history.state||!window.history.state.back)return;const e=document.querySelector("[data-back-home]"),t=document.querySelector("[data-back-previous]");e&&t&&(t.onclick=()=>window.history.back(),e.hidden=!0,t.hidden=!1)})();`,
+      innerHTML: `(()=>{if(!(window.history.state&&window.history.state.back||document.referrer.startsWith(window.location.origin+"/")))return;const t=document.querySelector("[data-back-home]"),e=document.querySelector("[data-back-previous]");t&&e&&(e.onclick=()=>window.history.back(),t.hidden=!0,e.hidden=!1)})();`,
       tagPosition: 'bodyClose'
     }
   ],
