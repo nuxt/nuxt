@@ -29,6 +29,22 @@ export function getHostServerApis (nuxt: Nuxt = useNuxt()): ServerApi[] | undefi
   }
 }
 
+/**
+ * Returns the variant the configured server prefers, or `undefined` (with a warning)
+ * when it runs none of them.
+ *
+ * @example
+ * ```ts
+ * const server = resolveServerVariant({
+ *   nuxt: resolver.resolve('./runtime/server'),
+ *   nitro2: resolver.resolve('./runtime/server.legacy'),
+ * })
+ * ```
+ */
+export function resolveServerVariant<T> (variants: Partial<Record<ServerApi, T>>): T | undefined {
+  return resolveVariant<T, ServerApi>('resolveServerVariant', variants, value => value, SERVER_APIS)?.value
+}
+
 /** An unidentifiable host is, in practice, an older Nuxt on nitro v2. */
 const UNIDENTIFIED_HOST_APIS: ServerApi[] = ['nitro2', 'nuxt', 'nitro3']
 
@@ -257,12 +273,21 @@ export function tryUseNitro (): NitroInstance | undefined {
   return (tryUseNuxt() as any)?._nitro
 }
 
+/** A server import whose `from` may be one module per server API. */
+export type ServerImportInput = Omit<NuxtImport, 'from'> & { from: ServerApiVariants<string> }
+
 /**
  * Add server imports to be auto-imported in the server program.
  */
-export function addServerImports (imports: NuxtImport | NuxtImport[]): void {
+export function addServerImports (imports: ServerImportInput | ServerImportInput[]): void {
   const nuxt = useNuxt()
-  const _imports = toArray(imports)
+  const _imports: NuxtImport[] = []
+  for (const entry of toArray(imports)) {
+    const resolved = resolveVariant('addServerImports', entry.from, value => value, SERVER_APIS)
+    if (resolved) {
+      _imports.push({ ...entry, from: resolved.value })
+    }
+  }
   if (_imports.length === 0) {
     return
   }
