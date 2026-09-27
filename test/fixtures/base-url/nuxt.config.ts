@@ -7,5 +7,7 @@ export default withMatrix({
   routeRules: {
     '/no-ssr': { ssr: false },
     '/prerendered': { prerender: true },
+    '/api/prerendered-fetch': { prerender: true },
+    '/api/echo': { headers: { 'x-echo': '1' } },
   },
 })

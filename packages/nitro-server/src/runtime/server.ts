@@ -12,16 +12,19 @@
  * must be exported here too.
  */
 import { defineEventHandler as defineH3EventHandler } from 'nitro/h3'
-import type { EventHandler, RequestEvent } from 'nuxt/server'
+import { serverFetch as nitroServerFetch } from 'nitro'
+import type { EventHandler, RequestEvent, ServerFetchInit } from 'nuxt/server'
 
 import {
   clearSession as clearNuxtSession,
   createError,
   getSession as getNuxtSession,
+  resolveServerFetchInit,
   updateSession as updateNuxtSession,
   useSession as useNuxtSession,
 } from 'nuxt/internal/server-default'
 
+import { withBaseURL } from './utils/base'
 import { bufferRequestBody } from './utils/body'
 import { serverDiagnostics } from './diagnostics'
 
@@ -79,4 +82,8 @@ export function defineEventHandler<Result> (handler: EventHandler<Result>): Even
     bufferRequestBody(event)
     return handler(event as RequestEvent) as Result
   }) as unknown as EventHandler<Result>
+}
+
+export function serverFetch (event: Pick<RequestEvent, 'req' | 'context'>, path: string, init?: ServerFetchInit): Promise<Response> {
+  return nitroServerFetch(withBaseURL(path), resolveServerFetchInit(event, init), { nuxt: { '~internal': true } })
 }

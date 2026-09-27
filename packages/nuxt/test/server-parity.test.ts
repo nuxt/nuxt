@@ -61,6 +61,7 @@ interface FourXSurface {
   readValidatedBody: <Output>(event: RequestEvent, validate: (data: unknown) => ValidateResult<Output>) => Promise<Output>
   handleCors: (event: RequestEvent, options?: CorsOptions) => Response | false
   useAppConfig: (event?: RequestEvent) => SharedAppConfig
+  serverFetch: (event: RequestEvent, path: string, init?: RequestInit & { forwardHeaders?: boolean | string[] }) => Promise<Response>
 }
 
 /** Value exports 4.x has. */
@@ -96,6 +97,7 @@ const FOURX_VALUE_EXPORTS = [
   'getRequestProtocol',
   'parseCookies',
   'matchRouteRules',
+  'serverFetch',
 ]
 
 /** Value exports only this branch has. */
