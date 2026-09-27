@@ -47,6 +47,7 @@ export {
 
 export { getRouteRules, matchRouteRules } from './utils/route-rules'
 export { useRuntimeConfig } from 'nitro/runtime-config'
+export { useNitroHooks as useServerHooks } from 'nitro/app'
 
 export {
   createError,

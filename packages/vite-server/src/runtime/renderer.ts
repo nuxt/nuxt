@@ -1,10 +1,9 @@
 import { joinURL, withQuery } from 'ufo'
-import { createHooks } from 'hookable'
 import { SSR_ERROR_PARAM, appendVary, describeError, encodeSSRError, isExpectedError, isJsonRequest } from 'nuxt/internal/renderer/error'
 import type { DescribedError } from 'nuxt/internal/renderer/error'
 import { mergeHeaders } from 'nuxt/internal/renderer/headers'
-import { createError } from 'nuxt/server'
-import type { NuxtRendererOptions, RendererHooks } from 'nuxt/internal/renderer/runtime'
+import { createError, useServerHooks } from 'nuxt/server'
+import type { NuxtRendererOptions } from 'nuxt/internal/renderer/runtime'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
 import { createRequestEvent } from './event.ts'
@@ -25,12 +24,6 @@ export type MatchRouteRules = (path: string) => {
 }
 
 /**
- * Hooks the renderer calls while rendering. Without a server runtime there is no channel
- * for a module to register one at build time, so a custom server is the one that hooks in.
- */
-export const serverHooks: RendererHooks = createHooks() as unknown as RendererHooks
-
-/**
  * The capabilities `@nuxt/vite-server` provides to the renderer. Everything comes from the
  * platform or from values the build serialised, so the same options run on a node server
  * and in a web-standard worker.
@@ -48,7 +41,7 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     buildAssetsURL,
     publicAssetsURL,
     getRouteRules: event => ({ ssr: true, ...matchRouteRules(event.url.pathname) }),
-    hooks: () => serverHooks,
+    hooks: useServerHooks,
     createResponse: (body, init) => new Response(body, init),
     createError: init => createError(init),
     prerender,

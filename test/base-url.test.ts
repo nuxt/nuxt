@@ -78,6 +78,10 @@ describe.skipIf(!runs)('base URL set at build time', () => {
     })
   })
 
+  it('should call `render:html` handlers registered with `useServerHooks`', async () => {
+    expect(await $fetch<string>('/foo/')).toContain('<meta name="server-hooks" content="ok">')
+  })
+
   it('should hydrate and navigate on the client under the base URL', async () => {
     const browser = await getBrowser()
     const page = await browser.newPage({})

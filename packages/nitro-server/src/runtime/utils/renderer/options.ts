@@ -29,7 +29,7 @@ export const rendererOptions: NuxtRendererOptions = {
   buildAssetsURL,
   publicAssetsURL,
   getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
-  hooks: () => useNitroHooks() as RendererHooks,
+  hooks: useNitroHooks as () => RendererHooks,
   createResponse: (body, init) => {
     const response = new FastResponse(body, init)
     if (legacyCompat) {
