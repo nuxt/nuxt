@@ -339,7 +339,7 @@ function provideFallbackValues (obj: Record<string, any>) {
 
 function restoreNullValues (target: Record<string, any>, source: Record<string, any>) {
   for (const key in source) {
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+    if (key === '__proto__' || key === 'constructor') {
       continue
     }
     if (source[key] === null) {
