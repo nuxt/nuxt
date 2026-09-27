@@ -175,11 +175,11 @@ defineProps<{ count: number }>()
 </script>
 `
       const viteResult = await viteTransform(source, 'hello.server.vue')
-      expect(viteResult).toContain('v-for="n in __vforBound(count)"')
+      expect(viteResult).toContain('v-for="n in nuxtVforBound(count)"')
       expect(viteResult).not.toContain('v-for="n in count"')
 
       const webpackResult = await webpackTransform(source, 'hello.server.vue')
-      expect(webpackResult).toContain('v-for="n in __vforBound(count)"')
+      expect(webpackResult).toContain('v-for="n in nuxtVforBound(count)"')
       expect(webpackResult).not.toContain('v-for="n in count"')
     })
 
