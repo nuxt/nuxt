@@ -314,11 +314,19 @@ export default defineResolvers({
       if (_val && typeof _val === 'object') {
         restoreNullValues(merged, _val)
       }
-      merged.app = (typeof merged.app === 'object' && merged.app !== null) ? merged.app : {}
-      merged.app.buildId ??= buildId
-      merged.app.baseURL ??= app.baseURL
-      merged.app.buildAssetsDir ??= app.buildAssetsDir
-      merged.app.cdnURL ??= app.cdnURL
+      if (!merged.app || typeof merged.app !== 'object') {
+        merged.app = {
+          buildId,
+          baseURL: app.baseURL,
+          buildAssetsDir: app.buildAssetsDir,
+          cdnURL: app.cdnURL,
+        }
+      } else {
+        merged.app.buildId ??= buildId
+        merged.app.baseURL ??= app.baseURL
+        merged.app.buildAssetsDir ??= app.buildAssetsDir
+        merged.app.cdnURL ??= app.cdnURL
+      }
       return merged
     },
   },
