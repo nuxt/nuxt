@@ -7,6 +7,10 @@
  * - `nuxt.island` (per-island `renderToString`)
  * - `nuxt.data` (`useAsyncData` / `useFetch` handler executions)
  * - `nuxt.plugin` (Nuxt app plugin invocations)
+ * - `nuxt.hook` (`nuxtApp.hooks` calls with at least one listener; payload is
+ *   `{ hook: { name } }`)
+ * - `nuxt.middleware` (route middleware executions; payload is
+ *   `{ middleware: { name, path, global } }`)
  *
  * Channel names follow the [untracing](https://github.com/unjs/untracing)
  * `{namespace}.{operation}` convention.
