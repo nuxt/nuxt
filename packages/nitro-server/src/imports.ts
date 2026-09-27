@@ -78,7 +78,6 @@ export const nuxtServerImportsPreset = {
     'sendRedirect',
     'setCookie',
     'setResponseStatus',
-    'toNuxtRequestEvent',
     'updateSession',
     'useRuntimeConfig',
     'useSession',

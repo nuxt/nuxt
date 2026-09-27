@@ -52,7 +52,6 @@ export {
   NuxtError,
   sendRedirect,
   setResponseStatus,
-  toNuxtRequestEvent,
   useAppConfig,
 } from 'nuxt/internal/server-default'
 
