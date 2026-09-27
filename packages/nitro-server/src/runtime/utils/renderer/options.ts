@@ -1,13 +1,15 @@
 import { HTTPError, writeEarlyHints } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
-import { useNitroApp, useNitroHooks } from 'nitro/app'
+import { useNitroApp } from 'nitro/app'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { FastResponse } from 'srvx'
 import type { NuxtSSRContext } from '#app/types'
 import { createRendererInstance } from 'nuxt/internal/renderer/instance'
 import type { NuxtRendererInstance } from 'nuxt/internal/renderer/instance'
 import { appEvent } from 'nuxt/internal/renderer/runtime'
-import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/internal/renderer/runtime'
+import type { NuxtRendererOptions, RendererRouteRules } from 'nuxt/internal/renderer/runtime'
+
+import { useServerHooks } from '../../server'
 
 import '../../context'
 
@@ -29,7 +31,7 @@ export const rendererOptions: NuxtRendererOptions = {
   buildAssetsURL,
   publicAssetsURL,
   getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
-  hooks: () => useNitroHooks() as RendererHooks,
+  hooks: useServerHooks,
   createResponse: (body, init) => {
     const response = new FastResponse(body, init)
     if (legacyCompat) {

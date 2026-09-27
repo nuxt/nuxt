@@ -13,7 +13,8 @@
  */
 import { defineEventHandler as defineH3EventHandler } from 'nitro/h3'
 import { serverFetch as nitroServerFetch } from 'nitro'
-import type { EventHandler, RequestEvent, ServerFetchInit } from 'nuxt/server'
+import { useNitroHooks } from 'nitro/app'
+import type { EventHandler, NuxtServerHooks, NuxtServerRendererHooks, RequestEvent, ServerFetchInit, ServerHookable } from 'nuxt/server'
 
 import {
   clearSession as clearNuxtSession,
@@ -86,4 +87,8 @@ export function defineEventHandler<Result> (handler: EventHandler<Result>): Even
 
 export function serverFetch (event: Pick<RequestEvent, 'req' | 'context'>, path: string, init?: ServerFetchInit): Promise<Response> {
   return nitroServerFetch(withBaseURL(path), resolveServerFetchInit(event, init), { nuxt: { '~internal': true } })
+}
+
+export function useServerHooks (): ServerHookable<NuxtServerHooks & NuxtServerRendererHooks> {
+  return useNitroHooks() as unknown as ServerHookable<NuxtServerHooks & NuxtServerRendererHooks>
 }

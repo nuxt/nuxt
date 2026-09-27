@@ -85,6 +85,7 @@ export const nuxtServerImportsPreset = {
     'setResponseStatus',
     'updateSession',
     'useRuntimeConfig',
+    'useServerHooks',
     'useSession',
   ],
 }
