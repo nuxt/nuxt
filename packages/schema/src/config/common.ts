@@ -314,6 +314,9 @@ export default defineResolvers({
       if (_val && typeof _val === 'object') {
         restoreNullValues(merged, _val)
       }
+      if (!merged.public || typeof merged.public !== 'object') {
+        merged.public = {}
+      }
       if (!merged.app || typeof merged.app !== 'object') {
         merged.app = {
           buildId,
