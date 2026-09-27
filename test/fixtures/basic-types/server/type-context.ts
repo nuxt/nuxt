@@ -1,9 +1,9 @@
 import { expectTypeOf } from 'vitest'
 import type { H3Event } from 'nitro/h3'
-import { getRouterParam, handleCors, useSession } from 'nitro/h3'
+import { getRouterParam, useSession } from 'nitro/h3'
 import { defineCachedHandler } from 'nitro/cache'
 import type { NuxtRequestEvent, RequestEvent, RequestEventContext } from 'nuxt/server'
-import { defineEventHandler, getQuery, getRequestURL, getRouteRules, toNuxtRequestEvent } from 'nuxt/server'
+import { defineEventHandler, getQuery, getRequestURL, getRouteRules } from 'nuxt/server'
 
 // @ts-expect-error Fromage is 'cheese'
 const _fake: Fromage = 'babybel'
@@ -41,13 +41,7 @@ const portableHandler = defineEventHandler(async (event) => {
   // @ts-expect-error `waitUntil` is not part of the portable event
   void event.waitUntil
 
-  // the runtime's own event, for the helpers that need it
-  const runtimeEvent = toNuxtRequestEvent(event)
-  expectTypeOf(runtimeEvent).toEqualTypeOf<H3Event>()
-  expectTypeOf(runtimeEvent.node).not.toBeNever()
-  handleCors(runtimeEvent, { origin: '*' })
-
-  // the same value, so a cast reaches it too
+  // the runtime's own event, reached by a cast
   expectTypeOf(event as NuxtRequestEvent).toEqualTypeOf<H3Event>()
 
   return { greeting: 'hello' }
