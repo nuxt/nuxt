@@ -16,7 +16,6 @@ import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 import { distDir, nitroImplicitDependencies, toArray } from './utils.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 import { getH3ExportNames, getH3ImportsPreset, getNuxtServerImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from './imports.ts'
-import { wrapLegacyHandler } from './runtime/compat/wrapper.ts'
 import { migratedPlugins, serverApiOf } from './registrations.ts'
 
 /**
@@ -707,6 +706,8 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
       normalizeLegacyHandlerRoute(entry as { route?: string, middleware?: boolean, handler: string }, unrouted)
       const base = widenLegacyHandlerRoute(entry, widened)
       if (typeof entry.handler === 'function') {
+        // nitro runtime imports warn when loaded outside a Nitro build
+        const { wrapLegacyHandler } = await import('./runtime/compat/wrapper.ts')
         entry.handler = wrapLegacyHandler(entry.handler, base) as typeof entry.handler
       }
     }
