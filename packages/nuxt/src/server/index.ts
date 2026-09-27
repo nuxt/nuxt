@@ -120,12 +120,82 @@ export function isNuxtError<DataT = unknown> (error: unknown): error is NuxtErro
 }
 
 /**
- * The URL of the incoming request.
+ * Forwarded headers to trust. Enable only behind a proxy that overwrites them.
  *
  * @since 4.6.0
  */
-export function getRequestURL (event: EventWithURL): URL {
-  return event.url ?? new URL(event.req.url)
+export interface ForwardedOptions {
+  /** Read the host from the first entry of `X-Forwarded-Host`. */
+  xForwardedHost?: boolean
+  /** Read the protocol from the first entry of `X-Forwarded-Proto`, when it is `http` or `https`. */
+  xForwardedProto?: boolean
+}
+
+/**
+ * The URL of the incoming request, as a new `URL` each call.
+ *
+ * @example
+ * ```ts
+ * const origin = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).origin
+ * ```
+ *
+ * @since 4.6.0
+ */
+export function getRequestURL (event: EventWithURL, options: ForwardedOptions = {}): URL {
+  const url = new URL(event.url ?? event.req.url)
+  url.protocol = getRequestProtocol(event, options)
+  if (options.xForwardedHost) {
+    const host = getRequestHost(event, options)
+    if (host) {
+      applyForwardedHost(url, host)
+    }
+  }
+  return url
+}
+
+/**
+ * The `Host` of the request, or an empty string.
+ *
+ * @since 4.6.0
+ */
+export function getRequestHost (event: EventWithRequest, options: Pick<ForwardedOptions, 'xForwardedHost'> = {}): string {
+  if (options.xForwardedHost) {
+    const forwarded = event.req.headers.get('x-forwarded-host')?.split(',')[0]!.trim()
+    if (forwarded) {
+      return forwarded
+    }
+  }
+  return event.req.headers.get('host') || ''
+}
+
+/**
+ * The protocol of the request, without the trailing colon.
+ *
+ * @since 4.6.0
+ */
+export function getRequestProtocol (event: EventWithURL, options: Pick<ForwardedOptions, 'xForwardedProto'> = {}): string {
+  if (options.xForwardedProto) {
+    const forwarded = event.req.headers.get('x-forwarded-proto')?.split(',')[0]!.trim()
+    if (forwarded === 'https' || forwarded === 'http') {
+      return forwarded
+    }
+  }
+  return (event.url ?? new URL(event.req.url)).protocol.slice(0, -1)
+}
+
+const PORT_RE = /^\d{1,5}$/
+
+function applyForwardedHost (url: URL, host: string): void {
+  const separator = host.lastIndexOf(':')
+  const hasPort = separator > host.lastIndexOf(']')
+  const hostname = hasPort ? host.slice(0, separator) : host
+  const previous = url.hostname
+  url.hostname = hostname
+  if (url.hostname === previous && hostname.toLowerCase() !== previous) {
+    return
+  }
+  const port = hasPort ? host.slice(separator + 1) : ''
+  url.port = PORT_RE.test(port) && +port < 65536 ? port : ''
 }
 
 /**
@@ -298,6 +368,16 @@ function collectEntries (entries: Iterable<[string, string]>): Record<string, st
 }
 
 /**
+ * Read every cookie sent with the request, keyed by name.
+ *
+ * @since 4.6.0
+ */
+export function parseCookies (event: EventWithRequest): Record<string, string> {
+  const header = event.req.headers.get('cookie')
+  return header ? parse(header) as Record<string, string> : {}
+}
+
+/**
  * Read one cookie sent with the request, or `undefined` when it was not sent.
  *
  * @since 4.6.0
@@ -361,12 +441,21 @@ export function getRouteRules (_event: Pick<RequestEvent, 'context'>): AppRouteR
 }
 
 /**
+ * The route rules for a path relative to the app base URL.
+ *
+ * @since 4.6.0
+ */
+export function matchRouteRules (_path: string, _method = 'GET'): AppRouteRules {
+  return {}
+}
+
+/**
  * The runtime configuration, including the keys only the server can read.
  *
  * @since 4.6.0
  */
-export function useRuntimeConfig (): RuntimeConfig {
-  return _useRuntimeConfig() as RuntimeConfig
+export function useRuntimeConfig (event?: Pick<RequestEvent, 'context'>): RuntimeConfig {
+  return _useRuntimeConfig(event) as RuntimeConfig
 }
 
 let sharedAppConfig: SharedAppConfig | undefined
