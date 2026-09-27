@@ -1,4 +1,4 @@
-import { useNitroHooks } from 'nitro/app'
+import { useNitroApp, useNitroHooks } from 'nitro/app'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import { HTTPError, getQuery } from 'nitro/h3'
@@ -25,6 +25,8 @@ import { createEvent } from '../utils/base'
 import { applyIslandPrerenderHints } from '../utils/prerender'
 import { rendererInstance } from '../utils/renderer/options'
 import { prerenderRenderingURLs } from '../utils/cache'
+import { decorateLegacyEvent } from '../compat/decorate'
+import { legacyCompat } from '#nuxt-compat/flags'
 import { useStorage } from 'nitro/storage'
 import type { Storage } from 'unstorage'
 
@@ -74,6 +76,10 @@ const inFlightIslands: Map<string, Promise<IslandRenderResult>> | null = import.
 export default {
   async fetch (request: Request): Promise<Response> {
     const event = createEvent(request)
+    // built outside h3's routing like the page render event, so it needs the same v2 decoration
+    if (legacyCompat) {
+      decorateLegacyEvent(event, useNitroApp())
+    }
     try {
       event.res.headers.set('content-type', 'application/json;charset=utf-8')
       event.res.headers.set('x-powered-by', 'Nuxt')
