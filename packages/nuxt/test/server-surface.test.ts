@@ -17,7 +17,6 @@ import {
   sendRedirect,
   setCookie,
   setResponseStatus,
-  toNuxtRequestEvent,
 } from '../src/server/index'
 import type { NuxtErrorLike, RequestEvent } from '../src/server/index'
 
@@ -277,16 +276,5 @@ describe('the event the surface is typed against', () => {
     expectTypeOf<RequestEvent['context']>().toExtend<Record<string, unknown>>()
     expectTypeOf<RequestEvent>().not.toHaveProperty('node')
     expectTypeOf<RequestEvent>().not.toHaveProperty('waitUntil')
-  })
-
-  it('resolves to the event itself where it is web-shaped', () => {
-    const e = event(new Request('https://nuxt.com/api'))
-    expect(toNuxtRequestEvent(e)).toBe(e)
-  })
-
-  it('resolves to the event named in `~app` where there is one', () => {
-    const runtimeEvent = event(new Request('https://nuxt.com/api'))
-    const view = Object.assign(event(new Request('https://nuxt.com/api')), { '~app': runtimeEvent })
-    expect(toNuxtRequestEvent(view)).toBe(runtimeEvent)
   })
 })

@@ -1,8 +1,7 @@
 import { expectTypeOf } from 'vitest'
 import type { H3Event } from 'h3'
-import { handleCors } from 'h3'
 import type { NuxtRequestEvent, RequestEvent, RequestEventContext } from 'nuxt/server'
-import { defineEventHandler, getQuery, getRequestURL, getRouteRules, toNuxtRequestEvent } from 'nuxt/server'
+import { defineEventHandler, getQuery, getRequestURL, getRouteRules } from 'nuxt/server'
 
 // @ts-expect-error Fromage is 'cheese'
 const _fake: Fromage = 'babybel'
@@ -36,12 +35,6 @@ const portableHandler = defineEventHandler((event) => {
   void event.node
   // @ts-expect-error `path` is not part of the portable event
   void event.path
-
-  // the runtime's own event, for the helpers that need it
-  const runtimeEvent = toNuxtRequestEvent(event)
-  expectTypeOf(runtimeEvent).toEqualTypeOf<H3Event>()
-  expectTypeOf(runtimeEvent.node).not.toBeNever()
-  handleCors(runtimeEvent, { origin: '*' })
 
   return { greeting: 'hello' }
 })

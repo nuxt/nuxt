@@ -53,7 +53,6 @@ export {
 
 export {
   deriveSecret,
-  toNuxtRequestEvent,
   useAppConfig,
 } from 'nuxt/internal/server-default'
 

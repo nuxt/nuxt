@@ -3,16 +3,15 @@
  * web-standard part of the event every server runtime provides. Code written
  * against them runs on any Nuxt server builder.
  *
- * {@link toNuxtRequestEvent} returns the event in the shape the configured
- * `server.builder` provides. Anything not exported here comes from the server
- * runtime itself (`h3`, `nitropack`), and pins the code to it.
+ * Anything not exported here comes from the server runtime itself (`h3`,
+ * `nitropack`), and pins the code to it.
  *
  * @module nuxt/server
  */
 import { parse, serialize } from 'cookie-es'
 import type { CookieSerializeOptions } from '../app/types/cookie'
 import { parseQuery } from 'ufo'
-import type { AppRouteRules, NuxtRequestEvent, RequestEvent, RuntimeConfig, SharedAppConfig } from 'nuxt/schema'
+import type { AppRouteRules, RequestEvent, RuntimeConfig, SharedAppConfig } from 'nuxt/schema'
 import { useRuntimeConfig as _useRuntimeConfig } from 'nuxt/internal/server-runtime-config'
 import _appConfig from 'nuxt/internal/server-app-config'
 import { klona } from 'klona'
@@ -34,7 +33,7 @@ export type { NuxtErrorJSON } from '../app/types'
 
 /**
  * The request event in the shape the configured `server.builder` provides: an `h3` v1
- * `H3Event` under `@nuxt/nitro-server`. Returned by {@link toNuxtRequestEvent}.
+ * `H3Event` under `@nuxt/nitro-server`.
  *
  * @since 4.6.0
  */
@@ -69,28 +68,6 @@ export type EventHandler<Result = unknown> = (event: RequestEvent) => Result
  */
 export function defineEventHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
   return handler
-}
-
-/**
- * The event in the shape the configured `server.builder` provides, for calls the
- * helpers here do not cover. It is the same request, not a copy.
- *
- * @example
- * ```ts
- * // server/api/cors.ts
- * import { defineEventHandler, toNuxtRequestEvent } from 'nuxt/server'
- * import { handleCors } from 'h3'
- *
- * export default defineEventHandler((event) => {
- *   handleCors(toNuxtRequestEvent(event), { origin: '*' })
- *   return { ok: true }
- * })
- * ```
- *
- * @since 4.6.0
- */
-export function toNuxtRequestEvent (event: RequestEvent): NuxtRequestEvent {
-  return ((event as RequestEvent & { '~app'?: NuxtRequestEvent })['~app'] ?? event) as NuxtRequestEvent
 }
 
 export { createError }

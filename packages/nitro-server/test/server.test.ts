@@ -217,13 +217,6 @@ describe('the shape of what it reads off an h3 v1 event', () => {
       expect(e.node.res.statusCode).toBe(204)
     })
 
-    it('resolves through `toNuxtRequestEvent` to the h3 v1 event it is a view of', () => {
-      const e = event('/api/hello?name=nuxt')
-      const handler = delegate.defineEventHandler(portable => delegate.toNuxtRequestEvent(portable))
-
-      expect(handler(e)).toBe(e)
-    })
-
     it('is the same event every time, so state stored on it is shared', () => {
       const e = event('/')
       const handler = delegate.defineEventHandler(portable => portable)

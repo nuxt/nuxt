@@ -32,7 +32,6 @@ import type {
  */
 interface MainSurface {
   defineEventHandler: <Result>(handler: (event: RequestEvent) => Result) => (event: RequestEvent) => Result
-  toNuxtRequestEvent: (event: RequestEvent) => NuxtRequestEvent
   createError: (...args: never[]) => Error
   isNuxtError: (error: unknown) => boolean
   getRequestURL: (event: RequestEvent) => URL
@@ -64,7 +63,6 @@ interface MainSurface {
 /** Value exports `main` has. */
 const MAIN_VALUE_EXPORTS = [
   'defineEventHandler',
-  'toNuxtRequestEvent',
   'createError',
   'NuxtError',
   'isNuxtError',
