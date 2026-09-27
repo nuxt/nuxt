@@ -29,7 +29,9 @@ export {
   deleteCookie,
   getCookie,
   getQuery,
+  getRequestHost,
   getRequestIP,
+  getRequestProtocol,
   getRequestURL,
   getRouterParam,
   getRouterParams,
@@ -40,7 +42,7 @@ export {
   setCookie,
 } from 'nitro/h3'
 
-export { getRouteRules } from './utils/route-rules'
+export { getRouteRules, matchRouteRules } from './utils/route-rules'
 export { useRuntimeConfig } from 'nitro/runtime-config'
 
 export {
@@ -50,6 +52,7 @@ export {
   getRequestHeaders,
   isNuxtError,
   NuxtError,
+  parseCookies,
   sendRedirect,
   setResponseStatus,
   useAppConfig,

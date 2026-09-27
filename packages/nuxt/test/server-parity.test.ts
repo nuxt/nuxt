@@ -33,7 +33,11 @@ interface FourXSurface {
   defineEventHandler: <Result>(handler: (event: RequestEvent) => Result) => (event: RequestEvent) => Result
   createError: (...args: never[]) => Error
   isNuxtError: (error: unknown) => boolean
-  getRequestURL: (event: RequestEvent) => URL
+  getRequestURL: (event: RequestEvent, options?: { xForwardedHost?: boolean, xForwardedProto?: boolean }) => URL
+  getRequestHost: (event: RequestEvent, options?: { xForwardedHost?: boolean }) => string
+  getRequestProtocol: (event: RequestEvent, options?: { xForwardedProto?: boolean }) => string
+  parseCookies: (event: RequestEvent) => Record<string, string>
+  matchRouteRules: (path: string, method?: string) => AppRouteRules
   getRequestHeader: (event: RequestEvent, name: string) => string | undefined
   getRequestHeaders: (event: RequestEvent) => Record<string, string>
   setResponseStatus: (event: RequestEvent, status: number, statusText?: string) => void
@@ -44,7 +48,7 @@ interface FourXSurface {
   deleteCookie: (event: RequestEvent, name: string, options?: CookieSerializeOptions) => void
   sendRedirect: (event: RequestEvent, location: string, status?: number) => string
   getRouteRules: (event: RequestEvent) => AppRouteRules
-  useRuntimeConfig: () => RuntimeConfig
+  useRuntimeConfig: (event?: RequestEvent) => RuntimeConfig
   useSession: <T extends SessionData>(event: SessionEvent, config?: SessionConfig) => Promise<SessionManager<T>>
   getSession: <T extends SessionData>(event: SessionEvent, config?: SessionConfig) => Promise<Session<T>>
   updateSession: <T extends SessionData>(event: SessionEvent, config?: SessionConfig, update?: SessionUpdate<T>) => Promise<Session<T>>
@@ -88,6 +92,10 @@ const FOURX_VALUE_EXPORTS = [
   'readValidatedBody',
   'handleCors',
   'useAppConfig',
+  'getRequestHost',
+  'getRequestProtocol',
+  'parseCookies',
+  'matchRouteRules',
 ]
 
 /** Value exports only this branch has. */

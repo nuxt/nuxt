@@ -8,5 +8,9 @@ import { withBaseURL } from './base.ts'
  * A request nitro has already routed carries them on `event.context.routeRules`.
  */
 export function getRouteRules (event: RequestEvent): AppRouteRules {
-  return (event.context.routeRules || getNitroRouteRules(event.req.method, withBaseURL(event.url.pathname)).routeRules || {}) as AppRouteRules
+  return (event.context.routeRules as AppRouteRules | undefined) || matchRouteRules(event.url.pathname, event.req.method)
+}
+
+export function matchRouteRules (path: string, method = 'GET'): AppRouteRules {
+  return (getNitroRouteRules(method, withBaseURL(path)).routeRules || {}) as AppRouteRules
 }
