@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import type { NitroConfig } from 'nitro/types'
 
+import { createHooks } from 'hookable'
 import { createUnimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
 
@@ -35,6 +36,10 @@ function createNuxt (options: Record<string, any> = {}) {
       ...options,
     },
   } as unknown as Nuxt
+}
+
+function createLateNitro (nitroConfig: NitroConfig) {
+  return { options: { alias: {}, plugins: nitroConfig.plugins, handlers: nitroConfig.handlers }, hooks: createHooks() } as any
 }
 
 describe('getNitroPackageResolutions', () => {
@@ -484,8 +489,9 @@ describe('setupNitroCompat', () => {
     expect(nitroConfig.plugins!.map(String)).toEqual([expect.stringMatching(/compat[\\/]event-plugin/), expect.stringMatching(/compat[\\/]hooks-plugin/)])
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`#virtual-module/template` (imports `nitropack/runtime`)') })
 
-    // a template function is rendered once nitro exists, so its evidence arrives late
-    await registerLateScope({ options: { alias: {}, plugins: nitroConfig.plugins, handlers: nitroConfig.handlers } } as any)
+    const nitro = createLateNitro(nitroConfig)
+    registerLateScope(nitro)
+    await nitro.hooks.callHook('build:before', nitro)
 
     expect(report.mock.calls[1]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`#virtual-module/handler` (imports `h3`)') })
     report.mockRestore()
@@ -507,13 +513,41 @@ describe('setupNitroCompat', () => {
 
     const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
 
+    const nitro = createLateNitro(nitroConfig)
+    registerLateScope(nitro)
     nitroReady!()
-    await registerLateScope({ options: { alias: {}, plugins: nitroConfig.plugins, handlers: nitroConfig.handlers } } as any)
+    await nitro.hooks.callHook('build:before', nitro)
 
     const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
     const transformed = await plugin.transform.handler.call(null, `import { useStorage } from 'nitropack/runtime'`, '#virtual-module/late')
     expect(transformed.code).toMatch(/compat[\\/]nitro-v2/)
     expect(nitroConfig.plugins!.map(String)).toEqual([expect.stringMatching(/compat[\\/]event-plugin/), expect.stringMatching(/compat[\\/]hooks-plugin/)])
+    vi.restoreAllMocks()
+  })
+
+  it('renders virtual templates after `nitro:init` hooks have returned', async () => {
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    let pagesResolved!: () => void
+    const pages = new Promise<void>((resolve) => { pagesResolved = resolve })
+    const template = vi.fn(async () => {
+      await pages
+      return `import { useStorage } from 'nitropack/runtime'`
+    })
+    const nitroConfig: NitroConfig = {
+      virtual: { '#virtual-module/pages': template },
+      handlers: [{ route: '/pages', handler: '#virtual-module/pages' } as any],
+    }
+    const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+
+    const nitro = createLateNitro(nitroConfig)
+    await registerLateScope(nitro)
+
+    pagesResolved()
+    await nitro.hooks.callHook('build:before', nitro)
+    expect(template).toHaveBeenCalledTimes(1)
+    const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
+    const transformed = await plugin.transform.handler.call(null, `import { useStorage } from 'nitropack/runtime'`, '#virtual-module/pages')
+    expect(transformed.code).toMatch(/compat[\\/]nitro-v2/)
     vi.restoreAllMocks()
   })
 
@@ -704,7 +738,7 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
       ],
       plugins: [],
     }
-    registerLateScope({ options } as any)
+    registerLateScope({ options, hooks: createHooks() } as any)
 
     await expect(plugin.resolveId.handler.call(context, 'h3', late)).resolves.toMatch(/compat[\\/]h3-v1/)
     await expect(plugin.resolveId.handler.call(context, 'h3', join(dir, 'utils.ts'))).resolves.toMatch(/compat[\\/]h3-v1/)
@@ -726,7 +760,7 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
 
     const options = { handlers: [{ middleware: true, handler: late }], plugins: [] }
-    registerLateScope({ options } as any)
+    registerLateScope({ options, hooks: createHooks() } as any)
 
     expect(options.handlers[0]).toMatchObject({ route: '/**', middleware: true })
     expect(report).toHaveBeenCalledTimes(1)

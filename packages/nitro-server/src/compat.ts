@@ -11,7 +11,7 @@ import escapeRE from 'escape-string-regexp'
 import { getLayerDirectories, resolveAlias } from '@nuxt/kit'
 import { trackPendingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt, ServerApi } from '@nuxt/schema'
-import type { NitroConfig, NitroOptions } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 
 import { distDir, nitroImplicitDependencies, toArray } from './utils.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
@@ -541,7 +541,7 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * Returns a callback that absorbs registrations made after the build config was assembled;
  * call it once the nitro instance exists.
  */
-export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, legacy: ResolvedNitroLegacyOptions, modulePresets: LegacyImportsPreset[], installedModules: InstalledModule[] = [], unusedVariants: string[] = []): Promise<(nitro: { options: NitroOptions }) => Promise<void>> {
+export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, legacy: ResolvedNitroLegacyOptions, modulePresets: LegacyImportsPreset[], installedModules: InstalledModule[] = [], unusedVariants: string[] = []): Promise<(nitro: Pick<Nitro, 'options' | 'hooks'>) => void> {
   // a module may register its handler through an alias it added for the server build only
   const aliases: Record<string, string> = { ...nitroConfig.alias as Record<string, string>, ...nuxt.options.alias }
   const files = new Map<string, CompatScope>()
@@ -987,10 +987,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     return scope
   }
 
-  // modules pushing straight into `nitro.options` from `nitro:init` are too late for the
-  // pass above, but the transform only consults the scope at build time
-  const registerLateScope = async (nitro: { options: NitroOptions }) => {
-    for (const [id, template] of deferredVirtuals.splice(0)) {
+  const renderDeferredVirtuals = async (nitro: { options: NitroOptions }) => {
+    const pending = deferredVirtuals.splice(0)
+    for (const [id, template] of pending) {
       try {
         const code = await trackPendingTemplate(id, template)
         if (typeof code === 'string') {
@@ -1000,6 +999,17 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
         // reported by the bundler when it renders the template itself
       }
     }
+    if (pending.length > 0) {
+      rescan(nitro.options.plugins as string[], nitro.options.handlers, nitro.options.virtual)
+      invalidateScopeCache()
+    }
+  }
+
+  // modules pushing straight into `nitro.options` from `nitro:init` are too late for the
+  // pass above, but the transform only consults the scope at build time
+  const registerLateScope = (nitro: Pick<Nitro, 'options' | 'hooks'>) => {
+    // templates may await hooks that run after `nitro:init`, such as `pages:resolved`
+    nitro.hooks.hookOnce('build:before', () => renderDeferredVirtuals(nitro))
 
     for (const handler of nitro.options.handlers || []) {
       const entry = handler as { handler?: unknown }
