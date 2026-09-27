@@ -52,9 +52,28 @@ describe('runtimeConfig schema resolution', () => {
     expect(resolved.app.cdnURL).toBe('')
   })
 
-  it('safely ignores unsafe prototype keys while allowing prototype field', async () => {
+  it('keeps app namespace as an object when runtimeConfig.app is null', async () => {
     const common = (await import('../src/config/common.ts')).default
-    const inputWithProto = JSON.parse('{"__proto__":{"polluted":null},"custom":null,"prototype":null}')
+    const resolved = await common.runtimeConfig.$resolve({
+      app: null,
+    }, (key: string) => {
+      if (key === 'app') {
+        return { baseURL: '/fallback/', buildAssetsDir: '/_nuxt/', cdnURL: '' }
+      }
+      if (key === 'buildId') {
+        return 'fallback-build-id'
+      }
+      return undefined
+    })
+
+    expect(resolved.app).toBeTypeOf('object')
+    expect(resolved.app.baseURL).toBe('/fallback/')
+    expect(resolved.app.buildId).toBe('fallback-build-id')
+  })
+
+  it('safely ignores unsafe prototype keys while allowing prototype and constructor null', async () => {
+    const common = (await import('../src/config/common.ts')).default
+    const inputWithProto = JSON.parse('{"__proto__":{"polluted":null},"custom":null,"prototype":null,"constructor":null}')
 
     const resolved = await common.runtimeConfig.$resolve(inputWithProto, (key: string) => {
       if (key === 'app') {
@@ -65,6 +84,7 @@ describe('runtimeConfig schema resolution', () => {
 
     expect(resolved.custom).toBe(null)
     expect(resolved.prototype).toBe(null)
+    expect(resolved.constructor).toBe(null)
     expect(Object.prototype.hasOwnProperty.call(Object.prototype, 'polluted')).toBe(false)
   })
 })
