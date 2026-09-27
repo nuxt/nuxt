@@ -67,6 +67,7 @@ const commonSettings: NuxtConfig = {
   },
   experimental: {
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+    serverPathFallback: false,
   },
   imports: {
     polyfills: false,
