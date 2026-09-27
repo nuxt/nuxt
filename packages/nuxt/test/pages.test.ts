@@ -25,6 +25,16 @@ vi.mock('@nuxt/kit', async (original) => {
   }
 })
 
+vi.mock('knitwork', async (original) => {
+  return {
+    ...(await original<typeof import('knitwork')>()),
+    genArrayFromRaw: (val: any) => val,
+    genSafeVariableName: (..._args: string[]) => {
+      return 'mock'
+    },
+  }
+})
+
 /** `augmentPages`, tied to the mocked nuxt instance the way `augmentAndResolve` ties it to a real one. */
 function augmentForNuxt (pages: NuxtPage[], vfs: Record<string, string>, ctx: Parameters<typeof augmentPages>[2] = {}) {
   return augmentPages(pages, vfs, { nuxt: mockNuxt as unknown as Nuxt, ...ctx })
@@ -42,16 +52,6 @@ export function generateRoutesFromFiles (files: InputFile[], options: PagesConte
 }
 
 describe('pages:generateRoutesFromFiles', () => {
-  vi.mock('knitwork', async (original) => {
-    return {
-      ...(await original<typeof import('knitwork')>()),
-      genArrayFromRaw: (val: any) => val,
-      genSafeVariableName: (..._args: string[]) => {
-        return 'mock'
-      },
-    }
-  })
-
   const normalizedResults: Record<string, any> = {}
   const normalizedOverrideMetaResults: Record<string, any> = {}
 

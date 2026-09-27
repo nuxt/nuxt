@@ -186,10 +186,14 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
       return
     }
 
-    const environmentName = options.server === false ? 'client' : 'ssr'
+    // a server environment a deploy target owns builds the app too, when the server builder
+    // says so; anything else a builder contributes (Nitro's own, one per service) does not
+    const isAppServer = (name: string) => name === 'ssr' || !!nuxt._appServerEnvironments?.has(name)
     const isAllowed = isIsomorphic
-      ? (name: string) => name === 'client' || name === 'ssr'
-      : (name: string) => name === environmentName
+      ? (name: string) => name === 'client' || isAppServer(name)
+      : options.server === false
+        ? (name: string) => name === 'client'
+        : isAppServer
     // isomorphic plugins are normally just added to plugins, so only force when `prepend` is set
     const defaultEnforce = isIsomorphic ? (options?.prepend ? 'pre' : undefined) : (options?.prepend ? 'pre' : 'post')
 
@@ -216,7 +220,8 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
  * further environments (Nitro adds `nitro`, and one per service), so a plugin registered
  * here has to opt out of any environment it wasn't registered for. The check runs per
  * environment as Vite resolves them, so environments added after the plugin was
- * registered are still excluded.
+ * registered are still excluded, unless the server builder has named them as app server
+ * environments by then.
  *
  * The plugin is returned as a top-level plugin rather than nested behind a wrapper
  * so that Vite still applies `apply`, sorts by `enforce`, calls server-level hooks

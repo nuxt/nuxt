@@ -2,13 +2,9 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import type { Storage } from 'unstorage'
 import { useStorage } from 'nitro/storage'
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
+import type { CachedResponse } from 'nuxt/internal/renderer/runtime'
 
-export interface CachedResponse {
-  body: string
-  status: number
-  statusText: string
-  headers: Record<string, string>
-}
+export type { CachedResponse }
 
 /**
  * Stack of URLs currently rendering in the active async context (oldest first).

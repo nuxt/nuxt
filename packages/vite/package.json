@@ -16,6 +16,7 @@
     "./package.json": "./package.json"
   },
   "imports": {
+    "#ssr-sourcemap": "./src/ssr-sourcemap.ts",
     "#vite-node": "./src/vite-node.ts",
     "#vite-node-entry": "./src/vite-node-entry.ts",
     "#vite-node-islands-entry": "./src/vite-node-islands-entry.ts",
@@ -42,6 +43,7 @@
     "js-tokens": "catalog:build",
     "knitwork": "catalog:build",
     "mocked-exports": "catalog:build",
+    "my-bad": "catalog:nitro-runtime",
     "pathe": "catalog:build",
     "pkg-types": "catalog:build",
     "rolldown-string": "catalog:vite",
@@ -111,6 +113,7 @@
       "./package.json": "./package.json"
     },
     "imports": {
+      "#ssr-sourcemap": "./dist/ssr-sourcemap.mjs",
       "#vite-node": "./dist/vite-node.mjs",
       "#vite-node-entry": "./dist/vite-node-entry.mjs",
       "#vite-node-islands-entry": "./dist/vite-node-islands-entry.mjs",

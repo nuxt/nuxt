@@ -1,15 +1,28 @@
 /**
- * Minimal server-compatible types for the parts of `nuxt/app` types that are needed in
- * `@nuxt/nitro-server` and `@nuxt/schema`.
+ * Minimal server-compatible types for the parts of `nuxt/app` types that a server builder
+ * needs.
  */
 import type { SerializableHead } from '@unhead/vue'
 import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { Hookable } from 'hookable'
-import type { RequestEvent, RuntimeConfig } from '@nuxt/schema'
+import type { NuxtHookRegistry, NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
+
+export type { NuxtLinkOptions } from '@nuxt/schema'
 
 type HookResult = Promise<void> | void
+
+/** A log recorded during server rendering and replayed in the browser by `dev:ssr-logs`. */
+export interface DevServerLog {
+  level: number
+  type: string
+  tag: string
+  args: any[]
+  date: Date
+  message?: string
+  additional?: string | string[]
+  [key: string]: unknown
+}
 
 export interface NuxtAppLiterals {
   [key: string]: string
@@ -29,48 +42,6 @@ export interface PluginMeta {
   order?: number
 }
 
-/**
- * Create a NuxtLink component with given options as defaults.
- *
- * Declared without reference to `vue-router` types so this leaf does not
- * force a (possibly duplicated) `vue-router` instance into consuming
- * programs; the fields mirror `RouterLinkProps['activeClass' |
- * 'exactActiveClass']` and `NuxtLinkProps['prefetch' | 'prefetchedClass' |
- * 'prefetchOn']` in `../components/nuxt-link.ts`.
- * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
- */
-export interface NuxtLinkOptions {
-  /**
-   * The name of the component.
-   * @default "NuxtLink"
-   */
-  componentName?: string
-  /**
-   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
-   */
-  externalRelAttribute?: string | null
-  /**
-   * An option to either add or remove trailing slashes in the `href`.
-   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
-   */
-  trailingSlash?: 'append' | 'remove'
-  /** A class to apply to active links. */
-  activeClass?: string
-  /** A class to apply to exact active links. */
-  exactActiveClass?: string
-  /** A class to apply to links that have been prefetched. */
-  prefetchedClass?: string
-  /** When enabled will prefetch middleware, layouts and payloads of links in the viewport. */
-  prefetch?: boolean
-  /**
-   * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
-   */
-  prefetchOn?: Partial<{
-    visibility: boolean
-    interaction: boolean
-  }>
-}
-
 type AppRenderedContext = { ssrContext: NuxtSSRContext | undefined, renderResult: null | Awaited<ReturnType<ReturnType<typeof createRenderer>['renderToString']>> }
 
 /**
@@ -87,20 +58,20 @@ export interface NuxtServerRuntimeHooks {
  * The part of the runtime Nuxt app addressable from the server runtime
  * (`ssrContext.nuxt`). The full `NuxtApp` in `./nuxt.ts` is assignable to
  * this shape; `hooks` is deliberately narrowed to the members the server
- * runtime calls, as `Hookable` instantiations over different hook maps are
+ * runtime calls, as hook registries over different hook maps are
  * not mutually assignable.
  */
 export interface NuxtServerApp {
-  hooks: Pick<Hookable<NuxtServerRuntimeHooks>, 'hook' | 'callHook'>
+  hooks: Pick<NuxtHookRegistry<NuxtServerRuntimeHooks>, 'hook' | 'callHook'>
   payload: NuxtPayload
   ssrContext?: NuxtSSRContext
   [key: string]: unknown
 }
 
 /**
- * Type-only declaration of the `NuxtError` class in
- * `./composables/error.ts`, which remains the canonical exported value (and
- * the `NuxtError` type exported from `nuxt/app` / `#app`).
+ * Type-only declaration of the `NuxtError` class in `./error.ts`, which
+ * remains the canonical exported value (and the `NuxtError` type exported
+ * from `nuxt/app` / `#app` and from `nuxt/server`).
  *
  * The members are declared here rather than inherited from h3's `HTTPError`,
  * but must stay structurally compatible with it: that is what h3 and Nitro read
@@ -171,7 +142,7 @@ export interface NuxtPayload {
 
 export interface NuxtSSRContext extends SSRContext {
   url: string
-  event: RequestEvent
+  event: NuxtRequestEvent
   runtimeConfig: RuntimeConfig
   noSSR: boolean
   /** whether we are rendering an SSR error */

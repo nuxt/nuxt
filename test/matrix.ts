@@ -12,6 +12,10 @@ export const isBuilt = !isDev
 export const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 
 export const asyncContext = process.env.TEST_CONTEXT === 'async'
+
+/** Whether to opt out of the renderer rendering the error page itself, which v5 does by default. */
+export const legacyErrorRendering = process.env.TEST_ERROR_RENDERING === 'legacy-errors'
+
 export const typescriptBundlerResolution = process.env.MODULE_RESOLUTION !== 'node'
 
 /**
@@ -22,6 +26,7 @@ export const projectSuffix = [
   process.env.TEST_ENV,
   process.env.TEST_CONTEXT,
   process.env.TEST_MANIFEST,
+  process.env.TEST_ERROR_RENDERING,
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER
@@ -58,6 +63,7 @@ export function withMatrix (config: NuxtConfig) {
     experimental: {
       asyncContext,
       appManifest: isTestingAppManifest,
+      ...legacyErrorRendering ? { inlineErrorRendering: false } : {},
       nitroViteEnvironment,
     },
     compatibilityDate: 'latest',

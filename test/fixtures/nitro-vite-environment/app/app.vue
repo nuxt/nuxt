@@ -1,3 +1,5 @@
 <template>
-  <div>nitro-vite-environment</div>
+  <div>
+    <NuxtPage />
+  </div>
 </template>

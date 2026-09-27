@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
-import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
+import { hasProtocol, isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
@@ -166,6 +166,13 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         for (const handler of hooks.error) {
           await handler(err)
         }
+      } finally {
+        if (navigationId === navigationCounter) {
+          delete nuxtApp._processingMiddleware
+          if (import.meta.server) {
+            delete nuxtApp._middlewareTo
+          }
+        }
       }
     }
 
@@ -219,9 +226,15 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         const navigate = () => handleNavigation(props.to!, props.replace)
         return () => {
           const route = router.resolve(props.to!)
-          return props.custom
-            ? slots.default?.({ href: props.to, navigate, route })
-            : h('a', { href: props.to, onClick: (e: MouseEvent) => { e.preventDefault(); return navigate() } }, slots)
+          const isExternal = hasProtocol(props.to!, { acceptRelative: true })
+          const href = isExternal ? props.to! : joinURL(baseURL, props.to!)
+          if (props.custom) {
+            return slots.default?.({ href, navigate, route })
+          }
+          if (isExternal) {
+            return h('a', { href }, slots)
+          }
+          return h('a', { href, onClick: (e: MouseEvent) => { e.preventDefault(); return navigate() } }, slots)
         }
       },
     }))
@@ -229,7 +242,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
     if (import.meta.client) {
       window.addEventListener('popstate', (event) => {
         const location = (event.target as Window).location
-        router.replace(location.href.replace(location.origin, ''))
+        router.replace(withoutBase(location.pathname, baseURL) + location.search + location.hash)
       })
     }
 

@@ -1,5 +1,5 @@
 import { rm } from 'node:fs/promises'
-import { afterAll, beforeAll, bench, describe } from 'vitest'
+import { afterAll, beforeAll, describe, test } from 'vitest'
 import { join } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import { build, loadNuxt } from 'nuxt'
@@ -32,11 +32,13 @@ describe('build', () => {
 
   afterAll(() => nuxt?.close())
 
-  bench('initial production build in the minimal test fixture', async () => {
-    await build(nuxt).catch((e) => {
-      if (!e?.toString().includes('bypass nitro build')) {
-        throw e
-      }
-    })
+  test('initial production build in the minimal test fixture', async ({ bench }) => {
+    await bench('initial production build in the minimal test fixture', async () => {
+      await build(nuxt).catch((e) => {
+        if (!e?.toString().includes('bypass nitro build')) {
+          throw e
+        }
+      })
+    }).run()
   })
 })

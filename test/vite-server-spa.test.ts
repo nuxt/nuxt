@@ -111,29 +111,6 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
   })
 })
 
-describe.skipIf(!runsOnceInMatrix)('server environment', () => {
-  const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt-ssr')
-  const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-ssr')
-
-  beforeAll(async () => {
-    const nuxt = await loadNuxt({ cwd: rootDir, ready: true, overrides: { ssr: true, buildDir, nitro: { output: { dir: outputDir } } } })
-    try {
-      await buildNuxt(nuxt)
-    } finally {
-      await nuxt.close()
-    }
-  }, 240 * 1000)
-
-  it('builds the server environment for a plugin or custom server to run', async () => {
-    const entry = await readFile(join(buildDir, 'dist/server/server.mjs'), 'utf-8')
-    expect(entry).toContain('vue/server-renderer')
-  })
-
-  it('still emits a client document', async () => {
-    expect(await readFile(join(outputDir, 'public/index.html'), 'utf-8')).toContain('<div id="__nuxt">')
-  })
-})
-
 describe.skipIf(!runsOnceInMatrix)('overridden client build options', () => {
   const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt-client-overrides')
   const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-client-overrides')

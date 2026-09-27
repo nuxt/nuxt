@@ -1,11 +1,10 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, tryUseNitro, updateTemplates, useNuxt } from '@nuxt/kit'
-import { headDiagnostics } from '@nuxt/kit/internal'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNuxt } from '@nuxt/kit'
+import { headDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
-import type { Nitro } from 'nitro/types'
 import { klona } from 'klona'
 import { resolveModulePath } from 'exsolve'
 
@@ -318,30 +317,28 @@ function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTy
       if (!options.autoImport) {
         return GENERATED_BY_COMMENT + AUTO_IMPORTS_DISABLED_COMMENT
       }
-      const nitro = tryUseNitro() as Nitro | undefined
-
       const nuxtImports = await ctx.getImports()
 
-      const nitroImports = await nitro?.unimport?.getImports() ?? []
-      const nitroImportsByName = new Map<string, Import>(nitroImports.map(i => [i.as || i.name, i]))
+      const serverImports = await useServerBuild(nuxt).imports?.() ?? []
+      const serverImportsByName = new Map<string, Import>(serverImports.map(i => [i.as || i.name, i]))
 
       const sharedImports: Import[] = []
 
       for (const i of nuxtImports) {
         const importName = i.as || i.name
-        const nitroImport = nitroImportsByName.get(importName)
-        if (!nitroImport || i.dtsDisabled || nitroImport.dtsDisabled) { continue }
+        const serverImport = serverImportsByName.get(importName)
+        if (!serverImport || i.dtsDisabled || serverImport.dtsDisabled) { continue }
 
         // Only include if both contexts import from the same source
-        // to avoid polluting shared space with nitro- or nuxt-only types (as a side-effect)
-        if (i.from !== nitroImport.from) { continue }
+        // to avoid polluting shared space with server- or nuxt-only types (as a side-effect)
+        if (i.from !== serverImport.from) { continue }
 
         sharedImports.push(i)
       }
 
       await cacheImportPaths(sharedImports)
 
-      // Utilities that exist in both Nuxt and Nitro contexts but with different implementations.
+      // Utilities that exist in both the Nuxt and server contexts but with different implementations.
       // These are safe to use in the shared context.
       const handCraftedDeclarations = `
   const useRuntimeConfig: () => import('nuxt/schema').RuntimeConfig

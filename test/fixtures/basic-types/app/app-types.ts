@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import type { Ref, SlotsType } from 'vue'
+import type { ComputedRef, Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
 import type { DynamicParam, Endpoint, HTTPMethod, TypedFetch, TypedFetchRequest } from 'nuxt/app'
@@ -9,7 +9,7 @@ import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHoo
 import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, NuxtSSRContext, PageMeta, RequestEvent } from '#app'
+import type { NuxtError, NuxtRequestEvent, NuxtSSRContext, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -86,6 +86,10 @@ describe('API routes', () => {
     // ofetch's plain `$fetch`, returning `Promise<any>` for every request
     expectTypeOf($fetch).toEqualTypeOf<TypedFetch>()
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+  })
+
+  it('types the response of a handler written against `nuxt/server`', () => {
+    expectTypeOf($fetch('/api/portable')).toEqualTypeOf<Promise<{ greeting: string }>>()
   })
 
   it('types responses of routes contributed by augmentation', () => {
@@ -169,6 +173,15 @@ describe('API routes', () => {
     expectTypeOf(useAsyncData('api-union-with-pick', () => $fetch('/api/union'), { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
+
+    // https://github.com/nuxt/nuxt/issues/28030
+    function useGenericAsyncData<T extends { id: number }> () {
+      const { data } = useAsyncData<T>('api-generic-param', () => Promise.resolve({ id: 1 } as T))
+      expectTypeOf(data.value?.id).toEqualTypeOf<number | undefined>()
+      const { data: fetched } = useFetch<T>('/api/hello')
+      expectTypeOf(fetched.value?.id).toEqualTypeOf<number | undefined>()
+    }
+    useGenericAsyncData()
 
     expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/api/hello')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
@@ -748,11 +761,11 @@ describe('components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
   })
 
-  it('types preloadComponents/prefetchComponents against global component names', () => {
-    expectTypeOf(preloadComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
-    expectTypeOf(prefetchComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
-    // @ts-expect-error not a global component
-    void preloadComponents('WithTypes')
+  it('suggests global component names to preloadComponents/prefetchComponents', () => {
+    type GlobalComponentName = 'GlobalComponent' | 'LazyGlobalComponent' | (string & {})
+    expectTypeOf(preloadComponents).parameter(0).toEqualTypeOf<GlobalComponentName | Array<GlobalComponentName>>()
+    expectTypeOf(prefetchComponents).parameter(0).toEqualTypeOf<GlobalComponentName | Array<GlobalComponentName>>()
+    void preloadComponents('RegisteredInAPlugin')
   })
 
   it('types NuxtIsland name against island component names', () => {
@@ -1076,6 +1089,68 @@ describe('composables', () => {
     const f2 = useFetchBoth<Foo>('/api/foo')
     expectTypeOf(f2.data.value).toEqualTypeOf<{ count: number }>()
   })
+
+  it('types addon options and extensions on created composables', () => {
+    const tenant = defineUseFetchAddon({
+      setup: (options: UseFetchAddonOptions<{ tenant?: string }>) => {
+        options.tenant ??= 'default'
+        return asyncData => ({ isSuccess: computed(() => asyncData.status.value === 'success') })
+      },
+      key: options => options.tenant,
+    })
+    const retries = defineUseFetchAddon({
+      setup: (options: UseFetchAddonOptions<{ retries?: number }>) => {
+        options.middleware.push(next => next())
+        return () => ({ attempts: ref(0) })
+      },
+    })
+
+    const useApi = createUseFetch({ addons: [tenant, retries] })
+    const r1 = useApi('/api/hello', { tenant: 'a', retries: 2 })
+    expectTypeOf(r1.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(r1.isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
+    expectTypeOf(r1.attempts).toEqualTypeOf<Ref<number>>()
+    // @ts-expect-error `tenant` is a string
+    useApi('/api/hello', { tenant: 1 })
+    // @ts-expect-error not an option any addon declares
+    useApi('/api/hello', { unknownOption: true })
+
+    const { isSuccess } = useApi('/api/hello')
+    expectTypeOf(isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
+    expectTypeOf(useApi('/api/hello').then(r => r.isSuccess)).toEqualTypeOf<Promise<ComputedRef<boolean>>>()
+
+    const useBare = createUseFetch({})
+    // @ts-expect-error `tenant` is not declared for this composable
+    useBare('/api/hello', { tenant: 'a' })
+    // @ts-expect-error nor is the extension present
+    void useBare('/api/hello').isSuccess
+
+    interface Pet { id: number, name: string }
+    interface PetStore {
+      '/pets': { [Endpoint]: { GET: { response: Pet[] } } }
+    }
+    const usePetStore = createUseFetch({ routes: {} as PetStore, addons: [tenant] })
+    const p1 = usePetStore('/pets', { tenant: 'a' })
+    expectTypeOf(p1.data).toEqualTypeOf<Ref<Pet[] | DefaultAsyncDataValue>>()
+    expectTypeOf(p1.isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
+    // @ts-expect-error `tenant` is a string
+    usePetStore('/pets', { tenant: 1 })
+    // @ts-expect-error no GET route matches '/pats'
+    usePetStore('/pats', { tenant: 'a' })
+
+    const polling = defineUseAsyncDataAddon({
+      setup: (options: UseAsyncDataAddonOptions<{ pollEvery?: number }>) => {
+        options.middleware.push(next => next())
+        return () => ({ polling: ref(Boolean(options.pollEvery)) })
+      },
+    })
+    const usePolled = createUseAsyncData({ addons: [polling] })
+    const a1 = usePolled('k', () => Promise.resolve(1), { pollEvery: 1000 })
+    expectTypeOf(a1.data.value).toEqualTypeOf<number | DefaultAsyncDataValue>()
+    expectTypeOf(a1.polling).toEqualTypeOf<Ref<boolean>>()
+    // @ts-expect-error `pollEvery` is a number
+    usePolled('k', () => Promise.resolve(1), { pollEvery: '1s' })
+  })
 })
 
 describe('app config', () => {
@@ -1218,7 +1293,7 @@ describe('request event typing', () => {
   it('resolves the event to the one contributed by `@nuxt/nitro-server`', () => {
     expectTypeOf(useRequestEvent()).toEqualTypeOf<H3Event | undefined>()
     expectTypeOf<NuxtSSRContext['event']>().toEqualTypeOf<H3Event>()
-    expectTypeOf<RequestEvent>().toEqualTypeOf<H3Event>()
+    expectTypeOf<NuxtRequestEvent>().toEqualTypeOf<H3Event>()
   })
 })
 
@@ -1230,7 +1305,8 @@ describe('route rules typing', () => {
     expectTypeOf(rules.appMiddleware).toEqualTypeOf<Record<string, boolean> | undefined>()
     expectTypeOf(rules.payload).toEqualTypeOf<boolean | undefined>()
     expectTypeOf(rules.appLayout).toEqualTypeOf<LayoutKey | false | undefined>()
-    expectTypeOf(rules.swr).toBeAny()
-    expectTypeOf(rules.headers).toBeAny()
+    // rules the app layer does not describe are read through the index signature
+    expectTypeOf(rules.swr).toBeUnknown()
+    expectTypeOf(rules.headers).toBeUnknown()
   })
 })

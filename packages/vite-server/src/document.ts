@@ -90,6 +90,11 @@ export function EntryImportMapPlugin (): Plugin {
  * A `buildApp` hook rather than a `builder.buildApp` config option, so that a plugin
  * bringing its own deploy target (`@cloudflare/vite-plugin`, for one) keeps its own
  * orchestration and its own environments: those are built as usual.
+ *
+ * It runs `pre`, because anything that renders reads the client manifest as it builds, and
+ * a target orchestrating with a config-level `builder.buildApp` (which is what such a
+ * plugin installs) would otherwise build its own environment first: Vite calls that before
+ * the first `post` hook.
  */
 // TODO: build server environment only when a target claims it
 export function BuildEnvironmentsPlugin (nuxt: Nuxt): Plugin {
@@ -97,7 +102,7 @@ export function BuildEnvironmentsPlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:vite-server:build-environments',
     apply: 'build',
     buildApp: {
-      order: 'post',
+      order: 'pre',
       async handler (builder) {
         const ssr = builder.environments.ssr
         if (ssr && nuxt.options.ssr === false) {

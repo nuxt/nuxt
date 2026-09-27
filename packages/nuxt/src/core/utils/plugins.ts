@@ -14,6 +14,14 @@ export function parseModuleId (id: string): { pathname: string, search: string }
   return { pathname: id.slice(0, qIndex), search: id.slice(qIndex) }
 }
 
+/**
+ * Combine multiple patterns into a single regular expression, for hook filters
+ * that accept only one `RegExp` (such as `resolveId.filter.id`).
+ */
+export function combineRE (patterns: RegExp[]): RegExp {
+  return new RegExp(patterns.map(re => `(?:${re.source})`).join('|'))
+}
+
 const VUE_FILE_RE = /\.vue$/
 const MACRO_QUERY_RE = /[?&]macro=/
 const EXACT_MACRO_QUERY_RE = /\?macro=true$/

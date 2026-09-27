@@ -13,6 +13,7 @@ export function ssr (nuxt: Nuxt) {
     external: isEnvApi
       ? []
       : [
+          'nitro',
           'nitro/runtime-config',
           // TODO: remove in v5
           '#internal/nitro',
@@ -39,6 +40,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
   const legacyExternals = isEnvApi
     ? []
     : [
+        'nitro',
         'nitro/runtime-config',
         // TODO: remove in v5
         '#internal/nitro',

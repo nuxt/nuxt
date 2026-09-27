@@ -1,4 +1,4 @@
-import type { RequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent } from '@nuxt/schema'
 import { useRequestEvent } from './ssr'
 
 /**
@@ -22,7 +22,7 @@ export function useRequestURL (opts: RequestURLOptions = {}): URL {
   return new URL(globalThis.location.href)
 }
 
-function getRequestURL (event: RequestEvent, opts: RequestURLOptions): URL {
+function getRequestURL (event: NuxtRequestEvent, opts: RequestURLOptions): URL {
   const url = new URL(event.url || event.req.url)
   if (opts.xForwardedProto) {
     const proto = event.req.headers.get('x-forwarded-proto')?.split(',')[0]?.trim()

@@ -11,7 +11,7 @@ links:
 
 ## Description
 
-`useLayout` returns a computed ref with the layout resolved for the current route, using the same chain as [`<NuxtLayout>`](/docs/4.x/api/components/nuxt-layout): the page's `layout` meta first, then the `appLayout` set via [route rules](/docs/4.x/guide/concepts/rendering#hybrid-rendering), then `'default'`.
+`useLayout` returns a computed ref with the layout resolved for the current route, using the same chain as [`<NuxtLayout>`](/docs/api/components/nuxt-layout): the page's `layout` meta first, then the `appLayout` set via [route rules](/docs/guide/concepts/rendering#hybrid-rendering), then `'default'`.
 
 Within a rendered `<NuxtLayout>` it reflects the enclosing layout; outside of one (for example in `app.vue`) it returns the layout that would be resolved for the current route.
 

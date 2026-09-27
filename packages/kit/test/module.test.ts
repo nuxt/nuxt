@@ -12,7 +12,7 @@ import { defineNuxtModule, installModule, loadNuxt, loadNuxtModuleInstance } fro
 
 const repoRoot = await findWorkspaceDir()
 
-describe('installNuxtModule', { sequential: true }, () => {
+describe('installNuxtModule', { concurrent: false }, () => {
   let nuxt: Nuxt
 
   const tempDir = join(repoRoot, 'node_modules/.temp/module-temp-hooks')
@@ -91,7 +91,7 @@ describe('installNuxtModule', { sequential: true }, () => {
   })
 })
 
-describe('module dependencies', { sequential: true }, () => {
+describe('module dependencies', { concurrent: false }, () => {
   let nuxt: Nuxt
 
   const tempDir = join(repoRoot, 'node_modules/.temp/module-dependencies')
@@ -468,7 +468,7 @@ export default Object.assign((options) => {
   })
 })
 
-describe('module install hooks', { sequential: true }, () => {
+describe('module install hooks', { concurrent: false }, () => {
   let nuxt: Nuxt
 
   const tempDir = join(repoRoot, 'node_modules/.temp/module-install-hooks')
@@ -594,7 +594,7 @@ describe('module install hooks', { sequential: true }, () => {
   })
 })
 
-describe('loadNuxtModuleInstance error surfacing', { sequential: true }, () => {
+describe('loadNuxtModuleInstance error surfacing', { concurrent: false }, () => {
   let nuxt: Nuxt
 
   const tempDir = join(repoRoot, 'node_modules/.temp/module-load-errors')

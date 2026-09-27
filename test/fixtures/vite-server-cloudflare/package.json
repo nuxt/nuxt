@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-vite-server-cloudflare",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.54.2",
+    "wrangler": "^4.127.1"
+  },
+  "engines": {
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  }
+}

@@ -1,4 +1,4 @@
-import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
+import type { NitroConfig, NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
 import { defu } from 'defu'
 
 import { useNuxt } from './context.ts'
@@ -20,7 +20,7 @@ export interface ExtendRouteRulesOptions {
 
 export function extendRouteRules (route: string, rule: NitroRouteConfig, options: ExtendRouteRulesOptions = {}): void {
   const nuxt = useNuxt()
-  for (const opts of [nuxt.options, nuxt.options.nitro]) {
+  for (const opts of [nuxt.options, nuxt.options.nitro as NitroConfig]) {
     opts.routeRules ||= {}
     opts.routeRules[route] = options.override
       ? defu(rule, opts.routeRules[route] as any)
