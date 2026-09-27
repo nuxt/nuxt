@@ -143,4 +143,3 @@ describe('collectDevCss', () => {
     expect(result).toEqual([])
   })
 })
-
