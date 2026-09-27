@@ -115,7 +115,7 @@
     "vitest-environment-nuxt": "catalog:dev",
     "vue": "catalog:app-runtime",
     "vue-component-type-helpers": "catalog:vue",
-    "vue-onigiri": "0.6.1",
+    "vue-onigiri": "catalog:app-runtime",
     "vue-router": "catalog:app-runtime",
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
