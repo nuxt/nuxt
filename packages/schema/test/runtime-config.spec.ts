@@ -87,4 +87,19 @@ describe('runtimeConfig schema resolution', () => {
     expect(resolved.constructor).toBe(null)
     expect(Object.prototype.hasOwnProperty.call(Object.prototype, 'polluted')).toBe(false)
   })
+
+  it('keeps public namespace as an object when runtimeConfig.public is null', async () => {
+    const common = (await import('../src/config/common.ts')).default
+    const resolved = await common.runtimeConfig.$resolve({
+      public: null,
+    }, (key: string) => {
+      if (key === 'app') {
+        return { baseURL: '/', buildAssetsDir: '/_nuxt/', cdnURL: '' }
+      }
+      return undefined
+    })
+
+    expect(resolved.public).toBeTypeOf('object')
+    expect(resolved.public).toEqual({})
+  })
 })
