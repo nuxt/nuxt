@@ -14,6 +14,7 @@ import type { NuxtImport, NuxtImportPreset, NuxtImportPresetSource } from './imp
 import type { NuxtManifest } from './manifest.ts'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt.ts'
 import type { ModuleMeta } from './module.ts'
+import type { ServerRequestTypes, ServerRouteHandler } from './server.ts'
 
 export type HookResult = Promise<void> | void
 
@@ -187,6 +188,17 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'app:templatesGenerated': (app: NuxtApp, templates: ResolvedNuxtTemplate[], options?: GenerateAppOptions) => HookResult
+  /**
+   * Called when Nuxt needs the full set of route handlers the server will serve, so that it can
+   * type `$fetch` and `useFetch` against them. The configured `server.builder` is expected to add
+   * the handlers it discovered by scanning, in addition to those registered through
+   * `serverHandlers`.
+   * @param routes Array of route handlers to be extended
+   * @param context Object the builder can extend
+   * @param context.requestTypes How the builder's types read a handler's validated request shapes
+   * @returns Promise
+   */
+  'server:routes': (routes: ServerRouteHandler[], context: { requestTypes?: ServerRequestTypes }) => HookResult
 
   /**
    * Called before Nuxt bundle builder.

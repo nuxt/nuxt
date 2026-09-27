@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-route-types-permissive",
+  "scripts": {
+    "build": "nuxt build",
+    "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+  }
+}

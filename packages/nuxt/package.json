@@ -103,6 +103,7 @@
     "errx": "catalog:app-runtime",
     "escape-string-regexp": "catalog:build",
     "exsolve": "catalog:build",
+    "fetchdts": "catalog:build",
     "fnv1a-64": "catalog:app-runtime",
     "hookable": "catalog:app-runtime",
     "ignore": "catalog:build",

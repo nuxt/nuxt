@@ -4,7 +4,7 @@ export default defineConfig([
   {
     dts: { oxc: true },
     exports: { devExports: true },
-    entry: ['src/index.ts', 'src/h3.ts', 'src/augments.ts'],
+    entry: ['src/index.ts', 'src/h3.ts', 'src/augments.ts', 'src/request-types.ts'],
     deps: {
       onlyBundle: [],
       neverBundle: ['@nuxt/schema', '#app/types'],

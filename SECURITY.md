@@ -14,7 +14,7 @@ Nuxt is built on top of other projects, each with their own security process:
 
 - [Nitro](https://github.com/nitrojs/nitro) - the server engine
 - [h3](https://github.com/h3js/h3) - the HTTP framework Nitro is built on
-- [Vue](https://github.com/vuejs/core) and [vue-router](https://github.com/vuejs/router) - see the [Vue security policy](https://vuejs.org/about/security)
+- [Vue](https://github.com/vuejs/core) and [vue-router](https://github.com/vuejs/router) - see the [Vue security policy](https://vuejs.org/guide/best-practices/security.html#reporting-vulnerabilities)
 - [unhead](https://github.com/unjs/unhead) - head/meta management
 - [Vite](https://github.com/vitejs/vite) and other build tooling
 

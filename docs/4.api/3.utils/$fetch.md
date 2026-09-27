@@ -64,6 +64,18 @@ async function contactForm () {
 If you use `$fetch` to call an (external) HTTPS URL with a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
 
+## Typed Requests
+
+`$fetch` is typed from the routes your server serves, so a response is typed by the handler that
+answers it, and a body, query or headers the handler validates are enforced on the call. A path
+built at runtime, an absolute URL or a `Request` object resolves to `unknown`; naming the response
+type (`$fetch<Todo[]>(url)`) overrides whatever Nuxt resolved.
+
+::read-more{to="/docs/4.x/getting-started/data-fetching#typed-routes"}
+Read more about typed routes, including how to declare a route Nuxt cannot see and how to reject a
+path no route answers.
+::
+
 ### Passing Headers and Cookies
 
 When we call `$fetch` in the browser, user headers like `cookie` will be directly sent to the API.

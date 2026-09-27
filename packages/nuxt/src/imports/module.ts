@@ -134,6 +134,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       },
       options,
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+      refreshImports: file => refreshImports(file),
     }))
 
     const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)
@@ -185,6 +186,29 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       })
     }
 
+    /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
+    let pendingRegeneration: Promise<void> | undefined
+    let staleScan = false
+    function refreshImports (path: string) {
+      if (!options.scan || !composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
+        return
+      }
+      if (pendingRegeneration) {
+        // a change may land after the in-flight scan has already read the directory,
+        // so schedule a single extra pass rather than resolving with stale imports
+        staleScan = true
+        return pendingRegeneration
+      }
+      pendingRegeneration = (async () => {
+        staleScan = false
+        await regenerateImports()
+        if (staleScan) {
+          await regenerateImports()
+        }
+      })().finally(() => { pendingRegeneration = undefined })
+      return pendingRegeneration
+    }
+
     nuxt.hook('modules:done', () => regenerateImports())
 
     // Generate types
@@ -195,10 +219,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // Watch composables/ directory
     nuxt.hook('builder:watch', async (_, relativePath) => {
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      if (options.scan && composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
-        await regenerateImports()
-      }
+      await refreshImports(resolve(nuxt.options.srcDir, relativePath))
     })
 
     // Watch for template generation

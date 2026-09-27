@@ -41,6 +41,11 @@ function createUseFetch (
 function createUseFetch (
   options: (callerOptions: UseFetchOptions) => Partial<UseFetchOptions>,
 ): typeof useFetch
+
+// where the client declares the routes it serves
+function createUseFetch<Routes> (
+  options: Partial<UseFetchOptions> & { routes: Routes },
+): DeclaredUseFetch<Routes>
 ```
 
 ## Options
@@ -48,6 +53,67 @@ function createUseFetch (
 `createUseFetch` accepts all the same options as [`useFetch`](/docs/4.x/api/composables/use-fetch#parameters), including `baseURL`, `headers`, `query`, `onRequest`, `onResponse`, `server`, `lazy`, `transform`, `getCachedData`, and more.
 
 See the full list of options in the [`useFetch` documentation](/docs/4.x/api/composables/use-fetch#parameters).
+
+## Typing a Third-Party API
+
+By default a composable created with `createUseFetch` is typed from the routes your own server
+serves, so a request to another API resolves to `unknown`. Pass `routes` to say what that API serves,
+and every request the composable makes is resolved against it instead:
+
+```ts [app/composables/usePetStore.ts]
+import type { DynamicParam, Endpoint } from 'nuxt/app'
+
+interface Pet { id: number, name: string }
+
+interface PetStoreRoutes {
+  '/pets': {
+    [Endpoint]: {
+      GET: { response: Pet[], query: { limit?: number } }
+      POST: { response: Pet, body: { name: string } }
+    }
+    // a path parameter, matched positionally
+    [DynamicParam]: {
+      [Endpoint]: { GET: { response: Pet } }
+    }
+  }
+}
+
+export const usePetStore = createUseFetch({
+  baseURL: 'https://api.example.com',
+  routes: {} as PetStoreRoutes,
+})
+```
+
+```ts
+const { data: pets } = await usePetStore('/pets')
+//      ^? Pet[]
+const { data: pet } = await usePetStore('/pets/42')
+//      ^? Pet
+await usePetStore('/pets', { method: 'post', body: { name: 'Rex' } })
+
+await usePetStore('/pats')
+//                ^ no GET route matches '/pats'
+await usePetStore('/pets', { method: 'put' })
+//                          ^ no PUT route matches '/pets'
+await usePetStore('/pets', { method: 'post' })
+//                          ^ body is required
+```
+
+Only the type of `routes` is read, so pass `{} as Routes`; the value is dropped before the request is
+made. The declared paths are matched **as written**, since they are the paths the API documents. You
+should not prefix them with the `baseURL`. A path built at runtime resolves to `unknown`.
+
+::note
+The routes a client declares are its own. They are not added to your app's route set, so plain
+`$fetch` and `useFetch` are unaffected, and this client will not accept your own server's paths.
+::
+
+::tip
+The interface above is the shape [`fetchdts`](https://github.com/unjs/fetchdts) uses, which is what
+Nuxt generates for your own server routes. A module can therefore generate one from an API
+description - an OpenAPI document, for example - with `compileRoutes` from `fetchdts/compiler`, and
+hand the emitted interface to `routes`.
+::
 
 ## Default vs Override Mode
 

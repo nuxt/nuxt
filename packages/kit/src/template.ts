@@ -243,6 +243,25 @@ async function getPathSubstitution (absolutePath: string, buildDir: string): Pro
 // describes, and TypeScript sources win over emitted JavaScript.
 const TS_PATH_TARGET_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']
 
+// Extensions an `include` glob such as `**/*` matches on its own (`.js` variants are matched
+// because we always set `allowJs`).
+const TS_MATCHED_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts', '.d.ts', '.js', '.jsx', '.mjs', '.cjs'])
+
+/**
+ * Rewrite an `include` entry so it names `extension` explicitly, or return `undefined` when the
+ * entry already targets specific files.
+ */
+function withExplicitExtension (entry: string, extension: string): string | undefined {
+  if (entry === '**/*' || entry.endsWith('/**/*')) {
+    return entry + extension
+  }
+  if (entry.includes('*') || basename(entry).includes('.')) {
+    return undefined
+  }
+  // directories are expanded by TypeScript to the extensions it recognises
+  return join(entry, '**/*' + extension)
+}
+
 /**
  * Resolve an extensionless `paths` target to the file TypeScript should load for it.
  *
@@ -381,6 +400,19 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude.add(join(relative, 'dist/*.*'))
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
+  }
+
+  // TypeScript matches `include` globs only against extensions it recognises.
+  const extraExtensions = nuxt.options.extensions.filter(extension => !TS_MATCHED_EXTENSIONS.has(extension))
+  for (const entries of [include, legacyInclude]) {
+    for (const entry of [...entries]) {
+      for (const extension of extraExtensions) {
+        const withExtension = withExplicitExtension(entry, extension)
+        if (withExtension) {
+          entries.add(withExtension)
+        }
+      }
+    }
   }
 
   const nestedModulesDirs: string[] = []
