@@ -314,6 +314,8 @@ export default defineResolvers({
       if (_val && typeof _val === 'object') {
         restoreNullValues(merged, _val)
       }
+      merged.app = (typeof merged.app === 'object' && merged.app !== null) ? merged.app : {}
+      merged.app.buildId ??= buildId
       merged.app.baseURL ??= app.baseURL
       merged.app.buildAssetsDir ??= app.buildAssetsDir
       merged.app.cdnURL ??= app.cdnURL
@@ -339,7 +341,7 @@ function provideFallbackValues (obj: Record<string, any>) {
 
 function restoreNullValues (target: Record<string, any>, source: Record<string, any>) {
   for (const key in source) {
-    if (key === '__proto__' || key === 'constructor') {
+    if (key === '__proto__' || (key === 'constructor' && source[key] !== null)) {
       continue
     }
     if (source[key] === null) {
