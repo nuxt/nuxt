@@ -314,9 +314,9 @@ export default defineResolvers({
       if (_val && typeof _val === 'object') {
         restoreNullValues(merged, _val)
       }
-      merged.app.baseURL ||= app.baseURL
-      merged.app.buildAssetsDir ||= app.buildAssetsDir
-      merged.app.cdnURL ||= app.cdnURL
+      merged.app.baseURL ??= app.baseURL
+      merged.app.buildAssetsDir ??= app.buildAssetsDir
+      merged.app.cdnURL ??= app.cdnURL
       return merged
     },
   },

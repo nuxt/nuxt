@@ -32,27 +32,29 @@ describe('runtimeConfig schema resolution', () => {
     expect(resolvedDirect.public.nestedString).toBe('hello')
   })
 
-  it('normalizes reserved app URL fields when provided with null', async () => {
+  it('normalizes reserved app URL fields when provided with null and preserves empty string', async () => {
     const common = (await import('../src/config/common.ts')).default
     const resolved = await common.runtimeConfig.$resolve({
       app: {
         baseURL: null,
         buildAssetsDir: null,
+        cdnURL: '',
       },
     }, (key: string) => {
       if (key === 'app') {
-        return { baseURL: '/custom-base/', buildAssetsDir: '/custom-assets/', cdnURL: '' }
+        return { baseURL: '/custom-base/', buildAssetsDir: '/custom-assets/', cdnURL: 'https://cdn.example.com' }
       }
       return undefined
     })
 
     expect(resolved.app.baseURL).toBe('/custom-base/')
     expect(resolved.app.buildAssetsDir).toBe('/custom-assets/')
+    expect(resolved.app.cdnURL).toBe('')
   })
 
-  it('safely ignores unsafe prototype keys', async () => {
+  it('safely ignores unsafe prototype keys while allowing prototype field', async () => {
     const common = (await import('../src/config/common.ts')).default
-    const inputWithProto = JSON.parse('{"__proto__":{"polluted":null},"custom":null}')
+    const inputWithProto = JSON.parse('{"__proto__":{"polluted":null},"custom":null,"prototype":null}')
 
     const resolved = await common.runtimeConfig.$resolve(inputWithProto, (key: string) => {
       if (key === 'app') {
@@ -62,6 +64,7 @@ describe('runtimeConfig schema resolution', () => {
     })
 
     expect(resolved.custom).toBe(null)
+    expect(resolved.prototype).toBe(null)
     expect(Object.prototype.hasOwnProperty.call(Object.prototype, 'polluted')).toBe(false)
   })
 })
