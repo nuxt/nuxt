@@ -23,7 +23,7 @@ function parseCookieValue (value: string) {
   } catch { return value }
 }
 
-type _CookieOptions = Omit<CookieSerializeOptions, 'encode' | 'expires'>
+type _CookieOptions = Omit<CookieSerializeOptions, 'encode'>
 
 export interface CookieOptions<T = any> extends _CookieOptions {
   decode?(value: string | null | undefined): T
@@ -33,15 +33,6 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   readonly?: boolean
   /** Whether this ref reads the named cookie from the jar. Defaults to an exact name match. */
   filter?(key: string): boolean
-
-  /**
-   * Expiration date for the cookie, or a getter that returns one.
-   *
-   * When a function is provided, it is evaluated on every cookie write
-   * so the expiration can be refreshed when the value is re-set.
-   * The getter should be pure (no side effects).
-   */
-  expires?: Date | (() => Date | undefined)
 
   /**
    * Refresh cookie expiration even when the value remains unchanged.
@@ -59,6 +50,18 @@ export interface CookieOptions<T = any> extends _CookieOptions {
    * @default false
    */
   refresh?: boolean
+}
+
+/** Options accepted by `useCookie`. */
+export interface UseCookieOptions<T = any> extends Omit<CookieOptions<T>, 'expires'> {
+  /**
+   * Expiration date for the cookie, or a getter that returns one.
+   *
+   * When a function is provided, it is evaluated on every cookie write
+   * so the expiration can be refreshed when the value is re-set.
+   * The getter should be pure (no side effects).
+   */
+  expires?: Date | (() => Date | undefined)
 }
 
 function resolveExpires (expires?: Date | (() => Date | undefined)): Date | undefined {
@@ -88,15 +91,15 @@ const CookieDefaults = {
     return encodeURIComponent(val)
   },
   refresh: false,
-} satisfies CookieOptions<any>
+} satisfies UseCookieOptions<any>
 
 // we use globalThis to avoid crashes in web workers
 const store = import.meta.client && cookieStore ? globalThis.cookieStore : undefined
 
 /** @since 3.0.0 */
-export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
-export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
-export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
+export function useCookie<T = string | null | undefined> (name: string, _opts?: UseCookieOptions<T> & { readonly?: false }): CookieRef<T>
+export function useCookie<T = string | null | undefined> (name: string, _opts: UseCookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
+export function useCookie<T = string | null | undefined> (name: string, _opts?: UseCookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   opts.filter ??= key => key === name
 
@@ -300,7 +303,7 @@ function readClientCookieJar () {
  * readable back from `document.cookie` on the current document, either because
  * the browser rejects the write or because it is scoped elsewhere.
  */
-function isWriteVisibleToDocument (opts: CookieOptions) {
+function isWriteVisibleToDocument (opts: UseCookieOptions) {
   // a partitioned cookie is readable from the partition that set it, so it is not excluded here
   if (opts.domain || opts.httpOnly) { return false }
   if (opts.secure && location.protocol !== 'https:') { return false }
@@ -320,13 +323,13 @@ function isCurrentPath (path: string) {
  * A write with a non-positive `maxAge` or a past `expires` date deletes the
  * cookie in the browser regardless of the value passed alongside it.
  */
-function isExpiredWrite (opts: CookieOptions) {
+function isExpiredWrite (opts: UseCookieOptions) {
   if (opts.maxAge !== undefined) { return opts.maxAge <= 0 }
   const expires = resolveExpires(opts.expires)
   return expires !== undefined && expires.getTime() <= Date.now()
 }
 
-function updateClientCookieJar (name: string, value: string | undefined, opts: CookieOptions) {
+function updateClientCookieJar (name: string, value: string | undefined, opts: UseCookieOptions) {
   if (!clientCookieJar) { return }
 
   if (!isWriteVisibleToDocument(opts)) {
@@ -381,7 +384,7 @@ function readResponseSetCookies (event: NuxtRequestEvent): string[] {
 // value is expected to be already encoded via `opts.encode`; pass through as-is
 const identity = (val: string) => val
 
-function toSerializeOptions (opts: CookieOptions): CookieSerializeOptions {
+function toSerializeOptions (opts: UseCookieOptions): CookieSerializeOptions {
   const { encode: _encode, decode: _decode, expires, ...rest } = opts
   return {
     ...rest,
@@ -390,7 +393,7 @@ function toSerializeOptions (opts: CookieOptions): CookieSerializeOptions {
   }
 }
 
-function serializeCookie (name: string, value: string | undefined, opts: CookieOptions = {}) {
+function serializeCookie (name: string, value: string | undefined, opts: UseCookieOptions = {}) {
   const serializeOpts = toSerializeOptions(opts)
   if (value === undefined) {
     return serialize(name, '', { ...serializeOpts, maxAge: -1 })
@@ -398,14 +401,14 @@ function serializeCookie (name: string, value: string | undefined, opts: CookieO
   return serialize(name, value, serializeOpts)
 }
 
-function writeClientCookie (name: string, value: string | undefined, opts: CookieOptions = {}) {
+function writeClientCookie (name: string, value: string | undefined, opts: UseCookieOptions = {}) {
   if (import.meta.client) {
     document.cookie = serializeCookie(name, value, opts)
     updateClientCookieJar(name, value, opts)
   }
 }
 
-function writeServerCookie (event: NuxtRequestEvent, name: string, value: string | undefined, opts: CookieOptions = {}) {
+function writeServerCookie (event: NuxtRequestEvent, name: string, value: string | undefined, opts: UseCookieOptions = {}) {
   if (event) {
     const serializeOpts = toSerializeOptions(opts)
     // update if value is set
@@ -495,7 +498,7 @@ function cookieRef<T> (value: T | undefined, initialDelay: number | undefined, g
  * This is required for the `refresh` option to ensure the cookie is
  * re-written on SSR even when the value remains unchanged.
  */
-function cookieServerRef<T> (name: string, value: T | undefined, opts: CookieOptions<any> & { encode: (value: any) => string }, nuxtApp: NuxtApp) {
+function cookieServerRef<T> (name: string, value: T | undefined, opts: UseCookieOptions<any> & { encode: (value: any) => string }, nuxtApp: NuxtApp) {
   const internalRef = ref(value)
 
   return customRef((track, trigger) => {
