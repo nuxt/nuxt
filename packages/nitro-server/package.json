@@ -73,7 +73,7 @@
     "vue": "catalog:app-runtime",
     "vue-bundle-renderer": "catalog:app-runtime",
     "vue-devtools-stub": "catalog:vue",
-    "vue-onigiri": "^0.6.1"
+    "vue-onigiri": "catalog:app-runtime"
   },
   "peerDependencies": {
     "@babel/plugin-proposal-decorators": "^7.25.0 || ^8.0.0",
