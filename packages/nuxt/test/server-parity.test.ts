@@ -31,7 +31,6 @@ import type {
  */
 interface FourXSurface {
   defineEventHandler: <Result>(handler: (event: RequestEvent) => Result) => (event: RequestEvent) => Result
-  toNuxtRequestEvent: (event: RequestEvent) => NuxtRequestEvent
   createError: (...args: never[]) => Error
   isNuxtError: (error: unknown) => boolean
   getRequestURL: (event: RequestEvent) => URL
@@ -63,7 +62,6 @@ interface FourXSurface {
 /** Value exports 4.x has. */
 const FOURX_VALUE_EXPORTS = [
   'defineEventHandler',
-  'toNuxtRequestEvent',
   'createError',
   'isNuxtError',
   'getRequestURL',

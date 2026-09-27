@@ -789,7 +789,7 @@ describe('getServerImportsPresets', () => {
 
     expect(presets).toHaveLength(source.size)
     // covered by `nuxt/server` alone, so unaffected by the toggles
-    expect(source.get('toNuxtRequestEvent')).toBe('nuxt/server')
+    expect(source.get('deriveSecret')).toBe('nuxt/server')
     expect(source.get('getRouteRules')).toBe('nuxt/server')
     expect(source.get('getQuery')).toMatch(/compat[\\/]h3-v1/)
     expect(source.get('useRuntimeConfig')).toMatch(/compat[\\/]runtime-config/)
