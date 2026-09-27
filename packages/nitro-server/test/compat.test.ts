@@ -125,6 +125,25 @@ describe('setupNitroCompat', () => {
     expect(nitroConfig.handlers![0]).toMatchObject({ route: '/**', middleware: true })
   })
 
+  it('registers route-less portable and nitro v3 handlers as global middleware without reporting them', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9002').mockImplementation(() => ({}) as any)
+    const handlers = [
+      declared({ handler: '/modules/cors.ts' }, 'nuxt'),
+      declared({ handler: '/modules/xss.ts' }, 'nuxt'),
+      declared({ handler: '/modules/v3.ts' }, 'nitro3'),
+      declared({ route: '/api', handler: '/modules/api.ts' }, 'nuxt'),
+    ]
+    const nitroConfig: NitroConfig = { handlers }
+    const registerLate = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+    await registerLate({ options: { handlers, devHandlers: [], plugins: [], virtual: {} } as any })
+
+    expect(handlers.slice(0, 3).every(h => h.route === '/**' && h.middleware === true)).toBe(true)
+    expect(handlers[3]).toMatchObject({ route: '/api' })
+    expect(handlers[3]).not.toHaveProperty('middleware')
+    expect(report).not.toHaveBeenCalled()
+    report.mockRestore()
+  })
+
   it('reports route-less v2 handlers once for the whole build', async () => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9002').mockImplementation(() => ({}) as any)
     const nitroConfig: NitroConfig = {
