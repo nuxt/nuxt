@@ -118,7 +118,7 @@ export default defineResolvers({
             await get('dev')
               ? {}
               : {
-                  'vue': ['onRenderTracked', 'onRenderTriggered'],
+                  'vue': ['onRenderTracked', 'onRenderTriggered', 'onServerPrefetch'],
                   '#app': ['definePayloadReducer', 'definePageMeta', 'onPrehydrate'],
                 },
           ),

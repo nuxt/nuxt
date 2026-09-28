@@ -501,6 +501,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (Object.keys(nuxt.options.optimization.treeShake.composables.client).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
         composables: nuxt.options.optimization.treeShake.composables.client,
+        preserveServerPrefetch: true,
       }), { server: false })
     }
 
