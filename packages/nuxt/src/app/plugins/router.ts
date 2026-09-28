@@ -6,9 +6,12 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
 import { clearError, createError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
+import type { RouteMiddleware } from '../composables/router'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 
 import { globalMiddleware } from '#build/middleware'
+import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { traceAsync } from '../internal/tracing'
 
 interface Route {
   /** Percentage encoded pathname section of the URL. */
@@ -290,7 +293,16 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || true
             }
-            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            const run = () => nuxtApp.runWithContext(() => middleware(to, from))
+            const result = await (import.meta.server && tracingChannelNuxt
+              ? traceAsync('nuxt.middleware', {
+                  middleware: {
+                    name: (middleware as any)._name as string | undefined || middleware.name || undefined,
+                    path: (middleware as any)._path as string | undefined,
+                    global: globalMiddleware.includes(middleware) || nuxtApp._middleware.global.includes(middleware as RouteMiddleware),
+                  },
+                }, run)
+              : run())
             if (import.meta.server) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
