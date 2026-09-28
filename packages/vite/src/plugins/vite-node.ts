@@ -22,6 +22,7 @@ import { resolveModulePath } from 'exsolve'
 
 import { toVirtualId } from '../utils/index.ts'
 import { collectDevCss } from '../utils/css.ts'
+import { isBundlerTracingEnabled, traceAsync } from '../utils/tracing.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
 import type { ErrorPartial } from '../types.ts'
 import type { ViteNodeErrorData } from '../vite-node-runner.ts'
@@ -508,10 +509,13 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
             if (request.payload.moduleId === '/') {
               throw { status: 400, message: 'Invalid moduleId' } satisfies ErrorPartial
             }
-            const ssrNode = nuxt.options.experimental.viteEnvironmentApi
-              ? ssrServer.environments.ssr
-              : getNode(ssrServer)
-            const response = await ssrNode.fetchModule(request.payload.moduleId)
+            const moduleId = request.payload.moduleId
+            const fetchModule = nuxt.options.experimental.viteEnvironmentApi
+              ? () => ssrServer.environments.ssr.fetchModule(moduleId)
+              : isBundlerTracingEnabled(nuxt)
+                ? () => traceAsync('nuxt.bundler.module', { url: moduleId, environment: 'ssr' }, () => getNode(ssrServer).fetchModule(moduleId))
+                : () => getNode(ssrServer).fetchModule(moduleId)
+            const response = await Promise.resolve(fetchModule())
               .catch(async (err) => {
                 const file = ssrServer.environments.ssr.moduleGraph.getModuleById(request.payload.moduleId)?.file ?? undefined
                 const errorData = serializeViteNodeError(err, request.payload.moduleId, file)

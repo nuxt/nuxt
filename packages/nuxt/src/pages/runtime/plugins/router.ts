@@ -20,7 +20,8 @@ import _routeRulesMatcher from '#build/route-rules.mjs'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
-import { serverPathFallback } from '#build/nuxt.config.mjs'
+import { serverPathFallback, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { traceAsync } from '#app/internal/tracing'
 
 // matches a trailing slash on the path only, leaving query and hash significant
 const PATH_TRAILING_SLASH_RE = /\/(?=$|[?#])/
@@ -309,7 +310,16 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
             }
-            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            const run = () => nuxtApp.runWithContext(() => middleware(to, from))
+            const result = await (import.meta.server && tracingChannelNuxt
+              ? traceAsync('nuxt.middleware', {
+                  middleware: {
+                    name: typeof entry === 'string' ? entry : (middleware as any)._name as string | undefined || middleware.name || undefined,
+                    path: (middleware as any)._path as string | undefined,
+                    global: typeof entry !== 'string' && (globalMiddleware.includes(entry) || nuxtApp._middleware.global.includes(entry)),
+                  },
+                }, run)
+              : run())
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({

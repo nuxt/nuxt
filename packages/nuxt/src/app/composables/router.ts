@@ -12,6 +12,7 @@ import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { getUserTrace } from '../utils'
 import { navigationDiagnostics } from '../diagnostics/navigation'
+import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /**
@@ -117,6 +118,9 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
     return
   }
   if (global) {
+    if (import.meta.server && tracingChannelNuxt && typeof name === 'string') {
+      Object.defineProperty(mw, '_name', { value: name, configurable: true })
+    }
     nuxtApp._middleware.global.push(mw)
   } else {
     nuxtApp._middleware.named[name] = mw

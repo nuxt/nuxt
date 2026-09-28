@@ -339,11 +339,16 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
   nuxtApp.hook = nuxtApp.hooks.hook
 
   if (import.meta.server) {
-    const contextCaller = async function (hooks: NuxtHookCallback[], args: any[]) {
+    const runHooks = async (hooks: NuxtHookCallback[], args: any[]) => {
       for (const hook of hooks) {
         await nuxtApp.runWithContext(() => hook(...args))
       }
     }
+    const contextCaller = tracingChannelNuxt
+      ? (hooks: NuxtHookCallback[], args: any[], name?: string) => hooks.length
+          ? traceAsync('nuxt.hook', { name, args }, () => runHooks(hooks, args))
+          : runHooks(hooks, args)
+      : runHooks
     // Patch callHook to preserve NuxtApp context on server
     // TODO: Refactor after https://github.com/unjs/hookable/issues/74
     nuxtApp.hooks.callHook = (name: any, ...args: any[]) => nuxtApp.hooks.callHookWith(contextCaller, name, args)
