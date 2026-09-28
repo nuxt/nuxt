@@ -297,7 +297,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
             const result = await (import.meta.server && tracingChannelNuxt
               ? traceAsync('nuxt.middleware', {
                   middleware: {
-                    name: middleware.name || undefined,
+                    name: (middleware as any)._name as string | undefined || middleware.name || undefined,
                     path: (middleware as any)._path as string | undefined,
                     global: globalMiddleware.includes(middleware) || nuxtApp._middleware.global.includes(middleware as RouteMiddleware),
                   },
