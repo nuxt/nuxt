@@ -554,10 +554,10 @@ catalogs:
       specifier: 4.10.2
       version: 4.10.2
     h3:
-      specifier: ^2.0.1-rc.31
+      specifier: ^2.0.1-rc.32
       version: 2.0.1-rc.32
     h3-next:
-      specifier: npm:h3@^2.0.1-rc.31
+      specifier: npm:h3@^2.0.1-rc.32
       version: 2.0.1-rc.32
     happy-dom:
       specifier: 20.14.5
@@ -657,7 +657,7 @@ catalogs:
       specifier: ^3.0.260903-beta
       version: 3.0.260903-beta
     srvx:
-      specifier: ^1.0.3
+      specifier: ^1.0.5
       version: 1.0.5
     unstorage:
       specifier: ^2.0.0-alpha.10
