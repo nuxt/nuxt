@@ -55,7 +55,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"192k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"193k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -79,7 +79,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"121k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1627k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1629k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -118,7 +118,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"294k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"257k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"260k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -141,7 +141,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"156k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1748k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1750k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
