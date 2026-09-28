@@ -48,10 +48,11 @@ export function isPrerendering (nuxt: Nuxt): boolean {
 
 function resolvePrerenderConfig (nuxt: Nuxt): ResolvedPrerenderConfig {
   const config = nuxt.options.nitro.prerender || {}
+  const shared = nuxt.options.prerender || {}
   return {
-    routes: (config.routes || []).filter(Boolean) as string[],
-    ignore: (config.ignore || []) as IgnorePattern[],
-    crawlLinks: config.crawlLinks ?? true,
+    routes: (shared.routes || []).filter(Boolean),
+    ignore: shared.ignore || [],
+    crawlLinks: shared.crawlLinks ?? true,
     autoSubfolderIndex: config.autoSubfolderIndex ?? true,
     concurrency: config.concurrency || cpus().length * 4 || 4,
     interval: config.interval || 0,
@@ -343,7 +344,7 @@ export async function writeAppManifest (nuxt: Nuxt, publicDir: string, routes: s
   const dir = resolve(publicDir, joinURL(nuxt.options.app.buildAssetsDir, 'builds').replace(/^\//, ''))
   await mkdir(join(dir, 'meta'), { recursive: true })
   await writeFile(join(dir, 'latest.json'), JSON.stringify({ id: buildId, timestamp }))
-  await writeFile(join(dir, `meta/${buildId}.json`), JSON.stringify({ id: buildId, timestamp, prerendered: [...prerendered] }))
+  await writeFile(join(dir, `meta/${buildId}.json`), JSON.stringify({ id: buildId, timestamp, prerendered: [...prerendered].sort() }))
 }
 
 const PAYLOAD_SUFFIX = '/_payload.json'

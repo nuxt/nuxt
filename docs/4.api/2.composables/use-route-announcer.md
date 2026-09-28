@@ -15,10 +15,10 @@ This composable is available in Nuxt v3.12+.
 
 ## Description
 
-A composable which observes the page title changes and updates the announcer message accordingly. Used by [`<NuxtRouteAnnouncer>`](/docs/4.x/api/components/nuxt-route-announcer) and controllable.
+A composable which observes the page title changes and updates the announcer message accordingly. Used by [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) and controllable.
 It hooks into Unhead's `dom:rendered` hook to read the page's title and set it as the announcer message.
 
-:read-more{title="Nuxt accessibility" to="/docs/4.x/guide/best-practices/accessibility#route-announcements"}
+:read-more{title="Nuxt accessibility" to="/docs/guide/best-practices/accessibility#route-announcements"}
 
 ## Parameters
 
@@ -61,5 +61,5 @@ const { message, politeness, set, polite, assertive } = useRouteAnnouncer({
 ```
 
 ::callout
-For announcing dynamic in-page content changes (form validation, toasts, loading states), use [`useAnnouncer`](/docs/4.x/api/composables/use-announcer) instead.
+For announcing dynamic in-page content changes (form validation, toasts, loading states), use [`useAnnouncer`](/docs/api/composables/use-announcer) instead.
 ::

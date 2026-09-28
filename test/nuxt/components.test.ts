@@ -35,7 +35,7 @@ describe('nuxt-link:prefetch', () => {
       nuxtApp.isHydrating = false
       await nuxtApp.hooks.callHook('app:suspense:resolve')
 
-      expect(loadPayload).toHaveBeenCalledExactlyOnceWith('/to')
+      expect(loadPayload).toHaveBeenCalledExactlyOnceWith('/to', { signal: expect.any(AbortSignal), promoted: false })
     } finally {
       wrapper.unmount()
       nuxtApp.hooks = originalHooks

@@ -11,13 +11,32 @@
  * The types come from `nuxt/server` whichever module backs it, so every name it exports
  * must be exported here too.
  */
+import { defineEventHandler as defineH3EventHandler } from 'nitro/h3'
+import type { EventHandler, RequestEvent } from 'nuxt/server'
+
+import {
+  clearSession as clearNuxtSession,
+  createError,
+  getSession as getNuxtSession,
+  updateSession as updateNuxtSession,
+  useSession as useNuxtSession,
+} from 'nuxt/internal/server-default'
+
+import { bufferRequestBody } from './utils/body'
+import { serverDiagnostics } from './diagnostics'
+
 export {
-  defineEventHandler,
   deleteCookie,
   getCookie,
   getQuery,
+  getRequestIP,
   getRequestURL,
+  getRouterParam,
+  getRouterParams,
+  getValidatedQuery,
+  handleCors,
   readBody,
+  readValidatedBody,
   setCookie,
 } from 'nitro/h3'
 
@@ -26,13 +45,35 @@ export { useRuntimeConfig } from 'nitro/runtime-config'
 
 export {
   createError,
+  deriveSecret,
   getRequestHeader,
   getRequestHeaders,
   isNuxtError,
   NuxtError,
   sendRedirect,
-  setResponseHeader,
-  setResponseHeaders,
   setResponseStatus,
-  toNuxtRequestEvent,
+  useAppConfig,
 } from 'nuxt/internal/server-default'
+
+export const clearSession = /* #__PURE__ */ requireRequestEvent('clearSession', clearNuxtSession)
+export const getSession = /* #__PURE__ */ requireRequestEvent('getSession', getNuxtSession)
+export const updateSession = /* #__PURE__ */ requireRequestEvent('updateSession', updateNuxtSession)
+export const useSession = /* #__PURE__ */ requireRequestEvent('useSession', useNuxtSession)
+
+function requireRequestEvent<F extends (event: any, ...args: any[]) => any> (helper: string, fn: F): F {
+  return function (this: unknown, event: Record<string, unknown>, ...args: unknown[]) {
+    if (event && !event.req && 'node' in event) {
+      const diagnostic = serverDiagnostics.NUXT_E8012({ helper })
+      throw createError({ status: 500, statusText: 'Server Error', message: `[${diagnostic.code}] ${diagnostic.message} ${diagnostic.fix}` })
+    }
+    return fn.call(this, event, ...args)
+  } as F
+}
+
+/** A handler h3's router can serve directly, whose body can be read more than once. */
+export function defineEventHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
+  return defineH3EventHandler((event) => {
+    bufferRequestBody(event)
+    return handler(event as RequestEvent) as Result
+  }) as unknown as EventHandler<Result>
+}

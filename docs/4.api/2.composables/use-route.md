@@ -20,7 +20,7 @@ that rely on the route metadata, for example.
 
 ## Example
 
-In the following example, we call an API via [`useFetch`](/docs/4.x/api/composables/use-fetch) using a dynamic page parameter - `slug` - as part of the URL.
+In the following example, we call an API via [`useFetch`](/docs/api/composables/use-fetch) using a dynamic page parameter - `slug` - as part of the URL.
 
 ```html [~/pages/[slug\\].vue]
 <script setup lang="ts">
@@ -76,7 +76,7 @@ The `useRoute()` composable should only be used in the setup function of a Vue c
 This applies to any composable that uses `useRoute()` internally too.
 ::
 
-::read-more{to="/docs/4.x/directory-structure/app/middleware"}
+::read-more{to="/docs/directory-structure/app/middleware"}
 Read more about accessing the route in the middleware section.
 ::
 

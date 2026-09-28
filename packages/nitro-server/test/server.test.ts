@@ -105,10 +105,95 @@ describe('parity between the shipped implementations and h3', () => {
   })
 
   it.for([
+    ['no params', undefined],
+    ['encoded params', { id: 'a%20b', path: 'x%2Fy%5Cz%252Fw' }],
+  ] as const)('reads %s the same way', ([, params]) => {
+    const { fallback, h3: h3Event } = events(new Request('https://nuxt.com/api'))
+    fallback.context.params = params
+    h3Event.context.params = params
+    for (const decode of [false, true]) {
+      expect(shipped.getRouterParams(fallback, { decode })).toEqual(h3.getRouterParams(h3Event, { decode }))
+      expect(shipped.getRouterParam(fallback, 'id', { decode })).toEqual(h3.getRouterParam(h3Event, 'id', { decode }))
+    }
+  })
+
+  it.for([
+    ['no header', {}],
+    ['a forwarded chain', { 'x-forwarded-for': ' 203.0.113.1 , 10.0.0.1' }],
+    ['an empty forwarded header', { 'x-forwarded-for': ' ' }],
+  ] as const)('reads the client IP from %s the same way', async ([, headers]) => {
+    for (const xForwardedFor of [false, true]) {
+      const { shipped: a, h3: b } = await compare(new Request('https://nuxt.com/api', { headers }), (api, event) => api.getRequestIP(event, { xForwardedFor }))
+      expect(a).toEqual(b)
+    }
+  })
+
+  const schema = {
+    '~standard': {
+      version: 1 as const,
+      vendor: 'test',
+      validate: (value: unknown) => (value as { name?: unknown })?.name === 'nuxt' ? { value: { ok: true } } : { issues: [{ message: 'no', path: ['name'] }] },
+    },
+  }
+
+  it.for<[string, unknown, Record<string, string>]>([
+    ['a schema accepting', schema, { name: 'nuxt' }],
+    ['a schema refusing', schema, { name: 'vue' }],
+    ['a function returning a value', () => ({ ok: 1 }), {}],
+    ['a function returning `true`', () => true, { name: 'nuxt' }],
+    ['a function refusing', () => false, {}],
+    ['a function throwing', () => { throw new Error('bad') }, {}],
+  ])('validates a body with %s the same way', async ([, validate, body]) => {
+    const settle = (promise: Promise<unknown>) => promise.then(value => ({ value }), (error: any) => ({ error: { status: error.status, statusText: error.statusText, message: error.message, data: error.data } }))
+    const { fallback, h3: h3Event } = events(post(JSON.stringify(body), 'application/json'))
+    expect(await settle(shipped.readValidatedBody(fallback, validate as never)))
+      .toEqual(await settle(h3.readValidatedBody(h3Event, validate as never)))
+
+    const query = events(new Request(`https://nuxt.com/api?${new URLSearchParams(body as Record<string, string>)}`))
+    expect(await settle(shipped.getValidatedQuery(query.fallback, validate as never)))
+      .toEqual(await settle(h3.getValidatedQuery(query.h3, validate as never)))
+  })
+
+  const origin = 'https://nuxt.com'
+  const preflight = { origin, 'access-control-request-method': 'PUT', 'access-control-request-headers': 'x-custom' }
+
+  it.for([
+    ['defaults on a request', 'GET', { origin }, undefined],
+    ['defaults on a preflight', 'OPTIONS', preflight, undefined],
+    ['an allowed origin with credentials', 'GET', { origin }, { origin: [origin], credentials: true }],
+    ['a refused origin', 'GET', { origin: 'https://evil.test' }, { origin: [/^https:\/\/nuxt\.com$/] }],
+    ['a missing origin', 'GET', {}, { origin: () => true }],
+    ['a credentialed preflight', 'OPTIONS', preflight, { origin: [origin], credentials: true, maxAge: '600', preflight: { statusCode: 200 } }],
+    ['an explicit preflight', 'OPTIONS', preflight, { origin: [origin], methods: ['GET', 'PUT'], allowHeaders: ['x-custom'], exposeHeaders: ['x-exposed'] }],
+    ['an OPTIONS request that is not a preflight', 'OPTIONS', { origin }, undefined],
+  ] as const)('applies CORS for %s the same way', ([, method, headers, options]) => {
+    const { fallback, h3: h3Event } = events(new Request('https://nuxt.com/api', { method, headers }))
+    const a = shipped.handleCors(fallback, options as never)
+    const b = h3.handleCors(h3Event, (options ?? {}) as never)
+    expect(a && a.status).toEqual(b && b.status)
+    expect([...fallback.res.headers]).toEqual([...h3Event.res.headers])
+  })
+
+  it.for([
     ['an h3 error', () => new h3.HTTPError({ status: 404 })],
     ['a Nuxt error', () => shipped.createError({ status: 404 })],
     ['a plain error', () => new Error('oops')],
   ] as const)('recognises %s the same way h3 does', ([, construct]) => {
     expect(shipped.isNuxtError(construct())).toBe(h3.HTTPError.isError(construct()))
+  })
+})
+
+describe('session helpers given an h3 v1 event', () => {
+  it('throws NUXT_E8012 naming the helper', async () => {
+    const delegate = await import('../src/runtime/server')
+    const e = { node: { req: {}, res: {} }, context: {} }
+    expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012.*useSession.*import `defineEventHandler` from `nuxt\/server`/is)
+    expect(() => delegate.clearSession(e as never, { password: 'x'.repeat(32) })).toThrow(expect.objectContaining({ status: 500 }))
+  })
+
+  it('passes a request event through', async () => {
+    const delegate = await import('../src/runtime/server')
+    const event = new H3Event(new Request('http://127.0.0.1/'))
+    await expect(delegate.getSession(event as never, { password: 'x'.repeat(32) })).resolves.toMatchObject({ data: {} })
   })
 })

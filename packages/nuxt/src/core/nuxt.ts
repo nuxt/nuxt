@@ -20,12 +20,12 @@ import escapeRE from 'escape-string-regexp'
 import { withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
 import { defu } from 'defu'
-import { coerce, satisfies } from 'verkit'
+import { satisfies } from 'verkit'
 import { hasTTY, isCI } from 'std-env'
 import { genImport, genString } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 import { link } from 'clickable-path'
-import type { DevServerHandler, Nuxt, NuxtHooks, NuxtModule, NuxtOptions, ServerHandler } from 'nuxt/schema'
+import type { DevServerHandler, NitroConfig, Nuxt, NuxtHooks, NuxtModule, NuxtOptions, ServerHandler } from 'nuxt/schema'
 
 import { installNuxtModule } from '../core/features.ts'
 import pagesModule from '../pages/module.ts'
@@ -35,6 +35,7 @@ import importsModule from '../imports/module.ts'
 import compilerModule from '../compiler/module.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 
+import { resolveDevAppSecret } from './app-secret.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -481,14 +482,15 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     const helperModule = resolveModulePath('unctx', { from: import.meta.url, try: true }) ?? 'unctx'
-    // Add unctx transform
+    // server-only: the `executeAsync` wrappers restore context across `await`, which a
+    // browser's set-once Nuxt app does not need
     addBuildPlugin(UnctxTransformPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
         helperModule,
       },
-    }))
+    }), { client: false })
 
     // Add composable tree-shaking optimisations
     if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
@@ -575,6 +577,15 @@ async function initNuxt (nuxt: Nuxt) {
 
     // add plugin to make warnings less verbose in dev mode
     addPlugin(resolve(nuxt.options.appDir, 'plugins/warn.dev.server'))
+  }
+
+  // Registered before `installModules` so module `build:manifest` hooks can attach to these
+  if (!nuxt.options.dev) {
+    nuxt.hook('build:manifest', (manifest) => {
+      for (const src of nuxt.options._noScriptsPageSources) {
+        manifest[src] ||= { file: '', src }
+      }
+    })
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
@@ -949,12 +960,6 @@ export default defineNuxtPlugin({
     }
   }
 
-  // Show compatibility version banner when Nuxt is running with a compatibility version
-  // that is different from the current major version
-  if (!(satisfies(coerce(nuxt._version) ?? nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
-    logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
-  }
-
   await nuxt.callHook('ready', nuxt)
   nuxt._perf?.endPhase('ready')
 }
@@ -1057,9 +1062,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   // Ensure we share key config between Nuxt and Nitro
-  const nitroOptions = options.nitro
+  const nitroOptions: NitroConfig = options.nitro
   createPortalProperties(nitroOptions.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
   createPortalProperties(nitroOptions.routeRules, options, ['nitro.routeRules', 'routeRules'])
+  createPortalProperties(nitroOptions.prerender, options, ['nitro.prerender', 'prerender'])
   // an entry written straight into the builder's own config is typed by the builder, and is a
   // superset of what Nuxt collects
   if (nitroOptions.handlers?.length && nitroOptions.handlers !== options.serverHandlers) {
@@ -1073,6 +1079,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])
   const serverTsConfig = defu(options.typescript.serverTsConfig, nitroOptions.typescript?.tsConfig)
   createPortalProperties(serverTsConfig, options, ['nitro.typescript.tsConfig', 'typescript.serverTsConfig'])
+
+  // must follow the `runtimeConfig` portal, which repoints `options.runtimeConfig`
+  if (options.dev) {
+    await resolveDevAppSecret(options)
+  }
 
   // prevent replacement of options.nitro
   Object.defineProperties(options, {
@@ -1267,7 +1278,12 @@ async function resolveTypescriptPaths (nuxt: Nuxt, options?: ResolveTypePathsOpt
     packagesToResolve.push(pkg)
   }
 
-  const resolved = await resolveTypePaths(packagesToResolve, nuxt.options.modulesDir, options)
+  // these types must come from the copies `nuxt` resolves, not from a copy hoisted to the project root
+  const nuxtOwnedPackages = packagesToResolve.filter(pkg => pkg === 'nuxt' || pkg.startsWith('nuxt/') || pkg.startsWith('@nuxt/'))
+  const resolved = [
+    ...await resolveTypePaths(nuxtOwnedPackages, [pkgDir, ...nuxt.options.modulesDir], options),
+    ...await resolveTypePaths(packagesToResolve.filter(pkg => !nuxtOwnedPackages.includes(pkg)), nuxt.options.modulesDir, options),
+  ]
 
   const paths: Record<string, [string]> = {}
   const nightlyResolved = new Set<string>() // track which originals were resolved via nightly

@@ -138,6 +138,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
     expect(response.status).toBe(301)
     expect(response.headers.get('location')).toBe('/about')
+    expect(await response.text()).toBe('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/about"></head></html>')
   })
 
   it('carries the request query onto a redirect target that names its own', async () => {
@@ -145,6 +146,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
     expect(response.status).toBe(307)
     expect(response.headers.get('location')).toBe('/about?from=rule&ref=ad#top')
+    expect(await response.text()).toContain('content="0; url=/about?from=rule%26ref=ad#top"')
   })
 
   it('runs the middleware an `appMiddleware` rule names', async () => {

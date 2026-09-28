@@ -15,6 +15,9 @@ import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.con
 interface LoadPayloadOptions {
   fresh?: boolean
   hash?: string
+  signal?: AbortSignal
+  /** Request the payload at high priority, because the user has shown intent to navigate. */
+  promoted?: boolean
 }
 
 /** @since 3.0.0 */
@@ -25,9 +28,43 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
     // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
     // cannot invalidate them - defer to normal HTTP cache semantics instead
     const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
-    return await _importPayload(payloadURL, cache) || null
+    if (opts.fresh) {
+      return await _importPayload(payloadURL, cache, opts.signal, opts.promoted) || null
+    }
+    return await _sharedImportPayload(payloadURL, cache, opts.signal, opts.promoted) || null
   }
   return null
+}
+
+interface PayloadAttempt { payload: Record<string, any> | null, aborted: boolean }
+
+const inFlightPayloads = new Map<string, Promise<PayloadAttempt>>()
+
+/**
+ * Concurrent identical `GET`s are not coalesced by the browser, and `force-cache` cannot help
+ * until the first response is stored, so a navigation joins a speculative fetch instead.
+ */
+function _sharedImportPayload (payloadURL: string, cache: RequestCache, signal?: AbortSignal, promoted?: boolean): Promise<Record<string, any> | null> {
+  const running = inFlightPayloads.get(payloadURL)
+  if (running) {
+    return running.then((attempt) => {
+      // an abort belongs to the caller that asked for it; anyone still interested fetches again
+      if (attempt.aborted && !signal?.aborted) {
+        return _sharedImportPayload(payloadURL, cache, signal, promoted)
+      }
+      return attempt.payload
+    })
+  }
+
+  const attempt = _importPayload(payloadURL, cache, signal, promoted)
+    .then(payload => ({ payload, aborted: !payload && !!signal?.aborted }))
+  attempt.finally(() => {
+    if (inFlightPayloads.get(payloadURL) === attempt) {
+      inFlightPayloads.delete(payloadURL)
+    }
+  })
+  inFlightPayloads.set(payloadURL, attempt)
+  return attempt.then(result => result.payload)
 }
 let linkRelType: 'preload' | 'prefetch' | undefined
 function detectLinkRelType (): 'preload' | 'prefetch' {
@@ -100,10 +137,11 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   return payloadURL + u.search
 }
 
-async function _importPayload (payloadURL: string, cache: RequestCache) {
+async function _importPayload (payloadURL: string, cache: RequestCache, signal?: AbortSignal, promoted?: boolean) {
   if (import.meta.server || !payloadExtraction) { return null }
+  const priority = promoted ? 'high' : undefined
   try {
-    const res = await fetch(payloadURL, import.meta.dev ? {} : { cache })
+    const res = await fetch(payloadURL, import.meta.dev ? { signal, priority } : { cache, signal, priority } as RequestInit)
     if (!res.ok) {
       if (import.meta.dev) {
         stateDiagnostics.NUXT_E7002({ url: payloadURL })
@@ -112,7 +150,9 @@ async function _importPayload (payloadURL: string, cache: RequestCache) {
     }
     return await parsePayload(await res.text())
   } catch (err) {
-    stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
+    if (!signal?.aborted) {
+      stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
+    }
   }
   return null
 }

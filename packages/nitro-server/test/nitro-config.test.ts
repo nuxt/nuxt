@@ -57,4 +57,11 @@ describe('nitro config', () => {
       expect(prerendererConfig.replace).toMatchObject(serverReplacements)
     })
   })
+
+  it('does not include the dev error channel in production builds', async () => {
+    await withNitro({ dev: false }, (_nitro, nitroConfig) => {
+      const errorChannel = nitroConfig.virtual!['#internal/nuxt/error-channel'] as () => string
+      expect(errorChannel()).toBe('export {}')
+    })
+  })
 })

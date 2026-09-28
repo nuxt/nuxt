@@ -6,6 +6,8 @@ import { useRouter } from '#app/composables/router'
 import layouts from '#build/layouts'
 import { namedMiddleware } from '#build/middleware'
 import { _loadAsyncComponent } from '#app/composables/preload'
+import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
+import { prefetchGroup } from '#app/internal/prefetch-util'
 import { componentIslands } from '#build/nuxt.config.mjs'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
@@ -23,6 +25,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       })
     })
     // Prefetch layouts & middleware
+    const { schedule } = usePrefetchScheduler(nuxtApp)
     nuxtApp.hooks.hook('link:prefetch', async (url) => {
       if (hasProtocol(url)) { return }
       const route = router.resolve(url)
@@ -32,16 +35,27 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       // or an array of either. we only prefetch named middleware (= strings).
       const middleware = toArray<unknown>(route.meta.middleware).filter((m): m is string => typeof m === 'string')
 
-      for (const name of middleware) {
-        const handler = namedMiddleware[name as keyof typeof namedMiddleware]
-        if (typeof handler === 'function') {
-          handler()
-        }
-      }
+      schedule({
+        key: `route:chunks:${url}`,
+        priority: 'route',
+        scope: 'navigation',
+        group: prefetchGroup(url),
+        run: (signal) => {
+          if (signal.aborted) { return }
+          const loading: unknown[] = []
+          for (const name of middleware) {
+            const handler = namedMiddleware[name as keyof typeof namedMiddleware]
+            if (typeof handler === 'function') {
+              loading.push(handler())
+            }
+          }
 
-      if (typeof layout === 'string' && layout in layouts) {
-        _loadAsyncComponent(layouts[layout])
-      }
+          if (typeof layout === 'string' && layout in layouts) {
+            loading.push(_loadAsyncComponent(layouts[layout]))
+          }
+          return Promise.all(loading).catch(() => {})
+        },
+      })
 
       if (componentIslands) {
         await Promise.all(route.matched.map((record) => {

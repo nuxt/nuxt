@@ -16,6 +16,7 @@ import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
+import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
 import { sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
@@ -23,7 +24,7 @@ import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
-import { LayerDepOptimizePlugin } from './plugins/layer-dep-optimize.ts'
+import { OptimizeDepsPlugin } from './plugins/optimize-deps.ts'
 import { distDir } from './dirs.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
@@ -52,13 +53,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.options.modulesDir.push(distDir)
 
-  // Register Nitro plugin to fix SSR error stacktraces in dev mode
   const nitro = nuxt.options.dev ? tryUseNitro() : undefined
   if (nitro) {
-    nitro.options.virtual['#internal/nitro/ssr-stacktrace'] = `export { default } from ${JSON.stringify(resolve(distDir, 'fix-stacktrace'))}`
-    nitro.options.plugins.push('#internal/nitro/ssr-stacktrace')
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
-    nitro.options.virtual['#internal/nuxt/vite-node-runner.mjs'] = () => `export { default } from ${JSON.stringify(resolve(distDir, 'vite-node-runner'))}`
   }
 
   let allowDirs = [
@@ -223,7 +220,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           baseURL: nuxt.options.app.baseURL,
         }),
         ReplacePlugin(),
-        LayerDepOptimizePlugin(nuxt),
+        OptimizeDepsPlugin(nuxt),
         SSRStylesPlugin(nuxt),
         EnvironmentsPlugin(nuxt),
         // Add type-checking
@@ -275,8 +272,24 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await nuxt.callHook('vite:extend', ctx)
 
   const callbacks = optimizerCallbacks.get(nuxt)
-  config.customLogger = createViteLogger(config, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep })
+  const devErrors = nuxt.options.dev ? createDevErrorReporter(nuxt, { print: rendered => logger.log(rendered) }) : undefined
+  config.customLogger = createViteLogger(config, {
+    onNewDeps: callbacks?.onNewDeps,
+    onStaleDep: callbacks?.onStaleDep,
+    onTransformError: devErrors
+      ? (error) => {
+          if (!isTransformError(error)) {
+            return false
+          }
+          devErrors.report(error).catch(() => {})
+          return true
+        }
+      : undefined,
+  })
   config.configFile = false
+  if (devErrors) {
+    config.plugins!.push(DevErrorsPlugin(devErrors))
+  }
 
   for (const environment of ['client', 'ssr']) {
     const environments = { [environment]: config.environments![environment]! }

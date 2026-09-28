@@ -63,6 +63,8 @@ export interface RuntimeConfigApp extends RuntimeConfigNamespace {
 }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
+  /** The application's root secret, overridable at runtime with `NUXT_APP_SECRET`. */
+  appSecret: string
   public: PublicRuntimeConfig
   app: RuntimeConfigApp
 }

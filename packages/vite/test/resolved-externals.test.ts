@@ -100,6 +100,16 @@ describe('ResolveExternalsPlugin', () => {
     await expect(resolveId(plugin, { resolve: vi.fn().mockResolvedValue(unresolvable) }, 'does-not-exist', importer)).resolves.toBe(unresolvable)
   })
 
+  it('does not resolve a deduped package from the importing package', async () => {
+    const plugin = environmentPlugin(createNuxt(), createEnvironment('ssr', { dedupe: ['dep', '@scope/dep'] }))
+    const context = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
+
+    for (const id of ['dep', 'dep/sub', '@scope/dep/sub']) {
+      await expect(resolveId(plugin, context, id, importer)).resolves.toBeUndefined()
+    }
+    expect(context.resolve).not.toHaveBeenCalled()
+  })
+
   it('skips node builtins and ids without an importer', async () => {
     const plugin = environmentPlugin()
     const context = { resolve: vi.fn() }
