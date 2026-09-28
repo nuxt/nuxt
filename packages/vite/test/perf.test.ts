@@ -62,8 +62,8 @@ describe('PerfPlugin', () => {
 
   it('should publish server module fetches on `nuxt.bundler.module`', async () => {
     const events = subscribe('nuxt.bundler.module')
-    const ssr = { name: 'ssr', fetchModule: (id: string) => Promise.resolve({ code: id }) }
-    const client = { name: 'client', fetchModule: (id: string) => Promise.resolve({ code: id }) }
+    const ssr = { name: 'ssr', plugins: [], fetchModule: (id: string) => Promise.resolve({ code: id }) }
+    const client = { name: 'client', plugins: [], fetchModule: (id: string) => Promise.resolve({ code: id }) }
     const perf = PerfPlugin(createNuxt({ tracingChannel: { nuxt: true } } as any))
     ;(perf.configureServer as (server: unknown) => void)({ environments: { ssr, client } })
     expect(await ssr.fetchModule('/c.ts')).toEqual({ code: '/c.ts' })
@@ -72,5 +72,15 @@ describe('PerfPlugin', () => {
       ['start', { id: '/c.ts', environment: 'ssr', result: undefined }],
       ['asyncEnd', { code: '/c.ts' }],
     ])
+  })
+
+  it('should trace plugins resolved per environment', async () => {
+    const events = subscribe('nuxt.bundler.plugin')
+    const plugin: Plugin = { name: 'env-plugin', load: id => id }
+    const perf = applyPerfPlugin(createNuxt({ tracingChannel: { nuxt: true } } as any), [])
+    const ssr = { name: 'ssr', plugins: [plugin], fetchModule: () => Promise.resolve({}) }
+    ;(perf.configureServer as (server: unknown) => void)({ environments: { ssr } })
+    await (plugin.load as any).call({ environment: ssr }, '/e.ts')
+    expect(events[0]).toEqual(['start', { plugin: 'env-plugin', hook: 'load', id: '/e.ts', environment: 'ssr', result: undefined }])
   })
 })

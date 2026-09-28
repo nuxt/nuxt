@@ -7,26 +7,34 @@ const HOOKS_TO_TRACK = ['transform', 'resolveId', 'load'] as const
 
 export function PerfPlugin (nuxt: Nuxt): Plugin {
   const tracing = isBundlerTracingEnabled(nuxt)
+  const wrapped = new WeakSet<Plugin>()
+  const wrapPlugins = (plugins: readonly Plugin[]) => {
+    for (const plugin of plugins) {
+      if (plugin.name === 'nuxt:perf' || wrapped.has(plugin)) { continue }
+      wrapped.add(plugin)
+      for (const hookName of HOOKS_TO_TRACK) {
+        wrapPluginHook(plugin, plugin.name, hookName, nuxt, tracing)
+      }
+    }
+  }
   return {
     name: 'nuxt:perf',
     enforce: 'pre',
     apply: () => !!nuxt?._perf || tracing,
     configResolved (config) {
-      for (const plugin of config.plugins) {
-        if (plugin.name === 'nuxt:perf') { continue }
-        const pluginName = plugin.name
-        for (const hookName of HOOKS_TO_TRACK) {
-          wrapPluginHook(plugin, pluginName, hookName, nuxt, tracing)
+      wrapPlugins(config.plugins)
+    },
+    configureServer (server) {
+      for (const name in server.environments) {
+        const environment = server.environments[name]!
+        wrapPlugins(environment.plugins)
+        if (tracing && name !== 'client') {
+          traceFetchModule(environment)
         }
       }
     },
-    configureServer (server) {
-      if (!tracing) { return }
-      for (const name in server.environments) {
-        if (name !== 'client') {
-          traceFetchModule(server.environments[name]!)
-        }
-      }
+    buildStart () {
+      wrapPlugins(this.environment.plugins)
     },
   }
 }
