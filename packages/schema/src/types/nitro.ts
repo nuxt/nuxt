@@ -181,7 +181,7 @@ export type RouteRuleConfig = ResolveRouteRuleConfig<NitroTypes>
 
 /** The tracing channels Nuxt owns, enabled independently of the server runtime's own. */
 export interface TracingChannelOptionsBase {
-  /** Enable Nuxt-owned channels (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). */
+  /** Enable Nuxt-owned `nuxt.*` channels. */
   nuxt?: boolean
 }
 
