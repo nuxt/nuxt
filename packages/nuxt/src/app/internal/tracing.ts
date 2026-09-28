@@ -8,7 +8,7 @@
  * - `nuxt.data` (`useAsyncData` / `useFetch` handler executions)
  * - `nuxt.plugin` (Nuxt app plugin invocations)
  * - `nuxt.hook` (`nuxtApp.hooks` calls with at least one listener; payload is
- *   `{ hook: { name } }`)
+ *   `{ name, args }`)
  * - `nuxt.middleware` (route middleware executions; payload is
  *   `{ middleware: { name, path, global } }`)
  *

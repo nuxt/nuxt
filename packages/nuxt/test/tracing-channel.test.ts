@@ -22,8 +22,8 @@ describe('nuxt.hook tracing channel', () => {
 
     const events: Array<[string, unknown]> = []
     const handlers = {
-      start: (ctx: any) => events.push(['start', ctx.hook]),
-      asyncEnd: (ctx: any) => events.push(['asyncEnd', ctx.hook]),
+      start: (ctx: any) => events.push(['start', { name: ctx.name, args: ctx.args }]),
+      asyncEnd: (ctx: any) => events.push(['asyncEnd', ctx.name]),
     }
     const channel = tracingChannel('nuxt.hook')
     channel.subscribe(handlers as any)
@@ -34,8 +34,8 @@ describe('nuxt.hook tracing channel', () => {
       await nuxtApp.callHook('app:created', {} as any)
       expect(calls).toEqual(['app:rendered'])
       expect(events).toEqual([
-        ['start', { name: 'app:rendered' }],
-        ['asyncEnd', { name: 'app:rendered' }],
+        ['start', { name: 'app:rendered', args: [{}] }],
+        ['asyncEnd', 'app:rendered'],
       ])
     } finally {
       channel.unsubscribe(handlers as any)

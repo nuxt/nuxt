@@ -345,7 +345,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     }
     const contextCaller = tracingChannelNuxt
       ? (hooks: NuxtHookCallback[], args: any[], name?: string) => hooks.length
-          ? traceAsync('nuxt.hook', { hook: { name } }, () => runHooks(hooks, args))
+          ? traceAsync('nuxt.hook', { name, args }, () => runHooks(hooks, args))
           : runHooks(hooks, args)
       : runHooks
     // Patch callHook to preserve NuxtApp context on server

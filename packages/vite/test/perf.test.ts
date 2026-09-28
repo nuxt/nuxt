@@ -69,7 +69,7 @@ describe('PerfPlugin', () => {
     expect(await ssr.fetchModule('/c.ts')).toEqual({ code: '/c.ts' })
     await client.fetchModule('/d.ts')
     expect(events).toEqual([
-      ['start', { id: '/c.ts', environment: 'ssr', result: undefined }],
+      ['start', { url: '/c.ts', environment: 'ssr', result: undefined }],
       ['asyncEnd', { code: '/c.ts' }],
     ])
   })

@@ -10,7 +10,7 @@ export function isBundlerTracingEnabled (nuxt: Nuxt): boolean {
 }
 
 /**
- * Publishes `nuxt.bundler.module` (`{ id, environment }`) and `nuxt.bundler.plugin`
+ * Publishes `nuxt.bundler.module` (`{ url, environment }`) and `nuxt.bundler.plugin`
  * (`{ plugin, hook, id?, environment? }`) spans.
  *
  * @experimental Channel names and payload shapes may change.

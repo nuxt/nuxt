@@ -42,7 +42,7 @@ export function PerfPlugin (nuxt: Nuxt): Plugin {
 function traceFetchModule (environment: DevEnvironment): void {
   const fetchModule = environment.fetchModule
   environment.fetchModule = function (id, ...rest) {
-    return traceAsync('nuxt.bundler.module', { id, environment: environment.name }, () => fetchModule.call(this, id, ...rest)) as ReturnType<typeof fetchModule>
+    return traceAsync('nuxt.bundler.module', { url: id, environment: environment.name }, () => fetchModule.call(this, id, ...rest)) as ReturnType<typeof fetchModule>
   }
 }
 
