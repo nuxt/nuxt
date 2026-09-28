@@ -21,5 +21,5 @@ export function traceAsync<T> (name: string, context: object, fn: () => Promise<
   if ((channel as { hasSubscribers?: boolean }).hasSubscribers === false) {
     return fn()
   }
-  return channel.tracePromise(fn as () => Promise<T>, context)
+  return channel.tracePromise(() => Promise.resolve(fn()), context)
 }

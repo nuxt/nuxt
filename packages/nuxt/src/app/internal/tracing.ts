@@ -66,5 +66,5 @@ export function traceAsync<T, C> (name: string, context: C, fn: () => Promise<T>
   if (!channel || channel.hasSubscribers === false) {
     return fn()
   }
-  return channel.tracePromise(fn, context)
+  return channel.tracePromise(() => Promise.resolve(fn()), context)
 }
