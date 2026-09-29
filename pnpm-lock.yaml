@@ -339,15 +339,15 @@ catalogs:
     nostics:
       specifier: ^1.3.0
       version: 1.3.0
-    nypm:
-      specifier: ^0.6.10
-      version: 0.6.10
     ohash:
       specifier: ^2.0.12
       version: 2.0.12
     on-change:
       specifier: ^6.0.2
       version: 6.0.2
+    package-manager-detector:
+      specifier: ^1.8.0
+      version: 1.8.0
     pathe:
       specifier: ^2.0.3
       version: 2.0.3
@@ -387,6 +387,9 @@ catalogs:
     std-env:
       specifier: ^4.2.0
       version: 4.2.0
+    tinyexec:
+      specifier: ^1.3.1
+      version: 1.3.1
     tinyglobby:
       specifier: ^0.2.17
       version: 0.2.17
@@ -554,10 +557,10 @@ catalogs:
       specifier: 4.10.2
       version: 4.10.2
     h3:
-      specifier: ^2.0.1-rc.31
+      specifier: ^2.0.1-rc.32
       version: 2.0.1-rc.32
     h3-next:
-      specifier: npm:h3@^2.0.1-rc.31
+      specifier: npm:h3@^2.0.1-rc.32
       version: 2.0.1-rc.32
     happy-dom:
       specifier: 20.14.5
@@ -657,7 +660,7 @@ catalogs:
       specifier: ^3.0.260903-beta
       version: 3.0.260903-beta
     srvx:
-      specifier: ^1.0.3
+      specifier: ^1.0.5
       version: 1.0.5
     unstorage:
       specifier: ^2.0.0-alpha.10
@@ -1016,9 +1019,9 @@ importers:
       nostics:
         specifier: catalog:build
         version: 1.3.0
-      nypm:
+      package-manager-detector:
         specifier: catalog:build
-        version: 0.6.10
+        version: 1.8.0
       pathe:
         specifier: catalog:build
         version: 2.0.3
@@ -1031,6 +1034,9 @@ importers:
       std-env:
         specifier: catalog:build
         version: 4.2.0
+      tinyexec:
+        specifier: catalog:build
+        version: 1.3.1
       tinyglobby:
         specifier: catalog:build
         version: 0.2.17
