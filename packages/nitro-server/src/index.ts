@@ -1239,8 +1239,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       await prerender(nitro)
 
       logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
+      try {
+        await build(nitro)
+      } finally {
+        logger.wrapAll()
+      }
 
       await symlinkDist()
     } finally {

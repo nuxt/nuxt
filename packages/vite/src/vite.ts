@@ -132,9 +132,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                   if (environment.isBuilt) { continue }
                   logger.restoreAll()
                   nuxt._perf?.startPhase(`vite:${environment.name}`)
-                  await builder.build(environment)
+                  try {
+                    await builder.build(environment)
+                  } finally {
+                    logger.wrapAll()
+                  }
                   nuxt._perf?.endPhase(`vite:${environment.name}`)
-                  logger.wrapAll()
                   await nuxt.callHook('vite:compiled')
                 }
               },

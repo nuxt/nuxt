@@ -92,8 +92,11 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     const start = Date.now()
     logger.info('Building server...')
     logger.restoreAll()
-    await vite.build(serverConfig)
-    logger.wrapAll()
+    try {
+      await vite.build(serverConfig)
+    } finally {
+      logger.wrapAll()
+    }
     // Write production client manifest
     await writeManifest(ctx)
     await nuxt.callHook('vite:compiled')
