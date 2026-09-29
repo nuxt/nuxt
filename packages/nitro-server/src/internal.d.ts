@@ -2,6 +2,10 @@ declare module '#internal/nuxt.config.mjs'
 declare module '#internal/nuxt/nitro-config.mjs'
 declare module '#internal/nuxt/app-config'
 declare module '#internal/nuxt/dev-client-css'
+declare module '#internal/nuxt/error-channel' {
+  const errorChannel: typeof import('./runtime/utils/error-channel')
+  export = errorChannel
+}
 declare module '#internal/nuxt/island-renderer.mjs'
 declare module '#internal/dev-server-logs-options'
 declare module '#nuxt-compat/import-meta' {

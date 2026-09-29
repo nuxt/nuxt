@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
-import { addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
 import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
@@ -135,6 +135,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   }
 
   if (nuxt.options.dev) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'))
     setupDevServer(nuxt, server?.entry)
   } else {
     nuxt.hook('build:done', async () => {
@@ -197,9 +198,8 @@ function setupAppManifest (nuxt: Nuxt, prerender: boolean): void {
   })
   nuxt.options.alias['#app-manifest'] = dst
 
-  nuxt.options.nitro.prerender ||= {}
-  nuxt.options.nitro.prerender.ignore ||= []
-  nuxt.options.nitro.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'builds'))
+  nuxt.options.prerender.ignore ||= []
+  nuxt.options.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'builds'))
 }
 
 /**
@@ -219,8 +219,8 @@ function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: strin
   if (ignoredRules.length) {
     unsupported.push(`route rules needing an HTTP layer (${ignoredRules.sort().map(rule => `\`${rule}\``).join(', ')})`)
   }
-  const wantsPrerender = nuxt.options.nitro.prerender?.routes?.length
-    || nuxt.options.nitro.prerender?.crawlLinks
+  const wantsPrerender = nuxt.options.prerender.routes?.length
+    || nuxt.options.prerender.crawlLinks
     || routeRules.some(rules => rules?.prerender)
   if (!isPrerendering(nuxt) && wantsPrerender) {
     unsupported.push('prerendering (run `nuxt generate` for a prerendered build)')

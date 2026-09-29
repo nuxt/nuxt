@@ -100,7 +100,7 @@ export default defineResolvers({
       $resolve: async (val, get) => {
         const isV5 = (await get('future.compatibilityVersion')) >= 5
         if (isV5 && Array.isArray(val) && val.length > 0) {
-          schemaDiagnostics.NUXT_B5028({ option: 'optimization.keyedComposables', replacement: 'optimization.keyedFunctions' })
+          schemaDiagnostics.NUXT_B5030({ option: 'optimization.keyedComposables', replacement: 'optimization.keyedFunctions' })
         }
         return [
           ...isV5 ? [] : KEYED_FUNCTION_DEFAULTS,
@@ -118,7 +118,7 @@ export default defineResolvers({
       $resolve: async (val, get) => {
         const isV5 = (await get('future.compatibilityVersion')) >= 5
         if (isV5 && Array.isArray(val) && val.length > 0) {
-          schemaDiagnostics.NUXT_B5028({ option: 'optimization.keyedComposableFactories', replacement: 'optimization.keyedFunctionFactories' })
+          schemaDiagnostics.NUXT_B5030({ option: 'optimization.keyedComposableFactories', replacement: 'optimization.keyedFunctionFactories' })
         }
         return [
           ...isV5 ? [] : KEYED_FUNCTION_FACTORY_DEFAULTS,

@@ -5,6 +5,7 @@ import { useRoute } from '#app/composables/router'
 import { isPrerendered, shouldLoadPayload } from '#app/composables/payload'
 import { createError, showError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
+import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
 import type { NuxtApp } from '#app/nuxt'
 import { getIslandHash } from '#app/island-hash'
 import type { NuxtIslandResponse } from '#app/types'
@@ -100,8 +101,6 @@ export const createIslandPage = (name: string, islandKey?: string): IslandPageTy
   return component as unknown as IslandPageType
 }
 
-const inflightIslandPrefetches = import.meta.client ? new Set<string>() : undefined
-
 async function prefetchIslandPage (nuxtApp: NuxtApp, name: string, route: { path: string, fullPath: string }) {
   const [prerendered, willLoadPayload] = await nuxtApp.runWithContext(() => Promise.all([
     isPrerendered(route.path),
@@ -113,17 +112,22 @@ async function prefetchIslandPage (nuxtApp: NuxtApp, name: string, route: { path
   const url = prerendered ? route.path : route.fullPath.replace(/#.*$/, '')
   const islandName = `page_${name}`
   const key = `${islandName}_${getIslandHash({ name: islandName, props: '{}', context: { url } })}`
-  if (inflightIslandPrefetches!.has(key) || nuxtApp.payload.data[key]) { return }
-  inflightIslandPrefetches!.add(key)
-  try {
-    const result = await $fetch<NuxtIslandResponse>(`/__nuxt_island/${key}.json`, {
-      query: { url },
-      responseType: 'json',
-    })
-    nuxtApp.payload.data[key] ||= result
-  } catch {
-    // a failed prefetch is not fatal; the island will be fetched again on mount
-  } finally {
-    inflightIslandPrefetches!.delete(key)
-  }
+  if (nuxtApp.payload.data[key]) { return }
+  usePrefetchScheduler(nuxtApp).schedule({
+    key: `island:${key}`,
+    priority: 'island',
+    scope: 'app',
+    run: async (signal) => {
+      try {
+        const result = await $fetch<NuxtIslandResponse>(`/__nuxt_island/${key}.json`, {
+          query: { url },
+          responseType: 'json',
+          signal,
+        })
+        nuxtApp.payload.data[key] ||= result
+      } catch {
+        // a failed prefetch is not fatal; the island will be fetched again on mount
+      }
+    },
+  })
 }

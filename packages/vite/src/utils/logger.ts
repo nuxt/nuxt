@@ -26,7 +26,7 @@ const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, numbe
 }
 
 const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
-export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean, onNewDeps?: (deps: string[]) => void, onStaleDep?: (dep: string) => void } = {}): vite.Logger {
+export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean, onNewDeps?: (deps: string[]) => void, onStaleDep?: (dep: string) => void, onTransformError?: (error: unknown) => boolean } = {}): vite.Logger {
   const loggedErrors = new WeakSet<any>()
   const canClearScreen = hasTTY && !isCI && config.clearScreen
   const _logger = createLogger()
@@ -73,6 +73,12 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
       if (ctx.onNewDeps && type === 'info' && (msg.includes('optimized dependencies changed. reloading') || msg.includes('add these dependencies to optimizeDeps.include'))) {
         return
       }
+    }
+
+    // transform failures are reported through the dev error channel
+    if (type === 'error' && options.error && ctx.onTransformError?.(options.error)) {
+      loggedErrors.add(options.error)
+      return
     }
 
     const sameAsLast = lastType === type && lastMsg === msg

@@ -20,6 +20,8 @@ export const NUXT_PRERENDER_NO_SSR_ROUTES: string[] = []
 export const NUXT_EARLY_HINTS: boolean = false
 /** Whether every route is served without scripts. */
 export const NUXT_NO_SCRIPTS: boolean = false
+/** Whether any route rule serves its route without scripts. */
+export const NUXT_HAS_NO_SCRIPTS_ROUTES: boolean = false
 /** Whether scripts will be stripped in production only (dev-only diagnostics). */
 export const NUXT_NO_SCRIPTS_PROD: boolean = false
 /** Whether CSS is inlined into the document. */
@@ -34,6 +36,8 @@ export const NUXT_PAGE_PATTERNS: string[] = []
 export const NUXT_EARLY_404: boolean = false
 /** Matcher compiled from every page route, present when {@link NUXT_EARLY_404} is set. */
 export const NUXT_PAGE_MATCHER: ((method: string, path: string) => unknown) | undefined = undefined
+/** Whether the renderer renders the error page itself, rather than the server runtime doing it. */
+export const NUXT_INLINE_ERROR_RENDERING: boolean = false
 /** Whether `error.data` reaches the error page stringified. */
 export const PARSE_ERROR_DATA: boolean = true
 /** Whether payloads are extracted into `_payload.json` when prerendering. */

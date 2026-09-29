@@ -2,7 +2,7 @@ import fc from 'fast-check'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { snakeCase } from 'scule'
 import * as context from '../src/context.ts'
-import { useRuntimeConfig } from '../src/runtime-config.ts'
+import { updateRuntimeConfig, useRuntimeConfig } from '../src/runtime-config.ts'
 
 const { mockKlona } = vi.hoisted(() => ({
   mockKlona: vi.fn(),
@@ -178,5 +178,44 @@ describe('useRuntimeConfig env application', () => {
         expect(actual, `${other.join('.')} changed`).toEqual(expected)
       }
     }), { numRuns: 500 })
+  })
+})
+
+describe('updateRuntimeConfig', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  function stubNuxt (nitro?: { updateConfig: (config: unknown) => void }) {
+    const nuxt = { options: { nitro: { runtimeConfig: { existing: 'value' } } }, _nitro: nitro }
+    vi.spyOn(context, 'useNuxt').mockReturnValue(nuxt as any)
+    vi.spyOn(context, 'tryUseNuxt').mockReturnValue(nuxt as any)
+    return nuxt
+  }
+
+  it('should merge into the nitro runtime config', () => {
+    const nuxt = stubNuxt()
+
+    updateRuntimeConfig({ example: { foo: 'bar' } })
+
+    expect(nuxt.options.nitro.runtimeConfig).toEqual({ existing: 'value', example: { foo: 'bar' } })
+  })
+
+  it('should update the nitro instance when there is one', () => {
+    const updateConfig = vi.fn()
+    stubNuxt({ updateConfig })
+
+    updateRuntimeConfig({ example: { foo: 'bar' } })
+
+    expect(updateConfig).toHaveBeenCalledWith({ runtimeConfig: { example: { foo: 'bar' } } })
+  })
+
+  it('should not warn when nitro is not initialized yet', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    stubNuxt()
+
+    updateRuntimeConfig({ example: { foo: 'bar' } })
+
+    expect(warn).not.toHaveBeenCalled()
   })
 })

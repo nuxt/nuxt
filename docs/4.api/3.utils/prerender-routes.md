@@ -1,6 +1,6 @@
 ---
 title: 'prerenderRoutes'
-description: prerenderRoutes hints to Nitro to prerender an additional route.
+description: prerenderRoutes hints that an additional route should be prerendered.
 minimalVersion: "3.8"
 links:
   - label: Source
@@ -9,7 +9,7 @@ links:
     size: xs
 ---
 
-When prerendering, you can hint to Nitro to prerender additional paths, even if their URLs do not show up in the HTML of the generated page.
+When prerendering, you can hint that additional paths should be prerendered, even if their URLs do not show up in the HTML of the generated page. Nuxt collects the hints and passes them to your server builder's prerenderer (Nitro by default).
 
 ::important
 `prerenderRoutes` can only be called within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).

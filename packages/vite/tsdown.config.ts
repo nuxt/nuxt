@@ -2,7 +2,7 @@ import { defineConfig } from 'tsdown'
 
 export default defineConfig({
   dts: { generator: 'oxc' },
-  entry: ['src/index', 'src/vite-node', 'src/vite-node-entry', 'src/vite-node-runner', 'src/fix-stacktrace'],
+  entry: ['src/index', 'src/vite-node', 'src/vite-node-entry', 'src/vite-node-runner', 'src/ssr-sourcemap'],
   deps: {
     onlyBundle: [],
     neverBundle: true,
@@ -13,7 +13,6 @@ export default defineConfig({
     external: [
       '#vite-node',
       '#vite-node-runner',
-      '#internal/nuxt/vite-node-runner.mjs',
     ],
   },
 })

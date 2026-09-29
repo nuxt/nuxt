@@ -50,11 +50,11 @@ describe('createServerAutoImports', () => {
     const imports = await autoImports.getImports()
     const sourceOf = (name: string) => imports.filter(i => (i.as ?? i.name) === name).map(i => i.from)
 
-    for (const name of ['defineEventHandler', 'createError', 'getQuery', 'readBody', 'getCookie', 'useRuntimeConfig', 'getRouteRules']) {
+    for (const name of ['defineEventHandler', 'createError', 'getQuery', 'readBody', 'getCookie', 'useRuntimeConfig', 'getRouteRules', 'readValidatedBody', 'getRouterParam', 'handleCors']) {
       expect(sourceOf(name), name).toEqual(['nuxt/server'])
     }
 
-    expect(sourceOf('readValidatedBody')).toEqual(['nitro/h3'])
+    expect(sourceOf('readRawBody')).toEqual(['nitro/h3'])
   })
 
   it('resolves a local type path to a declaration TypeScript can follow', async () => {

@@ -2,7 +2,7 @@ import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { isSamePath, withoutBase } from 'ufo'
+import { isSamePath, withBase, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin } from '#app/nuxt'
 import type { RouteMiddleware } from '#app/composables/router'
@@ -20,6 +20,8 @@ import _routeRulesMatcher from '#build/route-rules.mjs'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
+import { serverPathFallback, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { traceAsync } from '#app/internal/tracing'
 
 // matches a trailing slash on the path only, leaving query and hash significant
 const PATH_TRAILING_SLASH_RE = /\/(?=$|[?#])/
@@ -111,6 +113,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       ? nuxtApp.ssrContext!.url
       : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
 
+    // the path this document was served for (`initialURL` is the path it was rendered for)
+    const documentPath = import.meta.client && serverPathFallback ? withoutBase(window.location.pathname, routerBase) : ''
+
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
@@ -178,6 +183,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       })
     }
 
+    // vue-router logs a navigation failure to the console when no error handler is registered
+    router.onError(async () => {
+      delete nuxtApp._processingMiddleware
+      if (import.meta.server) {
+        delete nuxtApp._middlewareTo
+      }
+      await nuxtApp.callHook('page:loading:end')
+    })
+
     try {
       if (import.meta.server) {
         await router.push(initialURL)
@@ -235,6 +249,18 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       })
     }
 
+    if (import.meta.client && serverPathFallback && !hashMode) {
+      router.beforeResolve((to) => {
+        // never reload the path this document was served for, so an SPA fallback cannot loop
+        if (to.matched.length || isSamePath(to.path, documentPath)) { return }
+        const url = new URL(withBase(to.fullPath, routerBase), window.location.href)
+        if (url.origin === window.location.origin) {
+          window.location.assign(url)
+          return false
+        }
+      })
+    }
+
     const initialLayout = nuxtApp.payload.state._layout
     router.beforeEach(async (to, from) => {
       await nuxtApp.callHook('page:loading:start')
@@ -284,7 +310,16 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (import.meta.dev) {
               nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
             }
-            const result = await nuxtApp.runWithContext(() => middleware(to, from))
+            const run = () => nuxtApp.runWithContext(() => middleware(to, from))
+            const result = await (import.meta.server && tracingChannelNuxt
+              ? traceAsync('nuxt.middleware', {
+                  middleware: {
+                    name: typeof entry === 'string' ? entry : (middleware as any)._name as string | undefined || middleware.name || undefined,
+                    path: (middleware as any)._path as string | undefined,
+                    global: typeof entry !== 'string' && (globalMiddleware.includes(entry) || nuxtApp._middleware.global.includes(entry)),
+                  },
+                }, run)
+              : run())
             if (import.meta.server || (!nuxtApp.payload.serverRendered && nuxtApp.isHydrating)) {
               if (result === false || result instanceof Error) {
                 const error = result || createError({
@@ -334,14 +369,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
       })
     }
-
-    router.onError(async () => {
-      delete nuxtApp._processingMiddleware
-      if (import.meta.server) {
-        delete nuxtApp._middlewareTo
-      }
-      await nuxtApp.callHook('page:loading:end')
-    })
 
     router.afterEach((to) => {
       if (to.matched.length === 0 && !error.value) {

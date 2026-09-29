@@ -46,6 +46,14 @@ export default defineResolvers({
         }
       },
     },
+    prerender: {
+      $resolve: async (val, get) => {
+        return {
+          ...await get('prerender'),
+          ...(val && typeof val === 'object' ? val : {}),
+        }
+      },
+    },
     tracingChannel: {
       $resolve: async (val, get) => {
         if (val === false) {
@@ -62,6 +70,7 @@ export default defineResolvers({
     },
   },
   routeRules: {},
+  prerender: {},
   nitroLegacy: {
     $resolve: (val: unknown) => {
       if (val === true) {

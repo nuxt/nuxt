@@ -1,6 +1,6 @@
 import { joinURL, withQuery } from 'ufo'
 import { createHooks } from 'hookable'
-import { SSR_ERROR_PARAM, encodeSSRError } from 'nuxt/internal/renderer/error'
+import { SSR_ERROR_PARAM, describeError, encodeSSRError, isExpectedError } from 'nuxt/internal/renderer/error'
 import { createError } from 'nuxt/server'
 import type { NuxtRendererOptions, RendererHooks } from 'nuxt/internal/renderer/runtime'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
@@ -50,6 +50,20 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     createResponse: (body, init) => new Response(body, init),
     createError: init => createError(init),
     prerender,
+    onRenderSuccess: import.meta.dev
+      ? () => {
+          import('./dev-error.ts').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+        }
+      : undefined,
+    captureError: (error) => {
+      // in development the live error channel reports and prints the error itself
+      if (!import.meta.dev) {
+        console.error(error)
+      }
+    },
+    onDevError: import.meta.dev
+      ? (error, event, options) => import('./dev-error.ts').then(({ observeDevError }) => observeDevError(error, event.req, options))
+      : undefined,
   }
 }
 
@@ -61,10 +75,17 @@ const PRERENDER_HINTS_HEADER = 'x-nuxt-prerender'
 
 /**
  * A web-standard handler over the renderer: it renders the request, and renders the app's
- * error page for a request the render refused.
+ * error page for a request the render refused. In development it also serves the live
+ * error channel and publishes what it failed on to it.
  */
 export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: MatchRouteRules): (request: Request) => Promise<Response> {
   return async function fetch (request: Request): Promise<Response> {
+    if (import.meta.dev) {
+      const devErrors = await import('./dev-error.ts')
+      if (devErrors.isErrorChannelRequest(new URL(request.url).pathname)) {
+        return devErrors.fetchErrorChannel(request)
+      }
+    }
     const event = createRequestEvent(request)
     const rules = matchRouteRules(event.url.pathname)
     if (rules.redirect) {
@@ -144,8 +165,12 @@ function applyPrerenderHints (event: ReturnType<typeof createRequestEvent>, resp
 }
 
 async function renderError (renderer: NuxtRenderer, request: Request, error: unknown, event: ReturnType<typeof createRequestEvent>): Promise<Response> {
-  const { status, statusText, message, headers } = describeError(error)
+  const described = describeError(error)
+  const { status, statusText, message, headers } = described
   const url = new URL(request.url)
+
+  const devErrors = import.meta.dev ? await import('./dev-error.ts') : undefined
+  const report = devErrors ? await devErrors.observeDevError(error, request, { expected: isExpectedError(error, described) }) : undefined
 
   const errorEvent = createRequestEvent(new Request(withQuery(new URL('/__nuxt_error', url).href, {
     [SSR_ERROR_PARAM]: encodeSSRError({
@@ -155,12 +180,19 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
       fatal: false,
       url: request.url,
       data: (error as { data?: unknown })?.data,
+      ...(import.meta.dev && { stack: (error as { stack?: string })?.stack }),
     }),
   }), { headers: request.headers }))
   // while prerendering the two renders share one state, so routes the error page asks
   // for are reported alongside those the failed render collected before it threw
   const state = (import.meta.prerender ? (event.context as { nuxt?: Record<string, unknown> }).nuxt : undefined) || {}
   state['~rendering-error'] = true
+  if (devErrors) {
+    const cause = devErrors.errorCause(error)
+    if (cause !== undefined) {
+      state['~error-cause'] = cause
+    }
+  }
   ;(errorEvent.context as { nuxt?: Record<string, unknown> }).nuxt = state
   if (import.meta.prerender) {
     ;(event.context as { nuxt?: Record<string, unknown> }).nuxt = state
@@ -173,7 +205,20 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
       responseHeaders.set(name, value)
     }
     responseHeaders.set('content-type', 'text/html;charset=utf-8')
+    if (report && !import.meta.test) {
+      const html = await rendered.text()
+      // the overlay is a development aid; never let it replace the real error
+      const body = await report.overlay(html).catch(() => html)
+      return new Response(body, { status, statusText, headers: responseHeaders })
+    }
     return new Response(rendered.body, { status, statusText, headers: responseHeaders })
+  }
+
+  if (report) {
+    const page = await report.page().catch(() => undefined)
+    if (page) {
+      return new Response(page, { status, statusText, headers: { ...headers, 'content-type': 'text/html;charset=utf-8' } })
+    }
   }
 
   return new Response(message, {
@@ -181,20 +226,4 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
     statusText,
     headers: { ...headers, 'content-type': 'text/plain;charset=utf-8' },
   })
-}
-
-// a reason phrase is limited to HTAB / SP / VCHAR / obs-text, and `Response` throws on anything else
-const INVALID_REASON_PHRASE_RE = /[^\t\x20-\x7E\x80-\xFF]/g
-
-function describeError (error: unknown) {
-  const { status, statusText, message, headers } = (error || {}) as { status?: number, statusText?: string, message?: string, headers?: unknown }
-  const isHTTPError = typeof status === 'number' && status >= 400 && status <= 599
-  // an error without a status is the server's own, whose message is only exposed in development
-  const text = ((isHTTPError || import.meta.dev) && (statusText || message)) || (isHTTPError ? 'Request failed' : 'Internal Server Error')
-  return {
-    status: isHTTPError ? status : 500,
-    statusText: text.replace(INVALID_REASON_PHRASE_RE, '') || 'Error',
-    message: text,
-    headers: headers instanceof Headers ? Object.fromEntries(headers) : (headers as Record<string, string> | undefined) ?? {},
-  }
 }

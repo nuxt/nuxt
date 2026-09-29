@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { H3, readBody, serve } from 'nitro/h3'
-import { defineEventHandler, toNuxtRequestEvent } from '../src/runtime/server.ts'
+import type { H3Event } from 'nitro/h3'
+import { defineEventHandler } from '../src/runtime/server.ts'
 import { readBody as readLegacyBody } from '../src/runtime/compat/h3-v1.ts'
 
 function withTimeout<T> (promise: Promise<T>, label: string): Promise<T> {
@@ -45,11 +46,11 @@ app.post('/web-then-stream', defineEventHandler(async (event) => {
 
 app.post('/web-then-v1', defineEventHandler(async (event) => {
   const web = await event.req.json()
-  return { web, v1: await withTimeout(readLegacyBody(toNuxtRequestEvent(event)), 'v1 readBody') }
+  return { web, v1: await withTimeout(readLegacyBody(event as H3Event), 'v1 readBody') }
 }))
 
 app.post('/v1-then-web', defineEventHandler(async (event) => {
-  const v1 = await readLegacyBody(toNuxtRequestEvent(event))
+  const v1 = await readLegacyBody(event as H3Event)
   return { v1, web: await withTimeout(event.req.json(), 'req.json') }
 }))
 

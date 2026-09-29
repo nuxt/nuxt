@@ -46,7 +46,8 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
   }
 
   for (const i of [
-    /(^|node_modules\/)@nuxt\/(cli|kit|test-utils)/,
+    /(^|node_modules\/)@nuxt\/(kit|test-utils)/,
+    /(^|node_modules\/)@nuxt\/cli(?:-nightly)?(?:$|\/)(?!runtime\/)/,
     /(^|node_modules\/)nuxi/,
     /(^|node_modules\/)nitropack(?:-nightly)?(?:$|\/)(?!(?:dist\/)?(?:node_modules|presets|runtime|types))/,
     /(^|node_modules\/)nitro(?:-nightly)?\/(builder|meta|vite|tsconfig)/,
@@ -84,7 +85,7 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
     // denied by the build, not by its types: those resolve in every context, which is what
     // lets the generated server-route typings type `$fetch`
     patterns.push([
-      /^nuxt\/server$/,
+      /^nuxt\/(?:server|internal\/server-app-config)$/,
       `\`nuxt/server\` cannot be imported in ${context}.`,
       ['Import runtime Nuxt composables from `#app` or `#imports` instead.', 'Use `$fetch()` or `useFetch()` to call server endpoints.'],
     ])

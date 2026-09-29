@@ -22,7 +22,7 @@ export default definePlugin((nitroApp) => {
   observeLegacyHooks(hooks)
 
   const reported = new Set<string>()
-  const report = (code: 'NUXT_E8008' | 'NUXT_E8009', hook: string) => {
+  const report = (code: 'NUXT_E8008' | 'NUXT_E8011', hook: string) => {
     const key = `${code}:${hook}`
     if (!reported.has(key)) {
       reported.add(key)
@@ -59,7 +59,7 @@ export default definePlugin((nitroApp) => {
       const legacyResponse = {
         get body () {
           if (streamed) {
-            report('NUXT_E8009', hook)
+            report('NUXT_E8011', hook)
           }
           return body
         },

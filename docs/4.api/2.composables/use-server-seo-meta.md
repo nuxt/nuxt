@@ -9,7 +9,7 @@ links:
 ---
 
 ::warning
-`useServerSeoMeta` is deprecated. Wrap [`useSeoMeta`](/docs/api/composables/use-seo-meta) in an `if (import.meta.server)` block instead. The auto-import is removed under `future.compatibilityVersion: 5`.
+`useServerSeoMeta` is deprecated. Wrap [`useSeoMeta`](/docs/api/composables/use-seo-meta) in an `if (import.meta.server)` block instead. It is no longer auto-imported.
 ::
 
 `useServerSeoMeta` lets you define your site's SEO meta tags as a flat object with full TypeScript support, exactly like [`useSeoMeta`](/docs/api/composables/use-seo-meta), but it only runs server-side and is tree-shaken from the client bundle.

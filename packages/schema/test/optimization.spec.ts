@@ -44,18 +44,4 @@ describe('optimization keyed function options', () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('`optimization.keyedComposables` is deprecated'))
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('`optimization.keyedComposableFactories` is deprecated'))
   })
-
-  it('does not warn about the deprecated options with compatibilityVersion 4', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-    await applyDefaults(NuxtConfigSchema, {
-      future: { compatibilityVersion: 4 },
-      optimization: {
-        keyedComposables: [{ name: 'useLegacy', source: '~/composables/legacy', argumentLength: 2 }],
-        keyedComposableFactories: [{ name: 'createUseLegacy', source: '~/composables/legacy', argumentLength: 2 }],
-      },
-    })
-
-    expect(warn).not.toHaveBeenCalled()
-  })
 })

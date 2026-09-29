@@ -657,7 +657,7 @@ export default defineNuxtModule({
         // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
         // not), then case-fold unless routing is `sensitive`.
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-        const ruleMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules.routes, nitro.options.baseURL, !caseSensitiveRouteRules)
+        const ruleMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules.routes, '', !caseSensitiveRouteRules)
         for (const route of prerenderRoutes) {
           const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', normalizeRouteRulePath(route, !caseSensitiveRouteRules)).reverse())
           if (rules.prerender) {
@@ -802,6 +802,10 @@ export default defineNuxtModule({
       if (conflicting.length) {
         pageDiagnostics.NUXT_B4021({ paths: conflicting.map(path => `\`${path}\``).join(', ') })
       }
+
+      nuxt.options._noScriptsPageSources = [...restrictedPages]
+        .filter(([page, stub]) => stub === 'noScripts' && page.file)
+        .map(([page]) => relative(nuxt.options.srcDir, page.file!))
 
       return restrictedPages
     }

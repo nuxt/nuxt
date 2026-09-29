@@ -181,7 +181,7 @@ export type RouteRuleConfig = ResolveRouteRuleConfig<NitroTypes>
 
 /** The tracing channels Nuxt owns, enabled independently of the server runtime's own. */
 export interface TracingChannelOptionsBase {
-  /** Enable Nuxt-owned channels (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). */
+  /** Enable Nuxt-owned `nuxt.*` channels. */
   nuxt?: boolean
 }
 
@@ -195,6 +195,16 @@ export type ResolveTracingChannelOptions<T> = TracingChannelOptionsBase & (T ext
  * @experimental Channel names, payload shapes, and option keys may change.
  */
 export type TracingChannelOptions = ResolveTracingChannelOptions<NitroTypes>
+
+/** Prerender options shared by every server builder. */
+export interface PrerenderOptions {
+  /** Routes to prerender, in addition to those discovered by crawling or matched by `prerender` route rules. */
+  routes?: string[]
+  /** Routes to skip. A string matches as a path prefix. */
+  ignore?: Array<string | RegExp | ((path: string) => boolean | undefined)>
+  /** Follow links in each rendered page to discover further routes. */
+  crawlLinks?: boolean
+}
 
 /**
  * Fallback configuration shape, limited to the keys Nuxt itself reads and writes. A server
@@ -214,7 +224,7 @@ export interface NitroConfigFallback {
   imports?: false | ServerImportsOptions
   scanDirs?: string[]
   routeRules?: Record<string, RouteRuleConfigFallback>
-  prerender?: { routes?: string[], crawlLinks?: boolean, ignore?: unknown[], failOnError?: boolean }
+  prerender?: PrerenderOptions & { failOnError?: boolean }
   static?: boolean
   typescript?: { tsConfig?: Record<string, any>, generateTsConfig?: boolean, strict?: boolean }
   tracingChannel?: boolean | (TracingChannelOptionsBase & Record<string, boolean | undefined>)
@@ -226,6 +236,34 @@ export type ResolveNitroConfig<T> = T extends { config: infer C } ? C : NitroCon
 
 /** The configuration of the server build, as accepted by the configured `server.builder`. */
 export type NitroConfig = ResolveNitroConfig<NitroTypes>
+
+interface DeprecatedNitroPrerenderOptions {
+  /** @deprecated Use the top-level `prerender.routes` option instead. */
+  routes?: PrerenderOptions['routes']
+  /** @deprecated Use the top-level `prerender.ignore` option instead. */
+  ignore?: PrerenderOptions['ignore']
+  /** @deprecated Use the top-level `prerender.crawlLinks` option instead. */
+  crawlLinks?: PrerenderOptions['crawlLinks']
+}
+
+type NitroConfigKey<T, K extends PropertyKey> = K extends keyof T ? T[K] : never
+
+interface DeprecatedNitroOptions<T> {
+  /** @deprecated Use the top-level `runtimeConfig` option instead. */
+  runtimeConfig?: NitroConfigKey<T, 'runtimeConfig'>
+  /** @deprecated Use the top-level `routeRules` option instead. */
+  routeRules?: NitroConfigKey<T, 'routeRules'>
+  /** @deprecated Use the top-level `tracingChannel` option instead. */
+  tracingChannel?: NitroConfigKey<T, 'tracingChannel'>
+  typescript?: Omit<NonNullable<NitroConfigKey<T, 'typescript'>>, 'tsConfig'> & {
+    /** @deprecated Use the top-level `typescript.serverTsConfig` option instead. */
+    tsConfig?: NonNullable<NitroConfigKey<T, 'typescript'>> extends { tsConfig?: infer C } ? C : never
+  }
+  prerender?: Omit<NonNullable<NitroConfigKey<T, 'prerender'>>, keyof PrerenderOptions> & DeprecatedNitroPrerenderOptions
+}
+
+/** @internal */
+export type ResolveNuxtNitroConfig<T> = Omit<T, keyof DeprecatedNitroOptions<T>> & DeprecatedNitroOptions<T>
 
 /**
  * Fallback options shape, describing the subset of resolved options common to the supported

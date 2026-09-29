@@ -327,3 +327,67 @@ describe('layout hydration', () => {
     delete layouts['layout-pending']
   })
 })
+
+describe('layout transition', () => {
+  it('should dispose head entries of the leaving page when switching layout to a suspended page', async () => {
+    const router = useRouter()
+    const nuxtApp = useNuxtApp()
+    const head = nuxtApp.runWithContext(() => injectHead())
+    const titles = () => [...head.entries.values()].map(entry => entry.input?.title)
+
+    for (const layout of ['head-layout-a', 'head-layout-b']) {
+      layouts[layout] = defineComponent({
+        setup: (_, ctx) => () => h('div', { class: layout }, ctx.slots.default?.()),
+      })
+    }
+    const meta = (layout: string) => ({
+      layout,
+      layoutTransition: { name: 'layout', mode: 'out-in' as const, duration: 10 },
+      pageTransition: { name: 'page', mode: 'out-in' as const, duration: 10 },
+    })
+    router.addRoute({
+      name: 'head-layout-a',
+      path: '/head-layout-a',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: meta('head-layout-a'),
+      component: defineComponent({
+        setup () {
+          useHead({ title: 'Page A' })
+          return () => h('div', 'Page A')
+        },
+      }),
+    })
+    router.addRoute({
+      name: 'head-layout-b',
+      path: '/head-layout-b',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: meta('head-layout-b'),
+      component: defineComponent({
+        async setup () {
+          await new Promise(resolve => setTimeout(resolve, 10))
+          return () => h('div', 'Page B')
+        },
+      }),
+    })
+
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    }, { global: { stubs: { transition: false } } })
+
+    await navigateTo('/head-layout-a')
+    await flushPromises()
+    await expect.poll(titles).toContain('Page A')
+
+    await navigateTo('/head-layout-b')
+    await flushPromises()
+    await expect.poll(() => el.html()).toContain('Page B')
+
+    await expect.poll(titles).not.toContain('Page A')
+
+    el.unmount()
+    router.removeRoute('head-layout-a')
+    router.removeRoute('head-layout-b')
+    delete layouts['head-layout-a']
+    delete layouts['head-layout-b']
+  })
+})

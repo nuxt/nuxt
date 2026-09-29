@@ -56,10 +56,11 @@ export default defineNuxtModule({
       ctx.sharedReferences.push({ path: 'schema/nuxt.schema.d.ts' })
       ctx.nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
 
+      const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
       ctx.nodeTsConfig.include ||= []
       ctx.nodeTsConfig.include.push(
-        relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'nuxt.schema.*')),
-        relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'layers/*/nuxt.schema.*')),
+        relative(typesDir, join(nuxt.options.rootDir, 'nuxt.schema.*')),
+        relative(typesDir, join(nuxt.options.rootDir, 'layers/*/nuxt.schema.*')),
       )
 
       if (nuxt.options._prepare) {

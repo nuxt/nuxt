@@ -4,6 +4,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { dirname, isAbsolute, relative, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
+import { combineRE } from '../utils/plugins.ts'
 
 const PREFIX = 'virtual:nuxt:'
 const PREFIX_RE = /^\/?virtual:nuxt:/
@@ -87,14 +88,14 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
   }
 
   const filter = {
-    id: [
+    id: combineRE([
       PREFIX_RE,
       RELATIVE_ID_RE,
       /^#build\//,
       new RegExp('^(\\w:)?' + escapeDirectory(nuxt.options.buildDir)),
       ...Array.from(vfsEntries).map(id => new RegExp('^' + id)),
       ...relevantAliases.size ? [new RegExp('^' + Array.from(relevantAliases).join('|') + '([\\\\/]|$)')] : [],
-    ],
+    ]),
   }
 
   return {
