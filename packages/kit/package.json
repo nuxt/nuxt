@@ -41,11 +41,12 @@
     "klona": "catalog:build",
     "microdiff": "catalog:build",
     "nostics": "catalog:build",
-    "nypm": "catalog:build",
+    "package-manager-detector": "catalog:build",
     "pathe": "catalog:build",
     "rc9": "catalog:build",
     "scule": "catalog:build",
     "std-env": "catalog:build",
+    "tinyexec": "catalog:build",
     "tinyglobby": "catalog:build",
     "unctx": "catalog:build",
     "verkit": "catalog:build"
