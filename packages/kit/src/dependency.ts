@@ -129,13 +129,15 @@ export async function getAddDependencyCommand (names: string | string[], cwd: st
   return [command, ...args].join(' ')
 }
 
+const DENO_SPECIFIER_RE = /^(?:npm|jsr|file):/
+
 async function resolveAddCommand (names: string | string[], cwd: string, options: { dev?: boolean }): Promise<ResolvedCommand> {
-  const agent = (await detect({ cwd }).catch(() => null))?.agent || 'npm'
+  const { name, agent } = await detect({ cwd }).catch(() => null) || { name: 'npm', agent: 'npm' } as const
   const packages = Array.isArray(names) ? names : [names]
   const args = [
-    ...agent === 'pnpm' && existsSync(join(cwd, 'pnpm-workspace.yaml')) ? ['--workspace-root'] : [],
+    ...name === 'pnpm' && existsSync(join(cwd, 'pnpm-workspace.yaml')) ? ['--workspace-root'] : [],
     ...options.dev ? ['-D'] : [],
-    ...agent === 'deno' ? packages.map(name => `npm:${name}`) : packages,
+    ...name === 'deno' ? packages.map(pkg => DENO_SPECIFIER_RE.test(pkg) ? pkg : `npm:${pkg}`) : packages,
   ]
   return resolveCommand(agent, 'add', args) || { command: 'npm', args: ['i', ...args] }
 }
