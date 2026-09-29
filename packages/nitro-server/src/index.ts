@@ -436,9 +436,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       ],
     },
     alias: {
-      // resolved before tree-shaking removes the renderer's dev-only import, so its dependencies
-      // are traced into the output unless stubbed
-      ...nuxt.options.dev ? {} : { 'nuxt/internal/dev-error': mockProxy },
       // Vue 3 mocks
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
