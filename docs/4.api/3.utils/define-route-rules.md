@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-::read-more{to="/docs/4.x/guide/going-further/experimental-features#inlinerouterules" icon="i-lucide-star"}
+::read-more{to="/docs/guide/going-further/experimental-features#inlinerouterules" icon="i-lucide-star"}
 This feature is experimental and in order to use it you must enable the `experimental.inlineRouteRules` option in your `nuxt.config`.
 ::
 
@@ -37,16 +37,19 @@ export default defineNuxtConfig({
 ```
 
 ::note
-When running [`nuxt build`](/docs/4.x/api/commands/build), the home page will be pre-rendered in `.output/public/index.html` and statically served.
+When running [`nuxt build`](/docs/api/commands/build), the home page will be pre-rendered in `.output/public/index.html` and statically served.
 ::
 
 ## Notes
 
 - A rule defined in `~/pages/foo/bar.vue` will be applied to `/foo/bar` requests.
-- A rule in `~/pages/foo/[id].vue` will be applied to `/foo/**` requests.
+- A rule in `~/pages/foo/[id].vue` will be applied to `/foo/*` requests.
+- A rule in a page with a finite set of alternatives, such as a custom `path` of `/:locale(en|fr)/about`, will generate one rule per alternative (`/en/about` and `/fr/about`).
 
-For more control, such as if you are using a custom `path` or `alias` set in the page's [`definePageMeta`](/docs/4.x/api/utils/define-page-meta), you should set `routeRules` directly within your `nuxt.config`.
+If a page path cannot be converted to an equivalent route rule pattern (for example, a param with a regular expression like `/:id(\d+)`, a partial segment like `/prefix-:id`, or a repeatable param like `/:slug+`), the rules for that page are **not** applied and Nuxt warns during build. In that case, define the rules explicitly in `nitro.routeRules` in your `nuxt.config`.
 
-::read-more{to="/docs/4.x/guide/concepts/rendering#hybrid-rendering" icon="i-lucide-medal"}
+For more control, such as if you are using a custom `path` or `alias` set in the page's [`definePageMeta`](/docs/api/utils/define-page-meta), you should set `routeRules` directly within your `nuxt.config`.
+
+::read-more{to="/docs/guide/concepts/rendering#hybrid-rendering" icon="i-lucide-medal"}
 Read more about the `routeRules`.
 ::

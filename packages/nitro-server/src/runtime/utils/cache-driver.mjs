@@ -3,8 +3,8 @@
 import crypto from 'node:crypto'
 import { mkdir, rename, unlink, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
+import flru from 'flru'
 import fsDriver from 'unstorage/drivers/fs-lite'
-import lruCache from 'unstorage/drivers/lru-cache'
 
 /**
  * @param {string} item
@@ -41,20 +41,21 @@ async function atomicWrite (path, value) {
  */
 export default function cacheDriver (opts) {
   const fs = fsDriver({ base: opts.base })
-  const lru = lruCache({ max: 1000 })
+  /** flru keeps an active and a stale half, so up to 2x `max` entries are retained. */
+  const lru = /** @type {import('flru').flruCache<string>} */ (flru(500))
   const base = resolve(opts.base || '.')
 
   return {
     ...fs, // fall back to file system - only the bottom three methods are used in renderer
-    async setItem (key, value, opts) {
+    async setItem (key, value) {
       await atomicWrite(join(base, normalizeFsKey(key)), value)
-      await lru.setItem?.(key, value, opts)
+      lru.set(key, value)
     },
     async hasItem (key, opts) {
-      return await lru.hasItem(key, opts) || await fs.hasItem(normalizeFsKey(key), opts)
+      return lru.has(key) || await fs.hasItem(normalizeFsKey(key), opts)
     },
     async getItem (key, opts) {
-      return await lru.getItem(key, opts) || await fs.getItem(normalizeFsKey(key), opts)
+      return lru.get(key) || await fs.getItem(normalizeFsKey(key), opts)
     },
   }
 }

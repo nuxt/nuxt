@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-basic-types",
   "scripts": {
     "build": "nuxt build",

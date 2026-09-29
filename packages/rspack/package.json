@@ -12,7 +12,6 @@
   "type": "module",
   "types": "./src/index.ts",
   "imports": {
-    "#builder": "./builder.mjs",
     "#vue-module-identifier": "./src/loaders/vue-module-identifier.ts"
   },
   "exports": {
@@ -20,11 +19,10 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist",
-    "builder.mjs"
+    "dist"
   ],
   "scripts": {
-    "prepack": "tsdown",
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
     "build": "tsdown",
     "test:attw": "node ../../scripts/test-attw.ts"
   },
@@ -42,14 +40,11 @@
     "escape-string-regexp": "catalog:build",
     "exsolve": "catalog:build",
     "file-loader": "catalog:webpack",
-    "jiti": "catalog:build",
     "knitwork": "catalog:build",
     "memfs": "catalog:webpack",
     "mini-css-extract-plugin": "catalog:webpack",
-    "mlly": "catalog:build",
     "ohash": "catalog:build",
     "pathe": "catalog:build",
-    "pify": "catalog:webpack",
     "postcss": "catalog:build",
     "postcss-import": "catalog:build",
     "postcss-import-resolver": "catalog:build",
@@ -95,7 +90,6 @@
     },
     "types": "./dist/index.d.mts",
     "imports": {
-      "#builder": "./builder.mjs",
       "#vue-module-identifier": "./dist/loaders/vue-module-identifier.mjs"
     }
   }

@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-hmr",
   "scripts": {
     "build": "nuxt build"

@@ -3,8 +3,9 @@ import process from 'node:process'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'pathe'
 import { consola } from 'consola'
+import { link } from 'clickable-path'
 import { colors } from 'consola/utils'
-import type { Hookable } from 'hookable'
+import type { NuxtHookRegistry } from '@nuxt/schema'
 import type { NuxtHooks } from 'nuxt/schema'
 
 export interface MemorySnapshot {
@@ -168,7 +169,7 @@ export class NuxtPerfProfiler {
     this.#baseTs = Date.now() * 1000 - this.#globalStart * 1000
   }
 
-  installHookInterceptors (hooks: Hookable<NuxtHooks>): void {
+  installHookInterceptors (hooks: NuxtHookRegistry<NuxtHooks>): void {
     const unsubBefore = hooks.beforeEach((event) => {
       this.#hookStartStack.push({
         name: event.name,
@@ -699,9 +700,9 @@ export class NuxtPerfProfiler {
   writeReport (buildDir: string, options?: { quiet?: boolean }): string {
     const report = this.getReport()
     const reportPath = join(buildDir, 'perf-report.json')
-    const relativeReportPath = relative(process.cwd(), reportPath).replace(/^(?![^.]{1,2}\/)/, './')
+    const relativeReportPath = link(reportPath, { formatter: absolute => relative(process.cwd(), absolute).replace(/^(?![^.]{1,2}\/)/, './') })
     const tracePath = join(buildDir, 'perf-trace.json')
-    const relativeTracePath = relative(process.cwd(), tracePath).replace(/^(?![^.]{1,2}\/)/, './')
+    const relativeTracePath = link(tracePath, { formatter: absolute => relative(process.cwd(), absolute).replace(/^(?![^.]{1,2}\/)/, './') })
     try {
       mkdirSync(buildDir, { recursive: true })
       writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf-8')

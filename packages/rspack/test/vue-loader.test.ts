@@ -5,9 +5,11 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { VueLoaderPlugin, getVueLoaderHash, vueLoader, webpack } from '../builder.mjs'
+import { impl } from '../src/impl.ts'
 
-const require = createRequire(new URL('../builder.mjs', import.meta.url))
+const { VueLoaderPlugin, getVueLoaderHash, vueLoader, webpack } = impl
+
+const require = createRequire(new URL('../src/impl.ts', import.meta.url))
 const rootNodeModules = resolve(import.meta.dirname, '../../../node_modules')
 
 describe('rspack-vue-loader', () => {

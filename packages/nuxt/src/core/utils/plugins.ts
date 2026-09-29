@@ -14,51 +14,43 @@ export function parseModuleId (id: string): { pathname: string, search: string }
   return { pathname: id.slice(0, qIndex), search: id.slice(qIndex) }
 }
 
-const NUXT_COMPONENT_RE = /[?&]nuxt_component=/
-const MACRO_RE = /[?&]macro=/
+const VUE_FILE_RE = /\.vue$/
+const MACRO_QUERY_RE = /[?&]macro=/
+const EXACT_MACRO_QUERY_RE = /\?macro=true$/
 const VUE_QUERY_RE = /[?&]vue(?:&|$)/
-const SETUP_QUERY_RE = /[?&]setup(?:=|&|$)/
-const TYPE_QUERY_RE = /[?&]type=([^&]*)/
+const VUE_SCRIPT_BLOCK_RE = /[?&]vue&type=script\b/
+const VUE_TEMPLATE_BLOCK_RE = /[?&]vue&type=template\b/
 
-export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 'style'> } = {}) {
-  const { search } = parseModuleId(id)
+/**
+ * Module id filters for Vue SFC requests, usable directly as `transform.filter.id`
+ * includes. Each array matches whole `.vue` files, page-meta macro requests and the
+ * relevant SFC block requests (`?vue&type=...` from `@vitejs/plugin-vue` and `vue-loader`).
+ */
+export const VUE_ID_FILTER = [VUE_FILE_RE, MACRO_QUERY_RE, VUE_QUERY_RE]
+export const VUE_SCRIPT_ID_FILTER = [VUE_FILE_RE, MACRO_QUERY_RE, VUE_SCRIPT_BLOCK_RE]
+export const VUE_TEMPLATE_ID_FILTER = [VUE_FILE_RE, EXACT_MACRO_QUERY_RE, VUE_TEMPLATE_BLOCK_RE]
+export const VUE_SCRIPT_TEMPLATE_ID_FILTER = [VUE_FILE_RE, MACRO_QUERY_RE, VUE_SCRIPT_BLOCK_RE, VUE_TEMPLATE_BLOCK_RE]
 
-  // Bare `.vue` file (in Vite)
-  if (id.endsWith('.vue') && !search) {
-    return true
-  }
+/**
+ * SFC block requests that never contain user script code but may carry a JS-like
+ * extension in their query (e.g. `?vue&type=template&lang.js`). Use as an `exclude`
+ * when combining `JS_ID_RE` with a filter that should not match template blocks.
+ */
+export const VUE_NON_SCRIPT_BLOCK_RE = /[?&]vue&type=(?:template|style|custom)\b/
 
-  if (!search) {
-    return false
-  }
-
-  // Component async/lazy wrapper
-  if (NUXT_COMPONENT_RE.test(search)) {
-    return false
-  }
-
-  // Macro
-  if (MACRO_RE.test(search) && (search === '?macro=true' || !opts.type || opts.type.includes('script'))) {
-    return true
-  }
-
-  // Non-Vue or Styles
-  if (!VUE_QUERY_RE.test(search)) {
-    return false
-  }
-
-  if (opts.type) {
-    const type = SETUP_QUERY_RE.test(search) ? 'script' : TYPE_QUERY_RE.exec(search)?.[1] as 'script' | 'template' | 'style' | undefined
-    if (!type || !opts.type.includes(type)) {
-      return false
-    }
-  }
-
-  // Query `?vue&type=template` (in Webpack or external template)
-  return true
+export function isVue (id: string, opts: { type?: Array<'template' | 'script'> } = {}) {
+  const filter = opts.type
+    ? opts.type.includes('script')
+      ? opts.type.includes('template') ? VUE_SCRIPT_TEMPLATE_ID_FILTER : VUE_SCRIPT_ID_FILTER
+      : VUE_TEMPLATE_ID_FILTER
+    : VUE_ID_FILTER
+  return filter.some(re => re.test(id))
 }
 
 const JS_RE = /\.(?:[cm]?[jt]s|[jt]sx)$/
+
+/** Like {@link isJS} but usable as an id filter (allows a query string after the extension). */
+export const JS_ID_RE = /\.(?:[cm]?[jt]s|[jt]sx)(?:\?|$)/
 
 /** Matches module IDs for Vue files (ignoring query strings). */
 export const VUE_ID_RE = /\.vue(?:\?|$)/

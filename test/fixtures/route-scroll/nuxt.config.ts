@@ -1,14 +1,14 @@
 import { fileURLToPath } from 'node:url'
 
-export default defineNuxtConfig({
-  devtools: { enabled: false },
+import { withMatrix } from '../../matrix.ts'
+
+export default withMatrix({
   app: {
     head: {
       title: 'Route scroll',
       meta: [{ name: 'description', content: 'Route scroll behavior test fixture' }],
     },
   },
-  compatibilityDate: 'latest',
   hooks: {
     'pages:resolved' (pages) {
       pages.push({

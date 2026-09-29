@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { parseAndWalk } from 'oxc-walker'
 
-import { SX_RE, isVue } from '../../core/utils/index.ts'
+import { SX_RE, VUE_ID_FILTER } from '../../core/utils/index.ts'
 import type { Component } from 'nuxt/schema'
 
 interface NameDevPluginOptions {
@@ -16,13 +16,9 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
   return {
     name: 'nuxt:component-name-plugin',
     enforce: 'post',
-    transformInclude (id) {
-      /* v8 ignore next 2 */
-      return isVue(id) || !!id.match(SX_RE)
-    },
     transform: {
       filter: {
-        id: { include: FILENAME_RE },
+        id: { include: [...VUE_ID_FILTER, SX_RE] },
       },
       handler (code, id, meta?: unknown) {
         const filename = id.match(FILENAME_RE)?.[1]

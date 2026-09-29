@@ -7,7 +7,7 @@ function matchesFilter (
     code?: string
     id?: {
       include?: RegExp[]
-      exclude?: RegExp[]
+      exclude?: RegExp | RegExp[]
     }
   },
   code: string,
@@ -17,11 +17,11 @@ function matchesFilter (
     return false
   }
 
-  if (filter.id?.include?.length && !filter.id.include.some(re => re.test(id))) {
+  if (filter.id?.exclude && [filter.id.exclude].flat().some(re => re.test(id))) {
     return false
   }
 
-  if (filter.id?.exclude?.some(re => re.test(id))) {
+  if (filter.id?.include?.length && !filter.id.include.some(re => re.test(id))) {
     return false
   }
 
@@ -48,7 +48,7 @@ describe('DecoratorsPlugin transform filter', () => {
     code?: string
     id?: {
       include?: RegExp[]
-      exclude?: RegExp[]
+      exclude?: RegExp | RegExp[]
     }
   }
 

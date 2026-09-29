@@ -1,7 +1,7 @@
 import { createApp, createSSRApp, nextTick } from 'vue'
 import type { App } from 'vue'
 
-import '#build/fetch'
+import '#build/fetch-setup'
 import '#build/global-polyfills.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'

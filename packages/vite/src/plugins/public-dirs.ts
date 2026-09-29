@@ -1,16 +1,31 @@
 import { existsSync } from 'node:fs'
-import { useNitro } from '@nuxt/kit'
-import { withLeadingSlash, withTrailingSlash } from 'ufo'
+import { tryUseNitro } from '@nuxt/kit'
+import { joinURL, withLeadingSlash, withTrailingSlash } from 'ufo'
 import { dirname, relative } from 'pathe'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { isCSSRequest } from 'vite'
 import type { Plugin } from 'vite'
 
+import { isInlineStyleId } from '../utils/inline-styles.ts'
+
 const PREFIX = '\0virtual:public?'
 const PREFIX_RE = /^\0virtual:public\?/
 const CSS_URL_RE = /url\((\/[^)]+)\)/g
 const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
-const RENDER_CHUNK_RE = /(?<= = )['"`]/
+const QUOTE_RE = /['"`]/
+
+/**
+ * Find the quote character of the string literal containing the given index, so that
+ * merged chunks with differently-quoted literals are each handled correctly.
+ */
+function enclosingQuote (code: string, index: number) {
+  for (let i = index - 1; i >= 0; i--) {
+    if (QUOTE_RE.test(code[i]!) && code[i - 1] !== '\\') {
+      return code[i]!
+    }
+  }
+  return '"'
+}
 
 interface VitePublicDirsPluginOptions {
   dev?: boolean
@@ -30,9 +45,10 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
         if (!isCSSRequest(id) || !CSS_URL_SINGLE_RE.test(code)) { return }
 
         const s = rolldownString(code, id, meta)
-        for (const [full, url] of code.matchAll(CSS_URL_RE)) {
+        for (const match of code.matchAll(CSS_URL_RE)) {
+          const [full, url] = match
           if (url && resolveFromPublicAssets(url)) {
-            s.replace(full, `url(${options.baseURL}${url})`)
+            s.update(match.index, match.index + full.length, `url(${joinURL(options.baseURL!, url)})`)
           }
         }
 
@@ -64,13 +80,15 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
         },
       },
       renderChunk (code, chunk) {
-        if (!chunk.facadeModuleId?.includes('?inline&used')) { return }
+        if (!isInlineStyleId(chunk.facadeModuleId)) { return }
 
         const s = rolldownString(code, chunk.fileName)
-        const q = code.match(RENDER_CHUNK_RE)?.[0] || '"'
-        for (const [full, url] of code.matchAll(CSS_URL_RE)) {
+        for (const match of code.matchAll(CSS_URL_RE)) {
+          const [full, url] = match
           if (url && resolveFromPublicAssets(url)) {
-            s.replace(full, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
+            const q = enclosingQuote(code, match.index)
+            // update by index to cover every `url()` in a chunk
+            s.update(match.index, match.index + full.length, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
           }
         }
 
@@ -103,10 +121,10 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
 
 const PUBLIC_ASSETS_RE = /[?#].*$/
 export function useResolveFromPublicAssets () {
-  const nitro = useNitro()
+  const nitro = tryUseNitro()
 
   function resolveFromPublicAssets (id: string) {
-    for (const dir of nitro.options.publicAssets) {
+    for (const dir of nitro?.options.publicAssets || []) {
       if (!id.startsWith(withTrailingSlash(dir.baseURL || '/'))) { continue }
       const path = id.replace(PUBLIC_ASSETS_RE, '').replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
       if (existsSync(path)) {

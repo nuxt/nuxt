@@ -13,7 +13,7 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
   codes: {
     NUXT_B7001: {
       why: '`rollup-plugin-visualizer` is not installed, so bundle analysis cannot run.',
-      fix: 'Run `npm install -D rollup-plugin-visualizer` to enable bundle analysis.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable bundle analysis.`,
       docs: false,
     },
     NUXT_B7002: {
@@ -43,22 +43,22 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B7007: {
       why: (p: { pluginName: string }) => `The PostCSS plugin \`${p.pluginName}\` could not be loaded.`,
-      fix: (p: { pluginName: string }) => `Run \`npm install -D ${p.pluginName}\` to install the PostCSS plugin.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install the PostCSS plugin.`,
       docs: false,
     },
     NUXT_B7008: {
       why: '`@vitejs/plugin-vue-jsx` is not installed, so JSX support is unavailable.',
-      fix: 'Run `npm install -D @vitejs/plugin-vue-jsx` to install it.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
       docs: false,
     },
     NUXT_B7009: {
       why: (p: { deps: string }) => `The Babel dependencies required for decorator support are missing: ${p.deps}.`,
-      fix: (p: { install: string }) => `Run \`npm install -D ${p.install}\` to install the required Babel decorator dependencies.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install the required Babel decorator dependencies.`,
       docs: false,
     },
     NUXT_B7011: {
       why: (p: { pluginName: string }) => `The PostCSS plugin \`${p.pluginName}\` could not be imported, which is unexpected.`,
-      fix: (p: { pluginName: string }) => `Run \`npm install -D ${p.pluginName}\` to install it, or report this issue at https://github.com/nuxt/nuxt/issues.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it, or report this issue at https://github.com/nuxt/nuxt/issues.`,
       docs: false,
     },
     NUXT_B7012: {
@@ -99,6 +99,41 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B7019: {
       why: 'The server webpack build does not externalize dependencies.',
       fix: 'Externalize dependencies in the server build (`externals`) for better build performance.',
+      docs: false,
+    },
+    NUXT_B7020: {
+      why: 'The client build manifest is disabled, but Nuxt requires it to render the correct assets for each route.',
+      fix: 'Remove any `build.manifest: false` override from your `nuxt.config` `vite` options or from a Vite plugin `config`/`configEnvironment` hook.',
+      docs: false,
+    },
+    NUXT_B7021: {
+      why: (p: { manifestFile: string }) => `The client build manifest was expected at \`${p.manifestFile}\` but was not emitted by the client build.`,
+      fix: 'Check that no Vite plugin removes or renames the client build manifest in a `generateBundle`/`writeBundle` hook. If this happens with no such plugin, please report it at https://github.com/nuxt/nuxt/issues.',
+      docs: false,
+    },
+    NUXT_B7022: {
+      why: (p: { existing: string, route: string }) => `Route rules for \`${p.existing}\` and \`${p.route}\` resolve to the same path; \`${p.route}\` takes precedence.`,
+      fix: (p: { canFold: boolean }) => `Disambiguate the keys${p.canFold ? ' or set `router.options.sensitive: true`' : ''}.`,
+      docs: false,
+    },
+    NUXT_B7023: {
+      why: (p: { dir: string, baseURL: string }) => `A configured \`nitro.publicAssets\` directory does not exist: \`${p.dir}\`. Requests to \`${p.baseURL}\` will return a 404.`,
+      fix: (p: { resolvedFrom: string }) => `Relative \`dir\` values are resolved against ${p.resolvedFrom}. Point \`dir\` at an existing directory, using an absolute path or a Nuxt alias (such as \`~~/public/video\`) if it lives elsewhere.`,
+      docs: false,
+    },
+    NUXT_B7024: {
+      why: (p: { outDir: string, publicDir: string }) => `The client build output directory is set to \`${p.outDir}\`, but the server builder writes the client build to \`${p.publicDir}\`, so the override is ignored.`,
+      fix: 'Remove the `vite.$client.build.outDir` override from your `nuxt.config`, and set `nitro.output.publicDir` to move the whole public output instead.',
+      docs: false,
+    },
+    NUXT_B7025: {
+      why: (p: { input: string }) => `The client build input is set to \`${p.input}\`, which cannot carry the document the server builder emits, so the override is ignored.`,
+      fix: 'Pass an object to `vite.$client.build.rolldownOptions.input` if you need additional inputs, or add an `index.html` at the root of your app directory to take over the document itself.',
+      docs: false,
+    },
+    NUXT_B7026: {
+      why: (p: { route: string }) => `The route rule for \`${p.route}\` sets \`redirect.statusCode\`, which the server builder no longer reads.`,
+      fix: 'Rename it to `redirect.status`. Nuxt has applied it as `status` for now.',
       docs: false,
     },
   },

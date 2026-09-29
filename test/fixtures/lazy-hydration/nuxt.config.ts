@@ -1,5 +1,6 @@
-export default defineNuxtConfig({
-  devtools: { enabled: false },
+import { withMatrix } from '../../matrix.ts'
+
+export default withMatrix({
   app: {
     head: {
       title: 'Lazy hydration',
@@ -9,5 +10,4 @@ export default defineNuxtConfig({
   features: {
     inlineStyles: false,
   },
-  compatibilityDate: 'latest',
 })

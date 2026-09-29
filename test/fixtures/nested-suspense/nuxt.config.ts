@@ -1,5 +1,5 @@
 import type { NuxtPage } from 'nuxt/schema'
-import { withMatrix } from '../../matrix'
+import { withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
   modules: [

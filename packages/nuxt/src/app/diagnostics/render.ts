@@ -89,5 +89,34 @@ export const renderDiagnostics = !import.meta.dev
           why: (p: { fullPath: string, childPath: string, parentPath: string }) => `The route \`${p.fullPath}\` matches a nested page (\`${p.childPath}\`), but the parent page (\`${p.parentPath}\`) does not render \`<NuxtPage />\`, so the nested page cannot be displayed. If \`<NuxtPage />\` is rendered conditionally, this warning can be triggered before it is mounted.`,
           fix: (p: { parentPath: string }) => `Add \`<NuxtPage />\` to the page component for \`${p.parentPath}\`, or restructure your \`pages/\` directory if you did not intend nesting.`,
         },
+        NUXT_E4017: {
+          why: (p: { source: number, max: number }) => `A \`v-for\` in a server component asked for ${p.source} iterations; only the first ${p.max} were rendered. Island props come from the request, so the count is capped to bound server-side expansion.`,
+          fix: (p: { max: number }) => `Paginate the data, or clamp the value to at most ${p.max} before passing it to the island.`,
+          docs: false,
+        },
+        NUXT_E4018: {
+          why: (p: { name: string, key: string }) => `Island \`${p.name}\` was sent a top-level \`${p.key}\` prop it does not declare. An undeclared prop falls through as an attribute onto the island's root, where a polymorphic component would use it to resolve which component to render, so the request was rejected.`,
+          fix: (p: { key: string }) => `Declare \`${p.key}\` as a prop on the island, or set \`inheritAttrs: false\` so request input cannot reach the root element.`,
+        },
+        NUXT_E4019: {
+          why: (p: { scopeId: string }) => `\`<NuxtIsland>\` was passed a \`scopeId\` prop that is not a Vue scope attribute (\`${p.scopeId}\`) and it was ignored. The value is inserted into the island's opening tag, so only \`data-v-\` attributes are accepted.`,
+          fix: 'Pass a compiler-generated scope ID such as `data-v-abc123`, or omit the prop.',
+          docs: false,
+        },
+        NUXT_E4020: {
+          why: '`<NuxtClientFallback>` cannot server-render a vapor slot child. Its content is not expressed as VNodes, so the SSR attempt (and the fallback-on-error behaviour that depends on it) will not work.',
+          fix: 'Wrap the content in a vdom component if you need server-side fallback.',
+          docs: false,
+        },
+        NUXT_E4021: {
+          why: '`<ClientOnly>` cannot forward fallthrough attributes onto a vapor slot child.',
+          fix: 'Move the attributes onto an element inside the slot, or wrap the content in a single vdom root.',
+          docs: false,
+        },
+        NUXT_E4022: {
+          why: 'A vapor component cannot be teleported as an interactive island. Island client hydration reads the wrapped component from its VNode, which a vapor slot does not expose.',
+          fix: 'Use a vdom component for `nuxtClient` islands.',
+          docs: false,
+        },
       },
     })

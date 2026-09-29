@@ -9,7 +9,7 @@ links:
     size: xs
 ---
 
-`createUseAsyncData` creates a custom [`useAsyncData`](/docs/4.x/api/composables/use-async-data) composable with pre-defined options. The resulting composable is fully typed and works exactly like `useAsyncData`, but with your defaults baked in.
+`createUseAsyncData` creates a custom [`useAsyncData`](/docs/api/composables/use-async-data) composable with pre-defined options. The resulting composable is fully typed and works exactly like `useAsyncData`, but with your defaults baked in.
 
 ::note
 `createUseAsyncData` is a compiler macro. It must be used as an **exported** declaration in the `composables/` directory (or any directory scanned by the Nuxt compiler). Nuxt automatically injects de-duplication keys at build time.
@@ -34,7 +34,7 @@ const { data: mountains } = await useCachedData(
 </script>
 ```
 
-The resulting composable has the same signature and return type as [`useAsyncData`](/docs/4.x/api/composables/use-async-data), with all options available for the caller to use or override.
+The resulting composable has the same signature and return type as [`useAsyncData`](/docs/api/composables/use-async-data), with all options available for the caller to use or override.
 
 ## Type
 
@@ -50,9 +50,9 @@ function createUseAsyncData (
 
 ## Options
 
-`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/4.x/api/composables/use-async-data#parameters), including `server`, `lazy`, `immediate`, `default`, `transform`, `pick`, `getCachedData`, `deep`, `dedupe`, `timeout`, and `watch`.
+`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/api/composables/use-async-data#parameters), including `server`, `lazy`, `immediate`, `default`, `transform`, `pick`, `getCachedData`, `deep`, `dedupe`, `timeout`, and `watch`.
 
-See the full list of options in the [`useAsyncData` documentation](/docs/4.x/api/composables/use-async-data#parameters).
+See the full list of options in the [`useAsyncData` documentation](/docs/api/composables/use-async-data#parameters).
 
 ## Default vs Override Mode
 
@@ -86,6 +86,6 @@ export const useStrictData = createUseAsyncData(callerOptions => ({
 }))
 ```
 
-:read-more{to="/docs/4.x/guide/recipes/custom-usefetch"}
+:read-more{to="/docs/guide/recipes/custom-usefetch"}
 
-:read-more{to="/docs/4.x/api/composables/use-async-data"}
+:read-more{to="/docs/api/composables/use-async-data"}

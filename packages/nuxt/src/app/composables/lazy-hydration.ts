@@ -1,4 +1,6 @@
-import type { AsyncComponentLoader, Component, ComponentPublicInstance, DefineComponent } from 'vue'
+import type { AsyncComponentLoader, Component, ComponentPublicInstance, DefineComponent, InjectionKey } from 'vue'
+
+export const neverHydratedSymbol: InjectionKey<boolean> = Symbol.for('nuxt:never-hydrated')
 
 type LazyHydrationComponent<T extends Component, Props> = T & DefineComponent<Props, {}, {}, {}, {}, {}, {}, { hydrated: () => void }>
 

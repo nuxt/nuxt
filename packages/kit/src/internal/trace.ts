@@ -24,6 +24,7 @@ const warnings = new Set<string>()
 
 export function warn (warning: string) {
   if (!warnings.has(warning)) {
+    // eslint-disable-next-line no-restricted-syntax -- deduplicating passthrough; callers compose the message
     console.warn(warning)
     warnings.add(warning)
   }

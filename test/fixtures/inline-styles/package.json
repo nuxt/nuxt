@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-inline-styles",
   "scripts": {
     "build": "nuxt build"

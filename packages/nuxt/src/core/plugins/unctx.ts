@@ -2,7 +2,7 @@ import type { Transformer, TransformerOptions } from 'unctx/transform'
 import { createTransformer, getTransformFilter } from 'unctx/transform'
 import { createUnplugin } from 'unplugin'
 
-import { isJS, isVue } from '../utils/index.ts'
+import { JS_ID_RE, VUE_SCRIPT_TEMPLATE_ID_FILTER } from '../utils/index.ts'
 
 const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 const TRANSFORM_MARKER_RE = /^\/\* _processed_nuxt_unctx_transform \*\/\n/
@@ -19,12 +19,9 @@ export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => cr
   return {
     name: 'unctx:transform',
     enforce: 'post',
-    transformInclude (id) {
-      return isVue(id, { type: ['template', 'script'] }) || isJS(id)
-    },
     transform: {
       filter: {
-        ...filter,
+        id: { include: [...VUE_SCRIPT_TEMPLATE_ID_FILTER, JS_ID_RE] },
         code: {
           include: filter.code,
           exclude: TRANSFORM_MARKER_RE,

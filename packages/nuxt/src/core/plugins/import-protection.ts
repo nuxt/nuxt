@@ -81,6 +81,13 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
       `Server aliases are not allowed in ${context}.`,
       ['Use `$fetch()` or `useFetch()` to call server endpoints.', 'Move shared logic to the `shared/` directory.'],
     ])
+    // denied by the build, not by its types: those resolve in every context, which is what
+    // lets the generated server-route typings type `$fetch`
+    patterns.push([
+      /^nuxt\/server$/,
+      `\`nuxt/server\` cannot be imported in ${context}.`,
+      ['Import runtime Nuxt composables from `#app` or `#imports` instead.', 'Use `$fetch()` or `useFetch()` to call server endpoints.'],
+    ])
   }
 
   return patterns

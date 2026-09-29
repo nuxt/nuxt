@@ -3,6 +3,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { mount } from '@vue/test-utils'
+import type { ComponentSlots } from 'vue-component-type-helpers'
 import { NuxtErrorBoundary } from '#components'
 
 describe('NuxtErrorBoundary', () => {
@@ -36,7 +37,7 @@ describe('NuxtErrorBoundary', () => {
             },
           })),
           error: (
-            { error, clearError }: Parameters<InstanceType<typeof NuxtErrorBoundary>['$slots']['error']>[0],
+            { error, clearError }: Parameters<ComponentSlots<typeof NuxtErrorBoundary>['error']>[0],
           ) => h('button', { onClick: () => clearError() }, error.toString()),
         }))
       },

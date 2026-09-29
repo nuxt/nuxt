@@ -1,5 +1,5 @@
 import { rm } from 'node:fs/promises'
-import { beforeAll, bench, describe } from 'vitest'
+import { beforeAll, describe, test } from 'vitest'
 import { join } from 'pathe'
 import { loadNuxt } from 'nuxt'
 import { findWorkspaceDir } from 'pkg-types'
@@ -18,37 +18,43 @@ describe('loadNuxt', () => {
     ])
   })
 
-  bench('loadNuxt in an empty directory', async () => {
-    const nuxt = await loadNuxt({
-      cwd: emptyDir,
-      ready: true,
-      overrides: {
-        buildDir: join(emptyDir, 'node_modules/load-nuxt/.nuxt'),
-      },
-    })
-    await nuxt.close()
+  test('loadNuxt in an empty directory', async ({ bench }) => {
+    await bench('loadNuxt in an empty directory', async () => {
+      const nuxt = await loadNuxt({
+        cwd: emptyDir,
+        ready: true,
+        overrides: {
+          buildDir: join(emptyDir, 'node_modules/load-nuxt/.nuxt'),
+        },
+      })
+      await nuxt.close()
+    }).run()
   })
 
-  bench('loadNuxt in the basic test fixture', async () => {
-    const nuxt = await loadNuxt({
-      cwd: basicTestFixtureDir,
-      ready: true,
-      overrides: {
-        buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'),
-      },
-    })
-    await nuxt.close()
+  test('loadNuxt in the basic test fixture', async ({ bench }) => {
+    await bench('loadNuxt in the basic test fixture', async () => {
+      const nuxt = await loadNuxt({
+        cwd: basicTestFixtureDir,
+        ready: true,
+        overrides: {
+          buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt/.nuxt'),
+        },
+      })
+      await nuxt.close()
+    }).run()
   })
 
-  bench('loadNuxt in the basic test fixture (dev)', async () => {
-    const nuxt = await loadNuxt({
-      cwd: basicTestFixtureDir,
-      ready: true,
-      overrides: {
-        dev: true,
-        buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt-dev/.nuxt'),
-      },
-    })
-    await nuxt.close()
+  test('loadNuxt in the basic test fixture (dev)', async ({ bench }) => {
+    await bench('loadNuxt in the basic test fixture (dev)', async () => {
+      const nuxt = await loadNuxt({
+        cwd: basicTestFixtureDir,
+        ready: true,
+        overrides: {
+          dev: true,
+          buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt-dev/.nuxt'),
+        },
+      })
+      await nuxt.close()
+    }).run()
   })
 })

@@ -2,6 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { resolve } from 'pathe'
+import '../src/impl.ts'
 import { packageDependencyDirs } from '../src/presets/base.ts'
 
 describe('packageDependencyDirs', () => {

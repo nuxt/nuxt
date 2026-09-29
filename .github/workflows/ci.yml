@@ -6,12 +6,10 @@ on:
     branches:
       - main
       - 4.x
-      - 3.x
   pull_request:
     branches:
       - main
       - 4.x
-      - 3.x
       - '!v[0-9]*'
 
 # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
@@ -44,11 +42,12 @@ jobs:
       pull-requests: read
     outputs:
       src: ${{ steps.filter.outputs.src }}
+      playwright: ${{ steps.playwright.outputs.version }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: filter
         with:
           base: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha || github.event.before }}
@@ -68,6 +67,15 @@ jobs:
               - 'eslint.config.mjs'
               - '.github/workflows/ci.yml'
 
+      # Keyed on the browser version rather than the lockfile, which changes
+      # weekly for unrelated reasons and would evict the cache each time.
+      - name: Resolve Playwright version
+        id: playwright
+        run: |
+          version="$(grep -oE '^[[:space:]]+playwright-core: [0-9.]+' pnpm-workspace.yaml | tr -d ' ' | cut -d: -f2)"
+          test -n "$version" || { echo "::error::could not resolve playwright-core version from pnpm-workspace.yaml"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
   build:
     needs: changes
     if: needs.changes.outputs.src == 'true'
@@ -78,10 +86,10 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: lts
           cache: true
@@ -91,6 +99,9 @@ jobs:
 
       - name: Build and check built types
         run: vp run test:attw
+
+      - name: Check public API type surface
+        run: vp run test:public-api
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -109,13 +120,52 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: 22
           cache: true
+
+  ui-templates-generated:
+    # Regenerates the committed @nuxt/ui-templates output and fails on drift.
+    needs: changes
+    if: needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+        with:
+          node-version: 22
+          cache: true
+
+      - name: Regenerate ui-templates output
+        working-directory: packages/ui-templates
+        run: vp run build
+
+      - name: Fail if committed output is stale
+        run: |
+          paths="packages/nuxt/src/app/components packages/nitro-server/src/runtime/templates packages/nitro-server/src/templates packages/schema/src/templates"
+          git add -N -- $paths
+          if ! git diff --exit-code -- $paths; then
+            echo "::error::Committed ui-templates output is out of date. Run 'pnpm --filter @nuxt/ui-templates build' and commit the result."
+            exit 1
+          fi
+          echo "Committed ui-templates output is up to date."
+
+      - name: Cancel workflow on failure
+        if: failure() && github.event_name == 'merge_group'
+        run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
   codeql:
     if: github.event_name != 'merge_group' && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
@@ -130,12 +180,12 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@7188fc363630916deb702c7fdcf4e481b751f97a # v4.37.1
+        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
         with:
           config: |
             paths:
@@ -152,7 +202,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@7188fc363630916deb702c7fdcf4e481b751f97a # v4.37.1
+        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -176,10 +226,10 @@ jobs:
           - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: lts
           cache: true
@@ -208,18 +258,19 @@ jobs:
     permissions:
       actions: write
       contents: read
+      id-token: write
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: lts
           cache: true
 
       - name: Prepare
-        run: vp run dev:prepare && vp run test:prepare
+        run: vp run dev:prepare && vp run test:prepare && vp run build:kit
 
       - parallel:
           - name: Lint
@@ -227,9 +278,21 @@ jobs:
 
           - name: Test (nuxt runtime)
             run: vp run test:runtime
+            env:
+              FLAKINESS_OUTPUT_DIR: flakiness-report/runtime
+              FLAKINESS_TITLE: Nuxt runtime
 
           - name: Test (unit)
             run: vp run test:unit
+            env:
+              FLAKINESS_OUTPUT_DIR: flakiness-report/unit
+              FLAKINESS_TITLE: Unit
+
+          - name: Test (no jiti)
+            run: vp run test:no-jiti
+            env:
+              FLAKINESS_OUTPUT_DIR: flakiness-report/no-jiti
+              FLAKINESS_TITLE: No jiti
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -249,10 +312,10 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: lts
           cache: true
@@ -281,12 +344,13 @@ jobs:
     permissions:
       actions: write
       contents: read
+      id-token: write
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: lts
           cache: true
@@ -303,13 +367,14 @@ jobs:
   test-benchmark:
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.src == 'true' && github.event_name != 'merge_group' && github.repository_owner == 'nuxt'
+    # TODO: re-enable when `@codspeed/vitest-plugin` supports vitest 5 (peer range is `^3.2 || ^4`)
+    if: false
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: lts
           cache: true
@@ -318,7 +383,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@f99becdce5e5d51fd556489ebef684f4ecfd6286 # v4.18.5
+        uses: CodSpeedHQ/action@373d6868929f444bc08d901fd0eb0ad52a8875ea # v5.2.1
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -332,6 +397,7 @@ jobs:
     permissions:
       actions: write
       contents: read
+      id-token: write
 
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
@@ -340,7 +406,9 @@ jobs:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
           - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-*"'
+            projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*"'
+          - os: ubuntu-24.04-arm
+            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*"'
           - os: windows-latest
             projects: '--project "fixtures:vite-dev-*"'
           - os: windows-latest
@@ -348,14 +416,24 @@ jobs:
 
     timeout-minutes: 45
 
+    env:
+      # `runner` is not available in job-level `env`, so anchor on `github`
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.pw-browsers
+
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: 22
           cache: true
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/.pw-browsers
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ needs.changes.outputs.playwright }}
 
       - name: Install Playwright
         run: vp exec playwright-core install chromium
@@ -385,6 +463,7 @@ jobs:
     permissions:
       actions: write
       contents: read
+      id-token: write
 
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
@@ -399,14 +478,24 @@ jobs:
 
     timeout-minutes: 25
 
+    env:
+      # `runner` is not available in job-level `env`, so anchor on `github`
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.pw-browsers
+
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: 22
           cache: true
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/.pw-browsers
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ needs.changes.outputs.playwright }}
 
       - name: Install Playwright
         run: vp exec playwright-core install chromium
@@ -416,6 +505,15 @@ jobs:
 
       - name: Test (e2e)
         run: vp run test:e2e ${{ matrix.shard }}
+
+      - name: Upload e2e failure context
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e2e-test-results-${{ matrix.os }}-${{ strategy.job-index }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -438,6 +536,7 @@ jobs:
       - test-size
       - test-fixtures
       - test-e2e
+      - ui-templates-generated
     steps:
       - name: Check required jobs
         run: |
@@ -452,6 +551,7 @@ jobs:
             "${{ needs.test-size.result }}" \
             "${{ needs.test-fixtures.result }}" \
             "${{ needs.test-e2e.result }}" \
+            "${{ needs.ui-templates-generated.result }}" \
           )
           for result in "${results[@]}"; do
             if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
@@ -476,19 +576,19 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: latest
           cache: true
 
       - name: Release nightly
-        run: node scripts/release.ts --nightly
+        run: node scripts/release.ts
         env:
-          TAG: ${{ github.ref == 'refs/heads/main' && '5x' || github.ref == 'refs/heads/4.x' && 'latest' || '3x' }}
+          TAG: ${{ github.ref == 'refs/heads/main' && '5x' || 'latest' }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
@@ -497,13 +597,13 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1.15.0
+      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
         with:
           node-version: lts
           cache: true
 
-      - run: vp exec pkg-pr-new publish --compact --pnpm './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step
+      - run: vp exec pkg-pr-new publish --compact --pnpm --packageManager=pnpm,npm,yarn './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/vite-server' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step

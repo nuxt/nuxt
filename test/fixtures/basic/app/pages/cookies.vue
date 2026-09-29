@@ -7,6 +7,7 @@ useCookie('accessed-with-default-value', { default: () => 'default' })
 useCookie('set').value = 'set'
 useCookie('set-to-null').value = null
 useCookie<string | null>('set-to-null-with-default', { default: () => 'default' }).value = null
+useCookie('readonly-with-default', { default: () => 'default', readonly: true })
 
 // the next set are all sent by browser
 useCookie('browser-accessed-but-not-used')

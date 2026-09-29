@@ -115,13 +115,12 @@ describe('<NuxtTime>', () => {
   })
 
   const tests = [
-    [`${Date.now() - 25 * 60 * 60 * 1000}`, '1 day ago'],
-    [`${Date.now() - 45 * 24 * 60 * 60 * 1000}`, '2 months ago'],
-    [`${Date.now() - 15 * 30 * 24 * 60 * 60 * 1000}`, '1 year ago'],
+    { datetime: `${Date.now() - 25 * 60 * 60 * 1000}`, description: '1 day ago' },
+    { datetime: `${Date.now() - 45 * 24 * 60 * 60 * 1000}`, description: '2 months ago' },
+    { datetime: `${Date.now() - 15 * 30 * 24 * 60 * 60 * 1000}`, description: '1 year ago' },
   ]
 
-  it.each(tests)('should generate the correct hydrateable code', async (_datetime,
-    description) => {
+  it.each(tests)('should generate the correct hydrateable code ($description)', async ({ datetime: _datetime, description }) => {
     const datetime = Number(_datetime)
     const thing = await mountSuspended(
       defineComponent({

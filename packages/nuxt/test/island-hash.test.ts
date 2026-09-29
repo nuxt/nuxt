@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { hash } from 'ohash'
 import { filterIslandProps, getIslandHash, serializeIslandProps } from '#app/island-hash'
+import { findReservedRootIslandPropKey, findUnsafeIslandPropKey } from '#app/island-props'
 
 describe('filterIslandProps', () => {
   it('returns an empty object for nullish input', () => {
@@ -123,5 +124,92 @@ describe('getIslandHash', () => {
       const h = getIslandHash({ name: 'Comp', props: JSON.stringify({ i, salt: `${i}-${i}` }) })
       expect(h).not.toMatch(/[-_]/)
     }
+  })
+})
+
+describe('findUnsafeIslandPropKey', () => {
+  it('returns undefined for null and undefined', () => {
+    expect(findUnsafeIslandPropKey(null)).toBeUndefined()
+    expect(findUnsafeIslandPropKey(undefined)).toBeUndefined()
+  })
+
+  it('returns undefined for primitives', () => {
+    expect(findUnsafeIslandPropKey(42)).toBeUndefined()
+    expect(findUnsafeIslandPropKey('hello')).toBeUndefined()
+    expect(findUnsafeIslandPropKey(true)).toBeUndefined()
+  })
+
+  it('returns undefined for plain objects without a template key', () => {
+    expect(findUnsafeIslandPropKey({ foo: 1, bar: 'baz' })).toBeUndefined()
+    expect(findUnsafeIslandPropKey({ content: { title: 'Hello' }, items: [{ label: 'One' }] })).toBeUndefined()
+  })
+
+  it('returns undefined for arrays without a template key', () => {
+    expect(findUnsafeIslandPropKey([1, 2, 3])).toBeUndefined()
+    expect(findUnsafeIslandPropKey([{ ok: true }])).toBeUndefined()
+  })
+
+  it('returns the template key at the top level', () => {
+    expect(findUnsafeIslandPropKey({ template: '<div>evil</div>' })).toBe('template')
+  })
+
+  it('returns the template key when nested in an object', () => {
+    expect(findUnsafeIslandPropKey({ as: { template: '<div />' } })).toBe('template')
+  })
+
+  it('returns the template key when nested in an array', () => {
+    expect(findUnsafeIslandPropKey({ items: [{ id: 1 }, { template: 'evil' }] })).toBe('template')
+  })
+
+  it('does not match keys that merely contain template as a substring', () => {
+    expect(findUnsafeIslandPropKey({ template_id: 42, pretemplate: true })).toBeUndefined()
+  })
+
+  it('only considers own enumerable properties', () => {
+    const inherited = Object.create({ template: '<div />' })
+    inherited.label = 'safe'
+    expect(findUnsafeIslandPropKey({ inherited })).toBeUndefined()
+  })
+
+  it('handles circular values without infinite loop', () => {
+    const value: Record<string, unknown> = {}
+    value.self = value
+    expect(findUnsafeIslandPropKey(value)).toBeUndefined()
+  })
+})
+
+describe('findReservedRootIslandPropKey', () => {
+  const undeclared = {}
+
+  it('returns undefined for nullish, primitives, and arrays', () => {
+    expect(findReservedRootIslandPropKey(null, undeclared)).toBeUndefined()
+    expect(findReservedRootIslandPropKey(undefined, undeclared)).toBeUndefined()
+    expect(findReservedRootIslandPropKey('as', undeclared)).toBeUndefined()
+    expect(findReservedRootIslandPropKey([{ as: 'iframe' }], undeclared)).toBeUndefined()
+  })
+
+  it('returns the reserved key when the island does not declare `as`', () => {
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, undeclared)).toBe('as')
+    expect(findReservedRootIslandPropKey({ as: { some: 'object' }, other: 1 }, undeclared)).toBe('as')
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { props: { other: String } })).toBe('as')
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { props: ['other'] })).toBe('as')
+  })
+
+  it('allows `as` when the island declares it', () => {
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { props: { as: String } })).toBeUndefined()
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { props: ['as'] })).toBeUndefined()
+  })
+
+  it('allows `as` when the island opts out of attribute inheritance', () => {
+    expect(findReservedRootIslandPropKey({ as: 'iframe' }, { inheritAttrs: false })).toBeUndefined()
+  })
+
+  it('ignores `as` nested below the top level', () => {
+    expect(findReservedRootIslandPropKey({ user: { as: 'iframe' } }, undeclared)).toBeUndefined()
+    expect(findReservedRootIslandPropKey({ items: [{ as: 'iframe' }] }, undeclared)).toBeUndefined()
+  })
+
+  it('does not match keys that merely contain `as`', () => {
+    expect(findReservedRootIslandPropKey({ aside: 1, hasChildren: true, canvas: 'x' }, undeclared)).toBeUndefined()
   })
 })

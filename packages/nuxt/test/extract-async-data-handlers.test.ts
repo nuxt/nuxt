@@ -11,14 +11,14 @@ describe('extract async data handlers plugin', () => {
 
   function createTransform (options = defaultOptions) {
     const plugin = ExtractAsyncDataHandlersPlugin(options).raw({}, { framework: 'rollup', versions: {} }) as {
-      load: (id: string) => { code: string } | undefined
+      load: { handler: (id: string) => { code: string } | undefined }
       transform: { handler: (code: string, id: string) => { code: string } | undefined }
     }
     const fn = (code: string, id = '/app/test.ts') => {
       const result = plugin.transform.handler(code, id)
       return result?.code ? clean(result.code) : result?.code
     }
-    return Object.assign(fn, { load: (id: string) => clean(plugin.load(id)?.code) || undefined })
+    return Object.assign(fn, { load: (id: string) => clean(plugin.load.handler(id)?.code) || undefined })
   }
 
   describe('basic functionality', () => {

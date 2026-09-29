@@ -10,6 +10,8 @@ on:
     types:
       - labeled
 
+permissions: {}
+
 jobs:
   possible-bot:
     uses: nuxt/.github/.github/workflows/possible-bot.yml@main # zizmor: ignore[unpinned-uses] first-party reusable workflow from nuxt/.github; pinning to SHA blocks central propagation

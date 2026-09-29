@@ -5,12 +5,17 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises } from '@vue/test-utils'
 import { NuxtPage } from '#components'
+import viewTransitionsPlugin from '#app/plugins/view-transitions.client'
 
-// We test the view-transitions plugin behavior by manually registering
-// a beforeResolve guard that mirrors the plugin's logic, with mocked
-// document.startViewTransition. This is necessary because:
-// 1. The basic fixture doesn't enable experimental.viewTransition
-// 2. jsdom doesn't implement document.startViewTransition
+// jsdom doesn't implement document.startViewTransition or window.matchMedia,
+// so both are stubbed before the plugin is installed.
+
+const appViewTransition = vi.hoisted((): { enabled: boolean | 'always', types?: string[] } => ({ enabled: false }))
+
+vi.mock('#build/nuxt.config.mjs', async original => ({
+  ...await original<Record<string, unknown>>(),
+  appViewTransition,
+}))
 
 type MockViewTransition = {
   finished: Promise<void>
@@ -18,20 +23,9 @@ type MockViewTransition = {
   updateCallbackDone: Promise<void>
   types: Set<string>
   skipTransition: ReturnType<typeof vi.fn>
-  _resolveFinished: () => void
-}
-
-function createMockViewTransition (): MockViewTransition {
-  let resolveFinished: () => void
-  const finished = new Promise<void>((resolve) => { resolveFinished = resolve })
-  return {
-    finished,
-    ready: Promise.resolve(),
-    updateCallbackDone: Promise.resolve(),
-    types: new Set(),
-    skipTransition: vi.fn(),
-    _resolveFinished: resolveFinished!,
-  }
+  runUpdate: () => Promise<void>
+  settleFinished: () => void
+  rejectReady: (reason: unknown) => void
 }
 
 type StartViewTransitionCallback = () => Promise<void>
@@ -44,15 +38,30 @@ describe('view transitions plugin', () => {
   let router: ReturnType<typeof useRouter>
   let nuxtApp: ReturnType<typeof useNuxtApp>
   let startViewTransition: ReturnType<typeof vi.fn>
-  let mockTransition: MockViewTransition
   let matchMediaMatches: boolean
-  const cleanups: Array<() => void> = []
+  let autoRunUpdate: boolean
+  let transitions: MockViewTransition[] = []
 
   const PageA = defineComponent({ name: '~/pages/vt-a.vue', setup: () => () => h('div', 'Page A') })
   const PageB = defineComponent({ name: '~/pages/vt-b.vue', setup: () => () => h('div', 'Page B') })
 
-  // Per-test cleanups (guards, hooks, routes added within a test)
+  // Per-test cleanups (hooks, routes added within a test)
   let testCleanups: Array<() => void> = []
+
+  function createMockViewTransition (update: () => Promise<void>): MockViewTransition {
+    let settleFinished!: () => void
+    let rejectReady!: (reason: unknown) => void
+    return {
+      finished: new Promise<void>((resolve) => { settleFinished = resolve }),
+      ready: new Promise<void>((_, reject) => { rejectReady = reject }),
+      updateCallbackDone: Promise.resolve(),
+      types: new Set(),
+      skipTransition: vi.fn(),
+      runUpdate: update,
+      settleFinished,
+      rejectReady,
+    }
+  }
 
   beforeAll(async () => {
     router = useRouter()
@@ -70,6 +79,21 @@ describe('view transitions plugin', () => {
       component: PageB,
     })
 
+    window.matchMedia = vi.fn(() => ({
+      matches: matchMediaMatches,
+      media: '(prefers-reduced-motion: reduce)',
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })) as unknown as typeof window.matchMedia
+
+    document.startViewTransition = ((...args: unknown[]) => startViewTransition(...args)) as typeof document.startViewTransition
+
+    await nuxtApp.runWithContext(() => viewTransitionsPlugin(nuxtApp))
+
     await mountSuspended(defineComponent({
       setup: () => () => h(NuxtPage),
     }))
@@ -77,21 +101,24 @@ describe('view transitions plugin', () => {
   })
 
   beforeEach(async () => {
+    appViewTransition.enabled = false
+    appViewTransition.types = undefined
+    matchMediaMatches = false
+    autoRunUpdate = true
+    transitions = []
+
     await navigateTo('/')
     await flushPromises()
     vi.clearAllMocks()
 
-    mockTransition = createMockViewTransition()
-    matchMediaMatches = false
-
     startViewTransition = vi.fn((callbackOrOptions: StartViewTransitionCallback | StartViewTransitionOptions) => {
-      // Execute the update callback to allow route change to proceed
-      if (typeof callbackOrOptions === 'function') {
-        callbackOrOptions()
-      } else {
-        callbackOrOptions.update()
+      const update = typeof callbackOrOptions === 'function' ? callbackOrOptions : callbackOrOptions.update
+      const transition = createMockViewTransition(update)
+      transitions.push(transition)
+      if (autoRunUpdate) {
+        update()
       }
-      return mockTransition
+      return transition
     })
   })
 
@@ -105,106 +132,10 @@ describe('view transitions plugin', () => {
   afterAll(() => {
     router.removeRoute('vt-a')
     router.removeRoute('vt-b')
-    for (const cleanup of cleanups) {
-      cleanup()
-    }
   })
-
-  // Helper to install the view transition plugin behavior with given config
-  function installViewTransitionGuard (defaultConfig: { enabled: boolean | 'always', types?: string[] }) {
-    const matchMediaSpy = vi.spyOn(window, 'matchMedia').mockImplementation(() => ({
-      matches: matchMediaMatches,
-      media: '(prefers-reduced-motion: reduce)',
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    }))
-
-    // Track finishTransition so page:finish can call it
-    let finishTransition: (() => void) | undefined
-
-    const removeGuard = router.beforeResolve(async (to, from) => {
-      if (to.matched.length === 0) { return }
-
-      const normalizeOptions = (value: unknown): Record<string, unknown> => {
-        if (typeof value === 'boolean' || value === 'always') {
-          return { enabled: value }
-        }
-        if (value && typeof value === 'object') {
-          return value as Record<string, unknown>
-        }
-        return {}
-      }
-
-      const toOpts = normalizeOptions(to.meta.viewTransition)
-      const fromOpts = normalizeOptions(from.meta.viewTransition)
-      const viewTransitionMode = toOpts.enabled ?? defaultConfig.enabled
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      const prefersNoTransition = prefersReducedMotion && viewTransitionMode !== 'always'
-
-      if (
-        viewTransitionMode === false
-        || prefersNoTransition
-        || to.path === from.path
-      ) {
-        return
-      }
-
-      const resolveTypes = (types: unknown) => {
-        if (!types) { return undefined }
-        return typeof types === 'function' ? (types as (to: unknown, from: unknown) => string[])(to, from) : types as string[]
-      }
-
-      const viewTransitionBaseTypes = resolveTypes(toOpts.types) ?? resolveTypes(defaultConfig.types) ?? []
-      const viewTransitionFromTypes = resolveTypes(fromOpts.fromTypes) ?? []
-      const viewTransitionToTypes = resolveTypes(toOpts.toTypes) ?? []
-
-      const allTypes = [
-        ...(viewTransitionBaseTypes as string[]),
-        ...(viewTransitionFromTypes as string[]),
-        ...(viewTransitionToTypes as string[]),
-      ]
-
-      const promise = new Promise<void>((resolve) => {
-        finishTransition = resolve
-      })
-
-      let changeRoute: () => void
-      const ready = new Promise<void>(resolve => (changeRoute = resolve))
-
-      const update = () => {
-        changeRoute()
-        return promise
-      }
-
-      if (allTypes.length > 0) {
-        startViewTransition({ update, types: allTypes })
-      } else {
-        startViewTransition(update)
-      }
-
-      await nuxtApp.callHook('page:view-transition:start', mockTransition as unknown as ViewTransition)
-
-      return ready
-    })
-
-    const removeFinishHook = nuxtApp.hook('page:finish', () => {
-      finishTransition?.()
-      finishTransition = undefined
-    })
-
-    testCleanups.push(removeGuard, removeFinishHook, () => matchMediaSpy.mockRestore())
-
-    return { removeGuard, removeFinishHook, matchMediaSpy }
-  }
 
   describe('transition skipping', () => {
     it('should not start a view transition when disabled', async () => {
-      installViewTransitionGuard({ enabled: false })
-
       await navigateTo('/vt-a')
       await flushPromises()
 
@@ -212,7 +143,7 @@ describe('view transitions plugin', () => {
     })
 
     it('should not start a view transition when page meta disables it', async () => {
-      installViewTransitionGuard({ enabled: true })
+      appViewTransition.enabled = true
 
       router.addRoute({
         name: 'vt-disabled',
@@ -230,7 +161,7 @@ describe('view transitions plugin', () => {
 
     it('should skip transition when prefers-reduced-motion is set', async () => {
       matchMediaMatches = true
-      installViewTransitionGuard({ enabled: true })
+      appViewTransition.enabled = true
 
       await navigateTo('/vt-a')
       await flushPromises()
@@ -240,7 +171,7 @@ describe('view transitions plugin', () => {
 
     it('should NOT skip transition when prefers-reduced-motion is set but mode is always', async () => {
       matchMediaMatches = true
-      installViewTransitionGuard({ enabled: 'always' })
+      appViewTransition.enabled = 'always'
 
       await navigateTo('/vt-a')
       await flushPromises()
@@ -250,7 +181,7 @@ describe('view transitions plugin', () => {
 
     it('should NOT skip when page meta sets always even if global is true', async () => {
       matchMediaMatches = true
-      installViewTransitionGuard({ enabled: true })
+      appViewTransition.enabled = true
 
       router.addRoute({
         name: 'vt-always',
@@ -269,7 +200,7 @@ describe('view transitions plugin', () => {
 
   describe('callback vs object form', () => {
     it('should use callback form when no types are specified', async () => {
-      installViewTransitionGuard({ enabled: true })
+      appViewTransition.enabled = true
 
       await navigateTo('/vt-a')
       await flushPromises()
@@ -280,7 +211,8 @@ describe('view transitions plugin', () => {
     })
 
     it('should use object form when global types are specified', async () => {
-      installViewTransitionGuard({ enabled: true, types: ['slide'] })
+      appViewTransition.enabled = true
+      appViewTransition.types = ['slide']
 
       await navigateTo('/vt-a')
       await flushPromises()
@@ -292,7 +224,7 @@ describe('view transitions plugin', () => {
     })
 
     it('should use object form when page meta has types', async () => {
-      installViewTransitionGuard({ enabled: true })
+      appViewTransition.enabled = true
 
       router.addRoute({
         name: 'vt-typed',
@@ -318,7 +250,7 @@ describe('view transitions plugin', () => {
 
   describe('type merging', () => {
     it('should merge types, toTypes and fromTypes', async () => {
-      installViewTransitionGuard({ enabled: true })
+      appViewTransition.enabled = true
 
       router.addRoute({
         name: 'vt-from-page',
@@ -365,7 +297,7 @@ describe('view transitions plugin', () => {
     })
 
     it('should support function types in page meta', async () => {
-      installViewTransitionGuard({ enabled: true })
+      appViewTransition.enabled = true
 
       router.addRoute({
         name: 'vt-fn-types',
@@ -389,7 +321,8 @@ describe('view transitions plugin', () => {
     })
 
     it('should fall back to global types when page has no types', async () => {
-      installViewTransitionGuard({ enabled: true, types: ['global-slide'] })
+      appViewTransition.enabled = true
+      appViewTransition.types = ['global-slide']
 
       router.addRoute({
         name: 'vt-no-types',
@@ -410,7 +343,8 @@ describe('view transitions plugin', () => {
     })
 
     it('page types should override global types', async () => {
-      installViewTransitionGuard({ enabled: true, types: ['global-slide'] })
+      appViewTransition.enabled = true
+      appViewTransition.types = ['global-slide']
 
       router.addRoute({
         name: 'vt-override',
@@ -436,8 +370,6 @@ describe('view transitions plugin', () => {
 
   describe('legacy page meta values', () => {
     it('should handle viewTransition: true in page meta', async () => {
-      installViewTransitionGuard({ enabled: false })
-
       router.addRoute({
         name: 'vt-legacy-true',
         path: '/vt-legacy-true',
@@ -456,7 +388,6 @@ describe('view transitions plugin', () => {
 
     it('should handle viewTransition: "always" in page meta', async () => {
       matchMediaMatches = true
-      installViewTransitionGuard({ enabled: false })
 
       router.addRoute({
         name: 'vt-legacy-always',
@@ -476,7 +407,7 @@ describe('view transitions plugin', () => {
 
   describe('hooks and lifecycle', () => {
     it('should fire page:view-transition:start hook', async () => {
-      installViewTransitionGuard({ enabled: true })
+      appViewTransition.enabled = true
 
       const hookSpy = vi.fn()
       const removeHook = nuxtApp.hook('page:view-transition:start', hookSpy)
@@ -486,7 +417,69 @@ describe('view transitions plugin', () => {
       await flushPromises()
 
       expect(hookSpy).toHaveBeenCalledTimes(1)
-      expect(hookSpy).toHaveBeenCalledWith(mockTransition)
+      expect(hookSpy).toHaveBeenCalledWith(transitions[0])
+    })
+
+    it('should resolve the update callback of a transition that interrupts an animating one', async () => {
+      appViewTransition.enabled = true
+      autoRunUpdate = false
+
+      const firstNavigation = navigateTo('/vt-a')
+      await vi.waitFor(() => expect(transitions).toHaveLength(1))
+      const first = transitions[0]!
+      const firstUpdate = first.runUpdate()
+      await firstNavigation
+      await firstUpdate
+      expect(router.currentRoute.value.path).toBe('/vt-a')
+
+      const secondNavigation = navigateTo('/vt-b')
+      await vi.waitFor(() => expect(transitions).toHaveLength(2))
+      const second = transitions[1]!
+
+      first.settleFinished()
+      await flushPromises()
+
+      const secondUpdate = second.runUpdate()
+      await secondNavigation
+      await expect(Promise.race([secondUpdate, new Promise((_, reject) => setTimeout(() => reject(new Error('update callback never resolved')), 200))])).resolves.toBeUndefined()
+      expect(router.currentRoute.value.path).toBe('/vt-b')
+    })
+
+    it('should settle the update callback of a transition whose navigation was superseded', async () => {
+      appViewTransition.enabled = true
+      autoRunUpdate = false
+
+      const firstNavigation = navigateTo('/vt-a')
+      await vi.waitFor(() => expect(transitions).toHaveLength(1))
+      const firstUpdate = transitions[0]!.runUpdate()
+
+      const secondNavigation = router.push('/vt-b')
+      await vi.waitFor(() => expect(transitions).toHaveLength(2))
+      const secondUpdate = transitions[1]!.runUpdate()
+
+      await Promise.allSettled([firstNavigation, secondNavigation])
+      await expect(Promise.race([firstUpdate, new Promise((_, reject) => setTimeout(() => reject(new Error('update callback never resolved')), 200))])).resolves.toBeUndefined()
+      await expect(secondUpdate).resolves.toBeUndefined()
+      expect(router.currentRoute.value.path).toBe('/vt-b')
+    })
+
+    it('should not produce an unhandled rejection when the transition is skipped', async () => {
+      appViewTransition.enabled = true
+
+      const unhandled = vi.fn()
+      process.on('unhandledRejection', unhandled)
+
+      await navigateTo('/vt-a')
+      await flushPromises()
+
+      const transition = transitions[0]!
+      transition.rejectReady(new DOMException('Transition was skipped', 'AbortError'))
+      transition.settleFinished()
+      await flushPromises()
+      await new Promise(resolve => setTimeout(resolve, 20))
+
+      process.off('unhandledRejection', unhandled)
+      expect(unhandled).not.toHaveBeenCalled()
     })
   })
 })

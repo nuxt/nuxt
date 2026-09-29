@@ -1,1 +1,1 @@
-export const appRootTag = 'div'
+export const appId = 'nuxt-app'

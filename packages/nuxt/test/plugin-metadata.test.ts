@@ -11,7 +11,7 @@ describe('plugin-metadata', () => {
     setup: () => { return { provide: { jsx: '[JSX]' } } },
     order: 1,
   })
-  it.each(properties)('should extract metadata from object-syntax plugins', (k, value) => {
+  it.each(properties)('should extract metadata from object-syntax plugins when `%s` is declared last', (k, value) => {
     const obj = [...properties.filter(([key]) => key !== k), [k, value]]
 
     const meta = extractMetadata([

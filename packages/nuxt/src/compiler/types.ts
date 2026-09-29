@@ -1,6 +1,6 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { parseAndWalk } from 'oxc-walker'
-import type { ParsedStaticImport } from 'mlly'
+import type { ParsedStaticImport } from '../core/utils/static-imports.ts'
 import type { ParseResult } from 'rolldown/utils'
 
 type Awaitable<T> = T | Promise<T>

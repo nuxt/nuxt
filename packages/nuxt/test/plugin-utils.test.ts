@@ -15,6 +15,10 @@ describe('isValidIslandKey util', () => {
     expect(isValidIslandKey('Component-Name_hash123')).toBe(true)
     const sampleHash = hash({ props: randomUUID() }).replace(/[-_]/g, '')
     expect(isValidIslandKey('ComponentName_' + sampleHash)).toBe(true)
+    // island pages and components with underscores in their names
+    expect(isValidIslandKey('page_server-page_' + sampleHash)).toBe(true)
+    expect(isValidIslandKey('Component_Name_hash123')).toBe(true)
+    expect(isValidIslandKey('Component__hash123')).toBe(true)
   })
 
   it('should reject invalid island keys', () => {
@@ -46,6 +50,7 @@ describe('isValidIslandKey util', () => {
     expect(isValidIslandKey('../../Component_hash123')).toBe(false)
     expect(isValidIslandKey('Component_../hash123')).toBe(false)
     expect(isValidIslandKey('Component_../../hash123')).toBe(false)
+    expect(isValidIslandKey('page_server-page_hash.json')).toBe(false)
 
     // URL/protocol attempts
     expect(isValidIslandKey('http://evil.com_hash123')).toBe(false)
@@ -54,9 +59,6 @@ describe('isValidIslandKey util', () => {
 
     const longKey = 'A'.repeat(95) + '_' + 'B'.repeat(10)
     expect(isValidIslandKey(longKey)).toBe(false)
-
-    expect(isValidIslandKey('Component_Name_hash123')).toBe(false)
-    expect(isValidIslandKey('Component__hash123')).toBe(false)
   })
 
   it('should handle edge cases', () => {

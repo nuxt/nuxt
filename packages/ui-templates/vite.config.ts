@@ -16,6 +16,9 @@ const r = (...path: string[]) => resolve(rootDir, ...path)
 export default defineConfig({
   build: {
     outDir: process.env.OUTPUT_DIR || 'dist',
+    // the templates are inlined as classic scripts and every `<link>` is
+    // stripped when rendering, so there is nothing for the polyfill to preload
+    modulePreload: { polyfill: false },
     rolldownOptions: {
       input: {
         ...Object.fromEntries(

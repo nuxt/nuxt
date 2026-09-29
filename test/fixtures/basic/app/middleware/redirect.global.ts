@@ -13,6 +13,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
     // the path will be the same in this new route and vue-router should send a 500 response
     return navigateTo('/catchall/redirect-infinite?test=true')
   }
+  if (to.path === '/navigate-to-encoded-query') {
+    return navigateTo('/?callback=%2Fother')
+  }
+  if (to.path === '/navigate-to-encoded-space') {
+    return navigateTo('/?q=a%20b')
+  }
   if (to.path === '/navigate-to-external') {
     return navigateTo('/', { external: true })
   }

@@ -1,9 +1,7 @@
 import { consola } from 'consola'
 import { vi } from 'vitest'
-import { logger } from '@nuxt/kit'
 
 consola.mockTypes(() => vi.fn())
-logger.mockTypes(() => vi.fn())
 
 const _warn = console.warn.bind(console)
 

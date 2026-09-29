@@ -1,4 +1,4 @@
-import { withMatrix } from '../../matrix'
+import { withMatrix } from '../../matrix.ts'
 
 // Regression fixture for nuxt/nuxt#24035: `buildAssetsDir` ('abc') collides
 // with a source directory of the same name that contains a CSS file
