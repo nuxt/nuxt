@@ -1,5 +1,9 @@
+import { existsSync } from 'node:fs'
 import process from 'node:process'
-import { addDependency, addDependencyCommand, detectPackageManager } from 'nypm'
+import { join } from 'pathe'
+import { x } from 'tinyexec'
+import { detect, resolveCommand } from 'package-manager-detector'
+import type { ResolvedCommand } from 'package-manager-detector'
 import { resolveModulePath } from 'exsolve'
 import { hasTTY, isCI, provider } from 'std-env'
 import { useTerminal } from './terminal.ts'
@@ -81,11 +85,7 @@ export async function ensureDependencyInstalled (names: string | string[], optio
 
   const task = terminal.startTask(`Installing ${formattedNames}...`)
   try {
-    await addDependency(missing, {
-      dev: true,
-      cwd: rootDir,
-      silent: true,
-    })
+    await runCommand(await resolveAddCommand(missing, rootDir, { dev: true }), rootDir)
     task.stop(`Installed ${formattedNames}`)
     return true
   } catch (err) {
@@ -125,6 +125,28 @@ function isResolvable (name: string, searchPaths: string[]): boolean {
  * @param options.dev - Whether the command should install as a dev dependency
  */
 export async function getAddDependencyCommand (names: string | string[], cwd: string, options: { dev?: boolean } = {}): Promise<string> {
-  const packageManager = await detectPackageManager(cwd, { includeParentDirs: true }).catch(() => undefined)
-  return addDependencyCommand(packageManager?.name || 'npm', names, { ...options, short: true })
+  const { command, args } = await resolveAddCommand(names, cwd, options)
+  return [command, ...args].join(' ')
+}
+
+async function resolveAddCommand (names: string | string[], cwd: string, options: { dev?: boolean }): Promise<ResolvedCommand> {
+  const agent = (await detect({ cwd }).catch(() => null))?.agent || 'npm'
+  const packages = Array.isArray(names) ? names : [names]
+  const args = [
+    ...agent === 'pnpm' && existsSync(join(cwd, 'pnpm-workspace.yaml')) ? ['--workspace-root'] : [],
+    ...options.dev ? ['-D'] : [],
+    ...agent === 'deno' ? packages.map(name => `npm:${name}`) : packages,
+  ]
+  return resolveCommand(agent, 'add', args) || { command: 'npm', args: ['i', ...args] }
+}
+
+async function runCommand ({ command, args }: ResolvedCommand, cwd: string): Promise<void> {
+  if (command === 'pnpm') {
+    // allow installs to proceed without prompting or failing on blocked build scripts
+    args = [...args, '--config.confirm-modules-purge=false', '--config.strict-dep-builds=false']
+  }
+  const result = await x(command, args, { nodeOptions: { cwd, stdio: ['ignore', 'ignore', 'pipe'] } })
+  if (result.exitCode !== 0) {
+    throw new Error(`\`${command} ${args.join(' ')}\` exited with code ${result.exitCode}${result.stderr ? `\n${result.stderr.trim()}` : ''}`)
+  }
 }
