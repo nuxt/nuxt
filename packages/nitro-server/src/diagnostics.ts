@@ -22,7 +22,7 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B9002: {
       why: (p: { count: number, handlers: string }) => `${p.count} Nitro v2 handler${p.count === 1 ? ' has' : 's have'} no \`route\`, which Nitro v3 requires:\n  - ${p.handlers}`,
-      fix: 'They have been registered as middleware on `/**`. Give each handler an explicit `route` to control where it runs.',
+      fix: 'They have been registered as middleware on `/**`. Set `middleware: true` on each handler that runs for every request, or give it an explicit `route`.',
       docs: false,
     },
     NUXT_B9003: {

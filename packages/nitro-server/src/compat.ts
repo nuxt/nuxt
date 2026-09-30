@@ -1026,6 +1026,13 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
 
     rescan(nitro.options.plugins as string[], nitro.options.handlers, nitro.options.virtual)
     invalidateScopeCache()
+
+    for (const handler of [...nitro.options.handlers || [], ...nitro.options.devHandlers || []]) {
+      if (!handler.route) {
+        handler.route = '/**'
+        handler.middleware = true
+      }
+    }
   }
 
   // baked in at build time, so that an app with no v2 code keeps Nitro's error semantics
