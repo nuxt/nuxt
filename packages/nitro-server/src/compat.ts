@@ -88,6 +88,8 @@ interface ImportSpecifier {
   end: number
   /** Erased from the output, as `import type` or an all-`type` named import. */
   typeOnly: boolean
+  /** Names imported as values. */
+  names: string[]
 }
 
 const STRING_LITERAL_RE = /^(['"])(.*)\1$/s
@@ -97,7 +99,7 @@ const JSX_RE = /\.[cm]?[jt]sx$/
 function findImportSpecifiers (code: string, filename: string): ImportSpecifier[] {
   const { module } = parseSync(filename, code, { lang: JSX_RE.test(filename) ? 'tsx' : 'ts', sourceType: 'module' })
   const specifiers: ImportSpecifier[] = []
-  const add = (request: { start: number, end: number }, entries?: Array<{ isType: boolean }>) => {
+  const add = (request: { start: number, end: number }, entries?: Array<{ isType: boolean, importName: { name: string | null } }>) => {
     const literal = code.slice(request.start, request.end).match(STRING_LITERAL_RE)
     if (literal) {
       const values = entries?.filter(entry => !entry.isType) ?? []
@@ -106,6 +108,7 @@ function findImportSpecifiers (code: string, filename: string): ImportSpecifier[
         start: request.start + 1,
         end: request.end - 1,
         typeOnly: !!entries?.length && values.length === 0,
+        names: values.flatMap(entry => entry.importName.name ?? []),
       })
     }
   }
@@ -201,6 +204,55 @@ export function scanLegacyScope (files: Iterable<string>, dirs: Iterable<string>
   }
 
   return found
+}
+
+const NODE_BRIDGE_RE = /\.node\s*\??\.\s*(?:req|res)\b/
+
+/** Nitro v2 APIs used by a file of user server code, for `NUXT_B9005`. */
+function userLegacySignals (code: string, filename: string, h3Names: Set<string>): string[] {
+  const signals = new Set<string>()
+  for (const specifier of findImportSpecifiers(code, filename)) {
+    if (specifier.typeOnly) {
+      continue
+    }
+    if (NITRO_V2_SPECIFIER_RE.test(specifier.value)) {
+      signals.add(`\`${specifier.value}\``)
+    } else if (specifier.value === 'h3' || specifier.value === 'h3/utils') {
+      for (const name of specifier.names) {
+        if (!/^[A-Z]/.test(name) && !h3Names.has(name)) {
+          signals.add(`\`${name}\` from \`h3\``)
+        }
+      }
+    }
+  }
+  if (NODE_BRIDGE_RE.test(code)) {
+    signals.add('`event.node`')
+  }
+  return [...signals]
+}
+
+async function reportUserLegacyCode (dirs: string[]): Promise<void> {
+  const files = listFiles(dirs.map(dir => normalize(dir)))
+  if (files.length === 0) {
+    return
+  }
+  const h3Names = new Set(await getH3ExportNames())
+  const found: string[] = []
+  for (const path of files) {
+    let code: string
+    try {
+      code = readFileSync(path, 'utf8')
+    } catch {
+      continue
+    }
+    const signals = userLegacySignals(code, path, h3Names)
+    if (signals.length > 0) {
+      found.push(`\`${path}\` (uses ${signals.join(', ')})`)
+    }
+  }
+  if (found.length > 0) {
+    nitroBuildDiagnostics.NUXT_B9005({ count: found.length, files: found.join('\n  - ') })
+  }
 }
 
 /**
@@ -520,7 +572,7 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * `#nuxt-compat/*` virtuals and their `tsdown` externals; the `render:response` hook,
  * `rememberRenderBody` in `utils/renderer/options.ts` and the `hasLegacyHookListener`
  * check in `handlers/renderer.ts`; the `legacyCompat` branches in `handlers/error.ts`,
- * `handlers/renderer.ts` and `utils/renderer/options.ts`; the `NUXT_B9001`-`B9004` and
+ * `handlers/renderer.ts` and `utils/renderer/options.ts`; the `NUXT_B9001`-`B9005` and
  * `NUXT_E8008`-`E8010` diagnostics; the `nitro-legacy` and `nitro-module-compat` fixtures.
  *
  * Returns a callback that absorbs registrations made after the build config was assembled;
@@ -1030,6 +1082,10 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
         handler.route = '/**'
         handler.middleware = true
       }
+    }
+
+    if (!isLegacyEnabled(legacy)) {
+      await reportUserLegacyCode(getLayerDirectories(nuxt).flatMap(layer => [layer.server, layer.shared]))
     }
   }
 

@@ -35,5 +35,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Give each middleware the `route` it needs, ending in `/**` if it has to keep running for sub-paths. Nitro v2 also stripped the route from `event.path`; the layer keeps doing so, but a migrated handler reads the full path.',
       docs: false,
     },
+    NUXT_B9005: {
+      why: (p: { count: number, files: string }) => `${p.count} file${p.count === 1 ? '' : 's'} in your server code use${p.count === 1 ? 's' : ''} Nitro v2 or h3 v1 APIs, which Nitro v3 does not provide:\n  - ${p.files}`,
+      fix: 'Move these imports to `nuxt/server` (or `nitro/h3` and `nitro/*`), and read the request from `event.req` rather than `event.node`. To ship before migrating, enable `nitroLegacy`.',
+      docs: false,
+    },
   },
 })

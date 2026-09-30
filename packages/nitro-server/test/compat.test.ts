@@ -644,6 +644,31 @@ export default legacy`)
     vi.restoreAllMocks()
   })
 
+  it('reports user server code that relies on Nitro v2 when `nitroLegacy` is off', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9005').mockImplementation(() => ({}) as any)
+    const rootDir = mkdtempSync(join(tmpdir(), 'nitro-compat-user-'))
+    mkdirSync(join(rootDir, 'server/middleware'), { recursive: true })
+    writeFileSync(join(rootDir, 'server/middleware/auth.ts'), `import { eventHandler } from 'h3'
+export default eventHandler(event => event.node.req.headers)`)
+    writeFileSync(join(rootDir, 'server/middleware/ok.ts'), `import { defineEventHandler } from 'nuxt/server'
+import type { H3Event } from 'h3'
+export default defineEventHandler((event: H3Event) => event.req.headers)`)
+
+    const nuxt = createNuxt({ rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    const nitroConfig: NitroConfig = { handlers: [] }
+    const registerLate = await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
+    await registerLate({ options: { handlers: [], plugins: [] } } as any)
+
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, files: expect.stringContaining('auth.ts` (uses `event.node`)') })
+
+    report.mockClear()
+    const registerLateLegacy = await setupNitroCompat(nuxt, { handlers: [] }, resolveNitroLegacyOptions(true), [])
+    await registerLateLegacy({ options: { handlers: [], plugins: [] } } as any)
+    expect(report).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
   it('treats a file importing a module virtual of nitro v3 code as migrated', async () => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-virtual-gate-'))
