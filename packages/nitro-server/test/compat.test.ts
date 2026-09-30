@@ -657,14 +657,18 @@ export default defineEventHandler((event: H3Event) => event.req.headers)`)
     const nuxt = createNuxt({ rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
     const nitroConfig: NitroConfig = { handlers: [] }
     const registerLate = await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
-    await registerLate({ options: { handlers: [], plugins: [] } } as any)
+    const nitro = { options: { handlers: [], plugins: [] }, hooks: createHooks() } as any
+    registerLate(nitro)
+    await nitro.hooks.callHook('build:before', nitro)
 
     expect(report).toHaveBeenCalledTimes(1)
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, files: expect.stringContaining('auth.ts` (uses `event.node`)') })
 
     report.mockClear()
     const registerLateLegacy = await setupNitroCompat(nuxt, { handlers: [] }, resolveNitroLegacyOptions(true), [])
-    await registerLateLegacy({ options: { handlers: [], plugins: [] } } as any)
+    const legacyNitro = { options: { handlers: [], plugins: [] }, hooks: createHooks() } as any
+    registerLateLegacy(legacyNitro)
+    await legacyNitro.hooks.callHook('build:before', legacyNitro)
     expect(report).not.toHaveBeenCalled()
     vi.restoreAllMocks()
   })

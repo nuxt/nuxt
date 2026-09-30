@@ -1085,7 +1085,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     }
 
     if (!isLegacyEnabled(legacy)) {
-      await reportUserLegacyCode(getLayerDirectories(nuxt).flatMap(layer => [layer.server, layer.shared]))
+      nitro.hooks.hookOnce('build:before', () => reportUserLegacyCode(getLayerDirectories(nuxt).flatMap(layer => [layer.server, layer.shared])))
     }
   }
 
