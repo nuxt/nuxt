@@ -585,6 +585,65 @@ export const useRule = () => setHeader`)
     vi.restoreAllMocks()
   })
 
+  it('does not follow or count type-only imports from a reached file', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-type-only-'))
+    mkdirSync(join(dir, 'dist/runtime/server'), { recursive: true })
+    mkdirSync(join(dir, 'dist/runtime/composables'), { recursive: true })
+    writeFileSync(join(dir, 'dist/runtime/server/handler.ts'), `import { defineEventHandler } from 'nuxt/server'
+import { helper } from './helpers'
+export default defineEventHandler(() => helper())`)
+    writeFileSync(join(dir, 'dist/runtime/server/helpers.ts'), `import type { RouterMethod } from 'h3'
+import { type NitroApp, type NitroRuntimeHooks } from 'nitropack'
+import type { ApiClient } from '../composables/api'
+export type { NitroApp, NitroRuntimeHooks, RouterMethod, ApiClient }
+export const helper = () => 'ok'`)
+    writeFileSync(join(dir, 'dist/runtime/composables/api.ts'), `import { useNuxtApp } from '#imports'
+export type ApiClient = ReturnType<typeof useNuxtApp>`)
+
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/server', handler: join(dir, 'dist/runtime/server/handler.ts') } as any] }
+    await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'type-only-module' }])
+
+    expect(report).not.toHaveBeenCalled()
+    expect(nitroConfig.plugins).toEqual([])
+    vi.restoreAllMocks()
+  })
+
+  it('does not count unreferenced files in a directory a module aliased', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-alias-dir-'))
+    mkdirSync(join(dir, 'dist/runtime/server/services'), { recursive: true })
+    writeFileSync(join(dir, 'dist/runtime/server/services/index.ts'), `import { getCookie } from 'nuxt/server'
+export const client = getCookie`)
+    writeFileSync(join(dir, 'dist/runtime/server/services/unused.ts'), `import { getCookie } from 'h3'
+export const legacy = getCookie`)
+
+    const nitroConfig: NitroConfig = { handlers: [], alias: { '#module/server': join(dir, 'dist/runtime/server/services') } }
+    await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'alias-module' }])
+
+    expect(report).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it('counts files in an aliased module directory that user server code imports', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-alias-user-'))
+    const rootDir = join(dir, 'project')
+    mkdirSync(join(dir, 'dist/runtime/server/services'), { recursive: true })
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    writeFileSync(join(dir, 'dist/runtime/server/services/legacy.ts'), `import { getCookie } from 'h3'
+export const legacy = getCookie`)
+    writeFileSync(join(rootDir, 'server/api/test.ts'), `import { legacy } from '#module/server/legacy'
+export default legacy`)
+
+    const nitroConfig: NitroConfig = { handlers: [], alias: { '#module/server': join(dir, 'dist/runtime/server/services') } }
+    const nuxt = createNuxt({ extensions: ['.js', '.mjs', '.ts'], rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir, name: 'alias-module' }])
+
+    expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`alias-module` (imports `h3`)') })
+    vi.restoreAllMocks()
+  })
+
   it('treats a file importing a module virtual of nitro v3 code as migrated', async () => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-virtual-gate-'))
@@ -807,6 +866,14 @@ describe('scanLegacyScope', () => {
       'nested/legacy.ts': `import { createError } from 'h3'\nexport const fail = () => createError({ statusCode: 418 })`,
     })
     expect([...scanLegacyScope([], [dir])]).toEqual([[join(dir, 'nested/legacy.ts'), ['h3']]])
+  })
+
+  it('ignores type-only imports', () => {
+    const dir = scoped({
+      'types.ts': `import type { H3Event } from 'h3'\nimport { type RouterMethod } from 'h3'\nexport type { NitroApp } from 'nitropack'\nimport type * as Imports from '#imports'\nexport type Event = H3Event | RouterMethod | typeof Imports`,
+      'value.ts': `import { type H3Event, getCookie } from 'h3'\nexport const read = (event: H3Event) => getCookie(event, 'a')`,
+    })
+    expect([...scanLegacyScope([], [dir])]).toEqual([[join(dir, 'value.ts'), ['h3']]])
   })
 
   it('treats a file importing both as migrated', () => {
