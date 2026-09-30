@@ -140,7 +140,7 @@ describe('setupNitroCompat', () => {
     ]
     const nitroConfig: NitroConfig = { handlers }
     const registerLate = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
-    await registerLate({ options: { handlers, devHandlers: [], plugins: [], virtual: {} } as any })
+    await registerLate({ options: { handlers, devHandlers: [], plugins: [], virtual: {} }, hooks: createHooks() } as any)
 
     expect(handlers.slice(0, 3).every(h => h.route === '/**' && h.middleware === true)).toBe(true)
     expect(handlers[3]).toMatchObject({ route: '/api' })
