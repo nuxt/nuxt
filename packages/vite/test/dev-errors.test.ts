@@ -25,12 +25,12 @@ type OverlayRoute = { path: string, handle: (req: { url?: string, headers?: Reco
 /** A stand-in dev server, capturing the overlay route and the messages pushed over hmr. */
 function devServer (options: { graph?: unknown } = {}) {
   const send = vi.fn()
-  const listeners: Record<string, (data?: any) => void> = {}
+  const listeners: Record<string, (data?: any, client?: any) => void> = {}
   const routes: OverlayRoute[] = []
   const server = {
     config: { base: '/_nuxt/' },
     middlewares: { use: (path: string, handle: OverlayRoute['handle']) => routes.push({ path, handle }) },
-    environments: { client: { hot: { send, on: (event: string, fn: (data?: any) => void) => { listeners[event] = fn } }, moduleGraph: options.graph } },
+    environments: { client: { hot: { send, on: (event: string, fn: (data?: any, client?: any) => void) => { listeners[event] = fn } }, moduleGraph: options.graph } },
   } as unknown as ViteDevServer
 
   /** Request the overlay the last pushed payload points at, as a page on this machine. */
@@ -140,6 +140,25 @@ describe('createDevErrorReporter', () => {
     nuxt.close()
   })
 
+  it('sends the current report to a page that asks once it listens', async () => {
+    const nuxt = createNuxt()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    const { server, send, listeners } = devServer()
+    reporter.attach(server)
+    const client = { send: vi.fn() }
+
+    listeners['nuxt:dev:error:ready']!(undefined, client)
+    expect(client.send).not.toHaveBeenCalled()
+
+    await reporter.report(transformError)
+    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
+    listeners['nuxt:dev:error:ready']!(undefined, client)
+    expect(client.send).toHaveBeenCalledWith(send.mock.calls[0]![0])
+    expect(send).toHaveBeenCalledTimes(1)
+
+    nuxt.close()
+  })
+
   it('serves the overlay to a same-origin request from any peer', async () => {
     const nuxt = createNuxt()
     const reporter = createDevErrorReporter(nuxt, { print: () => {} })
@@ -243,27 +262,30 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     nuxt.close()
   })
 
-  it('replays the overlay when a page connects, and when it reloads into the same error', async () => {
+  it('replays a runtime error to a ready page and on the same error', async () => {
     const nuxt = createNuxt()
     const print = vi.fn()
     const reporter = createDevErrorReporter(nuxt, { print })
     const { server, send, listeners } = devServer({ graph: clientGraph() })
     reporter.attach(server)
+    const client = { send: vi.fn() }
 
     const error = { name: 'Error', message: 'boom', stack: 'Error: boom\n    at setup (http://localhost:3000/_nuxt/pages/index.vue?t=1:3:1)' }
     listeners['nuxt:dev:client-error']!(error)
     await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
 
-    listeners['vite:client:connect']!()
-    expect(send).toHaveBeenCalledTimes(2)
+    listeners['nuxt:dev:error:ready']!(undefined, client)
+    expect(client.send).toHaveBeenCalledWith(send.mock.calls[0]![0])
     listeners['nuxt:dev:client-error']!({ ...error })
-    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(3))
+    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(2))
     expect(new Set(send.mock.calls.map(([payload]) => JSON.stringify(payload))).size).toBe(1)
     expect(print).toHaveBeenCalledTimes(1)
 
     reporter.clear()
-    listeners['vite:client:connect']!()
     expect(send).toHaveBeenLastCalledWith({ type: 'custom', event: 'nuxt:dev:error:clear' })
+    client.send.mockClear()
+    listeners['nuxt:dev:error:ready']!(undefined, client)
+    expect(client.send).not.toHaveBeenCalled()
     nuxt.close()
   })
 })
