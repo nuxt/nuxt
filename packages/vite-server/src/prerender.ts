@@ -23,7 +23,7 @@ const WRITABLE_STATUSES = new Set([200, 304, ...REDIRECT_STATUSES])
 /** Longest path segment most file systems accept. */
 const FS_MAX_SEGMENT = 255
 
-type IgnorePattern = string | RegExp | ((path: string) => boolean | undefined)
+type IgnorePattern = string | RegExp | ((path: string) => boolean | null | undefined)
 
 interface ResolvedPrerenderConfig {
   routes: string[]

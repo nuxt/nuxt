@@ -1161,6 +1161,9 @@ importers:
       pathe:
         specifier: catalog:app-runtime
         version: 2.0.3
+      rolldown:
+        specifier: 1.2.11
+        version: 1.2.11
       rou3:
         specifier: catalog:build
         version: 0.9.2
