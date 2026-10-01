@@ -18,7 +18,7 @@ interface LoaderOptions {
 
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/gi
 const TEMPLATE_RE = /<template(?<attrs>[^>]*)>([\s\S]*)<\/template>/
-const PUG_LANG_RE = /\blang\s*=\s*(?:"(?:pug|jade)"|'(?:pug|jade)')/
+const PUG_LANG_RE = /\blang\s*=\s*(?:"(?:pug|jade)"|'(?:pug|jade)'|(?:pug|jade)(?=\s|$))/
 
 const hydrationStrategyMap = {
   hydrateOnIdle: 'Idle',

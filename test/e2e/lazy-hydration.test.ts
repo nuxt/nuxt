@@ -77,9 +77,9 @@ const hydrationTests = {
 }
 
 for (const [description, path] of Object.entries(hydrationTests)) {
-  test.skip(({ builder }) => description === 'with pug templates' && builder !== 'vite', 'pug templates are only tested with the vite builder')
-
   test.describe(`delayed hydration components ${description}`, () => {
+    test.skip(({ builder }) => description === 'with pug templates' && builder !== 'vite', 'pug templates are only tested with the vite builder')
+
     test('lazy load delayed hydration comps at the right time', async ({ page, goto, fetch }) => {
       const html = await fetch(`/delayed-hydration${path}`).then(r => r.text())
 
