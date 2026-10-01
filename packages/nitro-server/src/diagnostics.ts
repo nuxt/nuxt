@@ -22,7 +22,7 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B9002: {
       why: (p: { count: number, handlers: string }) => `${p.count} Nitro v2 handler${p.count === 1 ? ' has' : 's have'} no \`route\`, which Nitro v3 requires:\n  - ${p.handlers}`,
-      fix: 'They have been registered as middleware on `/**`. Give each handler an explicit `route` to control where it runs.',
+      fix: 'They have been registered as middleware on `/**`. Set `middleware: true` on each handler that runs for every request, or give it an explicit `route`.',
       docs: false,
     },
     NUXT_B9003: {
@@ -33,6 +33,11 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B9004: {
       why: (p: { count: number, handlers: string }) => `${p.count} Nitro v2 middleware handler${p.count === 1 ? '' : 's'} ran for every path below ${p.count === 1 ? 'its' : 'their'} \`route\` in Nitro v2, which matches routed middleware exactly in Nitro v3, so ${p.count === 1 ? 'it was' : 'they were'} registered on a wildcard route:\n  - ${p.handlers}`,
       fix: 'Give each middleware the `route` it needs, ending in `/**` if it has to keep running for sub-paths. Nitro v2 also stripped the route from `event.path`; the layer keeps doing so, but a migrated handler reads the full path.',
+      docs: false,
+    },
+    NUXT_B9005: {
+      why: (p: { count: number, files: string }) => `${p.count} file${p.count === 1 ? '' : 's'} in your server code use${p.count === 1 ? 's' : ''} Nitro v2 or h3 v1 APIs, which Nitro v3 does not provide:\n  - ${p.files}`,
+      fix: 'Move these imports to `nuxt/server` (or `nitro/h3` and `nitro/*`), and read the request from `event.req` rather than `event.node`. To ship before migrating, enable `nitroLegacy`.',
       docs: false,
     },
   },

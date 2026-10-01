@@ -23,6 +23,9 @@ const SERVER_RUNTIME_CONFIG_SPECIFIER = 'nuxt/internal/server-runtime-config'
 /** Specifier the shipped `nuxt/server` implementations read the app config from. */
 const SERVER_APP_CONFIG_SPECIFIER = 'nuxt/internal/server-app-config'
 
+/** Dev-only error reporting, empty outside development. */
+const DEV_ERROR_SPECIFIER = 'nuxt/internal/dev-error'
+
 /** The part of the app config template only the Vue app runs. */
 const APP_CONFIG_CLIENT_RE = /\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//
 
@@ -179,7 +182,11 @@ function getServerSurfaceModule (nuxt: Nuxt): string {
   if (delegate) {
     return delegate
   }
-  return resolveModulePath('nuxt/server', {
+  return resolveNuxtModule('nuxt/server', nuxt)
+}
+
+function resolveNuxtModule (specifier: string, nuxt: Nuxt): string {
+  return resolveModulePath(specifier, {
     from: [...(nuxt.options.modulesDir || []).filter(Boolean).map(dir => directoryToURL(dir)), import.meta.url],
   })
 }
@@ -263,6 +270,7 @@ export function getServerRuntime (options: ServerRuntimeOptions = {}, nuxt: Nuxt
 
   modules[SERVER_SPECIFIER] = { code: () => `export * from ${JSON.stringify(getServerSurfaceModule(nuxt))}` }
   modules[SERVER_APP_CONFIG_SPECIFIER] = { code: () => nuxt.vfs['#build/app.config.mjs']?.replace(APP_CONFIG_CLIENT_RE, '') || 'export default {}' }
+  modules[DEV_ERROR_SPECIFIER] = { code: () => nuxt.options.dev ? `export * from ${JSON.stringify(resolveNuxtModule(DEV_ERROR_SPECIFIER, nuxt))}` : 'export {}' }
   modules[SERVER_RUNTIME_CONFIG_SPECIFIER] = { code: () => `export { useRuntimeConfig } from ${JSON.stringify(useServerBuild(nuxt).runtime.runtimeConfig)}` }
 
   return {

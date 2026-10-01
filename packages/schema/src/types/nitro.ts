@@ -201,7 +201,7 @@ export interface PrerenderOptions {
   /** Routes to prerender, in addition to those discovered by crawling or matched by `prerender` route rules. */
   routes?: string[]
   /** Routes to skip. A string matches as a path prefix. */
-  ignore?: Array<string | RegExp | ((path: string) => boolean | undefined)>
+  ignore?: Array<string | RegExp | ((path: string) => boolean | null | undefined)>
   /** Follow links in each rendered page to discover further routes. */
   crawlLinks?: boolean
 }
