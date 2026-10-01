@@ -284,6 +284,7 @@ catalogs:
     pkg-pr-new: 0.0.88
     playwright-core: 1.63.0
     prettier: 3.9.9
+    pug: 3.0.4
     rollup: 4.63.5
     rollup-plugin-visualizer: 7.1.1
     sherif: 1.13.0
