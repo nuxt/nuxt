@@ -9,11 +9,14 @@ export function vue (ctx: WebpackConfigContext) {
   ctx.nuxt.hooks.hookOnce(`${builder}:config`, () => {
     ctx.nuxt.hook(`${builder}:configResolved`, (configs) => {
       for (const config of configs) {
-        config.plugins!.unshift(
-          // @ts-expect-error de-default vue-loader
-          new (VueLoaderPlugin.default
-            || VueLoaderPlugin)(),
-        )
+        // Guard against duplicate injection across multiple preset calls
+        if (!config.plugins!.some(p => (p as any)?.constructor?.NS === 'vue-loader')) {
+          config.plugins!.unshift(
+            // @ts-expect-error de-default vue-loader
+            new (VueLoaderPlugin.default
+              || VueLoaderPlugin)(),
+          )
+        }
       }
     })
   })

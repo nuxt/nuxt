@@ -78,8 +78,6 @@ const hydrationTests = {
 
 for (const [description, path] of Object.entries(hydrationTests)) {
   test.describe(`delayed hydration components ${description}`, () => {
-    test.skip(({ builder }) => description === 'with pug templates' && builder !== 'vite', 'pug templates are only tested with the vite builder')
-
     test('lazy load delayed hydration comps at the right time', async ({ page, goto, fetch }) => {
       const html = await fetch(`/delayed-hydration${path}`).then(r => r.text())
 
@@ -129,9 +127,9 @@ for (const [description, path] of Object.entries(hydrationTests)) {
       await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'hidden' })
     })
 
-    if (description === 'in template') {
+    if (description === 'in template' || description === 'with pug templates') {
       test('does not delay hydration of components named after modifiers', async ({ page, goto }) => {
-        await goto('/delayed-hydration')
+        await goto(`/delayed-hydration${path}`)
 
         await page.locator('data-testid=event-view-normal-component', { hasText: 'This is mounted.' }).waitFor()
         await page.locator('data-testid=event-view-normal-component', { hasText: 'This is not mounted.' }).waitFor({ state: 'hidden' })

@@ -32,10 +32,17 @@ type PugLexerPromise = Promise<PugLexer | null>
 
 let pugLexerPromise: PugLexerPromise | undefined
 
+/**
+ * Load the `pug-lexer` instance for a project root, resolving and caching it on first use.
+ */
 function loadPugLexer (rootDir: string) {
   return pugLexerPromise ??= resolvePugLexer(rootDir)
 }
 
+/**
+ * Resolve pug's lexer from the given project root, returning `null` when pug is not installed.
+ * A failed resolution clears the cached promise so a later transform can retry.
+ */
 async function resolvePugLexer (rootDir: string): PugLexerPromise {
   try {
     const pugPath = await tryResolveModule('pug', [directoryToURL(rootDir)])
@@ -47,6 +54,11 @@ async function resolvePugLexer (rootDir: string): PugLexerPromise {
   }
 }
 
+/**
+ * Rename lazily hydrated components inside a Pug template, mirroring the HTML transform:
+ * a component using a hydration strategy is rewritten to encode that strategy in its name
+ * (for example `LazyFoo(hydrate-on-idle)` becomes `LazyIdleFoo`).
+ */
 export async function transformPugTemplate (params: {
   code: string
   template: string
