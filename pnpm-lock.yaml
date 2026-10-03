@@ -231,8 +231,8 @@ catalogs:
       specifier: ^2.4.0
       version: 2.4.0
     vue-onigiri:
-      specifier: ^0.6.2
-      version: 0.6.2
+      specifier: ^0.6.3
+      version: 0.6.3
     vue-router:
       specifier: ^5.3.1
       version: 5.3.1
@@ -983,7 +983,7 @@ importers:
         version: 3.3.11
       vue-onigiri:
         specifier: catalog:app-runtime
-        version: 0.6.2(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
+        version: 0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.3.1(@rsbuild/core@2.2.8)(@rspack/core@2.2.7(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.43)(esbuild@0.28.2)(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))(webpack@5.111.1(cssnano@9.0.5(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.4(@types/node@24.19.0))(svgo@4.1.0))
@@ -1208,7 +1208,7 @@ importers:
         version: 0.1.0
       vue-onigiri:
         specifier: catalog:app-runtime
-        version: 0.6.2(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
+        version: 0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -1431,7 +1431,7 @@ importers:
         version: 3.3.11
       vue-onigiri:
         specifier: catalog:app-runtime
-        version: 0.6.2(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
+        version: 0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.3.1(@rsbuild/core@2.2.8)(@rspack/core@2.2.7(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.43)(esbuild@0.28.2)(rolldown@1.2.11)(rollup@4.63.5)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))(webpack@5.111.1(cssnano@9.0.5(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.4(@types/node@24.19.0))(svgo@4.1.0))
@@ -1869,7 +1869,7 @@ importers:
         version: 2.4.0
       vue-onigiri:
         specifier: catalog:app-runtime
-        version: 0.6.2(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
+        version: 0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -12383,8 +12383,8 @@ packages:
       vue:
         optional: true
 
-  vue-onigiri@0.6.2:
-    resolution: {integrity: sha512-+/4h1MFaX4+HhogmEoe1nqa/okQP6aGVB8Yfbm5Yet9/xeVdrAw9rUAcjqmkZ+03AbwrlVN2PYJWlH2WPE0/kg==}
+  vue-onigiri@0.6.3:
+    resolution: {integrity: sha512-UmQg5u60FHDiuTPEhMD+Vo8Y5LcTun/cYvbpoOI2TkpIbxoAF9LUI9blAPwWkSkfy9GuQLMzXo5p7V/OB2rgKw==}
     peerDependencies:
       '@vue/server-renderer': ^3.5.0
       vite: 8.3.1
@@ -23528,7 +23528,7 @@ snapshots:
       '@vue/compiler-sfc': 3.5.43
       vue: 3.5.43(typescript@6.0.3)
 
-  vue-onigiri@0.6.2(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3)):
+  vue-onigiri@0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3)):
     dependencies:
       '@babel/parser': 7.29.9
       '@vue/compiler-dom': 3.5.43
