@@ -61,6 +61,7 @@
     "ofetch": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",
+    "rolldown": "catalog:vite",
     "rou3": "catalog:build",
     "srvx": "catalog:nitro-runtime",
     "std-env": "catalog:build",

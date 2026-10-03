@@ -118,7 +118,7 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B1022: {
       why: (p: { count: number, templates: string }) => `The build stopped with ${p.count} template${p.count === 1 ? '' : 's'} still compiling:\n  - ${p.templates}`,
-      fix: 'A `getContents` function returned a promise that never settles. Resolve it during the build (from `nitro:init` at the latest), rather than waiting on something that happens after it.',
+      fix: 'A `getContents` function returned a promise that never settles. Resolve it before the bundler starts (for example from `pages:resolved` or `nitro:init`), rather than waiting on something that happens during or after bundling.',
       docs: false,
     },
   },

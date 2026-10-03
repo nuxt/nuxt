@@ -114,7 +114,7 @@ describe('getServerRuntime', () => {
 
     const { modules } = getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() }))
 
-    expect(Object.keys(modules).sort()).toEqual([...stubs, 'nuxt/server'].sort())
+    expect(Object.keys(modules).sort()).toEqual([...stubs, 'nuxt/internal/dev-error', 'nuxt/server'].sort())
   })
 
   it('backs `nuxt/server` with the shipped implementations, and with a builder\'s where it supplies them', async () => {
@@ -124,6 +124,13 @@ describe('getServerRuntime', () => {
 
     const withDelegate = withServerRuntime(nuxt({ buildOutputs: buildOutputs() }), { server: '/delegate.mjs' })
     expect(await getServerRuntime({}, withDelegate).modules['nuxt/server']!.code()).toBe('export * from "/delegate.mjs"')
+  })
+
+  it('backs `nuxt/internal/dev-error` with the shipped module in development only', async () => {
+    const dev = nuxt({ buildOutputs: buildOutputs() })
+    dev.options.dev = true
+    expect(await getServerRuntime({}, dev).modules['nuxt/internal/dev-error']!.code()).toMatch(/^export \* from "\S+dev-error[/\\]index\.ts"$/)
+    expect(await getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() })).modules['nuxt/internal/dev-error']!.code()).toBe('export {}')
   })
 
   it('reads runtime configuration from the module the server builder provides it in', async () => {

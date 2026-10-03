@@ -69,8 +69,11 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
       await prerender(nitro)
 
       logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
+      try {
+        await build(nitro)
+      } finally {
+        logger.wrapAll()
+      }
 
       if (nitro.options.static) {
         const dist = resolve(nuxt.options.rootDir, 'dist')

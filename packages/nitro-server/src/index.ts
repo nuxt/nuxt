@@ -839,7 +839,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Modules that bypass kit and push handlers or plugins into `nitro.options`
   // are nitro v2 code too, and are only visible now.
-  await registerLateNitroCompatScope(nitro)
+  registerLateNitroCompatScope(nitro)
 
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {
