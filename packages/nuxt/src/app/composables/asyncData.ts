@@ -527,10 +527,9 @@ export function _createUseAsyncData<
         const instance = getCurrentInstance()
         const inComponentSetup = !!instance || isWithinVaporComponent()
 
-        // @ts-expect-error - instance.sp is an internal vue property
-        if (instance && fetchOnServer && opts.immediate && !instance.sp) {
-          // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
-          instance.sp = []
+        if (inComponentSetup && fetchOnServer && opts.immediate) {
+          // Preserve the server-prefetch async boundary for stable useId hydration.
+          onServerPrefetch(() => {})
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!inComponentSetup || instance?.isMounted)) {
           dataDiagnostics.NUXT_E3003()

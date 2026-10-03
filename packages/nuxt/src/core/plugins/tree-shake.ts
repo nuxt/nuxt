@@ -9,6 +9,7 @@ type ImportPath = string
 
 interface TreeShakeComposablesPluginOptions {
   composables: Record<ImportPath, string[]>
+  preserveServerPrefetch?: boolean
 }
 
 export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOptions) => createUnplugin(() => {
@@ -50,6 +51,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
 
             const functionName = node.callee.name
             const scopeTrackerNode = scopeTracker.getDeclaration(functionName)
+            let composableName = functionName
 
             if (scopeTrackerNode) {
             // don't tree-shake if there's a local declaration
@@ -68,6 +70,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
               const importedName = importSpecifier.type === 'ImportSpecifier' && importSpecifier.imported.type === 'Identifier'
                 ? importSpecifier.imported.name
                 : importSpecifier.local.name
+              composableName = importedName
 
               const isFromAllowedPath = importPath === '#imports'
                 ? allComposableNames.has(importedName)
@@ -83,7 +86,11 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
             }
 
             // TODO: validate function name against actual auto-imports registry
-            s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
+            if (options.preserveServerPrefetch && composableName === 'onServerPrefetch' && node.arguments[0]) {
+              s.overwrite(node.arguments[0].start, node.arguments[0].end, '() => {}')
+            } else {
+              s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
+            }
             this.skip()
           },
         })
