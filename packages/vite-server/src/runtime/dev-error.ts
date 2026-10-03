@@ -102,7 +102,12 @@ function fixStacktraces (error: unknown, server: ViteDevServer, seen = new Set<u
     const carrier = { stack: error.stack } as Error
     server.ssrFixStacktrace(carrier)
     if (carrier.stack) {
-      error.stack = carrier.stack
+      try {
+        // `stack` can be a getter without a setter
+        Object.defineProperty(error, 'stack', { value: carrier.stack, writable: true, configurable: true })
+      } catch {
+        // non-configurable
+      }
     }
   }
   fixStacktraces(error.cause, server, seen)
