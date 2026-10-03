@@ -44,10 +44,18 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with ss
   })
 
   it('renders the error page for a route no page matches', async () => {
-    const response = await fetch('/not-a-page')
+    const response = await fetch('/not-a-page', { headers: { accept: 'text/html' } })
 
     expect(response.status).toBe(404)
     expect(await response.text()).toContain('id="__nuxt"')
+  })
+
+  it('answers a JSON client with the error as JSON', async () => {
+    const response = await fetch('/not-a-page', { headers: { accept: 'application/json' } })
+
+    expect(response.status).toBe(404)
+    expect(response.headers.get('content-type')).toBe('application/json;charset=utf-8')
+    expect(await response.json()).toMatchObject({ error: true, status: 404, data: { path: '/not-a-page' } })
   })
 })
 
