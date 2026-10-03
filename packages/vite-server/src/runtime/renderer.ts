@@ -1,6 +1,8 @@
 import { joinURL, withQuery } from 'ufo'
 import { createHooks } from 'hookable'
-import { describeError, isExpectedError } from 'nuxt/internal/renderer/error'
+import { appendVary, describeError, isExpectedError, isJsonRequest } from 'nuxt/internal/renderer/error'
+import type { DescribedError } from 'nuxt/internal/renderer/error'
+import { mergeHeaders } from 'nuxt/internal/renderer/headers'
 import type { NuxtRendererOptions, RendererHooks } from 'nuxt/internal/renderer/runtime'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -182,11 +184,23 @@ function applyPrerenderHints (event: ReturnType<typeof createRequestEvent>, resp
 
 async function renderError (renderer: NuxtRenderer, request: Request, error: unknown, event: ReturnType<typeof createRequestEvent>): Promise<Response> {
   const described = describeError(error)
-  const { status, statusText, message, headers } = described
+  const { status, statusText, message } = described
   const url = new URL(request.url)
 
   const devErrors = import.meta.dev ? await import('./dev-error.ts') : undefined
-  const report = devErrors ? await devErrors.observeDevError(error, request, { expected: isExpectedError(error, described) }) : undefined
+  const report = devErrors ? await devErrors.observeDevError(error, request, { expected: isExpectedError(error, described) }).catch(() => undefined) : undefined
+
+  if (isJsonRequest(request, url.pathname)) {
+    const body = {
+      error: true,
+      status,
+      statusText,
+      message,
+      data: described.data,
+      ...(import.meta.dev && { stack: (error as { stack?: string })?.stack?.split('\n').map(line => line.trim()) }),
+    }
+    return new Response(JSON.stringify(body), { status, statusText, headers: errorResponseHeaders(event, described, 'application/json;charset=utf-8') })
+  }
 
   // the renderer reads the error off the query, as the error page's props
   const data = (error as { data?: unknown })?.data
@@ -218,11 +232,7 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
 
   const rendered = await renderer.fetch(errorEvent).catch(() => null)
   if (rendered) {
-    const responseHeaders = new Headers(rendered.headers)
-    for (const [name, value] of new Headers(headers)) {
-      responseHeaders.set(name, value)
-    }
-    responseHeaders.set('content-type', 'text/html;charset=utf-8')
+    const responseHeaders = errorResponseHeaders(event, described, 'text/html;charset=utf-8', rendered.headers)
     if (report && !import.meta.test) {
       const html = await rendered.text()
       // the overlay is a development aid; never let it replace the real error
@@ -235,13 +245,20 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
   if (report) {
     const page = await report.page().catch(() => undefined)
     if (page) {
-      return new Response(page, { status, statusText, headers: { ...headers, 'content-type': 'text/html;charset=utf-8' } })
+      return new Response(page, { status, statusText, headers: errorResponseHeaders(event, described, 'text/html;charset=utf-8') })
     }
   }
 
-  return new Response(message, {
-    status,
-    statusText,
-    headers: { ...headers, 'content-type': 'text/plain;charset=utf-8' },
-  })
+  return new Response(message, { status, statusText, headers: errorResponseHeaders(event, described, 'text/plain;charset=utf-8') })
+}
+
+function errorResponseHeaders (event: ReturnType<typeof createRequestEvent>, described: DescribedError, contentType: string, page?: Headers): Headers {
+  const headers = new Headers(event.res.headers)
+  if (page) {
+    mergeHeaders(headers, page)
+  }
+  mergeHeaders(headers, described.headers)
+  headers.set('content-type', contentType)
+  appendVary(headers, 'accept, sec-fetch-mode')
+  return headers
 }
