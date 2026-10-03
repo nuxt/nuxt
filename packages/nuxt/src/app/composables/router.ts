@@ -5,6 +5,7 @@ import { decodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseUR
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
+import type { NuxtApp } from '../nuxt'
 import { isInComponentSetup, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import { sanitizeStatusCode } from '../utils/http-status'
@@ -137,6 +138,31 @@ const isProcessingMiddleware = () => {
     return false
   }
   return false
+}
+
+/** @internal */
+export const _enterMiddlewareContext = (nuxtApp: NuxtApp, to: NonNullable<NuxtApp['_middlewareTo']>): void => {
+  nuxtApp._processingMiddleware = true
+  if (import.meta.server) {
+    nuxtApp._middlewareTo = to
+  }
+}
+
+/** @internal */
+export const _leaveMiddlewareContext = (nuxtApp: NuxtApp): void => {
+  delete nuxtApp._processingMiddleware
+  if (import.meta.server) {
+    delete nuxtApp._middlewareTo
+  }
+}
+
+/** @internal */
+export const _invokeMiddleware = <Route, Result>(nuxtApp: NuxtApp, middleware: (to: Route, from: Route) => Result, to: Route, from: Route, name?: string) => {
+  if (import.meta.dev) {
+    const path = '_path' in middleware && typeof middleware._path === 'string' ? middleware._path : undefined
+    nuxtApp._processingMiddleware = path || name || true
+  }
+  return nuxtApp.runWithContext(() => middleware(to, from))
 }
 
 // Conditional types, either one or other
