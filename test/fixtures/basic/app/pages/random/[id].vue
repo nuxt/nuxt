@@ -53,6 +53,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  alias: '/товары/:id',
+})
+
 const route = useRoute('random-id')
 
 const pageKey = 'rand_' + route.params.id
