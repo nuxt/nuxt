@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
+import type { Duplex } from 'node:stream'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
 import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
@@ -148,6 +149,19 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   if (nuxt.options.dev) {
     let devServer: ViteDevServer | undefined
 
+    // Vite runs in middleware mode, so it has no http server for Nitro to listen
+    // for upgrades on. nuxt/cli owns the listener and forwards them here. It looks
+    // for `upgrade` before the vite server exists, hence the early assignment.
+    const upgrade = (req: IncomingMessage, socket: Duplex, head: Buffer) => {
+      const env = devServer?.environments.nitro as { devServer?: { upgrade?: (context: unknown) => void } } | undefined
+      if (!env?.devServer?.upgrade) {
+        socket.destroy()
+        return
+      }
+      env.devServer.upgrade({ node: { req, socket, head } })
+    }
+    nuxt.server = { upgrade }
+
     // TODO: fix upstream in nitro
     nitro.hooks.hook('rollup:reload', () => {
       const env = devServer?.environments.nitro
@@ -191,6 +205,7 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
         fetch: toFetchHandler(viteServer.middlewares),
         reload: () => viteServer.restart(),
         close: () => viteServer.close(),
+        upgrade,
       }
     })
   }
