@@ -1,9 +1,11 @@
+import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { withQuery } from 'ufo'
 import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
-import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
+import { glob } from 'tinyglobby'
+import { $fetch, fetch, setup, startServer, useTestContext } from '@nuxt/test-utils/e2e'
 import type { DefineComponent } from 'vue'
 import { createSSRApp, defineComponent, h } from 'vue'
 import { renderToString } from 'vue/server-renderer'
@@ -275,6 +277,23 @@ describe.runIf(shouldRun)('component islands', () => {
     expect(result.html).toBeUndefined()
     const html = await renderIslandAst(result.ast)
     expect(html).toContain('Route: /foo')
+  })
+
+  it('strips dev-only content in production', async () => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL('DevOnlyComponent'))
+    const html = await renderIslandAst(result.ast)
+    expect(html).toContain(isDev ? 'onigiri dev-only content' : 'onigiri prod-only fallback')
+    expect(html).not.toContain(isDev ? 'onigiri prod-only fallback' : 'onigiri dev-only content')
+
+    if (isDev) { return }
+    // the dev-only branch must not be bundled either
+    // @ts-expect-error ssssh! untyped secret property
+    const { output } = useTestContext().nuxt._nitro.options
+    for (const dir of [output.serverDir, output.publicDir]) {
+      for (const file of await glob('**/*.{js,mjs}', { cwd: dir, absolute: true })) {
+        expect(await readFile(file, 'utf8'), file).not.toContain('onigiri dev-only content')
+      }
+    }
   })
 
   it('render async component', async () => {

@@ -560,7 +560,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
-    addBuildPlugin(DevOnlyPlugin())
+    addBuildPlugin(DevOnlyPlugin(), { prepend: true })
 
     // Extract async data handlers into separate chunks for better performance
     if (nuxt.options.experimental.extractAsyncDataHandlers) {
