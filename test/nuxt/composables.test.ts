@@ -20,7 +20,7 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
-import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
+import { _enterMiddlewareContext, _invokeMiddleware, _leaveMiddlewareContext, encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
@@ -882,7 +882,7 @@ describe('routing utilities: `navigateTo`', () => {
   })
   it('navigateTo should replace current navigation state if called within middleware', () => {
     const nuxtApp = useNuxtApp()
-    nuxtApp._processingMiddleware = true
+    _enterMiddlewareContext(nuxtApp, useRoute())
     expect(navigateTo('/')).toMatchInlineSnapshot(`"/"`)
     expect(navigateTo('/', { replace: true })).toMatchInlineSnapshot(`
       {
@@ -890,7 +890,7 @@ describe('routing utilities: `navigateTo`', () => {
         "replace": true,
       }
     `)
-    nuxtApp._processingMiddleware = false
+    _leaveMiddlewareContext(nuxtApp)
   })
 
   it('#28425', async () => {
@@ -1150,6 +1150,44 @@ describe('routing utilities: `abortNavigation`', () => {
   })
 })
 
+describe('routing utilities: middleware context', () => {
+  afterEach(() => {
+    _leaveMiddlewareContext(useNuxtApp())
+    vi.unstubAllGlobals()
+  })
+
+  it('should run a middleware within the middleware context', async () => {
+    const nuxtApp = useNuxtApp()
+    const route = useRoute()
+    _enterMiddlewareContext(nuxtApp, route)
+    const result = await _invokeMiddleware(nuxtApp, () => navigateTo('/redirected'), route, route)
+    expect(result).toBe('/redirected')
+    _leaveMiddlewareContext(nuxtApp)
+    expect(nuxtApp._processingMiddleware).toBeUndefined()
+  })
+
+  it('should pass the routes to the middleware', async () => {
+    const nuxtApp = useNuxtApp()
+    const to = useRouter().resolve('/to')
+    const from = useRouter().resolve('/from')
+    const middleware = vi.fn()
+    await _invokeMiddleware(nuxtApp, middleware, to, from)
+    expect(middleware).toHaveBeenCalledWith(to, from)
+  })
+
+  it('should track the processing middleware in development', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+    const nuxtApp = useNuxtApp()
+    const route = useRoute()
+    const getProcessingMiddleware = () => nuxtApp._processingMiddleware
+    const withPath = Object.defineProperty(() => nuxtApp._processingMiddleware, '_path', { value: '/middleware/auth.ts' })
+
+    expect(await _invokeMiddleware(nuxtApp, withPath, route, route, 'auth')).toBe('/middleware/auth.ts')
+    expect(await _invokeMiddleware(nuxtApp, getProcessingMiddleware, route, route, 'auth')).toBe('auth')
+    expect(await _invokeMiddleware(nuxtApp, getProcessingMiddleware, route, route)).toBe(true)
+  })
+})
+
 describe('routing utilities: `setPageLayout`', () => {
   it('should set layout on page metadata if run outside middleware', () => {
     const route = useRoute()
@@ -1162,10 +1200,10 @@ describe('routing utilities: `setPageLayout`', () => {
   it('should not set layout directly if run within middleware', () => {
     const route = useRoute()
     const nuxtApp = useNuxtApp()
-    nuxtApp._processingMiddleware = true
+    _enterMiddlewareContext(nuxtApp, route)
     setPageLayout('custom')
     expect(route.meta.layout).toBeUndefined()
-    nuxtApp._processingMiddleware = false
+    _leaveMiddlewareContext(nuxtApp)
   })
 
   it('should preserve layout and props on same-path (query-only) navigation', async () => {
