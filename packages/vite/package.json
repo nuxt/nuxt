@@ -19,6 +19,7 @@
     "#ssr-sourcemap": "./src/ssr-sourcemap.ts",
     "#vite-node": "./src/vite-node.ts",
     "#vite-node-entry": "./src/vite-node-entry.ts",
+    "#vite-node-islands-entry": "./src/vite-node-islands-entry.ts",
     "#vite-node-runner": "./src/vite-node-runner.ts"
   },
   "files": [
@@ -53,7 +54,8 @@
     "vite": "catalog:vite",
     "vite-node": "catalog:vite",
     "vite-plugin-checker": "catalog:vite",
-    "vue-bundle-renderer": "catalog:build"
+    "vue-bundle-renderer": "catalog:build",
+    "vue-onigiri": "catalog:app-runtime"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "catalog:dev",
@@ -80,7 +82,7 @@
     "cssnano": "^7.1.3 || ^8.0.0 || ^9.0.0",
     "nuxt": "workspace:*",
     "rollup-plugin-visualizer": "^6.0.0 || ^7.0.1",
-    "vue": "^3.3.4"
+    "vue": "^3.5.0"
   },
   "peerDependenciesMeta": {
     "@babel/plugin-proposal-decorators": {
@@ -114,6 +116,7 @@
       "#ssr-sourcemap": "./dist/ssr-sourcemap.mjs",
       "#vite-node": "./dist/vite-node.mjs",
       "#vite-node-entry": "./dist/vite-node-entry.mjs",
+      "#vite-node-islands-entry": "./dist/vite-node-islands-entry.mjs",
       "#vite-node-runner": "./dist/vite-node-runner.mjs"
     },
     "types": "./dist/index.d.mts"

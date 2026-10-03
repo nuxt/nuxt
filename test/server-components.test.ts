@@ -290,7 +290,7 @@ describe('component islands', () => {
   it('renders components with route', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
-    result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
+    result.html = result.html!.replace(/ data-island-uid="[^"]*"/g, '')
     result.head.link ||= []
     result.head.style ||= []
     delete result.id
@@ -311,7 +311,7 @@ describe('component islands', () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
     result.head.link ||= []
     result.head.style ||= []
-    result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
+    result.html = result.html!.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
     delete result.id
     expect(result).toMatchInlineSnapshot(`
       {
@@ -368,7 +368,7 @@ describe('component islands', () => {
     result.props = {}
     result.components = {}
     result.slots = {}
-    result.html = result.html.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
+    result.html = result.html!.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
     delete result.id
 
     expect(result).toMatchInlineSnapshot(`
@@ -391,7 +391,7 @@ describe('component islands', () => {
       const { components } = result
       result.components = {}
       result.slots = {}
-      result.html = result.html.replace(/data-island-component="[^"]*"/g, 'data-island-component')
+      result.html = result.html!.replace(/data-island-component="[^"]*"/g, 'data-island-component')
 
       const teleportsEntries = Object.entries(components || {})
 
@@ -429,7 +429,7 @@ describe('component islands', () => {
         obj: { foo: 42, bar: false, me: 'hi' },
       },
     }))
-    result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
+    result.html = result.html!.replace(/ data-island-uid="[^"]*"/g, '')
 
     if (isDev) {
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/server-components', import.meta.url)))
@@ -476,7 +476,7 @@ describe('component islands', () => {
       `)
     }
 
-    expect(result.html.replace(/data-v-\w+|"|<!--.*-->/g, '').replace(/data-island-uid="[^"]"/g, '')).toMatchInlineSnapshot(`
+    expect(result.html!.replace(/data-v-\w+|"|<!--.*-->/g, '').replace(/data-island-uid="[^"]"/g, '')).toMatchInlineSnapshot(`
       "<div data-island-uid > Was router enabled: true <br > Props: <pre >{
         number: 3487,
         str: something,
@@ -758,14 +758,14 @@ describe('denial-of-service protections', () => {
   // the slot response rather than the island body).
   it('bounds plain and slot v-for over a large-integer prop', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 10_000_000 } }))
-    expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
+    expect(result.html!.match(/class="plain-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
     expect(result.slots?.loop?.props?.length ?? 0).toBe(MAX_VFOR_LENGTH)
     expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
   })
 
   it('renders a small v-for prop unchanged', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 3 } }))
-    expect(result.html.match(/class="plain-item"/g)?.length ?? 0).toBe(3)
+    expect(result.html!.match(/class="plain-item"/g)?.length ?? 0).toBe(3)
     expect(result.slots?.loop?.props?.length ?? 0).toBe(3)
     expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(3)
   })
