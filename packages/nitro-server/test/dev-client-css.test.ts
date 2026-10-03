@@ -1,28 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { EnvironmentModuleGraph } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { collectDevCss, toFsUrl } from '../src/utils/css.ts'
+import { collectDevCss, collectSsrGraphCss } from '../src/vite.ts'
 
-describe('toFsUrl', () => {
-  it('should prefix a posix path', () => {
-    expect(toFsUrl('/project/packages/nuxt/src/app/entry.async.ts')).toBe('/@fs/project/packages/nuxt/src/app/entry.async.ts')
-  })
-
-  it('should keep a separator before a windows drive letter', () => {
-    expect(toFsUrl('D:/project/packages/nuxt/src/app/entry.async.ts')).toBe('/@fs/D:/project/packages/nuxt/src/app/entry.async.ts')
-  })
-})
-
-describe('collectDevCss', () => {
-  it('should deduplicate multiple moduleGraph entries pointing to the same file', () => {
-    const nuxt = {
-      options: {
-        css: [],
-        alias: {},
-        modulesDir: [],
-      },
-    } as unknown as Nuxt
-
+describe('collectSsrGraphCss and collectDevCss in nitro-server', () => {
+  it('should deduplicate multiple moduleGraph entries pointing to the same file in SSR graph', () => {
     const moduleGraph = {
       urlToModuleMap: new Map([
         ['/@fs/workspace/layer/app/assets/css/tokens.css', { file: '/workspace/layer/app/assets/css/tokens.css', importers: new Set() }],
@@ -31,13 +13,18 @@ describe('collectDevCss', () => {
       ]),
     } as unknown as EnvironmentModuleGraph
 
-    expect(collectDevCss(nuxt, moduleGraph)).toEqual([
+    const { urls, files } = collectSsrGraphCss(moduleGraph)
+    expect(urls).toEqual([
       '/@fs/workspace/layer/app/assets/css/tokens.css',
       '/assets/css/theme.css',
     ])
+    expect(Array.from(files)).toEqual([
+      '/workspace/layer/app/assets/css/tokens.css',
+      '/workspace/app/assets/css/theme.css',
+    ])
   })
 
-  it('should not re-add global css if already covered in moduleGraph', () => {
+  it('should not duplicate global css already covered by SSR graph', () => {
     const nuxt = {
       options: {
         css: ['/workspace/app/assets/css/global.css'],
