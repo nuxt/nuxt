@@ -9,6 +9,7 @@ import { serverFetch } from 'nitro'
 
 import type { SSRErrorInput } from 'nuxt/internal/renderer/error'
 import { SSR_ERROR_PARAM, appendVary, encodeSSRError, isJsonRequest } from 'nuxt/internal/renderer/error'
+import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
 import { toLegacyError } from '../compat/error-shape'
@@ -47,11 +48,14 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
   // return Nitro response + our headers for redirects and JSON responses
   const status = error.status || 500
   const headers = new Headers(error.headers)
-  appendVary(headers, 'accept, sec-fetch-mode')
+  if (!NUXT_INLINE_ERROR_RENDERING) {
+    appendVary(headers, 'accept, sec-fetch-mode')
+  }
   if (import.meta.prerender && 'context' in event) {
     applyPrerenderHints(event as H3Event, headers)
   }
-  if (isJsonRequest(event.req as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
+  // with inline error rendering, page errors never reach this handler
+  if (NUXT_INLINE_ERROR_RENDERING || isJsonRequest(event.req as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
     const setCookies = new Set(headers.getSetCookie())
     const headerEntries = [
       new Headers(defaultRes.headers),
