@@ -19,6 +19,7 @@ import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG } from './build-files'
 
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from './payload'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from './app'
+import { mergeHeaders } from './headers'
 import { patchDevClientCss } from './dev-css'
 import { renderInlineStyles } from './inline-styles'
 import { createInlinedCSSFilter } from './inlined-css'
@@ -178,14 +179,8 @@ async function staticErrorResponse (runtime: NuxtRendererOptions, event: Rendere
 }
 
 /** Apply the headers the error asked for, keeping the cookies the render already set. */
-function applyErrorHeaders (headers: Headers, overrides: Record<string, string>): void {
-  for (const name in overrides) {
-    if (name.toLowerCase() === 'set-cookie') {
-      headers.append(name, overrides[name]!)
-    } else {
-      headers.set(name, overrides[name]!)
-    }
-  }
+function applyErrorHeaders (headers: Headers, overrides: Headers): void {
+  mergeHeaders(headers, overrides)
   appendVary(headers, 'accept, sec-fetch-mode')
 }
 

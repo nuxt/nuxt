@@ -5,6 +5,7 @@ import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SSR_STREAMING, unheadOp
 import { appEvent, getRequestState } from './runtime'
 import type { NuxtRendererOptions, RendererEvent } from './runtime'
 import { urlHash } from './url'
+import { mergeHeaders } from './headers'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
 
@@ -49,19 +50,6 @@ export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['err
   ssrContext.payload = { error }
   const url = new URL(error.url)
   ssrContext.url = url.pathname + url.search + url.hash
-}
-
-// Layer `overlay` onto `base`, overwriting per header except `set-cookie`,
-// which is appended so cookies from both sides survive.
-export function mergeHeaders (base: Headers, overlay: Headers): Headers {
-  for (const [name, value] of overlay) {
-    if (name === 'set-cookie') { continue }
-    base.set(name, value)
-  }
-  for (const cookie of overlay.getSetCookie()) {
-    base.append('set-cookie', cookie)
-  }
-  return base
 }
 
 export function returnRenderResponse (options: NuxtRendererOptions, event: RendererEvent, response: Response): Response {
