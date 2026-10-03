@@ -14,10 +14,11 @@ import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/is
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 
-import { isDev, isWebpack, runsOncePerEnvInMatrix } from './matrix'
+import { isDev, isWebpack, nitroViteEnvironment, runsOncePerEnvInMatrix } from './matrix'
 import { renderPage } from './utils'
 
-const shouldRun = runsOncePerEnvInMatrix
+// also run under the nitro vite environment, which bundles the app into nitro's `ssr` environment
+const shouldRun = runsOncePerEnvInMatrix || nitroViteEnvironment
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
   const serializedProps = serializeIslandProps(opts.props)
