@@ -11,7 +11,7 @@ import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
 import { sessionConfig } from './fixtures/basic/server/utils/session'
-import { asyncContext, isDev, isRenderingJson, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { asyncContext, inlineErrorRendering, isDev, isRenderingJson, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const appSecret = 'nuxt-runtime-app-secret-test-value'
@@ -1499,7 +1499,29 @@ describe('preserves current instance', () => {
 })
 
 describe('errors', () => {
-  it('should render a JSON error page', async () => {
+  it.skipIf(!inlineErrorRendering)('should render the error page for a request that accepts JSON', async () => {
+    const res = await fetch('/error', {
+      headers: {
+        accept: 'application/json',
+      },
+    })
+    expect(res.status).toBe(422)
+    expect(res.statusText).toBe('This is a custom error')
+    expect(res.headers.get('content-type')).toContain('text/html')
+    expect(await res.text()).toContain('This is a custom error')
+  })
+
+  it('should return JSON for a server route error, unless error rendering is legacy', async () => {
+    const res = await fetch('/api/error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.status).toBe(400)
+    expect(res.headers.get('content-type')).toContain(inlineErrorRendering ? 'application/json' : 'text/html')
+  })
+
+  it.skipIf(inlineErrorRendering)('should render a JSON error page', async () => {
     const res = await fetch('/error', {
       headers: {
         accept: 'application/json',
@@ -1543,16 +1565,17 @@ describe('errors', () => {
       expect(html).not.toContain('root cause')
     }
 
-    const jsonResponse = await fetch('/error-cause', {
-      headers: { accept: 'application/json' },
-    })
-    const json = await jsonResponse.json()
-    expect(json).not.toHaveProperty('cause')
-    expect(JSON.stringify(json)).not.toContain('inner error')
-    expect(JSON.stringify(json)).not.toContain('root cause')
+    if (!inlineErrorRendering) {
+      const json = await fetch('/error-cause', {
+        headers: { accept: 'application/json' },
+      }).then(r => r.json())
+      expect(json).not.toHaveProperty('cause')
+      expect(JSON.stringify(json)).not.toContain('inner error')
+      expect(JSON.stringify(json)).not.toContain('root cause')
+    }
   })
 
-  it('should not allow accessing error route directly', async () => {
+  it.skipIf(inlineErrorRendering)('should not allow accessing error route directly', async () => {
     const res = await fetch('/__nuxt_error', {
       headers: {
         accept: 'application/json',

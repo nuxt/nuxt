@@ -7,6 +7,7 @@ import type { NuxtRequestContext } from 'nuxt/schema'
 import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 
 import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
+import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { isJsonRequest } from '../utils/error'
 import { getFetchedRequestContext } from '../utils/event'
 import { applyPrerenderHints } from '../utils/prerender'
@@ -40,15 +41,19 @@ export default <NitroErrorHandler> async function errorhandler (error, event, { 
   // a cached module evaluation rethrows the same error, so it must still parse as a stack
   const stacks = import.meta.dev ? snapshotStacks(error) : undefined
 
-  if (isJsonRequest(event)) {
-    // let Nitro render and log JSON errors, unless the report has already been printed
-    if (!devError) {
+  // with inline error rendering, page errors never reach this handler
+  if (NUXT_INLINE_ERROR_RENDERING || isJsonRequest(event)) {
+    // let Nitro render and log JSON errors, unless the report has already been printed or Nitro
+    // would render HTML for a page request in development
+    if (!devError && !NUXT_INLINE_ERROR_RENDERING) {
       return
     }
-    const { headers, status, statusText, body } = await defaultHandler(error, event, { json: true, silent: true })
+    const { headers, status, statusText, body } = await defaultHandler(error, event, { json: true, silent: !!devError })
     stacks?.restore()
     setResponseHeaders(event, headers)
-    appendVary(event, 'accept, sec-fetch-mode')
+    if (!NUXT_INLINE_ERROR_RENDERING) {
+      appendVary(event, 'accept, sec-fetch-mode')
+    }
     setResponseStatus(event, status, statusText)
     return send(event, typeof body === 'string' ? body : JSON.stringify(body, null, 2))
   }

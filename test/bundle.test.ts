@@ -76,7 +76,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"121k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"122k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, rootDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1629k"`)
@@ -115,7 +115,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"294k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"295k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, rootDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"260k"`)
