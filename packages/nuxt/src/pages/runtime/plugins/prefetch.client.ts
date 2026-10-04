@@ -20,7 +20,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       router.beforeEach(async (to) => {
         const layout = to?.meta?.layout
         if (typeof layout === 'string' && layout in layouts) {
-          await _loadAsyncComponent(layouts[layout as keyof typeof layouts])
+          await _loadAsyncComponent(layouts[layout])
         }
       })
     })
