@@ -1030,6 +1030,11 @@ function buildAsyncData<
     _hash: import.meta.dev ? createHash(_handler, options) : undefined,
     _off: () => {
       unsubRefreshAsyncData()
+      // a newer entry may already own this key, for example when `useNuxtData` kept this one
+      // alive until after the next page registered the key again - leave that entry alone
+      if (nuxtApp._asyncData[key] !== asyncData) {
+        return
+      }
       if (nuxtApp._asyncData[key]?._init) {
         nuxtApp._asyncData[key]._init = false
       }
