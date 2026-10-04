@@ -32,6 +32,7 @@ export default defineNuxtPlugin({
         window.location.reload()
       }
     })
+    hot.send('nuxt:dev:error:ready')
 
     // reported once, however many hooks see it
     const reportedObjects = new WeakSet<object>()

@@ -221,9 +221,9 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
           client.send({ type: 'custom', event: 'nuxt:dev:error:clear' })
         }
       })
-      hot?.on?.('vite:client:connect', () => {
+      hot?.on?.('nuxt:dev:error:ready', (_data: unknown, client) => {
         if (pendingOverlay) {
-          hot.send(pendingOverlay)
+          client.send(pendingOverlay)
         }
       })
     },
