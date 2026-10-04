@@ -8,6 +8,7 @@ import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { VUE_ID_FILTER } from '../../core/utils/index.ts'
 import { linkToAlias, offsetToPosition } from '../../utils.ts'
+import { transformPugTemplate } from './lazy-hydration-pug.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -16,7 +17,9 @@ interface LoaderOptions {
 }
 
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/gi
-const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
+const TEMPLATE_RE = /<template(?<attrs>[^>]*)>([\s\S]*)<\/template>/
+const PUG_LANG_RE = /(?:^|\s)lang\s*=\s*(?:"(?:pug|jade)"|'(?:pug|jade)'|(?:pug|jade)(?=\s|$))/
+
 const hydrationStrategyMap = {
   hydrateOnIdle: 'Idle',
   hydrateOnVisible: 'Visible',
@@ -27,8 +30,14 @@ const hydrationStrategyMap = {
   hydrateNever: 'Never',
 }
 
-const TEMPLATE_WITH_LAZY_HYDRATION_RE = /<template>[\s\S]*\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-visible|hydrateOnVisible|hydrate-on-interaction|hydrateOnInteraction|hydrate-on-media-query|hydrateOnMediaQuery|hydrate-after|hydrateAfter|hydrate-when|hydrateWhen|hydrate-never|hydrateNever)\b[\s\S]*<\/template>/
+const TEMPLATE_WITH_LAZY_HYDRATION_RE = /<template[^>]*>[\s\S]*\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-visible|hydrateOnVisible|hydrate-on-interaction|hydrateOnInteraction|hydrate-on-media-query|hydrateOnMediaQuery|hydrate-after|hydrateAfter|hydrate-when|hydrateWhen|hydrate-never|hydrateNever)\b[\s\S]*<\/template>/
 
+/**
+ * Rewrite lazily hydrated components in SFC templates so the hydration strategy becomes part of
+ * the component name (`<LazyMyComponent hydrate-on-idle />` becomes `<LazyIdleMyComponent hydrate-on-idle />`),
+ * which lets Nuxt resolve the matching wrapper component. Pug templates are handled by
+ * `transformPugTemplate`, as ultrahtml cannot parse them.
+ */
 export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
@@ -46,16 +55,22 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
         code: { include: TEMPLATE_WITH_LAZY_HYDRATION_RE },
       },
 
+      /**
+       * Locate the SFC template and, when it uses a hydration strategy, rename each lazy
+       * component tag with that strategy. Pug templates take the Pug-aware path; anything that
+       * cannot be parsed as a template is left untouched.
+       */
       async handler (code, id, meta?: unknown) {
         // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
-        const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE) || {}
+        const { 0: template, index: offset = 0, groups } = code.match(TEMPLATE_RE) || {}
         if (!template) {
           return
         }
         try {
-          const ast = parse(template)
-
           const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
+          const s = rolldownString(code, id, meta)
+          const components = new Set(options.getComponents().map(c => c.pascalName))
+
           for (const { 0: script } of code.matchAll(SCRIPT_RE)) {
             if (!script) { continue }
             try {
@@ -63,9 +78,12 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             } catch { /* ignore */ }
           }
 
-          const s = rolldownString(code, id, meta)
+          if (groups && PUG_LANG_RE.test(groups.attrs ?? '')) {
+            await transformPugTemplate({ code, template, offset, s, components, scopeTracker, id, nuxt, strategies: hydrationStrategyMap })
+            return generateTransform(s, id)
+          }
 
-          const components = new Set(options.getComponents().map(c => c.pascalName))
+          const ast = parse(template)
           await walk(ast, (node) => {
             if (node.type !== 1 /* ELEMENT_NODE */) {
               return
