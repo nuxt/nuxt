@@ -78,6 +78,12 @@ describe('error handler vary', () => {
     expect(res.headers.get('vary')).toBe('*')
   })
 
+  it('sends each cookie once on the server-rendered error page', async () => {
+    const res = await handle(new HTTPError({ status: 404, headers: { 'set-cookie': 'session=1' } }), 'text/html', { 'set-cookie': 'session=1' })
+
+    expect(res.headers.getSetCookie()).toEqual(['session=1'])
+  })
+
   it('preserves the cache-control advertised on an early 404', async () => {
     const res = await handle(new HTTPError({ status: 404, headers: { 'cache-control': 'public, max-age=60' } }), 'application/json')
 
