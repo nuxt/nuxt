@@ -9,6 +9,7 @@ import { serverFetch } from 'nitro'
 
 import type { SSRErrorInput } from 'nuxt/internal/renderer/error'
 import { SSR_ERROR_PARAM, appendVary, encodeSSRError, isJsonRequest } from 'nuxt/internal/renderer/error'
+import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
 import { toLegacyError } from '../compat/error-shape'
@@ -47,12 +48,15 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
   // return Nitro response + our headers for redirects and JSON responses
   const status = error.status || 500
   const headers = new Headers(error.headers)
-  appendVary(headers, 'accept, sec-fetch-mode')
+  const setCookies = new Set(headers.getSetCookie())
+  if (!NUXT_INLINE_ERROR_RENDERING) {
+    appendVary(headers, 'accept, sec-fetch-mode')
+  }
   if (import.meta.prerender && 'context' in event) {
     applyPrerenderHints(event as H3Event, headers)
   }
-  if (isJsonRequest(event.req as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
-    const setCookies = new Set(headers.getSetCookie())
+  // with inline error rendering, page errors never reach this handler
+  if (NUXT_INLINE_ERROR_RENDERING || isJsonRequest(event.req as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
     const headerEntries = [
       new Headers(defaultRes.headers),
       ...('res' in event ? [(event.res as Response).headers.entries()] : []),
@@ -83,7 +87,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
 
   // Merge defaultRes headers, skipping content-type (would be application/json)
   // and content-security-policy (would disable JS execution in the error page)
-  mergeHeaders(headers, new Headers(defaultRes.headers), new Set(), IGNORED_ERROR_HEADERS)
+  mergeHeaders(headers, new Headers(defaultRes.headers), setCookies, IGNORED_ERROR_HEADERS)
 
   // Skip SSR error rendering if we're already inside one, to avoid recursion.
   if (!isRenderingError) {
@@ -151,7 +155,6 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
     }
   }
 
-  const setCookies = new Set(headers.getSetCookie())
   mergeHeaders(headers, res.headers, setCookies, INTERNAL_HEADERS)
   if ('res' in event) {
     mergeHeaders(headers, (event as H3Event).res.headers, setCookies)

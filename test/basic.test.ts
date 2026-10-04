@@ -11,7 +11,7 @@ import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
 import { sessionConfig } from './fixtures/basic/server/utils/session'
-import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { asyncContext, isDev, isTestingAppManifest, isWebpack, legacyErrorRendering, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const appSecret = 'nuxt-runtime-app-secret-test-value'
@@ -1426,7 +1426,29 @@ describe('preserves current instance', () => {
 })
 
 describe('errors', () => {
-  it('should render a JSON error page', async () => {
+  it.skipIf(legacyErrorRendering)('should render the error page for a request that accepts JSON', async () => {
+    const res = await fetch('/error', {
+      headers: {
+        accept: 'application/json',
+      },
+    })
+    expect(res.status).toBe(422)
+    expect(res.statusText).toBe('This is a custom error')
+    expect(res.headers.get('content-type')).toContain('text/html')
+    expect(await res.text()).toContain('This is a custom error')
+  })
+
+  it('should return JSON for a server route error, unless error rendering is legacy', async () => {
+    const res = await fetch('/api/error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.status).toBe(400)
+    expect(res.headers.get('content-type')).toContain(legacyErrorRendering ? 'text/html' : 'application/json')
+  })
+
+  it.skipIf(!legacyErrorRendering)('should render a JSON error page', async () => {
     const res = await fetch('/error', {
       headers: {
         accept: 'application/json',
@@ -1452,12 +1474,13 @@ describe('errors', () => {
     })
     expect(res.status).toBe(404)
     expect(res.statusText).toBe('This page does not exist')
-    const error = await res.json()
-    expect(error).toMatchObject({
-      status: 404,
-      statusText: 'This page does not exist',
-      data: { reason: 'missing' },
-    })
+    if (legacyErrorRendering) {
+      expect(await res.json()).toMatchObject({
+        status: 404,
+        statusText: 'This page does not exist',
+        data: { reason: 'missing' },
+      })
+    }
 
     const html = await fetch('/error/not-found').then(r => r.text())
     expect(html).toContain('This page does not exist')
@@ -1523,16 +1546,17 @@ describe('errors', () => {
       expect(html).not.toContain('root cause')
     }
 
-    const jsonResponse = await fetch('/error-cause', {
-      headers: { accept: 'application/json' },
-    })
-    const json = await jsonResponse.json()
-    expect(json).not.toHaveProperty('cause')
-    expect(JSON.stringify(json)).not.toContain('inner error')
-    expect(JSON.stringify(json)).not.toContain('root cause')
+    if (legacyErrorRendering) {
+      const json = await fetch('/error-cause', {
+        headers: { accept: 'application/json' },
+      }).then(r => r.json())
+      expect(json).not.toHaveProperty('cause')
+      expect(JSON.stringify(json)).not.toContain('inner error')
+      expect(JSON.stringify(json)).not.toContain('root cause')
+    }
   })
 
-  it('should not allow accessing error route directly', async () => {
+  it.skipIf(!legacyErrorRendering)('should not allow accessing error route directly', async () => {
     const res = await fetch('/__nuxt_error', {
       headers: {
         accept: 'application/json',
