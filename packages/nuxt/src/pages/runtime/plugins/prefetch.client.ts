@@ -18,9 +18,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     // Force layout prefetch on route changes
     nuxtApp.hooks.hook('app:mounted', () => {
       router.beforeEach(async (to) => {
-        const layout = to?.meta?.layout as keyof typeof layouts | undefined
-        if (layout && typeof layouts[layout] === 'function') {
-          await layouts[layout]()
+        const layout = to?.meta?.layout
+        if (typeof layout === 'string' && layout in layouts) {
+          await _loadAsyncComponent(layouts[layout as keyof typeof layouts])
         }
       })
     })
