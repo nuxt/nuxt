@@ -1,12 +1,14 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { defineAsyncComponent, defineComponent, h } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 import { loadPayload } from '#app/composables/payload'
 import { preloadRouteComponents } from '#app/composables/preload'
 import { useRouter } from '#app/composables/router'
 import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
 import type { PrefetchScheduler } from '#app/internal/prefetch'
+import layouts from '#build/layouts.mjs'
 
 // the test environment builds with `ssr: false`, which disables payload extraction
 vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
@@ -169,6 +171,40 @@ describe('payload prefetch deduplication', () => {
       expect(fetchSpy).toHaveBeenCalledTimes(2)
     } finally {
       fetchSpy.mockRestore()
+    }
+  })
+})
+
+describe('layout loading on navigation', () => {
+  it('should wait for an async layout to load before completing navigation', async () => {
+    const router = useRouter()
+    let release: () => void
+    const loader = vi.fn(() => new Promise<ReturnType<typeof defineComponent>>((resolve) => {
+      release = () => resolve(defineComponent({ render: () => h('div') }))
+    }))
+    layouts['deferred-layout'] = defineAsyncComponent(loader)
+    const removeRoute = router.addRoute({
+      path: '/deferred-layout',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: { layout: 'deferred-layout' },
+      component: defineComponent({ render: () => h('div') }),
+    })
+
+    try {
+      let settled = false
+      const navigation = router.push('/deferred-layout').then(() => { settled = true })
+      await tick()
+
+      expect(loader).toHaveBeenCalledTimes(1)
+      expect(settled).toBe(false)
+
+      release!()
+      await navigation
+      expect(router.currentRoute.value.path).toBe('/deferred-layout')
+    } finally {
+      removeRoute()
+      delete layouts['deferred-layout']
+      await router.push('/')
     }
   })
 })
