@@ -59,6 +59,7 @@ minimumReleaseAgeExclude:
   - vue
   - '@vue/*'
   - fetchdts@0.2.0
+  - package-manager-detector@1.9.0
 
 catalogs:
   app-runtime:
