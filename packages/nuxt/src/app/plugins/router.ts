@@ -36,6 +36,8 @@ interface Route {
   meta: Record<string, any>
   /** compatibility type for vue-router */
   matched: never[]
+  /** Location to use as an anchor `href`, or `null` when it would not be safe to render. */
+  href: string | null
 }
 
 // characters the `URL` parser leaves untouched in a pathname
