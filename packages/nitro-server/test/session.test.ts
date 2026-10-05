@@ -6,6 +6,9 @@ vi.mock('nitropack/runtime', () => ({
   getRouteRules: () => ({}),
   useRuntimeConfig: () => ({}),
 }))
+vi.mock('nitropack/runtime/internal/route-rules', () => ({
+  getRouteRulesForPath: () => ({}),
+}))
 
 vi.mock('nuxt/internal/server-runtime-config', () => ({
   useRuntimeConfig: () => ({ appSecret: 's'.repeat(32) }),
