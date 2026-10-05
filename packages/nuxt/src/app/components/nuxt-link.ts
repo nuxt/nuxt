@@ -17,7 +17,7 @@ import { prefetchRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
-import { isAbsoluteHref, sanitizeAnchorHref } from '../utils'
+import { isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../utils'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
 import type { NuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
@@ -177,6 +177,8 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
   function useLinkTarget (props: { [K in keyof NuxtLinkProps]: MaybeRef<NuxtLinkProps[K]> }) {
     const router = useRouter()
     const config = useRuntimeConfig()
+    // the history base accounts for the app base and for hash mode
+    const rootedHref = router.options?.history?.createHref ?? ((path: string) => joinURL(config.app.baseURL, path))
 
     const hasTarget = computed(() => !!unref(props.target) && unref(props.target) !== '_self')
 
@@ -231,7 +233,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         return router.resolve(to.value)?.href ?? null
       }
 
-      return applyTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), effectiveTrailingSlash)
+      // only a relative path needs resolving against the current route
+      const href = isRootedPath(to.value) ? rootedHref(to.value) : router.resolve(to.value).href
+      return applyTrailingSlashBehavior(href, effectiveTrailingSlash)
     })
 
     return {
