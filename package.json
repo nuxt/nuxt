@@ -74,7 +74,7 @@
     "autoprefixer": "10.6.1",
     "case-police": "catalog:dev",
     "consola": "catalog:build",
-    "cssnano": "9.0.5",
+    "cssnano": "9.2.2",
     "defu": "catalog:build",
     "devalue": "catalog:app-runtime",
     "eslint": "catalog:dev",
@@ -120,7 +120,7 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@12.6.0",
+  "packageManager": "pnpm@12.9.1",
   "simple-git-hooks": {
     "pre-commit": "pnpm nano-staged"
   },

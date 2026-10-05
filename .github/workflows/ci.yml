@@ -125,7 +125,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
   ui-templates-generated:
@@ -144,7 +144,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
       - name: Regenerate ui-templates output
@@ -386,7 +386,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@373d6868929f444bc08d901fd0eb0ad52a8875ea # v5.2.1
+        uses: CodSpeedHQ/action@c4fd08a3a159bd0cc208da1e0edf32b8c47d75e5 # v5.4.0
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -429,7 +429,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
       - name: Cache Playwright browsers
@@ -491,7 +491,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
       - name: Cache Playwright browsers
