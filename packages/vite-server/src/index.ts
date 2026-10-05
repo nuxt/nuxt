@@ -61,6 +61,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     runtime: {
       fetch: resolve(distDir, 'runtime/fetch'),
       runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
+      server: ssr ? resolve(nuxt.options.buildDir, 'vite-server/server.mjs') : undefined,
       // the emitted entry, which only exists once a build has run
       handler,
     },
