@@ -1,6 +1,4 @@
-import { existsSync } from 'node:fs'
 import process from 'node:process'
-import { join } from 'pathe'
 import { x } from 'tinyexec'
 import { detect, resolveCommand } from 'package-manager-detector'
 import type { ResolvedCommand } from 'package-manager-detector'
@@ -129,17 +127,14 @@ export async function getAddDependencyCommand (names: string | string[], cwd: st
   return [command, ...args].join(' ')
 }
 
-const DENO_SPECIFIER_RE = /^(?:npm|jsr|file):/
-
 async function resolveAddCommand (names: string | string[], cwd: string, options: { dev?: boolean }): Promise<ResolvedCommand> {
-  const { name, agent } = await detect({ cwd }).catch(() => null) || { name: 'npm', agent: 'npm' } as const
+  const { agent } = await detect({ cwd }).catch(() => null) || { agent: 'npm' } as const
   const packages = Array.isArray(names) ? names : [names]
   const args = [
-    ...name === 'pnpm' && existsSync(join(cwd, 'pnpm-workspace.yaml')) ? ['--workspace-root'] : [],
     ...options.dev ? ['-D'] : [],
-    ...name === 'deno' ? packages.map(pkg => DENO_SPECIFIER_RE.test(pkg) ? pkg : `npm:${pkg}`) : packages,
+    ...packages,
   ]
-  return resolveCommand(agent, 'add', args) || { command: 'npm', args: ['i', ...args] }
+  return resolveCommand(agent, 'add', args, { ignoreWorkspaceRootCheck: true }) || { command: 'npm', args: ['i', ...args] }
 }
 
 async function runCommand ({ command, args }: ResolvedCommand, cwd: string): Promise<void> {
