@@ -12,7 +12,7 @@ import { generateRouteKey, toArray } from '../utils'
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
-import { navigateTo } from '#app/composables/router'
+import { _enterMiddlewareContext, _invokeMiddleware, _leaveMiddlewareContext, navigateTo } from '#app/composables/router'
 import { navigationDiagnostics } from '../../../app/diagnostics/navigation'
 
 import _routes, { handleHotUpdate } from '#build/routes'
@@ -161,10 +161,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const isServerPage = import.meta.server && nuxtApp.ssrContext?.islandContext?.name?.startsWith('page_')
     if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
       router.afterEach(async (to, _from, failure) => {
-        delete nuxtApp._processingMiddleware
-        if (import.meta.server) {
-          delete nuxtApp._middlewareTo
-        }
+        _leaveMiddlewareContext(nuxtApp)
 
         if (import.meta.client && !nuxtApp.isHydrating && error.value) {
           // Clear any existing errors
@@ -185,10 +182,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     // vue-router logs a navigation failure to the console when no error handler is registered
     router.onError(async () => {
-      delete nuxtApp._processingMiddleware
-      if (import.meta.server) {
-        delete nuxtApp._middlewareTo
-      }
+      _leaveMiddlewareContext(nuxtApp)
       await nuxtApp.callHook('page:loading:end')
     })
 
@@ -268,10 +262,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
         to.meta.layout = initialLayout as any
       }
-      nuxtApp._processingMiddleware = true
-      if (import.meta.server) {
-        nuxtApp._middlewareTo = to
-      }
+      _enterMiddlewareContext(nuxtApp, to)
 
       if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
         type MiddlewareDef = string | RouteMiddleware
@@ -307,10 +298,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
 
           try {
-            if (import.meta.dev) {
-              nuxtApp._processingMiddleware = (middleware as any)._path || (typeof entry === 'string' ? entry : true)
-            }
-            const run = () => nuxtApp.runWithContext(() => middleware(to, from))
+            const run = () => _invokeMiddleware(nuxtApp, middleware, to, from, typeof entry === 'string' ? entry : undefined)
             const result = await (import.meta.server && tracingChannelNuxt
               ? traceAsync('nuxt.middleware', {
                   middleware: {

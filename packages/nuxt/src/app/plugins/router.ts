@@ -5,7 +5,7 @@ import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
 import { clearError, createError, showError } from '../composables/error'
-import { navigateTo } from '../composables/router'
+import { _enterMiddlewareContext, _invokeMiddleware, _leaveMiddlewareContext, navigateTo } from '../composables/router'
 import type { RouteMiddleware } from '../composables/router'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 
@@ -171,10 +171,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         }
       } finally {
         if (navigationId === navigationCounter) {
-          delete nuxtApp._processingMiddleware
-          if (import.meta.server) {
-            delete nuxtApp._middlewareTo
-          }
+          _leaveMiddlewareContext(nuxtApp)
         }
       }
     }
@@ -267,10 +264,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
           to.meta.layout = initialLayout
           to.meta.layoutProps = initialLayoutProps
         }
-        nuxtApp._processingMiddleware = true
-        if (import.meta.server) {
-          nuxtApp._middlewareTo = to
-        }
+        _enterMiddlewareContext(nuxtApp, to)
 
         if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
@@ -290,10 +284,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
           }
 
           for (const middleware of middlewareEntries) {
-            if (import.meta.dev) {
-              nuxtApp._processingMiddleware = (middleware as any)._path || true
-            }
-            const run = () => nuxtApp.runWithContext(() => middleware(to, from))
+            const run = () => _invokeMiddleware(nuxtApp, middleware, to, from)
             const result = await (import.meta.server && tracingChannelNuxt
               ? traceAsync('nuxt.middleware', {
                   middleware: {
@@ -312,8 +303,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
                     path: initialURL,
                   },
                 })
-                delete nuxtApp._processingMiddleware
-                delete nuxtApp._middlewareTo
+                _leaveMiddlewareContext(nuxtApp)
                 return nuxtApp.runWithContext(() => showError(error))
               }
             }
@@ -324,10 +314,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
       })
 
       router.afterEach(() => {
-        delete nuxtApp._processingMiddleware
-        if (import.meta.server) {
-          delete nuxtApp._middlewareTo
-        }
+        _leaveMiddlewareContext(nuxtApp)
       })
 
       await router.replace(initialURL)
