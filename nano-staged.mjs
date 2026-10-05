@@ -1,3 +1,4 @@
+import process from 'node:process'
 import { relative } from 'node:path'
 import { generatedOutputs } from './packages/ui-templates/lib/paths.mjs'
 
