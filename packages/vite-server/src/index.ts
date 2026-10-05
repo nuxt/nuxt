@@ -60,6 +60,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     // `nitropack/runtime` does not resolve in a build without nitro
     runtime: {
       runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
+      server: ssr ? resolve(nuxt.options.buildDir, 'vite-server/server.mjs') : undefined,
       // the emitted entry, which only exists once a build has run
       handler,
     },
