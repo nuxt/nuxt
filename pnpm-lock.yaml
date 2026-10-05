@@ -1890,9 +1890,6 @@ importers:
       exsolve:
         specifier: catalog:build
         version: 1.1.1
-      hookable:
-        specifier: catalog:app-runtime
-        version: 6.1.2
       mocked-exports:
         specifier: catalog:build
         version: 0.1.1

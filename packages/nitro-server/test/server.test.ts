@@ -6,14 +6,17 @@ import type { H3Event } from 'h3'
 import * as shipped from '../../nuxt/src/server/index.ts'
 import type { RequestEvent } from '../../nuxt/src/server/index.ts'
 
-const localFetch = vi.hoisted(() => vi.fn((_path: string, _init: RequestInit) => Promise.resolve(new Response('ok'))))
+const { hooks, localFetch } = vi.hoisted(() => ({
+  hooks: {},
+  localFetch: vi.fn((_path: string, _init: RequestInit) => Promise.resolve(new Response('ok'))),
+}))
 
 // the delegate re-exports nitro's own `getRouteRules`/`useRuntimeConfig`, which only resolve
 // inside a built server bundle
 vi.mock('nitropack/runtime', () => ({
   getRouteRules: () => ({}),
   useRuntimeConfig: () => ({ app: { baseURL: '/base/' } }),
-  useNitroApp: () => ({ localFetch }),
+  useNitroApp: () => ({ hooks, localFetch }),
 }))
 vi.mock('nitropack/runtime/internal/route-rules', () => ({
   getRouteRulesForPath: () => ({}),
@@ -151,6 +154,10 @@ describe('the shape of what it reads off an h3 v1 event', () => {
     expect(path).toBe('/base/api/echo?a=1')
     expect(init.method).toBe('POST')
     expect(Object.fromEntries(init.headers as Headers)).toEqual({ cookie: 'a=1' })
+  })
+
+  it('registers server hooks on the nitro app', () => {
+    expect(delegate.useServerHooks()).toBe(hooks)
   })
 
   it('reads a missing header as undefined rather than as an empty string', () => {

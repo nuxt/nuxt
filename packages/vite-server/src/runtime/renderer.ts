@@ -1,9 +1,9 @@
 import { joinURL, withQuery } from 'ufo'
-import { createHooks } from 'hookable'
 import { appendVary, describeError, isExpectedError, isJsonRequest } from 'nuxt/internal/renderer/error'
 import type { DescribedError } from 'nuxt/internal/renderer/error'
 import { mergeHeaders } from 'nuxt/internal/renderer/headers'
-import type { NuxtRendererOptions, RendererHooks } from 'nuxt/internal/renderer/runtime'
+import { useServerHooks } from 'nuxt/server'
+import type { NuxtRendererOptions } from 'nuxt/internal/renderer/runtime'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
 import { createRequestEvent } from './event.ts'
@@ -22,12 +22,6 @@ export type MatchRouteRules = (path: string) => {
   redirect?: { to: string, status?: number, base?: string } | false
   headers?: Record<string, string>
 }
-
-/**
- * Hooks the renderer calls while rendering. Without a server runtime there is no channel
- * for a module to register one at build time, so a custom server is the one that hooks in.
- */
-export const serverHooks: RendererHooks = createHooks() as unknown as RendererHooks
 
 /** An error carrying the HTTP status the renderer refused a request with. */
 export class NuxtServerError extends Error {
@@ -64,7 +58,7 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     buildAssetsURL,
     publicAssetsURL,
     getRouteRules: event => ({ ssr: true, ...matchRouteRules(event.url.pathname) }),
-    hooks: () => serverHooks,
+    hooks: useServerHooks,
     createResponse: (body, init) => new Response(body, init),
     createError: init => new NuxtServerError(init),
     prerender,

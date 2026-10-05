@@ -176,6 +176,12 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     })
   })
 
+  it('should call `render:html` handlers registered with `useServerHooks`', async () => {
+    await startServer()
+
+    expect(await $fetch<string>('/')).toContain('<meta name="server-hooks" content="ok">')
+  })
+
   it('should allow setting CDN URL', async () => {
     await startServer({
       env: {

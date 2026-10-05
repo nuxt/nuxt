@@ -160,6 +160,23 @@ export interface RequestEvent {
 }
 
 /**
+ * Server runtime hooks declared by modules. Augment it to declare a hook.
+ *
+ * @example
+ * ```ts
+ * declare module 'nuxt/schema' {
+ *   interface NuxtServerHooks {
+ *     'my-module:request': (payload: { url: string }, event: RequestEvent) => void | Promise<void>
+ *   }
+ * }
+ * ```
+ *
+ * @since 4.6.0
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface NuxtServerHooks {}
+
+/**
  * Resolves the event type contributed to a {@link ServerTypes} registry, or
  * {@link RequestEvent} when the registry does not declare one. Exported for type tests;
  * not part of the public API.

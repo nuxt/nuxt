@@ -1,6 +1,7 @@
 import type { NuxtRequestEvent, RequestEvent } from '@nuxt/schema'
 import type { DevErrorObserveOptions, DevErrorReport } from '../dev-error'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, NuxtSSRContext } from '#app/types'
+import type { NuxtSSRContext } from '#app/types'
+import type { NuxtServerRendererHooks, ServerHookable } from '../../../server/hooks'
 
 /**
  * The request event the renderer reads. A server runtime whose own event has another
@@ -50,13 +51,7 @@ export interface RendererRouteRules {
 }
 
 /** Hooks the renderer calls while rendering a route. */
-export interface RendererHooks {
-  callHook(name: 'render:route', context: NuxtRenderRouteContext, extra: { event: NuxtRequestEvent }): void | Promise<void>
-  callHook(name: 'render:html', context: NuxtRenderHTMLContext, extra: { event: NuxtRequestEvent, streaming?: boolean }): void | Promise<void>
-  callHook(name: 'render:html:chunk', context: NuxtRenderChunkContext, extra: { event: NuxtRequestEvent }): void | Promise<void>
-  callHook(name: 'render:html:close', context: NuxtRenderCloseContext, extra: { event: NuxtRequestEvent }): void | Promise<void>
-  callHook(name: 'render:island', response: NuxtIslandResponse, extra: { event: NuxtRequestEvent, islandContext: NuxtIslandContext }): void | Promise<void>
-}
+export type RendererHooks = Pick<ServerHookable<NuxtServerRendererHooks>, 'callHook'>
 
 /** Storage for the payloads rendered alongside a prerendered route. */
 export interface PayloadCache {

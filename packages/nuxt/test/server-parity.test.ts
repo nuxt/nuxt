@@ -10,8 +10,12 @@ import type {
   NuxtErrorJSON,
   NuxtErrorLike,
   NuxtRequestEvent,
+  NuxtServerHooks,
+  NuxtServerRendererHooks,
   RequestEvent,
   RequestEventContext,
+  ServerHookResult,
+  ServerHookable,
   ServerRoutes,
   Session,
   SessionConfig,
@@ -62,6 +66,7 @@ interface MainSurface {
   readValidatedBody: <Output>(event: RequestEvent, validate: (data: unknown) => ValidateResult<Output>) => Promise<Output>
   handleCors: (event: RequestEvent, options?: CorsOptions) => Response | false
   useAppConfig: (event?: RequestEvent) => SharedAppConfig
+  useServerHooks: () => Record<'hook' | 'removeHook' | 'callHook', (...args: never[]) => unknown>
   serverFetch: (event: RequestEvent, path: string, init?: RequestInit & { forwardHeaders?: boolean | string[] }) => Promise<Response>
 }
 
@@ -100,6 +105,7 @@ const MAIN_VALUE_EXPORTS = [
   'parseCookies',
   'matchRouteRules',
   'serverFetch',
+  'useServerHooks',
 ]
 
 /** Value exports only `main` has. */
@@ -135,5 +141,9 @@ describe('the `nuxt/server` surface against `main`', () => {
     expectTypeOf<NuxtErrorJSON>().not.toBeNever()
     expectTypeOf<ServerRoutes>().not.toBeNever()
     expectTypeOf<AppRouteRules>().not.toBeNever()
+    expectTypeOf<NuxtServerHooks>().toBeObject()
+    expectTypeOf<NuxtServerRendererHooks['render:html']>().toBeFunction()
+    expectTypeOf<ServerHookable<NuxtServerRendererHooks>['hook']>().toBeFunction()
+    expectTypeOf<ServerHookResult>().not.toBeNever()
   })
 })
