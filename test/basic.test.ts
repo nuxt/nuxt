@@ -1275,6 +1275,53 @@ describe('nuxt links', () => {
     await page.close()
   })
 
+  it('renders internal anchors identically to `<RouterLink>`', async () => {
+    const html = await $fetch<string>('/parent/link-state')
+
+    const attributes = (html: string, attribute: string) => {
+      const anchors: Record<string, string[]> = {}
+      for (const [anchor] of html.matchAll(/<a [^>]*>/g)) {
+        const name = anchor.match(new RegExp(`${attribute}="([^"]*)"`))?.[1]
+        if (name) {
+          anchors[name] = anchor.slice(3, -1).trim().split(/\s+(?=[\w-]+=)/).filter(a => !a.startsWith(attribute)).sort()
+        }
+      }
+      return anchors
+    }
+
+    const nuxtLinks = attributes(html, 'data-nuxt-link')
+    const routerLinks = attributes(html, 'data-router-link')
+
+    expect(Object.keys(nuxtLinks).sort()).toEqual(['active', 'exact', 'inactive', 'query'])
+    for (const name in nuxtLinks) {
+      expect(nuxtLinks[name], name).toEqual(routerLinks[name])
+    }
+    expect(nuxtLinks).toMatchInlineSnapshot(`
+      {
+        "active": [
+          "class="foo-active-class"",
+          "href="/parent"",
+        ],
+        "exact": [
+          "aria-current="page"",
+          "class="foo-active-class bar-exact-active-class"",
+          "href="/parent/link-state"",
+        ],
+        "inactive": [
+          "class=""",
+          "href="/nuxt-link/trailing-slash"",
+        ],
+        "query": [
+          "aria-current="page"",
+          "class="foo-active-class bar-exact-active-class"",
+          "href="/parent/link-state?a=1"",
+        ],
+      }
+    `)
+
+    await expectNoClientErrors('/parent/link-state')
+  })
+
   it('preserves route state', async () => {
     const { page } = await renderPage('/nuxt-link/trailing-slash')
 
