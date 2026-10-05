@@ -619,7 +619,7 @@ jobs:
         with:
           nightly: true
           files: ${{ needs.pack-nightly.outputs.files }}
-          npm-tag: ${{ github.ref == 'refs/heads/main' && '5x' || 'latest' }}
+          npm-tag: ${{ github.ref == 'refs/heads/main' && '5x' || (github.ref == 'refs/heads/4.x' && '4x' || 'latest') }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
