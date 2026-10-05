@@ -152,6 +152,30 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     expect(headers.get('location')).toEqual('/foo/')
   })
 
+  it('should fetch routes of the app relative to the base URL with `serverFetch`', async () => {
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '/foo/',
+      },
+    })
+
+    expect(await $fetch('/foo/api/server-fetch', { headers: { cookie: 'a=1' } })).toMatchObject({
+      status: 200,
+      echo: { cookie: 'a=1' },
+      rules: { headers: { 'x-echo': '1' } },
+    })
+  })
+
+  it('should fetch routes of the app with `serverFetch` while prerendering', async () => {
+    await startServer()
+
+    expect(JSON.parse(await $fetch<string>('/api/prerendered-fetch', { headers: { cookie: 'a=1' }, responseType: 'text' }))).toMatchObject({
+      status: 200,
+      echo: { cookie: null },
+      rules: { headers: { 'x-echo': '1' } },
+    })
+  })
+
   it('should allow setting CDN URL', async () => {
     await startServer({
       env: {

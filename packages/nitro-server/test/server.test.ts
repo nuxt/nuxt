@@ -6,11 +6,14 @@ import type { H3Event } from 'h3'
 import * as shipped from '../../nuxt/src/server/index.ts'
 import type { RequestEvent } from '../../nuxt/src/server/index.ts'
 
+const localFetch = vi.hoisted(() => vi.fn((_path: string, _init: RequestInit) => Promise.resolve(new Response('ok'))))
+
 // the delegate re-exports nitro's own `getRouteRules`/`useRuntimeConfig`, which only resolve
 // inside a built server bundle
 vi.mock('nitropack/runtime', () => ({
   getRouteRules: () => ({}),
-  useRuntimeConfig: () => ({}),
+  useRuntimeConfig: () => ({ app: { baseURL: '/base/' } }),
+  useNitroApp: () => ({ localFetch }),
 }))
 vi.mock('nitropack/runtime/internal/route-rules', () => ({
   getRouteRulesForPath: () => ({}),
@@ -137,6 +140,17 @@ describe('the shape of what it reads off an h3 v1 event', () => {
   it('parses every cookie the same way as the shipped implementation', () => {
     const cookie = 'a=1; b=%20; a=2'
     expect(delegate.parseCookies(event('/', { headers: { cookie } }))).toEqual(shipped.parseCookies(webEvent('https://nuxt.com/', { cookie })))
+  })
+
+  it('fetches a route of the app relative to the base URL', async () => {
+    const e = event('/page', { headers: { 'cookie': 'a=1', 'x-other': 'y' } })
+
+    expect(await (await delegate.serverFetch(e, '/api/echo?a=1', { method: 'POST' })).text()).toBe('ok')
+
+    const [path, init] = localFetch.mock.calls[0]!
+    expect(path).toBe('/base/api/echo?a=1')
+    expect(init.method).toBe('POST')
+    expect(Object.fromEntries(init.headers as Headers)).toEqual({ cookie: 'a=1' })
   })
 
   it('reads a missing header as undefined rather than as an empty string', () => {

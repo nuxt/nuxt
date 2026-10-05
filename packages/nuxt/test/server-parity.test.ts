@@ -62,6 +62,7 @@ interface MainSurface {
   readValidatedBody: <Output>(event: RequestEvent, validate: (data: unknown) => ValidateResult<Output>) => Promise<Output>
   handleCors: (event: RequestEvent, options?: CorsOptions) => Response | false
   useAppConfig: (event?: RequestEvent) => SharedAppConfig
+  serverFetch: (event: RequestEvent, path: string, init?: RequestInit & { forwardHeaders?: boolean | string[] }) => Promise<Response>
 }
 
 /** Value exports `main` has. */
@@ -98,6 +99,7 @@ const MAIN_VALUE_EXPORTS = [
   'getRequestProtocol',
   'parseCookies',
   'matchRouteRules',
+  'serverFetch',
 ]
 
 /** Value exports only `main` has. */

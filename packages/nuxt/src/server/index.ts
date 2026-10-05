@@ -21,6 +21,8 @@ import type { NuxtError } from '../app/error'
 
 export { clearSession, getSession, updateSession, useSession } from './session'
 export { deriveSecret } from './secret'
+export { serverFetch } from './fetch'
+export type { ServerFetchInit } from './fetch'
 export { handleCors } from './cors'
 export type { CorsOptions } from './cors'
 export { getValidatedQuery, readValidatedBody } from './validate'

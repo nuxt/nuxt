@@ -24,9 +24,10 @@ import {
   setResponseStatus,
 } from 'h3'
 import type { H3Event } from 'h3'
-import { getRouteRules as getNitroRouteRules, useRuntimeConfig as useNitroRuntimeConfig } from 'nitropack/runtime'
+import { getRouteRules as getNitroRouteRules, useNitroApp, useRuntimeConfig as useNitroRuntimeConfig } from 'nitropack/runtime'
+import { joinURL } from 'ufo'
 import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
-import type { EventHandler, ForwardedOptions, NuxtErrorLike } from 'nuxt/server'
+import type { EventHandler, ForwardedOptions, NuxtErrorLike, ServerFetchInit } from 'nuxt/server'
 
 import {
   clearSession as clearPortableSession,
@@ -38,12 +39,14 @@ import {
   getValidatedQuery as getPortableValidatedQuery,
   handleCors as handlePortableCors,
   readValidatedBody as readPortableValidatedBody,
+  resolveServerFetchInit,
   updateSession as updatePortableSession,
   useSession as usePortableSession,
 } from 'nuxt/internal/server-default'
 
 import { NUXT_ERROR_SIGNATURE } from '#app/error'
 import { PORTABLE_EVENT, toPortableEvent } from './utils/event'
+import { baseURL } from './utils/paths'
 import { serverDiagnostics } from './diagnostics'
 
 export {
@@ -81,7 +84,7 @@ function requirePortableEvent<F extends (event: any, ...args: any[]) => any> (he
 }
 
 export type { AppRouteRules, ServerRoutes } from 'nuxt/schema'
-export type { CorsOptions, EventHandler, ForwardedOptions, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent, Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate, ValidateResult } from 'nuxt/server'
+export type { CorsOptions, EventHandler, ForwardedOptions, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent, ServerFetchInit, Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate, ValidateResult } from 'nuxt/server'
 
 /**
  * @see {@link import('nuxt/server').defineEventHandler}
@@ -283,6 +286,11 @@ const REDIRECT_UNSAFE_RE = /["'<>&]/g
 /** @see {@link import('nuxt/server').getRouteRules} */
 export function getRouteRules (event: H3Event): AppRouteRules {
   return getNitroRouteRules(event) as AppRouteRules
+}
+
+/** @see {@link import('nuxt/server').serverFetch} */
+export function serverFetch (event: H3Event, path: string, init?: ServerFetchInit): Promise<Response> {
+  return useNitroApp().localFetch(joinURL(baseURL(), path), resolveServerFetchInit({ req: { headers: event.headers } as Request }, init))
 }
 
 /** @see {@link import('nuxt/server').useRuntimeConfig} */
