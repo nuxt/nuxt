@@ -123,7 +123,8 @@ export default defineResolvers({
      * handing the error to the server runtime and re-entering the renderer over an internal request.
      *
      * The error page is rendered in process, on the same request event, so the response keeps the
-     * headers and cookies the failed render had already written.
+     * headers and cookies the failed render had already written. Page errors return the error page
+     * and server route errors return JSON. When disabled, the request headers determine the format.
      *
      * @default true
      */

@@ -8,7 +8,7 @@ import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link, Script } from '@unhead/vue/types'
 import { relative } from 'pathe'
 
-import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, appendVary, decodeSSRError, describeError, isExpectedError, isJsonRequest, stringifyErrorData } from './error'
+import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, decodeSSRError, describeError, isExpectedError, stringifyErrorData } from './error'
 import type { DescribedError, SSRError } from './error'
 import type { DevErrorReport } from '../dev-error'
 
@@ -72,11 +72,11 @@ function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<R
   // Whether we're rendering an error page
   const isErrorRoute = event.url.pathname.startsWith('/__nuxt_error')
 
-  // a render the runtime re-entered to build *its* error page keeps throwing back to it, and a
-  // request that asked for JSON must never be answered with a page
+  // a render the runtime re-entered to build *its* error page keeps throwing back to it, as does
+  // a payload render
   const inlineErrors = NUXT_INLINE_ERROR_RENDERING
     && !getRequestState(event)?.['~rendering-error']
-    && !isJsonRequest(event.req as Request, event.url.pathname)
+    && !PAYLOAD_URL_RE.test(event.url.pathname)
 
   if (isErrorRoute && !getRequestState(event)?.['~rendering-error'] /* allow internal fetch from the error handler */) {
     const error = runtime.createError({
@@ -128,8 +128,7 @@ async function renderErrorResponse (instance: NuxtRendererInstance, event: Rende
     return staticErrorResponse(runtime, event, described, devError)
   }
 
-  const headers = new Headers(rendered.headers)
-  applyErrorHeaders(headers, described.headers)
+  const headers = mergeHeaders(new Headers(rendered.headers), described.headers)
   headers.set('content-type', 'text/html;charset=utf-8')
 
   let body: BodyInit | null = rendered.body
@@ -158,8 +157,7 @@ async function captureError (runtime: NuxtRendererOptions, event: RendererEvent,
 
 /** The error page of last resort, for when the app's own error page cannot render either. */
 async function staticErrorResponse (runtime: NuxtRendererOptions, event: RendererEvent, described: DescribedError, devError: DevErrorReport | undefined): Promise<Response> {
-  const headers = new Headers(event.res.headers)
-  applyErrorHeaders(headers, described.headers)
+  const headers = mergeHeaders(new Headers(event.res.headers), described.headers)
   headers.set('content-type', 'text/html;charset=utf-8')
   const init = { status: described.status, statusText: described.statusText, headers }
 
@@ -176,12 +174,6 @@ async function staticErrorResponse (runtime: NuxtRendererOptions, event: Rendere
     statusText: described.statusText,
     ...(import.meta.dev && { description: described.message }),
   }), init)
-}
-
-/** Apply the headers the error asked for, keeping the cookies the render already set. */
-function applyErrorHeaders (headers: Headers, overrides: Headers): void {
-  mergeHeaders(headers, overrides)
-  appendVary(headers, 'accept, sec-fetch-mode')
 }
 
 /** The caught error in the shape `error.vue` receives through the payload. */
