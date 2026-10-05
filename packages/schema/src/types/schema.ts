@@ -276,6 +276,15 @@ export interface ConfigSchema {
     keepalive: NuxtAppConfig['keepalive']
 
     /**
+     * Whether to reset focus after client-side navigation to a different page, as the browser does on a full page load.
+     *
+     * This can be overridden with `definePageMeta` on an individual page.
+     *
+     * @default true
+     */
+    resetFocus: NuxtAppConfig['resetFocus']
+
+    /**
      * Customize Nuxt root element id.
      *
      * @deprecated Prefer `rootAttrs.id` instead

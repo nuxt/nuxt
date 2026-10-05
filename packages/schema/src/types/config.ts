@@ -212,6 +212,7 @@ export interface NuxtAppConfig {
   pageTransition: boolean | Serializable<TransitionProps>
   viewTransition?: ViewTransitionOptions['enabled'] | ViewTransitionOptions
   keepalive: boolean | Serializable<KeepAliveProps>
+  resetFocus: boolean
 }
 
 export interface AppConfig {

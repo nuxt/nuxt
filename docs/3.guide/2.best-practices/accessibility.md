@@ -93,9 +93,33 @@ Links to files in your `public/` directory, or to another app on the same origin
 
 ## Focus Management
 
-After a client-side navigation, focus stays where it was, which is usually the link the user just activated. Vue Router does not move it and neither does Nuxt, so a keyboard user can end up tabbing through the whole header again to reach the content that just changed.
+After a full page load, the browser starts keyboard focus at the top of the new document. A client-side navigation does not reload the document, so Vue Router leaves focus where it was, which is usually the link the user just activated.
 
-A skip link as the first tab stop of your app is the conventional fix, and it helps on the initial page load too:
+Nuxt resets it for you. Once the new page has rendered and any page transition has finished, focus moves to where the browser would have left it:
+
+- an element with the `autofocus` attribute, if the page has one
+- the element the URL hash points to, if there is a hash. If that element can't receive focus itself, such as a heading, the next <kbd>Tab</kbd> continues from it
+- otherwise the start of the document, so the next <kbd>Tab</kbd> lands on the first focusable element
+
+Focus is left alone when only the query or hash changes, and when the new page has already moved focus itself, for example in `onMounted`.
+
+Some pages should keep focus where it is. Tabs built as child routes are the usual example: the user expects to stay on the tab they just activated. Set `resetFocus` to `false` in [`definePageMeta`](/docs/api/utils/define-page-meta) for those pages:
+
+```vue [app/pages/settings/profile.vue]
+<script setup lang="ts">
+definePageMeta({
+  resetFocus: false,
+})
+</script>
+```
+
+To turn the reset off for every page, set [`app.resetFocus`](/docs/api/nuxt-config#resetfocus) to `false` in your `nuxt.config`. Individual pages can then opt back in with `resetFocus: true`.
+
+::note
+Focus is only reset in apps that use the [`app/pages/`](/docs/directory-structure/app/pages) directory.
+::
+
+Because focus restarts at the top of the document, a keyboard user still has to get past your header on every page. A skip link as the first tab stop of your app is the conventional fix, and it helps on the initial page load too:
 
 ```vue [app.vue]
 <template>
@@ -123,20 +147,7 @@ A skip link as the first tab stop of your app is the conventional fix, and it he
 </style>
 ```
 
-`<main>` is not focusable on its own, so it needs `tabindex="-1"` to accept focus from the skip link or from a script. Use `-1` rather than a positive value, which would move the element in the tab order and surprise everyone else.
-
-If it suits your app, you can go further and move focus to the main region after every navigation from a plugin:
-
-```ts [app/plugins/focus-main.client.ts]
-export default defineNuxtPlugin(() => {
-  useRouter().afterEach((to, from) => {
-    if (to.path === from.path) {
-      return
-    }
-    nextTick(() => document.getElementById('main')?.focus())
-  })
-})
-```
+`<main>` is not focusable on its own, so it needs `tabindex="-1"` to accept focus from the skip link. Use `-1` rather than a positive value, which would move the element in the tab order and surprise everyone else.
 
 ::tip
 Navigate around your app with the keyboard alone. Tabbing from the skip link into `<main>` after a couple of navigations will surface most focus problems quickly.

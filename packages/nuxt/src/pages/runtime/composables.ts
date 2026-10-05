@@ -54,6 +54,8 @@ export interface PageMeta {
   props?: RouteRecordRaw['props']
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
+  /** Set to `false` to keep focus where it is on page navigations. Defaults to `app.resetFocus`. */
+  resetFocus?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
 }
 
 declare module 'vue-router' {

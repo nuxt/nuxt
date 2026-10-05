@@ -126,6 +126,9 @@ export default defineResolvers({
       },
     },
     keepalive: false,
+    resetFocus: {
+      $resolve: val => typeof val === 'boolean' ? val : true,
+    },
     rootId: {
       $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : '__nuxt'),
     },

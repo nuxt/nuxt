@@ -41,6 +41,7 @@ interface PageMeta {
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey> | { name?: LayoutKey | false, props?: Record<string, unknown> /* or the selected layout's props */ }
   middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
+  resetFocus?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
   [key: string]: unknown
 }
 ```
@@ -152,6 +153,12 @@ interface PageMeta {
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
     Tell Nuxt to scroll to the top before rendering the page or not. Navigation is independent from rendering, so scroll behavior is always triggered even when the page doesn't re-render (e.g. when using a fixed [`key`](/docs/api/utils/define-page-meta#key)). Set `scrollToTop: false` to disable scrolling in such cases. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/router.options.ts` (see [custom routing](/docs/guide/recipes/custom-routing#using-routeroptions)) for more info.
+
+  **`resetFocus`**
+
+  - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
+
+    Tell Nuxt whether to reset focus after navigating to the page. By default, focus moves to the start of the document, as it would after a full page load. Set `resetFocus: false` to keep focus where it is, for example on a tab when the tab panels are child routes. The default for all pages can be changed with [`app.resetFocus`](/docs/api/nuxt-config#resetfocus). See [focus management](/docs/guide/best-practices/accessibility#focus-management) for more info.
 
   **`[key: string]`**
 

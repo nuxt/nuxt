@@ -734,6 +734,9 @@ export default defineNuxtModule({
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
 
+    // Reset focus after client-side navigation, as the browser does on a full page load
+    addPlugin(resolve(runtimeDir, 'plugins/route-focus.client'))
+
     // Add build plugin to ensure template $route is kept in sync with `<NuxtPage>`
     if (nuxt.options.experimental.templateRouteInjection) {
       addBuildPlugin(RouteInjectionPlugin(nuxt), { server: false })

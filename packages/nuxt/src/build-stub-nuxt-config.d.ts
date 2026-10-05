@@ -17,6 +17,7 @@ export {
   anyValue as appLayoutTransition,
   anyValue as appManifest,
   anyValue as appPageTransition,
+  anyValue as appResetFocus,
   anyValue as appSpaLoaderAttrs,
   anyValue as appViewTransition,
   anyValue as asyncCallHook,
