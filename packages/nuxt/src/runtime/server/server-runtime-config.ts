@@ -1,4 +1,4 @@
-import type { RequestEvent, RuntimeConfig } from 'nuxt/schema'
+import type { RuntimeConfig } from 'nuxt/schema'
 
 /**
  * Runtime configuration, the one thing the portable `nuxt/server`
@@ -8,6 +8,6 @@ import type { RequestEvent, RuntimeConfig } from 'nuxt/schema'
  *
  * The body below describes a bundle that did not replace it.
  */
-export function useRuntimeConfig (_event?: Pick<RequestEvent, 'context'>): RuntimeConfig {
+export function useRuntimeConfig (): RuntimeConfig {
   return { app: {}, public: {} } as unknown as RuntimeConfig
 }

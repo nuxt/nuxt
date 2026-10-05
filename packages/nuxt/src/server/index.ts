@@ -458,8 +458,8 @@ export function matchRouteRules (_path: string, _method = 'GET'): AppRouteRules 
  *
  * @since 4.6.0
  */
-export function useRuntimeConfig (event?: Pick<RequestEvent, 'context'>): RuntimeConfig {
-  return _useRuntimeConfig(event) as RuntimeConfig
+export function useRuntimeConfig (): RuntimeConfig {
+  return _useRuntimeConfig() as RuntimeConfig
 }
 
 let sharedAppConfig: SharedAppConfig | undefined

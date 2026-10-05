@@ -1,15 +1,9 @@
 /**
  * The `nuxt/server` implementations for a Nitro-backed build, registered as
- * `serverBuild.runtime.server`.
+ * `serverBuild.runtime.server`. Request helpers come from h3; route rules, runtime config,
+ * hooks and `serverFetch` from Nitro; the rest from `nuxt/internal/server-default`.
  *
- * Only the helpers h3 does more with than the platform alone can are taken from it:
- * resolving the request URL through forwarded headers, merging `Set-Cookie` against the
- * headers already queued for the response, negotiating the body against the request the
- * router matched, and marking a handler so the router can serve it directly. The rest come
- * from the shipped implementations, which is also what h3 v2's own deprecations point at.
- *
- * The types come from `nuxt/server` whichever module backs it, so every name it exports
- * must be exported here too.
+ * The types come from `nuxt/server`, so every name it exports must be exported here too.
  */
 import { defineEventHandler as defineH3EventHandler } from 'nitro/h3'
 import { serverFetch as nitroServerFetch } from 'nitro'
