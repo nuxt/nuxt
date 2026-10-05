@@ -1,9 +1,17 @@
 import process from 'node:process'
+import { execFileSync } from 'node:child_process'
 import { copyFileSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
 
 const repoRoot = resolve(import.meta.dirname, '..')
 const pkgDir = process.cwd()
+
+if (basename(pkgDir) === 'nuxt' && JSON.parse(readFileSync(resolve(pkgDir, 'package.json'), 'utf-8')).name === 'nuxt-nightly') {
+  execFileSync('pnpm', ['--config.verify-deps-before-run=false', '--filter', '@nuxt/ui-templates', 'build'], {
+    cwd: repoRoot,
+    stdio: 'inherit',
+  })
+}
 
 copyFileSync(resolve(repoRoot, 'LICENSE'), resolve(pkgDir, 'LICENSE'))
 
