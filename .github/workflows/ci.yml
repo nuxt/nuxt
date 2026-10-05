@@ -565,10 +565,12 @@ jobs:
           echo "All required jobs passed or were skipped."
 
   pack-nightly:
-    permissions: {}
+    permissions:
+      contents: read
     if: |
       github.event_name == 'push' &&
       github.repository_owner == 'nuxt' &&
+      !github.event.repository.fork &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs: changes
