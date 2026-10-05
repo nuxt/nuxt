@@ -23,6 +23,7 @@
     "nonexistent-package",
     "pkg-pr-new",
     "ofetch",
+    "verkit",
     "@nuxt/webpack-builder",
     "@nuxt/rspack-builder",
     "@rspack/core"
