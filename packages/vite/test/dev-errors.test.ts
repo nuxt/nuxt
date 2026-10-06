@@ -70,6 +70,7 @@ describe('isTransformError', () => {
 describe('createDevErrorReporter', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
+    vi.unstubAllGlobals()
   })
 
   it('reports a compile error once, to the channel and the terminal', async () => {
@@ -191,6 +192,27 @@ describe('createDevErrorReporter', () => {
     expect(messages[1]).toEqual({ type: 'nuxt:dev:error:clear' })
 
     channel.close()
+    nuxt.close()
+  })
+
+  it('reports without a working `BroadcastChannel`', async () => {
+    vi.stubGlobal('BroadcastChannel', function () {
+      throw new TypeError('Cannot read properties of undefined (reading \'on\')')
+    })
+    const nuxt = createNuxt()
+    const print = vi.fn()
+    const reporter = createDevErrorReporter(nuxt, { print })
+    const { server, send, overlay } = devServer()
+    reporter.attach(server)
+
+    const report = await reporter.report(transformError)
+    expect(report).toMatchObject({ kind: 'compile' })
+    expect(print).toHaveBeenCalledTimes(1)
+    expect(await overlay()).toContain('<nuxt-error-overlay>')
+    reporter.progress({ phase: 'transform', message: 'Rebuilding' })
+    reporter.clear()
+    expect(send).toHaveBeenLastCalledWith({ type: 'custom', event: 'nuxt:dev:error:clear' })
+
     nuxt.close()
   })
 })
