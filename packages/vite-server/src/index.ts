@@ -7,9 +7,8 @@ import { resolveModulePath } from 'exsolve'
 import { joinURL } from 'ufo'
 import type { Nuxt } from '@nuxt/schema'
 
-import { distDir } from './dirs.ts'
 import { setupSSR } from './ssr.ts'
-import { DevServerListenerPlugin, setupDevServer } from './dev.ts'
+import { setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { finishStaticOutput, writeStaticOutput } from './output.ts'
 import { isPrerendering, manifestTimestamp, prerenderRoutes, writeAppManifest } from './prerender.ts'
@@ -101,7 +100,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   // Registered at the root rather than through `addVitePlugin`, which scopes plugins to
   // an environment, where an app-level `buildApp` hook is never called.
   nuxt.options.vite.plugins ||= []
-  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt), DevServerListenerPlugin(nuxt))
+  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt))
 
   if (!nuxt.options.dev) {
     // the document is a real HTML build input, so vite links the entry chunk, injects its
@@ -160,13 +159,11 @@ export function bundle (nuxt: Nuxt): Promise<void> {
 /**
  * Resolves `#server-entry` to the render as a module for a deploy target's own environment
  * to build, so that the app is compiled with that target's export conditions and nothing
- * spells a path inside the build directory.
- *
- * In development it resolves to a stub answering every request with a 503: the dev server
- * serves the app there, and a target rendering would render from a second module graph.
+ * spells a path inside the build directory. In development, the target's environment runs it
+ * from its own module graph.
  */
 function addServerEntryAlias (nuxt: Nuxt, entry: string): void {
-  nuxt.options.alias['#server-entry'] = nuxt.options.dev ? resolve(distDir, 'runtime/dev-handler') : entry
+  nuxt.options.alias['#server-entry'] = entry
 
   addTypeTemplate({
     filename: 'types/server-entry.d.ts',
