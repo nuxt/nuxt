@@ -205,7 +205,7 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
     statusText,
     statusMessage: statusText,
     message,
-    url: request.url,
+    url: url.pathname + url.search + url.hash,
     ...data === undefined ? {} : { data: typeof data === 'string' ? data : JSON.stringify(data) },
     ...import.meta.dev && stack ? { stack } : {},
   }), { headers: request.headers }))

@@ -5,6 +5,7 @@ import type { ErrorReport } from 'my-bad'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
 import { channelState, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
+import { parseData } from './utils'
 
 const fixtureURL = new URL('./fixtures/vite-server-dev-error/', import.meta.url)
 const at = (file: string, needle: string) => sourcePosition(fixtureURL, file, needle)
@@ -44,10 +45,11 @@ describe.skipIf(!runs)('pure vite dev server error reporting', () => {
   })
 
   it('reports a component that fails to compile as a compile error', async () => {
-    const { body, report, status } = await renderErrorPage('/compile-error')
+    const { body, report, status } = await renderErrorPage('/compile-error?from=test')
 
     expect(status).toBe(500)
     expect(body.match(/<nuxt-error-overlay>/g)).toHaveLength(1)
+    expect(parseData(body).script.path).toBe('/compile-error?from=test')
     expect([...reports(report)].find(entry => entry.kind === 'compile')?.frames[0]).toMatchObject({
       file: expect.stringMatching(/app\/components\/Broken\.vue$/),
       snippet: expect.objectContaining({ lines: expect.arrayContaining([expect.stringContaining('this component does not compile')]) }),
