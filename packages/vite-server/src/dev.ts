@@ -8,6 +8,33 @@ import type { Connect, ViteDevServer } from 'vite'
 import { resolveDocument } from './document.ts'
 import { publicDirs } from './output.ts'
 
+/**
+ * The ESM dependencies of the render, which a deploy target's environment loads as they
+ * are rather than discovering and pre-bundling them as it reaches them.
+ */
+const SERVER_RUNTIME_DEPS = [
+  'vue',
+  'vue-router',
+  '@vue/shared',
+  '@unhead/vue',
+  'unhead',
+  'vue-bundle-renderer',
+  'cookie-es',
+  'defu',
+  'destr',
+  'devalue',
+  'errx',
+  'hookable',
+  'iron-webcrypto',
+  'klona',
+  'my-bad',
+  'nostics',
+  'ofetch',
+  'pathe',
+  'ufo',
+  'unctx',
+]
+
 export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   let viteServer: ViteDevServer | undefined
   nuxt.hook('vite:serverCreated', (server) => {
@@ -59,6 +86,11 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
     name: 'nuxt:vite-server:dev',
     enforce: 'pre',
     apply: 'serve',
+    configEnvironment (name, config) {
+      if (serverEntry && name !== 'client' && name !== 'ssr' && (config.consumer ?? 'server') === 'server') {
+        return { optimizeDeps: { exclude: [...SERVER_RUNTIME_DEPS] } }
+      }
+    },
     configureServer: {
       order: 'pre',
       handler (server) {

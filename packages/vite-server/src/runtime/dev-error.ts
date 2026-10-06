@@ -1,4 +1,3 @@
-import process from 'node:process'
 import type { ViteDevServer } from 'vite'
 import type { ErrorReport } from 'my-bad'
 import { ERROR_CHANNEL_ENV, createDevErrorReporter, createErrorReport, serializeErrorCause, setErrorChannelForwarding, useErrorChannel } from 'nuxt/internal/dev-error'
@@ -19,8 +18,10 @@ export interface DevErrorContext {
 
 let context: DevErrorContext | undefined
 
+const env = (): Record<string, string | undefined> => (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {}
+
 /** Whether a dev server in front owns the channel. */
-const forwarding = (): boolean => !!process.env[ERROR_CHANNEL_ENV]
+const forwarding = (): boolean => !!env()[ERROR_CHANNEL_ENV]
 
 setErrorChannelForwarding(forwarding)
 
@@ -119,5 +120,5 @@ export function errorCause (error: unknown): SerializedErrorCause | undefined {
 }
 
 function channelPath (): string {
-  return process.env[ERROR_CHANNEL_ENV] || context!.channel
+  return env()[ERROR_CHANNEL_ENV] || context!.channel
 }

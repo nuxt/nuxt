@@ -157,13 +157,11 @@ export function bundle (nuxt: Nuxt): Promise<void> {
 /**
  * Resolves `#server-entry` to the render as a module for a deploy target's own environment
  * to build, so that the app is compiled with that target's export conditions and nothing
- * spells a path inside the build directory.
- *
- * In development it resolves to a stub answering every request with a 503: the dev server
- * serves the app there, and a target rendering would render from a second module graph.
+ * spells a path inside the build directory. In development, the target's environment runs it
+ * from its own module graph.
  */
 function addServerEntryAlias (nuxt: Nuxt, entry: string): void {
-  nuxt.options.alias['#server-entry'] = nuxt.options.dev ? resolve(distDir, 'runtime/dev-handler') : entry
+  nuxt.options.alias['#server-entry'] = entry
 
   addTypeTemplate({
     filename: 'types/server-entry.d.ts',
