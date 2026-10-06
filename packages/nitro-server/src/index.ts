@@ -11,7 +11,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
-import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig, NitroModule } from 'nitropack/types'
+import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitropack/types'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { bundlerDiagnostics, getServerRuntime, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
@@ -274,10 +274,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       name: 'nuxt',
       version: nuxtPkg.version || nitroBuilder.version,
     },
-    // Keep `imports` enabled even when nitro auto-imports are opted out. A `false` here is
-    // replaced with `{}` by any module that calls `addServerImports`, which silently brings
-    // back every h3 and nitro preset. Opting out drops those presets instead (see below), so
-    // scanned directories and registered imports stay available, as in Nuxt 5.
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
       dirs: [...importDirs],
@@ -300,31 +296,37 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           priority: -1,
         },
       ],
-      presets: nuxt.options.experimental.nitroAutoImports === false
-        ? []
-        : [
-            {
-              from: 'h3',
-              imports: [
-                'H3Event',
-                'H3Error',
-              ],
-            },
-            {
-              from: 'h3',
-              type: true,
-              imports: [
-                'EventHandler',
-                'EventHandlerRequest',
-                'EventHandlerResponse',
-                'EventHandlerObject',
-                'H3EventContext',
-              ],
-            },
+      presets: [
+        {
+          from: 'h3',
+          imports: [
+            'H3Event',
+            'H3Error',
           ],
+        },
+        {
+          from: 'h3',
+          type: true,
+          imports: [
+            'EventHandler',
+            'EventHandlerRequest',
+            'EventHandlerResponse',
+            'EventHandlerObject',
+            'H3EventContext',
+          ],
+        },
+      ] as const,
       exclude: [...excludePattern, /[\\/]\.git[\\/]/],
     },
-    modules: nuxt.options.experimental.nitroAutoImports === false ? [dropNitroAutoImportPresets] : [],
+    // `imports: false` would be revived by `addServerImports`, with every preset. Nitro modules run
+    // after nitropack adds its h3 and runtime presets and before unimport reads them, so drop them here.
+    modules: nuxt.options.experimental.nitroAutoImports === false
+      ? [(nitro) => {
+          if (nitro.options.imports) {
+            nitro.options.imports.presets = nitro.options.imports.presets?.filter(p => typeof p === 'string' || !('from' in p) || (p.from !== 'h3' && !p.from.startsWith('nitropack/runtime/')))
+          }
+        }]
+      : [],
     esbuild: {
       options: { exclude: excludePattern },
     },
@@ -1258,21 +1260,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 }
 
 const RELATIVE_RE = /^([^.])/
-/**
- * Drop the runtime and `h3` presets that nitropack adds while it resolves its options.
- * Nitro modules run after that and before the unimport context is created.
- */
-const dropNitroAutoImportPresets: NitroModule = {
-  name: 'nuxt:drop-nitro-auto-import-presets',
-  setup (nitro) {
-    if (nitro.options.imports) {
-      nitro.options.imports.presets = (nitro.options.imports.presets || []).filter(preset =>
-        typeof preset === 'string' || !('from' in preset) || (preset.from !== 'h3' && !preset.from.startsWith('nitropack/runtime')),
-      )
-    }
-  },
-}
-
 function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
 }
