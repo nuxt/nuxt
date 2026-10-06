@@ -728,6 +728,32 @@ export default legacy`)
     vi.restoreAllMocks()
   })
 
+  it.each([['nitro3', false], [undefined, true]] as const)('scopes an alias of a module nested in a v2 module directory by the nested module (server: %s)', async (server, scoped) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9005').mockImplementation(() => ({}) as any)
+    const rootDir = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-nested-alias-')))
+    onTestFinished(() => rmSync(rootDir, { recursive: true, force: true }))
+    const modules = join(rootDir, 'modules')
+    mkdirSync(join(modules, 'nested/runtime/server'), { recursive: true })
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    writeFileSync(join(modules, 'nested/runtime/server/query.ts'), `import { getQuery } from 'h3'
+export const query = getQuery`)
+    writeFileSync(join(rootDir, 'server/api/test.ts'), `import { query } from '#nested/server/query'
+export default query`)
+
+    const nitroConfig: NitroConfig = { handlers: [], alias: { '#nested/server': join(modules, 'nested/runtime/server') } }
+    const nuxt = createNuxt({ extensions: ['.js', '.mjs', '.ts'], rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir: modules, name: 'parent-module' }, { dir: join(modules, 'nested'), name: 'nested-module', server }])
+
+    if (scoped) {
+      expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`nested-module` (imports `h3`)' })
+    } else {
+      expect(report).not.toHaveBeenCalled()
+      expect(nitroConfig.plugins).toEqual([])
+    }
+    vi.restoreAllMocks()
+  })
+
   it('reports user server code that relies on Nitro v2 when `nitroLegacy` is off', async () => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9005').mockImplementation(() => ({}) as any)
     const rootDir = mkdtempSync(join(tmpdir(), 'nitro-compat-user-'))

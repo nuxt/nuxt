@@ -760,22 +760,50 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     }
   }
 
+  /** The most specific module holding the real path, else one of the given paths. */
+  const ownerOf = (real: string, paths: string[]) => {
+    let owner: InstalledModule | undefined
+    let length = 0
+    for (const space of ['real', 'literal'] as const) {
+      for (const module of installedModules) {
+        const dir = normalize(module.dir)
+        const prefix = withTrailingSlash(space === 'real' ? toRealPath(dir) : dir)
+        if (prefix.length > length && (space === 'real' ? real.startsWith(prefix) : paths.some(path => path.startsWith(prefix)))) {
+          owner = module
+          length = prefix.length
+        }
+      }
+      if (owner) {
+        return owner
+      }
+    }
+  }
+
   // module runtime code reaches the build in more ways than it is registered (a
   // module-owned alias, a deep import from a virtual), so scope the conventional runtime
   // directories of every module that has not declared itself migrated
-  const v2ModuleDirs: string[] = []
   for (const module of installedModules) {
     if (isMigrated(module.server)) {
       continue
     }
-    v2ModuleDirs.push(withTrailingSlash(normalize(module.dir)))
     addModuleScopeDir(resolve(module.dir, 'runtime'))
     addModuleScopeDir(resolve(module.dir, 'dist/runtime'))
   }
 
   // ... and any module-owned alias target outside those directories
   for (const alias of Object.values({ ...nuxt.options.alias, ...nitroConfig.alias })) {
-    if (typeof alias !== 'string' || !isAbsolute(alias) || !v2ModuleDirs.some(dir => alias.startsWith(dir))) {
+    if (typeof alias !== 'string' || !isAbsolute(alias)) {
+      continue
+    }
+    const target = withTrailingSlash(normalize(alias))
+    const real = withTrailingSlash(toRealPath(normalize(alias)))
+    const owner = ownerOf(real, [target])
+    if (!owner || isMigrated(owner.server)) {
+      continue
+    }
+    // the module root, not a runtime directory within it
+    const ownerDir = normalize(owner.dir)
+    if (target === withTrailingSlash(ownerDir) || real === withTrailingSlash(toRealPath(ownerDir))) {
       continue
     }
     if (statSync(alias, { throwIfNoEntry: false })?.isDirectory()) {
@@ -844,25 +872,6 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // layer stays registered: a module can still push v2 code into `nitro.options` later
   let active = isLegacyEnabled(legacy) || declaredLegacy
   const reported = new Set<string>()
-
-  /** The most specific module holding the real path, else one of the scanned paths. */
-  const ownerOf = (real: string, paths: string[]) => {
-    let owner: InstalledModule | undefined
-    let length = 0
-    for (const space of ['real', 'literal'] as const) {
-      for (const module of installedModules) {
-        const dir = normalize(module.dir)
-        const prefix = withTrailingSlash(space === 'real' ? toRealPath(dir) : dir)
-        if (prefix.length > length && (space === 'real' ? real.startsWith(prefix) : paths.some(path => path.startsWith(prefix)))) {
-          owner = module
-          length = prefix.length
-        }
-      }
-      if (owner) {
-        return owner
-      }
-    }
-  }
 
   const reportLegacyScope = (found: Map<string, string[]>) => {
     const byFile = new Map<string, { paths: string[], specifiers: string[] }>()
