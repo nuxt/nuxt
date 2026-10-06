@@ -84,7 +84,7 @@ const reporter = createDevErrorReporter<Request>({
     return context!.cwd
   },
   channel: channelPath,
-  createReport: error => buildReport(error),
+  createReport: (error, request) => buildReport(error, request),
   requestInfo: request => ({ method: request.method, url: new URL(request.url), headers: request.headers }),
   mapStack: error => fixStacktraces(error, context!.server),
 })
@@ -121,12 +121,13 @@ function requestRemoteReport (error: unknown, request?: Request): Promise<DevErr
   })
 }
 
-async function buildReport (error: unknown): Promise<ErrorReport> {
+async function buildReport (error: unknown, request?: Request): Promise<ErrorReport> {
   const { viteLoader } = await import('my-bad/vite')
   return createErrorReport(error, {
     cwd: context!.cwd,
     // sources are read by the filesystem loader the report adds after this one
     loaders: [viteLoader(ssrOnly(context!.server), { fs: false })],
+    context: { request },
   })
 }
 

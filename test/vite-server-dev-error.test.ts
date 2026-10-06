@@ -44,6 +44,12 @@ describe.skipIf(!runs)('pure vite dev server error reporting', () => {
     expect(frameAt(report, 'app/app.vue')).toMatchObject({ type: 'app', ...at('app/app.vue', 'useBoom()') })
   })
 
+  it('describes the request that failed in the report', async () => {
+    const { report } = await renderErrorPage()
+
+    expect(report.sections.find(section => section.id === 'request')?.content).toMatchObject({ method: 'GET', url: '/', status: 500 })
+  })
+
   it('reports a component that fails to compile as a compile error', async () => {
     const { body, report, status } = await renderErrorPage('/compile-error?from=test')
 
