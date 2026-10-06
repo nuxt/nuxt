@@ -699,10 +699,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     }
     files.set(target, TAG_SCOPE)
     files.set(toRealPath(target), TAG_SCOPE)
-    dirs.push([withTrailingSlash(dirname(target)), TAG_SCOPE])
-    const realDir = withTrailingSlash(dirname(toRealPath(target)))
-    if (realDir !== withTrailingSlash(dirname(target))) {
-      dirs.push([realDir, TAG_SCOPE])
+    const parentDirs = new Set([dirname(target), dirname(toRealPath(target)), toRealPath(dirname(target))])
+    for (const dir of parentDirs) {
+      dirs.push([withTrailingSlash(dir), TAG_SCOPE])
     }
   }
 
@@ -723,10 +722,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
       const target = addFile(entry.handler, TAG_SCOPE)
       // module runtime code lives next to its entry, unless the entry is userland code
       if (!isUserServerCode(target)) {
-        dirs.push([withTrailingSlash(dirname(target)), TAG_SCOPE])
-        const realDir = withTrailingSlash(dirname(toRealPath(target)))
-        if (realDir !== withTrailingSlash(dirname(target))) {
-          dirs.push([realDir, TAG_SCOPE])
+        const parentDirs = new Set([dirname(target), dirname(toRealPath(target)), toRealPath(dirname(target))])
+        for (const dir of parentDirs) {
+          dirs.push([withTrailingSlash(dir), TAG_SCOPE])
         }
       }
       nitroConfig.virtual ||= {}
@@ -850,11 +848,12 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   const reportLegacyScope = (found: Map<string, string[]>) => {
     const byModule = new Map<string, Set<string>>()
     for (const [path, specifiers] of found) {
-      if (reported.has(path) || isUserServerCode(path)) {
+      const real = toRealPath(path)
+      if (reported.has(real) || isUserServerCode(path)) {
         continue
       }
-      reported.add(path)
-      const module = installedModules.find(m => path.startsWith(withTrailingSlash(normalize(m.dir))))
+      reported.add(real)
+      const module = installedModules.find(m => path.startsWith(withTrailingSlash(normalize(m.dir))) || real.startsWith(withTrailingSlash(toRealPath(normalize(m.dir)))))
       const key = module?.name || module?.dir || (virtualSources.has(path) ? path : dirname(path))
       const set = byModule.get(key) || new Set()
       byModule.set(key, set)

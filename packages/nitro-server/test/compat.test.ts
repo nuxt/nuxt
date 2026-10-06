@@ -1,7 +1,7 @@
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'pathe'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import type { NitroConfig } from 'nitro/types'
 
@@ -77,6 +77,19 @@ describe('resolveNitroLegacyOptions', () => {
 
 describe('setupNitroCompat', () => {
   const legacyOff = resolveNitroLegacyOptions(false)
+
+  function createModuleDir (prefix: string, symlinked: boolean) {
+    const root = mkdtempSync(join(tmpdir(), prefix))
+    onTestFinished(() => rmSync(root, { recursive: true, force: true }))
+    const target = join(root, 'module')
+    mkdirSync(target)
+    if (!symlinked) {
+      return target
+    }
+    const dir = join(root, 'linked-module')
+    symlinkSync(realpathSync(target), dir, 'junction')
+    return dir
+  }
 
   it('keeps the nitro package out of the v2 scope', async () => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
@@ -409,9 +422,9 @@ describe('setupNitroCompat', () => {
     expect((nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()).toContain('legacyCompat = false')
   })
 
-  it('installs the runtime plugin and reports the module once a scoped file imports h3 v1', async () => {
+  it.each([false, true])('installs the runtime plugin and reports the module once a scoped file imports h3 v1 (symlinked: %s)', async (symlinked) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
-    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-module-'))
+    const dir = createModuleDir('nitro-compat-module-', symlinked)
     writeFileSync(join(dir, 'handler.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => 'legacy')`)
 
     const nitroConfig: NitroConfig = { handlers: [{ route: '/legacy', handler: join(dir, 'handler.ts') } as any] }
@@ -569,9 +582,9 @@ export const useRule = (event: any) => setHeader(event, 'x-rule', 'noindex')`)
     vi.restoreAllMocks()
   })
 
-  it('attributes module files the server build reaches through an import', async () => {
+  it.each([false, true])('attributes module files the server build reaches through an import (symlinked: %s)', async (symlinked) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
-    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-reachable-'))
+    const dir = createModuleDir('nitro-compat-reachable-', symlinked)
     mkdirSync(join(dir, 'dist/runtime/server'), { recursive: true })
     writeFileSync(join(dir, 'dist/runtime/server/handler.ts'), `import { useRule } from './rule'
 export default () => useRule()`)
@@ -625,9 +638,9 @@ export const legacy = getCookie`)
     vi.restoreAllMocks()
   })
 
-  it('counts files in an aliased module directory that user server code imports', async () => {
+  it.each([false, true])('counts files in an aliased module directory that user server code imports (symlinked: %s)', async (symlinked) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
-    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-alias-user-'))
+    const dir = createModuleDir('nitro-compat-alias-user-', symlinked)
     const rootDir = join(dir, 'project')
     mkdirSync(join(dir, 'dist/runtime/server/services'), { recursive: true })
     mkdirSync(join(rootDir, 'server/api'), { recursive: true })
@@ -707,10 +720,10 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     vi.restoreAllMocks()
   })
 
-  it('gives an undeclared v2 handler registered without an extension the v2 middleware semantics', async () => {
+  it.each([false, true])('gives an undeclared v2 handler registered without an extension the v2 middleware semantics (symlinked: %s)', async (symlinked) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9002').mockImplementation(() => ({}) as any)
     vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
-    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-extensionless-'))
+    const dir = createModuleDir('nitro-compat-extensionless-', symlinked)
     writeFileSync(join(dir, 'guard.js'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => {})`)
 
     const nitroConfig: NitroConfig = { handlers: [{ handler: join(dir, 'guard') } as any] }
