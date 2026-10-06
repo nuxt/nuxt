@@ -3,6 +3,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { defineComponent, h } from 'vue'
 
 import { clearNuxtData, useNuxtData } from '#app/composables/asyncData'
 import { createRouteAsyncDataKey, useAsyncRouteData } from '#app/composables/asyncRouteData'
@@ -145,15 +146,23 @@ describe('useAsyncRouteData', () => {
   it('supports lazy: true without a separate lazy composable', async () => {
     let resolve!: (value: string) => void
     const promise = new Promise<string>((r) => { resolve = r })
+    let res!: ReturnType<typeof useAsyncRouteData>
 
-    const res = useAsyncRouteData(uniqueKey, () => promise, { lazy: true })
+    const wrapper = await mountSuspended(defineComponent({
+      setup () {
+        res = useAsyncRouteData(uniqueKey, () => promise, { lazy: true })
+        return () => h('div')
+      },
+    }))
+
     expect(res.status.value).toBe('pending')
     expect(res.data.value).toBe(undefined)
 
     resolve('lazy-ok')
-    await res
+    await flushPromises()
     expect(res.data.value).toBe('lazy-ok')
     expect(res.status.value).toBe('success')
+    wrapper.unmount()
   })
 
   it('clear removes the route-scoped slot', async () => {

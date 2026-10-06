@@ -45,7 +45,7 @@ export function useAsyncRouteData<ResT> (
 
 ### `key`
 
-A unique key within the current route. Nuxt scopes it to the current path so each page keeps its own cache slot.
+A unique key within the current route. Nuxt scopes it to the current path, so each page keeps its own cache slot.
 
 ### `handler`
 
