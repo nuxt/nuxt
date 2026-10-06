@@ -155,4 +155,63 @@ describe('components bundled into chunks without a facade module', () => {
     expect(entry).toBeDefined()
     expect(entry!.css?.length).toBeGreaterThan(0)
   }, 240 * 1000)
+
+  it('does not add alias entries when styles are inlined (default `inlineStyles`)', async () => {
+    await rm(tmpDir, { recursive: true, force: true })
+    await mkdir(join(tmpDir, 'app/components'), { recursive: true })
+    await mkdir(join(tmpDir, 'app/pages'), { recursive: true })
+    await writeFile(join(tmpDir, 'app/app.vue'), '<template><NuxtPage /></template>')
+    await writeFile(join(tmpDir, 'app/components/Lazy.vue'), [
+      '<template><p class="lazy">lazy</p></template>',
+      '',
+      '<style scoped>.lazy { color: rebeccapurple }</style>',
+    ].join('\n'))
+    await writeFile(join(tmpDir, 'app/pages/index.vue'), [
+      '<script setup>',
+      'const Lazy = defineAsyncComponent(() => import(\'../components/Lazy.vue\'))',
+      '</script>',
+      '',
+      '<template><div><Lazy /></div></template>',
+    ].join('\n'))
+    await writeFile(join(tmpDir, 'app/pages/other.vue'), [
+      '<script setup>',
+      'import Lazy from \'../components/Lazy.vue\'',
+      '</script>',
+      '',
+      '<template><div><Lazy /></div></template>',
+    ].join('\n'))
+
+    const nuxt = await loadNuxt({
+      cwd: tmpDir,
+      ready: true,
+      dev: false,
+      overrides: {
+        compatibilityDate: 'latest',
+        devtools: { enabled: false },
+        ssr: true,
+        vite: {
+          build: {
+            rollupOptions: {
+              output: {
+                manualChunks: (id: string) => id.endsWith('components/Lazy.vue') ? 'shared-lazy' : undefined,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    let manifest: Manifest | undefined
+    nuxt.hook('build:manifest', (m) => { manifest = m })
+
+    try {
+      await buildNuxt(nuxt)
+    } finally {
+      await nuxt.close()
+    }
+
+    // With styles inlined by default the renderer never looks up a stylesheet
+    // link for the component, so no manifest alias is added.
+    expect(manifest!['components/Lazy.vue']).toBeUndefined()
+  }, 240 * 1000)
 })
