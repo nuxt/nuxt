@@ -1,6 +1,6 @@
 import { matchesGlob } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern, resolveNitroCommand, toFsDriverIgnorePatterns } from '../src/utils.ts'
+import { getLayerNodeModulesExcludePattern, isNuxtDistId, resolveNitroCommand, toFsDriverIgnorePatterns } from '../src/utils.ts'
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
@@ -121,5 +121,14 @@ describe('resolveNitroCommand', () => {
 
   it('leaves the key in place for an unknown placeholder', () => {
     expect(resolveNitroCommand('node {{ output.missing }}/index.mjs', options)).toBe('node output.missing/index.mjs')
+  })
+})
+
+describe('isNuxtDistId', () => {
+  it('does not match other packages', () => {
+    expect(isNuxtDistId('/proj/node_modules/@scope/nuxt/dist/index.js')).toBe(false)
+    expect(isNuxtDistId('D:\\proj\\node_modules\\my-nuxt\\dist\\index.js')).toBe(false)
+    expect(isNuxtDistId('/proj/node_modules/nuxt/package.json')).toBe(false)
+    expect(isNuxtDistId('nuxt/internal/renderer')).toBe(false)
   })
 })

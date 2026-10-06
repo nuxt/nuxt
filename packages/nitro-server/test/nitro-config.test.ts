@@ -50,6 +50,21 @@ describe('nitro config', () => {
     })
   })
 
+  it('inlines the nuxt renderer with either path separator', async () => {
+    await withNitro(async (nitro) => {
+      const isInlined = async (id: string) => {
+        for (const matcher of nitro.options.externals.inline!) {
+          if (typeof matcher === 'function' ? await matcher(id) : matcher instanceof RegExp ? matcher.test(id) : id.startsWith(matcher) || id.split('node_modules/').pop()!.startsWith(matcher)) {
+            return true
+          }
+        }
+        return false
+      }
+      expect(await isInlined('/project/node_modules/nuxt/dist/runtime/server/renderer/index.js')).toBe(true)
+      expect(await isInlined('D:\\project\\node_modules\\nuxt\\dist\\runtime\\server\\renderer\\index.js')).toBe(true)
+    })
+  })
+
   it('does not include the dev error channel in production builds', async () => {
     await withNitro((_nitro, nitroConfig) => {
       const errorChannel = nitroConfig.virtual!['#internal/nuxt/error-channel'] as () => string

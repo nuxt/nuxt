@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, join, relative } from 'pathe'
+import { dirname, join, normalize, relative } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 
 const TEMPLATE_PARAM_RE = /\{\{ ?([\w.]+) ?\}\}/g
@@ -21,6 +21,12 @@ export function resolveNitroCommand (command: string | undefined, options: Recor
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
+}
+
+const NUXT_DIST_RE = /\/node_modules\/nuxt(?:3|-nightly)?\/dist\//
+
+export function isNuxtDistId (id: string): boolean {
+  return NUXT_DIST_RE.test(normalize(id))
 }
 
 const NODE_MODULES_RE = /\/node_modules\//g
