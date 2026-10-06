@@ -31,7 +31,7 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
 import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
-import { collectServerRegistrations } from './registrations.ts'
+import { collectServerRegistrations, toPortableDevHandlers } from './registrations.ts'
 import { nitroInternalApiTemplate, nitroSchemaTemplate } from './templates.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
@@ -1001,6 +1001,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const devMiddlewareHandler = dynamicEventHandler()
   nitro.options.devHandlers.unshift({ handler: devMiddlewareHandler })
   nitro.options.devHandlers.push(...nuxt.options.devServerHandlers as NitroBuilderOptions['devHandlers'])
+  nitro.options.devHandlers = toPortableDevHandlers(nitro.options.devHandlers)
   if (nuxt.options.dev) {
     nitro.options.plugins.push(resolve(distDir, 'runtime/plugins/dev-errors'))
     nitro.options.handlers.unshift({

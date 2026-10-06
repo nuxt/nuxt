@@ -40,7 +40,11 @@ function encodeVueRouterPath (path: string): string {
  * h3 and a header the renderer sets are the same header, and both are sent.
  */
 class NodeResponseHeaders {
-  constructor (private res: H3Event['node']['res']) {}
+  private res: H3Event['node']['res']
+
+  constructor (res: H3Event['node']['res']) {
+    this.res = res
+  }
 
   get (name: string): string | null {
     const value = this.res.getHeader(name)

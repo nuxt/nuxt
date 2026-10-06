@@ -1,7 +1,30 @@
 import { normalize } from 'pathe'
+import { defineEventHandler, getRequestURL } from 'h3'
 import { resolveAlias } from '@nuxt/kit'
-import type { Nuxt, ServerPlugin } from '@nuxt/schema'
+import { kServerApi } from '@nuxt/kit/internal'
+import type { DevServerHandler, Nuxt, ServerPlugin } from '@nuxt/schema'
 import type { NitroConfig } from 'nitropack'
+
+import { toPortableEvent } from './runtime/utils/event.ts'
+
+/** The dev server handlers, with each `nuxt` variant given a `RequestEvent`. */
+export function toPortableDevHandlers<T extends Pick<DevServerHandler, 'handler'>> (handlers: T[]): T[] {
+  return handlers.map((entry) => {
+    const handler = entry.handler
+    if ((entry as Record<symbol, unknown>)[kServerApi] !== 'nuxt' || typeof handler !== 'function') {
+      return entry
+    }
+    return {
+      ...entry,
+      handler: defineEventHandler((event) => {
+        const portable = toPortableEvent(event)
+        // nitro mounts dev handlers by prefix, which strips the route from `event.path`
+        portable.url = getRequestURL(event)
+        return handler(portable)
+      }),
+    }
+  })
+}
 
 /**
  * Write the server plugins gathered on `nuxt.options._serverPlugins`, which carry the server
