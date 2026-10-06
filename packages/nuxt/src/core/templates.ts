@@ -654,6 +654,23 @@ export const dollarFetchTypeTemplate: NuxtTemplate = {
   },
 }
 
+// no imports, so it is declared ahead of nitropack's own global `$fetch` (the first declaration sets the type)
+export const dollarFetchGlobalTypeTemplate: NuxtTemplate = {
+  filename: 'types/fetch-global.d.ts',
+  dependsOn: [],
+  getContents () {
+    return [
+      'declare global {',
+      '  interface NuxtGlobalFetch {}',
+      '  var $fetch: NuxtGlobalFetch',
+      '}',
+      '',
+      'export {}',
+      '',
+    ].join('\n')
+  },
+}
+
 function hasActiveComponentIslands (ctx: { nuxt: { options: NuxtOptions }, app: NuxtApp }) {
   return ctx.nuxt.options.experimental.componentIslands && (
     ctx.nuxt.options.experimental.componentIslands !== 'auto' ||

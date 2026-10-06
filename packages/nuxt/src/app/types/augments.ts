@@ -4,8 +4,13 @@
 
 import type { UseHeadInput } from '@unhead/vue/types'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
+import type { TypedFetch } from './fetch'
 
 declare global {
+  // global `$fetch`, declared in `#build/types/fetch-global.d.ts`
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface NuxtGlobalFetch extends TypedFetch {}
+
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace NodeJS {
     interface Process {
