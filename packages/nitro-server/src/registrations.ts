@@ -7,6 +7,16 @@ import type { NitroConfig } from 'nitropack'
 
 import { toPortableEvent } from './runtime/utils/event.ts'
 
+/** Add the dev server handlers that nitro does not already hold a copy of from its config. */
+export function addDevServerHandlers<T extends { handler: unknown }> (nitroHandlers: T[], handlers: T[]): void {
+  const registered = new Set(nitroHandlers.map(entry => entry.handler))
+  for (const entry of handlers) {
+    if (!registered.has(entry.handler)) {
+      nitroHandlers.push(entry)
+    }
+  }
+}
+
 /** The dev server handlers, with each `nuxt` variant given a `RequestEvent`. */
 export function toPortableDevHandlers<T extends Pick<DevServerHandler, 'handler'>> (handlers: T[]): T[] {
   return handlers.map((entry) => {

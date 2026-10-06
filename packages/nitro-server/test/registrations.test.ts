@@ -5,7 +5,7 @@ import { kServerApi } from '@nuxt/kit/internal'
 import type { DevServerHandler, Nuxt, RequestEvent } from '@nuxt/schema'
 import type { NitroConfig } from 'nitropack'
 
-import { collectServerRegistrations, toPortableDevHandlers } from '../src/registrations.ts'
+import { addDevServerHandlers, collectServerRegistrations, toPortableDevHandlers } from '../src/registrations.ts'
 
 function createNuxt (serverPlugins?: Array<{ plugin: string }>) {
   return {
@@ -54,5 +54,17 @@ describe('toPortableDevHandlers', () => {
 
     expect(response.headers.get('x-greeting')).toBe('hello')
     expect(await response.json()).toEqual({ request: true, path: '/_greet/world', name: 'nuxt' })
+  })
+})
+
+describe('addDevServerHandlers', () => {
+  it('registers a dev server handler once when nitro already holds a copy of it', () => {
+    const fromConfig = { route: '/_config', handler: () => 'config' }
+    const added = { route: '/_added', handler: () => 'added' }
+    const nitroHandlers = [{ ...fromConfig }]
+
+    addDevServerHandlers(nitroHandlers, [fromConfig, added])
+
+    expect(nitroHandlers.map(entry => entry.route)).toEqual(['/_config', '/_added'])
   })
 })
