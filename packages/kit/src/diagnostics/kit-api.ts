@@ -134,5 +134,10 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { accepted: string }) => `Key the variants by the server API the code is written against (\`${p.accepted}\`), or pass a single path: the registered file's imports say which API it uses.`,
       docs: false,
     },
+    NUXT_B8026: {
+      why: (p: { imports: string }) => `Server auto-imports are disabled, so ${p.imports} will not be auto-imported.`,
+      fix: 'Import them explicitly in server code, or enable `experimental.nitroAutoImports`.',
+      docs: false,
+    },
   },
 })

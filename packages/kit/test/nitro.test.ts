@@ -432,7 +432,8 @@ describe('addServerImports', () => {
     expect(config.imports!.dirs).toEqual(['/modules/runtime/server/utils'])
   })
 
-  it('leaves disabled server auto-imports disabled', async () => {
+  it('leaves disabled server auto-imports disabled and reports what it skipped', async () => {
+    const report = vi.spyOn(kitDiagnostics, 'NUXT_B8026').mockImplementation(() => ({}) as any)
     const nuxt = createMockNuxt('2.11.0')
     runWithNuxtContext(nuxt, () => {
       addServerImports([{ name: 'useThing', from: '/modules/runtime/utils' }])
@@ -441,6 +442,9 @@ describe('addServerImports', () => {
     const config = { imports: false }
     await runWithNuxtContext(nuxt, () => nuxt.callHook('nitro:config', config as any))
     expect(config.imports).toBe(false)
+    expect(report).toHaveBeenCalledWith({ imports: '`useThing` from `/modules/runtime/utils`' })
+    expect(report).toHaveBeenCalledWith({ imports: 'exports of `/modules/runtime/server/utils`' })
+    report.mockRestore()
   })
 })
 

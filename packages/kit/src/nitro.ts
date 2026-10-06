@@ -292,7 +292,10 @@ export function addServerImports (imports: ServerImportInput | ServerImportInput
     return
   }
   nuxt.hook('nitro:config', (config) => {
-    if (config.imports === false) { return }
+    if (config.imports === false) {
+      kitDiagnostics.NUXT_B8026({ imports: _imports.map(i => `\`${i.as || i.name}\` from \`${i.from}\``).join(', ') })
+      return
+    }
     config.imports ||= {}
     config.imports.imports ||= []
     config.imports.imports.push(..._imports)
@@ -309,7 +312,10 @@ export function addServerImportsDir (dirs: string | string[], opts: { prepend?: 
     return
   }
   nuxt.hook('nitro:config', (config) => {
-    if (config.imports === false) { return }
+    if (config.imports === false) {
+      kitDiagnostics.NUXT_B8026({ imports: _dirs.map(dir => `exports of \`${dir}\``).join(', ') })
+      return
+    }
     config.imports ||= {}
     config.imports.dirs ||= []
     config.imports.dirs[opts.prepend ? 'unshift' : 'push'](..._dirs)
