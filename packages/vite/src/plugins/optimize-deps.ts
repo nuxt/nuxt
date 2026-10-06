@@ -10,11 +10,33 @@ import { userOptimizeDepsInclude } from './optimize-deps-hint.ts'
  *
  * Runs on resolved environment config so `include` entries added by modules through
  * `vite:extendConfig`, or by other plugins, are rewritten too.
+ *
+ * Those files can import Nuxt virtual modules such as `#components`, which Nuxt's transforms
+ * rewrite before they are ever resolved. The dependency scan does not run those transforms,
+ * and inside a package that declares its own `imports` Vite resolves the specifier as a Node
+ * subpath import and throws, which aborts the whole scan. Such imports are left out of the
+ * scan instead.
  */
 export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:optimize-deps',
     enforce: 'post',
+
+    resolveId: {
+      order: 'pre',
+      filter: {
+        id: /^#/,
+      },
+      async handler (id, importer, options) {
+        // Vite passes `scan` while scanning for dependencies, but it is not part of the public hook type
+        if (!('scan' in options) || !options.scan) { return }
+        try {
+          return await this.resolve(id, importer, { ...options, skipSelf: true })
+        } catch {
+          return { id, external: true }
+        }
+      },
+    },
 
     async configEnvironment (name, config) {
       if (name !== 'client') { return }
