@@ -6,7 +6,7 @@ import { directoryToURL } from './internal/esm.ts'
 import { useNuxt } from './context.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
-const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
+const SEMANTIC_VERSION_RE = /-\d+[.-][0-9a-f]+/
 export function normalizeSemanticVersion (version: string): string {
   return version.replace(SEMANTIC_VERSION_RE, '') // Remove edge prefix
 }
