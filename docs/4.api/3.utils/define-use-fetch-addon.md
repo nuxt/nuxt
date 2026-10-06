@@ -28,7 +28,12 @@ const refreshOnFocus = defineUseFetchAddon({
 
     return (asyncData) => {
       // 👈 run code *after* calling `useAsyncData` in `useFetch`
-      const focused = useWindowFocus()
+      const focused = ref(false)
+      const onFocus = () => { focused.value = true }
+      const onBlur = () => { focused.value = false }
+      window.addEventListener('focus', onFocus)
+      window.addEventListener('blur', onBlur)
+
       watch(focused, (focused) => {
         if (focused) { asyncData.refresh() }
       })
