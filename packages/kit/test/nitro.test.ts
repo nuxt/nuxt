@@ -431,6 +431,17 @@ describe('addServerImports', () => {
     expect(config.imports!.imports).toEqual([{ name: 'useThing', from: '/modules/runtime/utils' }])
     expect(config.imports!.dirs).toEqual(['/modules/runtime/server/utils'])
   })
+
+  it('leaves disabled server auto-imports disabled', async () => {
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => {
+      addServerImports([{ name: 'useThing', from: '/modules/runtime/utils' }])
+      addServerImportsDir('/modules/runtime/server/utils')
+    })
+    const config = { imports: false }
+    await runWithNuxtContext(nuxt, () => nuxt.callHook('nitro:config', config as any))
+    expect(config.imports).toBe(false)
+  })
 })
 
 describe('addServerTemplate', () => {

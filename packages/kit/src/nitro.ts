@@ -292,6 +292,7 @@ export function addServerImports (imports: ServerImportInput | ServerImportInput
     return
   }
   nuxt.hook('nitro:config', (config) => {
+    if (config.imports === false) { return }
     config.imports ||= {}
     config.imports.imports ||= []
     config.imports.imports.push(..._imports)
@@ -308,6 +309,7 @@ export function addServerImportsDir (dirs: string | string[], opts: { prepend?: 
     return
   }
   nuxt.hook('nitro:config', (config) => {
+    if (config.imports === false) { return }
     config.imports ||= {}
     config.imports.dirs ||= []
     config.imports.dirs[opts.prepend ? 'unshift' : 'push'](..._dirs)

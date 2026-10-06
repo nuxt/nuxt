@@ -40,10 +40,11 @@ describe('loadNuxt', () => {
     expect(normalized).not.toContain('<rootDir>/server/types')
   })
 
-  it('keeps scanning layer directories when nitro auto-imports are opted out', async () => {
+  it('does not register server type directories when nitro auto-imports are opted out', async () => {
     const importDirs = await getNitroImportDirs({ experimental: { nitroAutoImports: false } })
-    // opting out drops the h3 and nitro presets, but scanned directories stay, as in Nuxt 5
-    expect(importDirs).toEqual(await getNitroImportDirs())
+    // `nitro.imports` is disabled entirely, so no directories (incl. `server/types`) are scanned
+    expect(normalizePaths(importDirs)).not.toContain('<rootDir>/server/types')
+    expect(importDirs).toHaveLength(0)
   })
 })
 
