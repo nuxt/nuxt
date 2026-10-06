@@ -72,10 +72,10 @@ export type MergedAddonsOptions<Addons extends ReadonlyArray<any>> =
     ? {}
     : UnionToIntersection<Addons[number] extends { [AddonMarker]?: { options: infer O, extension: any } } ? O : never>
 
+type AddonsExtensions<Addons extends ReadonlyArray<any>> = UnionToIntersection<Addons[number] extends { [AddonMarker]?: { options: any, extension: infer E } } ? E : never>
+
 export type MergedAddonsExtensions<Addons extends ReadonlyArray<any>> =
-  [Addons[number]] extends [never]
-    ? {}
-    : Omit<UnionToIntersection<Addons[number] extends { [AddonMarker]?: { options: any, extension: infer E } } ? E : never>, PromiseMethod>
+  [keyof AddonsExtensions<Addons>] extends [never] ? {} : Omit<AddonsExtensions<Addons>, PromiseMethod>
 
 type AnyAddon = {
   setup: (options: any) => AsyncDataAddonSetup<any> | void

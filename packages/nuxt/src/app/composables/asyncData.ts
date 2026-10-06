@@ -193,7 +193,9 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-export type AugmentedAsyncData<Data, Error, Ext> = _AsyncData<Data, Error> & Ext & Promise<_AsyncData<Data, Error> & Ext>
+export type AsyncDataWithExtensions<Data, Error, Ext> = _AsyncData<Data, Error> & Ext & Promise<_AsyncData<Data, Error> & Ext>
+
+export type AugmentedAsyncData<Data, Error, Ext> = [keyof Ext] extends [never] ? AsyncData<Data, Error> : AsyncDataWithExtensions<Data, Error, Ext>
 
 // Type of the public-facing `useAsyncData` returned by the factory below.
 // Expressed as a callable interface so we can spell out all eight overloads
