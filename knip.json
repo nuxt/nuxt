@@ -65,6 +65,19 @@
         "nested-dep"
       ]
     },
+    "test/fixtures/unhead-duplicate": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreDependencies": [
+        "unhead"
+      ]
+    },
     "packages/nitro-server": {
       "entry": [
         "src/runtime/**/*.{js,ts,mjs}!"

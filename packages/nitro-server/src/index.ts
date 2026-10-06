@@ -42,6 +42,8 @@ type NitroTSConfig = NonNullable<NonNullable<NitroConfig['typescript']>['tsConfi
 /** Subpath the request-shape extractors are imported from in generated declarations. */
 const REQUEST_TYPES_MODULE = '@nuxt/nitro-server/request-types'
 
+const UNHEAD_IMPORT_RE = /^unhead(?:\/|$)/
+
 const logLevelMapReverse = {
   silent: 0,
   info: 3,
@@ -709,6 +711,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
     ],
   }))
+
+  // resolve from nuxt's own dependency tree, where the bundled runtime imports unhead from
+  const nuxtRuntimeImporter = join(nuxt.options.appDir, 'index.js')
+  nitroConfig.rollupConfig!.plugins!.push({
+    name: 'nuxt:unhead:dedupe',
+    resolveId (id, importer, options) {
+      if (!importer || !UNHEAD_IMPORT_RE.test(id)) { return }
+      return this.resolve(id, nuxtRuntimeImporter, { ...options, skipSelf: true })
+    },
+  })
 
   // Nitro serialises mount options with `JSON.stringify` for the storage its dev and
   // prerender runtimes build, so the patterns have to go through the fs driver's `ignore`
