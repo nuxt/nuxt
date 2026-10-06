@@ -13,6 +13,7 @@ import { getLegacyRuntimeConfigPath, getNitroPackageResolutions, getServerImport
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { kServerApi } from '@nuxt/kit/internal'
+import { H3 } from 'nitro/h3'
 
 /** An entry as `addServerHandler()` leaves it, having resolved the variant it registered. */
 function declared<T extends object> (entry: T, api: string): any {
@@ -782,7 +783,7 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
 
   it('mounts an untagged dev handler with v2 route semantics and wraps it', async () => {
     vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9002').mockImplementation(() => ({}) as any)
-    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9004').mockImplementation(() => ({}) as any)
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9004').mockImplementation(() => ({}) as any)
     const devServerHandlers = [
       { route: '/_module', middleware: true, handler: () => 'dev' },
       { route: '/_module-wildcard/**', middleware: true, handler: () => 'dev' },
@@ -797,10 +798,48 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     expect(devServerHandlers[1]).toMatchObject({ route: '/_module-wildcard/**' })
     expect(devServerHandlers[2]).toMatchObject({ route: '/_module-migrated' })
     expect(devServerHandlers[3]).toMatchObject({ route: '/**', middleware: true })
+    expect(report.mock.calls.flat()).toEqual([
+      expect.objectContaining({ count: 1, handlers: '`/_module` as `/_module/**`' }),
+    ])
     // wrapped in place, so the registered handler is no longer the function the module passed
     expect(devServerHandlers[0]!.handler).not.toBe(untouched[0])
     expect(devServerHandlers[3]!.handler).not.toBe(untouched[3])
     expect(devServerHandlers[2]!.handler).toBe(untouched[2])
+    vi.restoreAllMocks()
+  })
+
+  it('mounts a routed v2 dev handler on its route and every path below it', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9004').mockImplementation(() => ({}) as any)
+    const respond = (name: string) => (event: any) => `${name} ${event.path}`
+    const devServerHandlers: any[] = [
+      declared({ route: '/_tagged', handler: respond('tagged') }, 'nitro2'),
+      { route: '/_untagged', handler: respond('untagged') },
+      { route: '/_wildcard/**', handler: respond('wildcard') },
+      { route: '/_skipped', handler: () => undefined },
+      declared({ route: '/_migrated', handler: respond('migrated') }, 'nuxt'),
+    ]
+    await setupNitroCompat(createNuxt({ devServerHandlers }), { handlers: [] }, legacyOff, [])
+    expect(report).not.toHaveBeenCalled()
+
+    const app = new H3()
+    for (const entry of devServerHandlers) {
+      if (entry.middleware) {
+        app.use(entry.route, entry.handler)
+      } else {
+        app.on('', entry.route, entry.handler)
+      }
+    }
+    app.all('/**', () => 'fallback')
+    const fetchText = async (path: string) => (await app.fetch(new Request(`http://nuxt${path}`))).text()
+
+    expect(await fetchText('/_tagged')).toBe('tagged /')
+    expect(await fetchText('/_tagged/deep')).toBe('tagged /deep')
+    expect(await fetchText('/_untagged/deep')).toBe('untagged /deep')
+    expect(await fetchText('/_wildcard')).toBe('wildcard /')
+    expect(await fetchText('/_wildcard/deep')).toBe('wildcard /deep')
+    expect(await fetchText('/_skipped/deep')).toBe('fallback')
+    expect(await fetchText('/_migrated')).toBe('migrated /_migrated')
+    expect(await fetchText('/_migrated/deep')).toBe('fallback')
     vi.restoreAllMocks()
   })
 

@@ -742,7 +742,11 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     if (compatibility === 'nitro2' || compatibility === undefined) {
       declaredLegacy ||= compatibility === 'nitro2'
       normalizeLegacyHandlerRoute(entry as { route?: string, middleware?: boolean, handler: string }, unrouted)
-      const base = widenLegacyHandlerRoute(entry, widened)
+      // `NUXT_B9004` describes routed middleware
+      const report = entry.middleware ? widened : []
+      // nitro v2 mounts every dev handler with `app.use()` on the literal base of its route
+      entry.middleware = true
+      const base = widenLegacyHandlerRoute(entry, report) ?? LITERAL_WILDCARD_ROUTE_RE.exec(entry.route!)?.[1]
       if (typeof entry.handler === 'function') {
         // nitro runtime imports warn when loaded outside a Nitro build
         const { wrapLegacyHandler } = await import('./runtime/compat/wrapper.ts')
@@ -1158,6 +1162,7 @@ function normalizeLegacyHandlerRoute (handler: { route?: string, middleware?: bo
 }
 
 const PLAIN_ROUTE_RE = /^[^:*]+$/
+const LITERAL_WILDCARD_ROUTE_RE = /^([^:*]*[^:*/])\/\*\*(?::\w+)?$/
 
 /**
  * Nitro v2 mounted routed middleware with `app.use(route)`, so it ran for every path below
