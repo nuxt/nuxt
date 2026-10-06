@@ -76,7 +76,7 @@ Use [`<NuxtLink>`](/docs/api/components/nuxt-link) for in-app navigation. It ren
 </template>
 ```
 
-In a menu or a set of breadcrumbs, the link matching the current route already exposes `aria-current="page"`, so assistive technology can tell which item you are on. Where a different token describes the relationship better, such as a step in a multi-page form, set [`ariaCurrentValue`](/docs/api/components/nuxt-link#routerlink):
+In a menu or a set of breadcrumbs, only the link matching the current route should expose `aria-current="page"`, so assistive technology can tell which item you are on. Vue Router's exact-active matching does not take query parameters into account, so links that differ only by query can all expose `aria-current="page"`. For query-based tabs or filters, use `<NuxtLink>`'s `custom` slot and set `aria-current="page"` only on the item selected by the query value. Where a different token describes the relationship better, such as a step in a multi-page form, set [`ariaCurrentValue`](/docs/api/components/nuxt-link#routerlink):
 
 ```vue
 <template>
