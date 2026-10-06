@@ -59,7 +59,11 @@ const SSR_BOT_RE: RegExp = NUXT_SSR_STREAMING_BOT_RE
  */
 export function createNuxtRenderer (optionsOrInstance: NuxtRendererOptions | NuxtRendererInstance): { fetch: (event: RendererEvent) => Promise<Response> } {
   const instance = 'getRenderer' in optionsOrInstance ? optionsOrInstance : createRendererInstance(optionsOrInstance)
-  return { fetch: event => fetch(instance, event) }
+  return {
+    fetch: tracingChannelNuxt
+      ? event => traceAsync('nuxt.request', { event: appEvent(event) }, () => fetch(instance, event))
+      : event => fetch(instance, event),
+  }
 }
 
 function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<Response> {
