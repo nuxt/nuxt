@@ -75,6 +75,10 @@ const { data: user } = useAsyncData(
 </script>
 ```
 
+::tip
+You can use `useAsyncRouteData` for fetching data that is scoped to the current page.
+::
+
 ### Make Your `handler` Abortable
 
 You can make your `handler` function abortable by using the `signal` provided in the second argument. This is useful for cancelling requests when they are no longer needed, such as when a user navigates away from a page. `$fetch` natively supports abort signals.
