@@ -80,6 +80,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           packages: ${{ env.PACKAGES }}
+          npm-tag: ${{ github.event.pull_request.base.ref == '4.x' && 'latest' || '' }}
 
   # the chained dispatch lands here on the vX.Y.Z tag; build the tarballs
   pack:
