@@ -41,11 +41,11 @@ The resulting composable has the same signature and return type as [`useAsyncDat
 ```ts [Signature]
 function createUseAsyncData (
   options?: Partial<AsyncDataOptions> & { addons?: UseAsyncDataAddon[] },
-): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
+): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 
 function createUseAsyncData (
   options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions>,
-): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
+): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 ```
 
 The returned composable's signature includes any custom options and return-value extensions contributed by the [addons](#addons).
@@ -106,6 +106,10 @@ const refreshOnFocus = defineUseAsyncDataAddon({
       const onBlur = () => { focused.value = false }
       window.addEventListener('focus', onFocus)
       window.addEventListener('blur', onBlur)
+      onScopeDispose(() => {
+        window.removeEventListener('focus', onFocus)
+        window.removeEventListener('blur', onBlur)
+      })
 
       watch(focused, (focused) => {
         if (focused) { asyncData.refresh() }
