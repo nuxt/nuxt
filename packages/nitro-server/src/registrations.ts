@@ -16,12 +16,8 @@ export function toPortableDevHandlers<T extends Pick<DevServerHandler, 'handler'
     }
     return {
       ...entry,
-      handler: defineEventHandler((event) => {
-        const portable = toPortableEvent(event)
-        // nitro mounts dev handlers by prefix, which strips the route from `event.path`
-        portable.url = getRequestURL(event)
-        return handler(portable)
-      }),
+      // nitro mounts dev handlers by prefix, which strips the route from `event.path`
+      handler: defineEventHandler(event => handler(toPortableEvent(event, () => getRequestURL(event)))),
     }
   })
 }

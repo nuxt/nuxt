@@ -197,25 +197,26 @@ const portableEvents = new WeakMap<H3Event, RequestEvent>()
  *
  * Both shapes are served from one object: `req`, `res`, `url` and `~app` resolve to the web
  * view, everything else to the h3 v1 event, so h3's own helpers work on it too (they read
- * `event.node`, not its deprecated `req`/`res` aliases). Cached per event.
+ * `event.node`, not its deprecated `req`/`res` aliases). Cached per event, with the web view
+ * built on first access. `resolveURL` replaces how `url` is derived from the event's path.
  */
-export function toPortableEvent (event: H3Event): RequestEvent {
+export function toPortableEvent (event: H3Event, resolveURL?: () => URL): RequestEvent {
   const cached = portableEvents.get(event)
   if (cached) { return cached }
 
-  const web = toWebView(event)
+  let web: RendererEvent | undefined
   const portable = new Proxy(event, {
     get (target, property) {
       if (property === PORTABLE_EVENT) {
         return true
       }
       return WEB_PROPERTIES.has(property as string)
-        ? web[property as keyof RendererEvent]
+        ? (web ??= toWebView(event, resolveURL))[property as keyof RendererEvent]
         : Reflect.get(target, property, target)
     },
     set (target, property, value) {
       if (property === 'url') {
-        web.url = value
+        (web ??= toWebView(event, resolveURL)).url = value
         return true
       }
       return Reflect.set(target, property, value, target)
@@ -260,7 +261,7 @@ export function toRequestEvent (event: H3Event): RendererEvent {
  * than a copy of it, so a header the application sets through h3 and a header the renderer
  * sets are the same header.
  */
-function toWebView (event: H3Event): RendererEvent {
+function toWebView (event: H3Event, resolveURL = () => new URL(encodeEventPath(event.path), `${getRequestProtocol(event)}://${getRequestHost(event)}`)): RendererEvent {
   const node = event.node
   let request: Request | undefined
   let url: URL | undefined
@@ -286,7 +287,7 @@ function toWebView (event: H3Event): RendererEvent {
       return (request ??= toWebRequest(event))
     },
     get url () {
-      return (url ??= new URL(encodeEventPath(event.path), `${getRequestProtocol(event)}://${getRequestHost(event)}`))
+      return (url ??= resolveURL())
     },
     // the renderer rewrites the URL when a payload request renders the page it belongs to
     set url (value: URL) {
