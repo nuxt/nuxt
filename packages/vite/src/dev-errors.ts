@@ -4,9 +4,7 @@ import type { ErrorReport } from 'my-bad'
 import type { BuildProgress } from 'my-bad/channel'
 import type { ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { joinURL } from 'ufo'
-
-const ERROR_CHANNEL_BROADCAST = 'nuxt:dev:error'
-const ERROR_CHANNEL_ENV = 'NUXT_DEV_ERROR_CHANNEL'
+import { ERROR_CHANNEL_ENV, openErrorBroadcast } from 'nuxt/internal/dev-error'
 
 /** The shape Vite gives transform failures. */
 export interface ViteTransformError {
@@ -75,8 +73,7 @@ export function reportTransformError (reporter: DevErrorReporter | undefined): (
 
 /** Turns the compile errors Vite raises into reports on the dev error channel. */
 export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered: string) => void }): DevErrorReporter {
-  const broadcast = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
-  ;(broadcast as { unref?: () => void }).unref?.()
+  const broadcast = openErrorBroadcast()
   nuxt.hook('close', () => broadcast.close())
 
   let server: ViteDevServer | undefined
