@@ -5,6 +5,7 @@ import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
 import { joinURL } from 'ufo'
 import type { Connect, ViteDevServer } from 'vite'
 
+import { listenForRemoteDevErrors } from './dev-errors.ts'
 import { resolveDocument } from './document.ts'
 import { publicDirs } from './output.ts'
 
@@ -96,6 +97,9 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
       handler (server) {
         // vite runs in middleware mode, so plugins attach to Nuxt's listener instead
         server.httpServer ||= nuxt._devServerListener ?? null
+        if (serverEntry) {
+          listenForRemoteDevErrors(nuxt, server, errorChannel)
+        }
         // ahead of other plugins' post middlewares, which may respond to every request
         return () => {
           server.middlewares.use(async function nuxtDevMiddleware (req: Connect.IncomingMessage, res, next) {

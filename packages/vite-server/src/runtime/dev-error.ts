@@ -1,10 +1,12 @@
 import type { ViteDevServer } from 'vite'
+import type { ViteHotContext } from 'vite/types/hot.d.ts'
 import type { ErrorReport } from 'my-bad'
-import { ERROR_CHANNEL_ENV, createDevErrorReporter, createErrorReport, serializeErrorCause, setErrorChannelForwarding, useErrorChannel } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, clearErrorReport as clearChannelReport, createDevErrorReporter, createErrorReport, serializeErrorCause, setErrorChannelForwarding, useErrorChannel } from 'nuxt/internal/dev-error'
 import type { DevErrorObserveOptions, DevErrorReport, SerializedErrorCause } from 'nuxt/internal/dev-error'
 import { isLoopbackAddress } from 'nuxt/internal/dev/peer'
 
-export { clearErrorReport } from 'nuxt/internal/dev-error'
+import { REMOTE_DEV_ERROR_CLEAR_EVENT, REMOTE_DEV_ERROR_EVENT, REMOTE_DEV_ERROR_REPORT_EVENT } from './remote-dev-error.ts'
+import type { RemoteDevError, RemoteDevErrorReport } from './remote-dev-error.ts'
 
 /** What the dev server hands the runtime so it can report on what it renders. */
 export interface DevErrorContext {
@@ -22,6 +24,8 @@ const env = (): Record<string, string | undefined> => (globalThis as { process?:
 
 /** Whether a dev server in front owns the channel. */
 const forwarding = (): boolean => !!env()[ERROR_CHANNEL_ENV]
+
+const hot = (import.meta as ImportMeta & { hot?: ViteHotContext }).hot
 
 setErrorChannelForwarding(forwarding)
 
@@ -57,10 +61,22 @@ export async function fetchErrorChannel (request: Request & { ip?: string }): Pr
  * every later consumer sees source positions.
  */
 export function observeDevError (error: unknown, request?: Request, observe?: DevErrorObserveOptions): Promise<DevErrorReport | undefined> {
-  if (!context) {
-    return Promise.resolve(undefined)
+  if (context) {
+    return reporter(error, request, observe)
   }
-  return reporter(error, request, observe)
+  if (hot && !observe?.expected) {
+    return requestRemoteReport(error, request).catch(() => undefined)
+  }
+  return Promise.resolve(undefined)
+}
+
+/** Retire the current report, dismissing overlays showing it. */
+export function clearErrorReport (): Promise<void> {
+  if (context || !hot) {
+    return clearChannelReport()
+  }
+  hot.send(REMOTE_DEV_ERROR_CLEAR_EVENT)
+  return Promise.resolve()
 }
 
 const reporter = createDevErrorReporter<Request>({
@@ -72,6 +88,38 @@ const reporter = createDevErrorReporter<Request>({
   requestInfo: request => ({ method: request.method, url: new URL(request.url), headers: request.headers }),
   mapStack: error => fixStacktraces(error, context!.server),
 })
+
+/** Ask the dev server to build, publish and render the report, as only it can read the sources. */
+function requestRemoteReport (error: unknown, request?: Request): Promise<DevErrorReport> {
+  const id = crypto.randomUUID()
+  return new Promise((resolve, reject) => {
+    const settle = (reply?: RemoteDevErrorReport) => {
+      clearTimeout(timer)
+      hot!.off(REMOTE_DEV_ERROR_REPORT_EVENT, listener)
+      const { report, overlay = '', page = '' } = reply ?? {}
+      if (!report) {
+        return reject(new Error('The dev server did not report the error.'))
+      }
+      resolve({
+        report,
+        overlay: (html) => {
+          const index = html.lastIndexOf('</body>')
+          return Promise.resolve(index === -1 ? html + overlay : html.slice(0, index) + overlay + html.slice(index))
+        },
+        page: () => Promise.resolve(page),
+      })
+    }
+    const listener = (reply: RemoteDevErrorReport) => reply.id === id && settle(reply)
+    const timer = setTimeout(settle, 10_000)
+    hot!.on(REMOTE_DEV_ERROR_REPORT_EVENT, listener)
+    hot!.send(REMOTE_DEV_ERROR_EVENT, {
+      id,
+      error: serializeErrorCause(error),
+      status: (error as { status?: number } | undefined)?.status,
+      request: request && { method: request.method, url: request.url, headers: [...request.headers] },
+    } satisfies RemoteDevError)
+  })
+}
 
 async function buildReport (error: unknown): Promise<ErrorReport> {
   const { viteLoader } = await import('my-bad/vite')
