@@ -71,6 +71,7 @@ minimumReleaseAgeExclude:
   - fetchdts@0.2.0
   - pkg-types@2.3.3
   - package-manager-detector@1.9.0
+  - '@devframes/hub-ui-onboard@1.2.2'
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
@@ -160,7 +161,7 @@ catalogs:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.10
     '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-2610050950-4d0d3e9
-    '@nuxt/devtools': ^4.0.0-beta.3
+    '@nuxt/devtools-onboard': ^4.0.0-beta.4
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.43
     autoprefixer: ^10.6.1
