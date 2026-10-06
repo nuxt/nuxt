@@ -356,6 +356,36 @@ describe('addDevServerHandler', () => {
     expect(nuxt.options.devServerHandlers).toEqual([{ route: '/test', handler: v3 }])
     expect(serverApiOf(nuxt.options.devServerHandlers[0]!)).toBe('nitro3')
   })
+
+  it('registers the base path of a wildcard route on a nitro v2 host', () => {
+    const nuxt = createMockNuxt('2.11.0')
+    const v2 = () => {}
+    const portable = () => {}
+    runWithNuxtContext(nuxt, () => addDevServerHandler({ route: '/_fonts/**', handler: { nitro2: v2, nuxt: portable } }))
+    expect(nuxt.options.devServerHandlers).toEqual([
+      { route: '/_fonts/**', handler: v2 },
+      { route: '/_fonts', handler: v2 },
+    ])
+    expect(serverApiOf(nuxt.options.devServerHandlers[1]!)).toBe('nitro2')
+    expect(unusedVariantsOf(nuxt.options.devServerHandlers[1]!)).toEqual([portable])
+  })
+
+  it('leaves a wildcard route alone where the host router matches the base path', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    runWithNuxtContext(nuxt, () => addDevServerHandler({ route: '/_fonts/**', handler: () => {} }))
+    expect(nuxt.options.devServerHandlers.map(handler => handler.route)).toEqual(['/_fonts/**'])
+  })
+
+  it('does not add a base route that nitro v2 cannot mount, or that is taken', () => {
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => {
+      addDevServerHandler({ route: '/**', handler: () => {} })
+      addDevServerHandler({ route: '/_img/:size/**', handler: () => {} })
+      addDevServerHandler({ route: '/_icons', method: 'post', handler: () => {} })
+      addDevServerHandler({ route: '/_icons/**', method: 'get', handler: () => {} })
+    })
+    expect(nuxt.options.devServerHandlers.map(handler => handler.route)).toEqual(['/**', '/_img/:size/**', '/_icons', '/_icons/**'])
+  })
 })
 
 describe('addNitroPlugin', () => {
