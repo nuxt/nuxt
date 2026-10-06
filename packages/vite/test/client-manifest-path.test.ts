@@ -85,3 +85,74 @@ describe('client manifest path overridden by a vite plugin', () => {
     })).rejects.toMatchObject({ code: 'NUXT_B7020' })
   }, 240 * 1000)
 })
+
+// https://github.com/nuxt/nuxt/issues/36343
+describe('components bundled into chunks without a facade module', () => {
+  afterEach(async () => {
+    await rm(tmpDir, { recursive: true, force: true })
+  })
+
+  it('gains manifest entries with their stylesheets (`inlineStyles: false`)', async () => {
+    await rm(tmpDir, { recursive: true, force: true })
+    await mkdir(join(tmpDir, 'app/components'), { recursive: true })
+    await mkdir(join(tmpDir, 'app/pages'), { recursive: true })
+    await writeFile(join(tmpDir, 'app/app.vue'), '<template><NuxtPage /></template>')
+    await writeFile(join(tmpDir, 'app/components/Lazy.vue'), [
+      '<template><p class="lazy">lazy</p></template>',
+      '',
+      '<style scoped>.lazy { color: rebeccapurple }</style>',
+    ].join('\n'))
+    // The component is lazily loaded on one page and statically imported on another,
+    // so the bundler merges it into a chunk without a facade module.
+    await writeFile(join(tmpDir, 'app/pages/index.vue'), [
+      '<script setup>',
+      'const Lazy = defineAsyncComponent(() => import(\'../components/Lazy.vue\'))',
+      '</script>',
+      '',
+      '<template><div><Lazy /></div></template>',
+    ].join('\n'))
+    await writeFile(join(tmpDir, 'app/pages/other.vue'), [
+      '<script setup>',
+      'import Lazy from \'../components/Lazy.vue\'',
+      '</script>',
+      '',
+      '<template><div><Lazy /></div></template>',
+    ].join('\n'))
+
+    const nuxt = await loadNuxt({
+      cwd: tmpDir,
+      ready: true,
+      dev: false,
+      overrides: {
+        compatibilityDate: 'latest',
+        devtools: { enabled: false },
+        ssr: true,
+        features: { inlineStyles: false },
+        vite: {
+          build: {
+            rollupOptions: {
+              output: {
+                // Force the component into a manual chunk, which — unlike dynamic
+                // entry chunks — has no facade module carrying its manifest key.
+                manualChunks: (id: string) => id.endsWith('components/Lazy.vue') ? 'shared-lazy' : undefined,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    let manifest: Manifest | undefined
+    nuxt.hook('build:manifest', (m) => { manifest = m })
+
+    try {
+      await buildNuxt(nuxt)
+    } finally {
+      await nuxt.close()
+    }
+
+    const entry = manifest!['components/Lazy.vue']
+    expect(entry).toBeDefined()
+    expect(entry!.css?.length).toBeGreaterThan(0)
+  }, 240 * 1000)
+})

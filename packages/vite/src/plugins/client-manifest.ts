@@ -17,6 +17,7 @@ import { collectGlobalCss, toFsUrl } from '../utils/css.ts'
 export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   let clientEntry: string
   let key: string
+  let root: string
   let disableCssCodeSplit: boolean
   let manifestFileName: string
   let manifestFile: string
@@ -27,6 +28,15 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
 
   // captured in-memory from the client env's bundle under env-API
   let rawClientManifest: ViteClientManifest | undefined
+
+  /**
+   * Vue SFC modules that the bundler placed into chunks *without* a facade module.
+   * Vite's manifest only emits entries keyed by a chunk's facade (or by the chunk file
+   * name when there is none), so the source id the SSR runtime registers for such a
+   * component (`components/x.vue`) has no manifest entry and its stylesheet is skipped
+   * on the server (https://github.com/nuxt/nuxt/issues/36343).
+   */
+  const facadelessModuleEntries: Array<{ id: string, file: string, css: string[] }> = []
 
   let clientBundleGenerated = false
 
@@ -84,6 +94,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       handler (_options, bundle) {
         if (nuxt.options.dev || this.environment?.name !== 'client') { return }
         clientBundleGenerated = true
+        captureFacadelessModuleEntries(bundle)
         if (!envApi) { return }
         const asset = bundle[manifestFileName]
         if (asset?.type === 'asset') {
@@ -94,6 +105,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     configResolved (config) {
       clientEntry = resolveClientEntry(config)
       key = relative(config.root, clientEntry)
+      root = config.root
       disableCssCodeSplit = config.build?.cssCodeSplit === false
       if (!nuxt.options.dev) {
         const clientBuild = config.environments.client?.build ?? config.build
@@ -115,6 +127,28 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       if (envApi && !nuxt.options.dev) { return }
       await finalize()
     },
+  }
+
+  /**
+   * Capture the `.vue` modules that ended up inside chunks without a facade module.
+   * These ids have no manifest entry of their own (Vite keys such chunks by file name),
+   * but the SSR runtime registers components by their source id, so the final manifest
+   * gains an alias entry per module pointing at the chunk that carries its styles.
+   */
+  function captureFacadelessModuleEntries (bundle: Record<string, { type: string, fileName?: string, modules?: Record<string, unknown>, viteMetadata?: { importedCss?: Set<string> } }>): void {
+    for (const fileName in bundle) {
+      const chunk = bundle[fileName]
+      if (chunk?.type !== 'chunk' || !chunk.modules) { continue }
+      const css = [...(chunk.viteMetadata?.importedCss ?? [])]
+      if (!css.length) { continue }
+      for (const id of Object.keys(chunk.modules)) {
+        // Only SFCs are registered by the SSR runtime; virtual ids and other assets are never looked up.
+        if (!id.endsWith('.vue')) { continue }
+        const id_ = relative(root, id)
+        if (!id_.endsWith('.vue')) { continue }
+        facadelessModuleEntries.push({ id: id_, file: fileName, css })
+      }
+    }
   }
 
   async function finalizeBuildManifest (): Promise<void> {
@@ -158,6 +192,18 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
     }
 
     const manifest = normalizeViteManifest(clientManifest)
+
+    // Alias facade-less Vue modules to the chunk that carries their styles, so the SSR
+    // renderer can resolve styles for components it registers by source id even when the
+    // bundler merged them into a shared chunk without a facade.
+    for (const entry of facadelessModuleEntries) {
+      if (manifest[entry.id]) { continue }
+      manifest[entry.id] = {
+        file: entry.file.replace(BASE_RE, ''),
+        css: entry.css.map(css => css.replace(BASE_RE, '')),
+      }
+    }
+
     await nuxt.callHook('build:manifest', manifest)
 
     precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))
