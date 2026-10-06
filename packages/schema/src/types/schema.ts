@@ -1822,6 +1822,9 @@ export interface ConfigSchema {
     /**
      * Whether to enable a compatibility layer for Nitro auto imports.
      * We recommend migrating to direct imports instead.
+     *
+     * When disabled, h3 and Nitro helpers are no longer auto-imported in server code. Exports from
+     * `server/utils/` and `shared/utils/`, and imports that modules register, stay auto-imported.
      * @default true
      * @default false with compatibilityVersion >= 5
      */
