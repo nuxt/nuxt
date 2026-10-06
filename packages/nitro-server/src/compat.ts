@@ -845,15 +845,45 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   let active = isLegacyEnabled(legacy) || declaredLegacy
   const reported = new Set<string>()
 
+  /** The most specific module holding the real path, else one of the scanned paths. */
+  const ownerOf = (real: string, paths: string[]) => {
+    let owner: InstalledModule | undefined
+    let length = 0
+    for (const space of ['real', 'literal'] as const) {
+      for (const module of installedModules) {
+        const dir = normalize(module.dir)
+        const prefix = withTrailingSlash(space === 'real' ? toRealPath(dir) : dir)
+        if (prefix.length > length && (space === 'real' ? real.startsWith(prefix) : paths.some(path => path.startsWith(prefix)))) {
+          owner = module
+          length = prefix.length
+        }
+      }
+      if (owner) {
+        return owner
+      }
+    }
+  }
+
   const reportLegacyScope = (found: Map<string, string[]>) => {
-    const byModule = new Map<string, Set<string>>()
+    const byFile = new Map<string, { paths: string[], specifiers: string[] }>()
     for (const [path, specifiers] of found) {
       const real = toRealPath(path)
-      if (reported.has(real) || isUserServerCode(path)) {
+      const file = byFile.get(real)
+      if (file) {
+        file.paths.push(path)
+        file.specifiers.push(...specifiers)
+      } else {
+        byFile.set(real, { paths: [path], specifiers: [...specifiers] })
+      }
+    }
+    const byModule = new Map<string, Set<string>>()
+    for (const [real, { paths, specifiers }] of byFile) {
+      if (reported.has(real) || paths.some(isUserServerCode)) {
         continue
       }
       reported.add(real)
-      const module = installedModules.find(m => path.startsWith(withTrailingSlash(normalize(m.dir))) || real.startsWith(withTrailingSlash(toRealPath(normalize(m.dir)))))
+      const module = ownerOf(real, paths)
+      const path = paths.find(path => path !== real) ?? real
       const key = module?.name || module?.dir || (virtualSources.has(path) ? path : dirname(path))
       const set = byModule.get(key) || new Set()
       byModule.set(key, set)
