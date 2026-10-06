@@ -44,6 +44,7 @@ allowBuilds:
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - '@nuxt/*'
+  - '@devframes/*'
   - clickable-path
   - errx
   - fnv1a-64
@@ -160,7 +161,7 @@ catalogs:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.10
     '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-2610050950-4d0d3e9
-    '@nuxt/devtools': ^4.0.0-beta.3
+    '@nuxt/devtools-onboard': ^4.0.0-beta.3
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.43
     autoprefixer: ^10.6.1
