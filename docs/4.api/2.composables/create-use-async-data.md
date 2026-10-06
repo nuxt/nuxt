@@ -41,11 +41,11 @@ The resulting composable has the same signature and return type as [`useAsyncDat
 ```ts [Signature]
 function createUseAsyncData (
   options?: Partial<AsyncDataOptions> & { addons?: UseAsyncDataAddon[] },
-): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, /* addon extensions */>
+): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
 
 function createUseAsyncData (
   options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions>,
-): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, /* addon extensions */>
+): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
 ```
 
 The returned composable's signature includes any custom options and return-value extensions contributed by the [addons](#addons).
