@@ -391,8 +391,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add nuxt types
   nuxt.hook('prepare:types', async (opts) => {
-    // must stay first so the global `$fetch` gets Nuxt's type rather than nitropack's
-    opts.references.unshift({ path: resolve(nuxt.options.buildDir, 'types/fetch-global.d.ts') })
+    if (nuxt.options.experimental.routeTypedFetch) {
+      // must stay first so the global `$fetch` gets Nuxt's type rather than nitropack's
+      opts.references.unshift({ path: resolve(nuxt.options.buildDir, 'types/fetch-global.d.ts') })
+    }
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
     // Add vue shim
     if (nuxt.options.typescript.shim) {
