@@ -505,6 +505,8 @@ export interface ConfigSchema {
      *
      * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
      *
+     * With the Rsbuild builder, Nuxt writes an [Rsdoctor](https://rsdoctor.rs) report to `filename` and ignores the other options.
+     *
      * @example
      * ```js
      * analyze: {

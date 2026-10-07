@@ -147,7 +147,7 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B7029: {
-      why: '`webpack-bundle-analyzer` is not installed, so bundle analysis cannot run.',
+      why: '`@rsdoctor/rspack-plugin` is not installed, so bundle analysis cannot run.',
       fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable bundle analysis.`,
       docs: false,
     },

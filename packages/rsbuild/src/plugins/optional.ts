@@ -1,8 +1,9 @@
+import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
-import type { RsbuildPlugin, Rspack } from '@rsbuild/core'
+import type { RsbuildPlugin } from '@rsbuild/core'
 import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
-import { resolve } from 'pathe'
+import { basename, dirname, join, resolve } from 'pathe'
 
 /**
  * Rsbuild plugins enabled when the project depends on them, as they
@@ -48,39 +49,55 @@ export async function resolveTypeCheckPlugin (nuxt: Nuxt): Promise<RsbuildPlugin
   return pluginTypeCheck()
 }
 
-export async function resolveAnalyzePlugin (nuxt: Nuxt): Promise<RsbuildPlugin | undefined> {
+/**
+ * Rsdoctor is the bundle analyzer of Rsbuild. `build.analyze` writes a single HTML report of the client build, which
+ * `nuxt analyze` serves. With `RSDOCTOR=true`, Rsbuild adds Rsdoctor to each build with its data next to the output,
+ * which would publish the data of the client build (including the source of modules): Nuxt adds it instead.
+ */
+export async function resolveRsdoctorPlugin (nuxt: Nuxt): Promise<RsbuildPlugin | undefined> {
   const analyze = nuxt.options.build.analyze
-  if (nuxt.options.dev || nuxt.options.test || !analyze || (typeof analyze === 'object' && !analyze.enabled)) {
+  const analyzeClient = !nuxt.options.dev && !nuxt.options.test && !!analyze && (typeof analyze !== 'object' || !!analyze.enabled)
+  const rsdoctorEnv = process.env.RSDOCTOR === 'true'
+  if (!analyzeClient && !rsdoctorEnv) {
     return
   }
 
-  const installed = await ensureDependencyInstalled('webpack-bundle-analyzer', {
+  const installed = await ensureDependencyInstalled('@rsdoctor/rspack-plugin', {
     rootDir: nuxt.options.rootDir,
     searchPaths: nuxt.options.modulesDir,
     from: import.meta.url,
   })
   if (!installed) {
-    bundlerDiagnostics.NUXT_B7029({ installCommand: await getAddDependencyCommand('webpack-bundle-analyzer', nuxt.options.rootDir, { dev: true }) })
+    bundlerDiagnostics.NUXT_B7029({ installCommand: await getAddDependencyCommand('@rsdoctor/rspack-plugin', nuxt.options.rootDir, { dev: true }) })
     return
   }
 
-  const { BundleAnalyzerPlugin } = await import('webpack-bundle-analyzer')
-  const statsDir = resolve(nuxt.options.analyzeDir)
+  const { RsdoctorRspackPlugin } = await import('@rsdoctor/rspack-plugin')
+  const filename = resolve(nuxt.options.rootDir, typeof analyze === 'object' && 'filename' in analyze && analyze.filename ? analyze.filename.replace('{name}', 'client') : join(nuxt.options.analyzeDir, 'client.html'))
 
   return {
-    name: 'nuxt:analyze',
+    name: 'nuxt:rsdoctor',
     setup (api) {
-      // Rsbuild has no built-in bundle analyzer: use the Rspack-compatible `webpack-bundle-analyzer` plugin
-      api.modifyRspackConfig((config) => {
+      // Rsbuild doesn't add its own `RSDOCTOR=true` plugin to builds that already have one
+      api.modifyRspackConfig((config, { environment }) => {
+        const brief = analyzeClient && environment.name === 'client'
+        if (!brief && !rsdoctorEnv) {
+          return
+        }
+
         config.plugins ||= []
-        config.plugins.push(new BundleAnalyzerPlugin({
-          analyzerMode: 'static',
-          defaultSizes: 'gzip',
-          generateStatsFile: true,
-          openAnalyzer: true,
-          reportFilename: resolve(statsDir, 'client.html'),
-          statsFilename: resolve(statsDir, 'client.json'),
-        }) as unknown as Rspack.RspackPluginInstance)
+        config.plugins.push(new RsdoctorRspackPlugin({
+          output: brief
+            ? {
+                mode: 'brief',
+                reportDir: dirname(filename),
+                options: {
+                  type: ['html'],
+                  htmlOptions: { reportHtmlName: basename(filename), writeDataJson: false },
+                },
+              }
+            : { reportDir: resolve(nuxt.options.analyzeDir, environment.name) },
+        }))
       })
     },
   }
