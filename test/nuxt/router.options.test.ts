@@ -261,6 +261,93 @@ describe('scrollBehavior with cross-layout transitions (#34196)', () => {
   })
 })
 
+// https://github.com/nuxt/nuxt/issues/36484
+describe('scrollBehavior with a page transition across layouts', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  let wrapper: VueWrapper<unknown>
+  let scrollTo: ReturnType<typeof vi.spyOn>
+  const cleanups: Array<() => void> = []
+
+  const pageLoadingEnd = vi.fn()
+  const addedLayouts = ['page-transition-layout-a', 'page-transition-layout-b']
+
+  beforeAll(async () => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    for (const layout of addedLayouts) {
+      layouts[layout] = defineComponent({
+        setup (_, ctx) {
+          return () => h('div', { class: layout }, ctx.slots.default?.())
+        },
+      })
+    }
+
+    const pageTransition = { name: 'page', mode: 'out-in' as const, duration: 10 }
+
+    router.addRoute({
+      name: 'page-transition-layout-a',
+      path: '/page-transition-layout-a',
+      // @ts-expect-error dynamically-added layout
+      meta: { layout: 'page-transition-layout-a', layoutTransition: false, pageTransition },
+      component: SyncComponent,
+    })
+
+    router.addRoute({
+      name: 'page-transition-layout-b',
+      path: '/page-transition-layout-b/:id',
+      // @ts-expect-error dynamically-added layout
+      meta: { layout: 'page-transition-layout-b', layoutTransition: false, pageTransition },
+      component: AsyncComponent,
+    })
+
+    cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEnd))
+
+    wrapper = await mountSuspended(defineComponent({
+      setup: () => () => h(NuxtLayout, null, {
+        default: () => h(NuxtPage),
+      }),
+    }), { global: { stubs: { transition: false } } })
+    await flushPromises()
+  })
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
+  })
+
+  afterAll(() => {
+    router.removeRoute('page-transition-layout-a')
+    router.removeRoute('page-transition-layout-b')
+    for (const layout of addedLayouts) {
+      delete layouts[layout]
+    }
+    wrapper.unmount()
+    for (const cleanup of cleanups) {
+      cleanup()
+    }
+  })
+
+  it('should scroll after switching layout to a page with async setup', async () => {
+    await navigateTo('/page-transition-layout-a')
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    vi.clearAllMocks()
+
+    await navigateTo('/page-transition-layout-b/1')
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    expect(nuxtApp['~transitionPromise']).toBeUndefined()
+
+    // later navigations in the new layout still scroll
+    vi.clearAllMocks()
+    await navigateTo('/page-transition-layout-b/2')
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+  })
+})
+
 describe('scrollBehavior with scrollToTop and fixed page key', () => {
   let router: ReturnType<typeof useRouter>
   let nuxtApp: ReturnType<typeof useNuxtApp>

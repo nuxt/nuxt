@@ -226,7 +226,9 @@ export default defineComponent({
                   suspensible: true,
                   onPending: () => {
                     isSuspensePending = true
-                    if (hasTransition) {
+                    // a freshly mounted <NuxtPage> (e.g. inside a new layout) has no page to leave,
+                    // so `onAfterLeave` would never settle the transition (#36484)
+                    if (hasTransition && hasResolvedOnce) {
                       _startTransition(nuxtApp)
                     }
                     pageStartPromise = nuxtApp.callHook('page:start', routeProps.Component)
