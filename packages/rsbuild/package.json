@@ -44,25 +44,24 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "@rsbuild/plugin-type-check": "catalog:dev",
-    "@types/webpack-bundle-analyzer": "catalog:dev",
+    "@rsdoctor/rspack-plugin": "catalog:dev",
     "h3": "1.15.11",
     "h3-next": "catalog:dev",
     "rollup": "catalog:dev",
     "tsdown": "catalog:dev",
-    "vue": "catalog:app-runtime",
-    "webpack-bundle-analyzer": "catalog:webpack"
+    "vue": "catalog:app-runtime"
   },
   "peerDependencies": {
     "@rsbuild/plugin-type-check": "^1.6.0",
+    "@rsdoctor/rspack-plugin": "^1.6.4",
     "nuxt": "workspace:*",
-    "vue": "^3.3.4",
-    "webpack-bundle-analyzer": "^5.4.0"
+    "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {
     "@rsbuild/plugin-type-check": {
       "optional": true
     },
-    "webpack-bundle-analyzer": {
+    "@rsdoctor/rspack-plugin": {
       "optional": true
     }
   },
