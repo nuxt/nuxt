@@ -44,7 +44,7 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "@rsbuild/plugin-type-check": "catalog:dev",
-    "@rsdoctor/rspack-plugin": "catalog:dev",
+    "@rsdoctor/types": "catalog:dev",
     "h3": "1.15.11",
     "h3-next": "catalog:dev",
     "rollup": "catalog:dev",
@@ -53,15 +53,11 @@
   },
   "peerDependencies": {
     "@rsbuild/plugin-type-check": "^1.6.0",
-    "@rsdoctor/rspack-plugin": "^1.6.4",
     "nuxt": "workspace:*",
     "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {
     "@rsbuild/plugin-type-check": {
-      "optional": true
-    },
-    "@rsdoctor/rspack-plugin": {
       "optional": true
     }
   },

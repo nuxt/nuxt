@@ -1,6 +1,7 @@
 import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
-import type { RsbuildPlugin } from '@rsbuild/core'
+import type { RsbuildPlugin, Rspack } from '@rsbuild/core'
+import type { Plugin as RsdoctorPluginTypes } from '@rsdoctor/types'
 import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { basename, dirname, join, resolve } from 'pathe'
@@ -50,6 +51,14 @@ export async function resolveTypeCheckPlugin (nuxt: Nuxt): Promise<RsbuildPlugin
 }
 
 /**
+ * `@rsdoctor/rspack-plugin` is loaded from the project, like the preprocessor plugins. It isn't a (peer) dependency, as
+ * pnpm installs optional peers in the monorepo, and its dependencies would lower the provenance of locked packages.
+ */
+interface RsdoctorModule {
+  RsdoctorRspackPlugin: new (options: RsdoctorPluginTypes.RsdoctorWebpackPluginOptions<[]>) => Rspack.RspackPluginInstance
+}
+
+/**
  * Rsdoctor is the bundle analyzer of Rsbuild. `build.analyze` writes a single HTML report of the client build, which
  * `nuxt analyze` serves. With `RSDOCTOR=true`, Rsbuild adds Rsdoctor to each build with its data next to the output,
  * which would publish the data of the client build (including the source of modules): Nuxt adds it instead.
@@ -67,12 +76,18 @@ export async function resolveRsdoctorPlugin (nuxt: Nuxt): Promise<RsbuildPlugin 
     searchPaths: nuxt.options.modulesDir,
     from: import.meta.url,
   })
-  if (!installed) {
+  const rsdoctor = installed
+    ? await tryImportModule<RsdoctorModule>('@rsdoctor/rspack-plugin', {
+        url: [...[nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)), new URL(import.meta.url)],
+        interopDefault: false,
+      })
+    : undefined
+  if (!rsdoctor) {
     bundlerDiagnostics.NUXT_B7029({ installCommand: await getAddDependencyCommand('@rsdoctor/rspack-plugin', nuxt.options.rootDir, { dev: true }) })
     return
   }
 
-  const { RsdoctorRspackPlugin } = await import('@rsdoctor/rspack-plugin')
+  const { RsdoctorRspackPlugin } = rsdoctor
   const filename = resolve(nuxt.options.rootDir, typeof analyze === 'object' && 'filename' in analyze && analyze.filename ? analyze.filename.replace('{name}', 'client') : join(nuxt.options.analyzeDir, 'client.html'))
 
   return {
