@@ -87,6 +87,17 @@ In a menu or a set of breadcrumbs, the link matching the current route already e
 </template>
 ```
 
+Vue Router decides which link matches from the route and its params, [not the query](https://router.vuejs.org/guide/essentials/active-links.html), so a link that differs from the current page only by its query is marked as the current page too: a row of `?tab=` links, a set of filters, or a list of `?edit=<id>` rows all announce "current page" at once. Only one element in a set should be current, so give such links an `aria-current` of their own, which takes precedence over the router's:
+
+```vue
+<template>
+  <NuxtLink
+    :to="{ query: { tab: 'billing' } }"
+    :aria-current="$route.query.tab === 'billing' ? 'true' : undefined"
+  >Billing</NuxtLink>
+</template>
+```
+
 Links to files in your `public/` directory, or to another app on the same origin, are not routes that Vue Router knows about. Mark them as [`external`](/docs/api/components/nuxt-link#handling-static-file-and-cross-app-links) so the browser performs a real navigation instead of failing to match a route.
 
 :read-more{title="NuxtLink" to="/docs/api/components/nuxt-link"}
@@ -104,10 +115,7 @@ A skip link as the first tab stop of your app is the conventional fix, and it he
     href="#main"
   >Skip to main content</a>
   <AppHeader />
-  <main
-    id="main"
-    tabindex="-1"
-  >
+  <main id="main">
     <NuxtPage />
   </main>
 </template>
@@ -123,9 +131,9 @@ A skip link as the first tab stop of your app is the conventional fix, and it he
 </style>
 ```
 
-`<main>` is not focusable on its own, so it needs `tabindex="-1"` to accept focus from the skip link or from a script. Use `-1` rather than a positive value, which would move the element in the tab order and surprise everyone else.
+Following a link to `#main` moves the browser's sequential focus navigation starting point to `<main>`, so the next <kbd>Tab</kbd> lands inside it even though `<main>` itself is not focusable.
 
-If it suits your app, you can go further and move focus to the main region after every navigation from a plugin:
+If it suits your app, you can go further and move focus to the main region after every navigation from a plugin. A script can only focus `<main>` once it has `tabindex="-1"`. Use `-1` rather than a positive value, which would move the element in the tab order and surprise everyone else. Note that a click on anything non-focusable inside it then focuses `<main>` itself, because the browser focuses the nearest focusable ancestor of what was clicked:
 
 ```ts [app/plugins/focus-main.client.ts]
 export default defineNuxtPlugin(() => {
