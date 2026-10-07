@@ -20,7 +20,9 @@
     "ofetch",
     "verkit",
     "@nuxt/webpack-builder",
+    "@nuxt/rsbuild-builder",
     "@nuxt/rspack-builder",
+    "@rsbuild/core",
     "@rspack/core"
   ],
   "workspaces": {
@@ -163,11 +165,15 @@
         "vue"
       ]
     },
+    "packages/rsbuild": {
+      "ignoreDependencies": [
+        "@vue/compiler-sfc",
+        "vue"
+      ]
+    },
     "packages/rspack": {
       "ignoreDependencies": [
         "@nuxt/friendly-errors-webpack-plugin",
-        "@nuxt/kit",
-        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",

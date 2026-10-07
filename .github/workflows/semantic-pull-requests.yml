@@ -28,6 +28,7 @@ jobs:
             docs
             kit
             nuxt
+            rsbuild
             rspack
             schema
             ui-templates

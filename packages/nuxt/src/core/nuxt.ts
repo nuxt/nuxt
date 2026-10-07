@@ -309,10 +309,12 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.typescript.builder !== false) {
     const envMap = {
       // defaults from `builder` based on package name
+      '@nuxt/rsbuild-builder': '@rsbuild/core/types',
       '@nuxt/rspack-builder': '@rsbuild/core/types',
       '@nuxt/vite-builder': 'vite/client',
       '@nuxt/webpack-builder': 'webpack/module',
       // simpler overrides from `typescript.builder` for better DX
+      'rsbuild': '@rsbuild/core/types',
       'rspack': '@rsbuild/core/types',
       'vite': 'vite/client',
       'webpack': 'webpack/module',
@@ -758,7 +760,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Track components used to render for webpack
-  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.builder === '@nuxt/rspack-builder') {
+  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.builder === '@nuxt/rsbuild-builder' || nuxt.options.builder === '@nuxt/rspack-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
