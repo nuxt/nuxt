@@ -238,7 +238,7 @@ catalogs:
     '@playwright/test': 1.64.1
     '@rollup/plugin-babel': 7.1.0
     '@rsbuild/plugin-type-check': 1.6.0
-    '@rsdoctor/rspack-plugin': 1.6.4
+    '@rsdoctor/types': 1.6.4
     '@rspack/core': 2.3.0
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5
