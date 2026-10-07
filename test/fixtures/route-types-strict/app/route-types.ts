@@ -1,5 +1,4 @@
 import { expectTypeOf } from 'vitest'
-import { $fetch } from '#build/fetch'
 
 /**
  * `future.compatibilityVersion: 5` types requests from the routes the server builder reported, and
