@@ -108,6 +108,7 @@ catalogs:
 
   # vue compiler/tooling
   vue:
+    '@rsbuild/plugin-vue': ^2.0.1
     '@vitejs/plugin-vue': ^6.0.10
     # kept in lockstep with the vue override above
     '@vue/compiler-sfc': 3.5.44
@@ -236,6 +237,7 @@ catalogs:
     '@parcel/watcher': 2.6.0
     '@playwright/test': 1.64.1
     '@rollup/plugin-babel': 7.1.0
+    '@rsbuild/plugin-type-check': 1.6.0
     '@rspack/core': 2.3.0
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5

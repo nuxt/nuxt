@@ -1,0 +1,79 @@
+{
+  "name": "@nuxt/rsbuild-builder",
+  "version": "5.0.0-0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/rsbuild"
+  },
+  "description": "Rsbuild bundler for Nuxt",
+  "homepage": "https://nuxt.com",
+  "license": "MIT",
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prepack": "node ../../scripts/prepack.ts && tsdown",
+    "build": "tsdown",
+    "test:attw": "node ../../scripts/test-attw.ts"
+  },
+  "dependencies": {
+    "@nuxt/kit": "workspace:*",
+    "@rsbuild/core": "catalog:webpack",
+    "@rsbuild/plugin-vue": "catalog:vue",
+    "@vue/compiler-sfc": "catalog:vue",
+    "defu": "catalog:build",
+    "escape-string-regexp": "catalog:build",
+    "exsolve": "catalog:build",
+    "knitwork": "catalog:build",
+    "mlly": "catalog:build",
+    "ohash": "catalog:build",
+    "pathe": "catalog:build",
+    "rolldown-string": "catalog:vite",
+    "seroval": "catalog:build",
+    "ufo": "catalog:build",
+    "unenv": "catalog:build",
+    "vue-bundle-renderer": "catalog:build"
+  },
+  "devDependencies": {
+    "@nuxt/schema": "workspace:*",
+    "@rsbuild/plugin-type-check": "catalog:dev",
+    "@types/webpack-bundle-analyzer": "catalog:dev",
+    "h3": "1.15.11",
+    "h3-next": "catalog:dev",
+    "rollup": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "vue": "catalog:app-runtime",
+    "webpack-bundle-analyzer": "catalog:webpack"
+  },
+  "peerDependencies": {
+    "@rsbuild/plugin-type-check": "^1.6.0",
+    "nuxt": "workspace:*",
+    "vue": "^3.3.4",
+    "webpack-bundle-analyzer": "^5.4.0"
+  },
+  "peerDependenciesMeta": {
+    "@rsbuild/plugin-type-check": {
+      "optional": true
+    },
+    "webpack-bundle-analyzer": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": "^22.12.0 || ^24.11.0 || >=26.0.0"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.mjs",
+      "./package.json": "./package.json"
+    },
+    "types": "./dist/index.d.mts"
+  }
+}
