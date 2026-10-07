@@ -20,7 +20,9 @@
     "ofetch",
     "verkit",
     "@nuxt/webpack-builder",
+    "@nuxt/rsbuild-builder",
     "@nuxt/rspack-builder",
+    "@rsbuild/core",
     "@rspack/core"
   ],
   "workspaces": {
@@ -159,6 +161,12 @@
         "pug-plain-loader",
         "raw-loader",
         "url-loader",
+        "vue"
+      ]
+    },
+    "packages/rsbuild": {
+      "ignoreDependencies": [
+        "@vue/compiler-sfc",
         "vue"
       ]
     },

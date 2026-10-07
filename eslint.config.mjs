@@ -230,7 +230,7 @@ export default createConfigForNuxt({
       },
     },
     {
-      files: ['packages/{nuxt,kit,nitro-server,schema,vite,webpack,rspack}/src/**'],
+      files: ['packages/{nuxt,kit,nitro-server,schema,vite,webpack,rsbuild,rspack}/src/**'],
       // vite-node* files execute inside the nitro dev process rather than the
       // Nuxt build process, so nostics catalogs do not apply there.
       ignores: ['packages/nuxt/src/app/**', '**/runtime/**', '**/*.{spec,test}.{js,mjs,ts,mts}', 'packages/vite/src/vite-node*.ts'],

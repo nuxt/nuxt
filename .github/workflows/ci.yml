@@ -411,7 +411,7 @@ jobs:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*"'
           - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*"'
+            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*" --project "fixtures:rsbuild-*"'
           - os: windows-latest
             projects: '--project "fixtures:vite-dev-*"'
           - os: windows-latest
@@ -639,4 +639,4 @@ jobs:
           node-version: lts
           cache: true
 
-      - run: vp exec pkg-pr-new publish --compact --pnpm --packageManager=pnpm,npm,yarn './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/vite-server' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step
+      - run: vp exec pkg-pr-new publish --compact --pnpm --packageManager=pnpm,npm,yarn './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rsbuild' './packages/rspack' './packages/schema' './packages/vite' './packages/vite-server' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step

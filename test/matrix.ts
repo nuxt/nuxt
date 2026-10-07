@@ -1,9 +1,9 @@
 import { defu } from 'defu'
 import type { NuxtConfig } from 'nuxt/schema'
 
-export const builder = (process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' | 'nitro-vite') || 'vite'
+export const builder = (process.env.TEST_BUILDER as 'webpack' | 'rsbuild' | 'rspack' | 'vite' | 'nitro-vite') || 'vite'
 
-export const isWebpack = builder === 'webpack' || builder === 'rspack'
+export const isWebpack = builder === 'webpack' || builder === 'rspack' || builder === 'rsbuild'
 export const nitroViteEnvironment = builder === 'nitro-vite'
 
 export const isDev = process.env.TEST_ENV === 'dev'
