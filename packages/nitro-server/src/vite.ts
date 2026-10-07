@@ -129,6 +129,9 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   }
 
   nuxt.options.vite.plugins ||= []
+  if (nuxt.options.dev) {
+    nuxt.options.vite.plugins.push(DevRequestUrlPlugin())
+  }
   nuxt.options.vite.plugins.push(nitroPlugin({
     // reuse the Nitro instance we have created
     _nitro: nitro,
@@ -387,6 +390,35 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
           }
         }
       },
+    },
+  }
+}
+
+/**
+ * Restores the `req.url` Vite's base middleware rewrote before `nitro/vite`'s dev middleware
+ * runs, so it must be registered ahead of that plugin.
+ * TODO: remove once nitro includes https://github.com/nitrojs/nitro/pull/4734
+ */
+function DevRequestUrlPlugin (): VitePlugin {
+  const originalUrls = new WeakMap<IncomingMessage, string>()
+  return {
+    name: 'nuxt:nitro-dev-request-url',
+    configureServer (server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.url) {
+          originalUrls.set(req, req.url)
+        }
+        next()
+      })
+      return () => {
+        server.middlewares.use((req, _res, next) => {
+          const url = originalUrls.get(req)
+          if (url !== undefined && url !== req.url) {
+            req.url = url
+          }
+          next()
+        })
+      }
     },
   }
 }
