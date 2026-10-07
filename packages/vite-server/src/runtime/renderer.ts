@@ -53,6 +53,9 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
   ;(globalThis as { __buildAssetsURL?: unknown }).__buildAssetsURL = buildAssetsURL
   ;(globalThis as { __publicAssetsURL?: unknown }).__publicAssetsURL = publicAssetsURL
 
+  // loaded up front, as a runtime may drop a request's pending work once it has responded
+  const devErrors = import.meta.dev ? import('./dev-error.ts') : undefined
+
   return {
     runtimeConfig,
     buildAssetsURL,
@@ -62,9 +65,9 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     createResponse: (body, init) => new Response(body, init),
     createError: init => new NuxtServerError(init),
     prerender,
-    onRenderSuccess: import.meta.dev
+    onRenderSuccess: devErrors
       ? () => {
-          import('./dev-error.ts').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+          devErrors.then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
         }
       : undefined,
     captureError: (error) => {
@@ -73,8 +76,8 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
         console.error(error)
       }
     },
-    onDevError: import.meta.dev
-      ? (error, event, options) => import('./dev-error.ts').then(({ observeDevError }) => observeDevError(error, event.req, options))
+    onDevError: devErrors
+      ? (error, event, options) => devErrors.then(({ observeDevError }) => observeDevError(error, event.req, options))
       : undefined,
   }
 }
@@ -205,7 +208,7 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
     statusText,
     statusMessage: statusText,
     message,
-    url: request.url,
+    url: url.pathname + url.search + url.hash,
     ...data === undefined ? {} : { data: typeof data === 'string' ? data : JSON.stringify(data) },
     ...import.meta.dev && stack ? { stack } : {},
   }), { headers: request.headers }))
