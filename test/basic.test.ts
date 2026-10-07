@@ -1728,30 +1728,13 @@ describe('composables', () => {
     expect(pageErrors).toEqual([])
     await page.close()
   })
-})
-
-describe.skipIf(isDev)('useId hydration with onServerPrefetch', () => {
-  it('keeps useId stable across server render and hydration', async () => {
-    const serverHTML = await $fetch<string>('/use-id-server-prefetch')
-    const serverId = serverHTML.match(/<input[^>]*\sid="([^"]+)"/)?.[1]
-
-    expect(serverId).toBeTruthy()
-
-    const { page, pageErrors } = await renderPage('/use-id-server-prefetch')
-
-    await page.waitForFunction(() => {
-      return Boolean(document.querySelector('[data-testid="client-use-id"]')?.textContent)
-    })
-
-    const clientId = await page.getByTestId('client-use-id').textContent()
-
-    expect(clientId).toBeTruthy()
-    expect(clientId).toBe(serverId)
-    expect(pageErrors).toEqual([])
-
-    await page.close()
+  it.each(['/use-id-server-prefetch', '/use-id-preload-payload'])('`useId` should work with server prefetch hooks (%s)', async (path) => {
+    const html = await $fetch<string>(path)
+    expect(html).toContain('<div>v-0-0-0</div>')
+    await expectNoClientErrors(path)
   })
 })
+
 describe('middlewares', () => {
   it('should redirect to index with global middleware', async () => {
     const html = await $fetch<string>('/redirect/')

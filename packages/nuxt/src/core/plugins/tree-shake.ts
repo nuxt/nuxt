@@ -2,6 +2,7 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { createUnplugin } from 'unplugin'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import escapeStringRegexp from 'escape-string-regexp'
+import { genImport } from 'knitwork'
 
 import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 
@@ -9,7 +10,8 @@ type ImportPath = string
 
 interface TreeShakeComposablesPluginOptions {
   composables: Record<ImportPath, string[]>
-  preserveServerPrefetch?: boolean
+  /** Composables to replace with an argument-less call to the same export from the given module. */
+  stubs?: Record<string, ImportPath>
 }
 
 export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOptions) => createUnplugin(() => {
@@ -33,6 +35,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
       },
       handler (code, id, meta?: unknown) {
         const s = rolldownString(code, id, meta)
+        const stubImports = new Map<string, string>()
 
         // Parse and collect scope information
         const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
@@ -85,15 +88,24 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
               return
             }
 
-            // TODO: validate function name against actual auto-imports registry
-            if (options.preserveServerPrefetch && composableName === 'onServerPrefetch' && node.arguments[0]) {
-              s.overwrite(node.arguments[0].start, node.arguments[0].end, '() => {}')
-            } else {
-              s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
+            const stub = options.stubs?.[composableName]
+            if (stub) {
+              const local = `__nuxt_stub_${composableName}`
+              stubImports.set(local, genImport(stub, [{ name: composableName, as: local }]))
+              s.overwrite(node.start, node.end, `${local}()`)
+              this.skip()
+              return
             }
+
+            // TODO: validate function name against actual auto-imports registry
+            s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
             this.skip()
           },
         })
+
+        if (stubImports.size) {
+          s.prepend([...stubImports.values(), ''].join('\n'))
+        }
 
         return generateTransform(s, id)
       },

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { rolldown } from 'rolldown'
 
 import { TreeShakeComposablesPlugin } from '../src/core/plugins/tree-shake.ts'
 import { clean } from './utils.ts'
@@ -7,15 +6,6 @@ import { clean } from './utils.ts'
 describe('tree-shake', () => {
   const transformPlugin: any = TreeShakeComposablesPlugin({
     composables: { 'vue': ['onMounted'] },
-  }).raw({}, {} as any)
-
-  const clientServerPrefetchTransformPlugin: any = TreeShakeComposablesPlugin({
-    composables: { 'vue': ['onServerPrefetch'] },
-    preserveServerPrefetch: true,
-  }).raw({}, {} as any)
-
-  const serverPrefetchTransformPlugin: any = TreeShakeComposablesPlugin({
-    composables: { 'vue': ['onServerPrefetch'] },
   }).raw({}, {} as any)
 
   it('should tree shake composables from source code', () => {
@@ -42,44 +32,6 @@ describe('tree-shake', () => {
        false && /*@__PURE__*/ _onMounted(() => {})
       console.log('Hello World')"
     `)
-  })
-
-  it('should preserve onServerPrefetch registration and explicit target on the client', () => {
-    const code = `
-      import { onServerPrefetch as _onServerPrefetch } from 'vue'
-      const captured = () => console.log('server only')
-      _onServerPrefetch(() => captured(), target)
-    `
-    const { code: result } = clientServerPrefetchTransformPlugin.transform.handler(code, 'test.js')
-    expect(clean(result)).toMatchInlineSnapshot(`
-      "import { onServerPrefetch as _onServerPrefetch } from 'vue'
-      const captured = () => console.log('server only')
-      _onServerPrefetch(() => {}, target)"
-    `)
-  })
-
-  it('should leave onServerPrefetch fully tree-shakeable without client preservation', () => {
-    const code = `
-      import { onServerPrefetch } from 'vue'
-      onServerPrefetch(() => console.log('server only'))
-    `
-    const { code: result } = serverPrefetchTransformPlugin.transform.handler(code, 'test.js')
-    expect(clean(result)).toMatchInlineSnapshot(`
-      "import { onServerPrefetch } from 'vue'
-       false && /*@__PURE__*/ onServerPrefetch(() => console.log('server only'))"
-    `)
-  })
-
-  it('should eliminate dependencies captured only by onServerPrefetch handlers', async () => {
-    const result = await bundleWithClientTreeShake(`
-      import { onServerPrefetch } from 'vue'
-      import { capturedDependency } from './captured-dependency.js'
-      onServerPrefetch(() => capturedDependency())
-    `)
-
-    expect(clean(result)).toContain('onServerPrefetch(() => {})')
-    expect(result).not.toContain('capturedDependency')
-    expect(result).not.toContain('captured dependency should be eliminated')
   })
 
   it('should not error when tree-shaking composables within other tree-shaken composables', () => {
@@ -111,6 +63,25 @@ describe('tree-shake', () => {
       "import { onMounted } from '#imports'
        false && /*@__PURE__*/ onMounted(() => {})
       console.log('Hello World')"
+    `)
+  })
+
+  it('should replace stubbed composables with an argument-less call to the stub', () => {
+    const plugin: any = TreeShakeComposablesPlugin({
+      composables: { 'vue': ['onServerPrefetch'] },
+      stubs: { onServerPrefetch: '#app/composables/server-prefetch' },
+    }).raw({}, {} as any)
+    const code = `
+      import { onServerPrefetch as _onServerPrefetch } from 'vue'
+      onServerPrefetch(async () => { await serverOnly() })
+      _onServerPrefetch(() => serverOnly(), instance)
+    `
+    const { code: result } = plugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onServerPrefetch as __nuxt_stub_onServerPrefetch } from "#app/composables/server-prefetch";
+            import { onServerPrefetch as _onServerPrefetch } from 'vue'
+            __nuxt_stub_onServerPrefetch()
+            __nuxt_stub_onServerPrefetch()"
     `)
   })
 
@@ -242,39 +213,3 @@ describe('tree-shake', () => {
     `)
   })
 })
-
-async function bundleWithClientTreeShake (code: string) {
-  const entry = '/entry.js'
-  const capturedDependency = '/captured-dependency.js'
-  const bundle = await rolldown({
-    input: entry,
-    external: id => id === 'vue',
-    plugins: [
-      {
-        name: 'virtual-modules',
-        resolveId (id) {
-          if (id === entry || id === capturedDependency) {
-            return id
-          }
-          if (id === './captured-dependency.js') {
-            return capturedDependency
-          }
-        },
-        load (id) {
-          if (id === entry) {
-            return code
-          }
-          if (id === capturedDependency) {
-            return `export function capturedDependency () { console.log('captured dependency should be eliminated') }`
-          }
-        },
-      },
-      TreeShakeComposablesPlugin({
-        composables: { 'vue': ['onServerPrefetch'] },
-        preserveServerPrefetch: true,
-      }).rolldown(),
-    ],
-  })
-  const { output: [chunk] } = await bundle.generate({})
-  return chunk.code.trim()
-}

@@ -16,6 +16,7 @@ import { applyUseAsyncDataAddons } from './addons'
 import type { MergedAddonsExtensions, MergedAddonsOptions, UseAsyncDataAddon } from './addons'
 
 import { neverHydratedSymbol } from './lazy-hydration'
+import { onServerPrefetch as markServerPrefetch } from './server-prefetch'
 
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
@@ -529,9 +530,8 @@ export function _createUseAsyncData<
         const instance = getCurrentInstance()
         const inComponentSetup = !!instance || isWithinVaporComponent()
 
-        if (inComponentSetup && fetchOnServer && opts.immediate) {
-          // Preserve the server-prefetch async boundary for stable useId hydration.
-          onServerPrefetch(() => {})
+        if (fetchOnServer && opts.immediate) {
+          markServerPrefetch()
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!inComponentSetup || instance?.isMounted)) {
           dataDiagnostics.NUXT_E3003()

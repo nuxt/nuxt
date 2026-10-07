@@ -6,7 +6,7 @@ const Child = defineComponent({
   },
 })
 
-onServerPrefetch(() => {})
+preloadPayload('/')
 </script>
 
 <template>
