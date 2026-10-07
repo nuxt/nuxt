@@ -81,7 +81,7 @@
     "@dxup/nuxt": "catalog:build",
     "@jridgewell/trace-mapping": "catalog:nitro-runtime",
     "@nuxt/cli": "catalog:build",
-    "@nuxt/devtools": "catalog:build",
+    "@nuxt/devtools-onboard": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/schema": "workspace:*",
@@ -176,7 +176,7 @@
     }
   },
   "engines": {
-    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
   },
   "publishConfig": {
     "exports": {

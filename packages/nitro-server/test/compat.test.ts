@@ -1,10 +1,11 @@
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'pathe'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import type { NitroConfig } from 'nitro/types'
 
+import { createHooks } from 'hookable'
 import { createUnimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
 
@@ -35,6 +36,10 @@ function createNuxt (options: Record<string, any> = {}) {
       ...options,
     },
   } as unknown as Nuxt
+}
+
+function createLateNitro (nitroConfig: NitroConfig) {
+  return { options: { alias: {}, plugins: nitroConfig.plugins, handlers: nitroConfig.handlers }, hooks: createHooks() } as any
 }
 
 describe('getNitroPackageResolutions', () => {
@@ -72,6 +77,19 @@ describe('resolveNitroLegacyOptions', () => {
 
 describe('setupNitroCompat', () => {
   const legacyOff = resolveNitroLegacyOptions(false)
+
+  function createModuleDir (prefix: string, symlinked: boolean) {
+    const root = mkdtempSync(join(tmpdir(), prefix))
+    onTestFinished(() => rmSync(root, { recursive: true, force: true }))
+    const target = join(root, 'module')
+    mkdirSync(target)
+    if (!symlinked) {
+      return target
+    }
+    const dir = join(root, 'linked-module')
+    symlinkSync(realpathSync(target), dir, 'junction')
+    return dir
+  }
 
   it('keeps the nitro package out of the v2 scope', async () => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
@@ -123,6 +141,25 @@ describe('setupNitroCompat', () => {
     await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
 
     expect(nitroConfig.handlers![0]).toMatchObject({ route: '/**', middleware: true })
+  })
+
+  it('registers route-less portable and nitro v3 handlers as global middleware without reporting them', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9002').mockImplementation(() => ({}) as any)
+    const handlers = [
+      declared({ handler: '/modules/cors.ts' }, 'nuxt'),
+      declared({ handler: '/modules/xss.ts' }, 'nuxt'),
+      declared({ handler: '/modules/v3.ts' }, 'nitro3'),
+      declared({ route: '/api', handler: '/modules/api.ts' }, 'nuxt'),
+    ]
+    const nitroConfig: NitroConfig = { handlers }
+    const registerLate = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+    await registerLate({ options: { handlers, devHandlers: [], plugins: [], virtual: {} }, hooks: createHooks() } as any)
+
+    expect(handlers.slice(0, 3).every(h => h.route === '/**' && h.middleware === true)).toBe(true)
+    expect(handlers[3]).toMatchObject({ route: '/api' })
+    expect(handlers[3]).not.toHaveProperty('middleware')
+    expect(report).not.toHaveBeenCalled()
+    report.mockRestore()
   })
 
   it('reports route-less v2 handlers once for the whole build', async () => {
@@ -385,9 +422,9 @@ describe('setupNitroCompat', () => {
     expect((nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()).toContain('legacyCompat = false')
   })
 
-  it('installs the runtime plugin and reports the module once a scoped file imports h3 v1', async () => {
+  it.each([false, true])('installs the runtime plugin and reports the module once a scoped file imports h3 v1 (symlinked: %s)', async (symlinked) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
-    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-module-'))
+    const dir = createModuleDir('nitro-compat-module-', symlinked)
     writeFileSync(join(dir, 'handler.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => 'legacy')`)
 
     const nitroConfig: NitroConfig = { handlers: [{ route: '/legacy', handler: join(dir, 'handler.ts') } as any] }
@@ -465,8 +502,9 @@ describe('setupNitroCompat', () => {
     expect(nitroConfig.plugins!.map(String)).toEqual([expect.stringMatching(/compat[\\/]event-plugin/), expect.stringMatching(/compat[\\/]hooks-plugin/)])
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`#virtual-module/template` (imports `nitropack/runtime`)') })
 
-    // a template function is rendered once nitro exists, so its evidence arrives late
-    await registerLateScope({ options: { alias: {}, plugins: nitroConfig.plugins, handlers: nitroConfig.handlers } } as any)
+    const nitro = createLateNitro(nitroConfig)
+    registerLateScope(nitro)
+    await nitro.hooks.callHook('build:before', nitro)
 
     expect(report.mock.calls[1]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`#virtual-module/handler` (imports `h3`)') })
     report.mockRestore()
@@ -488,13 +526,41 @@ describe('setupNitroCompat', () => {
 
     const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
 
+    const nitro = createLateNitro(nitroConfig)
+    registerLateScope(nitro)
     nitroReady!()
-    await registerLateScope({ options: { alias: {}, plugins: nitroConfig.plugins, handlers: nitroConfig.handlers } } as any)
+    await nitro.hooks.callHook('build:before', nitro)
 
     const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
     const transformed = await plugin.transform.handler.call(null, `import { useStorage } from 'nitropack/runtime'`, '#virtual-module/late')
     expect(transformed.code).toMatch(/compat[\\/]nitro-v2/)
     expect(nitroConfig.plugins!.map(String)).toEqual([expect.stringMatching(/compat[\\/]event-plugin/), expect.stringMatching(/compat[\\/]hooks-plugin/)])
+    vi.restoreAllMocks()
+  })
+
+  it('renders virtual templates after `nitro:init` hooks have returned', async () => {
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    let pagesResolved!: () => void
+    const pages = new Promise<void>((resolve) => { pagesResolved = resolve })
+    const template = vi.fn(async () => {
+      await pages
+      return `import { useStorage } from 'nitropack/runtime'`
+    })
+    const nitroConfig: NitroConfig = {
+      virtual: { '#virtual-module/pages': template },
+      handlers: [{ route: '/pages', handler: '#virtual-module/pages' } as any],
+    }
+    const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+
+    const nitro = createLateNitro(nitroConfig)
+    await registerLateScope(nitro)
+
+    pagesResolved()
+    await nitro.hooks.callHook('build:before', nitro)
+    expect(template).toHaveBeenCalledTimes(1)
+    const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
+    const transformed = await plugin.transform.handler.call(null, `import { useStorage } from 'nitropack/runtime'`, '#virtual-module/pages')
+    expect(transformed.code).toMatch(/compat[\\/]nitro-v2/)
     vi.restoreAllMocks()
   })
 
@@ -516,9 +582,9 @@ export const useRule = (event: any) => setHeader(event, 'x-rule', 'noindex')`)
     vi.restoreAllMocks()
   })
 
-  it('attributes module files the server build reaches through an import', async () => {
+  it.each([false, true])('attributes module files the server build reaches through an import (symlinked: %s)', async (symlinked) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
-    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-reachable-'))
+    const dir = createModuleDir('nitro-compat-reachable-', symlinked)
     mkdirSync(join(dir, 'dist/runtime/server'), { recursive: true })
     writeFileSync(join(dir, 'dist/runtime/server/handler.ts'), `import { useRule } from './rule'
 export default () => useRule()`)
@@ -529,6 +595,191 @@ export const useRule = () => setHeader`)
     await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'reachable-module' }])
 
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`reachable-module` (imports `h3`)') })
+    vi.restoreAllMocks()
+  })
+
+  it.each(['linked', 'real'])('attributes files of a symlinked module nested in another module to the nested module (registered: %s)', async (registered) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-nested-')))
+    onTestFinished(() => rmSync(root, { recursive: true, force: true }))
+    const parent = join(root, 'parent')
+    const child = join(parent, 'child')
+    mkdirSync(join(child, 'dist/runtime/server'), { recursive: true })
+    const linked = join(root, 'linked-child')
+    symlinkSync(child, linked, 'junction')
+    writeFileSync(join(child, 'dist/runtime/server/handler.ts'), `import { defineEventHandler } from 'h3'
+import { useRule } from './rule'
+export default defineEventHandler(() => useRule())`)
+    writeFileSync(join(child, 'dist/runtime/server/rule.ts'), `import { setHeader } from 'h3/utils'
+export const useRule = () => setHeader`)
+
+    const handlerDir = registered === 'linked' ? linked : child
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/server', handler: join(handlerDir, 'dist/runtime/server/handler.ts') } as any] }
+    await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir: parent, name: 'parent-module' }, { dir: linked, name: 'child-module' }])
+
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`child-module` (imports `h3`, `h3/utils`)' })
+    vi.restoreAllMocks()
+  })
+
+  it.each([
+    ['outside any module', undefined, 'linking-module'],
+    ['inside another module', 'owning-module', 'owning-module'],
+  ])('attributes module files linked from %s to the module holding their real path, else the linking module', async (_, owner, expected) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-linked-out-')))
+    onTestFinished(() => rmSync(root, { recursive: true, force: true }))
+    const linking = join(root, 'linking')
+    const target = join(root, 'target')
+    mkdirSync(join(target, 'dist/runtime/server'), { recursive: true })
+    mkdirSync(join(linking, 'dist/runtime'), { recursive: true })
+    symlinkSync(join(target, 'dist/runtime/server'), join(linking, 'dist/runtime/server'), 'junction')
+    writeFileSync(join(target, 'dist/runtime/server/handler.ts'), `import { defineEventHandler } from 'h3'
+import { useRule } from './rule'
+export default defineEventHandler(() => useRule())`)
+    writeFileSync(join(target, 'dist/runtime/server/rule.ts'), `import { setHeader } from 'h3/utils'
+export const useRule = () => setHeader`)
+
+    const modules = [{ dir: linking, name: 'linking-module' }, ...owner ? [{ dir: target, name: owner }] : []]
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/server', handler: join(linking, 'dist/runtime/server/handler.ts') } as any] }
+    await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], modules)
+
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: `\`${expected}\` (imports \`h3\`, \`h3/utils\`)` })
+    vi.restoreAllMocks()
+  })
+
+  it('does not report a v2 user server handler registered through a symlinked project directory', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9005').mockImplementation(() => ({}) as any)
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-linked-user-')))
+    onTestFinished(() => rmSync(root, { recursive: true, force: true }))
+    const project = join(root, 'project')
+    mkdirSync(join(project, 'server/api'), { recursive: true })
+    const rootDir = join(root, 'linked-project')
+    symlinkSync(project, rootDir, 'junction')
+    writeFileSync(join(project, 'server/api/legacy.ts'), `import { defineEventHandler } from 'h3'
+export default defineEventHandler(() => 'legacy')`)
+
+    const nitroConfig: NitroConfig = { handlers: [declared({ route: '/api/legacy', handler: join(rootDir, 'server/api/legacy.ts') }, 'nitro2')] }
+    const nuxt = createNuxt({ extensions: ['.js', '.mjs', '.ts'], rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [])
+
+    expect(report).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it('does not follow or count type-only imports from a reached file', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-type-only-'))
+    mkdirSync(join(dir, 'dist/runtime/server'), { recursive: true })
+    mkdirSync(join(dir, 'dist/runtime/composables'), { recursive: true })
+    writeFileSync(join(dir, 'dist/runtime/server/handler.ts'), `import { defineEventHandler } from 'nuxt/server'
+import { helper } from './helpers'
+export default defineEventHandler(() => helper())`)
+    writeFileSync(join(dir, 'dist/runtime/server/helpers.ts'), `import type { RouterMethod } from 'h3'
+import { type NitroApp, type NitroRuntimeHooks } from 'nitropack'
+import type { ApiClient } from '../composables/api'
+export type { NitroApp, NitroRuntimeHooks, RouterMethod, ApiClient }
+export const helper = () => 'ok'`)
+    writeFileSync(join(dir, 'dist/runtime/composables/api.ts'), `import { useNuxtApp } from '#imports'
+export type ApiClient = ReturnType<typeof useNuxtApp>`)
+
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/server', handler: join(dir, 'dist/runtime/server/handler.ts') } as any] }
+    await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'type-only-module' }])
+
+    expect(report).not.toHaveBeenCalled()
+    expect(nitroConfig.plugins).toEqual([])
+    vi.restoreAllMocks()
+  })
+
+  it('does not count unreferenced files in a directory a module aliased', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-alias-dir-'))
+    mkdirSync(join(dir, 'dist/runtime/server/services'), { recursive: true })
+    writeFileSync(join(dir, 'dist/runtime/server/services/index.ts'), `import { getCookie } from 'nuxt/server'
+export const client = getCookie`)
+    writeFileSync(join(dir, 'dist/runtime/server/services/unused.ts'), `import { getCookie } from 'h3'
+export const legacy = getCookie`)
+
+    const nitroConfig: NitroConfig = { handlers: [], alias: { '#module/server': join(dir, 'dist/runtime/server/services') } }
+    await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'alias-module' }])
+
+    expect(report).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it.each([false, true])('counts files in an aliased module directory that user server code imports (symlinked: %s)', async (symlinked) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = createModuleDir('nitro-compat-alias-user-', symlinked)
+    const rootDir = join(dir, 'project')
+    mkdirSync(join(dir, 'dist/runtime/server/services'), { recursive: true })
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    writeFileSync(join(dir, 'dist/runtime/server/services/legacy.ts'), `import { getCookie } from 'h3'
+export const legacy = getCookie`)
+    writeFileSync(join(rootDir, 'server/api/test.ts'), `import { legacy } from '#module/server/legacy'
+export default legacy`)
+
+    const nitroConfig: NitroConfig = { handlers: [], alias: { '#module/server': join(dir, 'dist/runtime/server/services') } }
+    const nuxt = createNuxt({ extensions: ['.js', '.mjs', '.ts'], rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir, name: 'alias-module' }])
+
+    expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`alias-module` (imports `h3`)') })
+    vi.restoreAllMocks()
+  })
+
+  it.each([['nitro3', false], [undefined, true]] as const)('scopes an alias of a module nested in a v2 module directory by the nested module (server: %s)', async (server, scoped) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9005').mockImplementation(() => ({}) as any)
+    const rootDir = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-nested-alias-')))
+    onTestFinished(() => rmSync(rootDir, { recursive: true, force: true }))
+    const modules = join(rootDir, 'modules')
+    mkdirSync(join(modules, 'nested/runtime/server'), { recursive: true })
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    writeFileSync(join(modules, 'nested/runtime/server/query.ts'), `import { getQuery } from 'h3'
+export const query = getQuery`)
+    writeFileSync(join(rootDir, 'server/api/test.ts'), `import { query } from '#nested/server/query'
+export default query`)
+
+    const nitroConfig: NitroConfig = { handlers: [], alias: { '#nested/server': join(modules, 'nested/runtime/server') } }
+    const nuxt = createNuxt({ extensions: ['.js', '.mjs', '.ts'], rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir: modules, name: 'parent-module' }, { dir: join(modules, 'nested'), name: 'nested-module', server }])
+
+    if (scoped) {
+      expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`nested-module` (imports `h3`)' })
+    } else {
+      expect(report).not.toHaveBeenCalled()
+      expect(nitroConfig.plugins).toEqual([])
+    }
+    vi.restoreAllMocks()
+  })
+
+  it('reports user server code that relies on Nitro v2 when `nitroLegacy` is off', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9005').mockImplementation(() => ({}) as any)
+    const rootDir = mkdtempSync(join(tmpdir(), 'nitro-compat-user-'))
+    mkdirSync(join(rootDir, 'server/middleware'), { recursive: true })
+    writeFileSync(join(rootDir, 'server/middleware/auth.ts'), `import { eventHandler } from 'h3'
+export default eventHandler(event => event.node.req.headers)`)
+    writeFileSync(join(rootDir, 'server/middleware/ok.ts'), `import { defineEventHandler } from 'nuxt/server'
+import type { H3Event } from 'h3'
+export default defineEventHandler((event: H3Event) => event.req.headers)`)
+
+    const nuxt = createNuxt({ rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    const nitroConfig: NitroConfig = { handlers: [] }
+    const registerLate = await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
+    const nitro = { options: { handlers: [], plugins: [] }, hooks: createHooks() } as any
+    registerLate(nitro)
+    await nitro.hooks.callHook('build:before', nitro)
+
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, files: expect.stringContaining('auth.ts` (uses `event.node`)') })
+
+    report.mockClear()
+    const registerLateLegacy = await setupNitroCompat(nuxt, { handlers: [] }, resolveNitroLegacyOptions(true), [])
+    const legacyNitro = { options: { handlers: [], plugins: [] }, hooks: createHooks() } as any
+    registerLateLegacy(legacyNitro)
+    await legacyNitro.hooks.callHook('build:before', legacyNitro)
+    expect(report).not.toHaveBeenCalled()
     vi.restoreAllMocks()
   })
 
@@ -566,10 +817,10 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     vi.restoreAllMocks()
   })
 
-  it('gives an undeclared v2 handler registered without an extension the v2 middleware semantics', async () => {
+  it.each([false, true])('gives an undeclared v2 handler registered without an extension the v2 middleware semantics (symlinked: %s)', async (symlinked) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9002').mockImplementation(() => ({}) as any)
     vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
-    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-extensionless-'))
+    const dir = createModuleDir('nitro-compat-extensionless-', symlinked)
     writeFileSync(join(dir, 'guard.js'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => {})`)
 
     const nitroConfig: NitroConfig = { handlers: [{ handler: join(dir, 'guard') } as any] }
@@ -685,7 +936,7 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
       ],
       plugins: [],
     }
-    registerLateScope({ options } as any)
+    registerLateScope({ options, hooks: createHooks() } as any)
 
     await expect(plugin.resolveId.handler.call(context, 'h3', late)).resolves.toMatch(/compat[\\/]h3-v1/)
     await expect(plugin.resolveId.handler.call(context, 'h3', join(dir, 'utils.ts'))).resolves.toMatch(/compat[\\/]h3-v1/)
@@ -707,7 +958,7 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
 
     const options = { handlers: [{ middleware: true, handler: late }], plugins: [] }
-    registerLateScope({ options } as any)
+    registerLateScope({ options, hooks: createHooks() } as any)
 
     expect(options.handlers[0]).toMatchObject({ route: '/**', middleware: true })
     expect(report).toHaveBeenCalledTimes(1)
@@ -754,6 +1005,14 @@ describe('scanLegacyScope', () => {
       'nested/legacy.ts': `import { createError } from 'h3'\nexport const fail = () => createError({ statusCode: 418 })`,
     })
     expect([...scanLegacyScope([], [dir])]).toEqual([[join(dir, 'nested/legacy.ts'), ['h3']]])
+  })
+
+  it('ignores type-only imports', () => {
+    const dir = scoped({
+      'types.ts': `import type { H3Event } from 'h3'\nimport { type RouterMethod } from 'h3'\nexport type { NitroApp } from 'nitropack'\nimport type * as Imports from '#imports'\nexport type Event = H3Event | RouterMethod | typeof Imports`,
+      'value.ts': `import { type H3Event, getCookie } from 'h3'\nexport const read = (event: H3Event) => getCookie(event, 'a')`,
+    })
+    expect([...scanLegacyScope([], [dir])]).toEqual([[join(dir, 'value.ts'), ['h3']]])
   })
 
   it('treats a file importing both as migrated', () => {

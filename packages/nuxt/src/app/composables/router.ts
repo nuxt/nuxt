@@ -1,17 +1,18 @@
 import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { decodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { decodePath, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
 import { isInComponentSetup, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import { sanitizeStatusCode } from '../utils/http-status'
+import { getScriptProtocol, getUserTrace, isAbsoluteHref } from '../utils'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
-import { getUserTrace } from '../utils'
 import { navigationDiagnostics } from '../diagnostics/navigation'
+import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /**
@@ -117,6 +118,9 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
     return
   }
   if (global) {
+    if (import.meta.server && tracingChannelNuxt && typeof name === 'string') {
+      Object.defineProperty(mw, '_name', { value: name, configurable: true })
+    }
     nuxtApp._middleware.global.push(mw)
   } else {
     nuxtApp._middleware.named[name] = mw
@@ -199,13 +203,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Early open handler
   if (import.meta.client && options?.open) {
-    const { protocol } = new URL(toPath, window.location.href)
-    if (protocol && isScriptProtocol(protocol)) {
+    const protocol = getScriptProtocol(toPath)
+    if (protocol !== null) {
       throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
 
     // route objects with a `name` are already resolved against the router base by `router.resolve`
-    const isInternal = isPathForm && !hasProtocol(toPath, { acceptRelative: true }) && !toPath.startsWith('#')
+    const isInternal = isPathForm && !isAbsoluteHref(toPath) && !toPath.startsWith('#')
     const openPath = isInternal ? joinURL(useRuntimeConfig().app.baseURL, toPath) : toPath
 
     const { target = '_blank', windowFeatures = {} } = options.open
@@ -221,14 +225,14 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     return Promise.resolve()
   }
 
-  const isExternalHost = hasProtocol(toPath, { acceptRelative: true })
+  const isExternalHost = isAbsoluteHref(toPath)
   const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
       throw navigationDiagnostics.NUXT_E2001({ toPath })
     }
-    const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
-    if (protocol && isScriptProtocol(protocol)) {
+    const protocol = getScriptProtocol(toPath)
+    if (protocol !== null) {
       throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
   }

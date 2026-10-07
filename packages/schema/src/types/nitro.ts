@@ -1,4 +1,5 @@
 import type { NuxtImport } from './imports.ts'
+import type { RequestEvent } from './server.ts'
 
 /**
  * Extension point through which the configured `server.builder` contributes the types of the
@@ -132,7 +133,7 @@ export interface DevServerHandler extends DevServerHandlerBase {
 /** A development-only registration as `addDevServerHandler()` accepts it. */
 export interface DevServerHandlerInput extends DevServerHandlerBase {
   /** The handler, or one per server API. */
-  handler: ServerApiVariants<DevServerHandlerFunction>
+  handler: DevServerHandlerFunction | { nuxt?: (event: RequestEvent) => unknown, nitro2?: DevServerHandlerFunction, nitro3?: DevServerHandlerFunction }
 }
 
 /**
@@ -181,7 +182,7 @@ export type RouteRuleConfig = ResolveRouteRuleConfig<NitroTypes>
 
 /** The tracing channels Nuxt owns, enabled independently of the server runtime's own. */
 export interface TracingChannelOptionsBase {
-  /** Enable Nuxt-owned channels (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). */
+  /** Enable Nuxt-owned `nuxt.*` channels. */
   nuxt?: boolean
 }
 
@@ -201,7 +202,7 @@ export interface PrerenderOptions {
   /** Routes to prerender, in addition to those discovered by crawling or matched by `prerender` route rules. */
   routes?: string[]
   /** Routes to skip. A string matches as a path prefix. */
-  ignore?: Array<string | RegExp | ((path: string) => boolean | undefined)>
+  ignore?: Array<string | RegExp | ((path: string) => boolean | null | undefined)>
   /** Follow links in each rendered page to discover further routes. */
   crawlLinks?: boolean
 }

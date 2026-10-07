@@ -10,3 +10,7 @@ import { withBaseURL } from './base.ts'
 export function getRouteRules (event: RequestEvent): AppRouteRules {
   return (event.context.routeRules || getNitroRouteRules(event.req.method, withBaseURL(event.url.pathname)).routeRules || {}) as AppRouteRules
 }
+
+export function matchRouteRules (path: string, method = 'GET'): AppRouteRules {
+  return (getNitroRouteRules(method, withBaseURL(path)).routeRules || {}) as AppRouteRules
+}

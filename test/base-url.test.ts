@@ -62,6 +62,26 @@ describe.skipIf(!runs)('base URL set at build time', () => {
     expect(await res.text()).toContain('<div id="__nuxt">')
   })
 
+  it('should fetch routes of the app relative to the base URL with `serverFetch`', async () => {
+    expect(await $fetch('/foo/api/server-fetch', { headers: { cookie: 'a=1' } })).toMatchObject({
+      status: 200,
+      echo: { cookie: 'a=1' },
+      rules: { headers: { 'x-echo': '1' } },
+    })
+  })
+
+  it('should fetch routes of the app with `serverFetch` while prerendering', async () => {
+    expect(JSON.parse(await $fetch<string>('/foo/api/prerendered-fetch', { responseType: 'text' }))).toMatchObject({
+      status: 200,
+      echo: { cookie: null },
+      rules: { headers: { 'x-echo': '1' } },
+    })
+  })
+
+  it('should call `render:html` handlers registered with `useServerHooks`', async () => {
+    expect(await $fetch<string>('/foo/')).toContain('<meta name="server-hooks" content="ok">')
+  })
+
   it('should hydrate and navigate on the client under the base URL', async () => {
     const browser = await getBrowser()
     const page = await browser.newPage({})

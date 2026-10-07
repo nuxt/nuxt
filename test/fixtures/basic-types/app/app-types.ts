@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type { ComputedRef, Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
-import type { DynamicParam, Endpoint, HTTPMethod, TypedFetch, TypedFetchRequest } from 'nuxt/app'
+import type { AsyncData, AsyncDataWithExtensions, AugmentedAsyncData, DeclaredUseFetch, DynamicParam, Endpoint, HTTPMethod, KeysOf, MergedAddonsExtensions, PickFrom, TypedFetch, TypedFetchRequest, UseAsyncData, UseFetch } from 'nuxt/app'
 import type { H3Event, HTTPError } from 'nitro/h3'
 import { $fetch } from '#build/fetch'
 import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
@@ -169,6 +169,7 @@ describe('API routes', () => {
     expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf<PickFrom<{ foo: string, baz: string }, ['baz']>>().toEqualTypeOf<{ baz: string }>()
     expectTypeOf(useAsyncData('api-union', () => $fetch('/api/union')).data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-union-with-pick', () => $fetch('/api/union'), { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
@@ -1120,6 +1121,7 @@ describe('composables', () => {
     expectTypeOf(useApi('/api/hello').then(r => r.isSuccess)).toEqualTypeOf<Promise<ComputedRef<boolean>>>()
 
     const useBare = createUseFetch({})
+    expectTypeOf(useBare).toEqualTypeOf<UseFetch<any, KeysOf<any>>>()
     // @ts-expect-error `tenant` is not declared for this composable
     useBare('/api/hello', { tenant: 'a' })
     // @ts-expect-error nor is the extension present
@@ -1130,6 +1132,7 @@ describe('composables', () => {
       '/pets': { [Endpoint]: { GET: { response: Pet[] } } }
     }
     const usePetStore = createUseFetch({ routes: {} as PetStore, addons: [tenant] })
+    expectTypeOf(usePetStore).toEqualTypeOf<DeclaredUseFetch<PetStore, unknown, KeysOf<unknown>, undefined, { tenant?: string }, MergedAddonsExtensions<[typeof tenant]>>>()
     const p1 = usePetStore('/pets', { tenant: 'a' })
     expectTypeOf(p1.data).toEqualTypeOf<Ref<Pet[] | DefaultAsyncDataValue>>()
     expectTypeOf(p1.isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
@@ -1145,11 +1148,24 @@ describe('composables', () => {
       },
     })
     const usePolled = createUseAsyncData({ addons: [polling] })
+    expectTypeOf(usePolled).toEqualTypeOf<UseAsyncData<unknown, unknown, KeysOf<unknown>, undefined, { pollEvery?: number }, MergedAddonsExtensions<[typeof polling]>>>()
     const a1 = usePolled('k', () => Promise.resolve(1), { pollEvery: 1000 })
     expectTypeOf(a1.data.value).toEqualTypeOf<number | DefaultAsyncDataValue>()
     expectTypeOf(a1.polling).toEqualTypeOf<Ref<boolean>>()
+    expectTypeOf(a1).toEqualTypeOf<AsyncDataWithExtensions<number | DefaultAsyncDataValue, NuxtError | DefaultAsyncDataErrorValue, { polling: Ref<boolean> }>>()
+    expectTypeOf<AugmentedAsyncData<number, NuxtError, MergedAddonsExtensions<[typeof polling]>>>().toEqualTypeOf<AsyncDataWithExtensions<number, NuxtError, { polling: Ref<boolean> }>>()
     // @ts-expect-error `pollEvery` is a number
     usePolled('k', () => Promise.resolve(1), { pollEvery: '1s' })
+
+    const optionsOnlyFetch = defineUseFetchAddon({
+      setup: (options: UseFetchAddonOptions<{ enabled?: boolean }>) => { options.middleware.push(next => next()) },
+    })
+    const optionsOnlyAsyncData = defineUseAsyncDataAddon({
+      setup: (options: UseAsyncDataAddonOptions<{ enabled?: boolean }>) => { options.middleware.push(next => next()) },
+    })
+    type Plain = AsyncData<string | DefaultAsyncDataValue, NuxtError | DefaultAsyncDataErrorValue>
+    expectTypeOf(createUseFetch({ addons: [optionsOnlyFetch] })('/api/hello')).toEqualTypeOf<Plain>()
+    expectTypeOf(createUseAsyncData({ addons: [optionsOnlyAsyncData] })(() => Promise.resolve('hello'))).toEqualTypeOf<Plain>()
   })
 })
 
