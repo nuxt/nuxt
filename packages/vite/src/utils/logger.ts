@@ -26,6 +26,8 @@ const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, numbe
 }
 
 const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
+// `new dependencies optimized:` before Vite 8.1.1, `dependency optimized:` / `dependencies optimized:` since
+const NEW_DEPS_OPTIMIZED_RE = /dependenc(?:y|ies) optimized:\s*(.+)/
 export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean, onNewDeps?: (deps: string[]) => void, onStaleDep?: (dep: string) => void, onTransformError?: (error: unknown) => boolean } = {}): vite.Logger {
   const loggedErrors = new WeakSet<any>()
   const canClearScreen = hasTTY && !isCI && config.clearScreen
@@ -63,8 +65,8 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
           return
         }
       }
-      if (ctx.onNewDeps && type === 'info' && msg.includes('new dependencies optimized:')) {
-        const match = stripAnsi(msg).match(/new dependencies optimized:\s*(.+)/)
+      if (ctx.onNewDeps && type === 'info' && msg.includes(' optimized:')) {
+        const match = stripAnsi(msg).match(NEW_DEPS_OPTIMIZED_RE)
         if (match) {
           ctx.onNewDeps(match[1]!.split(',').map(d => d.trim()).filter(Boolean))
           return
