@@ -33,7 +33,11 @@ interface FourXSurface {
   defineEventHandler: <Result>(handler: (event: RequestEvent) => Result) => (event: RequestEvent) => Result
   createError: (...args: never[]) => Error
   isNuxtError: (error: unknown) => boolean
-  getRequestURL: (event: RequestEvent) => URL
+  getRequestURL: (event: RequestEvent, options?: { xForwardedHost?: boolean, xForwardedProto?: boolean }) => URL
+  getRequestHost: (event: RequestEvent, options?: { xForwardedHost?: boolean }) => string
+  getRequestProtocol: (event: RequestEvent, options?: { xForwardedProto?: boolean }) => string
+  parseCookies: (event: RequestEvent) => Record<string, string>
+  matchRouteRules: (path: string, method?: string) => AppRouteRules
   getRequestHeader: (event: RequestEvent, name: string) => string | undefined
   getRequestHeaders: (event: RequestEvent) => Record<string, string>
   setResponseStatus: (event: RequestEvent, status: number, statusText?: string) => void
@@ -57,6 +61,8 @@ interface FourXSurface {
   readValidatedBody: <Output>(event: RequestEvent, validate: (data: unknown) => ValidateResult<Output>) => Promise<Output>
   handleCors: (event: RequestEvent, options?: CorsOptions) => Response | false
   useAppConfig: (event?: RequestEvent) => SharedAppConfig
+  useServerHooks: () => Record<'hook' | 'removeHook' | 'callHook', (...args: never[]) => unknown>
+  serverFetch: (event: RequestEvent, path: string, init?: RequestInit & { forwardHeaders?: boolean | string[] }) => Promise<Response>
 }
 
 /** Value exports 4.x has. */
@@ -88,6 +94,12 @@ const FOURX_VALUE_EXPORTS = [
   'readValidatedBody',
   'handleCors',
   'useAppConfig',
+  'getRequestHost',
+  'getRequestProtocol',
+  'parseCookies',
+  'matchRouteRules',
+  'serverFetch',
+  'useServerHooks',
 ]
 
 /** Value exports only this branch has. */

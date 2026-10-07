@@ -66,6 +66,25 @@ describe('tree-shake', () => {
     `)
   })
 
+  it('should replace stubbed composables with a call to the stub without the first argument', () => {
+    const plugin: any = TreeShakeComposablesPlugin({
+      composables: { 'vue': ['onServerPrefetch'] },
+      stubs: { onServerPrefetch: '#app/composables/server-prefetch' },
+    }).raw({}, {} as any)
+    const code = `
+      import { onServerPrefetch as _onServerPrefetch } from 'vue'
+      onServerPrefetch(async () => { await serverOnly() })
+      _onServerPrefetch(() => serverOnly(), instance)
+    `
+    const { code: result } = plugin.transform.handler(code, 'test.js')
+    expect(clean(result)).toMatchInlineSnapshot(`
+      "import { onServerPrefetch as __nuxt_stub_onServerPrefetch } from "#app/composables/server-prefetch";
+            import { onServerPrefetch as _onServerPrefetch } from 'vue'
+            __nuxt_stub_onServerPrefetch()
+            __nuxt_stub_onServerPrefetch(instance)"
+    `)
+  })
+
   it('should not tree-shake composables from other paths', () => {
     const code = `
       import { onMounted } from 'other-path'

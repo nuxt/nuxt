@@ -54,10 +54,21 @@ export function useErrorChannel (): Promise<Channel> {
   return store[CHANNEL_KEY]
 }
 
-/** The `BroadcastChannel` reports travel between threads on, which must not hold the process open. */
-function openBroadcast (): { broadcast: BroadcastChannel, post: (message: ErrorChannelMessage) => void } {
-  const broadcast = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
-  ;(broadcast as { unref?: () => void }).unref?.()
+type ErrorBroadcast = Pick<BroadcastChannel, 'onmessage' | 'postMessage' | 'close'>
+
+/** The `BroadcastChannel` reports travel between threads on, which must not hold the process open. It drops every message where none can be opened. */
+export function openErrorBroadcast (): ErrorBroadcast {
+  try {
+    const broadcast = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
+    ;(broadcast as { unref?: () => void }).unref?.()
+    return broadcast
+  } catch {
+    return { onmessage: null, postMessage () {}, close () {} }
+  }
+}
+
+function openBroadcast (): { broadcast: ErrorBroadcast, post: (message: ErrorChannelMessage) => void } {
+  const broadcast = openErrorBroadcast()
   return { broadcast, post: message => broadcast.postMessage(message) }
 }
 

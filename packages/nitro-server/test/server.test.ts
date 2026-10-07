@@ -119,6 +119,24 @@ describe('parity between the shipped implementations and h3', () => {
 
   it.for([
     ['no header', {}],
+    ['forwarded headers', { 'host': 'internal:3000', 'x-forwarded-host': ' nuxt.com:8443 , proxy', 'x-forwarded-proto': 'https, http' }],
+    ['an unsupported forwarded protocol', { 'x-forwarded-proto': 'ftp' }],
+    ['a forwarded IPv6 host', { 'x-forwarded-host': '[::1]:99999' }],
+  ] as const)('reads the host, protocol and URL from %s the same way', async ([, headers]) => {
+    for (const trust of [false, true]) {
+      const options = { xForwardedHost: trust, xForwardedProto: trust }
+      const { shipped: a, h3: b } = await compare(new Request('http://internal:3000/api?a=1', { headers }), (api, event) => [api.getRequestURL(event, options).href, api.getRequestHost(event, options), api.getRequestProtocol(event, options)])
+      expect(a).toEqual(b)
+    }
+  })
+
+  it('parses every cookie the same way', async () => {
+    const { shipped: a, h3: b } = await compare(new Request('https://nuxt.com/', { headers: { cookie: 'a=1; b=%20; a=2' } }), (api, event) => api.parseCookies(event))
+    expect(a).toEqual(b)
+  })
+
+  it.for([
+    ['no header', {}],
     ['a forwarded chain', { 'x-forwarded-for': ' 203.0.113.1 , 10.0.0.1' }],
     ['an empty forwarded header', { 'x-forwarded-for': ' ' }],
   ] as const)('reads the client IP from %s the same way', async ([, headers]) => {

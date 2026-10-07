@@ -16,6 +16,7 @@ import { applyUseAsyncDataAddons } from './addons'
 import type { MergedAddonsExtensions, MergedAddonsOptions, UseAsyncDataAddon } from './addons'
 
 import { neverHydratedSymbol } from './lazy-hydration'
+import { onServerPrefetch as markServerPrefetch } from './server-prefetch'
 
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
@@ -193,7 +194,9 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-export type AugmentedAsyncData<Data, Error, Ext> = _AsyncData<Data, Error> & Ext & Promise<_AsyncData<Data, Error> & Ext>
+export type AsyncDataWithExtensions<Data, Error, Ext> = _AsyncData<Data, Error> & Ext & Promise<_AsyncData<Data, Error> & Ext>
+
+export type AugmentedAsyncData<Data, Error, Ext> = [keyof Ext] extends [never] ? AsyncData<Data, Error> : AsyncDataWithExtensions<Data, Error, Ext>
 
 // Type of the public-facing `useAsyncData` returned by the factory below.
 // Expressed as a callable interface so we can spell out all eight overloads
@@ -527,10 +530,8 @@ export function _createUseAsyncData<
         const instance = getCurrentInstance()
         const inComponentSetup = !!instance || isWithinVaporComponent()
 
-        // @ts-expect-error - instance.sp is an internal vue property
-        if (instance && fetchOnServer && opts.immediate && !instance.sp) {
-          // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
-          instance.sp = []
+        if (fetchOnServer && opts.immediate) {
+          markServerPrefetch()
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!inComponentSetup || instance?.isMounted)) {
           dataDiagnostics.NUXT_E3003()
@@ -1030,6 +1031,11 @@ function buildAsyncData<
     _hash: import.meta.dev ? createHash(_handler, options) : undefined,
     _off: () => {
       unsubRefreshAsyncData()
+      // a newer entry may already own this key, for example when `useNuxtData` kept this one
+      // alive until after the next page registered the key again - leave that entry alone
+      if (nuxtApp._asyncData[key] !== asyncData) {
+        return
+      }
       if (nuxtApp._asyncData[key]?._init) {
         nuxtApp._asyncData[key]._init = false
       }

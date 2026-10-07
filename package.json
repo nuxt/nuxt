@@ -120,7 +120,7 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@12.6.0",
+  "packageManager": "pnpm@12.9.1",
   "simple-git-hooks": {
     "pre-commit": "pnpm nano-staged"
   },

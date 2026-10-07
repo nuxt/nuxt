@@ -37,7 +37,7 @@ import { createServerAutoImports, resolveServerImportDirs } from './auto-imports
 import { normalizeLegacyRouteRules } from './route-rules.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
-import { collectServerRegistrations } from './registrations.ts'
+import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
 export type { NuxtTracingChannelOptions } from './augments.ts'
@@ -962,7 +962,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  nitro.options.devHandlers.push(...nuxt.options.devServerHandlers as NitroBuilderOptions['devHandlers'])
+  addDevServerHandlers(nitro.options.devHandlers, nuxt.options.devServerHandlers as NitroBuilderOptions['devHandlers'])
   if (nuxt.options.dev) {
     nitro.options.plugins.push(resolve(distDir, 'runtime/plugins/dev-errors'))
     nitro.options.handlers.unshift({

@@ -125,7 +125,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
   ui-templates-generated:
@@ -144,7 +144,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
       - name: Regenerate ui-templates output
@@ -386,7 +386,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@373d6868929f444bc08d901fd0eb0ad52a8875ea # v5.2.1
+        uses: CodSpeedHQ/action@c4fd08a3a159bd0cc208da1e0edf32b8c47d75e5 # v5.4.0
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -429,7 +429,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
       - name: Cache Playwright browsers
@@ -491,7 +491,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
       - name: Cache Playwright browsers
@@ -564,34 +564,64 @@ jobs:
           done
           echo "All required jobs passed or were skipped."
 
-  release-nightly:
-    concurrency:
-      group: release-nightly
+  pack-nightly:
     permissions:
-      id-token: write
+      contents: read
     if: |
       github.event_name == 'push' &&
       github.repository_owner == 'nuxt' &&
+      !github.event.repository.fork &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs: changes
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
+    outputs:
+      files: ${{ steps.pack.outputs.files }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
           node-version: latest
           cache: true
 
-      - name: Release nightly
-        run: node scripts/release.ts
-        env:
-          TAG: ${{ github.ref == 'refs/heads/main' && '5x' || 'latest' }}
+      - name: Pack nightly
+        id: pack
+        uses: danielroe/uppt/pack@6ec27140623aa835e362f866d8ab0018ab057f4d # v0.6.11
+        with:
+          checkout: false
+          install: false
+          nightly: true
+          nightly-aliases: |
+            nuxi
+            @nuxt/cli
+          packages: |
+            packages/*
+            !packages/nuxi
+            !packages/test-utils
+            !packages/ui-templates
+            docs
+
+  release-nightly:
+    if: needs.pack-nightly.outputs.files != '' && needs.pack-nightly.outputs.files != '[]'
+    needs: pack-nightly
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    concurrency:
+      group: release-nightly-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      id-token: write
+    environment: nightly
+    steps:
+      - uses: danielroe/uppt/publish@6ec27140623aa835e362f866d8ab0018ab057f4d # v0.6.11
+        with:
+          nightly: true
+          files: ${{ needs.pack-nightly.outputs.files }}
+          npm-tag: ${{ github.ref == 'refs/heads/main' && '5x' || (github.ref == 'refs/heads/4.x' && '4x' || 'latest') }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'

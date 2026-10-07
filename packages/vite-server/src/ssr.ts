@@ -113,6 +113,22 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
     ].join('\n'),
   })
 
+  addTemplate({
+    filename: 'vite-server/server.mjs',
+    write: true,
+    getContents: () => [
+      `import match from ${JSON.stringify(routeRules)}`,
+      `import { createServerHelpers } from ${JSON.stringify(resolve(distDir, 'runtime/server'))}`,
+      '',
+      `export * from 'nuxt/internal/server-default'`,
+      '',
+      `const helpers = createServerHelpers(match, () => import(${JSON.stringify(handler)}).then(m => m.fetch), ${JSON.stringify(nuxt.options.app.baseURL || '/')})`,
+      `export const getRouteRules = helpers.getRouteRules`,
+      `export const matchRouteRules = helpers.matchRouteRules`,
+      `export const serverFetch = helpers.serverFetch`,
+    ].join('\n'),
+  })
+
   const { dst: entry } = addTemplate({
     filename: 'vite-server/server-entry.mjs',
     write: true,
