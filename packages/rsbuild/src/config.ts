@@ -13,7 +13,7 @@ import { defineEnv } from 'unenv'
 import { getHMRPath } from './dev-server.ts'
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { NuxtHooksPlugin } from './plugins/hooks.ts'
-import { resolveAnalyzePlugin, resolvePreprocessorPlugins, resolveTypeCheckPlugin } from './plugins/optional.ts'
+import { resolvePreprocessorPlugins, resolveRsdoctorPlugin, resolveTypeCheckPlugin } from './plugins/optional.ts'
 import { ServerPlugin, createServerExternals } from './plugins/server.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { VueSSRPlugin } from './plugins/vue.ts'
@@ -28,11 +28,11 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
 
   const entry = resolve(nuxt.options.appDir, nuxt.options.experimental.asyncEntry ? 'entry.async' : 'entry')
   const assetPrefix = joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
-  const [postcssPlugins, preprocessorPlugins, typeCheckPlugin, analyzePlugin] = await Promise.all([
+  const [postcssPlugins, preprocessorPlugins, typeCheckPlugin, rsdoctorPlugin] = await Promise.all([
     resolvePostcssPlugins(nuxt),
     resolvePreprocessorPlugins(nuxt),
     resolveTypeCheckPlugin(nuxt),
-    resolveAnalyzePlugin(nuxt),
+    resolveRsdoctorPlugin(nuxt),
   ])
 
   const plugins: RsbuildPlugins = [
@@ -53,6 +53,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
     SSRStylesPlugin(nuxt),
     NuxtHooksPlugin(nuxt),
     ...preprocessorPlugins,
+    rsdoctorPlugin,
   ]
 
   const config: RsbuildConfig = {
@@ -141,7 +142,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
       client: {
         ...clientEnvironment(nuxt, { entry, assetPrefix }),
         // type checking runs once, in the server build when SSR is enabled
-        plugins: [analyzePlugin, !nuxt.options.ssr && typeCheckPlugin],
+        plugins: [!nuxt.options.ssr && typeCheckPlugin],
       },
       ...nuxt.options.ssr
         ? {
