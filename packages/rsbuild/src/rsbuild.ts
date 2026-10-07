@@ -35,7 +35,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await nuxt.callHook('rsbuild:config', config)
 
   const rsbuild = await createRsbuild({
-    cwd: nuxt.options.rootDir,
+    cwd: config.root,
     callerName: 'nuxt',
     config,
   })
