@@ -1763,6 +1763,11 @@ describe('composables', () => {
     expect(pageErrors).toEqual([])
     await page.close()
   })
+  it.each(['/use-id-server-prefetch', '/use-id-preload-payload'])('`useId` should work with server prefetch hooks (%s)', async (path) => {
+    const html = await $fetch<string>(path)
+    expect(html).toContain('<div>v-0-0-0</div>')
+    await expectNoClientErrors(path)
+  })
 })
 
 describe('middlewares', () => {

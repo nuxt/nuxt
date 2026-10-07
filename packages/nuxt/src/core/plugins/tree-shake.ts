@@ -2,6 +2,7 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { createUnplugin } from 'unplugin'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import escapeStringRegexp from 'escape-string-regexp'
+import { genImport } from 'knitwork'
 
 import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 
@@ -9,6 +10,8 @@ type ImportPath = string
 
 interface TreeShakeComposablesPluginOptions {
   composables: Record<ImportPath, string[]>
+  /** Composables to replace with a call to the same export from the given module, without the first argument. */
+  stubs?: Record<string, ImportPath>
 }
 
 export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOptions) => createUnplugin(() => {
@@ -32,6 +35,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
       },
       handler (code, id, meta?: unknown) {
         const s = rolldownString(code, id, meta)
+        const stubImports = new Map<string, string>()
 
         // Parse and collect scope information
         const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
@@ -50,6 +54,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
 
             const functionName = node.callee.name
             const scopeTrackerNode = scopeTracker.getDeclaration(functionName)
+            let composableName = functionName
 
             if (scopeTrackerNode) {
             // don't tree-shake if there's a local declaration
@@ -68,6 +73,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
               const importedName = importSpecifier.type === 'ImportSpecifier' && importSpecifier.imported.type === 'Identifier'
                 ? importSpecifier.imported.name
                 : importSpecifier.local.name
+              composableName = importedName
 
               const isFromAllowedPath = importPath === '#imports'
                 ? allComposableNames.has(importedName)
@@ -82,11 +88,26 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
               return
             }
 
+            const stub = options.stubs?.[composableName]
+            if (stub) {
+              const local = `__nuxt_stub_${composableName}`
+              stubImports.set(local, genImport(stub, [{ name: composableName, as: local }]))
+              const rest = node.arguments.slice(1)
+              const args = rest.length ? code.slice(rest[0]!.start, rest.at(-1)!.end) : ''
+              s.overwrite(node.start, node.end, `${local}(${args})`)
+              this.skip()
+              return
+            }
+
             // TODO: validate function name against actual auto-imports registry
             s.overwrite(node.start, node.end, ` false && /*@__PURE__*/ ${functionName}${code.slice(node.callee.end, node.end)}`)
             this.skip()
           },
         })
+
+        if (stubImports.size) {
+          s.prepend([...stubImports.values(), ''].join('\n'))
+        }
 
         return generateTransform(s, id)
       },
