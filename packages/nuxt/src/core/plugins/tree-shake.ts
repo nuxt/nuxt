@@ -10,7 +10,7 @@ type ImportPath = string
 
 interface TreeShakeComposablesPluginOptions {
   composables: Record<ImportPath, string[]>
-  /** Composables to replace with an argument-less call to the same export from the given module. */
+  /** Composables to replace with a call to the same export from the given module, without the first argument. */
   stubs?: Record<string, ImportPath>
 }
 
@@ -92,7 +92,9 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
             if (stub) {
               const local = `__nuxt_stub_${composableName}`
               stubImports.set(local, genImport(stub, [{ name: composableName, as: local }]))
-              s.overwrite(node.start, node.end, `${local}()`)
+              const rest = node.arguments.slice(1)
+              const args = rest.length ? code.slice(rest[0]!.start, rest.at(-1)!.end) : ''
+              s.overwrite(node.start, node.end, `${local}(${args})`)
               this.skip()
               return
             }

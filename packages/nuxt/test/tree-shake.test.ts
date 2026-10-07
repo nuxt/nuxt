@@ -66,7 +66,7 @@ describe('tree-shake', () => {
     `)
   })
 
-  it('should replace stubbed composables with an argument-less call to the stub', () => {
+  it('should replace stubbed composables with a call to the stub without the first argument', () => {
     const plugin: any = TreeShakeComposablesPlugin({
       composables: { 'vue': ['onServerPrefetch'] },
       stubs: { onServerPrefetch: '#app/composables/server-prefetch' },
@@ -81,7 +81,7 @@ describe('tree-shake', () => {
       "import { onServerPrefetch as __nuxt_stub_onServerPrefetch } from "#app/composables/server-prefetch";
             import { onServerPrefetch as _onServerPrefetch } from 'vue'
             __nuxt_stub_onServerPrefetch()
-            __nuxt_stub_onServerPrefetch()"
+            __nuxt_stub_onServerPrefetch(instance)"
     `)
   })
 
