@@ -46,16 +46,24 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   const packages = Array.isArray(names) ? names : [names]
   const nuxt = tryUseNuxt()
   const rootDir = options.rootDir || nuxt?.options.rootDir || process.cwd()
-  const searchPaths = options.searchPaths || nuxt?.options.modulesDir || []
+  const searchPaths = [rootDir, ...options.from ? [options.from] : [], ...options.searchPaths || nuxt?.options.modulesDir || []]
 
-  const missing = findMissing(packages, [rootDir, ...options.from ? [options.from] : [], ...searchPaths])
+  const missing = findMissing(packages, searchPaths)
 
   if (missing.length === 0) {
     return true
   }
 
-  const formattedNames = missing.map(n => `\`${n}\``).join(', ')
-  configDiagnostics.NUXT_B5010({ names: formattedNames, installCommand: await getAddDependencyCommand(missing, rootDir, { dev: true }) })
+  // A subpath such as `tailwindcss/nesting` is installed with the package it belongs to. If that
+  // package is installed already, the subpath is one it does not provide, and installing it again
+  // would not change that, so there is nothing to offer.
+  const installable = [...new Set(missing.map(toPackageName))].filter(name => !isInstalled(name, searchPaths))
+  if (installable.length === 0) {
+    return Array.isArray(names) ? missing : false
+  }
+
+  const formattedNames = installable.map(n => `\`${n}\``).join(', ')
+  configDiagnostics.NUXT_B5010({ names: formattedNames, installCommand: await getAddDependencyCommand(installable, rootDir, { dev: true }) })
 
   if (isCI) {
     return Array.isArray(names) ? missing : false
@@ -83,12 +91,12 @@ export async function ensureDependencyInstalled (names: string | string[], optio
 
   const task = terminal.startTask(`Installing ${formattedNames}...`)
   try {
-    await runCommand(await resolveAddCommand(missing, rootDir, { dev: true }), rootDir)
+    await runCommand(await resolveAddCommand(installable, rootDir, { dev: true }), rootDir)
     task.stop(`Installed ${formattedNames}`)
     return true
   } catch (err) {
     task.stop(undefined, 'failure')
-    buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(missing, rootDir, { dev: true }), cause: err })
+    buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(installable, rootDir, { dev: true }), cause: err })
     return Array.isArray(names) ? missing : false
   }
 }
@@ -113,9 +121,29 @@ function isResolvable (name: string, searchPaths: string[]): boolean {
   return false
 }
 
+/** Whether the package `name` is installed, even if it has no entry that can be imported. */
+function isInstalled (name: string, searchPaths: string[]): boolean {
+  return isResolvable(name, searchPaths) || isResolvable(`${name}/package.json`, searchPaths)
+}
+
+const PACKAGE_NAME_RE = /^(?:@[^/]+\/)?[^/]+/
+
+/**
+ * The package a bare module specifier belongs to, such as `@scope/pkg` for `@scope/pkg/subpath`.
+ * Paths and specifiers with a protocol are returned unchanged.
+ */
+function toPackageName (specifier: string): string {
+  if (specifier.startsWith('.') || specifier.startsWith('/') || specifier.includes(':')) {
+    return specifier
+  }
+  return specifier.match(PACKAGE_NAME_RE)?.[0] || specifier
+}
+
 /**
  * Get the command a user should run to add dependencies to their project, using the
  * package manager detected from `cwd` (falling back to `npm`).
+ *
+ * Module specifiers with a subpath are installed as the package they belong to.
  *
  * @param names - One or more package names to install
  * @param cwd - Directory to detect the package manager from
@@ -129,7 +157,8 @@ export async function getAddDependencyCommand (names: string | string[], cwd: st
 
 async function resolveAddCommand (names: string | string[], cwd: string, options: { dev?: boolean }): Promise<ResolvedCommand> {
   const { agent } = await detect({ cwd }).catch(() => null) || { agent: 'npm' } as const
-  const packages = Array.isArray(names) ? names : [names]
+  // `pnpm add owner/repo` installs from GitHub, so a subpath must never reach the package manager.
+  const packages = [...new Set((Array.isArray(names) ? names : [names]).map(toPackageName))]
   const args = [
     ...options.dev ? ['-D'] : [],
     ...packages,
