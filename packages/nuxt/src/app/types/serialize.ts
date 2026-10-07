@@ -16,9 +16,6 @@ export type NonJsonPrimitive = undefined | ((...args: any[]) => any) | symbol
 /** @internal */
 type IsAny<T> = 0 extends 1 & T ? true : false
 
-/** @internal */
-type FilterKeys<T extends object, Filter> = { [K in keyof T]: T[K] extends Filter ? K : never }[keyof T]
-
 /**
  * The type `T` becomes once serialized to JSON and parsed back:
  * - `undefined`, functions and symbols are dropped from objects and nulled in tuples and arrays
@@ -51,9 +48,14 @@ export type SerializeTuple<T extends [unknown, ...unknown[]]> = {
   [K in keyof T]: T[K] extends NonJsonPrimitive ? null : Serialize<T[K]>
 }
 
-/** JSON-serializes an object or class instance, dropping keys JSON cannot represent. */
+/**
+ * JSON-serializes an object or class instance, dropping keys JSON cannot represent.
+ *
+ * Keys are remapped rather than picked with `Omit`, which keeps only the index signature of a type
+ * that has one and so would drop every named key.
+ */
 export type SerializeObject<T extends object> = {
-  [K in keyof Omit<T, FilterKeys<T, NonJsonPrimitive>>]: Serialize<T[K]>
+  [K in keyof T as T[K] extends NonJsonPrimitive ? never : K]: Serialize<T[K]>
 }
 
 /**

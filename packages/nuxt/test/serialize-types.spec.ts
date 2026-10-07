@@ -40,6 +40,14 @@ describe('Serialize', () => {
     expectTypeOf<Serialize<{ type: 'a', at: Date } | { type: 'b', fn: () => void }>>().toEqualTypeOf<{ type: 'a', at: string } | { type: 'b' }>()
   })
 
+  it('keeps the named keys of a type with an index signature', () => {
+    expectTypeOf<Serialize<{ [key: string]: string | number | Date, version: number, at: Date }>>().toEqualTypeOf<{ [key: string]: string | number, version: number, at: string }>()
+  })
+
+  it('keeps optional keys optional', () => {
+    expectTypeOf<Serialize<{ name?: string, at?: Date }>>().toEqualTypeOf<{ name?: string, at?: string }>()
+  })
+
   it('leaves `any` as `any` rather than collapsing it', () => {
     expectTypeOf<Serialize<any>>().toBeAny()
   })
