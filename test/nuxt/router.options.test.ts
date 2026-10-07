@@ -7,6 +7,7 @@ import type { VueWrapper } from '@vue/test-utils'
 import { flushPromises } from '@vue/test-utils'
 import { NuxtLayout, NuxtPage } from '#components'
 import layouts from '#build/layouts.mjs'
+import routerOptions from '../../packages/nuxt/src/pages/runtime/router.options'
 
 describe('scrollBehavior of router options with global transition', () => {
   let router: ReturnType<typeof useRouter>
@@ -336,6 +337,36 @@ describe('scrollBehavior with scrollToTop and fixed page key', () => {
     await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
 
     expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+})
+
+// https://github.com/nuxt/nuxt/issues/36460
+describe('scrollBehavior with same-page hash links', () => {
+  const elements: HTMLElement[] = []
+
+  function addHeading (id: string) {
+    const heading = document.createElement('h2')
+    heading.id = id
+    heading.style.scrollMarginTop = '32px'
+    document.body.appendChild(heading)
+    elements.push(heading)
+  }
+
+  afterAll(() => {
+    for (const element of elements) {
+      element.remove()
+    }
+  })
+
+  it.each(['tips', '5-tips'])('should offset by scroll-margin-top for #%s', async (id) => {
+    addHeading(id)
+    const router = useRouter()
+    const from = router.resolve('/')
+    const to = router.resolve(`/#${id}`)
+
+    const position = await routerOptions.scrollBehavior!(to, from, null)
+
+    expect(position).toEqual({ el: `#${id}`, top: 32, behavior: 'auto' })
   })
 })
 
