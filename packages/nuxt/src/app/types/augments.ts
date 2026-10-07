@@ -7,7 +7,7 @@ import type { NuxtApp, useNuxtApp } from '../nuxt'
 import type { TypedFetch } from './fetch'
 
 declare global {
-  // global `$fetch`, declared in `#build/types/fetch-global.d.ts`
+  // the global `$fetch`, see `#build/types/fetch-global.d.ts`
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NuxtGlobalFetch extends TypedFetch {}
 

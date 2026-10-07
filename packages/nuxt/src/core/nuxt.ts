@@ -389,12 +389,21 @@ async function initNuxt (nuxt: Nuxt) {
     return serverBuilderReference
   }
 
+  if (nuxt.options.experimental.routeTypedFetch) {
+    // imports nothing, so that it precedes nitropack's global `$fetch`
+    const { dst } = addTemplate({
+      filename: 'types/fetch-global.d.ts',
+      dependsOn: [],
+      getContents: () => 'declare global {\n  interface NuxtGlobalFetch {}\n  var $fetch: NuxtGlobalFetch\n}\n\nexport {}\n',
+    })
+    // first, as the first declaration of a global `var` sets its type
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.unshift({ path: dst })
+    })
+  }
+
   // Add nuxt types
   nuxt.hook('prepare:types', async (opts) => {
-    if (nuxt.options.experimental.routeTypedFetch) {
-      // must stay first so the global `$fetch` gets Nuxt's type rather than nitropack's
-      opts.references.unshift({ path: resolve(nuxt.options.buildDir, 'types/fetch-global.d.ts') })
-    }
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
     // Add vue shim
     if (nuxt.options.typescript.shim) {

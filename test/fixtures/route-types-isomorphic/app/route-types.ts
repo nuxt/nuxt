@@ -1,5 +1,4 @@
 import { expectTypeOf } from 'vitest'
-import { $fetch } from '#build/fetch'
 
 /**
  * `experimental.strictRouteTypes: 'isomorphic'` puts the routes the Vue router serves into the
