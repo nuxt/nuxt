@@ -1,5 +1,5 @@
 import { normalize } from 'pathe'
-import type { DevServerHandlerInput, NitroInstance, Nuxt, NuxtImport, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerInput, ServerPlugin, ServerPluginInput } from '@nuxt/schema'
+import type { DevServerHandler, DevServerHandlerInput, NitroInstance, Nuxt, NuxtImport, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerInput, ServerPlugin, ServerPluginInput } from '@nuxt/schema'
 
 import { tryUseNuxt, useNuxt } from './context.ts'
 import { getNitroVersion } from './compatibility.ts'
@@ -143,6 +143,26 @@ function addLegacyBaseRoute (nuxt: Nuxt, entry: ServerHandler, resolved: Resolve
   }
 }
 
+const LITERAL_ROUTE_RE = /^[^:*]+$/
+
+/**
+ * Nitro v2 mounts dev handlers with `app.use()`, a literal prefix match that ignores method,
+ * so a `/fonts/**` route needs a second registration on `/fonts` to reach anything.
+ */
+function addLegacyDevBaseRoute (nuxt: Nuxt, entry: DevServerHandler, resolved: ResolvedVariant<unknown>): void {
+  const route = entry.route
+  if (!route || getNitroVersion(nuxt) !== 2) {
+    return
+  }
+  const base = route.replace(WILDCARD_SUFFIX_RE, '')
+  if (base === route || !base || base === '/' || !LITERAL_ROUTE_RE.test(base)) {
+    return
+  }
+  if (!nuxt.options.devServerHandlers.some(handler => handler.route === base)) {
+    nuxt.options.devServerHandlers.push(withVariantMeta({ ...entry, route: base }, resolved))
+  }
+}
+
 /**
  * Adds a server handler.
  *
@@ -189,7 +209,9 @@ export function addDevServerHandler (handler: DevServerHandlerInput): void {
   if (!resolved) {
     return
   }
-  nuxt.options.devServerHandlers.push(withVariantMeta({ ...handler, handler: resolved.value }, resolved))
+  const entry: DevServerHandler = { ...handler, handler: resolved.value }
+  nuxt.options.devServerHandlers.push(withVariantMeta(entry, resolved))
+  addLegacyDevBaseRoute(nuxt, entry, resolved)
 }
 
 /**
