@@ -296,6 +296,17 @@ describe.runIf(shouldRun)('component islands', () => {
     }
   })
 
+  it.skipIf(isDev)('keeps server component implementations out of the client bundle', async () => {
+    // `ServerWithClient.server.vue` is used by tag from `pages/server-components/lazy/end.vue`
+    const marker = 'ServerWithClient.server.vue :'
+    // @ts-expect-error ssssh! untyped secret property
+    const { output } = useTestContext().nuxt._nitro.options
+    const contents = async (dir: string) => Promise.all((await glob('**/*.{js,mjs}', { cwd: dir, absolute: true })).map(file => readFile(file, 'utf8')))
+
+    expect((await contents(output.publicDir)).some(code => code.includes(marker))).toBe(false)
+    expect((await contents(output.serverDir)).some(code => code.includes(marker))).toBe(true)
+  })
+
   it('render async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
 

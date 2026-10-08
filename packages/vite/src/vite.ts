@@ -43,6 +43,7 @@ import { EnvironmentsPlugin } from './plugins/environments.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
 import { ServerEntryPlugin } from './plugins/server-entry.ts'
 import { OnigiriIslandsPlugin } from './plugins/onigiri-islands.ts'
+import { OnigiriServerComponentsPlugin } from './plugins/onigiri-server-components.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
@@ -115,9 +116,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   const onigiriEnabled = nuxt.options.experimental.componentIslands === 'vue-onigiri'
-  const onigiriVitePlugins: Plugin[] = !onigiriEnabled
+  const onigiriVitePlugins = !onigiriEnabled
     ? []
     : [
+        OnigiriServerComponentsPlugin(nuxt),
         ...onigiriPlugins({
           additionalImports: () => onigiriComponentImports,
           clientInclude: 'auto',
@@ -125,6 +127,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           extraEntries: onigiriExtraEntries,
           componentIdGenerator: 'filepath-source',
         }),
+        OnigiriIslandsPlugin(nuxt),
       ]
 
   // https://github.com/vitejs/vite/blob/main/packages/vite/src/node/build.ts#L464-L478
@@ -259,7 +262,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           : viteConfig.vue),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
         ...onigiriVitePlugins,
-        OnigiriIslandsPlugin(nuxt),
         ClientManifestPlugin(nuxt),
         // After ClientManifestPlugin so its dev `clientManifest` override wins.
         ViteNodePlugin(nuxt),
