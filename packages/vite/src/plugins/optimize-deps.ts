@@ -1,5 +1,6 @@
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
+import { hasOwnSubpathImport } from '@nuxt/kit/internal'
 
 import { installedScanEntries, resolveOptimizeDepsInclude } from '../utils/optimize-deps.ts'
 import { userOptimizeDepsInclude } from './optimize-deps-hint.ts'
@@ -11,11 +12,7 @@ import { userOptimizeDepsInclude } from './optimize-deps-hint.ts'
  * Runs on resolved environment config so `include` entries added by modules through
  * `vite:extendConfig`, or by other plugins, are rewritten too.
  *
- * Those files can import Nuxt virtual modules such as `#components`, which Nuxt's transforms
- * rewrite before they are ever resolved. The dependency scan does not run those transforms,
- * and inside a package that declares its own `imports` Vite resolves the specifier as a Node
- * subpath import and throws, which aborts the whole scan. Such imports are left out of the
- * scan instead.
+ * During the dependency scan, `#components` and any `#` imports that fail to resolve are excluded.
  */
 export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
   return {
@@ -28,8 +25,11 @@ export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
         id: /^#/,
       },
       async handler (id, importer, options) {
-        // Vite passes `scan` while scanning for dependencies, but it is not part of the public hook type
+        // `scan` is not part of Vite's public hook type
         if (!('scan' in options) || !options.scan) { return }
+        if (id === '#components' && !(importer && await hasOwnSubpathImport(importer, id, nuxt.options.rootDir))) {
+          return { id, external: true }
+        }
         try {
           return await this.resolve(id, importer, { ...options, skipSelf: true })
         } catch {

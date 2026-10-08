@@ -26,6 +26,8 @@ export { loadJiti } from './jiti.ts'
 export { parseNodeModulePath } from './node-module.ts'
 export type { ParsedNodeModulePath } from './node-module.ts'
 
+export { hasOwnSubpathImport } from './subpath-imports.ts'
+
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'
 

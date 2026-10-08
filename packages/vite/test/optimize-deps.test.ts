@@ -17,7 +17,12 @@ const layerSrcDir = join(layerRoot, 'app/')
 const moduleRuntime = join(rootDir, 'node_modules/installed-module/runtime/')
 const importsModuleRoot = join(rootDir, 'node_modules/installed-imports-module/')
 const importsModulePlugin = join(importsModuleRoot, 'runtime/plugin.mjs')
+const ownComponentsRoot = join(rootDir, 'node_modules/installed-own-components/')
+const ownComponentsPlugin = join(ownComponentsRoot, 'runtime/plugin.mjs')
+const localComponentsRoot = join(rootDir, 'layers/local-components/')
+const localComponentsPlugin = join(localComponentsRoot, 'plugin.mjs')
 const entry = join(srcDir, 'entry.mjs')
+const componentsEntry = join(srcDir, 'components-entry.mjs')
 
 const registered = {
   plugins: [{ src: join(moduleRuntime, 'plugin.mjs') }],
@@ -34,8 +39,9 @@ async function writePackage (dir: string, name: string, contents: string, main =
 
 await mkdir(join(layerSrcDir, 'plugins'), { recursive: true })
 await mkdir(srcDir, { recursive: true })
-await writeFile(join(rootDir, 'package.json'), JSON.stringify({ name: 'fixture', type: 'module' }))
+await writeFile(join(rootDir, 'package.json'), JSON.stringify({ name: 'fixture', type: 'module', imports: { '#shared/*': './shared/*' } }))
 await writeFile(entry, 'export default 1\n')
+await writeFile(componentsEntry, 'import { NuxtLink } from \'#components\'\nimport x from \'root-dep\'\nexport default [NuxtLink, x]\n')
 await writeFile(join(layerRoot, 'package.json'), JSON.stringify({ name: 'installed-layer', type: 'module' }))
 await writeFile(join(layerSrcDir, 'plugins/broken.mjs'), 'import { hello } from \'layer-dep\'\nexport default hello\n')
 await writePackage(join(layerRoot, 'node_modules/layer-dep'), 'layer-dep', 'import cjs from \'cjs-only\'\nexport const hello = () => cjs()\n')
@@ -49,12 +55,19 @@ await writeFile(join(moduleRuntime, 'plugin.mjs'), 'import x from \'plugin-dep\'
 await writeFile(join(moduleRuntime, 'Component.vue'), '<script setup>\nimport x from \'component-dep\'\n</script>\n')
 await writeFile(join(moduleRuntime, 'middleware.mjs'), 'import x from \'middleware-dep\'\nexport default x\n')
 await writeFile(join(moduleRuntime, 'layout.vue'), '<script setup>\nimport x from \'layout-dep\'\n</script>\n')
-// a module whose package declares its own subpath `imports`, like `@nuxtjs/i18n`
 await mkdir(join(importsModuleRoot, 'runtime'), { recursive: true })
 await writeFile(join(importsModuleRoot, 'package.json'), JSON.stringify({ name: 'installed-imports-module', type: 'module', imports: { '#internal': './runtime/internal.mjs' } }))
-await writeFile(join(importsModuleRoot, 'runtime/internal.mjs'), 'export default 1\n')
-await writeFile(importsModulePlugin, 'import { NuxtLink } from \'#components\'\nimport internal from \'#internal\'\nimport x from \'imports-module-dep\'\nexport default [NuxtLink, internal, x]\n')
-for (const dep of ['plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep', 'imports-module-dep']) {
+await writeFile(join(importsModuleRoot, 'runtime/internal.mjs'), 'import x from \'internal-dep\'\nexport default x\n')
+await writeFile(importsModulePlugin, 'import internal from \'#internal\'\nimport missing from \'#missing\'\nimport x from \'imports-module-dep\'\nexport default [internal, missing, x]\n')
+await mkdir(join(ownComponentsRoot, 'runtime'), { recursive: true })
+await writeFile(join(ownComponentsRoot, 'package.json'), JSON.stringify({ name: 'installed-own-components', type: 'module', imports: { '#components': './runtime/components.mjs' } }))
+await writeFile(join(ownComponentsRoot, 'runtime/components.mjs'), 'export { default as Own } from \'own-components-dep\'\n')
+await writeFile(ownComponentsPlugin, 'import { Own } from \'#components\'\nexport default Own\n')
+await mkdir(localComponentsRoot, { recursive: true })
+await writeFile(join(localComponentsRoot, 'package.json'), JSON.stringify({ name: 'local-components', type: 'module', imports: { '#components': './components.mjs' } }))
+await writeFile(join(localComponentsRoot, 'components.mjs'), 'export { default as Local } from \'local-components-dep\'\n')
+await writeFile(localComponentsPlugin, 'import { Local } from \'#components\'\nimport x from \'root-dep\'\nexport default [Local, x]\n')
+for (const dep of ['plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep', 'imports-module-dep', 'internal-dep', 'own-components-dep', 'local-components-dep']) {
   await writePackage(join(rootDir, 'node_modules', dep), dep, 'export default 1\n')
 }
 
@@ -144,14 +157,6 @@ describe('installedScanEntries', () => {
     expect(installedScanEntries(nuxt)).toEqual([])
   })
 
-  it('should not abort the scan on virtual imports in a package that declares its own imports', async () => {
-    const nuxt = createNuxt([], { default: { components: [], plugins: [{ src: importsModulePlugin }], middleware: [], layouts: {} } })
-    const entries = [entry, ...installedScanEntries(nuxt)]
-
-    await expect(optimizedDeps({ entries })).resolves.not.toContain('imports-module-dep')
-    await expect(optimizedDeps({ entries, plugins: [OptimizeDepsPlugin(nuxt)] })).resolves.toContain('imports-module-dep')
-  })
-
   it('should not scan dependencies nested within the layer', async () => {
     const entries = installedScanEntries(createNuxt([installedLayer]))
 
@@ -188,30 +193,39 @@ describe('OptimizeDepsPlugin', () => {
     expect(config.optimizeDeps).toEqual({ entries: [entry], include: ['layer-dep'] })
   })
 
-  function resolveId (id: string, options: { scan?: boolean }, resolve: (...args: any[]) => Promise<unknown>) {
-    const hook = OptimizeDepsPlugin(createNuxt()).resolveId as { filter: { id: RegExp }, handler: (...args: any[]) => Promise<unknown> }
-    expect(hook.filter.id.test(id)).toBe(true)
-    return hook.handler.call({ resolve }, id, importsModulePlugin, options)
-  }
-
   it('should leave resolution outside the dependency scan alone', async () => {
+    const hook = OptimizeDepsPlugin(createNuxt()).resolveId as { handler: (...args: any[]) => Promise<unknown> }
     const resolve = vi.fn()
 
-    await expect(resolveId('#components', {}, resolve)).resolves.toBeUndefined()
+    await expect(hook.handler.call({ resolve }, '#components', componentsEntry, {})).resolves.toBeUndefined()
     expect(resolve).not.toHaveBeenCalled()
   })
 
-  it('should resolve virtual imports as usual during the dependency scan', async () => {
-    const resolve = vi.fn(() => Promise.resolve({ id: join(importsModuleRoot, 'runtime/internal.mjs') }))
+  it('should exclude `#components` from the dependency scan', async () => {
+    const entries = [entry, componentsEntry]
 
-    await expect(resolveId('#internal', { scan: true }, resolve)).resolves.toEqual({ id: join(importsModuleRoot, 'runtime/internal.mjs') })
-    expect(resolve).toHaveBeenCalledWith('#internal', importsModulePlugin, { scan: true, skipSelf: true })
+    await expect(optimizedDeps({ entries })).resolves.not.toContain('root-dep')
+    await expect(optimizedDeps({ entries, plugins: [OptimizeDepsPlugin(createNuxt())] })).resolves.toContain('root-dep')
   })
 
-  it('should leave virtual imports that fail to resolve out of the dependency scan', async () => {
-    const resolve = vi.fn(() => Promise.reject(new Error('Missing "#components" specifier in "installed-imports-module" package')))
+  it('should scan `#components` through an installed package\'s own subpath import', async () => {
+    await expect(optimizedDeps({ entries: [entry, ownComponentsPlugin], plugins: [OptimizeDepsPlugin(createNuxt())] })).resolves.toContain('own-components-dep')
+  })
 
-    await expect(resolveId('#components', { scan: true }, resolve)).resolves.toEqual({ id: '#components', external: true })
+  it('should exclude `#components` from the dependency scan within the project even when its package maps it', async () => {
+    const deps = await optimizedDeps({ entries: [entry, localComponentsPlugin], plugins: [OptimizeDepsPlugin(createNuxt())] })
+
+    expect(deps).toContain('root-dep')
+    expect(deps).not.toContain('local-components-dep')
+  })
+
+  it('should exclude `#` imports that fail to resolve from the dependency scan', async () => {
+    const entries = [entry, importsModulePlugin]
+
+    await expect(optimizedDeps({ entries })).resolves.not.toContain('imports-module-dep')
+    await expect(optimizedDeps({ entries, plugins: [OptimizeDepsPlugin(createNuxt())] })).resolves.toEqual(
+      expect.arrayContaining(['imports-module-dep', 'internal-dep']),
+    )
   })
 
   it('should keep rewritten entries attributed to the user', async () => {
