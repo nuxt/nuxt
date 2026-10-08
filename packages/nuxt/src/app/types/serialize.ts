@@ -13,21 +13,16 @@ export type JsonPrimitive = string | number | boolean | null
 /** A value JSON cannot represent, dropped or nulled depending on where it appears. */
 export type NonJsonPrimitive = undefined | ((...args: any[]) => any) | symbol
 
-/** @internal */
-type IsAny<T> = 0 extends 1 & T ? true : false
-
-/** @internal */
-type FilterKeys<T extends object, Filter> = { [K in keyof T]: T[K] extends Filter ? K : never }[keyof T]
-
 /**
  * The type `T` becomes once serialized to JSON and parsed back:
  * - `undefined`, functions and symbols are dropped from objects and nulled in tuples and arrays
+ * - symbol keys are dropped from objects
  * - `Map` and `Set` become empty objects
  * - anything with a `toJSON()` method becomes that method's return type
  * - `Date`, being `toJSON()`-bearing, becomes `string`
  */
-export type Serialize<T> = IsAny<T> extends true
-  ? any
+export type Serialize<T> = unknown extends T
+  ? T
   : T extends JsonPrimitive | undefined
     ? T
     : T extends Map<any, any> | Set<any>
@@ -53,7 +48,7 @@ export type SerializeTuple<T extends [unknown, ...unknown[]]> = {
 
 /** JSON-serializes an object or class instance, dropping keys JSON cannot represent. */
 export type SerializeObject<T extends object> = {
-  [K in keyof Omit<T, FilterKeys<T, NonJsonPrimitive>>]: Serialize<T[K]>
+  [K in keyof T as K extends symbol ? never : T[K] extends NonJsonPrimitive ? never : K]: Serialize<T[K]>
 }
 
 /**
