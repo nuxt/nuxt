@@ -21,8 +21,8 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
   let waitUntilCompile: Promise<void> | undefined
   if (nuxt.options.dev) {
     let nitroBuilt = false
-    for (const builder of ['webpack', 'rspack'] as const) {
-      nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
+    for (const builder of ['webpack', 'rspack', 'rsbuild'] as const) {
+      nuxt.hook(`${builder}:compile`, ({ name, compiler }: { name: string, compiler: { outputFileSystem?: unknown } }) => {
         if (name === 'server') {
           nitro.options.virtual['nuxt/internal/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
         }

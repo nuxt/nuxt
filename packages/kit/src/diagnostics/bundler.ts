@@ -136,5 +136,25 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Rename it to `redirect.status`. Nuxt has applied it as `status` for now.',
       docs: false,
     },
+    NUXT_B7027: {
+      why: '`@nuxt/rspack-builder` is deprecated and will be removed in a future major version of Nuxt.',
+      fix: 'Set `builder: \'rsbuild\'` in your `nuxt.config` to use `@nuxt/rsbuild-builder` instead.',
+      docs: false,
+    },
+    NUXT_B7028: {
+      why: '`@rsbuild/plugin-type-check` is not installed, so type checking cannot run.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable type checking.`,
+      docs: false,
+    },
+    NUXT_B7029: {
+      why: '`@rsdoctor/rspack-plugin` is not installed, so bundle analysis cannot run.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable bundle analysis.`,
+      docs: false,
+    },
+    NUXT_B7030: {
+      why: (p: { name: string }) => `The Rsbuild \`${p.name}\` build failed with errors.`,
+      fix: 'Fix the build errors listed above. If the errors are unclear, try running `nuxt cleanup` and rebuilding.',
+      docs: false,
+    },
   },
 })

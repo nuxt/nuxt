@@ -3,6 +3,8 @@ import type { Plugin as VitePluginType, ServerOptions as ViteServerOptions, User
 import type { Configuration as WebpackConfiguration, WebpackPluginInstance as WebpackPluginInstanceType } from 'webpack'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
+import type { RsbuildConfig as RsbuildConfigType, RsbuildPlugin as RsbuildPluginType } from '@rsbuild/core'
+import type { PluginVueOptions as RsbuildVuePluginOptions } from '@rsbuild/plugin-vue'
 import type { SchemaDefinition } from 'untyped'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
 import type { SnakeCase } from './case.ts'
@@ -16,13 +18,15 @@ export type { SchemaDefinition } from 'untyped'
 /**
  * Bundler types re-exported for the utilities that extend a bundler's own configuration.
  *
- * Authoring a Vite or webpack plugin is not possible without the bundler's types, so these are a
+ * Authoring a Vite, webpack or Rsbuild plugin is not possible without the bundler's types, so these are a
  * deliberate exception to Nuxt owning its public types: `@nuxt/kit` takes them from here rather
  * than importing the bundlers itself.
  */
 export type VitePlugin = VitePluginType
 export type WebpackConfig = WebpackConfiguration
 export type WebpackPluginInstance = WebpackPluginInstanceType
+export type RsbuildConfig = RsbuildConfigType
+export type RsbuildPlugin = RsbuildPluginType
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
@@ -72,15 +76,17 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 // Avoid DeepPartial for some problematic config, including:
 // - the server builder's config interface (#31908)
 // - vite config interface (#4772)
+// - rsbuild config interface
 
 /**
  * User configuration in `nuxt.config` file
  */
-export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'rsbuild' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
   components?: ConfigSchema['components']
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   vite?: ConfigSchema['vite']
   nitro?: ConfigSchema['nitro']
+  rsbuild?: ConfigSchema['rsbuild']
   runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
@@ -129,7 +135,7 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'd
   vue: Omit<ConfigSchema['vue'], 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   debug: Required<Exclude<ConfigSchema['debug'], true>>
-  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rspack-builder' | NuxtBuilder
+  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rsbuild-builder' | '@nuxt/rspack-builder' | NuxtBuilder
   postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
   webpack: ConfigSchema['webpack'] & {
     $client: ConfigSchema['webpack']
@@ -179,6 +185,16 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ViteOptions extends ViteConfig {}
+
+export interface RsbuildOptions extends RsbuildConfig {
+  /**
+   * Options passed to @rsbuild/plugin-vue.
+   *
+   * `vueLoaderOptions` defaults to the `vue.compilerOptions`, `vue.transformAssetUrls` and `vue.propsDestructure` options.
+   * @see [@rsbuild/plugin-vue](https://rsbuild.rs/plugins/list/plugin-vue)
+   */
+  vue?: RsbuildVuePluginOptions
+}
 
 // App Config
 export interface CustomAppConfig {

@@ -8,6 +8,7 @@ type E2eConfigOptions = ConfigOptions & MatrixOptions
 // dev-mode entries are interleaved to spread them across both Windows shards
 const e2eMatrix = [
   { builder: 'webpack', isDev: false, nitroViteEnvironment: false },
+  { builder: 'rsbuild', isDev: false, nitroViteEnvironment: false },
   { builder: 'rspack', isDev: false, nitroViteEnvironment: false },
   { builder: 'vite', isDev: true, nitroViteEnvironment: false },
   { builder: 'vite', isDev: false, nitroViteEnvironment: false },
@@ -42,7 +43,8 @@ function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
   if (entry.builder !== 'vite') {
     ignore.push(...viteOnlyTests)
   }
-  if (entry.builder === 'rspack') {
+  // the chunk error runtime module is only applied with webpack
+  if (entry.builder === 'rspack' || entry.builder === 'rsbuild') {
     ignore.push(...rspackExcludedTests)
   }
   if (entry.nitroViteEnvironment) {
@@ -87,7 +89,7 @@ export default defineConfig<E2eConfigOptions>({
           ...devices['Desktop Chrome'],
           isDev: entry.isDev,
           isBuilt: !entry.isDev,
-          isWebpack: entry.builder === 'webpack' || entry.builder === 'rspack',
+          isWebpack: entry.builder === 'webpack' || entry.builder === 'rspack' || entry.builder === 'rsbuild',
           builder: entry.builder,
           defaults: {
             nuxt: {
