@@ -4,7 +4,7 @@ import { join } from 'pathe'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { x } from 'tinyexec'
 
-import { ensureDependencyInstalled, getAddDependencyCommand } from '../src/dependency.ts'
+import { ensureDependencyInstalled, getAddDependencyCommand, isPackageInstalled, toPackageName } from '../src/dependency.ts'
 import { logger } from '../src/logger.ts'
 
 vi.mock('std-env', async original => ({ ...await original<typeof import('std-env')>(), isCI: false, hasTTY: true, provider: '' }))
@@ -16,14 +16,22 @@ vi.mock('package-manager-detector', async original => ({
 
 let rootDir: string
 
+async function createPackage (name: string, exports: Record<string, string>) {
+  const dir = join(rootDir, 'node_modules', name)
+  await mkdir(dir, { recursive: true })
+  await writeFile(join(dir, 'package.json'), JSON.stringify({ name, type: 'module', exports }))
+  await writeFile(join(dir, 'index.js'), 'export default {}\n')
+}
+
+function installCreatesPackage (name: string, exports: Record<string, string>) {
+  vi.mocked(x).mockImplementationOnce((() => createPackage(name, exports).then(() => ({ exitCode: 0, stdout: '', stderr: '' }))) as any)
+}
+
 beforeAll(async () => {
   rootDir = await mkdtemp(join(tmpdir(), 'nuxt-dependency-'))
   await writeFile(join(rootDir, 'package.json'), JSON.stringify({ name: 'app', private: true }))
-  // `tailwindcss` v4 no longer ships the `tailwindcss/nesting` subpath it had in v3
-  const tailwind = join(rootDir, 'node_modules/tailwindcss')
-  await mkdir(tailwind, { recursive: true })
-  await writeFile(join(tailwind, 'package.json'), JSON.stringify({ name: 'tailwindcss', type: 'module', exports: { '.': './index.js' } }))
-  await writeFile(join(tailwind, 'index.js'), 'export default {}\n')
+  await createPackage('tailwindcss', { '.': './index.js' })
+  await createPackage('subpath-only', { './a': './index.js' })
 })
 
 afterAll(async () => {
@@ -33,6 +41,32 @@ afterAll(async () => {
 afterEach(() => {
   vi.restoreAllMocks()
   vi.mocked(x).mockClear()
+})
+
+describe('toPackageName', () => {
+  it.each([
+    ['tailwindcss/nesting', 'tailwindcss'],
+    ['@scope/pkg/sub/path', '@scope/pkg'],
+    ['@scope/pkg', '@scope/pkg'],
+    ['pkg', 'pkg'],
+    ['~/plugins/postcss', '~/plugins/postcss'],
+    ['@/plugins/postcss', '@/plugins/postcss'],
+    ['#build/postcss', '#build/postcss'],
+    ['./postcss.js', './postcss.js'],
+    ['/abs/postcss.js', '/abs/postcss.js'],
+    ['C:/abs/postcss.js', 'C:/abs/postcss.js'],
+    ['npm:pkg/sub', 'npm:pkg/sub'],
+  ])('maps %s to %s', (specifier, expected) => {
+    expect(toPackageName(specifier)).toBe(expected)
+  })
+})
+
+describe('isPackageInstalled', () => {
+  it('detects an installed package that exports neither its root nor its package.json', () => {
+    expect(isPackageInstalled('subpath-only', [rootDir])).toBe(true)
+    expect(isPackageInstalled('subpath-only', [join(rootDir, 'node_modules')])).toBe(true)
+    expect(isPackageInstalled('missing', [rootDir])).toBe(false)
+  })
 })
 
 describe('getAddDependencyCommand', () => {
@@ -51,6 +85,7 @@ describe('ensureDependencyInstalled', () => {
 
     await expect(ensureDependencyInstalled('tailwindcss/nesting', { rootDir, searchPaths: [] })).resolves.toBe(false)
     await expect(ensureDependencyInstalled(['tailwindcss/nesting'], { rootDir, searchPaths: [] })).resolves.toEqual(['tailwindcss/nesting'])
+    await expect(ensureDependencyInstalled('subpath-only/b', { rootDir, searchPaths: [] })).resolves.toBe(false)
 
     expect(prompt).not.toHaveBeenCalled()
     expect(x).not.toHaveBeenCalled()
@@ -58,6 +93,7 @@ describe('ensureDependencyInstalled', () => {
 
   it('installs the package a missing subpath belongs to', async () => {
     const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('@scope/missing', { './plugin': './index.js' })
 
     await expect(ensureDependencyInstalled('@scope/missing/plugin', { rootDir, searchPaths: [] })).resolves.toBe(true)
 
@@ -67,5 +103,24 @@ describe('ensureDependencyInstalled', () => {
     expect(command).toBe('pnpm')
     expect(args).toContain('@scope/missing')
     expect(args).not.toContain('@scope/missing/plugin')
+  })
+
+  it('returns the packages still missing after installing the others', async () => {
+    vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('other', { '.': './index.js' })
+
+    await expect(ensureDependencyInstalled(['tailwindcss/nesting', 'other'], { rootDir, searchPaths: [] })).resolves.toEqual(['tailwindcss/nesting'])
+
+    const [, args] = vi.mocked(x).mock.calls[0]!
+    expect(args).toContain('other')
+    expect(args).not.toContain('tailwindcss')
+  })
+
+  it('returns false when the installed package does not provide the subpath', async () => {
+    vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('@scope/other', { '.': './index.js' })
+
+    await expect(ensureDependencyInstalled('@scope/other/plugin', { rootDir, searchPaths: [] })).resolves.toBe(false)
+    expect(x).toHaveBeenCalledOnce()
   })
 })

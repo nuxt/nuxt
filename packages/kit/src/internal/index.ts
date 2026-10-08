@@ -23,6 +23,8 @@ export { reportPendingTemplates, trackPendingTemplate } from './pending-template
 
 export { loadJiti } from './jiti.ts'
 
+export { isPackageInstalled, toPackageName } from '../dependency.ts'
+
 export { parseNodeModulePath } from './node-module.ts'
 export type { ParsedNodeModulePath } from './node-module.ts'
 

@@ -1,4 +1,7 @@
 import process from 'node:process'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'pathe'
 import { x } from 'tinyexec'
 import { detect, resolveCommand } from 'package-manager-detector'
 import type { ResolvedCommand } from 'package-manager-detector'
@@ -54,10 +57,8 @@ export async function ensureDependencyInstalled (names: string | string[], optio
     return true
   }
 
-  // A subpath such as `tailwindcss/nesting` is installed with the package it belongs to. If that
-  // package is installed already, the subpath is one it does not provide, and installing it again
-  // would not change that, so there is nothing to offer.
-  const installable = [...new Set(missing.map(toPackageName))].filter(name => !isInstalled(name, searchPaths))
+  // an installed package that lacks a subpath cannot be fixed by reinstalling it
+  const installable = [...new Set(missing.map(toPackageName))].filter(name => !isPackageInstalled(name, searchPaths))
   if (installable.length === 0) {
     return Array.isArray(names) ? missing : false
   }
@@ -93,12 +94,17 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   try {
     await runCommand(await resolveAddCommand(installable, rootDir, { dev: true }), rootDir)
     task.stop(`Installed ${formattedNames}`)
-    return true
   } catch (err) {
     task.stop(undefined, 'failure')
     buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(installable, rootDir, { dev: true }), cause: err })
     return Array.isArray(names) ? missing : false
   }
+
+  const stillMissing = findMissing(missing, searchPaths)
+  if (stillMissing.length === 0) {
+    return true
+  }
+  return Array.isArray(names) ? stillMissing : false
 }
 
 function findMissing (packages: string[], searchPaths: string[]): string[] {
@@ -114,28 +120,46 @@ function findMissing (packages: string[], searchPaths: string[]): string[] {
 
 function isResolvable (name: string, searchPaths: string[]): boolean {
   for (const from of searchPaths) {
-    if (resolveModulePath(name, { from, try: true })) {
+    // exsolve caches failed lookups, which would hide a package installed since the last check
+    if (resolveModulePath(name, { from, try: true, cache: false })) {
       return true
     }
   }
   return false
 }
 
-/** Whether the package `name` is installed, even if it has no entry that can be imported. */
-function isInstalled (name: string, searchPaths: string[]): boolean {
-  return isResolvable(name, searchPaths) || isResolvable(`${name}/package.json`, searchPaths)
+/**
+ * Whether the package `name` is installed, even if it has no entry that can be imported.
+ *
+ * @internal
+ */
+export function isPackageInstalled (name: string, searchPaths: string[]): boolean {
+  return isResolvable(name, searchPaths) || searchPaths.some(from => hasPackageDir(name, from))
 }
 
-const PACKAGE_NAME_RE = /^(?:@[^/]+\/)?[^/]+/
+function hasPackageDir (name: string, from: string): boolean {
+  let dir = from.startsWith('file:') ? fileURLToPath(from) : from
+  while (true) {
+    if (existsSync(join(dir, 'node_modules', name, 'package.json'))) {
+      return true
+    }
+    const parent = dirname(dir)
+    if (parent === dir) {
+      return false
+    }
+    dir = parent
+  }
+}
+
+const PACKAGE_NAME_RE = /^(?:@[a-z0-9][\w.-]*\/)?[a-z0-9][\w.-]*(?=\/|$)/i
 
 /**
  * The package a bare module specifier belongs to, such as `@scope/pkg` for `@scope/pkg/subpath`.
- * Paths and specifiers with a protocol are returned unchanged.
+ * Anything else (paths, aliases, specifiers with a protocol) is returned unchanged.
+ *
+ * @internal
  */
-function toPackageName (specifier: string): string {
-  if (specifier.startsWith('.') || specifier.startsWith('/') || specifier.includes(':')) {
-    return specifier
-  }
+export function toPackageName (specifier: string): string {
   return specifier.match(PACKAGE_NAME_RE)?.[0] || specifier
 }
 
