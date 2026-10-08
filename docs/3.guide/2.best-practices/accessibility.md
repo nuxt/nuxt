@@ -133,7 +133,7 @@ A skip link as the first tab stop of your app is the conventional fix, and it he
 
 Following a link to `#main` moves the browser's sequential focus navigation starting point to `<main>`, so the next <kbd>Tab</kbd> lands inside it even though `<main>` itself is not focusable.
 
-If it suits your app, you can go further and move focus to the main region after every navigation from a plugin. A script can only focus `<main>` once it has `tabindex="-1"`. Use `-1` rather than a positive value, which would move the element in the tab order and surprise everyone else. Note that a click on anything non-focusable inside it then focuses `<main>` itself, because the browser focuses the nearest focusable ancestor of what was clicked:
+If it suits your app, you can go further and move focus to the main region from a plugin whenever navigation changes the path. A query-only change, such as a `?tab=` link, leaves focus where it is. A script can only focus `<main>` once it has `tabindex="-1"`. Use `-1` rather than a positive value, which would move the element in the tab order and surprise everyone else. Note that a click on anything non-focusable inside it then focuses `<main>` itself because the browser focuses the nearest focusable ancestor of what was clicked:
 
 ```ts [app/plugins/focus-main.client.ts]
 export default defineNuxtPlugin(() => {
