@@ -170,6 +170,14 @@ describe('parity between the shipped implementations and h3', () => {
     const query = events(new Request(`https://nuxt.com/api?${new URLSearchParams(body as Record<string, string>)}`))
     expect(await settle(shipped.getValidatedQuery(query.fallback, validate as never)))
       .toEqual(await settle(h3.getValidatedQuery(query.h3, validate as never)))
+
+    for (const decode of [false, true]) {
+      const routed = events(new Request('https://nuxt.com/api'))
+      routed.fallback.context.params = body
+      routed.h3.context.params = body
+      expect(await settle(shipped.getValidatedRouterParams(routed.fallback, validate as never, { decode })))
+        .toEqual(await settle(h3.getValidatedRouterParams(routed.h3, validate as never, { decode })))
+    }
   })
 
   const origin = 'https://nuxt.com'
