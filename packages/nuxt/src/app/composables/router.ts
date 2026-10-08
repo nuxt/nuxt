@@ -377,7 +377,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
  * Sets the layout for the current page.
  * @since 3.0.0
  */
-export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? string : Layout, props?: typeof layout extends Layout ? MakeSerializableObject<NuxtLayouts[Layout]> : never): void => {
+export const setPageLayout = <Layout extends keyof NuxtLayouts | false>(layout: unknown extends Layout ? string | false : Layout, props?: Layout extends keyof NuxtLayouts ? MakeSerializableObject<NuxtLayouts[Layout]> : never): void => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && isInComponentSetup(nuxtApp) && nuxtApp.payload.state._layout !== layout) {
