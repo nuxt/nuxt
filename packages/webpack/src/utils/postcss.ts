@@ -3,7 +3,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { Plugin } from 'postcss'
 import { directoryToURL, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, findPackageMissingSubpath } from '@nuxt/kit/internal'
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
@@ -58,6 +58,12 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       const pluginFn = await tryImportModule<(opts: Record<string, any>) => Plugin>(pluginName, { url: parentURLs })
       if (typeof pluginFn === 'function') {
         plugins.push(pluginFn(pluginOptions))
+        continue
+      }
+
+      const packageName = isDefault ? undefined : findPackageMissingSubpath(pluginName, nuxt.options.modulesDir)
+      if (packageName) {
+        bundlerDiagnostics.NUXT_B7027({ pluginName, packageName })
       } else {
         const installCommand = await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true })
         if (isDefault) {
