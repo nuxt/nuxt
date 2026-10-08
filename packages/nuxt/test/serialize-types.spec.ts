@@ -52,6 +52,12 @@ describe('Serialize', () => {
     expectTypeOf<Serialize<any>>().toBeAny()
   })
 
+  it('leaves `unknown` as `unknown` rather than collapsing it', () => {
+    expectTypeOf<Serialize<unknown>>().toBeUnknown()
+    expectTypeOf<Serialize<{ [key: string]: unknown, version: number }>>().toEqualTypeOf<{ [key: string]: unknown, version: number }>()
+    expectTypeOf<Serialize<unknown[]>>().toEqualTypeOf<unknown[]>()
+  })
+
   it('serializes object types directly via `SerializeObject`', () => {
     expectTypeOf<SerializeObject<{ at: Date, fn: () => void }>>().toEqualTypeOf<{ at: string }>()
   })

@@ -13,9 +13,6 @@ export type JsonPrimitive = string | number | boolean | null
 /** A value JSON cannot represent, dropped or nulled depending on where it appears. */
 export type NonJsonPrimitive = undefined | ((...args: any[]) => any) | symbol
 
-/** @internal */
-type IsAny<T> = 0 extends 1 & T ? true : false
-
 /**
  * The type `T` becomes once serialized to JSON and parsed back:
  * - `undefined`, functions and symbols are dropped from objects and nulled in tuples and arrays
@@ -23,8 +20,8 @@ type IsAny<T> = 0 extends 1 & T ? true : false
  * - anything with a `toJSON()` method becomes that method's return type
  * - `Date`, being `toJSON()`-bearing, becomes `string`
  */
-export type Serialize<T> = IsAny<T> extends true
-  ? any
+export type Serialize<T> = unknown extends T
+  ? T
   : T extends JsonPrimitive | undefined
     ? T
     : T extends Map<any, any> | Set<any>
