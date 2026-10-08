@@ -128,13 +128,22 @@ function isResolvable (name: string, searchPaths: string[]): boolean {
   return false
 }
 
+/** Whether the package `name` is installed, even if it has no entry that can be imported. */
+function isPackageInstalled (name: string, searchPaths: string[]): boolean {
+  return isResolvable(name, searchPaths) || searchPaths.some(from => hasPackageDir(name, from))
+}
+
 /**
- * Whether the package `name` is installed, even if it has no entry that can be imported.
+ * The installed package that `specifier` is a missing subpath of, such as `tailwindcss` for
+ * `tailwindcss/nesting` when `tailwindcss` is installed but does not provide `nesting`.
  *
  * @internal
  */
-export function isPackageInstalled (name: string, searchPaths: string[]): boolean {
-  return isResolvable(name, searchPaths) || searchPaths.some(from => hasPackageDir(name, from))
+export function findPackageMissingSubpath (specifier: string, searchPaths: string[]): string | undefined {
+  const name = toPackageName(specifier)
+  if (name !== specifier && !isResolvable(specifier, searchPaths) && isPackageInstalled(name, searchPaths)) {
+    return name
+  }
 }
 
 function hasPackageDir (name: string, from: string): boolean {

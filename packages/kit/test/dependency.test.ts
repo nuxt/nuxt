@@ -4,7 +4,7 @@ import { join } from 'pathe'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { x } from 'tinyexec'
 
-import { ensureDependencyInstalled, getAddDependencyCommand, isPackageInstalled, toPackageName } from '../src/dependency.ts'
+import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand, toPackageName } from '../src/dependency.ts'
 import { logger } from '../src/logger.ts'
 
 vi.mock('std-env', async original => ({ ...await original<typeof import('std-env')>(), isCI: false, hasTTY: true, provider: '' }))
@@ -61,11 +61,17 @@ describe('toPackageName', () => {
   })
 })
 
-describe('isPackageInstalled', () => {
-  it('detects an installed package that exports neither its root nor its package.json', () => {
-    expect(isPackageInstalled('subpath-only', [rootDir])).toBe(true)
-    expect(isPackageInstalled('subpath-only', [join(rootDir, 'node_modules')])).toBe(true)
-    expect(isPackageInstalled('missing', [rootDir])).toBe(false)
+describe('findPackageMissingSubpath', () => {
+  it('returns the installed package a subpath is missing from', () => {
+    expect(findPackageMissingSubpath('tailwindcss/nesting', [rootDir])).toBe('tailwindcss')
+    expect(findPackageMissingSubpath('subpath-only/b', [rootDir])).toBe('subpath-only')
+    expect(findPackageMissingSubpath('subpath-only/b', [join(rootDir, 'node_modules')])).toBe('subpath-only')
+  })
+
+  it('returns nothing for a subpath that resolves, a missing package or a bare package name', () => {
+    expect(findPackageMissingSubpath('subpath-only/a', [rootDir])).toBeUndefined()
+    expect(findPackageMissingSubpath('missing/b', [rootDir])).toBeUndefined()
+    expect(findPackageMissingSubpath('tailwindcss', [rootDir])).toBeUndefined()
   })
 })
 

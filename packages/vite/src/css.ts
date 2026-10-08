@@ -2,7 +2,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { InlineConfig as ViteConfig } from 'vite'
 import type { Plugin } from 'postcss'
 import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
-import { bundlerDiagnostics, isPackageInstalled, toPackageName } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, findPackageMissingSubpath } from '@nuxt/kit/internal'
 
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
@@ -41,8 +41,8 @@ async function resolvePostcssPlugin (pluginName: string, nuxt: Nuxt): Promise<((
     return pluginFn
   }
 
-  const packageName = toPackageName(pluginName)
-  if (packageName !== pluginName && isPackageInstalled(packageName, nuxt.options.modulesDir)) {
+  const packageName = findPackageMissingSubpath(pluginName, nuxt.options.modulesDir)
+  if (packageName) {
     bundlerDiagnostics.NUXT_B7027({ pluginName, packageName })
     return
   }
