@@ -22,7 +22,7 @@ if (runsOncePerEnvInMatrix && isDev) {
 
 describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server', () => {
   it('serves the SPA shell for a navigation request', async () => {
-    const html = await $fetch<string>('/')
+    const html = await $fetch<string>('/', { headers: { accept: 'text/html' } })
     expect(html).toContain('<div id="__nuxt">')
     expect(html).toContain('window.__NUXT__=')
     // injected by vite's own `transformIndexHtml`, along with the html transforms of
@@ -31,7 +31,7 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server', () =>
   })
 
   it('serves the same shell for a client-only route', async () => {
-    expect(await $fetch<string>('/about')).toContain('<div id="__nuxt">')
+    expect(await $fetch<string>('/about', { headers: { accept: 'text/html' } })).toContain('<div id="__nuxt">')
   })
 
   it('serves files from the public directory', async () => {

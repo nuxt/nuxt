@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 4.x
+      - 'release/v*'
   pull_request:
     types: [closed]
     branches:
@@ -15,6 +16,10 @@ on:
     inputs:
       prerelease:
         description: 'Cut a prerelease instead of a normal release, e.g. `beta`, `rc`, or `0`'
+        required: false
+        default: ''
+      npm-tag:
+        description: 'npm dist-tag override for maintenance releases'
         required: false
         default: ''
 
@@ -35,6 +40,7 @@ jobs:
   pr:
     if: |
       github.repository_owner == 'nuxt'
+      && !github.event.repository.fork
       && (
         github.event_name == 'push'
         || (github.event_name == 'workflow_dispatch' && !startsWith(github.ref, 'refs/tags/'))
@@ -61,6 +67,7 @@ jobs:
       && startsWith(github.event.pull_request.head.ref, 'release/v')
       && github.event.pull_request.head.repo.full_name == github.repository
       && github.repository_owner == 'nuxt'
+      && !github.event.repository.fork
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
     concurrency:
@@ -112,4 +119,4 @@ jobs:
       - uses: danielroe/uppt/publish@6ec27140623aa835e362f866d8ab0018ab057f4d # v0.6.11
         with:
           files: ${{ needs.pack.outputs.files }}
-          npm-tag: ${{ startsWith(github.ref_name, 'v5.') && '5x' || '' }}
+          npm-tag: ${{ startsWith(github.ref_name, 'v5.') && '5x' || inputs.npm-tag }}

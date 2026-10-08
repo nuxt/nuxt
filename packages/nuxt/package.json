@@ -81,7 +81,7 @@
     "@dxup/nuxt": "catalog:build",
     "@jridgewell/trace-mapping": "catalog:nitro-runtime",
     "@nuxt/cli": "catalog:build",
-    "@nuxt/devtools": "catalog:build",
+    "@nuxt/devtools-onboard": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/schema": "workspace:*",

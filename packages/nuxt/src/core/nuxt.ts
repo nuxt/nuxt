@@ -501,6 +501,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (Object.keys(nuxt.options.optimization.treeShake.composables.client).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
         composables: nuxt.options.optimization.treeShake.composables.client,
+        stubs: { onServerPrefetch: '#app/composables/server-prefetch' },
       }), { server: false })
     }
 
@@ -1000,8 +1001,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       : options.devtools?.enabled !== false // enabled by default unless explicitly disabled
 
     if (isDevToolsEnabled) {
-      if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-nightly' || m === '@nuxt/devtools-edge')) {
-        options._modules.push('@nuxt/devtools')
+      if (!options._modules.some(m => m === '@nuxt/devtools-onboard' || m === '@nuxt/devtools' || m === '@nuxt/devtools-nightly' || m === '@nuxt/devtools-edge')) {
+        options._modules.push('@nuxt/devtools-onboard')
       }
     }
   }
