@@ -2,6 +2,8 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import type { Serialize, SerializeObject } from '../src/app/types/serialize'
 
+declare const sym: unique symbol
+
 describe('Serialize', () => {
   it('passes JSON primitives through unchanged', () => {
     expectTypeOf<Serialize<string>>().toEqualTypeOf<string>()
@@ -46,6 +48,10 @@ describe('Serialize', () => {
 
   it('keeps optional keys optional', () => {
     expectTypeOf<Serialize<{ name?: string, at?: Date }>>().toEqualTypeOf<{ name?: string, at?: string }>()
+  })
+
+  it('drops symbol keys', () => {
+    expectTypeOf<Serialize<{ [sym]: string, keep: string }>>().toEqualTypeOf<{ keep: string }>()
   })
 
   it('leaves `any` as `any` rather than collapsing it', () => {

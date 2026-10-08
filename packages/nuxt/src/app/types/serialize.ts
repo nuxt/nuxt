@@ -16,6 +16,7 @@ export type NonJsonPrimitive = undefined | ((...args: any[]) => any) | symbol
 /**
  * The type `T` becomes once serialized to JSON and parsed back:
  * - `undefined`, functions and symbols are dropped from objects and nulled in tuples and arrays
+ * - symbol keys are dropped from objects
  * - `Map` and `Set` become empty objects
  * - anything with a `toJSON()` method becomes that method's return type
  * - `Date`, being `toJSON()`-bearing, becomes `string`
@@ -45,14 +46,9 @@ export type SerializeTuple<T extends [unknown, ...unknown[]]> = {
   [K in keyof T]: T[K] extends NonJsonPrimitive ? null : Serialize<T[K]>
 }
 
-/**
- * JSON-serializes an object or class instance, dropping keys JSON cannot represent.
- *
- * Keys are remapped rather than picked with `Omit`, which keeps only the index signature of a type
- * that has one and so would drop every named key.
- */
+/** JSON-serializes an object or class instance, dropping keys JSON cannot represent. */
 export type SerializeObject<T extends object> = {
-  [K in keyof T as T[K] extends NonJsonPrimitive ? never : K]: Serialize<T[K]>
+  [K in keyof T as K extends symbol ? never : T[K] extends NonJsonPrimitive ? never : K]: Serialize<T[K]>
 }
 
 /**
