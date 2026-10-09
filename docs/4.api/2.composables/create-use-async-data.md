@@ -39,12 +39,24 @@ The resulting composable has the same signature and return type as [`useAsyncDat
 ## Type
 
 ```ts [Signature]
-function createUseAsyncData (
-  options?: Partial<AsyncDataOptions> & { addons?: UseAsyncDataAddon[] },
+function createUseAsyncData<
+  FResT,
+  FDataT = FResT,
+  FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+  FDefaultT = undefined,
+  const FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = [],
+> (
+  options?: Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>> & { addons?: FAddons },
 ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 
-function createUseAsyncData (
-  options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions>,
+function createUseAsyncData<
+  FResT,
+  FDataT = FResT,
+  FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+  FDefaultT = undefined,
+  const FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = [],
+> (
+  options: (callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>,
 ): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 ```
 
