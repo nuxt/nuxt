@@ -346,10 +346,12 @@ describe('scrollBehavior with hash on the same page', () => {
     for (const element of elements.splice(0)) {
       element.remove()
     }
+    document.documentElement.style.scrollPaddingTop = ''
   })
 
   // https://github.com/nuxt/nuxt/issues/36460
-  it.each(['section', '5-tips'])('should respect scroll-margin-top of the #%s target', async (id) => {
+  it.each(['section', '5-tips'])('should respect scroll-margin-top and root scroll-padding-top for the #%s target', async (id) => {
+    document.documentElement.style.scrollPaddingTop = '10px'
     const element = document.createElement('h2')
     element.id = id
     element.style.scrollMarginTop = '40px'
@@ -359,7 +361,7 @@ describe('scrollBehavior with hash on the same page', () => {
     const router = useRouter()
     const position = await router.options.scrollBehavior!(router.resolve(`/#${id}`), router.resolve('/'), null)
 
-    expect(position).toMatchObject({ el: `#${id}`, top: 40 })
+    expect(position).toMatchObject({ el: `#${id}`, top: 50 })
   })
 })
 
