@@ -46,6 +46,27 @@ export async function validatedRequests () {
   await $fetch('/api/hello', { params: { a: 1 } })
 }
 
+declare const runtimeBase: string
+
+/** A call that names its response type accepts any `baseURL`. */
+export async function namedResponseBaseURLProbe<T extends { id: number }> () {
+  expectTypeOf(await $fetch<{ id: number }>('/users', { baseURL: runtimeBase })).toEqualTypeOf<{ id: number }>()
+  expectTypeOf(await $fetch<{ id: number }>('/users', { baseURL: '/api' })).toEqualTypeOf<{ id: number }>()
+  expectTypeOf(useFetch<{ id: number }>('/users', { baseURL: runtimeBase }).data.value).toEqualTypeOf<{ id: number } | undefined>()
+  expectTypeOf(useLazyFetch<{ id: number }>('/users', { baseURL: () => runtimeBase }).data.value).toEqualTypeOf<{ id: number } | undefined>()
+  expectTypeOf(useFetch<T>('/users', { baseURL: runtimeBase }).data.value?.id).toEqualTypeOf<number | undefined>()
+
+  const api = $fetch.create({ baseURL: '/api' })
+  expectTypeOf(await api<{ id: number }>('/users', { baseURL: runtimeBase })).toEqualTypeOf<{ id: number }>()
+  expectTypeOf(await $fetch.create<{ id: number }>({ baseURL: runtimeBase })('/users')).toEqualTypeOf<{ id: number }>()
+  expectTypeOf(createUseFetch<{ id: number }>({ baseURL: runtimeBase })('/users').data.value).toEqualTypeOf<{ id: number } | undefined>()
+
+  // a response type taken from context leaves the request inferred, so it is still validated
+  // @ts-expect-error no GET route matches '/api/helo'
+  const contextual: string = await $fetch('/api/helo')
+  return contextual
+}
+
 export function strictComposable () {
   expectTypeOf(useFetch('/api/hello').data.value).toEqualTypeOf<{ hello: boolean } | undefined>()
 
