@@ -161,75 +161,6 @@ exports[`template > produces correct output for error-404 template 2`] = `
   border-style: solid;
   border-width: 0;
   border-color: var(--un-default-border-color, #e5e7eb);
-}
-:after,
-:before {
-  --un-content: "";
-}
-html {
-  -webkit-text-size-adjust: 100%;
-  tab-size: 4;
-  font-feature-settings: normal;
-  font-variation-settings: normal;
-  -webkit-tap-highlight-color: transparent;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    sans-serif,
-    Apple Color Emoji,
-    Segoe UI Emoji,
-    Segoe UI Symbol,
-    Noto Color Emoji;
-  line-height: 1.5;
-}
-body {
-  line-height: inherit;
-  margin: 0;
-}
-h1,
-h2 {
-  font-size: inherit;
-  font-weight: inherit;
-}
-a {
-  -webkit-text-decoration: inherit;
-  text-decoration: inherit;
-}
-a,
-button {
-  color: inherit;
-}
-button {
-  font-feature-settings: inherit;
-  font-variation-settings: inherit;
-  font-family: inherit;
-  font-size: 100%;
-  font-weight: inherit;
-  line-height: inherit;
-  margin: 0;
-  padding: 0;
-  text-transform: none;
-}
-[type="button"],
-button {
-  -webkit-appearance: button;
-  background-color: #0000;
-  background-image: none;
-}
-h1,
-h2,
-p {
-  margin: 0;
-}
-button {
-  cursor: pointer;
-}
-[hidden]:where(:not([hidden="until-found"])) {
-  display: none;
-}
-*,
-:after,
-:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -280,6 +211,68 @@ button {
   --un-backdrop-opacity: ;
   --un-backdrop-saturate: ;
   --un-backdrop-sepia: ;
+}
+:after,
+:before {
+  --un-content: "";
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  -webkit-tap-highlight-color: transparent;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    sans-serif,
+    Apple Color Emoji,
+    Segoe UI Emoji,
+    Segoe UI Symbol,
+    Noto Color Emoji;
+  line-height: 1.5;
+}
+body,
+button {
+  line-height: inherit;
+  margin: 0;
+}
+h1,
+h2 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+a {
+  -webkit-text-decoration: inherit;
+  text-decoration: inherit;
+}
+a,
+button {
+  color: inherit;
+}
+button {
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  font-family: inherit;
+  font-size: 100%;
+  font-weight: inherit;
+  padding: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+[type="button"],
+button {
+  -webkit-appearance: button;
+  background-color: #0000;
+  background-image: none;
+}
+h1,
+h2,
+p {
+  margin: 0;
+}
+[hidden]:where(:not([hidden="until-found"])) {
+  display: none;
 }
 "
 `;
@@ -401,44 +394,6 @@ exports[`template > produces correct output for error-500 template 2`] = `
   border-style: solid;
   border-width: 0;
   border-color: var(--un-default-border-color, #e5e7eb);
-}
-:after,
-:before {
-  --un-content: "";
-}
-html {
-  -webkit-text-size-adjust: 100%;
-  tab-size: 4;
-  font-feature-settings: normal;
-  font-variation-settings: normal;
-  -webkit-tap-highlight-color: transparent;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    sans-serif,
-    Apple Color Emoji,
-    Segoe UI Emoji,
-    Segoe UI Symbol,
-    Noto Color Emoji;
-  line-height: 1.5;
-}
-body {
-  line-height: inherit;
-  margin: 0;
-}
-h1,
-h2 {
-  font-size: inherit;
-  font-weight: inherit;
-}
-h1,
-h2,
-p {
-  margin: 0;
-}
-*,
-:after,
-:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -489,6 +444,40 @@ p {
   --un-backdrop-opacity: ;
   --un-backdrop-saturate: ;
   --un-backdrop-sepia: ;
+}
+:after,
+:before {
+  --un-content: "";
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  -webkit-tap-highlight-color: transparent;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    sans-serif,
+    Apple Color Emoji,
+    Segoe UI Emoji,
+    Segoe UI Symbol,
+    Noto Color Emoji;
+  line-height: 1.5;
+}
+body {
+  line-height: inherit;
+  margin: 0;
+}
+h1,
+h2 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+h1,
+h2,
+p {
+  margin: 0;
 }
 "
 `;
@@ -1046,58 +1035,6 @@ exports[`template > produces correct output for welcome template 2`] = `
   border-style: solid;
   border-width: 0;
   border-color: var(--un-default-border-color, #e5e7eb);
-}
-:after,
-:before {
-  --un-content: "";
-}
-html {
-  -webkit-text-size-adjust: 100%;
-  tab-size: 4;
-  font-feature-settings: normal;
-  font-variation-settings: normal;
-  -webkit-tap-highlight-color: transparent;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    sans-serif,
-    Apple Color Emoji,
-    Segoe UI Emoji,
-    Segoe UI Symbol,
-    Noto Color Emoji;
-  line-height: 1.5;
-}
-body {
-  line-height: inherit;
-  margin: 0;
-}
-h1,
-h2 {
-  font-size: inherit;
-  font-weight: inherit;
-}
-a {
-  color: inherit;
-  -webkit-text-decoration: inherit;
-  text-decoration: inherit;
-}
-h1,
-h2,
-p,
-ul {
-  margin: 0;
-}
-ul {
-  padding: 0;
-  list-style: none;
-}
-svg {
-  vertical-align: middle;
-  display: block;
-}
-*,
-:after,
-:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -1148,6 +1085,54 @@ svg {
   --un-backdrop-opacity: ;
   --un-backdrop-saturate: ;
   --un-backdrop-sepia: ;
+}
+:after,
+:before {
+  --un-content: "";
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+  font-feature-settings: normal;
+  font-variation-settings: normal;
+  -webkit-tap-highlight-color: transparent;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    sans-serif,
+    Apple Color Emoji,
+    Segoe UI Emoji,
+    Segoe UI Symbol,
+    Noto Color Emoji;
+  line-height: 1.5;
+}
+body {
+  line-height: inherit;
+  margin: 0;
+}
+h1,
+h2 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+a {
+  color: inherit;
+  -webkit-text-decoration: inherit;
+  text-decoration: inherit;
+}
+h1,
+h2,
+p,
+ul {
+  margin: 0;
+}
+ul {
+  padding: 0;
+  list-style: none;
+}
+svg {
+  vertical-align: middle;
+  display: block;
 }
 "
 `;

@@ -36,7 +36,7 @@ overrides:
   esbuild: "0.28.2"
   nuxt: "workspace:*"
   oxc-parser: "0.152.0"
-  rolldown: "~1.2.12"
+  rolldown: "~1.2.13"
   vite: "8.3.2"
   vue: "3.5.43"
 
@@ -82,12 +82,12 @@ catalogs:
     unhead: ^3.4.2
     vue: ^3.5.43
     vue-bundle-renderer: ^2.4.0
-    vue-router: ^5.3.1
+    vue-router: ^5.4.0
   nitro-runtime:
     '@jridgewell/trace-mapping': ^0.3.31
     destr: ^2.0.5
     flru: ^1.0.2
-    my-bad: ^0.2.10
+    my-bad: ^0.2.11
     nitro: ^3.0.260903-beta
     srvx: 1.0.5
     unstorage: ^1.17.5
@@ -99,17 +99,17 @@ catalogs:
     vue-devtools-stub: ^0.1.0
     vue-loader: ^17.4.2
   vite:
-    magic-string: ^1.4.2
+    magic-string: ^1.4.3
     oxc-walker: ^1.1.1
     # needs to match vite's own `~1.2.0` pin
-    rolldown: ~1.2.12
+    rolldown: ~1.2.13
     rolldown-string: ^0.3.1
     vite: ^8.3.2
     vite-node: ^6.0.0
     vite-plugin-checker: ^0.14.5
   webpack:
     '@nuxt/friendly-errors-webpack-plugin': ^2.6.0
-    '@rsbuild/core': ~2.2.11
+    '@rsbuild/core': ~2.2.12
     css-loader: ^7.1.5
     css-minimizer-webpack-plugin: ^8.0.0
     esbuild-loader: ^4.5.0
@@ -130,7 +130,7 @@ catalogs:
     webpackbar: ^7.0.0
   build:
     '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': ^4.0.0
+    '@nuxt/cli': ^4.0.1
     '@nuxt/devtools': ^3.4.2
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.43
@@ -141,10 +141,10 @@ catalogs:
     compatx: ^0.2.0
     confbox: ^0.3.1
     consola: ^3.4.2
-    cssnano: ^9.2.2
+    cssnano: ^9.4.0
     defu: ^6.1.7
     destr: ^2.0.5
-    dotenv: ^18.0.5
+    dotenv: ^18.0.6
     errx: ^0.2.2
     escape-string-regexp: ^5.0.0
     exsolve: ^1.1.3
@@ -170,7 +170,7 @@ catalogs:
     pathe: ^2.0.3
     picomatch: ^4.0.7
     pkg-types: ^2.3.3
-    postcss: ^8.5.28
+    postcss: ^8.5.29
     postcss-import: ^17.0.0
     postcss-import-resolver: ^2.0.0
     postcss-loader: ^8.2.1
@@ -196,7 +196,7 @@ catalogs:
   # dev/test/workspace tooling (pinned)
   dev:
     '@arethetypeswrong/cli': 0.18.5
-    '@babel/core': 8.0.6
+    '@babel/core': 8.0.7
     '@babel/plugin-proposal-decorators': 8.0.2
     '@babel/plugin-syntax-jsx': 8.0.1
     '@babel/plugin-syntax-typescript': 8.0.3
@@ -209,7 +209,7 @@ catalogs:
     '@nuxt/scripts': 1.3.12
     '@nuxt/test-utils': 4.3.3
     '@parcel/watcher': 2.6.0
-    '@playwright/test': 1.63.0
+    '@playwright/test': 1.64.0
     '@rollup/plugin-babel': 7.1.0
     '@rspack/core': 2.2.8
     '@testing-library/vue': 8.1.0
@@ -229,7 +229,7 @@ catalogs:
     '@vue/devtools-api': 8.2.1
     '@vue/language-core': 3.3.12
     '@vue/test-utils': 2.5.1
-    acorn: 8.18.0
+    acorn: 8.19.0
     beasties: 0.5.4
     case-police: 2.2.1
     esbuild: 0.28.2
@@ -244,7 +244,7 @@ catalogs:
     html-validate: 11.16.2
     htmlnano: 3.5.1
     installed-check: 11.0.0
-    knip: 6.39.0
+    knip: 6.40.0
     magic-regexp: 0.11.2
     markdownlint-cli: 0.49.1
     nano-staged: 1.0.2
@@ -252,9 +252,9 @@ catalogs:
     nuxt-content-twoslash: 0.4.0
     oxc-transform: 0.152.0
     pkg-pr-new: 0.0.88
-    playwright-core: 1.63.0
+    playwright-core: 1.64.0
     prettier: 3.9.9
-    rollup: 4.64.0
+    rollup: 4.64.3
     rollup-plugin-visualizer: 7.1.1
     sherif: 1.13.0
     simple-git-hooks: 2.14.0
