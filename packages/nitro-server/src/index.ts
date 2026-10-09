@@ -12,7 +12,7 @@ import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitropack/types'
-import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveDeclarationPath, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { bundlerDiagnostics, getServerRuntime, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -1367,5 +1367,14 @@ async function resolveOwnTypePaths (h3PackageJson: string, options?: { entry?: b
     resolveTypePaths(['nitropack/types', 'nitropack/runtime', 'nitropack', 'h3'], [fileURLToPath(new URL('.', import.meta.url))], options),
     resolveTypePaths(['crossws'], [dirname(h3PackageJson)], options),
   ])
-  return Object.fromEntries([...own, ...crossws].map(([pkg, path]) => [pkg, [path]]))
+  const paths: Record<string, [string]> = Object.fromEntries([...own, ...crossws].map(([pkg, path]) => [pkg, [path]]))
+  if (options?.entry) {
+    // `nitropack/types` re-exports without a file extension, which `nodenext` does not resolve
+    // https://github.com/nuxt/nuxt/issues/36516
+    const typesEntry = resolveModulePath('nitropack/types', { from: import.meta.url, conditions: ['import'], try: true })
+    if (typesEntry) {
+      paths['nitropack/types'] = [await resolveDeclarationPath(typesEntry)]
+    }
+  }
+  return paths
 }
