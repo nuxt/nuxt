@@ -24,7 +24,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitropack/runtime/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, getLayerNodeModulesExcludePattern, isNuxtDistId, resolveNitroCommand, toArray, toFsDriverIgnorePatterns } from './utils.ts'
+import { distDir, getLayerNodeModulesExcludePattern, isNuxtDistId, resolveNitroCommand, toArray, toFsDriverIgnorePatterns, toTranspileNoExternal } from './utils.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
@@ -416,7 +416,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
               '@nuxt/',
               nuxt.options.buildDir,
             ]),
-        ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
+        ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string').map(toTranspileNoExternal),
         isNuxtDistId,
         distDir,
         // Ensure app config files have auto-imports injected even if they are pure .js files
