@@ -388,6 +388,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         generatedCode: {
           symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351
         },
+        sourcemapExcludeSources: nuxt.options.sourcemap.server === 'nosource',
       },
       plugins: [],
     },
