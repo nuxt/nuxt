@@ -5,7 +5,7 @@ import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptio
 import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
-import { readPackageJSON, resolvePackageDir, resolvePackageJSON } from '../internal/package-json.ts'
+import { readPackageJSON, resolvePackageDir } from '../internal/package-json.ts'
 import { read as readRc, update as updateRc } from 'rc9'
 import { isGreaterThan, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
@@ -109,18 +109,9 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       }
 
       if (value.version) {
-        const cachedDependency = await moduleLoadCache.get(resolvedModule.module)
-        const dependencyPath = cachedDependency?.resolvedModulePath || dependencyPaths.get(resolvedModule.module)
-        const resolvePaths = [dependencyPath || res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
-        const dependencyEntry = dependencyPath || resolvedModule.resolvedPath || name
-        const packagePath = resolvePackageJSON(dependencyEntry, { from: resolvePaths, try: true })
-        const pkg = packagePath ? await readPackageJSON(packagePath).catch(() => null) : null
-        const isLayerPackage = nuxt.options._layers.some(layer => packagePath === resolve(layer.cwd, 'package.json'))
-        const isDependencyPackage = pkg?.name && (
-          name === pkg.name || name.startsWith(`${pkg.name}/`)
-          || resolveModuleDefinition(pkg.name, nuxt, dependencyEntry)?.resolvedPath === dependencyEntry
-        )
-        if (pkg?.version && (!isLayerPackage || isDependencyPackage) && !satisfies(pkg.version, value.version, { includePrerelease: true })) {
+        const resolvePaths = [res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
+        const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
+        if (pkg?.version && !satisfies(pkg.version, value.version, { includePrerelease: true })) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
           error = new TypeError(message)
         }

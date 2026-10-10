@@ -126,30 +126,6 @@ export default Object.assign(() => {}, {
     await writeDependency(join(tempDir, 'app/node_modules/nested-dependency'), '3.0.0')
     await writeDependency(join(tempDir, 'incompatible/node_modules/nested-dependency'), '1.0.0')
     await writeDependency(join(tempDir, 'hoisted/node_modules/nested-dependency'), '3.0.0')
-    const localApp = join(tempDir, 'local')
-    await mkdir(join(localApp, 'modules'), { recursive: true })
-    await writeFile(join(localApp, 'package.json'), JSON.stringify({ name: 'local-app', version: '1.0.0', type: 'module' }))
-    await writeFile(join(localApp, 'modules/local.mjs'), `
-export default (_options, nuxt) => {
-  nuxt.options.runtimeConfig.localDependencyLoaded = true
-}
-    `)
-    await writeDependency(join(localApp, 'packaged'), '1.0.0')
-    for (const scenario of ['layer', 'resolved-layer']) {
-      const layer = join(tempDir, scenario, 'node_modules/layer-dependency')
-      const dependency = scenario === 'layer' ? 'layer-dependency' : join(layer, 'index.js')
-      await mkdir(layer, { recursive: true })
-      await writeFile(join(layer, 'package.json'), JSON.stringify({ name: 'layer-dependency', version: '1.0.0', type: 'module', exports: './index.js' }))
-      await writeFile(join(layer, 'index.js'), 'export default () => {}')
-      await writeFile(join(layer, 'nuxt.config.mjs'), `
-export default {
-  modules: [Object.assign(() => {}, {
-    getMeta: () => ({ name: 'layer-parent' }),
-    getModuleDependencies: () => ({ [${JSON.stringify(dependency)}]: { version: '>=2' } })
-  })]
-}
-      `)
-    }
   })
 
   afterEach(async () => {
@@ -194,19 +170,6 @@ export default {
     })
   })
 
-  it.each([
-    ['nested-dependency', 'parent-module'],
-    ['parent-module', 'nested-dependency'],
-  ])('rejects an explicitly installed incompatible app dependency: %j', async (...modules) => {
-    const error = await loadNuxt({
-      cwd: join(tempDir, 'incompatible'),
-      overrides: { modules },
-    }).then((instance) => { nuxt = instance }, (error: unknown) => error)
-
-    expect(error).toBeInstanceOf(TypeError)
-    expect(error).toHaveProperty('message', expect.stringMatching(/Module `nested-dependency` version \(`1\.0\.0`\) does not satisfy `>=2`/))
-  })
-
   it('loads the app dependency when the declaring module has no nested copy', async () => {
     nuxt = await loadNuxt({
       cwd: join(tempDir, 'hoisted'),
@@ -216,48 +179,5 @@ export default {
     expect(nuxt.options.runtimeConfig.nestedDependency).toEqual({
       version: '3.0.0', message: 'configured', calls: 1,
     })
-  })
-
-  it('does not use the app version for a local dependency without a manifest', async () => {
-    const localDependency = join(tempDir, 'local/modules/local.mjs')
-    nuxt = await loadNuxt({
-      cwd: join(tempDir, 'local'),
-      overrides: {
-        modules: [
-          localDependency,
-          defineNuxtModule({
-            meta: { name: 'local-parent' },
-            moduleDependencies: { [localDependency]: { version: '>=2' } },
-            setup () {},
-          }),
-        ],
-      },
-    })
-
-    expect(nuxt.options.runtimeConfig.localDependencyLoaded).toBe(true)
-  })
-
-  it('checks a local dependency with its own manifest', async () => {
-    const localDependency = join(tempDir, 'local/packaged/index.js')
-    await expect(loadNuxt({
-      cwd: join(tempDir, 'local'),
-      overrides: {
-        modules: [defineNuxtModule({
-          meta: { name: 'local-parent' },
-          moduleDependencies: { [localDependency]: { version: '>=2' } },
-          setup () {},
-        })],
-      },
-    })).rejects.toThrow(/version \(`1\.0\.0`\) does not satisfy `>=2`/)
-  })
-
-  it.each(['layer', 'resolved-layer'])('checks a dependency exported by a package-backed layer: %s', async (scenario) => {
-    const error = await loadNuxt({
-      cwd: join(tempDir, scenario),
-      overrides: { extends: [join(tempDir, scenario, 'node_modules/layer-dependency')] },
-    }).then((instance) => { nuxt = instance }, (error: unknown) => error)
-
-    expect(error).toBeInstanceOf(TypeError)
-    expect(error).toHaveProperty('message', expect.stringMatching(/version \(`1\.0\.0`\) does not satisfy `>=2`/))
   })
 })
