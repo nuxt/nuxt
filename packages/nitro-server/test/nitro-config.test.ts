@@ -1,5 +1,6 @@
+import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { resolve } from 'pathe'
+import { isAbsolute, resolve } from 'pathe'
 import { loadNuxt } from '@nuxt/kit'
 import type { NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
@@ -66,6 +67,15 @@ describe('nitro config', () => {
       expect(noExternals).toContain('@nuxt/image')
       expect(isNoExternal(`${moduleDir}/src/runtime/server/routes/_ipx.ts`)).toBe(true)
       expect(isNoExternal(`${moduleDir}/node_modules/.pnpm/sharp@0.34.5/node_modules/sharp/lib/index.js`)).toBe(false)
+    })
+  })
+
+  it('aliases `@vue/devtools-api` to a resolved path', async () => {
+    await withNitro({}, (_nitro, nitroConfig) => {
+      const alias = nitroConfig.alias!['@vue/devtools-api']!
+      expect(isAbsolute(alias)).toBe(true)
+      expect(existsSync(alias)).toBe(true)
+      expect(alias).toContain('vue-devtools-stub')
     })
   })
 

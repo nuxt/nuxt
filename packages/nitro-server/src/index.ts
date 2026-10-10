@@ -377,7 +377,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             '@vue/compiler-dom': mockProxy,
             '@vue/compiler-ssr': mockProxy,
           },
-      '@vue/devtools-api': 'vue-devtools-stub',
+      '@vue/devtools-api': resolveModulePath('vue-devtools-stub', { from: import.meta.url }),
 
       // Nuxt aliases
       ...nuxt.options.alias,
