@@ -6,12 +6,14 @@ test.describe.configure({ mode: 'serial' })
 test.use({
   nuxt: {
     rootDir: fileURLToPath(new URL('../fixtures/navigation-abort-404', import.meta.url)),
+    // the dev projects share this fixture and never write to it, but each needs its own dev server
+    env: { NUXT_IGNORE_LOCK: '1' },
   },
 })
 
 test.describe('aborted navigation', () => {
   test('keeps the current page without rendering a 404', async ({ page, goto }) => {
-    await goto('/', { waitUntil: 'hydration' })
+    await goto('/')
 
     await page.locator('#abort').click()
     // the bogus 404 (if it were rendered) happens asynchronously after the failed navigation
@@ -22,7 +24,7 @@ test.describe('aborted navigation', () => {
   })
 
   test('still renders a 404 for a successful navigation to an unknown route', async ({ page, goto }) => {
-    await goto('/', { waitUntil: 'hydration' })
+    await goto('/')
 
     await page.locator('#unknown').click()
 
