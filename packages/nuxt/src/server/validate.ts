@@ -1,6 +1,7 @@
 import type { RequestEvent } from 'nuxt/schema'
 
-import { createError, getQuery, isNuxtError, readBody } from './index'
+import { createError, getQuery, getRequestHeaders, isNuxtError, readBody } from './index'
+import type { EventHandler } from './index'
 import type { NuxtErrorDetails } from '../app/error'
 
 /** A validation failure, as a Standard Schema reports it. */
@@ -112,4 +113,85 @@ export function readValidatedBody<S extends StandardSchema> (event: Pick<Request
 export function readValidatedBody<Output> (event: Pick<RequestEvent, 'req'>, validate: (data: unknown) => ValidateResult<Output> | Promise<ValidateResult<Output>>, options?: ValidateOptions): Promise<Output>
 export async function readValidatedBody (event: Pick<RequestEvent, 'req'>, validate: Validator<any, unknown>, options?: ValidateOptions): Promise<unknown> {
   return validateData(await readBody(event), validate, options)
+}
+
+/** What a schema validates to, or `never` when there is none. */
+type OutputOf<S> = [S] extends [StandardSchema] ? SchemaOutput<S> : never
+
+/**
+ * The event a {@link defineValidatedHandler} handler receives: `req.json()` resolves the validated body.
+ *
+ * @since 5.0.0
+ */
+export type ValidatedRequestEvent<Body = unknown> = Omit<RequestEvent, 'req'> & {
+  readonly req: Omit<Request, 'json'> & { json: () => Promise<Body> }
+}
+
+/**
+ * A request handler, as {@link defineValidatedHandler} returns it. `~validated` is
+ * type-only: it carries the validated shapes to the types of `$fetch` and `useFetch`.
+ *
+ * @since 5.0.0
+ */
+export interface ValidatedEventHandler<Result = unknown, Body = never, Query = never, Headers = never> extends EventHandler<Result> {
+  readonly '~validated'?: { body: Body, query: Query, headers: Headers }
+}
+
+/**
+ * Define a request handler that validates its request with Standard Schemas, as h3's
+ * `defineValidatedHandler` does: the headers and the query before the handler runs, the body
+ * when the handler reads it with `event.req.json()`. Invalid input is rejected with a `400`
+ * whose `data` carries the issues, unless `onError` returns a different error.
+ *
+ * The schemas type `$fetch` and `useFetch` calls to the route.
+ *
+ * @example
+ * ```ts
+ * // server/api/todos.post.ts
+ * import { defineValidatedHandler } from 'nuxt/server'
+ * import { z } from 'zod'
+ *
+ * export default defineValidatedHandler({
+ *   validate: { body: z.object({ title: z.string() }) },
+ *   handler: async (event) => {
+ *     const { title } = await event.req.json()
+ *     return { title }
+ *   },
+ * })
+ * ```
+ *
+ * @since 5.0.0
+ */
+export function defineValidatedHandler<
+  BodySchema extends StandardSchema | undefined = undefined,
+  QuerySchema extends StandardSchema | undefined = undefined,
+  HeadersSchema extends StandardSchema | undefined = undefined,
+  Result = unknown,
+> (definition: {
+  validate: { body?: BodySchema, query?: QuerySchema, headers?: HeadersSchema } & ValidateOptions
+  handler: (event: ValidatedRequestEvent<[BodySchema] extends [StandardSchema] ? SchemaOutput<BodySchema> : unknown>) => Result
+}): ValidatedEventHandler<Promise<Awaited<Result>>, OutputOf<BodySchema>, OutputOf<QuerySchema>, OutputOf<HeadersSchema>> {
+  const { validate, handler } = definition
+  return async (event): Promise<Awaited<Result>> => {
+    if (validate.headers) {
+      await validateData(getRequestHeaders(event), validate.headers, validate)
+    }
+    if (validate.query) {
+      await validateData(getQuery(event), validate.query, validate)
+    }
+    const body = validate.body
+    if (body) {
+      // `req` is reassigned rather than the event copied, which would drop what the runtime defines on it
+      ;(event as { req: Request }).req = new Proxy(event.req, {
+        get (target, property) {
+          if (property === 'json') {
+            return () => readValidatedBody({ req: target }, body, validate)
+          }
+          const value = Reflect.get(target, property, target)
+          return typeof value === 'function' ? value.bind(target) : value
+        },
+      })
+    }
+    return await handler(event as unknown as ValidatedRequestEvent<never>) as Awaited<Result>
+  }
 }

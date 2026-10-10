@@ -5,8 +5,13 @@ import type { EventHandlerRequest, H3Event } from 'nitro/h3'
  * require them at the call site without the shapes being declared twice.
  */
 
-/** The request description a handler receives, or `never` for anything that is not a handler. */
-type RequestOf<Handler> = Handler extends (event: H3Event<infer Request>) => any ? Request : never
+/**
+ * The request description a handler receives, or `never` for anything that is not a handler.
+ * `nuxt/server`'s `defineValidatedHandler` declares it on its type, as it has no h3 event.
+ */
+type RequestOf<Handler> = '~validated' extends keyof Handler
+  ? NonNullable<Handler['~validated' & keyof Handler]>
+  : Handler extends (event: H3Event<infer Request>) => any ? Request : never
 
 /** Whether two types are identical, used to tell a validated shape from h3's default. */
 type Equals<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false

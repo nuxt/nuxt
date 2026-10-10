@@ -26,8 +26,9 @@ import type {
  * Every name and signature `nuxt/server` has on 4.x has to exist here too, so that server
  * code written there survives the upgrade.
  *
- * The reference below is 4.x's surface. One difference is expected: 4.x exports
- * `NuxtError` as a type, where here it is a value too.
+ * The reference below is 4.x's surface. Two differences are expected: 4.x exports
+ * `NuxtError` as a type, where here it is a value too, and `defineValidatedHandler`
+ * only exists here.
  */
 interface FourXSurface {
   defineEventHandler: <Result>(handler: (event: RequestEvent) => Result) => (event: RequestEvent) => Result
@@ -103,10 +104,10 @@ const FOURX_VALUE_EXPORTS = [
 ]
 
 /** Value exports only this branch has. */
-const MAIN_ONLY_VALUE_EXPORTS = ['NuxtError']
+const MAIN_ONLY_VALUE_EXPORTS = ['NuxtError', 'defineValidatedHandler']
 
 describe('the `nuxt/server` surface against 4.x', () => {
-  it('carries every value export 4.x does, and nothing else but `NuxtError`', async () => {
+  it('carries every value export 4.x does, and nothing else but `NuxtError` and `defineValidatedHandler`', async () => {
     const names = await resolveModuleExportNames(new URL('../src/server/index.ts', import.meta.url).pathname, { url: import.meta.url })
 
     expect(FOURX_VALUE_EXPORTS.filter(name => !names.includes(name))).toEqual([])
