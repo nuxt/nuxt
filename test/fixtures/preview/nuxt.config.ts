@@ -7,4 +7,8 @@ export default withMatrix({
       meta: [{ name: 'description', content: 'Preview mode test fixture' }],
     },
   },
+  routeRules: {
+    '/preview-only-prerendered': { prerender: true },
+    '/preview-only-delayed': { prerender: true },
+  },
 })
