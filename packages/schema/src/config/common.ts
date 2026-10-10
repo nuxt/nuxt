@@ -301,7 +301,7 @@ export default defineResolvers({
       const val = _val && typeof _val === 'object' ? _val : {}
       const [app, buildId] = await Promise.all([get('app'), get('buildId')])
       provideFallbackValues(val)
-      return defu(val, {
+      const merged = defu(val, {
         appSecret: '',
         public: {},
         app: {
@@ -311,6 +311,26 @@ export default defineResolvers({
           cdnURL: app.cdnURL,
         },
       })
+      if (_val && typeof _val === 'object') {
+        restoreNullValues(merged, _val)
+      }
+      if (!merged.public || typeof merged.public !== 'object') {
+        merged.public = {}
+      }
+      if (!merged.app || typeof merged.app !== 'object') {
+        merged.app = {
+          buildId,
+          baseURL: app.baseURL,
+          buildAssetsDir: app.buildAssetsDir,
+          cdnURL: app.cdnURL,
+        }
+      } else {
+        merged.app.buildId ??= buildId
+        merged.app.baseURL ??= app.baseURL
+        merged.app.buildAssetsDir ??= app.buildAssetsDir
+        merged.app.cdnURL ??= app.cdnURL
+      }
+      return merged
     },
   },
   appConfig: {
@@ -322,10 +342,23 @@ export default defineResolvers({
 
 function provideFallbackValues (obj: Record<string, any>) {
   for (const key in obj) {
-    if (typeof obj[key] === 'undefined' || obj[key] === null) {
+    if (typeof obj[key] === 'undefined') {
       obj[key] = ''
-    } else if (typeof obj[key] === 'object') {
+    } else if (obj[key] && typeof obj[key] === 'object') {
       provideFallbackValues(obj[key])
+    }
+  }
+}
+
+function restoreNullValues (target: Record<string, any>, source: Record<string, any>) {
+  for (const key in source) {
+    if (key === '__proto__' || (key === 'constructor' && source[key] !== null)) {
+      continue
+    }
+    if (source[key] === null) {
+      target[key] = null
+    } else if (source[key] && typeof source[key] === 'object' && target[key] && typeof target[key] === 'object') {
+      restoreNullValues(target[key], source[key])
     }
   }
 }
