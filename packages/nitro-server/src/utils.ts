@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, normalize } from 'pathe'
+import { dirname, isAbsolute, normalize } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
@@ -65,6 +65,18 @@ export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>)
   return excludePaths.length
     ? new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)
     : /node_modules/
+}
+
+/**
+ * Convert a `build.transpile` entry into a Nitro `noExternals` entry. An absolute
+ * directory matches its own files but not the dependencies installed beneath it.
+ */
+export function toTranspileNoExternal (entry: string): string | RegExp {
+  if (!isAbsolute(entry)) {
+    return entry
+  }
+  const dir = escapeRE(normalize(entry)).replace(/\//g, '[\\\\/]')
+  return new RegExp(`^${dir}(?!.*node_modules)`)
 }
 
 /**

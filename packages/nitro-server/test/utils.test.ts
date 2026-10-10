@@ -1,6 +1,6 @@
 import { matchesGlob } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern, toFsDriverIgnorePatterns, toModulePackageDir } from '../src/utils.ts'
+import { getLayerNodeModulesExcludePattern, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
@@ -140,5 +140,29 @@ describe('toModulePackageDir', () => {
     // never the bare `node_modules` it resolved from: as a prefix that would take in
     // every other package installed beside the module
     expect(toModulePackageDir('/proj/node_modules/', '/elsewhere/dist')).toBe('/elsewhere/dist')
+  })
+})
+
+describe('toTranspileNoExternal', () => {
+  it('leaves a package name as a string', () => {
+    expect(toTranspileNoExternal('@nuxt/image')).toBe('@nuxt/image')
+  })
+
+  it('matches the files of an absolute directory', () => {
+    const re = toTranspileNoExternal('/code/nuxt/image') as RegExp
+    expect(re.test('/code/nuxt/image/src/runtime/server/routes/_ipx.ts')).toBe(true)
+  })
+
+  it('does not match dependencies installed beneath an absolute directory', () => {
+    const re = toTranspileNoExternal('/code/nuxt/image') as RegExp
+    expect(re.test('/code/nuxt/image/node_modules/.pnpm/sharp@0.34.5/node_modules/sharp/lib/index.js')).toBe(false)
+    expect(re.test('/code/nuxt/image/playground/node_modules/ipx/dist/index.mjs')).toBe(false)
+  })
+
+  it('matches windows paths with either separator', () => {
+    const re = toTranspileNoExternal('C:\\code\\nuxt\\image') as RegExp
+    expect(re.test('C:\\code\\nuxt\\image\\src\\runtime\\server\\routes\\_ipx.ts')).toBe(true)
+    expect(re.test('C:/code/nuxt/image/src/runtime/server/routes/_ipx.ts')).toBe(true)
+    expect(re.test('C:\\code\\nuxt\\image\\node_modules\\sharp\\lib\\index.js')).toBe(false)
   })
 })

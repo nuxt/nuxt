@@ -58,6 +58,17 @@ describe('nitro config', () => {
     })
   })
 
+  it('does not inline the dependencies of an absolute `build.transpile` directory', async () => {
+    const moduleDir = resolve(fixtureDir, '../workspace-module')
+    await withNitro({ dev: false, build: { transpile: [moduleDir, '@nuxt/image'] } }, (nitro) => {
+      const noExternals = nitro.options.noExternals as Array<string | RegExp>
+      const isNoExternal = (id: string) => noExternals.some(entry => typeof entry === 'string' ? id.includes(entry) : entry.test(id))
+      expect(noExternals).toContain('@nuxt/image')
+      expect(isNoExternal(`${moduleDir}/src/runtime/server/routes/_ipx.ts`)).toBe(true)
+      expect(isNoExternal(`${moduleDir}/node_modules/.pnpm/sharp@0.34.5/node_modules/sharp/lib/index.js`)).toBe(false)
+    })
+  })
+
   it('does not include the dev error channel in production builds', async () => {
     await withNitro({ dev: false }, (_nitro, nitroConfig) => {
       const errorChannel = nitroConfig.virtual!['#internal/nuxt/error-channel'] as () => string
