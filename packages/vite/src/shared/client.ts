@@ -83,11 +83,12 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
       ...nuxt.options.experimental.clientNodeCompat ? { global: 'globalThis' } : {},
     },
     build: {
-      sourcemap: nuxt.options.sourcemap.client ? nuxt.options.vite.build?.sourcemap ?? nuxt.options.sourcemap.client : false,
+      sourcemap: nuxt.options.sourcemap.client ? nuxt.options.vite.build?.sourcemap ?? (nuxt.options.sourcemap.client === 'nosource' || nuxt.options.sourcemap.client) : false,
       manifest: 'manifest.json',
       outDir: resolve(nuxt.options.buildDir, 'dist/client'),
       rolldownOptions: {
         input: { entry },
+        ...nuxt.options.sourcemap.client === 'nosource' ? { output: { sourcemapExcludeSources: true } } : {},
       },
     },
   }

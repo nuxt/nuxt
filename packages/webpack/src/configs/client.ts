@@ -33,13 +33,14 @@ function clientDevtool (ctx: WebpackConfigContext) {
   }
 
   const prefix = ctx.nuxt.options.sourcemap.client === 'hidden' ? 'hidden-' : ''
+  const nosources = ctx.nuxt.options.sourcemap.client === 'nosource' ? 'nosources-' : ''
 
   if (!ctx.isDev) {
-    ctx.config.devtool = prefix + 'source-map'
+    ctx.config.devtool = prefix + nosources + 'source-map'
     return
   }
 
-  ctx.config.devtool = prefix + 'eval-cheap-module-source-map'
+  ctx.config.devtool = prefix + 'eval-' + nosources + 'cheap-module-source-map'
 }
 
 function clientPerformance (ctx: WebpackConfigContext) {
