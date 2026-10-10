@@ -93,13 +93,17 @@ export function renderIndexHtml (nuxt: Nuxt, entry: string, spaLoadingTemplate =
 
   const head = renderConfiguredHead(nuxt)
 
-  const loader = spaLoadingTemplate
+  // as in the nitro renderer, `within` renders the template as the root's content: vue
+  // clears it on mount, so it needs no wrapper for the client to remove
+  const loaderWithinRoot = nuxt.options.ssr === false && nuxt.options.experimental.spaLoadingTemplateLocation === 'within'
+
+  const loader = spaLoadingTemplate && !loaderWithinRoot
     ? `<${app.spaLoaderTag}${renderAttrs(app.spaLoaderAttrs as Record<string, unknown>)}>${spaLoadingTemplate}</${app.spaLoaderTag}>`
     : ''
 
   // the marker vite's SSR convention (and nitro's own vite integration) renders into, so
   // that a server brought by a plugin can use this document as its template
-  const root = nuxt.options.ssr === false ? '' : '<!--ssr-outlet-->'
+  const root = nuxt.options.ssr === false ? (loaderWithinRoot ? spaLoadingTemplate : '') : '<!--ssr-outlet-->'
 
   const body = [
     `<${app.rootTag}${rootAttrs}>${root}</${app.rootTag}>`,
