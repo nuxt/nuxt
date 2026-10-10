@@ -10,7 +10,7 @@ import { createDefu, defu } from 'defu'
 import { klona } from 'klona'
 import microdiff from 'microdiff'
 import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
-import { resolveModuleURL } from 'exsolve'
+import { resolveModulePath, resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm.ts'
 import { getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
@@ -205,6 +205,8 @@ let configImportCounter = 0
 // The `extends` sources the config loader hands to `giget`. Kept in step with c12; a prefix that
 // is missing here only means the loader reports the missing downloader in its own words.
 const REMOTE_SOURCE_RE = /^(?:gh|github|gitlab|bitbucket):|^https?:\/\//
+// a bare package specifier, with or without scope and subpath, as c12 recognises it
+const PACKAGE_SOURCE_RE = /^(?:@[\da-z~-][\d._a-z~-]*\/)?[\da-z~-][\d._a-z~-]*(?:$|\/)/
 
 /**
  * Check that a remote `extends` source can actually be downloaded, and explain the alternative if
@@ -380,13 +382,18 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
         // Expand `~`/`~~`/`@`/`@@` aliases, which c12 does not understand in extend sources.
         // Local layers live at the project root, so every alias form resolves against `rootCwd`.
         const aliased = resolveLayerExtendsAlias(source, rootCwd)
-        // Only dedupe local sources; packages/remote sources are left to c12
+        // Remote sources are left to c12
         const path = aliased ?? resolve(base, source)
-        if (!existsSync(path)) { return }
+        // Resolve a package name the way c12 is about to, so the layer behind it is recognised
+        // when another `extends` reaches it again
+        const packageEntry = !existsSync(path) && !aliased && PACKAGE_SOURCE_RE.test(source)
+          ? resolveModulePath(source, { try: true, from: directoryToURL(base), suffixes: ['', '/index'], extensions: [...CONFIG_EXTENSIONS] })
+          : undefined
+        if (!packageEntry && !existsSync(path)) { return }
         // Canonicalise to the layer directory so different spellings of the same
         // layer share one identity: a config-file path -> its directory, and a
         // symlink -> its target
-        const layerDir = canonicalLayerDir(path)
+        const layerDir = canonicalLayerDir(packageEntry ?? path)
         // Record the order local layers are listed in the root project's own `extends`
         // (not the auto-scan `_extends` injection) so they can be reordered afterwards
         if (base === rootCwd && !autoScanSources.has(source) && localLayerDirs.has(layerDir)) {
