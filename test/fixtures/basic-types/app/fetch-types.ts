@@ -39,6 +39,12 @@ export async function probe () {
   await $fetch('/api/validated', { method: 'POST' })
   expectTypeOf<typeof validated>().not.toBeUnknown()
 
+  // the same holds for `nuxt/server`'s `defineValidatedHandler`
+  // @ts-expect-error `count` is not a string
+  await $fetch('/api/portable-validated', { method: 'POST', body: { title: 'a', count: 'no' } })
+  // @ts-expect-error the route validates a body, so it cannot be omitted
+  await $fetch('/api/portable-validated', { method: 'POST' })
+
   // an absolute URL is not Nuxt's to describe, so any method is accepted
   await $fetch('https://example.com/x', { method: 'post' })
 

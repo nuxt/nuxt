@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
-import { getValidatedQuery, readValidatedBody } from '../src/server/index'
+import { defineValidatedHandler, getValidatedQuery, readValidatedBody } from '../src/server/index'
 import type { RequestEvent } from '../src/server/index'
 
 function event (request: Request): RequestEvent {
@@ -79,5 +79,17 @@ describe('`getValidatedQuery`', () => {
       return Number(query.page)
     })
     expect(page).toBe(2)
+  })
+})
+
+describe('`defineValidatedHandler`', () => {
+  const handler = defineValidatedHandler({ validate: { body: named }, handler: event => event.req.json() })
+
+  it('resolves the validated body from `req.json()`', async () => {
+    await expect(handler(post({ name: 'nuxt' }))).resolves.toEqual({ name: 'NUXT' })
+  })
+
+  it('rejects an invalid body with a 400', async () => {
+    await expect(handler(post({}))).rejects.toMatchObject({ status: 400 })
   })
 })
