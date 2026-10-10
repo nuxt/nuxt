@@ -10,6 +10,7 @@ interface NuxtLoadingIndicatorProps {
   height?: number
   color?: string | boolean
   errorColor?: string
+  finishColor?: string
   estimatedProgress?: (duration: number, elapsed: number) => number
 }
 
@@ -44,6 +45,10 @@ const NuxtLoadingIndicator = defineComponent({
       type: String,
       default: 'repeating-linear-gradient(to right,#f87171 0%,#ef4444 100%)',
     },
+    finishColor: {
+      type: String,
+      required: false,
+    },
     estimatedProgress: {
       type: Function as unknown as () => (duration: number, elapsed: number) => number,
       required: false,
@@ -73,7 +78,9 @@ const NuxtLoadingIndicator = defineComponent({
         width: 'auto',
         height: `${props.height}px`,
         opacity: isLoading.value ? 1 : 0,
-        background: error.value ? props.errorColor : props.color || undefined,
+        background: error.value
+          ? props.errorColor
+          : (progress.value === 100 && props.finishColor) || props.color || undefined,
         backgroundSize: `${progress.value > 0 ? (100 / progress.value) * 100 : 0}% auto`,
         transform: `scaleX(${progress.value}%)`,
         transformOrigin: 'left',
