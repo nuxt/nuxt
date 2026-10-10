@@ -22,7 +22,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir } from './utils.ts'
+import { PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
 import { setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
@@ -351,7 +351,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             '@nuxt/',
             nuxt.options.buildDir,
           ]),
-      ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
+      ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string').map(toTranspileNoExternal),
       // path entries apply when nitro bundles with rollup; in the vite dev
       // environment `noExternal` is matched against the bare package name
       'nuxt/dist',
