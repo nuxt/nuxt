@@ -1,19 +1,13 @@
 import process from 'node:process'
 import { resolveAlias } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import { dirname, isAbsolute, relative, resolve } from 'pathe'
+import { dirname, isAbsolute, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
 import { combineRE } from '../utils/plugins.ts'
+import { toVirtualId } from '../utils/virtual.ts'
 
-const PREFIX = 'virtual:nuxt:'
 const PREFIX_RE = /^\/?virtual:nuxt:/
-
-// encode the vfs key as a path relative to `rootDir` so that the same Nuxt
-// source produces byte-identical SSR output across machines
-export function toVirtualId (absolutePath: string, nuxt: Nuxt): string {
-  return PREFIX + encodeURIComponent(relative(nuxt.options.rootDir, absolutePath))
-}
 
 function fromVirtualId (id: string, nuxt: Nuxt): string {
   const search = id.match(QUERY_RE)?.[0] || ''
