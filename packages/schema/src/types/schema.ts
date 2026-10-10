@@ -456,10 +456,10 @@ export interface ConfigSchema {
   /**
    * Configures whether and how sourcemaps are generated for server and/or client bundles.
    *
-   * If set to a single boolean, that value applies to both server and client. Additionally, the `'hidden'` option is also available for both server and client.
-   * Available options for both client and server: - `true`: Generates sourcemaps and includes source references in the final bundle. - `false`: Does not generate any sourcemaps. - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
+   * If set to a single boolean, that value applies to both server and client. Additionally, the `'hidden'` and `'nosource'` options are also available for both server and client.
+   * Available options for both client and server: - `true`: Generates sourcemaps and includes source references in the final bundle. - `false`: Does not generate any sourcemaps. - `'hidden'`: Generates sourcemaps but does not include references in the final bundle. - `'nosource'`: Generates sourcemaps without the original source code (only file names and line mappings).
    */
-  sourcemap: boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }
+  sourcemap: boolean | { server?: boolean | 'hidden' | 'nosource', client?: boolean | 'hidden' | 'nosource' }
 
   /**
    * Log level when building logs.
