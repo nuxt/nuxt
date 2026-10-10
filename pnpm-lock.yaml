@@ -770,6 +770,8 @@ overrides:
   vite: 8.3.1
   vue: 3.5.43
 
+packageExtensionsChecksum: sha256-L0/6yU1QZSdlkSDUc3VFLPEi4hxV5T7fw856XAekcgk=
+
 patchedDependencies:
   nitropack@2.13.4: 14fc1a0de87a798e71fa108469f4b19797146bf7e82bee35ba801b43c2919ab8
 
@@ -20391,6 +20393,7 @@ snapshots:
       hookable: 6.1.2
       nf3: 0.3.24
       ocache: 0.3.0
+      pathe: 2.0.3
       rolldown: 1.2.11
       rou3: 0.9.2
       srvx: 1.0.5
