@@ -276,31 +276,30 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       name: 'nuxt',
       version: nuxtPkg.version || nitroBuilder.version,
     },
-    imports: nuxt.options.experimental.nitroAutoImports === false
-      ? false
-      : {
-          autoImport: nuxt.options.imports.autoImport as boolean,
-          dirs: [...importDirs],
-          imports: [
-            {
-              as: '__buildAssetsURL',
-              name: 'buildAssetsURL',
-              from: resolve(distDir, 'runtime/utils/paths'),
-            },
-            {
-              as: '__publicAssetsURL',
-              name: 'publicAssetsURL',
-              from: resolve(distDir, 'runtime/utils/paths'),
-            },
-            {
-              // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
-              as: 'defineAppConfig',
-              name: 'defineAppConfig',
-              from: resolve(distDir, 'runtime/utils/config'),
-              priority: -1,
-            },
-          ],
-          presets: [
+    imports: {
+      autoImport: nuxt.options.imports.autoImport as boolean,
+      dirs: [...importDirs],
+      imports: [
+        {
+          as: '__buildAssetsURL',
+          name: 'buildAssetsURL',
+          from: resolve(distDir, 'runtime/utils/paths'),
+        },
+        {
+          as: '__publicAssetsURL',
+          name: 'publicAssetsURL',
+          from: resolve(distDir, 'runtime/utils/paths'),
+        },
+        {
+          // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
+          as: 'defineAppConfig',
+          name: 'defineAppConfig',
+          from: resolve(distDir, 'runtime/utils/config'),
+          priority: -1,
+        },
+      ],
+      presets: nuxt.options.experimental.nitroAutoImports
+        ? [
             {
               from: 'h3',
               imports: [
@@ -319,9 +318,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
                 'H3EventContext',
               ],
             },
-          ] as const,
-          exclude: [...excludePattern, /[\\/]\.git[\\/]/],
-        },
+          ]
+        : [],
+      exclude: [...excludePattern, /[\\/]\.git[\\/]/],
+    },
     esbuild: {
       options: { exclude: excludePattern },
     },
@@ -772,6 +772,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // a `nitro:config` listener can still register a plugin, so collect after the hook
   collectServerRegistrations(nuxt, nitroConfig)
+
+  if (!nuxt.options.experimental.nitroAutoImports && nitroConfig.imports) {
+    // nitropack appends its h3 and runtime presets while resolving options, before modules run
+    const presetCount = nitroConfig.imports.presets?.length ?? 0
+    nitroConfig.modules = [
+      (nitro) => {
+        if (nitro.options.imports) {
+          nitro.options.imports.presets.splice(presetCount)
+        }
+      },
+      ...nitroConfig.modules || [],
+    ]
+  }
 
   if (nitroConfig.static && nuxt.options.dev) {
     nitroConfig.routeRules ||= {}

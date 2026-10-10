@@ -40,11 +40,22 @@ describe('loadNuxt', () => {
     expect(normalized).not.toContain('<rootDir>/server/types')
   })
 
-  it('does not register server type directories when nitro auto-imports are opted out', async () => {
+  it('still registers server type directories when nitro compat auto-imports are opted out', async () => {
     const importDirs = await getNitroImportDirs({ experimental: { nitroAutoImports: false } })
-    // `nitro.imports` is disabled entirely, so no directories (incl. `server/types`) are scanned
-    expect(normalizePaths(importDirs)).not.toContain('<rootDir>/server/types')
-    expect(importDirs).toHaveLength(0)
+    expect(normalizePaths(importDirs)).toContain('<rootDir>/server/types')
+  })
+
+  it('auto-imports h3 and nitro helpers by default', async () => {
+    const names = await getNitroImportNames()
+    expect(names).toEqual(expect.arrayContaining(['defineEventHandler', 'getQuery', 'useStorage', 'defineNitroPlugin', 'H3Event']))
+  })
+
+  it('only stops auto-importing h3 and nitro helpers when nitro compat auto-imports are opted out', async () => {
+    const names = await getNitroImportNames({ experimental: { nitroAutoImports: false } })
+    for (const name of ['defineEventHandler', 'getQuery', 'createError', 'useStorage', 'defineNitroPlugin', 'cachedEventHandler', 'useRuntimeConfig', 'H3Event', 'EventHandler']) {
+      expect(names).not.toContain(name)
+    }
+    expect(names).toEqual(expect.arrayContaining(['useLayerPrecedence', 'autoimportedFunction', 'someUtils', '__buildAssetsURL', 'defineAppConfig']))
   })
 })
 
@@ -74,6 +85,25 @@ async function getNitroImportDirs (overrides?: NuxtConfig) {
   })
   await nuxt.close()
   return importDirs
+}
+
+async function getNitroImportNames (overrides?: NuxtConfig) {
+  let names: string[] = []
+  const nuxt = await loadNuxt({
+    cwd: fixtureDir,
+    ready: true,
+    overrides: {
+      ...overrides,
+      hooks: {
+        async 'nitro:init' (nitro) {
+          const imports = await nitro.unimport?.getImports() || []
+          names = imports.map(i => i.as || i.name)
+        },
+      },
+    },
+  })
+  await nuxt.close()
+  return names
 }
 
 async function getAppImportDirs (overrides?: NuxtConfig) {
