@@ -151,6 +151,7 @@ describe('toTranspileNoExternal', () => {
   it('matches the files of an absolute directory', () => {
     const re = toTranspileNoExternal('/code/nuxt/image') as RegExp
     expect(re.test('/code/nuxt/image/src/runtime/server/routes/_ipx.ts')).toBe(true)
+    expect(re.test('/code/nuxt/image/src/node_modules_helper.ts')).toBe(true)
   })
 
   it('does not match dependencies installed beneath an absolute directory', () => {

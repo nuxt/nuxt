@@ -76,7 +76,7 @@ export function toTranspileNoExternal (entry: string): string | RegExp {
     return entry
   }
   const dir = escapeRE(normalize(entry)).replace(/\//g, '[\\\\/]')
-  return new RegExp(`^${dir}(?!.*node_modules)`)
+  return new RegExp(`^${dir}(?!.*[\\\\/]node_modules[\\\\/])`)
 }
 
 /**
