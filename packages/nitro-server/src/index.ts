@@ -164,7 +164,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
-  const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
+  const islandHandlerPath = JSON.stringify(resolve(distDir, nuxt.options.experimental.componentIslands === 'vue-onigiri' ? 'runtime/handlers/island-onigiri' : 'runtime/handlers/island'))
 
   // the page renderer resolves this specifier whether or not islands are enabled
   nuxt.options.nitro.virtual ||= {}

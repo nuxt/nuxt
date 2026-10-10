@@ -63,6 +63,11 @@ export const clientEnvironment = (nuxt: Nuxt, entry: string) => {
         '#head',
         'virtual:nuxt:',
         'virtual:nuxt:*',
+
+        // vue-onigiri's runtime imports `virtual:onigiri/manifest`,
+        // which only Vite's plugin chain (not esbuild's optimizeDeps)
+        // can resolve.
+        'vue-onigiri',
         ...getTranspileStrings({ isDev: nuxt.options.dev, isClient: true }),
       ],
     },

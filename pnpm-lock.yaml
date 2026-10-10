@@ -230,6 +230,9 @@ catalogs:
     vue-bundle-renderer:
       specifier: ^2.4.0
       version: 2.4.0
+    vue-onigiri:
+      specifier: ^0.6.3
+      version: 0.6.3
     vue-router:
       specifier: ^5.3.1
       version: 5.3.1
@@ -978,6 +981,9 @@ importers:
       vue-component-type-helpers:
         specifier: catalog:vue
         version: 3.3.12
+      vue-onigiri:
+        specifier: catalog:app-runtime
+        version: 0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.3.1(@rsbuild/core@2.2.11)(@rspack/core@2.2.8(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.43)(esbuild@0.28.2)(rolldown@1.2.11)(rollup@4.64.0)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))(webpack@5.111.1(cssnano@9.2.2(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.4(@types/node@24.19.1))(svgo@4.1.0))
@@ -1200,6 +1206,9 @@ importers:
       vue-devtools-stub:
         specifier: catalog:vue
         version: 0.1.0
+      vue-onigiri:
+        specifier: catalog:app-runtime
+        version: 0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -1420,6 +1429,9 @@ importers:
       vue-component-type-helpers:
         specifier: catalog:vue
         version: 3.3.12
+      vue-onigiri:
+        specifier: catalog:app-runtime
+        version: 0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.3.1(@rsbuild/core@2.2.11)(@rspack/core@2.2.8(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.43)(esbuild@0.28.2)(rolldown@1.2.11)(rollup@4.64.0)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))(webpack@5.111.1(cssnano@9.2.2(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.4(@types/node@24.19.1))(svgo@4.1.0))
@@ -1855,6 +1867,9 @@ importers:
       vue-bundle-renderer:
         specifier: catalog:build
         version: 2.4.0
+      vue-onigiri:
+        specifier: catalog:app-runtime
+        version: 0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -2543,6 +2558,12 @@ importers:
       '@universal-deploy/vite':
         specifier: 0.1.11
         version: 0.1.11(h3@1.15.11)(srvx@1.0.5)(vite@8.3.1)
+
+  test/fixtures/vue-onigiri:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/worker-assets:
     dependencies:
@@ -12285,6 +12306,18 @@ packages:
       '@vue/compiler-sfc':
         optional: true
       vue:
+        optional: true
+
+  vue-onigiri@0.6.3:
+    resolution: {integrity: sha512-UmQg5u60FHDiuTPEhMD+Vo8Y5LcTun/cYvbpoOI2TkpIbxoAF9LUI9blAPwWkSkfy9GuQLMzXo5p7V/OB2rgKw==}
+    peerDependencies:
+      '@vue/server-renderer': ^3.5.0
+      vite: 8.3.1
+      vue: 3.5.43
+    peerDependenciesMeta:
+      '@vue/server-renderer':
+        optional: true
+      vite:
         optional: true
 
   vue-router@5.3.1:
@@ -23260,6 +23293,19 @@ snapshots:
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.43
       vue: 3.5.43(typescript@6.0.3)
+
+  vue-onigiri@0.6.3(@vue/server-renderer@3.5.43)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3)):
+    dependencies:
+      '@babel/parser': 7.29.9
+      '@vue/compiler-dom': 3.5.43
+      '@vue/compiler-sfc': 3.5.43
+      '@vue/shared': 3.5.43
+      knitwork: 1.3.0
+      magic-string: 0.30.21
+      vue: 3.5.43(typescript@6.0.3)
+    optionalDependencies:
+      '@vue/server-renderer': 3.5.43
+      vite: 8.3.1(@types/node@24.19.1)(@vitejs/devtools@0.7.6)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
 
   vue-router@5.3.1(@rsbuild/core@2.2.11)(@rspack/core@2.2.8(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.43)(esbuild@0.28.2)(rolldown@1.2.11)(rollup@4.64.0)(vite@8.3.1)(vue@3.5.43(typescript@6.0.3))(webpack@5.111.1(cssnano@9.2.2(postcss@8.5.28))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.4(@types/node@24.19.1))(svgo@4.1.0)):
     dependencies:

@@ -3,7 +3,7 @@ import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
-import type { App } from 'vue'
+import type { App, Component } from 'vue'
 
 import type { NuxtSSRContext } from '#app/types'
 
@@ -12,7 +12,9 @@ import { lazyCachedFunction } from './cache'
 import { rendererDiagnostics } from './diagnostics'
 import type { NuxtRendererOptions } from './runtime'
 
-export type Entry = (ssrContext: NuxtSSRContext) => Promise<App>
+// Mirrors the `Entry` type exported by `nuxt/app`'s entry: island handlers pass
+// `rootComponent` to render a sub-tree without mutating the shared `ssrContext`.
+export type Entry = (ssrContext: NuxtSSRContext, options?: { rootComponent?: Component }) => Promise<App>
 
 export const APP_ROOT_OPEN_TAG: string = `<${appRootTag}${propsToString(appRootAttrs)}>`
 export const APP_ROOT_CLOSE_TAG: string = `</${appRootTag}>`
