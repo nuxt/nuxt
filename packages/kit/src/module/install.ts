@@ -98,7 +98,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       // modules where meta.name differs from the npm package name).
       const resolvedModule = modulesByMetaName.has(name)
         ? resolveModuleWithOptions(modulesByMetaName.get(name)!, nuxt)
-        : resolveModuleWithOptions(name, nuxt)
+        : resolveModuleWithOptions(name, nuxt, res.resolvedModulePath)
       const moduleToAttribute = typeof key === 'string' ? `\`${key}\`` : 'a module in `nuxt.options`'
 
       if (!resolvedModule?.module) {
@@ -109,7 +109,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
 
       if (value.version) {
         const resolvePaths = [res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
-        const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
+        const pkg = await readPackageJSON(resolvedModule.resolvedPath || name, { from: resolvePaths }).catch(() => null)
         if (pkg?.version && !satisfies(pkg.version, value.version, { includePrerelease: true })) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
           error = new TypeError(message)
@@ -259,6 +259,7 @@ export async function installModule<
 export function resolveModuleWithOptions (
   definition: NuxtModule<any> | string | false | undefined | null | [(NuxtModule | string)?, Record<string, any>?],
   nuxt: Nuxt,
+  fallbackFrom?: string,
 ): { resolvedPath?: string, module: string | NuxtModule<any>, options: Record<string, any> } | undefined {
   const [module, options = {}] = Array.isArray(definition) ? definition : [definition, {}]
 
@@ -280,10 +281,18 @@ export function resolveModuleWithOptions (
     suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
     extensions: DEFAULT_JS_FILE_EXTENSIONS,
   })
+  const nestedPath = !modPath && fallbackFrom
+    ? resolveModulePath(modAlias, {
+        try: true,
+        from: fallbackFrom,
+        suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
+        extensions: DEFAULT_JS_FILE_EXTENSIONS,
+      })
+    : undefined
 
   return {
-    module,
-    resolvedPath: modPath || modAlias,
+    module: nestedPath || module,
+    resolvedPath: modPath || nestedPath || modAlias,
     options,
   }
 }
