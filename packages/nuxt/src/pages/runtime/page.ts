@@ -226,7 +226,7 @@ export default defineComponent({
                   suspensible: true,
                   onPending: () => {
                     isSuspensePending = true
-                    if (hasTransition) {
+                    if (hasTransition && hasResolvedOnce) {
                       _startTransition(nuxtApp)
                     }
                     pageStartPromise = nuxtApp.callHook('page:start', routeProps.Component)
