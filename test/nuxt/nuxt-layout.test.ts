@@ -98,6 +98,7 @@ describe('NuxtLayout', () => {
   })
 
   afterAll(() => {
+    el.unmount()
     for (const layout of addedLayouts) {
       delete layouts[layout]
     }
@@ -213,6 +214,8 @@ describe('NuxtLayout', () => {
 
     // Page content (h3) should update even with name=false on inner layout
     expect.soft(nestedEl.find('h3').text()).toBe('Current route: /layout-2')
+
+    nestedEl.unmount()
   })
 
   it('should not block navigation when name is overridden to the current meta layout', async () => {
@@ -233,6 +236,8 @@ describe('NuxtLayout', () => {
     await flushPromises()
     expect.soft(overrideEl.find('h1').text()).toBe(`'layout-1' layout`)
     expect.soft(overrideEl.find('h3').text()).toBe('Current route: /no-layout')
+
+    overrideEl.unmount()
   })
 
   it.todo('should not change layout before child page resolves', async () => {
@@ -389,5 +394,60 @@ describe('layout transition', () => {
     router.removeRoute('head-layout-b')
     delete layouts['head-layout-a']
     delete layouts['head-layout-b']
+  })
+
+  it('should settle the page transition when switching layout to a suspended page without a layout transition', async () => {
+    const router = useRouter()
+    const nuxtApp = useNuxtApp()
+
+    for (const layout of ['settle-layout-a', 'settle-layout-b']) {
+      layouts[layout] = defineComponent({
+        setup: (_, ctx) => () => h('div', { class: layout }, ctx.slots.default?.()),
+      })
+    }
+    router.addRoute({
+      name: 'settle-layout-a',
+      path: '/settle-layout-a',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: { layout: 'settle-layout-a' },
+      component: defineComponent({
+        setup: () => () => h('div', 'Page A'),
+      }),
+    })
+    router.addRoute({
+      name: 'settle-layout-b',
+      path: '/settle-layout-b',
+      meta: {
+        // @ts-expect-error dynamically-added layout is not typed
+        layout: 'settle-layout-b',
+        pageTransition: { name: 'page', mode: 'out-in' as const, duration: 10 },
+      },
+      component: defineComponent({
+        async setup () {
+          await new Promise(resolve => setTimeout(resolve, 10))
+          return () => h('div', 'Page B')
+        },
+      }),
+    })
+
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    }, { global: { stubs: { transition: false } } })
+
+    await navigateTo('/settle-layout-a')
+    await flushPromises()
+    await expect.poll(() => el.html()).toContain('Page A')
+
+    await navigateTo('/settle-layout-b')
+    await flushPromises()
+    await expect.poll(() => el.html()).toContain('Page B')
+
+    await expect.poll(() => nuxtApp['~transitionPromise']).toBeUndefined()
+
+    el.unmount()
+    router.removeRoute('settle-layout-a')
+    router.removeRoute('settle-layout-b')
+    delete layouts['settle-layout-a']
+    delete layouts['settle-layout-b']
   })
 })
