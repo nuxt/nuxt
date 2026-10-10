@@ -176,6 +176,38 @@ onMounted(() => {
 </script>
 ```
 
+### Phone Numbers on iOS Safari
+
+**Problem**: iOS Safari scans the rendered text and turns phone numbers into `tel:` links. This changes the DOM after the server has rendered it, which can cause a hydration mismatch (`NodeMismatch`) and break the page on iOS only.
+
+**Solution**: Tell the browser not to detect phone numbers with the `format-detection` meta tag. You can set it for the whole app in your `nuxt.config`:
+
+```ts
+export default defineNuxtConfig({
+  app: {
+    head: {
+      meta: [
+        { name: 'format-detection', content: 'telephone=no' },
+      ],
+    },
+  },
+})
+```
+
+Or only on a single page with [`useHead`](/docs/api/composables/use-head):
+
+```html
+<script setup>
+useHead({
+  meta: [
+    { name: 'format-detection', content: 'telephone=no' },
+  ],
+})
+</script>
+```
+
+If you want a phone number to be a link, wrap it yourself with an `<a href="tel:...">` element. The browser will not detect it, and the link stays in the markup the server renders.
+
 ## In Summary
 
 1. **Use SSR-friendly composables**: [`useFetch`](/docs/api/composables/use-fetch), [`useAsyncData`](/docs/api/composables/use-async-data), [`useState`](/docs/api/composables/use-state)
