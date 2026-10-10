@@ -31,8 +31,10 @@ export type TypedFetchPathInput = StrictFetchPaths extends true
  * literal inferred into a parameter constrained by `string` widens - so `` `/api/posts/${id}` ``
  * arrives as `string`, matches nothing, and loses the union a parameter would have resolved to. The
  * pattern members keep the literal; `string & {}` keeps the signature total.
+ *
+ * @internal
  */
-type AnyFetchPath = `/${string}` | `${string}://${string}` | (string & {})
+export type AnyFetchPath = `/${string}` | `${string}://${string}` | (string & {})
 
 /**
  * `unknown` where the path resolves, where it is an absolute URL, where the request is not a

@@ -1127,14 +1127,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       serverPaths['#app/island-hash'] ||= [resolve(appDir, 'island-hash')]
       serverPaths['#app/island-props'] ||= [resolve(appDir, 'island-props')]
       serverPaths['#app/internal/*'] ||= [resolve(appDir, 'internal/*')]
-      serverPaths['#app/types'] ||= [resolve(appDir, 'types')]
     }
 
-    // the generated route types import the request-shape extractors by package name, which the app
-    // program cannot resolve on its own: this package is a dependency of `nuxt`, not of the project
+    // the generated route types import the request-shape extractors by package name, which neither
+    // program can resolve on its own: this package is a dependency of `nuxt`, not of the project
     opts.tsConfig.compilerOptions ||= {}
     opts.tsConfig.compilerOptions.paths ||= {}
     opts.tsConfig.compilerOptions.paths[REQUEST_TYPES_MODULE] = [resolve(distDir, 'request-types')]
+    serverPaths[REQUEST_TYPES_MODULE] = [resolve(distDir, 'request-types')]
 
     // ensure aliases shared between nuxt + nitro are included in shared tsconfig
     opts.sharedTsConfig.compilerOptions ||= {}

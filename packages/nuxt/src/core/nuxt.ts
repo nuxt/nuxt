@@ -417,6 +417,8 @@ async function initNuxt (nuxt: Nuxt) {
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
     // bundler-resolved, so it takes the same substitutions as the app
     opts.serverTsConfig.compilerOptions = defu(opts.serverTsConfig.compilerOptions, { paths: { ...paths } })
+    // required for the generated route types, which `serverFetch` resolves against
+    opts.serverTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
 
     for (const dirs of layerDirs) {
       const declaration = join(dirs.root, 'index.d.ts')
