@@ -1,5 +1,5 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { performance } from 'node:perf_hooks'
 import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptions } from '@nuxt/schema'
 import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
@@ -77,8 +77,9 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
   )
   let error: Error | undefined
   const dependencyMap = new Map<ModuleToInstall, string>()
+  const dependencyPaths = new Map<ModuleToInstall, string>()
   for (const [key, options] of modulesToInstall) {
-    const loadPromise = moduleLoadCache.get(key) || loadNuxtModuleInstance(key, nuxt)
+    const loadPromise = moduleLoadCache.get(key) || loadNuxtModuleInstance(dependencyPaths.get(key) || key, nuxt)
     const res = await loadPromise.catch((err) => {
       if (dependencyMap.has(key) && typeof key === 'string') {
         (err as Error).cause = `Could not resolve \`${key}\` (specified as a dependency of ${dependencyMap.get(key)!}).`
@@ -98,7 +99,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       // modules where meta.name differs from the npm package name).
       const resolvedModule = modulesByMetaName.has(name)
         ? resolveModuleWithOptions(modulesByMetaName.get(name)!, nuxt)
-        : resolveModuleWithOptions(name, nuxt)
+        : resolveModuleDefinition(name, nuxt, res.resolvedModulePath)
       const moduleToAttribute = typeof key === 'string' ? `\`${key}\`` : 'a module in `nuxt.options`'
 
       if (!resolvedModule?.module) {
@@ -141,6 +142,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
+          dependencyPaths.set(resolvedModule.module, path)
         }
       }
     }
@@ -260,6 +262,14 @@ export function resolveModuleWithOptions (
   definition: NuxtModule<any> | string | false | undefined | null | [(NuxtModule | string)?, Record<string, any>?],
   nuxt: Nuxt,
 ): { resolvedPath?: string, module: string | NuxtModule<any>, options: Record<string, any> } | undefined {
+  return resolveModuleDefinition(definition, nuxt)
+}
+
+function resolveModuleDefinition (
+  definition: Parameters<typeof resolveModuleWithOptions>[0],
+  nuxt: Nuxt,
+  parentPath?: string,
+): ReturnType<typeof resolveModuleWithOptions> {
   const [module, options = {}] = Array.isArray(definition) ? definition : [definition, {}]
 
   if (!module) {
@@ -276,7 +286,10 @@ export function resolveModuleWithOptions (
   const modAlias = resolveAlias(module, nuxt.options.alias)
   const modPath = resolveModulePath(modAlias, {
     try: true,
-    from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+    from: [
+      ...parentPath ? [pathToFileURL(parentPath)] : [],
+      ...nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+    ],
     suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
     extensions: DEFAULT_JS_FILE_EXTENSIONS,
   })

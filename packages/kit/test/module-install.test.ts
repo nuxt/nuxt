@@ -79,3 +79,67 @@ export default Object.assign(() => {}, {
     })).rejects.toThrow(/Module `prerelease-module` version \(`2\.0\.0-beta\.1`\) does not satisfy `>=3`/)
   })
 })
+
+describe('nuxt module dependency resolution', () => {
+  const tempDir = join(repoRoot, 'node_modules/.temp/module-dependency-resolution-test')
+  const parentModule = join(tempDir, 'node_modules/parent-module')
+  const hoistedModule = join(tempDir, 'node_modules/hoisted-module')
+
+  const writeModule = async (dir: string, name: string, source: string) => {
+    await mkdir(dir, { recursive: true })
+    await writeFile(join(dir, 'package.json'), JSON.stringify({ name, version: '1.0.0', type: 'module', exports: './index.js' }))
+    await writeFile(join(dir, 'index.js'), source)
+  }
+
+  beforeAll(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+    await writeModule(parentModule, 'parent-module', `
+export default Object.assign(() => {}, {
+  getMeta: () => ({ name: 'parent-module' }),
+  getModuleDependencies: () => ({
+    'nested-module': { defaults: { foo: 'bar' } },
+    'hoisted-module': {},
+  }),
+})
+    `)
+    await writeModule(join(parentModule, 'node_modules/nested-module'), 'nested-module', `
+export default Object.assign(() => {}, {
+  getMeta: () => ({ name: 'nested-module', configKey: 'nestedModule' })
+})
+    `)
+    await writeModule(hoistedModule, 'hoisted-module', `
+export default Object.assign(() => {}, {
+  getMeta: () => ({ name: 'hoisted-module' })
+})
+    `)
+  })
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  it('installs a dependency only resolvable from the declaring module', async () => {
+    const nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: { modules: ['parent-module'] },
+    })
+
+    const installed = nuxt.options._installedModules.filter(m => m.meta.name === 'nested-module')
+    expect(installed).toHaveLength(1)
+    expect(installed[0]!.entryPath).toBe('nested-module')
+    expect((nuxt.options as any).nestedModule).toEqual({ foo: 'bar' })
+
+    await nuxt.close()
+  })
+
+  it('deduplicates a dependency the app also installs by path', async () => {
+    const nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: { modules: [hoistedModule, 'parent-module'] },
+    })
+
+    expect(nuxt.options._installedModules.filter(m => m.meta.name === 'hoisted-module')).toHaveLength(1)
+
+    await nuxt.close()
+  })
+})
