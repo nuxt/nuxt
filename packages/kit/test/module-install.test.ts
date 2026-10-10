@@ -105,7 +105,7 @@ export default Object.assign((_options, nuxt) => {
   }
 
   beforeAll(async () => {
-    for (const scenario of ['nested', 'app', 'incompatible']) {
+    for (const scenario of ['nested', 'app', 'incompatible', 'hoisted']) {
       const parent = join(tempDir, scenario, 'node_modules/parent-module')
       await mkdir(parent, { recursive: true })
       await writeFile(join(parent, 'package.json'), JSON.stringify({
@@ -119,10 +119,13 @@ export default Object.assign(() => {}, {
   })
 })
       `)
-      await writeDependency(join(parent, 'node_modules/nested-dependency'), '2.0.0')
+      if (scenario !== 'hoisted') {
+        await writeDependency(join(parent, 'node_modules/nested-dependency'), '2.0.0')
+      }
     }
     await writeDependency(join(tempDir, 'app/node_modules/nested-dependency'), '3.0.0')
     await writeDependency(join(tempDir, 'incompatible/node_modules/nested-dependency'), '1.0.0')
+    await writeDependency(join(tempDir, 'hoisted/node_modules/nested-dependency'), '3.0.0')
   })
 
   afterEach(async () => {
@@ -156,10 +159,25 @@ export default Object.assign(() => {}, {
     })
   })
 
-  it('checks the version of the app dependency that will load', async () => {
-    await expect(loadNuxt({
+  it('prefers the declaring module dependency over an incompatible app dependency', async () => {
+    nuxt = await loadNuxt({
       cwd: join(tempDir, 'incompatible'),
       overrides: { modules: ['parent-module'] },
-    })).rejects.toThrow(/Module `nested-dependency` version \(`1\.0\.0`\) does not satisfy `>=2`/)
+    })
+
+    expect(nuxt.options.runtimeConfig.nestedDependency).toEqual({
+      version: '2.0.0', message: 'configured', calls: 1,
+    })
+  })
+
+  it('loads the app dependency when the declaring module has no nested copy', async () => {
+    nuxt = await loadNuxt({
+      cwd: join(tempDir, 'hoisted'),
+      overrides: { modules: ['parent-module'] },
+    })
+
+    expect(nuxt.options.runtimeConfig.nestedDependency).toEqual({
+      version: '3.0.0', message: 'configured', calls: 1,
+    })
   })
 })
