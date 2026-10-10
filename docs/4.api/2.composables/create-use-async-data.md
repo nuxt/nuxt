@@ -39,22 +39,32 @@ The resulting composable has the same signature and return type as [`useAsyncDat
 ## Type
 
 ```ts [Signature]
-function createUseAsyncData (
-  options?: Partial<AsyncDataOptions> & { addons?: UseAsyncDataAddon[] },
-): typeof useAsyncData
+function createUseAsyncData<
+  FResT,
+  FDataT = FResT,
+  FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+  FDefaultT = undefined,
+  const FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = [],
+> (
+  options?: Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>> & { addons?: FAddons },
+): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 
-function createUseAsyncData (
-  options: (callerOptions: AsyncDataOptions) => Partial<AsyncDataOptions>,
-): typeof useAsyncData
+function createUseAsyncData<
+  FResT,
+  FDataT = FResT,
+  FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+  FDefaultT = undefined,
+  const FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = [],
+> (
+  options: (callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>,
+): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
 ```
 
 The returned composable's signature includes any custom options and return-value extensions contributed by the [addons](#addons).
 
 ## Options
 
-`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/api/composables/use-async-data#parameters), including `server`, `lazy`, `immediate`, `default`, `transform`, `pick`, `getCachedData`, `deep`, `dedupe`, `timeout`, and `watch`.
-
-See the full list of options in the [`useAsyncData` documentation](/docs/api/composables/use-async-data#parameters).
+`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/api/composables/use-async-data#parameters) — see the full list there.
 
 ## Default vs Override Mode
 
@@ -90,7 +100,7 @@ export const useStrictData = createUseAsyncData(callerOptions => ({
 
 ## Addons
 
-In addition to `useAsyncData` options, `createUseAsyncData` accepts an `addons` array. Addons are reusable units of behavior defined with [`defineUseAsyncDataAddon`](/docs/api/utils/define-use-async-data-addon). They can declare custom call-site options, run middleware around the handler, extend the returned object, and attach custom logic to the composable.
+In addition to `useAsyncData` options, `createUseAsyncData` accepts an `addons` array :badge[v4.6]{color="info" size="xs" class="align-middle"}. Addons are reusable units of behavior defined with [`defineUseAsyncDataAddon`](/docs/api/utils/define-use-async-data-addon). They can declare custom call-site options, run middleware around the handler, extend the returned object, and attach custom logic to the composable.
 
 For example, an addon that refreshes the data whenever the window regains focus, gated behind a custom `refreshOnFocus` option, so callers opt in per call:
 
@@ -103,7 +113,16 @@ const refreshOnFocus = defineUseAsyncDataAddon({
 
     return (asyncData) => {
       // 👈 run code *after* creating the `useAsyncData` instance
-      const focused = useWindowFocus()
+      const focused = ref(false)
+      const onFocus = () => { focused.value = true }
+      const onBlur = () => { focused.value = false }
+      window.addEventListener('focus', onFocus)
+      window.addEventListener('blur', onBlur)
+      onScopeDispose(() => {
+        window.removeEventListener('focus', onFocus)
+        window.removeEventListener('blur', onBlur)
+      })
+
       watch(focused, (focused) => {
         if (focused) { asyncData.refresh() }
       })
@@ -128,7 +147,3 @@ const { data } = await useCustomAsyncData(
 ```
 
 :read-more{to="/docs/api/utils/define-use-async-data-addon"}
-
-:read-more{to="/docs/guide/recipes/custom-usefetch"}
-
-:read-more{to="/docs/api/composables/use-async-data"}

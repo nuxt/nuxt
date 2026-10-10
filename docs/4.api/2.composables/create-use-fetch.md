@@ -168,7 +168,7 @@ The **function signature** (override mode) is required here so that [`useNuxtApp
 
 ## Addons
 
-In addition to `useFetch` options, `createUseFetch` accepts an `addons` array. Addons are reusable units of behavior defined with [`defineUseFetchAddon`](/docs/api/utils/define-use-fetch-addon). They can declare custom call-site options, run middleware around the handler, extend the returned object, and attach custom logic to the composable.
+In addition to `useFetch` options, `createUseFetch` accepts an `addons` array :badge[v4.6]{color="info" size="xs" class="align-middle"}. Addons are reusable units of behavior defined with [`defineUseFetchAddon`](/docs/api/utils/define-use-fetch-addon). They can declare custom call-site options, run middleware around the handler, extend the returned object, and attach custom logic to the composable.
 
 For example, an addon that refreshes the data whenever the window regains focus, gated behind a custom `refreshOnFocus` option, so callers opt in per call:
 
@@ -181,7 +181,16 @@ const refreshOnFocus = defineUseFetchAddon({
 
     return (asyncData) => {
       // 👈 run code *after* calling `useAsyncData` in `useFetch`
-      const focused = useWindowFocus()
+      const focused = ref(false)
+      const onFocus = () => { focused.value = true }
+      const onBlur = () => { focused.value = false }
+      window.addEventListener('focus', onFocus)
+      window.addEventListener('blur', onBlur)
+      onScopeDispose(() => {
+        window.removeEventListener('focus', onFocus)
+        window.removeEventListener('blur', onBlur)
+      })
+
       watch(focused, (focused) => {
         if (focused) { asyncData.refresh() }
       })
@@ -205,7 +214,3 @@ const { data } = await useCustomFetch(
 ```
 
 :read-more{to="/docs/api/utils/define-use-fetch-addon"}
-
-:read-more{to="/docs/guide/recipes/custom-usefetch"}
-
-:read-more{to="/docs/api/composables/use-fetch"}
