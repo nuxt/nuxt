@@ -1200,10 +1200,12 @@ export interface ConfigSchema {
      *   server render and client-side navigation.
      * - `false` - Payload extraction is disabled entirely. Payload is always inlined in HTML and
      *   no `_payload.json` files are generated.
+     * - `'always'` - Like `'client'`, but payloads are also rendered at runtime and prefetched
+     *   for routes that are neither prerendered nor cached.
      *
      * @default 'client'
      */
-    payloadExtraction: 'client' | boolean | undefined
+    payloadExtraction: 'client' | 'always' | boolean | undefined
 
     /**
      * Render the error page in the Nuxt renderer itself when a server render fails, rather than

@@ -2355,6 +2355,12 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/payload-extraction:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/preview:
     dependencies:
       nuxt:

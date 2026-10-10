@@ -718,12 +718,14 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const hasPrerenderRules = nitro
       ? !!nitro.routing?.routeRules.routes.some(r => r.data.prerender)
       : Object.values(ctx.nuxt.options.routeRules || {}).some(rules => rules?.prerender)
-    const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (isStatic || hasCachedRoutes || !!prerenderRoutes?.length || hasPrerenderRules)
+    const payloadExtraction = ctx.nuxt.options.experimental.payloadExtraction === 'always'
+      ? 'always' as const
+      : !!ctx.nuxt.options.experimental.payloadExtraction && (isStatic || hasCachedRoutes || !!prerenderRoutes?.length || hasPrerenderRules)
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const componentIslands = ${componentIslands}`,
       `export const componentIslandsActive = ${componentIslandsActive}`,
-      `export const payloadExtraction = ${payloadExtraction}`,
+      `export const payloadExtraction = ${JSON.stringify(payloadExtraction)}`,
       `export const prefetchPreloadTags = ${!!ctx.nuxt.options.experimental.prefetchPreloadTags}`,
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,

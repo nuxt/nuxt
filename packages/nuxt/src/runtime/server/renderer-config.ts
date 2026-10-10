@@ -46,6 +46,8 @@ export const NUXT_PAYLOAD_EXTRACTION: boolean = false
 export const NUXT_PAYLOAD_INLINE: boolean = true
 /** Whether payloads are extracted at runtime for cached routes. */
 export const NUXT_RUNTIME_PAYLOAD_EXTRACTION: boolean = false
+/** Whether payloads are extracted at runtime for every server-rendered route (`payloadExtraction: 'always'`). */
+export const NUXT_PAYLOAD_EXTRACTION_ALWAYS: boolean = false
 /** Whether SSR streaming is enabled. */
 export const NUXT_SSR_STREAMING: boolean = false
 /** User agents that are served a buffered response even when streaming is enabled. */
