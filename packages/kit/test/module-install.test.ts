@@ -135,6 +135,21 @@ export default (_options, nuxt) => {
 }
     `)
     await writeDependency(join(localApp, 'packaged'), '1.0.0')
+    for (const scenario of ['layer', 'resolved-layer']) {
+      const layer = join(tempDir, scenario, 'node_modules/layer-dependency')
+      const dependency = scenario === 'layer' ? 'layer-dependency' : join(layer, 'index.js')
+      await mkdir(layer, { recursive: true })
+      await writeFile(join(layer, 'package.json'), JSON.stringify({ name: 'layer-dependency', version: '1.0.0', type: 'module', exports: './index.js' }))
+      await writeFile(join(layer, 'index.js'), 'export default () => {}')
+      await writeFile(join(layer, 'nuxt.config.mjs'), `
+export default {
+  modules: [Object.assign(() => {}, {
+    getMeta: () => ({ name: 'layer-parent' }),
+    getModuleDependencies: () => ({ [${JSON.stringify(dependency)}]: { version: '>=2' } })
+  })]
+}
+      `)
+    }
   })
 
   afterEach(async () => {
@@ -234,5 +249,15 @@ export default (_options, nuxt) => {
         })],
       },
     })).rejects.toThrow(/version \(`1\.0\.0`\) does not satisfy `>=2`/)
+  })
+
+  it.each(['layer', 'resolved-layer'])('checks a dependency exported by a package-backed layer: %s', async (scenario) => {
+    const error = await loadNuxt({
+      cwd: join(tempDir, scenario),
+      overrides: { extends: [join(tempDir, scenario, 'node_modules/layer-dependency')] },
+    }).then((instance) => { nuxt = instance }, (error: unknown) => error)
+
+    expect(error).toBeInstanceOf(TypeError)
+    expect(error).toHaveProperty('message', expect.stringMatching(/version \(`1\.0\.0`\) does not satisfy `>=2`/))
   })
 })
