@@ -223,6 +223,23 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: 'https://nuxtjs.org' }).props.target).toBe(null)
       })
 
+      it('uses user\'s default for external links', () => {
+        expect(nuxtLink({ to: 'https://nuxtjs.org' }, { externalTargetAttribute: '_blank' }).props.target).toBe('_blank')
+        expect(nuxtLink({ to: 'https://nuxtjs.org' }, { externalTargetAttribute: null }).props.target).toBe(null)
+      })
+
+      it('uses and favors `target` prop over user\'s default', () => {
+        expect(nuxtLink({ to: 'https://nuxtjs.org', target: '_self' }, { externalTargetAttribute: '_blank' }).props.target).toBe('_self')
+        expect(nuxtLink({ to: 'https://nuxtjs.org', target: null }, { externalTargetAttribute: '_blank' }).props.target).toBe(null)
+      })
+
+      it('does not apply user\'s default to internal links', () => {
+        const link = nuxtLink({ to: '/about' }, { externalTargetAttribute: '_blank' })
+        expect(link.type).toBe(INTERNAL)
+        expect(link.props.target).toBeUndefined()
+        expect(nuxtLink({ to: '/about', external: true }, { externalTargetAttribute: '_blank' }).props.target).toBe(null)
+      })
+
       it('prefixes target="_blank" internal links with baseURL', () => {
         vi.mocked(useRuntimeConfig).withImplementation(() => {
           return {

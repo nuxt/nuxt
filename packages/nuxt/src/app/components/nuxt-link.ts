@@ -526,8 +526,11 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       }
 
       return () => {
-        // Resolves `target` value
-        const target = props.target || null
+        // Resolves `target` value, falling back to the user's default for external links
+        const target = firstNonUndefined<string | null>(
+          props.target,
+          isAbsoluteUrl.value ? options.externalTargetAttribute : undefined,
+        ) || null
 
         // Resolves `rel`
         checkPropConflicts(props, 'noRel', 'rel')
