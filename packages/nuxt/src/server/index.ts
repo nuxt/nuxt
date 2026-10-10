@@ -27,7 +27,7 @@ export type { NuxtServerRendererHooks, ServerHookable, ServerHookResult } from '
 export type { ServerFetchInit } from './fetch'
 export { handleCors } from './cors'
 export type { CorsOptions } from './cors'
-export { getValidatedQuery, readValidatedBody } from './validate'
+export { getValidatedQuery, getValidatedRouterParams, readValidatedBody } from './validate'
 export type { ValidateResult } from './validate'
 export type { Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate } from './session'
 
