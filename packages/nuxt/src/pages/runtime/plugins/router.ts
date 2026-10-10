@@ -370,7 +370,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       })
     }
 
-    router.afterEach((to) => {
+    router.afterEach((to, _from, failure) => {
+      // an aborted navigation keeps the current page, so it must not show a 404 for the rejected target
+      if (failure) { return }
       if (to.matched.length === 0 && !error.value) {
         return nuxtApp.runWithContext(() => showError(createError({
           status: 404,
