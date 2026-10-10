@@ -3,7 +3,7 @@ import type { ResolvableLink } from 'unhead/types'
 
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
-import { isCachedPayloadRoute, loadPayload } from '../composables/payload'
+import { hasStaticPayload, isCachedPayloadRoute, loadPayload } from '../composables/payload'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
@@ -12,12 +12,17 @@ import { stateDiagnostics } from '../diagnostics/state'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
 
-import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
+import { appManifest as isAppManifestEnabled, payloadExtraction, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
 interface ActiveHeadEntryLike { dispose: () => void }
 
 const forwardedHintEntries = new Set<ActiveHeadEntryLike>()
 const forwardedHintHrefs = new Set<string>()
+
+// with `payloadExtraction: 'always'`, payloads prefetched for routes that are neither
+// prerendered nor cached are kept here and consumed once on navigation, so navigation
+// never blocks on an on-demand payload render
+const prefetchedPayloads = new Map<string, Record<string, any>>()
 
 const MAX_HINTS_PER_ROUTE = 2
 const FORWARDED_HINT_TIMEOUT_MS = 30_000
@@ -85,7 +90,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       const toURL = queryAware ? withoutFragment(to.fullPath) : to.path
       const fromURL = queryAware ? withoutFragment(from.fullPath) : from.path
       if (toURL === fromURL) { return }
-      const payload = await loadPayload(toURL)
+      let payload = prefetchedPayloads.get(toURL)
+      prefetchedPayloads.delete(toURL)
+      if (!payload && (payloadExtraction !== 'always' || await hasStaticPayload(toURL))) {
+        payload = await loadPayload(toURL) || undefined
+      }
       if (!payload) { return }
       if (purgeCachedData) {
         for (const key of staticKeysToRemove) {
@@ -145,6 +154,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
             const payload = await loadPayload(url, { signal, promoted }).catch(() => {
               stateDiagnostics.NUXT_E7003({ url })
             })
+            if (payload && !signal.aborted && payloadExtraction === 'always') {
+              const { pathname } = new URL(url, window.location.href)
+              if (router.currentRoute.value.path !== pathname && !(await hasStaticPayload(pathname))) {
+                prefetchedPayloads.set(pathname, payload)
+              }
+            }
             // a retained payload resolves onto its own route, which renders these hints itself
             if (signal.aborted || !head || !payload?.prefetchLinks?.length || group === prefetchGroup(router.currentRoute.value.fullPath)) { return }
             schedule(selectHints(payload.prefetchLinks).map(({ href, link }) => ({

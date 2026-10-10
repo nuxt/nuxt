@@ -26,9 +26,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   if (import.meta.server || !payloadExtraction) { return null }
   if (await shouldLoadPayload(url)) {
     const payloadURL = await _getPayloadURL(url, opts)
-    // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
-    // cannot invalidate them - defer to normal HTTP cache semantics instead
-    const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
+    const cache = await _getPayloadCacheMode(url)
     if (opts.fresh) {
       return await _importPayload(payloadURL, cache, opts.signal, opts.promoted) || null
     }
@@ -160,6 +158,20 @@ async function _importPayload (payloadURL: string, cache: RequestCache, signal?:
   return null
 }
 
+async function _getPayloadCacheMode (url: string): Promise<RequestCache> {
+  // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
+  // cannot invalidate them - defer to normal HTTP cache semantics instead
+  if (isCachedPayloadRoute(url)) {
+    return 'default'
+  }
+  // with `payloadExtraction: 'always'`, payloads for routes that are neither prerendered
+  // nor cached are rendered on demand and must not be reused from the browser cache
+  if (payloadExtraction === 'always' && !(await isPrerendered(url))) {
+    return 'no-cache'
+  }
+  return 'force-cache'
+}
+
 function _shouldLoadPrerenderedPayload (rules: Record<string, any>) {
   if (rules.redirect) {
     return false
@@ -201,6 +213,9 @@ export async function shouldLoadPayload (url: string = useRoute().path): Promise
   if (rules.ssr === false) {
     return false
   }
+  if (payloadExtraction === 'always') {
+    return !rules.redirect
+  }
   const res = _shouldLoadPrerenderedPayload(rules)
   if (res !== undefined) {
     return res
@@ -212,6 +227,15 @@ export async function shouldLoadPayload (url: string = useRoute().path): Promise
 
   const prerendered = await _isPrerenderedInManifest(url)
   return prerendered
+}
+
+/**
+ * Whether the payload for this route is served as a static or server-cached asset (prerendered,
+ * or covered by a `cache`/`isr`/`swr` route rule) rather than rendered on demand.
+ * @internal
+ */
+export async function hasStaticPayload (url: string): Promise<boolean> {
+  return isCachedPayloadRoute(url) || await isPrerendered(url)
 }
 
 /** @since 3.0.0 */

@@ -59,6 +59,7 @@ export type RendererConfigName =
   | 'NUXT_PAYLOAD_EXTRACTION'
   | 'NUXT_PAYLOAD_INLINE'
   | 'NUXT_RUNTIME_PAYLOAD_EXTRACTION'
+  | 'NUXT_PAYLOAD_EXTRACTION_ALWAYS'
   | 'NUXT_SSR_STREAMING'
   | 'NUXT_SSR_STREAMING_BOT_RE'
   | 'appHead'
@@ -123,6 +124,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_PAYLOAD_EXTRACTION: String(payloadExtraction !== false),
     NUXT_PAYLOAD_INLINE: String(payloadExtraction !== true),
     NUXT_RUNTIME_PAYLOAD_EXTRACTION: 'false',
+    NUXT_PAYLOAD_EXTRACTION_ALWAYS: String(payloadExtraction === 'always'),
     NUXT_SSR_STREAMING: String(streamingEnabled),
     NUXT_SSR_STREAMING_BOT_RE: streamingEnabled && streaming.botRegex instanceof RegExp ? String(streaming.botRegex) : '/^$/',
     appHead: JSON.stringify(app.head),
