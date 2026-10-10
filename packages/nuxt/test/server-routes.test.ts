@@ -291,13 +291,13 @@ describe('emitServerRoutesModule', () => {
     })).toMatchSnapshot()
   })
 
-  it('names its vocabulary through `nuxt/app`, which is what a user project can resolve', () => {
+  it('names its vocabulary through `#app/types`, which both the app and the server programs resolve', () => {
     const module = emitServerRoutesModule({ routes, strict: false })
 
     for (const specifier of module.match(/from '[^']+'/g) || []) {
       expect(specifier).not.toMatch(/'fetchdts/)
     }
-    expect(module).toContain('from \'nuxt/app\'')
+    expect(module).toContain('from \'#app/types\'')
   })
 
   it('emits the resolved answer for `strictRouteTypes` rather than a flag to branch on', () => {

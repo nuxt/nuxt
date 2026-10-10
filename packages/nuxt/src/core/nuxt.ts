@@ -298,7 +298,7 @@ async function initNuxt (nuxt: Nuxt) {
   addTemplate({
     filename: 'types/shared-server-routes.d.ts',
     dependsOn: [],
-    getContents: () => emitServerRoutesModule({ routes: [], strict: false, moduleSpecifier: '#app/types' }),
+    getContents: () => emitServerRoutesModule({ routes: [], strict: false }),
   })
 
   addTypeTemplate({

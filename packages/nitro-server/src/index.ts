@@ -81,7 +81,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const modules = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
 
   addTemplate(nitroSchemaTemplate)
-  addTypeTemplate(nitroInternalApiTemplate)
+  addTypeTemplate(nitroInternalApiTemplate, { nuxt: true, nitro: true })
 
   const importDirs = new Set<string>()
   if (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false) {
@@ -879,6 +879,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     tsConfig.compilerOptions.paths['#app/internal/*'] ||= [resolve(appDir, 'internal/*')]
     tsConfig.compilerOptions.paths['#app/types'] ||= [resolve(appDir, 'types')]
   }
+  tsConfig.compilerOptions.paths[REQUEST_TYPES_MODULE] = [resolve(distDir, 'request-types')]
 
   // Init nitro
   nuxt._perf?.startPhase('nitro:createNitro')
