@@ -1,5 +1,5 @@
 export { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER, isVue, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
-export { toVirtualId } from '../../../nuxt/src/core/plugins/virtual.ts'
+export { toVirtualId } from '../../../nuxt/src/core/utils/virtual.ts'
 
 // Copied from vue-bundle-renderer utils
 export const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
