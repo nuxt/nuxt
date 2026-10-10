@@ -14,4 +14,6 @@ declare module '#nuxt-compat/import-meta' {
 declare module '#nuxt-compat/flags' {
   /** Whether the app has any nitro v2 code, so the compat runtime is wanted. */
   export const legacyCompat: boolean
+  /** Whether v2 code runs on a cloudflare preset, so `event.context.cloudflare` is wanted. */
+  export const cloudflareCompat: boolean
 }

@@ -467,6 +467,22 @@ describe('setupNitroCompat', () => {
     report.mockRestore()
   })
 
+  it.each([
+    ['cloudflare-module', true],
+    ['node-server', false],
+  ])('bakes `cloudflareCompat` in from the resolved preset (%s)', async (preset, expected) => {
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = createModuleDir('nitro-compat-cloudflare-', false)
+    writeFileSync(join(dir, 'handler.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => 'legacy')`)
+
+    const nuxt = Object.assign(createNuxt(), { _nitro: { options: { preset } } })
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/legacy', handler: join(dir, 'handler.ts') } as any] }
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir, name: 'legacy-module' }])
+
+    expect((nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()).toContain(`cloudflareCompat = ${expected}`)
+    vi.restoreAllMocks()
+  })
+
   it('scopes a handler registered through a server-only alias', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-alias-'))
     writeFileSync(join(dir, 'handler.ts'), `import { getQuery } from 'h3'\nexport default (event: any) => getQuery(event)`)

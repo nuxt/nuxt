@@ -1134,8 +1134,15 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // baked in at build time, so that an app with no v2 code keeps Nitro's error semantics
   // with the recovery branch tree-shaken out. One flag for the whole app, decided by what
   // the scoped code imports rather than by which modules are installed.
-  nitroConfig.virtual['#nuxt-compat/flags'] = () =>
-    `export const legacyCompat = ${active}\n`
+  nitroConfig.virtual['#nuxt-compat/flags'] = () => {
+    // the v2 `event.context.cloudflare` bridge has a source on the cloudflare presets only
+    const preset = (nuxt as Nuxt & { _nitro?: { options?: { preset?: string } } })._nitro?.options?.preset || ''
+    return [
+      `export const legacyCompat = ${active}`,
+      `export const cloudflareCompat = ${active && preset.startsWith('cloudflare')}`,
+      '',
+    ].join('\n')
+  }
 
   // module dists built for nitro v2 dereference `globalThis._importMeta_`
   nitroConfig.virtual['#nuxt-compat/import-meta'] = () => {
