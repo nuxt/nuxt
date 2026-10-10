@@ -182,6 +182,32 @@ describe('loadNuxt', () => {
     await nuxt.close()
   })
 
+  describe('when building into a relocated build directory', () => {
+    async function loadWithRelocatedBuildDir (prepareTypesDir?: (typesDir: string) => void) {
+      const tmpDir = mkdtempSync(join(tmpdir(), 'nuxt-relocated-build-'))
+      const typesDir = join(tmpDir, '.nuxt')
+      mkdirSync(typesDir, { recursive: true })
+      prepareTypesDir?.(typesDir)
+      const nuxt = await loadNuxt({
+        cwd: repoRoot,
+        ready: true,
+        overrides: { buildDir: join(tmpDir, 'node_modules/.cache/nuxt/.nuxt'), typesDir },
+      })
+      const generateTsConfig = (nuxt as any)._nitro?.options.typescript?.generateTsConfig
+      await nuxt.close()
+      rmSync(tmpDir, { recursive: true, force: true })
+      return generateTsConfig
+    }
+
+    it('does not overwrite an existing nitro tsconfig', async () => {
+      expect(await loadWithRelocatedBuildDir(typesDir => writeFileSync(join(typesDir, 'tsconfig.server.json'), '{}'))).toBe(false)
+    })
+
+    it('writes a missing nitro tsconfig', async () => {
+      expect(await loadWithRelocatedBuildDir()).toBe(true)
+    })
+  })
+
   it('does not leak debug mutation proxies into resolved options', async () => {
     const nuxt = await loadNuxt({
       cwd: repoRoot,
