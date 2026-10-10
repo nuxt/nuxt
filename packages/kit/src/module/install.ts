@@ -5,7 +5,7 @@ import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptio
 import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
-import { readPackageJSON, resolvePackageDir } from '../internal/package-json.ts'
+import { readPackageJSON, resolvePackageDir, resolvePackageJSON } from '../internal/package-json.ts'
 import { read as readRc, update as updateRc } from 'rc9'
 import { isGreaterThan, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
@@ -112,7 +112,9 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         const cachedDependency = await moduleLoadCache.get(resolvedModule.module)
         const dependencyPath = cachedDependency?.resolvedModulePath || dependencyPaths.get(resolvedModule.module)
         const resolvePaths = [dependencyPath || res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
-        const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
+        const packagePath = resolvePackageJSON(dependencyPath || resolvedModule.resolvedPath || name, { from: resolvePaths, try: true })
+        const isLayerPackage = nuxt.options._layers.some(layer => packagePath === resolve(layer.cwd, 'package.json'))
+        const pkg = packagePath && !isLayerPackage ? await readPackageJSON(packagePath).catch(() => null) : null
         if (pkg?.version && !satisfies(pkg.version, value.version, { includePrerelease: true })) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
           error = new TypeError(message)

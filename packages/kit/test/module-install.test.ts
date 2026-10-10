@@ -126,6 +126,15 @@ export default Object.assign(() => {}, {
     await writeDependency(join(tempDir, 'app/node_modules/nested-dependency'), '3.0.0')
     await writeDependency(join(tempDir, 'incompatible/node_modules/nested-dependency'), '1.0.0')
     await writeDependency(join(tempDir, 'hoisted/node_modules/nested-dependency'), '3.0.0')
+    const localApp = join(tempDir, 'local')
+    await mkdir(join(localApp, 'modules'), { recursive: true })
+    await writeFile(join(localApp, 'package.json'), JSON.stringify({ name: 'local-app', version: '1.0.0', type: 'module' }))
+    await writeFile(join(localApp, 'modules/local.mjs'), `
+export default (_options, nuxt) => {
+  nuxt.options.runtimeConfig.localDependencyLoaded = true
+}
+    `)
+    await writeDependency(join(localApp, 'packaged'), '1.0.0')
   })
 
   afterEach(async () => {
@@ -192,5 +201,38 @@ export default Object.assign(() => {}, {
     expect(nuxt.options.runtimeConfig.nestedDependency).toEqual({
       version: '3.0.0', message: 'configured', calls: 1,
     })
+  })
+
+  it('does not use the app version for a local dependency without a manifest', async () => {
+    const localDependency = join(tempDir, 'local/modules/local.mjs')
+    nuxt = await loadNuxt({
+      cwd: join(tempDir, 'local'),
+      overrides: {
+        modules: [
+          localDependency,
+          defineNuxtModule({
+            meta: { name: 'local-parent' },
+            moduleDependencies: { [localDependency]: { version: '>=2' } },
+            setup () {},
+          }),
+        ],
+      },
+    })
+
+    expect(nuxt.options.runtimeConfig.localDependencyLoaded).toBe(true)
+  })
+
+  it('checks a local dependency with its own manifest', async () => {
+    const localDependency = join(tempDir, 'local/packaged/index.js')
+    await expect(loadNuxt({
+      cwd: join(tempDir, 'local'),
+      overrides: {
+        modules: [defineNuxtModule({
+          meta: { name: 'local-parent' },
+          moduleDependencies: { [localDependency]: { version: '>=2' } },
+          setup () {},
+        })],
+      },
+    })).rejects.toThrow(/version \(`1\.0\.0`\) does not satisfy `>=2`/)
   })
 })
