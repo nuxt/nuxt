@@ -58,6 +58,15 @@ describe('nitro config', () => {
     })
   })
 
+  it('mounts the build dir as `build:` and `cache:` dev storage, as nitro v2 did', async () => {
+    await withNitro({}, (_nitro, nitroConfig) => {
+      expect(nitroConfig.devStorage).toMatchObject({
+        build: { driver: 'fs', base: nitroConfig.buildDir },
+        cache: { driver: 'fs', base: resolve(nitroConfig.buildDir!, 'cache') },
+      })
+    })
+  })
+
   it('does not include the dev error channel in production builds', async () => {
     await withNitro({ dev: false }, (_nitro, nitroConfig) => {
       const errorChannel = nitroConfig.virtual!['#internal/nuxt/error-channel'] as () => string

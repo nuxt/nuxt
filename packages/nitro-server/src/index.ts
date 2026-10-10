@@ -681,6 +681,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     base: nitroConfig.serverDir,
     ignore: devStorageIgnore(nuxt.options.serverDir),
   }
+  // Nitro v2 compatibility. Remove in v6
+  nitroConfig.devStorage.build ??= {
+    driver: 'fs',
+    base: nitroConfig.buildDir,
+  }
+  nitroConfig.devStorage.cache ??= {
+    driver: 'fs',
+    base: join(nitroConfig.buildDir!, 'cache'),
+  }
 
   const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
   const cacheDriverOption = isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath

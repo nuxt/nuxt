@@ -573,7 +573,8 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * `rememberRenderBody` in `utils/renderer/options.ts` and the `hasLegacyHookListener`
  * check in `handlers/renderer.ts`; the `legacyCompat` branches in `handlers/error.ts`,
  * `handlers/renderer.ts` and `utils/renderer/options.ts`; the `NUXT_B9001`-`B9005` and
- * `NUXT_E8008`-`E8010` diagnostics; the `nitro-legacy` and `nitro-module-compat` fixtures.
+ * `NUXT_E8008`-`E8010` diagnostics; the `build`/`cache` `devStorage` mounts in `index.ts`;
+ * the `nitro-legacy` and `nitro-module-compat` fixtures.
  *
  * Returns a callback that absorbs registrations made after the build config was assembled;
  * call it once the nitro instance exists.
