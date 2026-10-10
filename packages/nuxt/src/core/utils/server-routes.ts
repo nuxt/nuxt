@@ -185,14 +185,14 @@ export function emitServerRoutesModule (opts: {
     compileRoutes([{ routes: [...opts.routes, ...opts.pages || []] }], {
       name: 'GeneratedServerRoutes',
       // `fetchdts` is not a dependency of user projects, so its vocabulary is named through the
-      // re-exports in `nuxt/app` instead
-      moduleSpecifier: 'nuxt/app',
+      // re-exports in `#app/types`, which both the app and the server programs resolve
+      moduleSpecifier: '#app/types',
       // the accessors resolve against the interface an app can augment, so a route added by
       // hand is found by the walk behind the exact-match table rather than being invisible
       resolveAgainst: 'ServerRoutes',
       imports: [
         'import type { ServerRoutes } from \'@nuxt/schema\'',
-        'import type { Serialize } from \'nuxt/app\'',
+        'import type { Serialize } from \'#app/types\'',
         ...extractors.length && opts.requestTypes ? [`import type { ${extractors.sort().join(', ')} } from '${opts.requestTypes.module}'`] : [],
       ],
     }).code,

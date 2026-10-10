@@ -9,6 +9,8 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { NuxtHookRegistry, NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
 
 export type { NuxtLinkOptions } from '@nuxt/schema'
+export type { Serialize } from './types/serialize.js'
+export type { AnyHTTPMethod, DynamicParam, Endpoint, HTTPMethod, TypedFetchErrorBody, TypedFetchMethods, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, TypedFetchResponseHeaders, ValidFetchInput, WildcardParam } from 'fetchdts'
 
 type HookResult = Promise<void> | void
 
