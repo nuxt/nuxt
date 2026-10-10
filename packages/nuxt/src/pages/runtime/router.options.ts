@@ -63,7 +63,8 @@ export default <RouterConfig>{
 
 function _getHashElementScrollMarginTop (selector: string): number {
   try {
-    const elem = document.querySelector(selector)
+    // look up by id like vue-router does, as ids such as `5-tips` aren't valid CSS selectors
+    const elem = document.getElementById(selector.slice(1))
     if (elem) {
       return (Number.parseFloat(getComputedStyle(elem).scrollMarginTop) || 0) + (Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0)
     }
