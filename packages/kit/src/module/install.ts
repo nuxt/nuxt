@@ -109,7 +109,9 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       }
 
       if (value.version) {
-        const resolvePaths = [res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
+        const cachedDependency = await moduleLoadCache.get(resolvedModule.module)
+        const dependencyPath = cachedDependency?.resolvedModulePath || dependencyPaths.get(resolvedModule.module)
+        const resolvePaths = [dependencyPath || res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
         const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
         if (pkg?.version && !satisfies(pkg.version, value.version, { includePrerelease: true })) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`

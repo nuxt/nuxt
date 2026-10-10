@@ -170,6 +170,19 @@ export default Object.assign(() => {}, {
     })
   })
 
+  it.each([
+    ['nested-dependency', 'parent-module'],
+    ['parent-module', 'nested-dependency'],
+  ])('rejects an explicitly installed incompatible app dependency: %j', async (...modules) => {
+    const error = await loadNuxt({
+      cwd: join(tempDir, 'incompatible'),
+      overrides: { modules },
+    }).then((instance) => { nuxt = instance }, (error: unknown) => error)
+
+    expect(error).toBeInstanceOf(TypeError)
+    expect(error).toHaveProperty('message', expect.stringMatching(/Module `nested-dependency` version \(`1\.0\.0`\) does not satisfy `>=2`/))
+  })
+
   it('loads the app dependency when the declaring module has no nested copy', async () => {
     nuxt = await loadNuxt({
       cwd: join(tempDir, 'hoisted'),
