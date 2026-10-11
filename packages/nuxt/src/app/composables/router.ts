@@ -1,23 +1,37 @@
 import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { decodePath, hasProtocol, isScriptProtocol, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { decodePath, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
 import { isInComponentSetup, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import { sanitizeStatusCode } from '../utils/http-status'
+import { getScriptProtocol, getUserTrace, isAbsoluteHref } from '../utils'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
-import { getUserTrace } from '../utils'
 import { navigationDiagnostics } from '../diagnostics/navigation'
+import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
+/**
+ * Augmented by Nuxt when `experimental.early404` is enabled, to remove router methods
+ * that are incompatible with it from the router returned by `useRouter`. Dynamically
+ * added routes cannot be known at build time, so requests to them would incorrectly
+ * receive an early 404 response.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface Early404IncompatibleRouterMethods {}
+
+type NuxtUseRouter = keyof Early404IncompatibleRouterMethods extends never
+  ? typeof _useRouter
+  : () => Router & { [K in keyof Early404IncompatibleRouterMethods & keyof Router]: never }
+
 /** @since 3.0.0 */
-export const useRouter: typeof _useRouter = () => {
+export const useRouter: NuxtUseRouter = (() => {
   return useNuxtApp()?.$router as unknown as Router
-}
+}) as unknown as NuxtUseRouter
 
 /**
  * Whether the current effect scope is (a descendant of) the component instance's scope.
@@ -104,6 +118,9 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
     return
   }
   if (global) {
+    if (import.meta.server && tracingChannelNuxt && typeof name === 'string') {
+      Object.defineProperty(mw, '_name', { value: name, configurable: true })
+    }
     nuxtApp._middleware.global.push(mw)
   } else {
     nuxtApp._middleware.named[name] = mw
@@ -136,7 +153,7 @@ export type OpenWindowFeatures = {
   & XOR<{ top?: number }, { screenY?: number }>
 
 export type OpenOptions = {
-  target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
+  target?: '_blank' | '_parent' | '_self' | '_top' | (string & {})
   windowFeatures?: OpenWindowFeatures
 }
 
@@ -181,14 +198,19 @@ function encodeForHtmlAttr (value: string): string {
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   to ||= '/'
 
+  const isPathForm = typeof to === 'string' || 'path' in to
   const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
   // Early open handler
   if (import.meta.client && options?.open) {
-    const { protocol } = new URL(toPath, window.location.href)
-    if (protocol && isScriptProtocol(protocol)) {
+    const protocol = getScriptProtocol(toPath)
+    if (protocol !== null) {
       throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
+
+    // route objects with a `name` are already resolved against the router base by `router.resolve`
+    const isInternal = isPathForm && !isAbsoluteHref(toPath) && !toPath.startsWith('#')
+    const openPath = isInternal ? joinURL(useRuntimeConfig().app.baseURL, toPath) : toPath
 
     const { target = '_blank', windowFeatures = {} } = options.open
 
@@ -199,18 +221,18 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       }
     }
 
-    open(toPath, target, features.join(', '))
+    open(openPath, target, features.join(', '))
     return Promise.resolve()
   }
 
-  const isExternalHost = hasProtocol(toPath, { acceptRelative: true })
+  const isExternalHost = isAbsoluteHref(toPath)
   const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
       throw navigationDiagnostics.NUXT_E2001({ toPath })
     }
-    const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
-    if (protocol && isScriptProtocol(protocol)) {
+    const protocol = getScriptProtocol(toPath)
+    if (protocol !== null) {
       throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
     }
   }
@@ -262,7 +284,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       // We wait to perform the redirect last in case any other middleware will intercept the redirect
       // and redirect somewhere else instead.
       if (!isExternal && inMiddleware) {
-        router.afterEach(final => final.fullPath === fullPath ? redirect(false) : undefined)
+        // vue-router normalises queries so in this case we need to resolve instead of directly comparing
+        let expectedPath = fullPath
+        if (typeof to === 'string' && toPath.includes('?')) {
+          const target = router.resolve(to)
+          expectedPath = router.resolve({ path: target.path, query: target.query, hash: target.hash }).fullPath || '/'
+        }
+        router.afterEach(final => final.fullPath === expectedPath ? redirect(false) : undefined)
         return to
       }
       return redirect(!inMiddleware ? undefined : /* abort route navigation */ false)
@@ -298,6 +326,34 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 }
 
 /**
+ * Produces the render function returned from `setup()` when
+ * `experimental.navigateToEarlyReturn` short-circuits after a successful navigation.
+ *
+ * The returned function renders a placeholder comment both as a client render function
+ * and as an inline `ssrRender` (where it is called with a `push` function). On the server
+ * it is also assigned to `instance.ssrRender`, because the server renderer prefers the
+ * component's compiled `ssrRender` over a render function returned from `setup()`, and the
+ * compiled template must not run against the empty setup state left by the early return.
+ * @internal
+ */
+export function _navigateToEarlyReturn () {
+  const render = (_ctx?: unknown, push?: unknown) => {
+    if (typeof push === 'function') {
+      push('<!---->')
+      return
+    }
+    return null
+  }
+  if (import.meta.server) {
+    const instance = getCurrentInstance() as (ComponentInternalInstance & { ssrRender?: typeof render }) | null
+    if (instance) {
+      instance.ssrRender = render
+    }
+  }
+  return render
+}
+
+/**
  * This will abort navigation within a Nuxt route middleware handler.
  * @since 3.0.0
  */
@@ -321,7 +377,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
  * Sets the layout for the current page.
  * @since 3.0.0
  */
-export const setPageLayout = <Layout extends keyof NuxtLayouts>(layout: unknown extends Layout ? string : Layout, props?: typeof layout extends Layout ? MakeSerializableObject<NuxtLayouts[Layout]> : never): void => {
+export const setPageLayout = <Layout extends keyof NuxtLayouts | false>(layout: unknown extends Layout ? string | false : Layout, props?: Layout extends keyof NuxtLayouts ? MakeSerializableObject<NuxtLayouts[Layout]> : never): void => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
     if (import.meta.dev && isInComponentSetup(nuxtApp) && nuxtApp.payload.state._layout !== layout) {

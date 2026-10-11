@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Nitro, NitroRouteConfig } from 'nitro/types'
+import type { Nitro, RouteRuleConfig } from 'nitro/types'
 import type { NuxtPage } from 'nuxt/schema'
 
 import { markPagesCoveredByRouteRule } from '../src/pages/route-coverage.ts'
@@ -20,7 +20,7 @@ function segmentsMatch (route: string, path: string) {
   return routeSegments.length === pathSegments.length
 }
 
-function createNitro (rules: Record<string, NitroRouteConfig>) {
+function createNitro (rules: Record<string, RouteRuleConfig>) {
   const routes = Object.entries(rules).map(([route, data]) => ({ route, data }))
   return {
     routing: {

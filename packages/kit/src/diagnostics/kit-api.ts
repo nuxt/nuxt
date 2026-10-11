@@ -119,5 +119,20 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Add `oxc-parser` to your project; every supported version of Nuxt already ships a package that can be used here.',
       docs: false,
     },
+    NUXT_B8023: {
+      why: (p: { module: string, error: string }) => `The module \`${p.module}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
+      fix: 'Loading it natively is faster, as jiti has to transform the module first. Report it to the module author if the module is not your own.',
+      docs: false,
+    },
+    NUXT_B8024: {
+      why: (p: { api: string, declared: string, host: string }) => `A \`${p.api}\` registration was skipped because this project's server runs \`${p.host}\`.${p.declared ? ` It provided implementations for \`${p.declared}\`.` : ''}`,
+      fix: 'Provide an implementation the server can run: `nuxt/server` code runs everywhere. Report it to the module author if the module is not your own.',
+      docs: false,
+    },
+    NUXT_B8025: {
+      why: (p: { api: string, value: string }) => `\`${p.api}\` was passed a \`${p.value}\` variant, which is not a server API it accepts.`,
+      fix: (p: { accepted: string }) => `Key the variants by the server API the code is written against (\`${p.accepted}\`), or pass a single path: the registered file's imports say which API it uses.`,
+      docs: false,
+    },
   },
 })

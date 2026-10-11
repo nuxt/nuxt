@@ -1,13 +1,14 @@
+import { connect } from 'node:net'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { withQuery } from 'ufo'
 import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
-import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch, setup, startServer, url } from '@nuxt/test-utils/e2e'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
-import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
+import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
 import { isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
@@ -338,13 +339,13 @@ describe('component islands', () => {
             "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><!--teleport anchor-->",
             "props": [
               {
-                "t": 0,
-              },
-              {
                 "t": 1,
               },
               {
                 "t": 2,
+              },
+              {
+                "t": 3,
               },
             ],
           },
@@ -676,6 +677,41 @@ describe('denial-of-service protections', () => {
     expect(res.status).toBe(413)
   })
 
+  it('keeps the connection usable after rejecting an oversized body', async () => {
+    const { hostname, port } = new URL(url('/'))
+    const oversized = 'x'.repeat(MAX_ISLAND_DRAIN_BYTES)
+    const nested = `{"props":${'['.repeat(500)}${']'.repeat(500)}}`
+    const request = (body: string) => [
+      'POST /__nuxt_island/PureComponent_deadbeef.json HTTP/1.1',
+      `Host: ${hostname}:${port}`,
+      'Content-Type: application/json',
+      `Content-Length: ${Buffer.byteLength(body)}`,
+      '',
+      body,
+    ].join('\r\n')
+
+    const statuses = await new Promise<string[]>((resolve, reject) => {
+      const socket = connect(Number(port), hostname)
+      let received = ''
+      socket.on('data', (chunk) => {
+        received += chunk.toString()
+        const statuses = [...received.matchAll(/^HTTP\/1\.1 (\d{3})/gm)].map(m => m[1]!)
+        if (statuses.length === 2) {
+          socket.end()
+          resolve(statuses)
+        }
+      })
+      socket.on('error', reject)
+      socket.on('close', () => reject(new Error(`connection closed after: ${received.split('\r\n')[0]}`)))
+      socket.on('connect', () => {
+        socket.write(request(oversized))
+        socket.write(request(nested))
+      })
+    })
+
+    expect(statuses).toEqual(['413', '400'])
+  })
+
   it('rejects an oversized chunked island body without content-length', async () => {
     const chunk = JSON.stringify(Object.fromEntries(Array.from({ length: 10_000 }, (_, i) => [`k${i}`, i])))
     const body = new ReadableStream<Uint8Array>({
@@ -697,11 +733,10 @@ describe('denial-of-service protections', () => {
   })
 
   it('rejects a deeply nested island body before hashing', async () => {
-    const props = '['.repeat(500) + ']'.repeat(500)
     const res = await fetch('/__nuxt_island/PureComponent_deadbeef.json', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ props }),
+      body: `{"props":${'['.repeat(500)}${']'.repeat(500)}}`,
     })
     expect(res.status).toBe(400)
   })
@@ -812,6 +847,31 @@ describe('page-island middleware', () => {
     expect(res.status).toBe(400)
     const body = await res.text()
     expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
+  })
+})
+
+describe('island request headers', () => {
+  it('forwards the page request headers to the island subrequest', async () => {
+    const html = await $fetch<string>('/island-headers', {
+      headers: {
+        cookie: 'session=alice',
+        authorization: 'Bearer alice-token',
+      },
+    })
+
+    expect(html).toContain('<span id="page-cookie">session=alice</span>')
+    expect(html).toContain('<span id="island-cookie">session=alice</span>')
+    expect(html).toContain('<span id="island-authorization">Bearer alice-token</span>')
+  })
+
+  it('does not forward headers from a different request', async () => {
+    const html = await $fetch<string>('/island-headers', { headers: { cookie: 'session=bob' } })
+    expect(html).toContain('<span id="island-cookie">session=bob</span>')
+    expect(html).toContain('<span id="island-authorization">none</span>')
+
+    const anonymous = await $fetch<string>('/island-headers')
+    expect(anonymous).toContain('<span id="island-cookie">none</span>')
+    expect(anonymous).toContain('<span id="island-authorization">none</span>')
   })
 })
 

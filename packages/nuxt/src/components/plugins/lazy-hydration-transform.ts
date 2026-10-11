@@ -6,7 +6,7 @@ import { tryUseNuxt } from '@nuxt/kit'
 import { componentDiagnostics } from '@nuxt/kit/internal'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
-import { isVue } from '../../core/utils/index.ts'
+import { VUE_ID_FILTER } from '../../core/utils/index.ts'
 import { linkToAlias, offsetToPosition } from '../../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
@@ -37,17 +37,12 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
   return {
     name: 'nuxt:components-loader-pre',
     enforce: 'pre',
-    transformInclude (id) {
-      if (exclude.some(pattern => pattern.test(id))) {
-        return false
-      }
-      if (include.some(pattern => pattern.test(id))) {
-        return true
-      }
-      return isVue(id)
-    },
     transform: {
       filter: {
+        id: {
+          include: [...include, ...VUE_ID_FILTER],
+          exclude,
+        },
         code: { include: TEMPLATE_WITH_LAZY_HYDRATION_RE },
       },
 

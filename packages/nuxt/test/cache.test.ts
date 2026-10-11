@@ -43,7 +43,7 @@ async function renderIndex (outputDir: string) {
 // the inline style extracted from the fixture's scoped `<style>` block
 const INLINE_STYLE_RE = /<style[^>]*>[^<]*color\s*:\s*red/
 
-describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
+describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
   const workspaceDir = await findWorkspaceDir()
   const tmpDir = join(workspaceDir, '.test/build-cache')
 
@@ -239,6 +239,38 @@ describe('buildCache', { sequential: true, timeout: 120_000 }, async () => {
     const html = await renderIndex(outputDir)
     expect(html).toMatch(INLINE_STYLE_RE)
     expect(html).toBe(expectedHtml)
+  })
+
+  it('should hit the cache when only an ignored file changes', async () => {
+    const rootDir = join(tmpDir, 'project')
+
+    const nuxt1 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'ignored-1',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt1)
+
+    await writeFile(join(rootDir, 'unit.spec.ts'), 'export const marker = 1')
+
+    const nuxt2 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'ignored-2',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    expect(nuxt2.options.buildId).toBe('ignored-1')
+    await build(nuxt2)
+
+    const latestJson = JSON.parse(await readFile(join(nuxt2.options.buildDir, 'manifest', 'latest.json'), 'utf-8'))
+    expect(latestJson.id).toBe('ignored-1')
   })
 
   it('should generate a new buildId when sources change', async () => {

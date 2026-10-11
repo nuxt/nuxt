@@ -110,9 +110,14 @@ describe('resolveApp', () => {
       'layouts/default/index.vue',
       'layouts/other.vue',
     ])
-    // Middleware are not resolved in a nested manner
+    // A folder index is named after its folder; `middleware/index.ts` has no name at all
     expect(app.middleware.filter(m => m.path.startsWith('<rootDir>'))).toMatchInlineSnapshot(`
       [
+        {
+          "global": false,
+          "name": "auth",
+          "path": "<rootDir>/middleware/auth/index.ts",
+        },
         {
           "global": false,
           "name": "other",

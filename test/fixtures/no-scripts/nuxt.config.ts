@@ -1,4 +1,5 @@
 export default defineNuxtConfig({
+  modules: ['./modules/font-preload'],
   devtools: { enabled: false },
   routeRules: {
     '/no-scripts': { noScripts: true },

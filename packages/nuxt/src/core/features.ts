@@ -1,8 +1,7 @@
 import { resolvePackageJSON } from 'pkg-types'
-import { getAddDependencyCommand, useNuxt } from '@nuxt/kit'
+import { getAddDependencyCommand, useNuxt, useTerminal } from '@nuxt/kit'
 import { buildDiagnostics, configDiagnostics } from '@nuxt/kit/internal'
 import { isCI, provider } from 'std-env'
-import { logger } from '../utils.ts'
 
 const installPrompts = new Set<string>()
 
@@ -26,8 +25,10 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     return false
   }
 
+  const terminal = useTerminal()
+
   if (options?.prompt === true || (options?.prompt !== false && provider !== 'stackblitz')) {
-    const confirm = await logger.prompt(`Do you want to install ${name} package?`, {
+    const confirm = await terminal.prompt(`Do you want to install ${name} package?`, {
       type: 'confirm',
       name: 'confirm',
       initial: true,
@@ -38,13 +39,14 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
     }
   }
 
-  logger.info(`Installing ${name}...`)
+  const task = terminal.startTask(`Installing ${name}...`)
   try {
     const { runCommand } = await import('@nuxt/cli')
     await runCommand('module', ['add', name, '--cwd', rootDir])
-    logger.success(`Installed ${name}`)
+    task.stop(`Installed ${name}`)
     return true
   } catch (err) {
+    task.stop(undefined, 'failure')
     buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(name, rootDir), cause: err })
     return false
   }

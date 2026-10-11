@@ -73,5 +73,40 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to load it, or remove the \`nuxt.schema\` file.`,
       docs: false,
     },
+    NUXT_B5021: {
+      why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` was loaded as native ESM, which does not provide the CommonJS globals: ${p.error}`,
+      fix: (p: { installCommand: string }) => `Use \`import.meta.url\`, \`import.meta.dirname\` or \`createRequire(import.meta.url)\` from \`node:module\` instead of \`__dirname\`, \`__filename\` and \`require\`. Alternatively, run \`${p.installCommand}\` and Nuxt will load the file through jiti, which provides them.`,
+      docs: false,
+    },
+    NUXT_B5022: {
+      why: 'A `nuxt.config` in yaml, toml, jsonc or json5 is parsed by the `confbox` package, which is not installed.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\`, or rename your config to \`nuxt.config.ts\`.`,
+      docs: false,
+    },
+    NUXT_B5023: {
+      why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
+      fix: 'Loading it natively is faster, as jiti has to transform the file first. Relative imports need an explicit file extension, and `import.meta.dirname` replaces `__dirname`.',
+      docs: false,
+    },
+    NUXT_B5024: {
+      why: '`vue.vapor` requires vue `3.6.0` or later, so vapor mode has been disabled.',
+      fix: 'Upgrade to vue `3.6.0` or later, or remove `vue.vapor` from your `nuxt.config`.',
+      docs: false,
+    },
+    NUXT_B5025: {
+      why: (p: { entry: string }) => `\`css\` entries are resolved as module ids, not relative to \`nuxt.config\`, so \`${p.entry}\` may not resolve to the intended file.`,
+      fix: (p: { replacement: string }) => `Replace it with ${p.replacement}.`,
+      docs: false,
+    },
+    NUXT_B5026: {
+      why: (p: { entry: string, resolved?: string }) => `\`css\` entry \`${p.entry}\` could not be found${p.resolved ? ` (resolved to \`${p.resolved}\`)` : ''}.`,
+      fix: 'Ensure the file exists, or remove the entry from `css` in your `nuxt.config`.',
+      docs: false,
+    },
+    NUXT_B5028: {
+      why: 'A generated development secret is being used because `runtimeConfig.appSecret` is unset.',
+      fix: 'Set `NUXT_APP_SECRET` in your `.env` to the output of `openssl rand -base64 32`. Builds do not generate a secret.',
+      docs: false,
+    },
   },
 })

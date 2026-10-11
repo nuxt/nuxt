@@ -1,12 +1,15 @@
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
+import { join } from 'pathe'
 
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../src/constants.ts'
 import { loadNuxtConfig } from '../src/loader/config.ts'
-import { _generateTypes, resolveLayerPaths } from '../src/template.ts'
+import { _generateTypes, resolveLayerPaths, writeTypes } from '../src/template.ts'
 import { getLayerDirectories } from 'nuxt/kit'
 
 const typesFixtureDir = fileURLToPath(new URL('./types-fixture', import.meta.url))
@@ -95,6 +98,7 @@ describe('tsConfig generation', () => {
         "../../node_modules",
         "../dist",
         "../.data",
+        "../server/**/*",
         "../modules/*/runtime/server/**/*",
         "../layers/*/server/**/*",
         "../layers/*/modules/*/runtime/server/**/*",
@@ -391,11 +395,6 @@ describe('resolveLayerPaths', async () => {
           "../*.d.ts",
           "../layers/*/*.d.ts",
         ],
-        "nitro": [
-          "../custom-modules/*/runtime/server/**/*",
-          "../layers/*/server/**/*",
-          "../layers/*/modules/*/runtime/server/**/*",
-        ],
         "node": [
           "../custom-modules/*.*",
           "../nuxt.config.*",
@@ -413,6 +412,12 @@ describe('resolveLayerPaths', async () => {
           "../layers/*/app/**/*",
           "../layers/*/modules/*/runtime/**/*",
         ],
+        "server": [
+          "../server/**/*",
+          "../custom-modules/*/runtime/server/**/*",
+          "../layers/*/server/**/*",
+          "../layers/*/modules/*/runtime/server/**/*",
+        ],
         "shared": [
           "../custom-shared/**/*",
           "../custom-modules/*/shared/**/*",
@@ -425,5 +430,52 @@ describe('resolveLayerPaths', async () => {
         ],
       }
     `)
+  })
+})
+
+describe('writeTypes', () => {
+  const generatedFiles = ['tsconfig.app.json', 'tsconfig.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json', 'nuxt.d.ts', 'nuxt.node.d.ts', 'nuxt.shared.d.ts', 'nuxt.server.d.ts']
+
+  async function withRelocatedBuildDir (fn: (typesDir: string, nuxt: Nuxt) => Promise<void>) {
+    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
+    const typesDir = join(rootDir, '.nuxt')
+    await mkdir(typesDir, { recursive: true })
+    try {
+      await fn(typesDir, mockNuxtWithOptions({
+        rootDir,
+        srcDir: rootDir,
+        buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt'),
+        typesDir,
+        dev: false,
+      }))
+    } finally {
+      await rm(rootDir, { recursive: true, force: true })
+    }
+  }
+
+  it('should not overwrite existing types when building into a relocated build directory', async () => {
+    await withRelocatedBuildDir(async (typesDir, nuxt) => {
+      for (const file of generatedFiles) {
+        await writeFile(join(typesDir, file), '{}')
+      }
+      await writeTypes(nuxt)
+      for (const file of generatedFiles) {
+        expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
+      }
+    })
+  })
+
+  it('should only write missing types when building into a relocated build directory', async () => {
+    await withRelocatedBuildDir(async (typesDir, nuxt) => {
+      const [missing, ...existing] = generatedFiles
+      for (const file of existing) {
+        await writeFile(join(typesDir, file), '{}')
+      }
+      await writeTypes(nuxt)
+      expect(await readFile(join(typesDir, missing!), 'utf8')).not.toBe('{}')
+      for (const file of existing) {
+        expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
+      }
+    })
   })
 })

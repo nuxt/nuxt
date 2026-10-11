@@ -156,7 +156,12 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
             return
           }
 
-          if (!('nuxt-client' in node.attributes) && !(':nuxt-client' in node.attributes)) {
+          const hasNuxtClientAttr = 'nuxt-client' in node.attributes || ':nuxt-client' in node.attributes
+          if (hasNuxtClientAttr) {
+            hasNuxtClient = true
+          }
+
+          if (!hasNuxtClientAttr || !isVite || !options.selectiveClient) {
             if (isIsland && 'v-for' in node.attributes) {
               const start = startingIndex + node.loc[0].start
               const end = startingIndex + node.loc[0].end
@@ -166,12 +171,6 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
                 s.overwrite(start, end, bounded)
               }
             }
-            return
-          }
-
-          hasNuxtClient = true
-
-          if (!isVite || !options.selectiveClient) {
             return
           }
 

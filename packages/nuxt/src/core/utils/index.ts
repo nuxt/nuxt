@@ -1,5 +1,5 @@
 export { getNameFromPath, hasSuffix, resolveComponentNameSegments } from './names.ts'
-export { getLoader, isJS, isVue, parseModuleId } from './plugins.ts'
+export { JS_ID_RE, VUE_ID_FILTER, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER, VUE_SCRIPT_TEMPLATE_ID_FILTER, VUE_TEMPLATE_ID_FILTER, getLoader, isJS, isVue, parseModuleId } from './plugins.ts'
 
 export function uniqueBy<T, K extends keyof T> (arr: T[], key: K) {
   if (arr.length < 2) {

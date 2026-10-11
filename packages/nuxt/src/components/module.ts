@@ -1,9 +1,11 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, getLayerDirectories, resolveAlias } from '@nuxt/kit'
+import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolveAlias } from '@nuxt/kit'
 import { componentDiagnostics } from '@nuxt/kit/internal'
 
 import { resolveModulePath } from 'exsolve'
+import picomatch from 'picomatch'
+import { withTrailingSlash } from 'ufo'
 import { distDir } from '../dirs.ts'
 import { DECLARATION_EXTENSIONS, isDirectorySync, linkToAlias, logger } from '../utils.ts'
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
@@ -197,15 +199,8 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Scan components and add to plugin
     const scannedStructureVersions = new WeakMap<Nuxt, number>()
-    nuxt.hook('app:templates', async (app) => {
-      // Component discovery depends only on which files exist, so it can be reused
-      // until a file is added or removed.
+    async function resolveComponents () {
       const structureVersion = getAppStructureVersion(nuxt)
-      if (nuxt.options.dev && context.components && scannedStructureVersions.get(nuxt) === structureVersion) {
-        app.components = context.components
-        return
-      }
-
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
       await nuxt.callHook('components:extend', newComponents)
       const modesByName = new Map<string, Set<string | undefined>>()
@@ -238,11 +233,20 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       }
       context.components = newComponents
-      app.components = newComponents
       scannedStructureVersions.set(nuxt, structureVersion)
+    }
+
+    nuxt.hook('app:templates', async (app) => {
+      // Component discovery depends only on which files exist, so it can be reused
+      // until a file is added or removed.
+      if (!nuxt.options.dev || scannedStructureVersions.get(nuxt) !== getAppStructureVersion(nuxt)) {
+        await resolveComponents()
+      }
+      app.components = context.components
     })
 
     nuxt.hook('prepare:types', ({ tsConfig }) => {
+      tsConfig.compilerOptions!.paths ||= {}
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
     })
 
@@ -266,8 +270,47 @@ export default defineNuxtModule<ComponentsOptions>({
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'client' }), { server: false })
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'server' }), { client: false })
+    const componentMatchers = new WeakMap<ComponentsDir, (path: string) => boolean>()
+    function isComponentFile (file: string) {
+      if (isIgnored(file)) { return false }
+      return componentDirs.some((dir) => {
+        if (!file.startsWith(withTrailingSlash(dir.path))) { return false }
+        let matcher = componentMatchers.get(dir)
+        if (!matcher) {
+          matcher = picomatch(dir.pattern!, { ignore: dir.ignore, dot: true })
+          componentMatchers.set(dir, matcher)
+        }
+        return matcher(relative(dir.path, file))
+      })
+    }
+
+    let pendingRefresh: Promise<void> | undefined
+    let rerunRefresh = false
+    const refreshedEvents = new Map<string, Promise<void>>()
+    /** Rescan components after a component file is added or removed, deduping concurrent requests. */
+    function refreshComponents (file: string, timestamp: number) {
+      if (!isComponentFile(file)) { return }
+      // each environment reports the same file event with the same timestamp
+      const event = `${timestamp}:${file}`
+      const refreshed = refreshedEvents.get(event)
+      if (refreshed) { return refreshed }
+      if (pendingRefresh) {
+        rerunRefresh = true
+      } else {
+        refreshedEvents.clear()
+        pendingRefresh = (async () => {
+          do {
+            rerunRefresh = false
+            await resolveComponents()
+          } while (rerunRefresh)
+        })().finally(() => { pendingRefresh = undefined })
+      }
+      refreshedEvents.set(event, pendingRefresh)
+      return pendingRefresh
+    }
+
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'client', refreshComponents: nuxt.options.dev ? refreshComponents : undefined }), { server: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'server', refreshComponents: nuxt.options.dev ? refreshComponents : undefined }), { client: false })
 
     if (nuxt.options.experimental.lazyHydration) {
       addBuildPlugin(LazyHydrationTransformPlugin({

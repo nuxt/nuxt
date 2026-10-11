@@ -6,6 +6,7 @@ import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
 import { renderDiagnostics } from '../diagnostics/render'
 import { MAX_VFOR_LENGTH } from './vfor'
+import type { NuxtApp } from '../nuxt'
 import { START_LOCATION } from '#build/pages'
 
 /**
@@ -115,7 +116,8 @@ export function vforToArray (source: any): any[] {
     const length = source > MAX_VFOR_LENGTH ? MAX_VFOR_LENGTH : source
     const array: number[] = []
     for (let i = 0; i < length; i++) {
-      array[i] = i
+      // Vue's `v-for` over a number is 1-based
+      array[i] = i + 1
     }
     return array
   } else if (isObject(source)) {
@@ -148,12 +150,7 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element, [], withoutSlots)
     }
-    if (withoutSlots) {
-      const clone = element.cloneNode(true)
-      clone.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
-      return [clone.outerHTML]
-    }
-    return [element.outerHTML]
+    return [getElementHTML(element, withoutSlots)]
   }
 }
 
@@ -161,15 +158,23 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
   let current = element
   while (current?.nodeName && !isEndFragment(current)) {
     if (!isStartFragment(current)) {
-      const clone = current.cloneNode(true) as Element
-      if (withoutSlots) {
-        clone.querySelectorAll?.('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
-      }
-      blocks.push(clone.outerHTML)
+      blocks.push(getElementHTML(current, withoutSlots))
     }
     current = current.nextSibling
   }
   return blocks
+}
+
+const ISLAND_TELEPORT_TARGET_SELECTOR = '[data-island-slot],[data-island-component]'
+
+function getElementHTML (element: RendererNode, withoutSlots: boolean) {
+  if (!withoutSlots || !element.querySelector?.(ISLAND_TELEPORT_TARGET_SELECTOR)) {
+    return element.outerHTML
+  }
+  const template = element.ownerDocument.createElement('template')
+  template.innerHTML = element.outerHTML
+  template.content.querySelectorAll(ISLAND_TELEPORT_TARGET_SELECTOR).forEach((n: Element) => { n.innerHTML = '' })
+  return template.innerHTML
 }
 
 /**
@@ -213,4 +218,16 @@ export function _mergeTransitionProps (routeProps: TransitionProps[]): Transitio
     })
   }
   return defu(..._props as [TransitionProps, TransitionProps])
+}
+
+export function _startTransition (nuxtApp: NuxtApp): void {
+  nuxtApp['~transitionPromise'] ||= new Promise((resolve) => {
+    nuxtApp['~transitionFinish'] = resolve
+  })
+}
+
+export function _finishTransition (nuxtApp: NuxtApp): void {
+  nuxtApp['~transitionFinish']?.()
+  delete nuxtApp['~transitionFinish']
+  delete nuxtApp['~transitionPromise']
 }

@@ -7,8 +7,11 @@ import { genImport } from 'knitwork'
 import { parseAndWalk } from 'oxc-walker'
 import { headDiagnostics } from '@nuxt/kit/internal'
 import { link } from 'clickable-path'
-import { isJS, isVue } from '../../core/utils/index.ts'
+import escapeStringRegexp from 'escape-string-regexp'
+import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../../core/utils/index.ts'
 import { distDir } from '../../dirs.ts'
+
+const DIST_DIR_RE = new RegExp('^' + escapeStringRegexp(normalize(distDir)).replace(/\//g, '[\\\\/]'))
 
 interface UnheadImportsPluginOptions {
   rootDir: string
@@ -37,18 +40,12 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
   return {
     name: 'nuxt:head:unhead-imports',
     enforce: 'post',
-    transformInclude (id) {
-      id = normalize(id)
-      return (
-        (isJS(id) || isVue(id, { type: ['script'] })) &&
-        !id.startsWith('virtual:') &&
-        !id.startsWith(normalize(distDir)) &&
-        !UNHEAD_LIB_RE.test(id) &&
-        !NUXT_HEAD_RE.test(id)
-      )
-    },
     transform: {
       filter: {
+        id: {
+          include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
+          exclude: [VUE_NON_SCRIPT_BLOCK_RE, /^virtual:/, DIST_DIR_RE, UNHEAD_LIB_RE, NUXT_HEAD_RE],
+        },
         code: { include: UnheadVueRE },
       },
       handler (code, id, meta?: unknown) {

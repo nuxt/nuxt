@@ -15,15 +15,15 @@ declare module '#build/css.mjs'
 declare module '#build/error-component.mjs'
 
 declare module '#build/fetch' {
-  const $fetch: import('nitro/types').$Fetch
+  const $fetch: import('./app/types/fetch').TypedFetch
   export { $fetch }
 }
 declare module '#build/fetch.client.mjs' {
-  const $fetch: import('nitro/types').$Fetch
+  const $fetch: import('./app/types/fetch').TypedFetch
   export { $fetch }
 }
 declare module '#build/fetch.server.mjs' {
-  const $fetch: import('nitro/types').$Fetch
+  const $fetch: import('./app/types/fetch').TypedFetch
   export { $fetch }
 }
 declare module '#build/fetch-setup'
@@ -47,6 +47,9 @@ declare module '#build/plugins.client.mjs'
 declare module '#build/plugins.server.mjs'
 declare module '#build/root-component.mjs'
 declare module '#build/route-rules.mjs'
+declare module '#build/server-routes' {
+  export type { ErrorBody, GeneratedServerRoutes, Methods, Path, RequestBody, RequestHeaders, RequestQuery, Requires, Response, ResponseHeaders, StrictFetchPaths, ValidInput } from './build-stub-server-routes'
+}
 declare module '#build/test-component-wrapper.mjs'
 declare module '#build/unhead-options.mjs'
 declare module '#build/unhead.config.mjs'
@@ -55,4 +58,3 @@ declare module '#components'
 declare module '#imports'
 declare module '#app-manifest'
 declare module '#internal/*'
-declare module '#spa-template'

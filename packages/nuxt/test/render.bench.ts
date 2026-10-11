@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
-import { beforeAll, bench, describe, expect } from 'vitest'
+import { beforeAll, describe, expect, test } from 'vitest'
 import { join } from 'pathe'
 import { x } from 'tinyexec'
 import { build, loadNuxt } from 'nuxt'
@@ -33,10 +33,12 @@ describe.todo('render', () => {
     await nuxt.close()
   }, 200_000)
 
-  bench('index route in the basic test fixture', async () => {
-    const res = await x('node', [join(outputDir, 'server/index.mjs')], {
-      nodeOptions: { stdio: 'pipe' },
-    })
-    expect(res.stdout).toContain('Hello Nuxt 3!')
+  test('index route in the basic test fixture', async ({ bench }) => {
+    await bench('index route in the basic test fixture', async () => {
+      const res = await x('node', [join(outputDir, 'server/index.mjs')], {
+        nodeOptions: { stdio: 'pipe' },
+      })
+      expect(res.stdout).toContain('Hello Nuxt 3!')
+    }).run()
   })
 })

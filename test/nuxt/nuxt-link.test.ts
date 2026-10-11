@@ -54,6 +54,47 @@ describe('useLink', () => {
     el.unmount()
   })
 
+  it('useLink resolves a relative path against the current route', async () => {
+    router.addRoute({
+      name: 'use-link-sibling',
+      path: '/use-link-nested/sibling',
+      component: defineComponent({ setup: () => () => h('div', 'sibling') }),
+    })
+    router.addRoute({
+      name: 'use-link-nested',
+      path: '/use-link-nested/child',
+      component: defineComponent({ setup: () => () => h('div', 'child') }),
+    })
+
+    const el = await mountSuspended(defineComponent({
+      setup: () => () => h(NuxtLink, { to: 'sibling', id: 'link' }, () => 'sibling'),
+    }))
+    await navigateTo('/use-link-nested/child')
+    await waitForRoute('/use-link-nested/child')
+
+    const href = (NuxtLink as any).useLink({ to: 'sibling' }).href.value
+    expect(href).toBe('/use-link-nested/sibling')
+    expect(href).toBe(router.resolve('sibling').href)
+    expect(el.get('#link').attributes('href')).toBe(href)
+
+    el.unmount()
+    router.removeRoute('use-link-nested')
+    router.removeRoute('use-link-sibling')
+  })
+
+  it('useLink only resolves against the router for relative paths', () => {
+    const resolve = vi.spyOn(router, 'resolve')
+    try {
+      expect((NuxtLink as any).useLink({ to: '/use-link-target' }).href.value).toBe('/use-link-target')
+      expect(resolve).not.toHaveBeenCalled()
+
+      expect((NuxtLink as any).useLink({ to: 'use-link-target' }).href.value).toBe('/use-link-target')
+      expect(resolve).toHaveBeenCalled()
+    } finally {
+      resolve.mockRestore()
+    }
+  })
+
   it('useLink navigate using resolveDynamicComponent works', async () => {
     const el = await mountSuspended(defineComponent({
       setup () {

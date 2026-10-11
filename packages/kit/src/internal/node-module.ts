@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { normalize } from 'pathe'
-import { readPackageJSON } from 'pkg-types'
+import { readPackageJSON } from './package-json.ts'
 import type { PackageJson } from 'pkg-types'
 
 type Exports = Exclude<PackageJson['exports'], undefined>

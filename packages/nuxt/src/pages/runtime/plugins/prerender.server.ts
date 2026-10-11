@@ -1,6 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { joinURL } from 'ufo'
-import type { NitroRouteRules } from 'nitro/types'
+import type { AppRouteRules } from '@nuxt/schema'
 
 import { defineNuxtPlugin } from '#app/nuxt'
 import type { ObjectPlugin, Plugin } from '#app/nuxt'
@@ -11,8 +11,8 @@ import { crawlLinks } from '#build/nuxt.config.mjs'
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
 // hoisted so a circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export
-function routeRulesMatcher (path: string): NitroRouteRules {
-  return (_routeRulesMatcher as (path: string) => NitroRouteRules)(path)
+function routeRulesMatcher (path: string): AppRouteRules {
+  return (_routeRulesMatcher as (path: string) => AppRouteRules)(path)
 }
 
 let routes: string[]

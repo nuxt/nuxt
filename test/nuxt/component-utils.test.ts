@@ -1,8 +1,27 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { getFragmentHTML } from '../../packages/nuxt/src/app/components/utils'
+import { renderList } from 'vue'
+import { getFragmentHTML, vforToArray } from '../../packages/nuxt/src/app/components/utils'
+
+describe('vforToArray', () => {
+  it('matches renderList semantics for number sources', () => {
+    expect(vforToArray(3)).toEqual([1, 2, 3])
+    expect(vforToArray(3)).toEqual(renderList(3, (item: number) => item))
+  })
+
+  it('matches renderList semantics for string, array and iterable sources', () => {
+    expect(vforToArray('ab')).toEqual(renderList('ab', (item: string) => item))
+    expect(vforToArray(['a', 'b'])).toEqual(renderList(['a', 'b'], (item: string) => item))
+    expect(vforToArray(new Set(['a', 'b']))).toEqual(renderList(new Set(['a', 'b']), (item: string) => item))
+    expect(vforToArray({ a: 1, b: 2 })).toEqual(renderList({ a: 1, b: 2 }, (item: number) => item))
+  })
+})
 
 describe('getFragmentHTML', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('walks large fragments without overflowing the call stack', () => {
     const fragment = document.createDocumentFragment()
     const start = document.createComment('[')
@@ -38,5 +57,39 @@ describe('getFragmentHTML', () => {
     expect(getFragmentHTML(start, true)).toEqual([
       '<div>before<span data-island-slot="default"></span>after</div>',
     ])
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33809
+  it('clears hydrated client component contents', () => {
+    const fragment = document.createDocumentFragment()
+    const start = document.createComment('[')
+    const element = document.createElement('div')
+
+    element.innerHTML = '<div data-island-uid="1" data-island-component="v-0-0-0"><!--teleport start anchor--><button>hydrated</button><!--teleport anchor--></div>'
+    fragment.append(start, element, document.createComment(']'))
+
+    expect(getFragmentHTML(start, true)).toEqual([
+      '<div><div data-island-uid="1" data-island-component="v-0-0-0"></div></div>',
+    ])
+  })
+
+  // cloning a live `<img>` starts a second load of its `src`
+  it('does not clone live nodes', () => {
+    const cloneNode = vi.spyOn(Node.prototype, 'cloneNode')
+
+    const fragment = document.createDocumentFragment()
+    const start = document.createComment('[')
+    const withSlot = document.createElement('div')
+    const withoutSlot = document.createElement('div')
+
+    withSlot.innerHTML = '<img src="/island-asset.svg"><span data-island-slot="default">slot content</span>'
+    withoutSlot.innerHTML = '<img src="/island-asset.svg">'
+    fragment.append(start, withSlot, withoutSlot, document.createComment(']'))
+
+    expect(getFragmentHTML(start, true)).toEqual([
+      '<div><img src="/island-asset.svg"><span data-island-slot="default"></span></div>',
+      '<div><img src="/island-asset.svg"></div>',
+    ])
+    expect(cloneNode).not.toHaveBeenCalled()
   })
 })

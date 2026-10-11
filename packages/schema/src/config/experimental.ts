@@ -4,7 +4,12 @@ import { defineResolvers } from '../utils/definition.ts'
 export default defineResolvers({
   future: {
     compatibilityVersion: {
-      $resolve: val => typeof val === 'number' ? val as 4 | 5 : 5,
+      $resolve: (val) => {
+        if (val !== undefined && val !== 5) {
+          schemaDiagnostics.NUXT_B5029({ value: String(val) })
+        }
+        return 5 as const
+      },
     },
     multiApp: false,
     typescriptBundlerResolution: {
@@ -62,6 +67,9 @@ export default defineResolvers({
     },
   },
   experimental: {
+    strictRouteTypes: {
+      $resolve: val => val === 'isomorphic' || typeof val === 'boolean' ? val : false,
+    },
     runtimeBaseURL: false,
     decorators: false,
     asyncEntry: {
@@ -100,16 +108,30 @@ export default defineResolvers({
      * - `true`: extract the payload to a `_payload.json` file for both the initial render and client-side navigation.
      * - `false`: disable payload extraction entirely; the payload is always inlined in the HTML.
      *
-     * Defaults to `true`, or `'client'` when `future.compatibilityVersion` is `5` or higher. It is forced to `false` when `ssr` is disabled.
+     * Defaults to `'client'`. It is forced to `false` when `ssr` is disabled.
      * @see [Payload Extraction documentation](https://nuxt.com/docs/getting-started/prerendering#payload-extraction)
      */
     payloadExtraction: {
       $resolve: async (val, get) => {
         if ((await get('ssr')) === false) { return false }
         if (val === 'client' || typeof val === 'boolean') { return val }
-        return (await get('future.compatibilityVersion')) >= 5 ? 'client' as const : true
+        return 'client' as const
       },
     },
+    /**
+     * Render the error page in the Nuxt renderer itself when a server render fails, rather than
+     * handing the error to the server runtime and re-entering the renderer over an internal request.
+     *
+     * The error page is rendered in process, on the same request event, so the response keeps the
+     * headers and cookies the failed render had already written. Page errors return the error page
+     * and server route errors return JSON. When disabled, the request headers determine the format.
+     *
+     * @default true
+     */
+    inlineErrorRendering: {
+      $resolve: val => typeof val === 'boolean' ? val : true,
+    },
+
     /**
      * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
      *
@@ -130,6 +152,23 @@ export default defineResolvers({
         })
       },
     },
+
+    /**
+     * Respond with an early 404 error for requests whose path cannot match any page route,
+     * without loading the Vue app, its plugins or middleware on the server.
+     *
+     * Page routes (including aliases) are converted to route patterns at build time and
+     * requests are checked against them before server-side rendering begins.
+     *
+     * This is opt-in as it can break apps that rely on runtime routing: pages added
+     * dynamically with `router.addRoute()` (on the server or the client), or route
+     * middleware that redirects unknown paths to existing ones. It also applies to
+     * `ssr: false` routes, which respond with a 404 error rather than the SPA shell when
+     * no page can match. The option is disabled automatically in development, when using
+     * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
+     * file may modify `routes`.
+     */
+    early404: false,
 
     clientFallback: false,
     crossOriginPrefetch: false,
@@ -154,30 +193,21 @@ export default defineResolvers({
     },
     localLayerAliases: true,
     typedPages: {
-      $resolve: async (val, get) => {
-        if (typeof val === 'boolean') {
-          return val
-        }
-        return (await get('future.compatibilityVersion')) >= 5
-      },
+      $resolve: val => typeof val === 'boolean' ? val : true,
+    },
+    serverPathFallback: {
+      $resolve: val => typeof val === 'boolean' ? val : true,
     },
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {
-      $resolve: async (val, get) => {
+      $resolve: (val) => {
         const validOptions = new Set(['chokidar', 'parcel', 'chokidar-granular', 'builder'] as const)
         type WatcherOption = typeof validOptions extends Set<infer Option> ? Option : never
         if (typeof val === 'string' && validOptions.has(val as WatcherOption)) {
           return val as WatcherOption
         }
-        if ((await get('future.compatibilityVersion')) >= 5) {
-          return 'builder' as const
-        }
-        const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
-        if (srcDir === rootDir) {
-          return 'chokidar-granular' as const
-        }
-        return 'chokidar' as const
+        return 'builder' as const
       },
     },
     asyncContext: false,
@@ -190,8 +220,8 @@ export default defineResolvers({
     },
     extraPageMetaExtractionKeys: [],
     extractSerializablePageMeta: {
-      async $resolve (val, get) {
-        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      $resolve (val) {
+        return typeof val === 'boolean' ? val : true
       },
     },
     sharedPrerenderData: {
@@ -213,8 +243,8 @@ export default defineResolvers({
       },
       useState: {
         resetOnClear: {
-          $resolve: async (val, get) => {
-            return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+          $resolve: (val) => {
+            return typeof val === 'boolean' ? val : true
           },
         },
       },
@@ -222,6 +252,11 @@ export default defineResolvers({
     },
     clientNodeCompat: false,
     navigationRepaint: true,
+    navigateToEarlyReturn: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
+      },
+    },
     buildCache: false,
     normalizeComponentNames: {
       $resolve: (val) => {
@@ -229,8 +264,8 @@ export default defineResolvers({
       },
     },
     normalizePageNames: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
       },
     },
     spaLoadingTemplateLocation: {
@@ -278,14 +313,11 @@ export default defineResolvers({
     },
     // TODO: remove this option, including from the schema types, before Nuxt 5 is released
     parseErrorData: {
-      $resolve: async (val, get) => {
-        if ((await get('future.compatibilityVersion')) >= 5) {
-          if (val === false) {
-            schemaDiagnostics.NUXT_B5016()
-          }
-          return true
+      $resolve: (val) => {
+        if (val === false) {
+          schemaDiagnostics.NUXT_B5016()
         }
-        return typeof val === 'boolean' ? val : true
+        return true
       },
     },
     enforceModuleCompatibility: false,
@@ -301,8 +333,8 @@ export default defineResolvers({
       },
     },
     nitroAutoImports: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
     ssrStreaming: {
@@ -333,7 +365,7 @@ export default defineResolvers({
         const builder = await get('builder')
         if (builder !== 'vite' && (builder as string) !== '@nuxt/vite-builder') {
           if (val === true) {
-            console.warn('[nuxt] `experimental.nitroViteEnvironment` is only compatible with `@nuxt/vite-builder`. Disabling.')
+            schemaDiagnostics.NUXT_B5027()
           }
           return false
         }
@@ -341,13 +373,13 @@ export default defineResolvers({
       },
     },
     asyncCallHook: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) < 5
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
       },
     },
     clientNodePlaceholder: {
-      $resolve: async (val, get) => {
-        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : true
       },
     },
     clearBuildHooks: true,

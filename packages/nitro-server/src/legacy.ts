@@ -24,7 +24,7 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
     for (const builder of ['webpack', 'rspack'] as const) {
       nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
         if (name === 'server') {
-          nitro.options.virtual['nuxt/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
+          nitro.options.virtual['nuxt/internal/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
         }
       })
       nuxt.hook(`${builder}:compiled`, () => {
@@ -67,8 +67,11 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
       await prerender(nitro)
 
       logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
+      try {
+        await build(nitro)
+      } finally {
+        logger.wrapAll()
+      }
 
       if (nitro.options.static) {
         const dist = resolve(nuxt.options.rootDir, 'dist')

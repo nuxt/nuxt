@@ -11,14 +11,17 @@
     "nuxt": "workspace:*"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-decorators": "catalog:dev",
+    "@babel/plugin-syntax-jsx": "catalog:dev",
     "@vue/devtools-api": "catalog:dev",
     "defu": "catalog:build",
+    "nested-dep": "file:./deps/nested-dep",
     "postcss": "catalog:build",
     "ufo": "catalog:build",
     "unplugin": "catalog:build",
     "vue": "catalog:app-runtime"
   },
   "engines": {
-    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
   }
 }

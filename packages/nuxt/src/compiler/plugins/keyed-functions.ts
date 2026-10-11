@@ -12,7 +12,7 @@ import type { KeyedFunction } from '@nuxt/schema'
 import type { ESTree } from 'rolldown/utils'
 
 import { parseStaticImports } from '../../core/utils/static-imports.ts'
-import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, isWhitespace, stripExtension } from '../../utils.ts'
+import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE, isWhitespace, stripExtension } from '../../utils.ts'
 import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 
 interface KeyedFunctionsOptions {
@@ -25,7 +25,6 @@ interface KeyedFunctionsOptions {
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
-const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 const NUXT_INJECTED_MARKER = '/* nuxt-injected */'
 

@@ -104,6 +104,18 @@ describe('component type templates', () => {
     expect(types).toContain('Ends early * / still documented')
     expect(types).not.toMatch(/\*\/\nexport const UnsafeDocs:/)
   })
+
+  it('keeps the componentName literal union open to arbitrary strings', async () => {
+    const { types } = await renderTemplates([
+      makeComponent({
+        pascalName: 'GlobalThing',
+        filePath: '/root/components/global/GlobalThing.vue',
+        global: true,
+      }),
+    ])
+
+    expect(types).toContain('componentName: "GlobalThing" | "LazyGlobalThing" | (string & {})')
+  })
 })
 
 describe('builtin component metadata', () => {

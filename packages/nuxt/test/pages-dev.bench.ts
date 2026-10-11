@@ -1,4 +1,4 @@
-import { bench, describe } from 'vitest'
+import { describe, test } from 'vitest'
 import { createPagesContext } from '../src/pages/utils.ts'
 
 const pagesDir = 'pages'
@@ -105,12 +105,16 @@ describe(`dev server simulation - small app (${smallAppPaths.length} files)`, ()
   const sim = createSimulator(smallAppPaths, { roots })
   sim.coldStart()
 
-  bench(`cold start (initial build + emit) - small (${smallAppPaths.length} files)`, () => {
-    sim.coldStart()
+  test(`cold start (initial build + emit) - small (${smallAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`cold start (initial build + emit) - small (${smallAppPaths.length} files)`, () => {
+      sim.coldStart()
+    }).run()
   })
 
-  bench(`emit (no fs change) - small (${smallAppPaths.length} files)`, () => {
-    sim.emit()
+  test(`emit (no fs change) - small (${smallAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`emit (no fs change) - small (${smallAppPaths.length} files)`, () => {
+      sim.emit()
+    }).run()
   })
 })
 
@@ -118,22 +122,30 @@ describe(`dev server simulation - medium app (${mediumAppPaths.length} files)`, 
   const sim = createSimulator(mediumAppPaths, { roots })
   sim.coldStart()
 
-  bench(`cold start (initial build + emit) - medium (${mediumAppPaths.length} files)`, () => {
-    sim.coldStart()
+  test(`cold start (initial build + emit) - medium (${mediumAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`cold start (initial build + emit) - medium (${mediumAppPaths.length} files)`, () => {
+      sim.coldStart()
+    }).run()
   })
 
-  bench(`emit (no fs change) - medium (${mediumAppPaths.length} files)`, () => {
-    sim.emit()
+  test(`emit (no fs change) - medium (${mediumAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`emit (no fs change) - medium (${mediumAppPaths.length} files)`, () => {
+      sim.emit()
+    }).run()
   })
 
-  bench(`add file + emit - medium (${mediumAppPaths.length} files)`, () => {
-    sim.addFile(newFile)
-    sim.removeFile(newFile) // reset
+  test(`add file + emit - medium (${mediumAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`add file + emit - medium (${mediumAppPaths.length} files)`, () => {
+      sim.addFile(newFile)
+      sim.removeFile(newFile) // reset
+    }).run()
   })
 
-  bench(`remove file + emit - medium (${mediumAppPaths.length} files)`, () => {
-    sim.removeFile(mediumAppPaths[Math.floor(mediumAppPaths.length / 2)]!)
-    sim.addFile(mediumAppPaths[Math.floor(mediumAppPaths.length / 2)]!) // reset
+  test(`remove file + emit - medium (${mediumAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`remove file + emit - medium (${mediumAppPaths.length} files)`, () => {
+      sim.removeFile(mediumAppPaths[Math.floor(mediumAppPaths.length / 2)]!)
+      sim.addFile(mediumAppPaths[Math.floor(mediumAppPaths.length / 2)]!) // reset
+    }).run()
   })
 })
 
@@ -141,21 +153,29 @@ describe(`dev server simulation - large app (${largeAppPaths.length} files)`, ()
   const sim = createSimulator(largeAppPaths, { roots })
   sim.coldStart()
 
-  bench(`cold start (initial build + emit) - large (${largeAppPaths.length} files)`, () => {
-    sim.coldStart()
+  test(`cold start (initial build + emit) - large (${largeAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`cold start (initial build + emit) - large (${largeAppPaths.length} files)`, () => {
+      sim.coldStart()
+    }).run()
   })
 
-  bench(`emit (no fs change) - large (${largeAppPaths.length} files)`, () => {
-    sim.emit()
+  test(`emit (no fs change) - large (${largeAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`emit (no fs change) - large (${largeAppPaths.length} files)`, () => {
+      sim.emit()
+    }).run()
   })
 
-  bench(`add file + emit - large (${largeAppPaths.length} files)`, () => {
-    sim.addFile(newFile)
-    sim.removeFile(newFile) // reset
+  test(`add file + emit - large (${largeAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`add file + emit - large (${largeAppPaths.length} files)`, () => {
+      sim.addFile(newFile)
+      sim.removeFile(newFile) // reset
+    }).run()
   })
 
-  bench(`remove file + emit - large (${largeAppPaths.length} files)`, () => {
-    sim.removeFile(existingFile)
-    sim.addFile(existingFile) // reset
+  test(`remove file + emit - large (${largeAppPaths.length} files)`, async ({ bench }) => {
+    await bench(`remove file + emit - large (${largeAppPaths.length} files)`, () => {
+      sim.removeFile(existingFile)
+      sim.addFile(existingFile) // reset
+    }).run()
   })
 })
