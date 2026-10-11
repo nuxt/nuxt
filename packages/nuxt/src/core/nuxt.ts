@@ -331,6 +331,8 @@ async function initNuxt (nuxt: Nuxt) {
         filename: 'types/builder-env.d.ts',
         dependsOn: [],
         getContents: () => genImport(environmentTypes),
+      }, {
+        nitro: nuxt.options.experimental.nitroViteEnvironment,
       })
     }
   }
