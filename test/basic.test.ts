@@ -2029,6 +2029,14 @@ describe.runIf(isDev && !isWebpack)('css links', () => {
     const links = html.match(/<link[^>]+global\.css[^>]*>/g) || []
     expect(links).toHaveLength(1)
   })
+
+  it('should link null-byte virtual css through `/@id/`', async () => {
+    const html = await $fetch<string>('/')
+    expect(html).not.toContain('\0')
+    const links = [...html.matchAll(/<link[^>]+href="([^"]*virtual-nul\.css)"[^>]*>/g)].map(m => m[1])
+    expect(links).toEqual(['/_nuxt/@id/__x00__/virtual-nul.css'])
+    expect(await $fetch<string>(links[0]!, { headers: { accept: 'text/css' } })).toMatch(/--virtual-nul:\s*red/)
+  })
 })
 
 describe.skipIf(isDev)('module identifiers', () => {
