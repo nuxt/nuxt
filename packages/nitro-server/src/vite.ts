@@ -29,15 +29,18 @@ const DEV_CLIENT_CSS_SEED = 'nuxt:dev-client-css:seed'
  * so this is eventually consistent rather than a strict per-request subset
  * (which nothing tracks).
  */
-function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): { urls: string[], files: Set<string> } {
+export function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): { urls: string[], files: Set<string> } {
   const urls = new Set<string>()
   const files = new Set<string>()
   for (const [mod, node] of moduleGraph.urlToModuleMap.entries()) {
     if (!IS_CSS_RE.test(mod) || 'raw' in getQuery(mod)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.url && 'raw' in getQuery(i.url))) { continue }
+    if (node.file) {
+      if (files.has(node.file)) { continue }
+      files.add(node.file)
+    }
     urls.add(mod)
-    if (node.file) { files.add(node.file) }
   }
   return { urls: [...urls], files }
 }
@@ -77,7 +80,7 @@ function toFsUrl (path: string): string {
  * `/@fs/...` url for the same file are different strings that would otherwise
  * both be emitted as `<link>` tags.
  */
-function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string[] {
+export function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string[] {
   const { urls, files } = collectSsrGraphCss(moduleGraph)
   return [...urls, ...resolveGlobalCss(nuxt).filter(e => !files.has(e.file)).map(e => e.url)]
 }

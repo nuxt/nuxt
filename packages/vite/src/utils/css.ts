@@ -62,8 +62,11 @@ export function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph):
     if (!isCSS(url) || 'raw' in getQuery(url)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.id && 'raw' in getQuery(i.id))) { continue }
+    if (node.file) {
+      if (files.has(node.file)) { continue }
+      files.add(node.file)
+    }
     urls.add(url)
-    if (node.file) { files.add(node.file) }
   }
 
   for (const entry of resolveGlobalCss(nuxt)) {
