@@ -388,12 +388,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         generatedCode: {
           symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351
         },
-        sourcemapExcludeSources: nuxt.options.sourcemap.server === 'nosource',
       },
       plugins: [],
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
+
+  if (nuxt.options.sourcemap.server === 'nosource') {
+    nitroConfig.rollupConfig!.output!.sourcemapExcludeSources ??= true
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.serverAppConfig === true && nitroConfig.imports) {

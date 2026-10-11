@@ -39,7 +39,7 @@ describe('vite sourcemap options', () => {
 
     const server = ssrEnvironment(nuxt, 'server.js').build
     expect(server.sourcemap).toBe(value)
-    expect(server.rolldownOptions.output.sourcemapExcludeSources).toBe(false)
+    expect(server.rolldownOptions.output).not.toHaveProperty('sourcemapExcludeSources')
   })
 
   it('generates sourcemaps without sources for `nosource`', () => {

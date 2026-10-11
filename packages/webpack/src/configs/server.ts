@@ -24,7 +24,7 @@ export async function server (ctx: WebpackConfigContext) {
   ])
 }
 
-function serverPreset (ctx: WebpackConfigContext) {
+export function serverPreset (ctx: WebpackConfigContext) {
   ctx.config.output!.filename = 'server.mjs'
 
   if (ctx.nuxt.options.sourcemap.server) {
