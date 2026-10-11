@@ -409,7 +409,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             nuxtApp['~restoreDeferredRoute'] = undefined
             // Assign synchronously: `router.replace` only finalises `currentRoute` a microtask
             // later, after mounted hooks flush. Resolve fresh so `route.name` survives.
-            ;(router.currentRoute as Ref<RouteLocationNormalizedLoadedGeneric>).value = router.resolve(initialURL) as RouteLocationNormalizedLoadedGeneric
+            const currentRoute = router.currentRoute as Ref<RouteLocationNormalizedLoadedGeneric>
+            const restoredRoute = router.resolve(initialURL) as RouteLocationNormalizedLoadedGeneric
+            // it is the same page, so keep the meta the hydrated route ended up with (e.g. a layout
+            // set by `setPageLayout` in middleware) rather than the static page meta (#36429)
+            restoredRoute.meta = currentRoute.value.meta
+            currentRoute.value = restoredRoute
             syncCurrentRoute()
             router.replace({ ...resolvedInitialRoute, force: true }).catch(() => {})
           }
