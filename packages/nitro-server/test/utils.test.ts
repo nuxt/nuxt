@@ -1,6 +1,6 @@
 import { matchesGlob } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
+import { getLayerNodeModulesExcludePattern, getSsrResolveConditions, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
@@ -165,5 +165,20 @@ describe('toTranspileNoExternal', () => {
     expect(re.test('C:\\code\\nuxt\\image\\src\\runtime\\server\\routes\\_ipx.ts')).toBe(true)
     expect(re.test('C:/code/nuxt/image/src/runtime/server/routes/_ipx.ts')).toBe(true)
     expect(re.test('C:\\code\\nuxt\\image\\node_modules\\sharp\\lib\\index.js')).toBe(false)
+  })
+})
+
+describe('getSsrResolveConditions', () => {
+  it('keeps conditions already set by nitro (miniflare dev runner)', () => {
+    const conditions = getSsrResolveConditions(['workerd', 'worker', 'development'], ['development', 'node'])
+    expect(conditions).toEqual(['workerd', 'worker', 'development', 'import'])
+  })
+
+  it('falls back to export conditions', () => {
+    expect(getSsrResolveConditions(undefined, ['development', 'node'])).toEqual(['development', 'node', 'import'])
+  })
+
+  it('does not duplicate the import condition', () => {
+    expect(getSsrResolveConditions(undefined, ['node', 'import'])).toEqual(['node', 'import'])
   })
 })

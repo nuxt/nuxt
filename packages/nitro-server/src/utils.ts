@@ -132,9 +132,12 @@ function toFsDriverGlob (pattern: string): string | undefined {
  * `'import'` is required so that packages whose top-level `exports` map is
  * keyed only by `import`/`require` (notably `vue` and `vue-router`) resolve
  * when the only available copy is nested under `nuxt`'s own `node_modules`.
+ *
+ * Conditions already set on the environment by nitro take precedence (e.g. `workerd`
+ * without `node` for the miniflare dev runner); otherwise `exportConditions` are used.
  */
-export function getSsrResolveConditions (exportConditions?: string[]): string[] {
-  const conditions = [...exportConditions || []]
+export function getSsrResolveConditions (currentConditions: string[] | undefined, exportConditions?: string[]): string[] {
+  const conditions = [...currentConditions ?? exportConditions ?? []]
   if (!conditions.includes('import')) {
     conditions.push('import')
   }

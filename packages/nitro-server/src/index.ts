@@ -888,7 +888,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     configEnvironment (name, config) {
       if (name === 'ssr') {
         config.resolve ||= {}
-        config.resolve.conditions = getSsrResolveConditions(nitro.options.exportConditions)
+        config.resolve.conditions = getSsrResolveConditions(config.resolve.conditions, nitro.options.exportConditions)
       }
     },
   })
