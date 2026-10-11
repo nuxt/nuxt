@@ -85,4 +85,16 @@ describe('nitro config', () => {
       expect(errorChannel()).toBe('export {}')
     })
   })
+
+  it('excludes sources from server sourcemaps for `nosource`', async () => {
+    await withNitro({ sourcemap: { server: 'nosource' } }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.rollupConfig!.output!.sourcemapExcludeSources).toBe(true)
+    })
+  })
+
+  it.for([true, 'hidden'] as const)('leaves `sourcemapExcludeSources` unset for `%s`', async (server) => {
+    await withNitro({ sourcemap: { server } }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.rollupConfig!.output).not.toHaveProperty('sourcemapExcludeSources')
+    })
+  })
 })
