@@ -40,4 +40,20 @@ describe('payloadExtraction: \'always\'', () => {
       fetchSpy.mockRestore()
     }
   })
+
+  it('keeps the query of on-demand payloads and drops it for prerendered payloads', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('[{"data":1},{}]')))
+    const payloadFetchURL = (path: string) => fetchSpy.mock.calls.map(([url]) => String(url)).find(url => url.startsWith(`${path}/_payload.json`))
+    try {
+      // on-demand payloads are rendered for the query the page receives
+      await loadPayload('/dynamic/thing?q=red')
+      expect(new URL(payloadFetchURL('/dynamic/thing')!, 'http://localhost').searchParams.get('q')).toBe('red')
+
+      // prerendered payloads are rendered once per path
+      await loadPayload('/pre/thing?q=red')
+      expect(new URL(payloadFetchURL('/pre/thing')!, 'http://localhost').searchParams.has('q')).toBe(false)
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
 })

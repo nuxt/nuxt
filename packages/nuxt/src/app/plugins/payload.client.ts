@@ -3,7 +3,7 @@ import type { ResolvableLink } from 'unhead/types'
 
 import { defineNuxtPlugin } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
-import { hasStaticPayload, isCachedPayloadRoute, loadPayload } from '../composables/payload'
+import { isCachedPayloadRoute, isOnDemandPayloadRoute, loadPayload } from '../composables/payload'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
@@ -20,8 +20,8 @@ const forwardedHintEntries = new Set<ActiveHeadEntryLike>()
 const forwardedHintHrefs = new Set<string>()
 
 // with `payloadExtraction: 'always'`, payloads prefetched for routes that are neither
-// prerendered nor cached are kept here and consumed once on navigation, so navigation
-// never blocks on an on-demand payload render
+// prerendered nor cached are kept here, by path and query, until the next navigation,
+// so navigation never blocks on an on-demand payload render
 const prefetchedPayloads = new Map<string, Record<string, any>>()
 
 const MAX_HINTS_PER_ROUTE = 2
@@ -85,16 +85,19 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         forwardedHintHrefs.clear()
       })
     }
+    if (payloadExtraction === 'always') {
+      // prefetched payloads only serve the next navigation, which bounds both their memory and their age
+      router.afterEach(() => prefetchedPayloads.clear())
+    }
     router.beforeResolve(async (to, from) => {
-      const queryAware = isCachedPayloadRoute(to.path)
+      const onDemand = payloadExtraction === 'always' && await isOnDemandPayloadRoute(to.path)
+      // cached and on-demand payloads are rendered for the requested query
+      const queryAware = onDemand || isCachedPayloadRoute(to.path)
       const toURL = queryAware ? withoutFragment(to.fullPath) : to.path
       const fromURL = queryAware ? withoutFragment(from.fullPath) : from.path
       if (toURL === fromURL) { return }
-      let payload = prefetchedPayloads.get(toURL)
-      prefetchedPayloads.delete(toURL)
-      if (!payload && (payloadExtraction !== 'always' || await hasStaticPayload(toURL))) {
-        payload = await loadPayload(toURL) || undefined
-      }
+      // an on-demand payload is only used when it was prefetched, so navigation never waits on a render
+      const payload = onDemand ? prefetchedPayloads.get(prefetchGroup(to.fullPath)) : await loadPayload(toURL)
       if (!payload) { return }
       if (purgeCachedData) {
         for (const key of staticKeysToRemove) {
@@ -150,15 +153,15 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           group,
           run: async (signal, promoted) => {
             if (signal.aborted) { return }
+            const onDemand = payloadExtraction === 'always' && await isOnDemandPayloadRoute(url)
             // TODO: use preloadPayload instead once we can support preloading islands too
             const payload = await loadPayload(url, { signal, promoted }).catch(() => {
               stateDiagnostics.NUXT_E7003({ url })
             })
-            if (payload && !signal.aborted && payloadExtraction === 'always') {
-              const { pathname } = new URL(url, window.location.href)
-              if (router.currentRoute.value.path !== pathname && !(await hasStaticPayload(pathname))) {
-                prefetchedPayloads.set(pathname, payload)
-              }
+            // keep an on-demand payload for the next navigation, unless the prefetch was cancelled
+            // or it targets the current route
+            if (onDemand && payload && !signal.aborted && group !== prefetchGroup(router.currentRoute.value.fullPath)) {
+              prefetchedPayloads.set(group, payload)
             }
             // a retained payload resolves onto its own route, which renders these hints itself
             if (signal.aborted || !head || !payload?.prefetchLinks?.length || group === prefetchGroup(router.currentRoute.value.fullPath)) { return }

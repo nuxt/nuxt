@@ -4,5 +4,8 @@
     <NuxtLink to="/data">
       data page
     </NuxtLink>
+    <NuxtLink to="/search?q=b">
+      search page
+    </NuxtLink>
   </div>
 </template>
