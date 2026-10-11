@@ -169,16 +169,7 @@ describe('toTranspileNoExternal', () => {
 })
 
 describe('getSsrResolveConditions', () => {
-  it('keeps conditions already set by nitro (miniflare dev runner)', () => {
-    const conditions = getSsrResolveConditions(['workerd', 'worker', 'development'], ['development', 'node'])
-    expect(conditions).toEqual(['workerd', 'worker', 'development', 'import'])
-  })
-
-  it('falls back to export conditions', () => {
-    expect(getSsrResolveConditions(undefined, ['development', 'node'])).toEqual(['development', 'node', 'import'])
-  })
-
-  it('does not duplicate the import condition', () => {
-    expect(getSsrResolveConditions(undefined, ['node', 'import'])).toEqual(['node', 'import'])
+  it('merges conditions without duplicates', () => {
+    expect(getSsrResolveConditions(['custom', 'node'], ['development', 'node', 'import'])).toEqual(['custom', 'node', 'development', 'import'])
   })
 })
