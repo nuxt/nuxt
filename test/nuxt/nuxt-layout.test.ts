@@ -444,6 +444,11 @@ describe('layout transition', () => {
 
     await expect.poll(() => nuxtApp['~transitionPromise']).toBeUndefined()
 
+    const scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => {})
+    await navigateTo('/settle-layout-a')
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+
+    scrollTo.mockRestore()
     el.unmount()
     router.removeRoute('settle-layout-a')
     router.removeRoute('settle-layout-b')
