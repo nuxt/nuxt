@@ -337,6 +337,11 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : false
       },
     },
+    typescriptPlugin: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
     ssrStreaming: {
       $resolve (val) {
         // Indexing crawlers only; `chrome-lighthouse` is intentionally absent
