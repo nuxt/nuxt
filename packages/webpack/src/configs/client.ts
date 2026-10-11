@@ -40,7 +40,7 @@ export function clientDevtool (ctx: WebpackConfigContext) {
     return
   }
 
-  ctx.config.devtool = prefix + 'eval-' + nosources + 'cheap-module-source-map'
+  ctx.config.devtool = prefix ? prefix + 'cheap-module-source-map' : 'eval-' + nosources + 'cheap-module-source-map'
 }
 
 function clientPerformance (ctx: WebpackConfigContext) {

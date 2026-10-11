@@ -36,6 +36,16 @@ describe('webpack devtool', () => {
   })
 
   it.each([
+    [true, 'eval-cheap-module-source-map'],
+    ['hidden', 'hidden-cheap-module-source-map'],
+  ] as const)('uses a valid client devtool in dev for `%s`', (value, devtool) => {
+    const ctx = createContext({ client: value, server: false }, true)
+    clientDevtool(ctx)
+    expect(ctx.config.devtool).toBe(devtool)
+    expect(() => impl.webpack.validate({ devtool })).not.toThrow()
+  })
+
+  it.each([
     [true, 'source-map'],
     ['hidden', 'hidden-source-map'],
     [false, false],
