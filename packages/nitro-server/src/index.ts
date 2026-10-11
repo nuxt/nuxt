@@ -758,8 +758,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // from this package rather than from `modulesDir`, where a package manager that does not hoist
   // may expose an unrelated version.
   const [ownTypePaths, ownNodeTypePaths] = await Promise.all([
-    resolveOwnTypePaths(h3PackageJson),
-    resolveOwnTypePaths(h3PackageJson, { entry: true }),
+    resolveOwnTypePaths(h3PackageJson, nuxt.options.modulesDir),
+    resolveOwnTypePaths(h3PackageJson, nuxt.options.modulesDir, { entry: true }),
   ])
   nitroConfig.typescript!.tsConfig!.compilerOptions ||= {}
   nitroConfig.typescript!.tsConfig!.compilerOptions.paths = {
@@ -1375,12 +1375,19 @@ function toRouteSegments (nodeKey: string): ServerRouteSegment[] {
   return segments.length ? segments : [{ type: 'static', value: '/' }]
 }
 
-async function resolveOwnTypePaths (h3PackageJson: string, options?: { entry?: boolean }): Promise<Record<string, [string]>> {
-  const [own, crossws] = await Promise.all([
+async function resolveOwnTypePaths (h3PackageJson: string, modulesDir: string[], options?: { entry?: boolean }): Promise<Record<string, [string]>> {
+  // `nitro/h3` re-exports `h3` v2, but the `h3` path above is v1, which would type a module's
+  // nitro v3 files against h3 v1. Point it at the copy nitro uses, when the project installs nitro.
+  const nitroPackageJson = resolveModulePath('nitro/package.json', { from: modulesDir.map(dir => pathToFileURL(withTrailingSlash(dir))), try: true })
+  const [own, crossws, nitroH3] = await Promise.all([
     resolveTypePaths(['nitropack/types', 'nitropack/runtime', 'nitropack', 'h3'], [fileURLToPath(new URL('.', import.meta.url))], options),
     resolveTypePaths(['crossws'], [dirname(h3PackageJson)], options),
+    nitroPackageJson ? resolveTypePaths(['h3'], [dirname(nitroPackageJson)], options) : [],
   ])
   const paths: Record<string, [string]> = Object.fromEntries([...own, ...crossws].map(([pkg, path]) => [pkg, [path]]))
+  for (const [, path] of nitroH3) {
+    paths['nitro/h3'] = [path]
+  }
   if (options?.entry) {
     // `nitropack/types` re-exports without a file extension, which `nodenext` does not resolve
     // https://github.com/nuxt/nuxt/issues/36516
