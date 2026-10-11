@@ -1148,6 +1148,50 @@ describe('routing utilities: `abortNavigation`', () => {
   it('should block navigation if no error is provided', () => {
     expect(abortNavigation()).toMatchInlineSnapshot('false')
   })
+
+  describe('aborted navigation', () => {
+    const abortMiddleware = defineNuxtRouteMiddleware(to => to.query.abort ? abortNavigation() : undefined)
+    let restoreRoutes = () => {}
+
+    beforeEach(() => {
+      const router = useRouter()
+      const catchall = router.getRoutes().find(route => route.name === 'catchall')
+      if (catchall) {
+        router.removeRoute('catchall')
+      }
+      router.addRoute({ name: 'abort-matched', path: '/abort-matched', component: defineComponent({ template: '<div />' }) })
+      restoreRoutes = () => {
+        router.removeRoute('abort-matched')
+        if (catchall) {
+          router.addRoute(catchall)
+        }
+      }
+      addRouteMiddleware(abortMiddleware, { global: true })
+    })
+
+    afterEach(async () => {
+      const globalMiddleware = useNuxtApp()._middleware.global
+      globalMiddleware.splice(globalMiddleware.indexOf(abortMiddleware), 1)
+      await clearError()
+      await navigateTo('/abort-matched')
+      restoreRoutes()
+    })
+
+    it('should not show a 404 for an unmatched route', async () => {
+      const error = useError()
+      await navigateTo('/abort-unmatched?abort=1')
+      expect(error.value).toBeUndefined()
+    })
+
+    it.each(['/abort-matched?abort=1', '/abort-unmatched-2?abort=1'])('should keep the current error when navigating to %s', async (target) => {
+      const error = useError()
+      await navigateTo('/abort-unmatched')
+      expect(error.value?.message).toBe('Page not found: /abort-unmatched')
+
+      await navigateTo(target)
+      expect(error.value?.message).toBe('Page not found: /abort-unmatched')
+    })
+  })
 })
 
 describe('routing utilities: `setPageLayout`', () => {
