@@ -113,15 +113,7 @@ const refreshOnFocus = defineUseAsyncDataAddon({
 
     return (asyncData) => {
       // 👈 run code *after* creating the `useAsyncData` instance
-      const focused = ref(false)
-      const onFocus = () => { focused.value = true }
-      const onBlur = () => { focused.value = false }
-      window.addEventListener('focus', onFocus)
-      window.addEventListener('blur', onBlur)
-      onScopeDispose(() => {
-        window.removeEventListener('focus', onFocus)
-        window.removeEventListener('blur', onBlur)
-      })
+      const focused = useWindowFocus()
 
       watch(focused, (focused) => {
         if (focused) { asyncData.refresh() }
