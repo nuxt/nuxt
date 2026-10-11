@@ -26,7 +26,7 @@ export async function client (ctx: WebpackConfigContext) {
   ])
 }
 
-function clientDevtool (ctx: WebpackConfigContext) {
+export function clientDevtool (ctx: WebpackConfigContext) {
   if (!ctx.nuxt.options.sourcemap.client) {
     ctx.config.devtool = false
     return
@@ -39,7 +39,7 @@ function clientDevtool (ctx: WebpackConfigContext) {
     return
   }
 
-  ctx.config.devtool = prefix + 'eval-cheap-module-source-map'
+  ctx.config.devtool = prefix ? prefix + 'cheap-module-source-map' : 'eval-cheap-module-source-map'
 }
 
 function clientPerformance (ctx: WebpackConfigContext) {
