@@ -3,7 +3,7 @@ import { directoryToURL, resolveAlias } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
-import type { EnvironmentModuleGraph } from 'vite'
+import type { EnvironmentModuleGraph, EnvironmentModuleNode } from 'vite'
 
 import { isCSS } from './index.ts'
 
@@ -58,10 +58,18 @@ export function collectGlobalCss (nuxt: Nuxt): string[] {
 export function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string[] {
   const urls = new Set<string>()
   const files = new Set<string>()
+  const seenModules = new Set<EnvironmentModuleNode>()
+  const seenIds = new Set<string>()
+
   for (const [url, node] of moduleGraph.urlToModuleMap.entries()) {
     if (!isCSS(url) || 'raw' in getQuery(url)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.id && 'raw' in getQuery(i.id))) { continue }
+    if (seenModules.has(node) || (node.id && seenIds.has(node.id))) { continue }
+    if (node.file && isCSS(node.file) && files.has(node.file)) { continue }
+
+    seenModules.add(node)
+    if (node.id) { seenIds.add(node.id) }
     urls.add(url)
     if (node.file) { files.add(node.file) }
   }
