@@ -1,7 +1,7 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
-import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { NavigationFailureType, START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory, isNavigationFailure } from 'vue-router'
 import { isSamePath, withBase, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin } from '#app/nuxt'
@@ -166,7 +166,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           delete nuxtApp._middlewareTo
         }
 
-        if (import.meta.client && !nuxtApp.isHydrating && error.value) {
+        if (import.meta.client && !nuxtApp.isHydrating && error.value && !isNavigationFailure(failure, NavigationFailureType.aborted | NavigationFailureType.cancelled)) {
           // Clear any existing errors
           await nuxtApp.runWithContext(clearError)
         }
@@ -370,8 +370,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       })
     }
 
-    router.afterEach((to) => {
-      if (to.matched.length === 0 && !error.value) {
+    router.afterEach((to, _from, failure) => {
+      if (to.matched.length === 0 && !error.value && !isNavigationFailure(failure, NavigationFailureType.aborted | NavigationFailureType.cancelled)) {
         return nuxtApp.runWithContext(() => showError(createError({
           status: 404,
           fatal: false,
