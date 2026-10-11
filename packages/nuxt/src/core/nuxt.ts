@@ -332,7 +332,8 @@ async function initNuxt (nuxt: Nuxt) {
         dependsOn: [],
         getContents: () => genImport(environmentTypes),
       }, {
-        nitro: nuxt.options.experimental.nitroViteEnvironment,
+        nuxt: true,
+        nitro: nuxt.options.experimental.nitroViteEnvironment && environmentTypes === 'vite/client',
       })
     }
   }
