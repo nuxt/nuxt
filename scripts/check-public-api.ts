@@ -1,0 +1,291 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, relative, resolve } from 'node:path'
+import process from 'node:process'
+
+interface PublicEntrypoint {
+  /**
+   * Packages whose types may appear in the emitted declarations. Anything else is a type we do
+   * not own, and therefore blocks us from changing the implementation of the utility that
+   * exposes it without a breaking change.
+   */
+  types: string[]
+  /**
+   * Packages the declarations import for side effects only, with no bindings. These bring in no
+   * names, but they do make the declarations depend on whatever that package augments, so they
+   * are tracked separately rather than ignored.
+   */
+  augmentations?: string[]
+}
+
+const entrypoints: Record<string, PublicEntrypoint> = {
+  'packages/kit/dist/index.d.mts': {
+    types: [
+      // Nuxt's own contract types. `@nuxt/schema` may itself depend on a third party where that
+      // third party is the concept (Vite's config type for `nuxt.options.vite`, and so on).
+      '@nuxt/schema',
+    ],
+    augmentations: [
+      // Left over from bundling `pkg-types`' declarations, whose type-only imports of `exsolve`
+      // are elided. `exsolve` is a hard dependency of kit, so consumers always have it.
+      'exsolve',
+    ],
+  },
+  // Schema describes configuration, so options that exist to configure a third party are typed
+  // by that third party on purpose. Anything here that Nuxt could describe itself is a TODO.
+  'packages/schema/dist/index.d.mts': {
+    types: [
+      // Bundlers, their plugins and loaders, and the Vue toolchain.
+      'vite',
+      '@vitejs/plugin-vue',
+      '@vitejs/plugin-vue-jsx',
+      'webpack',
+      'webpack-bundle-analyzer',
+      'webpack-dev-middleware',
+      'webpack-hot-middleware',
+      'css-minimizer-webpack-plugin',
+      'mini-css-extract-plugin',
+      'esbuild',
+      'esbuild-loader',
+      'oxc-transform',
+      'rollup-plugin-visualizer',
+      'vue-loader',
+      'pug',
+      'postcss',
+      'autoprefixer',
+      'cssnano',
+      'vue',
+      'vue-router',
+      '@vue/compiler-core',
+      '@vue/compiler-sfc',
+      '@vue/language-core',
+      '@unhead/vue/types',
+      '@unhead/vue/vite',
+      // Options passed straight through to the library they configure.
+      'chokidar',
+      'compatx',
+      'unctx/transform',
+      'h3',
+      // `TSConfig` models `tsconfig.json`, which is TypeScript's format rather than Nuxt's.
+      'pkg-types',
+      // `SchemaDefinition` and `Schema` are `untyped`'s schema format, which Nuxt exposes
+      // deliberately through `$schema` and `defineNuxtSchema`.
+      'untyped',
+      // `imports:context` hands out the auto-import transformer instance. An escape hatch, in the
+      // same category as `useNitro()`.
+      'unimport',
+    ],
+    augmentations: [
+      '@unhead/vue',
+      '@unhead/vue/server',
+      'vue-bundle-renderer/runtime',
+      'nitro/h3',
+      'hookable',
+    ],
+  },
+  // `@nuxt/schema/builder-env` declares `ImportMeta` globally, so anything it pulls in lands in
+  // every consuming project's global scope. It describes the bundler's `import.meta` inline
+  // today, and the empty list is what keeps it that way.
+  'packages/schema/dist/builder-env.d.mts': {
+    types: [],
+  },
+  // The runtime app: composables, components and the `NuxtApp` contract.
+  'packages/nuxt/dist/app/index.d.ts': {
+    types: [
+      // vue core
+      'vue',
+      'vue-router',
+      'vue-component-type-helpers',
+      // unhead
+      '@unhead/vue',
+      '@unhead/vue/types',
+      '@unhead/vue/client',
+      '@unhead/vue/server',
+      '@unhead/vue/scripts',
+      // `$fetch` + typed-fetch
+      'ofetch',
+      'fetchdts',
+      // Nuxt's own contract types.
+      '@nuxt/schema',
+      'nuxt/schema',
+      // `NuxtSSRContext` extends the renderer's context
+      'vue-bundle-renderer/runtime',
+      // Diagnostics catalogs, not re-exported from `nuxt/app`
+      'nostics',
+    ],
+  },
+  'packages/nuxt/dist/server/index.d.ts': {
+    types: [
+      '@nuxt/schema',
+      'nuxt/schema',
+      'vue',
+      'vue-router',
+      '@unhead/vue',
+      '@unhead/vue/types',
+      '@unhead/vue/server',
+      'vue-bundle-renderer/runtime',
+      'ofetch',
+      'fetchdts',
+      'nostics',
+    ],
+  },
+}
+
+/** Patterns that bind a name, and so put a package's types in our public surface. */
+const typeImportPatterns = [
+  // `import … from` and `export … from`, including a bare `export *`
+  /^\s*(?:import|export)\s[^'"]*\sfrom\s["']([^"']+)["'];?$/gm,
+  // an inline `import(…)` type
+  /\bimport\(\s*["']([^"']+)["']\s*\)/g,
+  // a triple-slash `reference types` directive
+  /\/\/\/\s*<reference\s+types="([^"]+)"\s*\/>/g,
+]
+
+/** A bare import with no bindings, which still pulls in the package's augmentations. */
+const augmentationPatterns = [/^\s*import\s+["']([^"']+)["'];?$/gm]
+
+/**
+ * An interface whose base type collapsed onto its own name, which TypeScript rejects with
+ * `TS2310`. This happens when a file that augments a module through an import alias
+ * (`interface X extends _X {}`) is inlined into the bundle that declares `X`, and the alias is
+ * rewritten to the bare local name.
+ */
+const selfReferentialBase = /\binterface\s+(\w+)\s+extends\s+\1\s*[<{]/g
+
+const root = new URL('../', import.meta.url)
+
+/**
+ * Comments are stripped before matching: specifiers named in prose or `@example` blocks are not
+ * part of the type surface, and the multi-line import pattern would otherwise span a comment
+ * into the declaration that follows it.
+ */
+function withoutComments (contents: string) {
+  return contents.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/(?!\/).*$/gm, '')
+}
+
+function specifiersMatching (contents: string, patterns: RegExp[]) {
+  const specifiers = new Set<string>()
+  for (const re of patterns) {
+    for (const match of contents.matchAll(re)) {
+      specifiers.add(match[1]!)
+    }
+  }
+  return specifiers
+}
+
+/**
+ * Nuxt's own subpath imports and build-time virtual modules. `#app/*` is this package's own
+ * code, reachable through the `imports` map, so it is followed rather than reported. `#build/*`
+ * is generated per project and augmented by the user, so it has no package to attribute.
+ */
+function internalSpecifier (specifier: string, appDir: string) {
+  if (specifier.startsWith('.')) { return specifier }
+  if (specifier.startsWith('#app/')) { return resolve(appDir, specifier.slice('#app/'.length)) }
+  if (specifier === '#app') { return resolve(appDir, 'index') }
+  if (specifier.startsWith('#build/') || specifier.startsWith('#internal/')) { return '' }
+}
+
+/**
+ * Declarations are emitted either as one bundled file or as a tree of modules that re-export
+ * each other. Walking the relative imports means both shapes report the same surface: every
+ * package a consumer of this entrypoint ends up depending on.
+ */
+/**
+ * Declarations reference their siblings by the specifier the runtime uses, so the matching
+ * declaration has to be found by extension or as a directory index. A reference that resolves
+ * to nothing is reported rather than skipped: silently walking less of the graph would quietly
+ * stop checking whatever that file imports.
+ */
+function resolveDeclaration (from: string, specifier: string) {
+  const base = resolve(dirname(from), specifier.replace(/\.[mc]?js$/, ''))
+  for (const candidate of ['.d.ts', '.d.mts', '.d.cts', '/index.d.ts', '/index.d.mts', '/index.d.cts']) {
+    if (existsSync(base + candidate)) { return base + candidate }
+  }
+}
+
+function collectFromGraph (entry: string, appDir: string) {
+  const found = { types: new Set<string>(), augmentations: new Set<string>() }
+  const unresolved = new Set<string>()
+  const seen = new Set<string>()
+  const queue = [entry]
+
+  while (queue.length) {
+    const file = queue.pop()!
+    if (seen.has(file)) { continue }
+    seen.add(file)
+
+    const contents = withoutComments(readFileSync(file, 'utf8'))
+    for (const kind of ['types', 'augmentations'] as const) {
+      const patterns = kind === 'types' ? typeImportPatterns : augmentationPatterns
+      for (const specifier of specifiersMatching(contents, patterns)) {
+        if (specifier.startsWith('node:')) { continue }
+        const internal = internalSpecifier(specifier, appDir)
+        if (internal === undefined) {
+          found[kind].add(specifier)
+          continue
+        }
+        if (!internal) { continue }
+        const resolved = resolveDeclaration(file, internal)
+        if (resolved) { queue.push(resolved) } else { unresolved.add(`${specifier} (from ${relative(fileURLToPath(root), file)})`) }
+      }
+    }
+  }
+
+  return { found, files: seen, unresolved }
+}
+
+let failed = false
+
+for (const [file, entrypoint] of Object.entries(entrypoints)) {
+  const path = fileURLToPath(new URL(file, root))
+  if (!existsSync(path)) {
+    console.error(`[check-public-api] ${file} not found. Run \`pnpm build\` first.`)
+    process.exit(1)
+  }
+
+  const { found, files, unresolved } = collectFromGraph(path, fileURLToPath(new URL('packages/nuxt/dist/app/', root)))
+
+  if (unresolved.size) {
+    failed = true
+    console.error(`[check-public-api] ${file} references declarations that could not be resolved, so their imports went unchecked:`)
+    for (const specifier of [...unresolved].sort()) {
+      console.error(`  - ${specifier}`)
+    }
+  }
+
+  const contents = files.size === 1
+    ? withoutComments(readFileSync(path, 'utf8'))
+    : [...files].map(file => withoutComments(readFileSync(file, 'utf8'))).join('\n')
+
+  const selfReferential = [...new Set([...contents.matchAll(selfReferentialBase)].map(match => match[1]!))].sort()
+  if (selfReferential.length) {
+    failed = true
+    console.error(`[check-public-api] ${file} declares interfaces that recursively reference themselves as a base type:`)
+    for (const name of selfReferential) {
+      console.error(`  - ${name}`)
+    }
+    console.error('Keep the augmenting file out of the bundle, or reference the base type in a way that survives inlining.')
+  }
+
+  for (const kind of ['types', 'augmentations'] as const) {
+    const allowed = entrypoint[kind] ?? []
+    const unexpected = [...found[kind]].filter(specifier => !allowed.includes(specifier)).sort()
+    if (!unexpected.length) { continue }
+
+    failed = true
+    const description = kind === 'types'
+      ? 'leaks types from packages that are not on the allowlist'
+      : 'depends on augmentations from packages that are not on the allowlist'
+    console.error(`[check-public-api] ${file} ${description}:`)
+    for (const specifier of unexpected) {
+      console.error(`  - ${specifier}`)
+    }
+    console.error(`Inline the types, or add the package to \`${kind}\` in scripts/check-public-api.ts with a rationale.`)
+  }
+}
+
+if (failed) {
+  process.exit(1)
+}
+
+console.debug('[check-public-api] no unexpected external types in public declarations')

@@ -1,7 +1,7 @@
 ---
 title: 'createUseFetch'
 description: A factory function to create a custom useFetch composable with pre-defined default options.
-minimalVersion: "4.2"
+minimalVersion: "4.4"
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -9,7 +9,7 @@ links:
     size: xs
 ---
 
-`createUseFetch` creates a custom [`useFetch`](/docs/4.x/api/composables/use-fetch) composable with pre-defined options. The resulting composable is fully typed and works exactly like `useFetch`, but with your defaults baked in.
+`createUseFetch` creates a custom [`useFetch`](/docs/api/composables/use-fetch) composable with pre-defined options. The resulting composable is fully typed and works exactly like `useFetch`, but with your defaults baked in.
 
 ::note
 `createUseFetch` is a compiler macro. It must be used as an **exported** declaration in the `composables/` directory (or any directory scanned by the Nuxt compiler). Nuxt automatically injects de-duplication keys at build time.
@@ -29,25 +29,93 @@ const { data: modules } = await useAPI('/modules')
 </script>
 ```
 
-The resulting `useAPI` composable has the same signature and return type as [`useFetch`](/docs/4.x/api/composables/use-fetch), with all options available for the caller to use or override.
+The resulting `useAPI` composable has the same signature and return type as [`useFetch`](/docs/api/composables/use-fetch), with all options available for the caller to use or override.
 
 ## Type
 
 ```ts [Signature]
 function createUseFetch (
-  options?: Partial<UseFetchOptions>,
+  options?: Partial<UseFetchOptions> & { addons?: UseFetchAddon[] },
 ): typeof useFetch
 
 function createUseFetch (
   options: (callerOptions: UseFetchOptions) => Partial<UseFetchOptions>,
 ): typeof useFetch
+
+// where the client declares the routes it serves
+function createUseFetch<Routes> (
+  options: Partial<UseFetchOptions> & { routes: Routes, addons?: UseFetchAddon[] },
+): DeclaredUseFetch<Routes>
 ```
+
+The returned composable's signature includes any custom options and return-value extensions contributed by the [addons](#addons).
 
 ## Options
 
-`createUseFetch` accepts all the same options as [`useFetch`](/docs/4.x/api/composables/use-fetch#parameters), including `baseURL`, `headers`, `query`, `onRequest`, `onResponse`, `server`, `lazy`, `transform`, `getCachedData`, and more.
+`createUseFetch` accepts all the same options as [`useFetch`](/docs/api/composables/use-fetch#parameters), including `baseURL`, `headers`, `query`, `onRequest`, `onResponse`, `server`, `lazy`, `transform`, `getCachedData`, and more.
 
-See the full list of options in the [`useFetch` documentation](/docs/4.x/api/composables/use-fetch#parameters).
+See the full list of options in the [`useFetch` documentation](/docs/api/composables/use-fetch#parameters).
+
+## Typing a Third-Party API
+
+By default a composable created with `createUseFetch` is typed from the routes your own server
+serves, so a request to another API resolves to `unknown`. Pass `routes` to say what that API serves,
+and every request the composable makes is resolved against it instead:
+
+```ts [app/composables/usePetStore.ts]
+import type { DynamicParam, Endpoint } from 'nuxt/app'
+
+interface Pet { id: number, name: string }
+
+interface PetStoreRoutes {
+  '/pets': {
+    [Endpoint]: {
+      GET: { response: Pet[], query: { limit?: number } }
+      POST: { response: Pet, body: { name: string } }
+    }
+    // a path parameter, matched positionally
+    [DynamicParam]: {
+      [Endpoint]: { GET: { response: Pet } }
+    }
+  }
+}
+
+export const usePetStore = createUseFetch({
+  baseURL: 'https://api.example.com',
+  routes: {} as PetStoreRoutes,
+})
+```
+
+```ts
+const { data: pets } = await usePetStore('/pets')
+//      ^? Pet[]
+const { data: pet } = await usePetStore('/pets/42')
+//      ^? Pet
+await usePetStore('/pets', { method: 'post', body: { name: 'Rex' } })
+
+await usePetStore('/pats')
+//                ^ no GET route matches '/pats'
+await usePetStore('/pets', { method: 'put' })
+//                          ^ no PUT route matches '/pets'
+await usePetStore('/pets', { method: 'post' })
+//                          ^ body is required
+```
+
+Only the type of `routes` is read, so pass `{} as Routes`; the value is dropped before the request is
+made. The declared paths are matched **as written**, since they are the paths the API documents. You
+should not prefix them with the `baseURL`. A path built at runtime resolves to `unknown`.
+
+::note
+The routes a client declares are its own. They are not added to your app's route set, so plain
+`$fetch` and `useFetch` are unaffected, and this client will not accept your own server's paths.
+::
+
+::tip
+The interface above is the shape [`fetchdts`](https://github.com/unjs/fetchdts) uses, which is what
+Nuxt generates for your own server routes. A module can therefore generate one from an API
+description - an OpenAPI document, for example - with `compileRoutes` from `fetchdts/compiler`, and
+hand the emitted interface to `routes`.
+::
 
 ## Default vs Override Mode
 
@@ -95,9 +163,49 @@ export const useAPI = createUseFetch(callerOptions => ({
 ```
 
 ::important
-The **function signature** (override mode) is required here so that [`useNuxtApp()`](/docs/4.x/api/composables/use-nuxt-app) is called in the setup context (at the composable call site) rather than in the module scope, where no Nuxt instance is available.
+The **function signature** (override mode) is required here so that [`useNuxtApp()`](/docs/api/composables/use-nuxt-app) is called in the setup context (at the composable call site) rather than in the module scope, where no Nuxt instance is available.
 ::
 
-:read-more{to="/docs/4.x/guide/recipes/custom-usefetch"}
+## Addons
 
-:read-more{to="/docs/4.x/api/composables/use-fetch"}
+In addition to `useFetch` options, `createUseFetch` accepts an `addons` array. Addons are reusable units of behavior defined with [`defineUseFetchAddon`](/docs/api/utils/define-use-fetch-addon). They can declare custom call-site options, run middleware around the handler, extend the returned object, and attach custom logic to the composable.
+
+For example, an addon that refreshes the data whenever the window regains focus, gated behind a custom `refreshOnFocus` option, so callers opt in per call:
+
+```ts [app/composables/useCustomFetch.ts]
+const refreshOnFocus = defineUseFetchAddon({
+  // augment the call-site options for the custom useFetch instance 👇
+  setup: (options: UseFetchAddonOptions<{ refreshOnFocus?: boolean }>) => {
+    // 👈 run code *before* calling `useAsyncData` in `useFetch`
+    if (import.meta.server || !options.refreshOnFocus) { return }
+
+    return (asyncData) => {
+      // 👈 run code *after* calling `useAsyncData` in `useFetch`
+      const focused = useWindowFocus()
+      watch(focused, (focused) => {
+        if (focused) { asyncData.refresh() }
+      })
+
+      return { focused } // 👈 extend the returned object with a new property
+    }
+  },
+})
+
+export const useCustomFetch = createUseFetch({ addons: [refreshOnFocus] })
+```
+
+```vue [app/pages/index.vue]
+<script setup lang="ts">
+// `refreshOnFocus` is typed on the created composable
+const { data } = await useCustomFetch(
+  'https://api.nuxtjs.dev/mountains',
+  { refreshOnFocus: true },
+)
+</script>
+```
+
+:read-more{to="/docs/api/utils/define-use-fetch-addon"}
+
+:read-more{to="/docs/guide/recipes/custom-usefetch"}
+
+:read-more{to="/docs/api/composables/use-fetch"}

@@ -1,7 +1,8 @@
 import { relative } from 'pathe'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { bundlerDiagnostics, logger } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { colorize } from 'consola/utils'
 import { link } from 'clickable-path'
 

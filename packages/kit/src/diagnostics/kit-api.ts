@@ -109,14 +109,29 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
       docs: false,
     },
+    NUXT_B8021: {
+      why: 'The deprecated `requireModule` helper needs `jiti`, which is an optional peer dependency and is not installed.',
+      fix: 'Use `importModule` instead, which loads the file with the runtime\'s own loader. If the calling code cannot be made async, add `jiti` to your project.',
+      docs: false,
+    },
     NUXT_B8022: {
       why: (p: { specifiers: string }) => `Scanning a module for its export names needs a parser (\`${p.specifiers}\`), and neither could be loaded.`,
       fix: 'Add `oxc-parser` to your project; every supported version of Nuxt already ships a package that can be used here.',
       docs: false,
     },
-    NUXT_B8021: {
-      why: 'The deprecated `requireModule` helper needs `jiti`, which is an optional peer dependency and is not installed.',
-      fix: 'Use `importModule` instead, which loads the file with the runtime\'s own loader. If the calling code cannot be made async, add `jiti` to your project.',
+    NUXT_B8023: {
+      why: (p: { module: string, error: string }) => `The module \`${p.module}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
+      fix: 'Loading it natively is faster, as jiti has to transform the module first. Report it to the module author if the module is not your own.',
+      docs: false,
+    },
+    NUXT_B8024: {
+      why: (p: { api: string, declared: string, host: string }) => `A \`${p.api}\` registration was skipped because this project's server runs \`${p.host}\`.${p.declared ? ` It provided implementations for \`${p.declared}\`.` : ''}`,
+      fix: 'Provide an implementation the server can run: `nuxt/server` code runs everywhere. Report it to the module author if the module is not your own.',
+      docs: false,
+    },
+    NUXT_B8025: {
+      why: (p: { api: string, value: string }) => `\`${p.api}\` was passed a \`${p.value}\` variant, which is not a server API it accepts.`,
+      fix: (p: { accepted: string }) => `Key the variants by the server API the code is written against (\`${p.accepted}\`), or pass a single path: the registered file's imports say which API it uses.`,
       docs: false,
     },
   },

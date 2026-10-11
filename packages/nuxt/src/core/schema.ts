@@ -5,7 +5,8 @@ import { join, relative, resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { configDiagnostics, createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, loadJiti } from '@nuxt/kit'
+import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule } from '@nuxt/kit'
+import { configDiagnostics, loadJiti } from '@nuxt/kit/internal'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import { linkToAlias } from '../utils.ts'
@@ -55,10 +56,11 @@ export default defineNuxtModule({
       ctx.sharedReferences.push({ path: 'schema/nuxt.schema.d.ts' })
       ctx.nodeReferences.push({ path: 'schema/nuxt.schema.d.ts' })
 
+      const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
       ctx.nodeTsConfig.include ||= []
       ctx.nodeTsConfig.include.push(
-        relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'nuxt.schema.*')),
-        relative(nuxt.options.buildDir, join(nuxt.options.rootDir, 'layers/*/nuxt.schema.*')),
+        relative(typesDir, join(nuxt.options.rootDir, 'nuxt.schema.*')),
+        relative(typesDir, join(nuxt.options.rootDir, 'layers/*/nuxt.schema.*')),
       )
 
       if (nuxt.options._prepare) {

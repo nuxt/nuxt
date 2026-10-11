@@ -1,5 +1,6 @@
 import { isAbsolute, normalize, resolve } from 'pathe'
-import { directoryToURL, logger, parseNodeModulePath, resolveAlias } from '@nuxt/kit'
+import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
+import { parseNodeModulePath } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
@@ -23,12 +24,13 @@ export async function server (ctx: WebpackConfigContext) {
   ])
 }
 
-function serverPreset (ctx: WebpackConfigContext) {
+export function serverPreset (ctx: WebpackConfigContext) {
   ctx.config.output!.filename = 'server.mjs'
 
   if (ctx.nuxt.options.sourcemap.server) {
     const prefix = ctx.nuxt.options.sourcemap.server === 'hidden' ? 'hidden-' : ''
-    ctx.config.devtool = prefix + (ctx.isDev ? 'cheap-module-source-map' : 'source-map')
+    const nosources = ctx.nuxt.options.sourcemap.server === 'nosource' ? 'nosources-' : ''
+    ctx.config.devtool = prefix + nosources + (ctx.isDev ? 'cheap-module-source-map' : 'source-map')
   } else {
     ctx.config.devtool = false
   }

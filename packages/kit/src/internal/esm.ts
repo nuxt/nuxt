@@ -23,8 +23,6 @@ export function directoryToURL (dir: string): URL {
 /**
  * Resolve a module from a given root path using an algorithm patterned on
  * the upcoming `import.meta.resolve`. It returns a file URL
- *
- * @internal
  */
 export async function tryResolveModule (id: string, url: URL | URL[]): Promise<string | undefined>
 /** @deprecated pass URLs pointing at files */

@@ -1,6 +1,7 @@
 import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 
 export default withMatrix({
+  css: ['~/global.css'],
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   experimental: {
     componentIslands: {

@@ -6,6 +6,7 @@ import escapeStringRegexp from 'escape-string-regexp'
 
 import type { Plugin as RollupPlugin } from 'rollup'
 import type { Plugin as VitePlugin } from 'vite'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] => {
   let outputDir: string
@@ -45,7 +46,7 @@ export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] 
 
   // there is no second rollup pass to hand the emitted sourcemaps to when nitro
   // runs as a vite environment
-  if (!nuxt.options.experimental.nitroViteEnvironment) {
+  if (useServerBuild(nuxt).buildsSeparately) {
     nuxt.hook('nitro:build:before', (nitro) => {
       nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {
         plugins: [nitroPlugin()],

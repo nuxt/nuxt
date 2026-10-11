@@ -9,6 +9,7 @@ export default defineResolvers({
     host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || undefined,
     url: 'http://localhost:3000',
     loadingTemplate,
+    errorChannel: '/__nuxt_dev__/error',
     cors: {
       origin: [/^https?:\/\/(?:(?:[^:]+\.)?localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/],
     },

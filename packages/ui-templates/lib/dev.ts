@@ -14,11 +14,12 @@ export const DevRenderingPlugin = () => {
   return <Plugin>{
     name: 'dev-rendering',
     async transformIndexHtml (html: string, context) {
-      const page = context.originalUrl || '/'
+      // the url is used as a path, so a query string would land in it
+      const page = (context.originalUrl || '/').split(/[?#]/)[0] || '/'
 
       if (page.endsWith('.png')) { return }
 
-      if (page === '/') {
+      if (page === '/' || page === '/index.html') {
         const templateNames = await fsp.readdir(r('templates'))
         const serializedData = JSON.stringify({ templateNames })
         return html.replace('{{ data }}', serializedData)

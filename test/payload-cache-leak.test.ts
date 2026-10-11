@@ -53,24 +53,23 @@ describe.skipIf(!shouldRun)('payload cache cross-user / unauthenticated disclosu
     expect(res.text).not.toContain('secret-for-')
   })
 
-  // this will pass on the next version of nitro
   describe('cache + cache.varies:[cookie] + named middleware', () => {
     const page = '/protected/cache-cookie'
 
-    it.fails('warms as user A', async () => {
+    it('warms as user A', async () => {
       const res = await get(page, cookie(USER_A))
       expect(res.status).toBe(200)
       expect(res.text).toContain(MARKER_A)
     })
 
-    it.fails('never returns user A payload to user B, and re-renders B their own payload', async () => {
+    it('never returns user A payload to user B, and re-renders B their own payload', async () => {
       const res = await get(`${page}/${payloadFile}`, cookie(USER_B))
       expect(res.text).not.toContain(MARKER_A)
       expect(res.text).not.toContain('secret-for-userA')
       expect(res.text).toContain(MARKER_B)
     })
 
-    it.fails('serves user B only their own data over HTML and payload', async () => {
+    it('serves user B only their own data over HTML and payload', async () => {
       const html = await get(page, cookie(USER_B))
       expect(html.text).toContain(MARKER_B)
       expect(html.text).not.toContain(MARKER_A)

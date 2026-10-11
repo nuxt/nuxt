@@ -254,7 +254,7 @@ export const componentsTypeTemplate = {
       }
     }
     const literals = [
-      globalComponentNames.size ? `    componentName: ${[...globalComponentNames].map(name => genString(name)).join(' | ')}` : '',
+      globalComponentNames.size ? `    componentName: ${[...globalComponentNames].map(name => genString(name)).join(' | ')} | (string & {})` : '',
       islandComponentNames.size ? `    islandName: ${[...islandComponentNames].map(name => genString(name)).join(' | ')}` : '',
     ].filter(Boolean)
     return `

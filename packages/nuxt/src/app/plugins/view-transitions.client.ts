@@ -74,6 +74,8 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
       ...viewTransitionToTypes,
     ]
 
+    finishTransition?.()
+
     const promise = new Promise<void>((resolve, reject) => {
       finishTransition = resolve
       abortTransition = reject
@@ -89,11 +91,17 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
 
     // Use the object form (Level 2) only when types are specified,
     // falling back to the callback form (Level 1) for broader browser support.
-    transition = allTypes.length > 0
+    const currentTransition = allTypes.length > 0
       ? document.startViewTransition!({ update, types: allTypes })
       : document.startViewTransition!(update)
+    transition = currentTransition
 
-    transition.finished.catch(() => {}).finally(resetTransitionState)
+    currentTransition.finished.catch(() => {}).finally(() => {
+      if (transition === currentTransition) {
+        resetTransitionState()
+      }
+    })
+    currentTransition.ready.catch(() => {})
 
     await nuxtApp.callHook('page:view-transition:start', transition)
 

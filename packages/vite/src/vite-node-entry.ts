@@ -10,8 +10,9 @@ let render: (ssrContext: NuxtSSRContext) => Promise<any>
 export default async (ssrContext: NuxtSSRContext): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
-  // Runtime define still injects process.server; Nitro types already declare it, so no @ts-expect-error.
-  process.server = true // eslint-disable-line nuxt/prefer-import-meta
+  // The build still replaces `process.server`, so it has to be assigned here; the flag is not
+  // part of Node's `process` type.
+  ;(process as unknown as { server: boolean }).server = true
   import.meta.server = true
 
   // Invalidate cache for files changed since last rendering

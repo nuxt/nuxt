@@ -3,6 +3,7 @@ import { tryUseNuxt, useLogger } from '@nuxt/kit'
 import { link } from 'clickable-path'
 import { reverseResolveAlias } from 'pathe/utils'
 
+import type { NuxtLogger } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 
 /** @since 3.9.0 */
@@ -58,12 +59,13 @@ export function isWhitespace (char: number | string | undefined | null): boolean
 }
 
 export const JS_EXT_RE = /^[^?]*\.(?:[jt]sx?|[cm][jt]s)(?:$|\?)/
+export const SUPPORTED_EXT_RE = /^[^?]*\.(?:m?[jt]sx?|vue)(?:$|\?)/
 export const NUXT_LIB_RE = /^[^?]*node_modules\/(?:nuxt|nuxt3|nuxt-nightly|@nuxt)\//
 export const STYLE_QUERY_RE = /[?&]type=style/
 export const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 export const DECLARATION_EXTENSIONS = ['d.ts', 'd.mts', 'd.cts', 'd.vue.ts', 'd.vue.mts', 'd.vue.cts']
 
-export const logger = useLogger('nuxt')
+export const logger: NuxtLogger = useLogger('nuxt')
 
 export function resolveToAlias (path: string, nuxt = tryUseNuxt()) {
   return reverseResolveAlias(path, { ...nuxt?.options.alias || {}, ...strippedAtAliases }).pop() || path

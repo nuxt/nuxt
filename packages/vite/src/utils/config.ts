@@ -1,5 +1,5 @@
 import type { ResolvedConfig } from 'vite'
-import { bundlerDiagnostics } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 
 /**
  * Resolve the client build manifest file name, relative to the client `outDir`,

@@ -9,7 +9,7 @@ import type { NuxtAppLiterals, PluginMeta } from '../../app/types.ts'
 import { parseAndWalk, walk } from 'oxc-walker'
 import { parseModule } from '../utils/parse.ts'
 import type { ESTree } from 'rolldown/utils'
-import { pluginDiagnostics } from '@nuxt/kit'
+import { pluginDiagnostics } from '@nuxt/kit/internal'
 import { linkToAlias } from '../../utils.ts'
 
 const internalOrderMap = {

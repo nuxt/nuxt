@@ -1,1 +1,2 @@
 !extends/node_modules
+!extends/node_modules/foo/node_modules

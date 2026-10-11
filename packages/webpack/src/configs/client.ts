@@ -26,20 +26,21 @@ export async function client (ctx: WebpackConfigContext) {
   ])
 }
 
-function clientDevtool (ctx: WebpackConfigContext) {
+export function clientDevtool (ctx: WebpackConfigContext) {
   if (!ctx.nuxt.options.sourcemap.client) {
     ctx.config.devtool = false
     return
   }
 
   const prefix = ctx.nuxt.options.sourcemap.client === 'hidden' ? 'hidden-' : ''
+  const nosources = ctx.nuxt.options.sourcemap.client === 'nosource' ? 'nosources-' : ''
 
   if (!ctx.isDev) {
-    ctx.config.devtool = prefix + 'source-map'
+    ctx.config.devtool = prefix + nosources + 'source-map'
     return
   }
 
-  ctx.config.devtool = prefix + 'eval-cheap-module-source-map'
+  ctx.config.devtool = prefix ? prefix + 'cheap-module-source-map' : 'eval-' + nosources + 'cheap-module-source-map'
 }
 
 function clientPerformance (ctx: WebpackConfigContext) {
@@ -105,7 +106,8 @@ function clientHMR (ctx: WebpackConfigContext) {
 }
 
 function clientOptimization (ctx: WebpackConfigContext) {
-  if (!ctx.nuxt.options.features.inlineStyles) {
+  const inlineStyles = ctx.nuxt.options.features.inlineStyles
+  if (!inlineStyles) {
     return
   }
 
@@ -134,7 +136,7 @@ function clientOptimization (ctx: WebpackConfigContext) {
         const identifier = normalize(module.identifier())
         for (const globalPath of globalCSSPaths) {
           if (identifier.includes(globalPath)) {
-            return true
+            return typeof inlineStyles === 'boolean' ? inlineStyles : inlineStyles(module.identifier())
           }
         }
         return false

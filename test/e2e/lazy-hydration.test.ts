@@ -59,6 +59,17 @@ test.describe('lazy hydration styles', () => {
   })
 })
 
+test('renders a previously loaded lazy hydration component on the first frame after remount', async ({ page, goto }) => {
+  await goto('/remount')
+  await page.locator('[data-testid="plain-remounted-component"]', { hasText: 'This is mounted.' }).first().waitFor()
+  await page.locator('[data-testid="hydrated-remounted-component"]', { hasText: 'This is mounted.' }).first().waitFor()
+
+  await page.getByTestId('remount').click()
+
+  await expect(page.getByTestId('plain-count-on-first-frame')).toHaveText('12')
+  await expect(page.getByTestId('hydrated-count-on-first-frame')).toHaveText('12')
+})
+
 const hydrationTests = {
   'in template': '',
   'with vue macros': '/macro',

@@ -6,6 +6,11 @@ import { test as teardown } from '@playwright/test'
 const fixtureDirs = [
   fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url)),
   fileURLToPath(new URL('../fixtures-temp/hmr-sibling-layer', import.meta.url)),
+  fileURLToPath(new URL('../fixtures-temp/dev-error-sourcemap', import.meta.url)),
+  fileURLToPath(new URL('../fixtures-temp/dev-error-client', import.meta.url)),
+  fileURLToPath(new URL('../fixtures-temp/dev-error-recovery', import.meta.url)),
+  fileURLToPath(new URL('../fixtures-temp/dev-error-compile', import.meta.url)),
+  fileURLToPath(new URL('../fixtures-temp/dev-error-expected', import.meta.url)),
 ]
 
 teardown('remove temporary hmr fixture directory', async () => {

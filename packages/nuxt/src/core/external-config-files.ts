@@ -1,4 +1,5 @@
-import { configDiagnostics, findPath } from '@nuxt/kit'
+import { findPath } from '@nuxt/kit'
+import { configDiagnostics } from '@nuxt/kit/internal'
 import { basename } from 'pathe'
 import { link } from 'clickable-path'
 

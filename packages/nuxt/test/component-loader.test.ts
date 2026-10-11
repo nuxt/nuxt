@@ -55,7 +55,7 @@ import{defineComponent as _defineComponent}from"vue";const _sfc_main=_defineComp
 
 function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", line, column, vnode) }
 `
-    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: (code: string, id: string) => { code: string, map?: unknown } | null }).transform(
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string, map?: unknown } | null } }).transform.handler(
       content,
       '/app.vue',
     ))
@@ -127,7 +127,7 @@ export default {
   }
 };
 `
-    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: (code: string, id: string) => { code: string } | null }).transform(
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }).transform.handler(
       content,
       '/app.vue?vue&type=script&setup=true&lang.jsx',
     ))
@@ -268,6 +268,26 @@ export default {
     `)
   })
 
+  it('should auto-import components resolved via vapor createAssetComponent', async () => {
+    const content = `import { createAssetComponent as _createAssetComponent, template as _template } from "vue";
+const t0 = _template("<div></div>", 1);
+function _sfc_render(_ctx) {
+  const n3 = t0();
+  const n2 = _createAssetComponent("MyComponent", { label: "nested" });
+  const n4 = _createAssetComponent("UnknownComponent");
+  return n3;
+}
+`
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }).transform.handler(
+      content,
+      '/pages/index.vue',
+    ))
+    expect(code?.code).toContain('import { default as __nuxt_component_0 } from "/components/MyComponent.vue"')
+    expect(code?.code).toContain('import { createComponentWithFallback as __nuxt_createComponentWithFallback } from "vue"')
+    expect(code?.code).toContain('__nuxt_createComponentWithFallback(__nuxt_component_0, { label: "nested" })')
+    expect(code?.code).toContain('_createAssetComponent("UnknownComponent")')
+  })
+
   it.each([
     ['hydrate-on-idle', 'createLazyIdleComponent'],
     ['hydrate-on-visible', 'createLazyVisibleComponent'],
@@ -291,6 +311,68 @@ export default {
     `
     const result = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
     expect(result.join('\n')).toContain(component)
+  })
+
+  describe('hot updates', () => {
+    function setup () {
+      const registry = [...components]
+      const refreshed: string[] = []
+      const raw = LoaderPlugin({
+        clientDelayedComponentRuntime: '/client-runtime.mjs',
+        serverComponentRuntime: '/server-runtime.mjs',
+        getComponents: () => registry,
+        srcDir: '/',
+        mode: 'client',
+        refreshComponents: (file) => {
+          if (file.startsWith('/components/')) {
+            refreshed.push(file)
+            return Promise.resolve()
+          }
+        },
+      }).raw({}, { framework: 'vite', versions: {} }) as any
+      const graph = new Map<string, { id: string }>()
+      const transform = (id: string, code: string) => {
+        graph.set(id, { id })
+        return raw.transform.handler(code, id)
+      }
+      const hotUpdate = (type: string, file: string, modules: unknown[] = []) =>
+        raw.vite.hotUpdate.handler.call({ environment: { moduleGraph: { getModuleById: (id: string) => graph.get(id) } } }, { type, file, modules })
+      return { registry, refreshed, transform, hotUpdate, graph }
+    }
+
+    it('should update modules whose component resolution changed', async () => {
+      const { registry, refreshed, transform, hotUpdate, graph } = setup()
+      transform('/pages/uses.vue', 'const a = _resolveComponent("MyComponent")')
+      transform('/pages/unrelated.vue', 'const a = _resolveComponent("OtherComponent")')
+      transform('/pages/none.vue', 'const a = 1')
+
+      registry[0] = { ...registry[0]!, filePath: '/components/Renamed.vue' }
+      const own = { id: '/components/MyComponent.vue' }
+      const result = await hotUpdate('delete', '/components/MyComponent.vue', [own])
+
+      expect(refreshed).toEqual(['/components/MyComponent.vue'])
+      expect(result).toEqual([own, graph.get('/pages/uses.vue')])
+    })
+
+    it('should update modules referencing a newly added component', async () => {
+      const { registry, transform, hotUpdate, graph } = setup()
+      transform('/pages/unresolved.vue', 'const a = _resolveComponent("NewComponent")')
+      transform('/pages/uses.vue', 'const a = _resolveComponent("MyComponent")')
+
+      registry.push({ ...registry[0]!, pascalName: 'NewComponent', kebabName: 'new-component', filePath: '/components/NewComponent.vue' })
+
+      expect(await hotUpdate('create', '/components/NewComponent.vue')).toEqual([graph.get('/pages/unresolved.vue')])
+    })
+
+    it('should ignore updates and non-component files', async () => {
+      const { refreshed, transform, hotUpdate } = setup()
+      transform('/pages/uses.vue', 'const a = _resolveComponent("MyComponent")')
+
+      expect(await hotUpdate('update', '/components/MyComponent.vue')).toBeUndefined()
+      expect(await hotUpdate('create', '/utils/foo.ts')).toBeUndefined()
+      expect(await hotUpdate('create', '/components/Unused.vue')).toBeUndefined()
+      expect(refreshed).toEqual(['/components/Unused.vue'])
+    })
   })
 })
 const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({

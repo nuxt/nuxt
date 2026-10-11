@@ -7,7 +7,7 @@ import { resolveAlias } from './resolve.ts'
 export interface LayerDirectories {
   /** Nuxt rootDir (`/` by default) */
   readonly root: string
-  /** Nitro source directory (`/server` by default) */
+  /** Server source directory (`/server` by default) */
   readonly server: string
   /** Local modules directory (`/modules` by default) */
   readonly modules: string

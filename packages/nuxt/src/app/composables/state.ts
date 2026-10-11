@@ -41,7 +41,7 @@ export function useState<T> (...args: any): Ref<T> {
     if (isRef(initialValue)) {
       // vue will unwrap the ref for us
       nuxtApp.payload.state[key] = initialValue
-      return initialValue as Ref<T>
+      return state
     }
     state.value = initialValue
   }

@@ -6,9 +6,7 @@ export default defineResolvers({
       hashMode: false,
       scrollBehaviorType: 'auto',
       sensitive: {
-        $resolve: async (val, get) => {
-          return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
-        },
+        $resolve: val => typeof val === 'boolean' ? val : true,
       },
     },
   },

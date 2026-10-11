@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const locale = ref()
+const locale = ref('en-GB')
 const switchLocale = () => {
   locale.value = locale.value !== 'fr' ? 'fr' : 'en-GB'
 }
@@ -33,6 +33,14 @@ const changeDate = () => {
       :locale="locale"
       data-testid="fixed"
       datetime="2023-02-11T08:24:08.396Z"
+      month="long"
+      day="numeric"
+    />
+    <br>
+    <NuxtTime
+      data-testid="no-locale"
+      :datetime="date"
+      second="numeric"
       month="long"
       day="numeric"
     />

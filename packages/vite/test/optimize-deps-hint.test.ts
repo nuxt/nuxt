@@ -9,13 +9,9 @@ import {
   userOptimizeDepsInclude,
 } from '../src/plugins/optimize-deps-hint.ts'
 
-vi.mock('@nuxt/kit', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@nuxt/kit')>()
+vi.mock('@nuxt/kit', () => {
   return {
     logger: { info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-    // Use the real diagnostics catalog so NUXT_B7002 reports through its
-    // console reporter (the stale-only hint path depends on it).
-    bundlerDiagnostics: actual.bundlerDiagnostics,
   }
 })
 

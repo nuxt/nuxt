@@ -5,7 +5,7 @@ import { join, relative } from 'pathe'
 import { consola } from 'consola'
 import { link } from 'clickable-path'
 import { colors } from 'consola/utils'
-import type { Hookable } from 'hookable'
+import type { NuxtHookRegistry } from '@nuxt/schema'
 import type { NuxtHooks } from 'nuxt/schema'
 
 export interface MemorySnapshot {
@@ -169,7 +169,7 @@ export class NuxtPerfProfiler {
     this.#baseTs = Date.now() * 1000 - this.#globalStart * 1000
   }
 
-  installHookInterceptors (hooks: Hookable<NuxtHooks>): void {
+  installHookInterceptors (hooks: NuxtHookRegistry<NuxtHooks>): void {
     const unsubBefore = hooks.beforeEach((event) => {
       this.#hookStartStack.push({
         name: event.name,

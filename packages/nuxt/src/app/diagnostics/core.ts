@@ -58,5 +58,10 @@ export const appDiagnostics = !import.meta.dev
           fix: 'Crawlers receive the server-rendered HTML instead of the error page so they index the content. No action is needed unless you did not expect this request to be treated as a bot.',
           docs: false,
         },
+        NUXT_E1013: {
+          why: '`onPrehydrate` was called with a `key` inside a component that has no vdom instance (for example a Vapor component). The keyed selector cannot be scoped to the component element, so the callback falls back to running unkeyed against the whole document.',
+          fix: 'Call keyed `onPrehydrate` from a vdom component, or drop the `key` argument if the callback is safe to run unscoped.',
+          docs: false,
+        },
       },
     })

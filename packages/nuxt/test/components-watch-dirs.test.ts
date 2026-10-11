@@ -5,7 +5,7 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { addComponentsDir } from '@nuxt/kit'
 import { build, loadNuxt } from 'nuxt'
 
-describe('components dir watching', { sequential: true }, async () => {
+describe('components dir watching', { concurrent: false }, async () => {
   const tmpDir = join(await findWorkspaceDir(), '.test/components-watch-dirs')
 
   beforeEach(async () => {

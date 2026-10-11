@@ -4,12 +4,12 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isReferenceIdentifier, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
-import { pageDiagnostics } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import { parseModuleId } from '../../core/utils/plugins.ts'
 import { parseModule } from '../../core/utils/parse.ts'
 import { getStaticImports } from '../../core/utils/static-imports.ts'
 import type { ParsedStaticImport } from '../../core/utils/static-imports.ts'
-import { classifyPageMetaProperty } from '../utils.ts'
+import { classifyPageMetaProperty, isScannablePageFile } from '../utils.ts'
 import { linkToAlias } from '../../utils.ts'
 import type { ESTree, ParserOptions } from 'rolldown/utils'
 
@@ -50,6 +50,8 @@ if (import.meta.webpackHot) {
 export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
   const extractedKeys = new Set(options.extractedKeys)
   const classifyOptions = { extractSerializable: options.extractSerializable }
+  const noExtractedKeys = new Set<string>()
+  const noExtraction = { extractSerializable: false }
 
   return {
     name: 'nuxt:pages-macros-transform',
@@ -79,6 +81,10 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
 
         const hasMacro = HAS_MACRO_RE.test(code)
+
+        const scanned = isScannablePageFile(id)
+        const fileExtractedKeys = scanned ? extractedKeys : noExtractedKeys
+        const fileClassifyOptions = scanned ? classifyOptions : noExtraction
 
         const parsed = parseModule(code, id, { lang: query.lang ?? 'ts' })
         const imports = getStaticImports(code, parsed.module.staticImports)
@@ -266,7 +272,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
-                const classification = classifyPageMetaProperty(prop, extractedKeys, classifyOptions)
+                const classification = classifyPageMetaProperty(prop, fileExtractedKeys, fileClassifyOptions)
 
                 // The route record now carries the value, so drop it here to keep the two in step.
                 if (classification.kind === 'extract' || (classification.kind === 'reshape' && classification.value)) {
