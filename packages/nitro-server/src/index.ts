@@ -139,7 +139,32 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       version: nuxtPkg.version || nitroBuilder.version,
     },
     imports: nuxt.options.experimental.nitroAutoImports === false
-      ? false
+      ? {
+          autoImport: nuxt.options.imports.autoImport as boolean,
+          dirs: [...sharedDirs],
+          // When nitroAutoImports is false, we still need to provide essential imports
+          // to avoid "ReferenceError: defineAppConfig is not defined" and similar errors
+          imports: [
+            {
+              as: '__buildAssetsURL',
+              name: 'buildAssetsURL',
+              from: resolve(distDir, 'runtime/utils/paths'),
+            },
+            {
+              as: '__publicAssetsURL',
+              name: 'publicAssetsURL',
+              from: resolve(distDir, 'runtime/utils/paths'),
+            },
+            {
+              // Always provide defineAppConfig to prevent "is not defined" errors
+              as: 'defineAppConfig',
+              name: 'defineAppConfig',
+              from: resolve(distDir, 'runtime/utils/config'),
+              priority: -1,
+            },
+          ],
+          exclude: createNitroImportsExcludePatterns(excludePattern),
+        }
       : {
           autoImport: nuxt.options.imports.autoImport as boolean,
           dirs: [...sharedDirs],
@@ -444,10 +469,23 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   if (nuxt.options.experimental.nitroAutoImports === false) {
     const appConfigPaths = new Set((nuxt.apps.default?.configs || []).map(path => normalize(path)))
+    nitroConfig.rollupConfig ||= {}
+    nitroConfig.rollupConfig.plugins = toArray(await nitroConfig.rollupConfig.plugins || [])
+    
+    // Provide essential imports when nitroAutoImports is disabled
+    nitroConfig.rollupConfig.plugins.unshift({
+      name: 'nuxt:nitro-essential-imports',
+      async resolveId (id) {
+        // Provide stub for #imports when auto-imports are disabled
+        if (id === '#imports') {
+          return this.resolve(resolve(distDir, 'runtime/utils/nitro-auto-imports-stub'))
+        }
+      },
+    })
+    
+    // Add defineAppConfig shim to app.config files
     if (appConfigPaths.size) {
-      nitroConfig.rollupConfig ||= {}
-      nitroConfig.rollupConfig.plugins = toArray(await nitroConfig.rollupConfig.plugins || [])
-      nitroConfig.rollupConfig.plugins.unshift({
+      nitroConfig.rollupConfig.plugins.push({
         name: 'nuxt:nitro-define-app-config-shim',
         transform (code, id) {
           const normalizedId = normalize(id.split('?')[0] || id)
