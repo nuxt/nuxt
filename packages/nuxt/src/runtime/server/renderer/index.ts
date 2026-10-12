@@ -339,7 +339,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     prefersStream: !!(NUXT_SSR_STREAMING
       && !SSR_BOT_RE.test(event.req.headers.get('user-agent') || '')),
   }
-  const hooks = runtime.hooks()
+  const hooks = instance.hooks
   const renderRouteResult = hooks.callHook('render:route', renderRouteContext, { event: hookEvent })
   if (renderRouteResult instanceof Promise) { await renderRouteResult }
 
@@ -743,7 +743,7 @@ async function renderStreamedResponse (ctx: {
     body: [],
     bodyAppend: [],
   }
-  const hooks = runtime.hooks()
+  const hooks = instance.hooks
   if (import.meta.dev) {
     const initialBodyLen = shellContext.body.length
     const initialAppendLen = shellContext.bodyAppend.length

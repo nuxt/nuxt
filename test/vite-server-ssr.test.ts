@@ -50,6 +50,14 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with ss
     expect(await response.text()).toContain('id="__nuxt"')
   })
 
+  it('runs renderer plugins for every document it renders', async () => {
+    expect((await $fetch<string>('/')).match(/<meta name="renderer-plugin">/g)).toHaveLength(1)
+    expect(await $fetch<string>('/spa')).toContain('<meta name="renderer-plugin">')
+
+    const error = await fetch('/not-a-page', { headers: { accept: 'text/html' } })
+    expect(await error.text()).toContain('<meta name="renderer-plugin">')
+  })
+
   it('renders the error page for a request that accepts JSON', async () => {
     const response = await fetch('/not-a-page', { headers: { accept: 'application/json' } })
 
@@ -139,6 +147,12 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
     expect(shell).not.toContain('id="spa"')
     expect(shell).toContain('data-ssr="false"')
+  })
+
+  it('runs renderer plugins for every document it renders', async () => {
+    expect(html.match(/<meta name="renderer-plugin">/g)).toHaveLength(1)
+    expect(await (await render('/spa')).text()).toContain('<meta name="renderer-plugin">')
+    expect(await (await render('/not-a-page')).text()).toContain('<meta name="renderer-plugin">')
   })
 
   it('renders a route ruled `noScripts` without scripts', async () => {

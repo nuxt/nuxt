@@ -39,7 +39,7 @@ import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
-import type { DevServerHandler, NitroConfig, PrerenderOptions, ResolveNuxtNitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
+import type { DevServerHandler, NitroConfig, PrerenderOptions, RendererPluginEntry, ResolveNuxtNitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
 
 export interface ConfigSchema {
   /**
@@ -1989,6 +1989,14 @@ export interface ConfigSchema {
    * @private
    */
   _serverPlugins: ServerPlugin[]
+
+  /**
+   * Plugins registered with the SSR renderer through `addRendererPlugin()`, which each
+   * renderer calls once, before it renders, with its hooks.
+   *
+   * @private
+   */
+  _rendererPlugins: RendererPluginEntry[]
 
   /**
    * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
