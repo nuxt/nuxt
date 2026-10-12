@@ -29,7 +29,7 @@ import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { createNormalizedRouteRulesRouter, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
 import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
 import { addDevServerHandlers, collectServerRegistrations, toPortableDevHandlers } from './registrations.ts'
 import { nitroInternalApiTemplate, nitroSchemaTemplate } from './templates.ts'
@@ -770,7 +770,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
 
-  // a `nitro:config` listener can still register a plugin, so collect after the hook
+  // after the hook, so rules and registrations contributed by modules are covered too
+  normalizeAppMiddlewareRules(nitroConfig.routeRules)
   collectServerRegistrations(nuxt, nitroConfig)
 
   if (!nuxt.options.experimental.nitroAutoImports && nitroConfig.imports) {
