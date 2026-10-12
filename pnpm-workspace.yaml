@@ -108,7 +108,6 @@ catalogs:
     vite-node: ^6.0.0
     vite-plugin-checker: ^0.14.5
   webpack:
-    '@nuxt/friendly-errors-webpack-plugin': ^2.6.0
     '@rsbuild/core': ~2.2.12
     css-loader: ^7.1.5
     css-minimizer-webpack-plugin: ^8.0.0

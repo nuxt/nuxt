@@ -7,14 +7,13 @@ import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
 import { directoryToURL, logger } from '@nuxt/kit'
 import { DEFAULT_JS_FILE_EXTENSIONS, parseNodeModulePath } from '@nuxt/kit/internal'
-// @ts-expect-error missing types
-import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
 import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { WarningFilter } from '../plugins/warning-ignore.ts'
 import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
+import { FriendlyErrorsPlugin } from '../plugins/friendly-errors.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets, fileName } from '../utils/config.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
@@ -92,15 +91,8 @@ function basePlugins (ctx: WebpackConfigContext) {
   // Provide env via DefinePlugin
   ctx.config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))
 
-  // Friendly errors
-  if (ctx.isServer || (ctx.isDev && ctx.userConfig.friendlyErrors)) {
-    ctx.config.plugins.push(
-      new FriendlyErrorsWebpackPlugin({
-        clearConsole: false,
-        reporter: 'consola',
-        logLevel: 'ERROR', // TODO
-      }),
-    )
+  if (ctx.isDev && (ctx.isServer || ctx.userConfig.friendlyErrors)) {
+    ctx.config.plugins.push(new FriendlyErrorsPlugin())
   }
 
   if (ctx.nuxt.options.webpack.profile) {

@@ -27,7 +27,6 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "@nuxt/friendly-errors-webpack-plugin": "catalog:webpack",
     "@nuxt/kit": "workspace:*",
     "@vue/compiler-sfc": "catalog:vue",
     "autoprefixer": "catalog:build",
