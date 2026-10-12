@@ -163,6 +163,7 @@ function rendererProject (name: string, include: string[], rendererConfig: strin
         'nuxt/internal/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
         'nuxt/internal/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
         'nuxt/internal/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
+        'nuxt/internal/renderer-plugins': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/renderer-plugins.mjs'),
         '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
         // provided by the server builder in a real build; the fixture writes them out
         '#internal/nuxt/paths': resolve('./test/fixtures/standalone-renderer/.nuxt/paths.mjs'),

@@ -213,6 +213,25 @@ describe.skipIf(!runsOnceInMatrix)('server sessions', () => {
   })
 })
 
+describe('renderer plugins', () => {
+  it('should run for a server-rendered page', async () => {
+    const html = await $fetch<string>('/')
+    expect(html.match(/<meta name="renderer-plugin">/g)).toHaveLength(1)
+  })
+
+  it('should run for a route with an `ssr: false` route rule', async () => {
+    const html = await $fetch<string>('/route-rules/spa')
+    expect(html).toContain('<div id="__nuxt"></div>')
+    expect(html).toContain('<meta name="renderer-plugin">')
+  })
+
+  it('should run for the error page', async () => {
+    const res = await fetch('/error/not-found', { headers: { accept: 'text/html' } })
+    expect(res.status).toBe(404)
+    expect(await res.text()).toContain('<meta name="renderer-plugin">')
+  })
+})
+
 describe('route rules', () => {
   it('should enable spa mode', async () => {
     const headHtml = await $fetch<string>('/route-rules/spa')

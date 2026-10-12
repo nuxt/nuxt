@@ -227,6 +227,9 @@ function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: strin
   if (nuxt.options.serverHandlers.length || getLayerDirectories(nuxt).some(dirs => existsSync(dirs.server))) {
     unsupported.push('server routes and server middleware')
   }
+  if (!build.ssr && nuxt.options._rendererPlugins.length) {
+    unsupported.push('renderer plugins')
+  }
   const routeRules = Object.values(nuxt.options.routeRules || {})
   const ignoredRules = [...new Set(routeRules.flatMap(rules => Object.keys(rules || {}).filter(key => SERVER_ONLY_RULES.has(key))))]
   if (ignoredRules.length) {
