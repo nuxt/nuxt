@@ -197,6 +197,20 @@ describe('addServerHandler', () => {
     ])
   })
 
+  it.each([
+    ['2.11.0', 4, 'post'],
+    ['2.11.0', 5, 'post'],
+    ['3.0.1', 4, 'POST'],
+    ['3.0.1', 5, 'POST'],
+  ])('registers the method its filename implies on nitro %s with compatibility version %i as %s', (nitroVersion, compatibilityVersion, method) => {
+    const nuxt = createMockNuxt(nitroVersion)
+    ;(nuxt.options as any).future = { compatibilityVersion }
+    runWithNuxtContext(nuxt, () => addServerHandler({ route: '/test', handler: '/handlers/test.post.ts' }))
+    expect(nuxt.options.serverHandlers).toEqual([
+      { method, route: '/test', handler: '/handlers/test.post.ts' },
+    ])
+  })
+
   it('registers the implementation this host runs, of one per server API', () => {
     const nuxt = createMockNuxt('3.0.1')
     runWithNuxtContext(nuxt, () => addServerHandler({
@@ -280,8 +294,7 @@ describe('addServerHandler', () => {
   it('does not add a base route where the handler on it takes the same method in another case', () => {
     const nuxt = createMockNuxt('2.11.0')
     runWithNuxtContext(nuxt, () => {
-      // a filename-derived method is uppercased, where an explicit one is authored as given
-      addServerHandler({ route: '/_icons', handler: '/handlers/icons.get.ts' })
+      addServerHandler({ route: '/_icons', method: 'GET', handler: '/handlers/icons.ts' })
       addServerHandler({ route: '/_icons/**', method: 'get', handler: '/handlers/icons.ts' })
     })
     expect(nuxt.options.serverHandlers.map(handler => handler.route)).toEqual(['/_icons', '/_icons/**'])
