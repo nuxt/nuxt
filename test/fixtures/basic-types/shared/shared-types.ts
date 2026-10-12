@@ -2,6 +2,8 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import { foo } from '#shared/other'
 
+import type helloHandler from '../server/api/hello'
+
 describe('shared folder', () => {
   it('can reference its own aliases', () => {
     expectTypeOf(foo).not.toBeAny()
@@ -28,5 +30,9 @@ describe('shared folder', () => {
     expectTypeOf(config.fromNuxtConfig).toEqualTypeOf<boolean>()
     expectTypeOf(config.userConfig).toEqualTypeOf<123 | 456 | undefined>()
     expectTypeOf(config.fromLayer).toEqualTypeOf<unknown>()
+  })
+
+  it('can reference server handler types', () => {
+    expectTypeOf<typeof helloHandler>().not.toBeAny()
   })
 })
