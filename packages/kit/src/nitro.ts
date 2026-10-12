@@ -1,5 +1,5 @@
 import { normalize } from 'pathe'
-import type { DevServerHandler, DevServerHandlerInput, NitroInstance, Nuxt, NuxtImport, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerInput, ServerPlugin, ServerPluginInput } from '@nuxt/schema'
+import type { DevServerHandler, DevServerHandlerInput, NitroInstance, Nuxt, NuxtImport, RendererPluginEntry, RendererPluginInput, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerInput, ServerPlugin, ServerPluginInput } from '@nuxt/schema'
 
 import { tryUseNuxt, useNuxt } from './context.ts'
 import { getNitroVersion } from './compatibility.ts'
@@ -71,8 +71,8 @@ interface ResolvedVariant<T> {
  * Resolved here rather than by the server builder, because kit is installed against hosts
  * whose builder knows nothing about variants.
  */
-function resolveVariant<T, Api extends ServerApi> (api: string, variants: ServerApiVariants<T, Api>, normalizeValue: (value: T) => T, accepted: Set<ServerApi>): ResolvedVariant<T> | undefined {
-  const host = (getHostServerApis() ?? UNIDENTIFIED_HOST_APIS).filter(candidate => accepted.has(candidate))
+function resolveVariant<T, Api extends ServerApi> (api: string, variants: ServerApiVariants<T, Api>, normalizeValue: (value: T) => T, accepted: Set<ServerApi>, hostApis: ServerApi[] = getHostServerApis() ?? UNIDENTIFIED_HOST_APIS): ResolvedVariant<T> | undefined {
+  const host = hostApis.filter(candidate => accepted.has(candidate))
 
   if (host.length === 0) {
     kitDiagnostics.NUXT_B8024({ api, declared: '', host: (getHostServerApis() ?? []).join('`, `') })
@@ -219,15 +219,17 @@ export function addDevServerHandler (handler: DevServerHandlerInput): void {
  * Adds a nitro plugin, which runs once when the server starts.
  *
  * `plugin` is a path, or one path per nitro major, resolved as for
- * {@link addServerHandler}. There is no portable variant: `nuxt/server` has no plugin
- * surface, so a plugin is written against nitro.
+ * {@link addServerHandler}. A plugin that only registers render hooks is portable as a
+ * renderer plugin: see {@link addRendererPlugin}.
  */
 export function addNitroPlugin (plugin: ServerPluginInput): void {
-  const nuxt = useNuxt()
   const resolved = resolveVariant('addNitroPlugin', plugin, normalize, NITRO_APIS)
-  if (!resolved) {
-    return
+  if (resolved) {
+    registerNitroPlugin(useNuxt(), resolved)
   }
+}
+
+function registerNitroPlugin (nuxt: Nuxt, resolved: ResolvedVariant<string>): void {
   // a host without `_serverPlugins` is nitro v2, where the metadata has no reader
   const plugins = nuxt.options._serverPlugins as ServerPlugin[] | undefined
   if (Array.isArray(plugins)) {
@@ -243,6 +245,54 @@ export function addNitroPlugin (plugin: ServerPluginInput): void {
 /** @deprecated Use {@link addNitroPlugin}: a startup plugin is nitro's, not a portable server API. */
 export function addServerPlugin (plugin: ServerPluginInput): void {
   addNitroPlugin(plugin)
+}
+
+/**
+ * Adds a renderer plugin, which every SSR renderer calls once, before it renders, with the
+ * hooks it calls while rendering. It runs under any server builder, and in whatever
+ * runtime the server renders in.
+ *
+ * The plugin default-exports a function taking `{ hooks }`. On a host that does not run
+ * renderer plugins, the same file is registered as a nitro plugin instead, which nitro
+ * calls with its app, whose `hooks` are the ones the renderer calls. Pass `nitro2` or
+ * `nitro3` variants to register a different nitro plugin there.
+ *
+ * @example
+ * ```ts
+ * addRendererPlugin(resolver.resolve('./runtime/server/renderer'))
+ * ```
+ *
+ * ```ts
+ * // runtime/server/renderer.ts
+ * export default (({ hooks }) => {
+ *   hooks.hook('render:html', (html) => {
+ *     html.head.push('<meta name="my-module">')
+ *   })
+ * }) satisfies RendererPlugin
+ * ```
+ */
+export function addRendererPlugin (plugin: RendererPluginInput): void {
+  const nuxt = useNuxt()
+  const variants = typeof plugin === 'string' ? { nuxt: plugin } : plugin
+  const hostApis = getHostServerApis(nuxt) ?? UNIDENTIFIED_HOST_APIS
+  // a host without `_rendererPlugins` predates them, and runs the `nuxt` variant as a nitro plugin
+  const rendererPlugins = nuxt.options._rendererPlugins as RendererPluginEntry[] | undefined
+  const supported = Array.isArray(rendererPlugins)
+  const host: ServerApi[] = supported
+    ? ['nuxt', ...hostApis.filter(api => api !== 'nuxt')]
+    : hostApis.some(api => NITRO_APIS.has(api)) ? hostApis : []
+
+  const resolved = resolveVariant('addRendererPlugin', variants, normalize, SERVER_APIS, host)
+  if (!resolved) {
+    return
+  }
+  if (supported && resolved.api === 'nuxt') {
+    if (!rendererPlugins.some(entry => entry.plugin === resolved.value)) {
+      rendererPlugins.push({ plugin: resolved.value, unused: resolved.unused })
+    }
+    return
+  }
+  registerNitroPlugin(nuxt, resolved)
 }
 
 /**

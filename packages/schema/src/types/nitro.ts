@@ -152,6 +152,21 @@ export interface ServerPlugin {
   unused?: string[]
 }
 
+/**
+ * A renderer plugin as `addRendererPlugin()` accepts it: the path of a renderer plugin, or
+ * one per server API. The `nuxt` variant is the renderer plugin; `nitro2` and `nitro3`
+ * are nitro plugins registered instead on a host that does not run renderer plugins.
+ */
+export type RendererPluginInput = ServerApiVariants<string>
+
+/** A renderer plugin registration, as written into `_rendererPlugins`. */
+export interface RendererPluginEntry {
+  /** Path to the renderer plugin. */
+  plugin: string
+  /** Paths of the variants the host does not run. */
+  unused?: string[]
+}
+
 export interface RouteRuleConfigFallback extends RouteRuleConfigExtensions {
   prerender?: boolean
   ssr?: boolean

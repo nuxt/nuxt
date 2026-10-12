@@ -37,7 +37,38 @@ export interface ServerHookable<Hooks extends HookMap<Hooks>> {
   callHook<Name extends keyof Hooks & string>(name: Name, ...args: Parameters<Hooks[Name]>): Promise<void> | void
 }
 
-let hooks: ServerHookable<NuxtServerHooks & NuxtServerRendererHooks> | undefined
+/**
+ * What a renderer plugin is called with.
+ *
+ * @since 5.0.0
+ */
+export interface RendererPluginContext {
+  /** The hooks of the renderer the plugin is called for. */
+  hooks: Pick<ServerHookable<NuxtServerRendererHooks>, 'hook'>
+}
+
+/**
+ * A renderer plugin, as registered with `addRendererPlugin()`: called once for each
+ * renderer, before it renders.
+ *
+ * @example
+ * ```ts
+ * import type { RendererPlugin } from 'nuxt/server'
+ *
+ * export default (({ hooks }) => {
+ *   hooks.hook('render:html', (html) => {
+ *     html.head.push('<meta name="my-module">')
+ *   })
+ * }) satisfies RendererPlugin
+ * ```
+ *
+ * @since 5.0.0
+ */
+export type RendererPlugin = (context: RendererPluginContext) => void
+
+type ServerHooks = ServerHookable<NuxtServerHooks & NuxtServerRendererHooks>
+
+let current: { hooks: ServerHooks, claimed: boolean } | undefined
 
 /**
  * The server runtime hooks: renderer hooks and those declared on {@link NuxtServerHooks}.
@@ -52,6 +83,23 @@ let hooks: ServerHookable<NuxtServerHooks & NuxtServerRendererHooks> | undefined
  *
  * @since 4.6.0
  */
-export function useServerHooks (): ServerHookable<NuxtServerHooks & NuxtServerRendererHooks> {
-  return hooks ||= createHooks() as unknown as ServerHookable<NuxtServerHooks & NuxtServerRendererHooks>
+export function useServerHooks (): ServerHooks {
+  current ||= { hooks: createHooks() as unknown as ServerHooks, claimed: false }
+  return current.hooks
+}
+
+/**
+ * The server hooks for a renderer being created. The first renderer keeps those registered
+ * before it; a later one, as a dev server creates when it evaluates the server bundle
+ * again, starts with none, so nothing registered for the renderer it replaces runs twice.
+ *
+ * @internal
+ */
+export function claimServerHooks (): ServerHooks {
+  if (current?.claimed) {
+    current = undefined
+  }
+  const hooks = useServerHooks()
+  current!.claimed = true
+  return hooks
 }

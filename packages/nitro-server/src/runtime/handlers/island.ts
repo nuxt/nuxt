@@ -1,4 +1,3 @@
-import { useNitroHooks } from 'nitro/app'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
 import { HTTPError, getQuery } from 'nitro/h3'
@@ -214,7 +213,7 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     slots: getSlotIslandResponse(ssrContext),
   }
 
-  await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
+  await rendererInstance.hooks.callHook('render:island', islandResponse, { event, islandContext })
 
   return islandResponse
 }
