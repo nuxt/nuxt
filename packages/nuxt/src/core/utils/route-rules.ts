@@ -68,6 +68,24 @@ export function normalizeRouteRules (config: Record<string, RouteRuleConfig> | u
 }
 
 /**
+ * Expand `appMiddleware` given as a name or a list of names into the record the server
+ * runtime accepts. Matching entries are replaced, not mutated.
+ *
+ * @internal
+ */
+export function normalizeAppMiddlewareRules (routeRules: Record<string, Record<string, any> | undefined> | undefined): void {
+  for (const route in routeRules) {
+    const appMiddleware = routeRules[route]?.appMiddleware
+    if (typeof appMiddleware !== 'string' && !Array.isArray(appMiddleware)) { continue }
+
+    routeRules[route] = {
+      ...routeRules[route],
+      appMiddleware: Object.fromEntries([appMiddleware].flat().map(name => [name, true])),
+    }
+  }
+}
+
+/**
  * The route rules the build has resolved, as router entries.
  *
  * A server builder resolves its own (a module may push rules through `nitro:config`, and the
