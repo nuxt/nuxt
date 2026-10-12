@@ -1,5 +1,5 @@
 import { createApp, createSSRApp, nextTick } from 'vue'
-import type { App } from 'vue'
+import type { App, Component } from 'vue'
 
 import '#build/fetch-setup'
 import '#build/global-polyfills.mjs'
@@ -15,13 +15,29 @@ import plugins from '#build/plugins'
 import RootComponent from '#build/root-component.mjs'
 import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
-export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>
+/**
+ * Optional overrides for the server entry. Used by callers that render
+ * a sub-tree (e.g. island handlers) and want to swap the root component
+ * without mutating the shared `ssrContext`.
+ */
+export interface EntryOptions {
+  /** Override the default `RootComponent` for this render. */
+  rootComponent?: Component
+}
+
+export type Entry = (
+  ssrContext?: NuxtSSRContext,
+  options?: EntryOptions,
+) => Promise<App<Element>>
 
 let entry: Entry
 
 if (import.meta.server) {
-  entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
-    const vueApp = createApp(RootComponent)
+  entry = async function createNuxtAppServer (
+    ssrContext: CreateOptions['ssrContext'],
+    options?: EntryOptions,
+  ) {
+    const vueApp = createApp(options?.rootComponent ?? RootComponent, ssrContext?.islandContext?.props)
 
     const nuxt = createNuxtApp({ vueApp, ssrContext })
 
@@ -105,4 +121,4 @@ if (import.meta.client) {
   })
 }
 
-export default (ssrContext => entry(ssrContext)) as Entry
+export default ((ssrContext, options) => entry(ssrContext, options)) as Entry

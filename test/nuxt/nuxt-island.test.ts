@@ -26,6 +26,7 @@ async function createServer (handler: ServerHandler) {
 
 vi.mock('#build/nuxt.config.mjs', () => {
   return {
+    onigiriEnabled: false,
     // app config defaults
     appBaseURL: '/',
     appBuildAssetsDir: '/_nuxt/',

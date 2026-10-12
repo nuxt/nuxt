@@ -60,6 +60,12 @@ describe('imports:transform', () => {
   it('should exclude files from transform', async () => {
     expect(await transform('excluded')).toEqual(undefined)
   })
+
+  it('should include vue-onigiri render modules', () => {
+    const { transformInclude } = TransformPlugin({ ctx, options: {} }).raw({}, { framework: 'rollup', versions: {} }) as { transformInclude: (id: string) => boolean }
+    expect(transformInclude('/app/components/Foo.vue?vue&type=onigiri&lang.mjs')).toBe(true)
+    expect(transformInclude('/app/components/Foo.vue?vue&type=style&index=0&lang.css')).toBe(false)
+  })
 })
 
 const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta', 'useId']

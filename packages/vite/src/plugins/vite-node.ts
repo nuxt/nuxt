@@ -214,10 +214,11 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
 
   const runnerResolvedPath = resolveModulePath('#vite-node-runner', { from: import.meta.url })
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
+  const islandsResolvedPath = resolveModulePath('#vite-node-islands-entry', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
   const sourceMapPluginPath = resolveModulePath('#ssr-sourcemap', { from: import.meta.url })
 
-  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, fetchResolvedPath, sourceMapPluginPath].map(p => pathToFileURL(p).href))
+  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, islandsResolvedPath, fetchResolvedPath, sourceMapPluginPath].map(p => pathToFileURL(p).href))
   nitro.options.rollupConfig ||= {}
   const existingExternal = nitro.options.rollupConfig.external
   nitro.options.rollupConfig.external = (id, ...args) => {
@@ -240,6 +241,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const runnerCode = `export { default } from ${JSON.stringify(pathToFileURL(runnerResolvedPath).href)}`
   nitro.options.virtual['#build/dist/server/runner.mjs'] = runnerCode
   nitro.options._config.virtual['#build/dist/server/runner.mjs'] = runnerCode
+  const islandsCode = `export { default } from ${JSON.stringify(pathToFileURL(islandsResolvedPath).href)}`
+  nitro.options.virtual['#build/dist/server/components.islands.mjs'] = islandsCode
+  nitro.options._config.virtual['#build/dist/server/components.islands.mjs'] = islandsCode
 
   const sourceMapPluginCode = `export { default } from ${JSON.stringify(pathToFileURL(sourceMapPluginPath).href)}`
   nitro.options.virtual['#internal/nitro/ssr-sourcemap'] = sourceMapPluginCode

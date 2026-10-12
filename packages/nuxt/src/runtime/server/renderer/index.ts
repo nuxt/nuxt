@@ -908,7 +908,8 @@ async function renderStreamedResponse (ctx: {
         // be stitched into the body string - it has already streamed. Emit them
         // as inert `<template>`s plus a relocation script that runs before the
         // deferred entry hydrates. Skipped under `NO_SCRIPTS` (the guard keeps
-        // island apps buffered in that case).
+        // island apps buffered in that case). No-op under the vue-onigiri
+        // implementation, which does not use island teleports.
         const islandTeleports = NO_SCRIPTS ? '' : renderStreamedIslandTeleports(ssrContext, nonceAttr)
 
         const closingHtml = APP_ROOT_CLOSE_TAG
