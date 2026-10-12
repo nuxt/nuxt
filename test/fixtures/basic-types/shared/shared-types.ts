@@ -3,6 +3,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 import { foo } from '#shared/other'
 
 import type helloHandler from '../server/api/hello'
+import type { aliasedHandler } from '../server/aliased-import'
 
 describe('shared folder', () => {
   it('can reference its own aliases', () => {
@@ -34,5 +35,6 @@ describe('shared folder', () => {
 
   it('can reference server handler types', () => {
     expectTypeOf<typeof helloHandler>().not.toBeAny()
+    expectTypeOf<typeof aliasedHandler>().not.toBeAny()
   })
 })

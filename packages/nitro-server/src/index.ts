@@ -1083,6 +1083,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.sharedTsConfig.compilerOptions ||= {}
     opts.sharedTsConfig.compilerOptions.paths ||= {}
     Object.assign(opts.sharedTsConfig.compilerOptions.paths, nitroTypePaths)
+    opts.sharedTsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsModulePath)]
     opts.nodeTsConfig.compilerOptions ||= {}
     opts.nodeTsConfig.compilerOptions.paths ||= {}
     Object.assign(opts.nodeTsConfig.compilerOptions.paths, nitroNodeTypePaths)
