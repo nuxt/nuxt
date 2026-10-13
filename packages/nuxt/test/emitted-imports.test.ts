@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { compileRoutes } from 'fetchdts/compiler'
+import type { CompileStrategy } from 'fetchdts/compiler'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -11,7 +12,7 @@ describe('the emitted route module', () => {
   const appTypes = readFileSync(join(import.meta.dirname, '../src/app/types.ts'), 'utf-8')
 
   /** A route set that makes the compiler emit every accessor it has. */
-  const compiled = compileRoutes([{
+  const compile = (strategy: CompileStrategy) => compileRoutes([{
     routes: [
       {
         segments: [{ type: 'static', value: '/api' }, { type: 'static', value: '/thing' }],
@@ -23,12 +24,17 @@ describe('the emitted route module', () => {
       { segments: [{ type: 'static', value: '/api' }, { type: 'dynamic' }], metadata: { GET: { responseType: 'number' } } },
       { segments: [{ type: 'static', value: '/files' }, { type: 'wildcard' }], metadata: { ALL: { responseType: 'string' } } },
     ],
-  }], { name: 'GeneratedServerRoutes', moduleSpecifier: '#app/types', resolveAgainst: 'ServerRoutes' })
+  }], { name: 'GeneratedServerRoutes', moduleSpecifier: '#app/types', resolveAgainst: 'ServerRoutes', strategy })
 
-  /** The names the emitted module imports from `#app/types`. */
-  const imported = [...compiled.code.matchAll(/^import type \{([^}]*)\} from '#app\/types'$/gm)]
+  /**
+   * The names the emitted module imports from `#app/types`, under every strategy: the compiler picks
+   * one from the app's routes, and only imports `AnyFetchPath` once it drops the path union, past
+   * 200 parameterised routes.
+   */
+  const imported = [...new Set((['table+union', 'table', 'tree+union', 'tree'] as const)
+    .flatMap(strategy => [...compile(strategy).code.matchAll(/^import type \{([^}]*)\} from '#app\/types'$/gm)])
     .flatMap(match => match[1]!.split(',').map(name => name.trim()))
-    .filter(Boolean)
+    .filter(Boolean))]
 
   it('imports something, so the assertion below is not vacuous', () => {
     expect(imported.length).toBeGreaterThan(8)
