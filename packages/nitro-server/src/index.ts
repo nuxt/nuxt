@@ -31,7 +31,7 @@ import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKe
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { createNormalizedRouteRulesRouter, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveServerImportDirs } from './auto-imports.ts'
 import { normalizeLegacyRouteRules } from './route-rules.ts'
@@ -722,6 +722,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // after the hook, so rules and registrations contributed by modules are covered too
   normalizeLegacyRouteRules(nitroConfig.routeRules)
+  normalizeAppMiddlewareRules(nitroConfig.routeRules)
   const unusedVariants = collectServerRegistrations(nuxt, nitroConfig)
 
   const registerLateNitroCompatScope = await setupNitroCompat(nuxt, nitroConfig, legacy, legacyModulePresets, installedModules, unusedVariants)

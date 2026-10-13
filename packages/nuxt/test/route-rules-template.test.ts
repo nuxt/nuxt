@@ -7,14 +7,14 @@ import { routeRulesTemplate } from '../src/core/templates.ts'
 
 const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
 
-async function getRouteRulesTemplate (sensitive: boolean, baseURL?: string) {
+async function getRouteRulesTemplate (sensitive: boolean, baseURL?: string, routeRules: Record<string, any> = { '/admin/**': { prerender: true }, '/protected/**': { redirect: '/login' } }) {
   const nuxt = await loadNuxt({
     cwd: pagesFixtureDir,
     ready: true,
     overrides: {
       router: { options: { sensitive } },
       ...baseURL ? { app: { baseURL } } : {},
-      routeRules: { '/admin/**': { prerender: true }, '/protected/**': { redirect: '/login' } },
+      routeRules,
     },
   })
   try {
@@ -44,5 +44,19 @@ describe('route rules template', () => {
     const matcher = new Function('defu', code)(defu) as (path: string) => Record<string, any>
     expect(matcher('/protected/secret')).toMatchObject({ redirect: '/login' })
     expect(matcher('/sub/protected/secret')).not.toHaveProperty('redirect')
+  })
+
+  it('accepts `appMiddleware` as a name or a list of names', async () => {
+    const contents = await getRouteRulesTemplate(false, undefined, {
+      '/string': { appMiddleware: 'auth' },
+      '/array': { appMiddleware: ['auth', 'admin'] },
+      '/object': { appMiddleware: { auth: false } },
+    })
+    const code = contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return')
+    const { defu } = await import('defu')
+    const matcher = new Function('defu', code)(defu) as (path: string) => Record<string, any>
+    expect(matcher('/string').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/array').appMiddleware).toEqual({ auth: true, admin: true })
+    expect(matcher('/object').appMiddleware).toEqual({ auth: false })
   })
 })
