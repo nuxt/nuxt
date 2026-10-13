@@ -134,7 +134,7 @@ describe('loadNuxt', () => {
         "projectInlineModule",
         "css",
         "projectAutoModule",
-        "@nuxt/devtools",
+        "@nuxt/devtools-onboard",
         "nuxt:pages",
         "nuxt:meta",
         "nuxt:components",

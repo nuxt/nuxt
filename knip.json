@@ -125,7 +125,7 @@
       "ignoreUnresolved": ["../schema.ts"],
       "ignoreDependencies": [
         "@dxup/nuxt",
-        "@nuxt/devtools",
+        "@nuxt/devtools-onboard",
         "@nuxt/telemetry",
         "@nuxt/vite-builder",
         "@nuxt/vite-server"
