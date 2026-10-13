@@ -1866,6 +1866,18 @@ describe('plugins', () => {
     const html = await $fetch<string>('/plugins')
     expect(html).toContain('<meta name="module-nitro-plugin" content="registered">')
   })
+
+  it('passes the rendered response to nitro `render:response` listeners', async () => {
+    const res = await fetch('/?render-response')
+    expect(res.status).toBe(203)
+    expect(JSON.parse(res.headers.get('x-render-response')!)).toEqual({
+      body: 'string',
+      html: true,
+      contentType: 'text/html;charset=utf-8',
+    })
+    expect(res.headers.get('x-powered-by')).toBeNull()
+    expect(await res.text()).toContain('<!--render:response--></body>')
+  })
 })
 
 describe('layouts', () => {

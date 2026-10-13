@@ -9,6 +9,7 @@ import { NUXT_ASYNC_CONTEXT } from '#internal/nuxt/nitro-config.mjs'
 import { toRequestEvent } from '../utils/event'
 import { applyPrerenderHints } from '../utils/prerender'
 import { rendererInstance } from '../utils/renderer/options'
+import { createResponseHeaderRecord } from '../utils/response'
 
 // Polyfill for unctx (https://github.com/unjs/unctx#native-async-context)
 if (NUXT_ASYNC_CONTEXT && !('AsyncLocalStorage' in globalThis)) {
@@ -35,6 +36,7 @@ const handler: EventHandler = defineRenderHandler(async (event): Promise<Partial
     body: response.body as RenderResponse['body'],
     statusCode: response.status,
     statusMessage: response.statusText || undefined,
+    headers: createResponseHeaderRecord(event.node.res),
   }
 })
 
