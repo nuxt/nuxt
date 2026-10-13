@@ -30,7 +30,7 @@ describe('resolveNuxtModule', () => {
     const installedModulePaths = nuxt.options._installedModules.map(m => m.meta?.rawPath || m.entryPath!).filter(Boolean)
     expect(installedModulePaths).toMatchInlineSnapshot(`
       [
-        "@nuxt/devtools",
+        "@nuxt/devtools-onboard",
         "@nuxt/telemetry",
       ]
     `)
