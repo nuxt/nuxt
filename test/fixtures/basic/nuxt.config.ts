@@ -51,6 +51,19 @@ export default withMatrix({
       addBuildPlugin(plugin)
     },
     function (_options, nuxt) {
+      if (!nuxt.options.dev || (typeof nuxt.options.builder === 'string' && !nuxt.options.builder.includes('vite'))) { return }
+
+      nuxt.options.css.push('virtual-nul.css')
+      addBuildPlugin(createUnplugin(() => ({
+        name: 'virtual-nul',
+        resolveId (id) {
+          if (id === 'virtual-nul.css') { return '\0/virtual-nul.css' }
+        },
+        loadInclude: id => id.split('?')[0] === '\0/virtual-nul.css',
+        load: () => ':root { --virtual-nul: red }',
+      })))
+    },
+    function (_options, nuxt) {
       nuxt.hook('pages:extend', (pages) => {
         pages.push({
           path: '/manual-redirect',

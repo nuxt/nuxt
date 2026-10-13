@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 
 import { serverFetch } from '../src/server/index'
 import { resolveServerFetchInit } from '../src/server/fetch'
@@ -34,5 +34,10 @@ describe('`serverFetch`', () => {
 
   it('rejects without a server builder', async () => {
     await expect(serverFetch(event({}), '/api')).rejects.toMatchObject({ status: 500 })
+  })
+
+  it('resolves an untyped `Response` without generated route types', () => {
+    expectTypeOf(() => serverFetch(event({}), '/api/anything')).returns.toEqualTypeOf<Promise<Response>>()
+    expectTypeOf(() => serverFetch(event({}), '/api/anything', { method: 'POST', forwardHeaders: false })).returns.toEqualTypeOf<Promise<Response>>()
   })
 })

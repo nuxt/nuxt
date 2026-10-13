@@ -1576,6 +1576,14 @@ describe('errors', () => {
     expect(await res.text()).toContain('This is a custom error')
   })
 
+  it('should only send the cookies of the current request with a reused error', async () => {
+    for (const who of ['alice', 'bob']) {
+      const res = await fetch(`/error/shared?who=${who}`, { headers: { accept: 'text/html' } })
+      expect(res.status).toBe(418)
+      expect(res.headers.getSetCookie().filter(cookie => cookie.startsWith('shared-error-who='))).toEqual([`shared-error-who=${who}; Path=/`])
+    }
+  })
+
   it('should expose error causes only to development error pages', async () => {
     const htmlResponse = await fetch('/error-cause', {
       headers: { accept: 'text/html' },
@@ -2028,6 +2036,14 @@ describe.runIf(isDev && !isWebpack)('css links', () => {
     const html = await $fetch<string>('/')
     const links = html.match(/<link[^>]+global\.css[^>]*>/g) || []
     expect(links).toHaveLength(1)
+  })
+
+  it('should link null-byte virtual css through `/@id/`', async () => {
+    const html = await $fetch<string>('/')
+    expect(html).not.toContain('\0')
+    const links = [...html.matchAll(/<link[^>]+href="([^"]*virtual-nul\.css)"[^>]*>/g)].map(m => m[1])
+    expect(links).toEqual(['/_nuxt/@id/__x00__/virtual-nul.css'])
+    expect(await $fetch<string>(links[0]!, { headers: { accept: 'text/css' } })).toMatch(/--virtual-nul:\s*red/)
   })
 })
 

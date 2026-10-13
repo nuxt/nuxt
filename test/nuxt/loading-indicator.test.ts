@@ -200,3 +200,45 @@ describe('page loading indicator', () => {
     el.unmount()
   })
 })
+
+describe('loading indicator colors', () => {
+  it('uses `finishColor` once loading has finished', async () => {
+    const wrapper = await mountSuspended(NuxtLoadingIndicator, {
+      props: { color: 'blue', finishColor: 'green', errorColor: 'red', throttle: 0, hideDelay: 1000, resetDelay: 1000 },
+    })
+    const vm = wrapper.vm as unknown as ReturnType<typeof useLoadingIndicator>
+    const background = () => (wrapper.element as HTMLElement).style.background
+
+    vm.start()
+    await nextTick()
+    expect(background()).toBe('blue')
+
+    vm.finish()
+    await nextTick()
+    expect(background()).toBe('green')
+
+    vm.clear()
+    vm.start()
+    vm.finish({ error: true })
+    await nextTick()
+    expect(background()).toBe('red')
+
+    vm.clear()
+    wrapper.unmount()
+  })
+
+  it('keeps `color` when finishing without `finishColor`', async () => {
+    const wrapper = await mountSuspended(NuxtLoadingIndicator, {
+      props: { color: 'blue', throttle: 0, hideDelay: 1000, resetDelay: 1000 },
+    })
+    const vm = wrapper.vm as unknown as ReturnType<typeof useLoadingIndicator>
+
+    vm.start()
+    vm.finish()
+    await nextTick()
+    expect((wrapper.element as HTMLElement).style.background).toBe('blue')
+
+    vm.clear()
+    wrapper.unmount()
+  })
+})

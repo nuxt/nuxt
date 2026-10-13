@@ -1,5 +1,5 @@
 import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { AcceptedDeclaredMethod, AcceptedMethod, AnyServerRouteMethod, DeclaredFetchRequest, DeclaredRequestShape, DeclaredServerResponse, EffectiveBaseURL, RequiredDeclaredBody, RequiredFetchBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, TypedServerResponse, UnmatchedDeclaredRouteArgs, UnmatchedRouteArgs, ValidDeclaredFetchPath, ValidTypedFetchPath } from '../types/fetch'
+import type { AcceptedDeclaredMethod, AcceptedMethod, AnyServerRouteMethod, DeclaredFetchRequest, DeclaredRequestShape, DeclaredServerResponse, EffectiveBaseURL, FallbackBaseURL, RequiredDeclaredBody, RequiredFetchBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, TypedServerResponse, UnmatchedDeclaredRouteArgs, UnmatchedRouteArgs, ValidDeclaredFetchPath, ValidTypedFetchPath } from '../types/fetch'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { isPlainObject } from '@vue/shared'
@@ -135,7 +135,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchRequest>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = _ResT,
@@ -159,7 +159,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchRequest>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = _ResT,
@@ -183,7 +183,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchRequest>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = FetchFactoryDataT<FDataT, _ResT>,
@@ -207,7 +207,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchRequest>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = FetchFactoryDataT<FDataT, _ResT>,
@@ -231,7 +231,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchRequest>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = _ResT,
@@ -258,7 +258,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchPathInput>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = _ResT,
@@ -281,7 +281,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchPathInput>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = _ResT,
@@ -304,7 +304,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchPathInput>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = FetchFactoryDataT<FDataT, _ResT>,
@@ -327,7 +327,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchPathInput>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = FetchFactoryDataT<FDataT, _ResT>,
@@ -350,7 +350,7 @@ export interface UseFetch<FDataT = unknown, FPickKeys extends KeysOf<FDataT> = n
     // the base is part of the path requested, so it is resolved into `_ReqT` and everything the
     // route set is asked - the response, the request shapes, whether the path resolves at all -
     // is asked of that rather than of the path as written
-    const BaseURL extends string = '',
+    const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchPathInput>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = _ResT,
@@ -546,8 +546,8 @@ export interface CreateUseFetch {
     const FMethod extends AnyServerRouteMethod = 'get',
     // a `baseURL` the factory sets applies to every call the composable it returns makes, so it is
     // carried on the returned type and resolved there. A base passed at the call site wins, as it
-    // does at runtime
-    const FBaseURL extends string = '',
+    // does at runtime. `string` once `FResT` is named, as a base passed alongside it is not inferred
+    const FBaseURL extends string = FResT extends void ? '' : string,
     F_ResT = FResT extends void ? FetchResult<FReqT, FMethod> : FResT,
     FDataT = F_ResT,
     FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,

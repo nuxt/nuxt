@@ -602,6 +602,9 @@ describe('layouts', () => {
     setPageLayout('pascal-case')
     setPageLayout('override')
     setPageLayout('with-props', { aProp: 42 })
+    setPageLayout(false)
+    // @ts-expect-error No props when disabling the layout
+    setPageLayout(false, { aProp: 42 })
     // @ts-expect-error Invalid layout
     setPageLayout('invalid-layout')
     // @ts-expect-error Invalid layout props

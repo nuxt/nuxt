@@ -46,7 +46,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   nuxt.options.vite.build ||= {}
   nuxt.options.vite.build.outDir ||= outputDir
 
-  const publicDir = resolve(outputDir, 'public')
+  let publicDir = resolve(outputDir, 'public')
   const ssr = nuxt.options.ssr !== false
   const prerender = isPrerendering(nuxt)
   const handler = ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined
@@ -132,6 +132,20 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     }
 
     nuxt.options.vite.$client = client
+    // Deployment plugins can redirect client output during Vite config resolution.
+    // Finalize the resolved SPA assets instead of a stale default output directory.
+    if (!ssr) {
+      nuxt.options.vite.plugins.push({
+        name: 'nuxt:vite-server:client-output',
+        enforce: 'post',
+        configResolved (config) {
+          const outDir = config.environments?.client?.build?.outDir
+          if (outDir) {
+            publicDir = resolve(config.root, outDir)
+          }
+        },
+      })
+    }
     addVitePlugin(() => [DocumentPlugin(nuxt), EntryImportMapPlugin()], { server: false })
   }
 

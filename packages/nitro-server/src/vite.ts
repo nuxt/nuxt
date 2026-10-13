@@ -36,7 +36,7 @@ function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): { urls: strin
     if (!IS_CSS_RE.test(mod) || 'raw' in getQuery(mod)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.url && 'raw' in getQuery(i.url))) { continue }
-    urls.add(mod)
+    urls.add(toDevUrl(mod))
     if (node.file) { files.add(node.file) }
   }
   return { urls: [...urls], files }
@@ -65,6 +65,12 @@ function resolveGlobalCss (nuxt: Nuxt): Array<{ file: string, url: string }> {
     }
   }
   return Array.from(out, ([file, url]) => ({ file, url }))
+}
+
+/** Vite serves non-path ids, such as `\0` virtual modules, from `/@id/`. */
+function toDevUrl (url: string): string {
+  if (url[0] === '/' || url[0] === '.') { return url }
+  return '/@id/' + url.replace('\0', '__x00__')
 }
 
 function toFsUrl (path: string): string {
