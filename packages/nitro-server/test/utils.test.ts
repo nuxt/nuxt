@@ -1,6 +1,6 @@
 import { matchesGlob } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
+import { getLayerNodeModulesExcludePattern, getSsrResolveConditions, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
@@ -165,5 +165,11 @@ describe('toTranspileNoExternal', () => {
     expect(re.test('C:\\code\\nuxt\\image\\src\\runtime\\server\\routes\\_ipx.ts')).toBe(true)
     expect(re.test('C:/code/nuxt/image/src/runtime/server/routes/_ipx.ts')).toBe(true)
     expect(re.test('C:\\code\\nuxt\\image\\node_modules\\sharp\\lib\\index.js')).toBe(false)
+  })
+})
+
+describe('getSsrResolveConditions', () => {
+  it('merges conditions without duplicates', () => {
+    expect(getSsrResolveConditions(['custom', 'node'], ['development', 'node', 'import'])).toEqual(['custom', 'node', 'development', 'import'])
   })
 })

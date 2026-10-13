@@ -133,12 +133,8 @@ function toFsDriverGlob (pattern: string): string | undefined {
  * keyed only by `import`/`require` (notably `vue` and `vue-router`) resolve
  * when the only available copy is nested under `nuxt`'s own `node_modules`.
  */
-export function getSsrResolveConditions (exportConditions?: string[]): string[] {
-  const conditions = [...exportConditions || []]
-  if (!conditions.includes('import')) {
-    conditions.push('import')
-  }
-  return conditions
+export function getSsrResolveConditions (...sources: Array<string[] | undefined>): string[] {
+  return [...new Set([...sources.flatMap(conditions => conditions || []), 'import'])]
 }
 
 /**
