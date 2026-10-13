@@ -1576,6 +1576,14 @@ describe('errors', () => {
     expect(await res.text()).toContain('This is a custom error')
   })
 
+  it('should only send the cookies of the current request with a reused error', async () => {
+    for (const who of ['alice', 'bob']) {
+      const res = await fetch(`/error/shared?who=${who}`, { headers: { accept: 'text/html' } })
+      expect(res.status).toBe(418)
+      expect(res.headers.getSetCookie().filter(cookie => cookie.startsWith('shared-error-who='))).toEqual([`shared-error-who=${who}; Path=/`])
+    }
+  })
+
   it('should expose error causes only to development error pages', async () => {
     const htmlResponse = await fetch('/error-cause', {
       headers: { accept: 'text/html' },

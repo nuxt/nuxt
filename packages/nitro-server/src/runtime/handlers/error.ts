@@ -49,6 +49,10 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
   const status = error.status || 500
   const headers = new Headers(error.headers)
   const setCookies = new Set(headers.getSetCookie())
+  const responseHeaders = (event as H3Event).context.nuxt?.['~response-headers']
+  if (responseHeaders) {
+    mergeHeaders(headers, responseHeaders, setCookies)
+  }
   if (!NUXT_INLINE_ERROR_RENDERING) {
     appendVary(headers, 'accept, sec-fetch-mode')
   }
