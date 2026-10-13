@@ -47,6 +47,16 @@ describe('v2 event decoration', () => {
     fetchSpy.mockRestore()
   })
 
+  it('marks a sub-request made while rendering an error page, without sharing other request state', async () => {
+    const app = { fetch: vi.fn((_request: Request) => Promise.resolve(new Response('ok'))) }
+    const event = decorate(mockEvent('http://nuxt/api/outer'), app)
+    event.context.nuxt = { '~rendering-error': true, '~internal': true, 'prerenderRoutes': ['/outer'] }
+
+    await event.$fetch('/api/inner')
+
+    expect((app.fetch.mock.calls[0]![0] as Request & { context?: any }).context?.nuxt).toEqual({ '~rendering-error': true })
+  })
+
   it('dispatches a path into the running app', async () => {
     const app = { fetch: vi.fn((_request: Request) => Promise.resolve(new Response('{"ok":true}', { headers: { 'content-type': 'application/json' } }))) }
     const event = decorate(mockEvent('http://nuxt/api/outer', { headers: { cookie: 'session=abc' } }), app)
