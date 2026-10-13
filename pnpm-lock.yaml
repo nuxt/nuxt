@@ -241,7 +241,7 @@ catalogs:
       specifier: ^4.0.1
       version: 4.0.1
     '@nuxt/devtools-onboard':
-      specifier: ^4.0.0-beta.4
+      specifier: ^4.0.0-beta.5
       version: 4.1.0
     '@nuxt/telemetry':
       specifier: ^2.9.1
@@ -11430,7 +11430,7 @@ packages:
     resolution: {integrity: sha512-ShOFe2PURXGvRS5OrgmOLZOCwDTD7dEBVt0tMpFPKb9AsvqXKCRGM8QgKrUbRbJYFXScHvDPpGRd28rYidC0tA==}
     engines: {node: '>=14'}
     peerDependencies:
-      '@nuxt/kit': workspace:*
+      '@nuxt/kit': '*'
       vite: 8.3.5
     peerDependenciesMeta:
       '@nuxt/kit':
@@ -17622,7 +17622,7 @@ snapshots:
   h3@2.0.2(crossws@0.4.17(srvx@1.0.5))(ocache@0.3.0):
     dependencies:
       rou3: 1.0.0
-      srvx: 1.0.5
+      srvx: 1.0.8
     optionalDependencies:
       crossws: 0.4.17(srvx@1.0.5)
       ocache: 0.3.0
