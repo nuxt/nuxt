@@ -138,7 +138,7 @@ function createWebpackManifest (rspackStats: Rspack.Stats, context: string) {
 
     const [cid] = m.chunks
     const chunk = chunksById.get(cid)
-    if (!chunk || !chunk.files || !cid) {
+    if (!chunk || !chunk.files || cid == null) {
       continue
     }
     const relativeId = getModuleId(m.identifier!, context)
