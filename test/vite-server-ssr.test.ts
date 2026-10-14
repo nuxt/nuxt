@@ -111,6 +111,20 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     expect(await (await render('/about')).text()).toContain('<p id="about"> about page </p>')
   })
 
+  it('resolves asset URLs with the helpers of its own build', async () => {
+    // another build loaded into the same process installs its own unscoped helpers
+    const globals = globalThis as { __buildAssetsURL?: unknown }
+    const own = globals.__buildAssetsURL
+    globals.__buildAssetsURL = () => '/other-build/logo.svg'
+    try {
+      const rendered = await (await render('/asset')).text()
+
+      expect(rendered).toMatch(/<img id="asset" src="\/_nuxt\/logo\.[^"]+\.svg"/)
+    } finally {
+      globals.__buildAssetsURL = own
+    }
+  })
+
   it('serves the public directory in front of the renderer', async () => {
     const response = await render('/static.txt')
 

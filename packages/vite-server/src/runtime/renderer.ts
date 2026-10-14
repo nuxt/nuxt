@@ -31,8 +31,13 @@ export type MatchRouteRules = (path: string) => {
  * Route rules come from the matcher the build compiled, so a route is server-rendered
  * unless a rule says otherwise.
  */
-export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runtimeConfig'], matchRouteRules: MatchRouteRules, prerender?: NuxtRendererOptions['prerender']): NuxtRendererOptions {
-  // the URL helpers the app build generates read these off the global
+export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runtimeConfig'], matchRouteRules: MatchRouteRules, prerender?: NuxtRendererOptions['prerender'], assetsURLGlobal?: string): NuxtRendererOptions {
+  // the asset URLs of the server build read these off a global scoped to the build, so
+  // that handlers of several builds can share a process; the unscoped names stay for code
+  // that reads them directly
+  if (assetsURLGlobal) {
+    (globalThis as Record<string, unknown>)[assetsURLGlobal] = { buildAssetsURL, publicAssetsURL }
+  }
   ;(globalThis as { __buildAssetsURL?: unknown }).__buildAssetsURL = buildAssetsURL
   ;(globalThis as { __publicAssetsURL?: unknown }).__publicAssetsURL = publicAssetsURL
 
