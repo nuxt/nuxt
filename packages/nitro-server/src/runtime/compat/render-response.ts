@@ -83,46 +83,50 @@ export function isStreamedResponse (response: Response): boolean {
   return streamedResponses.has(response)
 }
 
-const renderBodies = new WeakMap<object, string>()
+const renderBodies = new WeakMap<Response, string>()
 
 /**
- * Remember the HTML a response was built from, keyed by the `ResponseInit` it was built
- * with, so that the body can be offered to a `render:response` listener without reading it
- * back out of the `Response`.
+ * Remember the HTML a response was built from, so that the body can be offered to a
+ * `render:response` listener without reading it back out of the `Response`.
  */
-export function rememberRenderBody (init: object | undefined, body: unknown): void {
-  if (init && typeof body === 'string') {
-    renderBodies.set(init, body)
+export function rememberRenderBody (response: Response, body: unknown): void {
+  if (typeof body === 'string') {
+    renderBodies.set(response, body)
   }
 }
 
 /**
- * Emit `render:response` for a response the Nuxt renderer produced, rebuilding it if the
- * hook changed anything: the `Response` copied status and headers from `event.res` when it
- * was constructed, so mutations made through the hook are not otherwise visible on it.
+ * Emit `render:response` for a response the Nuxt renderer produced and rebuild it from
+ * `event.res`, which is first given the status and headers of the response. The body is
+ * offered only when the response was built from a string.
  */
 export async function applyLegacyRenderResponseTo (event: H3Event, hooks: LegacyHooks, response: Response, createResponse: (body: BodyInit | null, init?: ResponseInit) => Response): Promise<Response> {
-  const body = renderBodies.get(event.res)
-  renderBodies.delete(event.res)
+  const body = renderBodies.get(response)
 
-  if (body !== undefined) {
-    const replaced = await applyLegacyRenderResponse(event, hooks, body)
-    return createResponse(replaced ?? body, event.res)
+  event.res.status = response.status
+  event.res.statusText = response.statusText || undefined
+  replaceHeaders(event.res.headers, response.headers)
+
+  const replaced = await applyLegacyRenderResponse(event, hooks, body)
+  const rebuilt = createResponse(replaced ?? response.body, event.res)
+  if (isStreamedResponse(response)) {
+    markStreamedResponse(rebuilt)
   }
+  return rebuilt
+}
 
-  // a streamed body, or a response not built from `event.res` (a redirect): the status is
-  // committed, so only header changes carry over
-  await applyLegacyRenderResponse(event, hooks, undefined)
-  const cookies = new Set(response.headers.getSetCookie())
-  for (const [name, value] of event.res.headers) {
-    if (name !== 'set-cookie') {
-      response.headers.set(name, value)
+function replaceHeaders (target: Headers, source: Headers): void {
+  for (const name of [...target.keys()]) {
+    if (!source.has(name)) {
+      target.delete(name)
     }
   }
-  for (const cookie of event.res.headers.getSetCookie()) {
-    if (!cookies.has(cookie)) {
-      response.headers.append('set-cookie', cookie)
+  target.delete('set-cookie')
+  for (const [name, value] of source) {
+    if (name === 'set-cookie') {
+      target.append(name, value)
+    } else {
+      target.set(name, value)
     }
   }
-  return response
 }
