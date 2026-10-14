@@ -267,8 +267,11 @@ const flatDistPath = {
   wasm: '',
 }
 
-function getDevtool (sourcemap: boolean | 'hidden', devtool: 'cheap-module-source-map' | 'source-map') {
-  return sourcemap === 'hidden' ? `hidden-${devtool}` as const : devtool
+function getDevtool (sourcemap: boolean | 'hidden' | 'nosource', devtool: 'cheap-module-source-map' | 'source-map') {
+  if (sourcemap === 'hidden') {
+    return `hidden-${devtool}` as const
+  }
+  return sourcemap === 'nosource' ? `nosources-${devtool}` as const : devtool
 }
 
 function getDefines (nuxt: Nuxt, name: 'client' | 'server') {
