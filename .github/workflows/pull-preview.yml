@@ -21,7 +21,8 @@ permissions: {}
 
 concurrency:
   group: pull-preview-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
+  queue: max
 
 jobs:
   comment:
