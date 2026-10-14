@@ -1,7 +1,7 @@
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { PostCSSPlugin } from '@rsbuild/core'
 import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, findPackageMissingSubpath } from '@nuxt/kit/internal'
 
 type PostcssPluginFactory = (options: Record<string, any>) => PostCSSPlugin
 
@@ -40,6 +40,12 @@ async function resolvePostcssPlugin (pluginName: string, nuxt: Nuxt): Promise<Po
   let pluginFn = await importPlugin()
   if (typeof pluginFn === 'function') {
     return pluginFn
+  }
+
+  const packageName = findPackageMissingSubpath(pluginName, nuxt.options.modulesDir)
+  if (packageName) {
+    bundlerDiagnostics.NUXT_B7027({ pluginName, packageName })
+    return
   }
 
   // Plugin not found - prompt the user to install it

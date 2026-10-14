@@ -188,8 +188,6 @@
     },
     "packages/rspack": {
       "ignoreDependencies": [
-        "@nuxt/kit",
-        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",
