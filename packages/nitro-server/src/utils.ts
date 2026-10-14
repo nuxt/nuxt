@@ -1,9 +1,24 @@
+import { lstat, symlink, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, isAbsolute, join, normalize, relative } from 'pathe'
+import { dirname, isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 
 const TEMPLATE_PARAM_RE = /\{\{ ?([\w.]+) ?\}\}/g
+
+/**
+ * Link `<rootDir>/dist` to the public output of a static build, replacing an existing link.
+ * A real file or directory at that path is left untouched.
+ */
+export async function linkStaticDist (rootDir: string, publicDir: string): Promise<void> {
+  const dist = resolve(rootDir, 'dist')
+  const stats = await lstat(dist).catch(() => null)
+  if (stats) {
+    if (!stats.isSymbolicLink()) { return }
+    await unlink(dist).catch(() => {})
+  }
+  await symlink(publicDir, dist, 'junction').catch(() => {})
+}
 
 /**
  * Resolve the `{{ path.to.option }}` placeholders in a Nitro command against the Nitro

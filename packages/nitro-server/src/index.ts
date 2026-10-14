@@ -25,7 +25,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitropack/runtime/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, getLayerNodeModulesExcludePattern, isNuxtDistId, resolveNitroCommand, toArray, toFsDriverIgnorePatterns, toTranspileNoExternal } from './utils.ts'
+import { distDir, getLayerNodeModulesExcludePattern, isNuxtDistId, linkStaticDist, resolveNitroCommand, toArray, toFsDriverIgnorePatterns, toTranspileNoExternal } from './utils.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
@@ -1225,10 +1225,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   async function symlinkDist () {
     if (nitro.options.static) {
-      const distDir = resolve(nuxt.options.rootDir, 'dist')
-      if (!existsSync(distDir)) {
-        await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
-      }
+      await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
     }
   }
 
