@@ -111,18 +111,12 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     expect(await (await render('/about')).text()).toContain('<p id="about"> about page </p>')
   })
 
-  it('resolves asset URLs with the helpers of its own build', async () => {
-    // another build loaded into the same process installs its own unscoped helpers
-    const globals = globalThis as { __buildAssetsURL?: unknown }
-    const own = globals.__buildAssetsURL
-    globals.__buildAssetsURL = () => '/other-build/logo.svg'
-    try {
-      const rendered = await (await render('/asset')).text()
+  it('renders asset URLs without process-wide helpers', async () => {
+    expect(await (await render('/asset')).text()).toMatch(/<img id="asset" src="\/_nuxt\/logo\.[^"]+\.svg"/)
 
-      expect(rendered).toMatch(/<img id="asset" src="\/_nuxt\/logo\.[^"]+\.svg"/)
-    } finally {
-      globals.__buildAssetsURL = own
-    }
+    const files = await glob('**/*.mjs', { cwd: join(outputDir, 'server'), absolute: true })
+    const sources = await Promise.all(files.map(file => readFile(file, 'utf-8')))
+    expect(sources.filter(source => /__(?:build|public)AssetsURL/.test(source))).toEqual([])
   })
 
   it('serves the public directory in front of the renderer', async () => {

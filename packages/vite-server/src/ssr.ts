@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto'
 import { resolve } from 'pathe'
+import { joinRelativeURL } from 'ufo'
 import { addTemplate } from '@nuxt/kit'
 import { getServerRuntime, useServerBuild } from '@nuxt/kit/internal'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
@@ -60,7 +60,7 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handl
     ServerEnvironmentPlugin(nuxt, serverRuntime, entry, serverDir, prerender),
     BundledVuePlugin(nuxt),
     ServerRuntimeModulesPlugin(serverRuntime),
-    ScopedAssetsURLPlugin(nuxt),
+    StaticAssetsURLPlugin(nuxt),
   )
 
   return { entry, handler, unsupported }
@@ -109,7 +109,7 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
       `import matchRouteRules from ${JSON.stringify(routeRules)}`,
       ...prerender ? [`import { createPrerenderOptions } from ${JSON.stringify(resolve(distDir, 'runtime/prerender'))}`] : [],
       '',
-      `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig, matchRouteRules, ${prerender ? `createPrerenderOptions({ sharedData: ${!!nuxt.options.experimental.sharedPrerenderData} })` : 'undefined'}, ${JSON.stringify(assetsURLGlobal(nuxt))}))`,
+      `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig, matchRouteRules${prerender ? `, createPrerenderOptions({ sharedData: ${!!nuxt.options.experimental.sharedPrerenderData} })` : ''}))`,
       `export const fetch = createFetchHandler(renderer, matchRouteRules)`,
       `export default { fetch }`,
     ].join('\n'),
@@ -218,44 +218,34 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
   }
 }
 
-/**
- * The global a build's server chunks read its asset URL helpers from. Keyed by the build
- * directory as well as the build id, since a build id may be pinned to the same value for
- * several apps, such as a commit hash.
- */
-export function assetsURLGlobal (nuxt: Nuxt): string {
-  const hash = createHash('sha256').update(`${nuxt.options.buildDir}\n${nuxt.options.buildId}`).digest('hex').slice(0, 16)
-  return `__nuxt_assets:${hash}`
-}
+const ASSETS_URL_RE = /^(?:globalThis\.)?__(build|public)AssetsURL\(("(?:[^"\\]|\\.)*")\)$/
 
 /**
- * Resolves the asset URL helpers of a server chunk through a global scoped to the build.
- *
- * Asset URLs only become expressions when a chunk is rendered, too late for them to import
- * anything, so they read the helpers off `globalThis`. Under one shared name, the last
- * handler loaded into a process would answer for every other one, and an app would render
- * the asset URLs of another.
+ * Resolves the asset URLs of the server build at build time. The server reads the `app`
+ * runtime config serialised by the build, so each URL is a constant.
  */
-export function ScopedAssetsURLPlugin (nuxt: Nuxt): Plugin {
-  const key = JSON.stringify(assetsURLGlobal(nuxt))
-
+function StaticAssetsURLPlugin (nuxt: Nuxt): Plugin {
   return {
-    name: 'nuxt:vite-server:scoped-assets-url',
+    name: 'nuxt:vite-server:static-assets-url',
     apply: 'build',
-    config (config) {
-      const renderBuiltUrl = config.experimental?.renderBuiltUrl
-      if (!renderBuiltUrl) { return }
+    config: {
+      order: 'post',
+      handler (config) {
+        const renderBuiltUrl = config.experimental?.renderBuiltUrl
+        if (!renderBuiltUrl) { return }
 
-      config.experimental!.renderBuiltUrl = (filename, context) => {
-        const result = renderBuiltUrl(filename, context)
-        if (!context.ssr || !result || typeof result !== 'object' || !('runtime' in result) || !result.runtime) {
-          return result
+        config.experimental!.renderBuiltUrl = (filename, context) => {
+          const result = renderBuiltUrl(filename, context)
+          const match = context.ssr && result && typeof result === 'object' && 'runtime' in result && result.runtime?.match(ASSETS_URL_RE)
+          if (!match) { return result }
+
+          const { cdnURL, baseURL, buildAssetsDir } = nuxt.options.runtimeConfig.app
+          const path: string = JSON.parse(match[2]!)
+          return match[1] === 'build'
+            ? joinRelativeURL(cdnURL || baseURL, buildAssetsDir, path)
+            : joinRelativeURL(cdnURL || baseURL, path)
         }
-        return {
-          ...result,
-          runtime: result.runtime.replace(/^(?:globalThis\.)?__(build|public)AssetsURL\(/, (_, kind) => `globalThis[${key}].${kind}AssetsURL(`),
-        }
-      }
+      },
     },
   }
 }
