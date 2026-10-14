@@ -26,8 +26,7 @@ interface LegacyRenderResponse {
  * Returns the body to send, which the hook may replace on non-streamed responses.
  */
 export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHooks, body: string | undefined): Promise<string | undefined> {
-  const snapshot: Record<string, string> = Object.fromEntries(event.res.headers.entries())
-  const headers: Record<string, string> = { ...snapshot }
+  const headers = createHeaderRecord(event.res.headers)
   const response: LegacyRenderResponse = {
     body,
     statusCode: event.res.status,
@@ -37,18 +36,9 @@ export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHo
 
   await hooks.callHook('render:response', response, { event })
 
-  for (const header in response.headers) {
-    const value = response.headers[header]
-    if (value === undefined) {
-      event.res.headers.delete(header)
-    } else if (value !== snapshot[header] || !event.res.headers.has(header)) {
-      event.res.headers.set(header, value)
-    }
-  }
-
-  for (const header in snapshot) {
-    if (!(header in response.headers)) {
-      event.res.headers.delete(header)
+  if (response.headers && response.headers !== headers) {
+    for (const [name, value] of Object.entries(response.headers)) {
+      setHeader(event.res.headers, name, value)
     }
   }
 
@@ -65,6 +55,65 @@ export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHo
   }
 
   return typeof response.body === 'string' ? response.body : body
+}
+
+/**
+ * A live view of `event.res.headers` as the record nitro v2 passed to `render:response`,
+ * without `set-cookie`, which has no single-string form. The target is a snapshot for
+ * `util.inspect`, which bypasses the traps.
+ */
+function createHeaderRecord (headers: Headers): Record<string, string> {
+  const read = (name: string | symbol): string | undefined => {
+    if (typeof name !== 'string' || name.toLowerCase() === 'set-cookie') { return }
+    try {
+      return headers.get(name) ?? undefined
+    } catch {
+      // not a valid header name
+    }
+  }
+
+  const snapshot: Record<string, string> = {}
+  const write = (name: string | symbol, value: unknown) => {
+    if (typeof name !== 'string') { return }
+    setHeader(headers, name, value)
+    const current = read(name)
+    if (current === undefined) {
+      delete snapshot[name.toLowerCase()]
+    } else {
+      snapshot[name.toLowerCase()] = current
+    }
+  }
+  for (const [name, value] of headers) {
+    if (name !== 'set-cookie') {
+      snapshot[name] = value
+    }
+  }
+
+  return new Proxy(snapshot, {
+    get: (_, name) => read(name),
+    has: (_, name) => read(name) !== undefined,
+    set (_, name, value) {
+      write(name, value)
+      return true
+    },
+    deleteProperty (_, name) {
+      write(name, undefined)
+      return true
+    },
+    ownKeys: () => [...new Set(headers.keys())].filter(name => name !== 'set-cookie'),
+    getOwnPropertyDescriptor (_, name) {
+      const value = read(name)
+      return value === undefined ? undefined : { value, writable: true, enumerable: true, configurable: true }
+    },
+  })
+}
+
+function setHeader (headers: Headers, name: string, value: unknown): void {
+  if (value === undefined || value === null) {
+    headers.delete(name)
+  } else {
+    headers.set(name, String(value))
+  }
 }
 
 const streamedResponses = new WeakSet<Response>()

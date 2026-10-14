@@ -1,3 +1,4 @@
+import { inspect } from 'node:util'
 import { describe, expect, it } from 'vitest'
 import { mockEvent } from 'nitro/h3'
 import { FastResponse } from 'srvx'
@@ -40,6 +41,76 @@ describe('legacy `render:response` hook', () => {
     }), '<html></html>')
 
     expect(event.res.headers.has('x-powered-by')).toBe(false)
+  })
+
+  it('keeps a header removed from the event', async () => {
+    const event = mockEvent('http://nuxt/')
+    event.res.headers.set('x-frame-options', 'DENY')
+
+    await applyLegacyRenderResponse(event, createHooks((_response, { event }) => {
+      event.res.headers.delete('x-frame-options')
+    }), '<html></html>')
+
+    expect(event.res.headers.has('x-frame-options')).toBe(false)
+  })
+
+  it('reads headers set on the event after the hook was called', async () => {
+    const event = mockEvent('http://nuxt/')
+    event.res.headers.set('x-frame-options', 'DENY')
+
+    await applyLegacyRenderResponse(event, createHooks((response, { event }) => {
+      event.res.headers.set('x-frame-options', 'SAMEORIGIN')
+      event.res.headers.set('x-added', 'yes')
+      for (const [name, value] of Object.entries<string>(response.headers)) {
+        event.res.headers.set(name, value)
+      }
+      expect(response.headers['X-Added']).toBe('yes')
+    }), '<html></html>')
+
+    expect(event.res.headers.get('x-frame-options')).toBe('SAMEORIGIN')
+  })
+
+  it('leaves `set-cookie` out of the payload headers', async () => {
+    const event = mockEvent('http://nuxt/')
+    event.res.headers.set('content-type', 'text/html')
+    event.res.headers.append('set-cookie', 'a=1')
+    event.res.headers.append('set-cookie', 'b=2')
+
+    await applyLegacyRenderResponse(event, createHooks((response, { event }) => {
+      expect({ ...response.headers }).toEqual({ 'content-type': 'text/html' })
+      for (const [name, value] of Object.entries<string>(response.headers)) {
+        event.res.headers.set(name, value)
+      }
+    }), '<html></html>')
+
+    expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
+  })
+
+  it('shows the payload headers when inspected', async () => {
+    const event = mockEvent('http://nuxt/')
+    event.res.headers.set('content-type', 'text/html')
+    event.res.headers.set('set-cookie', 'a=1')
+
+    let inspected: string | undefined
+    await applyLegacyRenderResponse(event, createHooks((response) => {
+      response.headers['x-render-response'] = 'yes'
+      delete response.headers['content-type']
+      inspected = inspect(response.headers)
+    }), '<html></html>')
+
+    expect(inspected).toBe(`{ 'x-render-response': 'yes' }`)
+  })
+
+  it('applies headers from a replaced payload record', async () => {
+    const event = mockEvent('http://nuxt/')
+    event.res.headers.set('content-type', 'text/html')
+
+    await applyLegacyRenderResponse(event, createHooks((response) => {
+      response.headers = { 'x-replaced': 'yes' }
+    }), '<html></html>')
+
+    expect(event.res.headers.get('x-replaced')).toBe('yes')
+    expect(event.res.headers.get('content-type')).toBe('text/html')
   })
 
   it('applies a status and body replacement', async () => {
