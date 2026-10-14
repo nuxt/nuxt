@@ -1033,6 +1033,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
+  options.alias['nuxt/app'] ||= options.appDir
   options._majorVersion = 4
 
   // De-duplicate key arrays
