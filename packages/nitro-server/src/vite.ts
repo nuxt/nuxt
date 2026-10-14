@@ -16,7 +16,7 @@ import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 
-import { distDir, getServerReplacements } from './utils.ts'
+import { distDir, getServerReplacements, linkStaticDist } from './utils.ts'
 
 const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
@@ -208,7 +208,12 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   // it is where `nitro:build:public-assets` can see the copied assets.
   if (!nuxt.options.dev) {
     // TODO: hook to vite
-    nitro.hooks.hook('compiled', () => nuxt.callHook('nitro:build:public-assets', nitro))
+    nitro.hooks.hook('compiled', async () => {
+      await nuxt.callHook('nitro:build:public-assets', nitro)
+      if (nitro.options.static) {
+        await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
+      }
+    })
   }
 }
 

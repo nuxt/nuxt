@@ -1,6 +1,7 @@
+import { lstat, symlink, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, isAbsolute, normalize } from 'pathe'
+import { dirname, isAbsolute, normalize, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
@@ -13,6 +14,20 @@ export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
     '__VUE_PROD_DEVTOOLS__': String(false),
     'import.meta.test': String(!!nuxt.options.test),
   }
+}
+
+/**
+ * Link `<rootDir>/dist` to the public output of a static build, replacing an existing link.
+ * A real file or directory at that path is left untouched.
+ */
+export async function linkStaticDist (rootDir: string, publicDir: string): Promise<void> {
+  const dist = resolve(rootDir, 'dist')
+  const stats = await lstat(dist).catch(() => null)
+  if (stats) {
+    if (!stats.isSymbolicLink()) { return }
+    await unlink(dist).catch(() => {})
+  }
+  await symlink(publicDir, dist, 'junction').catch(() => {})
 }
 
 /**
