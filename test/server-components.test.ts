@@ -875,6 +875,48 @@ describe('island request headers', () => {
   })
 })
 
+describe('island head', () => {
+  it('applies useHeadSafe rules to the island response', async () => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL('SafeHead'))
+    expect(result.head.meta).toEqual([
+      { name: 'island-trusted-meta', content: 'trusted' },
+      { name: 'island-safe-meta', content: 'safe' },
+    ])
+    expect(result.head.bodyAttrs).toEqual({ class: 'island-safe-body' })
+    expect(JSON.stringify(result.head)).not.toContain('__islandUnsafe')
+  })
+
+  it('applies useHeadSafe rules to island head when server rendering the page', async () => {
+    const html = await $fetch<string>('/island-safe-head')
+    expect(html).toContain('<meta name="island-trusted-meta" content="trusted">')
+    expect(html).toContain('<meta name="island-safe-meta" content="safe">')
+    expect(html).toContain('island-safe-body')
+    expect(html).not.toContain('__islandUnsafe')
+  })
+
+  it('applies useHeadSafe rules to island head after hydration', async () => {
+    const { page } = await renderPage('/island-safe-head')
+    await page.locator('#safe-head-island').waitFor()
+    await page.waitForLoadState('networkidle')
+    expect(await page.evaluate(() => (window as any).__islandUnsafe)).toBeUndefined()
+    expect(await page.locator('body').getAttribute('onload')).toBeNull()
+    expect(await page.locator('body').getAttribute('class')).toContain('island-safe-body')
+    expect(await page.content()).not.toContain('__islandUnsafe')
+    await page.close()
+  })
+
+  it('applies useHeadSafe rules to island head on client-side navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.evaluate(() => (window as any).useNuxtApp?.().$router.push('/island-safe-head'))
+    await page.locator('#safe-head-island').waitFor()
+    await page.waitForFunction(() => document.querySelector('meta[name="island-safe-meta"]'))
+    expect(await page.evaluate(() => (window as any).__islandUnsafe)).toBeUndefined()
+    expect(await page.locator('body').getAttribute('onload')).toBeNull()
+    expect(await page.content()).not.toContain('__islandUnsafe')
+    await page.close()
+  })
+})
+
 describe.skipIf(isDev || isWebpack)('regressions', () => {
   // https://github.com/nuxt/nuxt/issues/26527
   it('renders <Counter nuxt-client /> when nested two levels deep in server components', async () => {
