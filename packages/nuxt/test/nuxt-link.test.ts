@@ -102,6 +102,8 @@ describe('nuxt-link:isExternal', () => {
     // External
     expect(nuxtLink({ to: 'https://nuxtjs.org' }).type).toBe(EXTERNAL)
     expect(nuxtLink({ to: '//nuxtjs.org' }).type).toBe(EXTERNAL)
+    expect(nuxtLink({ to: '/\t/nuxtjs.org' }).type).toBe(EXTERNAL)
+    expect(nuxtLink({ to: '/\n\\nuxtjs.org' }).type).toBe(EXTERNAL)
     expect(nuxtLink({ to: 'tel:0123456789' }).type).toBe(EXTERNAL)
     expect(nuxtLink({ to: 'mailto:hello@nuxtlabs.com' }).type).toBe(EXTERNAL)
   })
