@@ -34,6 +34,12 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server', () =>
     expect(await $fetch<string>('/about', { headers: { accept: 'text/html' } })).toContain('<div id="__nuxt">')
   })
 
+  it('renders the shell through renderer plugins for each navigation', async () => {
+    const html = await $fetch<string>('/about', { headers: { accept: 'text/html' } })
+    expect(html.match(/<meta name="renderer-plugin"[^>]*>/g)).toEqual(['<meta name="renderer-plugin" content="request /about">'])
+    expect(html).toMatch(/<body[^>]* data-renderer-plugin>/)
+  })
+
   it('serves files from the public directory', async () => {
     expect(await $fetch<string>('/static.txt')).toContain('static-asset')
   })
@@ -70,6 +76,11 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
     expect(html).toContain('<title>Pure Vite SPA</title>')
     // linked by vite, which owns the document as an html build input
     expect(html).toMatch(/<script type="module"[^>]* src="\.\/_nuxt\/[^"]+\.js">/)
+  })
+
+  it('renders the document through renderer plugins, as a prerendered route', () => {
+    expect(html.match(/<meta name="renderer-plugin"[^>]*>/g)).toEqual(['<meta name="renderer-plugin" content="prerender /">'])
+    expect(html).toMatch(/<body[^>]* data-renderer-plugin>/)
   })
 
   it('renders the built-in loading template', () => {

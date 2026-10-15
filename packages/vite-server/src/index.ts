@@ -12,6 +12,7 @@ import { setupSSR } from './ssr.ts'
 import { setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { finishStaticOutput, writeStaticOutput } from './output.ts'
+import { SpaDocumentPlugins, rendersSpaDocument } from './spa-document.ts'
 import { isPrerendering, manifestTimestamp, prerenderRoutes, writeAppManifest } from './prerender.ts'
 
 /**
@@ -99,6 +100,10 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   // an environment, where an app-level `buildApp` hook is never called.
   nuxt.options.vite.plugins ||= []
   nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt))
+
+  if (rendersSpaDocument(nuxt)) {
+    nuxt.options.vite.plugins.push(...SpaDocumentPlugins(nuxt))
+  }
 
   if (!nuxt.options.dev) {
     // the document is a real HTML build input, so vite links the entry chunk, injects its
@@ -226,9 +231,6 @@ function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: strin
 
   if (nuxt.options.serverHandlers.length || getLayerDirectories(nuxt).some(dirs => existsSync(dirs.server))) {
     unsupported.push('server routes and server middleware')
-  }
-  if (!build.ssr && nuxt.options._rendererPlugins.length) {
-    unsupported.push('renderer plugins')
   }
   const routeRules = Object.values(nuxt.options.routeRules || {})
   const ignoredRules = [...new Set(routeRules.flatMap(rules => Object.keys(rules || {}).filter(key => SERVER_ONLY_RULES.has(key))))]

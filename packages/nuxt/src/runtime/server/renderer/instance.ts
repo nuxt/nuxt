@@ -1,9 +1,6 @@
-import { HookableCore } from 'hookable'
-import plugins from 'nuxt/internal/renderer-plugins'
-
-import type { NuxtServerRendererHooks } from '../../../server/hooks'
 import { createBuildFiles } from './build-files'
 import type { BuildFiles } from './build-files'
+import { createRendererPluginHooks } from './plugins'
 import type { NuxtRendererOptions, RendererHooks } from './runtime'
 
 /**
@@ -35,14 +32,9 @@ export function createRendererInstance (options: NuxtRendererOptions): NuxtRende
 }
 
 function createRendererHooks (options: NuxtRendererOptions): RendererHooks {
-  if (!plugins.length) {
+  const own = createRendererPluginHooks()
+  if (!own) {
     return { callHook: (name, ...args) => options.hooks().callHook(name, ...args) }
-  }
-
-  const own = new HookableCore<NuxtServerRendererHooks>()
-  const context = { hooks: { hook: own.hook.bind(own) } }
-  for (const plugin of plugins) {
-    plugin(context)
   }
 
   return {
