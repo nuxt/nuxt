@@ -12,7 +12,8 @@ import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
 import { compileStyle, parse } from '@vue/compiler-sfc'
 
-import { getVueLoaderHash } from '../builder.ts'
+import type { BuilderImpl } from '../builder-registry.ts'
+import { getBuilderImpl } from '../builder-registry.ts'
 
 const CSS_URL_RE = /url\((['"]?)(\/[^)]+?)\1\)/g
 
@@ -52,18 +53,18 @@ function normalizeCSSContent (css: string) {
 // Reproduces the active Vue loader's scope id so styles extracted here match
 // the ids emitted by the server build. The loaders use different hash functions,
 // selected through the injected builder implementation.
-function getVueLoaderScopeId (filePath: string, source: string, rootContext: string) {
+function getVueLoaderScopeId (filePath: string, source: string, rootContext: string, getVueLoaderHash: BuilderImpl['getVueLoaderHash']) {
   const rawShortFilePath = relative(rootContext || process.cwd(), filePath).replace(/^(?:\.\.[/\\])+/, '')
   const shortFilePath = normalize(rawShortFilePath).replace(/\\/g, '/')
   return getVueLoaderHash(`${shortFilePath}\n${source.replace(/\r\n/g, '\n')}`)
 }
 
-function extractVueStyles (filePath: string, rootContext: string): string[] {
+function extractVueStyles (filePath: string, rootContext: string, getVueLoaderHash: BuilderImpl['getVueLoaderHash']): string[] {
   try {
     const src = readFileSync(filePath, 'utf8')
     const { descriptor } = parse(src, { filename: filePath })
     const styles: string[] = []
-    const scopeId = getVueLoaderScopeId(filePath, src, rootContext)
+    const scopeId = getVueLoaderScopeId(filePath, src, rootContext, getVueLoaderHash)
 
     for (let i = 0; i < descriptor.styles.length; i++) {
       const style = descriptor.styles[i]!
@@ -85,14 +86,25 @@ function extractVueStyles (filePath: string, rootContext: string): string[] {
   }
 }
 
+export interface SSRStylesPluginOptions {
+  /**
+   * Hash used by the Vue loader to generate scope IDs, when extracting the styles of server-only components.
+   * Defaults to the hash of the active webpack or rspack builder implementation.
+   */
+  getVueLoaderHash?: BuilderImpl['getVueLoaderHash']
+}
+
 export class SSRStylesPlugin {
   private nuxt: Nuxt
+  private getVueLoaderHash: BuilderImpl['getVueLoaderHash']
   private clientCSSByIssuer = new Map<string, Set<string>>()
+  private clientVueModules = new Set<string>()
   private chunksWithInlinedCSS = new Set<string>()
   private globalCSSPaths = new Set<string>()
 
-  constructor (nuxt: Nuxt) {
+  constructor (nuxt: Nuxt, options: SSRStylesPluginOptions = {}) {
     this.nuxt = nuxt
+    this.getVueLoaderHash = options.getVueLoaderHash ?? (value => getBuilderImpl().getVueLoaderHash(value))
     this.globalCSSPaths = this.resolveGlobalCSS()
 
     // Remove CSS entries from manifest for global CSS and files that will have inlined styles
@@ -306,8 +318,10 @@ export class SSRStylesPlugin {
         const rel = normalizePath(this.nuxt, resource)
         if (!rel) { continue }
         if (collected.has(rel)) { continue }
+        // server-only components have no client chunk to load their styles from, so they are always inlined
+        if (this.clientVueModules.has(rel) && !this.shouldInline(module)) { continue }
 
-        const vueStyles = extractVueStyles(resolveFilePath(resource) || resource, compilation.compiler.context)
+        const vueStyles = extractVueStyles(resolveFilePath(resource) || resource, compilation.compiler.context, this.getVueLoaderHash)
         if (vueStyles.length) {
           collected.set(rel, new Set(vueStyles))
         }
@@ -428,6 +442,16 @@ export class SSRStylesPlugin {
     const chunkCSSMeta = new Map<any, { files: string[], modules: NormalModule[] }>()
 
     compilation.hooks.processAssets.tap({ name: 'SSRStylesPlugin', stage }, () => {
+      if (!isServer) {
+        for (const mod of compilation.modules) {
+          const resource = (mod as NormalModule).resource
+          const rel = resource && VUE_ID_RE.test(resource) ? normalizePath(this.nuxt, resource) : null
+          if (rel) {
+            this.clientVueModules.add(rel)
+          }
+        }
+      }
+
       // First, associate emitted CSS assets with the modules in their chunks
       const cssAssetsByChunk = new Map<any, string[]>()
       for (const chunk of compilation.chunks) {

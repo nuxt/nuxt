@@ -11,6 +11,7 @@ import internal from './internal.ts'
 import nitro from './nitro.ts'
 import postcss from './postcss.ts'
 import router from './router.ts'
+import rsbuild from './rsbuild.ts'
 import typescript from './typescript.ts'
 import vite from './vite.ts'
 import webpack from './webpack.ts'
@@ -28,6 +29,7 @@ export default {
   ...nitro,
   ...postcss,
   ...router,
+  ...rsbuild,
   ...typescript,
   ...esbuild,
   ...oxc,

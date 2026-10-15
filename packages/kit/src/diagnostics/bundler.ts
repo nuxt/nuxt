@@ -141,5 +141,25 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { pluginName: string, packageName: string }) => `Remove \`${p.pluginName}\` from \`postcss.plugins\` in your \`nuxt.config\` (or report it to the author of the module that adds it), or install a version of \`${p.packageName}\` that provides it.`,
       docs: false,
     },
+    NUXT_B7028: {
+      why: '`@nuxt/rspack-builder` is deprecated and will be removed in a future major version of Nuxt.',
+      fix: 'Set `builder: \'rsbuild\'` in your `nuxt.config` to use `@nuxt/rsbuild-builder` instead.',
+      docs: false,
+    },
+    NUXT_B7029: {
+      why: '`@rsbuild/plugin-type-check` is not installed, so type checking cannot run.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable type checking.`,
+      docs: false,
+    },
+    NUXT_B7030: {
+      why: '`@rsdoctor/rspack-plugin` is not installed, so bundle analysis cannot run.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable bundle analysis.`,
+      docs: false,
+    },
+    NUXT_B7031: {
+      why: (p: { name: string }) => `The Rsbuild \`${p.name}\` build failed with errors.`,
+      fix: 'Fix the build errors listed above. If the errors are unclear, try running `nuxt cleanup` and rebuilding.',
+      docs: false,
+    },
   },
 })

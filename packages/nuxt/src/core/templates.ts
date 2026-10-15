@@ -82,7 +82,7 @@ export const testComponentWrapperTemplate: NuxtTemplate = {
   filename: 'test-component-wrapper.mjs',
   dependsOn: [],
   getContents: (ctx) => {
-    const needsComponentMap = ctx.nuxt.options.builder === '@nuxt/webpack-builder' || ctx.nuxt.options.builder === '@nuxt/rspack-builder'
+    const needsComponentMap = ctx.nuxt.options.builder === '@nuxt/webpack-builder' || ctx.nuxt.options.builder === '@nuxt/rspack-builder' || ctx.nuxt.options.builder === '@nuxt/rsbuild-builder'
     if (!ctx.nuxt.options.test || !ctx.nuxt.options.dev || !needsComponentMap) {
       return genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
     }

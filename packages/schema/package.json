@@ -45,6 +45,8 @@
     "std-env": "catalog:build"
   },
   "devDependencies": {
+    "@rsbuild/core": "catalog:webpack",
+    "@rsbuild/plugin-vue": "catalog:vue",
     "@types/pug": "catalog:dev",
     "@types/webpack-bundle-analyzer": "catalog:dev",
     "@types/webpack-hot-middleware": "catalog:dev",

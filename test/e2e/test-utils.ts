@@ -10,7 +10,7 @@ export interface MatrixOptions {
   isDev: boolean
   isBuilt: boolean
   isWebpack: boolean
-  builder: 'vite' | 'rspack' | 'webpack'
+  builder: 'vite' | 'rsbuild' | 'rspack' | 'webpack'
 }
 
 // TODO: remove custom _nuxtHooks below when upgrading nuxt/test-utils
