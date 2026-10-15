@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
-import { $fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
 
@@ -66,5 +66,17 @@ describe.skipIf(!shouldRun)('nitro v2 compatibility', () => {
   it('serialises `createError` from a user handler with the v2 keys', async () => {
     const error = await $fetch<Record<string, unknown>>('/api/v2-user?fail=1', { ignoreResponseError: true })
     expect(error).toMatchObject({ statusCode: 422, statusMessage: 'Unprocessable', data: { from: 'user' } })
+  })
+
+  it('keeps the status of an error page unless a v2 `render:response` listener sets one', async () => {
+    for (const accept of ['text/html', 'application/json']) {
+      const response = await fetch('/missing', { headers: { accept } })
+      expect(response.status).toBe(404)
+      expect(response.headers.get('x-render-response')).toBe('applied')
+    }
+
+    const response = await fetch('/missing?status=410', { headers: { accept: 'text/html' } })
+    expect(response.status).toBe(410)
+    expect(response.statusText).toBe('From render:response')
   })
 })
