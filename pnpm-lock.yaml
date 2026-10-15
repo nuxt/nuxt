@@ -1740,12 +1740,15 @@ importers:
       beasties:
         specifier: catalog:dev
         version: 0.5.5
+      cssnano:
+        specifier: catalog:build
+        version: 9.8.0(postcss@8.5.30)
       html-validate:
         specifier: catalog:dev
         version: 11.16.2(vitest@5.0.3)
       htmlnano:
         specifier: catalog:dev
-        version: 3.6.1(cssnano@7.1.9(postcss@8.5.30))(postcss@8.5.30)(svgo@4.1.0)(terser@5.51.2)
+        version: 3.6.1(cssnano@9.8.0(postcss@8.5.30))(postcss@8.5.30)(svgo@4.1.0)(terser@5.51.2)
       knitwork:
         specifier: catalog:build
         version: 1.3.0
@@ -18951,7 +18954,7 @@ snapshots:
 
   html-whitespace-sensitive-tag-names@3.0.1: {}
 
-  htmlnano@3.6.1(cssnano@7.1.9(postcss@8.5.30))(postcss@8.5.30)(svgo@4.1.0)(terser@5.51.2):
+  htmlnano@3.6.1(cssnano@9.8.0(postcss@8.5.30))(postcss@8.5.30)(svgo@4.1.0)(terser@5.51.2):
     dependencies:
       '@types/relateurl': 0.2.33
       commander: 15.0.0
@@ -18960,7 +18963,7 @@ snapshots:
       posthtml: 0.16.7
       tinyglobby: 0.2.17
     optionalDependencies:
-      cssnano: 7.1.9(postcss@8.5.30)
+      cssnano: 9.8.0(postcss@8.5.30)
       postcss: 8.5.30
       svgo: 4.1.0
       terser: 5.51.2
