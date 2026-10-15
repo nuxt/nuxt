@@ -32,10 +32,6 @@ export type MatchRouteRules = (path: string) => {
  * unless a rule says otherwise.
  */
 export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runtimeConfig'], matchRouteRules: MatchRouteRules, prerender?: NuxtRendererOptions['prerender']): NuxtRendererOptions {
-  // the URL helpers the app build generates read these off the global
-  ;(globalThis as { __buildAssetsURL?: unknown }).__buildAssetsURL = buildAssetsURL
-  ;(globalThis as { __publicAssetsURL?: unknown }).__publicAssetsURL = publicAssetsURL
-
   // loaded up front, as a runtime may drop a request's pending work once it has responded
   const devErrors = import.meta.dev ? import('./dev-error.ts') : undefined
 

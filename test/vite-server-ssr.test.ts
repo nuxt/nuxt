@@ -111,6 +111,14 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     expect(await (await render('/about')).text()).toContain('<p id="about"> about page </p>')
   })
 
+  it('renders asset URLs without process-wide helpers', async () => {
+    expect(await (await render('/asset')).text()).toMatch(/<img id="asset" src="\/_nuxt\/logo\.[^"]+\.svg"/)
+
+    const files = await glob('**/*.mjs', { cwd: join(outputDir, 'server'), absolute: true })
+    const sources = await Promise.all(files.map(file => readFile(file, 'utf-8')))
+    expect(sources.filter(source => /__(?:build|public)AssetsURL/.test(source))).toEqual([])
+  })
+
   it('serves the public directory in front of the renderer', async () => {
     const response = await render('/static.txt')
 

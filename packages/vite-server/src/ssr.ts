@@ -1,4 +1,5 @@
 import { resolve } from 'pathe'
+import { joinRelativeURL } from 'ufo'
 import { addTemplate } from '@nuxt/kit'
 import { getServerRuntime, useServerBuild } from '@nuxt/kit/internal'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
@@ -59,6 +60,7 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handl
     ServerEnvironmentPlugin(nuxt, serverRuntime, entry, serverDir, prerender),
     BundledVuePlugin(nuxt),
     ServerRuntimeModulesPlugin(serverRuntime),
+    StaticAssetsURLPlugin(nuxt),
   )
 
   return { entry, handler, unsupported }
@@ -212,6 +214,38 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       config.resolve ||= {}
       config.resolve.noExternal = true
       config.resolve.external = []
+    },
+  }
+}
+
+const ASSETS_URL_RE = /^(?:globalThis\.)?__(build|public)AssetsURL\(("(?:[^"\\]|\\.)*")\)$/
+
+/**
+ * Resolves the asset URLs of the server build at build time. The server reads the `app`
+ * runtime config serialised by the build, so each URL is a constant.
+ */
+function StaticAssetsURLPlugin (nuxt: Nuxt): Plugin {
+  return {
+    name: 'nuxt:vite-server:static-assets-url',
+    apply: 'build',
+    config: {
+      order: 'post',
+      handler (config) {
+        const renderBuiltUrl = config.experimental?.renderBuiltUrl
+        if (!renderBuiltUrl) { return }
+
+        config.experimental!.renderBuiltUrl = (filename, context) => {
+          const result = renderBuiltUrl(filename, context)
+          const match = context.ssr && result && typeof result === 'object' && 'runtime' in result && result.runtime?.match(ASSETS_URL_RE)
+          if (!match) { return result }
+
+          const { cdnURL, baseURL, buildAssetsDir } = nuxt.options.runtimeConfig.app
+          const path: string = JSON.parse(match[2]!)
+          return match[1] === 'build'
+            ? joinRelativeURL(cdnURL || baseURL, buildAssetsDir, path)
+            : joinRelativeURL(cdnURL || baseURL, path)
+        }
+      },
     },
   }
 }
