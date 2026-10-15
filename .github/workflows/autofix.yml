@@ -36,6 +36,9 @@ jobs:
         working-directory: packages/ui-templates
         run: vp run build
 
+      - name: Regenerate kit inlined dependency versions
+        run: vp run build:kit
+
       - parallel:
           - name: Test (nuxt runtime)
             run: vp run test:runtime -u

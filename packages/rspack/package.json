@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/rspack-builder",
-  "version": "4.6.0",
+  "version": "4.6.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -27,7 +27,6 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "@nuxt/friendly-errors-webpack-plugin": "catalog:webpack",
     "@nuxt/kit": "workspace:*",
     "@rsbuild/core": "catalog:webpack",
     "@vue/compiler-sfc": "catalog:vue",
@@ -70,7 +69,7 @@
     "@nuxt/schema": "workspace:*",
     "@types/webpack-bundle-analyzer": "catalog:dev",
     "h3": "1.15.11",
-    "h3-next": "npm:h3@2.0.1-rc.32",
+    "h3-next": "npm:h3@2.0.2",
     "rollup": "catalog:dev",
     "tsdown": "catalog:dev",
     "vue": "catalog:app-runtime"

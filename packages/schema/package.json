@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/schema",
-  "version": "4.6.0",
+  "version": "4.6.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -60,7 +60,7 @@
     "esbuild": "catalog:dev",
     "esbuild-loader": "catalog:webpack",
     "h3": "catalog:dev",
-    "h3-next": "npm:h3@2.0.1-rc.32",
+    "h3-next": "npm:h3@2.0.2",
     "mini-css-extract-plugin": "catalog:webpack",
     "ofetch": "catalog:app-runtime",
     "oxc-transform": "catalog:dev",

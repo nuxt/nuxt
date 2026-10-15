@@ -1,5 +1,4 @@
 import { expectTypeOf } from 'vitest'
-import { $fetch } from '#build/fetch'
 
 /**
  * `experimental.strictRouteTypes` is unset, so this asserts the default: a request Nuxt does not

@@ -25,7 +25,7 @@ const { data, status, pending, error, refresh, clear } = await useAsyncData(
 </script>
 ```
 
-::tip{to="/docs/guide/recipes/custom-usefetch#custom-usefetch-with-createusefetch"}
+::tip{to="/docs/api/composables/create-use-async-data"}
 Need a custom `useAsyncData` with pre-defined defaults? Use `createUseAsyncData` to create a fully typed custom composable. See the [custom useFetch recipe](/docs/guide/recipes/custom-usefetch) for details.
 ::
 

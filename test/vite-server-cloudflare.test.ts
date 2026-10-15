@@ -4,10 +4,13 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { buildNuxt, loadNuxt } from '@nuxt/kit'
+import { isWindows } from 'std-env'
+import { fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { glob } from 'tinyglobby'
 
-import { runsOnceInMatrix } from './matrix'
+import { isDev, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { channelState, frameAt, renderErrorPage } from './dev-error-utils'
 
 // workerd provides `node:async_hooks` and `node:diagnostics_channel`, and nothing else the
 // render reaches for; these are what a node server would drag in
@@ -16,6 +19,40 @@ const NODE_SERVER_BUILTINS = new Set(['node:fs', 'node:fs/promises', 'node:http'
 const rootDir = fileURLToPath(new URL('./fixtures/vite-server-cloudflare', import.meta.url))
 const workerDir = join(rootDir, '.output/nuxt_vite_server_cloudflare')
 const publicDir = join(rootDir, '.output/public')
+
+if (runsOncePerEnvInMatrix && isDev) {
+  await setup({
+    rootDir,
+    dev: true,
+    server: true,
+    setupTimeout: (isWindows ? 360 : 120) * 1000,
+  })
+}
+
+describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with a cloudflare deploy target', () => {
+  it('renders the routes the worker passes to `#server-entry` in the worker runtime', async () => {
+    const response = await fetch('/runtime', { headers: { accept: 'text/html' } })
+
+    expect(response.status).toBe(200)
+    expect(await response.text()).toMatch(/<p id="runtime">\s*Cloudflare-Workers\s*<\/p>/)
+  })
+
+  it('reports errors raised by the app the worker renders', async () => {
+    const { status, report } = await renderErrorPage('/boom')
+
+    expect(status).toBe(500)
+    expect(report.message).toBe('boom from a page the worker renders')
+    expect(frameAt(report, 'app/pages/boom.vue')).toMatchObject({ type: 'app', line: 2 })
+  })
+
+  it('retires the report once the worker renders a page', async () => {
+    const { report } = await renderErrorPage('/boom')
+    expect((await channelState('/boom')).current?.id).toBe(report.id)
+
+    await fetch('/about', { headers: { accept: 'text/html' } })
+    await expect.poll(async () => (await channelState('/boom')).current, { timeout: 5000 }).toBeUndefined()
+  })
+})
 
 describe.skipIf(!runsOnceInMatrix)('pure vite build with a cloudflare deploy target', () => {
   let wrangler: { main: string, assets: { directory: string, not_found_handling: string } }

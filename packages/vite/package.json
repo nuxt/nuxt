@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "4.6.0",
+  "version": "4.6.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -64,7 +64,7 @@
     "@babel/plugin-syntax-jsx": "catalog:dev",
     "@nuxt/schema": "workspace:*",
     "h3": "1.15.11",
-    "h3-next": "npm:h3@2.0.1-rc.32",
+    "h3-next": "npm:h3@2.0.2",
     "nitropack": "catalog:dev",
     "rolldown": "catalog:vite",
     "rollup": "catalog:dev",

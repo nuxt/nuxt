@@ -1763,6 +1763,11 @@ describe('composables', () => {
     expect(pageErrors).toEqual([])
     await page.close()
   })
+  it.each(['/use-id-server-prefetch', '/use-id-preload-payload'])('`useId` should work with server prefetch hooks (%s)', async (path) => {
+    const html = await $fetch<string>(path)
+    expect(html).toContain('<div>v-0-0-0</div>')
+    await expectNoClientErrors(path)
+  })
 })
 
 describe('middlewares', () => {
@@ -1860,6 +1865,18 @@ describe('plugins', () => {
   it('runs a nitro plugin registered by a module', async () => {
     const html = await $fetch<string>('/plugins')
     expect(html).toContain('<meta name="module-nitro-plugin" content="registered">')
+  })
+
+  it('passes the rendered response to nitro `render:response` listeners', async () => {
+    const res = await fetch('/?render-response')
+    expect(res.status).toBe(203)
+    expect(JSON.parse(res.headers.get('x-render-response')!)).toEqual({
+      body: 'string',
+      html: true,
+      contentType: 'text/html;charset=utf-8',
+    })
+    expect(res.headers.get('x-powered-by')).toBeNull()
+    expect(await res.text()).toContain('<!--render:response--></body>')
   })
 })
 
@@ -2067,6 +2084,14 @@ describe.runIf(isDev && !isWebpack)('css links', () => {
     const html = await $fetch<string>('/')
     const links = html.match(/<link[^>]+global\.css[^>]*>/g) || []
     expect(links).toHaveLength(1)
+  })
+
+  it('should link null-byte virtual css through `/@id/`', async () => {
+    const html = await $fetch<string>('/')
+    expect(html).not.toContain('\0')
+    const links = [...html.matchAll(/<link[^>]+href="([^"]*virtual-nul\.css)"[^>]*>/g)].map(m => m[1])
+    expect(links).toEqual(['/_nuxt/@id/__x00__/virtual-nul.css'])
+    expect(await $fetch<string>(links[0]!, { headers: { accept: 'text/css' } })).toMatch(/--virtual-nul:\s*red/)
   })
 })
 

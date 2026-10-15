@@ -1,7 +1,7 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
-import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
+import { NavigationFailureType, START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory, isNavigationFailure } from 'vue-router'
 import { isSamePath, withBase, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin } from '#app/nuxt'
@@ -75,8 +75,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           startPosition = savedPosition
           return
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         if (routerOptions.scrollBehavior) {
           // reset scroll behavior to initial value
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           router.options.scrollBehavior = routerOptions.scrollBehavior
           if ('scrollRestoration' in window.history) {
             const unsub = router.beforeEach(() => {
@@ -84,6 +86,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               window.history.scrollRestoration = 'manual'
             })
           }
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           return routerOptions.scrollBehavior(to, START_LOCATION, startPosition || savedPosition)
         }
       },
@@ -166,7 +169,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           delete nuxtApp._middlewareTo
         }
 
-        if (import.meta.client && !nuxtApp.isHydrating && error.value) {
+        if (import.meta.client && !nuxtApp.isHydrating && error.value && !isNavigationFailure(failure, NavigationFailureType.aborted | NavigationFailureType.cancelled)) {
           // Clear any existing errors
           await nuxtApp.runWithContext(clearError)
         }
@@ -370,8 +373,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       })
     }
 
-    router.afterEach((to) => {
-      if (to.matched.length === 0 && !error.value) {
+    router.afterEach((to, _from, failure) => {
+      if (to.matched.length === 0 && !error.value && !isNavigationFailure(failure, NavigationFailureType.aborted | NavigationFailureType.cancelled)) {
         return nuxtApp.runWithContext(() => showError(createError({
           status: 404,
           fatal: false,
@@ -424,6 +427,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           })
         }
         // reset scroll behavior to initial value
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         router.options.scrollBehavior = routerOptions.scrollBehavior
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here

@@ -389,6 +389,19 @@ async function initNuxt (nuxt: Nuxt) {
     return serverBuilderReference
   }
 
+  if (nuxt.options.experimental.routeTypedFetch) {
+    // imports nothing, so that it precedes nitropack's global `$fetch`
+    const { dst } = addTemplate({
+      filename: 'types/fetch-global.d.ts',
+      dependsOn: [],
+      getContents: () => 'declare global {\n  interface NuxtGlobalFetch {}\n  var $fetch: NuxtGlobalFetch\n}\n\nexport {}\n',
+    })
+    // first, as the first declaration of a global `var` sets its type
+    nuxt.hook('prepare:types', ({ references }) => {
+      references.unshift({ path: dst })
+    })
+  }
+
   // Add nuxt types
   nuxt.hook('prepare:types', async (opts) => {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
@@ -526,6 +539,7 @@ async function initNuxt (nuxt: Nuxt) {
     if (Object.keys(nuxt.options.optimization.treeShake.composables.client).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
         composables: nuxt.options.optimization.treeShake.composables.client,
+        stubs: { onServerPrefetch: '#app/composables/server-prefetch' },
       }), { server: false })
     }
 
@@ -1019,6 +1033,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
+  options.alias['nuxt/app'] ||= options.appDir
   options._majorVersion = 4
 
   // De-duplicate key arrays

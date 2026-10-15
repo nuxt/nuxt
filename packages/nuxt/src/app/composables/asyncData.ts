@@ -16,6 +16,7 @@ import { applyUseAsyncDataAddons } from './addons'
 import type { MergedAddonsExtensions, MergedAddonsOptions, UseAsyncDataAddon } from './addons'
 
 import { neverHydratedSymbol } from './lazy-hydration'
+import { onServerPrefetch as markServerPrefetch } from './server-prefetch'
 
 import { asyncDataDefaults, granularCachedData, pendingWhenIdle, purgeCachedData, stripNeverHydratedData, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
@@ -529,10 +530,8 @@ export function _createUseAsyncData<
         const instance = getCurrentInstance()
         const inComponentSetup = !!instance || isWithinVaporComponent()
 
-        // @ts-expect-error - instance.sp is an internal vue property
-        if (instance && fetchOnServer && opts.immediate && !instance.sp) {
-          // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
-          instance.sp = []
+        if (fetchOnServer && opts.immediate) {
+          markServerPrefetch()
         }
         if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!inComponentSetup || instance?.isMounted)) {
           dataDiagnostics.NUXT_E3003()

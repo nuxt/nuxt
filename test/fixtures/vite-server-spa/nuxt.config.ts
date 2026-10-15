@@ -14,6 +14,18 @@ export default defineNuxtConfig({
   },
   sourcemap: false,
   compatibilityDate: 'latest',
+  vite: {
+    plugins: [{
+      name: 'respond-to-every-request',
+      apply: 'serve',
+      configureServer: server => () => {
+        server.middlewares.use((_req, res) => {
+          res.statusCode = 404
+          res.end()
+        })
+      },
+    }],
+  },
   server: {
     builder: 'vite',
   },

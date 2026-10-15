@@ -45,6 +45,7 @@ import { ServerEntryPlugin } from './plugins/server-entry.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
+import { InlinedVuePlugin } from './plugins/inlined-vue.ts'
 import { PerfPlugin } from './plugins/perf.ts'
 import { isNavigationRequest, warmupViteServer } from './utils/warmup.ts'
 import { useServerBuild } from '@nuxt/kit/internal'
@@ -213,6 +214,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ResolveExternalsPlugin(nuxt),
         ...nuxt.options.experimental.viteEnvironmentApi
           ? [
+              InlinedVuePlugin(nuxt),
               vuePlugin(viteConfig.vue),
               viteJsxPlugin(viteConfig.vueJsx),
               ClientManifestPlugin(nuxt),
