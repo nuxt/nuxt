@@ -1,4 +1,4 @@
-import { createHooks } from 'hookable'
+import { HookableCore } from 'hookable'
 import type { NuxtServerHooks, RequestEvent } from 'nuxt/schema'
 
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '../app/types'
@@ -84,7 +84,7 @@ let current: { hooks: ServerHooks, claimed: boolean } | undefined
  * @since 4.6.0
  */
 export function useServerHooks (): ServerHooks {
-  current ||= { hooks: createHooks() as unknown as ServerHooks, claimed: false }
+  current ||= { hooks: new HookableCore() as ServerHooks, claimed: false }
   return current.hooks
 }
 
