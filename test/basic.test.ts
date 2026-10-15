@@ -153,6 +153,9 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
       decoded: 'a b%2Fc',
       forwardedIP: '203.0.113.1',
     })
+
+    const truncated = await fetch('/api/portable-extras/a%3Fpage=2/c')
+    expect(await truncated.json()).toMatchObject({ params: { id: 'a' }, decoded: 'a' })
   })
 
   it('should answer a CORS preflight with `nuxt/server`', async () => {

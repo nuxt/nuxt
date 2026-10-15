@@ -25,7 +25,7 @@ import {
 } from 'h3'
 import type { H3Event } from 'h3'
 import { useNitroApp, useRuntimeConfig as useNitroRuntimeConfig } from 'nitropack/runtime'
-import { joinURL } from 'ufo'
+import { decodePath, joinURL } from 'ufo'
 import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
 import type { EventHandler, ForwardedOptions, NuxtErrorLike, NuxtServerHooks, NuxtServerRendererHooks, ServerFetchInit, ServerHookable } from 'nuxt/server'
 
@@ -226,31 +226,54 @@ export function getRouterParam (event: H3Event, name: string, options?: { decode
 function getEncodedParams (event: H3Event): Record<string, string | undefined> {
   const params = event.context.params || {}
   const route = (event.context.matchedRoute as { path?: string } | undefined)?.path
-  if (!route) {
+  const url = event.node.req.originalUrl || event.node.req.url || ''
+  const query = url.includes('?') ? url.slice(url.indexOf('?')) : ''
+  if (!route || !event.path.endsWith(query)) {
     return params
   }
-  const pattern = route.split('/')
-  const decoded = event.path.split('?')[0]!.split('/')
-  const raw = (event.node.req.originalUrl || event.node.req.url || '').split('?')[0]!.split('/')
-  const offset = raw.length - decoded.length
-  if (offset < 0 || (pattern.length !== decoded.length && !pattern.some(segment => segment.startsWith('**')))) {
+  const raw = url.slice(0, url.length - query.length).split('/')
+  const decoded = event.path.slice(0, event.path.length - query.length)
+  const offset = raw.length - decoded.split('/').length
+  if (offset < 0) {
     return params
+  }
+  // h3 routes the path up to its first `?`, which can be a decoded `%3F`, without one trailing slash
+  const end = decoded.indexOf('?')
+  const matched = (end === -1 ? decoded : decoded.slice(0, end)).split('/')
+  const last = matched.length - 1
+  if (last > 1 && matched[last] === '') {
+    matched.pop()
+  }
+  const segments = raw.slice(offset, offset + matched.length)
+  if (end !== -1 && last < segments.length) {
+    segments[last] = segments[last]!.replace(ENCODED_QUERY_RE, '')
   }
   const encoded: Record<string, string | undefined> = { ...params }
   let unnamed = 0
-  for (let index = 0; index < pattern.length; index++) {
-    const segment = pattern[index]!
-    if (segment.startsWith('**')) {
-      encoded[segment.slice(3) || '_'] = raw.slice(offset + index).join('/')
-      break
+  for (const [index, segment] of route.split('/').entries()) {
+    const catchAll = segment.startsWith('**')
+    const name = catchAll ? segment.slice(3) || '_' : segment === '*' ? `_${unnamed++}` : segment.startsWith(':') ? segment.slice(1) : undefined
+    if (name === undefined) {
+      continue
     }
-    if (segment === '*') {
-      encoded[`_${unnamed++}`] = raw[offset + index]
-    } else if (segment.startsWith(':')) {
-      encoded[segment.slice(1)] = raw[offset + index]
+    const value = catchAll ? segments.slice(index).join('/') : segments[index]
+    if (value === undefined || decodeH3Path(value) !== params[name]) {
+      return params
+    }
+    encoded[name] = value
+    if (catchAll) {
+      break
     }
   }
   return encoded
+}
+
+const ENCODED_QUERY_RE = /%3f[\s\S]*$/i
+const ENCODED_PERCENT_RE = /%25/g
+
+/** Decodes a path the way h3 v1 does before routing, keeping `%25` and `%2F` encoded. */
+function decodeH3Path (path: string): string {
+  return decodePath(path.replace(ENCODED_PERCENT_RE, '%2525'))
 }
 
 /** @see {@link import('nuxt/server').readBody} */

@@ -6,7 +6,8 @@ import { rollup } from 'rollup'
 import { build } from 'tsdown'
 import tsdownConfig from '../tsdown.config.ts'
 import { resolveModuleExportNames } from '@nuxt/kit/internal'
-import { createEvent } from 'h3'
+import fc from 'fast-check'
+import { createApp, createEvent, createRouter, eventHandler, toPlainHandler } from 'h3'
 import type { H3Event } from 'h3'
 import * as shipped from '../../nuxt/src/server/index.ts'
 import type { RequestEvent } from '../../nuxt/src/server/index.ts'
@@ -131,6 +132,70 @@ describe('the shape of what it reads off an h3 v1 event', () => {
 
     e.context.matchedRoute = { path: '/api/other/:id/:extra' } as never
     expect(delegate.getRouterParams(e)).toEqual({ id: 'a b' })
+  })
+
+  describe.each(['/', '/base/'])('router params routed by h3 under %s', (base) => {
+    const router = createRouter({ preemptive: true })
+    for (const route of ['/api/auth/**:slug', '/api/users/:id', '/api/users/:id/**:rest', '/api/items/*/x']) {
+      router.use(route, eventHandler(event => ({
+        matched: event.context.params,
+        params: delegate.getRouterParams(event),
+        decoded: delegate.getRouterParams(event, { decode: true }),
+      })))
+    }
+    const app = createApp()
+    app.use(base, router.handler)
+    const handle = toPlainHandler(app)
+
+    async function request (path: string) {
+      const response = await handle({ method: 'GET', path: base.slice(0, -1) + path, headers: {} })
+      expect(response.status).toBe(200)
+      return JSON.parse(response.body as string) as Record<'matched' | 'params' | 'decoded', Record<string, string>>
+    }
+
+    it.for([
+      ['/api/auth/private%3Fignored/public', { slug: 'private' }],
+      ['/api/auth/private%3fignored/public', { slug: 'private' }],
+      ['/api/auth/a/b%3F/c', { slug: 'a/b' }],
+      ['/api/auth/a/%3Fb/c', { slug: 'a' }],
+      ['/api/auth/a%3Fb?c=%3F/d', { slug: 'a' }],
+      ['/api/auth/a%253Fb/c', { slug: 'a%253Fb/c' }],
+      ['/api/auth/a%23b/c', { slug: 'a%23b/c' }],
+      ['/api/auth/a%2Fb/c', { slug: 'a%2Fb/c' }],
+      ['/api/auth/a%2F%3Fb/c', { slug: 'a%2F' }],
+      ['/api/auth/caf%C3%A9/', { slug: 'caf%C3%A9' }],
+      ['/api/auth/a//', { slug: 'a/' }],
+      ['/api/auth/a%20b?x=1', { slug: 'a%20b' }],
+      ['/api/users/a%3Fb', { id: 'a' }],
+      ['/api/users/a%20b/', { id: 'a%20b' }],
+      ['/api/users/a%20b/c%3F/d', { id: 'a%20b', rest: 'c' }],
+      ['/api/users/a%3F/b/c', { id: 'a' }],
+      ['/api/items/a%2Fb/x', { _0: 'a%2Fb' }],
+      ['/api/items/a%23b/x?y', { _0: 'a%23b' }],
+    ] as const)('reads %s as h3 matched it', async ([path, params]) => {
+      const { matched, params: encoded, decoded } = await request(path)
+      expect(encoded).toEqual(params)
+      for (const key in matched) {
+        expect(decoded[key]).toBe(shipped.getRouterParam({ context: { params: matched } }, key, { decode: true }))
+      }
+    })
+
+    it('reads the same params h3 matched for any path', async () => {
+      const segment = fc.array(fc.constantFrom('a', 'é', '%20', '%3F', '%3f', '%23', '%2F', '%25', '%253F', '%2525', '%C3%A9', '?', '#', ''), { maxLength: 4 }).map(parts => parts.join(''))
+      const prefix = fc.constantFrom('/api/auth/', '/api/users/', '/api/items/')
+      await fc.assert(fc.asyncProperty(prefix, fc.array(segment, { minLength: 1, maxLength: 4 }), async (prefix, segments) => {
+        const path = prefix + segments.join('/')
+        const response = await handle({ method: 'GET', path: base.slice(0, -1) + path, headers: {} })
+        if (response.status !== 200) {
+          return
+        }
+        const { matched, params, decoded } = JSON.parse(response.body as string)
+        expect(decoded).toEqual(shipped.getRouterParams({ context: { params: matched } }, { decode: true }))
+        for (const value of Object.values(params)) {
+          expect(path).toContain(value)
+        }
+      }))
+    })
   })
 
   it('reads the client IP from the socket, and the first forwarded hop only when opted in', () => {
