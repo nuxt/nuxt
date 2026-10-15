@@ -308,6 +308,24 @@ describe('route rules', () => {
     }
   })
 
+  it('should apply server route rules regardless of request casing or encoding', async () => {
+    for (const path of ['/Route-Rules/Inline', '/ROUTE-RULES/INLINE', '/route-rules/%49nline']) {
+      const res = await fetch(path, { redirect: 'manual' })
+      expect(res.headers.get('x-extend'), path).toEqual('added in routeRules')
+    }
+
+    for (const path of ['/Route-Rules/Redirect', '/route-rules/%52edirect']) {
+      const res = await fetch(path, { redirect: 'manual' })
+      expect(res.status, path).toEqual(307)
+      expect(res.headers.get('location'), path).toEqual('/')
+    }
+
+    for (const path of ['/Route-Rules/Spa', '/route-rules/%53pa']) {
+      const { script } = parseData(await $fetch<string>(path))
+      expect(script.serverRendered, path).toEqual(false)
+    }
+  })
+
   it('should run appMiddleware from an uppercase-keyed route rule on client navigation', async () => {
     const { page } = await renderPage('/')
     await page.waitForLoadState('networkidle')

@@ -16,15 +16,14 @@ const { hooks, localFetch } = vi.hoisted(() => ({
   localFetch: vi.fn((_path: string, _init: RequestInit) => Promise.resolve(new Response('ok'))),
 }))
 
-// the delegate re-exports nitro's own `getRouteRules`/`useRuntimeConfig`, which only resolve
-// inside a built server bundle
+// the delegate reads nitro's `useRuntimeConfig` and a virtual route rules module, which only
+// resolve inside a built server bundle
 vi.mock('nitropack/runtime', () => ({
-  getRouteRules: () => ({}),
   useRuntimeConfig: () => ({ app: { baseURL: '/base/' } }),
   useNitroApp: () => ({ hooks, localFetch }),
 }))
-vi.mock('nitropack/runtime/internal/route-rules', () => ({
-  getRouteRulesForPath: () => ({}),
+vi.mock('#internal/nuxt/route-rules.mjs', () => ({
+  normalizeRouteRulePath: (path: string) => path,
 }))
 
 const delegate = await import('../src/runtime/server.ts')

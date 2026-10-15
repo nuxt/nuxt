@@ -24,7 +24,7 @@ import {
   setResponseStatus,
 } from 'h3'
 import type { H3Event } from 'h3'
-import { getRouteRules as getNitroRouteRules, useNitroApp, useRuntimeConfig as useNitroRuntimeConfig } from 'nitropack/runtime'
+import { useNitroApp, useRuntimeConfig as useNitroRuntimeConfig } from 'nitropack/runtime'
 import { joinURL } from 'ufo'
 import type { AppRouteRules, RuntimeConfig } from 'nuxt/schema'
 import type { EventHandler, ForwardedOptions, NuxtErrorLike, NuxtServerHooks, NuxtServerRendererHooks, ServerFetchInit, ServerHookable } from 'nuxt/server'
@@ -47,11 +47,12 @@ import {
 import { NUXT_ERROR_SIGNATURE } from '#app/error'
 import { PORTABLE_EVENT, toPortableEvent } from './utils/event'
 import { baseURL } from './utils/paths'
+import { getRouteRules as getNuxtRouteRules } from './utils/route-rules'
 import { serverDiagnostics } from './diagnostics'
 
 export { setResponseStatus }
 
-export { getRouteRulesForPath as matchRouteRules } from 'nitropack/runtime/internal/route-rules'
+export { matchRouteRules } from './utils/route-rules'
 
 export {
   deriveSecret,
@@ -303,7 +304,7 @@ const REDIRECT_UNSAFE_RE = /["'<>&]/g
 
 /** @see {@link import('nuxt/server').getRouteRules} */
 export function getRouteRules (event: H3Event): AppRouteRules {
-  return getNitroRouteRules(event) as AppRouteRules
+  return getNuxtRouteRules(event) as AppRouteRules
 }
 
 /** @see {@link import('nuxt/server').serverFetch} */
