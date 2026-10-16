@@ -234,16 +234,17 @@ describe('loadNuxt', () => {
     rmSync(modulesDir, { recursive: true, force: true })
   })
 
-  it('resolves `nitro/h3` types from the h3 copy nitro depends on', async () => {
+  it('resolves `nitro/h3` types from the copy nitro depends on', async () => {
     const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
 
     const nitroDir = dirname(resolveModulePath('nitro/package.json', { from: pathToFileURL(repoRoot + '/') }))
-    const h3Dir = dirname(resolveModulePath('h3/package.json', { from: pathToFileURL(nitroDir + '/') }))
+    const nitroH3Dir = dirname(resolveModulePath('h3/package.json', { from: pathToFileURL(nitroDir + '/') }))
+    const nitroServerDir = resolve(repoRoot, 'packages/nitro-server')
+    const h3Dir = dirname(resolveModulePath('h3/package.json', { from: pathToFileURL(nitroServerDir + '/') }))
 
     const nitroPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
-    expect(nitroPaths['nitro/h3']?.[0]).toBe(h3Dir)
-    // the bare `h3` stays on the copy nitro-server depends on
-    expect(nitroPaths.h3?.[0]).not.toBe(h3Dir)
+    expect(nitroPaths['nitro/h3']).toEqual([nitroH3Dir])
+    expect(nitroPaths.h3).toEqual([h3Dir])
 
     await nuxt.close()
   })
