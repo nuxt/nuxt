@@ -285,6 +285,13 @@ async function initNuxt (nuxt: Nuxt) {
     },
   })
 
+  // the shared context gets an empty route set, so it does not load server handlers
+  addTemplate({
+    filename: 'types/shared-server-routes.d.ts',
+    dependsOn: [],
+    getContents: () => emitServerRoutesModule({ routes: [], strict: false }),
+  })
+
   addTypeTemplate({
     filename: 'types/nitro-layouts.d.ts',
     dependsOn: [],
@@ -418,6 +425,7 @@ async function initNuxt (nuxt: Nuxt) {
     // required for the server builder's augmentations (referenced above)
     opts.nodeTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
+    opts.sharedTsConfig.compilerOptions!.paths!['#build/server-routes'] ||= [resolve(nuxt.options.buildDir, 'types/shared-server-routes.d.ts')]
     // bundler-resolved, so it takes the same substitutions as the app
     opts.serverTsConfig.compilerOptions = defu(opts.serverTsConfig.compilerOptions, { paths: { ...paths } })
     // required for the generated route types, which `serverFetch` resolves against

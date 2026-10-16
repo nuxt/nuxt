@@ -1076,14 +1076,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     // `include`, because the generated route types name them with `typeof import(...)`
     opts.serverReferences.push({ path: autoImports.importsModulePath + '.d.ts' })
     opts.references.push({ path: autoImports.importsModulePath + '.d.ts' })
-    opts.sharedReferences.push({ path: autoImports.importsModulePath + '.d.ts' })
 
     Object.assign(opts.tsConfig.compilerOptions.paths, nitroTypePaths)
     Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths)
     opts.sharedTsConfig.compilerOptions ||= {}
     opts.sharedTsConfig.compilerOptions.paths ||= {}
     Object.assign(opts.sharedTsConfig.compilerOptions.paths, nitroTypePaths)
-    opts.sharedTsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsModulePath)]
     opts.nodeTsConfig.compilerOptions ||= {}
     opts.nodeTsConfig.compilerOptions.paths ||= {}
     Object.assign(opts.nodeTsConfig.compilerOptions.paths, nitroNodeTypePaths)
@@ -1096,7 +1094,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.serverTsConfig.exclude.push(relative(typesDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
 
     opts.serverReferences.push({ path: resolve(typesDir, 'types/nitro-nuxt.d.ts') })
-    opts.sharedReferences.push({ path: resolve(typesDir, 'types/nitro-nuxt.d.ts') })
 
     // only the aliases Nitro adds on top of `nuxt.options.alias`, which Nuxt maps itself
     opts.serverTsConfig.compilerOptions ||= {}
