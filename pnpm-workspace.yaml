@@ -235,7 +235,7 @@ catalogs:
     '@babel/plugin-proposal-decorators': 8.0.2
     '@babel/plugin-syntax-jsx': 8.0.1
     '@babel/plugin-syntax-typescript': 8.0.3
-    '@codspeed/core': 5.7.1
+    '@codspeed/core': 6.0.1
     '@codspeed/vitest-plugin': 5.7.1
     '@eslint/markdown': 8.0.3
     '@flakiness/playwright': 2.0.2
