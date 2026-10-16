@@ -1143,6 +1143,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.tsConfig.exclude.push(relative(typesDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.tsConfig.exclude.push(relative(typesDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
+    opts.sharedReferences.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
 
     // the generated route types import the request-shape extractors by package name, which the app
     // program cannot resolve on its own: this package is a dependency of `nuxt`, not of the project
