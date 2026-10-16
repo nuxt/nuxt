@@ -119,6 +119,7 @@
         "src/*/runtime/**/*.{ts,js,vue}!",
         "src/core/templates.ts!",
         "meta.d.ts",
+        "app.d.ts",
         "test/**/*.ts",
         "test/**/*-fixture/**/*.{js,ts,mjs,vue}"
       ],
@@ -126,7 +127,6 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
-        "@nuxt/telemetry",
         "@nuxt/vite-builder",
         "@nuxt/vite-server"
       ]
@@ -158,7 +158,6 @@
     "packages/rspack": {
       "ignoreDependencies": [
         "@nuxt/kit",
-        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",
@@ -173,7 +172,6 @@
         "h3-next",
         "knitwork",
         "memfs",
-        "mini-css-extract-plugin",
         "ohash",
         "pathe",
         "postcss",
