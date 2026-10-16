@@ -180,16 +180,19 @@ export function emitServerRoutesModule (opts: {
   strict: boolean
   /** Whether `$fetch` and `useFetch` are typed from the generated route set. */
   typeFromRoutes?: boolean
+  /** The module the route vocabulary and `Serialize` are imported from. Defaults to `nuxt/app`. */
+  moduleSpecifier?: string
 }): string {
   const extractors = [opts.requestTypes?.body, opts.requestTypes?.query, opts.requestTypes?.headers].filter(Boolean)
   const typeFromRoutes = opts.typeFromRoutes ?? true
+  const moduleSpecifier = opts.moduleSpecifier ?? 'nuxt/app'
 
   return [
     compileRoutes([{ routes: [...opts.routes, ...opts.pages || []] }], {
       name: 'GeneratedServerRoutes',
       // `fetchdts` is not a dependency of user projects, so its vocabulary is named through the
       // re-exports in `nuxt/app` instead
-      moduleSpecifier: 'nuxt/app',
+      moduleSpecifier,
       // the accessors resolve against the generated routes intersected with the interface an
       // app can augment, so a route added by hand is found by the walk behind the exact-match
       // table rather than being invisible. An intersection rather than an augmentation of
@@ -199,7 +202,7 @@ export function emitServerRoutesModule (opts: {
       resolveAgainst: 'AugmentedServerRoutes',
       imports: [
         'import type { ServerRoutes } from \'@nuxt/schema\'',
-        'import type { Serialize } from \'nuxt/app\'',
+        `import type { Serialize } from '${moduleSpecifier}'`,
         ...extractors.length && opts.requestTypes ? [`import type { ${extractors.sort().join(', ')} } from '${opts.requestTypes.module}'`] : [],
         'type AugmentedServerRoutes = GeneratedServerRoutes & ServerRoutes',
       ],

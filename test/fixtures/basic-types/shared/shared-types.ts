@@ -2,6 +2,8 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import { foo } from '#shared/other'
 
+import type { Path } from '#build/server-routes'
+
 describe('shared folder', () => {
   it('can reference its own aliases', () => {
     expectTypeOf(foo).not.toBeAny()
@@ -33,5 +35,9 @@ describe('shared folder', () => {
   it('types build flags', () => {
     expectTypeOf(import.meta.dev).toEqualTypeOf<boolean>()
     expectTypeOf(import.meta.test).toEqualTypeOf<boolean>()
+  })
+
+  it('can reference generated route types', () => {
+    expectTypeOf<Path>().not.toBeAny()
   })
 })

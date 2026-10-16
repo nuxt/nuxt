@@ -10,6 +10,8 @@ import type { RenderResponse } from 'nitropack/types'
 import type { NuxtHookRegistry, NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
 
 export type { NuxtLinkOptions } from '@nuxt/schema'
+export type { Serialize } from './types/serialize'
+export type { AnyFetchPath, AnyHTTPMethod, DynamicParam, Endpoint, HTTPMethod, TypedFetchErrorBody, TypedFetchMethods, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, TypedFetchResponseHeaders, ValidFetchInput, WildcardParam } from 'fetchdts'
 
 type HookResult = Promise<void> | void
 
