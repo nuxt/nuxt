@@ -11,15 +11,15 @@
  */
 import {
   createError as createH3Error,
-  deleteCookie,
-  getCookie,
+  deleteCookie as deleteH3Cookie,
+  getCookie as getH3Cookie,
   getQuery as getH3Query,
   getRequestHeader as getH3RequestHeader,
   getRequestHeaders as getH3RequestHeaders,
   getRequestURL as getH3RequestURL,
-  parseCookies,
-  readBody,
-  setCookie,
+  parseCookies as parseH3Cookies,
+  readBody as readH3Body,
+  setCookie as setH3Cookie,
   setResponseHeader,
   setResponseStatus,
 } from 'h3'
@@ -49,14 +49,7 @@ import { PORTABLE_EVENT, toPortableEvent } from './utils/event'
 import { baseURL } from './utils/paths'
 import { serverDiagnostics } from './diagnostics'
 
-export {
-  deleteCookie,
-  getCookie,
-  parseCookies,
-  readBody,
-  setCookie,
-  setResponseStatus,
-}
+export { setResponseStatus }
 
 export { getRouteRulesForPath as matchRouteRules } from 'nitropack/runtime/internal/route-rules'
 
@@ -257,6 +250,31 @@ function getEncodedParams (event: H3Event): Record<string, string | undefined> {
     }
   }
   return encoded
+}
+
+/** @see {@link import('nuxt/server').readBody} */
+export function readBody<T = unknown> (event: H3Event): Promise<T> {
+  return readH3Body(event) as Promise<T>
+}
+
+/** @see {@link import('nuxt/server').parseCookies} */
+export function parseCookies (event: H3Event): Record<string, string> {
+  return parseH3Cookies(event)
+}
+
+/** @see {@link import('nuxt/server').getCookie} */
+export function getCookie (event: H3Event, name: string): string | undefined {
+  return getH3Cookie(event, name)
+}
+
+/** @see {@link import('nuxt/server').setCookie} */
+export function setCookie (event: H3Event, name: string, value: string, options?: Parameters<typeof setH3Cookie>[3]): void {
+  setH3Cookie(event, name, value, options)
+}
+
+/** @see {@link import('nuxt/server').deleteCookie} */
+export function deleteCookie (event: H3Event, name: string, options?: Parameters<typeof deleteH3Cookie>[2]): void {
+  deleteH3Cookie(event, name, options)
 }
 
 /** @see {@link import('nuxt/server').getQuery} */
