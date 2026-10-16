@@ -353,6 +353,7 @@ describe('scrollBehavior with hash on the same page', () => {
     })
 
     const router = useRouter()
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const position = await router.options.scrollBehavior!(router.resolve(`/#${id}`), router.resolve('/'), null)
 
     expect(position).toMatchObject({ el: `#${id}`, top: 50 })
