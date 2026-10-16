@@ -948,7 +948,7 @@ describe('pages', () => {
   ])('hydrates the layout set by middleware on prerendered %s', async (path) => {
     const page = await createPage()
     await page.addInitScript(() => {
-      // capture the server-rendered nodes before any script runs
+      // capture the server-rendered nodes before the app hydrates
       document.addEventListener('readystatechange', () => {
         if (document.readyState === 'interactive') {
           Object.assign(window, {

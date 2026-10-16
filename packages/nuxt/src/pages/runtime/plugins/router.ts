@@ -411,9 +411,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             // later, after mounted hooks flush. Resolve fresh so `route.name` survives.
             const currentRoute = router.currentRoute as Ref<RouteLocationNormalizedLoadedGeneric>
             const restoredRoute = router.resolve(initialURL) as RouteLocationNormalizedLoadedGeneric
-            // it is the same page, so keep the meta the hydrated route ended up with (e.g. a layout
-            // set by `setPageLayout` in middleware) rather than the static page meta (#36429)
-            restoredRoute.meta = currentRoute.value.meta
+            // Keep the hydrated meta, e.g. a layout set via `setPageLayout` in middleware (#36429)
+            if (restoredRoute.matched.at(-1) === currentRoute.value.matched.at(-1)) {
+              restoredRoute.meta = currentRoute.value.meta
+            }
             currentRoute.value = restoredRoute
             syncCurrentRoute()
             router.replace({ ...resolvedInitialRoute, force: true }).catch(() => {})
