@@ -942,6 +942,34 @@ describe('pages', () => {
     await page.close()
   })
 
+  it.skipIf(isDev).each([
+    ['/prerender/set-page-layout'],
+    ['/prerender/set-page-layout?foo=bar'],
+  ])('hydrates the layout set by middleware on prerendered %s', async (path) => {
+    const page = await createPage()
+    await page.addInitScript(() => {
+      // capture the server-rendered nodes before the app hydrates
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState === 'interactive') {
+          Object.assign(window, {
+            __ssrNodes: [document.querySelector('.count'), document.querySelector('#set-page-layout')],
+          })
+        }
+      })
+    })
+
+    await page.goto(url(path))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    const reused = await page.evaluate(() => {
+      const [layout, page] = (window as unknown as { __ssrNodes: Element[] }).__ssrNodes
+      return [!!layout && layout === document.querySelector('.count'), !!page && page === document.querySelector('#set-page-layout')]
+    })
+    expect(reused).toEqual([true, true])
+
+    await page.close()
+  })
+
   it.skipIf(isDev)('enables preview mode on prerendered pages', async () => {
     const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
 
