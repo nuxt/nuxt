@@ -276,7 +276,7 @@ catalogs:
     fast-check: 4.10.2
     h3: ^2.0.1-rc.32
     h3-next: 'npm:h3@^2.0.1-rc.32'
-    happy-dom: 20.14.6
+    happy-dom: 21.0.1
     html-validate: 11.16.2
     htmlnano: 3.6.1
     installed-check: 11.0.0
