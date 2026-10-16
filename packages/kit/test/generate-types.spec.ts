@@ -135,8 +135,6 @@ describe('tsConfig generation', () => {
   })
 
   it('should not exclude module directories with a dot in their name', async () => {
-    // TypeScript applies `exclude` globs to directories too, so a bare `modules/*.*` would also
-    // match a module directory such as `modules/1.dotted/` and drop its runtime files
     const { tsConfig, nodeTsConfig } = await _generateTypes(mockNuxtWithOptions({
       _installedModules: [{ meta: { name: 'dotted-module', rawPath: '/my-app/modules/1.dotted/index.ts' }, entryPath: '/my-app/modules/1.dotted/index.ts', timings: {} }],
     }))

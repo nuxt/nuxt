@@ -410,14 +410,12 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   for (const path of modulePaths) {
     const relative = relativeWithDot(typesDir, path)
-    const entryGlobs = [
-      ...moduleFileGlobs(relative, nuxt.options.extensions),
-      ...moduleFileGlobs(join(relative, 'dist'), nuxt.options.extensions),
-    ]
+    const sourceGlobs = moduleFileGlobs(relative, nuxt.options.extensions)
+    const entryGlobs = [...sourceGlobs, ...moduleFileGlobs(join(relative, 'dist'), nuxt.options.extensions)]
     if (!path.includes('node_modules') && path.startsWith(rootDirWithSlash)) {
       include.add(join(relative, 'runtime'))
       include.add(join(relative, 'dist/runtime'))
-      for (const glob of moduleFileGlobs(relative, nuxt.options.extensions)) {
+      for (const glob of sourceGlobs) {
         nodeInclude.add(glob)
       }
     }
@@ -431,13 +429,10 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     serverInclude.add(join(relative, 'runtime/server'))
     serverInclude.add(join(relative, 'dist/runtime/server'))
 
-    for (const glob of entryGlobs) {
-      serverExclude.add(glob)
-    }
-
     exclude.add(join(relative, 'runtime/server'))
     exclude.add(join(relative, 'dist/runtime/server'))
     for (const glob of entryGlobs) {
+      serverExclude.add(glob)
       exclude.add(glob)
     }
     legacyExclude.add(join(relative, 'runtime/server'))
