@@ -284,30 +284,30 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     nuxt.close()
   })
 
-  it('replays a runtime error to a ready page and on the same error', async () => {
+  it('replays a runtime error only to a page that raises it again', async () => {
     const nuxt = createNuxt()
     const print = vi.fn()
     const reporter = createDevErrorReporter(nuxt, { print })
     const { server, send, listeners } = devServer({ graph: clientGraph() })
     reporter.attach(server)
-    const client = { send: vi.fn() }
+    const noisy = { send: vi.fn() }
+    const quiet = { send: vi.fn() }
 
     const error = { name: 'Error', message: 'boom', stack: 'Error: boom\n    at setup (http://localhost:3000/_nuxt/pages/index.vue?t=1:3:1)' }
-    listeners['nuxt:dev:client-error']!(error)
+    listeners['nuxt:dev:client-error']!(error, noisy)
     await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
 
-    listeners['nuxt:dev:error:ready']!(undefined, client)
-    expect(client.send).toHaveBeenCalledWith(send.mock.calls[0]![0])
-    listeners['nuxt:dev:client-error']!({ ...error })
-    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(2))
-    expect(new Set(send.mock.calls.map(([payload]) => JSON.stringify(payload))).size).toBe(1)
+    listeners['nuxt:dev:error:ready']!(undefined, quiet)
+    expect(quiet.send).not.toHaveBeenCalled()
+
+    listeners['nuxt:dev:error:ready']!(undefined, noisy)
+    listeners['nuxt:dev:client-error']!({ ...error }, noisy)
+    expect(noisy.send).toHaveBeenCalledExactlyOnceWith(send.mock.calls[0]![0])
+    expect(send).toHaveBeenCalledTimes(1)
     expect(print).toHaveBeenCalledTimes(1)
 
     reporter.clear()
     expect(send).toHaveBeenLastCalledWith({ type: 'custom', event: 'nuxt:dev:error:clear' })
-    client.send.mockClear()
-    listeners['nuxt:dev:error:ready']!(undefined, client)
-    expect(client.send).not.toHaveBeenCalled()
     nuxt.close()
   })
 })
