@@ -264,6 +264,21 @@ describe('loadNuxt', () => {
     rmSync(modulesDir, { recursive: true, force: true })
   })
 
+  it('resolves `nitro/h3` types from the copy nitro depends on', async () => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+
+    const nitroDir = dirname(resolveModulePath('nitro/package.json', { from: pathToFileURL(repoRoot + '/') }))
+    const nitroH3Dir = dirname(resolveModulePath('h3/package.json', { from: pathToFileURL(nitroDir + '/') }))
+    const nitroServerDir = resolve(repoRoot, 'packages/nitro-server')
+    const h3Dir = dirname(resolveModulePath('h3/package.json', { from: pathToFileURL(nitroServerDir + '/') }))
+
+    const nitroPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+    expect(nitroPaths['nitro/h3']).toEqual([nitroH3Dir])
+    expect(nitroPaths.h3).toEqual([h3Dir])
+
+    await nuxt.close()
+  })
+
   it('resolves nitro aliases pointing at bare module specifiers', async () => {
     const nuxt = await loadNuxt({
       cwd: repoRoot,
