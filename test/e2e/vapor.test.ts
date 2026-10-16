@@ -474,6 +474,29 @@ test.describe('nuxt built-ins with vapor children', () => {
     expect(page).toHaveNoErrorsOrWarnings()
   })
 
+  test('<ClientOnly> does not forward attributes into a vapor slot as slot props', async ({ page, goto, builder, isDev }) => {
+    test.skip(builder !== 'vite', 'vue-loader compiles vapor SFCs as vdom components')
+    await goto('/vapor-slot-warnings')
+    await expect(page.getByTestId('vapor-client-only-slot-props')).toHaveText('{}')
+
+    if (isDev) {
+      // @ts-expect-error untyped
+      const logs: Array<{ type: string, text: string }> = page._consoleLogs
+      expect(logs.some(log => log.text.includes('NUXT_E4021'))).toBe(true)
+    }
+  })
+
+  test('<Title> warns about a vapor slot rather than its child count', async ({ page, goto, builder, isDev }) => {
+    test.skip(builder !== 'vite' || !isDev, 'vapor slot diagnostics are dev-only and vue-loader compiles vapor SFCs as vdom components')
+    await goto('/vapor-slot-warnings')
+    await expect(page.getByTestId('vapor-client-only-slot-props')).toHaveText('{}')
+
+    // @ts-expect-error untyped
+    const logs: Array<{ type: string, text: string }> = page._consoleLogs
+    expect(logs.some(log => log.text.includes('NUXT_E6004'))).toBe(true)
+    expect(logs.some(log => log.text.includes('NUXT_E6002'))).toBe(false)
+  })
+
   test('<DevOnly> renders a vapor slot child in dev and its fallback in production', async ({ page, goto, isDev }) => {
     await goto('/vapor-slots')
     if (isDev) {

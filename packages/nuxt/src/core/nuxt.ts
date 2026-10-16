@@ -1322,7 +1322,7 @@ async function vueSupportsVapor (nuxt: Nuxt) {
   })
   if (!path) { return false }
   const { version } = await readPackageJSON(path).catch(() => ({}) as PackageJson)
-  return !!version && satisfies(version, '>=3.6.0-0')
+  return !!version && satisfies(version, '>=3.6.0-rc.6')
 }
 
 const RELATIVE_CSS_ENTRY_RE = /^\.{1,2}\//
