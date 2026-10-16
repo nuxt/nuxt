@@ -127,6 +127,7 @@
       "ignoreDependencies": [
         "@dxup/nuxt",
         "@nuxt/devtools",
+        "@nuxt/telemetry",
         "@nuxt/vite-builder",
         "@nuxt/vite-server"
       ]
