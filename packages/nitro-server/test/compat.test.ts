@@ -1018,6 +1018,32 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
       expect.stringMatching(/compat[\\/]hooks-plugin/),
     ])
   })
+
+  it.fails('does not resolve a module virtual through an alias to a file', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-virtual-file-alias-'))
+    onTestFinished(() => rmSync(dir, { recursive: true, force: true }))
+    // `meta.mjs/nitro` fails with ENOTDIR rather than ENOENT once the file exists
+    writeFileSync(join(dir, 'meta.mjs'), '')
+
+    const nitroConfig: NitroConfig = { virtual: { '#meta/nitro': '' } }
+    await setupNitroCompat(createNuxt({ alias: { '#meta': join(dir, 'meta.mjs') } }), nitroConfig, legacyOff, [])
+  })
+
+  it.fails('follows a module virtual rather than a file its id would alias to', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-virtual-dir-alias-'))
+    onTestFinished(() => rmSync(dir, { recursive: true, force: true }))
+    writeFileSync(join(dir, 'handler.ts'), `import '#meta/nitro'`)
+    // never bundled: the build loads the virtual instead
+    writeFileSync(join(dir, 'nitro.ts'), `import 'h3'`)
+
+    const nitroConfig: NitroConfig = {
+      virtual: { '#meta/nitro': '' },
+      handlers: [{ route: '/meta', handler: join(dir, 'handler.ts') } as any],
+    }
+    await setupNitroCompat(createNuxt({ extensions: ['.ts'], alias: { '#meta': dir } }), nitroConfig, legacyOff, [])
+
+    expect(nitroConfig.plugins).toEqual([])
+  })
 })
 
 describe('scanLegacyScope', () => {
