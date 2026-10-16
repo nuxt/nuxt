@@ -38,6 +38,22 @@ test('overlays an error the browser raised, minimised over the app, and clears i
   await expect(page.locator('body')).toContainText('rendered after the fix')
 })
 
+test('does not overlay an error the browser raised on a page loaded afterwards', async ({ page, goto }) => {
+  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
+  await goto('/')
+  await page.getByRole('button', { name: 'throw' }).click()
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(1)
+
+  const ready = page.waitForEvent('websocket').then(ws => ws.waitForEvent('framesent', frame => String(frame.payload).includes('nuxt:dev:error:ready')))
+  await page.reload()
+  await ready
+  await page.waitForTimeout(1000)
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'throw' }).click()
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(1)
+})
+
 test('overlays a script syntax error introduced while the page is open', async ({ page, goto }) => {
   writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
   await goto('/')
