@@ -34,7 +34,7 @@ import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/impo
 import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
-import { normalizeLegacyRouteRules } from './route-rules.ts'
+import { normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
@@ -664,6 +664,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         applyToEnvironment: (env: { name: string }) => env.name === 'nitro',
       }))
     }
+  }
+
+  if (!nuxt.options.router.options.sensitive) {
+    nitroConfig.rollupConfig!.plugins!.push(routeRulesCaseFoldPlugin(() => nitro))
   }
 
   // Nitro serialises mount options with `JSON.stringify`, so the patterns have to go
