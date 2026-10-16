@@ -12,19 +12,24 @@ function parseAnchorURL (value: string, base: string = PROBE_BASE_A): URL | null
   }
 }
 
+// a relative value inherits whichever base it resolves against; an absolute one ignores both
+function resolvesWithoutBase (value: string): boolean {
+  const resolved = parseAnchorURL(value)
+  return !!resolved && resolved.href === parseAnchorURL(value, PROBE_BASE_B)?.href
+}
+
 /** Whether a URL string is a path rooted at the current origin, so carries no protocol. */
 export function isRootedPath (value: string): boolean {
-  return value[0] === '/' && value[1] !== '/' && value[1] !== '\\'
+  if (value[0] !== '/' || value[1] === '/' || value[1] === '\\') {
+    return false
+  }
+  // the URL parser drops ASCII tab and newline, which can join the leading `/` to a host
+  return (value[1] !== '\t' && value[1] !== '\n' && value[1] !== '\r') || !resolvesWithoutBase(value)
 }
 
 /** Whether a URL string carries its own protocol or authority. */
 export function isAbsoluteHref (value: string): boolean {
-  if (!value || isRootedPath(value)) {
-    return false
-  }
-  // a relative value inherits whichever base it resolves against; an absolute one ignores both
-  const resolved = parseAnchorURL(value)
-  return !!resolved && resolved.href === parseAnchorURL(value, PROBE_BASE_B)?.href
+  return !!value && !isRootedPath(value) && resolvesWithoutBase(value)
 }
 
 /** The script-capable protocol a URL string would navigate to, or `null` when it is safe. */
