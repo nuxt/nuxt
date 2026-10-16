@@ -87,16 +87,22 @@ In a menu or a set of breadcrumbs, the link matching the current route already e
 </template>
 ```
 
-Vue Router decides which link matches from the route and its params, [not the query](https://router.vuejs.org/guide/essentials/active-links.html), so a link that differs from the current page only by its query is marked as the current page too: a row of `?tab=` links, a set of filters, or a list of `?edit=<id>` rows all announce "current page" at once. Only one element in a set should be current, so give such links an `aria-current` of their own, which takes precedence over the router's:
+Vue Router decides which link matches from the route and its params, [not the query](https://router.vuejs.org/guide/essentials/active-links.html), so a link that differs from the current page only by its query is marked as the current page too: a set of filters or a list of `?edit=<id>` rows all announce "current page" at once. Only one element in a set should be current, so give such links an `aria-current` of their own. It takes precedence over the router's, and `undefined` removes the attribute:
 
 ```vue
+<script setup lang="ts">
+const route = useRoute()
+</script>
+
 <template>
   <NuxtLink
-    :to="{ query: { tab: 'billing' } }"
-    :aria-current="$route.query.tab === 'billing' ? 'true' : undefined"
-  >Billing</NuxtLink>
+    :to="{ query: { status: 'open' } }"
+    :aria-current="route.query.status === 'open' ? 'true' : undefined"
+  >Open</NuxtLink>
 </template>
 ```
+
+If the links switch between panels of the same page, the [tabs pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tabs/), with `role="tab"` and `aria-selected`, may be a better fit than `aria-current`.
 
 Links to files in your `public/` directory, or to another app on the same origin, are not routes that Vue Router knows about. Mark them as [`external`](/docs/api/components/nuxt-link#handling-static-file-and-cross-app-links) so the browser performs a real navigation instead of failing to match a route.
 
@@ -131,9 +137,23 @@ A skip link as the first tab stop of your app is the conventional fix, and it he
 </style>
 ```
 
-Following a link to `#main` moves the browser's sequential focus navigation starting point to `<main>`, so the next <kbd>Tab</kbd> lands inside it even though `<main>` itself is not focusable.
+Following a link to `#main` moves the browser's sequential focus navigation starting point to `<main>`, so in current browsers the next <kbd>Tab</kbd> lands inside it even though `<main>` itself is not focusable.
 
-If it suits your app, you can go further and move focus to the main region from a plugin whenever navigation changes the path. A query-only change, such as a `?tab=` link, leaves focus where it is. A script can only focus `<main>` once it has `tabindex="-1"`. Use `-1` rather than a positive value, which would move the element in the tab order and surprise everyone else. Note that a click on anything non-focusable inside it then focuses `<main>` itself because the browser focuses the nearest focusable ancestor of what was clicked:
+If it suits your app, you can go further and move focus to the main region from a plugin whenever navigation changes the path. A script can only focus `<main>` once it has `tabindex="-1"`. Use `-1` rather than a positive value, which would move the element in the tab order and surprise everyone else:
+
+```vue [app.vue]
+<template>
+  <!-- ... -->
+  <main
+    id="main"
+    tabindex="-1"
+  >
+    <NuxtPage />
+  </main>
+</template>
+```
+
+Navigations that only change the query or hash, such as a filter link or the skip link itself, leave focus where it is:
 
 ```ts [app/plugins/focus-main.client.ts]
 export default defineNuxtPlugin(() => {
@@ -145,6 +165,10 @@ export default defineNuxtPlugin(() => {
   })
 })
 ```
+
+::note
+With `tabindex="-1"`, a click on anything non-focusable inside `<main>` focuses `<main>` itself, because the browser focuses the nearest focusable ancestor of the clicked element. Take this into account if your app returns focus to the previously focused element, for example when closing a dialog.
+::
 
 ::tip
 Navigate around your app with the keyboard alone. Tabbing from the skip link into `<main>` after a couple of navigations will surface most focus problems quickly.
