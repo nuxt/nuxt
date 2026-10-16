@@ -1,3 +1,7 @@
+<script setup lang="ts">
+const greeting = await $fetch('/api/greeting')
+</script>
+
 <template>
-  <div>dev warmup fixture</div>
+  <div>dev warmup fixture: {{ greeting }}</div>
 </template>

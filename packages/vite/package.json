@@ -19,7 +19,8 @@
     "#ssr-sourcemap": "./src/ssr-sourcemap.ts",
     "#vite-node": "./src/vite-node.ts",
     "#vite-node-entry": "./src/vite-node-entry.ts",
-    "#vite-node-runner": "./src/vite-node-runner.ts"
+    "#vite-node-runner": "./src/vite-node-runner.ts",
+    "#vite-node-warmup": "./src/vite-node-warmup.ts"
   },
   "files": [
     "dist"
@@ -106,7 +107,8 @@
       "#ssr-sourcemap": "./dist/ssr-sourcemap.mjs",
       "#vite-node": "./dist/vite-node.mjs",
       "#vite-node-entry": "./dist/vite-node-entry.mjs",
-      "#vite-node-runner": "./dist/vite-node-runner.mjs"
+      "#vite-node-runner": "./dist/vite-node-runner.mjs",
+      "#vite-node-warmup": "./dist/vite-node-warmup.mjs"
     },
     "types": "./dist/index.d.mts"
   }

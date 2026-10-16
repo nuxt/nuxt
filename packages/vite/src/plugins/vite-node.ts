@@ -223,8 +223,9 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const serverResolvedPath = resolveModulePath('#vite-node-entry', { from: import.meta.url })
   const fetchResolvedPath = resolveModulePath('#vite-node', { from: import.meta.url })
   const sourceMapPluginPath = resolveModulePath('#ssr-sourcemap', { from: import.meta.url })
+  const warmupPluginPath = resolveModulePath('#vite-node-warmup', { from: import.meta.url })
 
-  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, fetchResolvedPath, sourceMapPluginPath].map(p => pathToFileURL(p).href))
+  const externalRuntimeUrls = new Set([runnerResolvedPath, serverResolvedPath, fetchResolvedPath, sourceMapPluginPath, warmupPluginPath].map(p => pathToFileURL(p).href))
   const rollupConfig = (nitro.options.rollupConfig ||= {} as NonNullable<typeof nitro.options.rollupConfig>)
   const existingExternal = rollupConfig.external
   rollupConfig.external = (id, ...args) => {
@@ -252,6 +253,12 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   nitro.options.virtual['#internal/nitro/ssr-sourcemap'] = sourceMapPluginCode
   nitro.options._config.virtual['#internal/nitro/ssr-sourcemap'] = sourceMapPluginCode
   nitro.options.plugins.push('#internal/nitro/ssr-sourcemap')
+
+  // a nitro plugin, so that the app is not evaluated before nitro installs `globalThis.$fetch`
+  const warmupPluginCode = `export { default } from ${JSON.stringify(pathToFileURL(warmupPluginPath).href)}`
+  nitro.options.virtual['#internal/nitro/vite-node-warmup'] = warmupPluginCode
+  nitro.options._config.virtual['#internal/nitro/vite-node-warmup'] = warmupPluginCode
+  nitro.options.plugins.push('#internal/nitro/vite-node-warmup')
 
   // The SSR dev server runs with `hmr: false`, so Vite never fires
   // `handleHotUpdate` on it and user-plugin invalidations of SSR modules
