@@ -41,6 +41,7 @@ export {
   anyValue as pendingWhenIdle,
   anyValue as prefetchPreloadTags,
   anyValue as purgeCachedData,
+  anyValue as rawVaporSlotKey,
   anyValue as remoteComponentIslands,
   anyValue as selectiveClient,
   anyValue as spaLoadingTemplateOutside,
