@@ -43,6 +43,7 @@ import { ServerEntryPlugin } from './plugins/server-entry.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
+import { InlinedVuePlugin } from './plugins/inlined-vue.ts'
 import { PerfPlugin } from './plugins/perf.ts'
 import { isNavigationRequest, warmupViteServer } from './utils/warmup.ts'
 import { useServerBuild } from '@nuxt/kit/internal'
@@ -207,6 +208,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
+        InlinedVuePlugin(nuxt),
         vuePlugin(viteConfig.vue),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
         ClientManifestPlugin(nuxt),

@@ -20,7 +20,7 @@ import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
-import { createNormalizedRouteRulesRouter, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
@@ -102,7 +102,9 @@ export default defineNuxtModule({
       nuxt.hook('nitro:init', (nitro) => {
         updateRouteConfig = async (inlineRules) => {
           if (!isEqual(inlineRulesCache, inlineRules)) {
-            await nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config?.routeRules) })
+            const routeRules = defu(inlineRules, nitro.options._config?.routeRules)
+            normalizeAppMiddlewareRules(routeRules)
+            await nitro.updateConfig({ routeRules })
             nitro.routing?.sync()
             inlineRulesCache = inlineRules
           }

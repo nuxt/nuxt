@@ -52,6 +52,13 @@ describe('error response headers', () => {
     expect((await render(rendererFailingWith(error, cleared, ['page=1']))).cookies).toEqual([...cleared, 'page=1', 'a=1', 'b=2'])
   })
 
+  it('sends only the cookies of the current request for a reused error', async () => {
+    const error = createError({ status: 401 })
+
+    expect((await render(rendererFailingWith(error, ['who=alice']))).cookies).toEqual(['who=alice'])
+    expect((await render(rendererFailingWith(error, ['who=bob']))).cookies).toEqual(['who=bob'])
+  })
+
   it('keeps the cookies when the error page cannot render', async () => {
     const renderer: NuxtRenderer = {
       fetch: (event) => {

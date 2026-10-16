@@ -1,4 +1,4 @@
-<a href="https://nuxt.com"><img width="830" height="213" src="./.github/assets/banner.svg" alt="Nuxt banner"></a>
+<a href="https://nuxt.com"><img width="830" height="276" src="./.github/assets/banner.avif" alt="Nuxt banner"></a>
 
 # Nuxt
 

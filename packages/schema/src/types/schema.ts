@@ -2396,7 +2396,7 @@ export interface ConfigSchema {
     hotMiddleware: MiddlewareOptions & { client?: ClientOptions }
 
     /**
-     * Set to `false` to disable the overlay provided by [FriendlyErrorsWebpackPlugin](https://github.com/nuxt/friendly-errors-webpack-plugin).
+     * Set to `false` to stop printing client build errors to the terminal during development.
      */
     friendlyErrors: boolean
 

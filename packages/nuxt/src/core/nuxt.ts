@@ -331,6 +331,9 @@ async function initNuxt (nuxt: Nuxt) {
         filename: 'types/builder-env.d.ts',
         dependsOn: [],
         getContents: () => genImport(environmentTypes),
+      }, {
+        nuxt: true,
+        nitro: nuxt.options.experimental.nitroViteEnvironment && environmentTypes === 'vite/client',
       })
     }
   }
@@ -989,6 +992,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
+  options.alias['nuxt/app'] ||= options.appDir
   options._majorVersion = 4
 
   // De-duplicate key arrays
