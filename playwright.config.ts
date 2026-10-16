@@ -105,6 +105,8 @@ export default defineConfig<E2eConfigOptions>({
               env: {
                 TEST_BUILDER: testBuilderFor(entry),
                 TEST_ENV: entry.isDev ? 'dev' : 'built',
+                // dev projects share fixture directories, and each runs its own dev server
+                ...entry.isDev ? { NUXT_IGNORE_LOCK: '1' } : {},
               },
             },
           },

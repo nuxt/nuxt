@@ -18,7 +18,7 @@ You can define the [`cache.varies` option](https://nitro.build/guide/cache#optio
 ::
 
 ::note
-If you have set [`app.baseURL`](/docs/api/nuxt-config#baseurl), the path returned on the server is relative to it, so `/base/about` is served as `/about`. On the client, `useRequestURL` reads `window.location`, which includes the base URL.
+If you have set [`app.baseURL`](/docs/api/nuxt-config#app-baseurl), the path returned on the server is relative to it, so `/base/about` is served as `/about`. On the client, `useRequestURL` reads `window.location`, which includes the base URL.
 ::
 
 ::code-group

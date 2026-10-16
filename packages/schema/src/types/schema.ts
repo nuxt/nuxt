@@ -323,11 +323,14 @@ export interface ConfigSchema {
   /**
    * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page rendered with `ssr: false`.
    *
-   * - If it is unset, it will use `~/spa-loading-template.html` file in one of your layers, if it exists. - If it is false, no SPA loading indicator will be loaded. - If true, Nuxt will look for `~/spa-loading-template.html` file in one of your layers, or a
-   *   default Nuxt image will be used.
+   * - If it is unset, it will use the `spa-loading-template.html` file in the `app/` directory of one of your layers, if it exists.
+   * - If it is false, no SPA loading indicator will be loaded.
+   * - If true, Nuxt will look for the `spa-loading-template.html` file in the `app/` directory of one of your layers, or a default Nuxt image will be used.
+   * - If it is a path, it is resolved relative to `srcDir`.
+   *
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
    *
-   * @example ~/spa-loading-template.html
+   * @example app/spa-loading-template.html
    * ```html
    * <!-- https://github.com/barelyhuman/snips/blob/dev/pages/css-loader.md -->
    * <div class="loader"></div>
@@ -456,10 +459,10 @@ export interface ConfigSchema {
   /**
    * Configures whether and how sourcemaps are generated for server and/or client bundles.
    *
-   * If set to a single boolean, that value applies to both server and client. Additionally, the `'hidden'` option is also available for both server and client.
-   * Available options for both client and server: - `true`: Generates sourcemaps and includes source references in the final bundle. - `false`: Does not generate any sourcemaps. - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
+   * If set to a single boolean, that value applies to both server and client. Additionally, the `'hidden'` and `'nosource'` options are also available for both server and client.
+   * Available options for both client and server: - `true`: Generates sourcemaps and includes source references in the final bundle. - `false`: Does not generate any sourcemaps. - `'hidden'`: Generates sourcemaps but does not include references in the final bundle. - `'nosource'`: Generates sourcemaps without the original source code (only file names and line mappings).
    */
-  sourcemap: boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }
+  sourcemap: boolean | { server?: boolean | 'hidden' | 'nosource', client?: boolean | 'hidden' | 'nosource' }
 
   /**
    * Log level when building logs.
@@ -2393,7 +2396,7 @@ export interface ConfigSchema {
     hotMiddleware: MiddlewareOptions & { client?: ClientOptions }
 
     /**
-     * Set to `false` to disable the overlay provided by [FriendlyErrorsWebpackPlugin](https://github.com/nuxt/friendly-errors-webpack-plugin).
+     * Set to `false` to stop printing client build errors to the terminal during development.
      */
     friendlyErrors: boolean
 

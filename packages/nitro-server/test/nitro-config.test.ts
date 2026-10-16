@@ -1,5 +1,6 @@
+import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { resolve } from 'pathe'
+import { isAbsolute, resolve } from 'pathe'
 import { loadNuxt } from '@nuxt/kit'
 import type { NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
@@ -58,10 +59,42 @@ describe('nitro config', () => {
     })
   })
 
+  it('does not inline the dependencies of an absolute `build.transpile` directory', async () => {
+    const moduleDir = resolve(fixtureDir, '../workspace-module')
+    await withNitro({ dev: false, build: { transpile: [moduleDir, '@nuxt/image'] } }, (nitro) => {
+      const noExternals = nitro.options.noExternals as Array<string | RegExp>
+      const isNoExternal = (id: string) => noExternals.some(entry => typeof entry === 'string' ? id.includes(entry) : entry.test(id))
+      expect(noExternals).toContain('@nuxt/image')
+      expect(isNoExternal(`${moduleDir}/src/runtime/server/routes/_ipx.ts`)).toBe(true)
+      expect(isNoExternal(`${moduleDir}/node_modules/.pnpm/sharp@0.34.5/node_modules/sharp/lib/index.js`)).toBe(false)
+    })
+  })
+
+  it('aliases `@vue/devtools-api` to a resolved path', async () => {
+    await withNitro({}, (_nitro, nitroConfig) => {
+      const alias = nitroConfig.alias!['@vue/devtools-api']!
+      expect(isAbsolute(alias)).toBe(true)
+      expect(existsSync(alias)).toBe(true)
+      expect(alias).toContain('vue-devtools-stub')
+    })
+  })
+
   it('does not include the dev error channel in production builds', async () => {
     await withNitro({ dev: false }, (_nitro, nitroConfig) => {
       const errorChannel = nitroConfig.virtual!['#internal/nuxt/error-channel'] as () => string
       expect(errorChannel()).toBe('export {}')
+    })
+  })
+
+  it('excludes sources from server sourcemaps for `nosource`', async () => {
+    await withNitro({ sourcemap: { server: 'nosource' } }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.rollupConfig!.output!.sourcemapExcludeSources).toBe(true)
+    })
+  })
+
+  it.for([true, 'hidden'] as const)('leaves `sourcemapExcludeSources` unset for `%s`', async (server) => {
+    await withNitro({ sourcemap: { server } }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.rollupConfig!.output).not.toHaveProperty('sourcemapExcludeSources')
     })
   })
 })

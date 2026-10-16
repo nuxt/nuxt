@@ -1,6 +1,44 @@
 import { matchesGlob } from 'node:path'
-import { describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern, toFsDriverIgnorePatterns, toModulePackageDir } from '../src/utils.ts'
+import { lstat, mkdir, mkdtemp, readdir, readlink, rm, symlink, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'pathe'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { getLayerNodeModulesExcludePattern, getSsrResolveConditions, linkStaticDist, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
+
+describe('linkStaticDist', () => {
+  let rootDir: string
+  let publicDir: string
+  let dist: string
+
+  beforeEach(async () => {
+    rootDir = await mkdtemp(join(tmpdir(), 'nitro-static-dist-'))
+    publicDir = join(rootDir, '.output/public')
+    dist = join(rootDir, 'dist')
+    await mkdir(publicDir, { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(rootDir, { recursive: true, force: true })
+  })
+
+  it('replaces a dangling link', async () => {
+    await symlink(join(rootDir, 'removed'), dist, 'junction')
+
+    await linkStaticDist(rootDir, publicDir)
+
+    expect(resolve(rootDir, await readlink(dist))).toBe(publicDir)
+  })
+
+  it('leaves an existing directory untouched', async () => {
+    await mkdir(dist)
+    await writeFile(join(dist, 'index.html'), '')
+
+    await linkStaticDist(rootDir, publicDir)
+
+    expect((await lstat(dist)).isSymbolicLink()).toBe(false)
+    expect(await readdir(dist)).toEqual(['index.html'])
+  })
+})
 
 describe('getLayerNodeModulesExcludePattern', () => {
   it('falls back to a bare node_modules pattern when no layers live in node_modules', () => {
@@ -140,5 +178,36 @@ describe('toModulePackageDir', () => {
     // never the bare `node_modules` it resolved from: as a prefix that would take in
     // every other package installed beside the module
     expect(toModulePackageDir('/proj/node_modules/', '/elsewhere/dist')).toBe('/elsewhere/dist')
+  })
+})
+
+describe('toTranspileNoExternal', () => {
+  it('leaves a package name as a string', () => {
+    expect(toTranspileNoExternal('@nuxt/image')).toBe('@nuxt/image')
+  })
+
+  it('matches the files of an absolute directory', () => {
+    const re = toTranspileNoExternal('/code/nuxt/image') as RegExp
+    expect(re.test('/code/nuxt/image/src/runtime/server/routes/_ipx.ts')).toBe(true)
+    expect(re.test('/code/nuxt/image/src/node_modules_helper.ts')).toBe(true)
+  })
+
+  it('does not match dependencies installed beneath an absolute directory', () => {
+    const re = toTranspileNoExternal('/code/nuxt/image') as RegExp
+    expect(re.test('/code/nuxt/image/node_modules/.pnpm/sharp@0.34.5/node_modules/sharp/lib/index.js')).toBe(false)
+    expect(re.test('/code/nuxt/image/playground/node_modules/ipx/dist/index.mjs')).toBe(false)
+  })
+
+  it('matches windows paths with either separator', () => {
+    const re = toTranspileNoExternal('C:\\code\\nuxt\\image') as RegExp
+    expect(re.test('C:\\code\\nuxt\\image\\src\\runtime\\server\\routes\\_ipx.ts')).toBe(true)
+    expect(re.test('C:/code/nuxt/image/src/runtime/server/routes/_ipx.ts')).toBe(true)
+    expect(re.test('C:\\code\\nuxt\\image\\node_modules\\sharp\\lib\\index.js')).toBe(false)
+  })
+})
+
+describe('getSsrResolveConditions', () => {
+  it('merges conditions without duplicates', () => {
+    expect(getSsrResolveConditions(['custom', 'node'], ['development', 'node', 'import'])).toEqual(['custom', 'node', 'development', 'import'])
   })
 })

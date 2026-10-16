@@ -7,6 +7,7 @@ declare module '#internal/nuxt/error-channel' {
   export = errorChannel
 }
 declare module '#internal/nuxt/island-renderer.mjs'
+declare module '#internal/nuxt/paths'
 declare module '#internal/dev-server-logs-options'
 declare module '#nuxt-compat/import-meta' {
   export const entryURL: string

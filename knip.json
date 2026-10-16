@@ -91,7 +91,6 @@
         "mocked-exports",
         "vue-devtools-stub",
         "ohash",
-        "hookable",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-typescript"
       ]
@@ -165,7 +164,6 @@
     },
     "packages/rspack": {
       "ignoreDependencies": [
-        "@nuxt/friendly-errors-webpack-plugin",
         "@nuxt/kit",
         "@nuxt/schema",
         "@types/webpack-bundle-analyzer",

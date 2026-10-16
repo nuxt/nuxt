@@ -104,6 +104,8 @@ export interface NuxtRequestState {
   '~devClientCss'?: string[]
   /** Dev-only: serialized cause of the error being rendered. */
   '~error-cause'?: unknown
+  /** Headers the failed render had set, for the server runtime to send with its error response. */
+  '~response-headers'?: Headers
 }
 
 export function getRequestState (event: RendererEvent): NuxtRequestState | undefined {

@@ -17,6 +17,12 @@ export function toFsUrl (path: string): string {
   return '/@fs' + path.replace(/^(?!\/)/, '/')
 }
 
+/** Vite serves non-path ids, such as `\0` virtual modules, from `/@id/`. */
+function toDevUrl (url: string): string {
+  if (url[0] === '/' || url[0] === '.') { return url }
+  return '/@id/' + url.replace('\0', '__x00__')
+}
+
 /**
  * Resolve the global CSS entries from `nuxt.options.css` to `/@fs/...`
  * dev-server URLs, paired with the absolute path they resolved to.
@@ -62,7 +68,7 @@ export function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph):
     if (!isCSS(url) || 'raw' in getQuery(url)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.id && 'raw' in getQuery(i.id))) { continue }
-    urls.add(url)
+    urls.add(toDevUrl(url))
     if (node.file) { files.add(node.file) }
   }
 
