@@ -17,6 +17,7 @@ import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
 import { TransformPlugin } from './plugins/transform.ts'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
+import { RenderListPlugin } from './plugins/render-list.ts'
 import { ClientComponentStubPlugin } from './plugins/client-component-stub.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
@@ -360,6 +361,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
 
       addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient }), { client: false, prepend: true })
+      addBuildPlugin(RenderListPlugin(), { client: false })
 
       if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
         addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
