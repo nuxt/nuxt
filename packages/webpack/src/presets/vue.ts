@@ -7,14 +7,12 @@ import { VueLoaderPlugin, builder, vueLoader, vueModuleIdentifierLoader, webpack
 export function vue (ctx: WebpackConfigContext) {
   // ensure the Vue loader is always the first plugin, regardless of plugin ordering.
   ctx.nuxt.hooks.hookOnce(`${builder}:config`, () => {
-    ctx.nuxt.hook(`${builder}:configResolved`, (configs) => {
-      for (const config of configs) {
-        config.plugins!.unshift(
-          // @ts-expect-error de-default vue-loader
-          new (VueLoaderPlugin.default
-            || VueLoaderPlugin)(),
-        )
-      }
+    ctx.nuxt.hook(`${builder}:configResolved`, () => {
+      ctx.config.plugins!.unshift(
+        // @ts-expect-error de-default vue-loader
+        new (VueLoaderPlugin.default
+          || VueLoaderPlugin)(),
+      )
     })
   })
 
