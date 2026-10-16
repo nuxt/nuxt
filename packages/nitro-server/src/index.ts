@@ -202,9 +202,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
   const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
 
-  // nitro computes the paths in its `tsconfig.server.json` for its own build directory
-  const serverTsConfigPath = join(typesDir, 'tsconfig.server.json')
-  const preservesServerTsConfig = !nuxt.options._prepare && !nuxt.options.dev && typesDir !== nuxt.options.buildDir && existsSync(serverTsConfigPath)
+  // nitro resolves the paths in `tsconfig.server.json` against its build directory, so a build into
+  // another `buildDir` writes it there rather than overwriting the one the project references
+  const typesServerTsConfigPath = join(typesDir, 'tsconfig.server.json')
+  const serverTsConfigPath = !nuxt.options._prepare && !nuxt.options.dev && typesDir !== nuxt.options.buildDir && existsSync(typesServerTsConfigPath)
+    ? join(nuxt.options.buildDir, 'tsconfig.server.json')
+    : typesServerTsConfigPath
 
   // pin to h3 v1 to prevent pulling in h3 v2 as a dependency of the nitro server
   const h3Entry = resolveModulePath('h3', { from: import.meta.url })
@@ -361,7 +364,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     typescript: {
       strict: true,
-      generateTsConfig: !preservesServerTsConfig,
+      generateTsConfig: true,
       tsconfigPath: serverTsConfigPath,
       tsConfig: {
         compilerOptions: {
