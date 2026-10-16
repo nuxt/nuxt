@@ -117,7 +117,7 @@
     "types": "./dist/index.d.mts"
   },
   "inlinedDependencies": {
-    "c12": "4.0.0-rc.1",
+    "c12": "4.0.0-rc.2",
     "pkg-types": "2.3.3",
     "untyped": "2.0.0"
   }

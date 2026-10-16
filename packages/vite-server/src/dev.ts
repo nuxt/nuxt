@@ -3,29 +3,38 @@ import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
 import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
 import { joinURL } from 'ufo'
-import type { Plugin, ViteDevServer } from 'vite'
+import type { Connect, ViteDevServer } from 'vite'
 
+import { listenForRemoteDevErrors } from './dev-errors.ts'
 import { resolveDocument } from './document.ts'
 import { publicDirs } from './output.ts'
 
 /**
- * Vite runs in middleware mode, so it creates no HTTP server of its own and leaves
- * `server.httpServer` null. Nuxt does listen, and its middlewares are served from that
- * listener, so the listener is exposed to Vite for other plugins to attach to.
+ * The ESM dependencies of the render, which a deploy target's environment loads as they
+ * are rather than discovering and pre-bundling them as it reaches them.
  */
-export function DevServerListenerPlugin (nuxt: Nuxt): Plugin {
-  return {
-    name: 'nuxt:vite-server:dev-listener',
-    enforce: 'pre',
-    apply: 'serve',
-    configureServer: {
-      order: 'pre',
-      handler (server) {
-        server.httpServer ||= nuxt._devServerListener ?? null
-      },
-    },
-  }
-}
+const SERVER_RUNTIME_DEPS = [
+  'vue',
+  'vue-router',
+  '@vue/shared',
+  '@unhead/vue',
+  'unhead',
+  'vue-bundle-renderer',
+  'cookie-es',
+  'defu',
+  'destr',
+  'devalue',
+  'errx',
+  'hookable',
+  'iron-webcrypto',
+  'klona',
+  'my-bad',
+  'nostics',
+  'ofetch',
+  'pathe',
+  'ufo',
+  'unctx',
+]
 
 export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   let viteServer: ViteDevServer | undefined
@@ -60,20 +69,65 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
     return serverEntry && viteServer ? render(request) : shell(url)
   }
 
+  const serveStatic = (request: Request): Promise<Response | undefined> => {
+    const next = (index: number): Promise<Response | undefined> => {
+      const middleware = staticMiddleware[index]
+      return Promise.resolve(middleware?.(request, () => next(index + 1) as Promise<Response>))
+    }
+    return next(0)
+  }
+
+  // with SSR, a deploy target renders documents through `#server-entry`
+  const isDocumentRequest = (req: IncomingMessage) => !serverEntry
+    && (req.method === 'GET' || req.method === 'HEAD')
+    && (req.headers['sec-fetch-mode'] === 'navigate' || !!req.headers.accept?.includes('text/html'))
+
+  nuxt.options.vite.plugins ||= []
+  nuxt.options.vite.plugins.push({
+    name: 'nuxt:vite-server:dev',
+    enforce: 'pre',
+    apply: 'serve',
+    configEnvironment (name, config) {
+      if (serverEntry && name !== 'client' && name !== 'ssr' && (config.consumer ?? 'server') === 'server') {
+        return { optimizeDeps: { exclude: [...SERVER_RUNTIME_DEPS] } }
+      }
+    },
+    configureServer: {
+      order: 'pre',
+      handler (server) {
+        // vite runs in middleware mode, so plugins attach to Nuxt's listener instead
+        server.httpServer ||= nuxt._devServerListener ?? null
+        if (serverEntry) {
+          listenForRemoteDevErrors(nuxt, server, errorChannel)
+        }
+        // ahead of other plugins' post middlewares, which may respond to every request
+        return () => {
+          server.middlewares.use(async function nuxtDevMiddleware (req: Connect.IncomingMessage, res, next) {
+            const viteUrl = req.url
+            const url = req.url = req.originalUrl || req.url || '/'
+            try {
+              const request = new NodeRequest({ req, res })
+              const response = await serveStatic(request) ?? (isDocumentRequest(req) ? await shell(url) : undefined)
+              if (response) {
+                return await sendNodeResponse(res, response)
+              }
+              req.url = viteUrl
+              next()
+            } catch (error) {
+              next(error)
+            }
+          })
+        }
+      },
+    },
+  })
+
   nuxt.server = {
     handler: async (req: IncomingMessage, res: ServerResponse) => {
       if (viteServer && await handledByVite(viteServer, req, res)) {
         return
       }
-
-      // every path that vite does not serve is either a public asset or a route
-      // the client router resolves from the app shell
-      const request = new NodeRequest({ req, res })
-      const next = (index: number): Response | Promise<Response> => {
-        const middleware = staticMiddleware[index]
-        return middleware ? middleware(request, () => next(index + 1)) : respond(request, req.url || '/')
-      }
-      await sendNodeResponse(res, await next(0))
+      await sendNodeResponse(res, await respond(new NodeRequest({ req, res }), req.url || '/'))
     },
   }
 }

@@ -16,7 +16,7 @@ import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 
-import { distDir, getServerReplacements } from './utils.ts'
+import { distDir, getServerReplacements, linkStaticDist } from './utils.ts'
 
 const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
@@ -36,7 +36,7 @@ function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): { urls: strin
     if (!IS_CSS_RE.test(mod) || 'raw' in getQuery(mod)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.url && 'raw' in getQuery(i.url))) { continue }
-    urls.add(mod)
+    urls.add(toDevUrl(mod))
     if (node.file) { files.add(node.file) }
   }
   return { urls: [...urls], files }
@@ -65,6 +65,12 @@ function resolveGlobalCss (nuxt: Nuxt): Array<{ file: string, url: string }> {
     }
   }
   return Array.from(out, ([file, url]) => ({ file, url }))
+}
+
+/** Vite serves non-path ids, such as `\0` virtual modules, from `/@id/`. */
+function toDevUrl (url: string): string {
+  if (url[0] === '/' || url[0] === '.') { return url }
+  return '/@id/' + url.replace('\0', '__x00__')
 }
 
 function toFsUrl (path: string): string {
@@ -129,6 +135,9 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   }
 
   nuxt.options.vite.plugins ||= []
+  if (nuxt.options.dev) {
+    nuxt.options.vite.plugins.push(DevRequestUrlPlugin())
+  }
   nuxt.options.vite.plugins.push(nitroPlugin({
     // reuse the Nitro instance we have created
     _nitro: nitro,
@@ -199,7 +208,12 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   // it is where `nitro:build:public-assets` can see the copied assets.
   if (!nuxt.options.dev) {
     // TODO: hook to vite
-    nitro.hooks.hook('compiled', () => nuxt.callHook('nitro:build:public-assets', nitro))
+    nitro.hooks.hook('compiled', async () => {
+      await nuxt.callHook('nitro:build:public-assets', nitro)
+      if (nitro.options.static) {
+        await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
+      }
+    })
   }
 }
 
@@ -387,6 +401,35 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
           }
         }
       },
+    },
+  }
+}
+
+/**
+ * Restores the `req.url` Vite's base middleware rewrote before `nitro/vite`'s dev middleware
+ * runs, so it must be registered ahead of that plugin.
+ * TODO: remove once nitro includes https://github.com/nitrojs/nitro/pull/4734
+ */
+function DevRequestUrlPlugin (): VitePlugin {
+  const originalUrls = new WeakMap<IncomingMessage, string>()
+  return {
+    name: 'nuxt:nitro-dev-request-url',
+    configureServer (server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.url) {
+          originalUrls.set(req, req.url)
+        }
+        next()
+      })
+      return () => {
+        server.middlewares.use((req, _res, next) => {
+          const url = originalUrls.get(req)
+          if (url !== undefined && url !== req.url) {
+            req.url = url
+          }
+          next()
+        })
+      }
     },
   }
 }

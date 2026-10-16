@@ -18,6 +18,7 @@
     "nonexistent-package",
     "pkg-pr-new",
     "ofetch",
+    "verkit",
     "@nuxt/webpack-builder",
     "@nuxt/rspack-builder",
     "@rspack/core"
@@ -90,7 +91,6 @@
         "mocked-exports",
         "vue-devtools-stub",
         "ohash",
-        "hookable",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-typescript"
       ]
@@ -131,7 +131,7 @@
       "ignoreUnresolved": ["../schema.ts"],
       "ignoreDependencies": [
         "@dxup/nuxt",
-        "@nuxt/devtools",
+        "@nuxt/devtools-onboard",
         "@nuxt/nitro-server",
         "@nuxt/telemetry",
         "@nuxt/vite-builder",
@@ -164,7 +164,6 @@
     },
     "packages/rspack": {
       "ignoreDependencies": [
-        "@nuxt/friendly-errors-webpack-plugin",
         "@nuxt/kit",
         "@nuxt/schema",
         "@types/webpack-bundle-analyzer",

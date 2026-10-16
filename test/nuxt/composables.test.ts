@@ -790,6 +790,8 @@ describe('routing utilities: `navigateTo`', () => {
   it('navigateTo should disallow navigation to external URLs by default', () => {
     expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/4.x/errors/e2001]`)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
+    expect(() => navigateTo('/\t/test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
+    expect(() => navigateTo('/\n\\test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
     const urls = [
@@ -1147,6 +1149,50 @@ describe('routing utilities: `abortNavigation`', () => {
   })
   it('should block navigation if no error is provided', () => {
     expect(abortNavigation()).toMatchInlineSnapshot('false')
+  })
+
+  describe('aborted navigation', () => {
+    const abortMiddleware = defineNuxtRouteMiddleware(to => to.query.abort ? abortNavigation() : undefined)
+    let restoreRoutes = () => {}
+
+    beforeEach(() => {
+      const router = useRouter()
+      const catchall = router.getRoutes().find(route => route.name === 'catchall')
+      if (catchall) {
+        router.removeRoute('catchall')
+      }
+      router.addRoute({ name: 'abort-matched', path: '/abort-matched', component: defineComponent({ template: '<div />' }) })
+      restoreRoutes = () => {
+        router.removeRoute('abort-matched')
+        if (catchall) {
+          router.addRoute(catchall)
+        }
+      }
+      addRouteMiddleware(abortMiddleware, { global: true })
+    })
+
+    afterEach(async () => {
+      const globalMiddleware = useNuxtApp()._middleware.global
+      globalMiddleware.splice(globalMiddleware.indexOf(abortMiddleware), 1)
+      await clearError()
+      await navigateTo('/abort-matched')
+      restoreRoutes()
+    })
+
+    it('should not show a 404 for an unmatched route', async () => {
+      const error = useError()
+      await navigateTo('/abort-unmatched?abort=1')
+      expect(error.value).toBeUndefined()
+    })
+
+    it.each(['/abort-matched?abort=1', '/abort-unmatched-2?abort=1'])('should keep the current error when navigating to %s', async (target) => {
+      const error = useError()
+      await navigateTo('/abort-unmatched')
+      expect(error.value?.message).toBe('Page not found: /abort-unmatched')
+
+      await navigateTo(target)
+      expect(error.value?.message).toBe('Page not found: /abort-unmatched')
+    })
   })
 })
 

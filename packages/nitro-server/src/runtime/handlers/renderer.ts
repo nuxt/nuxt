@@ -39,8 +39,8 @@ export default {
       }
     }
 
-    // after the v2 hook, which rebuilds the response from `event.res` when a listener
-    // changed anything: hints written onto the response it replaces would be lost
+    // after the v2 hook, which rebuilds the response: hints written onto the response it
+    // replaces would be lost
     if (import.meta.prerender) {
       applyPrerenderHints(event, response.headers)
     }

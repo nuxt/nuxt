@@ -74,7 +74,7 @@ export interface DescribedError {
   message: string
   /** The error's `data`, present only where it is safe to expose. */
   data: unknown
-  headers: Record<string, string>
+  headers: Headers
   /** Whether the error named an HTTP status itself, rather than being given 500. */
   isHTTPError: boolean
 }
@@ -125,7 +125,7 @@ export function describeError (error: unknown): DescribedError {
     statusText: reason.replace(INVALID_REASON_PHRASE_RE, '') || 'Error',
     message: (exposed && message) || reason,
     data: exposed ? jsonSafeData(data) : undefined,
-    headers: exposed ? (headers instanceof Headers ? Object.fromEntries(headers) : (headers as Record<string, string> | undefined) ?? {}) : {},
+    headers: new Headers(exposed ? (headers ?? undefined) as HeadersInit | undefined : undefined),
     isHTTPError,
   }
 }

@@ -1,10 +1,11 @@
-import { existsSync, promises as fsp } from 'node:fs'
-import { join, resolve } from 'pathe'
+import { join } from 'pathe'
 import { build, copyPublicAssets, createDevServer, prepare, prerender } from 'nitro/builder'
 import type { Nitro } from 'nitro/types'
 import type { Nuxt } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
+
+import { linkStaticDist } from './utils.ts'
 
 export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro): void {
   const devMiddlewareHandler = dynamicEventHandler()
@@ -74,10 +75,7 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
       }
 
       if (nitro.options.static) {
-        const dist = resolve(nuxt.options.rootDir, 'dist')
-        if (!existsSync(dist)) {
-          await fsp.symlink(nitro.options.output.publicDir, dist, 'junction').catch(() => {})
-        }
+        await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
       }
     } finally {
       nuxt._perf?.endPhase('nitro:build')

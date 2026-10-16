@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type * as UpstreamV2 from 'nitropack/types'
 import type * as UpstreamV3 from 'nitro/types'
-import type { DevServerHandler, ServerHandler, ServerHandlerInput } from '@nuxt/schema'
+import type { DevServerHandler, RequestEvent, ServerHandler, ServerHandlerInput } from '@nuxt/schema'
 
 import { addDevServerHandler, addNitroPlugin, addServerHandler } from '../src/nitro.ts'
 
@@ -66,6 +66,13 @@ describe('registrations', () => {
     addNitroPlugin({ nitro3: '/plugin.ts', nitro2: '/plugin.v2.ts' })
     addDevServerHandler({ route: '/a', handler: () => {} })
     addDevServerHandler({ route: '/a', handler: { nitro2: () => {}, nitro3: { fetch: () => new Response() } } })
+  }))
+
+  it('type the `nuxt` dev handler variant against `RequestEvent`', typed(() => {
+    addDevServerHandler({
+      route: '/a',
+      handler: { nuxt: event => expectTypeOf(event).toEqualTypeOf<RequestEvent>() },
+    })
   }))
 
   it('reject a variant key that is not a server API', typed(() => {

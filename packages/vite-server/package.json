@@ -28,7 +28,6 @@
     "clickable-path": "catalog:build",
     "defu": "catalog:build",
     "exsolve": "catalog:build",
-    "hookable": "catalog:app-runtime",
     "mocked-exports": "catalog:build",
     "my-bad": "catalog:nitro-runtime",
     "pathe": "catalog:build",
@@ -49,7 +48,7 @@
     "vite": "catalog:vite"
   },
   "engines": {
-    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
   },
   "publishConfig": {
     "exports": {

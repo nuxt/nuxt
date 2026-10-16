@@ -132,6 +132,8 @@ export interface NuxtRequestContext {
   '~devClientCss'?: string[]
   /** @internal */
   '~error-cause'?: unknown
+  /** @internal */
+  '~response-headers'?: Headers
 }
 
 /** The context of a {@link RequestEvent}, which carries Nuxt's own per-request state. */
@@ -159,6 +161,23 @@ export interface RequestEvent {
   }
   readonly context: RequestEventContext
 }
+
+/**
+ * Server runtime hooks declared by modules. Augment it to declare a hook.
+ *
+ * @example
+ * ```ts
+ * declare module 'nuxt/schema' {
+ *   interface NuxtServerHooks {
+ *     'my-module:request': (payload: { url: string }, event: RequestEvent) => void | Promise<void>
+ *   }
+ * }
+ * ```
+ *
+ * @since 4.6.0
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface NuxtServerHooks {}
 
 /**
  * Resolves the event type contributed to a {@link ServerTypes} registry, or

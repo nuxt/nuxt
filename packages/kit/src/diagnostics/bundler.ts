@@ -136,5 +136,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Rename it to `redirect.status`. Nuxt has applied it as `status` for now.',
       docs: false,
     },
+    NUXT_B7027: {
+      why: (p: { pluginName: string, packageName: string }) => `The PostCSS plugin \`${p.pluginName}\` could not be loaded: \`${p.packageName}\` is installed but does not provide it.`,
+      fix: (p: { pluginName: string, packageName: string }) => `Remove \`${p.pluginName}\` from \`postcss.plugins\` in your \`nuxt.config\` (or report it to the author of the module that adds it), or install a version of \`${p.packageName}\` that provides it.`,
+      docs: false,
+    },
   },
 })

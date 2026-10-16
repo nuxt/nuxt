@@ -5,6 +5,7 @@ import { onServerPrefetch, reactive } from 'vue'
 import { isInComponentSetup, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
 import { useHead } from './head'
+import { onServerPrefetch as markServerPrefetch } from './server-prefetch'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
@@ -108,6 +109,8 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
   })
   if (import.meta.server) {
     onServerPrefetch(() => promise)
+  } else {
+    markServerPrefetch()
   }
   return promise
 }

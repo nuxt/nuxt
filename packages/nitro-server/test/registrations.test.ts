@@ -3,7 +3,7 @@ import { addNitroPlugin, addServerHandler, runWithNuxtContext } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { NitroConfig } from 'nitro/types'
 
-import { collectServerRegistrations, migratedPlugins, serverApiOf } from '../src/registrations.ts'
+import { addDevServerHandlers, collectServerRegistrations, migratedPlugins, serverApiOf } from '../src/registrations.ts'
 
 function createNuxt (options: Record<string, any> = {}) {
   return {
@@ -61,5 +61,17 @@ describe('collectServerRegistrations', () => {
 
     expect(collectServerRegistrations(nuxt, nitroConfig)).toEqual([])
     expect(nitroConfig.plugins).toEqual(['/plugins/legacy.ts'])
+  })
+})
+
+describe('addDevServerHandlers', () => {
+  it('registers a dev server handler once when nitro already holds a copy of it', () => {
+    const fromConfig = { route: '/_config', handler: () => 'config' }
+    const added = { route: '/_added', handler: () => 'added' }
+    const nitroHandlers = [{ ...fromConfig }]
+
+    addDevServerHandlers(nitroHandlers, [fromConfig, added])
+
+    expect(nitroHandlers.map(entry => entry.route)).toEqual(['/_config', '/_added'])
   })
 })

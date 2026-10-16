@@ -111,5 +111,19 @@ describe('PublicDirsPlugin', () => {
       expect(output).toContain('"a{background:url(" + publicAssetsURL("/logo.svg") + ")}"')
       expect(output).toContain('\'b{background:url(\' + publicAssetsURL(\'/icon.svg\') + \')}\'')
     })
+
+    function evaluate (code: string) {
+      const body = render(code).replace('import { publicAssetsURL } from \'#internal/nuxt/paths\';', '')
+      return new Function('publicAssetsURL', `${body}; return a`)((url: string) => `/cdn${url}`)
+    }
+
+    it.each([
+      ['a double-quoted string containing other quotes', 'const a = "a::before{content:\\"\'`\\"}b{background:url(/logo.svg)}"', 'a::before{content:"\'`"}b{background:url(/cdn/logo.svg)}'],
+      ['a single-quoted string containing other quotes', 'const a = \'a::before{content:"`\\\'"}b{background:url(/logo.svg)}\'', 'a::before{content:"`\'"}b{background:url(/cdn/logo.svg)}'],
+      ['a template literal containing other quotes', 'const a = `a::before{content:"\'\\`"}b{background:url(/logo.svg)}`', 'a::before{content:"\'`"}b{background:url(/cdn/logo.svg)}'],
+      ['a template literal with substitutions', 'const x = "\'"; const a = `a{content:"${x}"}b{background:url(/logo.svg)}${"`"}c{background:url(/icon.svg)}`', 'a{content:"\'"}b{background:url(/cdn/logo.svg)}`c{background:url(/cdn/icon.svg)}'],
+    ])('rewrites public asset urls in %s', (_, code, expected) => {
+      expect(evaluate(code)).toBe(expected)
+    })
   })
 })

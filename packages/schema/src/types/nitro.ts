@@ -1,4 +1,5 @@
 import type { NuxtImport } from './imports.ts'
+import type { RequestEvent } from './server.ts'
 
 /**
  * Extension point through which the configured `server.builder` contributes the types of the
@@ -132,7 +133,7 @@ export interface DevServerHandler extends DevServerHandlerBase {
 /** A development-only registration as `addDevServerHandler()` accepts it. */
 export interface DevServerHandlerInput extends DevServerHandlerBase {
   /** The handler, or one per server API. */
-  handler: ServerApiVariants<DevServerHandlerFunction>
+  handler: DevServerHandlerFunction | { nuxt?: (event: RequestEvent) => unknown, nitro2?: DevServerHandlerFunction, nitro3?: DevServerHandlerFunction }
 }
 
 /**

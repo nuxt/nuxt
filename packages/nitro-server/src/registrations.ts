@@ -68,3 +68,13 @@ export function migratedPlugins (nuxt: Nuxt): Set<string> {
   }
   return paths
 }
+
+/** Add the dev server handlers that nitro does not already hold a copy of from its config. */
+export function addDevServerHandlers<T extends { handler: unknown }> (nitroHandlers: T[], handlers: T[]): void {
+  const registered = new Set(nitroHandlers.map(entry => entry.handler))
+  for (const entry of handlers) {
+    if (!registered.has(entry.handler)) {
+      nitroHandlers.push(entry)
+    }
+  }
+}

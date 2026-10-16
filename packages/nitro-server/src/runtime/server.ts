@@ -1,27 +1,24 @@
 /**
  * The `nuxt/server` implementations for a Nitro-backed build, registered as
- * `serverBuild.runtime.server`.
+ * `serverBuild.runtime.server`. Request helpers come from h3; route rules, runtime config,
+ * hooks and `serverFetch` from Nitro; the rest from `nuxt/internal/server-default`.
  *
- * Only the helpers h3 does more with than the platform alone can are taken from it:
- * resolving the request URL through forwarded headers, merging `Set-Cookie` against the
- * headers already queued for the response, negotiating the body against the request the
- * router matched, and marking a handler so the router can serve it directly. The rest come
- * from the shipped implementations, which is also what h3 v2's own deprecations point at.
- *
- * The types come from `nuxt/server` whichever module backs it, so every name it exports
- * must be exported here too.
+ * The types come from `nuxt/server`, so every name it exports must be exported here too.
  */
 import { defineEventHandler as defineH3EventHandler } from 'nitro/h3'
-import type { EventHandler, RequestEvent } from 'nuxt/server'
+import { serverFetch as nitroServerFetch } from 'nitro'
+import type { EventHandler, RequestEvent, ServerFetchInit } from 'nuxt/server'
 
 import {
   clearSession as clearNuxtSession,
   createError,
   getSession as getNuxtSession,
+  resolveServerFetchInit,
   updateSession as updateNuxtSession,
   useSession as useNuxtSession,
 } from 'nuxt/internal/server-default'
 
+import { withBaseURL } from './utils/base'
 import { bufferRequestBody } from './utils/body'
 import { serverDiagnostics } from './diagnostics'
 
@@ -29,7 +26,9 @@ export {
   deleteCookie,
   getCookie,
   getQuery,
+  getRequestHost,
   getRequestIP,
+  getRequestProtocol,
   getRequestURL,
   getRouterParam,
   getRouterParams,
@@ -40,8 +39,9 @@ export {
   setCookie,
 } from 'nitro/h3'
 
-export { getRouteRules } from './utils/route-rules'
+export { getRouteRules, matchRouteRules } from './utils/route-rules'
 export { useRuntimeConfig } from 'nitro/runtime-config'
+export { useNitroHooks as useServerHooks } from 'nitro/app'
 
 export {
   createError,
@@ -50,6 +50,7 @@ export {
   getRequestHeaders,
   isNuxtError,
   NuxtError,
+  parseCookies,
   sendRedirect,
   setResponseStatus,
   useAppConfig,
@@ -76,4 +77,8 @@ export function defineEventHandler<Result> (handler: EventHandler<Result>): Even
     bufferRequestBody(event)
     return handler(event as RequestEvent) as Result
   }) as unknown as EventHandler<Result>
+}
+
+export function serverFetch (event: Pick<RequestEvent, 'req' | 'context'>, path: string, init?: ServerFetchInit): Promise<Response> {
+  return nitroServerFetch(withBaseURL(path), resolveServerFetchInit(event, init), { nuxt: { '~internal': true } })
 }

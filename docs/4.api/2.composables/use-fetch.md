@@ -25,7 +25,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
 </script>
 ```
 
-::tip{to="/docs/guide/recipes/custom-usefetch#custom-usefetch-with-createusefetch"}
+::tip{to="/docs/guide/recipes/custom-usefetch#recipe-api-client-with-auth"}
 Need a custom `useFetch` with pre-defined defaults (like `baseURL` or auth headers)? Use `createUseFetch` to create a fully typed custom composable.
 ::
 
@@ -116,7 +116,7 @@ Keyed state created using `useFetch` can be retrieved across your Nuxt applicati
 ::
 
 ::warning
-`useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`. To create a custom variant with pre-defined options, use [`createUseFetch`](/docs/guide/recipes/custom-usefetch#custom-usefetch-with-createusefetch) instead.
+`useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`. To create a custom variant with pre-defined options, use [`createUseFetch`](/docs/api/composables/create-use-fetch) instead.
 ::
 
 ::warning

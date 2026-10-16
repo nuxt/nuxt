@@ -19,6 +19,7 @@
     "@unocss/reset": "catalog:dev",
     "@vue/shared": "catalog:build",
     "beasties": "catalog:dev",
+    "cssnano": "catalog:build",
     "html-validate": "catalog:dev",
     "htmlnano": "catalog:dev",
     "knitwork": "catalog:build",

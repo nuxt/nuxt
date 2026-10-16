@@ -9,8 +9,6 @@ test.use({
     rootDir: fixtureDir,
     dev: true,
     setupTimeout: (isWindows ? 360 : 120) * 1000,
-    // both dev projects share this fixture and never write to it, but each needs its own dev server
-    env: { NUXT_IGNORE_LOCK: '1' },
   },
 })
 

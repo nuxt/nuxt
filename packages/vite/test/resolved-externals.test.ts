@@ -1,10 +1,10 @@
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { ResolveExternalsPlugin } from '../src/plugins/resolved-externals.ts'
 
-const root = join(tmpdir(), 'nuxt-resolved-externals-test')
+const root = join(realpathSync(tmpdir()), 'nuxt-resolved-externals-test')
 
 function createNuxt (options: Record<string, unknown> = {}) {
   return {

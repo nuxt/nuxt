@@ -7,3 +7,4 @@
  * the parts it has nothing to add to.
  */
 export * from '../../server/index'
+export { resolveServerFetchInit } from '../../server/fetch'

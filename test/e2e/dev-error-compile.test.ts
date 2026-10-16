@@ -29,13 +29,15 @@ interface CompileCase {
   nameIsLostOverHmr?: boolean
 }
 
+const templateCase: CompileCase = {
+  title: 'a template that does not close a tag',
+  break: healthy => healthy.replace('<div>{{ message }}</div>', '<span\n    {{ message }}\n  </span>'),
+  message: 'Illegal',
+  name: 'SyntaxError',
+}
+
 const cases: CompileCase[] = [
-  {
-    title: 'a template that does not close a tag',
-    break: healthy => healthy.replace('<div>{{ message }}</div>', '<span\n    {{ message }}\n  </span>'),
-    message: 'Illegal',
-    name: 'SyntaxError',
-  },
+  templateCase,
   {
     title: 'a script block that does not parse',
     break: healthy => healthy.replace('const message', 'const x: = 1\nconst message'),
@@ -51,6 +53,23 @@ const cases: CompileCase[] = [
 ]
 
 const overlayOf = (page: Page) => page.locator('nuxt-error-overlay')
+
+test('shows the current compile report in a newly opened page', async ({ page, goto }) => {
+  const healthy = fixture.read(TARGET)
+  await goto('/compile-target')
+  await expect(page.locator('body')).toContainText('compile target healthy')
+  fixture.write(TARGET, templateCase.break(healthy))
+  await expectCompileOverlay(page, templateCase)
+
+  const secondPage = await page.context().newPage()
+  try {
+    await secondPage.goto('/ok')
+    await expect(secondPage.locator('body')).toContainText('ok page')
+    await expectCompileOverlay(secondPage, templateCase)
+  } finally {
+    await secondPage.close()
+  }
+})
 
 async function expectCompileOverlay (page: Page, scenario: CompileCase) {
   const overlay = overlayOf(page)

@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
@@ -79,7 +79,7 @@ describe('loadNuxtConfig', () => {
   })
 
   it('should not leak layer directory defaults into the merged Nuxt config', async () => {
-    const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-layer-dir-'))
+    const tempDir = await realpath(await mkdtemp(join(tmpdir(), 'nuxt-layer-dir-')))
     const layerDir = join(tempDir, 'layers/foo')
     await mkdir(layerDir, { recursive: true })
     await writeFile(join(tempDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({})\n')

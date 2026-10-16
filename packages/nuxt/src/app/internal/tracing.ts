@@ -2,6 +2,8 @@
  * Server-side diagnostics-channel tracing helper for Nuxt-owned subsystems.
  *
  * Channels published via this helper:
+ * - `nuxt.request` (each request the renderer handles, whichever server runtime
+ *   called it; payload is `{ event }`)
  * - `nuxt.render` (page-level Vue render, both buffered `renderToString` and
  *   streamed responses; payload includes `streaming: boolean`)
  * - `nuxt.island` (per-island `renderToString`)

@@ -1,6 +1,7 @@
+import { lstat, symlink, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, normalize } from 'pathe'
+import { dirname, isAbsolute, normalize, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
@@ -13,6 +14,20 @@ export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
     '__VUE_PROD_DEVTOOLS__': String(false),
     'import.meta.test': String(!!nuxt.options.test),
   }
+}
+
+/**
+ * Link `<rootDir>/dist` to the public output of a static build, replacing an existing link.
+ * A real file or directory at that path is left untouched.
+ */
+export async function linkStaticDist (rootDir: string, publicDir: string): Promise<void> {
+  const dist = resolve(rootDir, 'dist')
+  const stats = await lstat(dist).catch(() => null)
+  if (stats) {
+    if (!stats.isSymbolicLink()) { return }
+    await unlink(dist).catch(() => {})
+  }
+  await symlink(publicDir, dist, 'junction').catch(() => {})
 }
 
 /**
@@ -65,6 +80,18 @@ export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>)
   return excludePaths.length
     ? new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)
     : /node_modules/
+}
+
+/**
+ * Convert a `build.transpile` entry into a Nitro `noExternals` entry. An absolute
+ * directory matches its own files but not the dependencies installed beneath it.
+ */
+export function toTranspileNoExternal (entry: string): string | RegExp {
+  if (!isAbsolute(entry)) {
+    return entry
+  }
+  const dir = escapeRE(normalize(entry)).replace(/\//g, '[\\\\/]')
+  return new RegExp(`^${dir}(?!.*[\\\\/]node_modules[\\\\/])`)
 }
 
 /**
@@ -121,12 +148,8 @@ function toFsDriverGlob (pattern: string): string | undefined {
  * keyed only by `import`/`require` (notably `vue` and `vue-router`) resolve
  * when the only available copy is nested under `nuxt`'s own `node_modules`.
  */
-export function getSsrResolveConditions (exportConditions?: string[]): string[] {
-  const conditions = [...exportConditions || []]
-  if (!conditions.includes('import')) {
-    conditions.push('import')
-  }
-  return conditions
+export function getSsrResolveConditions (...sources: Array<string[] | undefined>): string[] {
+  return [...new Set([...sources.flatMap(conditions => conditions || []), 'import'])]
 }
 
 /**
