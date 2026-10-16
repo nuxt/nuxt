@@ -5,6 +5,7 @@
   },
   "ignoreExportsUsedInFile": true,
   "tags": ["-knipignore"],
+  "ignore": ["**/.nuxt-*/**", "packages/*/dist/**"],
   "ignoreIssues": {
     "**/.nuxt/**": ["unlisted", "unresolved"]
   },
@@ -17,6 +18,7 @@
     "nonexistent-package",
     "pkg-pr-new",
     "ofetch",
+    "verkit",
     "@nuxt/webpack-builder",
     "@nuxt/rspack-builder",
     "@rspack/core"
@@ -27,6 +29,7 @@
         "scripts/*",
         "test/*.ts",
         "test/e2e/*.ts",
+        "test/renderer/*.ts",
         "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
         "test/mocks/app-config.ts",
@@ -42,6 +45,28 @@
         "~/*": ["./*"],
         "#shared/*": ["./shared/*"]
       }
+    },
+    "test/fixtures/nitro-legacy": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreUnresolved": ["#legacy-module-runtime"]
+    },
+    "test/fixtures/nitro-module-compat": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreUnresolved": ["#compat-virtual/nitro-dependent"]
     },
     "test/fixtures/basic": {
       "entry": [
@@ -66,10 +91,8 @@
         "mocked-exports",
         "vue-devtools-stub",
         "ohash",
-        "hookable",
         "@babel/plugin-proposal-decorators",
-        "@babel/plugin-syntax-typescript",
-        "lru-cache"
+        "@babel/plugin-syntax-typescript"
       ]
     },
     "packages/vite-server": {
@@ -79,9 +102,6 @@
       ]
     },
     "packages/vite": {
-      "entry": [
-        "src/fix-stacktrace.ts"
-      ],
       "ignoreDependencies": [
         "mocked-exports",
         "nitropack",
@@ -111,7 +131,7 @@
       "ignoreUnresolved": ["../schema.ts"],
       "ignoreDependencies": [
         "@dxup/nuxt",
-        "@nuxt/devtools",
+        "@nuxt/devtools-onboard",
         "@nuxt/nitro-server",
         "@nuxt/telemetry",
         "@nuxt/vite-builder",
@@ -120,7 +140,8 @@
     },
     "packages/ui-templates": {
       "entry": [
-        "lib/*.ts"
+        "lib/*.{ts,mjs}",
+        "templates/**/shader/start.ts!"
       ],
       "ignoreDependencies": [
         "@vue/shared"
@@ -143,7 +164,6 @@
     },
     "packages/rspack": {
       "ignoreDependencies": [
-        "@nuxt/friendly-errors-webpack-plugin",
         "@nuxt/kit",
         "@nuxt/schema",
         "@types/webpack-bundle-analyzer",

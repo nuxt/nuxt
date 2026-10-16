@@ -110,6 +110,8 @@ describe('composables', () => {
       'setPageLayout',
       'defineNuxtComponent',
       'useRuntimeHook',
+      'defineUseFetchAddon',
+      'defineUseAsyncDataAddon',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',
@@ -293,9 +295,7 @@ describe('clearNuxtState', () => {
     const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
     clearNuxtState(key)
-    // In v5 (resetOnClear: true), clearNuxtState resets to init value by default
-    // In v4 (resetOnClear: false), clearNuxtState sets to undefined
-    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
+    expect(state.value).toBe('test')
   })
 
   it('expect state in payload for array of keys to be removed', () => {
@@ -306,13 +306,11 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState([key1, 'other'])
-    // In v5, resetOnClear resets to init value; in v4, it sets to undefined
-    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
-    expect(state1.value).toBe(cleared)
+    expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState([key1, key2])
-    expect(state1.value).toBe(cleared)
-    expect(state2.value).toBe(cleared)
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
   })
 
   it('expect state in payload for function to be removed', () => {
@@ -322,7 +320,7 @@ describe('clearNuxtState', () => {
     clearNuxtState(() => false)
     expect(state.value).toBe('test')
     clearNuxtState(k => k === key)
-    expect(state.value).toBe(process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test')
+    expect(state.value).toBe('test')
   })
 
   it('expect all states to be removed when no key is provided', () => {
@@ -331,9 +329,8 @@ describe('clearNuxtState', () => {
     expect(state1.value).toBe('test')
     expect(state2.value).toBe('test')
     clearNuxtState(undefined)
-    const cleared = process.env.PROJECT === 'nuxt-legacy' ? undefined : 'test'
-    expect(state1.value).toBe(cleared)
-    expect(state2.value).toBe(cleared)
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
   })
 
   it('expect state in payload for single key to reset', () => {
@@ -662,13 +659,8 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
     const spaRules = getRouteRules({ path: '/Pre/spa/thing' })
     const redirectRules = getRouteRules({ path: '/PRE/test' })
 
-    if (process.env.PROJECT === 'nuxt-legacy') {
-      expect(spaRules).toMatchObject({ prerender: true, ssr: false })
-      expect(redirectRules).toMatchObject({ redirect: '/' })
-    } else {
-      expect(spaRules).not.toHaveProperty('prerender')
-      expect(redirectRules).not.toHaveProperty('redirect')
-    }
+    expect(spaRules).not.toHaveProperty('prerender')
+    expect(redirectRules).not.toHaveProperty('redirect')
   })
 })
 
@@ -789,9 +781,9 @@ describe('routing utilities: `navigateTo`', () => {
     return vi.waitFor(() => new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve())))
   }
 
-  it('matches routes with compatibility-version casing', () => {
+  it('matches routes case-sensitively', () => {
     router.addRoute({ name: 'case-sensitive-test', path: '/case-sensitive-test', component: defineComponent({}) })
-    expect(router.resolve('/Case-Sensitive-Test').name === 'case-sensitive-test').toBe(process.env.PROJECT === 'nuxt-legacy')
+    expect(router.resolve('/Case-Sensitive-Test').name).not.toBe('case-sensitive-test')
     router.removeRoute('case-sensitive-test')
   })
 
@@ -1155,6 +1147,50 @@ describe('routing utilities: `abortNavigation`', () => {
   })
   it('should block navigation if no error is provided', () => {
     expect(abortNavigation()).toMatchInlineSnapshot('false')
+  })
+
+  describe('aborted navigation', () => {
+    const abortMiddleware = defineNuxtRouteMiddleware(to => to.query.abort ? abortNavigation() : undefined)
+    let restoreRoutes = () => {}
+
+    beforeEach(() => {
+      const router = useRouter()
+      const catchall = router.getRoutes().find(route => route.name === 'catchall')
+      if (catchall) {
+        router.removeRoute('catchall')
+      }
+      router.addRoute({ name: 'abort-matched', path: '/abort-matched', component: defineComponent({ template: '<div />' }) })
+      restoreRoutes = () => {
+        router.removeRoute('abort-matched')
+        if (catchall) {
+          router.addRoute(catchall)
+        }
+      }
+      addRouteMiddleware(abortMiddleware, { global: true })
+    })
+
+    afterEach(async () => {
+      const globalMiddleware = useNuxtApp()._middleware.global
+      globalMiddleware.splice(globalMiddleware.indexOf(abortMiddleware), 1)
+      await clearError()
+      await navigateTo('/abort-matched')
+      restoreRoutes()
+    })
+
+    it('should not show a 404 for an unmatched route', async () => {
+      const error = useError()
+      await navigateTo('/abort-unmatched?abort=1')
+      expect(error.value).toBeUndefined()
+    })
+
+    it.each(['/abort-matched?abort=1', '/abort-unmatched-2?abort=1'])('should keep the current error when navigating to %s', async (target) => {
+      const error = useError()
+      await navigateTo('/abort-unmatched')
+      expect(error.value?.message).toBe('Page not found: /abort-unmatched')
+
+      await navigateTo(target)
+      expect(error.value?.message).toBe('Page not found: /abort-unmatched')
+    })
   })
 })
 

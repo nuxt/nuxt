@@ -43,7 +43,6 @@
     "@ampproject/remapping": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "catalog:app-runtime",
-    "@vue/shared": "catalog:app-runtime",
     "consola": "catalog:app-runtime",
     "defu": "catalog:app-runtime",
     "destr": "catalog:nitro-runtime",
@@ -51,15 +50,18 @@
     "errx": "catalog:app-runtime",
     "escape-string-regexp": "catalog:build",
     "exsolve": "catalog:build",
+    "flru": "catalog:nitro-runtime",
     "impound": "catalog:build",
     "klona": "catalog:app-runtime",
-    "lru-cache": "catalog:nitro-runtime",
     "magic-string": "catalog:vite",
     "mocked-exports": "catalog:build",
+    "my-bad": "catalog:nitro-runtime",
     "nitro": "catalog:nitro-runtime",
     "nostics": "catalog:app-runtime",
+    "ofetch": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",
+    "rolldown": "catalog:vite",
     "rou3": "catalog:build",
     "srvx": "catalog:nitro-runtime",
     "std-env": "catalog:build",
@@ -102,7 +104,7 @@
     "vitest": "catalog:dev"
   },
   "engines": {
-    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
   },
   "publishConfig": {
     "exports": {

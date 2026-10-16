@@ -22,23 +22,24 @@ export type ResolveServerEventHandler<T> = T extends { eventHandler: infer H } ?
 export type ServerEventHandler = ResolveServerEventHandler<ServerTypes>
 
 /**
- * Extension point through which the configured `server.builder` contributes the response types
- * of the routes its runtime serves.
+ * The route tree `$fetch` and `useFetch` resolve a request against.
  *
- * Keys are route patterns (as written by the server runtime, so they may contain `:param` and
- * `**` segments) and values map a lowercased HTTP method - or `default`, for handlers that
- * answer every method - to the type that route resolves to.
- *
- * `@nuxt/nitro-server` declares the routes Nitro has scanned here, and Nuxt references its
- * declarations from the generated `.nuxt` types. Declaring routes where they are scanned keeps
- * `$fetch` and `useFetch` typing accurate without the app layer depending on a particular
- * server runtime.
+ * The routes the configured `server.builder` reports are compiled into this interface through the
+ * generated `.nuxt` types, so `$fetch` and `useFetch` stay accurate without the app layer
+ * depending on a particular server runtime. A route the builder cannot report, such as one a
+ * plugin registers at runtime, can be declared by augmenting it in the same shape.
  *
  * @example
  * ```ts
+ * import type { Endpoint } from 'nuxt/app'
+ *
  * declare module '@nuxt/schema' {
  *   interface ServerRoutes {
- *     '/api/hello': { get: { message: string } }
+ *     '/api/hello': {
+ *       [Endpoint]: {
+ *         GET: { response: { message: string } }
+ *       }
+ *     }
  *   }
  * }
  * ```
@@ -131,11 +132,18 @@ export interface NuxtRequestContext {
   '~devClientCss'?: string[]
   /** @internal */
   '~error-cause'?: unknown
+  /** @internal */
+  '~response-headers'?: Headers
 }
 
 /** The context of a {@link RequestEvent}, which carries Nuxt's own per-request state. */
 export interface RequestEventContext extends Record<string, unknown> {
   nuxt?: NuxtRequestContext
+  /**
+   * The dynamic segments the server builder matched for the request. Read them with
+   * `getRouterParams()`, which returns them percent-encoded as they appear in the URL.
+   */
+  params?: Record<string, string | undefined>
 }
 
 /**
@@ -153,6 +161,23 @@ export interface RequestEvent {
   }
   readonly context: RequestEventContext
 }
+
+/**
+ * Server runtime hooks declared by modules. Augment it to declare a hook.
+ *
+ * @example
+ * ```ts
+ * declare module 'nuxt/schema' {
+ *   interface NuxtServerHooks {
+ *     'my-module:request': (payload: { url: string }, event: RequestEvent) => void | Promise<void>
+ *   }
+ * }
+ * ```
+ *
+ * @since 4.6.0
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface NuxtServerHooks {}
 
 /**
  * Resolves the event type contributed to a {@link ServerTypes} registry, or

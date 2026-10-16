@@ -24,10 +24,8 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
   setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
 
-    /* eslint-disable @typescript-eslint/no-deprecated */
-    const legacy = options.legacy
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const headNext = nuxt.options.experimental.headNext
-    /* eslint-enable @typescript-eslint/no-deprecated */
 
     // Transpile @unhead/vue
     nuxt.options.build.transpile.push('@unhead/vue')
@@ -51,23 +49,13 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       rootDir: nuxt.options.rootDir,
     }))
 
-    // v5 users get tree-shaking via the @unhead/vue/vite plugin registered below.
-    // On v4 we fall back to Nuxt's composable tree-shaker so server composables
-    // still get stripped from the client bundle in production builds.
-    if (nuxt.options.future.compatibilityVersion < 5 && !nuxt.options.dev) {
-      nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
-        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe',
-      ]
-    }
-
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
     const resolveNuxtUnhead = (id: string) => resolveModulePath(id, { from: import.meta.url })
 
-    // Register @unhead/vue/vite plugin for v5 compat mode
     // Vite 8+ ships rolldown and lightningcss as direct deps, so minifiers
     // are always available when using the vite builder. We resolve paths at
     // setup time so dynamic imports resolve from vite's deps, not nuxt's.
-    if (nuxt.options.future.compatibilityVersion >= 5 && options.vite !== false && nuxt.options.builder === '@nuxt/vite-builder') {
+    if (options.vite !== false && nuxt.options.builder === '@nuxt/vite-builder') {
       const rolldownPath = resolveModulePath('rolldown/experimental', { try: true, from: importPaths })
       const lightningcssPath = resolveModulePath('lightningcss', { try: true, from: importPaths })
       // Convert to file:// URLs for Windows compatibility with dynamic import()
@@ -101,7 +89,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       })
     }
 
-    const unheadLegacy = resolveNuxtUnhead('@unhead/vue/legacy')
     const unheadPlugins = resolveNuxtUnhead('@unhead/vue/plugins')
 
     const ssrStreamingEnabled = typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
@@ -110,38 +97,19 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       filename: 'unhead-options.mjs',
       dependsOn: [],
       getContents () {
-        const isV5 = nuxt.options.future.compatibilityVersion >= 5
-
-        // legacy is forced false on v5 by the schema resolver (which warns there), so only v4 reaches this
-        if (legacy) {
-          headDiagnostics.NUXT_B6003()
-        }
-
         if (headNext === false) {
           headDiagnostics.NUXT_B6004()
         }
 
-        const disableCapoSorting = !isV5 && (legacy || headNext === false)
-
-        const lines: string[] = []
-        // v4 parity with v2 defaults: restore the plugin set that unhead v3 no
-        // longer auto-loads (DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin,
-        // AliasSortingPlugin). v5 keeps TemplateParamsPlugin because %s / %siteName
-        // / %separator title interpolation is a core Nuxt SEO idiom; other plugins
-        // must be registered explicitly.
-        if (!isV5) {
-          lines.push(`import { legacyPlugins } from ${JSON.stringify(unheadLegacy)};`)
-        } else {
-          lines.push(`import { TemplateParamsPlugin } from ${JSON.stringify(unheadPlugins)};`)
-        }
-        lines.push(`export default {`)
-        lines.push(`  disableDefaults: true,`)
-        if (disableCapoSorting) {
-          lines.push(`  disableCapoSorting: true,`)
-        }
-        lines.push(`  plugins: ${isV5 ? '[TemplateParamsPlugin]' : 'legacyPlugins'},`)
-        lines.push(`}`)
-        return lines.join('\n')
+        // TemplateParamsPlugin is kept because %s / %siteName / %separator title
+        // interpolation is a core Nuxt SEO idiom; other plugins must be registered explicitly.
+        return [
+          `import { TemplateParamsPlugin } from ${JSON.stringify(unheadPlugins)};`,
+          `export default {`,
+          `  disableDefaults: true,`,
+          `  plugins: [TemplateParamsPlugin],`,
+          `}`,
+        ].join('\n')
       },
     })
 
@@ -157,19 +125,16 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       },
     })
 
-    // Remove deprecated server composables from auto-imports in v5
-    if (nuxt.options.future.compatibilityVersion >= 5) {
-      const deprecated = new Set(['useServerHead', 'useServerHeadSafe', 'useServerSeoMeta'])
-      nuxt.hooks.hook('imports:sources', (sources) => {
-        for (const source of sources) {
-          if ('from' in source && source.from === '#app/composables/head' && 'imports' in source && Array.isArray(source.imports)) {
-            source.imports = (source.imports as (string | { name: string })[]).filter(
-              i => !deprecated.has(typeof i === 'string' ? i : i.name),
-            )
-          }
+    const deprecated = new Set(['useServerHead', 'useServerHeadSafe', 'useServerSeoMeta'])
+    nuxt.hooks.hook('imports:sources', (sources) => {
+      for (const source of sources) {
+        if ('from' in source && source.from === '#app/composables/head' && 'imports' in source && Array.isArray(source.imports)) {
+          source.imports = (source.imports as (string | { name: string })[]).filter(
+            i => !deprecated.has(typeof i === 'string' ? i : i.name),
+          )
         }
-      })
-    }
+      }
+    })
 
     // Emit the unhead streaming IIFE as a raw, content-hashed JS asset in
     // production so the renderer can load it as a classic script

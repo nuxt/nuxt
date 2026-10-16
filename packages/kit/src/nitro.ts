@@ -1,5 +1,5 @@
 import { normalize } from 'pathe'
-import type { DevServerHandlerInput, NitroInstance, Nuxt, NuxtImport, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerInput, ServerPlugin, ServerPluginInput } from '@nuxt/schema'
+import type { DevServerHandler, DevServerHandlerInput, NitroInstance, Nuxt, NuxtImport, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerInput, ServerPlugin, ServerPluginInput } from '@nuxt/schema'
 
 import { tryUseNuxt, useNuxt } from './context.ts'
 import { getNitroVersion } from './compatibility.ts'
@@ -27,6 +27,22 @@ export function getHostServerApis (nuxt: Nuxt = useNuxt()): ServerApi[] | undefi
     case 2: return ['nitro2', 'nuxt']
     default: return undefined
   }
+}
+
+/**
+ * Returns the variant the configured server prefers, or `undefined` (with a warning)
+ * when it runs none of them.
+ *
+ * @example
+ * ```ts
+ * const server = resolveServerVariant({
+ *   nuxt: resolver.resolve('./runtime/server'),
+ *   nitro2: resolver.resolve('./runtime/server.legacy'),
+ * })
+ * ```
+ */
+export function resolveServerVariant<T> (variants: Partial<Record<ServerApi, T>>): T | undefined {
+  return resolveVariant<T, ServerApi>('resolveServerVariant', variants, value => value, SERVER_APIS)?.value
 }
 
 /** An unidentifiable host is, in practice, an older Nuxt on nitro v2. */
@@ -127,6 +143,26 @@ function addLegacyBaseRoute (nuxt: Nuxt, entry: ServerHandler, resolved: Resolve
   }
 }
 
+const LITERAL_ROUTE_RE = /^[^:*]+$/
+
+/**
+ * Nitro v2 mounts dev handlers with `app.use()`, a literal prefix match that ignores method,
+ * so a `/fonts/**` route needs a second registration on `/fonts` to reach anything.
+ */
+function addLegacyDevBaseRoute (nuxt: Nuxt, entry: DevServerHandler, resolved: ResolvedVariant<unknown>): void {
+  const route = entry.route
+  if (!route || getNitroVersion(nuxt) !== 2) {
+    return
+  }
+  const base = route.replace(WILDCARD_SUFFIX_RE, '')
+  if (base === route || !base || base === '/' || !LITERAL_ROUTE_RE.test(base)) {
+    return
+  }
+  if (!nuxt.options.devServerHandlers.some(handler => handler.route === base)) {
+    nuxt.options.devServerHandlers.push(withVariantMeta({ ...entry, route: base }, resolved))
+  }
+}
+
 /**
  * Adds a server handler.
  *
@@ -154,7 +190,8 @@ export function addServerHandler (handler: ServerHandlerInput): void {
   // retrieve method from handler file name
   const [, method = undefined] = resolved.value.match(HANDLER_METHOD_RE) || []
   const entry: ServerHandler = {
-    method: method?.toUpperCase() as ServerHandler['method'],
+    // nitropack v2 writes the method into its route types as given, where requests are typed with lowercase methods
+    method: (getNitroVersion(nuxt) === 2 ? method : method?.toUpperCase()) as ServerHandler['method'],
     ...handler,
     handler: resolved.value,
   }
@@ -173,7 +210,9 @@ export function addDevServerHandler (handler: DevServerHandlerInput): void {
   if (!resolved) {
     return
   }
-  nuxt.options.devServerHandlers.push(withVariantMeta({ ...handler, handler: resolved.value }, resolved))
+  const entry: DevServerHandler = { ...handler, handler: resolved.value }
+  nuxt.options.devServerHandlers.push(withVariantMeta(entry, resolved))
+  addLegacyDevBaseRoute(nuxt, entry, resolved)
 }
 
 /**
@@ -257,12 +296,21 @@ export function tryUseNitro (): NitroInstance | undefined {
   return (tryUseNuxt() as any)?._nitro
 }
 
+/** A server import whose `from` may be one module per server API. */
+export type ServerImportInput = Omit<NuxtImport, 'from'> & { from: ServerApiVariants<string> }
+
 /**
  * Add server imports to be auto-imported in the server program.
  */
-export function addServerImports (imports: NuxtImport | NuxtImport[]): void {
+export function addServerImports (imports: ServerImportInput | ServerImportInput[]): void {
   const nuxt = useNuxt()
-  const _imports = toArray(imports)
+  const _imports: NuxtImport[] = []
+  for (const entry of toArray(imports)) {
+    const resolved = resolveVariant('addServerImports', entry.from, value => value, SERVER_APIS)
+    if (resolved) {
+      _imports.push({ ...entry, from: resolved.value })
+    }
+  }
   if (_imports.length === 0) {
     return
   }

@@ -34,7 +34,7 @@ const loggedIn = computed(() => !!tokenCookie.value)
 </script>
 ```
 
-::note{to="/docs/4.x/guide/going-further/experimental-features#cookiestore"}
+::note{to="/docs/guide/going-further/experimental-features#cookiestore"}
 Since [Nuxt v3.12.0](https://github.com/nuxt/nuxt/releases/tag/v3.12.0), the experimental `cookieStore` option is enabled by default. It automatically refreshes the `useCookie` value when cookies change in the browser.
 ::
 

@@ -89,7 +89,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           node-version: lts
           cache: true
@@ -123,9 +123,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
   ui-templates-generated:
@@ -142,9 +142,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
       - name: Regenerate ui-templates output
@@ -153,7 +153,7 @@ jobs:
 
       - name: Fail if committed output is stale
         run: |
-          paths="packages/nuxt/src/app/components packages/nitro-server/src/runtime/templates packages/nitro-server/src/templates packages/schema/src/templates"
+          paths=$(node -e "import('./packages/ui-templates/lib/paths.mjs').then(m => console.log(Object.keys(m.generatedTemplateCopies).join(' ')))")
           git add -N -- $paths
           if ! git diff --exit-code -- $paths; then
             echo "::error::Committed ui-templates output is out of date. Run 'pnpm --filter @nuxt/ui-templates build' and commit the result."
@@ -185,7 +185,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           config: |
             paths:
@@ -202,7 +202,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -229,7 +229,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           node-version: lts
           cache: true
@@ -264,10 +264,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           node-version: lts
           cache: true
+
+      - name: Fetch 4.x for cross-branch diagnostics check
+        run: git fetch --no-tags --depth=1 origin 4.x:refs/remotes/origin/4.x
 
       - name: Prepare
         run: vp run dev:prepare && vp run test:prepare && vp run build:kit
@@ -315,7 +318,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           node-version: lts
           cache: true
@@ -350,7 +353,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           node-version: lts
           cache: true
@@ -374,7 +377,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           node-version: lts
           cache: true
@@ -383,7 +386,7 @@ jobs:
         run: vp run test:prepare
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@373d6868929f444bc08d901fd0eb0ad52a8875ea # v5.2.1
+        uses: CodSpeedHQ/action@821a40cd6c80e3cfe387caf55668287addd808da # v5.5.0
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -424,9 +427,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
       - name: Cache Playwright browsers
@@ -444,7 +447,7 @@ jobs:
       - name: Test (fixtures)
         run: vp exec vitest run ${{ matrix.projects }}
 
-      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         if: github.event_name != 'push' && matrix.os == 'ubuntu-24.04-arm'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -486,9 +489,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
-          node-version: 22
+          node-version: 22.23.3
           cache: true
 
       - name: Cache Playwright browsers
@@ -508,7 +511,7 @@ jobs:
 
       - name: Upload e2e failure context
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-test-results-${{ matrix.os }}-${{ strategy.job-index }}
           path: test-results/
@@ -561,34 +564,64 @@ jobs:
           done
           echo "All required jobs passed or were skipped."
 
-  release-nightly:
-    concurrency:
-      group: release-nightly
+  pack-nightly:
     permissions:
-      id-token: write
+      contents: read
     if: |
       github.event_name == 'push' &&
       github.repository_owner == 'nuxt' &&
+      !github.event.repository.fork &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs: changes
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
+    outputs:
+      files: ${{ steps.pack.outputs.files }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           node-version: latest
           cache: true
 
-      - name: Release nightly
-        run: node scripts/release.ts
-        env:
-          TAG: ${{ github.ref == 'refs/heads/main' && '5x' || 'latest' }}
+      - name: Pack nightly
+        id: pack
+        uses: danielroe/uppt/pack@6ec27140623aa835e362f866d8ab0018ab057f4d # v0.6.11
+        with:
+          checkout: false
+          install: false
+          nightly: true
+          nightly-aliases: |
+            nuxi
+            @nuxt/cli
+          packages: |
+            packages/*
+            !packages/nuxi
+            !packages/test-utils
+            !packages/ui-templates
+            docs
+
+  release-nightly:
+    if: needs.pack-nightly.outputs.files != '' && needs.pack-nightly.outputs.files != '[]'
+    needs: pack-nightly
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    concurrency:
+      group: release-nightly-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      id-token: write
+    environment: nightly
+    steps:
+      - uses: danielroe/uppt/publish@6ec27140623aa835e362f866d8ab0018ab057f4d # v0.6.11
+        with:
+          nightly: true
+          files: ${{ needs.pack-nightly.outputs.files }}
+          npm-tag: ${{ github.ref == 'refs/heads/main' && '5x' || (github.ref == 'refs/heads/4.x' && '4x' || 'latest') }}
 
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
@@ -601,7 +634,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@49c3e4e92c52e7f8392712a9267bbe71c5ab30e5 # v1.19.0
+      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           node-version: lts
           cache: true

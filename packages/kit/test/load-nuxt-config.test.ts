@@ -75,6 +75,20 @@ describe('loadNuxtConfig layer identity canonicalisation', () => {
     expect(config.css?.filter(entry => entry === 'real-marker.css')).toHaveLength(1)
   })
 
+  it('addresses a layer extended via a symlink by its real path', async () => {
+    await writeFile(
+      join(tempDir, 'nuxt.config.ts'),
+      'export default defineNuxtConfig({ extends: [\'./layers/linked\'] })',
+    )
+    const config = await loadNuxtConfig({ cwd: tempDir })
+    const layer = config._layers.find(layer => layer.config.css?.includes('real-marker.css'))
+    expect(layer?.cwd).toBe(join(tempDir, 'real-layer'))
+    expect(layer?.config.rootDir).toBe(join(tempDir, 'real-layer'))
+    expect(layer?.config.srcDir).toBe(join(tempDir, 'real-layer'))
+    expect(layer?.configFile).toBe(join(tempDir, 'real-layer/nuxt.config.ts'))
+    expect(config._layers[0]?.cwd).toBe(tempDir)
+  })
+
   it('dedupes a layer extended via its config file path and auto-scanned as a dir', async () => {
     await writeFile(
       join(tempDir, 'nuxt.config.ts'),

@@ -3,37 +3,50 @@
  * web-standard part of the event every server runtime provides. Code written
  * against them runs on any Nuxt server builder.
  *
- * {@link toNuxtRequestEvent} returns the event in the shape the configured
- * `server.builder` provides. Anything not exported here comes from the server
- * runtime itself (`nitro`, `nitro/h3`), and pins the code to it.
+ * Anything not exported here comes from the server runtime itself (`nitro`,
+ * `nitro/h3`), and pins the code to it.
  *
  * @module nuxt/server
  */
 import { parse, serialize } from 'cookie-es'
-import type { CookieSerializeOptions } from 'cookie-es'
+import type { CookieSerializeOptions } from '../app/types/cookie'
 import { parseQuery } from 'ufo'
-import type { AppRouteRules, NuxtRequestEvent, RequestEvent, RuntimeConfig } from 'nuxt/schema'
+import type { AppRouteRules, RequestEvent, RuntimeConfig, SharedAppConfig } from 'nuxt/schema'
 import { useRuntimeConfig as _useRuntimeConfig } from 'nuxt/internal/server-runtime-config'
+import _appConfig from 'nuxt/internal/server-app-config'
+import { klona } from 'klona'
 
 import { NUXT_ERROR_SIGNATURE, NuxtError, createError } from '../app/error'
 import type { NuxtError as NuxtErrorContract } from '../app/types'
 
-export type { AppRouteRules, RequestEvent, RequestEventContext, ServerRoutes } from 'nuxt/schema'
+export { clearSession, getSession, updateSession, useSession } from './session'
+export { deriveSecret } from './secret'
+export { serverFetch } from './fetch'
+export { useServerHooks } from './hooks'
+export type { NuxtServerRendererHooks, ServerHookable, ServerHookResult } from './hooks'
+export type { ServerFetchInit, ServerFetchResponse } from './fetch'
+export { handleCors } from './cors'
+export type { CorsOptions } from './cors'
+export { getValidatedQuery, readValidatedBody } from './validate'
+export type { ValidateResult } from './validate'
+export type { Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate } from './session'
+
+export type { AppRouteRules, NuxtServerHooks, RequestEvent, RequestEventContext, ServerRoutes } from 'nuxt/schema'
 export type { NuxtErrorDetails } from '../app/error'
 export type { NuxtErrorJSON } from '../app/types'
 
 /**
  * The request event in the shape the configured `server.builder` provides: h3's
- * `H3Event` under `@nuxt/nitro-server`. Returned by {@link toNuxtRequestEvent}.
+ * `H3Event` under `@nuxt/nitro-server`.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export type { NuxtRequestEvent } from 'nuxt/schema'
 
 /**
  * A request handler, as {@link defineEventHandler} returns it.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export type EventHandler<Result = unknown> = (event: RequestEvent) => Result
 
@@ -55,42 +68,27 @@ export type EventHandler<Result = unknown> = (event: RequestEvent) => Result
  * })
  * ```
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export function defineEventHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
   return handler
 }
 
-/**
- * The event in the shape the configured `server.builder` provides, for calls the
- * helpers here do not cover. It is the same request, not a copy.
- *
- * @example
- * ```ts
- * // server/api/cors.ts
- * import { defineEventHandler, toNuxtRequestEvent } from 'nuxt/server'
- * import { handleCors } from 'nitro/h3'
- *
- * export default defineEventHandler((event) => {
- *   handleCors(toNuxtRequestEvent(event), { origin: '*' })
- *   return { ok: true }
- * })
- * ```
- *
- * @since 5.0.0
- */
-export function toNuxtRequestEvent (event: RequestEvent): NuxtRequestEvent {
-  return ((event as RequestEvent & { '~app'?: NuxtRequestEvent })['~app'] ?? event) as NuxtRequestEvent
-}
-
 export { createError, NuxtError }
+
+type EventWithRequest = Pick<RequestEvent, 'req'>
+
+/** `url` is optional because a runtime need not parse it up front; the request always carries it. */
+type EventWithURL = EventWithRequest & { url?: URL }
+
+type EventWithResponse = Pick<RequestEvent, 'res'>
 
 /**
  * The shape shared by every HTTP error reachable in server code: the ones
  * {@link createError} constructs, and the ones the server runtime throws for
  * itself, which are not `NuxtError`s.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export type NuxtErrorLike<DataT = unknown> = Error
   & Pick<NuxtErrorContract<DataT>, 'status'>
@@ -115,7 +113,7 @@ export type NuxtErrorLike<DataT = unknown> = Error
  * }
  * ```
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export function isNuxtError<DataT = unknown> (error: unknown): error is NuxtErrorLike<DataT> {
   const candidate = error as { status?: unknown, constructor?: { __h3_error__?: unknown }, [NUXT_ERROR_SIGNATURE]?: unknown } | null | undefined
@@ -126,12 +124,82 @@ export function isNuxtError<DataT = unknown> (error: unknown): error is NuxtErro
 }
 
 /**
- * The URL of the incoming request.
+ * Forwarded headers to trust. Enable only behind a proxy that overwrites them.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function getRequestURL (event: RequestEvent): URL {
-  return event.url
+export interface ForwardedOptions {
+  /** Read the host from the first entry of `X-Forwarded-Host`. */
+  xForwardedHost?: boolean
+  /** Read the protocol from the first entry of `X-Forwarded-Proto`, when it is `http` or `https`. */
+  xForwardedProto?: boolean
+}
+
+/**
+ * The URL of the incoming request, as a new `URL` each call.
+ *
+ * @example
+ * ```ts
+ * const origin = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).origin
+ * ```
+ *
+ * @since 4.6.0
+ */
+export function getRequestURL (event: EventWithURL, options: ForwardedOptions = {}): URL {
+  const url = new URL(event.url ?? event.req.url)
+  url.protocol = getRequestProtocol(event, options)
+  if (options.xForwardedHost) {
+    const host = getRequestHost(event, options)
+    if (host) {
+      applyForwardedHost(url, host)
+    }
+  }
+  return url
+}
+
+/**
+ * The `Host` of the request, or an empty string.
+ *
+ * @since 4.6.0
+ */
+export function getRequestHost (event: EventWithRequest, options: Pick<ForwardedOptions, 'xForwardedHost'> = {}): string {
+  if (options.xForwardedHost) {
+    const forwarded = event.req.headers.get('x-forwarded-host')?.split(',')[0]!.trim()
+    if (forwarded) {
+      return forwarded
+    }
+  }
+  return event.req.headers.get('host') || ''
+}
+
+/**
+ * The protocol of the request, without the trailing colon.
+ *
+ * @since 4.6.0
+ */
+export function getRequestProtocol (event: EventWithURL, options: Pick<ForwardedOptions, 'xForwardedProto'> = {}): string {
+  if (options.xForwardedProto) {
+    const forwarded = event.req.headers.get('x-forwarded-proto')?.split(',')[0]!.trim()
+    if (forwarded === 'https' || forwarded === 'http') {
+      return forwarded
+    }
+  }
+  return (event.url ?? new URL(event.req.url)).protocol.slice(0, -1)
+}
+
+const PORT_RE = /^\d{1,5}$/
+
+function applyForwardedHost (url: URL, host: string): void {
+  const separator = host.lastIndexOf(':')
+  const hasPort = separator > host.lastIndexOf(']')
+  const hostname = hasPort ? host.slice(0, separator) : host
+  const previous = url.hostname
+  url.hostname = hostname
+  if (url.hostname === previous && hostname.toLowerCase() !== previous) {
+    return
+  }
+  const port = hasPort ? host.slice(separator + 1) : ''
+  url.port = PORT_RE.test(port) && +port < 65536 ? port : ''
 }
 
 /**
@@ -139,27 +207,105 @@ export function getRequestURL (event: RequestEvent): URL {
  *
  * Header names are case-insensitive.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function getRequestHeader (event: RequestEvent, name: string): string | undefined {
+export function getRequestHeader (event: EventWithRequest, name: string): string | undefined {
   return event.req.headers.get(name) ?? undefined
 }
 
 /**
  * Read every request header, keyed by lowercased name.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function getRequestHeaders (event: RequestEvent): Record<string, string> {
+export function getRequestHeaders (event: EventWithRequest): Record<string, string> {
   return Object.fromEntries(event.req.headers)
+}
+
+/**
+ * The dynamic segments matched for the request, as they appear in the URL:
+ * percent-encoded, as `URLPattern` reports them. Set `decode` to decode them,
+ * apart from encoded path separators (`%2F`, `%5C`), so a segment cannot be
+ * read as a path it did not match.
+ *
+ * @example
+ * ```ts
+ * // server/api/users/[id].ts
+ * export default defineEventHandler((event) => {
+ *   const { id } = getRouterParams(event, { decode: true })
+ *   return { id }
+ * })
+ * ```
+ *
+ * @since 4.6.0
+ */
+export function getRouterParams (event: Pick<RequestEvent, 'context'>, options: { decode?: boolean } = {}): Record<string, string | undefined> {
+  const params = event.context.params || {}
+  if (!options.decode) {
+    return params
+  }
+  const decoded: Record<string, string | undefined> = {}
+  for (const key in params) {
+    const value = params[key]
+    decoded[key] = value === undefined ? value : decodePreservingSeparators(value)
+  }
+  return decoded
+}
+
+/**
+ * One dynamic segment matched for the request, or `undefined` when the route
+ * has none of that name. See {@link getRouterParams}.
+ *
+ * @since 4.6.0
+ */
+export function getRouterParam (event: Pick<RequestEvent, 'context'>, name: string, options?: { decode?: boolean }): string | undefined {
+  return getRouterParams(event, options)[name]
+}
+
+const ENCODED_SEPARATOR_RE = /%(?:25)*(?:2f|5c)/gi
+
+function decodePreservingSeparators (value: string): string {
+  if (!value.includes('%')) {
+    return value
+  }
+  let result = ''
+  let lastIndex = 0
+  for (const match of value.matchAll(ENCODED_SEPARATOR_RE)) {
+    result += decodeURIComponent(value.slice(lastIndex, match.index)) + match[0]
+    lastIndex = match.index + match[0].length
+  }
+  return result + decodeURIComponent(value.slice(lastIndex))
+}
+
+/**
+ * The IP address of the client, or `undefined` when it cannot be determined.
+ *
+ * By default no forwarded header is trusted: the address is the one the
+ * server runtime reports for the connection, and a runtime that reports none
+ * resolves `undefined`. Set `xForwardedFor` to read the first entry of the
+ * `X-Forwarded-For` header instead, only behind a proxy you control that
+ * overwrites that header; one that appends to it leaves a client-sent value
+ * first.
+ *
+ * @since 4.6.0
+ */
+export function getRequestIP (event: EventWithRequest, options: { xForwardedFor?: boolean } = {}): string | undefined {
+  if (options.xForwardedFor) {
+    const forwarded = event.req.headers.get('x-forwarded-for')?.split(',')[0]!.trim()
+    if (forwarded) {
+      return forwarded
+    }
+  }
+  const request = event.req as Request & { ip?: string, context?: { clientAddress?: string } }
+  return request.context?.clientAddress || request.ip || undefined
 }
 
 /**
  * Set the status, and optionally the reason phrase, of the response.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function setResponseStatus (event: RequestEvent, status: number, statusText?: string): void {
+export function setResponseStatus (event: EventWithResponse, status: number, statusText?: string): void {
   const res = event.res
   res.status = status
   if (statusText !== undefined) {
@@ -168,34 +314,13 @@ export function setResponseStatus (event: RequestEvent, status: number, statusTe
 }
 
 /**
- * Set one response header, replacing any value already set for it.
- *
- * @since 5.0.0
- */
-export function setResponseHeader (event: RequestEvent, name: string, value: string): void {
-  event.res.headers.set(name, value)
-}
-
-/**
- * Set several response headers, replacing any values already set for them.
- *
- * @since 5.0.0
- */
-export function setResponseHeaders (event: RequestEvent, headers: Record<string, string>): void {
-  const target = event.res.headers
-  for (const name in headers) {
-    target.set(name, headers[name]!)
-  }
-}
-
-/**
  * Read the query string of the request. A repeated parameter resolves to an
  * array, so a type parameter should account for that.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function getQuery<T extends Record<string, unknown> = Record<string, string | string[]>> (event: RequestEvent): T {
-  return parseQuery(event.url.search) as T
+export function getQuery<T extends Record<string, unknown> = Record<string, string | string[]>> (event: EventWithURL): T {
+  return parseQuery(getRequestURL(event).search) as T
 }
 
 /**
@@ -208,9 +333,9 @@ export function getQuery<T extends Record<string, unknown> = Record<string, stri
  * The type parameter is an assertion: validate the result with a schema when
  * it comes from a client.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export async function readBody<T = unknown> (event: RequestEvent): Promise<T> {
+export async function readBody<T = unknown> (event: EventWithRequest): Promise<T> {
   const request = event.req
   const contentType = request.headers.get('content-type') || ''
   const text = await request.text()
@@ -247,11 +372,21 @@ function collectEntries (entries: Iterable<[string, string]>): Record<string, st
 }
 
 /**
+ * Read every cookie sent with the request, keyed by name.
+ *
+ * @since 4.6.0
+ */
+export function parseCookies (event: EventWithRequest): Record<string, string> {
+  const header = event.req.headers.get('cookie')
+  return header ? parse(header) as Record<string, string> : {}
+}
+
+/**
  * Read one cookie sent with the request, or `undefined` when it was not sent.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function getCookie (event: RequestEvent, name: string): string | undefined {
+export function getCookie (event: EventWithRequest, name: string): string | undefined {
   const header = event.req.headers.get('cookie')
   return header ? parse(header)[name] : undefined
 }
@@ -260,9 +395,9 @@ export function getCookie (event: RequestEvent, name: string): string | undefine
  * Set a cookie on the response. Each call appends its own `Set-Cookie`
  * header, so several cookies may be set for one response.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function setCookie (event: RequestEvent, name: string, value: string, options?: CookieSerializeOptions): void {
+export function setCookie (event: EventWithResponse, name: string, value: string, options?: CookieSerializeOptions): void {
   event.res.headers.append('set-cookie', serialize(name, value, { path: '/', ...options }))
 }
 
@@ -270,9 +405,9 @@ export function setCookie (event: RequestEvent, name: string, value: string, opt
  * Expire a cookie on the response. The `path` and `domain` must match those
  * it was set with, or the original cookie survives alongside the expired one.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function deleteCookie (event: RequestEvent, name: string, options?: CookieSerializeOptions): void {
+export function deleteCookie (event: EventWithResponse, name: string, options?: CookieSerializeOptions): void {
   setCookie(event, name, '', { ...options, maxAge: 0 })
 }
 
@@ -286,12 +421,12 @@ export function deleteCookie (event: RequestEvent, name: string, options?: Cooki
  * export default defineEventHandler(event => sendRedirect(event, '/login', 302))
  * ```
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function sendRedirect (event: RequestEvent, location: string, status = 302): string {
+export function sendRedirect (event: EventWithResponse, location: string, status = 302): string {
   setResponseStatus(event, status)
-  setResponseHeader(event, 'location', location)
-  setResponseHeader(event, 'content-type', 'text/html')
+  event.res.headers.set('location', location)
+  event.res.headers.set('content-type', 'text/html')
   const encoded = location.replace(REDIRECT_UNSAFE_RE, char => REDIRECT_ESCAPES[char]!)
   return `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encoded}"></head></html>`
 }
@@ -303,17 +438,54 @@ const REDIRECT_UNSAFE_RE = /["'<>&]/g
  * The route rules matched for the request. A server builder without a
  * route-rule matcher resolves none, so treat every rule as optional.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
-export function getRouteRules (_event: RequestEvent): AppRouteRules {
+export function getRouteRules (_event: Pick<RequestEvent, 'context'>): AppRouteRules {
+  return {}
+}
+
+/**
+ * The route rules for a path relative to the app base URL.
+ *
+ * @since 4.6.0
+ */
+export function matchRouteRules (_path: string, _method = 'GET'): AppRouteRules {
   return {}
 }
 
 /**
  * The runtime configuration, including the keys only the server can read.
  *
- * @since 5.0.0
+ * @since 4.6.0
  */
 export function useRuntimeConfig (): RuntimeConfig {
   return _useRuntimeConfig() as RuntimeConfig
+}
+
+let sharedAppConfig: SharedAppConfig | undefined
+
+/**
+ * The app config, as `app.config.ts` and the layers define it.
+ *
+ * Called with the event, it returns a copy for that request, which changes
+ * made while handling it do not leak out of. Called without, it returns a
+ * frozen copy shared by every request.
+ *
+ * @since 4.6.0
+ */
+export function useAppConfig (event?: Pick<RequestEvent, 'context'>): SharedAppConfig {
+  if (!event) {
+    return sharedAppConfig ||= deepFreeze(klona(_appConfig))
+  }
+  const state = event.context.nuxt ||= {}
+  return state.appConfig ||= klona(_appConfig)
+}
+
+function deepFreeze<T extends object> (object: T): T {
+  for (const value of Object.values(object)) {
+    if (value && typeof value === 'object') {
+      deepFreeze(value)
+    }
+  }
+  return Object.freeze(object)
 }

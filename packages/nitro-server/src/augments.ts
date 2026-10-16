@@ -1,8 +1,8 @@
 /// <reference path="./internal.d.ts" />
 import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, NormalizedRouteRules, RouteRuleConfig, TracingOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
-import type { LogObject } from 'consola'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
+import type { NitroLegacyOptions } from './compat.ts'
+import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
 
 /**
@@ -13,7 +13,29 @@ import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, Serv
  */
 export type NuxtTracingChannelOptions = TracingChannelOptions
 
+/**
+ * Dev-only access to the SSR bundle's transformed modules, registered by the bundler that
+ * evaluates them in the Nitro process.
+ *
+ * @experimental
+ */
+export interface SSRSourceMaps {
+  /** Transformed code of an SSR module as it was evaluated. */
+  getCode: (file: string) => string | undefined
+  /** Position in generated code a source position was mapped from. */
+  getCompiledPosition?: (file: string, line: number, column?: number) => { file: string, line: number, column: number } | undefined
+}
+
 declare module 'nitro/types' {
+  interface NitroApp {
+    /**
+     * Only set in development, by bundlers that evaluate the SSR bundle within
+     * the Nitro process.
+     *
+     * @experimental
+     */
+    ssrSourceMaps?: SSRSourceMaps
+  }
   /** The channel `addServerImports()` and `addServerImportsDir()` write to through `nitro:config`. */
   interface NitroConfig {
     imports?: false | ServerImportsOptions
@@ -47,7 +69,7 @@ declare module 'nitro/types' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRuntimeHooks {
-    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
+    'dev:ssr-logs': (ctx: { logs: DevServerLog[], path: string }) => void | Promise<void>
     'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event, streaming?: boolean }) => void | Promise<void>
     'render:html:chunk': (chunkContext: NuxtRenderChunkContext, context: { event: H3Event }) => void | Promise<void>
     'render:html:close': (closeContext: NuxtRenderCloseContext, context: { event: H3Event }) => void | Promise<void>
@@ -82,6 +104,30 @@ declare module '@nuxt/schema' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface ServerTypes extends NitroServerTypes {}
 
+  interface ConfigSchema {
+    /**
+     * Opt-in Nitro v2 compatibility for your own server code (the `server/` directory
+     * and project code it imports). Pass `true` to enable every toggle, or an object to
+     * disable individual ones. Modules registering Nitro v2 server code through
+     * `@nuxt/kit` are handled automatically and are unaffected by this option.
+     *
+     * Transitional: this option and the compatibility layer behind it are removed in
+     * Nuxt 6. Prefer importing from `nuxt/server`.
+     *
+     * @note Enabling this, or installing any module whose server code imports from `h3`
+     * or `nitropack`, also turns on Nitro v2 error-shape recovery app-wide: an error
+     * thrown as `{ statusCode, statusMessage }` keeps that status instead of being
+     * scrubbed to a 500.
+     *
+     * @default false
+     */
+    nitroLegacy: boolean | NitroLegacyOptions
+  }
+
+  interface NuxtConfig {
+    nitroLegacy?: boolean | NitroLegacyOptions
+  }
+
   interface RuntimeConfig {
     /** Only available on the server. */
     nitro?: _NitroOnlyRuntimeConfig
@@ -99,6 +145,30 @@ declare module 'nuxt/schema' {
 
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface ServerTypes extends NitroServerTypes {}
+
+  interface ConfigSchema {
+    /**
+     * Opt-in Nitro v2 compatibility for your own server code (the `server/` directory
+     * and project code it imports). Pass `true` to enable every toggle, or an object to
+     * disable individual ones. Modules registering Nitro v2 server code through
+     * `@nuxt/kit` are handled automatically and are unaffected by this option.
+     *
+     * Transitional: this option and the compatibility layer behind it are removed in
+     * Nuxt 6. Prefer importing from `nuxt/server`.
+     *
+     * @note Enabling this, or installing any module whose server code imports from `h3`
+     * or `nitropack`, also turns on Nitro v2 error-shape recovery app-wide: an error
+     * thrown as `{ statusCode, statusMessage }` keeps that status instead of being
+     * scrubbed to a 500.
+     *
+     * @default false
+     */
+    nitroLegacy: boolean | NitroLegacyOptions
+  }
+
+  interface NuxtConfig {
+    nitroLegacy?: boolean | NitroLegacyOptions
+  }
 
   interface RuntimeConfig {
     /** Only available on the server. */

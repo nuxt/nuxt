@@ -1,9 +1,9 @@
 import process from 'node:process'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import type { Nuxt } from '@nuxt/schema'
+import type { NitroConfig, Nuxt } from '@nuxt/schema'
 import { getLayerDirectories, loadNuxtConfig } from '@nuxt/kit'
 import { basename, join } from 'pathe'
 
@@ -79,7 +79,7 @@ describe('loadNuxtConfig', () => {
   })
 
   it('should not leak layer directory defaults into the merged Nuxt config', async () => {
-    const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-layer-dir-'))
+    const tempDir = await realpath(await mkdtemp(join(tmpdir(), 'nuxt-layer-dir-')))
     const layerDir = join(tempDir, 'layers/foo')
     await mkdir(layerDir, { recursive: true })
     await writeFile(join(tempDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({})\n')
@@ -144,7 +144,7 @@ describe('loadNuxtConfig', () => {
 
     try {
       const config = await loadNuxtConfig({ cwd: tempDir })
-      expect(config.nitro.typescript?.tsConfig?.compilerOptions?.strict).toBe(true)
+      expect((config.nitro as NitroConfig).typescript?.tsConfig?.compilerOptions?.strict).toBe(true)
     } finally {
       await rm(tempDir, { recursive: true, force: true })
     }

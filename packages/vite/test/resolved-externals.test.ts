@@ -1,10 +1,10 @@
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { ResolveExternalsPlugin } from '../src/plugins/resolved-externals.ts'
 
-const root = join(tmpdir(), 'nuxt-resolved-externals-test')
+const root = join(realpathSync(tmpdir()), 'nuxt-resolved-externals-test')
 
 function createNuxt (options: Record<string, unknown> = {}) {
   return {
@@ -98,6 +98,16 @@ describe('ResolveExternalsPlugin', () => {
 
     const unresolvable = { id: 'does-not-exist', external: true }
     await expect(resolveId(plugin, { resolve: vi.fn().mockResolvedValue(unresolvable) }, 'does-not-exist', importer)).resolves.toBe(unresolvable)
+  })
+
+  it('does not resolve a deduped package from the importing package', async () => {
+    const plugin = environmentPlugin(createNuxt(), createEnvironment('ssr', { dedupe: ['dep', '@scope/dep'] }))
+    const context = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
+
+    for (const id of ['dep', 'dep/sub', '@scope/dep/sub']) {
+      await expect(resolveId(plugin, context, id, importer)).resolves.toBeUndefined()
+    }
+    expect(context.resolve).not.toHaveBeenCalled()
   })
 
   it('skips node builtins and ids without an importer', async () => {

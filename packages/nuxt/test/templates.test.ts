@@ -31,8 +31,15 @@ function makeApp (configs: string[] = []): NuxtApp {
 }
 
 describe('appConfigTemplate', () => {
-  it('emits an absolute path for the `defu` import so Nitro can resolve it under strict pnpm hoist', async () => {
+  it('does not merge at runtime when there are no app config layers', async () => {
     const contents = await appConfigTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+
+    expect(contents).not.toContain('defuFn')
+    expect(contents).toContain('export default inlineConfig')
+  })
+
+  it('emits an absolute path for the `defu` import so Nitro can resolve it under strict pnpm hoist', async () => {
+    const contents = await appConfigTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(['/app/app.config.ts']), options: {} })
 
     expect(contents).not.toMatch(/from ['"]defu['"]/)
     const match = contents.match(/import \{ defuFn \} from ["']([^"']+)["']/)
@@ -76,7 +83,7 @@ describe('publicPathTemplate', () => {
   it('omits the runtime-config import entirely in dev mode', async () => {
     const contents = await publicPathTemplate.getContents!({ nuxt: makeNuxt({ dev: true }), app: makeApp(), options: {} })
 
-    expect(contents).not.toMatch(/runtime-config/)
+    expect(contents).not.toMatch(/import \{ useRuntimeConfig \}/)
     expect(contents).toMatch(/getAppConfig = \(\) => \(/)
   })
 })
@@ -90,6 +97,7 @@ describe('dollarFetchTemplate', () => {
     })
 
     expect(contents).toMatch(/import \{ fetch \} from "\/runtime\/fetch\.mjs"/)
+    expect(contents).toMatch(/import \{ createFetch \} from "\/[^"]*ofetch[^"]*"/)
     expect(contents).toMatch(/createFetch\(\{\s*fetch,/)
   })
 
@@ -102,7 +110,7 @@ describe('dollarFetchTemplate', () => {
 
     expect(contents).not.toMatch(/import \{ fetch \}/)
     expect(contents).not.toMatch(/createFetch/)
-    expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from ['"]ofetch['"]/)
+    expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from "\/[^"]*ofetch[^"]*"/)
     expect(contents).toMatch(/globalThis\.\$fetch = _\$fetch\.create\(\{\s*baseURL: baseURL\(\)/)
   })
 })

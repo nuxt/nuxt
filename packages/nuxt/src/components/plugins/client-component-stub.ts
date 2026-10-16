@@ -3,7 +3,7 @@ import { dirname, isAbsolute, normalize, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 import { resolveAlias } from '@nuxt/kit'
 import type { Component } from '@nuxt/schema'
-import { parseModuleId } from '../../core/utils/plugins.ts'
+import { combineRE, parseModuleId } from '../../core/utils/plugins.ts'
 
 interface ClientComponentStubPluginOptions {
   getComponents (): Component[]
@@ -107,7 +107,7 @@ export const ClientComponentStubPlugin = (options: ClientComponentStubPluginOpti
       ? handler
       : {
           // otherwise every resolution in the server build reaches the handler
-          filter: { id: { include: [CLIENT_SUFFIX_RE, ...unconventionalClientPaths(options.getComponents())] } },
+          filter: { id: combineRE([CLIENT_SUFFIX_RE, ...unconventionalClientPaths(options.getComponents())]) },
           handler,
         },
   }

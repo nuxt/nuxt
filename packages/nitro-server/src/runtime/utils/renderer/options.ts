@@ -1,5 +1,6 @@
 import { HTTPError, writeEarlyHints } from 'nitro/h3'
-import { useNitroHooks } from 'nitro/app'
+import type { H3Event } from 'nitro/h3'
+import { useNitroApp, useNitroHooks } from 'nitro/app'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 import { FastResponse } from 'srvx'
 import type { NuxtSSRContext } from '#app/types'
@@ -13,6 +14,8 @@ import '../../context'
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 import { getRouteRules } from '../route-rules'
+import { markStreamedResponse, rememberRenderBody } from '../../compat/render-response'
+import { legacyCompat } from '#nuxt-compat/flags'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
@@ -26,11 +29,31 @@ export const rendererOptions: NuxtRendererOptions = {
   buildAssetsURL,
   publicAssetsURL,
   getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
-  hooks: () => useNitroHooks() as RendererHooks,
-  createResponse: (body, init) => new FastResponse(body, init),
+  hooks: useNitroHooks as () => RendererHooks,
+  createResponse: (body, init) => {
+    const response = new FastResponse(body, init)
+    if (legacyCompat) {
+      rememberRenderBody(response, body)
+      if (body instanceof ReadableStream) {
+        markStreamedResponse(response)
+      }
+    }
+    return response
+  },
   createError: init => new HTTPError(init),
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints),
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
+  onRenderSuccess: import.meta.dev
+    ? () => {
+        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+      }
+    : undefined,
+  captureError: (error, { event, tags }) => {
+    useNitroApp().captureError?.(error as Error, { event: appEvent(event) as H3Event, tags: ['ssr', ...tags ?? []] })
+  },
+  onDevError: import.meta.dev
+    ? (error, event, options) => import('#internal/nuxt/error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
+    : undefined,
   prerender: import.meta.prerender
     ? {
         payloadCache: payloadCache!,

@@ -1,8 +1,8 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import type { Ref, SlotsType } from 'vue'
+import type { ComputedRef, Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
-import type { DynamicParam, Endpoint, HTTPMethod, TypedFetch, TypedFetchRequest } from 'nuxt/app'
+import type { AsyncData, AsyncDataWithExtensions, AugmentedAsyncData, DeclaredUseFetch, DynamicParam, Endpoint, HTTPMethod, KeysOf, MergedAddonsExtensions, PickFrom, TypedFetch, TypedFetchRequest, UseAsyncData, UseFetch } from 'nuxt/app'
 import type { H3Event, HTTPError } from 'nitro/h3'
 import { $fetch } from '#build/fetch'
 import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
@@ -169,6 +169,7 @@ describe('API routes', () => {
     expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-hey-with-pick', () => $fetch('/api/hey'), { pick: ['baz'] }).data).toEqualTypeOf<Ref<{ baz: string } | DefaultAsyncDataValue>>()
+    expectTypeOf<PickFrom<{ foo: string, baz: string }, ['baz']>>().toEqualTypeOf<{ baz: string }>()
     expectTypeOf(useAsyncData('api-union', () => $fetch('/api/union')).data).toEqualTypeOf<Ref<{ type: 'a', foo: string } | { type: 'b', baz: string } | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-union-with-pick', () => $fetch('/api/union'), { pick: ['type'] }).data).toEqualTypeOf<Ref<{ type: 'a' } | { type: 'b' } | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData('api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
@@ -601,6 +602,9 @@ describe('layouts', () => {
     setPageLayout('pascal-case')
     setPageLayout('override')
     setPageLayout('with-props', { aProp: 42 })
+    setPageLayout(false)
+    // @ts-expect-error No props when disabling the layout
+    setPageLayout(false, { aProp: 42 })
     // @ts-expect-error Invalid layout
     setPageLayout('invalid-layout')
     // @ts-expect-error Invalid layout props
@@ -761,11 +765,11 @@ describe('components', () => {
     expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
   })
 
-  it('types preloadComponents/prefetchComponents against global component names', () => {
-    expectTypeOf(preloadComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
-    expectTypeOf(prefetchComponents).parameter(0).toEqualTypeOf<'GlobalComponent' | 'LazyGlobalComponent' | Array<'GlobalComponent' | 'LazyGlobalComponent'>>()
-    // @ts-expect-error not a global component
-    void preloadComponents('WithTypes')
+  it('suggests global component names to preloadComponents/prefetchComponents', () => {
+    type GlobalComponentName = 'GlobalComponent' | 'LazyGlobalComponent' | (string & {})
+    expectTypeOf(preloadComponents).parameter(0).toEqualTypeOf<GlobalComponentName | Array<GlobalComponentName>>()
+    expectTypeOf(prefetchComponents).parameter(0).toEqualTypeOf<GlobalComponentName | Array<GlobalComponentName>>()
+    void preloadComponents('RegisteredInAPlugin')
   })
 
   it('types NuxtIsland name against island component names', () => {
@@ -1088,6 +1092,83 @@ describe('composables', () => {
     })
     const f2 = useFetchBoth<Foo>('/api/foo')
     expectTypeOf(f2.data.value).toEqualTypeOf<{ count: number }>()
+  })
+
+  it('types addon options and extensions on created composables', () => {
+    const tenant = defineUseFetchAddon({
+      setup: (options: UseFetchAddonOptions<{ tenant?: string }>) => {
+        options.tenant ??= 'default'
+        return asyncData => ({ isSuccess: computed(() => asyncData.status.value === 'success') })
+      },
+      key: options => options.tenant,
+    })
+    const retries = defineUseFetchAddon({
+      setup: (options: UseFetchAddonOptions<{ retries?: number }>) => {
+        options.middleware.push(next => next())
+        return () => ({ attempts: ref(0) })
+      },
+    })
+
+    const useApi = createUseFetch({ addons: [tenant, retries] })
+    const r1 = useApi('/api/hello', { tenant: 'a', retries: 2 })
+    expectTypeOf(r1.data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(r1.isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
+    expectTypeOf(r1.attempts).toEqualTypeOf<Ref<number>>()
+    // @ts-expect-error `tenant` is a string
+    useApi('/api/hello', { tenant: 1 })
+    // @ts-expect-error not an option any addon declares
+    useApi('/api/hello', { unknownOption: true })
+
+    const { isSuccess } = useApi('/api/hello')
+    expectTypeOf(isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
+    expectTypeOf(useApi('/api/hello').then(r => r.isSuccess)).toEqualTypeOf<Promise<ComputedRef<boolean>>>()
+
+    const useBare = createUseFetch({})
+    expectTypeOf(useBare).toEqualTypeOf<UseFetch<any, KeysOf<any>>>()
+    // @ts-expect-error `tenant` is not declared for this composable
+    useBare('/api/hello', { tenant: 'a' })
+    // @ts-expect-error nor is the extension present
+    void useBare('/api/hello').isSuccess
+
+    interface Pet { id: number, name: string }
+    interface PetStore {
+      '/pets': { [Endpoint]: { GET: { response: Pet[] } } }
+    }
+    const usePetStore = createUseFetch({ routes: {} as PetStore, addons: [tenant] })
+    expectTypeOf(usePetStore).toEqualTypeOf<DeclaredUseFetch<PetStore, unknown, KeysOf<unknown>, undefined, { tenant?: string }, MergedAddonsExtensions<[typeof tenant]>>>()
+    const p1 = usePetStore('/pets', { tenant: 'a' })
+    expectTypeOf(p1.data).toEqualTypeOf<Ref<Pet[] | DefaultAsyncDataValue>>()
+    expectTypeOf(p1.isSuccess).toEqualTypeOf<ComputedRef<boolean>>()
+    // @ts-expect-error `tenant` is a string
+    usePetStore('/pets', { tenant: 1 })
+    // @ts-expect-error no GET route matches '/pats'
+    usePetStore('/pats', { tenant: 'a' })
+
+    const polling = defineUseAsyncDataAddon({
+      setup: (options: UseAsyncDataAddonOptions<{ pollEvery?: number }>) => {
+        options.middleware.push(next => next())
+        return () => ({ polling: ref(Boolean(options.pollEvery)) })
+      },
+    })
+    const usePolled = createUseAsyncData({ addons: [polling] })
+    expectTypeOf(usePolled).toEqualTypeOf<UseAsyncData<unknown, unknown, KeysOf<unknown>, undefined, { pollEvery?: number }, MergedAddonsExtensions<[typeof polling]>>>()
+    const a1 = usePolled('k', () => Promise.resolve(1), { pollEvery: 1000 })
+    expectTypeOf(a1.data.value).toEqualTypeOf<number | DefaultAsyncDataValue>()
+    expectTypeOf(a1.polling).toEqualTypeOf<Ref<boolean>>()
+    expectTypeOf(a1).toEqualTypeOf<AsyncDataWithExtensions<number | DefaultAsyncDataValue, NuxtError | DefaultAsyncDataErrorValue, { polling: Ref<boolean> }>>()
+    expectTypeOf<AugmentedAsyncData<number, NuxtError, MergedAddonsExtensions<[typeof polling]>>>().toEqualTypeOf<AsyncDataWithExtensions<number, NuxtError, { polling: Ref<boolean> }>>()
+    // @ts-expect-error `pollEvery` is a number
+    usePolled('k', () => Promise.resolve(1), { pollEvery: '1s' })
+
+    const optionsOnlyFetch = defineUseFetchAddon({
+      setup: (options: UseFetchAddonOptions<{ enabled?: boolean }>) => { options.middleware.push(next => next()) },
+    })
+    const optionsOnlyAsyncData = defineUseAsyncDataAddon({
+      setup: (options: UseAsyncDataAddonOptions<{ enabled?: boolean }>) => { options.middleware.push(next => next()) },
+    })
+    type Plain = AsyncData<string | DefaultAsyncDataValue, NuxtError | DefaultAsyncDataErrorValue>
+    expectTypeOf(createUseFetch({ addons: [optionsOnlyFetch] })('/api/hello')).toEqualTypeOf<Plain>()
+    expectTypeOf(createUseAsyncData({ addons: [optionsOnlyAsyncData] })(() => Promise.resolve('hello'))).toEqualTypeOf<Plain>()
   })
 })
 

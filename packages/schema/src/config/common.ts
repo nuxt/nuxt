@@ -256,7 +256,7 @@ export default defineResolvers({
         '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
         '**/*.d.{cts,mts,ts}', // ignore type declarations
         '**/*.d.vue.{cts,mts,ts}',
-        '**/.{pnpm-store,vercel,netlify,output,git,cache,data,direnv}',
+        '**/.{pnpm-store,vercel,netlify,wrangler,output,git,cache,data,direnv}',
         '/vendor',
         '**/node-compile-cache',
         '**/test-results',
@@ -302,6 +302,7 @@ export default defineResolvers({
       const [app, buildId] = await Promise.all([get('app'), get('buildId')])
       provideFallbackValues(val)
       return defu(val, {
+        appSecret: '',
         public: {},
         app: {
           buildId,

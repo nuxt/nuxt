@@ -844,6 +844,80 @@ describe('useAsyncData', () => {
     scopeB.stop()
   })
 
+  it('should not reset a newer entry when a `useNuxtData` consumer of an old entry is disposed', async () => {
+    const key = `stale-nuxt-data-${++counter}`
+    const nuxtApp = useNuxtApp()
+
+    // a page loads the key and is left, so its entry is taken off
+    const firstPage = effectScope()
+    await firstPage.run(() => useAsyncData(key, () => Promise.resolve('first')))
+    firstPage.stop()
+    await nextTick()
+
+    // the next page only reads the key and keeps the old entry
+    const readingPage = effectScope()
+    readingPage.run(() => useNuxtData(key))
+
+    // the first page opens again before the reading page is disposed
+    let resolveHandler: ((value: string) => void) | undefined
+    const secondPage = effectScope()
+    let result!: ReturnType<typeof useAsyncData>
+    secondPage.run(() => {
+      result = useAsyncData(key, () => new Promise<string>((resolve) => {
+        resolveHandler = resolve
+      }))
+    })
+
+    readingPage.stop()
+    await nextTick()
+
+    resolveHandler!('second')
+    await flushPromises()
+
+    expect(nuxtApp._asyncData[key]!._init).toBe(true)
+    expect(result.status.value).toBe('success')
+    expect(result.data.value).toBe('second')
+
+    secondPage.stop()
+  })
+
+  it('should run middleware around the handler on every execution', async () => {
+    const calls: string[] = []
+    const { data, refresh } = await useAsyncData(uniqueKey, () => {
+      calls.push('handler')
+      return Promise.resolve('value')
+    }, {
+      middleware: [
+        async (next, { signal }) => {
+          calls.push(`outer:${signal instanceof AbortSignal}`)
+          return (await next()) + '!'
+        },
+        (next) => {
+          calls.push('inner')
+          return next()
+        },
+      ],
+    })
+
+    expect(data.value).toBe('value!')
+    expect(calls).toEqual(['outer:true', 'inner', 'handler'])
+
+    await refresh()
+    expect(calls).toEqual(['outer:true', 'inner', 'handler', 'outer:true', 'inner', 'handler'])
+  })
+
+  it('should surface an error thrown by middleware without running the handler', async () => {
+    const handler = vi.fn(() => Promise.resolve('value'))
+    const { data, error, status } = await useAsyncData(uniqueKey, handler, {
+      middleware: [() => { throw new Error('blocked') }],
+    })
+
+    expect(handler).not.toHaveBeenCalled()
+    expect(data.value).toBeUndefined()
+    expect(error.value?.message).toBe('blocked')
+    expect(status.value).toBe('error')
+  })
+
   it('should abort the in-flight request when the last subscriber unmounts', () => {
     const key = `abort-on-unmount-${++counter}`
 
@@ -1657,7 +1731,7 @@ describe('useAsyncData', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/32154
-  it.fails('should not cause error with v-once after navigation', async () => {
+  it('should not cause error with v-once after navigation', async () => {
     const router = useRouter()
 
     const WrapperComponent = defineComponent({

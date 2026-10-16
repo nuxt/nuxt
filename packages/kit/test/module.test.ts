@@ -757,7 +757,7 @@ describe('loadNuxtModuleInstance error surfacing', { concurrent: false }, () => 
   it('reports a genuinely missing module as not installed, using the project package manager', async () => {
     const error = await loadError('this-module-is-not-installed')
     expect(error.message).toMatch(/may not be installed/)
-    expect((error as Error & { fix?: string }).fix).toBe('Run `pnpm add this-module-is-not-installed` to install it.')
+    expect((error as Error & { fix?: string }).fix).toBe('Run `pnpm add --ignore-workspace-root-check this-module-is-not-installed` to install it.')
     expect(error.cause).toBeInstanceOf(Error)
   })
 

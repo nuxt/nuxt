@@ -103,5 +103,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Ensure the file exists, or remove the entry from `css` in your `nuxt.config`.',
       docs: false,
     },
+    NUXT_B5028: {
+      why: 'A generated development secret is being used because `runtimeConfig.appSecret` is unset.',
+      fix: 'Set `NUXT_APP_SECRET` in your `.env` to the output of `openssl rand -base64 32`. Builds do not generate a secret.',
+      docs: false,
+    },
   },
 })

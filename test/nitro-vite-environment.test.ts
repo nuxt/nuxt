@@ -84,6 +84,21 @@ describe.skipIf(builder !== 'nitro-vite' || isBuilt)('nitro/vite environment dev
     await res.arrayBuffer()
   }, 120 * 1000)
 
+  it.each([
+    ['/_dev-handler/', 'dev-handler/file.woff2', undefined],
+    ['<buildAssetsDir>', 'dev-handler/file', undefined],
+    ['<buildAssetsDir>', 'dev-handler/file', 'font'],
+    ['<buildAssetsDir>', 'dev-handler/file.woff2', undefined],
+    ['<buildAssetsDir>', 'dev-handler/file.js', 'script'],
+    ['<buildAssetsDir>', 'dev-handler/file.json?import', undefined],
+  ])('routes %s%s to a dev server handler (sec-fetch-dest=%s)', async (prefix, path, secFetchDest) => {
+    const base = prefix === '<buildAssetsDir>' ? nuxt.options.app.buildAssetsDir : prefix
+    const url = `http://127.0.0.1:${port}${base}${path}`
+    const res = await fetch(url, secFetchDest ? { headers: { 'sec-fetch-dest': secFetchDest } } : undefined)
+    expect(res.status, url).toBe(200)
+    await expect(res.text()).resolves.toBe(`dev-handler:${base}${path.replace(/\?.*$/, '')}`)
+  }, 120 * 1000)
+
   it('does not substitute the server constants inside string literals', async () => {
     const res = await fetch(`http://127.0.0.1:${port}/api/string-literals`)
     await expect(res.json()).resolves.toEqual({ vueFlag: 'flag __VUE_PROD_DEVTOOLS__ in a string' })

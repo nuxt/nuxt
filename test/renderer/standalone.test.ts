@@ -105,10 +105,60 @@ describe('renderer without a server builder', () => {
     expect(ssrHtml).toContain('rendered without nitro')
     expect(spaHtml).not.toContain('rendered without nitro')
   })
+})
 
-  it('refuses an internal error route with the error the runtime constructs', async () => {
-    const renderer = createNuxtRenderer(options)
+describe('noScripts route rules', () => {
+  it('renders non-script resource hints without any scripts', async () => {
+    const { html } = await render('/', { getRouteRules: () => ({ ssr: true, noScripts: true }) })
 
-    await expect(renderer.fetch(createEvent('/__nuxt_error'))).rejects.toMatchObject({ status: 404 })
+    expect(html).toContain('rendered without nitro')
+    expect(html).not.toContain('type="module"')
+    expect(html).not.toContain('__NUXT_DATA__')
+    expect(html).not.toContain('modulepreload')
+    expect(html).not.toContain('as="script"')
+    expect(html).toContain(`rel="preload" as="font" type="font/woff2" crossorigin href="${BUILD_ASSETS_DIR}fonts/standalone.woff2"`)
+  })
+
+  it('advertises the same hints over early hints as it renders in the document', async () => {
+    const hints: string[] = []
+    await render('/', {
+      getRouteRules: () => ({ ssr: true, noScripts: true }),
+      writeEarlyHints: (_event, hint) => { hints.push(hint.link) },
+    })
+
+    expect(hints).toHaveLength(1)
+    expect(hints[0]).toContain(`<${BUILD_ASSETS_DIR}fonts/standalone.woff2>; rel="preload"; as="font"; type="font/woff2"; crossorigin`)
+    expect(hints[0]).not.toContain('modulepreload')
+    expect(hints[0]).not.toContain('as="script"')
+  })
+
+  it('keeps script hints in the early hints of a scripted route', async () => {
+    const hints: string[] = []
+    await render('/', {
+      writeEarlyHints: (_event, hint) => { hints.push(hint.link) },
+    })
+
+    expect(hints[0]).toContain('rel="modulepreload"')
+    expect(hints[0]).toContain(`<${BUILD_ASSETS_DIR}fonts/standalone.woff2>; rel="preload"; as="font"`)
+  })
+
+  it('does not let a noScripts request poison the hints of a scripted one', async () => {
+    const hints: string[] = []
+    const renderer = createNuxtRenderer({
+      ...options,
+      getRouteRules: event => ({ ssr: true, noScripts: event.url.search === '?no-scripts' }),
+      writeEarlyHints: (_event, hint) => { hints.push(hint.link) },
+    })
+
+    await renderer.fetch(createEvent('/?no-scripts'))
+    await renderer.fetch(createEvent('/'))
+    await renderer.fetch(createEvent('/?no-scripts'))
+
+    expect(hints[0]).not.toContain('modulepreload')
+    expect(hints[1]).toContain('modulepreload')
+    expect(hints[2]).not.toContain('modulepreload')
+    for (const hint of hints) {
+      expect(hint).toContain('fonts/standalone.woff2')
+    }
   })
 })

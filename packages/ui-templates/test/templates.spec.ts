@@ -135,4 +135,46 @@ describe('template', () => {
       expect(poll.fetches).toEqual([{ url: 'http://localhost:3000/', init: { headers: { accept: 'text/html' } } }])
     })
   })
+
+  it('renders the loading lockup as a button instead of a link', async () => {
+    const { template } = await import(`file://${distDir}/loading.ts`) as { template: () => string }
+    const html = template()
+
+    expect(html).toMatch(/<button[^>]*class="nuxt-lockup"[^>]*>/)
+    expect(html).not.toMatch(/<a[^>]*class="nuxt-lockup"/)
+  })
+
+  it('reflects loading bar progress in the document title', async () => {
+    const { template } = await import(`file://${distDir}/loading.ts`) as { template: () => string }
+    const script = template().match(/<script>([^<]*nuxt-progress[^<]*)<\/script>/)![1]!
+    let progress = ''
+    let update: (() => void) | undefined
+    const documentElement = {
+      style: { getPropertyValue: () => progress },
+    }
+    const titleElement = { dataset: { appName: 'Nuxt' } }
+    const document = {
+      title: 'Loading | Nuxt',
+      documentElement,
+      querySelector: (selector: string) => selector === 'title' ? titleElement : null,
+    }
+
+    runInNewContext(script, {
+      document,
+      MutationObserver: class {
+        constructor (callback: () => void) { update = callback }
+        observe () {}
+      },
+    })
+
+    // This is the order used by @nuxt/cli's progress client.
+    progress = '42.6%'
+    document.title = 'Building client'
+    update?.()
+    expect(document.title).toBe('43% | Building client | Nuxt')
+
+    progress = ''
+    update?.()
+    expect(document.title).toBe('Building client | Nuxt')
+  })
 })

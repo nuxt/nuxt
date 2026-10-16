@@ -13,6 +13,7 @@ export function ssr (nuxt: Nuxt) {
     external: isEnvApi
       ? []
       : [
+          'nitro',
           'nitro/runtime-config',
           // TODO: remove in v5
           '#internal/nitro',
@@ -34,6 +35,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
   const legacyExternals = isEnvApi
     ? []
     : [
+        'nitro',
         'nitro/runtime-config',
         // TODO: remove in v5
         '#internal/nitro',
@@ -47,7 +49,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
     build: {
       // we'll display this in nitro build output
       reportCompressedSize: false,
-      sourcemap: nuxt.options.sourcemap.server ? nuxt.options.vite.build?.sourcemap ?? nuxt.options.sourcemap.server : false,
+      sourcemap: nuxt.options.sourcemap.server ? nuxt.options.vite.build?.sourcemap ?? (nuxt.options.sourcemap.server === 'nosource' ? true : nuxt.options.sourcemap.server) : false,
       outDir: resolve(nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rolldownOptions: {
@@ -59,6 +61,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
+          ...nuxt.options.sourcemap.server === 'nosource' ? { sourcemapExcludeSources: true } : {},
         },
         onwarn (warning, rollupWarn) {
           if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {

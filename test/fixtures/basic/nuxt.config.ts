@@ -51,6 +51,19 @@ export default withMatrix({
       addBuildPlugin(plugin)
     },
     function (_options, nuxt) {
+      if (!nuxt.options.dev || (typeof nuxt.options.builder === 'string' && !nuxt.options.builder.includes('vite'))) { return }
+
+      nuxt.options.css.push('virtual-nul.css')
+      addBuildPlugin(createUnplugin(() => ({
+        name: 'virtual-nul',
+        resolveId (id) {
+          if (id === 'virtual-nul.css') { return '\0/virtual-nul.css' }
+        },
+        loadInclude: id => id.split('?')[0] === '\0/virtual-nul.css',
+        load: () => ':root { --virtual-nul: red }',
+      })))
+    },
+    function (_options, nuxt) {
       nuxt.hook('pages:extend', (pages) => {
         pages.push({
           path: '/manual-redirect',
@@ -204,6 +217,13 @@ export default withMatrix({
         '/random/c',
         '/prefetch/server-components',
         '/prefetch/many-hints',
+        '/prefetch/many-islands',
+        '/prefetch/hints/1',
+        '/prefetch/hints/2',
+        '/prefetch/hints/3',
+        '/prefetch/hints/4',
+        '/prefetch/hints/5',
+        '/prefetch/hints/6',
         '/prerender/catchall/a/b',
         '/404.html',
       ],

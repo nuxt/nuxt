@@ -13,9 +13,10 @@ function withServerRuntime (instance: Nuxt, runtime: Partial<NuxtServerBuildRunt
 }
 
 function nuxt (options: Record<string, any> = {}): Nuxt {
-  const { buildOutputs, ...rest } = options
+  const { buildOutputs, vfs = {}, ...rest } = options
   return {
     buildOutputs,
+    vfs,
     options: {
       dev: false,
       ssr: true,
@@ -113,7 +114,7 @@ describe('getServerRuntime', () => {
 
     const { modules } = getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() }))
 
-    expect(Object.keys(modules).sort()).toEqual([...stubs, 'nuxt/server'].sort())
+    expect(Object.keys(modules).sort()).toEqual([...stubs, 'nuxt/internal/dev-error', 'nuxt/server'].sort())
   })
 
   it('backs `nuxt/server` with the shipped implementations, and with a builder\'s where it supplies them', async () => {
@@ -125,11 +126,34 @@ describe('getServerRuntime', () => {
     expect(await getServerRuntime({}, withDelegate).modules['nuxt/server']!.code()).toBe('export * from "/delegate.mjs"')
   })
 
+  it('backs `nuxt/internal/dev-error` with the shipped module in development only', async () => {
+    const dev = nuxt({ buildOutputs: buildOutputs() })
+    dev.options.dev = true
+    expect(await getServerRuntime({}, dev).modules['nuxt/internal/dev-error']!.code()).toMatch(/^export \* from "\S+dev-error[/\\]index\.ts"$/)
+    expect(await getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() })).modules['nuxt/internal/dev-error']!.code()).toBe('export {}')
+  })
+
   it('reads runtime configuration from the module the server builder provides it in', async () => {
     const instance = withServerRuntime(nuxt({ buildOutputs: buildOutputs() }), { runtimeConfig: '#my-server/config' })
 
     expect(await getServerRuntime({}, instance).modules['nuxt/internal/server-runtime-config']!.code())
       .toBe('export { useRuntimeConfig } from "#my-server/config"')
+  })
+
+  it('reads the app config from the app build, without the part only the Vue app runs', async () => {
+    const template = [
+      'const inlineConfig = {}',
+      '/** client **/',
+      'import { _replaceAppConfig } from \'#app/config\'',
+      '/** client-end **/',
+      'export default inlineConfig',
+    ].join('\n')
+    const instance = nuxt({ buildOutputs: buildOutputs(), vfs: { '#build/app.config.mjs': template } })
+
+    const code = await getServerRuntime({}, instance).modules['nuxt/internal/server-app-config']!.code()
+    expect(code).toContain('export default inlineConfig')
+    expect(code).not.toContain('#app/config')
+    expect(await getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() })).modules['nuxt/internal/server-app-config']!.code()).toBe('export default {}')
   })
 
   it('reads each module body lazily, and names the build output backing it', async () => {

@@ -11,6 +11,7 @@ import { camelCase } from 'scule'
 
 import pkg from '../../nuxt/package.json' with { type: 'json' }
 import genericMessages from '../templates/messages.json' with { type: 'json' }
+import { generatedTemplateCopies } from './paths.mjs'
 
 const r = (path: string) => fileURLToPath(new URL(join('..', path), import.meta.url))
 const replaceAll = (input: string, search: string | RegExp, replace: string) => input.split(search).join(replace)
@@ -94,7 +95,12 @@ export const RenderPlugin = () => {
         }
 
         // Minify HTML
-        html = await htmlnano.process(html, { collapseWhitespace: 'aggressive' }).then(r => r.html)
+        html = await htmlnano.process(html, {
+          collapseWhitespace: 'aggressive',
+          removeAttributeQuotes: false,
+          removeOptionalTags: false,
+          normalizeDoctype: false,
+        }).then(r => r.html)
 
         if (!isCompleteHTML) {
           html = html.replace('<html><head></head><body>', '')
@@ -215,21 +221,11 @@ export const RenderPlugin = () => {
       }
 
       // we manually copy files across rather than using symbolic links for better windows support
-      const nuxtRoot = r('../nuxt')
-      const nitroRoot = r('../nitro-server')
-      const viteServerRoot = r('../vite-server')
-      const schemaRoot = r('../schema')
-      for (const file of ['error-404.vue', 'error-500.vue', 'welcome.vue']) {
-        await copyFile(join(outputDir, 'templates', file), join(nuxtRoot, 'src/app/components', file))
+      for (const [target, source] of Object.entries(generatedTemplateCopies)) {
+        const destination = r(join('../..', target))
+        await mkdir(dirname(destination), { recursive: true })
+        await copyFile(join(outputDir, source), destination)
       }
-      await mkdir(join(nitroRoot, 'src/runtime/templates'), { recursive: true })
-      await copyFile(join(outputDir, 'templates/error-500.ts'), join(nitroRoot, 'src/runtime/templates/error-500.ts'))
-      await mkdir(join(nitroRoot, 'src/templates'), { recursive: true })
-      await copyFile(join(outputDir, 'templates/spa-loading-icon.ts'), join(nitroRoot, 'src/templates/spa-loading-icon.ts'))
-      await mkdir(join(viteServerRoot, 'src/templates'), { recursive: true })
-      await copyFile(join(outputDir, 'templates/spa-loading-icon.ts'), join(viteServerRoot, 'src/templates/spa-loading-icon.ts'))
-      await mkdir(join(schemaRoot, 'src/templates'), { recursive: true })
-      await copyFile(join(outputDir, 'templates/loading.ts'), join(schemaRoot, 'src/templates/loading.ts'))
     },
   }
 }

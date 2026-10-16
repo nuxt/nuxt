@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
-import { addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
 import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
@@ -9,7 +9,7 @@ import type { Nuxt } from '@nuxt/schema'
 
 import { distDir } from './dirs.ts'
 import { setupSSR } from './ssr.ts'
-import { DevServerListenerPlugin, setupDevServer } from './dev.ts'
+import { setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { finishStaticOutput, writeStaticOutput } from './output.ts'
 import { isPrerendering, manifestTimestamp, prerenderRoutes, writeAppManifest } from './prerender.ts'
@@ -46,7 +46,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   nuxt.options.vite.build ||= {}
   nuxt.options.vite.build.outDir ||= outputDir
 
-  const publicDir = resolve(outputDir, 'public')
+  let publicDir = resolve(outputDir, 'public')
   const ssr = nuxt.options.ssr !== false
   const prerender = isPrerendering(nuxt)
   const handler = ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined
@@ -61,6 +61,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     runtime: {
       fetch: resolve(distDir, 'runtime/fetch'),
       runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
+      server: ssr ? resolve(nuxt.options.buildDir, 'vite-server/server.mjs') : undefined,
       // the emitted entry, which only exists once a build has run
       handler,
     },
@@ -97,7 +98,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   // Registered at the root rather than through `addVitePlugin`, which scopes plugins to
   // an environment, where an app-level `buildApp` hook is never called.
   nuxt.options.vite.plugins ||= []
-  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt), DevServerListenerPlugin(nuxt))
+  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt))
 
   if (!nuxt.options.dev) {
     // the document is a real HTML build input, so vite links the entry chunk, injects its
@@ -131,10 +132,25 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     }
 
     nuxt.options.vite.$client = client
+    // Deployment plugins can redirect client output during Vite config resolution.
+    // Finalize the resolved SPA assets instead of a stale default output directory.
+    if (!ssr) {
+      nuxt.options.vite.plugins.push({
+        name: 'nuxt:vite-server:client-output',
+        enforce: 'post',
+        configResolved (config) {
+          const outDir = config.environments?.client?.build?.outDir
+          if (outDir) {
+            publicDir = resolve(config.root, outDir)
+          }
+        },
+      })
+    }
     addVitePlugin(() => [DocumentPlugin(nuxt), EntryImportMapPlugin()], { server: false })
   }
 
   if (nuxt.options.dev) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'))
     setupDevServer(nuxt, server?.entry)
   } else {
     nuxt.hook('build:done', async () => {
@@ -155,13 +171,11 @@ export function bundle (nuxt: Nuxt): Promise<void> {
 /**
  * Resolves `#server-entry` to the render as a module for a deploy target's own environment
  * to build, so that the app is compiled with that target's export conditions and nothing
- * spells a path inside the build directory.
- *
- * In development it resolves to a stub answering every request with a 503: the dev server
- * serves the app there, and a target rendering would render from a second module graph.
+ * spells a path inside the build directory. In development, the target's environment runs it
+ * from its own module graph.
  */
 function addServerEntryAlias (nuxt: Nuxt, entry: string): void {
-  nuxt.options.alias['#server-entry'] = nuxt.options.dev ? resolve(distDir, 'runtime/dev-handler') : entry
+  nuxt.options.alias['#server-entry'] = entry
 
   addTypeTemplate({
     filename: 'types/server-entry.d.ts',
@@ -197,9 +211,8 @@ function setupAppManifest (nuxt: Nuxt, prerender: boolean): void {
   })
   nuxt.options.alias['#app-manifest'] = dst
 
-  nuxt.options.nitro.prerender ||= {}
-  nuxt.options.nitro.prerender.ignore ||= []
-  nuxt.options.nitro.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'builds'))
+  nuxt.options.prerender.ignore ||= []
+  nuxt.options.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'builds'))
 }
 
 /**
@@ -219,8 +232,8 @@ function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: strin
   if (ignoredRules.length) {
     unsupported.push(`route rules needing an HTTP layer (${ignoredRules.sort().map(rule => `\`${rule}\``).join(', ')})`)
   }
-  const wantsPrerender = nuxt.options.nitro.prerender?.routes?.length
-    || nuxt.options.nitro.prerender?.crawlLinks
+  const wantsPrerender = nuxt.options.prerender.routes?.length
+    || nuxt.options.prerender.crawlLinks
     || routeRules.some(rules => rules?.prerender)
   if (!isPrerendering(nuxt) && wantsPrerender) {
     unsupported.push('prerendering (run `nuxt generate` for a prerendered build)')

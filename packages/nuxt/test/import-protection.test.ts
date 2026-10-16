@@ -20,6 +20,10 @@ const testsToTriggerOn = [
   ['nuxt/kit', 'components/Component.vue', true],
   ['nuxt/schema', 'components/Component.vue', true],
   ['/root/node_modules/@nuxt/kit', 'components/Component.vue', true],
+  ['@nuxt/cli', 'components/Component.vue', true],
+  ['@nuxt/cli-nightly/dist/index.mjs', 'components/Component.vue', true],
+  ['/root/node_modules/@nuxt/cli/runtime/dev-close-sockets.mjs', 'components/Component.vue', false],
+  ['/root/node_modules/@nuxt/cli-nightly/runtime/dev-close-sockets.mjs', 'components/Component.vue', false],
   ['some-nuxt-module', 'components/Component.vue', true],
   ['some-nuxt-module/runtime/something.vue', 'components/Component.vue', false],
   ['/root/src/server/api/test.ts', 'components/Component.vue', true],
@@ -35,6 +39,7 @@ const testsToTriggerOn = [
   ['nitro', 'components/Component.vue', false],
   ['node_modules/some-pkg/server/api/helper.ts', 'components/Component.vue', false],
   ['nuxt/server', 'components/Component.vue', true],
+  ['nuxt/internal/server-app-config', 'components/Component.vue', true],
   ['nuxt/app', 'components/Component.vue', false],
 ] as const
 
