@@ -1,5 +1,10 @@
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { describe, expect, it, vi } from 'vitest'
-import { resolve } from 'pathe'
+import { join, resolve } from 'pathe'
+import { rollup } from 'rollup'
+import { build } from 'tsdown'
+import tsdownConfig from '../tsdown.config.ts'
 import { resolveModuleExportNames } from '@nuxt/kit/internal'
 import { createEvent } from 'h3'
 import type { H3Event } from 'h3'
@@ -36,6 +41,36 @@ describe('the h3-backed `nuxt/server` implementations', () => {
 
     expect(surface.length).toBeGreaterThan(0)
     expect(surface.filter(name => !implemented.includes(name))).toEqual([])
+  })
+
+  it('leaves no unused h3 imports in the built runtime', async () => {
+    const outDir = await mkdtemp(join(tmpdir(), 'nuxt-nitro-runtime-'))
+    try {
+      const runtimeConfig = tsdownConfig.find(config => config.outDir === 'dist/runtime/')!
+      await build({ ...runtimeConfig, cwd: resolve(import.meta.dirname, '..'), outDir, config: false, logLevel: 'silent' })
+
+      const unused: string[] = []
+      const bundle = await rollup({
+        input: 'entry',
+        external: id => !id.startsWith('.') && !id.startsWith('/'),
+        onwarn: (warning) => {
+          if (warning.code === 'UNUSED_EXTERNAL_IMPORT' && warning.exporter === 'h3') {
+            unused.push(...warning.names!)
+          }
+        },
+        plugins: [{
+          name: 'entry',
+          resolveId: id => id === 'entry' ? id : undefined,
+          load: id => id === 'entry' ? `import { defineEventHandler } from ${JSON.stringify(join(outDir, 'server.mjs'))}\nexport default defineEventHandler(() => 'ok')` : undefined,
+        }],
+      })
+      await bundle.generate({ format: 'es' })
+      await bundle.close()
+
+      expect(unused).toEqual([])
+    } finally {
+      await rm(outDir, { recursive: true, force: true })
+    }
   })
 })
 
