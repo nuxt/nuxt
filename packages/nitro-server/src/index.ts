@@ -202,6 +202,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
   const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
 
+  // nitro resolves the paths in `tsconfig.server.json` against its build directory, so a build into
+  // another `buildDir` writes it there rather than overwriting the one the project references
+  const typesServerTsConfigPath = join(typesDir, 'tsconfig.server.json')
+  const serverTsConfigPath = !nuxt.options._prepare && !nuxt.options.dev && typesDir !== nuxt.options.buildDir && existsSync(typesServerTsConfigPath)
+    ? join(nuxt.options.buildDir, 'tsconfig.server.json')
+    : typesServerTsConfigPath
+
   // pin to h3 v1 to prevent pulling in h3 v2 as a dependency of the nitro server
   const h3Entry = resolveModulePath('h3', { from: import.meta.url })
   const h3PackageJson = resolveModulePath('h3/package.json', { from: import.meta.url })
@@ -358,7 +365,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     typescript: {
       strict: true,
       generateTsConfig: true,
-      tsconfigPath: join(typesDir, 'tsconfig.server.json'),
+      tsconfigPath: serverTsConfigPath,
       tsConfig: {
         compilerOptions: {
           lib: ['esnext', 'webworker', 'dom.iterable'],
