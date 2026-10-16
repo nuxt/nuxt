@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
@@ -336,6 +336,36 @@ describe('scrollBehavior with scrollToTop and fixed page key', () => {
     await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
 
     expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+})
+
+describe('scrollRestoration and the back/forward cache', () => {
+  const initialScrollRestoration = window.history.scrollRestoration
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    window.history.scrollRestoration = initialScrollRestoration
+  })
+
+  function createPageTransitionEvent (type: 'pagehide' | 'pageshow', persisted: boolean) {
+    return Object.defineProperty(new Event(type), 'persisted', { value: persisted })
+  }
+
+  it('should not replace history state with manual scroll restoration when the page enters the bfcache', () => {
+    window.history.scrollRestoration = 'manual'
+    const scrollRestorations: ScrollRestoration[] = []
+    const replaceState = window.history.replaceState.bind(window.history)
+    vi.spyOn(window.history, 'replaceState').mockImplementation((...args) => {
+      scrollRestorations.push(window.history.scrollRestoration)
+      replaceState(...args)
+    })
+
+    window.dispatchEvent(createPageTransitionEvent('pagehide', true))
+    expect(scrollRestorations).not.toContain('manual')
+    expect(window.history.scrollRestoration).toBe('auto')
+
+    window.dispatchEvent(createPageTransitionEvent('pageshow', true))
+    expect(window.history.scrollRestoration).toBe('manual')
   })
 })
 

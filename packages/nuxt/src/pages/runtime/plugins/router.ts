@@ -59,6 +59,24 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       routerBase += '#'
     }
 
+    if (import.meta.client && 'scrollRestoration' in window.history) {
+      // must run before vue-router's `pagehide` listener, whose `replaceState()` call
+      // evicts the page from the bfcache unless `scrollRestoration` is `auto`
+      let restoreManual = false
+      window.addEventListener('pagehide', (event) => {
+        if (event.persisted && window.history.scrollRestoration === 'manual') {
+          restoreManual = true
+          window.history.scrollRestoration = 'auto'
+        }
+      })
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted && restoreManual) {
+          restoreManual = false
+          window.history.scrollRestoration = 'manual'
+        }
+      })
+    }
+
     const history = routerOptions.history?.(routerBase) ?? (import.meta.client
       ? (hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
       : createMemoryHistory(routerBase)
