@@ -256,6 +256,23 @@ describe('tsConfig generation', () => {
     }
   })
 
+  it('should keep the generated declaration first in `include`', async () => {
+    const { tsConfig, nodeTsConfig, sharedTsConfig, serverTsConfig, legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: { include: ['../global/**/*.ts'] },
+        appTsConfig: { include: ['../test/**/*.ts'] },
+        nodeTsConfig: { include: ['../node/**/*.ts'] },
+        sharedTsConfig: { include: ['../shared-extra/**/*.ts'] },
+        serverTsConfig: { include: ['../server-extra/**/*.ts'] },
+      },
+    }))
+    expect(tsConfig.include?.slice(0, 3)).toEqual(['./nuxt.d.ts', '../test/**/*.ts', '../global/**/*.ts'])
+    expect(legacyTsConfig.include?.[0]).toBe('./nuxt.d.ts')
+    expect(nodeTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.node.d.ts', '../node/**/*.ts'])
+    expect(sharedTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.shared.d.ts', '../shared-extra/**/*.ts'])
+    expect(serverTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.server.d.ts', '../server-extra/**/*.ts'])
+  })
+
   it('should propagate appTsConfig excludes to legacy tsconfig', async () => {
     const { legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
       typescript: { appTsConfig: { exclude: ['my-app-exclude'] } },
