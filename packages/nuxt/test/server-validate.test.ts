@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 
-import { getValidatedQuery, readValidatedBody } from '../src/server/index'
+import { getValidatedQuery, getValidatedRouterParams, readValidatedBody } from '../src/server/index'
 import type { RequestEvent } from '../src/server/index'
 
 function event (request: Request): RequestEvent {
@@ -79,5 +79,30 @@ describe('`getValidatedQuery`', () => {
       return Number(query.page)
     })
     expect(page).toBe(2)
+  })
+})
+
+describe('`getValidatedRouterParams`', () => {
+  const routed = (params?: Record<string, string>) => ({ ...event(new Request('https://nuxt.com/api')), context: { params } })
+
+  it('validates the matched params', async () => {
+    const params = await getValidatedRouterParams(routed({ name: 'nuxt' }), named)
+    expectTypeOf(params).toEqualTypeOf<{ name: string }>()
+    expect(params).toEqual({ name: 'NUXT' })
+    await expect(getValidatedRouterParams(routed(), named)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('validates the params as they appear in the URL, or decoded with `decode`', async () => {
+    const name = await getValidatedRouterParams(routed({ name: 'a%20b%2Fc' }), (params) => {
+      expectTypeOf(params).toEqualTypeOf<Record<string, string | undefined>>()
+      return params.name
+    })
+    expect(name).toBe('a%20b%2Fc')
+    await expect(getValidatedRouterParams(routed({ name: 'a%20b%2Fc' }), params => params.name, { decode: true })).resolves.toBe('a b%2Fc')
+  })
+
+  it('rejects with the error `onError` describes', async () => {
+    await expect(getValidatedRouterParams(routed(), named, { decode: true, onError: ({ issues }) => ({ status: 404, message: issues[0]?.message }) }))
+      .rejects.toMatchObject({ status: 404, message: 'name is required' })
   })
 })

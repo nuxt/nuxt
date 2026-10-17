@@ -73,6 +73,7 @@ export const nuxtServerImportsPreset = {
     'getRouterParams',
     'getSession',
     'getValidatedQuery',
+    'getValidatedRouterParams',
     'handleCors',
     'isNuxtError',
     'matchRouteRules',
