@@ -14,7 +14,7 @@ import { trackPendingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt, ServerApi } from '@nuxt/schema'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 
-import { distDir, nitroImplicitDependencies, toArray } from './utils.ts'
+import { GLOB_SUFFIX_RE, distDir, nitroImplicitDependencies, toArray } from './utils.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 import { getH3ExportNames, getH3ImportsPreset, getNuxtServerImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from './imports.ts'
 import { migratedPlugins, serverApiOf } from './registrations.ts'
@@ -25,7 +25,10 @@ import { migratedPlugins, serverApiOf } from './registrations.ts'
  * Transitional: the whole compatibility layer is removed in Nuxt 6.
  */
 export interface NitroLegacyOptions {
-  /** Register the Nitro v2 auto-import names (`defineNitroPlugin`, `cachedEventHandler`, `useEvent`, …). */
+  /**
+   * Register the Nitro v2 auto-import names (`defineNitroPlugin`, `cachedEventHandler`, `useEvent`, …)
+   * and auto-import from subdirectories of `server/utils/`.
+   */
   imports?: boolean
   /** Resolve `h3` to the bundled h3 v1 helper shim. */
   h3?: boolean
@@ -73,7 +76,6 @@ interface CompatScope {
 const TAG_SCOPE: CompatScope = { h3: true, specifiers: true, imports: true }
 
 const NITRO_V2_SPECIFIER_RE = /^(?:nitropack(?:\/|$)|#internal\/nitro(?:\/|$))/
-const GLOB_SUFFIX_RE = /\/[^/*]*\*[\s\S]*$/
 const TRANSFORMABLE_RE = /\.[cm]?[jt]sx?$/
 const DECLARATION_RE = /\.d\.[cm]?ts$/
 const OWN_VIRTUAL_RE = /^(?:#internal\/|#nuxt-compat\/|#build\/|#nitro|#spa-template|nuxt\/)/

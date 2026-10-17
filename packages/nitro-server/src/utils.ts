@@ -44,6 +44,8 @@ export const PATHS_SPECIFIER = '#internal/nuxt/paths'
  */
 export const nitroImplicitDependencies = ['nitro', 'h3', 'srvx', 'defu', 'consola', 'ofetch', 'crossws']
 
+export const GLOB_SUFFIX_RE = /\/[^/*]*\*[\s\S]*$/
+
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }

@@ -22,7 +22,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
+import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
 import { setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
@@ -33,7 +33,7 @@ import { compileRouterToString } from 'rou3/compiler'
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
-import { createServerAutoImports, resolveServerImportDirs } from './auto-imports.ts'
+import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
 import { normalizeLegacyRouteRules } from './route-rules.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
@@ -98,7 +98,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const importDirs = new Set<string>()
   if (nuxt.options.nitro.imports !== false) {
-    for (const dir of resolveServerImportDirs(nuxt)) {
+    for (const dir of resolveServerImportDirs(nuxt, { nestedUtils: legacy.imports })) {
       importDirs.add(dir)
     }
   }
@@ -728,7 +728,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const registerLateNitroCompatScope = await setupNitroCompat(nuxt, nitroConfig, legacy, legacyModulePresets, installedModules, unusedVariants)
   nitroConfig.alias = sortAliasesByPrecedence(nitroConfig.alias!)
 
-  const autoImports = createServerAutoImports(nuxt, nitroConfig.imports || { autoImport: false }, typesDir)
+  const autoImports = createServerAutoImports(nuxt, nitroConfig.imports || { autoImport: false }, typesDir, {
+    nestedUtilsDirs: nuxt.options.nitro.imports !== false && !legacy.imports ? resolveNestedServerUtilsDirs(nuxt) : [],
+  })
   // only for the server bundle: `nuxt.options.alias['#imports']` belongs to the app context
   nitroConfig.alias ||= {}
   nitroConfig.alias['#imports/server'] = autoImports.importsModulePath
@@ -752,7 +754,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // a file added to or removed from a scanned directory changes the set of imports available
   // through `#imports/server`, whether or not they are injected
-  const scannedDirs = (nitroConfig.imports as ServerImportsOptions).dirs ?? []
+  const scannedDirs = ((nitroConfig.imports as ServerImportsOptions).dirs ?? []).map(dir => dir.replace(GLOB_SUFFIX_RE, ''))
   nuxt.hook('builder:watch', async (event, relativePath) => {
     if (event !== 'add' && event !== 'unlink') { return }
     const path = resolve(nuxt.options.srcDir, relativePath)

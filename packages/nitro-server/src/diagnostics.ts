@@ -40,5 +40,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Move these imports to `nuxt/server` (or `nitro/h3` and `nitro/*`), and read the request from `event.req` rather than `event.node`. To ship before migrating, enable `nitroLegacy`.',
       docs: false,
     },
+    NUXT_B9006: {
+      why: (p: { file: string, count: number, names: string }) => `\`${p.file}\` uses ${p.names} without importing ${p.count === 1 ? 'it' : 'them'}. Files in subdirectories of \`server/utils/\` are not auto-imported.`,
+      fix: 'Import each one explicitly, re-export it from a file directly in `server/utils/`, or enable `nitroLegacy.imports` to scan subdirectories of `server/utils/` as Nitro v2 did.',
+      docs: false,
+    },
   },
 })
