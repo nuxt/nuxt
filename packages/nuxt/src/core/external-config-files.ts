@@ -3,6 +3,7 @@ import { findPath } from '@nuxt/kit'
 import { configDiagnostics } from '@nuxt/kit/internal'
 import { basename } from 'pathe'
 import { link } from 'clickable-path'
+import { parseAndWalk } from 'oxc-walker'
 
 /**
  * Check for those external configuration files that are not compatible with Nuxt,
@@ -22,7 +23,6 @@ export async function checkForExternalConfigurationFiles () {
 
 // https://github.com/vitejs/vite/blob/8fe69524d25d45290179175ba9b9956cbce87a91/packages/vite/src/node/constants.ts#L38
 const VITE_CONFIG_EXTENSIONS = ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts']
-const VITE_PLUS_IMPORT_RE = /\bfrom\s*["']vite-plus["']|\b(?:import|require)\s*\(\s*["']vite-plus["']\s*\)/
 
 /**
  * Find a `vite.config` file in `cwd` that configures Vite+ (it imports from `vite-plus`).
@@ -40,7 +40,21 @@ function findViteConfig (cwd?: string) {
 
 async function isVitePlusConfig (path: string) {
   const contents = await readFile(path, 'utf8').catch(() => '')
-  return VITE_PLUS_IMPORT_RE.test(contents)
+  if (!contents.includes('vite-plus')) {
+    return false
+  }
+  let importsVitePlus = false
+  parseAndWalk(contents, path, (node) => {
+    const specifier = node.type === 'ImportDeclaration' || node.type === 'ImportExpression'
+      ? node.source
+      : node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'require'
+        ? node.arguments[0]
+        : undefined
+    if (specifier?.type === 'Literal' && specifier.value === 'vite-plus') {
+      importsVitePlus = true
+    }
+  })
+  return importsVitePlus
 }
 
 async function checkViteConfig () {

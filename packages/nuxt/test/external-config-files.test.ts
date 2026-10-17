@@ -35,9 +35,12 @@ const viteConfig = `import { defineConfig } from 'vite'\nexport default defineCo
 const vitePlusConfig = `import { defineConfig } from 'vite-plus'\nexport default defineConfig({ lint: {} })\n`
 
 describe('external configuration files', () => {
-  it('warns about a standalone vite config', async () => {
+  it.for([
+    ['a standalone vite config', viteConfig],
+    ['a vite config with a commented-out vite-plus import', `// import { defineConfig } from 'vite-plus'\n${viteConfig}`],
+  ])('warns about %s', async ([, config]) => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const nuxt = await loadFixture(createFixture(viteConfig))
+    const nuxt = await loadFixture(createFixture(config!))
 
     await runWithNuxtContext(nuxt, checkForExternalConfigurationFiles)
     await nuxt.close()
