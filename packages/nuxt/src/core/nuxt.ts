@@ -50,6 +50,7 @@ import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
 import { DevOnlyPlugin } from './plugins/dev-only.ts'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing.ts'
 import { addModuleTranspiles } from './modules.ts'
+import { findVitePlusConfig } from './external-config-files.ts'
 import { bundleServer } from './server.ts'
 import { NuxtPerfProfiler } from './perf.ts'
 import schemaModule from './schema.ts'
@@ -430,6 +431,15 @@ async function initNuxt (nuxt: Nuxt) {
     opts.serverTsConfig.compilerOptions = defu(opts.serverTsConfig.compilerOptions, { paths: { ...paths } })
     // required for the generated route types, which `serverFetch` resolves against
     opts.serverTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
+
+    const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
+    for (const dir of new Set([nuxt.options.rootDir, nuxt.options.workspaceDir])) {
+      const vitePlusConfig = await findVitePlusConfig(dir)
+      if (vitePlusConfig) {
+        opts.nodeTsConfig.include ||= []
+        opts.nodeTsConfig.include.push(relative(typesDir, vitePlusConfig))
+      }
+    }
 
     for (const dirs of layerDirs) {
       const declaration = join(dirs.root, 'index.d.ts')
