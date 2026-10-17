@@ -48,7 +48,7 @@ export type { AddPluginOptions } from './plugin.ts'
 export { createResolver, findPath, resolveAlias, resolveFiles, resolveNuxtModule, resolvePath } from './resolve.ts'
 export type { ResolvePathOptions, Resolver } from './resolve.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated -- `addServerPlugin` is re-exported for the deprecation window
-export { addServerHandler, addDevServerHandler, addNitroPlugin, addServerPlugin, addPrerenderRoutes, useNitro, tryUseNitro, addServerImports, addServerImportsDir, addServerScanDir, resolveServerVariant } from './nitro.ts'
+export { addServerHandler, addDevServerHandler, addNitroPlugin, addServerPlugin, addRendererPlugin, addPrerenderRoutes, useNitro, tryUseNitro, addServerImports, addServerImportsDir, addServerScanDir, resolveServerVariant } from './nitro.ts'
 export type { ServerImportInput } from './nitro.ts'
 export type { NitroInstance, NitroInstanceOptions } from '@nuxt/schema'
 export type { NitroRouteConfig, NitroRouteConfigV2, NitroRouteConfigV3 } from './nitro-types.ts'
