@@ -769,6 +769,21 @@ describe('denial-of-service protections', () => {
     expect(result.slots?.loop?.props?.length ?? 0).toBe(3)
     expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(3)
   })
+
+  it.each([
+    ['BoundedVForPug', 'pug-item'],
+    ['BoundedVForSrc', 'src-item'],
+    ['BoundedVForSpaced', 'spaced-item'],
+    ['BoundedVForForwarded', 'row-item'],
+  ])('bounds a large-integer v-for in %s', async (name, className) => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL(name, { props: { count: 10_000_000 } }))
+    expect(result.html.match(new RegExp(`class="${className}"`, 'g'))?.length ?? 0).toBe(MAX_VFOR_LENGTH)
+  })
+
+  it('does not bound a large-integer v-for outside island renders', async () => {
+    const html = await $fetch<string>(`/row-list?rows=${MAX_VFOR_LENGTH + 1}`)
+    expect(html.match(/class="row-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH + 1)
+  })
 })
 
 describe('hash/render input alignment', () => {
