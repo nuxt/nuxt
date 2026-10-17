@@ -3,6 +3,7 @@ import type { ComponentMeta } from 'nuxt/schema'
 export type BuiltinComponentName =
   | 'ClientOnly'
   | 'DevOnly'
+  | 'PreviewOnly'
   | 'NuxtClientFallback'
   | 'NuxtPage'
   | 'NuxtLayout'
@@ -29,6 +30,7 @@ function defineBuiltinMeta (slug: string, description: string): BuiltinComponent
 export const BUILTIN_COMPONENT_META = {
   ClientOnly: defineBuiltinMeta('client-only', 'Renders its default slot only on the client, with an optional server fallback.'),
   DevOnly: defineBuiltinMeta('dev-only', 'Renders its content only during development.'),
+  PreviewOnly: defineBuiltinMeta('preview-only', 'Render content only when preview mode is enabled with the <PreviewOnly> component.'),
   NuxtClientFallback: defineBuiltinMeta('nuxt-client-fallback', 'Renders its content on the client when a child fails during server-side rendering.'),
   NuxtPage: defineBuiltinMeta('nuxt-page', 'Renders the current page from the `pages/` directory.'),
   NuxtLayout: defineBuiltinMeta('nuxt-layout', 'Renders the selected layout around pages or error content.'),
