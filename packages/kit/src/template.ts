@@ -697,7 +697,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     .map(dirs => dirs.root)
     .filter(root => !rootDirWithSlash.startsWith(root))
 
-  async function resolveConfig (tsConfig: TSConfig) {
+  async function resolveConfig (tsConfig: TSConfig, declarationEntry: string) {
     if (isV5OrHigher) {
       Reflect.deleteProperty(tsConfig.compilerOptions!, 'baseUrl')
     }
@@ -728,16 +728,17 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
       nuxt.options.typescript?.hoist ?? [],
     )
 
-    tsConfig.include = [...new Set(tsConfig.include!.map(p => isAbsolute(p) ? relativeWithDot(typesDir, p) : p))]
+    // the generated declaration must be the first root file for its globals to take precedence
+    tsConfig.include = [...new Set([declarationEntry, ...tsConfig.include!.map(p => isAbsolute(p) ? relativeWithDot(typesDir, p) : p)])]
     tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(typesDir, p) : p))]
   }
 
   await Promise.all([
-    resolveConfig(tsConfig),
-    resolveConfig(nodeTsConfig),
-    resolveConfig(sharedTsConfig),
-    resolveConfig(serverTsConfig),
-    resolveConfig(legacyTsConfig),
+    resolveConfig(tsConfig, './nuxt.d.ts'),
+    resolveConfig(nodeTsConfig, './nuxt.node.d.ts'),
+    resolveConfig(sharedTsConfig, './nuxt.shared.d.ts'),
+    resolveConfig(serverTsConfig, './nuxt.server.d.ts'),
+    resolveConfig(legacyTsConfig, './nuxt.d.ts'),
   ])
 
   const declaration = [
