@@ -25,6 +25,14 @@ describe('static SPA document', () => {
     )
   })
 
+  it('matches document tags regardless of case', async () => {
+    const html = '<!DOCTYPE html><HTML><HEAD><title>app</title></HEAD><BODY><div id="__nuxt"></div></BODY></HTML>'
+
+    expect(await renderDocument(html, 'http://localhost/')).toBe(
+      '<!DOCTYPE html><html data-html><head><title>app</title><meta name="plugin"></head><body data-body><div id="__nuxt"></div><!-- appended --></body></HTML>',
+    )
+  })
+
   it('leaves a document it cannot split unchanged', async () => {
     expect(await renderDocument('<div id="__nuxt"></div>', 'http://localhost/')).toBe('<div id="__nuxt"></div>')
   })
