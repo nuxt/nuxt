@@ -11,7 +11,7 @@ import escapeRE from 'escape-string-regexp'
 import MagicString from 'magic-string'
 import remapping from '@ampproject/remapping'
 
-import type { Nitro } from 'nitro/types'
+import type { Nitro, NitroHooks } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
@@ -204,13 +204,28 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
     })
   }
 
-  // `compiled` is the only Nitro hook that fires after `copyPublicAssets`, so
-  // it is where `nitro:build:public-assets` can see the copied assets.
   if (!nuxt.options.dev) {
-    // TODO: hook to vite
-    nitro.hooks.hook('compiled', async () => {
+    let publicAssetsHookCalled = false
+    const callPublicAssetsHook = async () => {
+      if (publicAssetsHookCalled) { return }
+      publicAssetsHookCalled = true
       await nuxt.callHook('nitro:build:public-assets', nitro)
+    }
+
+    // runs after public assets are copied and routes are prerendered, and
+    // before the public asset manifest is generated
+    nitro.hooks.hook('vite:compile:before' as keyof NitroHooks, callPublicAssetsHook)
+
+    // TODO: on the next nitro bump, drop the guard and these `buildStart` and `compiled`
+    // fallbacks once we require a version including https://github.com/nitrojs/nitro/pull/4440
+    nuxt.options.vite.plugins.push({
+      name: 'nuxt:nitro-public-assets',
+      applyToEnvironment: env => env.name === 'nitro',
+      buildStart: callPublicAssetsHook,
+    })
+    nitro.hooks.hook('compiled', async () => {
       if (nitro.options.static) {
+        await callPublicAssetsHook()
         await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
       }
     })
