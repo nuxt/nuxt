@@ -3,7 +3,7 @@ import type { NuxtServerRendererHooks } from 'nuxt/server'
 
 import { createRequestEvent } from './event.ts'
 
-const DOCUMENT_RE = /^([\s\S]*?)<html(\s[^>]*)?>([\s\S]*?)<head(\s[^>]*)?>([\s\S]*)<\/head>([\s\S]*?)<body(\s[^>]*)?>([\s\S]*)<\/body>([\s\S]*)$/
+const DOCUMENT_RE = /^([\s\S]*?)<html(\s[^>]*)?>([\s\S]*?)<head(\s[^>]*)?>([\s\S]*)<\/head>([\s\S]*?)<body(\s[^>]*)?>([\s\S]*)<\/body>([\s\S]*)$/i
 
 const hooks = createRendererPluginHooks()
 
