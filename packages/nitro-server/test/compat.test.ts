@@ -710,6 +710,66 @@ export const legacy = getCookie`)
     vi.restoreAllMocks()
   })
 
+  it.each([false, true])('does not count an aliased module file the server build never imports (symlinked: %s)', async (symlinked) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = createModuleDir('nitro-compat-alias-file-', symlinked)
+    mkdirSync(join(dir, 'dist/runtime/server'), { recursive: true })
+    mkdirSync(join(dir, 'dist/runtime/composables'), { recursive: true })
+    writeFileSync(join(dir, 'dist/runtime/server/plugin.js'), `import { definePlugin } from 'nitro'
+export default definePlugin(() => {})`)
+    writeFileSync(join(dir, 'dist/runtime/composables/index.js'), `import { useNuxtApp } from '#imports'
+export const useModule = () => useNuxtApp()`)
+
+    const alias = { '#module': join(dir, 'dist/runtime/composables/index') }
+    const nitroConfig: NitroConfig = { handlers: [], alias, plugins: [join(dir, 'dist/runtime/server/plugin.js')] }
+    await setupNitroCompat(createNuxt({ alias, extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'alias-module' }])
+
+    expect(report).not.toHaveBeenCalled()
+    expect(nitroConfig.plugins).toEqual([join(dir, 'dist/runtime/server/plugin.js')])
+    vi.restoreAllMocks()
+  })
+
+  it('resolves user server imports through the server alias over the app alias', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = createModuleDir('nitro-compat-server-alias-', false)
+    const rootDir = join(dir, 'project')
+    mkdirSync(join(dir, 'dist/runtime/composables'), { recursive: true })
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    writeFileSync(join(dir, 'dist/runtime/composables/index.js'), `import { useNuxtApp } from '#imports'\nexport const useModule = () => useNuxtApp()`)
+    writeFileSync(join(dir, 'dist/runtime/composables/server.js'), `import { getQuery } from 'nuxt/server'\nexport const useModule = getQuery`)
+    writeFileSync(join(rootDir, 'server/api/test.ts'), `import { useModule } from '#module'\nexport default useModule`)
+
+    const nitroConfig: NitroConfig = { handlers: [], alias: { '#module': join(dir, 'dist/runtime/composables/server') } }
+    const nuxt = createNuxt({ alias: { '#module': join(dir, 'dist/runtime/composables/index') }, extensions: ['.js', '.mjs', '.ts'], rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir, name: 'alias-module' }])
+
+    expect(report).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it.each([['nitro3', false], [undefined, true]] as const)('scopes the registrations of a module by its declared server API (server: %s)', async (server, scoped) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = createModuleDir('nitro-compat-declared-', false)
+    const rootDir = join(dir, 'project')
+    mkdirSync(join(dir, 'composables'), { recursive: true })
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    writeFileSync(join(dir, 'composables/index.js'), `import { useNuxtApp } from '#imports'\nexport const useModule = () => useNuxtApp()`)
+    writeFileSync(join(dir, 'composables/shared.js'), `export const defineModuleConfig = config => config`)
+    writeFileSync(join(rootDir, 'server/api/test.ts'), `import { useModule } from '#module'\nexport default useModule`)
+
+    const alias = { '#module': join(dir, 'composables/index') }
+    const nitroConfig: NitroConfig = { handlers: [], alias, imports: { imports: [{ name: 'defineModuleConfig', from: join(dir, 'composables/shared') }] } }
+    const nuxt = createNuxt({ alias, extensions: ['.js', '.mjs', '.ts'], rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir, name: 'declared-module', server }])
+
+    if (scoped) {
+      expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`declared-module` (imports `#imports`)' })
+    } else {
+      expect(report).not.toHaveBeenCalled()
+    }
+    vi.restoreAllMocks()
+  })
+
   it.each([false, true])('counts files in an aliased module directory that user server code imports (symlinked: %s)', async (symlinked) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
     const dir = createModuleDir('nitro-compat-alias-user-', symlinked)
