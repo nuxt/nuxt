@@ -56,21 +56,17 @@ declare module 'nuxt/app' {
   }
 }
 
-// Hook augmentation bridge between `@nuxt/schema` and `nuxt/schema`.
-//
-// `_local-modules/hook-augmenting-module/types.d.mts` augments
-// `@nuxt/schema { interface NuxtHooks }` with `'hook-augmenting-module:ping'`
-// and is pulled in via `<reference types="hook-augmenting-module" />` in
-// `.nuxt/nuxt*.d.ts` (the path real published modules take).
-//
-// Regression test for the bug where `declare module '@nuxt/schema'` augments
-// of `NuxtHooks` were visible on `NuxtHooks` directly but not on
-// `NuxtConfig['hooks']` when read via `nuxt/schema` — the path
-// `defineNuxtConfig` types take. See `packages/nuxt/schema.d.ts`.
+// `hook-augmenting-module` augments both `@nuxt/schema` and `nuxt/schema`, and enters the
+// program through `<reference types="hook-augmenting-module" />`, as published modules do.
 expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NuxtHooksFromAt>()
 expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NuxtHooksFromNuxt>()
 expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NonNullable<NuxtConfigFromAt['hooks']>>()
 expectTypeOf<'hook-augmenting-module:ping'>().toExtend<keyof NonNullable<NuxtConfigFromNuxt['hooks']>>()
+expectTypeOf<'hook-augmenting-module:nuxt-ping'>().toExtend<keyof NuxtHooksFromAt>()
+expectTypeOf<'hook-augmenting-module:nuxt-ping'>().toExtend<keyof NuxtHooksFromNuxt>()
+expectTypeOf<'hook-augmenting-module:nuxt-ping'>().toExtend<keyof NonNullable<NuxtConfigFromAt['hooks']>>()
+expectTypeOf<'hook-augmenting-module:nuxt-ping'>().toExtend<keyof NonNullable<NuxtConfigFromNuxt['hooks']>>()
+expectTypeOf(useAppConfig().hookAugmentingModule).toEqualTypeOf<{ enabled: boolean } | undefined>()
 
 defineNuxtConfig({
   hooks: {
@@ -1186,6 +1182,7 @@ describe('app config', () => {
       someThing?: {
         value?: string | false
       }
+      hookAugmentingModule?: { enabled: boolean }
       themed: {
         colors: { primary: string, neutral: string }
         slots: { root: string, body: string }

@@ -133,12 +133,6 @@ export default withMatrix({
       // Augmented by `_local-modules/hook-augmenting-module/types.d.mts`,
       // which enters the program through `<reference types="hook-augmenting-module" />`
       // generated into `.nuxt/nuxt*.d.ts`.
-      //
-      // Regression test for the bridge in `packages/nuxt/schema.d.ts`:
-      // augments to `@nuxt/schema { interface NuxtHooks }` from a published
-      // module entering through a `<reference types>` boundary must reach
-      // `NuxtConfig['hooks']` when read via `nuxt/schema` (the path
-      // `defineNuxtConfig` takes).
       const _: number = payload.value
     },
   },
