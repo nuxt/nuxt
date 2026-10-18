@@ -5,12 +5,18 @@ import { basename, resolve } from 'node:path'
 
 const repoRoot = resolve(import.meta.dirname, '..')
 const pkgDir = process.cwd()
+const pkgPath = resolve(pkgDir, 'package.json')
+const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
 
-if (basename(pkgDir) === 'nuxt' && JSON.parse(readFileSync(resolve(pkgDir, 'package.json'), 'utf-8')).name === 'nuxt-nightly') {
+if (basename(pkgDir) === 'nuxt' && pkg.name === 'nuxt-nightly') {
   execFileSync('pnpm', ['--config.verify-deps-before-run=false', '--filter', '@nuxt/ui-templates', 'build'], {
     cwd: repoRoot,
     stdio: 'inherit',
   })
+
+  // the runtime imports `nuxt/internal/*`, which cannot self-reference under the `nuxt-nightly` name
+  pkg.peerDependencies = { ...pkg.peerDependencies, nuxt: `npm:nuxt-nightly@${pkg.version}` }
+  writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n')
 }
 
 copyFileSync(resolve(repoRoot, 'LICENSE'), resolve(pkgDir, 'LICENSE'))
