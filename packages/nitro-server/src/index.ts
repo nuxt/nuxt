@@ -272,7 +272,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       ],
       exclude: [...excludePattern, /[\\/]\.git[\\/]/],
     },
-    // TODO: support for bundle analyser: https://github.com/nitrojs/nitro/pull/3628
     scanDirs: layerDirs.map(dirs => dirs.server),
     renderer: {
       handler: resolve(distDir, 'runtime/handlers/renderer'),

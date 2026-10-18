@@ -27,6 +27,13 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
 
   let config: ResolvedConfig
   const { visualizer } = await import('rollup-plugin-visualizer')
+  const getVisualizer = (name: string, title: string) => visualizer({
+    ...analyzeOptions,
+    filename: 'filename' in analyzeOptions && analyzeOptions.filename ? analyzeOptions.filename.replace('{name}', name) : undefined,
+    title,
+    gzipSize: true,
+    brotliSize: true,
+  })
 
   return {
     name: 'nuxt:analyze',
@@ -34,6 +41,12 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
       config = _config
     },
     applyToEnvironment (environment) {
+      if (environment.name === 'nitro') {
+        return getVisualizer('nitro', 'Nitro server bundle stats')
+      }
+      if (environment.name === 'ssr') {
+        return getVisualizer('ssr', 'Vue SSR bundle stats')
+      }
       if (environment.name !== 'client') {
         return false
       }
@@ -55,13 +68,7 @@ export async function AnalyzePlugin (nuxt: Nuxt): Promise<Plugin | undefined> {
             }
           },
         },
-        visualizer({
-          ...analyzeOptions,
-          filename: 'filename' in analyzeOptions && analyzeOptions.filename ? analyzeOptions.filename.replace('{name}', 'client') : undefined,
-          title: 'Client bundle stats',
-          gzipSize: true,
-          brotliSize: true,
-        }),
+        getVisualizer('client', 'Client bundle stats'),
       ]
     },
   }
