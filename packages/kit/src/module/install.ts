@@ -1,16 +1,18 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { performance } from 'node:perf_hooks'
 import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptions } from '@nuxt/schema'
-import { dirname, isAbsolute, join, resolve } from 'pathe'
+import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { readPackageJSON, resolvePackageDir } from '../internal/package-json.ts'
 import { read as readRc, update as updateRc } from 'rc9'
-import { isGreater, satisfies } from 'verkit'
+import { isGreaterThan, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
 import { interopDefault } from '../internal/interop.ts'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from '../internal/node-module.ts'
 import { useNuxt } from '../context.ts'
+import { logger } from '../logger.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
@@ -75,8 +77,9 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
   )
   let error: Error | undefined
   const dependencyMap = new Map<ModuleToInstall, string>()
+  const dependencyPaths = new Map<ModuleToInstall, string>()
   for (const [key, options] of modulesToInstall) {
-    const loadPromise = moduleLoadCache.get(key) || loadNuxtModuleInstance(key, nuxt)
+    const loadPromise = moduleLoadCache.get(key) || loadNuxtModuleInstance(dependencyPaths.get(key) || key, nuxt)
     const res = await loadPromise.catch((err) => {
       if (dependencyMap.has(key) && typeof key === 'string') {
         (err as Error).cause = `Could not resolve \`${key}\` (specified as a dependency of ${dependencyMap.get(key)!}).`
@@ -96,7 +99,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       // modules where meta.name differs from the npm package name).
       const resolvedModule = modulesByMetaName.has(name)
         ? resolveModuleWithOptions(modulesByMetaName.get(name)!, nuxt)
-        : resolveModuleWithOptions(name, nuxt)
+        : resolveModuleDefinition(name, nuxt, res.resolvedModulePath)
       const moduleToAttribute = typeof key === 'string' ? `\`${key}\`` : 'a module in `nuxt.options`'
 
       if (!resolvedModule?.module) {
@@ -106,7 +109,9 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       }
 
       if (value.version) {
-        const resolvePaths = [res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
+        const cachedDependency = await moduleLoadCache.get(resolvedModule.module)
+        const dependencyPath = cachedDependency?.resolvedModulePath || dependencyPaths.get(resolvedModule.module)
+        const resolvePaths = [dependencyPath || res.resolvedModulePath!, ...nuxt.options.modulesDir].filter(Boolean)
         const pkg = await readPackageJSON(name, { from: resolvePaths }).catch(() => null)
         if (pkg?.version && !satisfies(pkg.version, value.version, { includePrerelease: true })) {
           const message = `Module \`${name}\` version (\`${pkg.version}\`) does not satisfy \`${value.version}\` (requested by ${moduleToAttribute}).`
@@ -139,6 +144,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
         const path = resolvedModule.resolvedPath || resolvedModule.module
         if (typeof path === 'string') {
           resolvedModulePaths.add(path)
+          dependencyPaths.set(resolvedModule.module, path)
         }
       }
     }
@@ -258,6 +264,14 @@ export function resolveModuleWithOptions (
   definition: NuxtModule<any> | string | false | undefined | null | [(NuxtModule | string)?, Record<string, any>?],
   nuxt: Nuxt,
 ): { resolvedPath?: string, module: string | NuxtModule<any>, options: Record<string, any> } | undefined {
+  return resolveModuleDefinition(definition, nuxt)
+}
+
+function resolveModuleDefinition (
+  definition: Parameters<typeof resolveModuleWithOptions>[0],
+  nuxt: Nuxt,
+  parentPath?: string,
+): ReturnType<typeof resolveModuleWithOptions> {
   const [module, options = {}] = Array.isArray(definition) ? definition : [definition, {}]
 
   if (!module) {
@@ -274,7 +288,10 @@ export function resolveModuleWithOptions (
   const modAlias = resolveAlias(module, nuxt.options.alias)
   const modPath = resolveModulePath(modAlias, {
     try: true,
-    from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+    from: [
+      ...parentPath ? [pathToFileURL(parentPath)] : [],
+      ...nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+    ],
     suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
     extensions: DEFAULT_JS_FILE_EXTENSIONS,
   })
@@ -465,7 +482,7 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
   try {
     if (!previousVersion) {
       await nuxtModule.onInstall?.(nuxt)
-    } else if (isGreater(meta.version, previousVersion)) {
+    } else if (isGreaterThan(meta.version, previousVersion)) {
       await nuxtModule.onUpgrade?.(nuxt, inlineOptions, previousVersion)
     }
     if (previousVersion !== meta.version) {
@@ -477,6 +494,20 @@ async function callLifecycleHooks (nuxtModule: NuxtModule<any, Partial<any>, fal
   } catch (e) {
     kitDiagnostics.NUXT_B8019({ phase: !previousVersion ? 'install' : 'upgrade', name: meta.name, error: String(e) })
   }
+}
+
+function getModuleName (nuxtModule: NuxtModule<any, Partial<any>, false>, meta: ModuleMeta, nameOrPath: string | undefined, rootDir: string): string {
+  if (meta.name) {
+    return meta.name
+  }
+  if (nameOrPath) {
+    const parsed = parseNodeModulePath(nameOrPath)
+    if (parsed.name) {
+      return parsed.name
+    }
+    return isAbsolute(nameOrPath) ? relative(rootDir, nameOrPath) : nameOrPath
+  }
+  return nuxtModule.name || 'anonymous module'
 }
 
 interface CallModuleOptions {
@@ -495,7 +526,28 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
     ? nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(moduleOptions, nuxt))
     : nuxtModule(moduleOptions, nuxt)
 
+  const moduleInfo = {
+    name: getModuleName(nuxtModule, options.meta, nameOrPath, nuxt.options.rootDir),
+    meta: options.meta,
+    path: modulePath,
+  }
+
+  // fired within `callModule` so modules installed as dependencies or via `installModule` are covered too
+  await nuxt.callHook('module:before', moduleInfo)
+
+  const start = performance.now()
   const res = options.meta.disabled ? false : await fn()
+  const duration = Math.round((performance.now() - start) * 100) / 100
+  // our measurement of the whole invocation is authoritative for `setup`; extra keys a module reports are kept
+  const timings = defu({ setup: duration }, (res || {} as Record<string, undefined>).timings)
+
+  if (!options.meta.disabled) {
+    if (duration > 5000 && moduleInfo.name !== '@nuxt/telemetry') {
+      kitDiagnostics.NUXT_B8014({ name: moduleInfo.name, time: duration })
+    } else if (nuxt.options.debug && nuxt.options.debug.modules) {
+      logger.info(`Module \`${moduleInfo.name}\` took \`${duration}ms\` to setup.`)
+    }
+  }
 
   let entryPath: string | undefined
   if (typeof modulePath === 'string') {
@@ -528,7 +580,9 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
   nuxt.options._installedModules.push({
     meta: options.meta,
     module: nuxtModule,
-    timings: (res || {} as Record<string, undefined>).timings,
+    timings: options.meta.disabled ? undefined : timings,
     entryPath,
   })
+
+  await nuxt.callHook('module:done', { ...moduleInfo, entryPath, timings })
 }

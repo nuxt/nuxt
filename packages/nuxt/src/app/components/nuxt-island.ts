@@ -8,7 +8,7 @@ import { joinURL } from 'ufo'
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
-import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
+import { prerenderRoutes, useRequestFetch } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
@@ -19,7 +19,7 @@ import { $fetch } from '#build/fetch'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
-const DATA_ISLAND_UID_RE = /data-island-uid(="")?(?!="[^"])/g
+const DATA_ISLAND_UID_RE = /(?<=<[^<>"]*(?:"[^"]*"[^<>"]*)*\s)data-island-uid(="")?(?=[\s/>])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
 const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
@@ -108,7 +108,7 @@ const NuxtIsland = defineComponent({
     const serializedProps = computed(() => serializeIslandProps(props.props))
     const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
     const instance = getCurrentInstance()!
-    const event = useRequestEvent()
+    const islandFetch = import.meta.server ? useRequestFetch() : $fetch
 
     let activeHead: ActiveHeadEntry<SerializableHead>
 
@@ -218,12 +218,11 @@ const NuxtIsland = defineComponent({
 
       const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
       if (import.meta.server && import.meta.prerender) {
-        // Hint to Nitro to prerender the island component
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
       // $fetch handles `app.baseURL` for relative URLs
-      const r = await $fetch.raw<NuxtIslandResponse>(url, {
+      const r = await islandFetch.raw<NuxtIslandResponse>(url, {
         // custom island sources should not be resolved against `app.baseURL` (#23093)
         ...(props.source ? { baseURL: '' } : {}),
         query: {
@@ -233,18 +232,20 @@ const NuxtIsland = defineComponent({
         responseType: 'json',
         ignoreResponseError: true,
       })
+      // the island render is a separate request, so its hints only reach the page that
+      // embedded it over the wire, including when the render failed part-way
+      // TODO: support passing on more headers
+      if (import.meta.server && import.meta.prerender) {
+        const hints = r.headers.get('x-nuxt-prerender')
+        if (hints) {
+          nuxtApp.runWithContext(() => prerenderRoutes(hints.split(',').map(hint => decodeURIComponent(hint.trim()))))
+        }
+      }
       if (!r.ok) {
         throw createError({ status: r.status, statusText: r.statusText })
       }
       try {
         const result = r._data!
-        // TODO: support passing on more headers
-        if (import.meta.server && import.meta.prerender) {
-          const hints = r.headers.get('x-nitro-prerender')
-          if (hints) {
-            event!.res.headers.append('x-nitro-prerender', hints)
-          }
-        }
         setPayload(key, result)
         return result
       } catch (e: any) {
@@ -381,7 +382,7 @@ const NuxtIsland = defineComponent({
                 if (payloads.components) {
                   for (const [id, info] of Object.entries(payloads.components)) {
                     const { html, slots, uid: targetUID = uid.value } = info
-                    let replaced = html.replaceAll('data-island-uid', `data-island-uid="${uid.value}"`)
+                    let replaced = html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
                     for (const slot in slots) {
                       replaced = replaced.replaceAll(`data-island-slot="${slot}">`, full => full + slots[slot])
                     }

@@ -41,7 +41,7 @@ try {
 
 // `enum` is the cheapest syntax the runtime refuses to strip, so both the config and the module
 // in the fixture can only be loaded through jiti.
-describe('jiti resolution', { sequential: true }, () => {
+describe('jiti resolution', { concurrent: false }, () => {
   // Created outside the repository on purpose: resolution walks up through `node_modules`, so a
   // fixture inside the workspace would find the repo's own `nuxt` and `jiti` and prove nothing.
   let tempDir: string

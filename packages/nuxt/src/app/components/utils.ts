@@ -6,7 +6,9 @@ import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
 import { renderDiagnostics } from '../diagnostics/render'
 import { MAX_VFOR_LENGTH } from './vfor'
+import type { NuxtApp } from '../nuxt'
 import { START_LOCATION } from '#build/pages'
+import { rawVaporSlotKey } from '#build/nuxt.config.mjs'
 
 /**
  * Internal utility
@@ -51,14 +53,14 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
 /**
  * Detect a vapor slot function passed into a vdom component via interop.
  *
- * Vapor slots register `__vapor`/`__vs` markers on the slot function itself, so
- * we can recognise them without invoking the slot. Calling a vapor slot to
+ * Vapor slots carry Vue's `rawVaporSlotKey` on the slot function itself, so
+ * they can be recognised without invoking the slot. Calling a vapor slot to
  * inspect the shape of its returned VNodes is not a safe dry run (its content is
  * not expressed as a VNode tree), so callers use this to skip VNode-shape
  * heuristics rather than silently make a wrong decision.
  */
 export function isVaporSlot (slot: ((...args: any[]) => any) | undefined | null): boolean {
-  return !!slot && (!!(slot as any).__vapor || !!(slot as any).__vs)
+  return !!rawVaporSlotKey && !!slot && !!(slot as any)[rawVaporSlotKey]
 }
 
 const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i
@@ -115,7 +117,8 @@ export function vforToArray (source: any): any[] {
     const length = source > MAX_VFOR_LENGTH ? MAX_VFOR_LENGTH : source
     const array: number[] = []
     for (let i = 0; i < length; i++) {
-      array[i] = i
+      // Vue's `v-for` over a number is 1-based
+      array[i] = i + 1
     }
     return array
   } else if (isObject(source)) {
@@ -163,13 +166,15 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
   return blocks
 }
 
+const ISLAND_TELEPORT_TARGET_SELECTOR = '[data-island-slot],[data-island-component]'
+
 function getElementHTML (element: RendererNode, withoutSlots: boolean) {
-  if (!withoutSlots || !element.querySelector?.('[data-island-slot]')) {
+  if (!withoutSlots || !element.querySelector?.(ISLAND_TELEPORT_TARGET_SELECTOR)) {
     return element.outerHTML
   }
   const template = element.ownerDocument.createElement('template')
   template.innerHTML = element.outerHTML
-  template.content.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
+  template.content.querySelectorAll(ISLAND_TELEPORT_TARGET_SELECTOR).forEach((n: Element) => { n.innerHTML = '' })
   return template.innerHTML
 }
 
@@ -214,4 +219,16 @@ export function _mergeTransitionProps (routeProps: TransitionProps[]): Transitio
     })
   }
   return defu(..._props as [TransitionProps, TransitionProps])
+}
+
+export function _startTransition (nuxtApp: NuxtApp): void {
+  nuxtApp['~transitionPromise'] ||= new Promise((resolve) => {
+    nuxtApp['~transitionFinish'] = resolve
+  })
+}
+
+export function _finishTransition (nuxtApp: NuxtApp): void {
+  nuxtApp['~transitionFinish']?.()
+  delete nuxtApp['~transitionFinish']
+  delete nuxtApp['~transitionPromise']
 }

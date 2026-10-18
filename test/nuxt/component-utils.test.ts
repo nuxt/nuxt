@@ -1,6 +1,21 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { getFragmentHTML } from '../../packages/nuxt/src/app/components/utils'
+import { renderList } from 'vue'
+import { getFragmentHTML, vforToArray } from '../../packages/nuxt/src/app/components/utils'
+
+describe('vforToArray', () => {
+  it('matches renderList semantics for number sources', () => {
+    expect(vforToArray(3)).toEqual([1, 2, 3])
+    expect(vforToArray(3)).toEqual(renderList(3, (item: number) => item))
+  })
+
+  it('matches renderList semantics for string, array and iterable sources', () => {
+    expect(vforToArray('ab')).toEqual(renderList('ab', (item: string) => item))
+    expect(vforToArray(['a', 'b'])).toEqual(renderList(['a', 'b'], (item: string) => item))
+    expect(vforToArray(new Set(['a', 'b']))).toEqual(renderList(new Set(['a', 'b']), (item: string) => item))
+    expect(vforToArray({ a: 1, b: 2 })).toEqual(renderList({ a: 1, b: 2 }, (item: number) => item))
+  })
+})
 
 describe('getFragmentHTML', () => {
   afterEach(() => {
@@ -41,6 +56,20 @@ describe('getFragmentHTML', () => {
 
     expect(getFragmentHTML(start, true)).toEqual([
       '<div>before<span data-island-slot="default"></span>after</div>',
+    ])
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33809
+  it('clears hydrated client component contents', () => {
+    const fragment = document.createDocumentFragment()
+    const start = document.createComment('[')
+    const element = document.createElement('div')
+
+    element.innerHTML = '<div data-island-uid="1" data-island-component="v-0-0-0"><!--teleport start anchor--><button>hydrated</button><!--teleport anchor--></div>'
+    fragment.append(start, element, document.createComment(']'))
+
+    expect(getFragmentHTML(start, true)).toEqual([
+      '<div><div data-island-uid="1" data-island-component="v-0-0-0"></div></div>',
     ])
   })
 

@@ -8,7 +8,7 @@ export function esbuild (ctx: WebpackConfigContext) {
   const target = ctx.isServer ? 'es2020' : 'chrome85'
 
   // https://github.com/nuxt/nuxt/issues/13052
-  ctx.config.optimization!.minimizer!.push(new EsbuildPlugin())
+  ctx.config.optimization!.minimizer!.push(new EsbuildPlugin({ minify: !!ctx.config.optimization!.minimize }))
 
   ctx.config.module!.rules!.push(
     {

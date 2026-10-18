@@ -1,12 +1,15 @@
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
+import { join } from 'pathe'
 
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../src/constants.ts'
 import { loadNuxtConfig } from '../src/loader/config.ts'
-import { _generateTypes, resolveLayerPaths } from '../src/template.ts'
+import { _generateTypes, resolveLayerPaths, writeTypes } from '../src/template.ts'
 import { getLayerDirectories } from 'nuxt/kit'
 
 const typesFixtureDir = fileURLToPath(new URL('./types-fixture', import.meta.url))
@@ -95,18 +98,52 @@ describe('tsConfig generation', () => {
         "../../node_modules",
         "../dist",
         "../.data",
+        "../server/**/*",
         "../modules/*/runtime/server/**/*",
         "../layers/*/server/**/*",
         "../layers/*/modules/*/runtime/server/**/*",
-        "../modules/*.*",
+        "../modules/*.mjs",
+        "../modules/*.js",
+        "../modules/*.cjs",
+        "../modules/*.mts",
+        "../modules/*.ts",
+        "../modules/*.cts",
+        "../modules/*.tsx",
+        "../modules/*.jsx",
         "../nuxt.config.*",
         "../.config/nuxt.*",
         "../layers/*/nuxt.config.*",
         "../layers/*/.config/nuxt.*",
-        "../layers/*/modules/*.*",
-        "../layers/*/modules/*/*.*",
+        "../layers/*/modules/*.mjs",
+        "../layers/*/modules/*.js",
+        "../layers/*/modules/*.cjs",
+        "../layers/*/modules/*.mts",
+        "../layers/*/modules/*.ts",
+        "../layers/*/modules/*.cts",
+        "../layers/*/modules/*.tsx",
+        "../layers/*/modules/*.jsx",
+        "../layers/*/modules/*/*.mjs",
+        "../layers/*/modules/*/*.js",
+        "../layers/*/modules/*/*.cjs",
+        "../layers/*/modules/*/*.mts",
+        "../layers/*/modules/*/*.ts",
+        "../layers/*/modules/*/*.cts",
+        "../layers/*/modules/*/*.tsx",
+        "../layers/*/modules/*/*.jsx",
       ]
     `)
+  })
+
+  it('should not exclude module directories with a dot in their name', async () => {
+    const { tsConfig, nodeTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      _installedModules: [{ meta: { name: 'dotted-module', rawPath: '/my-app/modules/1.dotted/index.ts' }, entryPath: '/my-app/modules/1.dotted/index.ts', timings: {} }],
+    }))
+
+    expect(tsConfig.include).toContain('../modules/1.dotted/runtime')
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringMatching(/\*\.\*$/)]))
+    expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../modules/*.ts', '../modules/1.dotted/*.ts']))
+    expect(nodeTsConfig.include).toEqual(expect.arrayContaining(['../modules/*.ts', '../modules/1.dotted/*.ts']))
+    expect(nodeTsConfig.include).not.toEqual(expect.arrayContaining([expect.stringMatching(/\*\.\*$/)]))
   })
 
   it('should not exclude layer module runtime files from app tsconfig', async () => {
@@ -217,6 +254,23 @@ describe('tsConfig generation', () => {
       expect(config.exclude).not.toContain('my-global-exclude')
       expect(config).not.toHaveProperty('vueCompilerOptions')
     }
+  })
+
+  it('should keep the generated declaration first in `include`', async () => {
+    const { tsConfig, nodeTsConfig, sharedTsConfig, serverTsConfig, legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: { include: ['../global/**/*.ts'] },
+        appTsConfig: { include: ['../test/**/*.ts'] },
+        nodeTsConfig: { include: ['../node/**/*.ts'] },
+        sharedTsConfig: { include: ['../shared-extra/**/*.ts'] },
+        serverTsConfig: { include: ['../server-extra/**/*.ts'] },
+      },
+    }))
+    expect(tsConfig.include?.slice(0, 3)).toEqual(['./nuxt.d.ts', '../test/**/*.ts', '../global/**/*.ts'])
+    expect(legacyTsConfig.include?.[0]).toBe('./nuxt.d.ts')
+    expect(nodeTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.node.d.ts', '../node/**/*.ts'])
+    expect(sharedTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.shared.d.ts', '../shared-extra/**/*.ts'])
+    expect(serverTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.server.d.ts', '../server-extra/**/*.ts'])
   })
 
   it('should propagate appTsConfig excludes to legacy tsconfig', async () => {
@@ -391,19 +445,35 @@ describe('resolveLayerPaths', async () => {
           "../*.d.ts",
           "../layers/*/*.d.ts",
         ],
-        "nitro": [
-          "../custom-modules/*/runtime/server/**/*",
-          "../layers/*/server/**/*",
-          "../layers/*/modules/*/runtime/server/**/*",
-        ],
         "node": [
-          "../custom-modules/*.*",
+          "../custom-modules/*.mjs",
+          "../custom-modules/*.js",
+          "../custom-modules/*.cjs",
+          "../custom-modules/*.mts",
+          "../custom-modules/*.ts",
+          "../custom-modules/*.cts",
+          "../custom-modules/*.tsx",
+          "../custom-modules/*.jsx",
           "../nuxt.config.*",
           "../.config/nuxt.*",
           "../layers/*/nuxt.config.*",
           "../layers/*/.config/nuxt.*",
-          "../layers/*/modules/*.*",
-          "../layers/*/modules/*/*.*",
+          "../layers/*/modules/*.mjs",
+          "../layers/*/modules/*.js",
+          "../layers/*/modules/*.cjs",
+          "../layers/*/modules/*.mts",
+          "../layers/*/modules/*.ts",
+          "../layers/*/modules/*.cts",
+          "../layers/*/modules/*.tsx",
+          "../layers/*/modules/*.jsx",
+          "../layers/*/modules/*/*.mjs",
+          "../layers/*/modules/*/*.js",
+          "../layers/*/modules/*/*.cjs",
+          "../layers/*/modules/*/*.mts",
+          "../layers/*/modules/*/*.ts",
+          "../layers/*/modules/*/*.cts",
+          "../layers/*/modules/*/*.tsx",
+          "../layers/*/modules/*/*.jsx",
         ],
         "nuxt": [
           "../app/**/*",
@@ -412,6 +482,12 @@ describe('resolveLayerPaths', async () => {
           "../tests/nuxt/**/*",
           "../layers/*/app/**/*",
           "../layers/*/modules/*/runtime/**/*",
+        ],
+        "server": [
+          "../server/**/*",
+          "../custom-modules/*/runtime/server/**/*",
+          "../layers/*/server/**/*",
+          "../layers/*/modules/*/runtime/server/**/*",
         ],
         "shared": [
           "../custom-shared/**/*",
@@ -425,5 +501,52 @@ describe('resolveLayerPaths', async () => {
         ],
       }
     `)
+  })
+})
+
+describe('writeTypes', () => {
+  const generatedFiles = ['tsconfig.app.json', 'tsconfig.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json', 'nuxt.d.ts', 'nuxt.node.d.ts', 'nuxt.shared.d.ts', 'nuxt.server.d.ts']
+
+  async function withRelocatedBuildDir (fn: (typesDir: string, nuxt: Nuxt) => Promise<void>) {
+    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
+    const typesDir = join(rootDir, '.nuxt')
+    await mkdir(typesDir, { recursive: true })
+    try {
+      await fn(typesDir, mockNuxtWithOptions({
+        rootDir,
+        srcDir: rootDir,
+        buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt'),
+        typesDir,
+        dev: false,
+      }))
+    } finally {
+      await rm(rootDir, { recursive: true, force: true })
+    }
+  }
+
+  it('should not overwrite existing types when building into a relocated build directory', async () => {
+    await withRelocatedBuildDir(async (typesDir, nuxt) => {
+      for (const file of generatedFiles) {
+        await writeFile(join(typesDir, file), '{}')
+      }
+      await writeTypes(nuxt)
+      for (const file of generatedFiles) {
+        expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
+      }
+    })
+  })
+
+  it('should only write missing types when building into a relocated build directory', async () => {
+    await withRelocatedBuildDir(async (typesDir, nuxt) => {
+      const [missing, ...existing] = generatedFiles
+      for (const file of existing) {
+        await writeFile(join(typesDir, file), '{}')
+      }
+      await writeTypes(nuxt)
+      expect(await readFile(join(typesDir, missing!), 'utf8')).not.toBe('{}')
+      for (const file of existing) {
+        expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
+      }
+    })
   })
 })

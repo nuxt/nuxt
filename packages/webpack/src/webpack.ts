@@ -129,12 +129,13 @@ function createRsbuildInstance (configs: Configuration[], nuxt: Nuxt) {
     if (nuxt.options.dev && !isServer) {
       config.target ??= 'web'
     }
+    const distPath = isServer && nuxt.options.dev
+      ? resolve(nuxt.options.buildDir, 'dist/.rsbuild-server')
+      : config.output!.path as string
     environments[config.name!] = {
       output: {
         target: isServer ? 'node' : 'web',
-        // The dev server serves assets from `<distPath>/<url after publicPath>`,
-        // so point it at the same directory the compiler writes to.
-        distPath: { root: config.output!.path as string },
+        distPath: { root: distPath },
       },
       tools: {
         // Nuxt generates the full rspack configuration itself, so the

@@ -6,6 +6,8 @@ import { join } from 'pathe'
 import { exec } from 'tinyexec'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
+import { shouldReportJitiFallbackOnce } from '../src/internal/jiti.ts'
+
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
 const kitEntry = join(repoRoot, 'packages/kit/src/index.ts')
 const jitiInternal = pathToFileURL(join(repoRoot, 'packages/kit/src/internal/jiti.ts')).href
@@ -66,7 +68,7 @@ function output (stdout: string, stderr: string) {
 const BLOCK_JITI = `import { register } from 'node:module'
 register('data:text/javascript,export async function resolve (specifier, context, next) { if (specifier === \\'jiti\\') { throw new Error(\\'jiti is unavailable\\') } return next(specifier, context) }')`
 
-describe('jiti fallback', { sequential: true }, () => {
+describe('jiti fallback', { concurrent: false }, () => {
   let dir: string
   let blockJiti: string
 
@@ -259,18 +261,15 @@ describe('jiti fallback', { sequential: true }, () => {
     expect(result.message).not.toMatch(/__dirname/)
   }, 60_000)
 
-  // `compatibilityVersion` is spelled out because the schema resolving it is this repo's, which
-  // defaults to the v5 value that a Nuxt 4 project would not see
-  it('should not warn a Nuxt 4 project, whose nuxt depends on jiti', async () => {
-    const cwd = await configFixture('nuxt-4', `export default { future: { compatibilityVersion: 4 }, runtimeConfig: { value: __dirname ? 'ok' : 'no' } }\n`)
+  it('should not report a fallback for a Nuxt 4 project, whose nuxt depends on jiti', async () => {
+    const cwd = await configFixture('nuxt-4', USES_DIRNAME)
     await installFakeNuxt(cwd, { jiti: '^2.7.0' })
-    const result = await loadConfig(cwd)
-    expect(result).toMatchObject({ ok: true, value: 'ok' })
-    expect(result.logs).not.toContain('NUXT_B5023')
-  }, 60_000)
+    expect(shouldReportJitiFallbackOnce(join(cwd, 'nuxt.config.ts'), cwd, 4)).toBe(false)
+    expect(shouldReportJitiFallbackOnce(join(cwd, 'nuxt.config.ts'), cwd, 5)).toBe(true)
+  })
 
-  it('should warn a Nuxt 4 project that opted into compatibilityVersion 5', async () => {
-    const cwd = await configFixture('nuxt-4-compat-5', `export default { future: { compatibilityVersion: 5 }, runtimeConfig: { value: __dirname ? 'ok' : 'no' } }\n`)
+  it('should warn a project whose nuxt depends on jiti when loading its config', async () => {
+    const cwd = await configFixture('nuxt-4-config', `export default { future: { compatibilityVersion: 4 }, runtimeConfig: { value: __dirname ? 'ok' : 'no' } }\n`)
     await installFakeNuxt(cwd, { jiti: '^2.7.0' })
     const result = await loadConfig(cwd)
     expect(result).toMatchObject({ ok: true, value: 'ok' })

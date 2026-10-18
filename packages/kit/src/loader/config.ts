@@ -74,6 +74,21 @@ export interface LoadNuxtConfigOptions {
   /** Directory to load `nuxt.config` from. @default process.cwd() */
   cwd?: string
   /**
+   * Name of the config file to load, without an extension.
+   * @default 'nuxt.config'
+   */
+  configFile?: string
+  /**
+   * Name of the `.rc` file to load alongside the config file, or `false` to load none.
+   * @default '.nuxtrc'
+   */
+  rcFile?: string | false
+  /**
+   * Also load the user-level and workspace-level `.nuxtrc` files.
+   * @default true
+   */
+  globalRc?: boolean
+  /**
    * Configuration applied above every layer, including the root project's own `nuxt.config`.
    * Excluded from the `rawConfig` snapshot passed to `onConfigResolved`.
    */
@@ -223,6 +238,7 @@ const merger = createDefu((obj, key, value) => {
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   const rootCwd = resolve(opts.cwd || process.cwd())
+  const configFileName = opts.configFile || 'nuxt.config'
 
   // Automatically detect and import layers from `~~/layers/` directory
   const localLayers = (await glob('layers/*', {
@@ -266,7 +282,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   // Looking for jiti can mean offering to install it, so that is reserved for a failure jiti is
   // expected to fix; an ordinary mistake in a config file must never lead to a dependency prompt
   const getJiti = async (install: boolean) => {
-    jitiPromise ??= loadJiti({ rootDir: rootCwd, install }).then(mod => mod?.createJiti(join(rootCwd, 'nuxt.config'), {
+    jitiPromise ??= loadJiti({ rootDir: rootCwd, install }).then(mod => mod?.createJiti(join(rootCwd, configFileName), {
       interopDefault: true,
       moduleCache: false,
       extensions: [...CONFIG_EXTENSIONS],
@@ -339,10 +355,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   const loadRootConfig = () => withDefineNuxtConfig(
     () => loadConfig<NuxtConfig>({
       name: 'nuxt',
-      configFile: 'nuxt.config',
-      rcFile: '.nuxtrc',
+      configFile: configFileName,
+      rcFile: opts.rcFile ?? '.nuxtrc',
       extend: { extendKey: ['theme', '_extends', 'extends'] },
-      globalRc: true,
+      globalRc: opts.globalRc ?? true,
       merger: merger as (...sources: Array<NuxtConfig | null | undefined>) => NuxtConfig,
       cwd: opts.cwd,
       overrides: opts.overrides,
@@ -388,7 +404,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
           const layer = await loadConfig<NuxtConfig>({
             cwd: aliased,
             name: 'nuxt',
-            configFile: 'nuxt.config',
+            configFile: configFileName,
             rcFile: false,
             extend: false,
             // Reuse the current load's importer so a nested layer is not loaded through a
@@ -453,6 +469,15 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
+
+  // the project `tsconfig.json` references the generated configurations by path, so they
+  // have to keep being written where the project expects them even when we build
+  // elsewhere. A `buildDir` supplied as an override (as test utilities do) is not what the
+  // project references, so prefer the value the project configured for itself.
+  nuxtConfig.typesDir ||= opts.overrides?.buildDir
+    ? layers.find(l => l.config?.buildDir && l.config.buildDir !== opts.overrides?.buildDir)?.config?.buildDir || defaultBuildDir
+    : nuxtConfig.buildDir || defaultBuildDir
+
   if (!opts.overrides?._prepare && !nuxtConfig.dev && !nuxtConfig.buildDir && existsSync(defaultBuildDir)) {
     nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
   }
@@ -471,6 +496,13 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   const processedLayers = new Set<string>()
   const localRelativePaths = new Set(localLayers.map(layer => layer.replace(/\/$/, '')))
   for (const layer of layers) {
+    const layerCwd = layer.cwd
+    // Bundler module ids are realpaths, so address extended layers by their symlink target
+    if (layer.cwd && layer.cwd !== cwd) {
+      layer.cwd = tryRealPath(layer.cwd)
+      layer.configFile &&= tryRealPath(layer.configFile)
+    }
+
     // Resolve `rootDir` & `srcDir` of layers
     // Create a shallow copy to avoid mutating the cached ESM config object
     const resolvedRootDir = layer.config?.rootDir ?? layer.cwd!
@@ -490,9 +522,9 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
     // Add layer name for local layers
-    if (layer.cwd && cwd && localRelativePaths.has(relative(cwd, layer.cwd))) {
+    if (layerCwd && cwd && localRelativePaths.has(relative(cwd, layerCwd))) {
       layer.meta ||= {}
-      layer.meta.name ||= basename(layer.cwd)
+      layer.meta.name ||= basename(layerCwd)
     }
 
     // Add layer alias
@@ -551,6 +583,14 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
  */
 function canonicalLayerDir (path: string): string {
   return normalize(realpathSync(statSync(path).isDirectory() ? path : dirname(path)))
+}
+
+function tryRealPath (path: string): string {
+  try {
+    return normalize(realpathSync(path))
+  } catch {
+    return path
+  }
 }
 
 function withTrailingSlash (path: string | undefined): string {

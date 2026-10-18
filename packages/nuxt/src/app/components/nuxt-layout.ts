@@ -1,5 +1,5 @@
 import type { DefineComponent, ExtractPublicPropTypes, MaybeRef, PropType, VNode } from 'vue'
-import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
+import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onBeforeUnmount, onMounted, provide, shallowReactive, shallowRef, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { NuxtLayouts, PageMeta } from '../../pages/runtime/composables'
@@ -8,7 +8,7 @@ import { resolveLayoutName } from '../composables/layout'
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
-import { _mergeTransitionProps, _wrapInTransition, isVaporSlot } from './utils'
+import { _finishTransition, _mergeTransitionProps, _startTransition, _wrapInTransition, isVaporSlot } from './utils'
 import { LayoutMetaSymbol, LayoutSymbol, PageRouteSymbol } from './injections'
 
 import { useRoute as useVueRouterRoute } from '#build/pages'
@@ -76,11 +76,17 @@ export default defineComponent({
     context.expose({ layoutRef })
 
     const done = nuxtApp.deferHydration()
-    if (import.meta.client && nuxtApp.isHydrating) {
-      const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
-      const removeGuard = useRouter().beforeEach(() => {
-        removeErrorHook()
-        removeGuard()
+    if (import.meta.client) {
+      if (nuxtApp.isHydrating) {
+        const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
+        const removeGuard = useRouter().beforeEach(() => {
+          removeErrorHook()
+          removeGuard()
+        })
+      }
+      onBeforeUnmount(() => {
+        // Ensure hydration completes if unmounted before Suspense resolves
+        done()
       })
     }
 
@@ -100,17 +106,10 @@ export default defineComponent({
         defaultLayoutTransition,
         {
           onBeforeLeave () {
-            // Create the transition promise when the leave animation starts.
-            // This overrides any page transition promise since the layout
-            // is the outermost transition wrapper.
-            nuxtApp['~transitionPromise'] = new Promise((resolve) => {
-              nuxtApp['~transitionFinish'] = resolve
-            })
+            _startTransition(nuxtApp)
           },
           onAfterLeave () {
-            nuxtApp['~transitionFinish']?.()
-            delete nuxtApp['~transitionFinish']
-            delete nuxtApp['~transitionPromise']
+            _finishTransition(nuxtApp)
           },
         },
       ])

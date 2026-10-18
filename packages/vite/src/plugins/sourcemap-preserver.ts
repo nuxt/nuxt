@@ -6,12 +6,15 @@ import escapeStringRegexp from 'escape-string-regexp'
 
 import type { Plugin as RollupPlugin } from 'rollup'
 import type { Plugin as VitePlugin } from 'vite'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] => {
   let outputDir: string
   const ids = new Set<string>()
 
-  if (!nuxt.options.sourcemap.server || nuxt.options.dev) {
+  // there is no second rollup pass to hand the emitted sourcemaps to when the server build
+  // is not a pass of its own
+  if (!nuxt.options.sourcemap.server || nuxt.options.dev || !useServerBuild(nuxt).buildsSeparately) {
     return []
   }
 
@@ -43,15 +46,11 @@ export const SourcemapPreserverPlugin = (nuxt: Nuxt): VitePlugin | VitePlugin[] 
     },
   }) satisfies RollupPlugin
 
-  // there is no second rollup pass to hand the emitted sourcemaps to when nitro
-  // runs as a vite environment
-  if (!nuxt.options.experimental.nitroViteEnvironment) {
-    nuxt.hook('nitro:build:before', (nitro) => {
-      nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {
-        plugins: [nitroPlugin()],
-      })
+  nuxt.hook('nitro:build:before', (nitro) => {
+    nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {
+      plugins: [nitroPlugin()],
     })
-  }
+  })
 
   return {
     name: 'nuxt:sourcemap-export',

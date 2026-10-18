@@ -6,6 +6,7 @@
     <p class="normal-copy">
       This is a normal page.
     </p>
+    <SharedChild />
   </main>
 </template>
 

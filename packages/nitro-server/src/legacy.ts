@@ -1,10 +1,11 @@
-import { existsSync, promises as fsp } from 'node:fs'
-import { join, resolve } from 'pathe'
+import { join } from 'pathe'
 import { build, copyPublicAssets, createDevServer, prepare, prerender } from 'nitro/builder'
 import type { Nitro } from 'nitro/types'
 import type { Nuxt } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
+
+import { linkStaticDist } from './utils.ts'
 
 export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro): void {
   const devMiddlewareHandler = dynamicEventHandler()
@@ -24,7 +25,7 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
     for (const builder of ['webpack', 'rspack'] as const) {
       nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
         if (name === 'server') {
-          nitro.options.virtual['nuxt/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
+          nitro.options.virtual['nuxt/internal/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
         }
       })
       nuxt.hook(`${builder}:compiled`, () => {
@@ -67,14 +68,14 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
       await prerender(nitro)
 
       logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
+      try {
+        await build(nitro)
+      } finally {
+        logger.wrapAll()
+      }
 
       if (nitro.options.static) {
-        const dist = resolve(nuxt.options.rootDir, 'dist')
-        if (!existsSync(dist)) {
-          await fsp.symlink(nitro.options.output.publicDir, dist, 'junction').catch(() => {})
-        }
+        await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
       }
     } finally {
       nuxt._perf?.endPhase('nitro:build')

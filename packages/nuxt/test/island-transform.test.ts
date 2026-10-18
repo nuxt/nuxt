@@ -73,7 +73,6 @@ describe('islandTransform - server and island components', () => {
               <script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
               const someData = 'some data'
@@ -101,7 +100,6 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
         "<script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
         withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
@@ -111,7 +109,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
         </script>
 
         <template>
-          <template v-for="thing in __vforBound(things)">
+          <template v-for="thing in things">
             <NuxtTeleportSsrSlot name="thing" :props="[__mergeProps(thing, {  })]"><slot name="thing" v-bind="thing" /></NuxtTeleportSsrSlot>
           </template>
         </template>
@@ -119,56 +117,9 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
       `)
     })
 
-    it('bounds the slot element v-for source, not only the :props array', async () => {
-      const result = await viteTransform(`<template>
-  <slot v-for="n in count" :key="n" name="loop" :n="n" />
-</template>
-<script setup lang="ts">
-defineProps<{ count: number }>()
-</script>
-`, 'hello.server.vue')
-      // both the `:props` array and the emitted `<slot v-for>` must be bounded
-      expect(result).toContain('__vforToArray(__vforBound(count))')
-      expect(result).toContain('v-for="n in __vforBound(count)"')
-    })
-
-    it('bounds a plain element v-for source with __vforBound', async () => {
-      const result = await viteTransform(`<template>
-  <div v-for="n in count" :key="n">{{ n }}</div>
-</template>
-<script setup lang="ts">
-defineProps<{ count: number }>()
-</script>
-`, 'hello.server.vue')
-      expect(result).toContain('v-for="n in __vforBound(count)"')
-      expect(result).not.toContain('v-for="n in count"')
-    })
-
-    it('bounds a plain v-for in a slotless island (no <slot>/nuxt-client)', async () => {
-      const result = await viteTransform(`<template>
-  <ul><li v-for="n in count" :key="n">{{ n }}</li></ul>
-</template>
-<script setup lang="ts">
-defineProps<{ count: number }>()
-</script>
-`, 'hello.server.vue')
-      expect(result).toContain('v-for="n in __vforBound(count)"')
-    })
-
-    it('bounds a plain v-for with destructured alias and preserves the of keyword', async () => {
-      const result = await viteTransform(`<template>
-  <div v-for="(item, index) of items" :key="index">{{ item }}</div>
-</template>
-<script setup lang="ts">
-defineProps<{ items: any[] }>()
-</script>
-`, 'hello.server.vue')
-      expect(result).toContain('v-for="(item, index) of __vforBound(items)"')
-    })
-
     it('injects helpers into a setup block when the SFC uses the Options API (#35876)', async () => {
       const result = await viteTransform(`<template>
-  <div v-for="item in items" :key="item">{{ item }}</div>
+  <div v-for="item in items" :key="item"><slot :item="item" /></div>
 </template>
 <script lang="ts">
 export default {
@@ -177,13 +128,12 @@ export default {
 </script>
 `, 'hello.server.vue')
       expect(result).toContain('<script setup lang="ts">')
-      expect(result).toContain('v-for="item in __vforBound(items)"')
-      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
+      expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
     })
 
     it('injects helpers once when the SFC has both <script> and <script setup>', async () => {
       const result = await viteTransform(`<template>
-  <div v-for="item in items" :key="item">{{ item }}</div>
+  <div v-for="item in items" :key="item"><slot :item="item" /></div>
 </template>
 <script lang="ts">
 export const foo = 'bar'
@@ -192,13 +142,13 @@ export const foo = 'bar'
 defineProps<{ items: any[] }>()
 </script>
 `, 'hello.server.vue')
-      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
+      expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
       expect(result).toContain(`<script setup lang="ts">\nimport { mergeProps as __mergeProps }`)
     })
 
     it('does not treat a non-setup script as a setup block', async () => {
       const result = await viteTransform(`<template>
-  <div v-for="item in items" :key="item">{{ item }}</div>
+  <div v-for="item in items" :key="item"><slot :item="item" /></div>
 </template>
 <script lang="ts" data-setup="true">
 export default {
@@ -207,13 +157,13 @@ export default {
 </script>
 `, 'hello.server.vue')
       expect(result).toContain('<script setup lang="ts">')
-      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
-      expect(result.indexOf('__vforBound')).toBeLessThan(result.indexOf('data-setup'))
+      expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
+      expect(result.indexOf('__mergeProps')).toBeLessThan(result.indexOf('data-setup'))
     })
 
     it('ignores script openers inside comments and string literals', async () => {
       const result = await viteTransform(`<template>
-  <div v-for="item in items" :key="item">{{ item }}</div>
+  <div v-for="item in items" :key="item"><slot :item="item" /></div>
 </template>
 <!-- <script setup> -->
 <script lang="ts">
@@ -224,8 +174,8 @@ export default {
 </script>
 `, 'hello.server.vue')
       expect(result).toContain('<script setup lang="ts">')
-      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
-      expect(result.indexOf('__vforBound')).toBeLessThan(result.indexOf('<!--'))
+      expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
+      expect(result.indexOf('__mergeProps')).toBeLessThan(result.indexOf('<!--'))
     })
 
     it('ignores an unclosed script opener in a line comment within <script setup> (#35893)', async () => {
@@ -236,23 +186,12 @@ const fields: any[] = []
 
 <template>
   <div>
-    <div v-for="f in fields">TEST</div>
+    <div v-for="f in fields"><slot /></div>
   </div>
 </template>
 `, 'hello.server.vue')
       expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
       expect(result.indexOf('__mergeProps')).toBeLessThan(result.indexOf('// <script>'))
-    })
-
-    it('bounds a v-for on a nuxt-client element', async () => {
-      const result = await viteTransform(`<template>
-  <HelloWorld v-for="n in count" :key="n" nuxt-client />
-</template>
-<script setup lang="ts">
-defineProps<{ count: number }>()
-</script>
-`, 'hello.server.vue', true)
-      expect(result).toContain('__vforBound(count)')
     })
 
     it('expect slot fallback transform to match inline snapshot', async () => {
@@ -280,7 +219,6 @@ defineProps<{ count: number }>()
               <script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
               const someData = 'some data'
@@ -347,7 +285,6 @@ defineProps<{ count: number }>()
             <script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
             export interface Props {
@@ -376,7 +313,6 @@ defineProps<{ count: number }>()
         "<script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
               const foo = true;
@@ -417,7 +353,6 @@ defineProps<{ count: number }>()
                 <script setup lang="ts">
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
@@ -452,7 +387,6 @@ defineProps<{ count: number }>()
                 <script setup lang="ts">
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
@@ -489,7 +423,6 @@ defineProps<{ count: number }>()
                 <script setup lang="ts">
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
@@ -514,7 +447,6 @@ defineProps<{ count: number }>()
           "<script setup>
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
@@ -563,7 +495,6 @@ defineProps<{ count: number }>()
           "<script setup>
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
@@ -610,7 +541,6 @@ defineProps<{ count: number }>()
                 <script setup lang="ts">
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'

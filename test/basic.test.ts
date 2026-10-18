@@ -1,21 +1,29 @@
 import { readFile, readdir } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import type { Route } from 'playwright-core'
 import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, setup, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
-import { asyncContext, isDev, isTestingAppManifest, isWebpack, runsOnceInMatrix } from './matrix'
+import { sessionConfig } from './fixtures/basic/server/utils/session'
+import { asyncContext, isDev, isTestingAppManifest, isWebpack, legacyErrorRendering, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
+
+const appSecret = 'nuxt-runtime-app-secret-test-value'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
   dev: isDev,
   server: true,
   browser: true,
+  env: {
+    NUXT_APP_SECRET: appSecret,
+  },
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     hooks: {
@@ -29,6 +37,33 @@ await setup({
       },
     },
   },
+})
+
+describe('application secret', () => {
+  it('provides the application secret only on the server', async () => {
+    expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret })
+    expect(await $fetch<string>('/')).not.toContain(appSecret)
+
+    const page = await createPage('/')
+    try {
+      const config = await page.evaluate(() => window.useNuxtApp!().$config)
+      expect(config).not.toHaveProperty('appSecret')
+      expect(JSON.stringify(config)).not.toContain(appSecret)
+    } finally {
+      await page.close()
+    }
+  })
+
+  it.skipIf(isDev || !runsOncePerBuilderInMatrix).each([
+    undefined, '', '123', 'true', 'null', '4848e0', '"quoted-secret"', '{"key":"secret"}',
+  ])('preserves the runtime environment secret %j', async (value) => {
+    try {
+      await startServer({ env: { NUXT_APP_SECRET: value, NITRO_APP_SECRET: undefined } })
+      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret: value ?? '' })
+    } finally {
+      await startServer()
+    }
+  })
 })
 
 describe.skipIf(!runsOnceInMatrix)('server api', () => {
@@ -54,6 +89,71 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     expect(await $fetch('/api/counter')).toEqual({ count: 3 })
   })
 
+  it('should serve a handler written against `nuxt/server`', async () => {
+    const response = await fetch('/api/portable', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'nuxt' }),
+      headers: { 'content-type': 'application/json', 'cookie': 'incoming=here' },
+    })
+
+    expect(response.status).toBe(201)
+    expect(response.headers.get('x-portable')).toBe('yes')
+    expect(response.headers.getSetCookie()).toEqual([
+      'portable=set; Path=/',
+      'stale=; Max-Age=0; Path=/',
+    ])
+    expect(await response.json()).toMatchObject({
+      name: 'nuxt',
+      path: '/api/portable',
+      incoming: 'here',
+      publicKey: 123,
+    })
+  })
+
+  it('should read the body from both `nuxt/server` and nitro in one request', async () => {
+    const response = await fetch('/api/portable-body', {
+      method: 'POST',
+      body: JSON.stringify({ name: 'nuxt' }),
+      headers: { 'content-type': 'application/json' },
+    })
+
+    expect(await response.json()).toMatchObject({
+      middleware: { cloned: 'nuxt', parsed: 'nuxt' },
+      handler: 'nuxt',
+    })
+  })
+
+  it('should read router params, a validated query, the client IP and the app config with `nuxt/server`', async () => {
+    const invalid = await fetch('/api/portable-extras/a')
+    expect(invalid.status).toBe(400)
+
+    const response = await fetch('/api/portable-extras/a%20b%2Fc?page=2', { headers: { 'x-forwarded-for': '203.0.113.1, 10.0.0.1' } })
+    expect(await response.json()).toMatchObject({
+      page: 2,
+      appConfig: true,
+      params: { id: 'a%20b%2Fc' },
+      decoded: 'a b%2Fc',
+      forwardedIP: '203.0.113.1',
+    })
+  })
+
+  it('should answer a CORS preflight with `nuxt/server`', async () => {
+    const response = await fetch('/api/portable-extras/a', {
+      method: 'OPTIONS',
+      headers: { 'origin': 'https://nuxt.com', 'access-control-request-method': 'PUT' },
+    })
+    expect(response.status).toBe(204)
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://nuxt.com')
+    expect(response.headers.get('access-control-allow-methods')).toBe('*')
+  })
+
+  it('should map an error created with `nuxt/server` to its status', async () => {
+    const response = await fetch('/api/portable?fail=yes', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
+
+    expect(response.status).toBe(418)
+    expect(await response.json()).toMatchObject({ status: 418, statusText: 'Teapot', data: { fail: 'yes' } })
+  })
+
   it('should auto-import', async () => {
     const res = await $fetch('/api/auto-imports')
     expect(res).toMatchInlineSnapshot(`
@@ -63,6 +163,53 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
         "thisIs": "serverAutoImported",
       }
     `)
+  })
+})
+
+describe.skipIf(!runsOnceInMatrix)('server sessions', () => {
+  const sessionCookie = (response: Response) => response.headers.getSetCookie().find(cookie => cookie.startsWith('nuxt-session='))?.split(';')[0]
+
+  it('should seal a new session into a cookie', async () => {
+    const response = await fetch('/api/session/read')
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({})
+    expect(sessionCookie(response)).toMatch(/^nuxt-session=Fe26\.2\*/)
+  })
+
+  it('should read updated data back from the cookie', async () => {
+    const updated = await fetch('/api/session/update?user=daniel')
+    const cookie = sessionCookie(updated)!
+    expect(cookie).toMatch(/^nuxt-session=Fe26\.2\*/)
+
+    const read = await fetch('/api/session/read', { headers: { cookie } })
+    expect(await read.json()).toEqual({ user: 'daniel' })
+  })
+
+  it('should empty the session when it is cleared', async () => {
+    const cookie = sessionCookie(await fetch('/api/session/update?user=daniel'))!
+    const cleared = await fetch('/api/session/clear', { headers: { cookie } })
+    expect(cleared.headers.getSetCookie().find(c => c.startsWith('nuxt-session='))).toMatch(/^nuxt-session=;.*Max-Age=0/)
+
+    const read = await fetch('/api/session/read', { headers: { cookie: sessionCookie(cleared)! } })
+    expect(await read.json()).toEqual({})
+  })
+
+  it('should start an empty session for a tampered cookie', async () => {
+    const cookie = sessionCookie(await fetch('/api/session/update?user=daniel'))!
+    const tampered = cookie.slice(0, -4) + (cookie.endsWith('AAAA') ? 'BBBB' : 'AAAA')
+
+    const read = await fetch('/api/session/read', { headers: { cookie: tampered } })
+    expect(read.status).toBe(200)
+    expect(await read.json()).toEqual({})
+  })
+
+  it('should start an empty session for a value sealed by h3 with the same password', async () => {
+    const { defaults, seal } = await import(pathToFileURL(createRequire(fileURLToPath(new URL('../packages/nuxt/package.json', import.meta.url))).resolve('iron-webcrypto')).href) as { defaults: object, seal: (value: unknown, password: string, options: object) => Promise<string> }
+    const sealed = await seal({ id: crypto.randomUUID(), createdAt: Date.now(), data: { role: 'admin' } }, sessionConfig.password as string, defaults)
+
+    const read = await fetch('/api/session/read', { headers: { cookie: `nuxt-session=${sealed}` } })
+    expect(read.status).toBe(200)
+    expect(await read.json()).toEqual({})
   })
 })
 
@@ -669,6 +816,11 @@ describe('pages', () => {
     expect(html).toContain('should be prerendered: true')
   })
 
+  it.skipIf(isDev)('substitutes the server compile-time constants in the prerenderer', async () => {
+    const html = await $fetch<string>('/prerender/import-meta-test')
+    expect(html).toContain('server test flag: true')
+  })
+
   it('renders pages with special characters in route', async () => {
     const html = await $fetch('/non-ascii/ç')
     // Verify page renders successfully with layout
@@ -776,6 +928,7 @@ describe('pages', () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/prerender/catchall/a/b/?test=true')
 
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+    await expect.poll(() => page.innerText('#catchall-async-data')).toBe('/prerender/catchall/a/b/')
 
     const states = await page.evaluate(() => (window as unknown as { __asyncDataStates: Array<{ path: string, status: string, hasData: boolean }> }).__asyncDataStates)
     expect(states.length).toBeGreaterThan(0)
@@ -783,9 +936,36 @@ describe('pages', () => {
       expect.soft(state).toMatchObject({ status: 'success', hasData: true })
     }
 
-    expect(await page.innerText('#catchall-async-data')).toBe('/prerender/catchall/a/b/')
     expect(pageErrors).toEqual([])
     expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
+
+    await page.close()
+  })
+
+  it.skipIf(isDev).each([
+    ['/prerender/set-page-layout'],
+    ['/prerender/set-page-layout?foo=bar'],
+  ])('hydrates the layout set by middleware on prerendered %s', async (path) => {
+    const page = await createPage()
+    await page.addInitScript(() => {
+      // capture the server-rendered nodes before the app hydrates
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState === 'interactive') {
+          Object.assign(window, {
+            __ssrNodes: [document.querySelector('.count'), document.querySelector('#set-page-layout')],
+          })
+        }
+      })
+    })
+
+    await page.goto(url(path))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    const reused = await page.evaluate(() => {
+      const [layout, page] = (window as unknown as { __ssrNodes: Element[] }).__ssrNodes
+      return [!!layout && layout === document.querySelector('.count'), !!page && page === document.querySelector('#set-page-layout')]
+    })
+    expect(reused).toEqual([true, true])
 
     await page.close()
   })
@@ -801,6 +981,22 @@ describe('pages', () => {
 })
 
 describe('nuxt composables', () => {
+  it('forwards request headers from `useFetch` to relative urls only', async () => {
+    const html = await $fetch<string>('/forwarded-headers', {
+      headers: {
+        cookie: 'session=alice',
+        authorization: 'Bearer alice-token',
+      },
+    })
+
+    const [forwarded, absolute] = [...html.matchAll(/<pre id="(?:forwarded|absolute)">([^<]*)<\/pre>/g)].map(m => JSON.parse(m[1]!.replaceAll('&quot;', '"')))
+
+    expect(forwarded).toMatchObject({ cookie: 'session=alice', authorization: 'Bearer alice-token' })
+    // `accept` is not replayed, so the subrequest is free to negotiate its own response type
+    expect(forwarded.accept).not.toBe('text/html')
+    expect(absolute).toMatchObject({ cookie: null, authorization: null })
+  })
+
   it('has useRequestURL()', async () => {
     const html = await $fetch<string>('/url')
     expect(html).toContain('path: /url')
@@ -820,6 +1016,23 @@ describe('nuxt composables', () => {
     const cookies = res.headers.get('set-cookie')
     expect(cookies).toMatchInlineSnapshot('"set-in-plugin=%22true%22; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
+  it('reads cookies written earlier in the same request on the server', async () => {
+    const res = await fetch('/cookies-read-after-write')
+    const html = await res.text()
+    expect(html).toContain('<div id="from-plugin">true</div>')
+    expect(html).toContain('<div id="written">written</div>')
+    expect(html).toContain('<div id="from-default">from-default</div>')
+    expect(html).toContain('<div id="deleted">empty</div>')
+    expect(html).toContain('<div id="after-readonly">empty</div>')
+    expect(html).toContain('<div id="from-h3">h3-value</div>')
+    expect(html).toContain('<div id="h3-then-deleted">empty</div>')
+
+    const setCookies = res.headers.getSetCookie()
+    expect(setCookies.filter(c => c.startsWith('set-via-h3-then-deleted='))).toEqual([
+      expect.stringContaining('set-via-h3-then-deleted=; Max-Age=0'),
+    ])
+  })
+
   it('does not write a readonly cookie with a default value, on server or client', async () => {
     const res = await fetch('/cookies')
     expect(res.headers.get('set-cookie')).not.toContain('readonly-with-default')
@@ -1008,6 +1221,53 @@ describe('nuxt links', () => {
     const warnings = consoleLogs.filter(c => c.text.includes('No match found for location'))
     expect(warnings).toMatchInlineSnapshot(`[]`)
     await page.close()
+  })
+
+  it('renders internal anchors identically to `<RouterLink>`', async () => {
+    const html = await $fetch<string>('/parent/link-state')
+
+    const attributes = (html: string, attribute: string) => {
+      const anchors: Record<string, string[]> = {}
+      for (const [anchor] of html.matchAll(/<a [^>]*>/g)) {
+        const name = anchor.match(new RegExp(`${attribute}="([^"]*)"`))?.[1]
+        if (name) {
+          anchors[name] = anchor.slice(3, -1).trim().split(/\s+(?=[\w-]+=)/).filter(a => !a.startsWith(attribute)).sort()
+        }
+      }
+      return anchors
+    }
+
+    const nuxtLinks = attributes(html, 'data-nuxt-link')
+    const routerLinks = attributes(html, 'data-router-link')
+
+    expect(Object.keys(nuxtLinks).sort()).toEqual(['active', 'exact', 'inactive', 'query'])
+    for (const name in nuxtLinks) {
+      expect(nuxtLinks[name], name).toEqual(routerLinks[name])
+    }
+    expect(nuxtLinks).toMatchInlineSnapshot(`
+      {
+        "active": [
+          "class="foo-active-class"",
+          "href="/parent"",
+        ],
+        "exact": [
+          "aria-current="page"",
+          "class="foo-active-class bar-exact-active-class"",
+          "href="/parent/link-state"",
+        ],
+        "inactive": [
+          "class=""",
+          "href="/nuxt-link/trailing-slash"",
+        ],
+        "query": [
+          "aria-current="page"",
+          "class="foo-active-class bar-exact-active-class"",
+          "href="/parent/link-state?a=1"",
+        ],
+      }
+    `)
+
+    await expectNoClientErrors('/parent/link-state')
   })
 
   it('preserves route state', async () => {
@@ -1241,7 +1501,29 @@ describe('preserves current instance', () => {
 })
 
 describe('errors', () => {
-  it('should render a JSON error page', async () => {
+  it.skipIf(legacyErrorRendering)('should render the error page for a request that accepts JSON', async () => {
+    const res = await fetch('/error', {
+      headers: {
+        accept: 'application/json',
+      },
+    })
+    expect(res.status).toBe(422)
+    expect(res.statusText).toBe('This is a custom error')
+    expect(res.headers.get('content-type')).toContain('text/html')
+    expect(await res.text()).toContain('This is a custom error')
+  })
+
+  it('should return JSON for a server route error, unless error rendering is legacy', async () => {
+    const res = await fetch('/api/error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.status).toBe(400)
+    expect(res.headers.get('content-type')).toContain(legacyErrorRendering ? 'text/html' : 'application/json')
+  })
+
+  it.skipIf(!legacyErrorRendering)('should render a JSON error page', async () => {
     const res = await fetch('/error', {
       headers: {
         accept: 'application/json',
@@ -1267,12 +1549,13 @@ describe('errors', () => {
     })
     expect(res.status).toBe(404)
     expect(res.statusText).toBe('This page does not exist')
-    const error = await res.json()
-    expect(error).toMatchObject({
-      status: 404,
-      statusText: 'This page does not exist',
-      data: { reason: 'missing' },
-    })
+    if (legacyErrorRendering) {
+      expect(await res.json()).toMatchObject({
+        status: 404,
+        statusText: 'This page does not exist',
+        data: { reason: 'missing' },
+      })
+    }
 
     const html = await fetch('/error/not-found').then(r => r.text())
     expect(html).toContain('This page does not exist')
@@ -1321,6 +1604,14 @@ describe('errors', () => {
     expect(await res.text()).toContain('This is a custom error')
   })
 
+  it('should only send the cookies of the current request with a reused error', async () => {
+    for (const who of ['alice', 'bob']) {
+      const res = await fetch(`/error/shared?who=${who}`, { headers: { accept: 'text/html' } })
+      expect(res.status).toBe(418)
+      expect(res.headers.getSetCookie().filter(cookie => cookie.startsWith('shared-error-who='))).toEqual([`shared-error-who=${who}; Path=/`])
+    }
+  })
+
   it('should expose error causes only to development error pages', async () => {
     const htmlResponse = await fetch('/error-cause', {
       headers: { accept: 'text/html' },
@@ -1338,16 +1629,17 @@ describe('errors', () => {
       expect(html).not.toContain('root cause')
     }
 
-    const jsonResponse = await fetch('/error-cause', {
-      headers: { accept: 'application/json' },
-    })
-    const json = await jsonResponse.json()
-    expect(json).not.toHaveProperty('cause')
-    expect(JSON.stringify(json)).not.toContain('inner error')
-    expect(JSON.stringify(json)).not.toContain('root cause')
+    if (legacyErrorRendering) {
+      const json = await fetch('/error-cause', {
+        headers: { accept: 'application/json' },
+      }).then(r => r.json())
+      expect(json).not.toHaveProperty('cause')
+      expect(JSON.stringify(json)).not.toContain('inner error')
+      expect(JSON.stringify(json)).not.toContain('root cause')
+    }
   })
 
-  it('should not allow accessing error route directly', async () => {
+  it.skipIf(!legacyErrorRendering)('should not allow accessing error route directly', async () => {
     const res = await fetch('/__nuxt_error', {
       headers: {
         accept: 'application/json',
@@ -1363,6 +1655,18 @@ describe('errors', () => {
       statusText: 'Page Not Found: /__nuxt_error',
     })
     expect(error).not.toHaveProperty('url')
+  })
+
+  it('should render the app error page when accessing error route directly', async () => {
+    const res = await fetch('/__nuxt_error', {
+      headers: {
+        accept: 'text/html',
+      },
+    })
+    expect(res.status).toBe(404)
+    const html = await res.text()
+    expect(html).toContain('This is the error page 😱')
+    expect(html).toContain('Page Not Found: /__nuxt_error')
   })
 
   it('should not recursively throw an error when there is an error rendering the error page', async () => {
@@ -1460,6 +1764,11 @@ describe('composables', () => {
     expect(pageErrors).toEqual([])
     await page.close()
   })
+  it.each(['/use-id-server-prefetch', '/use-id-preload-payload'])('`useId` should work with server prefetch hooks (%s)', async (path) => {
+    const html = await $fetch<string>(path)
+    expect(html).toContain('<div>v-0-0-0</div>')
+    await expectNoClientErrors(path)
+  })
 })
 
 describe('middlewares', () => {
@@ -1492,7 +1801,7 @@ describe('middlewares', () => {
     const html = await $fetch<string>('/middleware-abort')
     expect(html).not.toContain('This is the error page')
     const { page } = await renderPage('/middleware-abort')
-    expect(await page.innerHTML('body')).toContain('This is the error page')
+    await page.waitForFunction(() => document.body.innerHTML.includes('This is the error page'))
     await page.close()
   })
 
@@ -1653,6 +1962,14 @@ describe('server tree shaking', () => {
   })
 })
 
+describe('dependencies of code in node_modules', () => {
+  // https://github.com/nuxt/nuxt/issues/22077
+  it('resolves them from the importing package rather than the project', async () => {
+    const html = await $fetch<string>('/foo')
+    expect(html).toContain('Plugin | nested dependency: nested dependency of foo')
+  })
+})
+
 describe.skipIf(!runsOnceInMatrix)('extends support', () => {
   it('renders layer layout, page, component, middleware, composable and plugin together', async () => {
     const html = await $fetch<string>('/foo')
@@ -1700,7 +2017,7 @@ describe('layout change not load page twice', () => {
     '/internal-layout/with-layout': '/internal-layout/with-layout2',
   }
 
-  it.each(Object.entries(cases))('should not cause run of page setup to repeat if layout changed', async (path1, path2) => {
+  it.each(Object.entries(cases))('should not cause run of page setup to repeat if layout changed (%s)', async (path1, path2) => {
     const { page, consoleLogs } = await renderPage(path1)
     await page.click(`[href="${path2}"]`)
     await page.waitForSelector('#with-layout2')
@@ -1748,6 +2065,14 @@ describe.runIf(isDev && !isWebpack)('css links', () => {
     const links = html.match(/<link[^>]+global\.css[^>]*>/g) || []
     expect(links).toHaveLength(1)
   })
+
+  it('should link null-byte virtual css through `/@id/`', async () => {
+    const html = await $fetch<string>('/')
+    expect(html).not.toContain('\0')
+    const links = [...html.matchAll(/<link[^>]+href="([^"]*virtual-nul\.css)"[^>]*>/g)].map(m => m[1])
+    expect(links).toEqual(['/_nuxt/@id/__x00__/virtual-nul.css'])
+    expect(await $fetch<string>(links[0]!, { headers: { accept: 'text/css' } })).toMatch(/--virtual-nul:\s*red/)
+  })
 })
 
 describe.skipIf(isDev)('module identifiers', () => {
@@ -1780,6 +2105,8 @@ describe.skipIf(isDev)('inlining component styles', () => {
     ...nonGlobalCSS,
     '{--server-only-child:"server-only-child"}', // child of a server-only component
     '{--server-only:"server-only"}', // server-only component not in client build
+    // webpack recovers a server-only component's styles from its SFC blocks alone
+    ...isWebpack ? [] : ['{--server-only-imported:"server-only-imported"}'], // CSS imported by a server-only component
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
     // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
@@ -1912,7 +2239,7 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should forward destination preload tags as prefetch hints on link prefetch', async () => {
+  it.skipIf(!isTestingAppManifest)('should preserve image preloads and downgrade other preload hints on link prefetch', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
@@ -1920,32 +2247,196 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     // prefetching should trigger loading its payload, which includes the
     // forwarded preload links registered via `useHead` on that page.
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => document.head.querySelector('link[rel="preload"][as="image"][href$="/public.svg"]')
+        && document.head.querySelector('link[rel="prefetch"][as="fetch"][href$="/prefetch-resource.txt"]'),
     )
 
-    // Confirm the rel was downgraded from preload to prefetch.
-    const preloadCount = await page.evaluate(
-      () => document.head.querySelectorAll('link[rel="preload"][href$="/public.svg"]').length,
-    )
-    expect(preloadCount).toBe(0)
+    const hints = await page.evaluate(() => Array.from(document.head.querySelectorAll('link'))
+      .filter(link => link.href.endsWith('/public.svg') || link.href.endsWith('/prefetch-resource.txt'))
+      .map(link => ({
+        as: link.as,
+        fetchpriority: link.getAttribute('fetchpriority'),
+        href: new URL(link.href).pathname,
+        rel: link.rel,
+      })))
+    expect(hints).toContainEqual({
+      as: 'image',
+      fetchpriority: null,
+      href: '/public.svg',
+      rel: 'preload',
+    })
+    expect(hints).toContainEqual({
+      as: 'fetch',
+      fetchpriority: null,
+      href: '/prefetch-resource.txt',
+      rel: 'prefetch',
+    })
 
     await page.close()
   })
 
-  it.skipIf(!isTestingAppManifest)('should evict forwarded prefetch hints for routes that are never visited', async () => {
+  it.skipIf(!isTestingAppManifest)('should not forward hints for resources that could be arbitrarily large', async () => {
     const { page } = await renderPage()
 
     await gotoPath(page, '/prefetch')
     await page.waitForFunction(
-      () => Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href$="/never-forwarded.mp4"]').length,
+    )).toBe(0)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should forward a limited number of hints per prefetched route', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => document.head.querySelector('link[href*="/hint-"]'),
+    )
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.evaluate(
+      () => document.head.querySelectorAll('link[href*="/hint-"]').length,
+    )).toBe(2)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should throttle forwarded hints and prioritise recently prefetched routes', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    for (let route = 1; route <= 4; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+      await page.waitForFunction(
+        route => document.head.querySelector(`link[href$="/hint-b.svg?route=${route}"]`),
+        route,
+      )
+    }
+
+    await expect.poll(() => pendingRequests.length).toBe(8)
+
+    let releaseLatestPayload!: () => void
+    const latestPayloadHeld = new Promise<void>((resolve) => { releaseLatestPayload = resolve })
+    await page.route(/\/prefetch\/hints\/6\/_payload\.json/, async (route) => {
+      await latestPayloadHeld
+      await route.continue()
+    })
+    const earlierPayload = page.waitForResponse(response => response.url().includes('/prefetch/hints/5/_payload.json'))
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/5'))
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/6'))
+    await earlierPayload
+    await new Promise(resolve => setTimeout(resolve, 100))
+    const latestPayload = page.waitForResponse(response => response.url().includes('/prefetch/hints/6/_payload.json'))
+    releaseLatestPayload()
+    await latestPayload
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect(pendingRequests).toHaveLength(8)
+    expect(await page.locator('link[href*="?route=5"], link[href*="?route=6"]').count()).toBe(0)
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(8)
+    expect(pendingRequests.at(-1)!.request().url()).toMatch(/\/hint-a\.svg\?route=6$/)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should free hint slots when navigating to a route whose hints are in flight', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/1'))
+    await expect.poll(() => pendingRequests.length).toBe(2)
+
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/prefetch/hints/1'))
+    await page.waitForFunction(() => window.useNuxtApp!()._route.path === '/prefetch/hints/1')
+
+    for (let route = 2; route <= 5; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+    }
+
+    await expect.poll(() => pendingRequests.length).toBe(10)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should promote queued prefetch work for a link the user interacts with', async () => {
+    const { page, requests } = await renderPage('/prefetch/ladder')
+    const pendingRequests: Route[] = []
+    await page.route(/\/hint-[ab]\.svg\?route=/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    for (let route = 1; route <= 4; route++) {
+      await page.evaluate(route => window.useNuxtApp!().hooks.callHook('link:prefetch', `/prefetch/hints/${route}`), route)
+    }
+    await expect.poll(() => pendingRequests.length).toBe(8)
+
+    const payloadRequested = (route: number) => requests.some(req => req.startsWith(`/prefetch/hints/${route}/_payload.json`))
+
+    const payloadReceived = (route: number) => page.waitForResponse(response => response.url().includes(`/prefetch/hints/${route}/_payload.json`))
+
+    const hoveredPayload = payloadReceived(5)
+    await page.hover('#ladder-link')
+    await expect.poll(() => payloadRequested(5)).toBe(true)
+
+    const latestPayload = payloadReceived(6)
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/hints/6'))
+    await expect.poll(() => payloadRequested(6)).toBe(true)
+    await Promise.all([hoveredPayload, latestPayload])
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    await page.dispatchEvent('#ladder-link', 'pointerdown')
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(8)
+    expect(pendingRequests.at(-1)!.request().url()).toMatch(/\/hint-a\.svg\?route=5$/)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should bound concurrent island requests when prefetching an island-heavy payload', async () => {
+    const { page } = await renderPage('/prefetch/components')
+    const pendingRequests: Route[] = []
+    await page.route(/\/__nuxt_island\/AsyncServerComponent/, (route) => {
+      pendingRequests.push(route)
+    })
+
+    await page.evaluate(() => window.useNuxtApp!().hooks.callHook('link:prefetch', '/prefetch/many-islands'))
+
+    await expect.poll(() => pendingRequests.length).toBe(4)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    expect(pendingRequests).toHaveLength(4)
+
+    await pendingRequests.shift()!.continue()
+    await expect.poll(() => pendingRequests.length).toBe(4)
+
+    await page.close()
+  })
+
+  it.skipIf(!isTestingAppManifest)('should evict forwarded resource hints for routes that are never visited', async () => {
+    const { page } = await renderPage()
+
+    await gotoPath(page, '/prefetch')
+    await page.waitForFunction(
+      () => Array.from(document.head.querySelectorAll('link'))
         .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
     )
 
     await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
     await page.waitForFunction(
-      () => !Array.from(document.head.querySelectorAll('link[rel="prefetch"]'))
-        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg')),
+      () => !Array.from(document.head.querySelectorAll('link'))
+        .some(l => (l as HTMLLinkElement).href.endsWith('/public.svg') || (l as HTMLLinkElement).href.endsWith('/prefetch-resource.txt')),
     )
 
     await page.close()
@@ -2001,6 +2492,21 @@ describe.skipIf(!runsOnceInMatrix)('public directories', () => {
 
     const greek = await $fetch<string>('/Ελληνικά.html')
     expect(greek).toContain('Ελληνικά')
+  })
+})
+
+// runs in dev as well as built, as nitro serves `publicAssets` via separate code paths in each
+describe.skipIf(!runsOncePerEnvInMatrix)('nitro publicAssets dirs', () => {
+  it('should serve assets from a relative `nitro.publicAssets` dir', async () => {
+    const res = await fetch('/custom/file.svg')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('image/svg')
+  })
+
+  it('should serve assets from an aliased `nitro.publicAssets` dir', async () => {
+    const res = await fetch('/aliased/file.svg')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('image/svg')
   })
 })
 
@@ -2296,7 +2802,7 @@ describe('experimental', () => {
 describe('import components', () => {
   let html = ''
 
-  it('fetch import-components page', { sequential: true }, async () => {
+  it('fetch import-components page', { concurrent: false }, async () => {
     html = await $fetch<string>('/import-components')
   })
 
@@ -2320,7 +2826,7 @@ describe('import components', () => {
 describe('lazy import components', () => {
   let html = ''
 
-  it('fetch lazy-import-components page', { sequential: true }, async () => {
+  it('fetch lazy-import-components page', { concurrent: false }, async () => {
     html = await $fetch<string>('/lazy-import-components')
   })
 

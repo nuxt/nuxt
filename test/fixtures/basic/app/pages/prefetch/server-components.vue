@@ -1,7 +1,8 @@
 <script setup lang="ts">
 useHead({
   link: [
-    { rel: 'preload', as: 'image', href: '/public.svg' },
+    { rel: 'preload', as: 'image', href: '/public.svg', fetchpriority: 'high' },
+    { rel: 'preload', as: 'fetch', href: '/prefetch-resource.txt' },
   ],
 })
 </script>
