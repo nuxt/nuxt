@@ -1367,6 +1367,11 @@ async function resolveTypescriptPaths (nuxt: Nuxt, options?: ResolveTypePathsOpt
     }
   }
 
+  // a single module identity keeps `nuxt/schema` and `@nuxt/schema` augmentations merged
+  if (paths['@nuxt/schema']) {
+    paths['nuxt/schema'] = paths['@nuxt/schema']
+  }
+
   return paths
 }
 

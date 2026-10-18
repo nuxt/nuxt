@@ -241,7 +241,7 @@ export const schemaTemplate: NuxtTemplate = {
     }
 
     return [
-      `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'`,
+      `import { RuntimeConfig as UserRuntimeConfig } from 'nuxt/schema'`,
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
           interfaceName: 'SharedRuntimeConfig',
@@ -258,14 +258,12 @@ export const schemaTemplate: NuxtTemplate = {
           allowExtraKeys: false,
           indentation: 2,
         }),
-      `declare module '@nuxt/schema' {`,
-      `  interface RuntimeConfig extends UserRuntimeConfig {}`,
-      `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}`,
-      `}`,
-      `declare module 'nuxt/schema' {`,
-      `  interface RuntimeConfig extends SharedRuntimeConfig {}`,
-      `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}`,
-      '}',
+      ...['nuxt/schema', '@nuxt/schema'].flatMap(module => [
+        `declare module '${module}' {`,
+        `  interface RuntimeConfig extends SharedRuntimeConfig {}`,
+        `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}`,
+        '}',
+      ]),
       `declare module 'vue' {
         interface ComponentCustomProperties {
           $config: UserRuntimeConfig
