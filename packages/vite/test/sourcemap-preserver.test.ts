@@ -18,6 +18,21 @@ describe('SourcemapPreserverPlugin', () => {
     await Promise.all(temporaryDirectories.splice(0).map(dir => rm(dir, { recursive: true, force: true })))
   })
 
+  it('does not emit sourcemaps when the server build is not a separate pass', () => {
+    const hook = vi.fn()
+    const nuxt = {
+      options: {
+        dev: false,
+        sourcemap: { server: true },
+        experimental: { nitroViteEnvironment: true },
+      },
+      hook,
+    } as unknown as Nuxt
+
+    expect(SourcemapPreserverPlugin(nuxt)).toEqual([])
+    expect(hook).not.toHaveBeenCalled()
+  })
+
   it('passes Vite server sourcemaps to the Nitro build', async () => {
     let nitroBuildBefore: ((nitro: NitroMock) => void) | undefined
     const nuxt = {

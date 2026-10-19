@@ -95,7 +95,12 @@ export const RenderPlugin = () => {
         }
 
         // Minify HTML
-        html = await htmlnano.process(html, { collapseWhitespace: 'aggressive' }).then(r => r.html)
+        html = await htmlnano.process(html, {
+          collapseWhitespace: 'aggressive',
+          removeAttributeQuotes: false,
+          removeOptionalTags: false,
+          normalizeDoctype: false,
+        }).then(r => r.html)
 
         if (!isCompleteHTML) {
           html = html.replace('<html><head></head><body>', '')

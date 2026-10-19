@@ -102,15 +102,48 @@ describe('tsConfig generation', () => {
         "../modules/*/runtime/server/**/*",
         "../layers/*/server/**/*",
         "../layers/*/modules/*/runtime/server/**/*",
-        "../modules/*.*",
+        "../modules/*.mjs",
+        "../modules/*.js",
+        "../modules/*.cjs",
+        "../modules/*.mts",
+        "../modules/*.ts",
+        "../modules/*.cts",
+        "../modules/*.tsx",
+        "../modules/*.jsx",
         "../nuxt.config.*",
         "../.config/nuxt.*",
         "../layers/*/nuxt.config.*",
         "../layers/*/.config/nuxt.*",
-        "../layers/*/modules/*.*",
-        "../layers/*/modules/*/*.*",
+        "../layers/*/modules/*.mjs",
+        "../layers/*/modules/*.js",
+        "../layers/*/modules/*.cjs",
+        "../layers/*/modules/*.mts",
+        "../layers/*/modules/*.ts",
+        "../layers/*/modules/*.cts",
+        "../layers/*/modules/*.tsx",
+        "../layers/*/modules/*.jsx",
+        "../layers/*/modules/*/*.mjs",
+        "../layers/*/modules/*/*.js",
+        "../layers/*/modules/*/*.cjs",
+        "../layers/*/modules/*/*.mts",
+        "../layers/*/modules/*/*.ts",
+        "../layers/*/modules/*/*.cts",
+        "../layers/*/modules/*/*.tsx",
+        "../layers/*/modules/*/*.jsx",
       ]
     `)
+  })
+
+  it('should not exclude module directories with a dot in their name', async () => {
+    const { tsConfig, nodeTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      _installedModules: [{ meta: { name: 'dotted-module', rawPath: '/my-app/modules/1.dotted/index.ts' }, entryPath: '/my-app/modules/1.dotted/index.ts', timings: {} }],
+    }))
+
+    expect(tsConfig.include).toContain('../modules/1.dotted/runtime')
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringMatching(/\*\.\*$/)]))
+    expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../modules/*.ts', '../modules/1.dotted/*.ts']))
+    expect(nodeTsConfig.include).toEqual(expect.arrayContaining(['../modules/*.ts', '../modules/1.dotted/*.ts']))
+    expect(nodeTsConfig.include).not.toEqual(expect.arrayContaining([expect.stringMatching(/\*\.\*$/)]))
   })
 
   it('should not exclude layer module runtime files from app tsconfig', async () => {
@@ -221,6 +254,23 @@ describe('tsConfig generation', () => {
       expect(config.exclude).not.toContain('my-global-exclude')
       expect(config).not.toHaveProperty('vueCompilerOptions')
     }
+  })
+
+  it('should keep the generated declaration first in `include`', async () => {
+    const { tsConfig, nodeTsConfig, sharedTsConfig, serverTsConfig, legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: { include: ['../global/**/*.ts'] },
+        appTsConfig: { include: ['../test/**/*.ts'] },
+        nodeTsConfig: { include: ['../node/**/*.ts'] },
+        sharedTsConfig: { include: ['../shared-extra/**/*.ts'] },
+        serverTsConfig: { include: ['../server-extra/**/*.ts'] },
+      },
+    }))
+    expect(tsConfig.include?.slice(0, 3)).toEqual(['./nuxt.d.ts', '../test/**/*.ts', '../global/**/*.ts'])
+    expect(legacyTsConfig.include?.[0]).toBe('./nuxt.d.ts')
+    expect(nodeTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.node.d.ts', '../node/**/*.ts'])
+    expect(sharedTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.shared.d.ts', '../shared-extra/**/*.ts'])
+    expect(serverTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.server.d.ts', '../server-extra/**/*.ts'])
   })
 
   it('should propagate appTsConfig excludes to legacy tsconfig', async () => {
@@ -396,13 +446,34 @@ describe('resolveLayerPaths', async () => {
           "../layers/*/*.d.ts",
         ],
         "node": [
-          "../custom-modules/*.*",
+          "../custom-modules/*.mjs",
+          "../custom-modules/*.js",
+          "../custom-modules/*.cjs",
+          "../custom-modules/*.mts",
+          "../custom-modules/*.ts",
+          "../custom-modules/*.cts",
+          "../custom-modules/*.tsx",
+          "../custom-modules/*.jsx",
           "../nuxt.config.*",
           "../.config/nuxt.*",
           "../layers/*/nuxt.config.*",
           "../layers/*/.config/nuxt.*",
-          "../layers/*/modules/*.*",
-          "../layers/*/modules/*/*.*",
+          "../layers/*/modules/*.mjs",
+          "../layers/*/modules/*.js",
+          "../layers/*/modules/*.cjs",
+          "../layers/*/modules/*.mts",
+          "../layers/*/modules/*.ts",
+          "../layers/*/modules/*.cts",
+          "../layers/*/modules/*.tsx",
+          "../layers/*/modules/*.jsx",
+          "../layers/*/modules/*/*.mjs",
+          "../layers/*/modules/*/*.js",
+          "../layers/*/modules/*/*.cjs",
+          "../layers/*/modules/*/*.mts",
+          "../layers/*/modules/*/*.ts",
+          "../layers/*/modules/*/*.cts",
+          "../layers/*/modules/*/*.tsx",
+          "../layers/*/modules/*/*.jsx",
         ],
         "nuxt": [
           "../app/**/*",

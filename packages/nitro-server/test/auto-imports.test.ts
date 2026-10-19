@@ -1,9 +1,10 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
-import { createServerAutoImports } from '../src/auto-imports.ts'
+import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from '../src/auto-imports.ts'
+import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
 
 const TYPE_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.mts', '.js', '.mjs']
@@ -18,6 +19,29 @@ function mockNuxt (): Nuxt {
       _layers: [],
     },
   } as unknown as Nuxt
+}
+
+function createNestedUtilsFixture (): Nuxt {
+  const rootDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-nested-'))
+  const layerDir = join(rootDir, 'layer')
+  const files: Record<string, string> = {
+    'server/utils/top.ts': 'export const useTopLevelUtil = () => {}',
+    'server/utils/admin/oauth.ts': 'export const requireAdminSession = () => {}\nexport interface AdminSession {}',
+    'layer/server/utils/deeply/nested/util.ts': 'export const useLayerNestedUtil = () => {}',
+    'server/types/nested/type.ts': 'export interface NestedServerType {}',
+    'shared/utils/nested/util.ts': 'export const useNestedSharedUtil = () => {}',
+    'shared/types/nested/type.ts': 'export interface NestedSharedType {}',
+  }
+  for (const [path, contents] of Object.entries(files)) {
+    mkdirSync(dirname(join(rootDir, path)), { recursive: true })
+    writeFileSync(join(rootDir, path), contents + '\n')
+  }
+  const nuxt = mockNuxt()
+  nuxt.options.rootDir = rootDir
+  nuxt.options.srcDir = rootDir
+  nuxt.options.imports = {} as Nuxt['options']['imports']
+  nuxt.options._layers = [{ cwd: rootDir, config: { rootDir } }, { cwd: layerDir, config: { rootDir: layerDir } }] as unknown as Nuxt['options']['_layers']
+  return nuxt
 }
 
 describe('createServerAutoImports', () => {
@@ -160,6 +184,64 @@ describe('createServerAutoImports', () => {
 
     const imports = await autoImports.getImports()
     expect(imports.filter(i => i.name === 'useMyServerUtil').map(i => i.from)).toEqual([join(rootDir, 'server/utils/useMyServerUtil.ts')])
+  })
+
+  it('only auto-imports server utils directly in `server/utils/` by default', async () => {
+    const nuxt = createNestedUtilsFixture()
+
+    const autoImports = createServerAutoImports(
+      nuxt,
+      { autoImport: true, dirs: resolveServerImportDirs(nuxt) },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+    )
+
+    const imports = await autoImports.getImports()
+    expect(imports.map(i => i.name)).toEqual(['useTopLevelUtil'])
+  })
+
+  it('auto-imports server utils nested in subdirectories of each layer with `nestedUtils`', async () => {
+    const nuxt = createNestedUtilsFixture()
+
+    const autoImports = createServerAutoImports(
+      nuxt,
+      { autoImport: true, dirs: resolveServerImportDirs(nuxt, { nestedUtils: true }) },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+    )
+
+    const imports = await autoImports.getImports()
+    expect(imports.map(i => i.name).sort()).toEqual(['AdminSession', 'requireAdminSession', 'useLayerNestedUtil', 'useTopLevelUtil'])
+
+    await autoImports.writeTypes()
+    const declarations = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    expect(declarations).toContain('const requireAdminSession: typeof import(')
+    expect(declarations).toContain('const useLayerNestedUtil: typeof import(')
+  })
+
+  it('warns once when a nested server util is used without an import', async () => {
+    const nuxt = createNestedUtilsFixture()
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9006').mockImplementation(() => ({}) as any)
+
+    const autoImports = createServerAutoImports(
+      nuxt,
+      { autoImport: true, dirs: resolveServerImportDirs(nuxt) },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+      { nestedUtilsDirs: resolveNestedServerUtilsDirs(nuxt) },
+    )
+
+    const handler = join(nuxt.options.rootDir, 'server/api/admin.ts')
+    const code = 'export default (): AdminSession => [requireAdminSession(), useTopLevelUtil()]'
+    await autoImports.injectImports(code, handler)
+    await autoImports.injectImports(code, handler)
+    await autoImports.injectImports(`import { requireAdminSession } from '../utils/admin/oauth'\n${code}`, join(nuxt.options.rootDir, 'server/api/imported.ts'))
+    await autoImports.injectImports('export default (useLayerNestedUtil: () => void) => useLayerNestedUtil()', join(nuxt.options.rootDir, 'server/api/shadowed.ts'))
+
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report).toHaveBeenCalledWith({
+      file: 'server/api/admin.ts',
+      count: 1,
+      names: '`requireAdminSession` (from `server/utils/admin/oauth.ts`)',
+    })
+    report.mockRestore()
   })
 
   it('resolves `#imports` to a path inside the types directory', () => {

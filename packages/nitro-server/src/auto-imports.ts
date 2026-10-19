@@ -4,6 +4,7 @@ import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { Import, InjectImportsOptions, Unimport } from 'unimport'
 import type { Nuxt, ServerImportsOptions } from '@nuxt/schema'
+import { nitroBuildDiagnostics } from './diagnostics.ts'
 
 export interface ServerAutoImports {
   /** Inject auto-imports into a server module, or `undefined` when auto-imports are disabled. */
@@ -20,8 +21,13 @@ export interface ServerAutoImports {
   enabled: boolean
 }
 
+export interface ServerAutoImportsContext {
+  /** Directories whose exports are not auto-imported, but are reported when used without an import. */
+  nestedUtilsDirs?: string[]
+}
+
 /** Creates and applies the auto-imports available to the modules the server builder bundles. */
-export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptions, typesDir: string): ServerAutoImports {
+export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptions, typesDir: string, context: ServerAutoImportsContext = {}): ServerAutoImports {
   const enabled = options.autoImport !== false
   const importsModulePath = join(typesDir, 'types/server-imports')
   // substitutions are resolved relative to the generated file itself, not to `typesDir`
@@ -37,6 +43,11 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
 
   const isIgnored = createIsIgnored(nuxt)
   const scanDirs = options.dirs ?? []
+  const nestedUtilsDirs = enabled ? context.nestedUtilsDirs ?? [] : []
+  const nestedUtilsCtx = nestedUtilsDirs.length > 0
+    ? createUnimport({ parser: 'oxc', presets: [], imports: [], addons: { addons: [] } })
+    : undefined
+  const reportedNestedUtils = new Set<string>()
 
   // the project comes first in `_layers`, so it gets the highest priority; the floor of 1 is
   // unimport's default, so a scanned util still takes precedence over a preset of the same name
@@ -54,6 +65,12 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   }
 
   async function scan () {
+    if (nestedUtilsCtx) {
+      await nestedUtilsCtx.modifyDynamicImports(async () => {
+        const scanned = await scanDirExports(nestedUtilsDirs, { fileFilter: file => !isIgnored(file) })
+        return scanned.filter(i => !i.type)
+      })
+    }
     if (scanDirs.length === 0) { return }
     await ctx.modifyDynamicImports(async (imports) => {
       const scanned = await scanDirExports(scanDirs, {
@@ -65,6 +82,17 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       imports.push(...scanned)
       return imports
     })
+  }
+
+  async function reportNestedUtils (code: string, id: string) {
+    if (!nestedUtilsCtx || (await nestedUtilsCtx.getImports()).length === 0) { return }
+    const { imports } = await nestedUtilsCtx.injectImports(code, id, { autoImport: true, id } as InjectImportsOptions)
+    if (imports.length === 0) { return }
+    const names = imports.map(i => `\`${i.as ?? i.name}\` (from \`${relative(nuxt.options.rootDir, i.from)}\`)`).sort()
+    const key = id + '\0' + names.join('\0')
+    if (reportedNestedUtils.has(key)) { return }
+    reportedNestedUtils.add(key)
+    nitroBuildDiagnostics.NUXT_B9006({ file: relative(nuxt.options.rootDir, id), count: names.length, names: names.join(', ') })
   }
 
   /**
@@ -100,7 +128,9 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       // `patches/unimport@6.4.0.patch` reads `id` off the options so oxc parses each module in its
       // own language, which it infers from the filename. Server modules arrive untranspiled.
       // TODO: drop the patch, this `id`, and the version pin once unimport threads the id itself.
-      return ctx.injectImports(code, id, { autoImport: true, id, ...injectOptions } as InjectImportsOptions)
+      const result = await ctx.injectImports(code, id, { autoImport: true, id, ...injectOptions } as InjectImportsOptions)
+      await reportNestedUtils(result.s.toString(), id)
+      return result
     },
 
     async getImports () {
@@ -147,23 +177,40 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   }
 }
 
-/** Resolve the directories scanned for server auto-imports across all layers. */
-export function resolveServerImportDirs (nuxt: Nuxt): string[] {
+/**
+ * Resolve the directories scanned for server auto-imports across all layers.
+ *
+ * `nestedUtils` also scans the subdirectories of each `server/utils`.
+ */
+export function resolveServerImportDirs (nuxt: Nuxt, options: { nestedUtils?: boolean } = {}): string[] {
   const dirs = new Set<string>()
-  if (nuxt.options.imports.scan === false) { return [] }
 
-  for (const layer of nuxt.options._layers) {
-    // Layer disabled scanning for itself
-    if (layer.config?.imports?.scan === false) { continue }
-
+  for (const layer of getScannedLayers(nuxt)) {
     const shared = layer.config.dir?.shared ?? 'shared'
     dirs.add(join(layer.config.rootDir, shared, 'utils'))
     dirs.add(join(layer.config.rootDir, shared, 'types'))
-    dirs.add(join(layer.config.serverDir ?? join(layer.config.rootDir, 'server'), 'utils'))
-    dirs.add(join(layer.config.serverDir ?? join(layer.config.rootDir, 'server'), 'types'))
+    dirs.add(join(getServerDir(layer), options.nestedUtils ? 'utils/**/*' : 'utils'))
+    dirs.add(join(getServerDir(layer), 'types'))
   }
 
   return [...dirs]
+}
+
+/** Resolve the subdirectories of each layer's `server/utils`. */
+export function resolveNestedServerUtilsDirs (nuxt: Nuxt): string[] {
+  return getScannedLayers(nuxt).map(layer => join(getServerDir(layer), 'utils/*/**/*'))
+}
+
+type NuxtLayer = Nuxt['options']['_layers'][number]
+
+function getScannedLayers (nuxt: Nuxt): NuxtLayer[] {
+  if (nuxt.options.imports.scan === false) { return [] }
+  // Layer disabled scanning for itself
+  return nuxt.options._layers.filter(layer => layer.config?.imports?.scan !== false)
+}
+
+function getServerDir (layer: NuxtLayer): string {
+  return layer.config.serverDir ?? join(layer.config.rootDir, 'server')
 }
 
 const RELATIVE_RE = /^\.{1,2}\//

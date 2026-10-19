@@ -14,7 +14,7 @@ import { trackPendingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt, ServerApi } from '@nuxt/schema'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 
-import { distDir, nitroImplicitDependencies, toArray } from './utils.ts'
+import { GLOB_SUFFIX_RE, distDir, nitroImplicitDependencies, toArray } from './utils.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 import { getH3ExportNames, getH3ImportsPreset, getNuxtServerImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from './imports.ts'
 import { migratedPlugins, serverApiOf } from './registrations.ts'
@@ -25,7 +25,10 @@ import { migratedPlugins, serverApiOf } from './registrations.ts'
  * Transitional: the whole compatibility layer is removed in Nuxt 6.
  */
 export interface NitroLegacyOptions {
-  /** Register the Nitro v2 auto-import names (`defineNitroPlugin`, `cachedEventHandler`, `useEvent`, …). */
+  /**
+   * Register the Nitro v2 auto-import names (`defineNitroPlugin`, `cachedEventHandler`, `useEvent`, …)
+   * and auto-import from subdirectories of `server/utils/`.
+   */
   imports?: boolean
   /** Resolve `h3` to the bundled h3 v1 helper shim. */
   h3?: boolean
@@ -73,7 +76,6 @@ interface CompatScope {
 const TAG_SCOPE: CompatScope = { h3: true, specifiers: true, imports: true }
 
 const NITRO_V2_SPECIFIER_RE = /^(?:nitropack(?:\/|$)|#internal\/nitro(?:\/|$))/
-const GLOB_SUFFIX_RE = /\/[^/*]*\*[\s\S]*$/
 const TRANSFORMABLE_RE = /\.[cm]?[jt]sx?$/
 const DECLARATION_RE = /\.d\.[cm]?ts$/
 const OWN_VIRTUAL_RE = /^(?:#internal\/|#nuxt-compat\/|#build\/|#nitro|#spa-template|nuxt\/)/
@@ -579,8 +581,9 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * call it once the nitro instance exists.
  */
 export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, legacy: ResolvedNitroLegacyOptions, modulePresets: LegacyImportsPreset[], installedModules: InstalledModule[] = [], unusedVariants: string[] = []): Promise<(nitro: Pick<Nitro, 'options' | 'hooks'>) => void> {
-  // a module may register its handler through an alias it added for the server build only
-  const aliases: Record<string, string> = { ...nitroConfig.alias as Record<string, string>, ...nuxt.options.alias }
+  // resolved as the server build resolves them: a module may add an alias for the server
+  // build only, or point an app alias at different code there
+  const aliases: Record<string, string> = { ...nuxt.options.alias, ...nitroConfig.alias as Record<string, string> }
   const files = new Map<string, CompatScope>()
   const dirs: Array<[prefix: string, scope: CompatScope]> = []
   // every file in these is a server entry, unlike a module runtime directory, which also
@@ -621,6 +624,27 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   const protectedDirs = [ownRuntime, withTrailingSlash(normalize(nuxt.options.buildDir)), ...getPackageDirs('nuxt/package.json', nuxt.options.rootDir), ...getPackageDirs('nitro/package.json', nuxt.options.rootDir)]
   const isProtected = (path: string) => protectedDirs.some(dir => path.startsWith(dir))
   const isUserServerCode = (path: string) => layerServerDirs.some(dir => path.startsWith(dir))
+
+  /** The most specific module holding the real path, else one of the given paths. */
+  const ownerOf = (real: string, paths: string[]) => {
+    let owner: InstalledModule | undefined
+    let length = 0
+    for (const space of ['real', 'literal'] as const) {
+      for (const module of installedModules) {
+        const dir = normalize(module.dir)
+        const prefix = withTrailingSlash(space === 'real' ? toRealPath(dir) : dir)
+        if (prefix.length > length && (space === 'real' ? real.startsWith(prefix) : paths.some(path => path.startsWith(prefix)))) {
+          owner = module
+          length = prefix.length
+        }
+      }
+      if (owner) {
+        return owner
+      }
+    }
+  }
+  const isMigratedModuleCode = (path: string) => isMigrated(ownerOf(toRealPath(path), [path])?.server)
+
   nitroConfig.virtual ||= {}
   const isModuleVirtual = (id: string) => id in nitroConfig.virtual! && !OWN_VIRTUAL_RE.test(id)
   let wrapperIndex = 0
@@ -669,7 +693,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
    */
   const addModuleScopeDir = (dir: string, entry = false) => {
     const target = normalize(resolveAlias(dir, aliases)).replace(GLOB_SUFFIX_RE, '')
-    if (!isAbsolute(target) || isProtected(target) || isUserServerCode(target) || !existsSync(target)) {
+    if (!isAbsolute(target) || isProtected(target) || isUserServerCode(target) || !existsSync(target) || isMigratedModuleCode(withTrailingSlash(target))) {
       return
     }
     dirs.push([withTrailingSlash(target), TAG_SCOPE])
@@ -694,14 +718,16 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
       return
     }
     const target = normalize(resolveAlias(path, aliases))
-    if (!isAbsolute(target) || isProtected(target) || isUserServerCode(target)) {
+    if (!isAbsolute(target) || isProtected(target) || isUserServerCode(target) || isMigratedModuleCode(target)) {
       return
     }
     files.set(target, TAG_SCOPE)
     files.set(toRealPath(target), TAG_SCOPE)
     const parentDirs = new Set([dirname(target), dirname(toRealPath(target)), toRealPath(dirname(target))])
     for (const dir of parentDirs) {
-      dirs.push([withTrailingSlash(dir), TAG_SCOPE])
+      if (!isMigratedModuleCode(withTrailingSlash(dir))) {
+        dirs.push([withTrailingSlash(dir), TAG_SCOPE])
+      }
     }
   }
 
@@ -764,25 +790,6 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     }
   }
 
-  /** The most specific module holding the real path, else one of the given paths. */
-  const ownerOf = (real: string, paths: string[]) => {
-    let owner: InstalledModule | undefined
-    let length = 0
-    for (const space of ['real', 'literal'] as const) {
-      for (const module of installedModules) {
-        const dir = normalize(module.dir)
-        const prefix = withTrailingSlash(space === 'real' ? toRealPath(dir) : dir)
-        if (prefix.length > length && (space === 'real' ? real.startsWith(prefix) : paths.some(path => path.startsWith(prefix)))) {
-          owner = module
-          length = prefix.length
-        }
-      }
-      if (owner) {
-        return owner
-      }
-    }
-  }
-
   // module runtime code reaches the build in more ways than it is registered (a
   // module-owned alias, a deep import from a virtual), so scope the conventional runtime
   // directories of every module that has not declared itself migrated
@@ -794,7 +801,8 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     addModuleScopeDir(resolve(module.dir, 'dist/runtime'))
   }
 
-  // ... and any module-owned alias target outside those directories
+  // ... and any module-owned alias target outside those directories. An alias is not a
+  // server entry: its target counts only once a server entry imports it
   for (const alias of Object.values({ ...nuxt.options.alias, ...nitroConfig.alias })) {
     if (typeof alias !== 'string' || !isAbsolute(alias)) {
       continue
@@ -802,7 +810,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     const target = withTrailingSlash(normalize(alias))
     const real = withTrailingSlash(toRealPath(normalize(alias)))
     const owner = ownerOf(real, [target])
-    if (!owner || isMigrated(owner.server)) {
+    if (!owner) {
       continue
     }
     // the module root, not a runtime directory within it
@@ -812,8 +820,10 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     }
     if (statSync(alias, { throwIfNoEntry: false })?.isDirectory()) {
       addModuleScopeDir(alias)
-    } else {
-      addModuleScope(alias)
+      continue
+    }
+    for (const dir of new Set([dirname(alias), dirname(toRealPath(normalize(alias)))])) {
+      addModuleScopeDir(dir)
     }
   }
 

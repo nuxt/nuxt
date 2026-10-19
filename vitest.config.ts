@@ -262,6 +262,7 @@ export default defineConfig({
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
+            '#build/pages': resolve('./test/mocks/pages'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#internal/nuxt/error-channel': resolve('./packages/nitro-server/src/runtime/utils/error-channel'),

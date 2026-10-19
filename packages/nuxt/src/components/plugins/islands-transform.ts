@@ -4,7 +4,6 @@ import { linkToAlias } from '../../utils.ts'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ELEMENT_NODE, parse, walk, walkSync } from 'ultrahtml'
-import type { ElementNode } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
 import { normalize } from 'pathe'
@@ -26,33 +25,13 @@ interface ServerOnlyComponentTransformPluginOptions {
 }
 
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
-const HAS_VFOR_RE = /\sv-for=/
 const TEMPLATE_RE = /<template>[\s\S]*<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(?:="[^"]*")?/g
-
-const VFOR_BOUND_IMPORT_CODE = '\nimport { vforBound as nuxtVforBound } from \'#app/components/vfor\''
-const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + VFOR_BOUND_IMPORT_CODE + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
 const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(?:="[^"]*")?/g
 const KEY_RE = /:?key="[^"]"/g
-const V_FOR_ALIAS_RE = /\s+(in|of)\s+/
-const V_FOR_ATTR_RE = /(\sv-for=)(["'])([\s\S]*?)\2/
-
-// A plain `v-for` compiles to `ssrRenderList`, which iterates a numeric source unbounded;
-// wrap the source in `nuxtVforBound` to clamp attacker-supplied magnitudes before iteration.
-function boundVForExpression (expression: string): string {
-  const match = V_FOR_ALIAS_RE.exec(expression)
-  if (!match) { return expression }
-  const alias = expression.slice(0, match.index)
-  const source = expression.slice(match.index + match[0].length)
-  return `${alias} ${match[1]} nuxtVforBound(${source})`
-}
-
-function boundVForInTag (tag: string): string {
-  return tag.replace(V_FOR_ATTR_RE, (_full, prefix, quote, expression) => `${prefix}${quote}${boundVForExpression(expression)}${quote}`)
-}
 
 function wrapWithVForDiv (code: string, vfor: string): string {
-  // `vfor` is already passed through `boundVForExpression` by the caller.
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
 }
 
@@ -72,45 +51,6 @@ function findScriptBlocks (code: string): ScriptBlock[] {
   return blocks
 }
 
-function injectSetupImports (s: ReturnType<typeof rolldownString>, code: string, importCode: string): void {
-  const scriptBlocks = findScriptBlocks(code)
-  const setupBlock = scriptBlocks.find(({ attributes }) => 'setup' in attributes)
-  if (setupBlock) {
-    s.appendRight(setupBlock.contentStart, importCode)
-    return
-  }
-  // `<script>` and `<script setup>` in one SFC must agree on `lang`.
-  const lang = scriptBlocks[0]?.attributes.lang
-  s.prepend(`<script setup${lang ? ` lang="${lang}"` : ''}>` + importCode + '</script>')
-}
-
-export const IslandsVForBoundPlugin = (options: Pick<ServerOnlyComponentTransformPluginOptions, 'getComponents' | 'getServerPages'>) => createUnplugin(() => ({
-  name: 'nuxt:island-vfor-bound',
-  enforce: 'pre',
-  transformInclude (id) {
-    if (!isVue(id)) { return false }
-    const { pathname } = parseModuleId(normalize(id))
-    return isIslandFile(pathname, options)
-  },
-  transform: {
-    filter: {
-      code: {
-        include: [HAS_VFOR_RE],
-      },
-    },
-    handler (code, id, transformMeta?: unknown) {
-      const template = code.match(TEMPLATE_RE)
-      if (!template) { return }
-      const s = rolldownString(code, id, transformMeta)
-
-      if (!boundVForsInTemplate(s, code, template)) { return }
-
-      injectSetupImports(s, code, VFOR_BOUND_IMPORT_CODE)
-      return generateTransform(s, id)
-    },
-  },
-}))
-
 export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
   const isVite = meta.framework === 'vite'
   return {
@@ -125,8 +65,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
     transform: {
       filter: {
         code: {
-          // Include `v-for` so slotless islands still reach the handler to have it bounded.
-          include: [HAS_SLOT_OR_CLIENT_RE, HAS_VFOR_RE],
+          include: HAS_SLOT_OR_CLIENT_RE,
         },
       },
       async handler (code, id, transformMeta?: unknown) {
@@ -138,17 +77,17 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
         const { pathname } = parseModuleId(normalize(id))
         const isIsland = isIslandFile(pathname, options)
 
-        // Bounding is island-only, so skip non-island files matched solely for their `v-for`
-        // rather than injecting unused island imports.
-        if (!HAS_SLOT_OR_CLIENT_RE.test(code) && !(isIsland && HAS_VFOR_RE.test(code))) {
-          return
-        }
-
-        injectSetupImports(s, code, IMPORT_CODE)
-
-        if (isIsland) {
-          // slots and `nuxt-client` tags bound their own `v-for` in the walk below
-          boundVForsInTemplate(s, code, template, node => node.name === 'slot' || node.name === 'NuxtTeleportIslandComponent' || (hasNuxtClientAttribute(node) && isVite && !!options.selectiveClient))
+        // The injected helpers are referenced from the template, so they must be setup bindings:
+        // adding them to a plain `<script>` leaves them in module scope only and the template
+        // compiler resolves them off `_ctx` instead, which is `undefined` at render time.
+        const scriptBlocks = findScriptBlocks(code)
+        const setupBlock = scriptBlocks.find(({ attributes }) => 'setup' in attributes)
+        if (setupBlock) {
+          s.appendRight(setupBlock.contentStart, IMPORT_CODE)
+        } else {
+          // `<script>` and `<script setup>` in one SFC must agree on `lang`.
+          const lang = scriptBlocks[0]?.attributes.lang
+          s.prepend(`<script setup${lang ? ` lang="${lang}"` : ''}>` + IMPORT_CODE + '</script>')
         }
 
         let hasNuxtClient = false
@@ -169,8 +108,6 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
               attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
             }
             const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-            // Bound the slot's own `v-for` source, separate from the (bounded) `:props` array.
-            attributes['v-for'] &&= boundVForExpression(attributes['v-for'])
             const bindings = getPropsToString(attributes)
             // add the wrapper
             s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
@@ -181,7 +118,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
               const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(KEY_RE, '')
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
             } else {
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, boundVForInTag(code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, '')))
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
             }
 
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
@@ -192,7 +129,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
             return
           }
 
-          const hasNuxtClientAttr = hasNuxtClientAttribute(node)
+          const hasNuxtClientAttr = 'nuxt-client' in node.attributes || ':nuxt-client' in node.attributes
           if (hasNuxtClientAttr) {
             hasNuxtClient = true
           }
@@ -208,9 +145,6 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
           if (wrapperAttributes) {
             startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
-          }
-          if (isIsland && 'v-for' in attributes) {
-            startTag = boundVForInTag(startTag)
           }
 
           s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
@@ -231,31 +165,6 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
     },
   }
 })
-
-function hasNuxtClientAttribute (node: ElementNode): boolean {
-  return 'nuxt-client' in node.attributes || ':nuxt-client' in node.attributes
-}
-
-/**
- * Clamps the `v-for` source of every element in an SFC template that `skip` does not claim.
- * Returns whether any tag changed.
- */
-function boundVForsInTemplate (s: ReturnType<typeof rolldownString>, code: string, template: RegExpMatchArray, skip?: (node: ElementNode) => boolean): boolean {
-  const startingIndex = template.index || 0
-  let changed = false
-  walkSync(parse(template[0]), (node) => {
-    if (node.type !== ELEMENT_NODE || !('v-for' in node.attributes) || skip?.(node)) { return }
-    const start = startingIndex + node.loc[0].start
-    const end = startingIndex + node.loc[0].end
-    const openTag = code.slice(start, end)
-    const bounded = boundVForInTag(openTag)
-    if (bounded !== openTag) {
-      s.overwrite(start, end, bounded)
-      changed = true
-    }
-  })
-  return changed
-}
 
 function isIslandFile (pathname: string, options: ServerOnlyComponentTransformPluginOptions): boolean {
   const components = options.getComponents()

@@ -1,6 +1,7 @@
+import { lstat, symlink, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, isAbsolute, normalize } from 'pathe'
+import { dirname, isAbsolute, normalize, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
@@ -16,6 +17,20 @@ export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
 }
 
 /**
+ * Link `<rootDir>/dist` to the public output of a static build, replacing an existing link.
+ * A real file or directory at that path is left untouched.
+ */
+export async function linkStaticDist (rootDir: string, publicDir: string): Promise<void> {
+  const dist = resolve(rootDir, 'dist')
+  const stats = await lstat(dist).catch(() => null)
+  if (stats) {
+    if (!stats.isSymbolicLink()) { return }
+    await unlink(dist).catch(() => {})
+  }
+  await symlink(publicDir, dist, 'junction').catch(() => {})
+}
+
+/**
  * Specifier the app and the server runtime both import the asset URL helpers through,
  * provided by the `paths.mjs` template Nuxt generates.
  */
@@ -28,6 +43,8 @@ export const PATHS_SPECIFIER = '#internal/nuxt/paths'
  * Nitro uses; a second copy would bypass its builder and duplicate state.
  */
 export const nitroImplicitDependencies = ['nitro', 'h3', 'srvx', 'defu', 'consola', 'ofetch', 'crossws']
+
+export const GLOB_SUFFIX_RE = /\/[^/*]*\*[\s\S]*$/
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
@@ -133,12 +150,8 @@ function toFsDriverGlob (pattern: string): string | undefined {
  * keyed only by `import`/`require` (notably `vue` and `vue-router`) resolve
  * when the only available copy is nested under `nuxt`'s own `node_modules`.
  */
-export function getSsrResolveConditions (exportConditions?: string[]): string[] {
-  const conditions = [...exportConditions || []]
-  if (!conditions.includes('import')) {
-    conditions.push('import')
-  }
-  return conditions
+export function getSsrResolveConditions (...sources: Array<string[] | undefined>): string[] {
+  return [...new Set([...sources.flatMap(conditions => conditions || []), 'import'])]
 }
 
 /**

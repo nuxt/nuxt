@@ -75,8 +75,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           startPosition = savedPosition
           return
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         if (routerOptions.scrollBehavior) {
           // reset scroll behavior to initial value
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           router.options.scrollBehavior = routerOptions.scrollBehavior
           if ('scrollRestoration' in window.history) {
             const unsub = router.beforeEach(() => {
@@ -84,6 +86,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               window.history.scrollRestoration = 'manual'
             })
           }
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           return routerOptions.scrollBehavior(to, START_LOCATION, startPosition || savedPosition)
         }
       },
@@ -409,7 +412,13 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             nuxtApp['~restoreDeferredRoute'] = undefined
             // Assign synchronously: `router.replace` only finalises `currentRoute` a microtask
             // later, after mounted hooks flush. Resolve fresh so `route.name` survives.
-            ;(router.currentRoute as Ref<RouteLocationNormalizedLoadedGeneric>).value = router.resolve(initialURL) as RouteLocationNormalizedLoadedGeneric
+            const currentRoute = router.currentRoute as Ref<RouteLocationNormalizedLoadedGeneric>
+            const restoredRoute = router.resolve(initialURL) as RouteLocationNormalizedLoadedGeneric
+            // Keep the hydrated meta, e.g. a layout set via `setPageLayout` in middleware (#36429)
+            if (restoredRoute.matched.at(-1) === currentRoute.value.matched.at(-1)) {
+              restoredRoute.meta = currentRoute.value.meta
+            }
+            currentRoute.value = restoredRoute
             syncCurrentRoute()
             router.replace({ ...resolvedInitialRoute, force: true }).catch(() => {})
           }
@@ -424,6 +433,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           })
         }
         // reset scroll behavior to initial value
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         router.options.scrollBehavior = routerOptions.scrollBehavior
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here

@@ -50,6 +50,7 @@ import { TreeShakeComposablesPlugin } from './plugins/tree-shake.ts'
 import { DevOnlyPlugin } from './plugins/dev-only.ts'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing.ts'
 import { addModuleTranspiles } from './modules.ts'
+import { findVitePlusConfig } from './external-config-files.ts'
 import { bundleServer } from './server.ts'
 import { NuxtPerfProfiler } from './perf.ts'
 import schemaModule from './schema.ts'
@@ -285,6 +286,13 @@ async function initNuxt (nuxt: Nuxt) {
     },
   })
 
+  // the shared context gets an empty route set, so it does not load server handlers
+  addTemplate({
+    filename: 'types/shared-server-routes.d.ts',
+    dependsOn: [],
+    getContents: () => emitServerRoutesModule({ routes: [], strict: false }),
+  })
+
   addTypeTemplate({
     filename: 'types/nitro-layouts.d.ts',
     dependsOn: [],
@@ -418,10 +426,20 @@ async function initNuxt (nuxt: Nuxt) {
     // required for the server builder's augmentations (referenced above)
     opts.nodeTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
+    opts.sharedTsConfig.compilerOptions!.paths!['#build/server-routes'] ||= [resolve(nuxt.options.buildDir, 'types/shared-server-routes.d.ts')]
     // bundler-resolved, so it takes the same substitutions as the app
     opts.serverTsConfig.compilerOptions = defu(opts.serverTsConfig.compilerOptions, { paths: { ...paths } })
     // required for the generated route types, which `serverFetch` resolves against
     opts.serverTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
+
+    const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
+    for (const dir of new Set([nuxt.options.rootDir, nuxt.options.workspaceDir])) {
+      const vitePlusConfig = await findVitePlusConfig(dir)
+      if (vitePlusConfig) {
+        opts.nodeTsConfig.include ||= []
+        opts.nodeTsConfig.include.push(relative(typesDir, vitePlusConfig))
+      }
+    }
 
     for (const dirs of layerDirs) {
       const declaration = join(dirs.root, 'index.d.ts')
@@ -993,6 +1011,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
+  options.alias['nuxt/app'] ||= options.appDir
   if (options.experimental.componentIslands === 'vue-onigiri') {
     // Listed before `#app`, which bundlers would otherwise match first as a prefix.
     options.alias = { '#app/components/nuxt-island': resolve(options.appDir, 'components/nuxt-island-onigiri'), ...options.alias }
@@ -1312,6 +1331,11 @@ async function resolveTypescriptPaths (nuxt: Nuxt, options?: ResolveTypePathsOpt
     }
   }
 
+  // a single module identity keeps `nuxt/schema` and `@nuxt/schema` augmentations merged
+  if (paths['@nuxt/schema']) {
+    paths['nuxt/schema'] = paths['@nuxt/schema']
+  }
+
   return paths
 }
 
@@ -1326,7 +1350,7 @@ async function vueSupportsVapor (nuxt: Nuxt) {
   })
   if (!path) { return false }
   const { version } = await readPackageJSON(path).catch(() => ({}) as PackageJson)
-  return !!version && satisfies(version, '>=3.6.0-0')
+  return !!version && satisfies(version, '>=3.6.0-rc.6')
 }
 
 const RELATIVE_CSS_ENTRY_RE = /^\.{1,2}\//

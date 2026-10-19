@@ -10,7 +10,7 @@ import type { NuxtHookRegistry, NuxtRequestEvent, RuntimeConfig } from '@nuxt/sc
 
 export type { NuxtLinkOptions } from '@nuxt/schema'
 export type { Serialize } from './types/serialize.js'
-export type { AnyHTTPMethod, DynamicParam, Endpoint, HTTPMethod, TypedFetchErrorBody, TypedFetchMethods, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, TypedFetchResponseHeaders, ValidFetchInput, WildcardParam } from 'fetchdts'
+export type { AnyFetchPath, AnyHTTPMethod, DynamicParam, Endpoint, HTTPMethod, TypedFetchErrorBody, TypedFetchMethods, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, TypedFetchResponseHeaders, ValidFetchInput, WildcardParam } from 'fetchdts'
 
 type HookResult = Promise<void> | void
 

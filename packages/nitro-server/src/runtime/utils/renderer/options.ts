@@ -33,7 +33,7 @@ export const rendererOptions: NuxtRendererOptions = {
   createResponse: (body, init) => {
     const response = new FastResponse(body, init)
     if (legacyCompat) {
-      rememberRenderBody(init, body)
+      rememberRenderBody(response, body)
       if (body instanceof ReadableStream) {
         markStreamedResponse(response)
       }

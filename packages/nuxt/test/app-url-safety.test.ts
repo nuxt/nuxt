@@ -1,11 +1,39 @@
 import { describe, expect, it } from 'vitest'
-import { getScriptProtocol, isAbsoluteHref, sanitizeAnchorHref } from '../src/app/utils.ts'
+import { getScriptProtocol, isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../src/app/utils.ts'
+
+describe('isRootedPath', () => {
+  it.each([
+    '/',
+    '/foo/bar?a=1#b',
+    '/\tfoo',
+    '/\n',
+    '/\t/',
+    '/foo\t//bar',
+  ])('should treat %j as rooted', (value) => {
+    expect(isRootedPath(value)).toBe(true)
+  })
+
+  it.each([
+    '',
+    'foo',
+    '//evil.com',
+    '/\\evil.com',
+    '/\t/evil.com',
+    '/\n/evil.com',
+    '/\r/evil.com',
+    '/\t\\evil.com',
+    '/\t\r\n/evil.com',
+  ])('should not treat %j as rooted', (value) => {
+    expect(isRootedPath(value)).toBe(false)
+  })
+})
 
 describe('isAbsoluteHref', () => {
   it.each([
     '',
     '/',
     '/foo/bar?a=1#b',
+    '/\tfoo',
     '/foo:bar',
     '#hash',
     'foo',
@@ -23,6 +51,8 @@ describe('isAbsoluteHref', () => {
     '//evil.com',
     '\\\\evil.com',
     '/\\evil.com',
+    '/\t/evil.com',
+    '/\n\\evil.com',
     'javascript:alert(1)',
     '\u0001javascript:alert(1)',
     'java\tscript:alert(1)',
