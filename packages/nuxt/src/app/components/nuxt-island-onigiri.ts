@@ -1,23 +1,12 @@
 import type { DefineSetupFnComponent, PropType, SlotsType, VNode } from 'vue'
-import { computed, defineComponent, getCurrentInstance, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, useId, watch } from 'vue'
-import { debounce } from 'perfect-debounce'
-import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
+import { createStaticVNode, defineComponent, getCurrentInstance, ref, shallowRef, toRaw, useId } from 'vue'
 import { randomUUID } from 'uncrypto'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- runtime deserializer is the point of this component
-import { renderOnigiri } from 'vue-onigiri/runtime/deserialize'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- rebuilds the island tree from its marked HTML
+import { domToVNode, htmlToVNode, isMarkerNonce } from 'vue-onigiri'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
-import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { injectHead } from '../composables/head'
-import { getIslandHash, serializeIslandProps } from '../island-hash'
-
-import { $fetch } from '#build/fetch'
-
-const pKey = '_islandPromises'
-
-let id = 1
-const getId = import.meta.client ? () => (id++).toString() : randomUUID
+import { useIslandFetch } from './island-fetch'
 
 interface NuxtIslandProps {
   name: string
@@ -35,6 +24,15 @@ type NuxtIslandSlots = SlotsType<{
   fallback?: (props: { error: unknown }) => VNode[]
   [name: string]: ((props: any) => VNode[]) | undefined
 }>
+
+interface MarkedHTML {
+  html: string
+  /** Nonce the markers inside `html` are bound to. */
+  nonce: string
+}
+
+let id = 1
+const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const NuxtIsland = defineComponent({
   name: 'NuxtIsland',
@@ -60,146 +58,67 @@ const NuxtIsland = defineComponent({
   },
   emits: ['error'],
   async setup (props, { expose, emit }) {
-    const teleportKey = ref(0)
-    const error = ref<unknown>(null)
     const nuxtApp = useNuxtApp()
-    const serializedProps = computed(() => serializeIslandProps(props.props))
-    const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context }))
     const instance = getCurrentInstance()!
-    const event = useRequestEvent()
-    const ast = ref(nuxtApp.payload.data[`${props.name}_${hashId.value}`]?.ast)
-    let activeHead: ActiveHeadEntry<SerializableHead>
-
-    const mounted = shallowRef(false)
-    onMounted(() => { mounted.value = true; teleportKey.value++ })
-    onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
-    function setPayload (key: string, result: NuxtIslandResponse) {
-      const toRevive: Partial<NuxtIslandResponse> = {}
-      if (result.head) { toRevive.head = result.head }
-      if (result.ast) { toRevive.ast = result.ast }
-      nuxtApp.payload.data[key] = {
-        __nuxt_island: {
-          key,
-          ...(import.meta.server && import.meta.prerender)
-            ? {}
-            : { params: { ...props.context, props: props.props ? serializedProps.value : undefined } },
-          result: toRevive,
-        },
-        ...result,
-      }
-    }
-
+    // Island HTML from Vue's SSR render with the nonce its markers are bound to; the server inlines it as static content.
+    const marked = shallowRef<MarkedHTML | undefined>()
+    // Shallow: the tree is swapped whole, walking a deeply reactive one would cost more than rendering it.
+    const tree = shallowRef<VNode | undefined>()
     const uid = ref<string>(useId() || getId())
-    const head = injectHead()
 
-    async function _fetchComponent (force = false) {
-      const key = `${props.name}_${hashId.value}`
-
-      if (!force) {
-        // The payload reviver stores its in-flight fetch of a prerendered island at this
-        // key, so a plain property check would miss it and fetch the island a second time.
-        const cached = await nuxtApp.payload.data[key]
-        if (cached?.ast) { return cached }
-      }
-
-      const url = `/__nuxt_island/${key}.json`
-      if (import.meta.server && import.meta.prerender) {
-        // Hint to Nitro to prerender the island component
-        nuxtApp.runWithContext(() => prerenderRoutes(url))
-      }
-      // TODO: Validate response
-      // $fetch handles `app.baseURL` for relative URLs
-      const r = await $fetch.raw<NuxtIslandResponse>(url, {
-        // custom island sources should not be resolved against `app.baseURL` (#23093)
-        // think again of if we want remote islands again
-        // ...(props.source ? { baseURL: '' } : {}),
-        query: {
-          ...props.context,
-          props: props.props ? serializedProps.value : undefined,
-        },
-        responseType: 'json',
-        ignoreResponseError: true,
-      })
-      if (!r.ok) {
-        throw createError({ status: r.status, statusText: r.statusText })
-      }
-      try {
-        const result = r._data!
-        // TODO: support passing on more headers
-        if (import.meta.server && import.meta.prerender) {
-          const hints = r.headers.get('x-nitro-prerender')
-          if (hints) {
-            event!.res.headers.append('x-nitro-prerender', hints)
-          }
+    const { islandKey, fetchComponent, guard, load } = useIslandFetch({
+      props,
+      uid,
+      emit,
+      // The DOM already carries the HTML; the client only needs the nonce to read its markers.
+      toPayload: ({ html: _html, ...data }) => {
+        const revive: Partial<NuxtIslandResponse> = {}
+        if (data.head) { revive.head = data.head }
+        if (data.nonce) { revive.nonce = data.nonce }
+        return { revive, data }
+      },
+      apply: (res) => {
+        const nonce = res.nonce
+        if (!isMarkerNonce(nonce)) {
+          throw createError({ status: 500, statusText: `Island ${props.name} response has no valid marker nonce` })
         }
-        setPayload(key, result)
-        return result
-      } catch (e: any) {
-        if (r.status !== 200) {
-          throw new Error(e.toString(), { cause: e })
+        let html = res.html
+        const outerNonce = import.meta.server ? (nuxtApp.ssrContext as { onigiriNonce?: string } | undefined)?.onigiriNonce : undefined
+        if (outerNonce && outerNonce !== nonce) {
+          // Nested in another island's render: the client reads this HTML with the outer island's nonce.
+          html = html.replace(new RegExp(`<!--(/?o:[ct]):${nonce}`, 'g'), `<!--$1:${outerNonce}`)
         }
-        throw e
-      }
-    }
-
-    async function fetchComponent (force = false) {
-      nuxtApp[pKey] ||= {}
-      nuxtApp[pKey][uid.value] ||= _fetchComponent(force).finally(() => {
-        delete nuxtApp[pKey]![uid.value]
-      })
-      try {
-        const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-
-        if (res.ast) {
-          ast.value = res.ast
+        marked.value = { html, nonce }
+        if (import.meta.client) {
+          // Unchanged static runs keep their VNode, so the patch only touches what the server changed.
+          tree.value = htmlToVNode(res.html, { nonce, previous: tree.value })
         }
-        error.value = null
-
-        if (res?.head) {
-          if (activeHead) {
-            activeHead.patch(res.head)
-          } else {
-            activeHead = head.push(res.head)
-          }
-        }
-      } catch (e) {
-        error.value = e
-        emit('error', e)
-      }
-    }
+      },
+    })
 
     expose({
       refresh: () => fetchComponent(true),
     })
 
-    if (import.meta.hot) {
-      import.meta.hot.on(`nuxt-server-component:${props.name}`, () => {
-        fetchComponent(true)
-      })
-    }
-
-    if (import.meta.client) {
-      watch(props, debounce(() => fetchComponent(), 100), { deep: true })
-    }
-
-    // Restore head entries from SSR payload during hydration
-    if (import.meta.client && instance.vnode.el) {
-      const headData = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.head
-      if (headData) {
-        activeHead = head.push(headData)
+    await load(() => guard(() => {
+      // Without a valid nonce no marker can be trusted, and the legacy prefixes must never be honoured here.
+      const nonce = toRaw(nuxtApp.payload.data[islandKey.value])?.nonce
+      if (!isMarkerNonce(nonce)) {
+        throw createError({ status: 500, statusText: `Island ${props.name} has no valid marker nonce in the payload` })
       }
-    }
+      tree.value = domToVNode(instance.vnode.el as Node, { nonce })
+    }))
 
-    if (import.meta.client && !instance.vnode.el && props.lazy) {
-      fetchComponent()
-    } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {
-      await fetchComponent()
-    }
-
-    // No custom `importFn`: AST chunk references are source paths (and bare package
-    // specifiers), which the `virtual:onigiri/manifest` module resolves in both
+    // No custom `importFn`: marker chunk references are source paths (and bare package
+    // specifiers), which the generated `vue-onigiri/manifest` module resolves in both
     // environments via its globs and `extraEntries`.
-    return () => renderOnigiri(ast.value)
+    return () => {
+      if (import.meta.server) {
+        // Vue's SSR renderer pushes static content raw; the node count only matters on the client.
+        return marked.value ? createStaticVNode(marked.value.html, 1) : null
+      }
+      return tree.value ?? null
+    }
   },
 }) as unknown as DefineSetupFnComponent<NuxtIslandProps, NuxtIslandEmits, NuxtIslandSlots>
 

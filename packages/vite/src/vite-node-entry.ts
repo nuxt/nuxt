@@ -5,9 +5,9 @@ import { viteNodeFetch, viteNodeOptions } from '#vite-node'
 import type { NuxtSSRContext } from 'nuxt/app'
 import runner from '#vite-node-runner'
 
-let render: (...args: any[]) => Promise<any>
+let render: (ssrContext: NuxtSSRContext) => Promise<any>
 
-export default async (ssrContext: NuxtSSRContext, ...rest: any[]): Promise<any> => {
+export default async (ssrContext: NuxtSSRContext): Promise<any> => {
   // Workaround for stub mode
   // https://github.com/nuxt/framework/pull/3983
   // The build still replaces `process.server`, so it has to be assigned here; the flag is not
@@ -27,9 +27,6 @@ export default async (ssrContext: NuxtSSRContext, ...rest: any[]): Promise<any> 
     consola.success(`Vite server hmr ${updates.size} files`, time ? `in ${time}ms` : '')
   }
 
-  // Forward any extra arguments (e.g. island handler's `{ rootComponent }`)
-  // so dev-mode behaviour matches the production bundle, where the entry
-  // is called directly with the same arity.
-  const result = await render(ssrContext, ...rest)
+  const result = await render(ssrContext)
   return result
 }

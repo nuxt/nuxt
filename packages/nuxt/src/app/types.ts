@@ -198,8 +198,9 @@ export interface NuxtIslandContext {
 
 export interface NuxtIslandResponse {
   id?: string
-  html?: string
-  ast?: any
+  html: string
+  /** Nonce the vue-onigiri markers inside `html` are bound to; the client walker accepts no other. */
+  nonce?: string
   head: SerializableHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>

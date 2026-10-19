@@ -1,7 +1,7 @@
 import type { Entry } from './entry'
 
 const entry: Entry | (() => Promise<Entry>) = import.meta.server
-  ? (ctx, options) => import('#app/entry').then(m => m.default(ctx, options))
+  ? ctx => import('#app/entry').then(m => m.default(ctx))
   : () => import('#app/entry').then(m => m.default)
 
 if (import.meta.client) {

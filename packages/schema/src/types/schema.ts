@@ -1282,7 +1282,7 @@ export interface ConfigSchema {
      *
      * By default it is set to 'auto', which means it will be enabled only when there are islands, server components or server pages in your app.
      *
-     * Set it to 'vue-onigiri' to use the experimental vue-onigiri implementation, which serialize in AST instead of HTML.
+     * Set it to 'vue-onigiri' to use the experimental vue-onigiri implementation, which renders islands as HTML with nonce-bound markers around the `v-load-client` components it hydrates.
      *
      * @default 'auto'
      */

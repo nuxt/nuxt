@@ -4,6 +4,7 @@ import { linkToAlias } from '../../utils.ts'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ELEMENT_NODE, parse, walk, walkSync } from 'ultrahtml'
+import type { ElementNode } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
 import { normalize } from 'pathe'
@@ -100,22 +101,9 @@ export const IslandsVForBoundPlugin = (options: Pick<ServerOnlyComponentTransfor
     handler (code, id, transformMeta?: unknown) {
       const template = code.match(TEMPLATE_RE)
       if (!template) { return }
-      const startingIndex = template.index || 0
       const s = rolldownString(code, id, transformMeta)
 
-      let hasBoundedVFor = false
-      walkSync(parse(template[0]), (node) => {
-        if (node.type !== ELEMENT_NODE || !('v-for' in node.attributes)) { return }
-        const start = startingIndex + node.loc[0].start
-        const end = startingIndex + node.loc[0].end
-        const openTag = code.slice(start, end)
-        const bounded = boundVForInTag(openTag)
-        if (bounded !== openTag) {
-          s.overwrite(start, end, bounded)
-          hasBoundedVFor = true
-        }
-      })
-      if (!hasBoundedVFor) { return }
+      if (!boundVForsInTemplate(s, code, template)) { return }
 
       injectSetupImports(s, code, VFOR_BOUND_IMPORT_CODE)
       return generateTransform(s, id)
@@ -158,6 +146,11 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
 
         injectSetupImports(s, code, IMPORT_CODE)
 
+        if (isIsland) {
+          // slots and `nuxt-client` tags bound their own `v-for` in the walk below
+          boundVForsInTemplate(s, code, template, node => node.name === 'slot' || node.name === 'NuxtTeleportIslandComponent' || (hasNuxtClientAttribute(node) && isVite && !!options.selectiveClient))
+        }
+
         let hasNuxtClient = false
 
         const ast = parse(template[0])
@@ -199,21 +192,12 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
             return
           }
 
-          const hasNuxtClientAttr = 'nuxt-client' in node.attributes || ':nuxt-client' in node.attributes
+          const hasNuxtClientAttr = hasNuxtClientAttribute(node)
           if (hasNuxtClientAttr) {
             hasNuxtClient = true
           }
 
           if (!hasNuxtClientAttr || !isVite || !options.selectiveClient) {
-            if (isIsland && 'v-for' in node.attributes) {
-              const start = startingIndex + node.loc[0].start
-              const end = startingIndex + node.loc[0].end
-              const openTag = code.slice(start, end)
-              const bounded = boundVForInTag(openTag)
-              if (bounded !== openTag) {
-                s.overwrite(start, end, bounded)
-              }
-            }
             return
           }
 
@@ -247,6 +231,31 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
     },
   }
 })
+
+function hasNuxtClientAttribute (node: ElementNode): boolean {
+  return 'nuxt-client' in node.attributes || ':nuxt-client' in node.attributes
+}
+
+/**
+ * Clamps the `v-for` source of every element in an SFC template that `skip` does not claim.
+ * Returns whether any tag changed.
+ */
+function boundVForsInTemplate (s: ReturnType<typeof rolldownString>, code: string, template: RegExpMatchArray, skip?: (node: ElementNode) => boolean): boolean {
+  const startingIndex = template.index || 0
+  let changed = false
+  walkSync(parse(template[0]), (node) => {
+    if (node.type !== ELEMENT_NODE || !('v-for' in node.attributes) || skip?.(node)) { return }
+    const start = startingIndex + node.loc[0].start
+    const end = startingIndex + node.loc[0].end
+    const openTag = code.slice(start, end)
+    const bounded = boundVForInTag(openTag)
+    if (bounded !== openTag) {
+      s.overwrite(start, end, bounded)
+      changed = true
+    }
+  })
+  return changed
+}
 
 function isIslandFile (pathname: string, options: ServerOnlyComponentTransformPluginOptions): boolean {
   const components = options.getComponents()

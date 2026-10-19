@@ -6,11 +6,8 @@ import { isWindows } from 'std-env'
 import { normalize } from 'pathe'
 import { glob } from 'tinyglobby'
 import { $fetch, fetch, setup, startServer, useTestContext } from '@nuxt/test-utils/e2e'
-import type { DefineComponent } from 'vue'
-import { createSSRApp, defineComponent, h } from 'vue'
-import { renderToString } from 'vue/server-renderer'
-import { renderOnigiri } from 'vue-onigiri/runtime/deserialize'
-import type { OnigiriPayload } from 'vue-onigiri/runtime/shared'
+import { decodeMarker } from 'vue-onigiri'
+import type { OnigiriComponentMarker, OnigiriTeleportMarker } from 'vue-onigiri'
 import type { NuxtIslandResponse } from 'nuxt/app'
 import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/island-hash'
 import { MAX_ISLAND_BODY_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
@@ -132,12 +129,12 @@ describe.runIf(shouldRun)('server components/islands', () => {
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
 
-    const text = (await page.innerText('pre')).replaceAll(/ data-island-uid="[^"]*"/g, '').replace(/data-island-component="[^"]*"/g, 'data-island-component')
+    const text = (await page.innerText('pre')).replaceAll(/ data-island-uid="[^"]*"/g, '').replace(/data-island-component="[^"]*"/g, 'data-island-component').replace(/(o:c:)[a-z0-9]+/gi, '$1NONCE')
 
     if (isWebpack) {
       expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <div class="sugar-counter" v-load-client=""> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div></div>"')
     } else {
-      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!----></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!----></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><div>a</div><div>b</div><div>c</div></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border: 1px solid red;"> The component below is not a slot but declared as interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div></div>"')
+      expect(text).toMatchInlineSnapshot(`" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border: 1px solid red;"> The component below is not a slot but declared as interactive <!--o:c:NONCE[1,{"multiplier":1},"/components/Counter.vue","default"]--><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--/o:c:NONCE--></div></div>"`)
     }
     expect(text).toContain('async component that was very long')
 
@@ -217,14 +214,13 @@ describe.runIf(shouldRun)('server components/islands', () => {
     await page.close()
   })
 
-  // Unlike the legacy renderer (which re-reads the island's SSR DOM at hydration), the
-  // serialized AST in the payload is onigiri's hydration source, so the island body
-  // legitimately appears twice in the initial response: once rendered, once as data.
-  it('/server-page - ships the island body once in the markup and once in the payload', async () => {
+  // The client rebuilds the island from its SSR DOM, so the payload carries only the
+  // marker nonce and the island body appears once, in the markup.
+  it('/server-page - ships the island body only in the markup', async () => {
     const html = await $fetch<string>('/server-page')
     const [markup = '', payload = ''] = html.split(/<script[^>]*id="__NUXT_DATA__"[^>]*>/)
     expect(markup.match(/Hello this is a server page/g)).toHaveLength(1)
-    expect(payload.match(/Hello this is a server page/g)).toHaveLength(1)
+    expect(payload).not.toContain('Hello this is a server page')
   })
 
   it('/server-page - island response is prefetched by NuxtLink', async () => {
@@ -257,8 +253,7 @@ describe.runIf(shouldRun)('server components/islands', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/31510
-  // TODO: restore the scoped-style assertions once island slots render again — the
-  // serializer will also need to carry `vnode.scopeId` for scoped styles to match
+  // TODO: restore the scoped-style assertions once island slots render again
   it.skipIf(isWebpack)('does not render consumer slot content in server components', async () => {
     const { page } = await renderPage('/slotted-styles')
 
@@ -274,14 +269,13 @@ describe.runIf(shouldRun)('component islands', () => {
   it('renders components with route', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
-    expect(result.html).toBeUndefined()
-    const html = await renderIslandAst(result.ast)
+    const { html } = readIsland(result)
     expect(html).toContain('Route: /foo')
   })
 
   it('strips dev-only content in production', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('DevOnlyComponent'))
-    const html = await renderIslandAst(result.ast)
+    const { html } = readIsland(result)
     expect(html).toContain(isDev ? 'onigiri dev-only content' : 'onigiri prod-only fallback')
     expect(html).not.toContain(isDev ? 'onigiri prod-only fallback' : 'onigiri dev-only content')
 
@@ -310,13 +304,13 @@ describe.runIf(shouldRun)('component islands', () => {
   it('render async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
 
-    const html = await renderIslandAst(result.ast)
+    const { html } = readIsland(result)
     expect(html).toContain('count is above 2')
     expect(html).toContain('that was very long')
     expect(html).toMatch(/id="long-async-component-count">\s*3\s*</)
     expect(html).toContain('<p>hello world !!!</p>')
     // caller slot content does not travel over the island protocol, so the
-    // unfilled named slots serialize their fallback content inline
+    // unfilled named slots render their fallback content inline
     expect(html).toContain('fallback slot -- index: 0')
     expect(html).toContain('fallback slot -- index: 2')
     expect(html).toMatch(/fall slot -- index: 0/)
@@ -327,28 +321,46 @@ describe.runIf(shouldRun)('component islands', () => {
   it('render .server async component', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
 
-    const html = await renderIslandAst(result.ast)
+    const { html, components } = readIsland(result)
     expect(html).toContain('This is a .server (20ms) async component')
     expect(html).toContain('that was very long')
     expect(html).toMatch(/id="async-server-component-count">\s*2\s*</)
-    // the non-interactive <Counter> is serialized inline, not as a client reference
+    // the non-interactive <Counter> renders inline, not as a client component
     expect(html).toContain('Sugar Counter 12 x 1 = 12')
-    expect(html).not.toContain('data-client-stub')
+    expect(components).toEqual([])
   })
 
   if (!isWebpack) {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>(islandURL('ServerWithClient'))
 
-      const html = await renderIslandAst(result.ast)
+      const { html, components } = readIsland(result)
       expect(html).toContain('ServerWithClient.server.vue')
       expect(html).toContain('<p>count: 0</p>')
       expect(html).toContain('This component should not be preloaded')
-      // the non-interactive <Counter> is serialized inline...
-      expect(html).toContain('Sugar Counter 12 x 1 = 12')
-      // ...while the `v-load-client` one ships as a component reference the
-      // client resolves, replacing the legacy `components` teleport channel
-      expect(html).toMatch(/class="interactive-component-wrapper"[\s\S]*data-client-stub="[^"]*Counter[^"]*"/)
+      // the non-interactive <Counter> renders inline without markers...
+      expect(html.replace(MARKED_REGION_RE, '')).toContain('Sugar Counter 12 x 1 = 12')
+      // ...while the `v-load-client` one is wrapped in markers carrying its chunk and props,
+      // replacing the legacy `components` teleport channel
+      expect(components).toHaveLength(1)
+      const [type, props, chunk, exportName] = components[0]!.marker
+      expect(type).toBe(1)
+      expect(props).toEqual({ multiplier: 1 })
+      expect(chunk).toMatch(/\/components\/Counter\.vue$/)
+      expect(exportName ?? 'default').toBe('default')
+      expect(components[0]!.html).toContain('Sugar Counter 12 x 1 = 12')
+      expect(html).toMatch(/class="interactive-component-wrapper"[\s\S]*<!--o:c:/)
+    })
+
+    it('render nested server components with one client component', async () => {
+      const result = await $fetch<NuxtIslandResponse>(islandURL('ServerOuter'))
+
+      // `ServerInner` renders as a nested island; its markers are rebound to the outer nonce
+      const { html, components } = readIsland(result)
+      expect(html).toContain('server-outer')
+      expect(html).toContain('server-inner-counter')
+      expect(components).toHaveLength(1)
+      expect(components[0]!.marker[2]).toMatch(/\/components\/Counter\.vue$/)
     })
   }
 
@@ -395,10 +407,18 @@ describe.runIf(shouldRun)('component islands', () => {
       expect(links.some(link => /PureComponent\.vue\?vue&type=style&index=0&scoped=[^&]+&lang\.css$/.test(String(link.href)))).toBe(true)
     }
 
-    const html = await renderIslandAst(result.ast)
+    const { html, components } = readIsland(result)
     expect(html).toContain('Was router enabled: true')
-    // the scope id survives serialization so scoped styles keep matching
+    // the scope id is in the island HTML so scoped styles keep matching
     expect(html).toMatch(/<pre[^>]*data-v-xxxxx/)
+    // only the outer `v-load-client` <Counter> is marked: it never renders its default slot,
+    // so no slot HTML is captured and the slot's own `v-load-client` <Counter> never renders
+    expect(components).toHaveLength(1)
+    const [, props, chunk, , slots] = components[0]!.marker
+    expect(props).toEqual({ multiplier: 3487 })
+    expect(chunk).toMatch(/\/components\/Counter\.vue$/)
+    expect(slots ?? {}).toEqual({})
+    expect(html).not.toContain('This Counter is loaded client side')
     // `v-html` raw JSON of the props
     expect(html).toContain('"number": 3487')
     expect(html).toContain('"str": "something"')
@@ -656,20 +676,22 @@ describe.runIf(shouldRun)('hash/render input alignment', () => {
       props: JSON.stringify({ ...props, 'data-v-abc123': '', 'data-v-def456': '' }),
     }))
 
-    expect(JSON.stringify(withScopeMarkers.ast)).not.toContain('data-v-abc123')
-    expect(withScopeMarkers.ast).toEqual(plain.ast)
+    expect(withScopeMarkers.html).not.toContain('data-v-abc123')
+    // each render has its own nonce, so compare the HTML with it masked
+    const masked = (r: NuxtIslandResponse) => r.html!.replaceAll(r.nonce!, 'NONCE')
+    expect(masked(withScopeMarkers)).toEqual(masked(plain))
   })
 
   it('bounds plain and slot v-for over a large-integer prop', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 10_000_000 } }))
-    const html = await renderIslandAst(result.ast)
+    const { html } = readIsland(result)
     expect(html.match(/class="plain-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
     expect(html.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
   })
 
   it('renders a small v-for prop unchanged', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 3 } }))
-    const html = await renderIslandAst(result.ast)
+    const { html } = readIsland(result)
     expect(html.match(/class="plain-item"/g)?.length ?? 0).toBe(3)
     expect(html.match(/class="slot-item"/g)?.length ?? 0).toBe(3)
   })
@@ -681,7 +703,7 @@ describe.runIf(shouldRun)('reserved island prop keys', () => {
   it('allows a nested template key when the runtime compiler is disabled', async () => {
     const props = { content: { template: 'blog' } }
     const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', { props }))
-    expect(result.ast).toBeTruthy()
+    expect(readIsland(result).html).toBeTruthy()
   })
 
   it('rejects a top-level `as` prop the island does not declare', async () => {
@@ -695,7 +717,7 @@ describe.runIf(shouldRun)('reserved island prop keys', () => {
 
   it('renders a top-level `as` prop the island declares', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsPropComponent', { props: { as: 'section' } }))
-    expect(JSON.stringify(result.ast)).toContain('as: section')
+    expect(readIsland(result).html).toContain('as: section')
   })
 })
 
@@ -719,7 +741,7 @@ describe.runIf(shouldRun)('page-island middleware', () => {
     }))
     expect(res.status).toBe(200)
     const body = await res.json() as NuxtIslandResponse
-    expect(JSON.stringify(body.ast)).toContain('Hello this is a server page')
+    expect(readIsland(body).html).toContain('Hello this is a server page')
   })
 
   it('rejects a `page_*` island whose url routes to a different page', async () => {
@@ -809,10 +831,21 @@ describe.runIf(shouldRun)('onigiri rendering matrix', () => {
     expect(html).toContain('Sugar Counter 12 x 5 = 60')
   })
 
-  it('island endpoint returns an AST payload, not island HTML', async () => {
-    const result = await $fetch<NuxtIslandResponse & { ast?: unknown }>(islandURL('PureComponent', { props: { bool: true, number: 3, str: 'hi', obj: { foo: 42 } } }))
-    expect(result.ast).toBeDefined()
-    expect(result.html).toBeUndefined()
+  it('island endpoint returns island HTML bound to a marker nonce', async () => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', { props: { bool: true, number: 3, str: 'hi', obj: { foo: 42 } } }))
+    expect(Object.keys(result).filter(key => key !== 'id').sort()).toEqual(['head', 'html', 'nonce'])
+    expect(result.nonce).toMatch(/^[a-z0-9]{16,}$/i)
+    // every marker carries the nonce, and each component region is closed
+    const markerNonces = [...result.html!.matchAll(/<!--\/?o:[ct]:(\w+)/g)].map(m => m[1])
+    expect(markerNonces.length).toBeGreaterThan(0)
+    expect(new Set(markerNonces)).toEqual(new Set([result.nonce]))
+    expect(result.html!.split(`<!--o:c:${result.nonce}[`).length).toBe(result.html!.split(`<!--/o:c:${result.nonce}-->`).length)
+  })
+
+  it('island markers use a fresh nonce for every render', async () => {
+    const url = islandURL('ServerWithClient')
+    const [a, b] = await Promise.all([$fetch<NuxtIslandResponse>(url), $fetch<NuxtIslandResponse>(url)])
+    expect(a.nonce).not.toBe(b.nonce)
   })
 
   it('hydrates client components inside islands without mismatches', async () => {
@@ -912,21 +945,91 @@ describe.runIf(shouldRun)('onigiri rendering matrix', () => {
   })
 })
 
+describe.runIf(shouldRun)('island request headers', () => {
+  it('forwards the page request headers to the island subrequest', async () => {
+    const html = await $fetch<string>('/island-headers', {
+      headers: {
+        cookie: 'session=alice',
+        authorization: 'Bearer alice-token',
+      },
+    })
+
+    expect(html).toContain('<span id="page-cookie">session=alice</span>')
+    expect(html).toContain('<span id="island-cookie">session=alice</span>')
+    expect(html).toContain('<span id="island-authorization">Bearer alice-token</span>')
+  })
+
+  it('does not forward headers from a different request', async () => {
+    const html = await $fetch<string>('/island-headers', { headers: { cookie: 'session=bob' } })
+    expect(html).toContain('<span id="island-cookie">session=bob</span>')
+    expect(html).toContain('<span id="island-authorization">none</span>')
+
+    const anonymous = await $fetch<string>('/island-headers')
+    expect(anonymous).toContain('<span id="island-cookie">none</span>')
+    expect(anonymous).toContain('<span id="island-authorization">none</span>')
+  })
+})
+
+interface MarkedComponent {
+  marker: OnigiriComponentMarker
+  /** Server HTML between the component's opening and closing markers. */
+  html: string
+}
+
+interface IslandMarkers {
+  /** Island HTML with scope ids normalised. */
+  html: string
+  /** Top-level `v-load-client` components; slot HTML is left for `readMarkers` on the slot. */
+  components: MarkedComponent[]
+  teleports: OnigiriTeleportMarker[]
+}
+
+// a component's marked region, assuming no nested region in the same HTML string
+const MARKED_REGION_RE = /<!--o:c:(\w+)\[[\s\S]*?<!--\/o:c:\1-->/g
+
 /**
- * Renders an island AST payload through the client deserializer, so assertions
- * survive AST layout changes. Client chunk references resolve to a marker
- * element since the test process cannot load them.
+ * Asserts the island response follows the HTML contract and parses its markers.
  */
-async function renderIslandAst (ast: unknown): Promise<string> {
-  const app = createSSRApp(defineComponent({
-    setup: () => () => renderOnigiri(ast as OnigiriPayload, {
-      importFn: chunk => Promise.resolve(defineComponent({
-        setup: (_, { slots }) => () => h('div', { 'data-client-stub': chunk }, slots.default?.()),
-      }) as DefineComponent),
-    }),
-  }))
-  const html = await renderToString(app)
-  return html.replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+function readIsland (result: NuxtIslandResponse): IslandMarkers {
+  expect(result).not.toHaveProperty('ast')
+  expect(typeof result.html).toBe('string')
+  expect(result.nonce).toMatch(/^[a-z0-9]{16,}$/i)
+  return readMarkers(result.html!, result.nonce!)
+}
+
+/**
+ * Parses the nonce-bound markers of an HTML string, pairing each top-level
+ * component marker with the HTML up to its closing comment.
+ */
+function readMarkers (html: string, nonce: string): IslandMarkers {
+  const open = `<!--o:c:${nonce}`
+  const close = `<!--/o:c:${nonce}-->`
+  const teleport = `<!--o:t:${nonce}`
+  const components: MarkedComponent[] = []
+  const teleports: OnigiriTeleportMarker[] = []
+  let depth = 0
+  let current: { marker: OnigiriComponentMarker, start: number } | undefined
+  for (const match of html.matchAll(/<!--\/?o:[ct]:[a-z0-9]+/gi)) {
+    const [prefix] = match
+    // marker JSON escapes `--`, so the first `-->` closes the comment
+    const end = html.indexOf('-->', match.index)
+    const comment = html.slice(match.index, end + 3)
+    const json = html.slice(match.index + prefix.length, end)
+    if (prefix === teleport) {
+      if (depth === 0) { teleports.push(decodeMarker<OnigiriTeleportMarker>(json)) }
+    } else if (prefix === open) {
+      if (depth++ === 0) { current = { marker: decodeMarker<OnigiriComponentMarker>(json), start: match.index + comment.length } }
+    } else if (comment === close) {
+      expect(depth).toBeGreaterThan(0)
+      if (--depth === 0) {
+        components.push({ marker: current!.marker, html: html.slice(current!.start, match.index) })
+      }
+    } else {
+      throw new Error(`marker bound to another nonce: ${comment}`)
+    }
+  }
+  expect(depth).toBe(0)
+  return { html: html.replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx'), components, teleports }
 }
 
 function normaliseIslandResult (result: NuxtIslandResponse) {

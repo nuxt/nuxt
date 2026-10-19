@@ -9,7 +9,6 @@ import type { ImportsOptions } from 'nuxt/schema'
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
 const IMPORTS_RE = /(['"])#imports\1/
-const ONIGIRI_ID_RE = /[?&]vue&type=onigiri\b/
 
 interface TransformPluginOptions {
   ctx: Pick<Unimport, 'injectImports'>
@@ -37,7 +36,7 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: Tra
       }
 
       // Vue files
-      if (isVue(id, { type: ['script', 'template'] }) || ONIGIRI_ID_RE.test(id)) {
+      if (isVue(id, { type: ['script', 'template'] })) {
         return true
       }
 

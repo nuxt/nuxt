@@ -164,7 +164,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     })
   }
 
-  const islandHandlerPath = JSON.stringify(resolve(distDir, nuxt.options.experimental.componentIslands === 'vue-onigiri' ? 'runtime/handlers/island-onigiri' : 'runtime/handlers/island'))
+  const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
 
   // the page renderer resolves this specifier whether or not islands are enabled
   nuxt.options.nitro.virtual ||= {}
@@ -280,6 +280,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     baseURL: nitroBaseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
+      // only an onigiri build references vue-onigiri, so a legacy output never traces or bundles it
+      '#internal/nuxt/onigiri-server.mjs': () => nuxt.options.experimental.componentIslands === 'vue-onigiri'
+        ? 'export { provideMarkerNonce } from \'vue-onigiri/server\''
+        : 'export const provideMarkerNonce = undefined',
       // the asset URL helpers the app also uses on the client
       [PATHS_SPECIFIER]: () => nuxt.vfs['#build/paths.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
