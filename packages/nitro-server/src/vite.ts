@@ -1,12 +1,13 @@
 import { randomBytes } from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
+import { defu } from 'defu'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
 import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
-import { nitro as nitroPlugin } from 'nitro/vite'
+import { type NitroPluginConfig, nitro as nitroPlugin } from 'nitro/vite'
 import escapeRE from 'escape-string-regexp'
 import MagicString from 'magic-string'
 import remapping from '@ampproject/remapping'
@@ -138,19 +139,25 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   if (nuxt.options.dev) {
     nuxt.options.vite.plugins.push(DevRequestUrlPlugin())
   }
+
+  const nitroViteOptions: NonNullable<NitroPluginConfig['experimental']>['vite'] = {
+    services: {
+      ssr: {
+        entry: resolveModulePath(resolve(distDir, 'runtime/handlers/renderer'), {
+          extensions: ['.ts', '.mjs', '.js'],
+        }),
+      },
+    },
+  }
+
+  // @ts-expect-error https://github.com/nitrojs/nitro/pull/4827
+  nitro.options.vite = defu(nitro.options.vite, nitroViteOptions)
+
   nuxt.options.vite.plugins.push(nitroPlugin({
     // reuse the Nitro instance we have created
     _nitro: nitro,
     experimental: {
-      vite: {
-        services: {
-          ssr: {
-            entry: resolveModulePath(resolve(distDir, 'runtime/handlers/renderer'), {
-              extensions: ['.ts', '.mjs', '.js'],
-            }),
-          },
-        },
-      },
+      vite: nitroViteOptions,
     },
   }))
 
