@@ -723,7 +723,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     files.set(toRealPath(target), TAG_SCOPE)
     const parentDirs = new Set([dirname(target), dirname(toRealPath(target)), toRealPath(dirname(target))])
     for (const dir of parentDirs) {
-      dirs.push([withTrailingSlash(dir), TAG_SCOPE])
+      if (!isMigratedModuleCode(withTrailingSlash(dir))) {
+        dirs.push([withTrailingSlash(dir), TAG_SCOPE])
+      }
     }
   }
 
@@ -814,7 +816,13 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     if (target === withTrailingSlash(ownerDir) || real === withTrailingSlash(toRealPath(ownerDir))) {
       continue
     }
-    addModuleScopeDir(statSync(alias, { throwIfNoEntry: false })?.isDirectory() ? alias : dirname(alias))
+    if (statSync(alias, { throwIfNoEntry: false })?.isDirectory()) {
+      addModuleScopeDir(alias)
+      continue
+    }
+    for (const dir of new Set([dirname(alias), dirname(toRealPath(normalize(alias)))])) {
+      addModuleScopeDir(dir)
+    }
   }
 
   // an auto-import source, scanned directory or server template is classified by what the

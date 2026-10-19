@@ -747,23 +747,28 @@ export const useModule = () => useNuxtApp()`)
     vi.restoreAllMocks()
   })
 
-  it.each([['nitro3', false], [undefined, true]] as const)('scopes the registrations of a module by its declared server API (server: %s)', async (server, scoped) => {
+  it.each([
+    ['nitro3', false, false],
+    ['nitro3', true, false],
+    [undefined, false, true],
+    [undefined, true, true],
+  ] as const)('scopes the registrations of a module by its declared server API (server: %s, symlinked: %s)', async (server, symlinked, scoped) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
-    const dir = createModuleDir('nitro-compat-declared-', false)
+    const dir = createModuleDir('nitro-compat-declared-', symlinked)
     const rootDir = join(dir, 'project')
     mkdirSync(join(dir, 'composables'), { recursive: true })
     mkdirSync(join(rootDir, 'server/api'), { recursive: true })
     writeFileSync(join(dir, 'composables/index.js'), `import { useNuxtApp } from '#imports'\nexport const useModule = () => useNuxtApp()`)
-    writeFileSync(join(dir, 'composables/shared.js'), `export const defineModuleConfig = config => config`)
+    writeFileSync(join(dir, 'composables/shared.js'), `import { getQuery } from 'h3'\nexport const defineModuleConfig = getQuery`)
     writeFileSync(join(rootDir, 'server/api/test.ts'), `import { useModule } from '#module'\nexport default useModule`)
 
     const alias = { '#module': join(dir, 'composables/index') }
     const nitroConfig: NitroConfig = { handlers: [], alias, imports: { imports: [{ name: 'defineModuleConfig', from: join(dir, 'composables/shared') }] } }
     const nuxt = createNuxt({ alias, extensions: ['.js', '.mjs', '.ts'], rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
-    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir, name: 'declared-module', server }])
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir: realpathSync(dir), name: 'declared-module', server }])
 
     if (scoped) {
-      expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`declared-module` (imports `#imports`)' })
+      expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`declared-module` (imports `#imports`, `h3`)' })
     } else {
       expect(report).not.toHaveBeenCalled()
     }
@@ -786,6 +791,51 @@ export default legacy`)
     await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir, name: 'alias-module' }])
 
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`alias-module` (imports `h3`)') })
+    vi.restoreAllMocks()
+  })
+
+  it('scopes a file alias linked from a migrated module by the module holding its real path', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9005').mockImplementation(() => ({}) as any)
+    const rootDir = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-linked-file-')))
+    onTestFinished(() => rmSync(rootDir, { recursive: true, force: true }))
+    const migrated = join(rootDir, 'modules/migrated')
+    const legacy = join(rootDir, 'modules/legacy')
+    mkdirSync(join(migrated, 'dist'), { recursive: true })
+    mkdirSync(join(legacy, 'lib'), { recursive: true })
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    writeFileSync(join(legacy, 'lib/query.ts'), `import { getQuery } from 'h3'\nexport const query = getQuery`)
+    symlinkSync(join(legacy, 'lib/query.ts'), join(migrated, 'dist/query.ts'))
+    writeFileSync(join(rootDir, 'server/api/test.ts'), `import { query } from '#query'\nexport default query`)
+
+    const alias = { '#query': join(migrated, 'dist/query.ts') }
+    const nitroConfig: NitroConfig = { handlers: [], alias }
+    const nuxt = createNuxt({ alias, extensions: ['.js', '.mjs', '.ts'], rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], [{ dir: migrated, name: 'migrated-module', server: 'nitro3' }, { dir: legacy, name: 'legacy-module' }])
+
+    expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`legacy-module` (imports `h3`)' })
+    vi.restoreAllMocks()
+  })
+
+  it('does not scope the directory of a migrated module holding a link to a v2 handler', async () => {
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-linked-handler-')))
+    onTestFinished(() => rmSync(root, { recursive: true, force: true }))
+    const migrated = join(root, 'migrated')
+    const legacy = join(root, 'legacy')
+    mkdirSync(join(migrated, 'dist'), { recursive: true })
+    mkdirSync(join(legacy, 'lib'), { recursive: true })
+    writeFileSync(join(legacy, 'lib/handler.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => 'ok')`)
+    symlinkSync(join(legacy, 'lib/handler.ts'), join(migrated, 'dist/handler.ts'))
+    writeFileSync(join(migrated, 'dist/sibling.ts'), `import { getQuery } from 'h3'\nexport const query = getQuery`)
+
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/linked', handler: join(migrated, 'dist/handler.ts') } as any] }
+    await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir: migrated, name: 'migrated-module', server: 'nitro3' }, { dir: legacy, name: 'legacy-module' }])
+
+    const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
+    const context = { resolve: () => Promise.resolve(null) }
+    await expect(plugin.resolveId.handler.call(context, 'h3', join(legacy, 'lib/handler.ts'))).resolves.toMatch(/compat[\\/]h3-v1/)
+    await expect(plugin.resolveId.handler.call(context, 'h3', join(migrated, 'dist/sibling.ts'))).resolves.toBeUndefined()
     vi.restoreAllMocks()
   })
 
