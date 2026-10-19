@@ -53,8 +53,7 @@ export const rootComponentTemplate: NuxtTemplate = {
   dependsOn: [],
   // TODO: fix upstream in vite - this ensures that vite generates a module graph for islands
   // but should not be necessary (and has a warmup performance cost). See https://github.com/nuxt/nuxt/pull/24584.
-  // vue-onigiri resolves islands without it, and it would pull them into the client graph
-  getContents: ctx => (ctx.nuxt.options.dev && ctx.nuxt.options.experimental.componentIslands !== 'vue-onigiri' ? 'import \'#build/components.islands.mjs\';\n' : '') + genExport(ctx.app.rootComponent!, ['default']),
+  getContents: ctx => (ctx.nuxt.options.dev ? 'import \'#build/components.islands.mjs\';\n' : '') + genExport(ctx.app.rootComponent!, ['default']),
 }
 // TODO: Use an alias
 export const errorComponentTemplate: NuxtTemplate = {

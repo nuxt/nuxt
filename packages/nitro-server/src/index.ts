@@ -280,9 +280,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     baseURL: nitroBaseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
-      // only an onigiri build references vue-onigiri, so a legacy output never traces or bundles it
       '#internal/nuxt/onigiri-server.mjs': () => nuxt.options.experimental.componentIslands === 'vue-onigiri'
-        ? 'export { provideMarkerNonce } from \'vue-onigiri/server\''
+        ? `export { provideMarkerNonce } from ${JSON.stringify(resolve(resolveModulePath('vue-onigiri/server', { from: import.meta.url })))}`
         : 'export const provideMarkerNonce = undefined',
       // the asset URL helpers the app also uses on the client
       [PATHS_SPECIFIER]: () => nuxt.vfs['#build/paths.mjs'] || '',

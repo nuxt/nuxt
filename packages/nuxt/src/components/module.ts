@@ -367,7 +367,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
       addBuildPlugin(RenderListPlugin(), { client: false })
 
-      if (!onigiriIslands && selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
+      if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
         addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
       } else {
         addTemplate({

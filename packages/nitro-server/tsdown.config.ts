@@ -18,7 +18,6 @@ export default defineConfig([
     deps: {
       onlyBundle: [],
       neverBundle: [
-        'vue-onigiri',
         '#internal/nuxt/paths',
         '#internal/dev-server-logs-options',
         '#internal/nuxt.config.mjs',
