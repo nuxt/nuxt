@@ -94,7 +94,7 @@
     "my-bad": "catalog:nitro-runtime",
     "nano-staged": "catalog:dev",
     "nitro": "catalog:nitro-runtime",
-    "nitropack": "2.13.4",
+    "nitropack": "2.13.5",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "catalog:dev",
     "ofetch": "catalog:app-runtime",
