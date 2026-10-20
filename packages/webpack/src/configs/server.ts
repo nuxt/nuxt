@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { isAbsolute, normalize, resolve } from 'pathe'
 import { directoryToURL, logger, resolveAlias } from '@nuxt/kit'
 import { parseNodeModulePath } from '@nuxt/kit/internal'
@@ -99,7 +100,11 @@ function serverStandalone (ctx: WebpackConfigContext) {
         try: true,
       })
       if (resolved && isAbsolute(resolved)) {
-        return cb(undefined, resolved)
+        // In dev the server bundle is loaded directly by the Node ESM loader; on Windows
+        // raw absolute paths ("D:\...") are treated as "d:" protocol URLs and throw
+        // ERR_UNSUPPORTED_ESM_URL_SCHEME. Wrap in a file:// URL for dev only —
+        // production Rollup cannot resolve file:// specifiers.
+        return cb(undefined, ctx.nuxt.options.dev ? pathToFileURL(resolved).href : resolved)
       }
       return cb(undefined, true)
     }
