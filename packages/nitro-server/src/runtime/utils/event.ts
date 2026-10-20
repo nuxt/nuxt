@@ -140,13 +140,14 @@ function toWebRequest (event: H3Event): Request {
 
   const method = event.method
   if (!PAYLOAD_METHODS.has(method)) {
-    return new Request(getRequestURL(event), { method, headers: event.headers })
+    return new Request(getRequestURL(event), { method, headers: event.headers, signal: toRequestSignal(event) })
   }
 
   const request = new Request(getRequestURL(event), {
     method,
     headers: event.headers,
     body: toBufferedBodyStream(event),
+    signal: toRequestSignal(event),
     // @ts-expect-error undici option, required to send a stream body
     duplex: 'half',
   })
@@ -174,6 +175,23 @@ function toWebRequest (event: H3Event): Request {
   })
 
   return buffered
+}
+
+/**
+ * Aborts when the client disconnects before the response is finished, the same moment an h3 v1
+ * handler would catch with `event.node.req.on('close')`.
+ */
+function toRequestSignal (event: H3Event): AbortSignal {
+  const controller = new AbortController()
+  const res = event.node?.res
+  if (typeof res?.once === 'function') {
+    res.once('close', () => {
+      if (!res.writableFinished) {
+        controller.abort()
+      }
+    })
+  }
+  return controller.signal
 }
 
 function toBufferedBodyStream (event: H3Event): ReadableStream<Uint8Array> {
