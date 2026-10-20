@@ -352,6 +352,14 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         }
       })
 
+      if (import.meta.client) {
+        // middleware has finished, so later `navigateTo` calls (e.g. from components while
+        // the navigation is still pending) should navigate rather than return a redirect
+        router.beforeEach(() => {
+          delete nuxtApp._processingMiddleware
+        })
+      }
+
       router.afterEach(() => {
         delete nuxtApp._processingMiddleware
         if (import.meta.server) {
