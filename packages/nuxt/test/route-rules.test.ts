@@ -49,7 +49,7 @@ describe('routeRules from page meta', () => {
     expect(result).toEqual({
       '/': { prerender: true },
       '/some/nested/page': { prerender: true },
-      '/users/*': { prerender: true },
+      '/users/:_0': { prerender: true },
     })
   })
 
@@ -68,7 +68,7 @@ describe('routeRules from page meta', () => {
     expect(collapse).not.toHaveBeenCalled()
   })
 
-  it('converts dynamic params to single-segment wildcards without warning', () => {
+  it('converts dynamic params to positional params without warning', () => {
     const pages = [
       {
         path: '/foo/:id/bar',
@@ -77,7 +77,7 @@ describe('routeRules from page meta', () => {
     ]
 
     expect(globRouteRulesFromPages(pages)).toEqual({
-      '/foo/*/bar': { prerender: true },
+      '/foo/:_0/bar': { prerender: true },
     })
     expect(collapse).not.toHaveBeenCalled()
   })
@@ -110,9 +110,9 @@ describe('routeRules from page meta', () => {
     ]
 
     expect(globRouteRulesFromPages(pages)).toEqual({
-      '/foo/*': { prerender: true },
+      '/foo/:_0': { prerender: true },
     })
-    expect(collision).toHaveBeenCalledWith({ path: '/foo/:slug', pattern: '/foo/*' })
+    expect(collision).toHaveBeenCalledWith({ path: '/foo/:slug', pattern: '/foo/:_0' })
   })
 
   it('removes route rules from pages', () => {

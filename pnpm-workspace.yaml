@@ -223,7 +223,7 @@ catalogs:
     unenv: ^2.0.0-rc.24
     unimport: ^7.0.2
     unplugin: ^3.4.0
-    unrouting: ^0.2.3
+    unrouting: ^0.3.1
     untyped: ^2.0.0
     verkit: ^0.5.0
     vue-bundle-renderer: ^2.4.0

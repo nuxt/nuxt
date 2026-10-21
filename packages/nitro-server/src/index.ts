@@ -204,7 +204,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // to them.
       const noScriptsPatterns = [...new Set(nitro.routing.routeRules.routes
         .filter(r => r.data.noScripts)
-        .map(r => rou3PatternToURLPattern(r.route).pattern))]
+        .map(r => rou3PatternToURLPattern(r.route, { wildcard: 'segment' }).pattern))]
       // `href_matches` patterns for every page route, provided by the pages
       // module; pages served without scripts scope their blanket speculation
       // rules to these (safe-to-GET) same-origin navigations
