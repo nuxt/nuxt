@@ -24,4 +24,10 @@ export default defineNitroPlugin((nitro) => {
     if (event.url.pathname !== '/hooks') { return }
     ctx.bodyAppend.push('<!--render:html:close bodyAppend-->')
   })
+
+  // `render:document` only fires for documents that are not streamed.
+  nitro.hooks.hook('render:document', (ctx, { event }) => {
+    if (event.url.pathname !== '/hooks') { return }
+    ctx.html += '<!--render:document-->'
+  })
 })

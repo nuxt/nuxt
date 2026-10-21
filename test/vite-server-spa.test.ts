@@ -32,6 +32,7 @@ describe.skipIf(!runsDev)('pure vite dev server', () => {
     expect(html.match(/<meta name="renderer-plugin"[^>]*>/g)).toEqual(['<meta name="renderer-plugin" content="request /about">'])
     expect(html).toContain('<meta name="renderer-plugin-config" content="hello from runtime config">')
     expect(html).toMatch(/<body[^>]* data-renderer-plugin>/)
+    expect(html).toContain('<!-- renderer-document --></body>')
   })
 
   it('serves files from the public directory', async () => {
@@ -93,6 +94,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
     expect(html.match(/<meta name="renderer-plugin"[^>]*>/g)).toEqual(['<meta name="renderer-plugin" content="prerender /">'])
     expect(html).toContain('<meta name="renderer-plugin-config" content="hello from runtime config">')
     expect(html).toMatch(/<body[^>]* data-renderer-plugin>/)
+    expect(html).toContain('<!-- renderer-document --></body>')
   })
 
   it('renders the built-in loading template', () => {
