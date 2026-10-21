@@ -1,12 +1,12 @@
-import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { dirname, join, normalize, resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { withoutTrailingSlash } from 'ufo'
 import { defu } from 'defu'
-import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
+import { logger, resolvePath, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
 import { _generateTypes } from '../../kit/src/template.ts'
 import { loadNuxt } from '../src/index.ts'
@@ -38,6 +38,36 @@ afterEach(() => {
 })
 
 describe('loadNuxt', () => {
+  it('resolves layer runtime imports through the consuming app', async () => {
+    const layerDir = mkdtempSync(join(tmpdir(), 'nuxt-layer-runtime-'))
+    onTestFinished(() => rmSync(layerDir, { recursive: true, force: true }))
+    const layerNuxtDir = join(layerDir, 'node_modules/nuxt')
+    mkdirSync(layerNuxtDir, { recursive: true })
+    writeFileSync(join(layerNuxtDir, 'package.json'), JSON.stringify({
+      name: 'nuxt',
+      type: 'module',
+      exports: { './app': './app.ts' },
+    }))
+    writeFileSync(join(layerNuxtDir, 'app.ts'), 'export const runtime = "layer"')
+
+    const nuxt = await loadNuxt({ cwd: repoRoot })
+    onTestFinished(() => nuxt.close())
+    const resolverOptions = { cwd: layerDir, alias: nuxt.options.alias }
+
+    expect(await resolvePath('nuxt/app', resolverOptions)).toBe(await resolvePath('#app', resolverOptions))
+  })
+
+  it('preserves a custom runtime import alias', async () => {
+    const customRuntime = resolve(repoRoot, 'packages/nuxt/src/app/composables/router.ts')
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+      overrides: { alias: { 'nuxt/app': customRuntime } },
+    })
+    onTestFinished(() => nuxt.close())
+
+    expect(await resolvePath('nuxt/app', { alias: nuxt.options.alias })).toBe(customRuntime)
+  })
+
   it('respects hook overrides', async () => {
     let hookRan = false
     const nuxt = await loadNuxt({
@@ -180,6 +210,46 @@ describe('loadNuxt', () => {
     expect(nodeTsConfig.include).toContain('../layers/*/nuxt.schema.*')
 
     await nuxt.close()
+  })
+
+  describe('when building into a relocated build directory', () => {
+    async function generateTypesWithRelocatedBuildDir (existingServerTsConfig?: string) {
+      const tmpDir = mkdtempSync(join(tmpdir(), 'nuxt-relocated-build-'))
+      onTestFinished(() => rmSync(tmpDir, { recursive: true, force: true }))
+      const typesDir = join(tmpDir, '.nuxt')
+      mkdirSync(typesDir, { recursive: true })
+      if (existingServerTsConfig) {
+        writeFileSync(join(typesDir, 'tsconfig.server.json'), existingServerTsConfig)
+      }
+      const extendedTsConfigs: unknown[] = []
+      const nuxt = await loadNuxt({
+        cwd: repoRoot,
+        ready: true,
+        overrides: {
+          buildDir: join(tmpDir, 'node_modules/.cache/nuxt/.nuxt'),
+          typesDir,
+          nitro: { hooks: { 'types:extend': (types) => { extendedTsConfigs.push(types.tsConfig) } } },
+        },
+      })
+      onTestFinished(() => nuxt.close())
+      await _generateTypes(nuxt)
+      return {
+        serverTsConfig: readFileSync(join(typesDir, 'tsconfig.server.json'), 'utf8'),
+        extendedTsConfigs,
+      }
+    }
+
+    it('does not overwrite an existing nitro tsconfig', async () => {
+      const { serverTsConfig, extendedTsConfigs } = await generateTypesWithRelocatedBuildDir('{}')
+      expect(serverTsConfig).toBe('{}')
+      expect(extendedTsConfigs).not.toHaveLength(0)
+      expect(extendedTsConfigs).not.toContain(undefined)
+    })
+
+    it('writes a missing nitro tsconfig', async () => {
+      const { serverTsConfig } = await generateTypesWithRelocatedBuildDir()
+      expect(JSON.parse(serverTsConfig)).toHaveProperty('compilerOptions.paths')
+    })
   })
 
   it('does not leak debug mutation proxies into resolved options', async () => {

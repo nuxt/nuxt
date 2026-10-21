@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/nitro-server",
-  "version": "4.6.1",
+  "version": "4.6.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -55,10 +55,11 @@
     "klona": "catalog:app-runtime",
     "mocked-exports": "catalog:build",
     "my-bad": "catalog:nitro-runtime",
-    "nitropack": "^2.13.4",
+    "nitropack": "^2.13.5",
     "nostics": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",
+    "radix3": "^1.1.2",
     "rou3": "^0.9.2",
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",
@@ -92,6 +93,7 @@
     "@nuxt/schema": "workspace:*",
     "@rollup/plugin-babel": "catalog:dev",
     "nuxt": "workspace:*",
+    "rollup": "catalog:dev",
     "tsdown": "catalog:dev",
     "vitest": "catalog:dev"
   },

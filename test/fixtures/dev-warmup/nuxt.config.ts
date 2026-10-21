@@ -5,6 +5,9 @@ export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   compatibilityDate: 'latest',
   nitro: {
+    esbuild: {
+      options: { target: 'esnext' },
+    },
     output: {
       dir: `.output-${projectSuffix}`,
     },

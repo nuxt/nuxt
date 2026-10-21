@@ -104,6 +104,7 @@ export default createConfigForNuxt({
     files: ['packages/**/*.{mjs,js,ts}', '**/*.{spec,test}.{mjs,js,ts}'],
     ignores: [
       'packages/nuxt/src/app/types/augments.ts',
+      'packages/nuxt/app.d.ts',
       'test/fixtures/basic/app/plugins/this-should-not-load.spec.js',
     ],
     languageOptions: {

@@ -73,8 +73,6 @@ test.describe('route scroll behavior', () => {
 
     await page.click('#scroll-to-top')
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/scroll-to-top/scroll-to-top'))
-
-    const scrollY = await page.evaluate(() => window.scrollY)
-    expect(scrollY).toBe(0)
+    await page.waitForFunction(() => window.scrollY === 0)
   })
 })

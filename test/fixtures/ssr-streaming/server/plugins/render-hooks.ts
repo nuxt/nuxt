@@ -24,4 +24,10 @@ export default defineNitroPlugin((nitro) => {
     if (getRequestURL(event).pathname !== '/hooks') { return }
     ctx.bodyAppend.push('<!--render:html:close bodyAppend-->')
   })
+
+  // `render:response` fires before the body streams; headers can still change.
+  nitro.hooks.hook('render:response', (response, { event }) => {
+    if (getRequestURL(event).pathname !== '/hooks') { return }
+    response.headers['x-render-response'] = `${response.body instanceof ReadableStream ? 'stream' : typeof response.body};${response.headers['content-type']}`
+  })
 })

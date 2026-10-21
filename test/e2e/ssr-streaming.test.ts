@@ -511,7 +511,7 @@ test.describe('SSR Streaming', () => {
   // Modules drive the streaming response via three hooks: `render:html`
   // (pre-shell, with `streaming: true`), `render:html:chunk` (per-chunk byte
   // mutation), and `render:html:close` (final `bodyAppend`). The `/hooks`
-  // fixture plugin exercises all three.
+  // fixture plugin exercises all three, plus `render:response`.
   test('render:html streaming hooks mutate the shell and document', async ({ fetch }) => {
     const res = await fetch('/hooks')
     const html = await res.text()
@@ -523,6 +523,9 @@ test.describe('SSR Streaming', () => {
     expect(html).toContain('<!--chunk:0-->')
     // `render:html:close` injected bodyAppend before the closing tags
     expect(html).toMatch(/<!--render:html:close bodyAppend-->[\s\S]*<\/body>/)
+    // `render:response` saw the stream and its headers, and could add one
+    expect(res.headers.get('transfer-encoding')).toBe('chunked')
+    expect(res.headers.get('x-render-response')).toBe('stream;text/html;charset=utf-8')
   })
 
   // Island components are compatible with streaming: their teleported content

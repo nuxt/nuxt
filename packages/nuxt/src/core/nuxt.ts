@@ -291,6 +291,13 @@ async function initNuxt (nuxt: Nuxt) {
     },
   })
 
+  // the shared context gets an empty route set, so it does not load server handlers
+  addTemplate({
+    filename: 'types/shared-server-routes.d.ts',
+    dependsOn: [],
+    getContents: () => emitServerRoutesModule({ routes: [], strict: false, moduleSpecifier: '#app/types' }),
+  })
+
   addTypeTemplate({
     filename: 'types/nitro-layouts.d.ts',
     dependsOn: [],
@@ -449,6 +456,7 @@ async function initNuxt (nuxt: Nuxt) {
     // required for the server builder's augmentations (referenced above)
     opts.nodeTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
+    opts.sharedTsConfig.compilerOptions!.paths!['#build/server-routes'] ||= [resolve(nuxt.options.buildDir, 'types/shared-server-routes.d.ts')]
 
     for (const dirs of layerDirs) {
       const declaration = join(dirs.root, 'index.d.ts')
@@ -1033,6 +1041,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
+  options.alias['nuxt/app'] ||= options.appDir
   options._majorVersion = 4
 
   // De-duplicate key arrays
@@ -1362,7 +1371,7 @@ async function vueSupportsVapor (nuxt: Nuxt) {
   })
   if (!path) { return false }
   const { version } = await readPackageJSON(path).catch(() => ({}) as PackageJson)
-  return !!version && satisfies(version, '>=3.6.0-0')
+  return !!version && satisfies(version, '>=3.6.0-rc.6')
 }
 
 const RELATIVE_CSS_ENTRY_RE = /^\.{1,2}\//

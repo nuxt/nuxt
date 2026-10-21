@@ -365,6 +365,11 @@ export default defineResolvers({
     nitroViteEnvironment: {
       $resolve: () => false,
     },
+    typescriptPlugin: {
+      $resolve: (val) => {
+        return typeof val === 'boolean' ? val : false
+      },
+    },
     ssrStreaming: {
       $resolve (val) {
         // Indexing crawlers only; `chrome-lighthouse` is intentionally absent

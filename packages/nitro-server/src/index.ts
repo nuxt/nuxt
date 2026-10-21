@@ -9,10 +9,11 @@ import { addRoute, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import type { Plugin } from 'rollup'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
-import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
+import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitropack'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitropack/types'
-import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveDeclarationPath, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { bundlerDiagnostics, getServerRuntime, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -29,7 +30,7 @@ import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { createNormalizedRouteRulesRouter, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizePathCode, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
 import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
 import { addDevServerHandlers, collectServerRegistrations, toPortableDevHandlers } from './registrations.ts'
 import { nitroInternalApiTemplate, nitroSchemaTemplate } from './templates.ts'
@@ -116,6 +117,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve aliases in user-provided input - so `~~/server/test` will work
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
+  nuxt.options.nitro.plugins.unshift(resolve(distDir, 'runtime/plugins/route-rules'))
 
   for (const asset of [...nuxt.options.nitro.publicAssets || [], ...nuxt.options.nitro.serverAssets || []]) {
     if (asset?.dir) {
@@ -201,6 +203,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
   const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
+
+  // nitro resolves the paths in `tsconfig.server.json` against its build directory, so a build into
+  // another `buildDir` writes it there rather than overwriting the one the project references
+  const typesServerTsConfigPath = join(typesDir, 'tsconfig.server.json')
+  const serverTsConfigPath = !nuxt.options._prepare && !nuxt.options.dev && typesDir !== nuxt.options.buildDir && existsSync(typesServerTsConfigPath)
+    ? join(nuxt.options.buildDir, 'tsconfig.server.json')
+    : typesServerTsConfigPath
 
   // pin to h3 v1 to prevent pulling in h3 v2 as a dependency of the nitro server
   const h3Entry = resolveModulePath('h3', { from: import.meta.url })
@@ -348,6 +357,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
         `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
       ].join('\n'),
+      '#internal/nuxt/route-rules.mjs': () => [
+        normalizePathCode,
+        `export const normalizeRouteRulePath = path => normalizePath(path, ${!nuxt.options.router.options.sensitive})`,
+      ].join('\n'),
     },
     routeRules: {
       ...(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
@@ -358,7 +371,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     typescript: {
       strict: true,
       generateTsConfig: true,
-      tsconfigPath: join(typesDir, 'tsconfig.server.json'),
+      tsconfigPath: serverTsConfigPath,
       tsConfig: {
         compilerOptions: {
           lib: ['esnext', 'webworker', 'dom.iterable'],
@@ -712,13 +725,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // resolve from nuxt's own dependency tree, where the bundled runtime imports unhead from
   const nuxtRuntimeImporter = join(nuxt.options.appDir, 'index.js')
-  nitroConfig.rollupConfig!.plugins!.push({
+  const unheadDedupePlugin: Plugin = {
     name: 'nuxt:unhead:dedupe',
     resolveId (id, importer, options) {
       if (!importer || !UNHEAD_IMPORT_RE.test(id)) { return }
       return this.resolve(id, nuxtRuntimeImporter, { ...options, skipSelf: true })
     },
-  })
+  }
+  nitroConfig.rollupConfig!.plugins!.push(unheadDedupePlugin)
 
   // Nitro serialises mount options with `JSON.stringify` for the storage its dev and
   // prerender runtimes build, so the patterns have to go through the fs driver's `ignore`
@@ -770,7 +784,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
 
-  // a `nitro:config` listener can still register a plugin, so collect after the hook
+  // after the hook, so rules and registrations contributed by modules are covered too
+  normalizeAppMiddlewareRules(nitroConfig.routeRules)
   collectServerRegistrations(nuxt, nitroConfig)
 
   if (!nuxt.options.experimental.nitroAutoImports && nitroConfig.imports) {
@@ -1081,17 +1096,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Nitro discovers file-based handlers by scanning, so they are only visible to Nuxt's typed
   // `$fetch` if reported here. Patterns are resolved through rou3, the router that will serve the
   // request, so the generated types and the routing cannot disagree about what a route matches.
-  nuxt.hook('server:routes', async (routes, context) => {
+  nuxt.hook('server:routes', (routes, context) => {
     context.requestTypes = {
       module: REQUEST_TYPES_MODULE,
       body: 'RequestBodyOf',
       query: 'RequestQueryOf',
-    }
-
-    // outside dev, nitro scans its handlers while types are prepared, which is after templates are
-    // generated, so the scan has to be brought forward for the route set to be complete
-    if (!nuxt.options.dev && nitro.scannedHandlers.length === 0) {
-      await scanHandlers(nitro)
     }
 
     for (const handler of [...nitro.scannedHandlers, ...nitro.options.handlers]) {
@@ -1130,9 +1139,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
-    if (!nuxt.options.dev) {
-      await scanHandlers(nitro)
-    }
     // in dev Nitro's own watcher writes these again once handlers have been scanned, but
     // the project `tsconfig.json` references `tsconfig.server.json`, so it has to exist
     // before anything resolves the references
@@ -1380,14 +1386,5 @@ async function resolveOwnTypePaths (h3PackageJson: string, options?: { entry?: b
     resolveTypePaths(['nitropack/types', 'nitropack/runtime', 'nitropack', 'h3'], [fileURLToPath(new URL('.', import.meta.url))], options),
     resolveTypePaths(['crossws'], [dirname(h3PackageJson)], options),
   ])
-  const paths: Record<string, [string]> = Object.fromEntries([...own, ...crossws].map(([pkg, path]) => [pkg, [path]]))
-  if (options?.entry) {
-    // `nitropack/types` re-exports without a file extension, which `nodenext` does not resolve
-    // https://github.com/nuxt/nuxt/issues/36516
-    const typesEntry = resolveModulePath('nitropack/types', { from: import.meta.url, conditions: ['import'], try: true })
-    if (typesEntry) {
-      paths['nitropack/types'] = [await resolveDeclarationPath(typesEntry)]
-    }
-  }
-  return paths
+  return Object.fromEntries([...own, ...crossws].map(([pkg, path]) => [pkg, [path]]))
 }

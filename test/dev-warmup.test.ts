@@ -58,4 +58,14 @@ describe.skipIf(!runsOnceInMatrix || isWebpack)('the dev ssr entry', () => {
 
     expect(await state()).toStrictEqual({ module: true, plugin: true })
   }, 120 * 1000)
+
+  it('renders with the server runtime\'s `$fetch` when a server plugin defers its creation', async () => {
+    const { url, output } = await startDevServer()
+
+    await expect.poll(() => fetch(`${url}/api/warmup`).then(r => r.ok).catch(() => output()), { timeout: 60 * 1000 }).toBe(true)
+
+    const response = await fetch(url)
+    expect(response.status).toBe(200)
+    expect(await response.text()).toContain('hello from the server')
+  }, 120 * 1000)
 })

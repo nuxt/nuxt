@@ -8,6 +8,7 @@ import { renderDiagnostics } from '../diagnostics/render'
 import { MAX_VFOR_LENGTH } from './vfor'
 import type { NuxtApp } from '../nuxt'
 import { START_LOCATION } from '#build/pages'
+import { rawVaporSlotKey } from '#build/nuxt.config.mjs'
 
 /**
  * Internal utility
@@ -52,14 +53,14 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
 /**
  * Detect a vapor slot function passed into a vdom component via interop.
  *
- * Vapor slots register `__vapor`/`__vs` markers on the slot function itself, so
- * we can recognise them without invoking the slot. Calling a vapor slot to
+ * Vapor slots carry Vue's `rawVaporSlotKey` on the slot function itself, so
+ * they can be recognised without invoking the slot. Calling a vapor slot to
  * inspect the shape of its returned VNodes is not a safe dry run (its content is
  * not expressed as a VNode tree), so callers use this to skip VNode-shape
  * heuristics rather than silently make a wrong decision.
  */
 export function isVaporSlot (slot: ((...args: any[]) => any) | undefined | null): boolean {
-  return !!slot && (!!(slot as any).__vapor || !!(slot as any).__vs)
+  return !!rawVaporSlotKey && !!slot && !!(slot as any)[rawVaporSlotKey]
 }
 
 const VALID_TAG_RE = /^[a-z][a-z0-9-]*$/i

@@ -190,7 +190,8 @@ export function addServerHandler (handler: ServerHandlerInput): void {
   // retrieve method from handler file name
   const [, method = undefined] = resolved.value.match(HANDLER_METHOD_RE) || []
   const entry: ServerHandler = {
-    method: method?.toUpperCase() as ServerHandler['method'],
+    // nitropack v2 writes the method into its route types as given, where requests are typed with lowercase methods
+    method: (getNitroVersion(nuxt) === 2 ? method : method?.toUpperCase()) as ServerHandler['method'],
     ...handler,
     handler: resolved.value,
   }

@@ -153,6 +153,9 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
       decoded: 'a b%2Fc',
       forwardedIP: '203.0.113.1',
     })
+
+    const truncated = await fetch('/api/portable-extras/a%3Fpage=2/c')
+    expect(await truncated.json()).toMatchObject({ params: { id: 'a' }, decoded: 'a' })
   })
 
   it('should answer a CORS preflight with `nuxt/server`', async () => {
@@ -305,6 +308,24 @@ describe('route rules', () => {
     for (const path of ['/route-rules/case-insensitive', '/Route-Rules/Case-Insensitive', '/ROUTE-RULES/CASE-INSENSITIVE']) {
       const html = await $fetch<string>(path)
       expect(html, path).toContain('Hello from routeRules!')
+    }
+  })
+
+  it('should apply server route rules regardless of request casing or encoding', async () => {
+    for (const path of ['/Route-Rules/Inline', '/ROUTE-RULES/INLINE', '/route-rules/%49nline']) {
+      const res = await fetch(path, { redirect: 'manual' })
+      expect(res.headers.get('x-extend'), path).toEqual('added in routeRules')
+    }
+
+    for (const path of ['/Route-Rules/Redirect', '/route-rules/%52edirect']) {
+      const res = await fetch(path, { redirect: 'manual' })
+      expect(res.status, path).toEqual(307)
+      expect(res.headers.get('location'), path).toEqual('/')
+    }
+
+    for (const path of ['/Route-Rules/Spa', '/route-rules/%53pa']) {
+      const { script } = parseData(await $fetch<string>(path))
+      expect(script.serverRendered, path).toEqual(false)
     }
   })
 
@@ -1018,6 +1039,34 @@ describe('pages', () => {
 
     expect(pageErrors).toEqual([])
     expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
+
+    await page.close()
+  })
+
+  it.skipIf(isDev).each([
+    ['/prerender/set-page-layout'],
+    ['/prerender/set-page-layout?foo=bar'],
+  ])('hydrates the layout set by middleware on prerendered %s', async (path) => {
+    const page = await createPage()
+    await page.addInitScript(() => {
+      // capture the server-rendered nodes before the app hydrates
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState === 'interactive') {
+          Object.assign(window, {
+            __ssrNodes: [document.querySelector('.count'), document.querySelector('#set-page-layout')],
+          })
+        }
+      })
+    })
+
+    await page.goto(url(path))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+
+    const reused = await page.evaluate(() => {
+      const [layout, page] = (window as unknown as { __ssrNodes: Element[] }).__ssrNodes
+      return [!!layout && layout === document.querySelector('.count'), !!page && page === document.querySelector('#set-page-layout')]
+    })
+    expect(reused).toEqual([true, true])
 
     await page.close()
   })
@@ -1865,6 +1914,18 @@ describe('plugins', () => {
   it('runs a nitro plugin registered by a module', async () => {
     const html = await $fetch<string>('/plugins')
     expect(html).toContain('<meta name="module-nitro-plugin" content="registered">')
+  })
+
+  it('passes the rendered response to nitro `render:response` listeners', async () => {
+    const res = await fetch('/?render-response')
+    expect(res.status).toBe(203)
+    expect(JSON.parse(res.headers.get('x-render-response')!)).toEqual({
+      body: 'string',
+      html: true,
+      contentType: 'text/html;charset=utf-8',
+    })
+    expect(res.headers.get('x-powered-by')).toBeNull()
+    expect(await res.text()).toContain('<!--render:response--></body>')
   })
 })
 

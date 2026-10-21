@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
@@ -336,6 +336,27 @@ describe('scrollBehavior with scrollToTop and fixed page key', () => {
     await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
 
     expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+})
+
+describe('scrollBehavior with hash on the same page', () => {
+  // https://github.com/nuxt/nuxt/issues/36460
+  it.each(['section', '5-tips'])('should respect scroll-margin-top and root scroll-padding-top for the #%s target', async (id) => {
+    document.documentElement.style.scrollPaddingTop = '10px'
+    const element = document.createElement('h2')
+    element.id = id
+    element.style.scrollMarginTop = '40px'
+    document.body.appendChild(element)
+    onTestFinished(() => {
+      element.remove()
+      document.documentElement.style.scrollPaddingTop = ''
+    })
+
+    const router = useRouter()
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const position = await router.options.scrollBehavior!(router.resolve(`/#${id}`), router.resolve('/'), null)
+
+    expect(position).toMatchObject({ el: `#${id}`, top: 50 })
   })
 })
 

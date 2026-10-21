@@ -3,11 +3,10 @@ import { createEvent } from 'h3'
 import type { RequestEvent } from 'nuxt/server'
 
 vi.mock('nitropack/runtime', () => ({
-  getRouteRules: () => ({}),
   useRuntimeConfig: () => ({}),
 }))
-vi.mock('nitropack/runtime/internal/route-rules', () => ({
-  getRouteRulesForPath: () => ({}),
+vi.mock('#internal/nuxt/route-rules.mjs', () => ({
+  normalizeRouteRulePath: (path: string) => path,
 }))
 
 vi.mock('nuxt/internal/server-runtime-config', () => ({

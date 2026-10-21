@@ -1,6 +1,6 @@
 import { createError, getRequestURL, writeEarlyHints } from 'h3'
 import type { H3Event } from 'h3'
-import { getRouteRules, useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
+import { useNitroApp, useRuntimeConfig } from 'nitropack/runtime'
 import { createRendererInstance } from 'nuxt/internal/renderer/instance'
 import type { NuxtRendererInstance } from 'nuxt/internal/renderer/instance'
 import { appEvent } from 'nuxt/internal/renderer/runtime'
@@ -11,6 +11,7 @@ import type { NuxtSSRContext } from '#app/types'
 
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '../paths'
+import { getRouteRules } from '../route-rules'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
 import { NodeRenderResponse } from '../response'
 

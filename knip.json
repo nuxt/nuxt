@@ -119,6 +119,7 @@
         "src/*/runtime/**/*.{ts,js,vue}!",
         "src/core/templates.ts!",
         "meta.d.ts",
+        "app.d.ts",
         "test/**/*.ts",
         "test/**/*-fixture/**/*.{js,ts,mjs,vue}"
       ],

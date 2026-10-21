@@ -61,16 +61,12 @@ export default <RouterConfig>{
   },
 }
 
-function _getHashElementScrollMarginTop (selector: string): number {
-  try {
-    const elem = document.querySelector(selector)
-    if (elem) {
-      return (Number.parseFloat(getComputedStyle(elem).scrollMarginTop) || 0) + (Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0)
-    }
-  } catch {
-    // ignore any errors parsing scrollMarginTop
+function _getHashElementScrollMarginTop (hash: string): number {
+  const elem = document.getElementById(hash.slice(1))
+  if (!elem) {
+    return 0
   }
-  return 0
+  return (Number.parseFloat(getComputedStyle(elem).scrollMarginTop) || 0) + (Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0)
 }
 
 function _calculatePosition (
