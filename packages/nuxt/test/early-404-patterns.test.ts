@@ -15,7 +15,7 @@ describe('collectRou3PagePatterns', () => {
       [
         "/",
         "/about",
-        "/products/*",
+        "/products/:_0",
         "/**",
       ]
     `)
@@ -57,7 +57,8 @@ describe('collectRou3PagePatterns', () => {
     ]
     expect(collectRou3PagePatterns(pages)).toMatchInlineSnapshot(`
       [
-        "/optional/*",
+        "/optional",
+        "/optional/:_0",
       ]
     `)
   })
