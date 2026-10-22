@@ -8,12 +8,6 @@ packages:
   - test/fixtures/*
   - test/fixtures/*/_local-modules/*
 
-packageExtensions:
-  # TODO: remove once nitro ships https://github.com/nitrojs/nitro/commit/db7a719c0
-  nitro@3.0.260903-beta:
-    dependencies:
-      pathe: ^2.0.3
-
 publicHoistPattern:
   - '*-loader'
   - 'webpack-*'
@@ -56,13 +50,12 @@ minimumReleaseAgeExclude:
   - oxc-walker@1.1.1
   - vue
   - '@vue/*'
-  # nitro betas and the unjs/h3 packages they pin are released in lockstep
+  # nitro prereleases and the unjs/h3 packages they pin are released in lockstep
   - nitro
   - crossws
   - db0
   - env-runner
   - h3
-  - nf3
   - ocache
   - rou3
   - srvx
@@ -106,9 +99,9 @@ catalogs:
     destr: ^2.0.5
     flru: ^1.0.2
     my-bad: ^0.2.11
-    nitro: ^3.0.260903-beta
-    srvx: ^1.0.5
-    unstorage: ^2.0.0-alpha.10
+    nitro: ^3.0.261029-rc
+    srvx: ^1.0.8
+    unstorage: ^2.0.0-beta.0
 
   # vue compiler/tooling
   vue:
@@ -211,7 +204,7 @@ catalogs:
     tinyglobby: ^0.2.17
     ufo: ^1.6.4
     ultrahtml: ^1.7.0
-    rou3: ^0.9.2
+    rou3: ^1.0.0
     unctx: ^3.0.1
     undici: ^8.12.3
     unenv: ^2.0.0-rc.24
@@ -268,8 +261,8 @@ catalogs:
     eslint-plugin-perfectionist: 5.13.0
     eslint-typegen: 2.3.1
     fast-check: 4.10.2
-    h3: ^2.0.1-rc.32
-    h3-next: 'npm:h3@^2.0.1-rc.32'
+    h3: ^2.0.8
+    h3-next: 'npm:h3@^2.0.8'
     happy-dom: 21.0.4
     html-validate: 11.17.0
     htmlnano: 3.6.1

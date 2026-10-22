@@ -25,7 +25,7 @@ function createProbeSegment (routes: readonly { route: string }[]): string {
   return probe
 }
 
-const ROU3_PARAM_RE = /^:[\w-]+/
+const ROU3_PARAM_RE = /^:[A-Z_]\w*/i
 const ROU3_MODIFIER_RE = /^[?+*]/
 
 /** Length of the `(...)` group starting at `index`, or `0` if there is none. */

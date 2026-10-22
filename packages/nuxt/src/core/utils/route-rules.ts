@@ -1,11 +1,11 @@
 import { addRoute, createRouter, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
-import type { RouterCompilerOptions } from 'rou3/compiler'
+import type { CompileRouterToStringOptions } from 'rou3/compiler'
 import { defu } from 'defu'
 import { tryUseNitro } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
-import { decodeRoutePath, foldRouteCase, foldRouteRulePath } from './index.ts'
+import { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath } from './index.ts'
 
 /** One entry of a route-rules router: the pattern it matches and the rules it resolves to. */
 export interface RouteRulesRoute {
@@ -18,7 +18,7 @@ export interface RouteRulesRoute {
 export interface RouteRulesRouter {
   routes: RouteRulesRoute[]
   matchAll (method: string, path: string): Record<string, any>[]
-  compileToString (options?: RouterCompilerOptions): string
+  compileToString (options?: CompileRouterToStringOptions): string
 }
 
 const HTTP_METHODS = new Set(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'CONNECT', 'TRACE', 'QUERY'])
@@ -230,6 +230,16 @@ export function assertCaseIndependentRouteRuleKey (key: string): void {
 }
 
 /**
+ * Normalise a lookup path like {@link normalizeRouteRulePath}, then percent-encode it the way
+ * rou3 encodes the literal text of the keys it is matched against.
+ *
+ * @internal
+ */
+export function normalizeRouteRuleLookupPath (path: string, fold: boolean): string {
+  return encodeRoutePath(normalizeRouteRulePath(path, fold))
+}
+
+/**
  * Expand the rule shorthands a server runtime would expand: `redirect` as a string, and
  * `swr`/`cache` as the single `cache` rule everything downstream reads.
  *
@@ -324,7 +334,7 @@ export function createRouteRulesRouter (allRoutes: RouteRulesRoute[], baseURL: s
       // a lone catch-all under no base matches every path, so it compiles to its data rather
       // than a lookup; under a base the router compiles the prefix check itself
       if (base || routes.length !== 1 || routes[0]!.route !== '/**') {
-        return compileRouterToString(router, undefined, options)
+        return compileRouterToString(router, options)
       }
       const data = (options?.serialize || JSON.stringify)(routes[0]!.data)
       const match = `{data,params:{"_":p.slice(1)}}`
@@ -343,10 +353,11 @@ export function createRouteRulesRouter (allRoutes: RouteRulesRoute[], baseURL: s
 export function genNormalizePathCode (fold: boolean): string {
   return [
     `const decodeRoutePath = ${decodeRoutePath.toString()}`,
+    `const encodeRoutePath = ${encodeRoutePath.toString()}`,
     fold ? `const foldRouteCase = ${foldRouteCase.toString()}` : ``,
     `const normalizePath = (path) => {`,
     `  if (typeof path !== 'string') { return path }`,
-    `  return ${fold ? 'foldRouteCase(decodeRoutePath(path))' : 'decodeRoutePath(path)'}`,
+    `  return encodeRoutePath(${fold ? 'foldRouteCase(decodeRoutePath(path))' : 'decodeRoutePath(path)'})`,
     `}`,
   ].filter(Boolean).join('\n')
 }

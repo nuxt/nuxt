@@ -67,6 +67,7 @@
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
+    "unenv": "catalog:build",
     "unimport": "catalog:build",
     "unplugin": "catalog:build",
     "unrouting": "catalog:build",
@@ -104,7 +105,7 @@
     "vitest": "catalog:dev"
   },
   "engines": {
-    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.22.0 || ^24.11.0 || >=26.0.0"
   },
   "publishConfig": {
     "exports": {
