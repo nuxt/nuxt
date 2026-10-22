@@ -2,7 +2,7 @@ import type { NitroInstance, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
-import { createRouteRulesRouter } from '../core/utils/route-rules.ts'
+import { createRouteRulesRouter, encodeRoutePattern } from '../core/utils/route-rules.ts'
 import { toArray } from '../utils.ts'
 
 const UNESCAPE_RE = /\\(.)/g
@@ -83,12 +83,6 @@ function patternToProbePath (pattern: string, probeSegment: string): string {
 }
 
 const TRAILING_SLASH_RE = /\/$/
-const ROUTE_ENCODE_RE = /[^\w!$%&'()*+,\-./:;=?@[\\\]^{|}~]/gu
-
-/** Percent-encode a route pattern the way h3 normalizes route rule keys, leaving existing escapes intact. */
-function encodeRoutePattern (pattern: string): string {
-  return pattern.replace(ROUTE_ENCODE_RE, encodeURIComponent)
-}
 
 export interface RouteRuleCoverageOptions {
   isCovered: (rules: RouteRuleConfig) => boolean

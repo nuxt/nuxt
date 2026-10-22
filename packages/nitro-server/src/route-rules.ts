@@ -2,6 +2,7 @@ import { pathToFileURL } from 'node:url'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
 import type { Nitro, NitroConfig } from 'nitro/types'
+import { assertCaseIndependentRouteRuleKey, foldRouteRulePath, foldRouteRulePattern } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
  * Rewrites `redirect.statusCode` to `redirect.status`, warning once per route.
@@ -21,47 +22,13 @@ export function normalizeLegacyRouteRules (routeRules: NitroConfig['routeRules']
 }
 
 /**
- * Lower-case a request path for case-insensitive route rule matching. Percent-encoded
- * characters are folded too, so `/%C3%89cole` folds to `/%C3%A9cole`.
- *
- * Inlined by source into the server bundle, so it must not reference anything outside itself.
- */
-export function foldRouteRulePath (path: string): string {
-  return path.replace(/(?:%[\da-f]{2})+|[^%]+/gi, (run) => {
-    if (run[0] !== '%') { return run.toLowerCase() }
-    try {
-      const decoded = decodeURIComponent(run)
-      const folded = decoded.toLowerCase()
-      return folded === decoded ? run : encodeURIComponent(folded)
-    } catch {
-      return run
-    }
-  })
-}
-
-/**
- * Lower-case a route rule pattern as {@link foldRouteRulePath} does a request path, keeping
- * param names and backslash escapes (such as `\D` in a constraint) as written.
- */
-export function foldRouteRulePattern (pattern: string): string {
-  let depth = 0
-  return pattern.replace(/\\.|:\w+|[^\\:()]+|[:()]/g, (token) => {
-    if (token === '(') {
-      depth++
-    } else if (token === ')') {
-      depth = Math.max(0, depth - 1)
-    }
-    return token[0] === '\\' || (token[0] === ':' && depth === 0) ? token : foldRouteRulePath(token)
-  })
-}
-
-/**
  * Re-key route rules by their folded pattern. Rules whose keys fold together are merged, with
  * object options merged one level deep and later keys taking precedence.
  */
 function foldRouteRules (routeRules: NitroConfig['routeRules']): NonNullable<NitroConfig['routeRules']> {
   const folded: Record<string, Record<string, unknown>> = {}
   for (const key in routeRules) {
+    assertCaseIndependentRouteRuleKey(key)
     const foldedKey = foldRouteRulePattern(key)
     const rules = folded[foldedKey] ||= {}
     for (const [name, options] of Object.entries(routeRules[key] || {})) {
