@@ -2,6 +2,7 @@ import type { NitroInstance, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
+import { createRouteRulesRouter } from '../core/utils/route-rules.ts'
 import { toArray } from '../utils.ts'
 
 const UNESCAPE_RE = /\\(.)/g
@@ -102,7 +103,7 @@ export interface RouteRuleCoverageOptions {
 export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInstance, options: RouteRuleCoverageOptions): boolean {
   if (!nitro.routing) { return false }
 
-  const routeRules = nitro.routing.routeRules
+  const routeRules = createRouteRulesRouter(nitro.routing.routeRules.routes, '')
   const PROBE_SEGMENT = createProbeSegment(routeRules.routes)
   const isPathCovered = (path: string) =>
     options.isCovered(defu({} as RouteRuleConfig, ...routeRules.matchAll('', path).reverse()))
