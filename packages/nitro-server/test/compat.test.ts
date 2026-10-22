@@ -223,7 +223,8 @@ describe('setupNitroCompat', () => {
 
       await expect(resolveId('nitro/runtime-config')).resolves.toMatch(/runtime-config/)
       await expect(resolveId('nitro/runtime-config')).resolves.toMatch(/runtime-config/)
-      for (const [source, pkg] of [['nitro', 'nitro'], ['h3', 'h3'], ['h3/rules', 'h3'], ['srvx', 'srvx'], ['defu', 'defu'], ['consola', 'consola'], ['ofetch', 'ofetch'], ['crossws', 'crossws']]) {
+      // TODO: use 'nitro' once the catalog uses the published nitro RC
+      for (const [source, pkg] of [['nitro', 'nitro(?:-nightly)?'], ['h3', 'h3'], ['h3/rules', 'h3'], ['srvx', 'srvx'], ['defu', 'defu'], ['consola', 'consola'], ['ofetch', 'ofetch'], ['crossws', 'crossws']]) {
         await expect(resolveId(source!), source).resolves.toMatch(new RegExp(`[\\\\/]${pkg}[\\\\/]`))
       }
       // builder-only nitro subpaths must not become bundleable

@@ -1,12 +1,12 @@
 /// <reference path="./internal.d.ts" />
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, NormalizedRouteRules, RouteRuleConfig, TracingOptions } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, TracingChannelOptions as NitroTracingChannelOptions, NormalizedRouteRules, RouteRuleConfig } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { NitroLegacyOptions } from './compat.ts'
 import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
 
 /**
- * Per-channel toggles for `tracingChannel`: Nitro's own {@link TracingOptions}, plus the
+ * Per-channel toggles for `tracingChannel`: Nitro's own {@link NitroTracingChannelOptions}, plus the
  * Nuxt-owned channels.
  *
  * @experimental Channel names, payload shapes, and option keys may change.
@@ -87,7 +87,7 @@ interface NitroSchemaTypes {
   handler: NitroEventHandler
   devHandler: NitroDevEventHandler
   routeRuleConfig: RouteRuleConfig
-  tracingChannels: TracingOptions
+  tracingChannels: NitroTracingChannelOptions
 }
 
 /** The types this package's runtime contributes to the app layer. */

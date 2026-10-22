@@ -9,6 +9,7 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { collectRou3PagePatterns } from '../../nuxt/src/pages/utils.ts'
 import { normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
+import { encodeRoutePath } from '../../nuxt/src/core/utils/index.ts'
 import { throwIfUnmatchedPagePath } from '../../nuxt/src/runtime/server/renderer/early-404.ts'
 import type { NuxtRendererOptions } from '../../nuxt/src/runtime/server/renderer/runtime.ts'
 
@@ -94,7 +95,8 @@ function compileMatcher (patterns: string[]) {
   for (const pattern of new Set(patterns.map(pattern => normalizeRouteRulePath(pattern, true)))) {
     addRoute(router, '', pattern, 1)
   }
-  return new Function(`${compileRouterToString(router, 'NUXT_PAGE_MATCHER')}\nreturn NUXT_PAGE_MATCHER`)() as (method: string, path: string) => unknown
+  const match = new Function(`${compileRouterToString(router, { functionName: 'NUXT_PAGE_MATCHER' })}\nreturn NUXT_PAGE_MATCHER`)() as (method: string, path: string) => unknown
+  return (method: string, path: string) => match(method, encodeRoutePath(path))
 }
 
 function isEarly404 (url: string) {

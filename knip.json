@@ -91,6 +91,7 @@
         "mocked-exports",
         "vue-devtools-stub",
         "ohash",
+        "unenv",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-typescript"
       ]
@@ -191,7 +192,6 @@
         "pug-plain-loader",
         "raw-loader",
         "rolldown-string",
-        "rollup",
         "seroval",
         "time-fix-plugin",
         "tinyglobby",

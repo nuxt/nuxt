@@ -12,12 +12,6 @@ patchedDependencies:
   # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
   nitropack@2.13.4: patches/nitropack@2.13.4.patch
 
-packageExtensions:
-  # TODO: remove once nitro ships https://github.com/nitrojs/nitro/commit/db7a719c0
-  nitro@3.0.260903-beta:
-    dependencies:
-      pathe: ^2.0.3
-
 publicHoistPattern:
   - '*-loader'
   - 'webpack-*'
@@ -61,13 +55,12 @@ minimumReleaseAgeExclude:
   - impound@1.2.0
   - vue
   - '@vue/*'
-  # nitro betas and the unjs/h3 packages they pin are released in lockstep
-  - nitro
+  # TODO: remove once the catalog uses the published nitro RC
+  - nitro-nightly
   - crossws
   - db0
   - env-runner
   - h3
-  - nf3
   - ocache
   - rou3
   - srvx
@@ -112,8 +105,9 @@ catalogs:
     destr: ^2.0.5
     flru: ^1.0.2
     my-bad: ^0.2.11
-    nitro: ^3.0.260903-beta
-    srvx: ^1.0.5
+    # TODO: switch to the nitro RC once it is published
+    nitro: npm:nitro-nightly@3.0.1-20261024-005652-6bccaad1
+    srvx: ^1.0.7
     unstorage: ^2.0.0-alpha.10
 
   # vue compiler/tooling
@@ -217,7 +211,7 @@ catalogs:
     tinyglobby: ^0.2.17
     ufo: ^1.6.4
     ultrahtml: ^1.7.0
-    rou3: ^0.9.2
+    rou3: ^1.0.0
     unctx: ^3.0.1
     undici: ^8.12.1
     unenv: ^2.0.0-rc.24
@@ -274,8 +268,8 @@ catalogs:
     eslint-plugin-perfectionist: 5.12.1
     eslint-typegen: 2.3.1
     fast-check: 4.10.2
-    h3: ^2.0.1-rc.32
-    h3-next: 'npm:h3@^2.0.1-rc.32'
+    h3: ^2.0.8
+    h3-next: 'npm:h3@^2.0.8'
     happy-dom: 21.0.1
     html-validate: 11.16.2
     htmlnano: 3.6.1
