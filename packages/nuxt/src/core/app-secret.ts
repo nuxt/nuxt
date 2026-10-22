@@ -5,7 +5,7 @@ import { dirname, join } from 'pathe'
 import type { NuxtOptions } from '@nuxt/schema'
 
 const GENERATED_BYTES = 32
-const APP_SECRET_FILE = 'app-secret'
+export const APP_SECRET_FILE = 'app-secret'
 
 const GENERATED_RE = /^[0-9a-f]{64}$/
 
