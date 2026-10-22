@@ -26,17 +26,17 @@ If you only need the router instance within your template, use `$router`:
 
 If you have a `app/pages/` directory, `useRouter` is identical in behavior to the one provided by `vue-router`.
 
-::read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/router#Properties-currentRoute-" target="_blank"}
+::read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/RouterClassic#currentRoute" target="_blank"}
 Read `vue-router` documentation about the `Router` interface.
 ::
 
 ## Basic Manipulation
 
-- [`addRoute()`](https://router.vuejs.org/api/interfaces/router#addRoute-): Add a new route to the router instance. `parentName` can be provided to add new route as the child of an existing route.
-- [`removeRoute()`](https://router.vuejs.org/api/interfaces/router#removeRoute-): Remove an existing route by its name.
-- [`getRoutes()`](https://router.vuejs.org/api/interfaces/router#getRoutes-): Get a full list of all the route records.
-- [`hasRoute()`](https://router.vuejs.org/api/interfaces/router#hasRoute-): Checks if a route with a given name exists.
-- [`resolve()`](https://router.vuejs.org/api/interfaces/router#resolve-): Returns the normalized version of a route location. Also includes an `href` property that includes any existing base.
+- [`addRoute()`](https://router.vuejs.org/api/interfaces/RouterClassic#addRoute-): Add a new route to the router instance. `parentName` can be provided to add new route as the child of an existing route.
+- [`removeRoute()`](https://router.vuejs.org/api/interfaces/RouterClassic#removeRoute-): Remove an existing route by its name.
+- [`getRoutes()`](https://router.vuejs.org/api/interfaces/RouterClassic#getRoutes-): Get a full list of all the route records.
+- [`hasRoute()`](https://router.vuejs.org/api/interfaces/RouterClassic#hasRoute-): Checks if a route with a given name exists.
+- [`resolve()`](https://router.vuejs.org/api/interfaces/RouterClassic#resolve-): Returns the normalized version of a route location. Also includes an `href` property that includes any existing base.
 
 ```ts [Example]
 const router = useRouter()
@@ -54,11 +54,11 @@ router.resolve({ name: 'home' })
 
 ## Based on History API
 
-- [`back()`](https://router.vuejs.org/api/interfaces/router#back-): Go back in history if possible, same as `router.go(-1)`.
-- [`forward()`](https://router.vuejs.org/api/interfaces/router#forward-): Go forward in history if possible, same as `router.go(1)`.
-- [`go()`](https://router.vuejs.org/api/interfaces/router#go-): Move forward or backward through the history without the hierarchical restrictions enforced in `router.back()` and `router.forward()`.
-- [`push()`](https://router.vuejs.org/api/interfaces/router#push-): Programmatically navigate to a new URL by pushing an entry in the history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
-- [`replace()`](https://router.vuejs.org/api/interfaces/router#replace-): Programmatically navigate to a new URL by replacing the current entry in the routes history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
+- [`back()`](https://router.vuejs.org/api/interfaces/RouterClassic#back-): Go back in history if possible, same as `router.go(-1)`.
+- [`forward()`](https://router.vuejs.org/api/interfaces/RouterClassic#forward-): Go forward in history if possible, same as `router.go(1)`.
+- [`go()`](https://router.vuejs.org/api/interfaces/RouterClassic#go-): Move forward or backward through the history without the hierarchical restrictions enforced in `router.back()` and `router.forward()`.
+- [`push()`](https://router.vuejs.org/api/interfaces/RouterClassic#push-): Programmatically navigate to a new URL by pushing an entry in the history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
+- [`replace()`](https://router.vuejs.org/api/interfaces/RouterClassic#replace-): Programmatically navigate to a new URL by replacing the current entry in the routes history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
 
 ```ts [Example]
 const router = useRouter()
@@ -84,10 +84,10 @@ However, Nuxt has a concept of **route middleware** that simplifies the implemen
 
 ## Promise and Error Handling
 
-- [`isReady()`](https://router.vuejs.org/api/interfaces/router#isReady-): Returns a Promise that resolves when the router has completed the initial navigation.
-- [`onError`](https://router.vuejs.org/api/interfaces/router#onError-): Adds an error handler that is called every time a non caught error happens during navigation.
+- [`isReady()`](https://router.vuejs.org/api/interfaces/RouterClassic#isReady-): Returns a Promise that resolves when the router has completed the initial navigation.
+- [`onError`](https://router.vuejs.org/api/interfaces/RouterClassic#onError-): Adds an error handler that is called every time a non caught error happens during navigation.
 
-:read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/router#Methods-" title="Vue Router Docs" target="_blank"}
+:read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/RouterClassic#Methods" title="Vue Router Docs" target="_blank"}
 
 ## Universal Router Instance
 

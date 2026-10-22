@@ -152,7 +152,7 @@ type OpenWindowFeatures = {
 
 ### `to`
 
-**Type**: [`RouteLocationRaw`](https://router.vuejs.org/api/interfaces/routelocationoptions) | `undefined` | `null`
+**Type**: [`RouteLocationRaw`](https://router.vuejs.org/api/type-aliases/RouteLocationRaw) | `undefined` | `null`
 
 **Default**: `'/'`
 
