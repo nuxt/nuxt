@@ -135,5 +135,10 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       why: (p: { tag: string, attribute: string, to: string, file: string }) => `\`<${p.tag} ${p.attribute}="${p.to}">\` in \`${p.file}\` does not match any page route.`,
       fix: 'Check the path for typos or add a page for it. To link to a server route, a file in `public/` or another site, set the `external` prop.',
     },
+    NUXT_B4026: {
+      why: (p: { route: string, part: string }) => `The route rule \`${p.route}\` has a regex constraint that depends on percent-encoding (\`${p.part}\`), so it cannot be matched the way it reads.`,
+      fix: 'Route rules are matched against the percent-encoded path, so a constraint can only match characters that are not encoded, such as `[a-z0-9-]+`, and cannot use a word boundary (`\\b` or `\\B`). To match any value, use a parameter without a constraint (such as `:slug`).',
+      docs: false,
+    },
   },
 })

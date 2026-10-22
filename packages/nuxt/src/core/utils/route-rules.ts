@@ -92,25 +92,8 @@ export function normalizeRouteRulePath (path: string, fold: boolean): string {
 }
 
 /**
- * Normalise a route-rule key as {@link normalizeRouteRulePath} does, except for its regex
- * constraints (`:id(\\D+)`), which are never folded, and in which a percent-encoded character
- * decodes to a literal match of that character rather than to regex syntax.
- *
- * @internal
+ * Split a route pattern into its literal text and its regex constraint groups, in order.
  */
-export function normalizeRouteRuleKey (key: string, fold: boolean): string {
-  return splitRouteConstraints(key)
-    .map(part => part.constraint ? decodeRouteConstraint(part.text) : normalizeRouteRulePath(part.text, fold))
-    .join('')
-}
-
-const ENCODED_RUN_RE = /(?:%[\da-f]{2})+/gi
-const REGEX_SYNTAX_RE = /[\\^$.*+?()[\]{}|-]/g
-
-function decodeRouteConstraint (constraint: string): string {
-  return constraint.replace(ENCODED_RUN_RE, encoded => decodeRoutePath(encoded).replace(REGEX_SYNTAX_RE, '\\$&'))
-}
-
 function splitRouteConstraints (pattern: string): Array<{ text: string, constraint: boolean }> {
   const parts: Array<{ text: string, constraint: boolean }> = []
   let start = 0
@@ -145,6 +128,18 @@ function splitRouteConstraints (pattern: string): Array<{ text: string, constrai
   return parts
 }
 
+const ROUTE_KEY_ENCODE_RE = /[\0-\x20"#<>`]|[^\0-\x7E]/gu
+const LONE_SURROGATE_RE = /[\uD800-\uDFFF]/u
+
+/**
+ * Percent-encode a route pattern the way h3 normalizes route rule keys, leaving existing escapes intact.
+ *
+ * @internal
+ */
+export function encodeRoutePattern (pattern: string): string {
+  return pattern.replace(ROUTE_KEY_ENCODE_RE, char => encodeURIComponent(char.replace(LONE_SURROGATE_RE, '\uFFFD')))
+}
+
 /**
  * Case-fold a route rule pattern as {@link foldRouteRulePath} does a request path, keeping
  * param names, backslash escapes and regex constraints as written.
@@ -161,6 +156,60 @@ export function foldRouteRulePattern (pattern: string): string {
 }
 
 const CONSTRAINT_ATOM_RE = /\\(?:x[\da-f]{2}|u[\da-f]{4}|u\{[\da-f]+\}|c[a-z]|[0-7]{1,3}|[\s\S])|\[(?:\\[\s\S]|[^\]\\])*\]|\{\d+(?:,\d*)?\}|\(\?(?:<?[=!]|<[^>]*>|:)|[\s\S]/gi
+const CONSTRAINT_SYNTAX = new Set('()|*+?^$')
+
+let encodedChars: string[] | undefined
+
+function getEncodedChars (): string[] {
+  if (!encodedChars) {
+    encodedChars = ['%']
+    for (let code = 0; code <= 0xFFFF; code++) {
+      const char = String.fromCharCode(code)
+      if (encodeRoutePath(char) !== char) { encodedChars.push(char) }
+    }
+  }
+  return encodedChars
+}
+
+/**
+ * The first part of a regex constraint that can match `%` or a character that is percent-encoded
+ * in a lookup path, such as `é`, `.`, `\s` or `[^a-z]`, or a word boundary (`\b` or `\B`), which
+ * tests the neighbouring characters. Constraints are matched against the encoded path, so such a
+ * constraint would not match the way it reads.
+ *
+ * @internal
+ */
+export function findEncodingDependentConstraint (constraint: string): string | undefined {
+  for (const [atom] of constraint.matchAll(CONSTRAINT_ATOM_RE)) {
+    if (atom.length === 1 && atom !== '.') {
+      if (!CONSTRAINT_SYNTAX.has(atom) && (atom === '%' || encodeRoutePath(atom) !== atom)) { return atom }
+      continue
+    }
+    if (atom === '\\b' || atom === '\\B') { return atom }
+    let regex: RegExp
+    try {
+      regex = new RegExp(atom)
+    } catch {
+      continue
+    }
+    if (getEncodedChars().some(char => regex.test(char))) { return atom }
+  }
+}
+
+/**
+ * Throw if a regex constraint in a route-rule key depends on percent-encoding (see
+ * {@link findEncodingDependentConstraint}).
+ *
+ * @internal
+ */
+export function assertEncodingIndependentRouteRuleKey (key: string): void {
+  for (const { text, constraint } of splitRouteConstraints(key)) {
+    const part = constraint ? findEncodingDependentConstraint(text) : undefined
+    if (part !== undefined) {
+      throw pageDiagnostics.NUXT_B4026({ route: decodeRoutePath(key), part: decodeRoutePath(part) })
+    }
+  }
+}
 
 let casePairs: Array<[char: string, folded: string]> | undefined
 
@@ -177,8 +226,8 @@ function getCasePairs (): Array<[char: string, folded: string]> {
 }
 
 /**
- * The first part of a decoded regex constraint that matches a character but not its case-folded
- * form (see {@link foldRouteCase}), such as `A`, `[A-Z]`, `\x41` or `É`, or a negated class that
+ * The first part of a regex constraint that matches a character but not its case-folded form
+ * (see {@link foldRouteCase}), such as `A`, `[A-Z]`, `\x41` or `É`, or a negated class that
  * matches one form but not the other, such as `[^A-Z]`. Request paths are case-folded before they
  * are matched when routing is case-insensitive, so such a constraint would not match the way it
  * reads.
@@ -204,14 +253,13 @@ export function findCaseDependentConstraint (constraint: string): string | undef
 
 /**
  * The first part of a regex constraint in a route-rule key that depends on letter case (see
- * {@link findCaseDependentConstraint}), once percent-encoded characters are decoded as they are
- * for matching.
+ * {@link findCaseDependentConstraint}).
  *
  * @internal
  */
 export function findCaseDependentRouteRuleKeyPart (key: string): string | undefined {
   for (const { text, constraint } of splitRouteConstraints(key)) {
-    const part = constraint ? findCaseDependentConstraint(decodeRouteConstraint(text)) : undefined
+    const part = constraint ? findCaseDependentConstraint(text) : undefined
     if (part !== undefined) { return part }
   }
 }
@@ -227,6 +275,22 @@ export function assertCaseIndependentRouteRuleKey (key: string): void {
   if (part !== undefined) {
     throw pageDiagnostics.NUXT_B4022({ route: key, part })
   }
+}
+
+/**
+ * Normalise a route-rule key like {@link normalizeRouteRulePath}, except for its regex
+ * constraints, which are kept as written. rou3 tests a constraint against the encoded path
+ * segment, so a constraint must not match an encoded character (see
+ * {@link assertEncodingIndependentRouteRuleKey}).
+ *
+ * @internal
+ */
+export function normalizeRouteRuleKey (key: string, fold: boolean): string {
+  return splitRouteConstraints(key)
+    .map((part) => {
+      return part.constraint ? part.text : normalizeRouteRulePath(part.text, fold)
+    })
+    .join('')
 }
 
 /**
