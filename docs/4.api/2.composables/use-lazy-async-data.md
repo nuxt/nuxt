@@ -63,7 +63,7 @@ export function useLazyAsyncData<DataT, ErrorT> (
 
 `useLazyAsyncData` accepts the same parameters as [`useAsyncData`](/docs/api/composables/use-async-data), with the `lazy` option automatically set to `true`.
 
-:read-more{to="/docs/api/composables/use-async-data#parameters"}
+:read-more{to="/docs/api/composables/use-async-data#params"}
 
 ## Return Values
 
