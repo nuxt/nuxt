@@ -59,4 +59,22 @@ describe('route rules template', () => {
     expect(matcher('/array').appMiddleware).toEqual({ auth: true, admin: true })
     expect(matcher('/object').appMiddleware).toEqual({ auth: false })
   })
+
+  it('applies method-scoped rules that match a page request', async () => {
+    const contents = await getRouteRulesTemplate(false, undefined, {
+      '/admin/**': { appMiddleware: 'auth' },
+      'GET /admin/**': { appMiddleware: 'admin', ssr: false },
+      'get /lower/**': { ssr: false },
+      'POST /admin/**': { ssr: true, appMiddleware: { auth: false } },
+      'HEAD /admin/**': { noScripts: true },
+    })
+    const code = contents
+      .replace(/^import \{ defu \} from .*$/m, '')
+      .replace(/^import routerOptions from .*$/m, 'const routerOptions = {}')
+      .replace('export default', 'return')
+    const { defu } = await import('defu')
+    const matcher = new Function('defu', code)(defu) as (path: string) => Record<string, any>
+    expect(matcher('/admin/users')).toEqual({ appMiddleware: { auth: true, admin: true }, ssr: false })
+    expect(matcher('/lower/page')).toEqual({ ssr: false })
+  })
 })
