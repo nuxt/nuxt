@@ -114,13 +114,21 @@ describe('dev build directory at /.nuxt/', () => {
     expect((await handleBuildDirRequest(nuxt, '/.nuxt/'))?.body).not.toContain('app-secret')
   })
 
-  it('answers as a portable dev server handler', async () => {
+  it('answers as a portable dev server handler, only to a loopback peer', async () => {
     const handler = createBuildDirHandler(createFakeNuxt())
-    const req = new Request('http://localhost:3000/.nuxt/routes.mjs')
-    const response = await handler({ req, url: new URL(req.url), res: { headers: new Headers() }, context: {} } as unknown as RequestEvent)
+    // the server runtime's request (srvx) exposes the peer address as `ip`
+    const event = (ip: string) => {
+      const req = Object.assign(new Request('http://localhost:3000/.nuxt/routes.mjs'), { ip })
+      return { req, url: new URL(req.url), res: { headers: new Headers() }, context: {} } as unknown as RequestEvent
+    }
+
+    const response = await handler(event('127.0.0.1'))
     expect(response.status).toBe(200)
     expect(response.headers.get('x-content-type-options')).toBe('nosniff')
     expect(response.headers.get('cache-control')).toBe('no-store')
     expect(await response.text()).toBe('export default []')
+
+    expect((await handler(event('::ffff:127.0.0.1'))).status).toBe(200)
+    expect((await handler(event('192.168.1.2'))).status).toBe(403)
   })
 })

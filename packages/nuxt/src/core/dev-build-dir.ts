@@ -4,6 +4,7 @@ import { withTrailingSlash } from 'ufo'
 import { addDevServerHandler } from '@nuxt/kit'
 import type { Nuxt, NuxtTemplate, RequestEvent } from 'nuxt/schema'
 
+import { isLoopbackAddress } from '../runtime/server/dev/peer.ts'
 import { APP_SECRET_FILE } from './app-secret.ts'
 
 /**
@@ -229,11 +230,19 @@ const RESPONSE_HEADERS = {
   'cache-control': 'no-store',
 }
 
-/** Answers a request for the build directory, as a portable dev server handler. */
+/**
+ * Answers a request for the build directory, as a portable dev server handler.
+ *
+ * It discloses local state (generated code, server virtual modules), so trust follows the
+ * socket, as for the other dev endpoints: origin headers are forgeable over a direct connection.
+ */
 export function createBuildDirHandler (nuxt: Nuxt): (event: RequestEvent) => Promise<Response> {
   return async (event) => {
-    const response = await handleBuildDirRequest(nuxt, event.url.pathname, event.req.headers.get('accept'))
-      ?? { status: 404, type: TEXT_TYPE, body: '' }
+    // the server runtime's request (srvx) exposes the peer address
+    const trusted = isLoopbackAddress((event.req as Request & { ip?: string }).ip)
+    const response = trusted
+      ? await handleBuildDirRequest(nuxt, event.url.pathname, event.req.headers.get('accept')) ?? { status: 404, type: TEXT_TYPE, body: '' }
+      : { status: 403, type: TEXT_TYPE, body: 'Forbidden' }
     return new Response(response.body, { status: response.status, headers: { ...RESPONSE_HEADERS, 'content-type': response.type } })
   }
 }
