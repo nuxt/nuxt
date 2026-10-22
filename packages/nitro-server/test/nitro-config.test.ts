@@ -47,6 +47,20 @@ async function isInlined (nitro: Nitro, id: string) {
 }
 
 describe('nitro config', () => {
+  it('emits valid single-segment URLPatterns for noScripts wildcard rules', async () => {
+    await withNitro({ routeRules: { '/foo/*': { noScripts: true }, '/scripted/*': { ssr: true } } }, async (_nitro, nitroConfig) => {
+      const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
+      const code = await rendererConfig()
+      const patterns: string[] = JSON.parse(/^export const NUXT_NO_SCRIPTS_PATTERNS = (.+)$/m.exec(code)![1]!)
+
+      expect(patterns).toEqual(['/foo/([^\\/]*)'])
+      const pattern = new URLPattern({ pathname: patterns[0] })
+      expect(pattern.test('https://example.com/foo/bar')).toBe(true)
+      expect(pattern.test('https://example.com/foo/bar/baz')).toBe(false)
+      expect(pattern.test('https://example.com/scripted/bar')).toBe(false)
+    })
+  }, 60_000)
+
   it('passes the server replacements to nitro as `replace`', async () => {
     await withNitro({}, (_nitro, nitroConfig) => {
       expect(nitroConfig.replace).toMatchObject(serverReplacements)
