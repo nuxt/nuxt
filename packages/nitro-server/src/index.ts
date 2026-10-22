@@ -933,6 +933,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   })
 
+  // Serve nitro's own virtual modules at `/.nuxt/@id/` in development, alongside Nuxt's
+  if (nuxt.options.dev) {
+    nuxt._vfsSources ||= []
+    nuxt._vfsSources.push({
+      keys: () => nitro.vfs.keys(),
+      read: id => nitro.vfs.get(id)?.render(),
+    })
+  }
+
   // Connect hooks
   nuxt.hook('close', () => nitro.hooks.callHook('close'))
   nitro.hooks.hook('prerender:routes', (routes) => {

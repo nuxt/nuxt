@@ -221,6 +221,9 @@ function setupAppManifest (nuxt: Nuxt, prerender: boolean): void {
  */
 const SERVER_ONLY_RULES = new Set(['cache', 'swr', 'isr', 'proxy', 'cors'])
 
+/** The route of the build directory that Nuxt serves in development (`packages/nuxt/src/core/dev-build-dir.ts`). */
+const BUILD_DIR_ROUTE = '/.nuxt/**'
+
 function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: string[] }) {
   const unsupported = [...build.unsupported]
 
@@ -239,8 +242,9 @@ function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: strin
     unsupported.push('prerendering (run `nuxt generate` for a prerendered build)')
   }
   // @todo serve these in dev: they are h3 handlers, so it needs an h3 app in front of
-  // the vite middlewares rather than the plain node listener used today
-  if (nuxt.options.dev && nuxt.options.devServerHandlers.length) {
+  // the vite middlewares rather than the plain node listener used today. Nuxt's own
+  // `/.nuxt/` handler is left out: it is portable and only unavailable until then
+  if (nuxt.options.dev && nuxt.options.devServerHandlers.some(handler => handler.route !== BUILD_DIR_ROUTE)) {
     unsupported.push('dev server handlers')
   }
 

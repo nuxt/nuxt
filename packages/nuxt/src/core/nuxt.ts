@@ -59,6 +59,7 @@ import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
+import { serveBuildDir } from './dev-build-dir.ts'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -228,6 +229,7 @@ async function initNuxt (nuxt: Nuxt) {
     nuxt.hook('listen', (server) => {
       nuxt._devServerListener = server
     })
+    serveBuildDir(nuxt)
   }
 
   // Prompt to set compatibility date
