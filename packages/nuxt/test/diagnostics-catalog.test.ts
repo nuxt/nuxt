@@ -57,6 +57,7 @@ const MAIN_ONLY: Record<string, string> = {
   NUXT_B9003: 'Nitro v2 compatibility layer',
   NUXT_B9004: 'Nitro v2 compatibility layer',
   NUXT_B9005: 'Nitro v2 compatibility layer',
+  NUXT_B9006: 'Nitro v2 auto-imports nested `server/utils/` files on 4.x',
   NUXT_E8008: 'Nitro v2 compatibility layer',
   NUXT_E8010: 'Nitro v2 compatibility layer',
   NUXT_E8011: 'Nitro v2 compatibility layer',
