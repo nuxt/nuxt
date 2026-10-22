@@ -307,7 +307,7 @@ test.describe('vite-only HMR tests', () => {
     expect(filteredLogs).toStrictEqual([])
   })
 
-  test('should support renaming files to same import name', async ({ page, goto }) => {
+  test('should support renaming files to same import name', async ({ page, goto, request }) => {
     await goto('/rename-component')
 
     await expect(page.getByTestId('example')).toHaveText('test.vue')
@@ -321,6 +321,12 @@ test.describe('vite-only HMR tests', () => {
       writeFileSync(renamed, `<template><div data-testid="example">example-test.vue</div></template>`)
 
       await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
+
+      async function readServerRendered () {
+        const html = await request.get('/rename-component', { headers: { accept: 'text/html' } }).then(r => r.text())
+        return html.match(/data-testid="example"[^>]*>([^<]+)</)?.[1]
+      }
+      await expect(readServerRendered).toBeWithPolling('example-test.vue', { timeout: 20000 })
 
       await page.reload()
 
