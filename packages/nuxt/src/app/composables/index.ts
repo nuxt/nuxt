@@ -10,6 +10,8 @@ export { clearError, createError, isNuxtError, showError, useError } from './err
 export type { NuxtError } from './error'
 export { useFetch, useLazyFetch } from './fetch'
 export type { AnyServerRouteMethod, AvailableServerRouteMethod, DeclaredUseFetch, FetchResult, UseFetch, ServerRouteMethod, ServerRouteMethods, UseFetchOptions, $Fetch, TypedFetch, TypedFetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from './fetch'
+export { useAsyncDataMutation, useFetchMutation } from './mutation'
+export type { AsyncDataMutation, AsyncDataMutationExecuteOptions, AsyncDataMutationHandler, AsyncDataMutationOptions, FetchMutationArgs, FetchMutationPayload, UseFetchMutation, UseFetchMutationOptions } from './mutation'
 export { useCookie, refreshCookie } from './cookie'
 export type { CookieOptions, CookieRef, UseCookieOptions } from './cookie'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
