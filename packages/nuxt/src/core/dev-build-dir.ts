@@ -134,7 +134,8 @@ async function readBuildDir (nuxt: Nuxt, path: string): Promise<(BuildDirEntry &
   }
   const { buildDir } = nuxt.options
   const file = resolve(buildDir, path)
-  if (!file.startsWith(withTrailingSlash(buildDir)) || PRIVATE_FILES.has(relative(buildDir, file))) {
+  // case-insensitive file systems (macOS, Windows) open `APP-SECRET` as `app-secret`
+  if (!file.startsWith(withTrailingSlash(buildDir)) || PRIVATE_FILES.has(relative(buildDir, file).toLowerCase())) {
     return
   }
   const virtualContent = nuxt.vfs['#build/' + path]

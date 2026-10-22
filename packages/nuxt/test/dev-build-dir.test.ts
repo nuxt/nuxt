@@ -110,6 +110,7 @@ describe('dev build directory at /.nuxt/', () => {
     // the generated dev app secret stays private
     expect(await handleBuildDirRequest(nuxt, '/.nuxt/app-secret')).toMatchObject({ status: 404 })
     expect(await handleBuildDirRequest(nuxt, '/.nuxt/types/../app-secret')).toMatchObject({ status: 404 })
+    expect(await handleBuildDirRequest(nuxt, '/.nuxt/APP-SECRET')).toMatchObject({ status: 404 })
     expect((await handleBuildDirRequest(nuxt, '/.nuxt/'))?.body).not.toContain('app-secret')
   })
 
