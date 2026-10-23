@@ -8,6 +8,7 @@ import type { Plugin } from 'vite'
 
 import { renderIndexHtml } from './html.ts'
 import { spaLoadingTemplate } from './output.ts'
+import { rendersSpaDocument } from './spa-document.ts'
 
 /**
  * Path of the SPA document, at the root of the Vite project so that it is emitted at the
@@ -105,11 +106,13 @@ export function BuildEnvironmentsPlugin (nuxt: Nuxt): Plugin {
       order: 'pre',
       async handler (builder) {
         const ssr = builder.environments.ssr
-        if (ssr && nuxt.options.ssr === false) {
+        const client = builder.environments.client
+        if (ssr && nuxt.options.ssr === false && !rendersSpaDocument(nuxt)) {
           // nothing renders on the server, so the orchestrator can skip the environment
           ssr.isBuilt = true
         }
-        for (const environment of [builder.environments.client, ssr]) {
+        // the document the client build emits is rendered with what the ssr environment builds
+        for (const environment of rendersSpaDocument(nuxt) ? [ssr, client] : [client, ssr]) {
           if (environment && !environment.isBuilt) {
             await builder.build(environment)
           }

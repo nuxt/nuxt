@@ -37,6 +37,12 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with a 
     expect(await response.text()).toMatch(/<p id="runtime">\s*Cloudflare-Workers\s*<\/p>/)
   })
 
+  it('runs renderer plugins in the worker runtime', async () => {
+    const html = await (await fetch('/about', { headers: { accept: 'text/html' } })).text()
+
+    expect(html.match(/<meta name="renderer-runtime"[^>]*>/g)).toEqual(['<meta name="renderer-runtime" content="Cloudflare-Workers">'])
+  })
+
   it('reports errors raised by the app the worker renders', async () => {
     const { status, report } = await renderErrorPage('/boom')
 
@@ -94,6 +100,12 @@ describe.skipIf(!runsOnceInMatrix)('pure vite build with a cloudflare deploy tar
     const page = await worker.default.fetch(new Request('https://example.com/about'))
     expect(page.status).toBe(200)
     expect(await page.text()).toContain('<p id="about-page">')
+  })
+
+  it('bundles renderer plugins into the worker', async () => {
+    const html = await (await worker.default.fetch(new Request('https://example.com/about'))).text()
+
+    expect(html.match(/<meta name="renderer-runtime"[^>]*>/g)).toHaveLength(1)
   })
 
   it('renders against the client build, which has to be built before the worker', async () => {
