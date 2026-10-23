@@ -3,7 +3,8 @@ import type { AcceptedMethod, AnyServerRouteMethod, EffectiveBaseURL, FallbackBa
 import type { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, toValue, unref } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { mergeAbortSignals } from '../utils/abort'
+import { isAbortError } from '../utils/abort'
+import { runAsyncDataHandler } from '../utils/async-data'
 import type { AsyncDataExecuteOptions, AsyncDataHandlerContext, AsyncDataMiddleware, AsyncDataRequestStatus, NoInfer, _Transform } from './asyncData'
 import type { FetchResult } from './fetch'
 import { applyUseAsyncDataMutationAddons, applyUseFetchMutationAddons } from './addons'
@@ -110,29 +111,14 @@ function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, DefaultT> 
     }
     abort('AsyncData mutation cancelled by deduplication')
     const controller = abortController = new AbortController()
-    const cleanupController = new AbortController()
     status.value = 'pending'
 
-    const promise: Promise<void> = new Promise<ResT>((resolve, reject) => {
-      const signal = mergeAbortSignals([controller.signal, executeOpts.signal], cleanupController.signal, executeOpts.timeout ?? opts.timeout)
-      const onAbort = () => {
-        const reason = signal.reason
-        reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-      }
-      if (signal.aborted) {
-        return onAbort()
-      }
-      signal.addEventListener('abort', onAbort, { once: true, signal: cleanupController.signal })
-
-      const ctx: AsyncDataHandlerContext = { signal }
-      let run = () => Promise.resolve(nuxtApp.runWithContext(() => handler(input, ctx)))
-      for (let i = (opts.middleware?.length ?? 0) - 1; i >= 0; i--) {
-        const middleware = opts.middleware![i]!
-        const next = run
-        run = () => Promise.resolve(middleware(next, ctx))
-      }
-      run().then(resolve, reject)
-    })
+    const promise: Promise<void> = runAsyncDataHandler(
+      ctx => nuxtApp.runWithContext(() => handler(input, ctx)),
+      opts.middleware,
+      [controller.signal, executeOpts.signal],
+      executeOpts.timeout ?? opts.timeout,
+    )
       .then(async (result) => {
         // superseded by a newer call, or cleared
         if (current !== promise) {
@@ -146,7 +132,7 @@ function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, DefaultT> 
         if (current !== promise) {
           return current
         }
-        if (typeof DOMException !== 'undefined' && err instanceof DOMException && err.name === 'AbortError') {
+        if (isAbortError(err)) {
           status.value = 'idle'
           return
         }
@@ -155,7 +141,6 @@ function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, DefaultT> 
         status.value = 'error'
       })
       .finally(() => {
-        cleanupController.abort()
         if (current === promise) {
           abortController = current = undefined
         }
