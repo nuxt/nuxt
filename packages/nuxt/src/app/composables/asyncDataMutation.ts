@@ -5,7 +5,7 @@ import { isAbortError } from '../utils/abort'
 import { runAsyncDataHandler } from '../utils/async-data'
 import type { FactoryDataT, FactoryDefaultT, NuxtErrorFor } from '../types/async-data'
 import type { AsyncDataExecuteOptions, AsyncDataHandlerContext, AsyncDataMiddleware, AsyncDataRequestStatus, NoInfer, _Transform } from './asyncData'
-import { applyUseAsyncDataMutationAddons } from './addons'
+import { applyMutationAddons } from './addons'
 import type { MergedAddonsExtensions, MergedAddonsOptions, UseAsyncDataMutationAddon } from './addons'
 import { createError } from './error'
 
@@ -199,7 +199,7 @@ export const createUseAsyncDataMutation: CreateUseAsyncDataMutation = ((options:
   }
   const { addons, ...factoryOptions } = options
   return addons?.length
-    ? applyUseAsyncDataMutationAddons(_createUseAsyncDataMutation, options)
+    ? applyMutationAddons<UseAsyncDataMutation>(_createUseAsyncDataMutation, options)
     : _createUseAsyncDataMutation(factoryOptions)
 }) as CreateUseAsyncDataMutation
 

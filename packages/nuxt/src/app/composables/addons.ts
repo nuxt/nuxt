@@ -4,8 +4,8 @@ import type { ArrayItems, UnionToIntersection } from '../utils'
 import { _isAutoKeyNeeded } from './asyncData'
 import type { AsyncData, AsyncDataMiddleware, AsyncDataOptions, UseAsyncData, _AsyncData } from './asyncData'
 import type { UseFetch, UseFetchOptions } from './fetch'
-import type { AsyncDataMutation, AsyncDataMutationOptions, UseAsyncDataMutation } from './asyncDataMutation'
-import type { UseFetchMutation, UseFetchMutationOptions } from './fetchMutation'
+import type { AsyncDataMutation, AsyncDataMutationOptions } from './asyncDataMutation'
+import type { UseFetchMutationOptions } from './fetchMutation'
 
 declare const AddonMarker: unique symbol
 
@@ -13,7 +13,7 @@ type SerializableValue = string | number | boolean | null | undefined | Serializ
 
 export type AsyncDataAddonInstance = _AsyncData<unknown, unknown>
 
-export type AsyncDataAddonSetup<Ext> = (asyncData: AsyncDataAddonInstance) => Ext | void
+export type AsyncDataAddonSetup<Ext, Instance = AsyncDataAddonInstance> = (asyncData: Instance) => Ext | void
 
 interface AddonChains {
   middleware: AsyncDataMiddleware<any>[]
@@ -39,8 +39,6 @@ export type UseFetchAddonOptions<Opts extends Record<string, any> = {}> =
 
 export type AsyncDataMutationAddonInstance = AsyncDataMutation<any[], unknown, unknown>
 
-export type AsyncDataMutationAddonSetup<Ext> = (mutation: AsyncDataMutationAddonInstance) => Ext | void
-
 export type UseAsyncDataMutationAddonOptions<Opts extends Record<string, any> = {}> =
   Omit<AsyncDataMutationOptions<any, any>, 'transform' | 'middleware'>
   & AddonChains
@@ -53,13 +51,13 @@ export type UseFetchMutationAddonOptions<Opts extends Record<string, any> = {}> 
   & Opts
 
 export interface UseAsyncDataMutationAddon<Opts extends Record<string, any> = {}, Ext = {}> {
-  setup: (options: UseAsyncDataMutationAddonOptions<Opts>) => AsyncDataMutationAddonSetup<Ext> | void
+  setup: (options: UseAsyncDataMutationAddonOptions<Opts>) => AsyncDataAddonSetup<Ext, AsyncDataMutationAddonInstance> | void
   /** @internal */
   [AddonMarker]?: { options: Opts, extension: Ext }
 }
 
 export interface UseFetchMutationAddon<Opts extends Record<string, any> = {}, Ext = {}> {
-  setup: (options: UseFetchMutationAddonOptions<Opts>) => AsyncDataMutationAddonSetup<Ext> | void
+  setup: (options: UseFetchMutationAddonOptions<Opts>) => AsyncDataAddonSetup<Ext, AsyncDataMutationAddonInstance> | void
   /** @internal */
   [AddonMarker]?: { options: Opts, extension: Ext }
 }
@@ -256,29 +254,17 @@ function attachMutationAddonExtensions (setups: ReadonlyArray<(mutation: any) =>
 }
 
 /** @internal */
-export function applyUseFetchMutationAddons (
+export function applyMutationAddons<T> (
   create: (options: Record<string, any>) => (...args: any[]) => AsyncDataMutationAddonInstance,
   { addons, ...factoryOptions }: Record<string, any>,
-): UseFetchMutation {
-  const useFetchMutation = create(factoryOptions)
-  return ((request: unknown, opts: Record<string, any> = {}) => {
+  fetchHooks = false,
+): T {
+  const useMutation = create(factoryOptions)
+  const arrayHookKeys = fetchHooks ? ['middleware', ...FETCH_HOOK_ARRAY_KEYS] : ['middleware']
+  return ((target: unknown, opts: Record<string, any> = {}) => {
     const merged: Record<string, any> = { ...factoryOptions, ...opts }
-    const { setups } = runAddonSetups(addons, merged, ['middleware', ...FETCH_HOOK_ARRAY_KEYS])
-    const result = useFetchMutation(request, merged)
+    const { setups } = runAddonSetups(addons, merged, arrayHookKeys)
+    const result = useMutation(target, merged)
     return setups ? attachMutationAddonExtensions(setups, result) : result
-  }) as UseFetchMutation
-}
-
-/** @internal */
-export function applyUseAsyncDataMutationAddons (
-  create: (options: Record<string, any>) => (...args: any[]) => AsyncDataMutationAddonInstance,
-  { addons, ...factoryOptions }: Record<string, any>,
-): UseAsyncDataMutation {
-  const useAsyncDataMutation = create(factoryOptions)
-  return ((handler: unknown, opts: Record<string, any> = {}) => {
-    const merged: Record<string, any> = { ...factoryOptions, ...opts }
-    const { setups } = runAddonSetups(addons, merged, ['middleware'])
-    const result = useAsyncDataMutation(handler, merged)
-    return setups ? attachMutationAddonExtensions(setups, result) : result
-  }) as UseAsyncDataMutation
+  }) as T
 }
