@@ -1,5 +1,5 @@
 import type { Ref, WatchHandle } from 'vue'
-import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
+import { customRef, getCurrentScope, onScopeDispose, ref, watch } from 'vue'
 import { parse, parseSetCookie, serialize } from 'cookie-es'
 import type { CookieSerializeOptions } from '../types/cookie'
 import type { NuxtRequestEvent } from '@nuxt/schema'
@@ -151,7 +151,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   if (import.meta.client) {
-    let syncing = false
+    let skipRefresh = false
     let channel: null | BroadcastChannel = null
     try {
       if (!store && typeof BroadcastChannel !== 'undefined') {
@@ -162,7 +162,6 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
     }
     const callback = (force = false) => {
-      if (syncing) { return }
       if (!force) {
         if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       }
@@ -181,15 +180,9 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       if (data.refresh) { invalidateClientCookieJar() }
       const raw = data.refresh ? (opts.filter!(name) ? readClientCookieJar()[name] : undefined) : data.value
       const value = raw === undefined && data.refresh ? undefined : opts.decode(raw)
-      syncing = true
-      cookieWatcher?.pause()
       cookie.value = value
       cookies[name] = klona(value)
-      nextTick(async () => {
-        cookieWatcher?.resume()
-        await nextTick()
-        syncing = false
-      })
+      skipRefresh = true
     }
 
     const hasScope = !!getCurrentScope()
@@ -225,7 +218,11 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
 
     if (opts.watch && !opts.readonly) {
-      cookieWatcher = watch(cookie, () => callback(opts.refresh), { deep: opts.watch !== 'shallow' })
+      cookieWatcher = watch(cookie, () => {
+        const force = opts.refresh && !skipRefresh
+        skipRefresh = false
+        callback(force)
+      }, { deep: opts.watch !== 'shallow' })
     }
 
     if (shouldSetInitialClientCookie) {

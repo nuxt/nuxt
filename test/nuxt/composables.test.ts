@@ -1499,6 +1499,20 @@ describe('useCookie', () => {
     }
   })
 
+  it('should write an assignment made straight after a CookieStore update when refresh is true', async () => {
+    const name = 'refresh-cookiestore-assign-test'
+    const scope = effectScope()
+    const cookie = scope.run(() => useCookie(name, { maxAge: 3600, refresh: true }))!
+
+    cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name, value: 'received' }], deleted: [] }))
+    await nextTick()
+    cookie.value = 'local'
+    for (let i = 0; i < 4; i++) { await nextTick() }
+    expect(document.cookie).toContain(`${name}=local`)
+
+    scope.stop()
+  })
+
   it('should not re-write cookie on same-value assignment when refresh is false', async () => {
     const { nextTick } = await import('vue')
 
