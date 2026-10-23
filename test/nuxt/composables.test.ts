@@ -793,6 +793,28 @@ describe('routing utilities: `navigateTo`', () => {
     expect(() => navigateTo('/\t/test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
     expect(() => navigateTo('/\n\\test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
   })
+  it('navigateTo with external: true keeps the app scope until the page is left', () => {
+    const pagehide = (persisted: boolean) => window.dispatchEvent(Object.assign(new Event('pagehide'), { persisted }))
+    const stop = vi.spyOn(nuxtApp._scope, 'stop').mockImplementation(() => {})
+    try {
+      // clear listeners left by earlier external navigations
+      pagehide(false)
+      stop.mockClear()
+
+      navigateTo('https://test.com', { external: true })
+      expect(stop).not.toHaveBeenCalled()
+
+      // kept in the back/forward cache
+      pagehide(true)
+      expect(stop).not.toHaveBeenCalled()
+
+      navigateTo('https://test.com', { external: true })
+      pagehide(false)
+      expect(stop).toHaveBeenCalledTimes(1)
+    } finally {
+      stop.mockRestore()
+    }
+  })
   it('navigateTo should disallow navigation to data/script URLs', () => {
     const urls = [
       ['data:alert("hi")', 'data'],

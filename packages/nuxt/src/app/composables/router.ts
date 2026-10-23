@@ -299,8 +299,15 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Client-side redirection using vue-router
   if (isExternal) {
-    // Run any cleanup steps for the current scope, like ending BroadcastChannel
-    nuxtApp._scope.stop()
+    // Run any cleanup steps for the current scope, like ending BroadcastChannel, once the
+    // page is actually left. Stopping it now would remove `useHead` tags while the page is
+    // still shown, and keep it stopped if the navigation never happens. A page kept in the
+    // back/forward cache keeps its scope, so it still works when restored.
+    window.addEventListener('pagehide', (event) => {
+      if (!event.persisted) {
+        nuxtApp._scope.stop()
+      }
+    }, { once: true })
     if (options?.replace) {
       location.replace(toPath)
     } else {
