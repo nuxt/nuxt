@@ -2,7 +2,7 @@ import './types/augments'
 
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
 import { createHooks } from 'hookable'
 
 import { getContext } from './internal/context'
@@ -170,6 +170,11 @@ interface _NuxtApp {
   '~transitionPromise'?: Promise<void>
   /** @internal */
   '~transitionFinish'?: () => void
+  /**
+   * Origin of the navigation whose page has not yet settled
+   * @internal
+   */
+  '~scrollFrom'?: RouteLocationNormalized
 
   /** @internal */
   '_announcer'?: NuxtAnnouncer
