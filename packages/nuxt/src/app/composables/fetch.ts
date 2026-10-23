@@ -706,7 +706,7 @@ export function _createUseFetch<
       ])))
 
       if (!fetchOptions.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
-        throw dataDiagnostics.NUXT_E3001({ url: _request.value })
+        throw dataDiagnostics.NUXT_E3001({ fn: 'useFetch', url: _request.value })
       }
 
       const _fetchOptions = reactive<typeof fetchOptions>({

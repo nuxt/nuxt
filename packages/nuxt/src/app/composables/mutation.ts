@@ -308,7 +308,7 @@ function _createUseFetchMutation (options: FactoryOptions = {}): UseFetchMutatio
     return createAsyncDataMutation((payload: Record<string, any> | undefined, { signal }) => {
       const _request = toValue(request)
       if (!fetchOptions.baseURL && typeof _request === 'string' && _request[0] === '/' && _request[1] === '/') {
-        throw dataDiagnostics.NUXT_E3001({ url: _request })
+        throw dataDiagnostics.NUXT_E3001({ fn: 'useFetchMutation', url: _request })
       }
       return _$fetch(_request, {
         ...fetchDefaults,
