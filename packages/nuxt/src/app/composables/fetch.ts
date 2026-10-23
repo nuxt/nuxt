@@ -694,7 +694,7 @@ export function _createUseFetch<
       if ('params' in fetchOptions) {
         delete (fetchOptions as { params?: unknown }).params
         if (import.meta.dev) {
-          dataDiagnostics.NUXT_E3010()
+          dataDiagnostics.NUXT_E3010({ fn: 'useFetch' })
         }
       }
 
