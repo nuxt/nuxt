@@ -10,6 +10,7 @@ import { TsCheckerPlugin, webpack } from '../builder.ts'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
 const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
+const VUE_PACKAGES = ['vue', 'vue/server-renderer', '@vue/server-renderer', '@vue/runtime-dom', '@vue/runtime-core', '@vue/reactivity', '@vue/shared']
 
 export async function server (ctx: WebpackConfigContext) {
   ctx.name = 'server'
@@ -68,6 +69,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     'nitropack/runtime',
     '#shared',
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
+    ...VUE_PACKAGES,
     ...ctx.nuxt['~runtimeDependencies'] || [],
   ])
   if (!ctx.nuxt.options.dev) {

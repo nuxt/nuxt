@@ -42,7 +42,7 @@ import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
-import { linkToAlias, logger } from '../utils.ts'
+import { linkToAlias, logger, toArray } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
 import { buildServerRoutes, collectPageRoutes, collectServerRoutes, emitServerRoutesModule, resolveServerRoutes } from './utils/server-routes.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
@@ -61,6 +61,7 @@ import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
+import { BundledVuePlugin } from './plugins/bundled-vue.ts'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -471,6 +472,14 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  if (!nuxt.options.dev && !nuxt.options.vue.runtimeCompiler) {
+    addBuildPlugin({ vite: () => BundledVuePlugin() }, { client: false })
+    nuxt.hook('nitro:config', (config) => {
+      config.rollupConfig ||= {}
+      config.rollupConfig.plugins = [...toArray(config.rollupConfig.plugins || []), BundledVuePlugin()]
+    })
+  }
+
   // Support Nuxt VFS
   addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
   addBuildPlugin(VirtualFSPlugin(nuxt, {
@@ -786,11 +795,6 @@ async function initNuxt (nuxt: Nuxt) {
       // @ts-expect-error TODO: refactor to @nuxt/cli
       _internal_install: '@nuxt/image',
     })
-  }
-
-  // Track components used to render for webpack
-  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.builder === '@nuxt/rspack-builder') {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
   // Add nuxt app hooks debugger
