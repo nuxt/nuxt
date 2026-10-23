@@ -32,6 +32,10 @@ export interface NuxtLinkOptions {
    */
   externalRelAttribute?: string | null
   /**
+   * A default `target` attribute value applied on external links, e.g. `"_blank"`. Not set by default.
+   */
+  externalTargetAttribute?: string | null
+  /**
    * An option to either add or remove trailing slashes in the `href`.
    * If unset or not matching the valid values `append` or `remove`, it will be ignored.
    */
