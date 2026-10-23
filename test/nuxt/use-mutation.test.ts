@@ -64,7 +64,7 @@ describe('useFetchMutation', () => {
   it('rejects a protocol-relative URL', async () => {
     const { error, mutate } = useFetchMutation('//example.com/api', { method: 'post' })
     await mutate()
-    expect(error.value?.message).toContain('`useFetchMutation` request URL must not start with "//"')
+    expect(error.value?.cause).toMatchObject({ code: 'NUXT_E3001' })
   })
 
   it('drops `params` rather than sending it as `query`', async () => {
