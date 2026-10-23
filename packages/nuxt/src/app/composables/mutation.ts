@@ -5,6 +5,7 @@ import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, toValue, un
 import { useNuxtApp } from '../nuxt'
 import { isAbortError } from '../utils/abort'
 import { runAsyncDataHandler } from '../utils/async-data'
+import type { FactoryDataT, FactoryDefaultT, NuxtErrorFor } from '../types/async-data'
 import type { AsyncDataExecuteOptions, AsyncDataHandlerContext, AsyncDataMiddleware, AsyncDataRequestStatus, NoInfer, _Transform } from './asyncData'
 import type { FetchResult } from './fetch'
 import { applyUseAsyncDataMutationAddons, applyUseFetchMutationAddons } from './addons'
@@ -63,10 +64,6 @@ export interface AsyncDataMutation<Args extends unknown[], DataT, ErrorT> {
 }
 
 export type AugmentedAsyncDataMutation<Args extends unknown[], DataT, ErrorT, Ext> = [keyof Ext] extends [never] ? AsyncDataMutation<Args, DataT, ErrorT> : AsyncDataMutation<Args, DataT, ErrorT> & Ext
-
-type NuxtErrorFor<NuxtErrorDataT> = NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>
-type FactoryDataT<FDataT, ResT> = [unknown] extends [FDataT] ? ResT : FDataT
-type FactoryDefaultT<FDefaultT> = [undefined] extends [FDefaultT] ? undefined : FDefaultT
 
 type FactoryOptions = Record<string, any> | ((callerOptions: Record<string, any>) => Record<string, any>)
 
@@ -170,7 +167,7 @@ function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, DefaultT> 
 }
 
 export interface UseAsyncDataMutation<FDataT = unknown, FDefaultT = undefined, FAddonOpts = {}, FAddonExt = {}> {
-  <ResT, InputT = void, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, DefaultT = FactoryDefaultT<FDefaultT>>(
+  <ResT, InputT = void, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     handler: AsyncDataMutationHandler<InputT, ResT>,
     opts?: AsyncDataMutationOptions<ResT, DataT, DefaultT> & FAddonOpts,
   ): AugmentedAsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT | DefaultT, NuxtErrorFor<NuxtErrorDataT>, FAddonExt>
@@ -257,7 +254,7 @@ export interface UseFetchMutation<FDataT = unknown, FDefaultT = undefined, FBase
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = FactoryDataT<FDataT, _ResT>,
-    DefaultT = FactoryDefaultT<FDefaultT>,
+    DefaultT = FactoryDefaultT<FDefaultT, undefined>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
     opts?: UseFetchMutationOptions<_ResT, DataT, DefaultT, _ReqT & string, Method, BaseURL> & FAddonOpts,
@@ -272,7 +269,7 @@ export interface UseFetchMutation<FDataT = unknown, FDefaultT = undefined, FBase
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
     DataT = FactoryDataT<FDataT, _ResT>,
-    DefaultT = FactoryDefaultT<FDefaultT>,
+    DefaultT = FactoryDefaultT<FDefaultT, undefined>,
   >(
     request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
     opts?: UseFetchMutationOptions<_ResT, DataT, DefaultT, _ReqT & string, Method, BaseURL> & FAddonOpts,
