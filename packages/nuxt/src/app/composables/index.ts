@@ -10,8 +10,10 @@ export { clearError, createError, isNuxtError, showError, useError } from './err
 export type { NuxtError } from './error'
 export { useFetch, useLazyFetch } from './fetch'
 export type { AnyServerRouteMethod, AvailableServerRouteMethod, DeclaredUseFetch, FetchResult, UseFetch, ServerRouteMethod, ServerRouteMethods, UseFetchOptions, $Fetch, TypedFetch, TypedFetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from './fetch'
-export { createUseAsyncDataMutation, createUseFetchMutation, useAsyncDataMutation, useFetchMutation } from './mutation'
-export type { AsyncDataMutation, AsyncDataMutationExecuteOptions, AsyncDataMutationHandler, AsyncDataMutationOptions, AugmentedAsyncDataMutation, CreateUseAsyncDataMutation, CreateUseAsyncDataMutationOptions, CreateUseFetchMutation, CreateUseFetchMutationOptions, FetchMutationArgs, FetchMutationPayload, UseAsyncDataMutation, UseFetchMutation, UseFetchMutationOptions } from './mutation'
+export { createUseAsyncDataMutation, useAsyncDataMutation } from './asyncDataMutation'
+export type { AsyncDataMutation, AsyncDataMutationExecuteOptions, AsyncDataMutationHandler, AsyncDataMutationOptions, AugmentedAsyncDataMutation, CreateUseAsyncDataMutation, CreateUseAsyncDataMutationOptions, UseAsyncDataMutation } from './asyncDataMutation'
+export { createUseFetchMutation, useFetchMutation } from './fetchMutation'
+export type { CreateUseFetchMutation, CreateUseFetchMutationOptions, FetchMutationArgs, FetchMutationPayload, UseFetchMutation, UseFetchMutationOptions } from './fetchMutation'
 export { useCookie, refreshCookie } from './cookie'
 export type { CookieOptions, CookieRef, UseCookieOptions } from './cookie'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
