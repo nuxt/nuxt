@@ -52,7 +52,7 @@ The returned composable's signature includes any custom options and return-value
 
 ## Options
 
-`createUseFetch` accepts all the same options as [`useFetch`](/docs/api/composables/use-fetch#parameters), including `baseURL`, `headers`, `query`, `onRequest`, `onResponse`, `server`, `lazy`, `transform`, `getCachedData`, and more.
+`createUseFetch` accepts all the same options as [`useFetch`](/docs/api/composables/use-fetch#parameters), including `baseURL`, `headers`, `query`, `onRequest`, `onResponse`, `server`, `lazy`, `transform`, `getCachedData`, `fetchPolicy`, and more.
 
 See the full list of options in the [`useFetch` documentation](/docs/api/composables/use-fetch#parameters).
 
