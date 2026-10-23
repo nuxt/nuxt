@@ -4,7 +4,10 @@ import { describe, expect, it } from 'vitest'
 import { defineEventHandler, readBody } from 'h3'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
-import { useAsyncDataMutation, useFetchMutation } from '#app/composables/mutation'
+import { computed } from 'vue'
+import { createUseAsyncDataMutation, createUseFetchMutation, useAsyncDataMutation, useFetchMutation } from '#app/composables/mutation'
+import { defineUseAsyncDataMutationAddon, defineUseFetchMutationAddon } from '#app/composables/addons'
+import type { UseAsyncDataMutationAddonOptions } from '#app/composables/addons'
 
 registerEndpoint('/api/mutation', defineEventHandler(async event => ({
   method: event.req.method,
@@ -56,5 +59,43 @@ describe('useFetchMutation', () => {
 
     await mutate({ body: { id: 2 }, headers: { 'x-test': 'call' } })
     expect(data.value).toMatchObject({ header: 'call', body: { id: 2 } })
+  })
+})
+
+describe('mutation factories', () => {
+  it('applies factory options as defaults, or as overrides when given a function', () => {
+    const withDefaults = createUseAsyncDataMutation({ default: () => 'factory' })
+    expect(withDefaults(() => Promise.resolve('x')).data.value).toBe('factory')
+    expect(withDefaults(() => Promise.resolve('x'), { default: () => 'caller' }).data.value).toBe('caller')
+
+    const withOverrides = createUseAsyncDataMutation(() => ({ default: () => 'factory' }))
+    expect(withOverrides(() => Promise.resolve('x'), { default: () => 'caller' }).data.value).toBe('factory')
+  })
+
+  it('runs addon middleware with custom options and merges extensions', async () => {
+    const suffix = defineUseAsyncDataMutationAddon({
+      setup: (options: UseAsyncDataMutationAddonOptions<{ suffix?: string }>) => {
+        options.suffix ??= '!'
+        options.middleware.push(async next => `${await next()}${options.suffix}`)
+        return mutation => ({ isDone: computed(() => mutation.status.value === 'success') })
+      },
+    })
+    const useSuffixedMutation = createUseAsyncDataMutation({ addons: [suffix] })
+    const { data, isDone, mutate } = useSuffixedMutation((input: string) => Promise.resolve(input), { suffix: '?' })
+    await mutate('hi')
+    expect(data.value).toBe('hi?')
+    expect(isDone.value).toBe(true)
+  })
+
+  it('applies factory fetch options and addon fetch hooks', async () => {
+    const header = defineUseFetchMutationAddon({
+      setup: (options) => {
+        options.onRequest.push(({ options }) => { options.headers.set('x-test', 'addon') })
+      },
+    })
+    const useApiMutation = createUseFetchMutation({ baseURL: '/api', method: 'post', addons: [header] })
+    const { data, mutate } = useApiMutation('/mutation')
+    await mutate({ body: { id: 1 } })
+    expect(data.value).toMatchObject({ method: 'POST', header: 'addon', body: { id: 1 } })
   })
 })

@@ -1,11 +1,13 @@
 import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { AcceptedMethod, AnyServerRouteMethod, FallbackBaseURL, RequiredRequestBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, UnmatchedRouteArgs, ValidTypedFetchPath } from '../types/fetch'
+import type { AcceptedMethod, AnyServerRouteMethod, EffectiveBaseURL, FallbackBaseURL, RequiredRequestBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, UnmatchedRouteArgs, ValidTypedFetchPath } from '../types/fetch'
 import type { MaybeRefOrGetter, Ref } from 'vue'
 import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, toValue, unref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { mergeAbortSignals } from '../utils/abort'
 import type { AsyncDataExecuteOptions, AsyncDataHandlerContext, AsyncDataMiddleware, AsyncDataRequestStatus, NoInfer, _Transform } from './asyncData'
 import type { FetchResult } from './fetch'
+import { applyUseAsyncDataMutationAddons, applyUseFetchMutationAddons } from './addons'
+import type { MergedAddonsExtensions, MergedAddonsOptions, UseAsyncDataMutationAddon, UseFetchMutationAddon } from './addons'
 import { createError } from './error'
 import type { NuxtError } from './error'
 import { useRequestFetch } from './ssr'
@@ -59,24 +61,33 @@ export interface AsyncDataMutation<Args extends unknown[], DataT, ErrorT> {
   clear: () => void
 }
 
-/**
- * Run an asynchronous side effect on demand, with a payload passed to each call.
- * Unlike `useAsyncData`, the state is local to the caller: it is not keyed, cached or serialized into the payload.
- * @since 4.7.0
- * @param handler An asynchronous function receiving the input passed to `mutate`
- * @param opts customize the behavior of useAsyncDataMutation
- */
-export function useAsyncDataMutation<
-  ResT,
-  InputT = void,
-  NuxtErrorDataT = unknown,
-  DataT = ResT,
-  DefaultT = undefined,
-> (
+export type AugmentedAsyncDataMutation<Args extends unknown[], DataT, ErrorT, Ext> = [keyof Ext] extends [never] ? AsyncDataMutation<Args, DataT, ErrorT> : AsyncDataMutation<Args, DataT, ErrorT> & Ext
+
+type NuxtErrorFor<NuxtErrorDataT> = NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>
+type FactoryDataT<FDataT, ResT> = [unknown] extends [FDataT] ? ResT : FDataT
+type FactoryDefaultT<FDefaultT> = [undefined] extends [FDefaultT] ? undefined : FDefaultT
+
+type FactoryOptions = Record<string, any> | ((callerOptions: Record<string, any>) => Record<string, any>)
+
+// as in `useAsyncData`: a plain object provides defaults for what the caller leaves undefined,
+// and a function's return value overrides the caller
+function mergeFactoryOptions (options: FactoryOptions, opts: Record<string, any>) {
+  const override = typeof options === 'function'
+  const factoryOptions = override ? options(opts) : options
+  const merged = { ...opts }
+  for (const key in factoryOptions) {
+    if (factoryOptions[key] !== undefined && (override || merged[key] === undefined)) {
+      merged[key] = factoryOptions[key]
+    }
+  }
+  return merged
+}
+
+function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, DefaultT> (
   handler: AsyncDataMutationHandler<InputT, ResT>,
-  opts: AsyncDataMutationOptions<ResT, DataT, DefaultT> = {},
-): AsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT | DefaultT, NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>> {
-  type ErrorT = NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>
+  opts: AsyncDataMutationOptions<ResT, DataT, DefaultT>,
+): AsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT | DefaultT, NuxtErrorFor<NuxtErrorDataT>> {
+  type ErrorT = NuxtErrorFor<NuxtErrorDataT>
 
   const nuxtApp = useNuxtApp()
   const getDefault = () => unref(opts.default?.()) as DefaultT
@@ -173,6 +184,56 @@ export function useAsyncDataMutation<
   }
 }
 
+export interface UseAsyncDataMutation<FDataT = unknown, FDefaultT = undefined, FAddonOpts = {}, FAddonExt = {}> {
+  <ResT, InputT = void, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, DefaultT = FactoryDefaultT<FDefaultT>>(
+    handler: AsyncDataMutationHandler<InputT, ResT>,
+    opts?: AsyncDataMutationOptions<ResT, DataT, DefaultT> & FAddonOpts,
+  ): AugmentedAsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT | DefaultT, NuxtErrorFor<NuxtErrorDataT>, FAddonExt>
+}
+
+export type CreateUseAsyncDataMutationOptions<
+  FDataT = unknown,
+  FDefaultT = undefined,
+  FAddons extends ReadonlyArray<UseAsyncDataMutationAddon<any, any>> = [],
+> = Partial<AsyncDataMutationOptions<any, FDataT, FDefaultT>> & { addons?: FAddons }
+
+export interface CreateUseAsyncDataMutation {
+  <FDataT = unknown, FDefaultT = undefined, const FAddons extends ReadonlyArray<UseAsyncDataMutationAddon<any, any>> = []>(
+    options?:
+      | CreateUseAsyncDataMutationOptions<FDataT, FDefaultT, FAddons>
+      | ((callerOptions: AsyncDataMutationOptions<unknown>) => Partial<AsyncDataMutationOptions<any, FDataT, FDefaultT>>),
+  ): UseAsyncDataMutation<FDataT, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
+}
+
+function _createUseAsyncDataMutation (options: FactoryOptions = {}): UseAsyncDataMutation {
+  return ((handler: AsyncDataMutationHandler<unknown, unknown>, opts: Record<string, any> = {}) => {
+    return createAsyncDataMutation(handler, mergeFactoryOptions(options, opts))
+  }) as UseAsyncDataMutation
+}
+
+/**
+ * A factory function to create a custom `useAsyncDataMutation` composable with pre-defined default options.
+ * @since 4.7.0
+ */
+export const createUseAsyncDataMutation: CreateUseAsyncDataMutation = ((options: FactoryOptions = {}) => {
+  if (typeof options === 'function') {
+    return _createUseAsyncDataMutation(options)
+  }
+  const { addons, ...factoryOptions } = options
+  return addons?.length
+    ? applyUseAsyncDataMutationAddons(_createUseAsyncDataMutation, options)
+    : _createUseAsyncDataMutation(factoryOptions)
+}) as CreateUseAsyncDataMutation
+
+/**
+ * Run an asynchronous side effect on demand, with a payload passed to each call.
+ * Unlike `useAsyncData`, the state is local to the caller: it is not keyed, cached or serialized into the payload.
+ * @since 4.7.0
+ * @param handler An asynchronous function receiving the input passed to `mutate`
+ * @param opts customize the behavior of useAsyncDataMutation
+ */
+export const useAsyncDataMutation: UseAsyncDataMutation = _createUseAsyncDataMutation()
+
 /** The `body`, `query` and `headers` a single `mutate` call sends to `Request`. */
 export type FetchMutationPayload<Request, Method extends AnyServerRouteMethod> = TypedRequestShape<Request, Method>
 
@@ -199,38 +260,92 @@ export interface UseFetchMutationOptions<
 }
 
 // The signatures mirror `UseFetch`: the registered paths first, for editor completions, then a path
-// known only at runtime, carrying the validator so an unregistered path is named.
-export interface UseFetchMutation {
+// known only at runtime, carrying the validator so an unregistered path is named. A `baseURL` the
+// factory sets is carried on the type and resolved as `UseFetch` does.
+export interface UseFetchMutation<FDataT = unknown, FDefaultT = undefined, FBaseURL extends string = '', FAddonOpts = {}, FAddonExt = {}> {
   <
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends TypedFetchRequest = TypedFetchRequest,
     const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
     const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchRequest>,
-    _ReqT = ResolvedFetchPath<ReqT, BaseURL>,
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
-    DataT = _ResT,
-    DefaultT = undefined,
+    DataT = FactoryDataT<FDataT, _ResT>,
+    DefaultT = FactoryDefaultT<FDefaultT>,
   >(
     request: Ref<ReqT> | ReqT | (() => ReqT),
-    opts?: UseFetchMutationOptions<_ResT, DataT, DefaultT, _ReqT & string, Method, BaseURL>,
+    opts?: UseFetchMutationOptions<_ResT, DataT, DefaultT, _ReqT & string, Method, BaseURL> & FAddonOpts,
     ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
-  ): AsyncDataMutation<FetchMutationArgs<_ReqT, Method>, DataT | DefaultT, ErrorT>
+  ): AugmentedAsyncDataMutation<FetchMutationArgs<_ReqT, Method>, DataT | DefaultT, ErrorT, FAddonExt>
   <
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends TypedFetchPathInput = TypedFetchPathInput,
     const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
     const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchPathInput>,
-    _ReqT = ResolvedFetchPath<ReqT, BaseURL>,
+    _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
-    DataT = _ResT,
-    DefaultT = undefined,
+    DataT = FactoryDataT<FDataT, _ResT>,
+    DefaultT = FactoryDefaultT<FDefaultT>,
   >(
     request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
-    opts?: UseFetchMutationOptions<_ResT, DataT, DefaultT, _ReqT & string, Method, BaseURL>,
-  ): AsyncDataMutation<FetchMutationArgs<_ReqT, Method>, DataT | DefaultT, ErrorT>
+    opts?: UseFetchMutationOptions<_ResT, DataT, DefaultT, _ReqT & string, Method, BaseURL> & FAddonOpts,
+  ): AugmentedAsyncDataMutation<FetchMutationArgs<_ReqT, Method>, DataT | DefaultT, ErrorT, FAddonExt>
 }
+
+type CreateUseFetchMutationBaseOptions<FDataT, FDefaultT, FBaseURL extends string> = Partial<UseFetchMutationOptions<any, FDataT, FDefaultT, string, AnyServerRouteMethod, FBaseURL>>
+
+export type CreateUseFetchMutationOptions<
+  FDataT = unknown,
+  FDefaultT = undefined,
+  FBaseURL extends string = '',
+  FAddons extends ReadonlyArray<UseFetchMutationAddon<any, any>> = [],
+> = CreateUseFetchMutationBaseOptions<FDataT, FDefaultT, FBaseURL> & { addons?: FAddons }
+
+export interface CreateUseFetchMutation {
+  <FDataT = unknown, FDefaultT = undefined, const FBaseURL extends string = '', const FAddons extends ReadonlyArray<UseFetchMutationAddon<any, any>> = []>(
+    options?:
+      | CreateUseFetchMutationOptions<FDataT, FDefaultT, FBaseURL, FAddons>
+      | ((callerOptions: UseFetchMutationOptions<unknown>) => CreateUseFetchMutationBaseOptions<FDataT, FDefaultT, FBaseURL>),
+  ): UseFetchMutation<FDataT, FDefaultT, FBaseURL, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
+}
+
+function _createUseFetchMutation (options: FactoryOptions = {}): UseFetchMutation {
+  return ((request: MaybeRefOrGetter<unknown>, opts: Record<string, any> = {}) => {
+    const { default: defaultFn, transform, deep, dedupe, timeout, middleware, $fetch: customFetch, ...fetchOptions } = mergeFactoryOptions(options, opts)
+    const _$fetch = (customFetch || (import.meta.server ? useRequestFetch() : $fetch)) as (request: unknown, opts: unknown) => Promise<unknown>
+
+    return createAsyncDataMutation((payload: Record<string, any> | undefined, { signal }) => {
+      const _request = toValue(request)
+      if (!fetchOptions.baseURL && typeof _request === 'string' && _request[0] === '/' && _request[1] === '/') {
+        throw dataDiagnostics.NUXT_E3001({ url: _request })
+      }
+      return _$fetch(_request, {
+        ...fetchDefaults,
+        ...fetchOptions,
+        ...payload,
+        query: payload?.query ? { ...fetchOptions.query, ...payload.query } : fetchOptions.query,
+        headers: mergeHeaders(fetchOptions.headers, payload?.headers),
+        signal,
+      })
+    }, { default: defaultFn, transform, deep, dedupe, timeout, middleware })
+  }) as UseFetchMutation
+}
+
+/**
+ * A factory function to create a custom `useFetchMutation` composable with pre-defined default options.
+ * @since 4.7.0
+ */
+export const createUseFetchMutation: CreateUseFetchMutation = ((options: FactoryOptions = {}) => {
+  if (typeof options === 'function') {
+    return _createUseFetchMutation(options)
+  }
+  const { addons, ...factoryOptions } = options
+  return addons?.length
+    ? applyUseFetchMutationAddons(_createUseFetchMutation, options)
+    : _createUseFetchMutation(factoryOptions)
+}) as CreateUseFetchMutation
 
 /**
  * Send a request to an API endpoint on demand, with the `body`, `query` and `headers` passed to each
@@ -239,25 +354,7 @@ export interface UseFetchMutation {
  * @param request The URL to send the request to
  * @param opts extends $fetch options and useAsyncDataMutation options
  */
-export const useFetchMutation: UseFetchMutation = ((request: MaybeRefOrGetter<unknown>, opts: Record<string, any> = {}) => {
-  const { default: defaultFn, transform, deep, dedupe, timeout, middleware, $fetch: customFetch, ...fetchOptions } = opts
-  const _$fetch = (customFetch || (import.meta.server ? useRequestFetch() : $fetch)) as (request: unknown, opts: unknown) => Promise<unknown>
-
-  return useAsyncDataMutation((payload: Record<string, any> | undefined, { signal }) => {
-    const _request = toValue(request)
-    if (!fetchOptions.baseURL && typeof _request === 'string' && _request[0] === '/' && _request[1] === '/') {
-      throw dataDiagnostics.NUXT_E3001({ url: _request })
-    }
-    return _$fetch(_request, {
-      ...fetchDefaults,
-      ...fetchOptions,
-      ...payload,
-      query: payload?.query ? { ...fetchOptions.query, ...payload.query } : fetchOptions.query,
-      headers: mergeHeaders(fetchOptions.headers, payload?.headers),
-      signal,
-    })
-  }, { default: defaultFn, transform, deep, dedupe, timeout, middleware })
-}) as UseFetchMutation
+export const useFetchMutation: UseFetchMutation = _createUseFetchMutation()
 
 function mergeHeaders (base: HeadersInit | undefined, extra: HeadersInit | undefined) {
   if (!base || !extra) {
