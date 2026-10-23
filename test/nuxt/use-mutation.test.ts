@@ -101,6 +101,14 @@ describe('mutation factories', () => {
     expect(isDone.value).toBe(true)
   })
 
+  it('does not let an addon extension make a mutation awaitable', () => {
+    const thenable = defineUseAsyncDataMutationAddon({
+      setup: () => () => ({ then: () => Promise.resolve() }),
+    })
+    const mutation = createUseAsyncDataMutation({ addons: [thenable] })(() => Promise.resolve(true))
+    expect('then' in mutation).toBe(false)
+  })
+
   it('applies factory fetch options and addon fetch hooks', async () => {
     const header = defineUseFetchMutationAddon({
       setup: (options) => {
