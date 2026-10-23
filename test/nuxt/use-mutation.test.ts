@@ -60,6 +60,13 @@ describe('useFetchMutation', () => {
     await mutate({ body: { id: 2 }, headers: { 'x-test': 'call' } })
     expect(data.value).toMatchObject({ header: 'call', body: { id: 2 } })
   })
+
+  it('drops `params` rather than sending it as `query`', async () => {
+    // @ts-expect-error `params` is not an option
+    const { data, mutate } = useFetchMutation('/api/mutation', { method: 'post', params: { a: '1' } })
+    await mutate()
+    expect(data.value?.query).toStrictEqual({})
+  })
 })
 
 describe('mutation factories', () => {

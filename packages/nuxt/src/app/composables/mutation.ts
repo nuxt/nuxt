@@ -316,6 +316,13 @@ function _createUseFetchMutation (options: FactoryOptions = {}): UseFetchMutatio
     const { default: defaultFn, transform, deep, dedupe, timeout, middleware, $fetch: customFetch, ...fetchOptions } = mergeFactoryOptions(options, opts)
     const _$fetch = (customFetch || (import.meta.server ? useRequestFetch() : $fetch)) as (request: unknown, opts: unknown) => Promise<unknown>
 
+    if ('params' in fetchOptions) {
+      delete fetchOptions.params
+      if (import.meta.dev) {
+        dataDiagnostics.NUXT_E3010({ fn: 'useFetchMutation' })
+      }
+    }
+
     return createAsyncDataMutation((payload: Record<string, any> | undefined, { signal }) => {
       const _request = toValue(request)
       if (!fetchOptions.baseURL && typeof _request === 'string' && _request[0] === '/' && _request[1] === '/') {

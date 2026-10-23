@@ -54,7 +54,7 @@ export const dataDiagnostics = !import.meta.dev
           fix: 'Pass a function as the handler argument, e.g. `useAsyncData(\'key\', () => $fetch(\'/api/data\'))`.',
         },
         NUXT_E3010: {
-          why: '`useFetch` no longer accepts `params`, so it was dropped from the request.',
+          why: (p: { fn: string }) => `\`${p.fn}\` does not accept \`params\`, so it was dropped from the request.`,
           fix: 'Rename the option to `query`, which is what `params` was an alias for.',
           docs: false,
         },
