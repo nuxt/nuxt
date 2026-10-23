@@ -1,6 +1,6 @@
 import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
 import type { AcceptedMethod, AnyServerRouteMethod, EffectiveBaseURL, FallbackBaseURL, RequiredRequestBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, UnmatchedRouteArgs, ValidTypedFetchPath } from '../types/fetch'
-import type { MaybeRefOrGetter, Ref } from 'vue'
+import type { ComputedRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, toValue, unref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { mergeAbortSignals } from '../utils/abort'
@@ -52,7 +52,7 @@ export type AsyncDataMutationExecuteOptions = Pick<AsyncDataExecuteOptions, 'ded
 
 export interface AsyncDataMutation<Args extends unknown[], DataT, ErrorT> {
   data: Ref<DataT>
-  pending: Ref<boolean>
+  pending: ComputedRef<boolean>
   status: Ref<AsyncDataRequestStatus>
   error: Ref<ErrorT | undefined>
   /** Run the mutation. Like `execute`, it never rejects: a failure is reported through `error` and `status`. */
