@@ -217,6 +217,18 @@ const NuxtIsland = defineComponent({
       if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
 
       const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
+      if (import.meta.server && import.meta.prerender && !props.source) {
+        // Emit the island JSON as a prerendered asset so client-side navigation can
+        // refetch it, registering the URL on the event context directly to avoid the
+        // call-stack overhead of `nuxtApp.runWithContext` per island (#36646)
+        const event = useRequestEvent()
+        if (event) {
+          event.context.nuxt ??= {}
+          event.context.nuxt.prerenderRoutes ??= []
+          const collected: string[] = event.context.nuxt.prerenderRoutes
+          if (!collected.includes(url)) { collected.push(url) }
+        }
+      }
       // TODO: Validate response
       // $fetch handles `app.baseURL` for relative URLs
       const r = await islandFetch.raw<NuxtIslandResponse>(url, {
@@ -236,8 +248,10 @@ const NuxtIsland = defineComponent({
         const hints = r.headers.get('x-nuxt-prerender')
         if (hints) {
           // forward hints directly to the event context to avoid the call-stack
-          // overhead of nuxtApp.runWithContext per island (#36646)
-          const event = useRequestEvent()
+          // overhead of nuxtApp.runWithContext per island (#36646); the captured
+          // nuxtApp keeps the event reachable once the await above has dropped
+          // the async context
+          const event = useRequestEvent(nuxtApp)
           if (event) {
             const routes = hints.split(',').map(hint => decodeURIComponent(hint.trim()))
             event.context.nuxt ??= {}
