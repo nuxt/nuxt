@@ -138,6 +138,25 @@ export async function mutationProbe () {
   // @ts-expect-error the handler takes an input
   await save.mutate()
   await useAsyncDataMutation(() => Promise.resolve(true)).mutate()
+
+  // a factory carries its `baseURL`, `transform` and `default` onto what it creates
+  const useApiMutation = createUseFetchMutation({ baseURL: '/api' })
+  expectTypeOf(useApiMutation('/searched').data.value).toEqualTypeOf<{ results: string[] } | undefined>()
+  // @ts-expect-error no POST route matches '/api/helo'
+  useApiMutation('/helo', { method: 'post' })
+
+  const useCountMutation = createUseAsyncDataMutation({ transform: (items: string[]) => items.length, default: () => 0 })
+  expectTypeOf(useCountMutation(() => Promise.resolve(['a'])).data.value).toEqualTypeOf<number>()
+
+  // addons contribute options and extensions
+  const tracked = defineUseFetchMutationAddon({
+    setup: (_options: UseFetchMutationAddonOptions<{ tag?: string }>) => mutation => ({ done: computed(() => mutation.status.value === 'success') }),
+  })
+  const useTrackedMutation = createUseFetchMutation({ addons: [tracked] })
+  const trackedMutation = useTrackedMutation('/api/validated', { method: 'post', tag: 'x' })
+  expectTypeOf(trackedMutation.done.value).toEqualTypeOf<boolean>()
+  // @ts-expect-error `tag` is a string
+  useTrackedMutation('/api/validated', { method: 'post', tag: 1 })
 }
 
 /** A route that validates a query and headers describes both at the call site. */
