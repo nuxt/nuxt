@@ -6,7 +6,7 @@ import type { FactoryDataT, FactoryDefaultT } from '../types/async-data'
 import { createAsyncDataMutation, mergeFactoryOptions } from './asyncDataMutation'
 import type { AsyncDataMutationExecuteOptions, AsyncDataMutationOptions, AugmentedAsyncDataMutation, FactoryOptions } from './asyncDataMutation'
 import type { FetchResult } from './fetch'
-import { applyUseFetchMutationAddons } from './addons'
+import { applyMutationAddons } from './addons'
 import type { MergedAddonsExtensions, MergedAddonsOptions, UseFetchMutationAddon } from './addons'
 import type { NuxtError } from './error'
 import { useRequestFetch } from './ssr'
@@ -133,7 +133,7 @@ export const createUseFetchMutation: CreateUseFetchMutation = ((options: Factory
   }
   const { addons, ...factoryOptions } = options
   return addons?.length
-    ? applyUseFetchMutationAddons(_createUseFetchMutation, options)
+    ? applyMutationAddons<UseFetchMutation>(_createUseFetchMutation, options, true)
     : _createUseFetchMutation(factoryOptions)
 }) as CreateUseFetchMutation
 
