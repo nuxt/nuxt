@@ -131,7 +131,7 @@ type AnyAddon = {
   key?: (options: any) => SerializableValue
 }
 
-const FETCH_HOOK_ARRAY_KEYS = ['onRequest', 'onRequestError', 'onResponse', 'onResponseError'] as const
+const FETCH_HOOK_ARRAY_KEYS = ['onRequest', 'onRequestError', 'onResponse', 'onResponseError'] as const satisfies ReadonlyArray<keyof FetchHookChains>
 const PROMISE_METHODS = ['then', 'catch', 'finally'] as const
 type PromiseMethod = typeof PROMISE_METHODS[number]
 
