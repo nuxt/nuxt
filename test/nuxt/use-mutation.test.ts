@@ -61,6 +61,12 @@ describe('useFetchMutation', () => {
     expect(data.value).toMatchObject({ header: 'call', body: { id: 2 } })
   })
 
+  it('rejects a protocol-relative URL', async () => {
+    const { error, mutate } = useFetchMutation('//example.com/api', { method: 'post' })
+    await mutate()
+    expect(error.value?.message).toContain('`useFetchMutation` request URL must not start with "//"')
+  })
+
   it('drops `params` rather than sending it as `query`', async () => {
     // @ts-expect-error `params` is not an option
     const { data, mutate } = useFetchMutation('/api/mutation', { method: 'post', params: { a: '1' } })

@@ -12,7 +12,7 @@ export const dataDiagnostics = !import.meta.dev
       reporters,
       codes: {
         NUXT_E3001: {
-          why: (p: { url: string }) => `The \`useFetch\` request URL must not start with "//" (received \`${p.url}\`).`,
+          why: (p: { fn: string, url: string }) => `The \`${p.fn}\` request URL must not start with "//" (received \`${p.url}\`).`,
           fix: 'Use an absolute URL with a protocol or a relative path instead.',
         },
         NUXT_E3002: {
