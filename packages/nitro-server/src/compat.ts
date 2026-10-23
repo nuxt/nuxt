@@ -676,6 +676,10 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
    * once the specifier is resolved to a file and through its symlink.
    */
   const registrationPaths = (path: string): string[] => {
+    // the build loads a module virtual by its id, even where an alias would map it to a path
+    if (isModuleVirtual(path)) {
+      return [path]
+    }
     const target = normalize(resolveAlias(path, aliases))
     const paths = [target, toRealPath(target)]
     const file = resolveModulePath(target, { try: true, extensions: nuxt.options.extensions, from: [nuxt.options.rootDir, import.meta.url] })
@@ -943,6 +947,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   const resolveScopeImport = (specifier: string, importer: string): string | undefined => {
     if (LEGACY_SPECIFIER_RE.test(specifier) || MIGRATED_SPECIFIER_RE.test(specifier) || OWN_VIRTUAL_RE.test(specifier)) {
       return
+    }
+    if (isModuleVirtual(specifier)) {
+      return specifier
     }
     const target = specifier[0] === '.' && isAbsolute(importer)
       ? resolve(dirname(importer), specifier)
