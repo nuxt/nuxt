@@ -4,7 +4,8 @@ import type { ArrayItems, UnionToIntersection } from '../utils'
 import { _isAutoKeyNeeded } from './asyncData'
 import type { AsyncData, AsyncDataMiddleware, AsyncDataOptions, UseAsyncData, _AsyncData } from './asyncData'
 import type { UseFetch, UseFetchOptions } from './fetch'
-import type { AsyncDataMutation, AsyncDataMutationOptions, UseAsyncDataMutation, UseFetchMutation, UseFetchMutationOptions } from './mutation'
+import type { AsyncDataMutation, AsyncDataMutationOptions, UseAsyncDataMutation } from './asyncDataMutation'
+import type { UseFetchMutation, UseFetchMutationOptions } from './fetchMutation'
 
 declare const AddonMarker: unique symbol
 

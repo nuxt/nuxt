@@ -5,7 +5,8 @@ import { defineEventHandler, readBody } from 'h3'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { computed } from 'vue'
-import { createUseAsyncDataMutation, createUseFetchMutation, useAsyncDataMutation, useFetchMutation } from '#app/composables/mutation'
+import { createUseAsyncDataMutation, useAsyncDataMutation } from '#app/composables/asyncDataMutation'
+import { createUseFetchMutation, useFetchMutation } from '#app/composables/fetchMutation'
 import { defineUseAsyncDataMutationAddon, defineUseFetchMutationAddon } from '#app/composables/addons'
 import type { UseAsyncDataMutationAddonOptions } from '#app/composables/addons'
 
