@@ -1,3 +1,12 @@
+export function isAbortError (err: unknown): err is DOMException {
+  return typeof DOMException !== 'undefined' && err instanceof DOMException && err.name === 'AbortError'
+}
+
+/** An abort reason as the error a request rejects with; a reason that is not an `Error` becomes an `AbortError`. */
+export function toAbortError (reason: unknown): Error {
+  return reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError')
+}
+
 export function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
   const list = signals.filter(s => !!s)
   if (typeof timeout === 'number' && timeout >= 0) {

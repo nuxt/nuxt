@@ -2,7 +2,8 @@ import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow
 import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { hashFunction, hashKey } from '../utils/hash'
 import { debounceTick } from '../utils/debounce-tick'
-import { mergeAbortSignals } from '../utils/abort'
+import { isAbortError } from '../utils/abort'
+import { runAsyncDataHandler } from '../utils/async-data'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
@@ -937,36 +938,12 @@ function buildAsyncData<
       }
       asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
-      const cleanupController = new AbortController()
-      const promise: Promise<ResT | void> = new Promise<ResT>(
-        (resolve, reject) => {
-          try {
-            const timeout = opts.timeout ?? options.timeout
-            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], cleanupController.signal, timeout)
-            if (mergedSignal.aborted) {
-              const reason = mergedSignal.reason
-              reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-              return
-            }
-            mergedSignal.addEventListener('abort', () => {
-              const reason = mergedSignal.reason
-              reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-            }, { once: true, signal: cleanupController.signal })
-
-            const ctx: AsyncDataHandlerContext = { signal: mergedSignal }
-            let run = () => Promise.resolve(handler(nuxtApp, ctx))
-            if (options.middleware?.length) {
-              for (let i = options.middleware.length - 1; i >= 0; i--) {
-                const middleware = options.middleware[i]!
-                const next = run
-                run = () => Promise.resolve(middleware(next, ctx))
-              }
-            }
-            return run().then(resolve, reject)
-          } catch (err) {
-            reject(err)
-          }
-        })
+      const promise: Promise<ResT | void> = runAsyncDataHandler(
+        ctx => handler(nuxtApp, ctx),
+        options.middleware,
+        [asyncData._abortController?.signal, opts?.signal],
+        opts.timeout ?? options.timeout,
+      )
         .then(async (_result) => {
           // If the promise was replaced or cleared (e.g. by clearNuxtData), skip the update
           if (nuxtApp._asyncDataPromises[key] !== promise) {
@@ -1007,7 +984,7 @@ function buildAsyncData<
           }
 
           // if the asyncData was explicitly aborted by user, we set it back to idle state
-          if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') {
+          if (isAbortError(error)) {
             asyncData.status.value = 'idle'
             return nuxtApp._asyncDataPromises[key]
           }
@@ -1017,8 +994,6 @@ function buildAsyncData<
           asyncData.status.value = 'error'
         })
         .finally(() => {
-          cleanupController.abort()
-
           // Only clean up if this promise is still the current one
           if (nuxtApp._asyncDataPromises[key] === promise) {
             if (pendingWhenIdle) {
