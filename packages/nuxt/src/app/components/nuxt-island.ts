@@ -8,7 +8,7 @@ import { joinURL } from 'ufo'
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
-import { prerenderRoutes, useRequestFetch } from '../composables/ssr'
+import { useRequestEvent, useRequestFetch } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
@@ -217,9 +217,6 @@ const NuxtIsland = defineComponent({
       if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
 
       const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
-      if (import.meta.server && import.meta.prerender) {
-        nuxtApp.runWithContext(() => prerenderRoutes(url))
-      }
       // TODO: Validate response
       // $fetch handles `app.baseURL` for relative URLs
       const r = await islandFetch.raw<NuxtIslandResponse>(url, {
@@ -238,7 +235,18 @@ const NuxtIsland = defineComponent({
       if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nuxt-prerender')
         if (hints) {
-          nuxtApp.runWithContext(() => prerenderRoutes(hints.split(',').map(hint => decodeURIComponent(hint.trim()))))
+          // forward hints directly to the event context to avoid the call-stack
+          // overhead of nuxtApp.runWithContext per island (#36646)
+          const event = useRequestEvent()
+          if (event) {
+            const routes = hints.split(',').map(hint => decodeURIComponent(hint.trim()))
+            event.context.nuxt ??= {}
+            event.context.nuxt.prerenderRoutes ??= []
+            const collected: string[] = event.context.nuxt.prerenderRoutes
+            for (const route of routes) {
+              if (!collected.includes(route)) { collected.push(route) }
+            }
+          }
         }
       }
       if (!r.ok) {
