@@ -18,20 +18,22 @@ interface AddonChains {
   middleware: AsyncDataMiddleware<any>[]
 }
 
+interface FetchHookChains {
+  onRequest: ArrayItems<FetchOptions['onRequest']>[]
+  onRequestError: ArrayItems<FetchOptions['onRequestError']>[]
+  onResponse: ArrayItems<FetchOptions['onResponse']>[]
+  onResponseError: ArrayItems<FetchOptions['onResponseError']>[]
+}
+
 export type UseAsyncDataAddonOptions<Opts extends Record<string, any> = {}> =
   Omit<AsyncDataOptions<any, any>, 'transform' | 'middleware'>
   & AddonChains
   & Opts
 
 export type UseFetchAddonOptions<Opts extends Record<string, any> = {}> =
-  Omit<UseFetchOptions<any, any>, 'transform' | 'middleware' | 'onRequest' | 'onRequestError' | 'onResponse' | 'onResponseError'>
+  Omit<UseFetchOptions<any, any>, 'transform' | 'middleware' | keyof FetchHookChains>
   & AddonChains
-  & {
-    onRequest: ArrayItems<FetchOptions['onRequest']>[]
-    onRequestError: ArrayItems<FetchOptions['onRequestError']>[]
-    onResponse: ArrayItems<FetchOptions['onResponse']>[]
-    onResponseError: ArrayItems<FetchOptions['onResponseError']>[]
-  }
+  & FetchHookChains
   & Opts
 
 export type AsyncDataMutationAddonInstance = AsyncDataMutation<any[], unknown, unknown>
@@ -44,14 +46,9 @@ export type UseAsyncDataMutationAddonOptions<Opts extends Record<string, any> = 
   & Opts
 
 export type UseFetchMutationAddonOptions<Opts extends Record<string, any> = {}> =
-  Omit<UseFetchMutationOptions<any, any>, 'transform' | 'middleware' | 'onRequest' | 'onRequestError' | 'onResponse' | 'onResponseError'>
+  Omit<UseFetchMutationOptions<any, any>, 'transform' | 'middleware' | keyof FetchHookChains>
   & AddonChains
-  & {
-    onRequest: ArrayItems<FetchOptions['onRequest']>[]
-    onRequestError: ArrayItems<FetchOptions['onRequestError']>[]
-    onResponse: ArrayItems<FetchOptions['onResponse']>[]
-    onResponseError: ArrayItems<FetchOptions['onResponseError']>[]
-  }
+  & FetchHookChains
   & Opts
 
 export interface UseAsyncDataMutationAddon<Opts extends Record<string, any> = {}, Ext = {}> {
