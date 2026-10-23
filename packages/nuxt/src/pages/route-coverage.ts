@@ -83,6 +83,12 @@ function patternToProbePath (pattern: string, probeSegment: string): string {
 }
 
 const TRAILING_SLASH_RE = /\/$/
+const ROUTE_ENCODE_RE = /[^\w!$%&'()*+,\-./:;=?@[\\\]^{|}~]/gu
+
+/** Percent-encode a route pattern the way h3 normalizes route rule keys, leaving existing escapes intact. */
+function encodeRoutePattern (pattern: string): string {
+  return pattern.replace(ROUTE_ENCODE_RE, encodeURIComponent)
+}
 
 export interface RouteRuleCoverageOptions {
   isCovered: (rules: RouteRuleConfig) => boolean
@@ -136,7 +142,7 @@ export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInst
   // alternations, and all of them have to be covered.
   function pathIsCovered (path: string): boolean {
     const { patterns } = vueRouterToRou3(path, { collapse: true })
-    return patterns.length > 0 && patterns.every(patternIsCovered)
+    return patterns.length > 0 && patterns.every(pattern => patternIsCovered(encodeRoutePattern(pattern)))
   }
 
   function markPages (pages: NuxtPage[], prefix: string): boolean {

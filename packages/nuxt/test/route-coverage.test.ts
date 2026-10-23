@@ -94,4 +94,34 @@ describe('markPagesCoveredByRouteRule', () => {
       await nuxt.close()
     }
   })
+
+  it('should match pages against percent-encoded route rule keys', async () => {
+    let nitro: Nitro | undefined
+    const nuxt = await loadNuxt({
+      cwd: pagesFixtureDir,
+      ready: false,
+      overrides: {
+        routeRules: {
+          '/café/**': { ssr: false },
+          '/café/secret': { ssr: true },
+        },
+      },
+    })
+    nuxt.hook('nitro:init', (instance) => { nitro = instance as Nitro })
+    try {
+      await nuxt.ready()
+      const marks = isCovered(nitro!, [
+        { path: '/café/about', file: 'about.vue' },
+        { path: '/caf%C3%A9/contact', file: 'contact.vue' },
+        { path: '/café/:id()', file: 'id.vue' },
+      ])
+      expect(Object.fromEntries(marks)).toEqual({
+        '/café/about': true,
+        '/caf%C3%A9/contact': true,
+        '/café/:id()': false,
+      })
+    } finally {
+      await nuxt.close()
+    }
+  })
 })
