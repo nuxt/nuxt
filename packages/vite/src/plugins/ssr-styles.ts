@@ -156,6 +156,24 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
   // Remove CSS entries for files that will have inlined styles
   nuxt.hook('build:manifest', (manifest) => {
+    // Alias entries for facade-less Vue components (added by the client-manifest
+    // plugin, keyed by source id and carrying no `src`) exist only to resurface
+    // chunk CSS as a stylesheet link for components the SSR runtime registers by
+    // source id. When that component's own styles are extracted for inlining
+    // (`cssMap`), they are already delivered as `<style>` tags whenever the
+    // component renders, and the alias would only duplicate them as a link that
+    // the request-time inlined-CSS filter cannot always drop on pages rendered
+    // without scripts — so drop the alias.
+    for (const id in manifest) {
+      if (!id.endsWith('.vue')) { continue }
+      const entry = manifest[id]
+      if (!entry || entry.src || entry.isEntry || entry.isDynamicEntry) { continue }
+      const extracted = cssMap[id]
+      if (extracted?.inBundle && extracted.files.length) {
+        delete manifest[id]
+      }
+    }
+
     const entryIds = new Set<string>()
 
     // The set of components whose CSS is inlined is derived from `cssMap`
