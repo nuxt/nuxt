@@ -4,6 +4,7 @@ import { hashFunction, hashKey } from '../utils/hash'
 import { debounceTick } from '../utils/debounce-tick'
 import { isAbortError } from '../utils/abort'
 import { runAsyncDataHandler } from '../utils/async-data'
+import type { FactoryDataT, FactoryDefaultT, FactoryPickKeys, NuxtErrorFor } from '../types/async-data'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
@@ -204,10 +205,6 @@ export type AugmentedAsyncData<Data, Error, Ext> = [keyof Ext] extends [never] ?
 // Expressed as a callable interface so we can spell out all eight overloads
 // without losing them in an inline function expression: oxc's isolated
 // declarations dts pipeline can't infer them otherwise.
-type NuxtErrorFor<NuxtErrorDataT> = NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>
-type FactoryDataT<FDataT, ResT> = [unknown] extends [FDataT] ? ResT : FDataT
-type FactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
-type FactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
 export interface UseAsyncData<FResT = unknown, FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined, FAddonOpts = {}, FAddonExt = {}> {
   // Auto-key, opts with transform, default = undefined
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
