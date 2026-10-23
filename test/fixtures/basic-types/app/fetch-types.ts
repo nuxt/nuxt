@@ -138,6 +138,8 @@ export async function mutationProbe () {
   // @ts-expect-error the handler takes an input
   await save.mutate()
   await useAsyncDataMutation(() => Promise.resolve(true)).mutate()
+  // @ts-expect-error `pending` is derived from `status`
+  save.pending.value = true
 
   // a factory carries its `baseURL`, `transform` and `default` onto what it creates
   const useApiMutation = createUseFetchMutation({ baseURL: '/api' })
