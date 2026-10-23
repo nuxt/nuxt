@@ -1,7 +1,11 @@
+import { fileURLToPath } from 'node:url'
+import { normalize } from 'pathe'
+import { withoutTrailingSlash } from 'ufo'
 import { describe, expect, it } from 'vitest'
 import type { Nitro, RouteRuleConfig } from 'nitro/types'
-import type { NuxtPage } from 'nuxt/schema'
+import type { NitroInstance, NuxtPage } from 'nuxt/schema'
 
+import { loadNuxt } from '../src/index.ts'
 import { markPagesCoveredByRouteRule } from '../src/pages/route-coverage.ts'
 
 const UNESCAPE_RE = /\\(.)/g
@@ -45,6 +49,8 @@ function isCovered (nitro: Nitro, pages: NuxtPage[]) {
   return marks
 }
 
+const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
+
 describe('markPagesCoveredByRouteRule', () => {
   it('should not report coverage from a literal rule matching the probe segment', () => {
     const nitro = createNitro({
@@ -59,5 +65,33 @@ describe('markPagesCoveredByRouteRule', () => {
       '/test\\:name': { ssr: false },
     })
     expect(isCovered(nitro, [{ path: '/test\\:name', file: 'test.vue' }]).get('/test\\:name')).toBe(true)
+  })
+
+  it('should report coverage when app.baseURL is set', async () => {
+    let nitro: NitroInstance | undefined
+    const nuxt = await loadNuxt({
+      cwd: pagesFixtureDir,
+      ready: true,
+      overrides: {
+        app: { baseURL: '/sub/' },
+        routeRules: { '/admin/**': { ssr: false } },
+        modules: [
+          (_options, nuxt) => {
+            nuxt.hook('nitro:init', (n) => { nitro = n })
+          },
+        ],
+      },
+    })
+    try {
+      expect(nitro).toBeDefined()
+      const marks = new Map<string, boolean>()
+      markPagesCoveredByRouteRule([{ path: '/admin', file: 'admin.vue' }], nitro!, {
+        isCovered: rules => rules.ssr === false,
+        mark: (_page, covered, resolvedPath) => { marks.set(resolvedPath, covered) },
+      })
+      expect(marks.get('/admin')).toBe(true)
+    } finally {
+      await nuxt.close()
+    }
   })
 })
