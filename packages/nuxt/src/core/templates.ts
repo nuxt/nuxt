@@ -882,3 +882,56 @@ export const routeRulesTemplate: NuxtTemplate = {
     ].filter(Boolean).join('\n')
   },
 }
+
+export const readmeTemplate: NuxtTemplate = {
+  filename: 'README.md',
+  write: true,
+  dependsOn: [],
+  getContents: () => `# Nuxt Build Directory
+
+Nuxt generates the contents of this directory from your application files, Nuxt configuration and modules. The generated code, type declarations and TypeScript configuration support development, builds and type checking.
+
+These are generated files, not project source files. Do not edit them: Nuxt can overwrite your changes. Update the corresponding application or server source, \`nuxt.config.ts\` or module options instead.
+
+Add this directory to your [\`.gitignore\`](https://nuxt.com/docs/directory-structure/gitignore) file to keep generated files out of version control.
+
+## Regenerating Files
+
+Nuxt generates the files it needs when you run [\`nuxt dev\`](https://nuxt.com/docs/api/commands/dev) or [\`nuxt build\`](https://nuxt.com/docs/api/commands/build). To generate type-related files without starting a development server or producing a production build, run:
+
+\`\`\`sh
+npx nuxt prepare
+\`\`\`
+
+See [\`nuxt prepare\`](https://nuxt.com/docs/api/commands/prepare) and the [\`.nuxt\` directory documentation](https://nuxt.com/docs/directory-structure/nuxt) for more information.
+
+## Virtual Files
+
+Some generated files exist only in Nuxt's virtual file system (VFS). Nuxt resolves these files during development and builds, so you do not need to create corresponding files on disk.
+
+Nuxt uses the \`#build\` alias to resolve generated modules. For example, \`#build/layouts.mjs\` refers to the generated \`layouts.mjs\` module. See [Nuxt Kit templates](https://nuxt.com/docs/api/kit/templates#addtemplate) for how modules generate virtual files and optionally write them to disk.
+
+Examples of generated modules include:
+
+- \`imports.mjs\`: exports for [auto-imported APIs](https://nuxt.com/docs/guide/concepts/auto-imports#explicit-imports), also available through \`#imports\`.
+- \`layouts.mjs\`: available [layouts](https://nuxt.com/docs/directory-structure/app/layouts).
+- \`middleware.mjs\`: registered global and named [route middleware](https://nuxt.com/docs/directory-structure/app/middleware).
+- \`plugins.client.mjs\` and \`plugins.server.mjs\`: [plugin registrations](https://nuxt.com/docs/directory-structure/app/plugins) for the client and server.
+
+To inspect virtual files, open [Nuxt DevTools](https://devtools.nuxt.com) in development mode and select the **Virtual Files** tab.
+
+## Generated Types
+
+Nuxt also writes type declarations and TypeScript configuration files to disk, including:
+
+- \`nuxt.d.ts\`: generated Nuxt type declarations.
+- \`tsconfig.app.json\`: configuration for application code in \`app/\`.
+- \`tsconfig.server.json\`: configuration for server-side code, when applicable.
+- \`tsconfig.node.json\`: configuration for \`nuxt.config.ts\` and files outside the other contexts.
+- \`tsconfig.shared.json\`: configuration for code shared between the application and server.
+
+These files provide type information and configuration for features such as auto-imports, path aliases and API routes. See [auto-generated types](https://nuxt.com/docs/guide/concepts/typescript#auto-generated-types) and [project references](https://nuxt.com/docs/guide/concepts/typescript#project-references).
+
+To customize TypeScript settings, [extend the configuration through \`nuxt.config.ts\`](https://nuxt.com/docs/directory-structure/tsconfig#extending-typescript-configuration) rather than editing the generated files.
+`,
+}

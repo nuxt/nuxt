@@ -1,10 +1,10 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, rm, stat, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { afterAll, describe, expect, it, vi } from 'vitest'
 import { dirname, join, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { createApp, generateApp, invalidateAppStructure, resolveApp } from '../src/core/app.ts'
-import { loadNuxt } from '../src/index.ts'
+import { build, loadNuxt } from '../src/index.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -397,6 +397,41 @@ describe('resolveApp', () => {
       await rm(rootDir, { recursive: true, force: true })
     }
   })
+})
+
+describe('build directory documentation', () => {
+  it.each([
+    { name: 'default', overrides: {} },
+    { name: 'custom', overrides: { buildDir: 'custom-build' } },
+  ])(
+    'writes documentation to disk in the $name build directory',
+    async ({ overrides }) => {
+      const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+      await mkdir(rootDir, { recursive: true })
+      await writeFile(join(rootDir, 'nuxt.config.ts'), 'export default {}')
+
+      const nuxt = await loadNuxt({
+        cwd: rootDir,
+        overrides: { dev: false, _prepare: true, ...overrides },
+      })
+      try {
+        await build(nuxt)
+
+        const readme = await stat(
+          join(rootDir, overrides.buildDir || '.nuxt', 'README.md'),
+        )
+        expect(readme.isFile()).toBe(true)
+        if (overrides.buildDir) {
+          await expect(
+            stat(join(rootDir, '.nuxt/README.md')),
+          ).rejects.toMatchObject({ code: 'ENOENT' })
+        }
+      } finally {
+        await nuxt.close()
+        await rm(rootDir, { recursive: true, force: true })
+      }
+    },
+  )
 })
 
 describe('generateApp template diagnostics', () => {
