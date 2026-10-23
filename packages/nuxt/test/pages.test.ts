@@ -1,9 +1,10 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
-import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import { type PagesContextOptions, augmentPages, createPagesContext, dynamicPageMetaCache, getDynamicPageMeta, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
-import { generateRouteKey } from '../src/pages/runtime/utils.ts'
+import { generateRouteKey, memoizeRouteComponent } from '../src/pages/runtime/utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import { useNuxt } from '@nuxt/kit'
 import type { InputFile } from 'unrouting'
@@ -431,6 +432,59 @@ describe('pages:generateRouteKey', () => {
       expect(generateRouteKey(test.route, test.override)).to.deep.equal(test.output)
     })
   }
+})
+
+describe('pages:memoizeRouteComponent', () => {
+  const Parent = { name: 'Parent', render: () => null }
+  const Child = { name: 'Child', render: () => null }
+
+  async function resolveWithNewRouter (routes: RouteRecordRaw[], path: string) {
+    const router = createRouter({ history: createMemoryHistory(), routes })
+    router.onError(() => {})
+    await router.push(path)
+    return router.currentRoute.value.matched.map(m => m.components?.default)
+  }
+
+  it('should wrap lazy page components when given a runtime', () => {
+    const pages: NuxtPage[] = [
+      { name: 'lazy', path: '/lazy', file: '/pages/lazy.vue' },
+      { name: 'sync', path: '/sync', file: '/pages/sync.vue', _sync: true },
+    ]
+    const { routes, imports } = normalizeRoutes(pages, new Set(), {
+      clientComponentRuntime: '<client>',
+      serverComponentRuntime: '<server>',
+      routeComponentRuntime: '<route-component>',
+    })
+
+    expect((routes as unknown as Array<{ component: string }>).map(r => r.component)).toEqual([
+      'import.meta.server ? _memoizeRouteComponent(() => import("/pages/lazy.vue")) : () => import("/pages/lazy.vue")',
+      'mock',
+    ])
+    expect(imports).toContain('import { memoizeRouteComponent as _memoizeRouteComponent } from "<route-component>";')
+  })
+
+  it('should share lazy component imports between routers', async () => {
+    const loadParent = vi.fn(() => Promise.resolve({ default: Parent }))
+    const loadChild = vi.fn(() => Promise.resolve({ default: Child }))
+    const routes: RouteRecordRaw[] = [{ path: '/parent', component: memoizeRouteComponent(loadParent), children: [{ path: 'child', component: memoizeRouteComponent(loadChild) }] }]
+
+    expect(await resolveWithNewRouter(routes, '/parent/child')).toEqual([Parent, Child])
+    expect(await resolveWithNewRouter(routes, '/parent/child')).toEqual([Parent, Child])
+    expect(loadParent).toHaveBeenCalledTimes(1)
+    expect(loadChild).toHaveBeenCalledTimes(1)
+  })
+
+  it('should retry a lazy component import after it rejects', async () => {
+    const load = vi.fn()
+      .mockRejectedValueOnce(new Error('failed to load'))
+      .mockResolvedValue({ default: Child })
+    const routes: RouteRecordRaw[] = [{ path: '/', component: memoizeRouteComponent(load) }]
+
+    await expect(resolveWithNewRouter(routes, '/')).rejects.toThrow('failed to load')
+    expect(await resolveWithNewRouter(routes, '/')).toEqual([Child])
+    expect(await resolveWithNewRouter(routes, '/')).toEqual([Child])
+    expect(load).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe('pages:relativizeToParent', () => {
