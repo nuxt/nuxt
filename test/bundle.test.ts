@@ -59,7 +59,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     )).join('\n')
     const client = await readClientBundle(join(spaRootDir, '.output/public'))
 
-    // the server only sends the SPA shell, so the app ships to the client alone
     expect(server).not.toContain('Hello World!')
     expect(client).toContain('Hello World!')
   })
