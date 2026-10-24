@@ -29,7 +29,7 @@ function defineBuiltinMeta (slug: string, description: string): BuiltinComponent
 
 export const BUILTIN_COMPONENT_META = {
   ClientOnly: defineBuiltinMeta('client-only', 'Renders its default slot only on the client, with an optional server fallback.'),
-  ServerOnly: defineBuiltinMeta('server-only', 'Renders its slot on the server and keeps that HTML static on the client.'),
+  ServerOnly: defineBuiltinMeta('server-only', 'Renders its slot on the server. Hydration keeps that HTML; a client render without server HTML leaves the wrapper empty.'),
   DevOnly: defineBuiltinMeta('dev-only', 'Renders its content only during development.'),
   NuxtClientFallback: defineBuiltinMeta('nuxt-client-fallback', 'Renders its content on the client when a child fails during server-side rendering.'),
   NuxtPage: defineBuiltinMeta('nuxt-page', 'Renders the current page from the `pages/` directory.'),
