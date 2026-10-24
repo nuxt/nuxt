@@ -2,6 +2,9 @@ import { computed, getCurrentInstance, getCurrentScope, inject, isRef, isShallow
 import type { ComputedRef, MaybeRefOrGetter, MultiWatchSources, Ref } from 'vue'
 import { hashFunction, hashKey } from '../utils/hash'
 import { debounceTick } from '../utils/debounce-tick'
+import { isAbortError } from '../utils/abort'
+import { runAsyncDataHandler } from '../utils/async-data'
+import type { FactoryDataT, FactoryDefaultT, FactoryPickKeys, NuxtErrorFor } from '../types/async-data'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
@@ -202,10 +205,6 @@ export type AugmentedAsyncData<Data, Error, Ext> = [keyof Ext] extends [never] ?
 // Expressed as a callable interface so we can spell out all eight overloads
 // without losing them in an inline function expression: oxc's isolated
 // declarations dts pipeline can't infer them otherwise.
-type NuxtErrorFor<NuxtErrorDataT> = NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>
-type FactoryDataT<FDataT, ResT> = [unknown] extends [FDataT] ? ResT : FDataT
-type FactoryDefaultT<FDefaultT, Fallback> = [undefined] extends [FDefaultT] ? Fallback : FDefaultT
-type FactoryPickKeys<FPickKeys, PickKeys, DataT> = [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>
 export interface UseAsyncData<FResT = unknown, FDataT = unknown, FPickKeys extends KeysOf<FDataT> = never[], FDefaultT = undefined, FAddonOpts = {}, FAddonExt = {}> {
   // Auto-key, opts with transform, default = undefined
   <ResT = FResT, NuxtErrorDataT = unknown, DataT = ResT, PickKeys extends KeysOf<DataT> = KeysOf<DataT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
@@ -931,36 +930,12 @@ function buildAsyncData<
       }
       asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
-      const cleanupController = new AbortController()
-      const promise: Promise<ResT | void> = new Promise<ResT>(
-        (resolve, reject) => {
-          try {
-            const timeout = opts.timeout ?? options.timeout
-            const mergedSignal = mergeAbortSignals([asyncData._abortController?.signal, opts?.signal], cleanupController.signal, timeout)
-            if (mergedSignal.aborted) {
-              const reason = mergedSignal.reason
-              reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-              return
-            }
-            mergedSignal.addEventListener('abort', () => {
-              const reason = mergedSignal.reason
-              reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-            }, { once: true, signal: cleanupController.signal })
-
-            const ctx: AsyncDataHandlerContext = { signal: mergedSignal }
-            let run = () => Promise.resolve(handler(nuxtApp, ctx))
-            if (options.middleware?.length) {
-              for (let i = options.middleware.length - 1; i >= 0; i--) {
-                const middleware = options.middleware[i]!
-                const next = run
-                run = () => Promise.resolve(middleware(next, ctx))
-              }
-            }
-            return run().then(resolve, reject)
-          } catch (err) {
-            reject(err)
-          }
-        })
+      const promise: Promise<ResT | void> = runAsyncDataHandler(
+        ctx => handler(nuxtApp, ctx),
+        options.middleware,
+        [asyncData._abortController?.signal, opts?.signal],
+        opts.timeout ?? options.timeout,
+      )
         .then(async (_result) => {
           // If the promise was replaced or cleared (e.g. by clearNuxtData), skip the update
           if (nuxtApp._asyncDataPromises[key] !== promise) {
@@ -1001,7 +976,7 @@ function buildAsyncData<
           }
 
           // if the asyncData was explicitly aborted by user, we set it back to idle state
-          if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') {
+          if (isAbortError(error)) {
             asyncData.status.value = 'idle'
             return nuxtApp._asyncDataPromises[key]
           }
@@ -1011,8 +986,6 @@ function buildAsyncData<
           asyncData.status.value = 'error'
         })
         .finally(() => {
-          cleanupController.abort()
-
           // Only clean up if this promise is still the current one
           if (nuxtApp._asyncDataPromises[key] === promise) {
             if (pendingWhenIdle) {
@@ -1086,47 +1059,4 @@ function createHash (_handler: AsyncDataHandler<unknown>, options: Partial<Recor
     serialize: String(options.serialize ?? true),
     middleware: (options.middleware as Array<(...args: any[]) => any> | undefined)?.map(fn => hashFunction(fn)).join(',') || undefined,
   }
-}
-function mergeAbortSignals (signals: Array<AbortSignal | null | undefined>, cleanupSignal: AbortSignal, timeout?: number): AbortSignal {
-  const list = signals.filter(s => !!s)
-  if (typeof timeout === 'number' && timeout >= 0) {
-    const timeoutSignal = AbortSignal.timeout?.(timeout)
-    if (timeoutSignal) { list.push(timeoutSignal) }
-  }
-
-  // Use native if available
-  if (AbortSignal.any) {
-    return AbortSignal.any(list)
-  }
-
-  // Polyfill
-  const controller = new AbortController()
-
-  for (const sig of list) {
-    if (sig.aborted) {
-      const reason = sig.reason ?? new DOMException('Aborted', 'AbortError')
-      try {
-        controller.abort(reason)
-      } catch {
-        controller.abort()
-      }
-      return controller.signal
-    }
-  }
-
-  const onAbort = () => {
-    const abortedSignal = list.find(s => s.aborted)
-    const reason = abortedSignal?.reason ?? new DOMException('Aborted', 'AbortError')
-    try {
-      controller.abort(reason)
-    } catch {
-      controller.abort()
-    }
-  }
-
-  for (const sig of list) {
-    sig.addEventListener?.('abort', onAbort, { once: true, signal: cleanupSignal })
-  }
-
-  return controller.signal
 }

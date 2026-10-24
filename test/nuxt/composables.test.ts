@@ -112,6 +112,12 @@ describe('composables', () => {
       'useRuntimeHook',
       'defineUseFetchAddon',
       'defineUseAsyncDataAddon',
+      'useAsyncDataMutation',
+      'useFetchMutation',
+      'createUseAsyncDataMutation',
+      'createUseFetchMutation',
+      'defineUseAsyncDataMutationAddon',
+      'defineUseFetchMutationAddon',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',

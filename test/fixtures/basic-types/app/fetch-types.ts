@@ -111,6 +111,56 @@ export async function namedResponseBaseURLProbe<T extends { id: number }> () {
   return contextual
 }
 
+/** A mutation takes its payload per call, typed from the route like `$fetch` options. */
+export async function mutationProbe () {
+  const created = useFetchMutation('/api/validated', { method: 'post' })
+  expectTypeOf(created.data.value).toEqualTypeOf<{ created: boolean } | undefined>()
+  await created.mutate({ body: { title: 'a', count: 1 } })
+  // @ts-expect-error `count` is not a string
+  await created.mutate({ body: { title: 'a', count: 'no' } })
+  // @ts-expect-error the route validates a body, so it cannot be omitted
+  await created.mutate()
+
+  // @ts-expect-error no GET route matches '/api/validated'
+  useFetchMutation('/api/validated')
+  // @ts-expect-error no POST route matches '/api/helo'
+  useFetchMutation('/api/helo', { method: 'post' })
+
+  const searched = useFetchMutation('/searched', { baseURL: '/api', transform: r => r.results.length })
+  expectTypeOf(searched.data.value).toEqualTypeOf<number | undefined>()
+  await searched.mutate({ query: { q: 'nuxt', page: '1' } })
+  // @ts-expect-error `q` is validated as a string
+  await searched.mutate({ query: { q: 1, page: '1' } })
+
+  const save = useAsyncDataMutation((input: { id: number }) => Promise.resolve(input.id), { default: () => 0 })
+  expectTypeOf(save.data.value).toEqualTypeOf<number>()
+  await save.mutate({ id: 1 })
+  // @ts-expect-error the handler takes an input
+  await save.mutate()
+  await useAsyncDataMutation(() => Promise.resolve(true)).mutate()
+  // @ts-expect-error `pending` is derived from `status`
+  save.pending.value = true
+
+  // a factory carries its `baseURL`, `transform` and `default` onto what it creates
+  const useApiMutation = createUseFetchMutation({ baseURL: '/api' })
+  expectTypeOf(useApiMutation('/searched').data.value).toEqualTypeOf<{ results: string[] } | undefined>()
+  // @ts-expect-error no POST route matches '/api/helo'
+  useApiMutation('/helo', { method: 'post' })
+
+  const useCountMutation = createUseAsyncDataMutation({ transform: (items: string[]) => items.length, default: () => 0 })
+  expectTypeOf(useCountMutation(() => Promise.resolve(['a'])).data.value).toEqualTypeOf<number>()
+
+  // addons contribute options and extensions
+  const tracked = defineUseFetchMutationAddon({
+    setup: (_options: UseFetchMutationAddonOptions<{ tag?: string }>) => mutation => ({ done: computed(() => mutation.status.value === 'success') }),
+  })
+  const useTrackedMutation = createUseFetchMutation({ addons: [tracked] })
+  const trackedMutation = useTrackedMutation('/api/validated', { method: 'post', tag: 'x' })
+  expectTypeOf(trackedMutation.done.value).toEqualTypeOf<boolean>()
+  // @ts-expect-error `tag` is a string
+  useTrackedMutation('/api/validated', { method: 'post', tag: 1 })
+}
+
 /** A route that validates a query and headers describes both at the call site. */
 export async function validatedRequestProbe () {
   const searched = await $fetch('/api/searched', { query: { q: 'nuxt', page: '1' }, headers: { 'x-api-key': 'secret' } })
