@@ -83,6 +83,10 @@ describe('foldRouteRulePattern', () => {
     expect(foldRouteRulePattern('GET /Users/:userId/**:Rest')).toBe('get /users/:userId/**:Rest')
     expect(foldRouteRulePattern('/N/:id(\\D+)')).toBe('/n/:id(\\D+)')
   })
+
+  it('folds text inside constraints', () => {
+    expect(foldRouteRulePattern('/:id((?:FOO|BAR))/:Rest')).toBe('/:id((?:foo|bar))/:Rest')
+  })
 })
 
 describe('routeRulesCaseFoldPlugin', () => {
@@ -129,6 +133,23 @@ describe('routeRulesCaseFoldPlugin', () => {
 
     expect(match('/Old/page')).toEqual({ headers: { 'x-all': '1' }, redirect: { to: '/new/**', status: 307, base: '/Old' } })
     expect(match('/old/page').redirect).toMatchObject({ to: '/new/**' })
+  })
+
+  it('merges the options of rules whose keys fold together', async () => {
+    const match = await loadMatcher({
+      '/Admin': { headers: { 'x-a': '1', 'x-c': '1' } },
+      '/admin': { headers: { 'x-b': '1', 'x-c': '2' } },
+    })
+
+    expect(match('/ADMIN').headers).toEqual({ 'x-a': '1', 'x-b': '1', 'x-c': '2' })
+  })
+
+  it('matches constraints regardless of casing', async () => {
+    const match = await loadMatcher({ '/x/:id((?:FOO|BAR))': { headers: { 'x-id': '1' } } })
+
+    for (const path of ['/x/FOO', '/x/foo', '/X/Bar']) {
+      expect(match(path).headers, path).toEqual({ 'x-id': '1' })
+    }
   })
 
   it('matches rules under a base URL regardless of casing', async () => {

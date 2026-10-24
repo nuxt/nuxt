@@ -44,17 +44,36 @@ export function foldRouteRulePath (path: string): string {
  * param names and backslash escapes (such as `\D` in a constraint) as written.
  */
 export function foldRouteRulePattern (pattern: string): string {
-  return pattern.replace(/\\.|:\w+|[^\\:]+|[\\:]/g, token => token[0] === '\\' || token[0] === ':' ? token : foldRouteRulePath(token))
+  let depth = 0
+  return pattern.replace(/\\.|:\w+|[^\\:()]+|[:()]/g, (token) => {
+    if (token === '(') {
+      depth++
+    } else if (token === ')') {
+      depth = Math.max(0, depth - 1)
+    }
+    return token[0] === '\\' || (token[0] === ':' && depth === 0) ? token : foldRouteRulePath(token)
+  })
 }
 
-/** Re-key route rules by their folded pattern. Of keys that fold together, later rules win. */
+/**
+ * Re-key route rules by their folded pattern. Rules whose keys fold together are merged, with
+ * object options merged one level deep and later keys taking precedence.
+ */
 function foldRouteRules (routeRules: NitroConfig['routeRules']): NonNullable<NitroConfig['routeRules']> {
-  const folded: NonNullable<NitroConfig['routeRules']> = {}
+  const folded: Record<string, Record<string, unknown>> = {}
   for (const key in routeRules) {
     const foldedKey = foldRouteRulePattern(key)
-    folded[foldedKey] = { ...folded[foldedKey], ...routeRules[key] }
+    const rules = folded[foldedKey] ||= {}
+    for (const [name, options] of Object.entries(routeRules[key] || {})) {
+      const existing = rules[name]
+      rules[name] = isObject(existing) && isObject(options) ? { ...existing, ...options } : options
+    }
   }
-  return folded
+  return folded as NonNullable<NitroConfig['routeRules']>
+}
+
+function isObject (value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object'
 }
 
 const ROUTING_ID = '#nitro/virtual/routing'
