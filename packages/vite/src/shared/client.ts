@@ -21,8 +21,10 @@ export function getOptimizeDepsEntries (nuxt: Nuxt, mainEntry: string): string[]
     if (dirs.app === srcDir || dirs.app.startsWith(rootDirWithSlash)) {
       continue
     }
+    // `*.server.*` is server-only and must not be scanned into the client dep optimizer.
     entries.push(
       join(dirs.app, '**/*.{vue,ts,tsx,js,jsx,mjs}'),
+      `!${join(dirs.app, '**/*.server.*')}`,
     )
   }
 
