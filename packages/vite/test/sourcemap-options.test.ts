@@ -25,6 +25,7 @@ function createNuxt (sourcemap: { client: SourcemapOption, server: SourcemapOpti
       experimental: {},
       vite: { mode: 'production', build: {} },
       sourcemap,
+      _layers: [],
     },
   } as unknown as Nuxt
 }
