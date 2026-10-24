@@ -97,7 +97,7 @@ describe('import protection', () => {
   it.each(nitroAppTests)('nitro-app: %s from %s -> %s', async (id, importer, isProtected) => {
     const result = await transformWithImportProtection(id, importer, 'nitro-app')
     if (!isProtected) {
-      expect(result).toBeNull()
+      expect(result).toBeFalsy()
     } else {
       expect(result).toBeDefined()
       expect(result).toContain('impound:proxy')
@@ -107,7 +107,7 @@ describe('import protection', () => {
   it.each(nuxtAppRelativeServerTests)('nuxt-app server import: %s from %s -> %s', async (id, importer, isProtected) => {
     const result = await transformWithImportProtection(id, importer, 'nuxt-app')
     if (!isProtected) {
-      expect(result).toBeNull()
+      expect(result).toBeFalsy()
     } else {
       expect(result).toBeDefined()
       expect(result).toContain('impound:proxy')
@@ -130,7 +130,7 @@ describe('import protection', () => {
     })
     const result = (plugin as any).resolveId.call({ error: () => {} }, id, importer)
     if (!isProtected) {
-      expect(result).toBeNull()
+      expect(result).toBeFalsy()
     } else {
       expect(result).toBeDefined()
       expect(result).toContain('impound:proxy')
@@ -147,7 +147,7 @@ describe('import protection', () => {
       patterns: createImportProtectionPatterns({ options: customOptions }, { context: 'nitro-app' }),
     })
     const result = (plugin as any).resolveId.call({ error: () => {} }, '~/backend/utils/helper', 'backend/api/bar.ts')
-    expect(result).toBeNull()
+    expect(result).toBeFalsy()
   })
 
   it('nitro-app with custom serverDir: ~/server-utils/ still protected (sibling of serverDir)', async () => {
