@@ -144,7 +144,7 @@ const greeting = hour < 12 ? 'Good morning' : 'Good afternoon'
 </script>
 ```
 
-**Solution**: Use [`NuxtTime`](/docs/api/components/nuxt-time) component or handle it client-side:
+**Solution**: Use [`NuxtTime`](/docs/api/components/nuxt-time) for live time, [`ServerOnly`](/docs/api/components/server-only) for fixed build/render timestamps, or handle it client-side:
 
 ```html
 <template>
@@ -153,6 +153,20 @@ const greeting = hour < 12 ? 'Good morning' : 'Good afternoon'
   </div>
 </template>
 ```
+
+For content that must stay fixed at render time (e.g. build timestamp in a footer):
+
+```html
+<template>
+  <footer>
+    <ServerOnly>
+      Generated at {{ new Date().toISOString() }}
+    </ServerOnly>
+  </footer>
+</template>
+```
+
+On client-side navigation the slot is not rendered again, so the wrapper is empty. Content that must be fetched on navigation belongs in a [server component](/docs/directory-structure/app/components#server-components).
 
 ```html
 <template>
@@ -200,8 +214,9 @@ To keep a phone number tappable, wrap it in an `<a href="tel:...">` element so t
 
 1. **Use SSR-friendly composables**: [`useFetch`](/docs/api/composables/use-fetch), [`useAsyncData`](/docs/api/composables/use-async-data), [`useState`](/docs/api/composables/use-state)
 2. **Wrap client-only code**: Use [`ClientOnly`](/docs/api/components/client-only) component for browser-specific content
-3. **Consistent data sources**: Ensure server and client uses the same data
-4. **Avoid side effects in setup**: Move browser-dependent code to `onMounted`
+3. **Wrap server-only content**: Use [`ServerOnly`](/docs/api/components/server-only) for content that must stay fixed at render time (e.g. build timestamps)
+4. **Consistent data sources**: Ensure server and client uses the same data
+5. **Avoid side effects in setup**: Move browser-dependent code to `onMounted`
 
 ::tip
 You can read the [Vue documentation on SSR hydration mismatch](https://vuejs.org/guide/scaling-up/ssr#hydration-mismatch) for a better understanding of hydration.

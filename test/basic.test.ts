@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, getBrowser, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
@@ -553,6 +553,38 @@ describe('pages', () => {
     expect(html).toContain('another-parent/index')
 
     await expectNoClientErrors('/another-parent')
+  })
+
+  it('/server-only', async () => {
+    const html = await $fetch<string>('/server-only')
+    expect(html).toContain('ServerOnly test page')
+    expect(html).toContain('Rendered at')
+    expect(html).toContain('data-server-only')
+    expect(html).toContain('server-only-content')
+    await expectNoClientErrors('/server-only')
+    const browser = await getBrowser()
+    const page = await browser.newPage({})
+    const response = await page.goto(url('/server-only'))
+    const responseHtml = await response!.text()
+    const ssrMatch = responseHtml.match(/id="server-only-content">([^<]+)</)
+    const ssrContent = ssrMatch?.[1]?.trim() ?? null
+    expect(ssrContent).toBeTruthy()
+    expect(ssrContent).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
+    expect(await page.locator('#server-only-content').textContent()).toBe(ssrContent)
+    expect(await page.locator('[data-server-only]').count()).toBe(1)
+    await page.close()
+  })
+
+  it('/server-only client-side navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.locator('#to-server-only').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
+    await page.getByText('ServerOnly test page').waitFor()
+    // A universal parent's slot is not serialized, so client navigation has no server HTML to keep.
+    expect(await page.locator('#server-only-content').count()).toBe(0)
+    expect(await page.locator('[data-server-only]').count()).toBe(1)
+    await page.close()
   })
 
   it('/client-server', async () => {
