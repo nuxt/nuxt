@@ -679,7 +679,7 @@ function reorderLocalLayersByExtends (
   }
 
   const pending = new Set(orderedDirs)
-  let constrained: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
+  let constrained: LoadedConfigLayer[] = []
   while (pending.size) {
     const next = orderedDirs.find(dir =>
       pending.has(dir) && ![...dependers.get(dir)!].some(depender => pending.has(depender)),
