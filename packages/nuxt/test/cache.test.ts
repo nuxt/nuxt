@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, rm, utimes, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import process from 'node:process'
@@ -9,6 +9,8 @@ import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { build, loadNuxt } from 'nuxt'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
+
+import { cleanupCaches } from '../src/core/cache.ts'
 
 async function resolveBuildOutputs (nuxt: Nuxt) {
   const resolved: Partial<Record<keyof NuxtBuildOutputs, string>> = {}
@@ -389,5 +391,33 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     // Verify manifest uses the new buildId
     const latestJson = JSON.parse(await readFile(join(nuxt2.options.buildDir, 'manifest', 'latest.json'), 'utf-8'))
     expect(latestJson.id).toBe('build-2')
+  })
+})
+
+describe('cleanupCaches', () => {
+  it('should keep every file of the ten most recent cache entries', async () => {
+    const workspaceDir = join(await findWorkspaceDir(), '.test/build-cache-cleanup')
+    const cacheDir = join(workspaceDir, 'node_modules/.cache/nuxt/builds/vue')
+    await rm(workspaceDir, { recursive: true, force: true })
+    await mkdir(cacheDir, { recursive: true })
+
+    const extensions = ['.tar', '.client.tar', '.client.json', '.buildid']
+    for (let i = 0; i < 12; i++) {
+      const time = new Date(Date.UTC(2024, 0, i + 1))
+      for (const ext of extensions) {
+        const file = join(cacheDir, `entry${i}${ext}`)
+        await writeFile(file, '')
+        await utimes(file, time, time)
+      }
+    }
+
+    try {
+      await cleanupCaches({ options: { workspaceDir, modulesDir: [] } } as unknown as Nuxt)
+      const remaining = (await readdir(cacheDir)).sort()
+      const expected = Array.from({ length: 10 }, (_, i) => extensions.map(ext => `entry${i + 2}${ext}`)).flat().sort()
+      expect(remaining).toStrictEqual(expected)
+    } finally {
+      await rm(workspaceDir, { recursive: true, force: true })
+    }
   })
 })

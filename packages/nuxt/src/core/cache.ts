@@ -7,7 +7,7 @@ import type { Nuxt, NuxtBuildOutputs, NuxtConfig, NuxtConfigLayer } from '@nuxt/
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
-import { dirname, join, relative, resolve } from 'pathe'
+import { basename, dirname, join, relative, resolve } from 'pathe'
 import { createTar, parseTar } from 'nanotar'
 import type { TarFileInput } from 'nanotar'
 import type { Plugin as VitePlugin } from 'vite'
@@ -182,13 +182,22 @@ export async function cleanupCaches (nuxt: Nuxt) {
     cwd: getCacheDir(nuxt),
     absolute: true,
   })
-  if (caches.length >= 10) {
-    const cachesWithMeta = await Promise.all(caches.map(async (cache) => {
-      return [cache, await stat(cache).then(r => r.mtime.getTime()).catch(() => 0)] as const
-    }))
-    cachesWithMeta.sort((a, b) => a[1] - b[1])
-    for (const [cache] of cachesWithMeta.slice(0, cachesWithMeta.length - 10)) {
-      await unlink(cache)
+  const entries = new Map<string, { files: string[], mtime: number }>()
+  for (const cache of caches) {
+    const name = basename(cache)
+    const key = join(dirname(cache), name.slice(0, name.indexOf('.')))
+    const mtime = await stat(cache).then(r => r.mtime.getTime()).catch(() => 0)
+    const entry = entries.get(key) ?? { files: [], mtime: 0 }
+    entry.files.push(cache)
+    entry.mtime = Math.max(entry.mtime, mtime)
+    entries.set(key, entry)
+  }
+  if (entries.size > 10) {
+    const sorted = [...entries.values()].sort((a, b) => a.mtime - b.mtime)
+    for (const { files } of sorted.slice(0, sorted.length - 10)) {
+      for (const file of files) {
+        await unlink(file)
+      }
     }
     const elapsed = Date.now() - start
     consola.success(`Cleaned up old build caches in \`${elapsed}ms\`.`)
