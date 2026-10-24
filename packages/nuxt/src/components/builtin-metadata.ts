@@ -2,6 +2,7 @@ import type { ComponentMeta } from 'nuxt/schema'
 
 export type BuiltinComponentName =
   | 'ClientOnly'
+  | 'ServerOnly'
   | 'DevOnly'
   | 'NuxtClientFallback'
   | 'NuxtPage'
@@ -28,6 +29,7 @@ function defineBuiltinMeta (slug: string, description: string): BuiltinComponent
 
 export const BUILTIN_COMPONENT_META = {
   ClientOnly: defineBuiltinMeta('client-only', 'Renders its default slot only on the client, with an optional server fallback.'),
+  ServerOnly: defineBuiltinMeta('server-only', 'Renders its slot on the server and keeps that HTML static on the client.'),
   DevOnly: defineBuiltinMeta('dev-only', 'Renders its content only during development.'),
   NuxtClientFallback: defineBuiltinMeta('nuxt-client-fallback', 'Renders its content on the client when a child fails during server-side rendering.'),
   NuxtPage: defineBuiltinMeta('nuxt-page', 'Renders the current page from the `pages/` directory.'),

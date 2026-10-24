@@ -144,7 +144,7 @@ const greeting = hour < 12 ? 'Good morning' : 'Good afternoon'
 </script>
 ```
 
-**Solution**: Use [`NuxtTime`](/docs/4.x/api/components/nuxt-time) for live time, [`ServerOnly`](/docs/4.x/api/components/server-only) for fixed build/render timestamps, or handle it client-side:
+**Solution**: Use [`NuxtTime`](/docs/api/components/nuxt-time) for live time, [`ServerOnly`](/docs/api/components/server-only) for fixed build/render timestamps, or handle it client-side:
 
 ```html
 <template>
@@ -165,6 +165,8 @@ For content that must stay fixed at render time (e.g. build timestamp in a foote
   </footer>
 </template>
 ```
+
+On client-side navigation the slot is not rendered again, so the wrapper is empty. Content that must be fetched on navigation belongs in a [server component](/docs/directory-structure/app/components#server-components).
 
 ```html
 <template>
@@ -210,9 +212,9 @@ To keep a phone number tappable, wrap it in an `<a href="tel:...">` element so t
 
 ## In Summary
 
-1. **Use SSR-friendly composables**: [`useFetch`](/docs/4.x/api/composables/use-fetch), [`useAsyncData`](/docs/4.x/api/composables/use-async-data), [`useState`](/docs/4.x/api/composables/use-state)
-2. **Wrap client-only code**: Use [`ClientOnly`](/docs/4.x/api/components/client-only) component for browser-specific content
-3. **Wrap server-only content**: Use [`ServerOnly`](/docs/4.x/directory-structure/app/components#built-in-nuxt-components) for content that must stay fixed at render time (e.g. build timestamps)
+1. **Use SSR-friendly composables**: [`useFetch`](/docs/api/composables/use-fetch), [`useAsyncData`](/docs/api/composables/use-async-data), [`useState`](/docs/api/composables/use-state)
+2. **Wrap client-only code**: Use [`ClientOnly`](/docs/api/components/client-only) component for browser-specific content
+3. **Wrap server-only content**: Use [`ServerOnly`](/docs/api/components/server-only) for content that must stay fixed at render time (e.g. build timestamps)
 4. **Consistent data sources**: Ensure server and client uses the same data
 5. **Avoid side effects in setup**: Move browser-dependent code to `onMounted`
 
