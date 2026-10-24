@@ -1,6 +1,7 @@
 import { addRoute, createRouter, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import type { RouterCompilerOptions } from 'rou3/compiler'
+import { defu } from 'defu'
 import { tryUseNitro } from '@nuxt/kit'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
 import { decodeRoutePath } from './index.ts'
@@ -59,6 +60,20 @@ export function resolveMethodRouteRulesRoutes (routes: RouteRulesRoute[], method
     layers[scopes.indexOf(method)]?.push({ ...route, route: path, method })
   }
   return layers.flat()
+}
+
+/**
+ * The rules that apply to a request with `method` (a page request by default), merged into one
+ * entry per path so that narrower scopes override the rules for every method.
+ *
+ * @internal
+ */
+export function mergeMethodRouteRulesRoutes (routes: RouteRulesRoute[], method = 'GET'): RouteRulesRoute[] {
+  const merged = new Map<string, Record<string, any>>()
+  for (const { route, data } of resolveMethodRouteRulesRoutes(routes, method)) {
+    merged.set(route, defu(data, merged.get(route)))
+  }
+  return [...merged].map(([route, data]) => ({ route, data }))
 }
 
 /**
