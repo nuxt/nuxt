@@ -32,7 +32,7 @@ export default defineNuxtConfig({
 })
 ```
 
-Lower `concurrency` trades build time for less parallel memory use. See [Prerendering](/docs/4.x/getting-started/prerendering) and [Nitro prerender options](https://nitro.build/config#prerender).
+Lower `concurrency` trades build time for less parallel memory use. See [Prerendering](/docs/getting-started/prerendering) and [Nitro prerender options](https://nitro.build/config#prerender).
 
 Turn off sourcemaps you do not ship:
 
@@ -45,7 +45,7 @@ export default defineNuxtConfig({
 })
 ```
 
-See [`sourcemap`](/docs/4.x/api/nuxt-config#sourcemap) and [Debugging](/docs/4.x/guide/going-further/debugging#sourcemaps).
+See [`sourcemap`](/docs/api/nuxt-config#sourcemap) and [Debugging](/docs/guide/going-further/debugging#sourcemaps).
 
 If the heap spikes near the end of the build, disable Nitro minification:
 
@@ -67,7 +67,7 @@ NODE_OPTIONS='--max-old-space-size=8192' npx nuxt build
 
 Exit code `137` means the process received SIGKILL. The OOM killer is one possible cause, not proof of memory exhaustion by itself. Check runner or container logs (for example dmesg or the host's OOM killer messages) before diagnosing a memory problem. A larger heap limit does not add physical RAM. `--expose-gc` only exposes `global.gc()`; it does not free objects the build still holds.
 
-If a very large dependency (for example Puppeteer) lands in the client graph, [`nuxt analyze`](/docs/4.x/api/commands/analyze) can show that. For most apps, prerender work matters more than the module graph.
+If a very large dependency (for example Puppeteer) lands in the client graph, [`nuxt analyze`](/docs/api/commands/analyze) can show that. For most apps, prerender work matters more than the module graph.
 
 ## CI Runners
 
@@ -102,29 +102,14 @@ NODE_OPTIONS='--heap-prof' npx nuxt build
 
 Open the `.heapprofile` in Chrome DevTools. Profiling adds overhead, so size CI from normal builds. When the build dies near the heap limit and you need a snapshot of the heap at that moment, prefer [`--heapsnapshot-near-heap-limit`](https://nodejs.org/api/cli.html#--heapsnapshot-near-heap-limitmax_count) instead of `--heap-prof`.
 
-You can also log RSS and heap at build hooks in the main process:
+Nuxt does not print memory on every build. For RSS and heap deltas per stage in the main process, run:
 
-```ts [nuxt.config.ts]
-function reportMemory (stage: string) {
-  const { heapUsed, rss } = process.memoryUsage()
-  const toMiB = (bytes: number) => Math.round(bytes / 1024 / 1024)
-  console.log(`[memory] ${stage}: RSS ${toMiB(rss)} MiB, heap ${toMiB(heapUsed)} MiB`)
-}
-
-export default defineNuxtConfig({
-  hooks: {
-    'build:before' () {
-      reportMemory('build:before')
-    },
-    'build:done' () {
-      reportMemory('build:done')
-    },
-  },
-})
+```bash [Terminal]
+npx nuxt build --profile=verbose
 ```
 
-These hooks miss peaks between stages and memory in child processes.
+Plain [`--profile`](/docs/api/commands/build) writes the same report in the build directory (`perf-report.json` and `perf-trace.json`) and skips the console table. `debug: { perf: true }` and `NUXT_DEBUG_PERF=1` match `--profile=verbose`. `NUXT_DEBUG_PERF=quiet` matches plain `--profile`.
 
-[`nuxt build --profile`](/docs/4.x/api/commands/build) reports RSS and heap deltas for build stages and writes a CPU profile. Use it to find slow stages; it does not produce a sampled heap profile.
+Stage deltas miss peaks between stages and memory in child processes. This is not a sampled heap profile.
 
 When you open an OOM issue, include Nuxt and Node.js versions, peak RSS, runner RAM, sourcemap settings, prerender route count, preset, and major module versions.
