@@ -150,6 +150,31 @@ describe('import protection', () => {
     expect(result).toBeFalsy()
   })
 
+  it('nitro-app with srcDir at the project root leaves package imports alone', async () => {
+    const plugin = ImpoundPlugin.rollup({
+      cwd: '/root',
+      patterns: createImportProtectionPatterns({
+        options: {
+          ...defaultNuxtOptions,
+          srcDir: '/root',
+          serverDir: '/root/server',
+          alias: {
+            '~': '/root',
+            '@': '/root',
+            '~~': '/root',
+            '@@': '/root',
+          },
+        } as NuxtOptions,
+      }, { context: 'nitro-app' }),
+    })
+    const resolveId = (id: string) => (plugin as any).resolveId.call({ error: () => {} }, id, 'server/api/bar.ts')
+    for (const id of ['h3', 'pathe', '@vue/shared', 'node:fs/promises', 'vue/server-renderer', 'nitro/h3']) {
+      expect(resolveId(id), id).toBeFalsy()
+    }
+    expect(resolveId('~/utils/foo')).toContain('impound:proxy')
+    expect(resolveId('app.vue')).toContain('impound:proxy')
+  })
+
   it('nitro-app with custom serverDir: ~/server-utils/ still protected (sibling of serverDir)', async () => {
     const customOptions = {
       ...defaultNuxtOptions,

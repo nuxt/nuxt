@@ -53,6 +53,42 @@ function isSubpath (parent: string, child: string): boolean {
   return rel !== '' && !rel.startsWith('..') && !rel.startsWith('/')
 }
 
+const SOURCE_FILE_RE = /\.(?:[cm]?[jt]sx?|vue|mjs|cjs|json|css|s[ac]ss|wasm|svg|md|html)$/i
+
+/**
+ * Bare package imports (`h3`, `vue/server-renderer`, `@vue/shared`, `node:fs/promises`) are not
+ * files under `srcDir`. `resolve(rootDir, id)` would still place them there when `srcDir` is the
+ * project root, and the blocker would replace the import with the impound proxy.
+ */
+function isPackageSpecifier (id: string, blockedDir: string, rootDir: string): boolean {
+  if (
+    isAbsolute(id)
+    || id.startsWith('.')
+    || id.startsWith('~/')
+    || id.startsWith('~~/')
+    || id.startsWith('@/')
+    || id.startsWith('@@/')
+  ) {
+    return false
+  }
+  if (
+    id.startsWith('node:')
+    || id.startsWith('data:')
+    || id.startsWith('file:')
+    || id.startsWith('http:')
+    || id.startsWith('https:')
+    || id.startsWith('\0')
+    || /^@[^/\\]/.test(id)
+  ) {
+    return true
+  }
+  const prefix = relative(rootDir, blockedDir).replace(/[/\\]+$/, '')
+  if (prefix && prefix !== '.' && (id === prefix || id.startsWith(`${prefix}/`) || id.startsWith(`${prefix}\\`))) {
+    return false
+  }
+  return !SOURCE_FILE_RE.test(id)
+}
+
 function createResolvedPathBlocker (
   rootDir: string,
   dir: string,
@@ -62,7 +98,7 @@ function createResolvedPathBlocker (
   const dirNorm = withTrailingSlash(resolve(dir))
   const excludeDirNorm = excludeDir ? withTrailingSlash(resolve(excludeDir)) : ''
   return (id: string) => {
-    if (IMPORT_PROTECTION_ALLOWED.isAllowed(id)) {
+    if (IMPORT_PROTECTION_ALLOWED.isAllowed(id) || isPackageSpecifier(id, dirNorm, rootDir)) {
       return false
     }
     const absolute = isAbsolute(id) ? id : resolve(rootDir, id)
