@@ -16,20 +16,26 @@ export interface ClientBuildState<T = unknown> {
   restore: (state: T) => void
 }
 
+const clientBuildStates = new WeakMap<Nuxt, Map<string, ClientBuildState<any>>>()
+
 /**
  * Register client build state under a key unique to the plugin that owns it.
  *
  * @internal
  */
 export function addClientBuildState<T> (key: string, state: ClientBuildState<T>, nuxt: Nuxt = useNuxt()): void {
-  nuxt._clientBuildState ??= new Map()
-  nuxt._clientBuildState.set(key, state)
+  let states = clientBuildStates.get(nuxt)
+  if (!states) {
+    states = new Map()
+    clientBuildStates.set(nuxt, states)
+  }
+  states.set(key, state)
 }
 
 /** @internal */
 export function saveClientBuildState (nuxt: Nuxt = useNuxt()): Record<string, unknown> {
   const saved: Record<string, unknown> = {}
-  for (const [key, state] of nuxt._clientBuildState ?? []) {
+  for (const [key, state] of clientBuildStates.get(nuxt) ?? []) {
     saved[key] = state.save()
   }
   return saved
@@ -37,7 +43,7 @@ export function saveClientBuildState (nuxt: Nuxt = useNuxt()): Record<string, un
 
 /** @internal */
 export function restoreClientBuildState (saved: Record<string, unknown>, nuxt: Nuxt = useNuxt()): void {
-  for (const [key, state] of nuxt._clientBuildState ?? []) {
+  for (const [key, state] of clientBuildStates.get(nuxt) ?? []) {
     if (key in saved) {
       state.restore(saved[key])
     }
