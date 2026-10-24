@@ -240,6 +240,30 @@ describe('route rules', () => {
     expect(res.headers.get('x-extend')).toEqual('added in routeRules')
   })
 
+  it('should apply server route rules to percent-encoded request paths', async () => {
+    for (const path of ['/route-rules/%69nline', '/%72oute-rules/inline']) {
+      const res = await fetch(path)
+      expect(res.headers.get('x-extend'), path).toEqual('added in routeRules')
+    }
+
+    for (const path of ['/route-rules/%72edirect', '/route-rules/%72%65direct']) {
+      const res = await fetch(path, { redirect: 'manual' })
+      expect(res.status, path).toEqual(307)
+      expect(res.headers.get('location'), path).toEqual('/')
+    }
+
+    const { script } = parseData(await $fetch<string>('/route-rules/%73pa'))
+    expect(script.serverRendered).toEqual(false)
+
+    const scripts = (await $fetch<string>('/no-%73cripts')).match(/<script[^>]*>/g) ?? []
+    expect(scripts.every(tag => tag.includes('type="speculationrules"'))).toBe(true)
+  })
+
+  it('should not apply server route rules to other casings with `sensitive` routing', async () => {
+    const res = await fetch('/route-rules/Redirect', { redirect: 'manual' })
+    expect(res.status).not.toEqual(307)
+  })
+
   it('test noScript routeRules', async () => {
     const html = await $fetch<string>('/no-scripts')
     // no executable scripts are shipped; the only `<script>` permitted is the

@@ -1,6 +1,13 @@
+import { mkdtemp, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { pathToFileURL } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
-import type { NitroConfig } from 'nitro/types'
-import { normalizeLegacyRouteRules } from '../src/route-rules.ts'
+import { join } from 'pathe'
+import { resolveModulePath } from 'exsolve'
+import { createMatcherFromFind } from 'h3/rules'
+import { compileRouteRules } from 'h3/rules/compiler'
+import type { Nitro, NitroConfig } from 'nitro/types'
+import { foldRouteRulePath, foldRouteRulePattern, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
 
 vi.mock('@nuxt/kit/internal', () => ({
   bundlerDiagnostics: { NUXT_B7026: vi.fn() },
@@ -56,5 +63,109 @@ describe('normalizeLegacyRouteRules', () => {
     expect(() => normalizeLegacyRouteRules(undefined)).not.toThrow()
     expect(() => normalizeLegacyRouteRules({})).not.toThrow()
     expect(() => normalizeLegacyRouteRules({ '/x': {} })).not.toThrow()
+  })
+})
+
+describe('foldRouteRulePath', () => {
+  it('lower-cases plain and percent-encoded characters', () => {
+    expect(foldRouteRulePath('/Admin/%C3%89cole')).toBe('/admin/%C3%A9cole')
+    expect(foldRouteRulePath('/%41dmin')).toBe('/admin')
+  })
+
+  it('leaves escapes without a lower-case form as written', () => {
+    expect(foldRouteRulePath('/a%2Fb/%e6%b5%8b')).toBe('/a%2Fb/%e6%b5%8b')
+    expect(foldRouteRulePath('/%zz/%C3')).toBe('/%zz/%C3')
+  })
+})
+
+describe('foldRouteRulePattern', () => {
+  it('keeps param names and backslash escapes', () => {
+    expect(foldRouteRulePattern('GET /Users/:userId/**:Rest')).toBe('get /users/:userId/**:Rest')
+    expect(foldRouteRulePattern('/N/:id(\\D+)')).toBe('/n/:id(\\D+)')
+  })
+
+  it('folds text inside constraints', () => {
+    expect(foldRouteRulePattern('/:id((?:FOO|BAR))/:Rest')).toBe('/:id((?:foo|bar))/:Rest')
+  })
+})
+
+describe('routeRulesCaseFoldPlugin', () => {
+  const nitroPackage = resolveModulePath('nitro/package.json', { from: import.meta.url })
+
+  async function loadMatcher (routeRules: NonNullable<NitroConfig['routeRules']>, baseURL = '/') {
+    const options = { runtimeRules: { cache: '#nitro/runtime/route-rule-handlers' }, baseURL, preMerge: true }
+    const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules, baseURL } }) as Nitro)
+    const code = await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing')
+    const file = join(await mkdtemp(join(tmpdir(), 'nuxt-route-rules-')), 'routing.mjs')
+    await writeFile(file, code!.replace(/from "(h3[^"]*)"/g, (_, id) => `from ${JSON.stringify(pathToFileURL(resolveModulePath(id, { from: nitroPackage })).href)}`))
+    const { findRouteRules } = await import(pathToFileURL(file).href)
+    const match = createMatcherFromFind(findRouteRules)
+    return (path: string, method = 'GET') => match(method, path).routeRules as Record<string, any>
+  }
+
+  it('matches rules regardless of the casing of the path or the pattern', async () => {
+    const match = await loadMatcher({
+      '/admin/**': { headers: { 'x-admin': '1' } },
+      '/Docs': { headers: { 'x-docs': '1' } },
+      '/école': { headers: { 'x-ecole': '1' } },
+      '/n/:id(\\D+)': { headers: { 'x-n': '1' } },
+      'POST /Form': { headers: { 'x-form': '1' } },
+    })
+
+    for (const path of ['/admin/a', '/Admin/a', '/ADMIN/a', '/%41dmin/a', '/%61dmin/a']) {
+      expect(match(path).headers, path).toEqual({ 'x-admin': '1' })
+    }
+    for (const path of ['/Docs', '/docs', '/DOCS', '/%64ocs']) {
+      expect(match(path).headers, path).toEqual({ 'x-docs': '1' })
+    }
+    for (const path of ['/%C3%A9cole', '/%C3%89cole', '/%c3%89COLE']) {
+      expect(match(path).headers, path).toEqual({ 'x-ecole': '1' })
+    }
+    expect(match('/N/abc').headers).toEqual({ 'x-n': '1' })
+    expect(match('/N/123').headers).toBeUndefined()
+    expect(match('/form', 'POST').headers).toEqual({ 'x-form': '1' })
+    expect(match('/form').headers).toBeUndefined()
+  })
+
+  it('keeps the base of a rule matched in its own casing', async () => {
+    const routeRules = { '/Old/**': { redirect: '/new/**' }, '/**': { headers: { 'x-all': '1' } } }
+    const match = await loadMatcher(routeRules)
+
+    expect(match('/Old/page')).toEqual({ headers: { 'x-all': '1' }, redirect: { to: '/new/**', status: 307, base: '/Old' } })
+    expect(match('/old/page').redirect).toMatchObject({ to: '/new/**' })
+  })
+
+  it('merges the options of rules whose keys fold together', async () => {
+    const match = await loadMatcher({
+      '/Admin': { headers: { 'x-a': '1', 'x-c': '1' } },
+      '/admin': { headers: { 'x-b': '1', 'x-c': '2' } },
+    })
+
+    expect(match('/ADMIN').headers).toEqual({ 'x-a': '1', 'x-b': '1', 'x-c': '2' })
+  })
+
+  it('matches constraints regardless of casing', async () => {
+    const match = await loadMatcher({ '/x/:id((?:FOO|BAR))': { headers: { 'x-id': '1' } } })
+
+    for (const path of ['/x/FOO', '/x/foo', '/X/Bar']) {
+      expect(match(path).headers, path).toEqual({ 'x-id': '1' })
+    }
+  })
+
+  it('matches rules under a base URL regardless of casing', async () => {
+    const match = await loadMatcher({ '/admin': { headers: { 'x-admin': '1' } } }, '/App/')
+
+    expect(match('/App/admin').headers).toEqual({ 'x-admin': '1' })
+    expect(match('/app/Admin').headers).toEqual({ 'x-admin': '1' })
+  })
+
+  it('leaves other modules alone', async () => {
+    const plugin = routeRulesCaseFoldPlugin(() => { throw new Error('unreachable') })
+    expect(await plugin.transform.handler('export const findRouteRules = 1', '#nitro/virtual/app')).toBeUndefined()
+  })
+
+  it('fails the build when the lookup cannot be found', async () => {
+    const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules: {} } }) as unknown as Nitro)
+    await expect(plugin.transform.handler('export function findRouteRules () {}', '#nitro/virtual/routing')).rejects.toThrow('findRouteRules')
   })
 })
