@@ -311,6 +311,13 @@ describe('route rules', () => {
     }
   })
 
+  it('should run appMiddleware from a route rule with a case-sensitive regex constraint', async () => {
+    for (const path of ['/route-rules/constrained/abc', '/route-rules/constrained/ABC']) {
+      expect(await $fetch<string>(path), path).toContain('Hello from routeRules!')
+    }
+    expect(await $fetch<string>('/route-rules/constrained/123')).not.toContain('Hello from routeRules!')
+  })
+
   it('should apply server route rules regardless of request casing or encoding', async () => {
     for (const path of ['/Route-Rules/Inline', '/ROUTE-RULES/INLINE', '/route-rules/%49nline']) {
       const res = await fetch(path, { redirect: 'manual' })
