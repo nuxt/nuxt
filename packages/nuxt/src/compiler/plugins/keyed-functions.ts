@@ -197,7 +197,6 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
         const s = rolldownString(code, _id, meta)
         let count = 0
-        // hash the id relative to `rootDir` so keys stay the same wherever the project is built
         const relativeID = isAbsolute(_id) ? relative(options.rootDir, _id) : _id
 
         const scopeTracker = new ScopeTracker({

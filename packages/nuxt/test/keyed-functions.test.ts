@@ -997,7 +997,6 @@ useAsyncData(() => $fetch('/api/data'))
   }
 
   it('should generate the same key when the project is built from another directory', async () => {
-    // a page of the project, and a page of a layer outside of `rootDir`
     for (const file of ['project/app/pages/index.vue', 'layer/app/pages/index.vue']) {
       expect(await getKey('/home/runner/work/project', `/home/runner/work/${file}`)).toBe(await getKey('/builds/project', `/builds/${file}`))
     }
