@@ -173,6 +173,8 @@ In addition to `useFetch` options, `createUseFetch` accepts an `addons` array :b
 For example, an addon that refreshes the data whenever the window regains focus, gated behind a custom `refreshOnFocus` option, so callers opt in per call:
 
 ```ts [app/composables/useCustomFetch.ts]
+import { useWindowFocus } from '@vueuse/core'
+
 const refreshOnFocus = defineUseFetchAddon({
   // augment the call-site options for the custom useFetch instance 👇
   setup: (options: UseFetchAddonOptions<{ refreshOnFocus?: boolean }>) => {
