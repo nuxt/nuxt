@@ -124,7 +124,7 @@ await navigateTo('https://nuxt.com', {
 export function navigateTo (
   to: RouteLocationRaw | undefined | null,
   options?: NavigateToOptions,
-): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw
+): Promise<void | NavigationFailure | false> | false | void
 
 interface NavigateToOptions {
   replace?: boolean
@@ -147,6 +147,8 @@ type OpenWindowFeatures = {
   & XOR<{ left?: number }, { screenX?: number }>
   & XOR<{ top?: number }, { screenY?: number }>
 ```
+
+Inside route middleware, `navigateTo()` still returns the original route at runtime so the middleware runner can follow the redirect. That route is not part of the signature above. With [typed pages](/docs/guide/going-further/experimental-features#typedpages), `RouteLocationRaw` is a union of every route, and a function that returns `navigateTo()` next to another value then exceeds TypeScript's union limit.
 
 ## Parameters
 
