@@ -17,7 +17,12 @@ export async function getVueHash (nuxt: Nuxt) {
 
   const { hash } = await getHashes(nuxt, {
     id,
-    cwd: layer => layer.config.srcDir || layer.cwd,
+    cwd: (layer) => {
+      const srcDir = layer.config.srcDir || layer.cwd
+      // `shared/` is resolved from the layer root, so it is outside `srcDir` when using an `app/` directory
+      const sharedDir = resolve(layer.config.rootDir || layer.cwd, layer.config.dir?.shared || 'shared')
+      return relative(srcDir, sharedDir).startsWith('../') ? [srcDir, sharedDir] : srcDir
+    },
     patterns: (layer) => {
       const srcDir = layer.config.srcDir || layer.cwd
       return [
@@ -205,7 +210,7 @@ type Hashes = { hash: string, sources: HashSource[] }
 
 interface GetHashOptions {
   id: string
-  cwd: (layer: NuxtConfigLayer) => string
+  cwd: (layer: NuxtConfigLayer) => string | string[]
   patterns: (layer: NuxtConfigLayer) => string[]
   configOverrides: Partial<Record<keyof NuxtConfig, unknown>>
 }

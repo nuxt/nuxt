@@ -273,6 +273,49 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     expect(latestJson.id).toBe('ignored-1')
   })
 
+  it('should miss the cache when a file in `shared/` changes', async () => {
+    const rootDir = join(tmpDir, 'project')
+    const outputDir = join(rootDir, '.output')
+    // with a config file and an `app/` directory, `shared/` sits outside `srcDir`
+    await writeFile(join(rootDir, 'nuxt.config.ts'), 'export default {}')
+    await rm(join(rootDir, 'app.vue'))
+    await mkdir(join(rootDir, 'app'), { recursive: true })
+    await writeFile(join(rootDir, 'app/app.vue'), '<template><div>{{ sharedMarker }}</div></template>')
+    await mkdir(join(rootDir, 'shared/utils'), { recursive: true })
+    await writeFile(join(rootDir, 'shared/utils/marker.ts'), 'export const sharedMarker = "shared-marker-v1"')
+
+    const nuxt1 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'shared-1',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt1)
+
+    await writeFile(join(rootDir, 'shared/utils/marker.ts'), 'export const sharedMarker = "shared-marker-v2"')
+
+    const nuxt2 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'shared-2',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt2)
+
+    const clientFiles = await readdir(join(outputDir, 'public/_nuxt'))
+    const clientCode = await Promise.all(clientFiles.filter(f => f.endsWith('.js')).map(f => readFile(join(outputDir, 'public/_nuxt', f), 'utf-8')))
+    expect(clientCode.some(code => code.includes('shared-marker-v2'))).toBe(true)
+    expect(clientCode.some(code => code.includes('shared-marker-v1'))).toBe(false)
+    // the buildId is only restored on a cache hit
+    expect(nuxt2.options.buildId).toBe('shared-2')
+  })
+
   it('should generate a new buildId when sources change', async () => {
     const rootDir = join(tmpDir, 'project')
 
