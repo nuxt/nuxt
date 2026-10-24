@@ -326,6 +326,12 @@ export interface Nuxt {
    */
   '_devServerListener'?: import('node:http').Server | import('node:https').Server
   /**
+   * Virtual files served at `/.nuxt/` in development beyond `nuxt.vfs`, such as the server
+   * builder's own virtual modules. `read` returns `undefined` for an id it does not have.
+   * @internal
+   */
+  '_vfsSources'?: Array<{ keys: () => Iterable<string>, read: (id: string) => string | undefined | Promise<string | undefined> }>
+  /**
    * Names of the bundler environments that build the app for the server, beyond `ssr`.
    * Plugins registered with `addVitePlugin()` apply to these too, so that an environment a
    * deploy target owns can bundle the app. Registered by the server builder, which is the
