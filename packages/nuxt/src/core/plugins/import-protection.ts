@@ -50,7 +50,7 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
     /(^|node_modules\/)@nuxt\/cli(?:-nightly)?(?:$|\/)(?!runtime\/)/,
     /(^|node_modules\/)nuxi/,
     /(^|node_modules\/)nitropack(?:-nightly)?(?:$|\/)(?!(?:dist\/)?(?:node_modules|presets|runtime|types))/,
-    /(^|node_modules\/)nitro(?:-nightly)?\/(builder|meta|vite|tsconfig)/,
+    /(^|node_modules\/)nitro(?:-nightly)?\/(builder|meta|vite(?!\/runtime(?:$|\/))|tsconfig)/,
     /(^|node_modules\/)nuxt\/(config|kit|schema)/,
   ]) {
     patterns.push([

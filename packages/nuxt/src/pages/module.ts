@@ -20,7 +20,7 @@ import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
-import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRuleLookupPath, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
@@ -650,7 +650,7 @@ export default defineNuxtModule({
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
         const ruleMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules.routes, '', !caseSensitiveRouteRules)
         for (const route of prerenderRoutes) {
-          const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', normalizeRouteRulePath(route, !caseSensitiveRouteRules)).reverse())
+          const rules = defu({} as Record<string, any>, ...ruleMatcher.matchAll('', normalizeRouteRuleLookupPath(route, !caseSensitiveRouteRules)).reverse())
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }

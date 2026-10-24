@@ -4,7 +4,8 @@ import { resolvePackageDir, resolvePackageJSON } from '../src/internal/package-j
 
 describe('resolvePackageJSON', () => {
   it('resolves the manifest of an installed package', () => {
-    expect(resolvePackageJSON('nitro', { from: import.meta.url })).toMatch(/nitro[\\/]package\.json$/)
+    // TODO: drop `(?:-nightly)?` once the catalog uses the published nitro RC
+    expect(resolvePackageJSON('nitro', { from: import.meta.url })).toMatch(/nitro(?:-nightly)?[\\/]package\.json$/)
   })
 
   it('returns `undefined` for an unresolvable module id when `try` is set', () => {

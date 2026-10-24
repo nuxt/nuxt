@@ -290,6 +290,11 @@ describe('route rules', () => {
     expect(html).toContain('Hello from routeRules!')
   })
 
+  it('should run appMiddleware from a route rule with a unicode regex constraint', async () => {
+    expect(await $fetch<string>(`/route-rules/constrained/${encodeURIComponent('café')}`)).toContain('Hello from routeRules!')
+    expect(await $fetch<string>('/route-rules/constrained/other')).not.toContain('Hello from routeRules!')
+  })
+
   it('should set layout defined in routeRules config', async () => {
     const html = await $fetch<string>('/route-rules/layout')
     expect(html).toContain('Custom Layout')

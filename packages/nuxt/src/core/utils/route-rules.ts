@@ -1,10 +1,11 @@
 import { addRoute, createRouter, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
-import type { RouterCompilerOptions } from 'rou3/compiler'
+import type { CompileRouterToStringOptions } from 'rou3/compiler'
 import { defu } from 'defu'
 import { tryUseNitro } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
-import { decodeRoutePath } from './index.ts'
+import { decodeRoutePath, encodeRoutePath } from './index.ts'
 
 /** One entry of a route-rules router: the pattern it matches and the rules it resolves to. */
 export interface RouteRulesRoute {
@@ -17,7 +18,7 @@ export interface RouteRulesRoute {
 export interface RouteRulesRouter {
   routes: RouteRulesRoute[]
   matchAll (method: string, path: string): Record<string, any>[]
-  compileToString (options?: RouterCompilerOptions): string
+  compileToString (options?: CompileRouterToStringOptions): string
 }
 
 const HTTP_METHODS = new Set(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'CONNECT', 'TRACE', 'QUERY'])
@@ -88,6 +89,177 @@ export function mergeMethodRouteRulesRoutes (routes: RouteRulesRoute[], method =
 export function normalizeRouteRulePath (path: string, fold: boolean): string {
   const decoded = decodeRoutePath(path)
   return fold ? decoded.toLowerCase() : decoded
+}
+
+/**
+ * Split a route pattern into its literal text and its regex constraint groups, in order.
+ */
+function splitRouteConstraints (pattern: string): Array<{ text: string, constraint: boolean }> {
+  const parts: Array<{ text: string, constraint: boolean }> = []
+  let start = 0
+  let depth = 0
+  let inClass = false
+  for (let i = 0; i < pattern.length; i++) {
+    const char = pattern[i]
+    if (char === '\\') {
+      i++
+      continue
+    }
+    if (depth === 0) {
+      if (char === '(') {
+        parts.push({ text: pattern.slice(start, i), constraint: false })
+        start = i
+        depth = 1
+      }
+      continue
+    }
+    if (inClass) {
+      inClass = char !== ']'
+    } else if (char === '[') {
+      inClass = true
+    } else if (char === '(') {
+      depth++
+    } else if (char === ')' && --depth === 0) {
+      parts.push({ text: pattern.slice(start, i + 1), constraint: true })
+      start = i + 1
+    }
+  }
+  parts.push({ text: pattern.slice(start), constraint: depth > 0 })
+  return parts
+}
+
+const ROUTE_KEY_ENCODE_RE = /[\0-\x20"#<>`]|[^\0-\x7E]/gu
+const LONE_SURROGATE_RE = /[\uD800-\uDFFF]/u
+
+/**
+ * Percent-encode a route pattern the way h3 normalizes route rule keys, leaving existing escapes intact.
+ *
+ * @internal
+ */
+export function encodeRoutePattern (pattern: string): string {
+  return pattern.replace(ROUTE_KEY_ENCODE_RE, char => encodeURIComponent(char.replace(LONE_SURROGATE_RE, '\uFFFD')))
+}
+
+/**
+ * Lower-case a request path for case-insensitive route rule matching. Percent-encoded
+ * characters are folded too, so `/%C3%89cole` folds to `/%C3%A9cole`.
+ *
+ * Inlined by source into the server bundle, so it must not reference anything outside itself.
+ *
+ * @internal
+ */
+export function foldRouteRulePath (path: string): string {
+  return path.replace(/(?:%[\da-f]{2})+|[^%]+/gi, (run) => {
+    if (run[0] !== '%') { return run.toLowerCase() }
+    try {
+      const decoded = decodeURIComponent(run)
+      const folded = decoded.toLowerCase()
+      return folded === decoded ? run : encodeURIComponent(folded)
+    } catch {
+      return run
+    }
+  })
+}
+
+/**
+ * Lower-case a route rule pattern as {@link foldRouteRulePath} does a request path, keeping
+ * param names, backslash escapes and regex constraints as written.
+ *
+ * @internal
+ */
+export function foldRouteRulePattern (pattern: string): string {
+  return splitRouteConstraints(pattern)
+    .map((part) => {
+      if (part.constraint) { return part.text }
+      return part.text.replace(/\\.|:\w+|[^\\:]+|:/g, token => token[0] === '\\' || (token[0] === ':' && token.length > 1) ? token : foldRouteRulePath(token))
+    })
+    .join('')
+}
+
+const CONSTRAINT_ATOM_RE = /(?:%[\da-f]{2})+|\\(?:x[\da-f]{2}|u[\da-f]{4}|u\{[\da-f]+\}|c[a-z]|[0-7]{1,3}|[\s\S])|\[(?:\\[\s\S]|[^\]\\])*\]|[\s\S]/gi
+
+let casePairs: Array<[upper: string, lower: string]> | undefined
+
+function getCasePairs (): Array<[upper: string, lower: string]> {
+  if (!casePairs) {
+    casePairs = []
+    for (let code = 0; code <= 0xFFFF; code++) {
+      const char = String.fromCharCode(code)
+      const lower = char.toLowerCase()
+      if (lower !== char && lower.length === 1 && (code < 0x80 || lower.charCodeAt(0) >= 0x80)) { casePairs.push([char, lower]) }
+    }
+  }
+  return casePairs
+}
+
+/**
+ * The first part of a regex constraint that matches an upper-case letter but not its lower-case
+ * form, such as `A`, `[A-Z]`, `\x41` or `%C3%89`, or a negated class that matches one form but
+ * not the other, such as `[^A-Z]`. Request paths are lower-cased before they are matched when
+ * routing is case-insensitive, so such a constraint would not match the way it reads.
+ *
+ * @internal
+ */
+export function findCaseDependentConstraint (constraint: string): string | undefined {
+  for (const [atom] of constraint.matchAll(CONSTRAINT_ATOM_RE)) {
+    if (atom[0] === '%') {
+      const decoded = decodeRoutePath(atom)
+      if (decoded.toLowerCase() !== decoded) { return atom }
+      continue
+    }
+    if (atom.length === 1) {
+      if (atom.toLowerCase() !== atom) { return atom }
+      continue
+    }
+    let regex: RegExp
+    try {
+      regex = new RegExp(atom)
+    } catch {
+      continue
+    }
+    const negated = atom.startsWith('[^')
+    if (getCasePairs().some(([upper, lower]) => negated ? regex.test(upper) !== regex.test(lower) : regex.test(upper) && !regex.test(lower))) { return atom }
+  }
+}
+
+/**
+ * Throw if a regex constraint in a route-rule key depends on letter case (see
+ * {@link findCaseDependentConstraint}), for keys matched case-insensitively.
+ *
+ * @internal
+ */
+export function assertCaseIndependentRouteRuleKey (key: string): void {
+  for (const { text, constraint } of splitRouteConstraints(key)) {
+    const part = constraint ? findCaseDependentConstraint(text) : undefined
+    if (part !== undefined) {
+      throw pageDiagnostics.NUXT_B4022({ route: key, part })
+    }
+  }
+}
+
+/**
+ * Normalise a route-rule key like {@link normalizeRouteRulePath}, except for its regex
+ * constraints. rou3 tests a constraint against the encoded path segment, so constraints are
+ * percent-encoded the way h3 encodes route-rule keys, never decoded or folded.
+ *
+ * @internal
+ */
+export function normalizeRouteRuleKey (key: string, fold: boolean): string {
+  return splitRouteConstraints(key)
+    .map((part) => {
+      return part.constraint ? encodeRoutePattern(part.text) : normalizeRouteRulePath(part.text, fold)
+    })
+    .join('')
+}
+
+/**
+ * Normalise a lookup path like {@link normalizeRouteRulePath}, then percent-encode it the way
+ * rou3 encodes the literal text of the keys it is matched against.
+ *
+ * @internal
+ */
+export function normalizeRouteRuleLookupPath (path: string, fold: boolean): string {
+  return encodeRoutePath(normalizeRouteRulePath(path, fold))
 }
 
 /**
@@ -183,7 +355,7 @@ export function createRouteRulesRouter (allRoutes: RouteRulesRoute[], baseURL: s
       // a lone catch-all under no base matches every path, so it compiles to its data rather
       // than a lookup; under a base the router compiles the prefix check itself
       if (base || routes.length !== 1 || routes[0]!.route !== '/**') {
-        return compileRouterToString(router, undefined, options)
+        return compileRouterToString(router, options)
       }
       const data = (options?.serialize || JSON.stringify)(routes[0]!.data)
       const match = `{data,params:{"_":p.slice(1)}}`
@@ -201,15 +373,16 @@ export function createRouteRulesRouter (allRoutes: RouteRulesRoute[], baseURL: s
  */
 export const normalizePathCode: string = [
   `const decodeRoutePath = ${decodeRoutePath.toString()}`,
+  `const encodeRoutePath = ${encodeRoutePath.toString()}`,
   `const normalizePath = (path, fold) => {`,
   `  if (typeof path !== 'string') { return path }`,
   `  const decoded = decodeRoutePath(path)`,
-  `  return fold ? decoded.toLowerCase() : decoded`,
+  `  return encodeRoutePath(fold ? decoded.toLowerCase() : decoded)`,
   `}`,
 ].join('\n')
 
 /**
- * Build a route-rules router whose keys are decoded (and, when `fold` is set, lower-cased),
+ * Build a route-rules router whose keys are normalised with {@link normalizeRouteRuleKey},
  * mirroring the normalised lookup path used at runtime.
  *
  * `onDuplicate` is called when two distinct keys normalise onto the same path; the later
@@ -221,7 +394,7 @@ export function createNormalizedRouteRulesRouter (routes: RouteRulesRoute[], bas
   const normalizedKeys = new Map<string, string>()
   const normalizedRoutes = resolveMethodRouteRulesRoutes(routes, method).map((route) => {
     if (typeof route.route !== 'string') { return route }
-    const path = normalizeRouteRulePath(route.route, fold)
+    const path = normalizeRouteRuleKey(route.route, fold)
     const key = route.method ? `${route.method} ${path}` : path
     const original = route.method ? `${route.method} ${route.route}` : route.route
     const existing = normalizedKeys.get(key)

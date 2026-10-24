@@ -695,7 +695,7 @@ describe('denial-of-service protections', () => {
       let received = ''
       socket.on('data', (chunk) => {
         received += chunk.toString()
-        const statuses = [...received.matchAll(/^HTTP\/1\.1 (\d{3})/gm)].map(m => m[1]!)
+        const statuses = [...received.matchAll(/HTTP\/1\.1 (\d{3}) /g)].map(m => m[1]!)
         if (statuses.length === 2) {
           socket.end()
           resolve(statuses)

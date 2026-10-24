@@ -3,7 +3,7 @@ import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
-import { createNormalizedRouteRulesRouter, normalizePathCode, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizePathCode, normalizeRouteRuleLookupPath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
  * The rules this builder resolves for itself: the renderer reads `ssr`, `streaming`,
@@ -21,7 +21,7 @@ const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url })
 export function createRouteRulesMatcher (nuxt: Nuxt): (path: string) => Record<string, any> {
   const fold = !nuxt.options.router.options.sensitive
   const router = createNormalizedRouteRulesRouter(resolveRouteRulesRoutes(nuxt).routes, '', fold)
-  return path => defu({}, ...router.matchAll('', normalizeRouteRulePath(path, fold)).reverse()) as Record<string, any>
+  return path => defu({}, ...router.matchAll('', normalizeRouteRuleLookupPath(path, fold)).reverse()) as Record<string, any>
 }
 
 /**

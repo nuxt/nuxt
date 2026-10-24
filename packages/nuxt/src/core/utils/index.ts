@@ -36,3 +36,15 @@ export function decodeRoutePath (path: string) {
     return path
   }
 }
+
+/**
+ * Percent-encode a decoded route path the way rou3 encodes the literal text of a pattern
+ * (the URL path percent-encode set, leaving `%` as is), so a lookup matches a pattern
+ * registered from the same decoded text. A query string, if present, is left untouched.
+ */
+export function encodeRoutePath (path: string) {
+  const queryIndex = path.indexOf('?')
+  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex)
+  const encoded = pathname.replace(/[\0-\x20"#<>^`{}\x7F-\uFFFC]+/g, run => encodeURIComponent(run.replace(/[\uD800-\uDFFF]/gu, '\uFFFD')))
+  return queryIndex === -1 ? encoded : encoded + path.slice(queryIndex)
+}

@@ -7,10 +7,11 @@ import { resolveModulePath } from 'exsolve'
 import { createMatcherFromFind } from 'h3/rules'
 import { compileRouteRules } from 'h3/rules/compiler'
 import type { Nitro, NitroConfig } from 'nitro/types'
-import { foldRouteRulePath, foldRouteRulePattern, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
+import { normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
 
 vi.mock('@nuxt/kit/internal', () => ({
   bundlerDiagnostics: { NUXT_B7026: vi.fn() },
+  pageDiagnostics: { NUXT_B4022: vi.fn((p: { route: string, part: string }) => new Error(`NUXT_B4022 ${p.route} ${p.part}`)) },
 }))
 
 const { bundlerDiagnostics } = await import('@nuxt/kit/internal')
@@ -63,29 +64,6 @@ describe('normalizeLegacyRouteRules', () => {
     expect(() => normalizeLegacyRouteRules(undefined)).not.toThrow()
     expect(() => normalizeLegacyRouteRules({})).not.toThrow()
     expect(() => normalizeLegacyRouteRules({ '/x': {} })).not.toThrow()
-  })
-})
-
-describe('foldRouteRulePath', () => {
-  it('lower-cases plain and percent-encoded characters', () => {
-    expect(foldRouteRulePath('/Admin/%C3%89cole')).toBe('/admin/%C3%A9cole')
-    expect(foldRouteRulePath('/%41dmin')).toBe('/admin')
-  })
-
-  it('leaves escapes without a lower-case form as written', () => {
-    expect(foldRouteRulePath('/a%2Fb/%e6%b5%8b')).toBe('/a%2Fb/%e6%b5%8b')
-    expect(foldRouteRulePath('/%zz/%C3')).toBe('/%zz/%C3')
-  })
-})
-
-describe('foldRouteRulePattern', () => {
-  it('keeps param names and backslash escapes', () => {
-    expect(foldRouteRulePattern('GET /Users/:userId/**:Rest')).toBe('get /users/:userId/**:Rest')
-    expect(foldRouteRulePattern('/N/:id(\\D+)')).toBe('/n/:id(\\D+)')
-  })
-
-  it('folds text inside constraints', () => {
-    expect(foldRouteRulePattern('/:id((?:FOO|BAR))/:Rest')).toBe('/:id((?:foo|bar))/:Rest')
   })
 })
 
@@ -145,11 +123,22 @@ describe('routeRulesCaseFoldPlugin', () => {
   })
 
   it('matches constraints regardless of casing', async () => {
-    const match = await loadMatcher({ '/x/:id((?:FOO|BAR))': { headers: { 'x-id': '1' } } })
+    const match = await loadMatcher({
+      '/x/:id((?:foo|bar))': { headers: { 'x-id': '1' } },
+      '/Y/:id([A-z]+)': { headers: { 'x-id': '2' } },
+    })
 
     for (const path of ['/x/FOO', '/x/foo', '/X/Bar']) {
       expect(match(path).headers, path).toEqual({ 'x-id': '1' })
     }
+    for (const path of ['/y/AAA', '/y/a_A', '/Y/_']) {
+      expect(match(path).headers, path).toEqual({ 'x-id': '2' })
+    }
+    expect(match('/y/123').headers).toBeUndefined()
+  })
+
+  it('rejects constraints that depend on letter case', async () => {
+    await expect(loadMatcher({ '/x/:id((?:FOO|bar))': { headers: { 'x-id': '1' } } })).rejects.toThrow('NUXT_B4022 /x/:id((?:FOO|bar)) F')
   })
 
   it('matches rules under a base URL regardless of casing', async () => {

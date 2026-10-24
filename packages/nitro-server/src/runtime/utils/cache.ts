@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import type { Storage } from 'unstorage'
-import { useStorage } from 'nitro/storage'
+import { useKV } from 'nitro/kv'
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import type { CachedResponse } from 'nuxt/internal/renderer/runtime'
 
@@ -15,7 +15,7 @@ export const prerenderRenderingURLs: AsyncLocalStorage<readonly string[]> | null
 // Prerender-only: a runtime payload cache would be keyed by path alone (no
 // cookie/authorization/`cache.varies` dimension) and leak one principal's SSR data to others.
 export const payloadCache: Storage<CachedResponse> | null = import.meta.prerender
-  ? useStorage<CachedResponse>('internal:nuxt:prerender:payload')
+  ? useKV<CachedResponse>('internal:nuxt:prerender:payload')
   : null
 export const sharedPrerenderPromises: Map<string, Promise<any>> | null = import.meta.prerender && NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 
@@ -40,7 +40,7 @@ export const sharedPrerenderCache: SharedPrerenderCache | null = import.meta.pre
         if (currentChain?.length && setChain?.length && setChain.some(url => currentChain.includes(url))) {
           return
         }
-        return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
+        return sharedPrerenderPromises!.get(key) ?? useKV('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
       },
       async set<T> (key: string, value: Promise<T>): Promise<void> {
         sharedPrerenderKeys.add(key)
@@ -51,7 +51,7 @@ export const sharedPrerenderCache: SharedPrerenderCache | null = import.meta.pre
         }
         try {
           const resolved = await value
-          await useStorage('internal:nuxt:prerender:shared').setItem(key, resolved as any)
+          await useKV('internal:nuxt:prerender:shared').setItem(key, resolved as any)
         } catch {
           // Rejections propagate through the original promise; only resolved values are persisted.
         } finally {

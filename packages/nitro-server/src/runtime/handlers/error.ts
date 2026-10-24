@@ -159,7 +159,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
     }
   }
 
-  mergeHeaders(headers, res.headers, setCookies, INTERNAL_HEADERS)
+  mergeHeaders(headers, res.headers, setCookies, IGNORED_PAGE_HEADERS)
   if ('res' in event) {
     mergeHeaders(headers, (event as H3Event).res.headers, setCookies)
   }
@@ -199,7 +199,8 @@ const THROWN_VALUE = Symbol.for('nuxt:dev:thrown')
 
 /** Set when the app's own error page could not render. */
 const ERROR_PAGE_HEADER = 'x-nuxt-error-page'
-const INTERNAL_HEADERS = new Set([ERROR_PAGE_HEADER])
+// Headers of the rendered error page that should not be forwarded, as its body is rebuilt
+const IGNORED_PAGE_HEADERS = new Set(['content-length', ERROR_PAGE_HEADER])
 
 // Headers that should not be forwarded from the default handler or SSR render to the error page
 const IGNORED_ERROR_HEADERS = new Set(['content-type', 'content-security-policy', ERROR_PAGE_HEADER])

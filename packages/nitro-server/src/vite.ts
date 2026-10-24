@@ -1,8 +1,7 @@
 import { randomBytes } from 'node:crypto'
-import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import type { EnvironmentModuleGraph, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
@@ -11,7 +10,7 @@ import escapeRE from 'escape-string-regexp'
 import MagicString from 'magic-string'
 import remapping from '@ampproject/remapping'
 
-import type { Nitro, NitroHooks } from 'nitro/types'
+import type { Nitro } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
@@ -135,60 +134,32 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   }
 
   nuxt.options.vite.plugins ||= []
-  if (nuxt.options.dev) {
-    nuxt.options.vite.plugins.push(DevRequestUrlPlugin())
-  }
   nuxt.options.vite.plugins.push(nitroPlugin({
     // reuse the Nitro instance we have created
     _nitro: nitro,
-    experimental: {
-      vite: {
-        services: {
-          ssr: {
-            entry: resolveModulePath(resolve(distDir, 'runtime/handlers/renderer'), {
-              extensions: ['.ts', '.mjs', '.js'],
-            }),
-          },
+    vite: {
+      services: {
+        ssr: {
+          entry: resolveModulePath(resolve(distDir, 'runtime/handlers/renderer'), {
+            extensions: ['.ts', '.mjs', '.js'],
+          }),
         },
       },
     },
   }))
 
   if (nuxt.options.dev) {
-    let devServer: ViteDevServer | undefined
-
-    // TODO: fix upstream in nitro
-    nitro.hooks.hook('rollup:reload', () => {
-      const env = devServer?.environments.nitro
-      if (!env) { return }
-      env.moduleGraph.invalidateAll()
-      env.hot.send({ type: 'full-reload' })
-    })
-
     nuxt.hook('vite:serverCreated', (viteServer, { isServer }) => {
       if (!isServer) { return }
 
-      devServer = viteServer
-
-      // Nitro's dev middleware claims any request it does not recognise as an
-      // asset, and without `sec-fetch-dest`, it recognises assets by file extension,
-      // but extension-less Vite URLs such as `/_nuxt/@id/__x00__plugin-vue:export-helper`
-      // need to be routed to Vite. Setting `_nitroHandled` here is a stopgap
-      // until Nitro's own exemption for Vite-internal prefixes is base-aware.
-      // TODO: drop `_nitroHandled` and narrow `VITE_INTERNAL_RE` back to the
-      // root-served handlers once we require a Nitro version including
-      // https://github.com/nitrojs/nitro/pull/4540
+      // `@vite/client`, `@vite/env` and `@react-refresh` are served from the
+      // root of the dev server rather than from under Vite's base, so they
+      // need the prefix dropped before Vite's own middlewares run.
       const buildAssetsDir = nuxt.options.app.buildAssetsDir
       const buildAssetsPrefix = escapeRE(buildAssetsDir.replace(/\/+$/, ''))
-      const VITE_INTERNAL_RE = new RegExp(`^${buildAssetsPrefix}\\/@[^/?#]`)
-      // `@vite/client`, `@vite/env` and `@react-refresh` are served from the
-      // root of the dev server rather than from under Vite's base, so they also
-      // need the prefix dropped before Vite's own middlewares run.
       const VITE_ROOT_ASSET_RE = new RegExp(`^${buildAssetsPrefix}\\/(@vite\\/(?:client|env)|@react-refresh)(?:\\?|$|\\/)`)
-      viteServer.middlewares.use((req: IncomingMessage & { _nitroHandled?: boolean }, _res, next) => {
-        if (!req.url || !VITE_INTERNAL_RE.test(req.url)) { return next() }
-        req._nitroHandled = true
-        if (VITE_ROOT_ASSET_RE.test(req.url)) {
+      viteServer.middlewares.use((req, _res, next) => {
+        if (req.url && VITE_ROOT_ASSET_RE.test(req.url)) {
           req.url = '/' + req.url.slice(buildAssetsDir.length).replace(/^\/+/, '')
         }
         next()
@@ -205,27 +176,11 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   }
 
   if (!nuxt.options.dev) {
-    let publicAssetsHookCalled = false
-    const callPublicAssetsHook = async () => {
-      if (publicAssetsHookCalled) { return }
-      publicAssetsHookCalled = true
-      await nuxt.callHook('nitro:build:public-assets', nitro)
-    }
-
     // runs after public assets are copied and routes are prerendered, and
     // before the public asset manifest is generated
-    nitro.hooks.hook('vite:compile:before' as keyof NitroHooks, callPublicAssetsHook)
-
-    // TODO: on the next nitro bump, drop the guard and these `buildStart` and `compiled`
-    // fallbacks once we require a version including https://github.com/nitrojs/nitro/pull/4440
-    nuxt.options.vite.plugins.push({
-      name: 'nuxt:nitro-public-assets',
-      applyToEnvironment: env => env.name === 'nitro',
-      buildStart: callPublicAssetsHook,
-    })
+    nitro.hooks.hook('vite:compile:before', () => nuxt.callHook('nitro:build:public-assets', nitro))
     nitro.hooks.hook('compiled', async () => {
       if (nitro.options.static) {
-        await callPublicAssetsHook()
         await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
       }
     })
@@ -416,35 +371,6 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
           }
         }
       },
-    },
-  }
-}
-
-/**
- * Restores the `req.url` Vite's base middleware rewrote before `nitro/vite`'s dev middleware
- * runs, so it must be registered ahead of that plugin.
- * TODO: remove once nitro includes https://github.com/nitrojs/nitro/pull/4734
- */
-function DevRequestUrlPlugin (): VitePlugin {
-  const originalUrls = new WeakMap<IncomingMessage, string>()
-  return {
-    name: 'nuxt:nitro-dev-request-url',
-    configureServer (server) {
-      server.middlewares.use((req, _res, next) => {
-        if (req.url) {
-          originalUrls.set(req, req.url)
-        }
-        next()
-      })
-      return () => {
-        server.middlewares.use((req, _res, next) => {
-          const url = originalUrls.get(req)
-          if (url !== undefined && url !== req.url) {
-            req.url = url
-          }
-          next()
-        })
-      }
     },
   }
 }

@@ -331,6 +331,7 @@ export default defineConfig({
                 routeRules: {
                   '/Secret/Docs/**': { ssr: false },
                   '/Legacy/Home': { redirect: '/target' },
+                  '/Range/:id([A-z]+)': { ssr: false },
                 },
               } satisfies NuxtConfig, commonSettings),
             },

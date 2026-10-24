@@ -7,7 +7,7 @@
 export { useNitroApp } from 'nitro/app'
 export { getRouteRules } from '../utils/route-rules.ts'
 export { defineErrorHandler as defineNitroErrorHandler, defineRouteMeta, definePlugin as defineNitroPlugin, definePlugin as nitroPlugin } from 'nitro'
-export { useStorage } from 'nitro/storage'
+export { useKV as useStorage } from 'nitro/kv'
 export { defineTask, runTask } from 'nitro/task'
 export {
   defineCachedFunction,
