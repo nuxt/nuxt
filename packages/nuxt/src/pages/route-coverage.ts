@@ -2,7 +2,7 @@ import type { NitroInstance, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
 import { toArray } from '../utils.ts'
-import { createNormalizedRouteRulesRouter, resolveRouteRules } from '../core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizeRouteRulePath, resolveRouteRules } from '../core/utils/route-rules.ts'
 
 const UNESCAPE_RE = /\\(.)/g
 
@@ -121,11 +121,10 @@ export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInst
     const prefix = segments.slice(0, dynamicAt).map(segment => segment.probe).join('/') || '/'
     const probe = (prefix === '/' ? '' : prefix) + '/' + PROBE_SEGMENT
     if (!isPathCovered(probe)) { return false }
-    // rule keys are raw rou3 patterns, so the region filter compares them against the raw prefix
-    const rawPrefix = pattern.split('/').slice(0, dynamicAt).join('/') || '/'
-    const within = rawPrefix === '/' ? '/' : rawPrefix + '/'
+    const normalizedPrefix = normalizeRouteRulePath(pattern.split('/').slice(0, dynamicAt).join('/') || '/', fold)
+    const within = normalizedPrefix === '/' ? '/' : normalizedPrefix + '/'
     for (const { route } of matcher.routes) {
-      if (route !== rawPrefix && !route.startsWith(within)) { continue }
+      if (route !== normalizedPrefix && !route.startsWith(within)) { continue }
       if (!isPathCovered(patternToProbePath(route, PROBE_SEGMENT))) { return false }
     }
     return true
