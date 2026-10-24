@@ -19,10 +19,8 @@ export default defineNuxtConfig({
     },
     function (_options, nuxt) {
       // this preserves onPrehydrate so we can make assertions on the client
-      const clientComposables = nuxt.options.optimization.treeShake.composables.client ||= {}
-      for (const source of ['#app', '#app/composables/ssr']) {
-        clientComposables[source] = clientComposables[source]?.filter(c => c !== 'onPrehydrate') || []
-      }
+      nuxt.options.optimization.treeShake.composables.client ||= {}
+      nuxt.options.optimization.treeShake.composables.client['#app'] = nuxt.options.optimization.treeShake.composables.client['#app']?.filter(c => c !== 'onPrehydrate') || []
 
       addVitePlugin(() => ({
         name: 'preserve-ssr-composables',
