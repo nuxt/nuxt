@@ -73,7 +73,6 @@ export async function getVueHash (nuxt: Nuxt) {
     async restoreCache () {
       const start = Date.now()
       if (cachesClientAssets) {
-        // a missing or unreadable state file counts as a miss, so the client is rebuilt
         clientState = existsSync(clientCacheFile) ? await readClientState(clientStateFile) : undefined
         if (!clientState) {
           return false
@@ -112,7 +111,6 @@ export async function getVueHash (nuxt: Nuxt) {
           ? {
               async buildApp (builder) {
                 await restoreCacheFromFile(useServerBuild(nuxt).output.publicDir(), clientCacheFile)
-                // the ssr build reads what the client build left in memory, not only its files
                 restoreClientBuildState(clientState!, nuxt)
                 const client = builder.environments.client
                 if (client) {

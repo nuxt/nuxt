@@ -259,8 +259,6 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
       },
     })
     await build(nuxt1)
-    // a page is not an entry, so the renderer drops its stylesheet link per request, for
-    // the pages that inlined its styles
     const expectedHtml = await renderIndex(outputDir)
     expect(expectedHtml).toMatch(INLINE_STYLE_RE)
     expect(expectedHtml).not.toMatch(STYLESHEET_LINK_RE)
@@ -298,7 +296,6 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     await build(nuxt1)
     const expectedHtml = await renderIndex(outputDir)
 
-    // a write cut short leaves a state file that is not valid JSON
     const cacheDir = join(tmpDir, 'node_modules')
     const stateFiles = (await readdir(cacheDir, { recursive: true })).filter(file => file.endsWith('.client.json'))
     expect(stateFiles).toHaveLength(1)
