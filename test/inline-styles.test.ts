@@ -41,11 +41,21 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/33041
-  it.runIf(isBuilt)('inlines child component styles before parent styles', async () => {
+  it.runIf(isBuilt)('inlines child styles before parent styles when they share a chunk', async () => {
     const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
     const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
     const childIndex = inlinedStyles.indexOf('--inline-some-component-token:some-component')
     const parentIndex = inlinedStyles.indexOf('--inline-app-token:app')
+    expect(childIndex).toBeGreaterThan(-1)
+    expect(parentIndex).toBeGreaterThan(childIndex)
+  })
+
+  // https://github.com/nuxt/nuxt/issues/33041
+  it.runIf(isBuilt)('inlines child styles before parent styles when they are in different chunks', async () => {
+    const html = await readFile(join(outputDir, 'public', 'shared-a', 'index.html'), 'utf-8')
+    const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
+    const childIndex = inlinedStyles.indexOf('--inline-shared-box-token:shared-box')
+    const parentIndex = inlinedStyles.indexOf('--inline-shared-parent-token:shared-parent')
     expect(childIndex).toBeGreaterThan(-1)
     expect(parentIndex).toBeGreaterThan(childIndex)
   })
