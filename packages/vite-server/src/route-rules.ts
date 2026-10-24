@@ -3,7 +3,7 @@ import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
-import { createNormalizedRouteRulesRouter, normalizePathCode, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizePathCode, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
  * The rules this builder resolves for itself: the renderer reads `ssr`, `streaming`,
@@ -26,7 +26,8 @@ export function createRouteRulesMatcher (nuxt: Nuxt): (path: string) => Record<s
 
 /**
  * Emit the matcher the server bundle resolves rules through, so that a render and the
- * handler in front of it read the same rules the build compiled.
+ * handler in front of it read the same rules the build compiled. A lookup takes the request
+ * method, `GET` by default.
  */
 export function addRouteRulesTemplate (): string {
   const { dst } = addTemplate({
@@ -35,18 +36,28 @@ export function addRouteRulesTemplate (): string {
     getContents: ({ nuxt }) => {
       const fold = !nuxt.options.router.options.sensitive
       const { routes, baseURL } = resolveRouteRulesRoutes(nuxt)
-      const matcher = createNormalizedRouteRulesRouter(routes, baseURL, fold).compileToString({
-        matchAll: true,
-        serialize: rules => `{${Object.entries(rules)
-          .filter(([name, value]) => value !== undefined && SUPPORTED_RULES.has(name))
-          .map(([name, value]) => `${name}: ${JSON.stringify(value)}`)
-          .join(',')}}`,
+      const methods = new Set(routes.map(route => parseRouteRulesRoute(route).method).filter(Boolean))
+      if (methods.has('GET')) {
+        methods.add('HEAD')
+      }
+      const matchers = ['', ...methods].map((method) => {
+        const matcher = createNormalizedRouteRulesRouter(routes, baseURL, fold, undefined, method).compileToString({
+          matchAll: true,
+          serialize: rules => `{${Object.entries(rules)
+            .filter(([name, value]) => value !== undefined && SUPPORTED_RULES.has(name))
+            .map(([name, value]) => `${name}: ${JSON.stringify(value)}`)
+            .join(',')}}`,
+        })
+        return `[${JSON.stringify(method)}, ${matcher}]`
       })
       return [
         `import { defu } from ${JSON.stringify(defuPath)}`,
-        `const matcher = ${matcher}`,
+        `const matchers = new Map([${matchers.join(',\n')}])`,
         normalizePathCode,
-        `export default path => defu({}, ...matcher('', normalizePath(path, ${fold})).map(r => r.data).reverse())`,
+        `export default (path, method = 'GET') => {`,
+        `  const matcher = matchers.get(method.toUpperCase()) || matchers.get('')`,
+        `  return defu({}, ...matcher('', normalizePath(path, ${fold})).map(r => r.data).reverse())`,
+        `}`,
       ].join('\n')
     },
   })

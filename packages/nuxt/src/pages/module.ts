@@ -20,7 +20,7 @@ import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
-import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
@@ -696,7 +696,7 @@ export default defineNuxtModule({
     // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
     nuxt.hook('pages:extend', (routes) => {
       let resolvedRoutes: string[]
-      for (const route of resolveRouteRulesRoutes(nuxt).routes) {
+      for (const route of mergeMethodRouteRulesRoutes(resolveRouteRulesRoutes(nuxt).routes)) {
         if (!route.data.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path

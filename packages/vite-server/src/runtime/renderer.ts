@@ -13,8 +13,8 @@ export interface NuxtRenderer {
   fetch: (event: ReturnType<typeof createRequestEvent>) => Promise<Response>
 }
 
-/** Route rules matched for a path, as the build's compiled matcher resolves them. */
-export type MatchRouteRules = (path: string) => {
+/** Route rules matched for a path and request method, as the build's compiled matcher resolves them. */
+export type MatchRouteRules = (path: string, method?: string) => {
   ssr?: boolean
   streaming?: boolean
   noScripts?: boolean
@@ -39,7 +39,7 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     runtimeConfig,
     buildAssetsURL,
     publicAssetsURL,
-    getRouteRules: event => ({ ssr: true, ...matchRouteRules(event.url.pathname) }),
+    getRouteRules: event => ({ ssr: true, ...matchRouteRules(event.url.pathname, event.req.method) }),
     hooks: useServerHooks,
     createResponse: (body, init) => new Response(body, init),
     createError: init => createError(init),
@@ -81,7 +81,7 @@ export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: Mat
       }
     }
     const event = createRequestEvent(request)
-    const rules = matchRouteRules(event.url.pathname)
+    const rules = matchRouteRules(event.url.pathname, request.method)
     if (rules.redirect) {
       return redirectResponse(event, rules.redirect, rules.headers)
     }

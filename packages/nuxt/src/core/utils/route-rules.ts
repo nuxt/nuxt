@@ -1,6 +1,7 @@
 import { addRoute, createRouter, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import type { RouterCompilerOptions } from 'rou3/compiler'
+import { defu } from 'defu'
 import { tryUseNitro } from '@nuxt/kit'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
 import { decodeRoutePath } from './index.ts'
@@ -17,6 +18,62 @@ export interface RouteRulesRouter {
   routes: RouteRulesRoute[]
   matchAll (method: string, path: string): Record<string, any>[]
   compileToString (options?: RouterCompilerOptions): string
+}
+
+const HTTP_METHODS = new Set(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'CONNECT', 'TRACE', 'QUERY'])
+const METHOD_KEY_RE = /^([A-Z]+)\s+(\/.*)$/i
+
+/**
+ * Split a `<METHOD> <path>` route-rule key into its HTTP method (empty when the key is not
+ * method-scoped) and its path.
+ *
+ * @internal
+ */
+export function parseRouteRuleKey (key: string): { method: string, path: string } {
+  const match = METHOD_KEY_RE.exec(key)
+  const method = match?.[1]!.toUpperCase()
+  return method && HTTP_METHODS.has(method) ? { method, path: match![2]! } : { method: '', path: key }
+}
+
+/**
+ * The method and path of a route-rules entry, taken from `method` when set and from the key
+ * otherwise.
+ *
+ * @internal
+ */
+export function parseRouteRulesRoute (route: RouteRulesRoute): { method: string, path: string } {
+  return route.method ? { method: route.method.toUpperCase(), path: route.route } : parseRouteRuleKey(route.route)
+}
+
+/**
+ * The routes whose rules apply to a request with `method`, keyed by path. Rules for every
+ * method come first, then `GET` rules for a `HEAD` request, then rules scoped to `method`, so
+ * that narrower scopes take precedence on the same path.
+ *
+ * @internal
+ */
+export function resolveMethodRouteRulesRoutes (routes: RouteRulesRoute[], method = 'GET'): RouteRulesRoute[] {
+  const scopes = method === 'HEAD' ? ['', 'GET', 'HEAD'] : ['', method]
+  const layers: RouteRulesRoute[][] = scopes.map(() => [])
+  for (const route of routes) {
+    const { method, path } = parseRouteRulesRoute(route)
+    layers[scopes.indexOf(method)]?.push({ ...route, route: path, method })
+  }
+  return layers.flat()
+}
+
+/**
+ * The rules that apply to a request with `method` (a page request by default), merged into one
+ * entry per path so that narrower scopes override the rules for every method.
+ *
+ * @internal
+ */
+export function mergeMethodRouteRulesRoutes (routes: RouteRulesRoute[], method = 'GET'): RouteRulesRoute[] {
+  const merged = new Map<string, Record<string, any>>()
+  for (const { route, data } of resolveMethodRouteRulesRoutes(routes, method)) {
+    merged.set(route, defu(data, merged.get(route)))
+  }
+  return [...merged].map(([route, data]) => ({ route, data }))
 }
 
 /**
@@ -46,8 +103,9 @@ export function normalizeRouteRules (config: Record<string, RouteRuleConfig> | u
 
     if (redirect) {
       const options: Record<string, unknown> = { to: '/', status: 307, ...typeof redirect === 'string' ? { to: redirect } : redirect }
-      if (key.endsWith('/**')) {
-        options.base = key.slice(0, -3)
+      const { path } = parseRouteRuleKey(key)
+      if (path.endsWith('/**')) {
+        options.base = path.slice(0, -3)
       }
       rules.redirect = options
     } else if (redirect === false) {
@@ -104,16 +162,18 @@ export function resolveRouteRulesRoutes (nuxt: Nuxt): { routes: RouteRulesRoute[
 }
 
 /**
- * Build a route-rules router: patterns are registered under `baseURL`, and a lookup resolves
- * every pattern it matches, least specific first.
+ * Build a route-rules router over the rules that apply to a request with `method` (a page
+ * request by default): patterns are registered under `baseURL`, and a lookup resolves every
+ * pattern it matches, least specific first.
  *
  * @internal
  */
-export function createRouteRulesRouter (routes: RouteRulesRoute[], baseURL: string): RouteRulesRouter {
+export function createRouteRulesRouter (allRoutes: RouteRulesRoute[], baseURL: string, method = 'GET'): RouteRulesRouter {
+  const routes = resolveMethodRouteRulesRoutes(allRoutes, method)
   const base = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL
   const router = createRouter<Record<string, any>>()
   for (const route of routes) {
-    addRoute(router, route.method || '', base + route.route, route.data)
+    addRoute(router, '', base + route.route, route.data)
   }
 
   return {
@@ -122,7 +182,7 @@ export function createRouteRulesRouter (routes: RouteRulesRoute[], baseURL: stri
     compileToString (options) {
       // a lone catch-all under no base matches every path, so it compiles to its data rather
       // than a lookup; under a base the router compiles the prefix check itself
-      if (base || routes.length !== 1 || routes[0]!.route !== '/**' || !!routes[0]!.method) {
+      if (base || routes.length !== 1 || routes[0]!.route !== '/**') {
         return compileRouterToString(router, undefined, options)
       }
       const data = (options?.serialize || JSON.stringify)(routes[0]!.data)
@@ -157,17 +217,19 @@ export const normalizePathCode: string = [
  *
  * @internal
  */
-export function createNormalizedRouteRulesRouter (routes: RouteRulesRoute[], baseURL: string | undefined, fold: boolean, onDuplicate?: (existing: string, route: string, key: string) => void): RouteRulesRouter {
+export function createNormalizedRouteRulesRouter (routes: RouteRulesRoute[], baseURL: string | undefined, fold: boolean, onDuplicate?: (existing: string, route: string, key: string) => void, method = 'GET'): RouteRulesRouter {
   const normalizedKeys = new Map<string, string>()
-  const normalizedRoutes = routes.map((route) => {
+  const normalizedRoutes = resolveMethodRouteRulesRoutes(routes, method).map((route) => {
     if (typeof route.route !== 'string') { return route }
-    const key = normalizeRouteRulePath(route.route, fold)
+    const path = normalizeRouteRulePath(route.route, fold)
+    const key = route.method ? `${route.method} ${path}` : path
+    const original = route.method ? `${route.method} ${route.route}` : route.route
     const existing = normalizedKeys.get(key)
-    if (existing !== undefined && existing !== route.route) {
-      onDuplicate?.(existing, route.route, key)
+    if (existing !== undefined && existing !== original) {
+      onDuplicate?.(existing, original, key)
     }
-    normalizedKeys.set(key, route.route)
-    return { ...route, route: key }
+    normalizedKeys.set(key, original)
+    return { ...route, route: path }
   })
-  return createRouteRulesRouter(normalizedRoutes, normalizeRouteRulePath(String(baseURL || ''), fold))
+  return createRouteRulesRouter(normalizedRoutes, normalizeRouteRulePath(String(baseURL || ''), fold), method)
 }

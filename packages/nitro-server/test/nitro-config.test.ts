@@ -52,6 +52,20 @@ describe('nitro config', () => {
     })
   }, 60_000)
 
+  it('emits noScripts patterns for the rules that apply to a GET request', async () => {
+    const routeRules = {
+      '/foo': { noScripts: true },
+      'GET /foo': { noScripts: false },
+      'GET /bar': { noScripts: true },
+      'POST /baz': { noScripts: true },
+    }
+    await withNitro({ routeRules }, async (_nitro, nitroConfig) => {
+      const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
+      const code = await rendererConfig()
+      expect(JSON.parse(/^export const NUXT_NO_SCRIPTS_PATTERNS = (.+)$/m.exec(code)![1]!)).toEqual(['/bar'])
+    })
+  }, 60_000)
+
   it('passes the server replacements to nitro as `replace` without nitroViteEnvironment', async () => {
     await withNitro({ experimental: { nitroViteEnvironment: false } }, (_nitro, nitroConfig) => {
       expect(nitroConfig.replace).toMatchObject(serverReplacements)

@@ -31,7 +31,7 @@ import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKe
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
 import { normalizeLegacyRouteRules } from './route-rules.ts'
@@ -202,7 +202,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // `noScripts` route rule, so scripted documents can speculatively
       // prefetch/prerender the full-page navigation the client router forces
       // to them.
-      const noScriptsPatterns = [...new Set(nitro.routing.routeRules.routes
+      const noScriptsPatterns = [...new Set(mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)
         .filter(r => r.data.noScripts)
         .map(r => rou3PatternToURLPattern(r.route, { wildcard: 'segment' }).pattern))]
       // `href_matches` patterns for every page route, provided by the pages
@@ -433,7 +433,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nuxt.hook('nitro:init', (nitro) => {
       nitro.hooks.hook('build:before', async (nitro) => {
         const updatedRules: Record<string, Record<string, any>> = {}
-        for (const { route, data: value } of nitro.routing.routeRules.routes) {
+        for (const { route, data: value } of mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)) {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
             if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
