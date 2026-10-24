@@ -60,7 +60,7 @@ export async function getVueHash (nuxt: Nuxt) {
       if (cachesClientAssets && clientFiles.length) {
         const publicDir = useServerBuild(nuxt).output.publicDir()
         await writeCache(publicDir, publicDir, clientCacheFile, clientFiles)
-        await writeFile(clientStateFile, JSON.stringify(saveClientBuildState(nuxt)))
+        await writeFile(clientStateFile, JSON.stringify({ version: nuxt._version, state: saveClientBuildState(nuxt) }))
       }
 
       // Cache buildId so it can be restored before modules are initialised on the next build
@@ -73,7 +73,7 @@ export async function getVueHash (nuxt: Nuxt) {
     async restoreCache () {
       const start = Date.now()
       if (cachesClientAssets) {
-        clientState = existsSync(clientCacheFile) ? await readClientState(clientStateFile) : undefined
+        clientState = existsSync(clientCacheFile) ? await readClientState(clientStateFile, nuxt._version) : undefined
         if (!clientState) {
           return false
         }
@@ -355,9 +355,10 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
   }
 }
 
-async function readClientState (file: string): Promise<Record<string, unknown> | undefined> {
+async function readClientState (file: string, version: string): Promise<Record<string, unknown> | undefined> {
   try {
-    const state = JSON.parse(await readFile(file, 'utf8'))
+    const { version: savedVersion, state } = JSON.parse(await readFile(file, 'utf8')) ?? {}
+    if (savedVersion !== version) { return }
     return state && typeof state === 'object' && !Array.isArray(state) ? state : undefined
   } catch {
     return undefined

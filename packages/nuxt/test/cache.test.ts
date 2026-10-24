@@ -280,7 +280,10 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     expect(await renderIndex(outputDir)).toBe(expectedHtml)
   })
 
-  it('should rebuild the client when its cached state is unreadable', { timeout: 300_000 }, async () => {
+  it.each([
+    ['unreadable', '{"ssr-styles":'],
+    ['from another nuxt version', JSON.stringify({ version: '0.0.0', state: { 'ssr-styles': {} } })],
+  ])('should rebuild the client when its cached state is %s', { timeout: 300_000 }, async (_, contents) => {
     const rootDir = join(tmpDir, 'project')
     const outputDir = join(rootDir, '.output')
 
@@ -299,7 +302,7 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     const cacheDir = join(tmpDir, 'node_modules')
     const stateFiles = (await readdir(cacheDir, { recursive: true })).filter(file => file.endsWith('.client.json'))
     expect(stateFiles).toHaveLength(1)
-    await writeFile(join(cacheDir, stateFiles[0]!), '{"ssr-styles":')
+    await writeFile(join(cacheDir, stateFiles[0]!), contents)
 
     await rm(outputDir, { recursive: true, force: true })
 
