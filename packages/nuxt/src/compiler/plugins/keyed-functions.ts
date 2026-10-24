@@ -381,6 +381,13 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                     && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/asyncData', options.alias))
                   ) { return }
                   break
+
+                case 'useAsyncRouteData':
+                  if (
+                    stringTypes.includes(parsedCall.callExpression.arguments[0]?.type)
+                    && stripExtension(fnMeta.source) === stripExtension(resolveAlias('#app/composables/asyncRouteData', options.alias))
+                  ) { return }
+                  break
               }
 
               // inject a key to the function call
