@@ -918,6 +918,30 @@ describe('routing utilities: `navigateTo`', () => {
     el.unmount()
     router.removeRoute('slug')
   })
+
+  it('navigateTo should not be treated as a middleware redirect while a navigation is pending after middleware', async () => {
+    const router = useRouter()
+
+    let releaseGuard: () => void
+    let guardEntered: (() => void) | undefined
+    const entered = new Promise<void>((resolve) => { guardEntered = resolve })
+    const removeGuard = router.beforeResolve(async (to) => {
+      if (to.query.section === 'roles') {
+        guardEntered!()
+        await new Promise<void>((resolve) => { releaseGuard = resolve })
+      }
+    })
+
+    const older = navigateTo({ path: '/', query: { section: 'roles' } }, { replace: true })
+    await entered
+    const newer = navigateTo({ path: '/', query: { section: 'employment' } }, { replace: true })
+    await newer
+    releaseGuard!()
+    await older
+    removeGuard()
+
+    expect(router.currentRoute.value.query.section).toBe('employment')
+  })
 })
 
 describe('routing utilities: `resolveRouteObject`', () => {

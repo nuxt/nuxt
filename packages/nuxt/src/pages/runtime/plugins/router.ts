@@ -357,6 +357,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
     })
 
+    if (import.meta.client) {
+      // middleware has finished, so later `navigateTo` calls (e.g. from components while
+      // the navigation is still pending) should navigate rather than return a redirect
+      router.beforeEach(() => {
+        delete nuxtApp._processingMiddleware
+      })
+    }
+
     if (isServerPage) {
       // validate that a server page is rendering the correct url
       router.beforeResolve((to) => {

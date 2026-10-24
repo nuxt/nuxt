@@ -61,4 +61,27 @@ describe('universal router', () => {
 
     expect(router.currentRoute.value.path).toBe('/fast')
   })
+
+  it('navigateTo should not be treated as a middleware redirect while a navigation is pending after middleware', async () => {
+    const router = useRouter()
+
+    let releaseGuard: () => void
+    let guardEntered: (() => void) | undefined
+    const entered = new Promise<void>((resolve) => { guardEntered = resolve })
+    const removeGuard = router.beforeResolve(async (to) => {
+      if (to.path === '/roles') {
+        guardEntered!()
+        await new Promise<void>((resolve) => { releaseGuard = resolve })
+      }
+    })
+
+    const older = navigateTo('/roles')
+    await entered
+    await navigateTo('/employment')
+    releaseGuard!()
+    await older
+    removeGuard()
+
+    expect(router.currentRoute.value.path).toBe('/employment')
+  })
 })
