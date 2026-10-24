@@ -13,7 +13,7 @@ import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
 import { withInlineQuery } from '../utils/inline-styles.ts'
 import { resolveClientEntry } from '../utils/config.ts'
 import escapeStringRegexp from 'escape-string-regexp'
-import { useServerBuild } from '@nuxt/kit/internal'
+import { addClientBuildState, useServerBuild } from '@nuxt/kit/internal'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 const QUERY_RE = /\?.+$/
@@ -47,6 +47,8 @@ function wrapStringGenerateScopedName (
   return (localName, resourcePath) => generate(localName, resourcePath.replace(QUERY_RE, ''))
 }
 
+type SavedSets = Array<[string, string[]]>
+
 export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   if (nuxt.options.dev) { return }
 
@@ -60,6 +62,20 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   // bundled into it.
   const cssSourcesByCSSFile = new Map<string, Set<string>>()
   const clientCSSMap: Record<string, Set<string>> = {}
+
+  // The ssr build reads all three maps above, which only the client build fills in.
+  addClientBuildState<Record<'clientCSSMap' | 'clientImporters' | 'cssSourcesByCSSFile', SavedSets>>('ssr-styles', {
+    save: () => ({
+      clientCSSMap: Object.entries(clientCSSMap).map(([id, files]) => [id, [...files]]),
+      clientImporters: [...clientImporters].map(([id, importers]) => [id, [...importers]]),
+      cssSourcesByCSSFile: [...cssSourcesByCSSFile].map(([file, sources]) => [file, [...sources]]),
+    }),
+    restore: (state) => {
+      for (const [id, files] of state.clientCSSMap) { clientCSSMap[id] = new Set(files) }
+      for (const [id, importers] of state.clientImporters) { clientImporters.set(id, new Set(importers)) }
+      for (const [file, sources] of state.cssSourcesByCSSFile) { cssSourcesByCSSFile.set(file, new Set(sources)) }
+    },
+  }, nuxt)
 
   const stripQuery = (id: string) => id.replace(QUERY_RE, '')
 
