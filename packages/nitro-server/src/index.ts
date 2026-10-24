@@ -743,17 +743,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitroConfig.alias['#imports'] = autoImports.importsModulePath
 
   if (autoImports.enabled) {
-    const autoImportsPluginOptions = { autoImports, sourcemap: !!nuxt.options.sourcemap.server }
-    nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup(autoImportsPluginOptions))
-
-    if (nuxt.options.experimental.nitroViteEnvironment) {
-      nuxt.options.vite.plugins ||= []
-      for (const plugin of [ServerAutoImportsPlugin.vite(autoImportsPluginOptions)].flat()) {
-        nuxt.options.vite.plugins.push(Object.assign(plugin, {
-          applyToEnvironment: (env: { name: string }) => env.name === 'nitro',
-        }))
-      }
-    }
+    nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
+      autoImports,
+      sourcemap: !!nuxt.options.sourcemap.server,
+      // the `ssr` environment's output, which the app's auto-imports have already transformed
+      exclude: [new RegExp('^' + escapeRE(withTrailingSlash(join(nuxt.options.buildDir, 'vite/services'))))],
+    }))
   }
 
   // a file added to or removed from a scanned directory changes the set of imports available
