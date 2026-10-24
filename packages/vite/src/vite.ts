@@ -214,7 +214,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ClientManifestPlugin(nuxt),
         // After ClientManifestPlugin so its dev `clientManifest` override wins.
         ViteNodePlugin(nuxt),
-        ServerEntryPlugin(nuxt, entry),
+        ServerEntryPlugin(nuxt, serverEntry),
         DevServerPlugin(nuxt),
         TemplateHMRPlugin(nuxt),
         // lower decorators after Vue SFC compilation and TypeScript stripping
