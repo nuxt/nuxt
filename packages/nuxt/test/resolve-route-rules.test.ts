@@ -57,6 +57,22 @@ describe('resolveRouteRules', () => {
     expect(resolveRouteRules(matcher, '/x/abc', false)).toEqual({})
   })
 
+  it('should match a regex constraint whose meaning changes when lower-cased when folding', () => {
+    const matcher = createMatcher({ '/protected/:slug([A-z]+)': { appMiddleware: { auth: true } } })
+    expect(resolveRouteRules(matcher, '/protected/_', true)).toEqual({ appMiddleware: { auth: true } })
+    expect(resolveRouteRules(matcher, '/Protected/abc', true)).toEqual({ appMiddleware: { auth: true } })
+    expect(resolveRouteRules(matcher, '/protected/123', true)).toEqual({})
+  })
+
+  it('should keep rules matched case-insensitively when the original-case lookup matches more', () => {
+    const matcher = createMatcher({
+      '/Admin/**': { appMiddleware: { auth: true } },
+      '/admin/:x([A-z])': { ssr: false },
+      '/admin/:y([A-z]+)': { prerender: true },
+    })
+    expect(resolveRouteRules(matcher, '/admin/_', true)).toEqual({ appMiddleware: { auth: true }, ssr: false, prerender: true })
+  })
+
   it('should match a literal character percent-encoded in a constraint', () => {
     const matcher = createMatcher({ '/x/:id(a%2Eb)': { prerender: true } })
     expect(resolveRouteRules(matcher, '/x/a.b', true)).toEqual({ prerender: true })

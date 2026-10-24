@@ -15,7 +15,7 @@ import { resolveModulePath } from 'exsolve'
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, normalizePathCode, resolveRouteRulesRoutes } from './utils/route-rules.ts'
+import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, resolveRouteRulesCode, resolveRouteRulesRoutes } from './utils/route-rules.ts'
 import type { RouteRulesRouter } from './utils/route-rules.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
@@ -806,7 +806,7 @@ export const routeRulesTemplate: NuxtTemplate = {
     // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
     // folded lookup and silently lose its protections. `sensitive` can also come from
     // `app/router.options.ts` (runtime-only), so emit both a decoded and a decoded+folded
-    // matcher and pick at runtime.
+    // matcher: a sensitive lookup uses the first, an insensitive one both.
     const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
     const warned = warnedKeyCollisions.get(nuxt) ?? warnedKeyCollisions.set(nuxt, new Set()).get(nuxt)!
     // rule keys are matched against router paths, which carry no base URL
@@ -853,18 +853,10 @@ export const routeRulesTemplate: NuxtTemplate = {
     return cache[cacheKey] = [
       `import { defu } from 'defu'`,
       needsRouterOptions ? `import routerOptions from '#build/router.options.mjs'` : ``,
-      needsRouterOptions ? `const sensitiveMatcher = ${sensitiveMatcher}` : ``,
-      needsRouterOptions
-        ? (foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`)
-        : `const foldedMatcher = ${foldedMatcher}`,
-      normalizePathCode,
-      needsRouterOptions
-        ? [
-            `export default (path) => routerOptions.sensitive`,
-            `  ? defu({}, ...sensitiveMatcher('', normalizePath(path, false)).map(r => r.data).reverse())`,
-            `  : defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
-          ].join('\n')
-        : `export default path => defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
+      `const sensitiveMatcher = ${sensitiveMatcher}`,
+      `const foldedMatcher = ${foldedMatcher === sensitiveMatcher ? 'sensitiveMatcher' : foldedMatcher}`,
+      resolveRouteRulesCode,
+      `export default path => resolveRouteRules(sensitiveMatcher, foldedMatcher, path, ${needsRouterOptions ? '!routerOptions.sensitive' : 'true'})`,
     ].filter(Boolean).join('\n')
   },
 }

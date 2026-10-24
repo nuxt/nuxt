@@ -23,6 +23,8 @@ export interface RouteRulesRoute {
 /** A router over route rules, matching every pattern a path matches rather than the closest one. */
 export interface RouteRulesRouter {
   routes: RouteRulesRoute[]
+  /** The same rules with keys in their original case, set on a case-folded router. */
+  unfolded?: RouteRulesRouter
   matchAll (method: string, path: string): Record<string, any>[]
   compileToString (options?: RouterCompilerOptions): string
 }
@@ -173,13 +175,16 @@ export function resolveRouteRulesRoutes (nuxt: Nuxt): { routes: RouteRulesRoute[
 /**
  * Resolve the route rules that apply to `path`, merged most-specific-last.
  *
- * The router is expected to have been built with keys normalised by
- * {@link normalizeRouteRuleKey} under the same `fold`, so that lookups match them.
+ * The router is expected to have been built by {@link createNormalizedRouteRulesRouter}
+ * under the same `fold`, so that lookups match its keys. With `fold`, `path` is also looked
+ * up in its original case against the {@link RouteRulesRouter.unfolded} keys, and the rules
+ * it resolves are merged under those of the folded lookup.
  *
  * @internal
  */
 export function resolveRouteRules<T extends Record<string, any>> (router: RouteRulesRouter, path: string, fold: boolean): T {
-  return defu({} as T, ...router.matchAll('', normalizeRouteRulePath(path, fold)).reverse())
+  const rules = defu({} as T, ...router.matchAll('', normalizeRouteRulePath(path, fold)).reverse())
+  return fold && router.unfolded ? defu(rules, resolveRouteRules<T>(router.unfolded, path, false)) as T : rules
 }
 
 /**
@@ -228,8 +233,28 @@ export const normalizePathCode: string = [
 ].join('\n')
 
 /**
+ * Source of {@link normalizePathCode} and a `resolveRouteRules(sensitiveMatcher, foldedMatcher, path, fold)`
+ * helper over two compiled `matchAll` matchers, the first built from keys normalised without `fold`
+ * and the second with it. The helper resolves rules as {@link resolveRouteRules} does, and
+ * expects `defu` in scope.
+ *
+ * @internal
+ */
+export const resolveRouteRulesCode: string = [
+  normalizePathCode,
+  `const mergeRouteRules = matches => defu({}, ...matches.map(r => r.data).reverse())`,
+  `const resolveRouteRules = (sensitiveMatcher, foldedMatcher, path, fold) => {`,
+  `  const sensitive = mergeRouteRules(sensitiveMatcher('', normalizePath(path, false)))`,
+  `  return fold ? defu(mergeRouteRules(foldedMatcher('', normalizePath(path, true))), sensitive) : sensitive`,
+  `}`,
+].join('\n')
+
+/**
  * Build a route-rules router whose keys are normalised by {@link normalizeRouteRuleKey},
  * mirroring the normalised lookup path used at runtime.
+ *
+ * With `fold`, the router also carries an {@link RouteRulesRouter.unfolded} counterpart for
+ * {@link resolveRouteRules} to consult.
  *
  * `onDuplicate` is called when two distinct keys normalise onto the same path; the later
  * key wins.
@@ -248,5 +273,9 @@ export function createNormalizedRouteRulesRouter (routes: RouteRulesRoute[], bas
     normalizedKeys.set(key, route.route)
     return { ...route, route: key }
   })
-  return createRouteRulesRouter(normalizedRoutes, normalizeRouteRulePath(String(baseURL || ''), fold))
+  const router = createRouteRulesRouter(normalizedRoutes, normalizeRouteRulePath(String(baseURL || ''), fold))
+  if (fold) {
+    router.unfolded = createNormalizedRouteRulesRouter(routes, baseURL, false)
+  }
+  return router
 }
