@@ -46,6 +46,10 @@ describe('payload route rules', () => {
         routeRules: {
           'GET /route-rules/get-swr': { swr: 60 },
           'POST /route-rules/post-swr': { swr: 60 },
+          '/route-rules/get-opt-out': { swr: 60 },
+          'GET /route-rules/get-opt-out': { cache: false },
+          '/route-rules/get-spa': { swr: 60 },
+          'GET /route-rules/get-spa': { ssr: false },
         },
       },
     })
@@ -53,11 +57,12 @@ describe('payload route rules', () => {
     const nitro = (nuxt as any)._nitro
     await nitro.hooks.callHook('build:before', nitro)
 
-    expect(nitro.options.routeRules['GET /route-rules/get-swr/_payload.json']).toMatchObject({
+    expect(nitro.options.routeRules['/route-rules/get-swr/_payload.json']).toMatchObject({
       ssr: true,
       cache: { swr: true },
     })
     expect(Object.keys(nitro.options.routeRules).filter(key => key.includes('post-swr'))).toEqual(['POST /route-rules/post-swr'])
+    expect(Object.keys(nitro.options.routeRules).filter(key => key.endsWith('/_payload.json') && (key.includes('get-opt-out') || key.includes('get-spa')))).toEqual([])
 
     await nuxt.close()
   })

@@ -433,11 +433,15 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nuxt.hook('nitro:init', (nitro) => {
       nitro.hooks.hook('build:before', async (nitro) => {
         const updatedRules: Record<string, Record<string, any>> = {}
-        for (const { route, method, data: value } of resolveMethodRouteRulesRoutes(nitro.routing.routeRules.routes)) {
+        const pageRules = new Map<string, Record<string, any>>()
+        for (const { route, data } of resolveMethodRouteRulesRoutes(nitro.routing.routeRules.routes)) {
+          pageRules.set(route, defu(data, pageRules.get(route)))
+        }
+        for (const [route, value] of pageRules) {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
             if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
-              const payloadKey = (method ? `${method} ` : '') + (route === '/' ? '' : route) + '/_payload.json'
+              const payloadKey = (route === '/' ? '' : route) + '/_payload.json'
               const defaults = { ssr: true } as Record<string, any>
               for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
                 if (key in value) {
