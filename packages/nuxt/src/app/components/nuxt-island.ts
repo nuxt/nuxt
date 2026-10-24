@@ -1,23 +1,16 @@
 import type { Component, DefineSetupFnComponent, PropType, RendererNode, SlotsType, VNode } from 'vue'
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
-import { debounce } from 'perfect-debounce'
-import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, shallowRef, toRaw, withMemo } from 'vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL } from 'ufo'
 
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
-import { createError } from '../composables/error'
-import { prerenderRoutes, useRequestFetch } from '../composables/ssr'
-import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
-import { getIslandHash, serializeIslandProps } from '../island-hash'
+import { useIslandFetch } from './island-fetch'
 import { renderDiagnostics } from '../diagnostics/render'
 
-import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
-import { $fetch } from '#build/fetch'
+import { appBaseURL, selectiveClient } from '#build/nuxt.config.mjs'
 
-const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
 const DATA_ISLAND_UID_RE = /(?<=<[^<>"]*(?:"[^"]*"[^<>"]*)*\s)data-island-uid(="")?(?=[\s/>])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
@@ -103,48 +96,68 @@ const NuxtIsland = defineComponent({
     const teleportKey = shallowRef(0)
     const key = shallowRef(0)
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
-    const error = ref<unknown>(null)
     const nuxtApp = useNuxtApp()
-    const serializedProps = computed(() => serializeIslandProps(props.props))
-    const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
     const instance = getCurrentInstance()!
-    const islandFetch = import.meta.server ? useRequestFetch() : $fetch
+    const uid = ref<string>('')
+    const payloads: Partial<Pick<NuxtIslandResponse, 'slots' | 'components'>> = {}
+    const ssrHTML = ref<string>('')
 
-    let activeHead: ActiveHeadEntry<SerializableHead>
+    const { error, islandKey, fetchComponent, load } = useIslandFetch({
+      props,
+      uid,
+      emit,
+      toPayload: (result) => {
+        const revive: Partial<NuxtIslandResponse> = {}
+        if (result.props) { revive.props = result.props }
+        if (result.slots) { revive.slots = result.slots }
+        if (result.components) { revive.components = result.components }
+        if (result.head) { revive.head = result.head }
+        return { revive, data: result }
+      },
+      apply: async (res) => {
+        ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
+        key.value++
+        payloads.slots = res.slots || {}
+        payloads.components = res.components || {}
+
+        if (import.meta.server && res.components && Object.keys(res.components).length) {
+          const parentIslandContext = nuxtApp.ssrContext?.islandContext
+
+          // parent response needs to keep the nested islands UID
+          if (parentIslandContext) {
+            for (const [id, { html: _, ...component }] of Object.entries(res.components)) {
+              parentIslandContext.components[id] = { ...component, uid: uid.value }
+            }
+          }
+        }
+
+        if (selectiveClient && import.meta.client) {
+          if (canLoadClientComponent.value && res.components) {
+            await loadComponents(props.source, res.components)
+          }
+        }
+
+        if (import.meta.client) {
+          // must await next tick for Teleport to work correctly with static node re-rendering
+          nextTick(() => {
+            canTeleport = true
+            teleportKey.value++
+          })
+        }
+      },
+    })
 
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
-    onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
-    function setPayload (key: string, result: NuxtIslandResponse) {
-      const toRevive: Partial<NuxtIslandResponse> = {}
-      if (result.props) { toRevive.props = result.props }
-      if (result.slots) { toRevive.slots = result.slots }
-      if (result.components) { toRevive.components = result.components }
-      if (result.head) { toRevive.head = result.head }
-      nuxtApp.payload.data[key] = {
-        __nuxt_island: {
-          key,
-          ...(import.meta.server && import.meta.prerender)
-            ? {}
-            : { params: { ...props.context, props: props.props ? serializedProps.value : undefined } },
-          result: toRevive,
-        },
-        ...result,
-      }
-    }
-
-    const payloads: Partial<Pick<NuxtIslandResponse, 'slots' | 'components'>> = {}
 
     if (instance.vnode.el) {
-      const slots = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots
+      const slots = toRaw(nuxtApp.payload.data[islandKey.value])?.slots
       if (slots) { payloads.slots = slots }
       if (selectiveClient) {
-        const components = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components
+        const components = toRaw(nuxtApp.payload.data[islandKey.value])?.components
         if (components) { payloads.components = components }
       }
     }
-
-    const ssrHTML = ref<string>('')
 
     if (import.meta.client && instance.vnode?.el) {
       if (import.meta.dev) {
@@ -169,13 +182,13 @@ const NuxtIsland = defineComponent({
         }
       }
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
-      const key = `${props.name}_${hashId.value}`
+      const key = islandKey.value
       nuxtApp.payload.data[key] ||= {}
       // clear all data-island-uid to avoid conflicts when saving into payloads
       nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), `data-island-uid=""`)
     }
 
-    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
+    uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] || getId()
 
     const currentSlots = new Set(Object.keys(slots))
     const availableSlots = computed(() => new Set([...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1])))
@@ -209,134 +222,15 @@ const NuxtIsland = defineComponent({
       return html
     })
 
-    const head = injectHead()
-
-    async function _fetchComponent (force = false) {
-      const key = `${props.name}_${hashId.value}`
-
-      if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
-
-      const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
-      if (import.meta.server && import.meta.prerender) {
-        nuxtApp.runWithContext(() => prerenderRoutes(url))
-      }
-      // TODO: Validate response
-      // $fetch handles `app.baseURL` for relative URLs
-      const r = await islandFetch.raw<NuxtIslandResponse>(url, {
-        // custom island sources should not be resolved against `app.baseURL` (#23093)
-        ...(props.source ? { baseURL: '' } : {}),
-        query: {
-          ...props.context,
-          props: props.props ? serializedProps.value : undefined,
-        },
-        responseType: 'json',
-        ignoreResponseError: true,
-      })
-      // the island render is a separate request, so its hints only reach the page that
-      // embedded it over the wire, including when the render failed part-way
-      // TODO: support passing on more headers
-      if (import.meta.server && import.meta.prerender) {
-        const hints = r.headers.get('x-nuxt-prerender')
-        if (hints) {
-          nuxtApp.runWithContext(() => prerenderRoutes(hints.split(',').map(hint => decodeURIComponent(hint.trim()))))
-        }
-      }
-      if (!r.ok) {
-        throw createError({ status: r.status, statusText: r.statusText })
-      }
-      try {
-        const result = r._data!
-        setPayload(key, result)
-        return result
-      } catch (e: any) {
-        if (r.status !== 200) {
-          throw renderDiagnostics.NUXT_E4012({ name: props.name, status: r.status, detail: e.message, cause: e })
-        }
-        throw e
-      }
-    }
-
-    async function fetchComponent (force = false) {
-      nuxtApp[pKey] ||= {}
-      nuxtApp[pKey][uid.value] ||= _fetchComponent(force).finally(() => {
-        delete nuxtApp[pKey]![uid.value]
-      })
-      try {
-        const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-
-        ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
-        key.value++
-        error.value = null
-        payloads.slots = res.slots || {}
-        payloads.components = res.components || {}
-
-        if (import.meta.server && res.components && Object.keys(res.components).length) {
-          const parentIslandContext = nuxtApp.ssrContext?.islandContext
-
-          // parent response needs to keep the nested islands UID
-          if (parentIslandContext) {
-            for (const [id, { html: _, ...component }] of Object.entries(res.components)) {
-              parentIslandContext.components[id] = { ...component, uid: uid.value }
-            }
-          }
-        }
-
-        if (selectiveClient && import.meta.client) {
-          if (canLoadClientComponent.value && res.components) {
-            await loadComponents(props.source, res.components)
-          }
-        }
-
-        if (res?.head) {
-          if (activeHead) {
-            activeHead.patch(res.head)
-          } else {
-            activeHead = head.push(res.head)
-          }
-        }
-
-        if (import.meta.client) {
-          // must await next tick for Teleport to work correctly with static node re-rendering
-          nextTick(() => {
-            canTeleport = true
-            teleportKey.value++
-          })
-        }
-      } catch (e) {
-        error.value = e
-        emit('error', e)
-      }
-    }
-
     expose({
       refresh: () => fetchComponent(true),
     })
 
-    if (import.meta.hot) {
-      import.meta.hot.on(`nuxt-server-component:${props.name}`, () => {
-        fetchComponent(true)
-      })
-    }
-
-    if (import.meta.client) {
-      watch(props, debounce(() => fetchComponent(), 100), { deep: true })
-    }
-
-    // Restore head entries from SSR payload during hydration
-    if (import.meta.client && instance.vnode.el) {
-      const headData = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.head
-      if (headData) {
-        activeHead = head.push(headData)
+    await load(() => {
+      if (selectiveClient && canLoadClientComponent.value) {
+        return loadComponents(props.source, payloads.components)
       }
-    }
-
-    if (import.meta.client && !instance.vnode.el && props.lazy) {
-      fetchComponent()
-    } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {
-      await fetchComponent()
-    } else if (selectiveClient && canLoadClientComponent.value) {
-      await loadComponents(props.source, payloads.components)
-    }
+    })
 
     return (_ctx: any, _cache: any) => {
       if (!html.value || error.value) {

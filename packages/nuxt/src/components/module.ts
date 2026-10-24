@@ -327,6 +327,7 @@ export default defineNuxtModule<ComponentsOptions>({
     }
 
     if (nuxt.options.experimental.componentIslands) {
+      const onigiriIslands = nuxt.options.experimental.componentIslands === 'vue-onigiri'
       const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
 
       addVitePlugin({
@@ -360,7 +361,10 @@ export default defineNuxtModule<ComponentsOptions>({
         return paths
       }
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient }), { client: false, prepend: true })
+      // vue-onigiri islands carry no slot or `nuxt-client` rewrites
+      if (!onigiriIslands) {
+        addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient }), { client: false, prepend: true })
+      }
       addBuildPlugin(RenderListPlugin(), { client: false })
 
       if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {

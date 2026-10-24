@@ -7,12 +7,15 @@ import { renderDiagnostics } from '../diagnostics/render'
 import { findReservedRootIslandPropKey } from '../island-props'
 
 import { islandComponents, pageIslandRoutes, providePageIslandDepth } from '#build/components.islands.mjs'
+import { onigiriEnabled } from '#build/nuxt.config.mjs'
 
 interface IslandRendererProps {
   context: { name: string, props?: Record<string, any> }
 }
 
 const PAGE_ISLAND_PREFIX = 'page_'
+// vue-onigiri islands are rebuilt from their markers, so their root carries no uid
+const ROOT_ATTRS = onigiriEnabled ? {} : { 'data-island-uid': '' }
 
 const IslandRenderer = defineComponent({
   name: 'IslandRenderer',
@@ -63,7 +66,7 @@ const IslandRenderer = defineComponent({
       })
     }
 
-    return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })
+    return () => createVNode(component || 'span', { ...props.context.props, ...ROOT_ATTRS })
   },
 }) as unknown as DefineSetupFnComponent<IslandRendererProps>
 
