@@ -18,7 +18,7 @@ import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { ImpoundPlugin } from 'impound'
+import { ImpoundPlugin, type ImpoundViolationInfo } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import { runtimeDir as nitroRuntimeDir, runtimeDependencies } from 'nitro/meta'
 
@@ -612,7 +612,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         // excludeFiles: skips when resolved import target matches (e.g. srvx/node after resolution).
         // onViolation: fallback when id is bare (srvx) before resolution or when excludeFiles misses edge cases.
         excludeFiles: [IMPORT_PROTECTION_ALLOWED.srvxPattern],
-        onViolation (info) {
+        onViolation (info: ImpoundViolationInfo) {
           // Fallback: when id is bare/unresolved, message contains importer path (e.g. "from `node_modules/...`")
           if (IMPORT_PROTECTION_ALLOWED.isAllowed(info.id ?? '', info.message)) {
             return false
