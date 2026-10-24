@@ -52,6 +52,17 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(bundle).not.toContain('EmptyShallowRef')
   })
 
+  it('does not ship the app in the server bundle of a spa build', async () => {
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(spaRootDir, '.output/server') }))
+        .map(file => fsp.readFile(join(spaRootDir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    const client = await readClientBundle(join(spaRootDir, '.output/public'))
+
+    expect(server).not.toContain('Hello World!')
+    expect(client).toContain('Hello World!')
+  })
+
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
