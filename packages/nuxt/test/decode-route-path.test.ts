@@ -78,26 +78,28 @@ describe('normalizeRouteRulePath', () => {
 })
 
 describe('normalizeRouteRuleKey', () => {
-  it('should not fold regex constraints', () => {
+  it('should fold regex constraints but not their escape sequences', () => {
     expect(normalizeRouteRuleKey('/X/:id(\\D+)', true)).toBe('/x/:id(\\D+)')
     expect(normalizeRouteRuleKey('/X/:id(\\W|\\S|\\B)/Y', true)).toBe('/x/:id(\\W|\\S|\\B)/y')
-    expect(normalizeRouteRuleKey('/:a(\\P{Lu}+)-:b([A-Z](?:\\D))', true)).toBe('/:a(\\P{Lu}+)-:b([A-Z](?:\\D))')
-    expect(normalizeRouteRuleKey('/X/:id(\\D+)', false)).toBe('/X/:id(\\D+)')
+    expect(normalizeRouteRuleKey('/:a(\\P{Lu}+)-:b([A-Z](?:\\D))', true)).toBe('/:a(\\P{Lu}+)-:b([a-z](?:\\D))')
+    expect(normalizeRouteRuleKey('/:role(Admin|User)', true)).toBe('/:role(admin|user)')
+    expect(normalizeRouteRuleKey('/X/:id([A-Z]\\D+)', false)).toBe('/X/:id([A-Z]\\D+)')
   })
 
   it('should treat escaped and bracketed parentheses as part of their group', () => {
-    expect(normalizeRouteRuleKey('/A\\(B/:id([)]A)C', true)).toBe('/a\\(b/:id([)]A)c')
-    expect(normalizeRouteRuleKey('/A/:id(\\)A)B', true)).toBe('/a/:id(\\)A)b')
+    expect(normalizeRouteRuleKey('/A\\(B/:id([)]A)C', true)).toBe('/a\\(b/:id([)]a)c')
+    expect(normalizeRouteRuleKey('/A/:id(\\)A)B', true)).toBe('/a/:id(\\)a)b')
     expect(normalizeRouteRuleKey('/A/:id(\\D', true)).toBe('/a/:id(\\D')
   })
 
   it('should decode constraints and literals', () => {
-    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', true)).toBe('/café/:id(café|CAFÉ)')
+    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', true)).toBe('/café/:id(café|café)')
+    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', false)).toBe('/CafÉ/:id(café|CAFÉ)')
   })
 
   it('should decode percent-encoded regex syntax in constraints to a literal match', () => {
     expect(normalizeRouteRuleKey('/:id(a%5Cd%2E%5B%2D%5D)', true)).toBe('/:id(a\\\\d\\.\\[\\-\\])')
-    expect(normalizeRouteRuleKey('/:id(a%2Fb%3Fc)', true)).toBe('/:id(a%2Fb%3Fc)')
+    expect(normalizeRouteRuleKey('/:id(a%2Fb%3Fc)', false)).toBe('/:id(a%2Fb%3Fc)')
     expect(normalizeRouteRuleKey('/:id(100%)', true)).toBe('/:id(100%)')
   })
 })

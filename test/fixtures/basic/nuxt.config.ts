@@ -205,7 +205,7 @@ export default withMatrix({
       '/Route-Rules/Case-Insensitive': { appMiddleware: 'route-rules-middleware' },
       // Decoded key must still apply to the percent-encoded path generated for the page.
       '/route-rules/测试': { appMiddleware: 'route-rules-middleware' },
-      '/route-rules/constrained/:id(\\D+)': { appMiddleware: 'route-rules-middleware' },
+      '/route-rules/constrained/:id([A-Z]\\D*)': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
       '/spa-plugin-redirect/**': { ssr: false },
       '/no-scripts': { noScripts: true },

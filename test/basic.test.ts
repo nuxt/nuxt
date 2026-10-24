@@ -312,7 +312,9 @@ describe('route rules', () => {
   })
 
   it('should run appMiddleware from a route rule with a case-sensitive regex constraint', async () => {
-    expect(await $fetch<string>('/route-rules/constrained/abc')).toContain('Hello from routeRules!')
+    for (const path of ['/route-rules/constrained/abc', '/route-rules/constrained/ABC']) {
+      expect(await $fetch<string>(path), path).toContain('Hello from routeRules!')
+    }
     expect(await $fetch<string>('/route-rules/constrained/123')).not.toContain('Hello from routeRules!')
   })
 

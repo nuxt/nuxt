@@ -51,16 +51,20 @@ describe('route rules template', () => {
   it('applies `appMiddleware` on a case-sensitive regex constraint when case-insensitive', async () => {
     const contents = await getRouteRulesTemplate(false, {
       '/y/:id(\\D+)': { appMiddleware: 'auth' },
+      '/z/:role(Admin|[A-Z]\\d)': { appMiddleware: 'admin' },
     })
     const matcher = await evaluateMatcher(contents)
     expect(matcher('/y/abc').appMiddleware).toEqual({ auth: true })
     expect(matcher('/Y/ABC').appMiddleware).toEqual({ auth: true })
     expect(matcher('/y/123').appMiddleware).toBeUndefined()
+    expect(matcher('/z/Admin').appMiddleware).toEqual({ admin: true })
+    expect(matcher('/z/A1').appMiddleware).toEqual({ admin: true })
+    expect(matcher('/z/AB').appMiddleware).toBeUndefined()
   })
 })
 
 async function evaluateMatcher (contents: string) {
-  const code = contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return')
+  const code = contents.replace(/^import .*$/gm, '').replace('export default', 'return')
   const { defu } = await import('defu')
-  return new Function('defu', code)(defu) as (path: string) => Record<string, any>
+  return new Function('defu', 'routerOptions', code)(defu, {}) as (path: string) => Record<string, any>
 }

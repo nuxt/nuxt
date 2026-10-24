@@ -42,20 +42,25 @@ export function normalizeRouteRulePath (path: string, fold: boolean): string {
 }
 
 /**
- * Normalise a route-rule key as {@link normalizeRouteRulePath} does, except that regex
- * constraints (`:id(\\D+)`) are never case-folded, and a percent-encoded character in one
+ * Normalise a route-rule key as {@link normalizeRouteRulePath} does, except that within regex
+ * constraints (`:id(\\D+)`) escape sequences keep their case, and a percent-encoded character
  * decodes to a literal match of that character rather than to regex syntax.
  *
  * @internal
  */
 export function normalizeRouteRuleKey (key: string, fold: boolean): string {
   return splitRouteConstraints(key)
-    .map(part => part.constraint ? decodeRouteConstraint(part.text) : normalizeRouteRulePath(part.text, fold))
+    .map((part) => {
+      if (!part.constraint) { return normalizeRouteRulePath(part.text, fold) }
+      const decoded = decodeRouteConstraint(part.text)
+      return fold ? decoded.replace(CONSTRAINT_TOKEN_RE, token => token[0] === '\\' ? token : token.toLowerCase()) : decoded
+    })
     .join('')
 }
 
 const ENCODED_RUN_RE = /(?:%[\da-f]{2})+/gi
 const REGEX_SYNTAX_RE = /[\\^$.*+?()[\]{}|-]/g
+const CONSTRAINT_TOKEN_RE = /\\p\{[^}]*\}|\\[\s\S]?|[^\\]+/gi
 
 function decodeRouteConstraint (constraint: string): string {
   return constraint.replace(ENCODED_RUN_RE, encoded => decodeRoutePath(encoded).replace(REGEX_SYNTAX_RE, '\\$&'))
