@@ -105,6 +105,8 @@ In addition to `useAsyncData` options, `createUseAsyncData` accepts an `addons` 
 For example, an addon that refreshes the data whenever the window regains focus, gated behind a custom `refreshOnFocus` option, so callers opt in per call:
 
 ```ts [app/composables/useCustomAsyncData.ts]
+import { useWindowFocus } from '@vueuse/core'
+
 const refreshOnFocus = defineUseAsyncDataAddon({
   // augment the call-site options for the custom useAsyncData instance 👇
   setup: (options: UseAsyncDataAddonOptions<{ refreshOnFocus?: boolean }>) => {
