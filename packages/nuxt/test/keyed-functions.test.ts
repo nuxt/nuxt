@@ -14,6 +14,7 @@ describe('keyed functions plugin - reactive getter (dev mode)', () => {
       getKeyedFunctions: () => keyedFunctions,
       alias: {},
       getAutoImports: () => Promise.resolve([]),
+      rootDir: '/',
       appDir: '/nuxt/dist/app/',
       requireSource: false,
       dev: true,
@@ -53,6 +54,7 @@ useNewComposable()
       getKeyedFunctions: () => keyedFunctions,
       alias: {},
       getAutoImports: () => Promise.resolve([]),
+      rootDir: '/',
       appDir: '/nuxt/dist/app/',
       requireSource: false,
       dev: true,
@@ -82,6 +84,7 @@ useExisting()
       getKeyedFunctions: () => keyedFunctions,
       alias: {},
       getAutoImports: () => Promise.resolve([]),
+      rootDir: '/',
       appDir: '/nuxt/dist/app/',
       requireSource: false,
       dev: false,
@@ -154,7 +157,7 @@ describe('keyed functions plugin', () => {
     },
   ]
 
-  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/', requireSource: false }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), rootDir: '/', appDir: '/nuxt/dist/app/', requireSource: false }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should add hash when there is none already provided', async () => {
     const code = `
@@ -241,7 +244,7 @@ useRenamedDefault()`
 
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-    KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/', requireSource: false }).raw({}, {} as any)
+    KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), rootDir: '/', appDir: '/nuxt/dist/app/', requireSource: false }).raw({}, {} as any)
 
     expect(warn).toHaveBeenCalledWith(expect.stringMatching(
       /Duplicate keyed function name `useKeyTwo`.* with the same source `#app` found\. Overwriting the existing entry\./,
@@ -888,7 +891,7 @@ pkg.app.useKey()
   })
 
   describe('with `requireSource`', () => {
-    const strictPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), appDir: '/nuxt/dist/app/', requireSource: true }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+    const strictPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve(autoImports), rootDir: '/', appDir: '/nuxt/dist/app/', requireSource: true }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
     it('should still inject keys for functions with a matching source', async () => {
       const code = `
@@ -929,7 +932,7 @@ describe('core keyed functions', () => {
     { name: 'useLazyAsyncData', argumentLength: 3, source: '#app/composables/asyncData' },
     { name: 'useLazyFetch', argumentLength: 3, source: '#app/composables/fetch' },
   ]
-  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve([]), appDir: '/nuxt/dist/app/', requireSource: false }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+  const transformPlugin = KeyedFunctionsPlugin({ keyedFunctions, alias: {}, getAutoImports: () => Promise.resolve([]), rootDir: '/', appDir: '/nuxt/dist/app/', requireSource: false }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
 
   it('should detect string type keys and not add a hash', async () => {
     const code = `
@@ -1054,5 +1057,32 @@ useLazyAsyncData('key', () => $fetch('/api/data'), { server: false })
       `
       expect((await transformPlugin.transform.handler(code, 'plugin.ts'))?.code.trim()).toMatchInlineSnapshot(`undefined`)
     })
+  })
+})
+
+describe('keyed functions plugin - project location', () => {
+  const keyedFunctions: KeyedFunction[] = [
+    { name: 'useAsyncData', argumentLength: 3, source: '/nuxt/dist/app/composables/asyncData' },
+  ]
+
+  async function getKey (rootDir: string, id: string) {
+    const plugin = KeyedFunctionsPlugin({ keyedFunctions, alias: { '#app': '/nuxt/dist/app' }, getAutoImports: () => Promise.resolve([]), appDir: '/nuxt/dist/app/', rootDir, requireSource: false }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => Promise<{ code: string } | null> } }
+    const code = `
+import { useAsyncData } from '#app/composables/asyncData'
+useAsyncData(() => $fetch('/api/data'))
+    `
+    const key = (await plugin.transform.handler(code, id))?.code.match(/'(\$\S+)' \/\* nuxt-injected \*\//)?.[1]
+    expect(key).toBeDefined()
+    return key
+  }
+
+  it('should generate the same key when the project is built from another directory', async () => {
+    for (const file of ['project/app/pages/index.vue', 'layer/app/pages/index.vue']) {
+      expect(await getKey('/home/runner/work/project', `/home/runner/work/${file}`)).toBe(await getKey('/builds/project', `/builds/${file}`))
+    }
+  })
+
+  it('should generate different keys for different files', async () => {
+    expect(await getKey('/builds/project', '/builds/project/app/pages/index.vue')).not.toBe(await getKey('/builds/project', '/builds/layer/app/pages/index.vue'))
   })
 })

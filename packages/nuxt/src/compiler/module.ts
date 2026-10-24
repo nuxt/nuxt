@@ -60,6 +60,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         getKeyedFunctions: () => normalizedKeyedFunctions,
         alias: nuxt.options.alias,
         getAutoImports: () => unimport?.getImports() || Promise.resolve([]),
+        rootDir: nuxt.options.rootDir,
         appDir: nuxt.options.appDir,
         requireSource: nuxt.options.future.compatibilityVersion >= 5,
         dev: nuxt.options.dev,
