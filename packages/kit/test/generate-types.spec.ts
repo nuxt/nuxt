@@ -1,5 +1,6 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
+import { Worker } from 'node:worker_threads'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
@@ -548,5 +549,44 @@ describe('writeTypes', () => {
         expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
       }
     })
+  })
+
+  it('should never expose a partially written tsconfig to concurrent readers', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
+    const buildDir = join(rootDir, '.nuxt')
+    const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
+    const tsConfigPath = join(buildDir, 'tsconfig.json')
+    await writeTypes(nuxt)
+
+    const reader = new Worker(`
+      const { readFileSync } = require('node:fs')
+      const { parentPort, workerData } = require('node:worker_threads')
+      let reads = 0
+      let invalid = 0
+      let stopped = false
+      parentPort.on('message', () => { stopped = true })
+      function poll () {
+        reads++
+        try { JSON.parse(readFileSync(workerData, 'utf8')) } catch { invalid++ }
+        if (stopped) { parentPort.postMessage({ reads, invalid }) } else { setImmediate(poll) }
+      }
+      poll()
+    `, { eval: true, workerData: tsConfigPath })
+
+    try {
+      for (let i = 0; i < 50; i++) {
+        nuxt.options.alias.changing = join(rootDir, 'aliases', String(i))
+        await writeTypes(nuxt)
+      }
+      const result = await new Promise<{ reads: number, invalid: number }>((resolve) => {
+        reader.once('message', resolve)
+        reader.postMessage('stop')
+      })
+      expect(result.reads).toBeGreaterThan(0)
+      expect(result.invalid).toBe(0)
+    } finally {
+      await reader.terminate()
+      await rm(rootDir, { recursive: true, force: true })
+    }
   })
 })
