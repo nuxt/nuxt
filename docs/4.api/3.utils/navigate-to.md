@@ -148,7 +148,7 @@ type OpenWindowFeatures = {
   & XOR<{ top?: number }, { screenY?: number }>
 ```
 
-Inside route middleware, `navigateTo()` still returns the original route at runtime so the middleware runner can follow the redirect. That route is not part of the signature above. With [typed pages](/docs/guide/going-further/experimental-features#typedpages), `RouteLocationRaw` is a union of every route, and a function that returns `navigateTo()` next to another value then exceeds TypeScript's union limit.
+Inside route middleware, an internal `navigateTo()` still returns the original route at runtime so the middleware runner can follow the redirect. `options.open` and a client-side external redirect do not. Those calls return `Promise<void>` or `false`. The route is not part of the signature above. With [typed pages](/docs/guide/going-further/experimental-features#typedpages), `RouteLocationRaw` is a union of every route, and a function that returns `navigateTo()` next to another value then exceeds TypeScript's union limit.
 
 ## Parameters
 

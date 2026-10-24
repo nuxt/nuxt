@@ -191,7 +191,7 @@ function encodeForHtmlAttr (value: string): string {
  * Can be called on the server and on the client, within pages, route middleware, plugins, and more.
  * @param {RouteLocationRaw | undefined | null} [to] - The route to navigate to. Accepts a route object, string path, `undefined`, or `null`. Defaults to '/'.
  * @param {NavigateToOptions} [options] - Optional customization for controlling the behavior of the navigation.
- * @returns {Promise<void | NavigationFailure | false> | false | void} The navigation result. Inside route middleware the runtime value is still the original route, so the middleware runner can follow the redirect. That route is not part of this signature: with typed pages, `RouteLocationRaw` is a union of every route, and returning it next to another value exceeds TypeScript's union limit (TS2590).
+ * @returns {Promise<void | NavigationFailure | false> | false | void} The navigation result. An internal redirect inside route middleware still returns the original route at runtime, so the middleware runner can follow it. `options.open` and client-side external redirects return `Promise<void>` or `false`. That route is not part of this signature: with typed pages, `RouteLocationRaw` is a union of every route, and returning it next to another value exceeds TypeScript's union limit (TS2590).
  * @see https://nuxt.com/docs/4.x/api/utils/navigate-to
  * @since 3.0.0
  */
