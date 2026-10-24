@@ -39,6 +39,7 @@ import compilerModule from '../compiler/module.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 
 import { resolveDevAppSecret } from './app-secret.ts'
+import { applyCompatibilityDateUpdate } from './compatibility-date.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -320,12 +321,13 @@ async function initNuxt (nuxt: Nuxt) {
                 return _getDefaultNuxtConfig()
               },
               onUpdate (config) {
-                config.compatibilityDate = todaysDate
+                applyCompatibilityDateUpdate(config, todaysDate)
               },
             })
 
             if (res?.configFile) {
-              nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(todaysDate)
+              applyCompatibilityDateUpdate(nuxt.options, todaysDate)
+              nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
               consola.success(`Compatibility date set to \`${todaysDate}\` in \`${displayConfigPath(res.configFile)}\``)
               return
             }
