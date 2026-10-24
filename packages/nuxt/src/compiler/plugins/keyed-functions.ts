@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { hash } from 'ohash'
 
-import { isAbsolute, join, parse } from 'pathe'
+import { isAbsolute, join, parse, relative } from 'pathe'
 import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
@@ -19,6 +19,7 @@ interface KeyedFunctionsOptions {
   keyedFunctions: KeyedFunction[]
   getKeyedFunctions?: () => KeyedFunction[]
   alias: Record<string, string>
+  rootDir: string
   // TODO: remove in Nuxt 5
   appDir: string
   dev?: boolean
@@ -196,6 +197,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
         const s = rolldownString(code, _id, meta)
         let count = 0
+        const relativeID = isAbsolute(_id) ? relative(options.rootDir, _id) : _id
 
         const scopeTracker = new ScopeTracker({
           preserveExitedScopes: true,
@@ -392,7 +394,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
               s.appendLeft(
                 codeIndex + parsedCall.callExpression.end - 1,
-                (parsedCall.callExpression.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${_id}-${++count}`).slice(0, 10) + `' ${NUXT_INJECTED_MARKER}`,
+                (parsedCall.callExpression.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`).slice(0, 10) + `' ${NUXT_INJECTED_MARKER}`,
               )
             })
           },

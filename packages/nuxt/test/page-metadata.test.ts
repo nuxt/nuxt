@@ -31,6 +31,7 @@ function getRouteMeta (contents: string, absolutePath: string, extraExtractionKe
 vi.mock('klona', { spy: true })
 const mockNuxt = vi.hoisted(() => ({
   options: {
+    rootDir: '/',
     experimental: {
       normalizePageNames: false,
     },
@@ -681,13 +682,13 @@ describe('normalizeRoutes', () => {
     expect({ routes, imports }).toMatchInlineSnapshot(`
       {
         "imports": Set {
-          "import { default as indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta } from "/app/pages/index.vue?macro=true";",
+          "import { default as indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta } from "/app/pages/index.vue?macro=true";",
         },
         "routes": "[
         {
           name: "some-custom-name",
-          path: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.path ?? "/",
-          meta: { ...(indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta || {}), ...{"layout":"test","foo":"bar"} },
+          path: indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta?.path ?? "/",
+          meta: { ...(indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta || {}), ...{"layout":"test","foo":"bar"} },
           redirect: "/",
           component: () => import("/app/pages/index.vue")
         }
@@ -738,6 +739,21 @@ describe('normalizeRoutes', () => {
     expect(imports).toEqual(new Set())
   })
 
+  it('should generate the same import names when the project is built from another directory', () => {
+    const importNameFor = (rootDir: string) => {
+      vi.mocked(useNuxt).mockReturnValueOnce({ options: { ...mockNuxt.options, rootDir } } as unknown as Nuxt)
+      const page: NuxtPage = { path: '/', name: 'index', file: `${rootDir}/app/pages/index.vue`, _sync: true }
+      const { imports } = normalizeRoutes([page], new Set(), {
+        clientComponentRuntime: '<client-component-runtime>',
+        serverComponentRuntime: '<server-component-runtime>',
+      })
+      return [...imports][0]?.match(/default as (\w+)/)?.[1]
+    }
+
+    expect(importNameFor('/builds/project')).toBeDefined()
+    expect(importNameFor('/home/runner/work/project')).toBe(importNameFor('/builds/project'))
+  })
+
   it('should import the macro module for pages the scanner cannot parse', async () => {
     const mdPath = '/app/pages/about.md'
     const page: NuxtPage = { path: '/about', name: 'about', file: mdPath }
@@ -752,12 +768,12 @@ describe('normalizeRoutes', () => {
     expect(routes).toMatchInlineSnapshot(`
       "[
         {
-          name: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.name ?? "about",
-          path: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.path ?? "/about",
-          props: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.props ?? false,
-          meta: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta || {},
-          alias: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.alias || [],
-          redirect: aboutovScknMoPDsfPpjLmpwuiAjQpDUQXp2Mg32kpF79y6IMeta?.redirect,
+          name: aboutRqheZq9_Iw3x97GGSQFGSL7qA2iT3W_eWQGyZTyyCMMMeta?.name ?? "about",
+          path: aboutRqheZq9_Iw3x97GGSQFGSL7qA2iT3W_eWQGyZTyyCMMMeta?.path ?? "/about",
+          props: aboutRqheZq9_Iw3x97GGSQFGSL7qA2iT3W_eWQGyZTyyCMMMeta?.props ?? false,
+          meta: aboutRqheZq9_Iw3x97GGSQFGSL7qA2iT3W_eWQGyZTyyCMMMeta || {},
+          alias: aboutRqheZq9_Iw3x97GGSQFGSL7qA2iT3W_eWQGyZTyyCMMMeta?.alias || [],
+          redirect: aboutRqheZq9_Iw3x97GGSQFGSL7qA2iT3W_eWQGyZTyyCMMMeta?.redirect,
           component: () => import("/app/pages/about.md")
         }
       ]"
@@ -787,7 +803,7 @@ describe('normalizeRoutes', () => {
           component: () => import("/app/pages/index.vue")
         },
         {
-          name: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.name,
+          name: indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta?.name,
           path: "/duplicate",
           alias: ["/some-alias"],
           component: () => import("/app/pages/index.vue")
@@ -814,7 +830,7 @@ describe('normalizeRoutes', () => {
       overrideMeta: true,
     })
     expect(imports).toEqual(new Set([
-      'import { default as indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta } from "/app/pages/index.vue?macro=true";',
+      'import { default as indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta } from "/app/pages/index.vue?macro=true";',
     ]))
   })
 
@@ -903,16 +919,16 @@ describe('normalizeRoutes', () => {
     expect({ routes, imports }).toMatchInlineSnapshot(`
       {
         "imports": Set {
-          "import { default as indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta } from "/app/pages/index.vue?macro=true";",
+          "import { default as indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta } from "/app/pages/index.vue?macro=true";",
         },
         "routes": "[
         {
-          name: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.name ?? undefined,
-          path: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.path ?? "/",
-          props: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.props ?? false,
-          meta: { ...(indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta || {}), ...{"layout":"test","foo":"bar"} },
-          alias: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.alias || [],
-          redirect: indexndqPXFtP262szLmLJV4PriPTgAg5k_7f05QyTfosBXQMeta?.redirect,
+          name: indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta?.name ?? undefined,
+          path: indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta?.path ?? "/",
+          props: indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta?.props ?? false,
+          meta: { ...(indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta || {}), ...{"layout":"test","foo":"bar"} },
+          alias: indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta?.alias || [],
+          redirect: indexcpcWNSbn9wmmk6rj_vIV3Lfs0pLXdg5oPT5xBB9CGloMeta?.redirect,
           component: () => import("/app/pages/index.vue")
         }
       ]",

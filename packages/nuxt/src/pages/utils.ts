@@ -739,7 +739,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
-      const pageImportName = genSafeVariableName(filename(file) + hash(file).replace(/-/g, '_'))
+      const relativeFile = relative(nuxt.options.rootDir, file)
+      const pageImportName = genSafeVariableName(filename(file) + hash(relativeFile).replace(/-/g, '_'))
       const metaImportName = pageImportName + 'Meta'
       const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
@@ -770,8 +771,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         : `${metaImportName}?.name ?? ${route.name}`
 
       // we use this to validate that a server page is rendering the correct url
-      const islandKey = page.mode === 'server' && page.file
-        ? JSON.stringify(hash(relative(nuxt.options.rootDir, page.file)))
+      const islandKey = page.mode === 'server'
+        ? JSON.stringify(hash(relativeFile))
         : undefined
 
       const component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames
