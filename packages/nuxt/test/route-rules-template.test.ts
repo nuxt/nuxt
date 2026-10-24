@@ -42,11 +42,25 @@ describe('route rules template', () => {
       '/array': { appMiddleware: ['auth', 'admin'] },
       '/object': { appMiddleware: { auth: false } },
     })
-    const code = contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return')
-    const { defu } = await import('defu')
-    const matcher = new Function('defu', code)(defu) as (path: string) => Record<string, any>
+    const matcher = await evaluateMatcher(contents)
     expect(matcher('/string').appMiddleware).toEqual({ auth: true })
     expect(matcher('/array').appMiddleware).toEqual({ auth: true, admin: true })
     expect(matcher('/object').appMiddleware).toEqual({ auth: false })
   })
+
+  it('applies `appMiddleware` on a case-sensitive regex constraint when case-insensitive', async () => {
+    const contents = await getRouteRulesTemplate(false, {
+      '/y/:id(\\D+)': { appMiddleware: 'auth' },
+    })
+    const matcher = await evaluateMatcher(contents)
+    expect(matcher('/y/abc').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/Y/ABC').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/y/123').appMiddleware).toBeUndefined()
+  })
 })
+
+async function evaluateMatcher (contents: string) {
+  const code = contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return')
+  const { defu } = await import('defu')
+  return new Function('defu', code)(defu) as (path: string) => Record<string, any>
+}

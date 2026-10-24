@@ -42,6 +42,60 @@ export function normalizeRouteRulePath (path: string, fold: boolean): string {
 }
 
 /**
+ * Normalise a route-rule key as {@link normalizeRouteRulePath} does, except that regex
+ * constraints (`:id(\\D+)`) are never case-folded, and a percent-encoded character in one
+ * decodes to a literal match of that character rather than to regex syntax.
+ *
+ * @internal
+ */
+export function normalizeRouteRuleKey (key: string, fold: boolean): string {
+  return splitRouteConstraints(key)
+    .map(part => part.constraint ? decodeRouteConstraint(part.text) : normalizeRouteRulePath(part.text, fold))
+    .join('')
+}
+
+const ENCODED_RUN_RE = /(?:%[\da-f]{2})+/gi
+const REGEX_SYNTAX_RE = /[\\^$.*+?()[\]{}|-]/g
+
+function decodeRouteConstraint (constraint: string): string {
+  return constraint.replace(ENCODED_RUN_RE, encoded => decodeRoutePath(encoded).replace(REGEX_SYNTAX_RE, '\\$&'))
+}
+
+function splitRouteConstraints (pattern: string): Array<{ text: string, constraint: boolean }> {
+  const parts: Array<{ text: string, constraint: boolean }> = []
+  let start = 0
+  let depth = 0
+  let inClass = false
+  for (let i = 0; i < pattern.length; i++) {
+    const char = pattern[i]
+    if (char === '\\') {
+      i++
+      continue
+    }
+    if (depth === 0) {
+      if (char === '(') {
+        parts.push({ text: pattern.slice(start, i), constraint: false })
+        start = i
+        depth = 1
+      }
+      continue
+    }
+    if (inClass) {
+      inClass = char !== ']'
+    } else if (char === '[') {
+      inClass = true
+    } else if (char === '(') {
+      depth++
+    } else if (char === ')' && --depth === 0) {
+      parts.push({ text: pattern.slice(start, i + 1), constraint: true })
+      start = i + 1
+    }
+  }
+  parts.push({ text: pattern.slice(start), constraint: depth > 0 })
+  return parts
+}
+
+/**
  * Expand the rule shorthands a server runtime would expand: `redirect` as a string, and
  * `swr`/`cache` as the single `cache` rule everything downstream reads.
  *
@@ -115,7 +169,7 @@ export function resolveRouteRulesRoutes (nuxt: Nuxt): { routes: RouteRulesRoute[
  * Resolve the route rules that apply to `path`, merged most-specific-last.
  *
  * The router is expected to have been built with keys normalised by
- * {@link normalizeRouteRulePath} under the same `fold`, so that lookups match them.
+ * {@link normalizeRouteRuleKey} under the same `fold`, so that lookups match them.
  *
  * @internal
  */
@@ -169,7 +223,7 @@ export const normalizePathCode: string = [
 ].join('\n')
 
 /**
- * Build a route-rules router whose keys are decoded (and, when `fold` is set, lower-cased),
+ * Build a route-rules router whose keys are normalised by {@link normalizeRouteRuleKey},
  * mirroring the normalised lookup path used at runtime.
  *
  * `onDuplicate` is called when two distinct keys normalise onto the same path; the later
@@ -181,7 +235,7 @@ export function createNormalizedRouteRulesRouter (routes: RouteRulesRoute[], bas
   const normalizedKeys = new Map<string, string>()
   const normalizedRoutes = routes.map((route) => {
     if (typeof route.route !== 'string') { return route }
-    const key = normalizeRouteRulePath(route.route, fold)
+    const key = normalizeRouteRuleKey(route.route, fold)
     const existing = normalizedKeys.get(key)
     if (existing !== undefined && existing !== route.route) {
       onDuplicate?.(existing, route.route, key)

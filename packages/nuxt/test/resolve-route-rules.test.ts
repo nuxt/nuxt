@@ -36,4 +36,16 @@ describe('resolveRouteRules', () => {
     expect(resolveRouteRules(matcher, '/Admin', false)).toEqual({ prerender: true })
     expect(resolveRouteRules(matcher, '/admin', false)).toEqual({})
   })
+
+  it.each([true, false])('should match regex constraints by their original case (fold: %s)', (fold) => {
+    const matcher = createMatcher({ '/x/:id(\\D+)': { prerender: true } }, fold)
+    expect(resolveRouteRules(matcher, '/x/abc', fold)).toEqual({ prerender: true })
+    expect(resolveRouteRules(matcher, '/x/123', fold)).toEqual({})
+  })
+
+  it('should match a literal character percent-encoded in a constraint', () => {
+    const matcher = createMatcher({ '/x/:id(a%2Eb)': { prerender: true } })
+    expect(resolveRouteRules(matcher, '/x/a.b', true)).toEqual({ prerender: true })
+    expect(resolveRouteRules(matcher, '/x/axb', true)).toEqual({})
+  })
 })
