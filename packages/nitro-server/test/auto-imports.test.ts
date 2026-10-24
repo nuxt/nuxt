@@ -255,13 +255,14 @@ describe('createServerAutoImports', () => {
 })
 
 describe('ServerAutoImportsPlugin', () => {
-  it('leaves excluded modules, such as the `ssr` environment output, untransformed', () => {
+  it('does not transform bundled environment outputs', () => {
     const plugin = ServerAutoImportsPlugin.raw({
       autoImports: createServerAutoImports(mockNuxt(), { autoImport: true }, '/app/.nuxt'),
-      exclude: [/^\/app\/\.nuxt\/vite\/services\//],
+      buildDir: '/app/.nuxt',
     }, {} as any) as { transformInclude: (id: string) => boolean }
 
     expect(plugin.transformInclude('/app/server/api/hello.ts')).toBe(true)
+    expect(plugin.transformInclude('/app/.nuxt/vite/services-utils.ts')).toBe(true)
     expect(plugin.transformInclude('/app/.nuxt/vite/services/ssr/index.mjs')).toBe(false)
     expect(plugin.transformInclude('/app/node_modules/pkg/index.mjs')).toBe(false)
   })

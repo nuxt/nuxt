@@ -741,9 +741,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   if (autoImports.enabled) {
     nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
       autoImports,
+      buildDir: resolve(nitroConfig.rootDir!, nitroConfig.buildDir!),
       sourcemap: !!nuxt.options.sourcemap.server,
-      // the `ssr` environment's output, which the app's auto-imports have already transformed
-      exclude: [new RegExp('^' + escapeRE(withTrailingSlash(join(nuxt.options.buildDir, 'vite/services'))))],
     }))
   }
 
