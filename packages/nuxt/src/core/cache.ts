@@ -49,6 +49,7 @@ export async function getVueHash (nuxt: Nuxt) {
   // `output.publicDir`, outside `buildDir`, so it needs its own cache entry.
   const cachesClientAssets = !useServerBuild(nuxt).buildsSeparately
   let clientFiles: string[] = []
+  let clientState: Record<string, unknown> | undefined
 
   return {
     hash,
@@ -71,8 +72,12 @@ export async function getVueHash (nuxt: Nuxt) {
     },
     async restoreCache () {
       const start = Date.now()
-      if (cachesClientAssets && (!existsSync(clientCacheFile) || !existsSync(clientStateFile))) {
-        return false
+      if (cachesClientAssets) {
+        // a missing or unreadable state file counts as a miss, so the client is rebuilt
+        clientState = existsSync(clientCacheFile) ? await readClientState(clientStateFile) : undefined
+        if (!clientState) {
+          return false
+        }
       }
       const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
       const elapsed = Date.now() - start
@@ -108,7 +113,7 @@ export async function getVueHash (nuxt: Nuxt) {
               async buildApp (builder) {
                 await restoreCacheFromFile(useServerBuild(nuxt).output.publicDir(), clientCacheFile)
                 // the ssr build reads what the client build left in memory, not only its files
-                restoreClientBuildState(JSON.parse(await readFile(clientStateFile, 'utf8')), nuxt)
+                restoreClientBuildState(clientState!, nuxt)
                 const client = builder.environments.client
                 if (client) {
                   client.isBuilt = true
@@ -349,6 +354,15 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
     buildDiagnostics.NUXT_B1011({ file: fileName, cause: err })
   } finally {
     await fd?.close()
+  }
+}
+
+async function readClientState (file: string): Promise<Record<string, unknown> | undefined> {
+  try {
+    const state = JSON.parse(await readFile(file, 'utf8'))
+    return state && typeof state === 'object' && !Array.isArray(state) ? state : undefined
+  } catch {
+    return undefined
   }
 }
 
