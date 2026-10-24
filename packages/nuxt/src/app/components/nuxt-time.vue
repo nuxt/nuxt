@@ -48,7 +48,9 @@ const nuxtApp = useNuxtApp()
 const date = computed(() => {
   const date = props.datetime
   if (renderedDate && nuxtApp.isHydrating) { return new Date(renderedDate) }
-  if (!props.datetime) { return new Date() }
+  // only fall back to the current time when no datetime was provided at all:
+  // `0` is a valid epoch timestamp and invalid input renders as an invalid date
+  if (date === undefined || date === null || date === '') { return new Date() }
   return new Date(date)
 })
 
