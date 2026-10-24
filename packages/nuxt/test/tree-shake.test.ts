@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
+import { applyDefaults } from 'untyped'
+import { createUnimport } from 'unimport'
+import { NuxtConfigSchema } from '@nuxt/schema'
+import type { NuxtOptions } from '@nuxt/schema'
 
 import { TreeShakeComposablesPlugin } from '../src/core/plugins/tree-shake.ts'
+import { defaultPresets } from '../src/imports/presets.ts'
+import { pagesImportPresets } from '../src/pages/module.ts'
 import { clean } from './utils.ts'
 
 describe('tree-shake', () => {
@@ -63,6 +69,31 @@ describe('tree-shake', () => {
       "import { onMounted } from '#imports'
        false && /*@__PURE__*/ onMounted(() => {})
       console.log('Hello World')"
+    `)
+  })
+
+  it('should tree-shake the default #app composables when they are auto-imported', async () => {
+    const { optimization } = await applyDefaults(NuxtConfigSchema, { dev: false }) as unknown as NuxtOptions
+    const ctx = createUnimport({ presets: [...defaultPresets, ...pagesImportPresets] })
+    const transform = async (composables: Record<string, string[]>) => {
+      const names = new Set(Object.entries(composables).flatMap(([key, names]) => key.startsWith('#app') ? names : []))
+      const { code } = await ctx.injectImports([...names].map(name => `${name}()`).join('\n'))
+      const plugin: any = TreeShakeComposablesPlugin({ composables }).raw({}, {} as any)
+      return clean(plugin.transform.handler(code, 'test.js')?.code ?? code)
+    }
+    expect(await transform(optimization.treeShake.composables.server)).toMatchInlineSnapshot(`
+      "import { definePayloadReviver } from '#app/composables/payload';
+      import { definePageMeta } from '#app/composables/pages';
+       false && /*@__PURE__*/ definePayloadReviver()
+       false && /*@__PURE__*/ definePageMeta()"
+    `)
+    expect(await transform(optimization.treeShake.composables.client)).toMatchInlineSnapshot(`
+      "import { definePayloadReducer } from '#app/composables/payload';
+      import { definePageMeta } from '#app/composables/pages';
+      import { onPrehydrate } from '#app/composables/ssr';
+       false && /*@__PURE__*/ definePayloadReducer()
+       false && /*@__PURE__*/ definePageMeta()
+       false && /*@__PURE__*/ onPrehydrate()"
     `)
   })
 

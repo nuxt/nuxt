@@ -110,6 +110,8 @@ export default defineResolvers({
               : {
                   'vue': ['onMounted', 'onUpdated', 'onUnmounted', 'onBeforeMount', 'onBeforeUpdate', 'onBeforeUnmount', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated'],
                   '#app': ['definePayloadReviver', 'definePageMeta'],
+                  '#app/composables/pages': ['definePageMeta'],
+                  '#app/composables/payload': ['definePayloadReviver'],
                 },
           ),
         },
@@ -120,6 +122,9 @@ export default defineResolvers({
               : {
                   'vue': ['onRenderTracked', 'onRenderTriggered', 'onServerPrefetch'],
                   '#app': ['definePayloadReducer', 'definePageMeta', 'onPrehydrate'],
+                  '#app/composables/pages': ['definePageMeta'],
+                  '#app/composables/payload': ['definePayloadReducer'],
+                  '#app/composables/ssr': ['onPrehydrate'],
                 },
           ),
         },
