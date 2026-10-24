@@ -76,9 +76,11 @@ describe('getOptimizeDepsEntries (#28631)', () => {
 
     const entries = getOptimizeDepsEntries(nuxt, mainEntry)
 
-    expect(entries).toHaveLength(2)
-    expect(entries[0]).toBe(mainEntry)
-    expect(entries[1]).toBe(join(externalApp, '**/*.{vue,ts,tsx,js,jsx,mjs}'))
+    expect(entries).toEqual([
+      mainEntry,
+      join(externalApp, '**/*.{vue,ts,tsx,js,jsx,mjs}'),
+      `!${join(externalApp, '**/*.server.*')}`,
+    ])
   })
 
   it('adds glob for external layer when rootDir has trailing slash', () => {
@@ -94,7 +96,10 @@ describe('getOptimizeDepsEntries (#28631)', () => {
 
     const entries = getOptimizeDepsEntries(nuxt, mainEntry)
 
-    expect(entries).toHaveLength(2)
-    expect(entries[1]).toBe(join('/outside/app', '**/*.{vue,ts,tsx,js,jsx,mjs}'))
+    expect(entries).toEqual([
+      mainEntry,
+      join('/outside/app', '**/*.{vue,ts,tsx,js,jsx,mjs}'),
+      `!${join('/outside/app', '**/*.server.*')}`,
+    ])
   })
 })
