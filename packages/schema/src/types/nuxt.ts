@@ -339,6 +339,7 @@ export interface Nuxt {
    * @internal
    */
   '_moduleOptionsFunctions'?: Map<string | NuxtModule, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>
+  '_clientBuildState'?: Map<string, { save: () => unknown, restore: (state: any) => void }>
 
   /** The resolved Nuxt configuration. */
   'options': NuxtOptions

@@ -42,6 +42,7 @@ async function renderIndex (outputDir: string) {
 
 // the inline style extracted from the fixture's scoped `<style>` block
 const INLINE_STYLE_RE = /<style[^>]*>[^<]*color\s*:\s*red/
+const STYLESHEET_LINK_RE = /<link[^>]+rel="stylesheet"/
 
 describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
   const workspaceDir = await findWorkspaceDir()
@@ -239,6 +240,46 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     const html = await renderIndex(outputDir)
     expect(html).toMatch(INLINE_STYLE_RE)
     expect(html).toBe(expectedHtml)
+  })
+
+  it('should drop links to inlined page styles on cache hit', { timeout: 300_000 }, async () => {
+    const rootDir = join(tmpDir, 'project')
+    const outputDir = join(rootDir, '.output')
+    await writeFile(join(rootDir, 'app.vue'), '<template><NuxtPage /></template>')
+    await mkdir(join(rootDir, 'pages'), { recursive: true })
+    await writeFile(join(rootDir, 'pages/index.vue'), '<template><div class="box">hello</div></template><style scoped>.box { color: red }</style>')
+
+    const nuxt1 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'page-styles-1',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt1)
+    // a page is not an entry, so the renderer drops its stylesheet link per request, for
+    // the pages that inlined its styles
+    const expectedHtml = await renderIndex(outputDir)
+    expect(expectedHtml).toMatch(INLINE_STYLE_RE)
+    expect(expectedHtml).not.toMatch(STYLESHEET_LINK_RE)
+
+    await rm(outputDir, { recursive: true, force: true })
+
+    const nuxt2 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'page-styles-2',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    expect(nuxt2.options.buildId).toBe('page-styles-1')
+    await build(nuxt2)
+
+    expect(await renderIndex(outputDir)).toBe(expectedHtml)
   })
 
   it('should hit the cache when only an ignored file changes', async () => {

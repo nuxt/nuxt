@@ -2,7 +2,7 @@ import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { createIsIgnored, setBuildOutput } from '@nuxt/kit'
-import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { buildDiagnostics, restoreClientBuildState, saveClientBuildState, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt, NuxtBuildOutputs, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
@@ -43,6 +43,7 @@ export async function getVueHash (nuxt: Nuxt) {
   const cacheFile = join(getCacheDir(nuxt), id, hash + '.tar')
   const buildIdCacheFile = cacheFile.replace('.tar', '.buildid')
   const clientCacheFile = cacheFile.replace('.tar', '.client.tar')
+  const clientStateFile = cacheFile.replace('.tar', '.client.json')
 
   // When Nitro builds as a Vite environment the client bundle is written to
   // `output.publicDir`, outside `buildDir`, so it needs its own cache entry.
@@ -58,6 +59,7 @@ export async function getVueHash (nuxt: Nuxt) {
       if (cachesClientAssets && clientFiles.length) {
         const publicDir = useServerBuild(nuxt).output.publicDir()
         await writeCache(publicDir, publicDir, clientCacheFile, clientFiles)
+        await writeFile(clientStateFile, JSON.stringify(saveClientBuildState(nuxt)))
       }
 
       // Cache buildId so it can be restored before modules are initialised on the next build
@@ -69,7 +71,7 @@ export async function getVueHash (nuxt: Nuxt) {
     },
     async restoreCache () {
       const start = Date.now()
-      if (cachesClientAssets && !existsSync(clientCacheFile)) {
+      if (cachesClientAssets && (!existsSync(clientCacheFile) || !existsSync(clientStateFile))) {
         return false
       }
       const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
@@ -105,7 +107,8 @@ export async function getVueHash (nuxt: Nuxt) {
           ? {
               async buildApp (builder) {
                 await restoreCacheFromFile(useServerBuild(nuxt).output.publicDir(), clientCacheFile)
-                await restoreBuildOutputs(nuxt, CLIENT_BUILD_OUTPUT_KEYS)
+                // the ssr build reads what the client build left in memory, not only its files
+                restoreClientBuildState(JSON.parse(await readFile(clientStateFile, 'utf8')), nuxt)
                 const client = builder.environments.client
                 if (client) {
                   client.isBuilt = true
@@ -133,24 +136,15 @@ async function persistBuildOutputs (nuxt: Nuxt) {
   await writeFile(resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE), JSON.stringify(outputs), 'utf8')
 }
 
-async function restoreBuildOutputs (nuxt: Nuxt, keys?: ReadonlyArray<keyof NuxtBuildOutputs>) {
+async function restoreBuildOutputs (nuxt: Nuxt) {
   const file = resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE)
   if (!existsSync(file)) { return }
   const outputs = JSON.parse(await readFile(file, 'utf8')) as Record<keyof NuxtBuildOutputs, string>
   for (const key of Object.keys(outputs) as Array<keyof NuxtBuildOutputs>) {
-    if (keys && !keys.includes(key)) { continue }
     const code = outputs[key]
     setBuildOutput(key, () => code, nuxt)
   }
 }
-
-/**
- * Outputs the client build is the sole source of. Their providers are
- * registered when the client environment's plugins are created, which happens
- * after the cache is restored, so they have to be replayed once the build has
- * started or the stub values would win.
- */
-const CLIENT_BUILD_OUTPUT_KEYS = ['clientManifest', 'clientPrecomputed', 'entryChunkName'] as const
 
 /**
  * Restore cached buildId before modules are initialised.
@@ -181,7 +175,7 @@ export async function restoreCachedBuildId (nuxt: Nuxt) {
 
 export async function cleanupCaches (nuxt: Nuxt) {
   const start = Date.now()
-  const caches = await glob(['*/*.tar', '*/*.buildid'], {
+  const caches = await glob(['*/*.tar', '*/*.client.json', '*/*.buildid'], {
     cwd: getCacheDir(nuxt),
     absolute: true,
   })
