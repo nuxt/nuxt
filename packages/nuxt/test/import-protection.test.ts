@@ -115,7 +115,7 @@ describe('import protection', () => {
   })
 
   // Separate setup: we need a custom alias (#api -> server) that modules might add at runtime.
-  it.each(nuxtAppAliasToServerTests)('nuxt-app alias to server: %s -> %s', async (id, importer, isProtected) => {
+  it.each(nuxtAppAliasToServerTests)('nuxt-app alias to server: %s -> %s', (id, importer, isProtected) => {
     const plugin = ImpoundPlugin.rollup({
       cwd: '/root',
       patterns: createImportProtectionPatterns({
@@ -137,7 +137,7 @@ describe('import protection', () => {
     }
   })
 
-  it('nitro-app with custom serverDir: ~/backend/ allowed when serverDir is backend', async () => {
+  it('nitro-app with custom serverDir: ~/backend/ allowed when serverDir is backend', () => {
     const customOptions = {
       ...defaultNuxtOptions,
       serverDir: '/root/src/backend',
@@ -150,7 +150,7 @@ describe('import protection', () => {
     expect(result).toBeFalsy()
   })
 
-  it('nitro-app with srcDir at the project root leaves package imports alone', async () => {
+  it('nitro-app with srcDir at the project root leaves package imports alone', () => {
     const plugin = ImpoundPlugin.rollup({
       cwd: '/root',
       patterns: createImportProtectionPatterns({
@@ -175,7 +175,7 @@ describe('import protection', () => {
     expect(resolveId('app.vue')).toContain('impound:proxy')
   })
 
-  it('nitro-app with custom serverDir: ~/server-utils/ still protected (sibling of serverDir)', async () => {
+  it('nitro-app with custom serverDir: ~/server-utils/ still protected (sibling of serverDir)', () => {
     const customOptions = {
       ...defaultNuxtOptions,
       serverDir: '/root/src/backend',

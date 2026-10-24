@@ -5,7 +5,7 @@ import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtBuildOutputs, NuxtOptions, ServerApi, ServerImportsOptions, ServerRouteSegment } from '@nuxt/schema'
-import { dirname, join, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { createNitro } from 'nitro/builder'
@@ -30,7 +30,7 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
-import { createImportProtectionPatterns, IMPORT_PROTECTION_ALLOWED } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { IMPORT_PROTECTION_ALLOWED, createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
@@ -652,7 +652,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         exclude: [
           /node_modules[\\/]/, // Don't apply import protection to deps (ufo, unhead, @vue/server-renderer, srvx, etc.)
           /[\\/]h3[\\/]/, // h3 legitimately imports srvx/node for Node adapter
-          /[\\/]\.nuxt[\\/]/, // Nuxt build output (styles.mjs, server.mjs, _nuxt/*)
+          /[\\/]\.nuxt[\\/]/, // Default build output (styles.mjs, server.mjs, _nuxt/*)
+          // A custom buildDir such as `.nuxt-vite-built-…` is still inside srcDir when srcDir is the
+          // project root, so the server bundle would otherwise be treated as app source.
+          new RegExp(escapeRE(withTrailingSlash(normalize(nuxt.options.buildDir))).replace(/\//g, '[\\\\/]')),
           /(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/,
           ...sharedPatterns,
         ],

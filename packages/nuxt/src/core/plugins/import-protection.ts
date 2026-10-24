@@ -22,7 +22,7 @@ interface NuxtImportProtectionOptions {
  * ImpoundPlugin config so allowed imports stay in sync.
  */
 /** Matches app.config.js, app.config.ts, etc. - merged by #build/app.config.mjs in nitro-app. */
-const APP_CONFIG_FILE_RE = /[/\\]app\.config\.(js|ts|mjs|cts|mts)$/
+const APP_CONFIG_FILE_RE = /[/\\]app\.config\.(?:js|ts|mjs|cts|mts)$/
 
 export const IMPORT_PROTECTION_ALLOWED = {
   /** Matches srvx (bare, srvx/, srvx/...) for excludeFiles. */
@@ -43,17 +43,12 @@ export const IMPORT_PROTECTION_ALLOWED = {
   },
 }
 
-/**
- * Returns a pattern that blocks imports whose resolved path is under the given directory.
- * normalized !== dir excludes the directory itself (e.g. /root/src/), only nested paths are blocked.
- * @param excludeDir - When provided, paths under this directory are not blocked (e.g. serverDir in nitro-app).
- */
 function isSubpath (parent: string, child: string): boolean {
   const rel = relative(parent, child)
   return rel !== '' && !rel.startsWith('..') && !rel.startsWith('/')
 }
 
-const SOURCE_FILE_RE = /\.(?:[cm]?[jt]sx?|vue|mjs|cjs|json|css|s[ac]ss|wasm|svg|md|html)$/i
+const SOURCE_FILE_RE = /\.(?:[cm]?[jt]sx?|vue|json|css|s[ac]ss|wasm|svg|md|html)$/i
 
 /**
  * Bare package imports (`h3`, `vue/server-renderer`, `@vue/shared`, `node:fs/promises`) are not
@@ -89,6 +84,11 @@ function isPackageSpecifier (id: string, blockedDir: string, rootDir: string): b
   return !SOURCE_FILE_RE.test(id)
 }
 
+/**
+ * Blocks imports whose resolved path is under `dir`.
+ * The directory itself is not blocked, only nested paths.
+ * `excludeDir`, when set, keeps paths under that directory (for example `serverDir` in the nitro app).
+ */
 function createResolvedPathBlocker (
   rootDir: string,
   dir: string,
