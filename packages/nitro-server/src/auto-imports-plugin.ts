@@ -8,22 +8,24 @@ const INCLUDE_RE = /\.[cm]?[jt]sx?$/
 interface ServerAutoImportsPluginOptions {
   autoImports: ServerAutoImports
   sourcemap?: boolean
+  /** Modules that have already been through the app's auto-imports, such as the `ssr` environment's output. */
+  exclude?: RegExp[]
 }
 
 /**
  * Injects the server auto-imports.
  *
- * Registered on both the Rollup config and the `nitro` Vite environment, as either may build the
- * server bundle depending on `experimental.nitroViteEnvironment`.
+ * Registered on the Rollup config only. Nitro passes `rollupConfig.plugins` to every server build,
+ * including the `nitro` Vite environment and the prerender build.
  */
-export const ServerAutoImportsPlugin = createUnplugin(({ autoImports, sourcemap }: ServerAutoImportsPluginOptions) => {
+export const ServerAutoImportsPlugin = createUnplugin(({ autoImports, sourcemap, exclude = [] }: ServerAutoImportsPluginOptions) => {
   return {
     name: 'nuxt:server-auto-imports',
     enforce: 'post',
 
     transformInclude (id) {
       const path = normalize(id)
-      return INCLUDE_RE.test(path.split('?')[0]!) && !EXCLUDE_RE.some(re => re.test(path))
+      return INCLUDE_RE.test(path.split('?')[0]!) && !EXCLUDE_RE.some(re => re.test(path)) && !exclude.some(re => re.test(path))
     },
 
     async transform (code, id) {
