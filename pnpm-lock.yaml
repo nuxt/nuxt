@@ -240,9 +240,9 @@ catalogs:
     '@nuxt/cli':
       specifier: ^4.0.1
       version: 4.0.1
-    '@nuxt/devtools':
-      specifier: ^3.4.3
-      version: 3.4.3
+    '@nuxt/devtools-onboard':
+      specifier: ^4.0.0-beta.7
+      version: 4.0.0-beta.7
     '@nuxt/telemetry':
       specifier: ^2.9.1
       version: 2.9.1
@@ -1211,9 +1211,9 @@ importers:
       '@nuxt/devalue':
         specifier: ^2.0.2
         version: 2.0.2
-      '@nuxt/devtools':
+      '@nuxt/devtools-onboard':
         specifier: catalog:build
-        version: 3.4.3(@netlify/blobs@11.0.3(supports-color@10.2.2))(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1(supports-color@10.2.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
+        version: 4.0.0-beta.7(@nuxt/devtools@3.4.3(@netlify/blobs@11.0.3(supports-color@10.2.2))(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1(supports-color@10.2.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3)))(@nuxt/kit@packages+kit)
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -2935,6 +2935,9 @@ packages:
     resolution: {integrity: sha512-v6oD9Ukp+N7V4n6p5I/+mM5fIohSfkrDSGlFm5w/pYmchvbk+sMIHsLxrFJ5Lnujewj1BzWL0K84d88lwZAMQA==}
     engines: {node: '>=18'}
 
+  '@devframes/hub-ui-onboard@1.2.6':
+    resolution: {integrity: sha512-51uFIzzVPNnoSfZLWabOimvzl6gGji97gzfLOV6fRkWm83/QFFM5tewz++st+6uVkV4RshqWeg4FXsulsyc8jA==}
+
   '@discoveryjs/json-ext@0.6.3':
     resolution: {integrity: sha512-4B4OijXeVNOPZlYA2oEwWOTkzyltLao+xbotHQeqN++Rv27Y6s818+n2Qkp8q+Fxhn0t/5lA5X1Mxktud8eayQ==}
     engines: {node: '>=14.17.0'}
@@ -3970,6 +3973,15 @@ packages:
     resolution: {integrity: sha512-mG4OT+1v6JkaRj+L9bYI6TaWLqDwu4NE+//UL/annLsrGiAOXc9FlFAnIIuQojPZ+H1gJeuc1pc968z/jXwUlA==}
     peerDependencies:
       vite: 8.3.4
+
+  '@nuxt/devtools-onboard@4.0.0-beta.7':
+    resolution: {integrity: sha512-YhHyDEYAyNRnGv0kcXsg4byOGOiiW/4CfW0HEu4AM0Rs9t2P5dpyTzBfkV96karI44MkjvZSepnUeakuw/4qCg==}
+    peerDependencies:
+      '@nuxt/devtools': '*'
+      '@nuxt/kit': workspace:*
+    peerDependenciesMeta:
+      '@nuxt/devtools':
+        optional: true
 
   '@nuxt/devtools-wizard@3.4.3':
     resolution: {integrity: sha512-0F5mQmaj3rEMT5gkQeDsXea7YyyvPwp4ktT3xduZgp1G0QiSzV7AQ64gXz2LPaIc4V8ib/k++8KjmHL+/DbH4Q==}
@@ -8302,8 +8314,8 @@ packages:
     engines: {node: '>=14.16'}
     hasBin: true
 
-  is-installed-globally@1.0.0:
-    resolution: {integrity: sha512-K55T22lfpQ63N4KEN57jZUAaAYqYHEe8veb/TycJRk9DdSCLLcovXz/mL6mOnhQaZsQGwPhuFopdQIlqGSEjiQ==}
+  is-installed-globally@1.0.1:
+    resolution: {integrity: sha512-li88H4QGRoNMX27jEmY8nR515oJVspAgC/WFMlhHfFV8RJ4QyGpHhXnwAe9gH5RIgKmdYRUmrOhQobcgEjIdSw==}
     engines: {node: '>=18'}
 
   is-json@2.0.1:
@@ -8582,8 +8594,8 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
-  launch-editor@2.14.1:
-    resolution: {integrity: sha512-QWBrQsMpH7gPr965dsKD/3cKWiNoTjpATQf++Xq63N6sKRGMwlVXz41O1IZTMfZQgBctD/K5Zt06+/I6pP6+HA==}
+  launch-editor@2.14.2:
+    resolution: {integrity: sha512-NHJEb30MGBCkmZXLZwz25t37QR4aY03ZzPYUJXOJaOa92uWwExI9SBQUuIznBYc1xkD7cJNGX7oc3Nl3sq2kQQ==}
 
   lazystream@1.0.1:
     resolution: {integrity: sha512-b94GiNHQNy6JNTrt5w6zNyffMrNkXZb3KTkCZJb2V1xaEGCk093vkZ2jk3tpaeP33/OiXC+WvK9AxUebnf5nbw==}
@@ -9619,6 +9631,9 @@ packages:
   pkg-types@2.3.3:
     resolution: {integrity: sha512-j/lCFdcppV0JxWpCEITdbDltBxPP6cHT+yNJ6Go2OgoSA9518X847X9z0p6LtA4Nc16+eQzCZjRrWanTGvHJ5w==}
 
+  pkg-types@2.4.0:
+    resolution: {integrity: sha512-07Fys7iVx0X6TcviMOgogM1Lk33ZyqOezMnU79S+kffWqwolG/5W9V8EgQSeYCIfFTYVgssRbnH630Oa2+soBA==}
+
   playwright-core@1.64.1:
     resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
     engines: {node: '>=20'}
@@ -10593,8 +10608,8 @@ packages:
     resolution: {integrity: sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==}
     engines: {node: '>=8'}
 
-  shell-quote@1.10.0:
-    resolution: {integrity: sha512-w1aiOKwKuRgtwAReIIj89puqg+I7GvX4IbLrvmhXbzQsj1+Zwi4VO3+fa6ZF91TWSjIxoEkKnMeHcLEODK5ZXA==}
+  shell-quote@1.12.0:
+    resolution: {integrity: sha512-PcByqNyT/38F2kDNi006HAMRJaULuBzq/FOsw3qdZvX/GA9W/jamDaRskgHjubHiftXK5sIFxLNkvrXUwcof6Q==}
     engines: {node: '>= 0.4'}
 
   sherif-darwin-arm64@1.13.0:
@@ -12636,6 +12651,12 @@ snapshots:
       gonzales-pe: 4.3.0
       node-source-walk: 7.0.2
 
+  '@devframes/hub-ui-onboard@1.2.6':
+    dependencies:
+      nostics: 1.3.0
+      package-manager-detector: 1.9.0
+      tinyexec: 1.3.1
+
   '@discoveryjs/json-ext@0.6.3': {}
 
   '@dxup/nuxt@0.5.10(@rsbuild/core@2.2.13)(@rspack/core@2.2.9(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.14)(rollup@4.64.6)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(webpack@5.111.1(cssnano@9.8.0(postcss@8.5.30))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.30)(sharp@0.35.2)(svgo@4.1.0))':
@@ -13822,6 +13843,14 @@ snapshots:
       execa: 8.0.1
       vite: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
 
+  '@nuxt/devtools-onboard@4.0.0-beta.7(@nuxt/devtools@3.4.3(@netlify/blobs@11.0.3(supports-color@10.2.2))(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1(supports-color@10.2.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3)))(@nuxt/kit@packages+kit)':
+    dependencies:
+      '@devframes/hub-ui-onboard': 1.2.6
+      '@nuxt/kit': link:packages/kit
+      pkg-types: 2.4.0
+    optionalDependencies:
+      '@nuxt/devtools': 3.4.3(@netlify/blobs@11.0.3(supports-color@10.2.2))(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1(supports-color@10.2.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
+
   '@nuxt/devtools-wizard@3.4.3':
     dependencies:
       '@clack/prompts': 1.8.1
@@ -13830,8 +13859,9 @@ snapshots:
       execa: 8.0.1
       magicast: 0.5.5
       pathe: 2.0.3
-      pkg-types: 2.3.3
+      pkg-types: 2.4.0
       semver: 7.8.5
+    optional: true
 
   '@nuxt/devtools@3.4.3(@netlify/blobs@11.0.3(supports-color@10.2.2))(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1(supports-color@10.2.2))(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))':
     dependencies:
@@ -13849,21 +13879,21 @@ snapshots:
       get-port-please: 3.2.0
       hookable: 6.1.2
       image-meta: 0.2.2
-      is-installed-globally: 1.0.0
-      launch-editor: 2.14.1
+      is-installed-globally: 1.0.1
+      launch-editor: 2.14.2
       local-pkg: 1.2.1
       magicast: 0.5.5
       ohash: 2.0.12
       package-manager-detector: 1.9.0
       pathe: 2.0.3
       perfect-debounce: 2.1.0
-      pkg-types: 2.3.3
+      pkg-types: 2.4.0
       semver: 7.8.5
       sirv: 3.0.2
       structured-clone-es: 2.0.1
       tinyexec: 1.3.1
       tinyglobby: 0.2.17
-      unstorage: 1.17.5(@netlify/blobs@11.0.3(supports-color@10.2.2))(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1(supports-color@10.2.2))
+      unstorage: 1.17.6(@netlify/blobs@11.0.3(supports-color@10.2.2))(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1(supports-color@10.2.2))
       vite: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
       vite-plugin-inspect: 11.4.1(@nuxt/kit@packages+kit)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
       vite-plugin-vue-tracer: 1.5.0(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
@@ -13892,6 +13922,7 @@ snapshots:
       - uploadthing
       - utf-8-validate
       - vue
+    optional: true
 
   '@nuxt/eslint-config@1.17.0(@typescript-eslint/utils@8.69.0(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(@vue/compiler-sfc@3.5.44)(eslint@10.12.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)':
     dependencies:
@@ -13939,7 +13970,7 @@ snapshots:
       defu: 6.1.7
       nostics: 1.3.0
       pathe: 2.0.3
-      pkg-types: 2.3.3
+      pkg-types: 2.4.0
       std-env: 4.3.0
     optional: true
 
@@ -15792,6 +15823,7 @@ snapshots:
       '@vue/devtools-kit': 8.2.1
       '@vue/devtools-shared': 8.2.1
       vue: 3.5.44(typescript@6.0.3)
+    optional: true
 
   '@vue/devtools-kit@8.2.1':
     dependencies:
@@ -16312,7 +16344,8 @@ snapshots:
 
   birpc@2.9.0: {}
 
-  birpc@4.2.0: {}
+  birpc@4.2.0:
+    optional: true
 
   blake3-wasm@2.1.5: {}
 
@@ -17053,7 +17086,8 @@ snapshots:
     dependencies:
       dequal: 2.0.3
 
-  diff@8.0.4: {}
+  diff@8.0.4:
+    optional: true
 
   doctypes@1.1.0: {}
 
@@ -17218,7 +17252,8 @@ snapshots:
 
   error-stack-parser-es@1.0.5: {}
 
-  error-stack-parser-es@2.0.1: {}
+  error-stack-parser-es@2.0.1:
+    optional: true
 
   errx@0.2.2: {}
 
@@ -17655,6 +17690,7 @@ snapshots:
   fast-npm-meta@2.2.0:
     dependencies:
       cac: 7.1.0
+    optional: true
 
   fast-safe-stringify@2.1.1: {}
 
@@ -17931,6 +17967,7 @@ snapshots:
   global-directory@4.0.1:
     dependencies:
       ini: 4.1.1
+    optional: true
 
   globals@17.12.0: {}
 
@@ -18323,7 +18360,8 @@ snapshots:
 
   ini@1.3.8: {}
 
-  ini@4.1.1: {}
+  ini@4.1.1:
+    optional: true
 
   ini@7.0.0: {}
 
@@ -18516,10 +18554,11 @@ snapshots:
     dependencies:
       is-docker: 3.0.0
 
-  is-installed-globally@1.0.0:
+  is-installed-globally@1.0.1:
     dependencies:
       global-directory: 4.0.1
       is-path-inside: 4.0.0
+    optional: true
 
   is-json@2.0.1: {}
 
@@ -18784,10 +18823,11 @@ snapshots:
       dotenv: 16.6.1
       winston: 3.19.0
 
-  launch-editor@2.14.1:
+  launch-editor@2.14.2:
     dependencies:
       picocolors: 1.1.1
-      shell-quote: 1.10.0
+      shell-quote: 1.12.0
+    optional: true
 
   lazystream@1.0.1:
     dependencies:
@@ -20189,6 +20229,12 @@ snapshots:
       exsolve: 1.1.3
       pathe: 2.0.3
 
+  pkg-types@2.4.0:
+    dependencies:
+      confbox: 0.3.1
+      exsolve: 1.1.3
+      pathe: 2.0.3
+
   playwright-core@1.64.1: {}
 
   playwright@1.64.1:
@@ -21356,7 +21402,8 @@ snapshots:
 
   shebang-regex@3.0.0: {}
 
-  shell-quote@1.10.0: {}
+  shell-quote@1.12.0:
+    optional: true
 
   sherif-darwin-arm64@1.13.0:
     optional: true
@@ -21618,7 +21665,8 @@ snapshots:
     dependencies:
       js-tokens: 10.0.0
 
-  structured-clone-es@2.0.1: {}
+  structured-clone-es@2.0.1:
+    optional: true
 
   stubborn-fs@2.0.0:
     dependencies:
@@ -22338,10 +22386,12 @@ snapshots:
       birpc: 4.2.0
       vite: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
       vite-hot-client: 2.2.0(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+    optional: true
 
   vite-hot-client@2.2.0(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)):
     dependencies:
       vite: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
+    optional: true
 
   vite-node@6.0.0(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1):
     dependencies:
@@ -22394,6 +22444,7 @@ snapshots:
       vite-dev-rpc: 2.0.0(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
     optionalDependencies:
       '@nuxt/kit': link:packages/kit
+    optional: true
 
   vite-plugin-vue-tracer@1.5.0(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3)):
     dependencies:
@@ -22404,6 +22455,7 @@ snapshots:
       source-map-js: 1.2.2
       vite: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
       vue: 3.5.44(typescript@6.0.3)
+    optional: true
 
   vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1):
     dependencies:
@@ -22726,6 +22778,7 @@ snapshots:
   which@6.0.1:
     dependencies:
       isexe: 4.0.0
+    optional: true
 
   which@7.0.0:
     dependencies:
