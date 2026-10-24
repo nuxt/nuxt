@@ -44,6 +44,32 @@ export default defineNuxtConfig({
 
 :read-more{title="NuxtLink" to="/docs/api/components/nuxt-link"}
 
+### Resource Hints
+
+To speed up client-side navigation, Nuxt adds resource hints for the JavaScript and CSS chunks a request resolves. `<link rel="preload">` (or `modulepreload`) marks the chunks the page itself needs, while `<link rel="prefetch">` marks the chunks the entry point and the rendered components lazy-import, so they are warm if the user later navigates to them.
+
+On a large app the prefetched set can grow past what a page actually needs. A public page and the signed-in app often share an entry chunk, so a prerendered public page can prefetch chunks that only the signed-in app uses. Prefetch hints have low download priority, but in volume they can still compete with the blocking stylesheet and delay first paint on a slow connection.
+
+To stop a chunk from being prefetched, set `prefetch` to `false` on its manifest entry in the [`build:manifest`](/docs/api/advanced/hooks#nuxt-hooks-build-time) hook:
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+  hooks: {
+    'build:manifest': (manifest) => {
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.src?.startsWith('pages/app/')) {
+          chunk.prefetch = false
+        }
+      }
+    },
+  },
+})
+```
+
+This removes the `rel="prefetch"` hint for every chunk whose source lives under `pages/app/`, while leaving the chunks in the bundle and the `preload` and `modulepreload` hints intact. Adjust the `startsWith` prefix to the directory whose chunks your public pages should not prefetch.
+
+You can also preload specific components or routes from your own code with [`preloadComponents`](/docs/api/utils/preload-components), [`preloadRouteComponents`](/docs/api/utils/preload-route-components) and [`prefetchComponents`](/docs/api/utils/prefetch-components).
+
 ### Hybrid Rendering
 
 In more complex applications, we may need a full control over how our application is rendered to support cases where some pages could be generated at build time, while others should be client-side rendered
