@@ -1,83 +1,81 @@
-import { describe, expect, it } from 'vitest'
-import type { Plugin } from 'vite'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { afterAll, describe, expect, it } from 'vitest'
+import { join } from 'pathe'
+import { createServer } from 'vite'
 import { ReplacePlugin } from '../src/plugins/replace.ts'
 
-function createEnvironment (define: Record<string, string> = {
-  'import.meta.client': 'true',
-  'import.meta.envName': JSON.stringify('development'),
-}) {
-  return {
-    name: 'client',
-    getTopLevelConfig: () => ({ define }),
-    config: { define: {} },
-  } as any
-}
+const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-replace-'))
+await writeFile(join(rootDir, 'main.js'), [
+  'export const client = import.meta.client',
+  'export const envName = import.meta.envName',
+  'export const literal = \'import.meta.envName\'',
+  'export const property = foo.import.meta.client',
+  'export const nested = import.meta.client.value',
+  '',
+].join('\n'))
+await writeFile(join(rootDir, 'worker.js'), 'self.postMessage(import.meta.client)\n')
 
-function environmentPlugin (define?: Record<string, string>) {
-  const plugin = ReplacePlugin() as Plugin & {
-    applyToEnvironment: (environment: unknown) => Plugin
+afterAll(() => rm(rootDir, { recursive: true, force: true }))
+
+async function withServer<T> (fn: (server: Awaited<ReturnType<typeof createServer>>) => Promise<T>) {
+  const server = await createServer({
+    root: rootDir,
+    configFile: false,
+    logLevel: 'silent',
+    server: { middlewareMode: true, ws: false },
+    optimizeDeps: { noDiscovery: true },
+    plugins: [ReplacePlugin()],
+    environments: {
+      client: {
+        define: {
+          'import.meta.client': 'true',
+          'import.meta.envName': JSON.stringify('development'),
+        },
+      },
+    },
+  })
+  try {
+    return await fn(server)
+  } finally {
+    await server.close()
   }
-  return plugin.applyToEnvironment(createEnvironment(define))
 }
-
-function getTransform (plugin: Plugin) {
-  if (typeof plugin.transform !== 'object' || !plugin.transform?.handler || !plugin.transform.filter) {
-    throw new Error('Expected object-based transform with filter')
-  }
-  return plugin.transform as {
-    filter: {
-      id?: {
-        exclude?: RegExp | RegExp[]
-      }
-    }
-    handler: (this: unknown, code: string, id: string, options?: { moduleType: string }) => Promise<{ code: string } | string | null | undefined>
-  }
-}
-
-function isExcluded (filter: { id?: { exclude?: RegExp | RegExp[] } }, id: string) {
-  const exclude = filter.id?.exclude
-  if (!exclude) { return false }
-  return [exclude].flat().some(re => re.test(id))
-}
-
-// Mirrors the env preamble Vite injects for `@vite-ignore` workers (string-keyed defines).
-const viteIgnoreWorkerPreamble = `const defines = {
-  "import.meta.envName": "development",
-  "import.meta.client": "true",
-};
-if (import.meta.client) console.log(import.meta.envName);
-`
 
 describe('ReplacePlugin', () => {
-  // https://github.com/nuxt/nuxt/issues/36657
-  it('excludes @vite-ignore worker module ids from transform', () => {
-    const plugin = environmentPlugin()
-    const transform = getTransform(plugin)
-
-    expect(isExcluded(transform.filter, '/app/worker.js?worker_file&type=ignore')).toBe(true)
-    expect(isExcluded(transform.filter, '/app/worker.js?import&worker_file&type=ignore')).toBe(true)
-    expect(isExcluded(transform.filter, '/app/worker.js?worker_file&type=module')).toBe(false)
-    expect(isExcluded(transform.filter, '/app/main.js')).toBe(false)
+  it('should replace `import.meta` defines in client modules', async () => {
+    const result = await withServer(server => server.environments.client.transformRequest('/main.js'))
+    expect(result?.code).toMatchInlineSnapshot(`
+      "export const client = true
+      export const envName = "development"
+      export const literal = 'import.meta.envName'
+      export const property = foo.import.meta.client
+      export const nested = import.meta.client.value
+      "
+    `)
   })
 
-  it('would corrupt Vite ignore-worker env string keys if replace ran (documents #36657)', async () => {
-    const plugin = environmentPlugin()
-    const transform = getTransform(plugin)
-
-    const result = await transform.handler.call({}, viteIgnoreWorkerPreamble, '/app/worker.js', { moduleType: 'js' })
-    const code = typeof result === 'string' ? result : result?.code
-    expect(code).toContain('""development""')
+  it('should keep the env preamble of `@vite-ignore` workers valid', async () => {
+    const code = await withServer(async (server) => {
+      await server.environments.client.transformRequest('/@vite/env')
+      const result = await server.environments.client.transformRequest('/worker.js?worker_file&type=ignore')
+      return result!.code
+    })
+    expect(code).toContain('"import.meta.client": true')
+    expect(code).toContain('"import.meta.envName": "development"')
+    expect(code).toContain('self.postMessage(true)')
   })
 
-  it('still replaces import.meta.* defines in normal modules', async () => {
-    const plugin = environmentPlugin()
-    const transform = getTransform(plugin)
-    const source = 'export const ready = import.meta.client && import.meta.envName === "development"\n'
+  it('should not apply outside the unbundled dev client', () => {
+    const plugin = ReplacePlugin()
+    const applyToEnvironment = plugin.applyToEnvironment as (environment: any) => unknown
+    const environment = (consumer: string, isBundled: boolean) => ({
+      config: { consumer, isBundled, define: {} },
+      getTopLevelConfig: () => ({ define: {} }),
+    })
 
-    expect(isExcluded(transform.filter, '/app/main.js')).toBe(false)
-
-    const result = await transform.handler.call({}, source, '/app/main.js', { moduleType: 'js' })
-    const code = typeof result === 'string' ? result : result?.code
-    expect(code).toBe('export const ready = true && "development" === "development"\n')
+    expect(applyToEnvironment(environment('server', false))).toBe(false)
+    expect(applyToEnvironment(environment('client', true))).toBe(false)
+    expect(applyToEnvironment(environment('client', false))).not.toBe(false)
   })
 })
