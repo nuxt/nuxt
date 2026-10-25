@@ -1,62 +1,101 @@
-import { describe, expect, it } from 'vitest'
-import type { Nuxt } from '@nuxt/schema'
+import { spawn } from 'node:child_process'
+import process from 'node:process'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
+import { setTimeout as sleep } from 'node:timers/promises'
+import { afterAll, describe, expect, it } from 'vitest'
+import { buildNuxt, loadNuxt } from '@nuxt/kit'
+import { getRandomPort } from 'get-port-please'
+import type { Plugin } from 'vite'
+import { join } from 'pathe'
 
-import { SSRStylesPlugin } from '../src/plugins/ssr-styles.ts'
-import { withInlineQuery } from '../src/utils/inline-styles.ts'
+const tmpDir = fileURLToPath(new URL('./.tmp/ssr-styles', import.meta.url))
 
-const COMPONENT = '/app/components/Foo.vue'
-const STYLE = `${COMPONENT}?vue&type=style&index=0&scoped=7d7f4a5d&lang.css`
+async function writeApp () {
+  await mkdir(join(tmpDir, 'app/components'), { recursive: true })
+  await writeFile(join(tmpDir, 'app/app.vue'), [
+    '<script setup>import Styled from \'./components/Styled.vue\'</script>',
+    '<template><div class="app"><Styled /></div></template>',
+    '<style>.app{color:#123456}</style>',
+  ].join('\n'))
+  await writeFile(join(tmpDir, 'app/components/Styled.vue'), [
+    '<template><p :class="$style.moduleClass" class="plain scoped">styled</p></template>',
+    '<style>.plain{color:#654321}</style>',
+    '<style scoped>.scoped{margin:3px}</style>',
+    '<style module>.moduleClass{padding:5px}</style>',
+  ].join('\n'))
+}
 
-function createNuxt () {
-  return {
-    options: {
-      dev: false,
-      srcDir: '/app',
-      buildDir: '/app/.nuxt',
-      css: [],
-      features: { inlineStyles: (id?: string) => !!id && id.includes('.vue') },
-      experimental: {},
-      _noScriptsPageSources: [],
+async function build () {
+  const ssrTransforms: string[] = []
+  const recorder: Plugin = {
+    name: 'record-ssr-transforms',
+    transform (_code, id) {
+      if (this.environment.name === 'ssr') {
+        ssrTransforms.push(id)
+      }
     },
-    apps: { default: { components: [], pages: [] } },
-    hook: () => {},
-  } as unknown as Nuxt
+  }
+
+  const nuxt = await loadNuxt({
+    cwd: tmpDir,
+    ready: true,
+    dev: false,
+    overrides: {
+      compatibilityDate: 'latest',
+      devtools: { enabled: false },
+      ssr: true,
+      features: { inlineStyles: true },
+      vite: { plugins: [recorder] },
+    },
+  })
+
+  try {
+    await buildNuxt(nuxt)
+  } finally {
+    await nuxt.close()
+  }
+
+  return ssrTransforms
 }
 
-function setup (environmentName: 'client' | 'ssr') {
-  const plugin = SSRStylesPlugin(createNuxt())!
-  ;(plugin.configResolved as any)({ environments: {}, build: { rolldownOptions: { input: '/app/entry.ts' } } })
-  const env = (plugin.applyToEnvironment as any)({ name: environmentName })
-  const ctx = {
-    environment: { name: environmentName },
-    resolve: (id: string) => Promise.resolve({ id }),
-  }
-  return {
-    resolveId: (id: string, importer = COMPONENT) => env.resolveId.handler.call(ctx, id, importer, {}),
-    load: (id: string) => env.load.filter.id.test(id) ? env.load.handler.call(ctx, id) : undefined,
+async function render () {
+  const port = await getRandomPort('127.0.0.1')
+  const server = spawn(process.execPath, [join(tmpDir, '.output/server/index.mjs')], {
+    env: { ...process.env, HOST: '127.0.0.1', PORT: String(port) },
+    stdio: 'ignore',
+  })
+  try {
+    for (let i = 0; i < 100; i++) {
+      const html = await fetch(`http://127.0.0.1:${port}/`).then(r => r.text()).catch(() => undefined)
+      if (html) { return html }
+      await sleep(100)
+    }
+    throw new Error('server did not start')
+  } finally {
+    server.kill()
   }
 }
 
-describe('ssr-styles plugin', () => {
-  it('gives plain style blocks an empty module in the server build', async () => {
-    const { resolveId, load } = setup('ssr')
-    const resolved = await resolveId(STYLE)
-    expect(resolved).toEqual({ id: expect.stringMatching(/^\0/), moduleSideEffects: false })
-    expect(load(resolved.id)).toBe('export {}')
+describe('ssr styles', () => {
+  afterAll(async () => {
+    await rm(tmpDir, { recursive: true, force: true })
   })
 
-  it.each([
-    ['inlined styles', withInlineQuery(STYLE)],
-    ['custom element styles', `${COMPONENT}?vue&type=style&index=0&inline&lang.css`],
-    ['CSS modules', `${COMPONENT}?vue&type=style&index=0&module&lang.module.css`],
-    ['named CSS modules', `${COMPONENT}?vue&type=style&index=0&module=classes&lang.module.css`],
-  ])('compiles %s in the server build', async (_, id) => {
-    const { resolveId } = setup('ssr')
-    expect(await resolveId(id)).toEqual({ id, moduleSideEffects: false })
-  })
+  it('compiles only the style blocks the server build reads', async () => {
+    await rm(tmpDir, { recursive: true, force: true })
+    await writeApp()
 
-  it('compiles plain style blocks in the client build', async () => {
-    const { resolveId } = setup('client')
-    expect(await resolveId(STYLE)).toEqual({ id: STYLE, moduleSideEffects: false })
-  })
+    const ssrTransforms = await build()
+    const styleTransforms = ssrTransforms.filter(id => id.includes('type=style'))
+    expect(styleTransforms.filter(id => !id.includes('&inline&used&') && !id.includes('.module.'))).toEqual([])
+
+    const html = await render()
+    const inlined = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('\n')
+    for (const css of ['.app{color:#123456}', '.plain{color:#654321}', 'margin:3px', 'padding:5px']) {
+      expect(inlined).toContain(css)
+    }
+    expect(html).not.toMatch(/<link[^>]+rel="stylesheet"/)
+    expect(html).toMatch(/<p class="[^"]*_moduleClass_/)
+  }, 240 * 1000)
 })

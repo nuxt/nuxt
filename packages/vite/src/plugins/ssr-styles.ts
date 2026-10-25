@@ -20,11 +20,9 @@ const QUERY_RE = /\?.+$/
 const MACRO_QUERY_RE = /[?&]macro(?:=|&|$)/
 const NUXT_COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 const STYLE_QUERY_RE = /[?&]type=style/
-// `?inline` (inlined styles, custom elements) and CSS modules export something the
-// server bundle reads; other style blocks are only imported for their side effect.
-const STYLE_WITH_EXPORTS_RE = /[?&]inline\b|[?&]module\b|\.module\.\w+$/
+// style blocks the server bundle reads exports from: `?inline` (inlined styles, custom elements) and CSS modules
+const STYLE_WITH_EXPORTS_RE = /[?&]inline(?:&|$)|\.module\.\w+$/
 const EMPTY_STYLE_ID = '\0nuxt:ssr-styles:empty'
-const EMPTY_STYLE_ID_RE = /^\0nuxt:ssr-styles:empty$/
 
 /**
  * Wrap a string `generateScopedName` pattern into a function that strips any
@@ -478,8 +476,6 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             },
           },
           async handler (id, importer, _options) {
-            // Nothing reads the server build's CSS for these style blocks, so skip compiling
-            // it. Styles to inline are compiled from their own `?inline&used` ids.
             if (environment.name === 'ssr' && STYLE_QUERY_RE.test(id) && !STYLE_WITH_EXPORTS_RE.test(id)) {
               return { id: EMPTY_STYLE_ID, moduleSideEffects: false }
             }
@@ -500,7 +496,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           },
         },
         load: {
-          filter: { id: EMPTY_STYLE_ID_RE },
+          filter: { id: new RegExp(`^${escapeStringRegexp(EMPTY_STYLE_ID)}$`) },
           handler () {
             return 'export {}'
           },
