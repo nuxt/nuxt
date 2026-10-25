@@ -195,13 +195,18 @@ describe('setupNitroCompat', () => {
     await expect(plugin.resolveId.handler.call(context, 'ofetch', '/modules/handler.ts')).resolves.toBeUndefined()
   })
 
-  it('resolves nitro and its implicit dependencies for an importer that cannot reach them, registered once for every server build', async () => {
+  it('registers its plugins once, on the rollup config, with nitroViteEnvironment', async () => {
     const nuxt = createNuxt({ experimental: { nitroViteEnvironment: true } })
     const nitroConfig: NitroConfig = { handlers: [] }
     await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
 
-    const vitePlugins = (nuxt.options.vite.plugins || []) as any[]
-    expect(vitePlugins.filter(plugin => plugin.applyToEnvironment?.({ name: 'nitro' }))).toEqual([])
+    expect(nuxt.options.vite.plugins ?? []).toEqual([])
+    expect((nitroConfig.rollupConfig!.plugins as any[]).map(plugin => plugin.name)).toEqual(['nuxt:nitro-v2-compat', 'nuxt:nitro-resolve-fallback'])
+  })
+
+  it('resolves nitro and its implicit dependencies for an importer that cannot reach them', async () => {
+    const nitroConfig: NitroConfig = { handlers: [] }
+    await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
 
     const resolvers = nitroConfig.rollupConfig!.plugins as any[]
     // Simulate repeated resolution probes returning a previously resolved ID.
@@ -231,7 +236,7 @@ describe('setupNitroCompat', () => {
     await expect(resolveId('h3x')).resolves.toBeUndefined()
 
     const fallback = resolvers.find(plugin => plugin.name === 'nuxt:nitro-resolve-fallback')
-    expect([fallback.enforce, fallback.resolveId.order]).toEqual(['post', 'post'])
+    expect(fallback.resolveId.order).toBe('post')
   })
 
   it('resolves nitro for a virtual importer', async () => {
@@ -314,7 +319,7 @@ describe('setupNitroCompat', () => {
     expect(after.code.toString()).not.toContain('nitro/runtime-config')
 
     // the reverse order cannot be repaired after the fact, which is why the plugin
-    // declares `order` and `enforce` for both build paths
+    // declares `order`
     const nitroFirst = await nitroPass.injectImports(code, '/modules/handler.ts')
     const oursSecond = await plugin.transform.handler.call(null, nitroFirst.code.toString(), '/modules/handler.ts')
     expect(oursSecond?.code ?? nitroFirst.code.toString()).toContain('nitro/runtime-config')
