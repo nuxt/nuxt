@@ -937,6 +937,30 @@ describe('useAsyncData', () => {
     expect(key in nuxtApp.payload.data).toBe(false)
   })
 
+  it('should not purge a newer entry for the same key from an older entry', async () => {
+    const key = `purged-entry-replaced-${++counter}`
+    const nuxtApp = useNuxtApp()
+
+    const firstPage = effectScope()
+    firstPage.run(() => useAsyncData(key, () => Promise.resolve('first')))
+    firstPage.stop()
+
+    const secondPage = effectScope()
+    const second = secondPage.run(() => useAsyncData(key, () => Promise.resolve('second')))!
+    second.data.value = 'second'
+    secondPage.stop()
+
+    const reader = effectScope()
+    const { data } = reader.run(() => useNuxtData(key))!
+    await nextTick()
+    expect(data.value).toBe('second')
+    expect(nuxtApp._asyncData[key]).toBeDefined()
+
+    reader.stop()
+    await nextTick()
+    expect(key in nuxtApp._asyncData).toBe(false)
+  })
+
   it('should run middleware around the handler on every execution', async () => {
     const calls: string[] = []
     const { data, refresh } = await useAsyncData(uniqueKey, () => {

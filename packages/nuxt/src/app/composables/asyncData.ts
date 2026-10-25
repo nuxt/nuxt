@@ -1058,12 +1058,13 @@ function buildAsyncData<
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
         nextTick(() => {
-          if (!nuxtApp._asyncData[key]?._init && asyncData._deps === 0) {
+          if (asyncData._deps > 0) {
+            return
+          }
+          asyncData.execute = () => Promise.resolve()
+          if (nuxtApp._asyncData[key] === asyncData) {
             clearNuxtDataByKey(nuxtApp, key)
-            asyncData.execute = () => Promise.resolve()
-            if (nuxtApp._asyncData[key] === asyncData) {
-              delete nuxtApp._asyncData[key]
-            }
+            delete nuxtApp._asyncData[key]
           }
         })
       }
