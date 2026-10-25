@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
+import { NavigationFailureType, isNavigationFailure } from 'vue-router'
 
 import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
 
@@ -918,6 +919,69 @@ describe('routing utilities: `navigateTo`', () => {
     el.unmount()
     router.removeRoute('slug')
   })
+
+  it('should navigate when called outside middleware while a navigation is pending', async () => {
+    const router = useRouter()
+    let release!: () => void
+    const blocked = new Promise<void>((resolve) => { release = resolve })
+    let enter!: () => void
+    const entered = new Promise<void>((resolve) => { enter = resolve })
+    const removeGuard = router.beforeResolve(async (to) => {
+      if (to.query.section === 'roles') {
+        enter()
+        await blocked
+      }
+    })
+
+    try {
+      const older = navigateTo({ path: '/', query: { section: 'roles' } })
+      await entered
+      await navigateTo({ path: '/', query: { section: 'employment' } })
+      release()
+      await older
+    } finally {
+      removeGuard()
+    }
+
+    expect(router.currentRoute.value.query.section).toBe('employment')
+  })
+
+  it('should redirect from middleware while an earlier navigation is being cancelled', async () => {
+    const router = useRouter()
+    let releaseFirst!: () => void
+    const firstBlocked = new Promise<void>((resolve) => { releaseFirst = resolve })
+    let releaseSecond!: () => void
+    const secondBlocked = new Promise<void>((resolve) => { releaseSecond = resolve })
+    let enterSecond!: () => void
+    const secondEntered = new Promise<void>((resolve) => { enterSecond = resolve })
+    const middleware = defineNuxtRouteMiddleware(async (to) => {
+      if (to.query.race === 'first') {
+        await firstBlocked
+      }
+      if (to.query.race === 'second') {
+        enterSecond()
+        await secondBlocked
+        return navigateTo({ path: '/', query: { race: 'redirected' } })
+      }
+    })
+    addRouteMiddleware(middleware, { global: true })
+
+    try {
+      const first = router.push({ path: '/', query: { race: 'first' } })
+      const second = router.push({ path: '/', query: { race: 'second' } })
+      await secondEntered
+      releaseFirst()
+      await first
+      releaseSecond()
+      await second
+    } finally {
+      const globalMiddleware = useNuxtApp()._middleware.global
+      globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+    }
+
+    expect(router.currentRoute.value.query.race).toBe('redirected')
+    expect(router.currentRoute.value.redirectedFrom?.query.race).toBe('second')
+  })
 })
 
 describe('routing utilities: `resolveRouteObject`', () => {
@@ -1150,6 +1214,18 @@ describe('routing utilities: `abortNavigation`', () => {
   it('should block navigation if no error is provided', () => {
     expect(abortNavigation()).toMatchInlineSnapshot('false')
   })
+  it('should abort navigation from a router guard in development', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+    const router = useRouter()
+    const removeGuard = router.beforeEach(to => to.query.abortGuard ? abortNavigation() : undefined)
+    try {
+      const failure = await router.push('/?abortGuard=1')
+      expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(true)
+    } finally {
+      removeGuard()
+      vi.unstubAllGlobals()
+    }
+  })
 
   describe('aborted navigation', () => {
     const abortMiddleware = defineNuxtRouteMiddleware(to => to.query.abort ? abortNavigation() : undefined)
@@ -1212,6 +1288,57 @@ describe('routing utilities: `setPageLayout`', () => {
     setPageLayout('custom')
     expect(route.meta.layout).toBeUndefined()
     nuxtApp._processingMiddleware = false
+  })
+
+  it('should set layout on the target route if run within a router guard', async () => {
+    const router = useRouter()
+    router.addRoute({
+      name: 'layout-guard-test',
+      path: '/layout-guard-test',
+      component: defineComponent({ template: '<div />' }),
+    })
+    const from = router.currentRoute.value
+    const removeGuard = router.beforeEach((to) => {
+      if (to.path === '/layout-guard-test') {
+        setPageLayout('custom')
+      }
+    })
+    try {
+      await router.push('/layout-guard-test')
+    } finally {
+      removeGuard()
+      router.removeRoute('layout-guard-test')
+    }
+    expect(from.meta.layout).toBeUndefined()
+    expect(router.currentRoute.value.meta.layout).toBe('custom')
+  })
+
+  it.each([
+    ['to the current route', ['/?layoutRedirect=current']],
+    ['through another route to the current route', ['/?layoutRedirect=hop', '/?layoutRedirect=current']],
+  ])('should set layout on page metadata after middleware redirects %s', async (_, targets) => {
+    const router = useRouter()
+    const route = useRoute()
+    await router.push('/')
+    const middleware = defineNuxtRouteMiddleware((to) => {
+      if (to.query.layoutRedirect === 'hop') {
+        return navigateTo('/?layoutRedirect=current')
+      }
+      if (to.query.layoutRedirect === 'current') {
+        return navigateTo('/')
+      }
+    })
+    addRouteMiddleware(middleware, { global: true })
+    try {
+      await router.push(targets[0]!)
+    } finally {
+      const globalMiddleware = useNuxtApp()._middleware.global
+      globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+    }
+    expect(route.fullPath).toBe('/')
+    setPageLayout('custom')
+    expect(route.meta.layout).toBe('custom')
+    route.meta.layout = undefined
   })
 
   it('should preserve layout and props on same-path (query-only) navigation', async () => {

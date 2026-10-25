@@ -129,7 +129,7 @@ interface _NuxtApp {
   '_processingMiddleware'?: string | boolean
 
   /** @internal */
-  '_middlewareTo'?: Pick<RouteLocationNormalizedLoaded, 'meta'>
+  '_middlewareTo'?: Pick<RouteLocationNormalizedLoaded, 'meta' | 'redirectedFrom'>
 
   /** @internal */
   '_once': {

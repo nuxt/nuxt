@@ -5,7 +5,7 @@ import { decodePath, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
-import { isInComponentSetup, useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { isInComponentSetup, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import { sanitizeStatusCode } from '../utils/http-status'
 import { getScriptProtocol, getUserTrace, isAbsoluteHref } from '../utils'
@@ -137,6 +137,11 @@ const isProcessingMiddleware = () => {
     return false
   }
   return false
+}
+
+const isNavigationPending = () => {
+  const nuxtApp = tryUseNuxtApp()
+  return !!(nuxtApp?._processingMiddleware || nuxtApp?._middlewareTo)
 }
 
 // Conditional types, either one or other
@@ -359,7 +364,7 @@ export function _navigateToEarlyReturn () {
  * @since 3.0.0
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
-  if (import.meta.dev && !isProcessingMiddleware()) {
+  if (import.meta.dev && !isNavigationPending()) {
     throw navigationDiagnostics.NUXT_E2003()
   }
 
@@ -390,7 +395,7 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts | false>(layout: 
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
     navigationDiagnostics.NUXT_E2008()
   }
-  const inMiddleware = isProcessingMiddleware()
+  const inMiddleware = isNavigationPending()
   const middlewareTo = import.meta.server && inMiddleware && nuxtApp._middlewareTo
   if (middlewareTo) {
     middlewareTo.meta.layout = layout as any
