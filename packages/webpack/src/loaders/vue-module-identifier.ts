@@ -19,8 +19,16 @@ const vueModuleIdentifierLoader: LoaderDefinitionFunction<LoaderOptions> = funct
   const relativePath = context ? relative(context, resourcePath) : resourcePath
   const moduleId = normalize(relativePath).replace(/^\.\//, '').replace(/\\/g, '/')
 
-  const snippet = `\n;__exports__.__moduleIdentifier = ${JSON.stringify(moduleId)};`
-  return source + snippet
+  return source + [
+    '',
+    'import { useSSRContext as __nuxt_useSSRContext } from \'vue\'',
+    'const __nuxt_setup = __exports__.setup',
+    '__exports__.setup = (props, ctx) => {',
+    '  const ssrContext = __nuxt_useSSRContext()',
+    `  ;(ssrContext.modules ||= new Set()).add(${JSON.stringify(moduleId)})`,
+    '  return __nuxt_setup ? __nuxt_setup(props, ctx) : undefined',
+    '}',
+  ].join('\n')
 }
 
 export default vueModuleIdentifierLoader

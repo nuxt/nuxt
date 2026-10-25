@@ -10,6 +10,7 @@ import { TsCheckerPlugin, webpack } from '../builder.ts'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
 const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
+const VUE_PACKAGES = new Set(['vue', 'vue/server-renderer', '@vue/server-renderer', '@vue/runtime-dom', '@vue/runtime-core', '@vue/reactivity', '@vue/shared'])
 
 export async function server (ctx: WebpackConfigContext) {
   ctx.name = 'server'
@@ -45,7 +46,7 @@ export function serverPreset (ctx: WebpackConfigContext) {
   }
 }
 
-function serverStandalone (ctx: WebpackConfigContext) {
+export function serverStandalone (ctx: WebpackConfigContext) {
   // TODO: Refactor this out of webpack
   const inline = [
     'src/',
@@ -68,6 +69,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     'nitropack/runtime',
     '#shared',
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
+    ...VUE_PACKAGES,
     ...ctx.nuxt['~runtimeDependencies'] || [],
   ])
   if (!ctx.nuxt.options.dev) {
@@ -92,7 +94,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     }
     if (external.has(request)) {
       // Resolve to absolute path so nitro can handle version resolution
-      const resolved = resolveModulePath(request, {
+      const resolved = resolveModulePath(VUE_PACKAGES.has(request) ? resolveAlias(request, ctx.nuxt.options.alias) : request, {
         from: context ? [context, ...ctx.nuxt.options.modulesDir].map(d => directoryToURL(d)) : ctx.nuxt.options.modulesDir.map(d => directoryToURL(d)),
         suffixes: ['', 'index'],
         conditions,

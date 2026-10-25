@@ -230,6 +230,7 @@ export interface NitroConfigFallback {
   typescript?: { tsConfig?: Record<string, any>, generateTsConfig?: boolean, strict?: boolean }
   tracingChannel?: boolean | (TracingChannelOptionsBase & Record<string, boolean | undefined>)
   experimental?: { envExpansion?: boolean }
+  rollupConfig?: { plugins?: unknown }
 }
 
 /** @internal */
