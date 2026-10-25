@@ -6,7 +6,7 @@ import type { NuxtRequestEvent } from '@nuxt/schema'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import type { NuxtApp } from '../nuxt'
-import { useNuxtApp } from '../nuxt'
+import { tryUseNuxtApp, useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 import { stateDiagnostics } from '../diagnostics/state'
 
@@ -188,7 +188,12 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const hasScope = !!getCurrentScope()
 
     if (hasScope) {
+      const app = tryUseNuxtApp()
+      const writers = app && (app._cookieWriters ||= new Set())
+      const write = () => callback()
+      writers?.add(write)
       onScopeDispose(() => {
+        writers?.delete(write)
         cookieWatcher?.pause()
         callback()
         channel?.close()
