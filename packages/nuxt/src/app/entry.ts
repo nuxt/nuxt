@@ -17,11 +17,21 @@ import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRo
 
 export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>
 
+declare const __VUE_OPTIONS_API__: boolean
+
 let entry: Entry
 
 if (import.meta.server) {
+  const propsCache = new WeakMap()
+  const emitsCache = new WeakMap()
+
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
+    if (!__VUE_OPTIONS_API__) {
+      const context = vueApp._context as typeof vueApp._context & { propsCache: typeof propsCache, emitsCache: typeof emitsCache }
+      context.propsCache = propsCache
+      context.emitsCache = emitsCache
+    }
 
     const nuxt = createNuxtApp({ vueApp, ssrContext })
 

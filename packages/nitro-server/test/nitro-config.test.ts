@@ -8,9 +8,13 @@ import type { Nitro, NitroConfig } from 'nitropack/types'
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
 
 const serverReplacements = {
+  '__VUE_OPTIONS_API__': 'true',
   '__VUE_PROD_DEVTOOLS__': 'false',
+  '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': 'false',
   'import.meta.test': 'false',
 }
+
+const hasBundledVuePlugin = (nitroConfig: NitroConfig) => (nitroConfig.rollupConfig!.plugins as Array<{ name?: string }>).some(plugin => plugin?.name === 'nuxt:bundled-vue')
 
 async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConfig: NitroConfig) => T | Promise<T>) {
   let nitroConfig: NitroConfig | undefined
@@ -80,6 +84,15 @@ describe('nitro config', () => {
     await withNitro({}, async (nitro) => {
       expect(await isInlined(nitro, '/project/node_modules/nuxt/dist/runtime/server/renderer/index.js')).toBe(true)
       expect(await isInlined(nitro, 'D:\\project\\node_modules\\nuxt\\dist\\runtime\\server\\renderer\\index.js')).toBe(true)
+    })
+  })
+
+  it('resolves inlined vue to its esm-bundler builds in production', async () => {
+    await withNitro({ dev: false }, (_nitro, nitroConfig) => {
+      expect(hasBundledVuePlugin(nitroConfig)).toBe(true)
+    })
+    await withNitro({ dev: false, vue: { runtimeCompiler: true } }, (_nitro, nitroConfig) => {
+      expect(hasBundledVuePlugin(nitroConfig)).toBe(false)
     })
   })
 

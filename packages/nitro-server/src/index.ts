@@ -472,7 +472,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '#internal/nuxt/paths': resolve(distDir, 'runtime/utils/paths'),
     },
     replace: {
+      '__VUE_OPTIONS_API__': String(!!nuxt.options.vue.optionsApi),
       '__VUE_PROD_DEVTOOLS__': String(false),
+      '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': String(!!nuxt.options.debug && !!nuxt.options.debug.hydration),
       'import.meta.test': String(!!nuxt.options.test),
     },
     rollupConfig: {
