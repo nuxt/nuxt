@@ -15,14 +15,7 @@ let scratch: Uint8Array | undefined
  */
 export function encodeDocument (chunks: string[]): Uint8Array<ArrayBuffer> {
   let length = 0
-  let splitsPair = false
-  for (const chunk of chunks) {
-    length += chunk.length
-    splitsPair ||= isHighSurrogate(chunk.charCodeAt(chunk.length - 1))
-  }
-  if (splitsPair) {
-    chunks = joinSurrogatePairs(chunks)
-  }
+  for (const chunk of chunks) { length += chunk.length }
   // UTF-8 needs at most 3 bytes per UTF-16 code unit
   const needed = length * 3
   if (needed > MAX_SCRATCH_SIZE) {
@@ -35,37 +28,35 @@ export function encodeDocument (chunks: string[]): Uint8Array<ArrayBuffer> {
   return encodeVia(chunks, scratch)
 }
 
-function isHighSurrogate (code: number): boolean {
-  return code >= 0xD800 && code <= 0xDBFF
-}
-
-function joinSurrogatePairs (chunks: string[]): string[] {
-  const joined: string[] = []
-  let pending = ''
-  for (const chunk of chunks) {
-    pending += chunk
-    if (!isHighSurrogate(pending.charCodeAt(pending.length - 1))) {
-      joined.push(pending)
-      pending = ''
+/** Write each chunk in turn, rewriting a high surrogate that ends a chunk with the chunk after it. */
+function writeChunks (chunks: string[], write: (chunk: string, offset: number) => number): number {
+  let offset = 0
+  let carry = ''
+  for (let chunk of chunks) {
+    if (carry) {
+      chunk = carry + chunk
+      carry = ''
+    }
+    offset += write(chunk, offset)
+    // checked once written, when the chunk is already flat; a lone high surrogate is written as U+FFFD
+    const last = chunk.charCodeAt(chunk.length - 1)
+    if (last >= 0xD800 && last <= 0xDBFF) {
+      offset -= 3
+      carry = chunk.slice(-1)
     }
   }
-  if (pending) {
-    joined.push(pending)
+  if (carry) {
+    offset += write(carry, offset)
   }
-  return joined
+  return offset
 }
 
 function encodeVia (chunks: string[], target: Uint8Array): Uint8Array<ArrayBuffer> {
-  let offset = 0
   if (hasBuffer) {
-    for (const chunk of chunks) {
-      offset += (target as Buffer).write(chunk, offset)
-    }
+    const offset = writeChunks(chunks, (chunk, offset) => (target as Buffer).write(chunk, offset))
     return Buffer.from(target.subarray(0, offset)) as Uint8Array<ArrayBuffer>
   }
-  for (const chunk of chunks) {
-    offset += textEncoder.encodeInto(chunk, target.subarray(offset)).written
-  }
+  const offset = writeChunks(chunks, (chunk, offset) => textEncoder.encodeInto(chunk, target.subarray(offset)).written)
   return target.slice(0, offset) as Uint8Array<ArrayBuffer>
 }
 
@@ -73,9 +64,5 @@ function encodeExact (chunks: string[]): Uint8Array<ArrayBuffer> {
   let size = 0
   for (const chunk of chunks) { size += Buffer.byteLength(chunk) }
   const bytes = Buffer.allocUnsafe(size)
-  let offset = 0
-  for (const chunk of chunks) {
-    offset += bytes.write(chunk, offset)
-  }
-  return bytes as Uint8Array<ArrayBuffer>
+  return bytes.subarray(0, writeChunks(chunks, (chunk, offset) => bytes.write(chunk, offset))) as Uint8Array<ArrayBuffer>
 }

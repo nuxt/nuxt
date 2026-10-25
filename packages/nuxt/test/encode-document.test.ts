@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const decode = (bytes: Uint8Array) => new TextDecoder().decode(bytes)
-const byteLength = (value: string) => new TextEncoder().encode(value).byteLength
 
 describe.each([
   ['with Buffer', false],
@@ -45,12 +44,14 @@ describe.each([
     ['larger than the reused buffer', 20],
   ])('encodes a document %s', async (_, count) => {
     const encodeDocument = await load()
-    const chunk = 'x'.repeat(100_000) + '→'
+    const [high, low] = '😀'.split('')
+    const chunk = low + 'x'.repeat(100_000) + '→' + high
     const chunks = Array.from({ length: count }, () => chunk)
     encodeDocument(['small'])
     const bytes = encodeDocument(chunks)
-    expect(bytes.byteLength).toBe(byteLength(chunks.join('')))
-    expect(decode(bytes)).toBe(chunks.join(''))
+    const expected = new TextEncoder().encode(chunks.join(''))
+    expect(bytes.byteLength).toBe(expected.byteLength)
+    expect(decode(bytes)).toBe(decode(expected))
   })
 
   it('returns bytes that are independent of later calls', async () => {
