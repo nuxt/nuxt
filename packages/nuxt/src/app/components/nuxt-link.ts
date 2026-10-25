@@ -288,10 +288,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
   }
 
   /**
-   * Render an internal link as a plain anchor, matching the markup `<RouterLink>` produces
-   * for the same location.
+   * Resolve the link state `<RouterLink>` exposes for an internal location.
    */
-  function renderStaticInternalLink (props: NuxtLinkProps, slots: { default?: (props?: any) => VNode[] }, router: Router, rawTo: RouteLocationRaw) {
+  function resolveStaticLink (props: NuxtLinkProps, router: Router, rawTo: RouteLocationRaw) {
     if (import.meta.dev) {
       checkPropConflicts(props, 'to', 'href')
       checkPropConflicts(props, 'noRel', 'rel')
@@ -300,8 +299,21 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     const route = router.resolve(resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash))
     const currentRoute = router.currentRoute.value
     const index = activeRecordIndex(route, currentRoute)
-    const isActive = index > -1 && includesParams(currentRoute.params, route.params)
-    const isExactActive = index > -1 && index === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.params)
+    return {
+      route,
+      href: sanitizeAnchorHref(route.href),
+      isActive: index > -1 && includesParams(currentRoute.params, route.params),
+      isExactActive: index > -1 && index === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.params),
+      navigate: async () => { await navigateTo(route.href, { replace: props.replace }) },
+    }
+  }
+
+  /**
+   * Render an internal link as a plain anchor, matching the markup `<RouterLink>` produces
+   * for the same location.
+   */
+  function renderStaticInternalLink (props: NuxtLinkProps, slots: { default?: (props?: any) => VNode[] }, router: Router, rawTo: RouteLocationRaw) {
+    const link = resolveStaticLink(props, router, rawTo)
 
     let dataInternal: string | undefined
     if (componentIslands && useNuxtApp().ssrContext?.islandContext) {
@@ -313,23 +325,33 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     }
 
     const routerOptions = router.options
-    const href = sanitizeAnchorHref(route.href)
     return h('a', {
-      'aria-current': isExactActive ? (props.ariaCurrentValue ?? 'page') : null,
-      href,
+      'aria-current': link.isExactActive ? (props.ariaCurrentValue ?? 'page') : null,
+      'href': link.href,
       'class': {
-        [getLinkClass(props.activeClass || options.activeClass, routerOptions.linkActiveClass, 'router-link-active')]: isActive,
-        [getLinkClass(props.exactActiveClass || options.exactActiveClass, routerOptions.linkExactActiveClass, 'router-link-exact-active')]: isExactActive,
+        [getLinkClass(props.activeClass || options.activeClass, routerOptions.linkActiveClass, 'router-link-active')]: link.isActive,
+        [getLinkClass(props.exactActiveClass || options.exactActiveClass, routerOptions.linkExactActiveClass, 'router-link-exact-active')]: link.isExactActive,
       },
       'rel': props.rel || undefined,
       'data-internal': dataInternal,
-    }, slots.default?.({
-      route,
-      href,
-      isActive,
-      isExactActive,
-      navigate: () => navigateTo(route.href, { replace: props.replace }),
-    }))
+    }, slots.default?.(link))
+  }
+
+  /**
+   * Render the slot of an internal `custom` link with the props `<RouterLink custom>` passes to it.
+   */
+  function renderStaticCustomLink (props: NuxtLinkProps, slots: { default?: (props: NuxtLinkSlotProps<true>) => VNode[] }, router: Router, rawTo: RouteLocationRaw) {
+    const link = resolveStaticLink(props, router, rawTo)
+    const vnodes = slots.default?.({
+      ...link,
+      rel: firstNonUndefined<string | null>(props.noRel ? '' : props.rel, options.externalRelAttribute, '') || null,
+      target: props.target || null,
+      isExternal: false,
+      prefetch: async () => {},
+      prefetched: false,
+      shouldPrefetch: () => false,
+    })
+    return vnodes?.length === 1 ? vnodes[0] : vnodes
   }
 
   return defineComponent({
@@ -424,13 +446,16 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     setup (props, { slots }) {
       const router = useRouter()
 
-      // On the server an internal link resolves to a static anchor, so it is rendered directly:
+      // On the server an internal link resolves to static markup, so it is rendered directly:
       // no `<RouterLink>` instance, no reactive link state and none of the client-only
       // prefetching setup below.
-      if (import.meta.server && !props.custom) {
+      if (import.meta.server) {
         const rawTo = props.to || props.href || ''
         const isExternalLink = props.external || (typeof rawTo === 'string' && (rawTo === '' || isAbsoluteHref(rawTo)))
         if (!isExternalLink && !isHashLinkWithoutHashMode(rawTo) && (!props.target || props.target === '_self')) {
+          if (props.custom) {
+            return () => renderStaticCustomLink(props, slots, router, rawTo)
+          }
           if (import.meta.dev) {
             checkNuxtLinkNesting()
           }
