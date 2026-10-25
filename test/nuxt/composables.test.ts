@@ -1313,6 +1313,34 @@ describe('routing utilities: `setPageLayout`', () => {
     expect(router.currentRoute.value.meta.layout).toBe('custom')
   })
 
+  it.each([
+    ['to the current route', ['/?layoutRedirect=current']],
+    ['through another route to the current route', ['/?layoutRedirect=hop', '/?layoutRedirect=current']],
+  ])('should set layout on page metadata after middleware redirects %s', async (_, targets) => {
+    const router = useRouter()
+    const route = useRoute()
+    await router.push('/')
+    const middleware = defineNuxtRouteMiddleware((to) => {
+      if (to.query.layoutRedirect === 'hop') {
+        return navigateTo('/?layoutRedirect=current')
+      }
+      if (to.query.layoutRedirect === 'current') {
+        return navigateTo('/')
+      }
+    })
+    addRouteMiddleware(middleware, { global: true })
+    try {
+      await router.push(targets[0]!)
+    } finally {
+      const globalMiddleware = useNuxtApp()._middleware.global
+      globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+    }
+    expect(route.fullPath).toBe('/')
+    setPageLayout('custom')
+    expect(route.meta.layout).toBe('custom')
+    route.meta.layout = undefined
+  })
+
   it('should preserve layout and props on same-path (query-only) navigation', async () => {
     const router = useRouter()
     router.addRoute({

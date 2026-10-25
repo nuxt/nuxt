@@ -167,7 +167,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       if (import.meta.server) {
         delete nuxtApp._processingMiddleware
         delete nuxtApp._middlewareTo
-      } else if (nuxtApp._middlewareTo === to) {
+      } else if (nuxtApp._middlewareTo && (nuxtApp._middlewareTo.redirectedFrom ?? nuxtApp._middlewareTo) === (to.redirectedFrom ?? to)) {
         delete nuxtApp._middlewareTo
       }
     }
