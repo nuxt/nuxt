@@ -134,6 +134,18 @@ describe('legacy `render:response` hook', () => {
     expect(event.res.statusText).toBe('Unavailable')
   })
 
+  it('offers each listener the body set by the previous one', async () => {
+    const event = mockEvent('http://nuxt/')
+    const hooks = {
+      callHook (_name: string, response: { body: string }) {
+        response.body = response.body.replace('</html>', '<!--first--></html>')
+        response.body = response.body.replace('</html>', '<!--second--></html>')
+      },
+    }
+
+    expect(await applyLegacyRenderResponse(event, hooks, toRenderBody('<html></html>'))).toBe('<html><!--first--><!--second--></html>')
+  })
+
   it('ignores a body replacement once the response is streaming', async () => {
     const event = mockEvent('http://nuxt/')
 

@@ -30,7 +30,7 @@ export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHo
   const headers = createHeaderRecord(event.res.headers)
   let replacement: string | undefined
   const response: LegacyRenderResponse = {
-    get body () { return body?.html },
+    get body () { return replacement ?? body?.html },
     set body (value: string | undefined) { replacement = value },
     statusCode: event.res.status,
     statusMessage: event.res.statusText,
