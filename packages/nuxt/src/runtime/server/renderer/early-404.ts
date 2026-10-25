@@ -26,7 +26,7 @@ function matchesPageRoute (pathname: string): boolean {
       // matched in encoded form
     }
   }
-  return !!NUXT_PAGE_MATCHER?.('', path.toLowerCase())
+  return !!NUXT_PAGE_MATCHER?.('', path)
 }
 
 /**

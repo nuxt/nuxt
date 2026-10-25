@@ -8,15 +8,16 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { tryUseNitro } from '@nuxt/kit'
-import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, pageDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import type { Nitro } from 'nitropack/types'
 import { resolveModulePath } from 'exsolve'
 
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, normalizePathCode, resolveRouteRulesRoutes } from './utils/route-rules.ts'
+import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, findCaseDependentRouteRuleKeyPart, normalizePathCode, resolveRouteRulesRoutes } from './utils/route-rules.ts'
 import type { RouteRulesRouter } from './utils/route-rules.ts'
+import { findRouterOptionsFileDefining } from '../pages/utils.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
 const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
@@ -783,22 +784,32 @@ const strippedAtAliases = {
  */
 const warnedKeyCollisions = new WeakMap<Nuxt, Set<string>>()
 
+const ROUTER_OPTIONS_FILE_RE = /(?:^|[/\\])router\.options\.\w+$/
+
 /** Compiled matchers, keyed by a hash of the route rules they were compiled from. */
 const cachedMatchers = new WeakMap<Nuxt, Record<string, string>>()
 
 export const routeRulesTemplate: NuxtTemplate = {
   filename: 'route-rules.mjs',
-  // `defineRouteRules` is extracted from page sources, so without it route rules come only
-  // from configuration
-  dependsOn: (_change, { nuxt }) => !!nuxt.options.experimental.inlineRouteRules,
-  getContents ({ nuxt }) {
+  // route rules can come from page sources (`defineRouteRules`), and `router.options` files
+  // can set `sensitive`
+  dependsOn: (change, { nuxt }) => !!nuxt.options.experimental.inlineRouteRules || ROUTER_OPTIONS_FILE_RE.test(change.path),
+  async getContents ({ nuxt }) {
     const routes = resolveRouteRulesRoutes(nuxt).routes
-      .filter(({ route, data }) => route !== '/__nuxt_error' && VALID_MANIFEST_KEYS.some(key => key in data))
+      .filter(({ route, data }) => route !== '/__nuxt_error' && VALID_MANIFEST_KEYS.some(key => data[key] !== undefined))
+    const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
+    const caseDependent = routes
+      .map(({ route }) => ({ route, part: findCaseDependentRouteRuleKeyPart(route) }))
+      .find((entry): entry is { route: string, part: string } => entry.part !== undefined)
+    const mayBeCaseSensitive = caseSensitiveRouteRules || (!!caseDependent && !!await findRouterOptionsFileDefining(nuxt, 'sensitive'))
+    if (caseDependent && !mayBeCaseSensitive) {
+      throw pageDiagnostics.NUXT_B4022(caseDependent)
+    }
     if (!routes.length) {
       return `export default () => ({})`
     }
     const cache = cachedMatchers.get(nuxt) ?? cachedMatchers.set(nuxt, {}).get(nuxt)!
-    const cacheKey = hash(routes)
+    const cacheKey = hash({ routes, mayBeCaseSensitive })
     if (cache[cacheKey]) {
       return cache[cacheKey]
     }
@@ -807,7 +818,6 @@ export const routeRulesTemplate: NuxtTemplate = {
     // folded lookup and silently lose its protections. `sensitive` can also come from
     // `app/router.options.ts` (runtime-only), so emit both a decoded and a decoded+folded
     // matcher and pick at runtime.
-    const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
     const warned = warnedKeyCollisions.get(nuxt) ?? warnedKeyCollisions.set(nuxt, new Set()).get(nuxt)!
     // rule keys are matched against router paths, which carry no base URL
     const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routes, '', fold, (existing, route, key) => {
@@ -849,10 +859,11 @@ export const routeRulesTemplate: NuxtTemplate = {
     }
     const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
     const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)
-    const needsRouterOptions = foldedMatcher !== sensitiveMatcher || caseSensitiveRouteRules
+    const needsRouterOptions = foldedMatcher !== sensitiveMatcher || mayBeCaseSensitive
     return cache[cacheKey] = [
       `import { defu } from 'defu'`,
       needsRouterOptions ? `import routerOptions from '#build/router.options.mjs'` : ``,
+      caseDependent ? `if (!routerOptions.sensitive) { throw new Error(${JSON.stringify(`[nuxt] The route rule \`${caseDependent.route}\` has a regex constraint that depends on letter case (\`${caseDependent.part}\`), so it cannot be matched with \`router.options.sensitive: false\`. Write the constraint for lower-case letters, such as \`[a-z]\` instead of \`[A-Z]\`.`)}) }` : ``,
       needsRouterOptions ? `const sensitiveMatcher = ${sensitiveMatcher}` : ``,
       needsRouterOptions
         ? (foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`)

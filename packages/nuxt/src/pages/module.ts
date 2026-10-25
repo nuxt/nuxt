@@ -1,5 +1,4 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import { join, relative, resolve } from 'pathe'
@@ -14,7 +13,7 @@ import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, findRouterOptionsFileDefining, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, resolveRouterOptions, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
@@ -44,23 +43,6 @@ export const pagesImportPresets: InlinePreset[] = [
 export const routeRulesPresets: InlinePreset[] = [
   { imports: ['defineRouteRules'], from: '#app/composables/pages' },
 ]
-
-async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
-  const context = {
-    files: [] as Array<{ path: string, optional?: boolean }>,
-  }
-
-  for (const layer of nuxt.options._layers) {
-    const path = await findPath(resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'router.options'))
-    if (path) { context.files.unshift({ path }) }
-  }
-
-  // Add default options at beginning
-  context.files.unshift({ path: builtInRouterOptions, optional: true })
-
-  await nuxt.callHook('pages:routerOptions', context)
-  return context.files
-}
 
 export default defineNuxtModule({
   meta: {
@@ -615,14 +597,10 @@ export default defineNuxtModule({
         return
       }
 
-      const routerOptionsFiles = await resolveRouterOptions(nuxt, builtInRouterOptions)
-      for (const file of routerOptionsFiles) {
-        if (file.optional) { continue }
-        const code = await readFile(file.path, 'utf-8').catch(() => undefined)
-        if (code === undefined || routerOptionsMayModifyRoutes(code, file.path)) {
-          pageDiagnostics.NUXT_B4020({ file: linkToAlias(file.path, nuxt) })
-          return
-        }
+      const routesFile = await findRouterOptionsFileDefining(nuxt, 'routes', builtInRouterOptions)
+      if (routesFile) {
+        pageDiagnostics.NUXT_B4020({ file: linkToAlias(routesFile, nuxt) })
+        return
       }
 
       // Patterns and lookups are always case-folded: with `sensitive` routing this can

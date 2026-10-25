@@ -43,12 +43,13 @@ describe('resolveRouteRules', () => {
     expect(resolveRouteRules(matcher, '/x/123', fold)).toEqual({})
   })
 
-  it('should match uppercase text in regex constraints case-insensitively when folding', () => {
-    const matcher = createMatcher({ '/x/:id([A-Z]+)': { prerender: true }, '/y/:role(Admin|User)': { ssr: false } })
+  it('should match regex constraints as written against the folded path when folding', () => {
+    const matcher = createMatcher({ '/X/:id([A-z]+)': { prerender: true }, '/Y/:role(admin|user)': { ssr: false } })
     expect(resolveRouteRules(matcher, '/x/ABC', true)).toEqual({ prerender: true })
     expect(resolveRouteRules(matcher, '/x/abc', true)).toEqual({ prerender: true })
+    expect(resolveRouteRules(matcher, '/X/_', true)).toEqual({ prerender: true })
     expect(resolveRouteRules(matcher, '/x/123', true)).toEqual({})
-    expect(resolveRouteRules(matcher, '/Y/Admin', true)).toEqual({ ssr: false })
+    expect(resolveRouteRules(matcher, '/y/Admin', true)).toEqual({ ssr: false })
   })
 
   it('should match uppercase text in regex constraints by case when not folding', () => {
@@ -61,5 +62,12 @@ describe('resolveRouteRules', () => {
     const matcher = createMatcher({ '/x/:id(a%2Eb)': { prerender: true } })
     expect(resolveRouteRules(matcher, '/x/a.b', true)).toEqual({ prerender: true })
     expect(resolveRouteRules(matcher, '/x/axb', true)).toEqual({})
+  })
+
+  it('should match constraints on letters that do not fold as written', () => {
+    const matcher = createMatcher({ '/x/:id([a-zİ]+)': { prerender: true }, '/y/:id([\u{10400}]+)': { ssr: false }, '/z/:id(\u{10400}+)': { noScripts: true } })
+    expect(resolveRouteRules(matcher, '/X/İstanbul', true)).toEqual({ prerender: true })
+    expect(resolveRouteRules(matcher, '/y/\u{10400}', true)).toEqual({ ssr: false })
+    expect(resolveRouteRules(matcher, '/z/\u{10400}', true)).toEqual({ noScripts: true })
   })
 })
