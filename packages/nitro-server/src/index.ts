@@ -31,6 +31,7 @@ import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-i
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizePathCode, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
+import { foldRouteCase } from '../../nuxt/src/core/utils/index.ts'
 import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
 import { addDevServerHandlers, collectServerRegistrations, toPortableDevHandlers } from './registrations.ts'
 import { nitroInternalApiTemplate, nitroSchemaTemplate } from './templates.ts'
@@ -1349,7 +1350,7 @@ function compilePageMatcher (patterns: string[]): string {
   for (const pattern of patterns) {
     addRoute(router, '', pattern, 1)
   }
-  return compileRouterToString(router)
+  return `/* @__PURE__ */ (() => {const foldRouteCase = ${foldRouteCase.toString()};const match = ${compileRouterToString(router)};return (method, path) => match(method, foldRouteCase(path));})()`
 }
 
 /**

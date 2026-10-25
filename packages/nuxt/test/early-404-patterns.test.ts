@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, routerOptionsMayModifyRoutes } from '../src/pages/utils.ts'
+import { collectRou3PagePatterns, routerOptionsMayDefine } from '../src/pages/utils.ts'
 
 describe('collectRou3PagePatterns', () => {
   it('should collect patterns for static and dynamic pages', () => {
@@ -90,8 +90,8 @@ describe('collectRou3PagePatterns', () => {
   })
 })
 
-describe('routerOptionsMayModifyRoutes', () => {
-  const check = (code: string) => routerOptionsMayModifyRoutes(code, 'router.options.ts')
+describe('routerOptionsMayDefine', () => {
+  const check = (code: string, key: 'routes' | 'sensitive' = 'routes') => routerOptionsMayDefine(code, 'router.options.ts', key)
 
   it('should allow object literals without a routes key', () => {
     expect(check('export default { scrollBehavior () { return { top: 0 } } }')).toBe(false)
@@ -104,6 +104,13 @@ describe('routerOptionsMayModifyRoutes', () => {
     expect(check('export default { routes: routes => routes }')).toBe(true)
     expect(check('export default { "routes": r => r }')).toBe(true)
     expect(check('export default <RouterConfig> { routes: (r) => r.filter(Boolean) }')).toBe(true)
+  })
+
+  it('should detect the requested key only', () => {
+    expect(check('export default <RouterConfig> { sensitive: true }', 'sensitive')).toBe(true)
+    expect(check('export default { "sensitive": false }', 'sensitive')).toBe(true)
+    expect(check('export default { routes: r => r }', 'sensitive')).toBe(false)
+    expect(check('export default { ...shared }', 'sensitive')).toBe(true)
   })
 
   it('should be conservative when the export cannot be analysed', () => {

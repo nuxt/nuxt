@@ -1,7 +1,7 @@
 import fs from 'node:fs'
-import { extname, normalize, relative } from 'pathe'
+import { extname, normalize, relative, resolve } from 'pathe'
 import { joinURL } from 'ufo'
-import { getLayerDirectories, resolveFiles, resolvePath, tryUseNuxt, useNuxt } from '@nuxt/kit'
+import { findPath, getLayerDirectories, resolveFiles, resolvePath, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { filename } from 'pathe/utils'
@@ -967,12 +967,49 @@ export function isSerializable (node: ESTree.Node): { value?: any, serializable:
 }
 
 /**
- * Statically determine whether a `router.options` file may modify `routes`.
- * Returns `true` (conservatively) when the default export is not a plain object
- * literal, contains spreads or computed keys, or defines a `routes` property.
+ * The `router.options` files of the app, in the order they are merged: the built-in options
+ * (when given, marked `optional`), then each layer's file, then any added by the
+ * `pages:routerOptions` hook.
  */
-export function routerOptionsMayModifyRoutes (code: string, filename: string): boolean {
-  let mayModify = true
+export async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions?: string) {
+  const context = {
+    files: [] as Array<{ path: string, optional?: boolean }>,
+  }
+
+  for (const layer of nuxt.options._layers) {
+    const path = await findPath(resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'router.options'))
+    if (path) { context.files.unshift({ path }) }
+  }
+
+  if (builtInRouterOptions) {
+    context.files.unshift({ path: builtInRouterOptions, optional: true })
+  }
+
+  await nuxt.callHook('pages:routerOptions', context)
+  return context.files
+}
+
+/**
+ * The first non-optional `router.options` file that may define `key` (see
+ * {@link routerOptionsMayDefine}), counting files that cannot be read.
+ */
+export async function findRouterOptionsFileDefining (nuxt: Nuxt, key: 'routes' | 'sensitive', builtInRouterOptions?: string): Promise<string | undefined> {
+  for (const file of await resolveRouterOptions(nuxt, builtInRouterOptions)) {
+    if (file.optional) { continue }
+    const code = await fs.promises.readFile(file.path, 'utf-8').catch(() => undefined)
+    if (code === undefined || routerOptionsMayDefine(code, file.path, key)) {
+      return file.path
+    }
+  }
+}
+
+/**
+ * Statically determine whether a `router.options` file may define `key`.
+ * Returns `true` (conservatively) when the default export is not a plain object
+ * literal, contains spreads or computed keys, or defines `key`.
+ */
+export function routerOptionsMayDefine (code: string, filename: string, key: 'routes' | 'sensitive'): boolean {
+  let mayDefine = true
   try {
     parseAndWalk(code, filename, (node) => {
       if (node.type !== 'ExportDefaultDeclaration') { return }
@@ -981,17 +1018,17 @@ export function routerOptionsMayModifyRoutes (code: string, filename: string): b
         declaration = declaration.expression
       }
       if (declaration.type !== 'ObjectExpression') { return }
-      mayModify = declaration.properties.some((property) => {
+      mayDefine = declaration.properties.some((property) => {
         if (property.type === 'SpreadElement') { return true }
-        const key = property.key
-        const name = key.type === 'Identifier' && !property.computed ? key.name : key.type === 'Literal' ? String(key.value) : undefined
-        return name === undefined || name === 'routes'
+        const propertyKey = property.key
+        const name = propertyKey.type === 'Identifier' && !property.computed ? propertyKey.name : propertyKey.type === 'Literal' ? String(propertyKey.value) : undefined
+        return name === undefined || name === key
       })
     })
   } catch {
     return true
   }
-  return mayModify
+  return mayDefine
 }
 
 /**
