@@ -7,7 +7,8 @@ export class ChunkErrorPlugin {
   apply (compiler: Compiler) {
     compiler.hooks.thisCompilation.tap(pluginName, (compilation) => {
       compilation.hooks.runtimeRequirementInTree
-        .for(webpack.runtime.RuntimeGlobals.ensureChunk)
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        .for(webpack.RuntimeGlobals.ensureChunk)
         .tap(pluginName, (chunk) => {
           compilation.addRuntimeModule(
             chunk,
@@ -18,13 +19,16 @@ export class ChunkErrorPlugin {
   }
 }
 
-class ChunkErrorRuntimeModule extends webpack.runtime.RuntimeModule {
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+class ChunkErrorRuntimeModule extends webpack.RuntimeModule {
   constructor () {
-    super('chunk preload error handler', webpack.runtime.RuntimeModule.STAGE_ATTACH)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    super('chunk preload error handler', webpack.RuntimeModule.STAGE_ATTACH)
   }
 
   override generate () {
-    const { ensureChunk } = webpack.runtime.RuntimeGlobals
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const { ensureChunk } = webpack.RuntimeGlobals
     return `
 if (typeof ${ensureChunk} !== "undefined") {
   var _ensureChunk = ${ensureChunk};
