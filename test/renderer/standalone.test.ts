@@ -88,6 +88,14 @@ describe('renderer without a server builder', () => {
     expect(html).toContain('<h1>rendered and replaced</h1>')
   })
 
+  it('sends the app markup an `app:rendered` listener rewrote', async () => {
+    const { html } = await render('/rewritten', {
+      createDocumentResponse: (received, init) => new Response(received.join(''), init),
+    })
+
+    expect(html).toContain('<h1>rewritten after render</h1>')
+  })
+
   it('resolves asset URLs through the helpers it was given', async () => {
     const { html } = await render('/')
 

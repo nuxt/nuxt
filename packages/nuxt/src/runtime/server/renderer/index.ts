@@ -364,6 +364,8 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     throw _err
   })
 
+  const renderedHtml = _rendered.html
+
   // A scriptless response has no chunk to link a stylesheet from, so it always inlines.
   // Both flags are build-time constants, so writing them out folds the branch away.
   const inlinedStyles = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) && !ssrContext['~renderResponse'] && !isRenderingPayload
@@ -550,9 +552,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
-  // the app markup is sent as rendered chunks unless a `render:html` listener changed the body
+  // the app markup is sent as rendered chunks unless a listener changed it
   const chunks = ssrContext['~htmlChunks']
-  if (runtime.createDocumentResponse && chunks && htmlContext.body.length === 2 && htmlContext.body[0] === _rendered.html) {
+  if (runtime.createDocumentResponse && chunks && htmlContext.body.length === 2 && htmlContext.body[0] === renderedHtml) {
     return runtime.createDocumentResponse(renderHTMLDocumentChunks(htmlContext, chunks), event.res)
   }
   return runtime.createResponse(renderHTMLDocument(htmlContext), event.res)
