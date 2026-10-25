@@ -8,10 +8,6 @@ packages:
   - test/fixtures/*
   - test/fixtures/*/_local-modules/*
 
-patchedDependencies:
-  # `types.d.ts` re-exports an extensionless path, which `nodenext` cannot resolve
-  nitropack@2.13.4: patches/nitropack@2.13.4.patch
-
 packageExtensions:
   # TODO: remove once nitro ships https://github.com/nitrojs/nitro/commit/db7a719c0
   nitro@3.0.260903-beta:
@@ -58,7 +54,6 @@ minimumReleaseAgeExclude:
   - unrouting
   - unimport
   - oxc-walker@1.1.1
-  - impound@1.2.0
   - vue
   - '@vue/*'
   # nitro betas and the unjs/h3 packages they pin are released in lockstep
@@ -75,7 +70,6 @@ minimumReleaseAgeExclude:
   - unstorage
   - unwasm
   - fetchdts@0.2.0
-  - pkg-types@2.3.3
   - package-manager-detector@1.9.0
 
 catalogs:
