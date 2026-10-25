@@ -36,7 +36,7 @@ jobs:
         !contains(github.event.head_commit.message, 'v4.') &&
         !contains(github.event.head_commit.message, 'v5.')
       )
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     permissions:
       contents: read
       pull-requests: read
@@ -79,7 +79,7 @@ jobs:
   build:
     needs: changes
     if: needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 10
     permissions:
       actions: write
@@ -132,7 +132,7 @@ jobs:
     # Regenerates the committed @nuxt/ui-templates output and fails on drift.
     needs: changes
     if: needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
       actions: write
@@ -253,7 +253,7 @@ jobs:
     # autofix workflow will be triggered instead for PRs; run in merge queue and on push to maintenance branches
     needs: changes
     if: (github.event_name == 'merge_group' || (github.event_name == 'push' && github.ref_name != 'main')) && needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
       actions: write
@@ -308,7 +308,7 @@ jobs:
   knip:
     needs: changes
     if: needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
       actions: write
@@ -343,7 +343,7 @@ jobs:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
     needs: changes
     if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     permissions:
       actions: write
       contents: read
@@ -528,7 +528,7 @@ jobs:
     # This job is the single required check for merge queues and branch protection.
     # All other jobs feed into this one. Skipped jobs are treated as successful.
     if: always()
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     needs:
       - changes
       - build
@@ -574,7 +574,7 @@ jobs:
       !contains(github.event.head_commit.message, '[skip-release]') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs: changes
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
     outputs:
       files: ${{ steps.pack.outputs.files }}
@@ -608,7 +608,7 @@ jobs:
   release-nightly:
     if: needs.pack-nightly.outputs.files != '' && needs.pack-nightly.outputs.files != '[]'
     needs: pack-nightly
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
     concurrency:
       group: release-nightly-${{ github.ref }}
@@ -626,7 +626,7 @@ jobs:
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
     needs: changes
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
 
     steps:

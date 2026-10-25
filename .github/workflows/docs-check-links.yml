@@ -19,7 +19,7 @@ permissions: {}
 
 jobs:
   link-checker:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     if: github.event_name != 'schedule' || github.repository == 'nuxt/nuxt'
     steps:
       # Cache lychee results (e.g. to avoid hitting rate limits)
