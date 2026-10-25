@@ -1579,6 +1579,67 @@ describe('useCookie', () => {
     expect(document.cookie).toContain('refresh-test=initial')
   })
 
+  it('should not re-write CookieStore updates when refresh is true', async () => {
+    const name = 'refresh-cookiestore-test'
+    const scope = effectScope()
+    const cookie = scope.run(() => useCookie(name, { maxAge: 3600, refresh: true }))!
+
+    let target: any = document
+    let descriptor: PropertyDescriptor | undefined
+    while (target && !descriptor) {
+      descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
+      if (!descriptor) { target = Object.getPrototypeOf(target) }
+    }
+
+    const writes: string[] = []
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get () {
+        return descriptor!.get!.call(document)
+      },
+      set (value: string) {
+        if (value.startsWith(`${name}=`)) { writes.push(value) }
+        descriptor!.set!.call(document, value)
+      },
+    })
+
+    try {
+      cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name, value: 'received' }], deleted: [] }))
+      expect(cookie.value).toBe('received')
+      await nextTick()
+      await nextTick()
+      expect(writes).toEqual([])
+
+      const value = cookie.value
+      cookie.value = value
+      await nextTick()
+      expect(writes).toHaveLength(1)
+      expect(writes[0]).toContain(`${name}=received`)
+
+      cookie.value = 'disposed'
+      scope.stop()
+      expect(writes).toHaveLength(2)
+      expect(writes[1]).toContain(`${name}=disposed`)
+    } finally {
+      scope.stop()
+      delete (document as any).cookie
+    }
+  })
+
+  it('should write an assignment made straight after a CookieStore update when refresh is true', async () => {
+    const name = 'refresh-cookiestore-assign-test'
+    const scope = effectScope()
+    const cookie = scope.run(() => useCookie(name, { maxAge: 3600, refresh: true }))!
+
+    cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name, value: 'received' }], deleted: [] }))
+    await nextTick()
+    cookie.value = 'local'
+    for (let i = 0; i < 4; i++) { await nextTick() }
+    expect(document.cookie).toContain(`${name}=local`)
+
+    scope.stop()
+  })
+
   it('should not re-write cookie on same-value assignment when refresh is false', async () => {
     const { nextTick } = await import('vue')
 
