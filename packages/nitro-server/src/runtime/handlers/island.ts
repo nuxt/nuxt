@@ -13,7 +13,8 @@ import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES, exceedsMaxBytes, exceeds
 import { toSafeHeadInput } from '../utils/island-head'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
-import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
+import { onigiriEnabled, runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
+import { provideMarkerNonce } from '#internal/nuxt/onigiri-server.mjs'
 import { serverDiagnostics } from '../diagnostics'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/internal/renderer/app'
 import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
@@ -138,6 +139,9 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   // Render app
   const renderer = await rendererInstance.getSSRRenderer()
 
+  // `v-load-client` writes markers bound to this nonce
+  const markerNonce = onigiriEnabled ? provideMarkerNonce!(ssrContext).onigiriNonce : undefined
+
   const renderResult = await (tracingChannelNuxt
     ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
     : renderer.renderToString(ssrContext)
@@ -206,13 +210,20 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     }
   }
 
-  const islandResponse: NuxtIslandResponse = {
-    id: islandContext.id,
-    head: islandHead,
-    html: getServerComponentHTML(renderResult.html),
-    components: getClientIslandResponse(ssrContext),
-    slots: getSlotIslandResponse(ssrContext),
-  }
+  const islandResponse: NuxtIslandResponse = onigiriEnabled
+    ? {
+        id: islandContext.id,
+        head: islandHead,
+        html: getServerComponentHTML(renderResult.html),
+        nonce: markerNonce,
+      }
+    : {
+        id: islandContext.id,
+        head: islandHead,
+        html: getServerComponentHTML(renderResult.html),
+        components: getClientIslandResponse(ssrContext),
+        slots: getSlotIslandResponse(ssrContext),
+      }
 
   await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
 
