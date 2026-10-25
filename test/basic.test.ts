@@ -11,7 +11,7 @@ import { $fetchComponent } from '@nuxt/test-utils/experimental'
 import { createRegExp, exactly } from 'magic-regexp'
 
 import { sessionConfig } from './fixtures/basic/server/utils/session'
-import { asyncContext, isDev, isTestingAppManifest, isWebpack, legacyErrorRendering, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { asyncContext, isDev, isTestingAppManifest, isWebpack, legacyErrorRendering, nitroViteEnvironment, runsOnceInMatrix, runsOncePerBuilderInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage } from './utils'
 
 const appSecret = 'nuxt-runtime-app-secret-test-value'
@@ -153,7 +153,9 @@ describe.skipIf(!runsOnceInMatrix)('server api', () => {
     expect(response.status).toBe(418)
     expect(await response.json()).toMatchObject({ status: 418, statusText: 'Teapot', data: { fail: 'yes' } })
   })
+})
 
+describe.skipIf(!runsOnceInMatrix && !nitroViteEnvironment)('server auto-imports', () => {
   it('should auto-import', async () => {
     const res = await $fetch('/api/auto-imports')
     expect(res).toMatchInlineSnapshot(`

@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { isAbsolute, resolve } from 'pathe'
 import { loadNuxt } from '@nuxt/kit'
-import type { NuxtConfig } from '@nuxt/schema'
+import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
@@ -12,7 +12,7 @@ const serverReplacements = {
   'import.meta.test': 'false',
 }
 
-async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConfig: NitroConfig) => T | Promise<T>) {
+async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConfig: NitroConfig, nuxt: Nuxt) => T | Promise<T>) {
   let nitroConfig: NitroConfig | undefined
   let nitro: Nitro | undefined
   const nuxt = await loadNuxt({
@@ -31,7 +31,7 @@ async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConf
     },
   })
   try {
-    return await fn(nitro!, nitroConfig!)
+    return await fn(nitro!, nitroConfig!, nuxt)
   } finally {
     await nuxt.close()
   }
@@ -123,6 +123,14 @@ describe('nitro config', () => {
   it.for([true, 'hidden'] as const)('leaves `sourcemapExcludeSources` unset for `%s`', async (server) => {
     await withNitro({ sourcemap: { server } }, (_nitro, nitroConfig) => {
       expect(nitroConfig.rollupConfig!.output).not.toHaveProperty('sourcemapExcludeSources')
+    })
+  })
+
+  it.for([true, false])('registers the server auto-imports plugin once when nitroViteEnvironment is %s', async (nitroViteEnvironment) => {
+    await withNitro({ experimental: { nitroViteEnvironment } }, (_nitro, nitroConfig, nuxt) => {
+      const isAutoImportsPlugin = (plugin: unknown) => (plugin as { name?: string } | null)?.name === 'nuxt:server-auto-imports'
+      expect([nitroConfig.rollupConfig!.plugins].flat().filter(isAutoImportsPlugin)).toHaveLength(1)
+      expect(nuxt.options.vite.plugins?.flat().filter(isAutoImportsPlugin) ?? []).toHaveLength(0)
     })
   })
 })
