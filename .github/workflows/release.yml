@@ -119,3 +119,12 @@ jobs:
         with:
           files: ${{ needs.pack.outputs.files }}
           npm-tag: ${{ inputs.npm-tag }}
+
+  notify:
+    if: "!contains(github.ref_name, '-')"
+    needs: publish
+    permissions:
+      issues: write
+    uses: $/.github/workflows/notify-resolved-issues.yml
+    with:
+      tag: ${{ github.ref_name }}
