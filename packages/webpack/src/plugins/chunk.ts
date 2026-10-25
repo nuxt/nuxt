@@ -7,7 +7,7 @@ export class ChunkErrorPlugin {
   apply (compiler: Compiler) {
     compiler.hooks.thisCompilation.tap(pluginName, (compilation) => {
       compilation.hooks.runtimeRequirementInTree
-        .for(webpack.RuntimeGlobals.ensureChunk)
+        .for(webpack.runtime.RuntimeGlobals.ensureChunk)
         .tap(pluginName, (chunk) => {
           compilation.addRuntimeModule(
             chunk,
@@ -18,13 +18,13 @@ export class ChunkErrorPlugin {
   }
 }
 
-class ChunkErrorRuntimeModule extends webpack.RuntimeModule {
+class ChunkErrorRuntimeModule extends webpack.runtime.RuntimeModule {
   constructor () {
-    super('chunk preload error handler', webpack.RuntimeModule.STAGE_ATTACH)
+    super('chunk preload error handler', webpack.runtime.RuntimeModule.STAGE_ATTACH)
   }
 
   override generate () {
-    const { ensureChunk } = webpack.RuntimeGlobals
+    const { ensureChunk } = webpack.runtime.RuntimeGlobals
     return `
 if (typeof ${ensureChunk} !== "undefined") {
   var _ensureChunk = ${ensureChunk};
