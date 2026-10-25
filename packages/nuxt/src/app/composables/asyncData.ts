@@ -533,7 +533,7 @@ export function _createUseAsyncData<
         if (fetchOnServer && opts.immediate) {
           markServerPrefetch()
         }
-        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!inComponentSetup || instance?.isMounted)) {
+        if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && !nuxtApp._middlewareTo && (!inComponentSetup || instance?.isMounted)) {
           dataDiagnostics.NUXT_E3003()
         }
         if (instance && !instance._nuxtOnBeforeMountCbs) {

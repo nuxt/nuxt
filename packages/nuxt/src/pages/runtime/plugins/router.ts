@@ -1,6 +1,6 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
-import type { RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
+import type { NavigationGuardReturn, RouteLocationNormalized, RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
 import { NavigationFailureType, START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory, isNavigationFailure } from 'vue-router'
 import { isSamePath, withBase, withoutBase } from 'ufo'
 
@@ -162,12 +162,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const error = useError()
     // we only skip redirect handlers for component islands, not page islands
     const isServerPage = import.meta.server && nuxtApp.ssrContext?.islandContext?.name?.startsWith('page_')
+
+    function endNavigation (to: RouteLocationNormalized) {
+      if (import.meta.server) {
+        delete nuxtApp._processingMiddleware
+        delete nuxtApp._middlewareTo
+      } else if (nuxtApp._middlewareTo === to) {
+        delete nuxtApp._middlewareTo
+      }
+    }
+
     if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
       router.afterEach(async (to, _from, failure) => {
-        delete nuxtApp._processingMiddleware
-        if (import.meta.server) {
-          delete nuxtApp._middlewareTo
-        }
+        endNavigation(to)
 
         if (import.meta.client && !nuxtApp.isHydrating && error.value && !isNavigationFailure(failure, NavigationFailureType.aborted | NavigationFailureType.cancelled)) {
           // Clear any existing errors
@@ -187,11 +194,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     // vue-router logs a navigation failure to the console when no error handler is registered
-    router.onError(async () => {
-      delete nuxtApp._processingMiddleware
-      if (import.meta.server) {
-        delete nuxtApp._middlewareTo
-      }
+    router.onError(async (_error, to) => {
+      endNavigation(to)
       await nuxtApp.callHook('page:loading:end')
     })
 
@@ -265,16 +269,29 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     const initialLayout = nuxtApp.payload.state._layout
+    let runningMiddleware = 0
     router.beforeEach(async (to, from) => {
+      if (import.meta.server) {
+        return runMiddleware(to, from)
+      }
+      runningMiddleware++
+      try {
+        return await runMiddleware(to, from)
+      } finally {
+        if (--runningMiddleware === 0) {
+          delete nuxtApp._processingMiddleware
+        }
+      }
+    })
+
+    async function runMiddleware (to: RouteLocationNormalized, from: RouteLocationNormalized): Promise<NavigationGuardReturn> {
       await nuxtApp.callHook('page:loading:start')
       to.meta = reactive(to.meta)
       if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
         to.meta.layout = initialLayout as any
       }
       nuxtApp._processingMiddleware = true
-      if (import.meta.server) {
-        nuxtApp._middlewareTo = to
-      }
+      nuxtApp._middlewareTo = to
 
       if (import.meta.client || !nuxtApp.ssrContext?.islandContext || isServerPage) {
         type MiddlewareDef = string | RouteMiddleware
@@ -355,14 +372,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
       }
-    })
-
-    if (import.meta.client) {
-      // middleware has finished, so later `navigateTo` calls (e.g. from components while
-      // the navigation is still pending) should navigate rather than return a redirect
-      router.beforeEach(() => {
-        delete nuxtApp._processingMiddleware
-      })
     }
 
     if (isServerPage) {
