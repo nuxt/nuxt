@@ -251,7 +251,7 @@ catalogs:
     nitropack: 2.13.5
     nuxt-content-twoslash: 0.4.0
     oxc-transform: 0.155.0
-    pkg-pr-new: 0.0.91
+    pkg-pr-new: 0.0.92
     playwright-core: 1.64.1
     prettier: 3.9.10
     rollup: 4.65.0
