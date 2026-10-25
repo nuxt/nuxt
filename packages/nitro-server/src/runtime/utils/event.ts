@@ -258,7 +258,12 @@ export function getFetchedRequestContext (event: H3Event): NuxtRequestContext | 
   return (event.node.req as { __unenv__?: { nuxt?: NuxtRequestContext } }).__unenv__?.nuxt
 }
 
+const requestEventCache = new WeakMap<H3Event, RendererEvent>()
+
 /** The event the SSR renderer reads, which reaches the h3 v1 event itself through `~app`. */
+ const cached = requestEventCache.get(event)
+ if (cached) { return cached } 
+
 export function toRequestEvent (event: H3Event): RendererEvent {
   const requestEvent = toWebView(event)
 
@@ -267,6 +272,7 @@ export function toRequestEvent (event: H3Event): RendererEvent {
     event.context.nuxt = { ...fetchedWith, ...event.context.nuxt }
   }
 
+   requestEventCache.set(event, requestEvent)
   return requestEvent
 }
 
