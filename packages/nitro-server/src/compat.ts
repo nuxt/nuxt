@@ -8,6 +8,7 @@ import { withTrailingSlash } from 'ufo'
 import { createUnimport } from 'unimport'
 import type { Unimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
+import type { ResolverOptions } from 'exsolve'
 import escapeRE from 'escape-string-regexp'
 import { getLayerDirectories, resolveAlias } from '@nuxt/kit'
 import { trackPendingTemplate } from '@nuxt/kit/internal'
@@ -505,6 +506,16 @@ function toRealPath (path: string): string {
   return resolved
 }
 
+/** The file a specifier resolves to, or `undefined` where it leads to none. */
+function resolveFile (specifier: string, options: ResolverOptions): string | undefined {
+  try {
+    const file = resolveModulePath(specifier, { ...options, try: true })
+    return file ? normalize(file) : undefined
+  } catch {
+    // `try` does not cover a path through a file (`ENOTDIR`)
+  }
+}
+
 /** Nitro v3 resolves aliases in insertion order, so a prefix must never precede a longer key. */
 export function sortAliasesByPrecedence<T> (aliases: Record<string, T>): Record<string, T> {
   const keys = Object.keys(aliases).sort((a, b) => b.split('/').length - a.split('/').length || b.length - a.length)
@@ -600,15 +611,18 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     const resolved = normalize(resolveAlias(variant, aliases))
     unusedFiles.add(resolved)
     unusedFiles.add(toRealPath(resolved))
-    const file = resolveModulePath(resolved, { try: true, extensions: nuxt.options.extensions, from: [nuxt.options.rootDir, import.meta.url] })
+    const file = resolveFile(resolved, { extensions: nuxt.options.extensions, from: [nuxt.options.rootDir, import.meta.url] })
     if (file) {
-      unusedFiles.add(normalize(file))
-      unusedFiles.add(toRealPath(normalize(file)))
+      unusedFiles.add(file)
+      unusedFiles.add(toRealPath(file))
     }
   }
 
+  nitroConfig.virtual ||= {}
+  const isModuleVirtual = (id: string) => id in nitroConfig.virtual! && !OWN_VIRTUAL_RE.test(id)
+
   const addFile = (path: string, scope: CompatScope) => {
-    const resolved = normalize(resolveAlias(path, aliases))
+    const resolved = isModuleVirtual(path) ? path : normalize(resolveAlias(path, aliases))
     files.set(resolved, scope)
     files.set(toRealPath(resolved), scope)
     return resolved
@@ -645,8 +659,6 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   }
   const isMigratedModuleCode = (path: string) => isMigrated(ownerOf(toRealPath(path), [path])?.server)
 
-  nitroConfig.virtual ||= {}
-  const isModuleVirtual = (id: string) => id in nitroConfig.virtual! && !OWN_VIRTUAL_RE.test(id)
   let wrapperIndex = 0
 
   /**
@@ -676,12 +688,14 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
    * once the specifier is resolved to a file and through its symlink.
    */
   const registrationPaths = (path: string): string[] => {
+    if (isModuleVirtual(path)) {
+      return [path]
+    }
     const target = normalize(resolveAlias(path, aliases))
     const paths = [target, toRealPath(target)]
-    const file = resolveModulePath(target, { try: true, extensions: nuxt.options.extensions, from: [nuxt.options.rootDir, import.meta.url] })
+    const file = resolveFile(target, { extensions: nuxt.options.extensions, from: [nuxt.options.rootDir, import.meta.url] })
     if (file) {
-      const resolved = normalize(file)
-      paths.push(resolved, toRealPath(resolved))
+      paths.push(file, toRealPath(file))
     }
     return paths
   }
@@ -747,7 +761,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
       const base = widenLegacyHandlerRoute(entry, widened)
       const target = addFile(entry.handler, TAG_SCOPE)
       // module runtime code lives next to its entry, unless the entry is userland code
-      if (!isUserServerCode(target)) {
+      if (!isUserServerCode(target) && !isModuleVirtual(target)) {
         const parentDirs = new Set([dirname(target), dirname(toRealPath(target)), toRealPath(dirname(target))])
         for (const dir of parentDirs) {
           dirs.push([withTrailingSlash(dir), TAG_SCOPE])
@@ -944,11 +958,13 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     if (LEGACY_SPECIFIER_RE.test(specifier) || MIGRATED_SPECIFIER_RE.test(specifier) || OWN_VIRTUAL_RE.test(specifier)) {
       return
     }
+    if (isModuleVirtual(specifier)) {
+      return specifier
+    }
     const target = specifier[0] === '.' && isAbsolute(importer)
       ? resolve(dirname(importer), specifier)
       : normalize(resolveAlias(specifier, aliases))
-    const file = resolveModulePath(target, { try: true, extensions: nuxt.options.extensions, from: [isAbsolute(importer) ? dirname(importer) : nuxt.options.rootDir, nuxt.options.rootDir] })
-    return file ? normalize(file) : undefined
+    return resolveFile(target, { extensions: nuxt.options.extensions, from: [isAbsolute(importer) ? dirname(importer) : nuxt.options.rootDir, nuxt.options.rootDir] })
   }
 
   /** The scanned files the server build can reach, so app-side module code is left out. */
@@ -1001,7 +1017,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
         // the file is in scope, so its imports are rewritten either way; the wrapper is
         // what strips the base off the event, and only a widened handler needs it
         if (base && virtuals) {
-          entry.handler = wrapHandlerFile(normalize(resolveAlias(entry.handler, aliases)), base, virtuals)
+          entry.handler = wrapHandlerFile(isModuleVirtual(entry.handler) ? entry.handler : normalize(resolveAlias(entry.handler, aliases)), base, virtuals)
         }
       }
     }
