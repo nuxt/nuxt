@@ -57,8 +57,13 @@ describe('scrollBehavior of router options with global transition', () => {
   })
 
   beforeEach(async () => {
+    const hasLeaveTransition = router.currentRoute.value.path !== '/'
+    vi.clearAllMocks()
     await navigateTo('/')
     await flushPromises()
+    if (hasLeaveTransition) {
+      await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
+    }
     vi.clearAllMocks()
     scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
   })
