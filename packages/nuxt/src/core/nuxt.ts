@@ -11,6 +11,7 @@ import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
+import type { Unimport } from 'unimport'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 import onChange from 'on-change'
@@ -498,6 +499,9 @@ async function initNuxt (nuxt: Nuxt) {
     }))
   }
 
+  let importsContext: Unimport | undefined
+  nuxt.hook('imports:context', (ctx) => { importsContext = ctx })
+
   nuxt.hook('modules:done', () => {
     // Transform initial composable call within `<script setup>` to preserve context
     if (nuxt.options.experimental.asyncContext) {
@@ -516,14 +520,17 @@ async function initNuxt (nuxt: Nuxt) {
     }), { client: false })
 
     // Add composable tree-shaking optimisations
+    const getAutoImports = () => importsContext?.getImportMap()
     if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
         composables: nuxt.options.optimization.treeShake.composables.server,
+        getAutoImports,
       }), { client: false })
     }
     if (Object.keys(nuxt.options.optimization.treeShake.composables.client).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
         composables: nuxt.options.optimization.treeShake.composables.client,
+        getAutoImports,
         stubs: { onServerPrefetch: '#app/composables/server-prefetch' },
       }), { server: false })
     }
