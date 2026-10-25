@@ -2,12 +2,12 @@ import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { createIsIgnored, setBuildOutput } from '@nuxt/kit'
-import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { buildDiagnostics, restoreClientBuildState, saveClientBuildState, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt, NuxtBuildOutputs, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
-import { dirname, join, relative, resolve } from 'pathe'
+import { basename, dirname, join, relative, resolve } from 'pathe'
 import { createTar, parseTar } from 'nanotar'
 import type { TarFileInput } from 'nanotar'
 import type { Plugin as VitePlugin } from 'vite'
@@ -48,11 +48,13 @@ export async function getVueHash (nuxt: Nuxt) {
   const cacheFile = join(getCacheDir(nuxt), id, hash + '.tar')
   const buildIdCacheFile = cacheFile.replace('.tar', '.buildid')
   const clientCacheFile = cacheFile.replace('.tar', '.client.tar')
+  const clientStateFile = cacheFile.replace('.tar', '.client.json')
 
   // When Nitro builds as a Vite environment the client bundle is written to
   // `output.publicDir`, outside `buildDir`, so it needs its own cache entry.
   const cachesClientAssets = !useServerBuild(nuxt).buildsSeparately
   let clientFiles: string[] = []
+  let clientState: Record<string, unknown> | undefined
 
   return {
     hash,
@@ -63,6 +65,7 @@ export async function getVueHash (nuxt: Nuxt) {
       if (cachesClientAssets && clientFiles.length) {
         const publicDir = useServerBuild(nuxt).output.publicDir()
         await writeCache(publicDir, publicDir, clientCacheFile, clientFiles)
+        await writeFile(clientStateFile, JSON.stringify({ version: nuxt._version, state: saveClientBuildState(nuxt) }))
       }
 
       // Cache buildId so it can be restored before modules are initialised on the next build
@@ -74,8 +77,11 @@ export async function getVueHash (nuxt: Nuxt) {
     },
     async restoreCache () {
       const start = Date.now()
-      if (cachesClientAssets && !existsSync(clientCacheFile)) {
-        return false
+      if (cachesClientAssets) {
+        clientState = existsSync(clientCacheFile) ? await readClientState(clientStateFile, nuxt._version) : undefined
+        if (!clientState) {
+          return false
+        }
       }
       const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
       const elapsed = Date.now() - start
@@ -110,7 +116,7 @@ export async function getVueHash (nuxt: Nuxt) {
           ? {
               async buildApp (builder) {
                 await restoreCacheFromFile(useServerBuild(nuxt).output.publicDir(), clientCacheFile)
-                await restoreBuildOutputs(nuxt, CLIENT_BUILD_OUTPUT_KEYS)
+                restoreClientBuildState(clientState!, nuxt)
                 const client = builder.environments.client
                 if (client) {
                   client.isBuilt = true
@@ -138,24 +144,15 @@ async function persistBuildOutputs (nuxt: Nuxt) {
   await writeFile(resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE), JSON.stringify(outputs), 'utf8')
 }
 
-async function restoreBuildOutputs (nuxt: Nuxt, keys?: ReadonlyArray<keyof NuxtBuildOutputs>) {
+async function restoreBuildOutputs (nuxt: Nuxt) {
   const file = resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE)
   if (!existsSync(file)) { return }
   const outputs = JSON.parse(await readFile(file, 'utf8')) as Record<keyof NuxtBuildOutputs, string>
   for (const key of Object.keys(outputs) as Array<keyof NuxtBuildOutputs>) {
-    if (keys && !keys.includes(key)) { continue }
     const code = outputs[key]
     setBuildOutput(key, () => code, nuxt)
   }
 }
-
-/**
- * Outputs the client build is the sole source of. Their providers are
- * registered when the client environment's plugins are created, which happens
- * after the cache is restored, so they have to be replayed once the build has
- * started or the stub values would win.
- */
-const CLIENT_BUILD_OUTPUT_KEYS = ['clientManifest', 'clientPrecomputed', 'entryChunkName'] as const
 
 /**
  * Restore cached buildId before modules are initialised.
@@ -186,17 +183,26 @@ export async function restoreCachedBuildId (nuxt: Nuxt) {
 
 export async function cleanupCaches (nuxt: Nuxt) {
   const start = Date.now()
-  const caches = await glob(['*/*.tar', '*/*.buildid'], {
+  const caches = await glob(['*/*.tar', '*/*.client.json', '*/*.buildid'], {
     cwd: getCacheDir(nuxt),
     absolute: true,
   })
-  if (caches.length >= 10) {
-    const cachesWithMeta = await Promise.all(caches.map(async (cache) => {
-      return [cache, await stat(cache).then(r => r.mtime.getTime()).catch(() => 0)] as const
-    }))
-    cachesWithMeta.sort((a, b) => a[1] - b[1])
-    for (const [cache] of cachesWithMeta.slice(0, cachesWithMeta.length - 10)) {
-      await unlink(cache)
+  const entries = new Map<string, { files: string[], mtime: number }>()
+  for (const cache of caches) {
+    const name = basename(cache)
+    const key = join(dirname(cache), name.slice(0, name.indexOf('.')))
+    const mtime = await stat(cache).then(r => r.mtime.getTime()).catch(() => 0)
+    const entry = entries.get(key) ?? { files: [], mtime: 0 }
+    entry.files.push(cache)
+    entry.mtime = Math.max(entry.mtime, mtime)
+    entries.set(key, entry)
+  }
+  if (entries.size > 10) {
+    const sorted = [...entries.values()].sort((a, b) => a.mtime - b.mtime)
+    for (const { files } of sorted.slice(0, sorted.length - 10)) {
+      for (const file of files) {
+        await unlink(file)
+      }
     }
     const elapsed = Date.now() - start
     consola.success(`Cleaned up old build caches in \`${elapsed}ms\`.`)
@@ -360,6 +366,16 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
     buildDiagnostics.NUXT_B1011({ file: fileName, cause: err })
   } finally {
     await fd?.close()
+  }
+}
+
+async function readClientState (file: string, version: string): Promise<Record<string, unknown> | undefined> {
+  try {
+    const { version: savedVersion, state } = JSON.parse(await readFile(file, 'utf8')) ?? {}
+    if (savedVersion !== version) { return }
+    return state && typeof state === 'object' && !Array.isArray(state) ? state : undefined
+  } catch {
+    return undefined
   }
 }
 

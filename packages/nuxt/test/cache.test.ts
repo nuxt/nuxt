@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, readdir, rm, utimes, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import process from 'node:process'
@@ -9,6 +9,8 @@ import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 import { build, loadNuxt } from 'nuxt'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
+
+import { cleanupCaches } from '../src/core/cache.ts'
 
 async function resolveBuildOutputs (nuxt: Nuxt) {
   const resolved: Partial<Record<keyof NuxtBuildOutputs, string>> = {}
@@ -42,6 +44,7 @@ async function renderIndex (outputDir: string) {
 
 // the inline style extracted from the fixture's scoped `<style>` block
 const INLINE_STYLE_RE = /<style[^>]*>[^<]*color\s*:\s*red/
+const STYLESHEET_LINK_RE = /<link[^>]+rel="stylesheet"/
 
 describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
   const workspaceDir = await findWorkspaceDir()
@@ -241,6 +244,84 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     expect(html).toBe(expectedHtml)
   })
 
+  it('should drop links to inlined page styles on cache hit', { timeout: 300_000 }, async () => {
+    const rootDir = join(tmpDir, 'project')
+    const outputDir = join(rootDir, '.output')
+    await writeFile(join(rootDir, 'app.vue'), '<template><NuxtPage /></template>')
+    await mkdir(join(rootDir, 'pages'), { recursive: true })
+    await writeFile(join(rootDir, 'pages/index.vue'), '<template><div class="box">hello</div></template><style scoped>.box { color: red }</style>')
+
+    const nuxt1 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'page-styles-1',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt1)
+    const expectedHtml = await renderIndex(outputDir)
+    expect(expectedHtml).toMatch(INLINE_STYLE_RE)
+    expect(expectedHtml).not.toMatch(STYLESHEET_LINK_RE)
+
+    await rm(outputDir, { recursive: true, force: true })
+
+    const nuxt2 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'page-styles-2',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    expect(nuxt2.options.buildId).toBe('page-styles-1')
+    await build(nuxt2)
+
+    expect(await renderIndex(outputDir)).toBe(expectedHtml)
+  })
+
+  it.each([
+    ['unreadable', '{"ssr-styles":'],
+    ['from another nuxt version', JSON.stringify({ version: '0.0.0', state: { 'ssr-styles': {} } })],
+  ])('should rebuild the client when its cached state is %s', { timeout: 300_000 }, async (_, contents) => {
+    const rootDir = join(tmpDir, 'project')
+    const outputDir = join(rootDir, '.output')
+
+    const nuxt1 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'client-state-1',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt1)
+    const expectedHtml = await renderIndex(outputDir)
+
+    const cacheDir = join(tmpDir, 'node_modules')
+    const stateFiles = (await readdir(cacheDir, { recursive: true })).filter(file => file.endsWith('.client.json'))
+    expect(stateFiles).toHaveLength(1)
+    await writeFile(join(cacheDir, stateFiles[0]!), contents)
+
+    await rm(outputDir, { recursive: true, force: true })
+
+    const nuxt2 = await loadNuxt({
+      cwd: rootDir,
+      overrides: {
+        buildId: 'client-state-2',
+        experimental: { buildCache: true },
+        dev: false,
+        workspaceDir: tmpDir,
+      },
+    })
+    await build(nuxt2)
+
+    expect(await renderIndex(outputDir)).toBe(expectedHtml)
+  })
+
   it('should hit the cache when only an ignored file changes', async () => {
     const rootDir = join(tmpDir, 'project')
 
@@ -353,5 +434,33 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     // Verify manifest uses the new buildId
     const latestJson = JSON.parse(await readFile(join(nuxt2.options.buildDir, 'manifest', 'latest.json'), 'utf-8'))
     expect(latestJson.id).toBe('build-2')
+  })
+})
+
+describe('cleanupCaches', () => {
+  it('should keep every file of the ten most recent cache entries', async () => {
+    const workspaceDir = join(await findWorkspaceDir(), '.test/build-cache-cleanup')
+    const cacheDir = join(workspaceDir, 'node_modules/.cache/nuxt/builds/vue')
+    await rm(workspaceDir, { recursive: true, force: true })
+    await mkdir(cacheDir, { recursive: true })
+
+    const extensions = ['.tar', '.client.tar', '.client.json', '.buildid']
+    for (let i = 0; i < 12; i++) {
+      const time = new Date(Date.UTC(2024, 0, i + 1))
+      for (const ext of extensions) {
+        const file = join(cacheDir, `entry${i}${ext}`)
+        await writeFile(file, '')
+        await utimes(file, time, time)
+      }
+    }
+
+    try {
+      await cleanupCaches({ options: { workspaceDir, modulesDir: [] } } as unknown as Nuxt)
+      const remaining = (await readdir(cacheDir)).sort()
+      const expected = Array.from({ length: 10 }, (_, i) => extensions.map(ext => `entry${i + 2}${ext}`)).flat().sort()
+      expect(remaining).toStrictEqual(expected)
+    } finally {
+      await rm(workspaceDir, { recursive: true, force: true })
+    }
   })
 })
