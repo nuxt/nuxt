@@ -15,7 +15,14 @@ let scratch: Uint8Array | undefined
  */
 export function encodeDocument (chunks: string[]): Uint8Array<ArrayBuffer> {
   let length = 0
-  for (const chunk of chunks) { length += chunk.length }
+  let splitsPair = false
+  for (const chunk of chunks) {
+    length += chunk.length
+    splitsPair ||= isHighSurrogate(chunk.charCodeAt(chunk.length - 1))
+  }
+  if (splitsPair) {
+    chunks = joinSurrogatePairs(chunks)
+  }
   // UTF-8 needs at most 3 bytes per UTF-16 code unit
   const needed = length * 3
   if (needed > MAX_SCRATCH_SIZE) {
@@ -26,6 +33,26 @@ export function encodeDocument (chunks: string[]): Uint8Array<ArrayBuffer> {
     scratch = hasBuffer ? Buffer.allocUnsafeSlow(size) : new Uint8Array(size)
   }
   return encodeVia(chunks, scratch)
+}
+
+function isHighSurrogate (code: number): boolean {
+  return code >= 0xD800 && code <= 0xDBFF
+}
+
+function joinSurrogatePairs (chunks: string[]): string[] {
+  const joined: string[] = []
+  let pending = ''
+  for (const chunk of chunks) {
+    pending += chunk
+    if (!isHighSurrogate(pending.charCodeAt(pending.length - 1))) {
+      joined.push(pending)
+      pending = ''
+    }
+  }
+  if (pending) {
+    joined.push(pending)
+  }
+  return joined
 }
 
 function encodeVia (chunks: string[], target: Uint8Array): Uint8Array<ArrayBuffer> {

@@ -26,6 +26,14 @@ describe.each([
     expect(decode(encodeDocument(chunks))).toBe(chunks.join(''))
   })
 
+  it('keeps a surrogate pair split across chunks', async () => {
+    const encodeDocument = await load()
+    const high = '😀'.charAt(0)
+    const low = '😀'.charAt(1)
+    expect(decode(encodeDocument(['<p>', high, '', low, '</p>']))).toBe('<p>😀</p>')
+    expect(decode(encodeDocument(['<p>', high]))).toBe('<p>\uFFFD')
+  })
+
   it('handles empty input and empty chunks', async () => {
     const encodeDocument = await load()
     expect(encodeDocument([]).byteLength).toBe(0)
