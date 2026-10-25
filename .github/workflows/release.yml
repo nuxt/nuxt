@@ -120,3 +120,12 @@ jobs:
         with:
           files: ${{ needs.pack.outputs.files }}
           npm-tag: ${{ startsWith(github.ref_name, 'v5.') && '5x' || inputs.npm-tag }}
+
+  notify:
+    if: "!contains(github.ref_name, '-')"
+    needs: publish
+    permissions:
+      issues: write
+    uses: $/.github/workflows/notify-resolved-issues.yml
+    with:
+      tag: ${{ github.ref_name }}

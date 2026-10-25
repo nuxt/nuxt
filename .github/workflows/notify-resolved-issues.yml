@@ -1,8 +1,17 @@
 name: notify resolved issues
 
 on:
-  release:
-    types: [published]
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      dry-run:
+        default: false
+        type: boolean
+      notify-once:
+        default: true
+        type: boolean
   workflow_dispatch:
     inputs:
       tag:
@@ -21,11 +30,11 @@ on:
 permissions: {}
 
 concurrency:
-  group: notify-resolved-issues-${{ inputs.tag || github.event.release.tag_name }}
+  group: notify-resolved-issues-${{ inputs.tag }}
 
 jobs:
   notify:
-    if: github.repository_owner == 'nuxt' && !github.event.release.prerelease
+    if: github.repository_owner == 'nuxt'
     runs-on: ubuntu-slim
     timeout-minutes: 15
     permissions:
@@ -43,6 +52,6 @@ jobs:
       - run: node ./scripts/notify-resolved-issues.ts
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ inputs.tag || github.event.release.tag_name }}
-          DRY_RUN: ${{ inputs.dry-run || false }}
-          NOTIFY_ONCE: ${{ github.event_name != 'workflow_dispatch' || inputs.notify-once }}
+          TAG: ${{ inputs.tag }}
+          DRY_RUN: ${{ inputs.dry-run }}
+          NOTIFY_ONCE: ${{ inputs.notify-once }}
