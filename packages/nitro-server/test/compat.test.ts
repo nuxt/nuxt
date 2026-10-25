@@ -204,8 +204,7 @@ describe('setupNitroCompat', () => {
     expect(vitePlugins.filter(plugin => plugin.applyToEnvironment?.({ name: 'nitro' }))).toEqual([])
 
     const resolvers = nitroConfig.rollupConfig!.plugins as any[]
-    // rolldown asks more than once per specifier, answering a `this.resolve` probe with
-    // whatever an earlier call resolved
+    // Simulate repeated resolution probes returning a previously resolved ID.
     let cached: string | undefined
     const context = { resolve: () => Promise.resolve(cached ? { id: cached } : null) }
     const resolveId = async (source: string) => {
