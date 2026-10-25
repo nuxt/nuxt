@@ -191,11 +191,12 @@ function encodeForHtmlAttr (value: string): string {
  * Can be called on the server and on the client, within pages, route middleware, plugins, and more.
  * @param {RouteLocationRaw | undefined | null} [to] - The route to navigate to. Accepts a route object, string path, `undefined`, or `null`. Defaults to '/'.
  * @param {NavigateToOptions} [options] - Optional customization for controlling the behavior of the navigation.
- * @returns {Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw} The navigation result, which varies depending on context and options.
+ * @returns {Promise<void | NavigationFailure | false> | false | void} The navigation result, which varies depending on context and options.
  * @see https://nuxt.com/docs/4.x/api/utils/navigate-to
  * @since 3.0.0
  */
-export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
+export function navigateTo (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void
+export function navigateTo (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw {
   to ||= '/'
 
   const isPathForm = typeof to === 'string' || 'path' in to
