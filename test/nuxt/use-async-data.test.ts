@@ -917,6 +917,26 @@ describe('useAsyncData', () => {
     expect(key in nuxtApp._asyncData).toBe(false)
   })
 
+  it('should not purge an entry picked up by `useNuxtData` before the purge runs', async () => {
+    const key = `purged-entry-late-nuxt-data-${++counter}`
+    const nuxtApp = useNuxtApp()
+
+    const page = effectScope()
+    await page.run(() => useAsyncData(key, () => Promise.resolve('value')))
+    page.stop()
+
+    const reader = effectScope()
+    const { data } = reader.run(() => useNuxtData(key))!
+    await nextTick()
+    expect(data.value).toBe('value')
+    expect(nuxtApp._asyncData[key]).toBeDefined()
+
+    reader.stop()
+    await nextTick()
+    expect(key in nuxtApp._asyncData).toBe(false)
+    expect(key in nuxtApp.payload.data).toBe(false)
+  })
+
   it('should run middleware around the handler on every execution', async () => {
     const calls: string[] = []
     const { data, refresh } = await useAsyncData(uniqueKey, () => {
