@@ -706,7 +706,7 @@ describe('useAsyncData', () => {
     expect(useNuxtData(firstKey).data.value).toBeUndefined()
     expect(useNuxtData(secondKey).data.value).toBe(secondKey)
 
-    expect(useNuxtApp()._asyncData[firstKey]!.data.value).toBe(undefined)
+    expect(useNuxtApp()._asyncData[firstKey]).toBeUndefined()
     expect(useNuxtApp()._asyncData[secondKey]!.data.value).toBe(secondKey)
 
     comp.unmount()
@@ -879,6 +879,86 @@ describe('useAsyncData', () => {
     expect(result.data.value).toBe('second')
 
     secondPage.stop()
+  })
+
+  it('should remove purged entries from `nuxtApp._asyncData`', async () => {
+    const key = `purged-entry-${++counter}`
+    const nuxtApp = useNuxtApp()
+
+    const page = effectScope()
+    const result = await page.run(() => useAsyncData(key, () => Promise.resolve('value')))!
+    expect(nuxtApp._asyncData[key]).toBeDefined()
+
+    page.stop()
+    await nextTick()
+
+    expect(key in nuxtApp._asyncData).toBe(false)
+    expect(result.data.value).toBeUndefined()
+    expect(result.status.value).toBe('idle')
+    expect(result.pending.value).toBe(false)
+  })
+
+  it('should keep the entry in `nuxtApp._asyncData` until `useNuxtData` releases it', async () => {
+    const key = `purged-entry-nuxt-data-${++counter}`
+    const nuxtApp = useNuxtApp()
+
+    const page = effectScope()
+    await page.run(() => useAsyncData(key, () => Promise.resolve('value')))
+    const reader = effectScope()
+    const { data } = reader.run(() => useNuxtData(key))!
+
+    page.stop()
+    await nextTick()
+    expect(nuxtApp._asyncData[key]).toBeDefined()
+    expect(data.value).toBe('value')
+
+    reader.stop()
+    await nextTick()
+    expect(key in nuxtApp._asyncData).toBe(false)
+  })
+
+  it('should not purge an entry picked up by `useNuxtData` before the purge runs', async () => {
+    const key = `purged-entry-late-nuxt-data-${++counter}`
+    const nuxtApp = useNuxtApp()
+
+    const page = effectScope()
+    await page.run(() => useAsyncData(key, () => Promise.resolve('value')))
+    page.stop()
+
+    const reader = effectScope()
+    const { data } = reader.run(() => useNuxtData(key))!
+    await nextTick()
+    expect(data.value).toBe('value')
+    expect(nuxtApp._asyncData[key]).toBeDefined()
+
+    reader.stop()
+    await nextTick()
+    expect(key in nuxtApp._asyncData).toBe(false)
+    expect(key in nuxtApp.payload.data).toBe(false)
+  })
+
+  it('should not purge a newer entry for the same key from an older entry', async () => {
+    const key = `purged-entry-replaced-${++counter}`
+    const nuxtApp = useNuxtApp()
+
+    const firstPage = effectScope()
+    firstPage.run(() => useAsyncData(key, () => Promise.resolve('first')))
+    firstPage.stop()
+
+    const secondPage = effectScope()
+    const second = secondPage.run(() => useAsyncData(key, () => Promise.resolve('second')))!
+    second.data.value = 'second'
+    secondPage.stop()
+
+    const reader = effectScope()
+    const { data } = reader.run(() => useNuxtData(key))!
+    await nextTick()
+    expect(data.value).toBe('second')
+    expect(nuxtApp._asyncData[key]).toBeDefined()
+
+    reader.stop()
+    await nextTick()
+    expect(key in nuxtApp._asyncData).toBe(false)
   })
 
   it('should run middleware around the handler on every execution', async () => {
