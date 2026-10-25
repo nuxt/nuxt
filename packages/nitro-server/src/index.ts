@@ -653,17 +653,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
     ],
   }
-  nitroConfig.rollupConfig!.plugins!.push(ImpoundPlugin.rollup(serverProtectionConfig))
-
-  // register same protection when building
-  if (nuxt.options.experimental.nitroViteEnvironment) {
-    nuxt.options.vite.plugins ||= []
-    for (const plugin of [ImpoundPlugin.vite(serverProtectionConfig)].flat()) {
-      nuxt.options.vite.plugins.push(Object.assign(plugin, {
-        name: `nuxt:server-import-protection:${plugin.name}`,
-        applyToEnvironment: (env: { name: string }) => env.name === 'nitro',
-      }))
+  for (const plugin of toArray(ImpoundPlugin.rollup(serverProtectionConfig))) {
+    // the specifier is checked before any alias or resolver on every server build
+    if (typeof plugin.resolveId === 'function') {
+      plugin.resolveId = { order: 'pre', handler: plugin.resolveId }
     }
+    nitroConfig.rollupConfig!.plugins!.push(plugin)
   }
 
   if (!nuxt.options.router.options.sensitive) {
