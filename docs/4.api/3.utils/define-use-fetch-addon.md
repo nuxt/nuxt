@@ -79,7 +79,7 @@ const { data } = await useCustomFetch('/public-endpoint', { auth: false })
 </script>
 ```
 
-Custom options stay in the merged options object, so they are also passed to `$fetch` along with the request options, which ignores keys it does not recognise.
+Custom options stay in the merged options object, so they are also passed to `$fetch` along with the request options, and `$fetch` ignores keys it does not recognize.
 
 ## Extending the Return Value
 

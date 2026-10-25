@@ -85,7 +85,7 @@ However, Nuxt has a concept of **route middleware** that simplifies the implemen
 ## Promise and Error Handling
 
 - [`isReady()`](https://router.vuejs.org/api/interfaces/router#isReady-): Returns a Promise that resolves when the router has completed the initial navigation.
-- [`onError`](https://router.vuejs.org/api/interfaces/router#onError-): Adds an error handler that is called every time a non caught error happens during navigation.
+- [`onError`](https://router.vuejs.org/api/interfaces/router#onError-): Adds an error handler that is called every time an uncaught error happens during navigation.
 
 :read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/router#Methods-" title="Vue Router Docs" target="_blank"}
 
