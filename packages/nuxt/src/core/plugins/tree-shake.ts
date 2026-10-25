@@ -12,6 +12,8 @@ interface TreeShakeComposablesPluginOptions {
   composables: Record<ImportPath, string[]>
   /** Composables to replace with a call to the same export from the given module, without the first argument. */
   stubs?: Record<string, ImportPath>
+  /** Auto-imports keyed by local name, so auto-imports from a subpath of a configured import path are tree-shaken too. */
+  getAutoImports?: () => Promise<Map<string, { name: string, from: string }>> | undefined
 }
 
 export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOptions) => createUnplugin(() => {
@@ -20,6 +22,25 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
 
   if (!allComposableNames.size) {
     return []
+  }
+
+  function isAllowedImport (importPath: string, importedName: string, autoImports?: Map<string, { name: string, from: string }>) {
+    if (importPath === '#imports') {
+      return allComposableNames.has(importedName)
+    }
+    if (options.composables[importPath]?.includes(importedName)) {
+      return true
+    }
+    const autoImport = autoImports?.get(importedName)
+    if (autoImport?.name !== importedName || autoImport.from !== importPath) {
+      return false
+    }
+    for (const path in options.composables) {
+      if (importPath.startsWith(path + '/') && options.composables[path]!.includes(importedName)) {
+        return true
+      }
+    }
+    return false
   }
 
   return {
@@ -33,7 +54,8 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
         },
         code: { include: new RegExp(`\\b(?:${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\b`) },
       },
-      handler (code, id, meta?: unknown) {
+      async handler (code, id, meta?: unknown) {
+        const autoImports = await options.getAutoImports?.()
         const s = rolldownString(code, id, meta)
         const stubImports = new Map<string, string>()
 
@@ -75,11 +97,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
                 : importSpecifier.local.name
               composableName = importedName
 
-              const isFromAllowedPath = importPath === '#imports'
-                ? allComposableNames.has(importedName)
-                : options.composables[importPath]?.includes(importedName)
-
-              if (!isFromAllowedPath) {
+              if (!isAllowedImport(importPath, importedName, autoImports)) {
                 return
               }
             }
