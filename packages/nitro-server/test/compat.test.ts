@@ -200,7 +200,6 @@ describe('setupNitroCompat', () => {
     const nitroConfig: NitroConfig = { handlers: [] }
     await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
 
-    // nitro passes `rollupConfig.plugins` to the `nitro` Vite environment, so a Vite plugin copy would run twice
     const vitePlugins = (nuxt.options.vite.plugins || []) as any[]
     expect(vitePlugins.filter(plugin => plugin.applyToEnvironment?.({ name: 'nitro' }))).toEqual([])
 

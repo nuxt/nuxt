@@ -1207,7 +1207,6 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   nitroConfig.rollupConfig ||= {}
   nitroConfig.rollupConfig.plugins = toArray(nitroConfig.rollupConfig.plugins || [])
   nitroConfig.rollupConfig.plugins.unshift(plugin as any)
-  // Nitro passes `rollupConfig.plugins` to every server build, including the `nitro` Vite environment
   nitroConfig.rollupConfig.plugins.push(fallbackPlugin as any)
 
   return registerLateScope
