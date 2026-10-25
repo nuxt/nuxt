@@ -1152,6 +1152,16 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     expect(nitroConfig.plugins).toEqual([])
   })
 
+  it('surfaces other errors from resolving an import', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-import-loop-'))
+    onTestFinished(() => rmSync(dir, { recursive: true, force: true }))
+    symlinkSync(join(dir, 'loop.ts'), join(dir, 'loop.ts'))
+    writeFileSync(join(dir, 'handler.ts'), `import './loop.ts'`)
+
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/loop', handler: join(dir, 'handler.ts') } as any] }
+    await expect(setupNitroCompat(createNuxt({ extensions: ['.ts'] }), nitroConfig, legacyOff, [])).rejects.toMatchObject({ code: 'ELOOP' })
+  })
+
   it('follows a module virtual rather than a file its id would alias to', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-virtual-dir-alias-'))
     onTestFinished(() => rmSync(dir, { recursive: true, force: true }))

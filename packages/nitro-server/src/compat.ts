@@ -511,8 +511,11 @@ function resolveFile (specifier: string, options: ResolverOptions): string | und
   try {
     const file = resolveModulePath(specifier, { ...options, try: true })
     return file ? normalize(file) : undefined
-  } catch {
-    // `try` does not cover a path through a file (`ENOTDIR`)
+  } catch (error) {
+    // `try` does not cover a path through a file
+    if ((error as NodeJS.ErrnoException).code !== 'ENOTDIR') {
+      throw error
+    }
   }
 }
 
