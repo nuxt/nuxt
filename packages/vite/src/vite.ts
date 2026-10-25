@@ -17,7 +17,7 @@ import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
-import { sanitizeFilePath } from './utils/index.ts'
+import { removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
@@ -59,7 +59,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
   }
 
-  let allowDirs = [
+  const allowDirs = removeNestedDirs([
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
     ...nuxt.options.modulesDir,
@@ -72,11 +72,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       dirname(nuxt.apps.default!.rootComponent!),
       dirname(nuxt.apps.default!.errorComponent!),
     ]),
-  ].filter(d => d && existsSync(d))
-
-  allowDirs = allowDirs.filter(d =>
-    !allowDirs.some(other => other !== d && d.startsWith(other + '/')),
-  )
+  ]).filter(d => existsSync(d))
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
@@ -251,7 +247,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         middlewareMode: true,
         watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
         fs: {
-          allow: [...new Set(allowDirs)],
+          allow: allowDirs,
         },
       },
     } satisfies ViteConfig,
