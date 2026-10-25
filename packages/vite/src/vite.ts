@@ -72,7 +72,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       dirname(nuxt.apps.default!.rootComponent!),
       dirname(nuxt.apps.default!.errorComponent!),
     ]),
-  ].filter(d => d && existsSync(d)))
+  ]).filter(d => existsSync(d))
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 

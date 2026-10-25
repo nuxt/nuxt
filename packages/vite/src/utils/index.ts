@@ -15,10 +15,14 @@ export function toArray<T> (value: T | T[]): T[] {
 
 /**
  * De-duplicate `dirs` and drop any dir nested inside another entry, keeping the first-seen order.
- * Looks up each dir's ancestors in a `Set`, so it stays linear for apps with thousands of components.
  */
 export function removeNestedDirs (dirs: string[]): string[] {
-  const unique = new Set(dirs)
+  const unique = new Set<string>()
+  for (const dir of dirs) {
+    if (dir) {
+      unique.add(dir)
+    }
+  }
   return [...unique].filter((dir) => {
     for (let i = dir.indexOf('/'); i !== -1; i = dir.indexOf('/', i + 1)) {
       if (unique.has(dir.slice(0, i))) {

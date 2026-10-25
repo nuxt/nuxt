@@ -20,8 +20,11 @@ describe('removeNestedDirs', () => {
     expect(removeNestedDirs(['/app', '/app-layer/components', '/app/components'])).toEqual(['/app', '/app-layer/components'])
   })
 
+  it('ignores empty entries', () => {
+    expect(removeNestedDirs(['', '/app', '/other/plugins'])).toEqual(['/app', '/other/plugins'])
+  })
+
   it('only treats an entry as a parent when the next character is a slash', () => {
-    // layer roots end with `/`, so they never matched `other + '/'` before either
     expect(removeNestedDirs(['/layer/', '/layer/components', '/layer/components'])).toEqual(['/layer/', '/layer/components'])
   })
 })
