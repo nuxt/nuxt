@@ -742,10 +742,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!nitro?.options.prerender.crawlLinks}`,
-      // User config: `prerender.crawlLinks`, then `nitro.prerender.crawlLinks`. The Nitro
-      // instance defaults `crawlLinks` to `false`, and `tryUseNitro()` is missing when the
-      // vite server builder prerenders.
-      `export const hintPrerenderedLinks = ${hintPrerenderedLinksEnabled(ctx.nuxt.options.prerender.crawlLinks ?? ctx.nuxt.options.nitro.prerender?.crawlLinks)}`,
+      `export const hintPrerenderedLinks = ${hintPrerenderedLinksEnabled(ctx.nuxt.options.prerender.crawlLinks, ctx.nuxt.options.server.builder === '@nuxt/vite-server')}`,
       `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
       `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
       `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,

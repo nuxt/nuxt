@@ -32,10 +32,11 @@ function makeApp (configs: string[] = []): NuxtApp {
 }
 
 describe('hintPrerenderedLinksEnabled', () => {
-  it('follows links unless crawling was explicitly disabled', () => {
-    expect(hintPrerenderedLinksEnabled(undefined)).toBe(true)
-    expect(hintPrerenderedLinksEnabled(true)).toBe(true)
-    expect(hintPrerenderedLinksEnabled(false)).toBe(false)
+  it('follows the builder default unless crawlLinks is set', () => {
+    expect(hintPrerenderedLinksEnabled(undefined, true)).toBe(true)
+    expect(hintPrerenderedLinksEnabled(undefined, false)).toBe(false)
+    expect(hintPrerenderedLinksEnabled(true, false)).toBe(true)
+    expect(hintPrerenderedLinksEnabled(false, true)).toBe(false)
   })
 })
 
