@@ -405,6 +405,10 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
+        os: [windows-latest]
+        projects:
+          - '--project "fixtures:vite-dev-*"'
+          - '--project "fixtures:vite-built-*"'
         include:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
@@ -412,10 +416,8 @@ jobs:
             projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*"'
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*"'
-          - os: windows-latest
-            projects: '--project "fixtures:vite-dev-*"'
-          - os: windows-latest
-            projects: '--project "fixtures:vite-built-*"'
+        exclude:
+          - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
     timeout-minutes: 45
 
@@ -471,13 +473,13 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
+        os: [windows-latest]
+        shard: ['--shard=1/2', '--shard=2/2']
         include:
           - os: ubuntu-24.04-arm
             shard: ''
-          - os: windows-latest
-            shard: '--shard=1/2'
-          - os: windows-latest
-            shard: '--shard=2/2'
+        exclude:
+          - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
     timeout-minutes: 25
 
