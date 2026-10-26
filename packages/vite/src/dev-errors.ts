@@ -260,8 +260,9 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       })
       const report = await createReport(input, {
         cwd: nuxt.options.rootDir,
-        // the stack is client-controlled, so no filesystem loader: only the module graph
-        loaders: [viteLoader(server)],
+        // the message and stack are client-controlled: no compile detection, no filesystem reads, only the module graph
+        kind: 'error',
+        loaders: [viteLoader(server, { fs: false })],
         presets: [nuxtPreset()],
       })
       current = report
