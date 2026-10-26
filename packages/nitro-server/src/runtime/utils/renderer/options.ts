@@ -29,6 +29,7 @@ export const rendererOptions: NuxtRendererOptions = {
   hooks: () => useNitroApp().hooks as unknown as RendererHooks,
   // the response never leaves this bundle, so the fields the renderer sets are enough
   createResponse: (body, init) => new NodeRenderResponse(body, init) as unknown as Response,
+  createDocumentResponse: (chunks, init) => Object.assign(new NodeRenderResponse(null, init), { chunks }) as unknown as Response,
   // h3 v1 reads the message of an error from `message`/`statusMessage`, and recognises an
   // error of its own by the marker its constructor carries, so this cannot construct one
   createError: init => createError({

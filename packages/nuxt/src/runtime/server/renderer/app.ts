@@ -53,11 +53,15 @@ export function returnRenderResponse (options: NuxtRendererOptions, event: Rende
   for (const name in response.headers) {
     headers.set(name, response.headers[name]!)
   }
-  return options.createResponse(response.body as BodyInit | null ?? null, {
+  const init = {
     status: response.statusCode ?? event.res.status,
     statusText: response.statusMessage ?? event.res.statusText,
     headers,
-  })
+  }
+  if (response.chunks) {
+    return options.createDocumentResponse ? options.createDocumentResponse(response.chunks, init) : options.createResponse(response.chunks.join(''), init)
+  }
+  return options.createResponse(response.body as BodyInit | null ?? null, init)
 }
 
 export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['error'] & { url: string }): void {

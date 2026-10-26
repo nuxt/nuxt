@@ -146,7 +146,7 @@ async function renderErrorResponse (instance: NuxtRendererInstance, event: Rende
   mergeHeaders(headers, described.headers)
   headers.set('content-type', 'text/html;charset=utf-8')
 
-  let body = (rendered.body ?? null) as BodyInit | null
+  let body = (rendered.chunks ? rendered.chunks.join('') : rendered.body ?? null) as BodyInit | null
   if (import.meta.dev && devError && !import.meta.test) {
     const html = typeof body === 'string' ? body : await new Response(body).text()
     // the overlay is a development aid; never let it replace the real error
@@ -388,6 +388,8 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     throw _err
   })
 
+  const renderedHtml = _rendered.html
+
   // A scriptless response has no chunk to link a stylesheet from, so it always inlines.
   // Both flags are build-time constants, so writing them out folds the branch away.
   // TODO: remove _renderResponse in nuxt v5
@@ -592,9 +594,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   // Allow hooking into the rendered result
   await hooks.callHook('render:html', htmlContext, { event: hookEvent })
 
-  // Construct HTML response
-  return {
-    body: renderHTMLDocument(htmlContext),
+  const response = {
     statusCode: event.res.status,
     statusMessage: event.res.statusText,
     headers: {
@@ -602,6 +602,13 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
       'x-powered-by': 'Nuxt',
     },
   } satisfies RenderedResponse
+
+  // the app markup is sent as rendered chunks unless a listener changed it
+  const chunks = ssrContext['~htmlChunks']
+  if (runtime.createDocumentResponse && chunks && htmlContext.body.length === 2 && htmlContext.body[0] === renderedHtml) {
+    return { ...response, chunks: renderHTMLDocumentChunks(htmlContext, chunks) }
+  }
+  return { ...response, body: renderHTMLDocument(htmlContext) }
 }
 
 async function renderStreamedResponse (ctx: {
@@ -1197,6 +1204,16 @@ function joinTags (tags: Array<string | undefined>) {
 function joinAttrs (chunks: string[]) {
   if (chunks.length === 0) { return '' }
   return ' ' + chunks.join(' ')
+}
+
+function renderHTMLDocumentChunks (html: NuxtRenderHTMLContext, appChunks: string[]): string[] {
+  const chunks: string[] = ['<!DOCTYPE html>' +
+    `<html${joinAttrs(html.htmlAttrs)}>` +
+    `<head>${joinTags(html.head)}</head>` +
+    `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}`]
+  for (const chunk of appChunks) { chunks.push(chunk) }
+  chunks.push(`${html.body[1]}${joinTags(html.bodyAppend)}</body></html>`)
+  return chunks
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
