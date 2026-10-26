@@ -24,3 +24,37 @@ export default defineNuxtPlugin(() => {
 ```
 
 It is 'safe' to run even after your app has initialized. In this case, then the code will be registered to run in the next idle callback.
+
+## Type
+
+```ts [Signature]
+export function onNuxtReady (callback: () => any, options?: OnNuxtReadyOptions): void
+
+interface OnNuxtReadyOptions {
+  timeout?: number
+}
+```
+
+### `callback`
+
+**Type**: `() => any`
+
+The function to run once your app has finished initializing and the browser is idle.
+
+### `options` (optional)
+
+**Type**: `OnNuxtReadyOptions`
+
+- `timeout` (optional)
+
+  **Type**: `number`
+
+  The maximum number of milliseconds to wait for the browser to become idle. It is passed to [`requestIdleCallback`](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback#timeout). Without it, the callback may be delayed for several seconds if the browser does not schedule an idle period, which can happen in headless browsers.
+
+```ts [app/plugins/ready.client.ts]
+export default defineNuxtPlugin(() => {
+  onNuxtReady(() => {
+    // runs when the browser is idle, or after at most 2 seconds
+  }, { timeout: 2000 })
+})
+```
