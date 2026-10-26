@@ -817,6 +817,37 @@ const ROUTER_OPTIONS_FILE_RE = /(?:^|[/\\])router\.options\.\w+$/
 /** Compiled matchers, keyed by a hash of the route rules they were compiled from. */
 const cachedMatchers = new WeakMap<Nuxt, Record<string, string>>()
 
+function serializeAppRouteRules (routeRules: Record<string, any>): string {
+  return `{${Object.entries(routeRules)
+    .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
+    .map(([name, value]) => {
+      if (name === 'redirect') {
+        const redirectOptions = value as { to: string, base?: string, _redirectStripBase?: string } | string
+        value = typeof redirectOptions === 'string'
+          ? redirectOptions
+          : isWildcardRedirect(redirectOptions) ? { to: redirectOptions.to, base: redirectOptions.base ?? redirectOptions._redirectStripBase ?? '' } : redirectOptions.to
+      }
+      if (name === 'appMiddleware') {
+        const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
+        if (typeof appMiddlewareOptions === 'string') {
+          value = { [appMiddlewareOptions]: true }
+        } else if (Array.isArray(appMiddlewareOptions)) {
+          const normalizedRules: Record<string, boolean> = {}
+          for (const middleware of appMiddlewareOptions) {
+            normalizedRules[middleware] = true
+          }
+          value = normalizedRules
+        }
+      }
+      if (name === 'cache' || name === 'isr' || name === 'swr') {
+        name = 'payload'
+        value = Boolean(value)
+      }
+      return `${name}: ${JSON.stringify(value)}`
+    }).join(',')
+  }}`
+}
+
 export const routeRulesTemplate: NuxtTemplate = {
   filename: 'route-rules.mjs',
   // route rules can come from page sources (`defineRouteRules`), and `router.options` files
@@ -835,6 +866,9 @@ export const routeRulesTemplate: NuxtTemplate = {
     }
     if (!routes.length) {
       return `export default () => ({})`
+    }
+    if (routes.length === 1 && routes[0]!.route === '/**' && !isWildcardRedirect(routes[0]!.data.redirect)) {
+      return `export default () => (${serializeAppRouteRules(routes[0]!.data)})`
     }
     const cache = cachedMatchers.get(nuxt) ?? cachedMatchers.set(nuxt, {}).get(nuxt)!
     const cacheKey = hash({ routes, mayBeCaseSensitive })
@@ -856,36 +890,7 @@ export const routeRulesTemplate: NuxtTemplate = {
     })
     const compileOptions: NonNullable<Parameters<RouteRulesRouter['compileToString']>[0]> = {
       matchAll: true,
-      serialize (routeRules) {
-        return `{${Object.entries(routeRules)
-          .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
-          .map(([name, value]) => {
-            if (name === 'redirect') {
-              const redirectOptions = value as { to: string, base?: string, _redirectStripBase?: string } | string
-              value = typeof redirectOptions === 'string'
-                ? redirectOptions
-                : isWildcardRedirect(redirectOptions) ? { to: redirectOptions.to, base: redirectOptions.base ?? redirectOptions._redirectStripBase ?? '' } : redirectOptions.to
-            }
-            if (name === 'appMiddleware') {
-              const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
-              if (typeof appMiddlewareOptions === 'string') {
-                value = { [appMiddlewareOptions]: true }
-              } else if (Array.isArray(appMiddlewareOptions)) {
-                const normalizedRules: Record<string, boolean> = {}
-                for (const middleware of appMiddlewareOptions) {
-                  normalizedRules[middleware] = true
-                }
-                value = normalizedRules
-              }
-            }
-            if (name === 'cache' || name === 'isr' || name === 'swr') {
-              name = 'payload'
-              value = Boolean(value)
-            }
-            return `${name}: ${JSON.stringify(value)}`
-          }).join(',')
-        }}`
-      },
+      serialize: serializeAppRouteRules,
     }
     const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
     const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)
