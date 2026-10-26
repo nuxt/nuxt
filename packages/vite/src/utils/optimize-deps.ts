@@ -7,21 +7,22 @@ import type { Nuxt } from '@nuxt/schema'
 const NODE_MODULES = '/node_modules/'
 
 /**
- * Scanner entries for app code that lives in `node_modules`, such as an installed layer
- * or a plugin a module registers from its own runtime directory.
+ * Scanner entries for the app code of every layer, and for app files a module registers
+ * from its own runtime directory in `node_modules`.
  *
- * Vite does not pre-bundle a bare import whose importer is in `node_modules`, so without
- * these its dependencies are served raw, breaking if they are CJS-only.
+ * Vite's scanner starts from the entry, but plugins, pages, layouts and components are
+ * reached through generated (virtual) modules it cannot follow. Without these entries their
+ * dependencies are found while the first page loads, and each new batch reloads the page.
+ * Vite also does not pre-bundle a bare import whose importer is in `node_modules`, so an
+ * installed layer's dependencies would otherwise be served raw, breaking if they are CJS-only.
  */
-export function installedScanEntries (nuxt: Nuxt): string[] {
+export function appScanEntries (nuxt: Nuxt): string[] {
   const entries = new Set<string>()
 
   for (const dirs of getLayerDirectories(nuxt)) {
-    if (dirs.app !== nuxt.options.srcDir && dirs.app.includes(NODE_MODULES)) {
-      entries.add(join(dirs.app, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'))
-      // scanning the layer's own dependency tree is unnecessary and slow
-      entries.add('!' + join(dirs.app, '**/node_modules/**'))
-    }
+    entries.add(join(dirs.app, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'))
+    // scanning a layer's own dependency tree is unnecessary and slow
+    entries.add('!' + join(dirs.app, '**/node_modules/**'))
   }
 
   for (const app of Object.values(nuxt.apps)) {

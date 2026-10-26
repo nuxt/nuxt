@@ -2,7 +2,7 @@ import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 import { hasOwnSubpathImport } from '@nuxt/kit/internal'
 
-import { installedScanEntries, resolveOptimizeDepsInclude } from '../utils/optimize-deps.ts'
+import { appScanEntries, resolveOptimizeDepsInclude } from '../utils/optimize-deps.ts'
 import { userOptimizeDepsInclude } from './optimize-deps-hint.ts'
 
 /**
@@ -41,7 +41,7 @@ export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
     async configEnvironment (name, config) {
       if (name !== 'client') { return }
 
-      const scanEntries = installedScanEntries(nuxt)
+      const scanEntries = appScanEntries(nuxt)
       if (!scanEntries.length) { return }
 
       config.optimizeDeps ||= {}
