@@ -52,7 +52,7 @@ The returned composable's signature includes any custom options and return-value
 
 ## Options
 
-`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/api/composables/use-async-data#parameters), including `server`, `lazy`, `immediate`, `default`, `transform`, `pick`, `getCachedData`, `deep`, `dedupe`, `timeout`, and `watch`.
+`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/api/composables/use-async-data#parameters), including `server`, `lazy`, `immediate`, `default`, `transform`, `pick`, `getCachedData`, `fetchPolicy`, `deep`, `dedupe`, `timeout`, and `watch`.
 
 See the full list of options in the [`useAsyncData` documentation](/docs/api/composables/use-async-data#parameters).
 

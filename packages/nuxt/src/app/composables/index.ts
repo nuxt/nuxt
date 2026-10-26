@@ -1,6 +1,6 @@
 export { defineNuxtComponent } from './component'
 export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData } from './asyncData'
-export type { AsyncDataOptions, AsyncDataOptionsWithTransform, AsyncData, AsyncDataWithExtensions, AugmentedAsyncData, AsyncDataRequestStatus, AsyncDataMiddleware, AsyncDataHandlerContext, KeysOf, PickFrom, UseAsyncData } from './asyncData'
+export type { AsyncDataOptions, AsyncDataOptionsWithTransform, AsyncData, AsyncDataWithExtensions, AugmentedAsyncData, AsyncDataFetchPolicy, AsyncDataRequestStatus, AsyncDataMiddleware, AsyncDataHandlerContext, KeysOf, PickFrom, UseAsyncData } from './asyncData'
 export { defineUseFetchAddon, defineUseAsyncDataAddon } from './addons'
 export type { UseFetchAddon, UseAsyncDataAddon, UseFetchAddonOptions, UseAsyncDataAddonOptions, AsyncDataAddonInstance, MergedAddonsExtensions } from './addons'
 export { useHydration } from './hydrate'
