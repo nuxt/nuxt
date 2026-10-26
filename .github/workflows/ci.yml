@@ -125,7 +125,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
-          node-version: 22.23.4
+          node-version: 24.22.1
           cache: true
 
   ui-templates-generated:
@@ -144,7 +144,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
-          node-version: 22.23.4
+          node-version: 24.22.1
           cache: true
 
       - name: Regenerate ui-templates output
@@ -429,7 +429,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
-          node-version: 22.23.4
+          node-version: 24.22.1
           cache: true
 
       - name: Cache Playwright browsers
@@ -491,7 +491,7 @@ jobs:
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
-          node-version: 22.23.4
+          node-version: 24.22.1
           cache: true
 
       - name: Cache Playwright browsers
