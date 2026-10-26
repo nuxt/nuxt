@@ -13,6 +13,7 @@ import { annotatePlugins, breakCircularDependencies, filterPluginDependencies, h
 import type { PluginCapability } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
+import { hintPrerenderedLinksEnabled } from './utils/prerender-hints.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
@@ -745,6 +746,10 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!nitro?.options.prerender.crawlLinks}`,
       `export const staticRoutes = ${!!ctx.nuxt.options.experimental.staticRoutes}`,
+      // User config: `prerender.crawlLinks`, then `nitro.prerender.crawlLinks`. The Nitro
+      // instance defaults `crawlLinks` to `false`, and `tryUseNitro()` is missing when the
+      // vite server builder prerenders.
+      `export const hintPrerenderedLinks = ${hintPrerenderedLinksEnabled(ctx.nuxt.options.prerender.crawlLinks ?? ctx.nuxt.options.nitro.prerender?.crawlLinks)}`, // eslint-disable-line @typescript-eslint/no-deprecated -- legacy nitro option read as a fallback
       `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
       `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
       `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,

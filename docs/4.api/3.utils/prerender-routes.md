@@ -5,7 +5,7 @@ minimalVersion: "3.8"
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ssr.ts
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/prerender-routes.ts
     size: xs
 ---
 

@@ -35,6 +35,7 @@ export {
   anyValue as hasParallelPlugins,
   anyValue as hasPluginDependencies,
   anyValue as hasPluginHooks,
+  anyValue as hintPrerenderedLinks,
   anyValue as multiApp,
   anyValue as navigateToDefaults,
   anyValue as nuxtLinkDefaults,

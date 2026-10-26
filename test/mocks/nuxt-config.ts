@@ -12,6 +12,8 @@ export const hasIslandOptOutPlugins = true
 
 export const componentIslands = true
 
+export const hintPrerenderedLinks = false
+
 export const nuxtLinkDefaults = {
   componentName: 'NuxtLink',
 }

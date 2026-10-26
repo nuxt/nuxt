@@ -9,6 +9,7 @@ import ts from 'typescript'
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
 import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, pluginsDeclaration, publicPathTemplate, schemaTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { hintPrerenderedLinksEnabled } from '../src/core/utils/prerender-hints.ts'
 
 import type { Nuxt, NuxtApp, NuxtPlugin } from 'nuxt/schema'
 import type { RuntimeConfigSchemaNode } from '@nuxt/schema/internal'
@@ -31,6 +32,14 @@ function makeNuxt (overrides: Partial<Nuxt['options']> = {}, serverBuild?: Parti
 function makeApp (configs: string[] = []): NuxtApp {
   return { configs } as unknown as NuxtApp
 }
+
+describe('hintPrerenderedLinksEnabled', () => {
+  it('follows links unless crawling was explicitly disabled', () => {
+    expect(hintPrerenderedLinksEnabled(undefined)).toBe(true)
+    expect(hintPrerenderedLinksEnabled(true)).toBe(true)
+    expect(hintPrerenderedLinksEnabled(false)).toBe(false)
+  })
+})
 
 describe('appConfigTemplate', () => {
   it('does not merge at runtime when there are no app config layers', async () => {
