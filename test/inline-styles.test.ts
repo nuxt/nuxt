@@ -160,4 +160,13 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     const linked = await Promise.all(cssLinks.map(href => readFile(join(outputDir, 'public', href.replace(/^\//, '')), 'utf-8')))
     expect(linked.join('\n')).toContain('--inline-predicate-shared-token:predicate-shared')
   })
+
+  it('renders component styles after stylesheet links and entry styles before them', async () => {
+    const html = await readFile(join(outputDir, 'public', 'predicate-not-inlined', 'index.html'), 'utf-8')
+    const linkIndex = html.search(/<link [^>]*rel="stylesheet"/)
+    expect(linkIndex).toBeGreaterThan(-1)
+    expect(html.indexOf('--inline-app-token:app')).toBeGreaterThan(-1)
+    expect(html.indexOf('--inline-app-token:app')).toBeLessThan(linkIndex)
+    expect(html.indexOf('--inline-shared-box-token:shared-box')).toBeGreaterThan(linkIndex)
+  })
 })

@@ -110,7 +110,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"279k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"280k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
