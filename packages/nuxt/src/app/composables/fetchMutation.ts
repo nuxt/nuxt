@@ -114,7 +114,7 @@ function _createUseFetchMutation (options: FactoryOptions = {}): UseFetchMutatio
       return _$fetch(_request, {
         ...fetchDefaults,
         ...fetchOptions,
-        ...payload,
+        body: payload?.body,
         query: payload?.query ? { ...fetchOptions.query, ...payload.query } : fetchOptions.query,
         headers: mergeHeaders(fetchOptions.headers, payload?.headers),
         signal,

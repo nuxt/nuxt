@@ -74,6 +74,14 @@ describe('useFetchMutation', () => {
     await mutate()
     expect(data.value?.query).toStrictEqual({})
   })
+
+  it('sends only `body`, `query` and `headers` from the payload', async () => {
+    const { data, mutate } = useFetchMutation('/api/mutation', { method: 'post' })
+    // @ts-expect-error neither `params` nor `method` is part of the payload
+    await mutate({ body: { id: 1 }, params: { a: '1' }, method: 'put' })
+    expect(data.value).toMatchObject({ method: 'POST', body: { id: 1 } })
+    expect(data.value?.query).toStrictEqual({})
+  })
 })
 
 describe('mutation factories', () => {
