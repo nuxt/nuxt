@@ -18,11 +18,24 @@ const NODE_MODULES = '/node_modules/'
  */
 export function appScanEntries (nuxt: Nuxt): string[] {
   const entries = new Set<string>()
+  const ignore = nuxt.options.ignore.filter(pattern => !pattern.startsWith('!'))
 
   for (const dirs of getLayerDirectories(nuxt)) {
     entries.add(join(dirs.app, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'))
-    // scanning a layer's own dependency tree is unnecessary and slow
-    entries.add('!' + join(dirs.app, '**/node_modules/**'))
+    // Scanning a layer's own dependency tree is unnecessary and slow. Vite globs patterns that contain
+    // `node_modules` on their own, so for a local layer `node_module?` keeps this with the pattern above.
+    entries.add('!' + join(dirs.app, '**/node_module?/**'))
+    // Tests, server code, local modules and config files would pre-bundle packages the browser never
+    // loads. Without an `app/` directory, the app directory is the layer root, which holds all of them.
+    for (const pattern of ignore) {
+      // a negation based above Vite's root (the `srcDir`) matches nothing
+      entries.add('!' + join(pattern.startsWith('**/') ? dirs.app : dirs.root, pattern))
+    }
+    for (const dir of [dirs.server, dirs.modules, dirs.public]) {
+      entries.add('!' + join(dir, '**'))
+    }
+    // config files such as `nuxt.config.ts` or `vitest.config.ts`
+    entries.add('!' + join(dirs.root, '*.{js,jsx,mjs,ts,tsx,mts}'))
   }
 
   for (const app of Object.values(nuxt.apps)) {
