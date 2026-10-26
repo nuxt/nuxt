@@ -198,6 +198,7 @@ export default defineResolvers({
     serverPathFallback: {
       $resolve: val => typeof val === 'boolean' ? val : true,
     },
+    sharedRouterMatcher: false,
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {

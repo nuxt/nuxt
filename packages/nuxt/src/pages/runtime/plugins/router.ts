@@ -1,7 +1,7 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
-import type { NavigationGuardReturn, RouteLocationNormalized, RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
-import { NavigationFailureType, START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory, isNavigationFailure } from 'vue-router'
+import type { NavigationGuardReturn, RouteLocationNormalized, RouteLocationNormalizedLoadedGeneric, RouteRecordRaw, Router, RouterMatcher, RouterScrollBehavior } from 'vue-router'
+import { NavigationFailureType, START_LOCATION, createMemoryHistory, createRouter, createRouterMatcher, createWebHashHistory, createWebHistory, isNavigationFailure } from 'vue-router'
 import { isSamePath, withBase, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin } from '#app/nuxt'
@@ -20,11 +20,26 @@ import _routeRulesMatcher from '#build/route-rules.mjs'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
-import { serverPathFallback, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { serverPathFallback, sharedRouterMatcher, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import { traceAsync } from '#app/internal/tracing'
 
 // matches a trailing slash on the path only, leaving query and hash significant
 const PATH_TRAILING_SLASH_RE = /\/(?=$|[?#])/
+
+// one matcher per routes array, shared by the routers of every server request, so the
+// routes are compiled once per process rather than once per request
+const sharedMatchers = import.meta.server && !import.meta.dev && sharedRouterMatcher
+  ? new WeakMap<readonly RouteRecordRaw[], RouterMatcher>()
+  : undefined
+
+function getSharedMatcher (matchers: WeakMap<readonly RouteRecordRaw[], RouterMatcher>, routes: readonly RouteRecordRaw[]) {
+  let matcher = matchers.get(routes)
+  if (!matcher) {
+    matcher = createRouterMatcher(routes, routerOptions)
+    matchers.set(routes, matcher)
+  }
+  return matcher
+}
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -70,6 +85,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     const router = createRouter({
       ...routerOptions,
+      ...sharedMatchers && { matcher: getSharedMatcher(sharedMatchers, routes) },
       scrollBehavior: (to, from, savedPosition) => {
         if (from === START_LOCATION) {
           startPosition = savedPosition
@@ -96,6 +112,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     if (import.meta.hot) {
       handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    }
+
+    if (sharedMatchers) {
+      // changing a shared matcher would change the routes of every later request
+      for (const method of ['addRoute', 'removeRoute', 'clearRoutes'] as const) {
+        router[method] = () => {
+          throw new Error(`[nuxt] \`router.${method}()\` cannot be used on the server with \`experimental.sharedRouterMatcher\`.`)
+        }
+      }
     }
 
     if (import.meta.client && 'scrollRestoration' in window.history) {

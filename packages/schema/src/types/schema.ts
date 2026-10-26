@@ -1309,6 +1309,18 @@ export interface ConfigSchema {
     serverPathFallback: boolean
 
     /**
+     * Build vue-router's route matcher once per server process and share it between the routers
+     * Nuxt creates for each request, instead of compiling every route again for each request.
+     *
+     * Only applies to production server rendering. With this enabled, `router.addRoute()`,
+     * `router.removeRoute()` and `router.clearRoutes()` throw on the server, because they would
+     * change the routes of every later request.
+     *
+     * @default false
+     */
+    sharedRouterMatcher: boolean
+
+    /**
      * Use app manifests to respect route rules on client-side.
      *
      * @default true
