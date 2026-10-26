@@ -101,6 +101,30 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     if (import.meta.client && 'scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'auto'
     }
+    // Native <a href="#hash"> clicks on the same page are handled by the browser,
+    // not by Vue Router. Since Nuxt sets scrollRestoration to 'manual' for router
+    // navigations, the browser won't restore the scroll position on Back after a
+    // native hash click. This handler saves the scroll position into the history
+    // state and lets the browser handle the restoration natively (#36660).
+    if (import.meta.client && 'scrollRestoration' in window.history) {
+      document.addEventListener('click', (e: MouseEvent) => {
+        const target = e.target as Node
+        const anchor = target instanceof Element
+          ? target.closest('a[href]') as HTMLAnchorElement | null
+          : null
+        if (!anchor) { return }
+
+        const href = anchor.getAttribute('href')
+        if (!href || !href.startsWith('#') || href === '#') { return }
+
+        // same-page native hash click — save scroll position so the browser can
+        // restore it on Back (scrollRestoration is 'manual' for router navs)
+        window.history.scrollRestoration = 'auto'
+        const state = { ...window.history.state, _nuxtHashScrollY: window.scrollY }
+        window.history.replaceState(state, '')
+      })
+    }
+
     nuxtApp.vueApp.use(router)
 
     const previousRoute = shallowRef(router.currentRoute.value)
