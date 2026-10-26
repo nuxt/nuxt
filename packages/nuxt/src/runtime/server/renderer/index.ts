@@ -493,7 +493,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   }
   for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
     if (!excludeHrefs.has(l.href)) {
-      hints.push(l)
+      hints.push(NO_SCRIPTS ? l : inertPrefetchLink(l))
     }
   }
   if (hints.length) {
@@ -626,7 +626,7 @@ async function renderStreamedResponse (ctx: {
   // Entry preload/prefetch links
   const entryHints = [
     ...getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
-    ...getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
+    ...(getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => NO_SCRIPTS ? l : inertPrefetchLink(l)),
   ]
   if (entryHints.length) {
     ssrContext.head.push({ link: entryHints })
@@ -1094,6 +1094,11 @@ function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: strin
       },
     }],
   })
+}
+
+/** Rendered without `href`, so the browser ignores it until the client activates it. */
+function inertPrefetchLink ({ href, ...link }: Link): Link {
+  return { ...link, 'data-href': href } as Link
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext): string {

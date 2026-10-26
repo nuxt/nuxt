@@ -58,6 +58,10 @@ describe('resolveApp', () => {
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
           },
           {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/deferred-prefetch.client.ts",
+          },
+          {
             "dependsOn": [],
             "filename": "components.plugin.mjs",
             "getContents": [Function],
