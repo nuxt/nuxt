@@ -1759,6 +1759,14 @@ export interface ConfigSchema {
     entryImportMap: boolean
 
     /**
+     * Whether to add V8 compile hints to the entry, layout and page chunks (and their static imports) in the Vite client build, so supporting browsers compile them eagerly while they download.
+     *
+     * @default true
+     * @see [V8 explicit compile hints](https://v8.dev/blog/explicit-compile-hints)
+     */
+    compileHints: boolean
+
+    /**
      * Extract async data handler functions into separate chunks for better performance and caching.
      *
      * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted
