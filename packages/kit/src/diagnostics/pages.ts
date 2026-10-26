@@ -116,5 +116,10 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove one of the two rules.',
       docs: false,
     },
+    NUXT_B4022: {
+      why: (p: { route: string, part: string }) => `The route rule \`${p.route}\` has a regex constraint that depends on letter case (\`${p.part}\`), so it cannot be matched with \`router.options.sensitive: false\`.`,
+      fix: 'Request paths are lower-cased before they are matched, so write the constraint for lower-case letters (such as `[a-z]` instead of `[A-Z]`), or set `router.options.sensitive` to `true`.',
+      docs: false,
+    },
   },
 })

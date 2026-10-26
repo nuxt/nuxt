@@ -1209,13 +1209,6 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   nitroConfig.rollupConfig.plugins.unshift(plugin as any)
   nitroConfig.rollupConfig.plugins.push(fallbackPlugin as any)
 
-  if (nuxt.options.experimental.nitroViteEnvironment) {
-    const applyToEnvironment = (environment: { name: string }) => environment.name === 'nitro'
-    nuxt.options.vite.plugins ||= []
-    nuxt.options.vite.plugins.push({ ...plugin, applyToEnvironment } as any)
-    nuxt.options.vite.plugins.push({ ...fallbackPlugin, applyToEnvironment } as any)
-  }
-
   return registerLateScope
 }
 
@@ -1276,7 +1269,6 @@ function createNitroFallbackResolvePlugin (nitroResolutions: Record<string, stri
 
   return {
     name: 'nuxt:nitro-resolve-fallback',
-    enforce: 'post' as const,
     resolveId: {
       order: 'post' as const,
       filter: { id: NITRO_IMPLICIT_DEPENDENCY_RE },
@@ -1338,9 +1330,7 @@ function createLegacyResolvePlugin (
       clearRealPathCache(id)
       invalidateScope(id)
     },
-    // `enforce` orders the plugin for Vite, `order` for rollup and rolldown; both are
-    // needed so that the legacy auto-imports beat nitro's own pass on either build path
-    enforce: 'pre' as const,
+    // `order` runs the legacy auto-imports ahead of nitro's own pass on every server build
     resolveId: { order: 'pre' as const, async handler (this: ResolvePluginContext, source: string, importer?: string) {
       // a virtual importer has no location to resolve from, so nitro's own copy answers
       if (importer && !isAbsolute(importer) && NITRO_SPECIFIER_RE.test(source)) {
