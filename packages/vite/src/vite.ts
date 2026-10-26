@@ -81,8 +81,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   let fsDeny: string[] | undefined
   if (nuxt.options.dev) {
     // a configured `server.fs.deny` replaces Vite's defaults
-    const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envFile: false, logLevel: 'silent' }, 'serve')).server.fs.deny
+    const defaultDeny = viteConfig.server?.fs?.deny ? [] : await resolveDefaultFsDeny(nuxt.options.rootDir)
     fsDeny = [...defaultDeny, '**/app-secret']
+    if (nitro) {
+      fsDeny.push(`${escapeGlob(nitro.options.output.serverDir)}/**`)
+    }
   }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
@@ -453,6 +456,17 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, crawls: WarmupCraw
   } else {
     nuxt.hooks.hookOnce('build:done', () => { void run() })
   }
+}
+
+const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
+
+function escapeGlob (path: string) {
+  return path.replace(GLOB_SPECIAL_CHARS_RE, '\\$&')
+}
+
+async function resolveDefaultFsDeny (root: string) {
+  const resolved = await resolveConfig({ root, configFile: false, envFile: false, logLevel: 'silent' }, 'serve')
+  return resolved.server.fs.deny
 }
 
 async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {
