@@ -533,15 +533,17 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     exclude: [...exclude],
   } satisfies TSConfig) as TSConfig
 
-  const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, baseTsConfig)
+  const tsConfig: TSConfig = defu(nuxt.options.typescript?.appTsConfig, baseTsConfig, {
+    compilerOptions: { tsBuildInfoFile: tsBuildInfoFile('tsconfig.app') },
+  } satisfies TSConfig)
 
   // `baseTsConfig.compilerOptions` already merges the user's global `typescript.tsConfig` with
   // Nuxt's defaults. The `node` and `shared` environments load `nuxt.config` and modules, so
   // they inherit that baseline minus the app-only (DOM/Vue) options, and always emit nothing,
   // scan no ambient types, and start from empty `paths` (filled in below).
   const appOnlyCompilerOptions = ['lib', 'libReplacement', 'jsx', 'jsxImportSource', 'noUncheckedSideEffectImports', 'experimentalDecorators'] as const
-  const nonAppCompilerOptions = (): NonNullable<TSConfig['compilerOptions']> => {
-    const compilerOptions = { ...baseTsConfig.compilerOptions }
+  const nonAppCompilerOptions = (configName: string): NonNullable<TSConfig['compilerOptions']> => {
+    const compilerOptions = { tsBuildInfoFile: tsBuildInfoFile(configName), ...baseTsConfig.compilerOptions }
     for (const key of appOnlyCompilerOptions) {
       delete compilerOptions[key]
     }
@@ -551,7 +553,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // This describes the environment where we load `nuxt.config.ts` (and modules).
   const nodeTsConfig: TSConfig = defu(nuxt.options.typescript?.nodeTsConfig, {
     compilerOptions: {
-      ...nonAppCompilerOptions(),
+      ...nonAppCompilerOptions('tsconfig.node'),
       ...isV5OrHigher
         ? {
             module: 'nodenext',
@@ -566,7 +568,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   // This describes the environment where we load `nuxt.config.ts` (and modules)
   const sharedTsConfig: TSConfig = defu(nuxt.options.typescript?.sharedTsConfig, {
-    compilerOptions: nonAppCompilerOptions(),
+    compilerOptions: nonAppCompilerOptions('tsconfig.shared'),
     include: [...sharedInclude],
     exclude: [...sharedExclude],
   } satisfies TSConfig)
@@ -575,7 +577,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // server runtime. The builder contributes what its own needs through `prepare:types`.
   const serverTsConfig = defu(nuxt.options.typescript?.serverTsConfig, {
     compilerOptions: {
-      ...nonAppCompilerOptions(),
+      ...nonAppCompilerOptions('tsconfig.server'),
       // bundled and web-standard rather than DOM-bound
       lib: ['ESNext', 'webworker', 'dom.iterable'],
       moduleResolution: 'Bundler',
@@ -688,6 +690,10 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // Legacy tsConfig for backward compatibility
   const legacyTsConfig: TSConfig = defu({}, {
     ...tsConfig,
+    compilerOptions: {
+      ...tsConfig.compilerOptions,
+      tsBuildInfoFile: nuxt.options.typescript?.tsConfig?.compilerOptions?.tsBuildInfoFile ?? tsBuildInfoFile('tsconfig'),
+    },
     include: [...tsConfig.include, ...legacyInclude],
     exclude: [...userExclude, ...legacyExclude],
   })
@@ -903,6 +909,10 @@ function renderReference (ref: TSReference, baseDir: string) {
     ? `path="${isAbsolute(ref.path) ? relative(baseDir, ref.path) : ref.path}"`
     : `types="${ref.types}"`
   return `/// <reference ${stuff} />`
+}
+
+function tsBuildInfoFile (configName: string) {
+  return `./cache/typecheck/${configName}.tsbuildinfo`
 }
 
 const RELATIVE_WITH_DOT_RE = /^([^.])/
