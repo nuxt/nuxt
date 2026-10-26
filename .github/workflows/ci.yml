@@ -76,9 +76,35 @@ jobs:
           test -n "$version" || { echo "::error::could not resolve playwright-core version from pnpm-workspace.yaml"; exit 1; }
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-  build:
+  gate:
     needs: changes
-    if: needs.changes.outputs.src == 'true'
+    if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 160
+    permissions:
+      contents: read
+    outputs:
+      full: ${{ steps.gate.outputs.full }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          node-version: lts
+          run-install: false
+
+      - name: Wait for the merge queue
+        id: gate
+        run: node ./scripts/merge-queue-gate.ts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BASE_REF: ${{ github.event.merge_group.base_ref }}
+          HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+
+  build:
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') }}
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 10
     permissions:
@@ -130,8 +156,8 @@ jobs:
 
   ui-templates-generated:
     # Regenerates the committed @nuxt/ui-templates output and fails on drift.
-    needs: changes
-    if: needs.changes.outputs.src == 'true'
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') }}
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
@@ -208,8 +234,8 @@ jobs:
 
   typecheck:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    needs: changes
-    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') && (github.event_name != 'push' || github.ref_name != 'main') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     permissions:
@@ -251,8 +277,8 @@ jobs:
 
   lint-and-test:
     # autofix workflow will be triggered instead for PRs; run in merge queue and on push to maintenance branches
-    needs: changes
-    if: (github.event_name == 'merge_group' || (github.event_name == 'push' && github.ref_name != 'main')) && needs.changes.outputs.src == 'true'
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (needs.gate.outputs.full == 'true' || (github.event_name == 'push' && github.ref_name != 'main')) }}
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
@@ -306,8 +332,8 @@ jobs:
   # Runs on pull requests too (unlike the `lint` job) so knip regressions surface
   # before the merge queue.
   knip:
-    needs: changes
-    if: needs.changes.outputs.src == 'true'
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') }}
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
@@ -341,8 +367,8 @@ jobs:
 
   test-size:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    needs: changes
-    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') && (github.event_name != 'push' || github.ref_name != 'main') }}
     runs-on: ubuntu-26.04-arm
     permissions:
       actions: write
@@ -394,8 +420,8 @@ jobs:
 
   test-fixtures:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    needs: changes
-    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') && (github.event_name != 'push' || github.ref_name != 'main') }}
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
@@ -462,8 +488,8 @@ jobs:
 
   test-e2e:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    needs: changes
-    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') && (github.event_name != 'push' || github.ref_name != 'main') }}
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
@@ -533,6 +559,7 @@ jobs:
     runs-on: ubuntu-26.04-arm
     needs:
       - changes
+      - gate
       - build
       - codeql
       - typecheck
@@ -544,21 +571,11 @@ jobs:
       - ui-templates-generated
     steps:
       - name: Check required jobs
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
           # Fail if any needed job was not successful (skipped counts as success)
-          results=( \
-            "${{ needs.changes.result }}" \
-            "${{ needs.build.result }}" \
-            "${{ needs.codeql.result }}" \
-            "${{ needs.typecheck.result }}" \
-            "${{ needs.lint-and-test.result }}" \
-            "${{ needs.knip.result }}" \
-            "${{ needs.test-size.result }}" \
-            "${{ needs.test-fixtures.result }}" \
-            "${{ needs.test-e2e.result }}" \
-            "${{ needs.ui-templates-generated.result }}" \
-          )
-          for result in "${results[@]}"; do
+          for result in $RESULTS; do
             if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
               echo "One or more required jobs failed or were cancelled: $result"
               exit 1
