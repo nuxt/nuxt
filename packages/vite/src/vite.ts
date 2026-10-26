@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { performance } from 'node:perf_hooks'
-import { createBuilder, createServer, mergeConfig } from 'vite'
+import { createBuilder, createServer, mergeConfig, resolveConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
@@ -77,6 +77,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   ]).filter(d => existsSync(d))
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
+
+  let fsDeny: string[] | undefined
+  if (nuxt.options.dev) {
+    // a configured `server.fs.deny` replaces Vite's defaults
+    const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envFile: false, logLevel: 'silent' }, 'serve')).server.fs.deny
+    fsDeny = [...defaultDeny, '**/app-secret']
+  }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
 
@@ -262,6 +269,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
         fs: {
           allow: allowDirs,
+          deny: fsDeny,
         },
       },
     } satisfies ViteConfig,
