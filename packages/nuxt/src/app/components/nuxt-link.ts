@@ -556,8 +556,10 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           }
           return () => renderStaticInternalLink(props, slots, router, rawTo, nuxtApp)
         }
-        // `target` other than `_self` still renders through `<RouterLink>`, so the static branch
-        // never resolves it. Resolve it once during prerender and record the path.
+        // A `target` other than `_self` falls through and renders a plain `<a href>` at the
+        // end of `setup`, so the HTML crawler already sees it. Resolve the route during
+        // prerender and record the path. A `custom` link renders no `href`, so that
+        // recording is what gets it prerendered.
         if (import.meta.prerender && props.target && props.target !== '_self' && attrs.download === undefined) {
           const isExternalLink = props.external || (typeof rawTo === 'string' && (rawTo === '' || isAbsoluteHref(rawTo)))
           if (!isExternalLink && !isHashLinkWithoutHashMode(rawTo)) {
