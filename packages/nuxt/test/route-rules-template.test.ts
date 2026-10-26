@@ -11,13 +11,14 @@ import type { NuxtPage } from '../schema.ts'
 
 const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
 
-async function getRouteRulesTemplate (sensitive: boolean, baseURL?: string, routeRules: Record<string, any> = { '/admin/**': { prerender: true }, '/protected/**': { redirect: '/login' } }) {
+async function getRouteRulesTemplate (sensitive: boolean, baseURL?: string, routeRules: Record<string, any> = { '/admin/**': { prerender: true }, '/protected/**': { redirect: '/login' } }, serverBuilder?: string) {
   const nuxt = await loadNuxt({
     cwd: pagesFixtureDir,
     ready: true,
     overrides: {
       router: { options: { sensitive } },
       ...baseURL ? { app: { baseURL } } : {},
+      ...serverBuilder ? { server: { builder: serverBuilder } } : {},
       routeRules,
     },
   })
@@ -45,6 +46,17 @@ describe('route rules template', () => {
     expect(await getRouteRulesTemplate(false, undefined, {})).toBe('export default () => ({ssr: true})')
     expect(await getRouteRulesTemplate(false, undefined, { '/**': { appLayout: 'a' }, 'GET /**': { appLayout: 'b' }, 'POST /admin/**': { ssr: false } }))
       .toBe('export default () => ({ssr: true,appLayout: "b"})')
+  })
+
+  it('merges `appMiddleware` names from overlapping catch-all rules without a nitro server', async () => {
+    for (const routeRules of [
+      { '/**': { appMiddleware: 'auth' }, 'GET /**': { appMiddleware: 'log' } },
+      { '/**': { appMiddleware: 'auth' }, 'GET /**': { appMiddleware: ['log'] } },
+      { '/**': { appMiddleware: 'auth' }, 'GET /**': { appMiddleware: 'log' }, '/x': { appMiddleware: 'x' } },
+    ]) {
+      const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, routeRules, 'vite'))
+      expect(matcher('/secret').appMiddleware, JSON.stringify(routeRules)).toEqual({ auth: true, log: true })
+    }
   })
 
   it('leaves rules without client-side options out of the matcher', async () => {
