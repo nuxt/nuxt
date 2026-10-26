@@ -3,8 +3,9 @@ import { compileRouterToString } from 'rou3/compiler'
 import type { RouterCompilerOptions } from 'rou3/compiler'
 import { defu } from 'defu'
 import { tryUseNitro } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
-import { decodeRoutePath } from './index.ts'
+import { decodeRoutePath, foldRouteCase, foldRouteRulePath } from './index.ts'
 
 /** One entry of a route-rules router: the pattern it matches and the rules it resolves to. */
 export interface RouteRulesRoute {
@@ -77,17 +78,155 @@ export function mergeMethodRouteRulesRoutes (routes: RouteRulesRoute[], method =
 }
 
 /**
- * Normalise a route-rule key or lookup path: decode percent-encoding, then case-fold when
- * `fold` is set. Keys are matched in decoded form so that a rule may be authored either
- * decoded (`/测试`, the usual case) or encoded (`/%E6%B5%8B%E8%AF%95`, the form the page route
- * and the request path take). Decoding must precede case folding, or a percent-encoded
- * non-ASCII character would never fold.
+ * Normalise a route-rule key or lookup path: decode percent-encoding, then case-fold (see
+ * {@link foldRouteCase}) when `fold` is set. Keys are matched in decoded form so that a rule may
+ * be authored either decoded (`/测试`, the usual case) or encoded (`/%E6%B5%8B%E8%AF%95`, the
+ * form the page route and the request path take). Decoding must precede case folding, or a
+ * percent-encoded non-ASCII character would never fold.
  *
  * @internal
  */
 export function normalizeRouteRulePath (path: string, fold: boolean): string {
   const decoded = decodeRoutePath(path)
-  return fold ? decoded.toLowerCase() : decoded
+  return fold ? foldRouteCase(decoded) : decoded
+}
+
+/**
+ * Normalise a route-rule key as {@link normalizeRouteRulePath} does, except for its regex
+ * constraints (`:id(\\D+)`), which are never folded, and in which a percent-encoded character
+ * decodes to a literal match of that character rather than to regex syntax.
+ *
+ * @internal
+ */
+export function normalizeRouteRuleKey (key: string, fold: boolean): string {
+  return splitRouteConstraints(key)
+    .map(part => part.constraint ? decodeRouteConstraint(part.text) : normalizeRouteRulePath(part.text, fold))
+    .join('')
+}
+
+const ENCODED_RUN_RE = /(?:%[\da-f]{2})+/gi
+const REGEX_SYNTAX_RE = /[\\^$.*+?()[\]{}|-]/g
+
+function decodeRouteConstraint (constraint: string): string {
+  return constraint.replace(ENCODED_RUN_RE, encoded => decodeRoutePath(encoded).replace(REGEX_SYNTAX_RE, '\\$&'))
+}
+
+function splitRouteConstraints (pattern: string): Array<{ text: string, constraint: boolean }> {
+  const parts: Array<{ text: string, constraint: boolean }> = []
+  let start = 0
+  let depth = 0
+  let inClass = false
+  for (let i = 0; i < pattern.length; i++) {
+    const char = pattern[i]
+    if (char === '\\') {
+      i++
+      continue
+    }
+    if (depth === 0) {
+      if (char === '(') {
+        parts.push({ text: pattern.slice(start, i), constraint: false })
+        start = i
+        depth = 1
+      }
+      continue
+    }
+    if (inClass) {
+      inClass = char !== ']'
+    } else if (char === '[') {
+      inClass = true
+    } else if (char === '(') {
+      depth++
+    } else if (char === ')' && --depth === 0) {
+      parts.push({ text: pattern.slice(start, i + 1), constraint: true })
+      start = i + 1
+    }
+  }
+  parts.push({ text: pattern.slice(start), constraint: depth > 0 })
+  return parts
+}
+
+/**
+ * Case-fold a route rule pattern as {@link foldRouteRulePath} does a request path, keeping
+ * param names, backslash escapes and regex constraints as written.
+ *
+ * @internal
+ */
+export function foldRouteRulePattern (pattern: string): string {
+  return splitRouteConstraints(pattern)
+    .map((part) => {
+      if (part.constraint) { return part.text }
+      return part.text.replace(/\\.|:\w+|[^\\:]+|:/g, token => token[0] === '\\' || (token[0] === ':' && token.length > 1) ? token : foldRouteRulePath(token))
+    })
+    .join('')
+}
+
+const CONSTRAINT_ATOM_RE = /\\(?:x[\da-f]{2}|u[\da-f]{4}|u\{[\da-f]+\}|c[a-z]|[0-7]{1,3}|[\s\S])|\[(?:\\[\s\S]|[^\]\\])*\]|\{\d+(?:,\d*)?\}|\(\?(?:<?[=!]|<[^>]*>|:)|[\s\S]/gi
+
+let casePairs: Array<[char: string, folded: string]> | undefined
+
+function getCasePairs (): Array<[char: string, folded: string]> {
+  if (!casePairs) {
+    casePairs = []
+    for (let code = 0; code <= 0xFFFF; code++) {
+      const char = String.fromCharCode(code)
+      const folded = foldRouteCase(char)
+      if (folded !== char) { casePairs.push([char, folded]) }
+    }
+  }
+  return casePairs
+}
+
+/**
+ * The first part of a decoded regex constraint that matches a character but not its case-folded
+ * form (see {@link foldRouteCase}), such as `A`, `[A-Z]`, `\x41` or `É`, or a negated class that
+ * matches one form but not the other, such as `[^A-Z]`. Request paths are case-folded before they
+ * are matched when routing is case-insensitive, so such a constraint would not match the way it
+ * reads.
+ *
+ * @internal
+ */
+export function findCaseDependentConstraint (constraint: string): string | undefined {
+  for (const [atom] of constraint.matchAll(CONSTRAINT_ATOM_RE)) {
+    if (atom.length === 1) {
+      if (foldRouteCase(atom) !== atom) { return atom }
+      continue
+    }
+    let regex: RegExp
+    try {
+      regex = new RegExp(atom)
+    } catch {
+      continue
+    }
+    const negated = atom.startsWith('[^')
+    if (getCasePairs().some(([char, folded]) => negated ? regex.test(char) !== regex.test(folded) : regex.test(char) && !regex.test(folded))) { return atom }
+  }
+}
+
+/**
+ * The first part of a regex constraint in a route-rule key that depends on letter case (see
+ * {@link findCaseDependentConstraint}), once percent-encoded characters are decoded as they are
+ * for matching.
+ *
+ * @internal
+ */
+export function findCaseDependentRouteRuleKeyPart (key: string): string | undefined {
+  for (const { text, constraint } of splitRouteConstraints(key)) {
+    const part = constraint ? findCaseDependentConstraint(decodeRouteConstraint(text)) : undefined
+    if (part !== undefined) { return part }
+  }
+}
+
+/**
+ * Throw if a regex constraint in a route-rule key depends on letter case, for keys matched
+ * case-insensitively.
+ *
+ * @internal
+ */
+export function assertCaseIndependentRouteRuleKey (key: string): void {
+  const part = findCaseDependentRouteRuleKeyPart(key)
+  if (part !== undefined) {
+    throw pageDiagnostics.NUXT_B4022({ route: key, part })
+  }
 }
 
 /**
@@ -193,23 +332,25 @@ export function createRouteRulesRouter (allRoutes: RouteRulesRoute[], baseURL: s
 }
 
 /**
- * Source of the `normalizePath` helper a compiled matcher looks rules up through: `decodeRoutePath`
- * is inlined by source so that the runtime lookup and the build-time key normalisation cannot
- * drift apart.
+ * Source of the `normalizePath` helper a compiled matcher looks rules up through, case-folding
+ * when `fold` is set: `decodeRoutePath` and `foldRouteCase` are inlined by source so that the
+ * runtime lookup and the build-time key normalisation cannot drift apart.
  *
  * @internal
  */
-export const normalizePathCode: string = [
-  `const decodeRoutePath = ${decodeRoutePath.toString()}`,
-  `const normalizePath = (path, fold) => {`,
-  `  if (typeof path !== 'string') { return path }`,
-  `  const decoded = decodeRoutePath(path)`,
-  `  return fold ? decoded.toLowerCase() : decoded`,
-  `}`,
-].join('\n')
+export function genNormalizePathCode (fold: boolean): string {
+  return [
+    `const decodeRoutePath = ${decodeRoutePath.toString()}`,
+    fold ? `const foldRouteCase = ${foldRouteCase.toString()}` : ``,
+    `const normalizePath = (path) => {`,
+    `  if (typeof path !== 'string') { return path }`,
+    `  return ${fold ? 'foldRouteCase(decodeRoutePath(path))' : 'decodeRoutePath(path)'}`,
+    `}`,
+  ].filter(Boolean).join('\n')
+}
 
 /**
- * Build a route-rules router whose keys are decoded (and, when `fold` is set, lower-cased),
+ * Build a route-rules router whose keys are normalised with {@link normalizeRouteRuleKey},
  * mirroring the normalised lookup path used at runtime.
  *
  * `onDuplicate` is called when two distinct keys normalise onto the same path; the later
@@ -221,7 +362,7 @@ export function createNormalizedRouteRulesRouter (routes: RouteRulesRoute[], bas
   const normalizedKeys = new Map<string, string>()
   const normalizedRoutes = resolveMethodRouteRulesRoutes(routes, method).map((route) => {
     if (typeof route.route !== 'string') { return route }
-    const path = normalizeRouteRulePath(route.route, fold)
+    const path = normalizeRouteRuleKey(route.route, fold)
     const key = route.method ? `${route.method} ${path}` : path
     const original = route.method ? `${route.method} ${route.route}` : route.route
     const existing = normalizedKeys.get(key)
