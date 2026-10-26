@@ -9,6 +9,7 @@ import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError, createErrorFromThrown } from './composables/error'
 import { appDiagnostics } from './diagnostics/core'
+import { waitForPaint, yieldToMain } from './internal/yield'
 
 import '#build/css'
 import plugins from '#build/plugins'
@@ -65,6 +66,10 @@ if (import.meta.client) {
       (multiApp ? window.__NUXT__?.[appId] : window.__NUXT__)?.serverRendered ??
       (multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__'))?.dataset.ssr === 'true',
     )
+    if (isSSR) {
+      await waitForPaint()
+    }
+
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
     const nuxt = createNuxtApp({ vueApp })
@@ -94,6 +99,10 @@ if (import.meta.client) {
       await applyPlugins(nuxt, plugins)
     } catch (err) {
       handleVueError(err)
+    }
+
+    if (isSSR) {
+      await yieldToMain()
     }
 
     try {
