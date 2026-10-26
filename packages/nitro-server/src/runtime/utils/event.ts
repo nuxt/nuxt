@@ -1,4 +1,4 @@
-import { getRequestHost, getRequestProtocol, getRequestURL, readRawBody } from 'h3'
+import { createError, getRequestHost, getRequestProtocol, getRequestURL, readRawBody } from 'h3'
 import type { H3Event } from 'h3'
 import type { RendererEvent } from 'nuxt/internal/renderer/runtime'
 import type { NuxtRequestContext, RequestEvent } from 'nuxt/schema'
@@ -9,6 +9,7 @@ const ENC_BRACKET_CLOSE_RE = /%5D/g
 const ENC_ENC_SLASH_RE = /%252F/gi
 const HASH_RE = /#/g
 const QUESTION_MARK_RE = /\?/g
+const DOT_SEGMENT_RE = /(?:^|\/)\.{1,2}(?:\/|$)/
 
 // h3 decodes the path, apart from `%2F`, and vue-router expects an encoded path
 function encodeEventPath (path: string): string {
@@ -262,8 +263,16 @@ export function getFetchedRequestContext (event: H3Event): NuxtRequestContext | 
  * The event the SSR renderer reads, which reaches the h3 v1 event itself through `~app`.
  * Of the Nuxt context a request nitro made to itself was fetched with, only the error render
  * flag carries over.
+ *
+ * Paths with `.` or `..` segments 404, as `url` would resolve them to a page other than the
+ * one `event.path` names.
  */
 export function toRequestEvent (event: H3Event): RendererEvent {
+  const queryIndex = event.path.indexOf('?')
+  if (DOT_SEGMENT_RE.test(queryIndex === -1 ? event.path : event.path.slice(0, queryIndex))) {
+    throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
+  }
+
   const requestEvent = toWebView(event)
 
   if (getFetchedRequestContext(event)?.['~rendering-error']) {

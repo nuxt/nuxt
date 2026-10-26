@@ -67,6 +67,21 @@ describe('request route rules', () => {
     expect(resolveRequestRouteRules(event('/base/Admin?x=1'))).toEqual({ ssr: false })
   })
 
+  it('resolves rules for a request path with dot segments', async () => {
+    const { resolveRequestRouteRules } = await load({
+      routeRules: {
+        '/dashboard': { headers: { 'x-frame-options': 'DENY' } },
+        '/old': { redirect: { to: '/new', statusCode: 307 } },
+      },
+    })
+    for (const path of ['/./dashboard', '/x/../dashboard', '/dashboard/.', '/%2e/dashboard', '/x/%2E%2e/dashboard']) {
+      expect(resolveRequestRouteRules(event(path))).toEqual({ headers: { 'x-frame-options': 'DENY' } })
+    }
+    for (const path of ['/./old', '/old/.', '/%2e%2e/old', '/a/b/../../old?x=1']) {
+      expect(resolveRequestRouteRules(event(path))).toEqual({ redirect: { to: '/new', statusCode: 307 } })
+    }
+  })
+
   it('reuses rules already resolved for a request', async () => {
     const { getRouteRules } = await load({ routeRules: { '/admin': { ssr: false } } })
     const resolved = { noScripts: true }

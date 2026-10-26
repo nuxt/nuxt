@@ -51,3 +51,32 @@ export function foldRouteCase (path: string) {
     return lower.length === 1 && lower.toUpperCase() === upper ? lower : upper
   })
 }
+
+/**
+ * Resolve the `.` and `..` segments of a route path, including their percent-encoded
+ * spellings (`%2e`), as a URL parser does. Only the path portion is resolved; a query
+ * string, if present, is left untouched.
+ */
+export function resolveRoutePathDotSegments (path: string) {
+  const queryIndex = path.indexOf('?')
+  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex)
+  if (!/(?:^|\/)(?:\.|%2e)/i.test(pathname)) { return path }
+  const input = pathname.split('/')
+  const output: string[] = []
+  const root = pathname.startsWith('/') ? 1 : 0
+  for (const [i, segment] of input.entries()) {
+    const dots = /^(?:\.|%2e)(\.|%2e)?$/i.exec(segment)
+    if (!dots) {
+      output.push(segment)
+      continue
+    }
+    if (dots[1] && output.length > root) {
+      output.pop()
+    }
+    if (i === input.length - 1) {
+      output.push('')
+    }
+  }
+  const resolved = output.join('/')
+  return queryIndex === -1 ? resolved : resolved + path.slice(queryIndex)
+}

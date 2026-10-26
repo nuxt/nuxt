@@ -6,6 +6,7 @@ import { toRequestEvent } from '../src/runtime/utils/event.ts'
 describe('toRequestEvent', () => {
   it('does not share the prerender hints of the fetching request', () => {
     const event = {
+      path: '/',
       context: {},
       node: { req: { __unenv__: { nuxt: { prerenderRoutes: ['/__nuxt_island/Island_abc.json'] } } } },
     } as unknown as H3Event

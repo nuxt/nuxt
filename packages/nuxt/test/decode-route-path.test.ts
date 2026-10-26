@@ -1,7 +1,7 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { decodeRoutePath, foldRouteCase } from '../src/core/utils/index.ts'
+import { decodeRoutePath, foldRouteCase, resolveRoutePathDotSegments } from '../src/core/utils/index.ts'
 import { findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, normalizeRouteRuleKey, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
 
 const RESERVED_RE = /[%;/?:@&=+$,#]/g
@@ -84,7 +84,58 @@ describe('foldRouteCase', () => {
   })
 })
 
+describe('resolveRoutePathDotSegments', () => {
+  it('resolves dot segments', () => {
+    expect(resolveRoutePathDotSegments('/./dashboard')).toBe('/dashboard')
+    expect(resolveRoutePathDotSegments('/x/../dashboard')).toBe('/dashboard')
+    expect(resolveRoutePathDotSegments('/a/b/../../dashboard')).toBe('/dashboard')
+    expect(resolveRoutePathDotSegments('/../../dashboard')).toBe('/dashboard')
+    expect(resolveRoutePathDotSegments('/a//../dashboard')).toBe('/a/dashboard')
+  })
+
+  it('resolves a trailing dot segment to a trailing slash', () => {
+    expect(resolveRoutePathDotSegments('/dashboard/.')).toBe('/dashboard/')
+    expect(resolveRoutePathDotSegments('/dashboard/x/..')).toBe('/dashboard/')
+    expect(resolveRoutePathDotSegments('/..')).toBe('/')
+  })
+
+  it('resolves percent-encoded dot segments', () => {
+    expect(resolveRoutePathDotSegments('/%2e/dashboard')).toBe('/dashboard')
+    expect(resolveRoutePathDotSegments('/x/%2E%2e/dashboard')).toBe('/dashboard')
+    expect(resolveRoutePathDotSegments('/x/.%2e/dashboard')).toBe('/dashboard')
+    expect(resolveRoutePathDotSegments('/x/%2e./dashboard')).toBe('/dashboard')
+  })
+
+  it('leaves other segments containing dots untouched', () => {
+    expect(resolveRoutePathDotSegments('/.well-known/x')).toBe('/.well-known/x')
+    expect(resolveRoutePathDotSegments('/x/.../y')).toBe('/x/.../y')
+    expect(resolveRoutePathDotSegments('/x/%252e%252e/y')).toBe('/x/%252e%252e/y')
+    expect(resolveRoutePathDotSegments('/x/..%2Fy')).toBe('/x/..%2Fy')
+    expect(resolveRoutePathDotSegments('/sitemap.xml')).toBe('/sitemap.xml')
+  })
+
+  it('resolves only the path portion of a query-bearing path', () => {
+    expect(resolveRoutePathDotSegments('/./old?next=/../x')).toBe('/old?next=/../x')
+  })
+
+  it('should resolve paths as a URL parser does', () => {
+    const segment = fc.oneof(pathSegment.map(segment => segment.replace(/[\0-\x20\x7F%/?#\\]/g, '')), fc.constantFrom('.', '..', '%2e', '%2E', '.%2e', '%2e%2e', ''))
+    fc.assert(fc.property(fc.array(segment, { minLength: 1, maxLength: 5 }), (segments) => {
+      const path = '/' + segments.join('/')
+      const resolved = resolveRoutePathDotSegments(path)
+      expect(new URL('http://localhost' + resolved).pathname).toBe(new URL('http://localhost' + path).pathname)
+      expect(resolved.split('/').some(s => /^(?:\.|%2e){1,2}$/i.test(s))).toBe(false)
+    }), { numRuns: 1000 })
+  })
+})
+
 describe('normalizeRouteRulePath', () => {
+  it('should resolve dot segments before decoding', () => {
+    expect(normalizeRouteRulePath('/./Dashboard', true)).toBe('/dashboard')
+    expect(normalizeRouteRulePath('/x/%2e%2e/dashboard', false)).toBe('/dashboard')
+    expect(normalizeRouteRulePath('/x/%252e%252e/dashboard', false)).toBe('/x/%2e%2e/dashboard')
+  })
+
   it('should fold by case-folding the unfolded key', () => {
     fc.assert(fc.property(routePath, (path) => {
       expect(normalizeRouteRulePath(path, true)).toBe(foldRouteCase(normalizeRouteRulePath(path, false)))

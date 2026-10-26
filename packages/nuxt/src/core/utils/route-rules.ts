@@ -4,7 +4,7 @@ import { compileRouterToString } from 'rou3/compiler'
 import type { RouterCompilerOptions } from 'rou3/compiler'
 import { tryUseNitro } from '@nuxt/kit'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
-import { decodeRoutePath, foldRouteCase } from './index.ts'
+import { decodeRoutePath, foldRouteCase, resolveRoutePathDotSegments } from './index.ts'
 
 /**
  * Route-rule keys the client-side matcher is compiled from; anything else is server-only.
@@ -28,16 +28,18 @@ export interface RouteRulesRouter {
 }
 
 /**
- * Normalise a route-rule key or lookup path: decode percent-encoding, then case-fold (see
- * {@link foldRouteCase}) when `fold` is set. Keys are matched in decoded form so that a rule may
- * be authored either decoded (`/测试`, the usual case) or encoded (`/%E6%B5%8B%E8%AF%95`, the
- * form the page route and the request path take). Decoding must precede case folding, or a percent-encoded
- * non-ASCII character would never fold.
+ * Normalise a route-rule key or lookup path: resolve `.` and `..` segments, decode
+ * percent-encoding, then case-fold (see {@link foldRouteCase}) when `fold` is set. Keys are
+ * matched in decoded form so that a rule may be authored either decoded (`/测试`, the usual
+ * case) or encoded (`/%E6%B5%8B%E8%AF%95`, the form the page route and the request path take). Dot segments
+ * are resolved before decoding, so a double-encoded `%252e` stays a literal segment.
+ * Decoding must precede case folding, or a percent-encoded non-ASCII character would never
+ * fold.
  *
  * @internal
  */
 export function normalizeRouteRulePath (path: string, fold: boolean): string {
-  const decoded = decodeRoutePath(path)
+  const decoded = decodeRoutePath(resolveRoutePathDotSegments(path))
   return fold ? foldRouteCase(decoded) : decoded
 }
 
@@ -268,18 +270,19 @@ export function createRouteRulesRouter (routes: RouteRulesRoute[], baseURL: stri
 }
 
 /**
- * Source of the `normalizePath` helper a compiled matcher looks rules up through: `decodeRoutePath`
- * and `foldRouteCase` are inlined by source so that the runtime lookup and the build-time key
- * normalisation cannot drift apart.
+ * Source of the `normalizePath` helper a compiled matcher looks rules up through:
+ * `decodeRoutePath`, `resolveRoutePathDotSegments` and `foldRouteCase` are inlined by source so
+ * that the runtime lookup and the build-time key normalisation cannot drift apart.
  *
  * @internal
  */
 export const normalizePathCode: string = [
   `const decodeRoutePath = ${decodeRoutePath.toString()}`,
+  `const resolveRoutePathDotSegments = ${resolveRoutePathDotSegments.toString()}`,
   `const foldRouteCase = ${foldRouteCase.toString()}`,
   `const normalizePath = (path, fold) => {`,
   `  if (typeof path !== 'string') { return path }`,
-  `  const decoded = decodeRoutePath(path)`,
+  `  const decoded = decodeRoutePath(resolveRoutePathDotSegments(path))`,
   `  return fold ? foldRouteCase(decoded) : decoded`,
   `}`,
 ].join('\n')
