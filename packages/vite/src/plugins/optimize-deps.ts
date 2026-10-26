@@ -12,7 +12,7 @@ import { userOptimizeDepsInclude } from './optimize-deps-hint.ts'
  * Runs on resolved environment config so `include` entries added by modules through
  * `vite:extendConfig`, or by other plugins, are rewritten too.
  *
- * During the dependency scan, `#components` and any `#` imports that fail to resolve are excluded.
+ * During the dependency scan, `#components` and any `#` imports or packages that fail to resolve are excluded.
  */
 export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
   return {
@@ -22,11 +22,19 @@ export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
     resolveId: {
       order: 'pre',
       filter: {
-        id: /^#/,
+        id: /^(?:#|[\w@][^:])/,
       },
       async handler (id, importer, options) {
         // `scan` is not part of Vite's public hook type
         if (!('scan' in options) || !options.scan) { return }
+        if (id[0] !== '#') {
+          // the scan covers app files that may never load, and Vite drops the whole scan on a missing package
+          try {
+            return await this.resolve(id, importer, { ...options, skipSelf: true }) ?? { id, external: true }
+          } catch {
+            return { id, external: true }
+          }
+        }
         if (id === '#components' && !(importer && await hasOwnSubpathImport(importer, id, nuxt.options.rootDir))) {
           return { id, external: true }
         }
