@@ -11,13 +11,14 @@ import type { NuxtPage } from '../schema.ts'
 
 const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
 
-async function getRouteRulesTemplate (sensitive: boolean, baseURL?: string, routeRules: Record<string, any> = { '/admin/**': { prerender: true }, '/protected/**': { redirect: '/login' } }) {
+async function getRouteRulesTemplate (sensitive: boolean, baseURL?: string, routeRules: Record<string, any> = { '/admin/**': { prerender: true }, '/protected/**': { redirect: '/login' } }, serverBuilder?: string) {
   const nuxt = await loadNuxt({
     cwd: pagesFixtureDir,
     ready: true,
     overrides: {
       router: { options: { sensitive } },
       ...baseURL ? { app: { baseURL } } : {},
+      ...serverBuilder ? { server: { builder: serverBuilder } } : {},
       routeRules,
     },
   })
@@ -39,6 +40,28 @@ describe('route rules template', () => {
       expect(matcher('/protected/secret')).toMatchObject({ redirect: '/login' })
       expect(matcher('/Protected/secret').redirect).toBe(sensitive ? undefined : '/login')
     }
+  })
+
+  it('emits a constant when only a catch-all rule applies', async () => {
+    expect(await getRouteRulesTemplate(false, undefined, {})).toBe('export default () => ({ssr: true})')
+    expect(await getRouteRulesTemplate(false, undefined, { '/**': { appLayout: 'a' }, 'GET /**': { appLayout: 'b' }, 'POST /admin/**': { ssr: false } }))
+      .toBe('export default () => ({ssr: true,appLayout: "b"})')
+  })
+
+  it('merges `appMiddleware` names from overlapping catch-all rules without a nitro server', async () => {
+    for (const routeRules of [
+      { '/**': { appMiddleware: 'auth' }, 'GET /**': { appMiddleware: 'log' } },
+      { '/**': { appMiddleware: 'auth' }, 'GET /**': { appMiddleware: ['log'] } },
+      { '/**': { appMiddleware: 'auth' }, 'GET /**': { appMiddleware: 'log' }, '/x': { appMiddleware: 'x' } },
+    ]) {
+      const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, routeRules, 'vite'))
+      expect(matcher('/secret').appMiddleware, JSON.stringify(routeRules)).toEqual({ auth: true, log: true })
+    }
+  })
+
+  it('leaves rules without client-side options out of the matcher', async () => {
+    const contents = await getRouteRulesTemplate(true, undefined, { '/headers/**': { headers: { 'x-test': '1' } }, '/__nuxt_error': { cache: false } })
+    expect(contents).toBe(await getRouteRulesTemplate(true, undefined, {}))
   })
 
   it('matches base-relative paths when app.baseURL is set', async () => {
@@ -113,6 +136,7 @@ describe('route rules template', () => {
   it('rejects regex constraints that depend on letter case when case-insensitive', async () => {
     await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([A-Z]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[A-Z]`)')
     await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([%41-%5A]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[A-Z]`)')
+    await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([A-Z]+)': { headers: { 'x-test': '1' } } })).resolves.toBeTypeOf('string')
     await expect(getRouteRulesTemplate(false, undefined, { '/sigma/:id([a-zς]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[a-zς]`)')
     const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, { '/upper/:id([A-Z]+)': { appMiddleware: 'auth' } }))
     expect(matcher('/upper/ABC').appMiddleware).toEqual({ auth: true })
