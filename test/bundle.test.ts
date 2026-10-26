@@ -119,6 +119,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const imports = new Set<string>()
     for (const file of await glob(['node_modules/{vue,@vue/*}/*.mjs'], { cwd: serverDir })) {
       const code = await fsp.readFile(join(serverDir, file), 'utf8')
+      expect(code).not.toMatch(/globalThis\._importMeta_\s*=\s*\{/)
       for (const [, id] of code.matchAll(/(?:from|import)\s*["']([^"']+)["']/g)) {
         imports.add(id!.startsWith('.') ? relative(serverDir, resolve(serverDir, dirname(file), id!)) : id!)
       }

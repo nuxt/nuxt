@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { matchesGlob } from 'node:path'
-import { join } from 'pathe'
+import { dirname, join } from 'pathe'
 import { bundlerDiagnostics, parseNodeModulePath } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import type { Nitro } from 'nitropack/types'
@@ -21,8 +21,10 @@ const VUE_SPECIFIERS = [
 ]
 
 const VUE_PACKAGE_RE = String.raw`(?:vue|@vue[\\/](?:shared|reactivity|runtime-core|runtime-dom|server-renderer))`
+const VUE_PACKAGE_ID_RE = new RegExp(String.raw`^${VUE_PACKAGE_RE}$`)
 const VUE_SPECIFIER_RE = new RegExp(String.raw`^${VUE_PACKAGE_RE}(?:/|$)`)
 const VUE_MODULE_RE = new RegExp(String.raw`(?:^|[\\/])node_modules[\\/]${VUE_PACKAGE_RE}[\\/]`)
+const IMPORT_META_RESET_RE = /globalThis\._importMeta_\s*=(?!\s*globalThis\._importMeta_)/
 const PROVIDED_SUBPATH_RE = /^\.\/(?:package\.json|index\.m?js|dist\/[\w.-]+\.cjs(?:\.prod)?\.js|(?:server-renderer|jsx-runtime|jsx-dev-runtime)\/index\.m?js)$/
 
 /**
@@ -65,8 +67,19 @@ export function setupVuePackage (nuxt: Nuxt, nitro: Nitro): void {
 }
 
 function VuePackagePlugin (nuxt: Nuxt, ignoredImports: Set<string>): Plugin {
+  const packageFiles = new Set<string>()
   return {
     name: 'nuxt:vue-package',
+    resolveId: {
+      order: 'pre',
+      filter: { id: VUE_PACKAGE_ID_RE },
+      async handler (id, importer, options) {
+        const pkg = await this.resolve(`${id}/package.json`, importer, { ...options, skipSelf: true })
+        if (!pkg || pkg.external) { return }
+        const build = id === 'vue' ? 'vue.runtime' : id.slice('@vue/'.length)
+        return join(dirname(pkg.id), 'dist', `${build}.esm-bundler.js`)
+      },
+    },
     outputOptions (output) {
       const manualChunks = output.manualChunks
       if (manualChunks && typeof manualChunks !== 'function') {
@@ -79,19 +92,21 @@ function VuePackagePlugin (nuxt: Nuxt, ignoredImports: Set<string>): Plugin {
     },
     async buildStart () {
       const importer = join(nuxt.options.appDir, 'entry.js')
-      const vue = await this.resolve('vue', importer)
+      const vue = await this.resolve('vue', importer, { skipSelf: false })
       if (!vue || vue.external) {
         this.error('Could not resolve `vue` to bundle it into the server build.')
       }
       const exports = new Map<string, Record<string, string>>()
       const versions = new Map<string, string>()
       for (const specifier of VUE_SPECIFIERS) {
-        const resolved = await this.resolve(specifier, specifier.startsWith('@vue/') ? vue.id : importer)
+        const resolved = await this.resolve(specifier, specifier.startsWith('@vue/') ? vue.id : importer, { skipSelf: false })
         if (!resolved || resolved.external) { continue }
         const pkg = specifier.startsWith('@vue/') ? specifier : 'vue'
         const subpath = specifier.slice(pkg.length)
         const file = subpath ? `.${subpath}.mjs` : './index.mjs'
-        this.emitFile({ type: 'chunk', id: resolved.id, fileName: join('node_modules', pkg, file), preserveSignature: 'strict' })
+        const fileName = join('node_modules', pkg, file)
+        packageFiles.add(fileName)
+        this.emitFile({ type: 'chunk', id: resolved.id, fileName, preserveSignature: 'strict' })
         exports.set(pkg, { ...exports.get(pkg), [`.${subpath}`]: file })
         if (!versions.has(pkg)) {
           const { dir, name } = parseNodeModulePath(resolved.id)
@@ -111,6 +126,14 @@ function VuePackagePlugin (nuxt: Nuxt, ignoredImports: Set<string>): Plugin {
           }, null, 2),
         })
       }
+    },
+    renderChunk: {
+      order: 'post',
+      handler (code, chunk) {
+        if (!packageFiles.has(chunk.fileName)) { return }
+        // nitro points `globalThis._importMeta_` at each entry chunk, and these load after the server entry
+        return { code: code.replace(IMPORT_META_RESET_RE, '$&globalThis._importMeta_||'), map: null }
+      },
     },
     writeBundle () {
       const unsupported = new Set<string>()
