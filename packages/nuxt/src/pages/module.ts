@@ -13,7 +13,7 @@ import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, getRouterOptionsKeys, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
@@ -837,6 +837,13 @@ export default defineNuxtModule({
       getContents: async ({ nuxt }) => {
         // Scan and register app/router.options files
         const routerOptionsFiles = await resolveRouterOptions(nuxt, builtInRouterOptions)
+        for (const file of routerOptionsFiles) {
+          if (file.path === builtInRouterOptions) { continue }
+          const code = await readFile(file.path, 'utf-8').catch(() => undefined)
+          if (code !== undefined && getRouterOptionsKeys(code, file.path)?.has('sensitive')) {
+            throw pageDiagnostics.NUXT_B4023({ file: linkToAlias(file.path, nuxt) })
+          }
+        }
 
         const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
           .map(([key, value]) => [key, genString(value as string)]))
@@ -859,6 +866,7 @@ export default defineNuxtModule({
           'export default {',
           '...configRouterOptions,',
           ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
+          `sensitive: ${!!nuxt.options.router.options.sensitive},`,
           '}',
         ].join('\n')
       },

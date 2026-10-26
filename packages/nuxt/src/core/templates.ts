@@ -817,16 +817,10 @@ export const routeRulesTemplate: NuxtTemplate = {
     if (!routes.length) {
       return `export default () => ({})`
     }
-    // rou3 matches keys case-sensitively, but vue-router matches routes case-insensitively
-    // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
-    // folded lookup and silently lose its protections. `sensitive` can also come from
-    // `app/router.options.ts` (runtime-only), so emit both a decoded and a decoded+folded
-    // matcher and pick at runtime.
-    const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
+    const fold = !nuxt.options.router.options.sensitive
     const warned = warnedKeyCollisions.get(nuxt) ?? warnedKeyCollisions.set(nuxt, new Set()).get(nuxt)!
-    const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routes, '', fold, (existing, route, key) => {
-      // Only the matcher that will actually be used at runtime should report collisions.
-      if (fold === caseSensitiveRouteRules || warned.has(key)) { return }
+    const router = createNormalizedRouteRulesRouter(routes, '', fold, (existing, route, key) => {
+      if (warned.has(key)) { return }
       warned.add(key)
       bundlerDiagnostics.NUXT_B7022({ existing, route, canFold: fold })
     })
@@ -861,24 +855,11 @@ export const routeRulesTemplate: NuxtTemplate = {
         }}`
       },
     }
-    const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
-    const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)
-    const needsRouterOptions = foldedMatcher !== sensitiveMatcher || caseSensitiveRouteRules
     return [
       `import { defu } from ${JSON.stringify(defuPath)}`,
-      needsRouterOptions ? `import routerOptions from '#build/router.options.mjs'` : ``,
-      needsRouterOptions ? `const sensitiveMatcher = ${sensitiveMatcher}` : ``,
-      needsRouterOptions
-        ? (foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`)
-        : `const foldedMatcher = ${foldedMatcher}`,
+      `const matcher = ${router.compileToString(compileOptions)}`,
       normalizePathCode,
-      needsRouterOptions
-        ? [
-            `export default (path) => routerOptions.sensitive`,
-            `  ? defu({}, ...sensitiveMatcher('', normalizePath(path, false)).map(r => r.data).reverse())`,
-            `  : defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
-          ].join('\n')
-        : `export default path => defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
-    ].filter(Boolean).join('\n')
+      `export default path => defu({}, ...matcher('', normalizePath(path, ${fold})).map(r => r.data).reverse())`,
+    ].join('\n')
   },
 }

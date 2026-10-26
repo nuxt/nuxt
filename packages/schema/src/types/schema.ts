@@ -2025,7 +2025,7 @@ export interface ConfigSchema {
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
    *
-   * @note `sensitive` defaults to `true`.
+   * @note `sensitive` defaults to `true`, and can only be set here, not in `app/router.options.ts`.
    *
    * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */

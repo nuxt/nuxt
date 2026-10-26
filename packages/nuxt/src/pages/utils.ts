@@ -974,7 +974,16 @@ export function isSerializable (node: ESTree.Node): { value?: any, serializable:
  * literal, contains spreads or computed keys, or defines a `routes` property.
  */
 export function routerOptionsMayModifyRoutes (code: string, filename: string): boolean {
-  let mayModify = true
+  const keys = getRouterOptionsKeys(code, filename)
+  return !keys || keys.has('routes')
+}
+
+/**
+ * The keys of the object literal a `router.options` file exports by default, or `undefined`
+ * when the export cannot be analysed or contains spreads or computed keys.
+ */
+export function getRouterOptionsKeys (code: string, filename: string): Set<string> | undefined {
+  let keys: Set<string> | undefined
   try {
     parseAndWalk(code, filename, (node) => {
       if (node.type !== 'ExportDefaultDeclaration') { return }
@@ -983,17 +992,20 @@ export function routerOptionsMayModifyRoutes (code: string, filename: string): b
         declaration = declaration.expression
       }
       if (declaration.type !== 'ObjectExpression') { return }
-      mayModify = declaration.properties.some((property) => {
-        if (property.type === 'SpreadElement') { return true }
+      const names = new Set<string>()
+      for (const property of declaration.properties) {
+        if (property.type === 'SpreadElement') { return }
         const key = property.key
         const name = key.type === 'Identifier' && !property.computed ? key.name : key.type === 'Literal' ? String(key.value) : undefined
-        return name === undefined || name === 'routes'
-      })
+        if (name === undefined) { return }
+        names.add(name)
+      }
+      keys = names
     })
   } catch {
-    return true
+    return undefined
   }
-  return mayModify
+  return keys
 }
 
 /**
