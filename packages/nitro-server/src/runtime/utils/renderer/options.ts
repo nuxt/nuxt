@@ -14,7 +14,7 @@ import '../../context'
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 import { getRouteRules } from '../route-rules'
-import { markStreamedResponse, rememberRenderBody } from '../../compat/render-response'
+import { markStreamedResponse, rememberRenderBody, toRenderBody } from '../../compat/render-response'
 import { legacyCompat } from '#nuxt-compat/flags'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
 
@@ -22,6 +22,15 @@ import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../c
 globalThis.__buildAssetsURL = buildAssetsURL
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__publicAssetsURL = publicAssetsURL
+
+function createDocumentResponse (document: string | string[], init?: ResponseInit): Response {
+  const rendered = toRenderBody(document)
+  const response = new FastResponse(rendered.bytes, init)
+  if (legacyCompat) {
+    rememberRenderBody(response, rendered)
+  }
+  return response
+}
 
 /** The capabilities Nitro provides to the Nuxt renderer. */
 export const rendererOptions: NuxtRendererOptions = {
@@ -31,15 +40,16 @@ export const rendererOptions: NuxtRendererOptions = {
   getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
   hooks: useNitroHooks as () => RendererHooks,
   createResponse: (body, init) => {
+    if (typeof body === 'string') {
+      return createDocumentResponse(body, init)
+    }
     const response = new FastResponse(body, init)
-    if (legacyCompat) {
-      rememberRenderBody(response, body)
-      if (body instanceof ReadableStream) {
-        markStreamedResponse(response)
-      }
+    if (legacyCompat && body instanceof ReadableStream) {
+      markStreamedResponse(response)
     }
     return response
   },
+  createDocumentResponse,
   createError: init => new HTTPError(init),
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints),
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),

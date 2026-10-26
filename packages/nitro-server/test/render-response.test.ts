@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { mockEvent } from 'nitro/h3'
 import { FastResponse } from 'srvx'
 
-import { applyLegacyRenderResponse, applyLegacyRenderResponseTo, isStreamedResponse, markStreamedResponse, rememberRenderBody } from '../src/runtime/compat/render-response.ts'
+import { applyLegacyRenderResponse, applyLegacyRenderResponseTo, isStreamedResponse, markStreamedResponse, rememberRenderBody, toRenderBody } from '../src/runtime/compat/render-response.ts'
 
 function createHooks (handler?: (response: any, context: any) => void) {
   return {
@@ -13,9 +13,16 @@ function createHooks (handler?: (response: any, context: any) => void) {
 }
 
 describe('legacy `render:response` hook', () => {
-  it('is skipped when nothing is listening', async () => {
+  it('keeps the encoded body when nothing replaces it', async () => {
     const event = mockEvent('http://nuxt/')
-    expect(await applyLegacyRenderResponse(event, createHooks(), '<html></html>')).toBe('<html></html>')
+    expect(await applyLegacyRenderResponse(event, createHooks(), toRenderBody('<html></html>'))).toBeUndefined()
+  })
+
+  it('exposes the rendered html to the listener', async () => {
+    const event = mockEvent('http://nuxt/')
+    let seen: string | undefined
+    await applyLegacyRenderResponse(event, createHooks((response) => { seen = response.body }), toRenderBody(['<html>', '</html>']))
+    expect(seen).toBe('<html></html>')
   })
 
   it('applies headers set on the event and on the payload', async () => {
@@ -25,7 +32,7 @@ describe('legacy `render:response` hook', () => {
     await applyLegacyRenderResponse(event, createHooks((response, { event }) => {
       event.res.headers.set('content-security-policy', `script-src 'nonce-abc'`)
       response.headers['x-from-payload'] = 'yes'
-    }), '<html></html>')
+    }), toRenderBody('<html></html>'))
 
     expect(event.res.headers.get('content-security-policy')).toBe(`script-src 'nonce-abc'`)
     expect(event.res.headers.get('x-from-payload')).toBe('yes')
@@ -38,7 +45,7 @@ describe('legacy `render:response` hook', () => {
 
     await applyLegacyRenderResponse(event, createHooks((response) => {
       delete response.headers['x-powered-by']
-    }), '<html></html>')
+    }), toRenderBody('<html></html>'))
 
     expect(event.res.headers.has('x-powered-by')).toBe(false)
   })
@@ -49,7 +56,7 @@ describe('legacy `render:response` hook', () => {
 
     await applyLegacyRenderResponse(event, createHooks((_response, { event }) => {
       event.res.headers.delete('x-frame-options')
-    }), '<html></html>')
+    }), toRenderBody('<html></html>'))
 
     expect(event.res.headers.has('x-frame-options')).toBe(false)
   })
@@ -65,7 +72,7 @@ describe('legacy `render:response` hook', () => {
         event.res.headers.set(name, value)
       }
       expect(response.headers['X-Added']).toBe('yes')
-    }), '<html></html>')
+    }), toRenderBody('<html></html>'))
 
     expect(event.res.headers.get('x-frame-options')).toBe('SAMEORIGIN')
   })
@@ -81,7 +88,7 @@ describe('legacy `render:response` hook', () => {
       for (const [name, value] of Object.entries<string>(response.headers)) {
         event.res.headers.set(name, value)
       }
-    }), '<html></html>')
+    }), toRenderBody('<html></html>'))
 
     expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
   })
@@ -96,7 +103,7 @@ describe('legacy `render:response` hook', () => {
       response.headers['x-render-response'] = 'yes'
       delete response.headers['content-type']
       inspected = inspect(response.headers)
-    }), '<html></html>')
+    }), toRenderBody('<html></html>'))
 
     expect(inspected).toBe(`{ 'x-render-response': 'yes' }`)
   })
@@ -107,7 +114,7 @@ describe('legacy `render:response` hook', () => {
 
     await applyLegacyRenderResponse(event, createHooks((response) => {
       response.headers = { 'x-replaced': 'yes' }
-    }), '<html></html>')
+    }), toRenderBody('<html></html>'))
 
     expect(event.res.headers.get('x-replaced')).toBe('yes')
     expect(event.res.headers.get('content-type')).toBe('text/html')
@@ -120,11 +127,23 @@ describe('legacy `render:response` hook', () => {
       response.statusCode = 503
       response.statusMessage = 'Unavailable'
       response.body = '<html>replaced</html>'
-    }), '<html></html>')
+    }), toRenderBody('<html></html>'))
 
     expect(body).toBe('<html>replaced</html>')
     expect(event.res.status).toBe(503)
     expect(event.res.statusText).toBe('Unavailable')
+  })
+
+  it('offers each listener the body set by the previous one', async () => {
+    const event = mockEvent('http://nuxt/')
+    const hooks = {
+      callHook (_name: string, response: { body: string }) {
+        response.body = response.body.replace('</html>', '<!--first--></html>')
+        response.body = response.body.replace('</html>', '<!--second--></html>')
+      },
+    }
+
+    expect(await applyLegacyRenderResponse(event, hooks, toRenderBody('<html></html>'))).toBe('<html><!--first--><!--second--></html>')
   })
 
   it('ignores a body replacement once the response is streaming', async () => {
@@ -141,8 +160,13 @@ describe('legacy `render:response` hook', () => {
 })
 
 function createResponse (body: BodyInit | null, init?: ResponseInit) {
+  if (typeof body === 'string') {
+    const rendered = toRenderBody(body)
+    const response = new FastResponse(rendered.bytes, init)
+    rememberRenderBody(response, rendered)
+    return response
+  }
   const response = new FastResponse(body, init)
-  rememberRenderBody(response, body)
   if (body instanceof ReadableStream) {
     markStreamedResponse(response)
   }
