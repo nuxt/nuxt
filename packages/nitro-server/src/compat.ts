@@ -99,8 +99,24 @@ interface ImportSpecifier {
 const STRING_LITERAL_RE = /^(['"])(.*)\1$/s
 const JSX_RE = /\.[cm]?[jt]sx$/
 
+/**
+ * The last parse of each file. Every compat scan pass, and every dev restart, parses the
+ * same files again, and the answer only changes with the code.
+ */
+const parsedImports = new Map<string, { code: string, specifiers: ImportSpecifier[] }>()
+
 /** Module specifiers of the static and dynamic imports and re-exports of a file. */
 function findImportSpecifiers (code: string, filename: string): ImportSpecifier[] {
+  const cached = parsedImports.get(filename)
+  if (cached?.code === code) {
+    return cached.specifiers
+  }
+  const specifiers = parseImportSpecifiers(code, filename)
+  parsedImports.set(filename, { code, specifiers })
+  return specifiers
+}
+
+function parseImportSpecifiers (code: string, filename: string): ImportSpecifier[] {
   const { module } = parseSync(filename, code, { lang: JSX_RE.test(filename) ? 'tsx' : 'ts', sourceType: 'module' })
   const specifiers: ImportSpecifier[] = []
   const add = (request: { start: number, end: number }, entries?: Array<{ isType: boolean, importName: { name: string | null } }>) => {
