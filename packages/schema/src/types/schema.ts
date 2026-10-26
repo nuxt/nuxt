@@ -1785,6 +1785,13 @@ export interface ConfigSchema {
     compileHints: boolean
 
     /**
+     * Whether to bundle the static dependencies of the layout into a single chunk in the Vite client build, when the app has exactly one layout.
+     *
+     * @default true
+     */
+    layoutChunk: boolean
+
+    /**
      * Extract async data handler functions into separate chunks for better performance and caching.
      *
      * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted

@@ -346,6 +346,7 @@ export default defineResolvers({
     },
     entryImportMap: true,
     compileHints: true,
+    layoutChunk: true,
     extractAsyncDataHandlers: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false

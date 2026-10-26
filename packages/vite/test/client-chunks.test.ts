@@ -105,4 +105,32 @@ describe('client chunks', () => {
 
     expect(chunks[chunkOf('app/components/AppHeader.vue')!]!.name).toBe('header')
   }, 120 * 1000)
+
+  it('bundles the static graph of a single layout into one chunk', async () => {
+    const { chunks, chunkOf } = await build(app)
+
+    const header = chunkOf('app/components/AppHeader.vue')!
+    const layout = chunks[chunkOf('app/layouts/default.vue')!]!
+    expect(chunkOf('app/components/AppFooter.vue')).toBe(header)
+    expect(layout.imports).toContain(header)
+    expect(layout.facadeModuleId).toBe(join(tmpDir, 'app/layouts/default.vue'))
+  }, 120 * 1000)
+
+  it('does not bundle modules shared by several layouts into one of them', async () => {
+    const { chunkOf } = await build({
+      ...app,
+      'app/layouts/other.vue': sfc(['AppHeader'], '<div><AppHeader /><slot /></div>'),
+    })
+
+    const files = [chunkOf('app/components/AppHeader.vue'), chunkOf('app/layouts/default.vue'), chunkOf('app/layouts/other.vue')]
+    expect(files).not.toContain(undefined)
+    expect(new Set(files).size).toBe(3)
+  }, 120 * 1000)
+
+  it('does not bundle the layout dependencies when `experimental.layoutChunk` is disabled', async () => {
+    const { chunkOf } = await build(app, { experimental: { layoutChunk: false } })
+
+    expect(chunkOf('app/components/AppHeader.vue')).toBeDefined()
+    expect(chunkOf('app/components/AppHeader.vue')).not.toBe(chunkOf('app/components/AppFooter.vue'))
+  }, 120 * 1000)
 })
