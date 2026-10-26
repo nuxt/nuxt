@@ -14,8 +14,7 @@ import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, createNormalizedRouteRulesRouter, genNormalizePathCode, resolveRouteRulesRoutes } from './utils/route-rules.ts'
-import type { RouteRulesRouter } from './utils/route-rules.ts'
+import { assertCaseIndependentRouteRuleKey, createNormalizedRouteRulesRouter, genNormalizePathCode, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes } from './utils/route-rules.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
@@ -807,15 +806,49 @@ const VALID_MANIFEST_KEYS = ['prerender', 'redirect', 'appMiddleware', 'appLayou
  */
 const warnedKeyCollisions = new WeakMap<Nuxt, Set<string>>()
 
+function serializeAppRouteRules (routeRules: Record<string, any>): string {
+  return `{${Object.entries(routeRules)
+    .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
+    .map(([name, value]) => {
+      if (name === 'redirect') {
+        const redirectOptions = value as { to: string } | string
+        value = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions.to
+      }
+      if (name === 'appMiddleware') {
+        const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
+        if (typeof appMiddlewareOptions === 'string') {
+          value = { [appMiddlewareOptions]: true }
+        } else if (Array.isArray(appMiddlewareOptions)) {
+          const normalizedRules: Record<string, boolean> = {}
+          for (const middleware of appMiddlewareOptions) {
+            normalizedRules[middleware] = true
+          }
+          value = normalizedRules
+        }
+      }
+      if (name === 'cache' || name === 'isr' || name === 'swr') {
+        name = 'payload'
+        value = Boolean(value)
+      }
+      return `${name}: ${JSON.stringify(value)}`
+    }).join(',')
+  }}`
+}
+
 export const routeRulesTemplate: NuxtTemplate = {
   filename: 'route-rules.mjs',
   // `defineRouteRules` is extracted from page sources, so without it route rules come only
   // from configuration
   dependsOn: (_change, { nuxt }) => !!nuxt.options.experimental.inlineRouteRules,
   getContents ({ nuxt }) {
-    const { routes } = resolveRouteRulesRoutes(nuxt)
+    const routes = resolveRouteRulesRoutes(nuxt).routes
+      .filter(({ route, data }) => route !== '/__nuxt_error' && VALID_MANIFEST_KEYS.some(key => data[key] !== undefined))
     if (!routes.length) {
       return `export default () => ({})`
+    }
+    const merged = mergeMethodRouteRulesRoutes(routes)
+    if (merged.length === 1 && merged[0]!.route === '/**') {
+      return `export default () => (${serializeAppRouteRules(merged[0]!.data)})`
     }
     const fold = !nuxt.options.router.options.sensitive
     if (fold) {
@@ -827,40 +860,9 @@ export const routeRulesTemplate: NuxtTemplate = {
       warned.add(key)
       bundlerDiagnostics.NUXT_B7022({ existing, route, canFold: fold })
     })
-    const compileOptions: NonNullable<Parameters<RouteRulesRouter['compileToString']>[0]> = {
-      matchAll: true,
-      serialize (routeRules) {
-        return `{${Object.entries(routeRules)
-          .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
-          .map(([name, value]) => {
-            if (name === 'redirect') {
-              const redirectOptions = value as { to: string } | string
-              value = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions.to
-            }
-            if (name === 'appMiddleware') {
-              const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
-              if (typeof appMiddlewareOptions === 'string') {
-                value = { [appMiddlewareOptions]: true }
-              } else if (Array.isArray(appMiddlewareOptions)) {
-                const normalizedRules: Record<string, boolean> = {}
-                for (const middleware of appMiddlewareOptions) {
-                  normalizedRules[middleware] = true
-                }
-                value = normalizedRules
-              }
-            }
-            if (name === 'cache' || name === 'isr' || name === 'swr') {
-              name = 'payload'
-              value = Boolean(value)
-            }
-            return `${name}: ${JSON.stringify(value)}`
-          }).join(',')
-        }}`
-      },
-    }
     return [
       `import { defu } from ${JSON.stringify(defuPath)}`,
-      `const matcher = ${router.compileToString(compileOptions)}`,
+      `const matcher = ${router.compileToString({ matchAll: true, serialize: serializeAppRouteRules })}`,
       genNormalizePathCode(fold),
       `export default path => defu({}, ...matcher('', normalizePath(path)).map(r => r.data).reverse())`,
     ].join('\n')
