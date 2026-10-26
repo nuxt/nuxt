@@ -35,6 +35,7 @@ import { foldRouteCase } from '../../nuxt/src/core/utils/index.ts'
 import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
 import { addDevServerHandlers, collectServerRegistrations, toPortableDevHandlers } from './registrations.ts'
 import { nitroInternalApiTemplate, nitroSchemaTemplate } from './templates.ts'
+import { setupVuePackage } from './vue-package.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
 export type { NuxtTracingChannelOptions } from './augments.ts'
@@ -929,6 +930,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     preview: { command: () => resolveNitroCommand(nitro.options.commands.preview, nitro.options) },
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)
+
+  setupVuePackage(nuxt, nitro)
 
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {

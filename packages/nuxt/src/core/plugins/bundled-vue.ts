@@ -1,3 +1,4 @@
+import { isAbsolute } from 'pathe'
 import { parseNodeModulePath } from '@nuxt/kit/internal'
 import type { Plugin } from 'vite'
 
@@ -22,14 +23,28 @@ export function BundledVuePlugin (): Plugin {
     resolveId: {
       order: 'pre',
       filter: { id: VUE_ID_RE },
-      async handler (id, importer) {
-        const resolved = await this.resolve(id, importer, { skipSelf: true })
+      async handler (id, importer, options) {
+        const resolveOptions = { ...options, skipSelf: true }
+        if (isAbsolute(id)) {
+          return toBundlerBuild(id)
+        }
+        if (VUE_PACKAGES.has(id)) {
+          const pkg = await this.resolve(`${id}/package.json`, importer, resolveOptions)
+          if (pkg && !pkg.external) {
+            return toBundlerBuild(pkg.id.replace(/package\.json$/, 'index.js'))
+          }
+        }
+        const resolved = await this.resolve(id, importer, resolveOptions)
         if (!resolved || resolved.external) { return resolved }
-        const { dir, name, subpath } = parseNodeModulePath(resolved.id)
-        if (!dir || !name || !subpath || !VUE_PACKAGES.has(name) || !CJS_ENTRY_RE.test(subpath)) { return resolved }
-        const build = name === 'vue' ? 'vue.runtime' : name.slice('@vue/'.length)
-        return { ...resolved, id: `${dir}${name}/dist/${build}.esm-bundler.js` }
+        return { ...resolved, id: toBundlerBuild(resolved.id) ?? resolved.id }
       },
     },
   }
+}
+
+function toBundlerBuild (id: string): string | undefined {
+  const { dir, name, subpath } = parseNodeModulePath(id)
+  if (!dir || !name || !subpath || !VUE_PACKAGES.has(name) || !CJS_ENTRY_RE.test(subpath)) { return }
+  const build = name === 'vue' ? 'vue.runtime' : name.slice('@vue/'.length)
+  return `${dir}${name}/dist/${build}.esm-bundler.js`
 }

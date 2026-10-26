@@ -141,5 +141,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { pluginName: string, packageName: string }) => `Remove \`${p.pluginName}\` from \`postcss.plugins\` in your \`nuxt.config\` (or report it to the author of the module that adds it), or install a version of \`${p.packageName}\` that provides it.`,
       docs: false,
     },
+    NUXT_B7028: {
+      why: (p: { imports: string }) => `Server dependencies import ${p.imports}, which the Vue package in the server output does not provide.`,
+      fix: 'Set `vue.runtimeCompiler` to `true` to ship the full Vue package with the server output.',
+      docs: false,
+    },
   },
 })
