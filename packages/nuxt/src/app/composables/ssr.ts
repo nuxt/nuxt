@@ -6,7 +6,6 @@ import { $fetch } from '#build/fetch'
 
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../utils'
 import { appDiagnostics } from '../diagnostics/core'
 import { useHead } from './head'
 
@@ -154,17 +153,7 @@ export function useResponseHeader (header: string): import('vue').WritableComput
   })
 }
 
-/** @since 3.8.0 */
-export function prerenderRoutes (path: string | string[]): void {
-  if (!import.meta.server || !import.meta.prerender) { return }
-
-  const context = useRequestEvent()?.context
-  if (!context) { return }
-
-  const nuxt = context.nuxt ||= {}
-  nuxt.prerenderRoutes ||= []
-  nuxt.prerenderRoutes.push(...toArray(path))
-}
+export { prerenderRoutes } from './prerender-routes'
 
 const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'
 

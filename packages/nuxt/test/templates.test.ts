@@ -8,6 +8,7 @@ import { resolve } from 'pathe'
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
 import { appConfigTemplate, dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { hintPrerenderedLinksEnabled } from '../src/core/utils/prerender-hints.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
@@ -29,6 +30,15 @@ function makeNuxt (overrides: Partial<Nuxt['options']> = {}, serverBuild?: Parti
 function makeApp (configs: string[] = []): NuxtApp {
   return { configs } as unknown as NuxtApp
 }
+
+describe('hintPrerenderedLinksEnabled', () => {
+  it('follows the builder default unless crawlLinks is set', () => {
+    expect(hintPrerenderedLinksEnabled(undefined, true)).toBe(true)
+    expect(hintPrerenderedLinksEnabled(undefined, false)).toBe(false)
+    expect(hintPrerenderedLinksEnabled(true, false)).toBe(true)
+    expect(hintPrerenderedLinksEnabled(false, true)).toBe(false)
+  })
+})
 
 describe('appConfigTemplate', () => {
   it('does not merge at runtime when there are no app config layers', async () => {

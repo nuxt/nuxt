@@ -81,6 +81,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
       'about/index.html',
       'blog/crawled/index.html',
       'hinted/from-hint/index.html',
+      'hinted/from-link/index.html',
       'index.html',
       'links/index.html',
       'redirected/index.html',
@@ -112,6 +113,13 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
     expect(await read('hinted/from-hint/index.html')).toContain('hint from-hint')
   })
 
+  it('prerenders the target of a custom NuxtLink that renders no anchor', async () => {
+    const html = await read('hinted/from-link/index.html')
+    expect(html).toContain('hinted from a custom link')
+    expect(await read('index.html')).not.toContain('href="/hinted/from-link"')
+    expect(await read('index.html')).toContain('href="https://example.com"')
+  })
+
   it('follows links in the rendered html to reach a dynamic route', async () => {
     expect(await read('blog/crawled/index.html')).toContain('blog post crawled')
   })
@@ -138,6 +146,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
       'about/_payload.json',
       'blog/crawled/_payload.json',
       'hinted/from-hint/_payload.json',
+      'hinted/from-link/_payload.json',
       'links/_payload.json',
       'rules/no-scripts/_payload.json',
       'rules/prerendered/_payload.json',
@@ -171,6 +180,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
       '/about',
       '/blog/crawled',
       '/hinted/from-hint',
+      '/hinted/from-link',
       '/links',
       '/rules/no-scripts',
     ])
