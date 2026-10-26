@@ -484,8 +484,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
 
+    // keeps the generated tsconfigs independent of the build id
+    addTemplate({
+      filename: 'types/app-manifest.d.ts',
+      dependsOn: [],
+      getContents: () => 'declare const manifest: { id: string, timestamp: number, prerendered: string[] }\nexport default manifest\n',
+    })
+    nuxt.hook('prepare:types', ({ tsConfig }) => {
+      tsConfig.compilerOptions ||= {}
+      tsConfig.compilerOptions.paths ||= {}
+      tsConfig.compilerOptions.paths['#app-manifest'] = [relativeWithDot(typesDir, resolve(nuxt.options.buildDir, 'types/app-manifest'))]
+    })
+
     // write stub manifest before build so external import of #app-manifest can be resolved
-    if (!nuxt.options.dev || nuxt.options.experimental.nitroViteEnvironment) {
+    if (!nuxt.options._prepare && (!nuxt.options.dev || nuxt.options.experimental.nitroViteEnvironment)) {
       nuxt.hook('build:before', async () => {
         await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
         await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify({
