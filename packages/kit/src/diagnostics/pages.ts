@@ -121,5 +121,10 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Request paths are lower-cased before they are matched, so write the constraint for lower-case letters (such as `[a-z]` instead of `[A-Z]`), or set `router.options.sensitive` to `true`.',
       docs: false,
     },
+    NUXT_B4023: {
+      why: (p: { file: string }) => `The \`router.options\` file at \`${p.file}\` sets \`sensitive\`, which is only read from \`router.options.sensitive\` in \`nuxt.config\`.`,
+      fix: 'Move `sensitive` to `router.options` in your `nuxt.config`.',
+      docs: false,
+    },
   },
 })
