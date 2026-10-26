@@ -1,6 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import { once } from 'node:events'
-import { mkdir, mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { Worker } from 'node:worker_threads'
 import { fileURLToPath } from 'node:url'
@@ -553,6 +553,8 @@ describe('resolveLayerPaths', async () => {
 })
 
 describe('writeTypes', () => {
+  const generatedFiles = ['tsconfig.app.json', 'tsconfig.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json', 'nuxt.d.ts', 'nuxt.node.d.ts', 'nuxt.shared.d.ts', 'nuxt.server.d.ts']
+
   async function withRelocatedBuildDir (fn: (typesDir: string, nuxt: Nuxt) => Promise<void>) {
     const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
     const typesDir = join(rootDir, '.nuxt')
@@ -618,26 +620,34 @@ describe('writeTypes', () => {
   it.each(['EPERM', 'ENOSPC'])('should preserve existing files and clean temporary files after %s rename failure', async (code) => {
     await withRelocatedBuildDir(async (typesDir, nuxt) => {
       nuxt.options.dev = true
-      await writeTypes(nuxt)
+      await Promise.all(generatedFiles.map(file => writeFile(join(typesDir, file), '{}')))
       const path = join(typesDir, 'tsconfig.json')
       const existing = await readFile(path, 'utf8')
       const rename = fsp.rename.bind(fsp)
       const failure = Object.assign(new Error('Rename failed'), { code })
+      let releaseRenames!: () => void
+      const renamesReleased = new Promise<void>((resolve) => { releaseRenames = resolve })
       let attempts = 0
       const spy = vi.spyOn(fsp, 'rename').mockImplementation(async (source, destination) => {
         if (destination === path) {
           attempts++
           throw failure
         }
+        await renamesReleased
         await rename(source, destination)
       })
       try {
         nuxt.options.alias.changing = join(nuxt.options.rootDir, 'changed')
         await expect(writeTypes(nuxt)).rejects.toBe(failure)
+        await vi.waitFor(() => expect(new Set(spy.mock.calls.map(([, destination]) => destination)).size).toBe(generatedFiles.length))
+        releaseRenames()
+        await Promise.allSettled(spy.mock.results.map(result => result.value))
         expect(attempts).toBe(code === 'EPERM' ? 6 : 1)
         expect(await readFile(path, 'utf8')).toBe(existing)
         expect((await readdir(typesDir)).filter(file => file.endsWith('.tmp'))).toEqual([])
       } finally {
+        releaseRenames()
+        await Promise.allSettled(spy.mock.results.map(result => result.value))
         spy.mockRestore()
       }
     })
