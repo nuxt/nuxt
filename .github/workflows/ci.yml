@@ -50,7 +50,7 @@ jobs:
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: filter
         with:
-          base: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha || github.event.before }}
+          base: ${{ github.event.merge_group.base_ref || github.event.pull_request.base.sha || github.event.before }}
           ref: ${{ github.event.merge_group.head_sha || github.sha }}
           filters: |
             src:
