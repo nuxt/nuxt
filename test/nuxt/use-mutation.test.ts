@@ -50,6 +50,23 @@ describe('useAsyncDataMutation', () => {
     expect(data.value).toBe('third')
     expect(calls).toBe(3)
   })
+
+  it('discards a result whose transform settles after `clear`', async () => {
+    let onTransform!: () => void
+    const transforming = new Promise<void>((resolve) => { onTransform = resolve })
+    const { data, status, mutate, clear } = useAsyncDataMutation((input: string) => Promise.resolve(input), {
+      transform: (input) => {
+        onTransform()
+        return new Promise<string>(resolve => setTimeout(() => resolve(input), 10))
+      },
+    })
+    const promise = mutate('stale')
+    await transforming
+    clear()
+    await promise
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+  })
 })
 
 describe('useFetchMutation', () => {

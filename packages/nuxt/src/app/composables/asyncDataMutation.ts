@@ -113,11 +113,11 @@ export function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, Def
       executeOpts.timeout ?? opts.timeout,
     )
       .then(async (result) => {
-        // superseded by a newer call, or cleared
+        const value = opts.transform ? await opts.transform(result) : result
         if (current !== promise) {
           return current
         }
-        data.value = (opts.transform ? await opts.transform(result) : result) as DataT
+        data.value = value as DataT
         error.value = undefined
         status.value = 'success'
       })
