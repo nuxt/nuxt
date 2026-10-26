@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -13,6 +13,21 @@ import { _generateTypes, resolveLayerPaths, writeTypes } from '../src/template.t
 import { getLayerDirectories } from 'nuxt/kit'
 
 const typesFixtureDir = fileURLToPath(new URL('./types-fixture', import.meta.url))
+
+vi.mock('../src/internal/package-json.ts', async (original) => {
+  const mod = await original<typeof import('../src/internal/package-json.ts')>()
+  return {
+    ...mod,
+    readPackageJSON: async (id: string, ...args: any[]) => {
+      const delay = typeof id === 'string' ? Number(id.match(/^delayed-module-(\d+)$/)?.[1] ?? Number.NaN) : Number.NaN
+      if (Number.isNaN(delay)) {
+        return mod.readPackageJSON(id, ...args)
+      }
+      await new Promise(resolve => setTimeout(resolve, delay))
+      return { name: id }
+    },
+  }
+})
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
@@ -290,6 +305,14 @@ describe('tsConfig generation', () => {
       expect(config.exclude).not.toContain('my-global-exclude')
       expect(config).not.toHaveProperty('vueCompilerOptions')
     }
+  })
+
+  it('should reference module types in the order modules are registered', async () => {
+    const modules = ['delayed-module-30', 'delayed-module-0', 'delayed-module-15']
+    const { declaration, nodeDeclaration } = await _generateTypes(mockNuxtWithOptions({ modules }))
+    const references = modules.map(id => `/// <reference types="${id}" />`).join('\n')
+    expect(declaration).toContain(references)
+    expect(nodeDeclaration).toContain(references)
   })
 
   it('should keep the generated declaration first in `include`', async () => {
