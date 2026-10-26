@@ -305,8 +305,10 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
 
   // Client-side redirection using vue-router
   if (isExternal) {
-    // Run any cleanup steps for the current scope, like ending BroadcastChannel
-    nuxtApp._scope.stop()
+    nuxtApp._cookieWriters?.forEach(write => write())
+    window.addEventListener('pagehide', (event) => {
+      if (!event.persisted) { nuxtApp._scope.stop() }
+    }, { once: true })
     if (options?.replace) {
       location.replace(toPath)
     } else {
