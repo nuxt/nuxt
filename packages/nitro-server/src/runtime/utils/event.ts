@@ -258,13 +258,16 @@ export function getFetchedRequestContext (event: H3Event): NuxtRequestContext | 
   return (event.node.req as { __unenv__?: { nuxt?: NuxtRequestContext } }).__unenv__?.nuxt
 }
 
-/** The event the SSR renderer reads, which reaches the h3 v1 event itself through `~app`. */
+/**
+ * The event the SSR renderer reads, which reaches the h3 v1 event itself through `~app`.
+ * Of the Nuxt context a request nitro made to itself was fetched with, only the error render
+ * flag carries over.
+ */
 export function toRequestEvent (event: H3Event): RendererEvent {
   const requestEvent = toWebView(event)
 
-  const fetchedWith = getFetchedRequestContext(event)
-  if (fetchedWith) {
-    event.context.nuxt = { ...fetchedWith, ...event.context.nuxt }
+  if (getFetchedRequestContext(event)?.['~rendering-error']) {
+    event.context.nuxt = { '~rendering-error': true, ...event.context.nuxt }
   }
 
   return requestEvent
