@@ -826,6 +826,16 @@ describe('page-island middleware', () => {
     expect(res.headers.get('set-cookie')).toContain('island-auth-marker=set-from-island-middleware')
   })
 
+  it('honours `redirect` route rules for `page_*` islands', async () => {
+    const res = await fetch(islandURL('page_redirected-server-page', {
+      context: { url: '/redirected-server-page' },
+    }), { redirect: 'manual' })
+    expect(res.status).toBe(302)
+    expect(res.headers.get('location')).toBe('/server-page')
+    const body = await res.text()
+    expect(body).not.toContain('REDIRECTED-PAGE-ISLAND-BODY')
+  })
+
   it('still renders unguarded `page_*` islands', async () => {
     const res = await fetch(islandURL('page_server-page', {
       context: { url: '/server-page' },
