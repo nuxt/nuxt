@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { describe, expect, it } from 'vitest'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import { loadNuxt } from '../src/index.ts'
 import { routeRulesTemplate } from '../src/core/templates.ts'
 import type { NuxtPage } from '../schema.ts'
@@ -33,6 +34,7 @@ describe('route rules template', () => {
     for (const sensitive of [true, false]) {
       const contents = await getRouteRulesTemplate(sensitive)
       expect(contents).not.toContain('router.options.mjs')
+      expect(contents.includes('foldRouteCase')).toBe(!sensitive)
       const matcher = new Function('defu', contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return'))(defu) as (path: string) => Record<string, any>
       expect(matcher('/protected/secret')).toMatchObject({ redirect: '/login' })
       expect(matcher('/Protected/secret').redirect).toBe(sensitive ? undefined : '/login')
@@ -78,7 +80,50 @@ describe('route rules template', () => {
     expect(matcher('/admin/users')).toEqual({ appMiddleware: { auth: true, admin: true }, ssr: false })
     expect(matcher('/lower/page')).toEqual({ ssr: false })
   })
+
+  it('applies `appMiddleware` to every path a case-insensitive page route matches', async () => {
+    const routes = ['/σίγμα', '/окно', '/контакты']
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, undefined, Object.fromEntries(routes.map(route => [route, { appMiddleware: 'auth' }]))))
+    const router = createRouter({ history: createMemoryHistory(), routes: routes.map(path => ({ path, component: {} })), sensitive: false })
+    for (const path of ['/ςίγμα', '/ΣΊΓΜΑ', '/ᲂкно', '/ОКНО', '/кᲂнᲄакᲅы', '/КОНТАКТЫ']) {
+      const to = router.resolve(path)
+      expect(to.matched, path).toHaveLength(1)
+      expect(matcher(to.path).appMiddleware, path).toEqual({ auth: true })
+      expect(matcher(encodeURI(path)).appMiddleware, path).toEqual({ auth: true })
+    }
+  })
+
+  it('applies `appMiddleware` from rules with regex constraints when case-insensitive', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, undefined, {
+      '/y/:id(\\D+)': { appMiddleware: 'auth' },
+      '/Z/:role(admin|[a-z]\\d)': { appMiddleware: 'admin' },
+      '/Range/:id([A-z]+)': { appMiddleware: 'range' },
+    }))
+    expect(matcher('/y/abc').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/Y/ABC').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/y/123').appMiddleware).toBeUndefined()
+    expect(matcher('/z/Admin').appMiddleware).toEqual({ admin: true })
+    expect(matcher('/z/A1').appMiddleware).toEqual({ admin: true })
+    expect(matcher('/z/AB').appMiddleware).toBeUndefined()
+    expect(matcher('/range/ABC').appMiddleware).toEqual({ range: true })
+    expect(matcher('/RANGE/_').appMiddleware).toEqual({ range: true })
+    expect(matcher('/range/123').appMiddleware).toBeUndefined()
+  })
+
+  it('rejects regex constraints that depend on letter case when case-insensitive', async () => {
+    await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([A-Z]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[A-Z]`)')
+    await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([%41-%5A]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[A-Z]`)')
+    await expect(getRouteRulesTemplate(false, undefined, { '/sigma/:id([a-zς]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[a-zς]`)')
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, { '/upper/:id([A-Z]+)': { appMiddleware: 'auth' } }))
+    expect(matcher('/upper/ABC').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/upper/abc').appMiddleware).toBeUndefined()
+  })
 })
+
+async function evaluateMatcher (contents: string) {
+  const { defu } = await import('defu')
+  return new Function('defu', contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return'))(defu) as (path: string) => Record<string, any>
+}
 
 describe('route rule redirects', () => {
   it('adds routes for redirects that apply to a page request', async () => {

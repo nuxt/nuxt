@@ -3,7 +3,7 @@ import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
-import { createNormalizedRouteRulesRouter, normalizePathCode, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, genNormalizePathCode, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
  * The rules this builder resolves for itself: the renderer reads `ssr`, `streaming`,
@@ -53,10 +53,10 @@ export function addRouteRulesTemplate (): string {
       return [
         `import { defu } from ${JSON.stringify(defuPath)}`,
         `const matchers = new Map([${matchers.join(',\n')}])`,
-        normalizePathCode,
+        genNormalizePathCode(fold),
         `export default (path, method = 'GET') => {`,
         `  const matcher = matchers.get(method.toUpperCase()) || matchers.get('')`,
-        `  return defu({}, ...matcher('', normalizePath(path, ${fold})).map(r => r.data).reverse())`,
+        `  return defu({}, ...matcher('', normalizePath(path)).map(r => r.data).reverse())`,
         `}`,
       ].join('\n')
     },
