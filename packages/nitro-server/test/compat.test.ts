@@ -1,5 +1,6 @@
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { performance } from 'node:perf_hooks'
 import { dirname, join } from 'pathe'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
@@ -598,6 +599,39 @@ export const useRule = () => setHeader`)
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`reachable-module` (imports `h3`)') })
     vi.restoreAllMocks()
   })
+
+  it('keeps the cost of following imports flat as aliases are added', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = createModuleDir('nitro-compat-alias-cost-', false)
+    mkdirSync(join(dir, 'dist/runtime/server'), { recursive: true })
+    const utils = Array.from({ length: 100 }, (_, i) => `util-${i}`)
+    for (const util of utils) {
+      writeFileSync(join(dir, `dist/runtime/server/${util}.ts`), `import { defu } from 'defu'
+import { withBase } from 'ufo'
+import { join } from 'pathe'
+import { getQuery } from 'h3'
+export default () => [defu, withBase, join, getQuery]`)
+    }
+    writeFileSync(join(dir, 'dist/runtime/server/handler.ts'), `${utils.map((util, i) => `import u${i} from './${util}'`).join('\n')}
+export default () => [${utils.map((_, i) => `u${i}`).join(', ')}]`)
+
+    // the late pass walks the same imports as the first one, and runs synchronously
+    const lateScan = async (aliasCount: number) => {
+      const alias = Object.fromEntries(Array.from({ length: aliasCount }, (_, i) => [`#alias-${i}`, `/project/aliased-${i}`]))
+      const nitroConfig: NitroConfig = { handlers: [{ route: '/server', handler: join(dir, 'dist/runtime/server/handler.ts') } as any] }
+      const registerLateScope = await setupNitroCompat(createNuxt({ alias, extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'alias-cost-module' }])
+      const start = performance.now()
+      registerLateScope(createLateNitro(nitroConfig))
+      return performance.now() - start
+    }
+
+    const few = await lateScan(10)
+    const many = await lateScan(500)
+
+    expect(report).toHaveBeenCalledWith(expect.objectContaining({ modules: expect.stringContaining('`alias-cost-module` (imports `h3`)') }))
+    expect(many).toBeLessThan(few * 3 + 50)
+    vi.restoreAllMocks()
+  }, 60_000)
 
   it.each(['linked', 'real'])('attributes files of a symlinked module nested in another module to the nested module (registered: %s)', async (registered) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)

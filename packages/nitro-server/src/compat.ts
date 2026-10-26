@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'n
 import type { Dirent } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { dirname, isAbsolute, join, normalize, resolve } from 'pathe'
+import { normalizeAliases } from 'pathe/utils'
 import MagicString from 'magic-string'
 import { parseSync } from 'rolldown/utils'
 import { withTrailingSlash } from 'ufo'
@@ -596,8 +597,9 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  */
 export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, legacy: ResolvedNitroLegacyOptions, modulePresets: LegacyImportsPreset[], installedModules: InstalledModule[] = [], unusedVariants: string[] = []): Promise<(nitro: Pick<Nitro, 'options' | 'hooks'>) => void> {
   // resolved as the server build resolves them: a module may add an alias for the server
-  // build only, or point an app alias at different code there
-  const aliases: Record<string, string> = { ...nuxt.options.alias, ...nitroConfig.alias as Record<string, string> }
+  // build only, or point an app alias at different code there. Normalized once, since
+  // `resolveAlias` otherwise sorts and expands the whole map on every call
+  const aliases = normalizeAliases({ ...nuxt.options.alias, ...nitroConfig.alias as Record<string, string> })
   const files = new Map<string, CompatScope>()
   const dirs: Array<[prefix: string, scope: CompatScope]> = []
   // every file in these is a server entry, unlike a module runtime directory, which also
