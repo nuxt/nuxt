@@ -76,6 +76,8 @@ interface _NuxtApp {
   /** @internal */
   '_appliedSetCookies'?: number
   '_cookiesChanged'?: Record<string, boolean>
+  /** @internal */
+  '_cookieWriters'?: Set<() => void>
   /**
    * The id of the Nuxt application.
    * @internal */
