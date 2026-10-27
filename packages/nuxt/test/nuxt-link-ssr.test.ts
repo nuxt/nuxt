@@ -82,6 +82,8 @@ const cases: Case[] = [
   { name: 'applies `activeClass` from options', options: { activeClass: 'opt-on' }, props: { to: '/parent' }, at: '/parent' },
   { name: 'applies active classes from router options', routerOptions: { linkActiveClass: 'r-on', linkExactActiveClass: 'r-exact-on' }, props: { to: '/parent' }, at: '/parent' },
   { name: 'applies `ariaCurrentValue`', props: { to: '/parent', ariaCurrentValue: 'step' }, at: '/parent' },
+  { name: 'applies equal active classes to an active parent link', props: { to: '/parent', activeClass: 'on', exactActiveClass: 'on' }, at: '/parent/child/1' },
+  { name: 'applies equal active classes to an exact active link', props: { to: '/parent', activeClass: 'on', exactActiveClass: 'on' }, at: '/parent' },
   { name: 'appends a trailing slash', options: { trailingSlash: 'append' }, props: { to: '/parent' } },
   { name: 'removes a trailing slash', props: { to: '/parent/', trailingSlash: 'remove' } },
   { name: 'passes slot props', props: { to: '/parent' }, at: '/parent', slot: (p: any) => h('span', { 'class': [p.isActive && 'a', p.isExactActive && 'ea'], 'data-href': p.href, 'data-path': p.route.path }, 'x') },

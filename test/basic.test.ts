@@ -1214,7 +1214,8 @@ describe('nuxt links', () => {
       <a href="/nuxt-link/ssr-static/abc" class="" data-v-0><!-- only a comment --></a>
       <a href="/nuxt-link/ssr-static/abc" class="" data-v-0><span data-v-0>async child</span></a>
       <a href="/nuxt-link/ssr-static/abc" class="" data-v-0> dynamic </a>
-      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0>same-class</a><!--[-->
+      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0>same-class</a>
+      <a aria-current="page" href="/nuxt-link/ssr-static" class="same" data-v-0>same-class-parent</a><!--[-->
       <a href="/" class="" data-v-0>list</a>
       <a href="/nuxt-link/ssr-static/abc" class="" data-v-0>list</a><!--]--><span data-v-0 data-v-1><!--[-->
       <a href="/nuxt-link/ssr-static/abc" class="" data-v-0 data-v-1-s>slotted</a><!--]--></span>"
@@ -1250,7 +1251,8 @@ describe('nuxt links', () => {
       <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0><!-- only a comment --></a>
       <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0><span data-v-0>async child</span></a>
       <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0> dynamic </a>
-      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="same" data-v-0>same-class</a><!--[-->
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="same" data-v-0>same-class</a>
+      <a href="/nuxt-link/ssr-static" class="" data-v-0>same-class-parent</a><!--[-->
       <a href="/" class="" data-v-0>list</a>
       <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0>list</a><!--]--><span data-v-0 data-v-1><!--[-->
       <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0 data-v-1-s>slotted</a><!--]--></span>"

@@ -304,7 +304,8 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     let href: string
     let isActive = false
     let isExactActive = false
-    if (typeof rawTo === 'string' && isPlainAbsolutePath(rawTo) && !hashMode && !props.trailingSlash && !options.trailingSlash && !mayMatchCurrentRoute(currentRoute, rawTo)) {
+    // the router used without pages has no `history`
+    if (typeof rawTo === 'string' && router.options.history && isPlainAbsolutePath(rawTo) && !hashMode && !props.trailingSlash && !options.trailingSlash && !mayMatchCurrentRoute(currentRoute, rawTo)) {
       href = router.options.history.base + rawTo
     } else {
       route = router.resolve(resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash))
@@ -370,7 +371,10 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     let tag = '<a'
     if (link.isExactActive) { tag += ` aria-current="${escapeHtml(props.ariaCurrentValue ?? 'page')}"` }
     tag += ` href="${escapeHtml(link.href)}"`
-    tag += ` class="${link.isActive ? escapeHtml(link.isExactActive && exactActiveClass !== activeClass ? `${activeClass} ${exactActiveClass}` : activeClass) : ''}"`
+    const linkClass = link.isExactActive
+      ? (activeClass === exactActiveClass ? activeClass : `${activeClass} ${exactActiveClass}`)
+      : (link.isActive && activeClass !== exactActiveClass ? activeClass : '')
+    tag += ` class="${escapeHtml(linkClass)}"`
     if (props.rel) { tag += ` rel="${escapeHtml(props.rel)}"` }
     if (dataInternal !== undefined) { tag += ` data-internal="${escapeHtml(dataInternal)}"` }
     return tag
