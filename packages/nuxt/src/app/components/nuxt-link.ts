@@ -20,7 +20,6 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../utils'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
 import type { NuxtApp } from '../nuxt'
-import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 import { renderDiagnostics } from '../diagnostics/render'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 
@@ -522,24 +521,17 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         checkPropConflicts(props, 'noPrefetch', 'prefetch')
         if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
-          let idleId: number
           let unobserve: (() => void) | null = null
           onMounted(() => {
-            const observer = useObserver()
-            onNuxtReady(() => {
-              idleId = requestIdleCallback(() => {
-                if (el?.value?.tagName) {
-                  unobserve = observer!.observe(el.value as HTMLElement, async () => {
-                    unobserve?.()
-                    unobserve = null
-                    await prefetch(nuxtApp)
-                  })
-                }
-              })
-            })
+            if (el?.value?.tagName) {
+              unobserve = useObserver()!.observe(el.value, async () => {
+                unobserve?.()
+                unobserve = null
+                await prefetch(nuxtApp)
+              }, true)
+            }
           })
           onBeforeUnmount(() => {
-            if (idleId) { cancelIdleCallback(idleId) }
             unobserve?.()
             unobserve = null
           })
@@ -776,7 +768,7 @@ function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions[
 
 // --- Prefetching utils ---
 type CallbackFn = () => void
-type ObserveFn = (element: Element, callback: CallbackFn) => () => void
+type ObserveFn = (element: Element, callback: CallbackFn, whenReady?: boolean) => () => void
 
 /** @internal */
 export function useObserver (): { observe: ObserveFn } | undefined {
@@ -790,8 +782,10 @@ export function useObserver (): { observe: ObserveFn } | undefined {
   let observer: IntersectionObserver | null = null
 
   const callbacks = new Map<Element, CallbackFn>()
+  const pending = new Set<Element>()
+  let flushScheduled = false
 
-  const observe: ObserveFn = (element, callback) => {
+  const start = (element: Element) => {
     observer ||= new IntersectionObserver((entries) => {
       for (const entry of entries) {
         const callback = callbacks.get(entry.target)
@@ -799,9 +793,26 @@ export function useObserver (): { observe: ObserveFn } | undefined {
         if (isVisible && callback) { callback() }
       }
     })
-    callbacks.set(element, callback)
     observer.observe(element)
+  }
+
+  const observe: ObserveFn = (element, callback, whenReady) => {
+    callbacks.set(element, callback)
+    if (!whenReady) {
+      start(element)
+    } else {
+      pending.add(element)
+      if (!flushScheduled) {
+        flushScheduled = true
+        nuxtApp.runWithContext(() => onNuxtReady(() => {
+          flushScheduled = false
+          pending.forEach(start)
+          pending.clear()
+        }))
+      }
+    }
     return () => {
+      pending.delete(element)
       callbacks.delete(element)
       observer?.unobserve(element)
       if (callbacks.size === 0) {

@@ -140,7 +140,7 @@ interface _NuxtApp {
   }
 
   /** @internal */
-  '_observer'?: { observe: (element: Element, callback: () => void) => () => void }
+  '_observer'?: { observe: (element: Element, callback: () => void, whenReady?: boolean) => () => void }
 
   /** @internal */
   '_appConfig': AppConfig
