@@ -292,13 +292,18 @@ async function createDevMiddleware (compiler: Compiler) {
   })
 
   // Register devMiddleware on server
-  const devHandler = wdmToH3Handler(nuxt, devMiddleware)
+  const devHandler = wdmToH3Handler(devMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
+    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+    if (!isSameOriginRequest(req, nuxt.options.devServer.allowedHosts)) {
+      res!.statusCode = 403
+      res!.end('Forbidden')
+      return kHandled
+    }
     const body = await devHandler(event)
     if (body !== undefined) {
       return body
     }
-    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
     await new Promise<void>((resolve, reject) => hotMiddleware(req as IncomingMessage, res as ServerResponse, err => err ? reject(err) : resolve()))
   }), { cors: () => true })
 
@@ -306,15 +311,9 @@ async function createDevMiddleware (compiler: Compiler) {
 }
 
 // TODO: implement upstream in `webpack-dev-middleware`
-function wdmToH3Handler (nuxt: Nuxt, devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
+function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
   return defineEventHandler(async (event) => {
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
-    if (!isSameOriginRequest(req, nuxt.options.devServer.allowedHosts)) {
-      res!.statusCode = 403
-      res!.end('Forbidden')
-      return
-    }
-
     const body = await new Promise((resolve, reject) => {
       // @ts-expect-error handle injected methods
       res.stream = (stream) => {
