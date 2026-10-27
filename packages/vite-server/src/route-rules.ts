@@ -1,9 +1,8 @@
 import { addTemplate } from '@nuxt/kit'
-import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
-import { createNormalizedRouteRulesRouter, normalizePathCode, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, normalizePathCode, resolveRouteRules, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
  * The rules this builder resolves for itself: the renderer reads `ssr`, `streaming`,
@@ -21,7 +20,7 @@ const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url })
 export function createRouteRulesMatcher (nuxt: Nuxt): (path: string) => Record<string, any> {
   const fold = !nuxt.options.router.options.sensitive
   const router = createNormalizedRouteRulesRouter(resolveRouteRulesRoutes(nuxt).routes, '', fold)
-  return path => defu({}, ...router.matchAll('', normalizeRouteRulePath(path, fold)).reverse()) as Record<string, any>
+  return path => resolveRouteRules(router, path, fold)
 }
 
 /**
@@ -46,7 +45,7 @@ export function addRouteRulesTemplate (): string {
         `import { defu } from ${JSON.stringify(defuPath)}`,
         `const matcher = ${matcher}`,
         normalizePathCode,
-        `export default path => defu({}, ...matcher('', normalizePath(path, ${fold})).map(r => r.data).reverse())`,
+        `export default path => defu({}, ...matchAllRouteRules(path => matcher('', normalizePath(path, ${fold})).map(r => r.data), path).reverse())`,
       ].join('\n')
     },
   })

@@ -4,7 +4,7 @@ import { compileRouterToString } from 'rou3/compiler'
 import type { RouterCompilerOptions } from 'rou3/compiler'
 import { tryUseNitro } from '@nuxt/kit'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
-import { decodeRoutePath, foldRouteCase, resolveRoutePathDotSegments } from './index.ts'
+import { decodeRoutePath, foldRouteCase, matchAllRouteRules, resolveRoutePathDotSegments } from './index.ts'
 
 /**
  * Route-rule keys the client-side matcher is compiled from; anything else is server-only.
@@ -237,7 +237,7 @@ export function resolveRouteRulesRoutes (nuxt: Nuxt): { routes: RouteRulesRoute[
  * @internal
  */
 export function resolveRouteRules<T extends Record<string, any>> (router: RouteRulesRouter, path: string, fold: boolean): T {
-  return defu({} as T, ...router.matchAll('', normalizeRouteRulePath(path, fold)).reverse())
+  return defu({} as T, ...matchAllRouteRules(path => router.matchAll('', normalizeRouteRulePath(path, fold)), path).reverse())
 }
 
 /**
@@ -270,9 +270,10 @@ export function createRouteRulesRouter (routes: RouteRulesRoute[], baseURL: stri
 }
 
 /**
- * Source of the `normalizePath` helper a compiled matcher looks rules up through:
- * `decodeRoutePath`, `resolveRoutePathDotSegments` and `foldRouteCase` are inlined by source so
- * that the runtime lookup and the build-time key normalisation cannot drift apart.
+ * Source of the `normalizePath` and `matchAllRouteRules` helpers a compiled matcher looks rules
+ * up through: `decodeRoutePath`, `resolveRoutePathDotSegments`, `foldRouteCase` and
+ * `matchAllRouteRules` are inlined by source so that the runtime lookup and the build-time key
+ * normalisation cannot drift apart.
  *
  * @internal
  */
@@ -280,6 +281,7 @@ export const normalizePathCode: string = [
   `const decodeRoutePath = ${decodeRoutePath.toString()}`,
   `const resolveRoutePathDotSegments = ${resolveRoutePathDotSegments.toString()}`,
   `const foldRouteCase = ${foldRouteCase.toString()}`,
+  `const matchAllRouteRules = ${matchAllRouteRules.toString()}`,
   `const normalizePath = (path, fold) => {`,
   `  if (typeof path !== 'string') { return path }`,
   `  const decoded = decodeRoutePath(resolveRoutePathDotSegments(path))`,

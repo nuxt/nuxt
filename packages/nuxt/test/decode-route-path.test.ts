@@ -1,8 +1,8 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { decodeRoutePath, foldRouteCase, resolveRoutePathDotSegments } from '../src/core/utils/index.ts'
-import { findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, normalizeRouteRuleKey, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
+import { decodeRoutePath, foldRouteCase, matchAllRouteRules, resolveRoutePathDotSegments } from '../src/core/utils/index.ts'
+import { createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, normalizeRouteRuleKey, normalizeRouteRulePath, resolveRouteRules } from '../src/core/utils/route-rules.ts'
 
 const RESERVED_RE = /[%;/?:@&=+$,#]/g
 
@@ -126,6 +126,27 @@ describe('resolveRoutePathDotSegments', () => {
       expect(new URL('http://localhost' + resolved).pathname).toBe(new URL('http://localhost' + path).pathname)
       expect(resolved.split('/').some(s => /^(?:\.|%2e){1,2}$/i.test(s))).toBe(false)
     }), { numRuns: 1000 })
+  })
+})
+
+describe('matchAllRouteRules', () => {
+  const router = createNormalizedRouteRulesRouter([
+    { route: '/**', data: { all: true } },
+    { route: '/docs/**', data: { docs: true, layout: 'docs' } },
+    { route: '/docs/*', data: { page: true } },
+    { route: '/docs/internal/**', data: { internal: true, layout: 'internal' } },
+  ], '', true)
+  const match = (path: string) => router.matchAll('', normalizeRouteRulePath(path, true))
+
+  it('should match the path and the path with encoded slashes as separators, without duplicates', () => {
+    expect(matchAllRouteRules(match, '/docs/internal%2Fx')).toEqual([{ all: true }, { docs: true, layout: 'docs' }, { page: true }, { internal: true, layout: 'internal' }])
+    expect(matchAllRouteRules(match, '/docs/internal/x')).toEqual(match('/docs/internal/x'))
+    expect(matchAllRouteRules(match, '/docs/internal%252Fx')).toEqual(match('/docs/internal%252Fx'))
+    expect(matchAllRouteRules(match, '/docs/a?next=%2Fdocs%2Finternal')).toEqual(match('/docs/a'))
+  })
+
+  it('should give rules matched only through encoded slashes precedence', () => {
+    expect(resolveRouteRules(router, '/Docs/Internal%2FX', true)).toEqual({ all: true, docs: true, page: true, internal: true, layout: 'internal' })
   })
 })
 

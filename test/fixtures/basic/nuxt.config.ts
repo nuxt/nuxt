@@ -199,6 +199,7 @@ export default withMatrix({
       '/route-rules/spa': { ssr: false },
       '/route-rules/spa-async-data': { ssr: false },
       '/redirect/catchall': { ssr: false },
+      '/catchall/route-rules/**': { ssr: false, headers: { 'x-catchall-route-rules': 'applied' } },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       // Uppercase-keyed rule must still apply to the case-insensitively served page.

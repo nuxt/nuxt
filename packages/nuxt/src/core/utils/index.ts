@@ -53,6 +53,27 @@ export function foldRouteCase (path: string) {
 }
 
 /**
+ * Collect the route rules `match` returns for a route path and, if its path portion contains
+ * an encoded slash (`%2F`), for the path with each encoded slash as a separator, since a page
+ * route param spanning several segments decodes to the same value either way. Rules keep the
+ * order `match` returns them in, and rules matched only through encoded slashes come last.
+ *
+ * Inlined by source into compiled matchers, so it must not reference anything outside itself.
+ *
+ * @internal
+ */
+export function matchAllRouteRules<T> (match: (path: string) => T[], path: string): T[] {
+  const matches = match(path)
+  if (typeof path !== 'string') { return matches }
+  const split = path.replace(/^[^?]*/, pathname => pathname.replace(/%2f/gi, '/'))
+  if (split === path) { return matches }
+  for (const rules of match(split)) {
+    if (!matches.includes(rules)) { matches.push(rules) }
+  }
+  return matches
+}
+
+/**
  * Resolve the `.` and `..` segments of a route path, including their percent-encoded
  * spellings (`%2e`), as a URL parser does. Only the path portion is resolved; a query
  * string, if present, is left untouched.

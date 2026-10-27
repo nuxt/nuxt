@@ -2,6 +2,7 @@ declare module '#internal/nuxt.config.mjs'
 declare module '#internal/nuxt/nitro-config.mjs'
 declare module '#internal/nuxt/route-rules.mjs' {
   export const normalizeRouteRulePath: (path: string) => string
+  export const matchAllRouteRules: <T>(match: (path: string) => T[], path: string) => T[]
 }
 declare module '#internal/nuxt/entry-ids.mjs'
 declare module '#internal/nuxt/app-config'

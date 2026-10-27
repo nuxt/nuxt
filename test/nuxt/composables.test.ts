@@ -722,6 +722,21 @@ describe('unicode route rules', () => {
   })
 })
 
+describe('encoded slash route rules', () => {
+  it('applies rules for the path with encoded slashes as separators', () => {
+    for (const path of ['/pre%2Ftest', '/pre%2ftest', '/PRE%2FTest']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ prerender: true, redirect: '/' })
+    }
+    for (const path of ['/pre/spa%2Fthing', '/pre%2Fspa%2Fthing', '/Secret%2FDocs/index']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ ssr: false })
+    }
+  })
+
+  it('does not treat a double-encoded slash as a separator', () => {
+    expect(getRouteRules({ path: '/pre%252Ftest' })).toEqual({})
+  })
+})
+
 describe('compiled route rules', () => {
   it('isPrerendered', async () => {
     expect(await isPrerendered('/specific-prerendered')).toBeTruthy()

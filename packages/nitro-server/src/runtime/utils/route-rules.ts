@@ -6,7 +6,7 @@ import { createRouter, toRouteMatcher } from 'radix3'
 import type { RouteMatcher } from 'radix3'
 import { withoutBase } from 'ufo'
 
-import { normalizeRouteRulePath } from '#internal/nuxt/route-rules.mjs'
+import { matchAllRouteRules, normalizeRouteRulePath } from '#internal/nuxt/route-rules.mjs'
 
 let matcher: RouteMatcher | undefined
 
@@ -26,7 +26,7 @@ function getMatcher (): RouteMatcher {
  * and case-folded unless routing is `sensitive`.
  */
 export function matchRouteRules (path: string): NitroRouteRules {
-  return defu({}, ...getMatcher().matchAll(normalizeRouteRulePath(path)).reverse()) as NitroRouteRules
+  return defu({}, ...matchAllRouteRules(path => getMatcher().matchAll(normalizeRouteRulePath(path)), path).reverse()) as NitroRouteRules
 }
 
 /** Resolve the route rules for a request, as {@link matchRouteRules} does for its path. */
