@@ -29,9 +29,30 @@ export function matchRouteRules (path: string): NitroRouteRules {
   return defu({}, ...matchAllRouteRules(path => getMatcher().matchAll(normalizeRouteRulePath(path)), path).reverse()) as NitroRouteRules
 }
 
-/** Resolve the route rules for a request, as {@link matchRouteRules} does for its path. */
+const STRIP_BASE_KEYS = { redirect: '_redirectStripBase', proxy: '_proxyStripBase' } as const
+
+function withRequestStripBases (rules: NitroRouteRules, path: string, baseURL: string): NitroRouteRules {
+  for (const [name, key] of Object.entries(STRIP_BASE_KEYS) as [keyof typeof STRIP_BASE_KEYS, string][]) {
+    const options = rules[name] as Record<string, unknown> | undefined
+    const stripBase = options?.[key]
+    if (typeof stripBase !== 'string') { continue }
+    const base = baseURL.replace(/\/$/, '') + stripBase
+    const prefix = path.split('/').slice(0, base.split('/').length).join('/')
+    if (prefix !== stripBase && normalizeRouteRulePath(prefix) === normalizeRouteRulePath(base)) {
+      (rules as Record<string, unknown>)[name] = { ...options, [key]: prefix }
+    }
+  }
+  return rules
+}
+
+/**
+ * Resolve the route rules for a request, as {@link matchRouteRules} does for its path. The
+ * strip base of a wildcard `redirect` or `proxy` rule is taken from the request path.
+ */
 export function resolveRequestRouteRules (event: H3Event): NitroRouteRules {
-  return matchRouteRules(withoutBase(event.path.split('?')[0]!, useRuntimeConfig().app.baseURL))
+  const path = event.path.split('?')[0]!
+  const baseURL = useRuntimeConfig().app.baseURL
+  return withRequestStripBases(matchRouteRules(withoutBase(path, baseURL)), path, baseURL)
 }
 
 /** The route rules for a request, reusing those already resolved for it. */

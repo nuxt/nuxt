@@ -101,6 +101,39 @@ describe('request route rules', () => {
     expect(resolveRequestRouteRules(event('/admin%252Fx'))).toEqual({ headers: { 'x-a': 'all' } })
   })
 
+  it('takes the strip base of wildcard redirect and proxy rules from the request path', async () => {
+    const routeRules = {
+      '/old/**': { redirect: { to: '/new/**', statusCode: 307, _redirectStripBase: '/old' } },
+      '/api/**': { proxy: { to: 'https://example.com/**', _proxyStripBase: '/api' } },
+      '/**': { redirect: { to: '/fallback/**', statusCode: 307, _redirectStripBase: '' } },
+    }
+    const { resolveRequestRouteRules } = await load({ routeRules })
+    expect(resolveRequestRouteRules(event('/OLD/A/b?x=1')).redirect).toEqual({ to: '/new/**', statusCode: 307, _redirectStripBase: '/OLD' })
+    expect(resolveRequestRouteRules(event('/Api/Users')).proxy).toEqual({ to: 'https://example.com/**', _proxyStripBase: '/Api' })
+    expect(resolveRequestRouteRules(event('/old/a')).redirect).toEqual({ to: '/new/**', statusCode: 307, _redirectStripBase: '/old' })
+    expect(resolveRequestRouteRules(event('/x/../OLD/a')).redirect).toEqual({ to: '/new/**', statusCode: 307, _redirectStripBase: '/old' })
+    expect(resolveRequestRouteRules(event('/Other')).redirect).toEqual({ to: '/fallback/**', statusCode: 307, _redirectStripBase: '' })
+    expect(routeRules['/old/**'].redirect._redirectStripBase).toBe('/old')
+
+    vi.resetModules()
+    const sensitive = await load({ fold: false, routeRules })
+    expect(sensitive.resolveRequestRouteRules(event('/OLD/a')).redirect).toEqual({ to: '/fallback/**', statusCode: 307, _redirectStripBase: '' })
+  })
+
+  it('takes the strip base of wildcard rules under a base URL from the request path', async () => {
+    const { resolveRequestRouteRules } = await load({
+      baseURL: '/base/',
+      routeRules: {
+        '/old/**': { redirect: { to: '/new/**', statusCode: 307, _redirectStripBase: '/old' } },
+        '/**': { proxy: { to: 'https://example.com/**', _proxyStripBase: '' } },
+      },
+    })
+    expect(resolveRequestRouteRules(event('/base/OLD/a'))).toEqual({
+      redirect: { to: '/new/**', statusCode: 307, _redirectStripBase: '/base/OLD' },
+      proxy: { to: 'https://example.com/**', _proxyStripBase: '/base' },
+    })
+  })
+
   it('reuses rules already resolved for a request', async () => {
     const { getRouteRules } = await load({ routeRules: { '/admin': { ssr: false } } })
     const resolved = { noScripts: true }
