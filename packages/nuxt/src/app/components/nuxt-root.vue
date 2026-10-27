@@ -75,7 +75,7 @@ onErrorCaptured((err, target, info) => {
     return false
   }
   if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
-    const p = nuxtApp.runWithContext(() => showError(import.meta.dev ? createErrorFromThrown(err, { instance: target, route: nuxtApp._route }) : err))
+    const p = nuxtApp.runWithContext(() => showError(createErrorFromThrown(err, { instance: target, route: nuxtApp._route })))
     onServerPrefetch(() => p)
     invokeAppErrorHandler(err, target, info)
     return false // suppress error from breaking render

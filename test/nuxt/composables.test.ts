@@ -10,7 +10,8 @@ import { createClientPage } from '../../packages/nuxt/src/components/runtime/cli
 
 import * as composables from '#app/composables'
 import { refreshNuxtData } from '#app/composables/asyncData'
-import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { _showErrorUnlessCrawler, clearError, createError, createErrorFromThrown, isNuxtError, showError, useError } from '#app/composables/error'
+import { describeError } from '../../packages/nuxt/src/runtime/server/renderer/error'
 import { useNuxtApp } from '#app/nuxt'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
@@ -191,6 +192,32 @@ describe('errors', () => {
     expect(error.value).toMatchInlineSnapshot('[Error: new error]')
     clearError()
     expect(error.value).toBe(undefined)
+  })
+
+  describe('createErrorFromThrown', () => {
+    it('should keep the details of a thrown error out of the response', () => {
+      const thrown = Object.assign(new Error('[GET] "http://10.0.0.7/users/1?token=secret": 502 Bad Gateway'), {
+        name: 'FetchError',
+        statusCode: 502,
+        statusMessage: 'Bad Gateway',
+        data: { secret: 'upstream' },
+      })
+      const error = createErrorFromThrown(thrown)
+      expect(error.unhandled).toBe(true)
+      expect(error.fatal).toBe(false)
+      expect(describeError(error)).toMatchObject({ status: 502, statusText: 'Bad Gateway', message: 'Bad Gateway', data: undefined })
+    })
+
+    it('should keep the details of an HTTP error the app raised', () => {
+      const nuxtError = createError({ statusCode: 404, message: 'missing', data: { id: 1 } })
+      expect(createErrorFromThrown(nuxtError)).toBe(nuxtError)
+      expect(nuxtError.unhandled).toBe(false)
+    })
+
+    it('should mark a thrown value that is not an error as unhandled', () => {
+      expect(createErrorFromThrown('boom').unhandled).toBe(true)
+      expect(createErrorFromThrown({ statusCode: 404, message: 'secret' }).unhandled).toBe(true)
+    })
   })
 
   describe('_showErrorUnlessCrawler', () => {
