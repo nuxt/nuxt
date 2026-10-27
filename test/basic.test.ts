@@ -262,8 +262,14 @@ describe('route rules', () => {
   })
 
   it('should not apply server route rules to other casings with `sensitive` routing', async () => {
-    const res = await fetch('/route-rules/Redirect', { redirect: 'manual' })
-    expect(res.status).not.toEqual(307)
+    for (const path of ['/route-rules/Redirect', '/route-rules/OLD/x', '/route-rules/Old/A/b?q=Value']) {
+      const res = await fetch(path, { redirect: 'manual' })
+      expect(res.status, path).not.toEqual(307)
+      expect(res.headers.get('location'), path).toBeNull()
+    }
+    const res = await fetch('/route-rules/old/A/b?q=Value', { redirect: 'manual' })
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('/new/A/b?q=Value')
   })
 
   it('test noScript routeRules', async () => {
