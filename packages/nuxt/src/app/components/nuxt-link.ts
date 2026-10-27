@@ -7,10 +7,10 @@ import type {
   MaybeRef,
   PropType,
   PublicProps,
-  Slots, SlotsType, VNode,
+  SlotsType,
+  VNode,
 } from 'vue'
-import { computed, defineComponent, getCurrentInstance, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
-import { ssrRenderAttrs, ssrRenderComponent, ssrRenderSlotInner } from 'vue/server-renderer'
+import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import { escapeHtml } from '@vue/shared'
 import type { ComponentSlots } from 'vue-component-type-helpers'
 import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteLocationResolvedGeneric, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
@@ -385,53 +385,23 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     return !isExternalLink && !isHashLinkWithoutHashMode(rawTo) && (!props.target || props.target === '_self')
   }
 
-  /** Renders the static anchor straight into the parent's SSR buffer, without a component instance. */
-  function ssrRender (comp: unknown, props: Record<string, unknown> | null, slots: Slots | null, parent: ComponentInternalInstance, slotScopeId?: string) {
-    const rawTo = props?.to as RouteLocationRaw | undefined
-    if (!props || !rawTo || !slots || !canRenderDirectly(props) || !isStaticInternalLink(props as NuxtLinkProps, rawTo)) {
-      return ssrRenderComponent(comp as any, props, slots, parent, slotScopeId)
-    }
+  /** Resolves the anchor of a template `<NuxtLink>` that can be rendered without a component instance. */
+  function resolveSsrLink (rawProps: Record<string, unknown>, parent: ComponentInternalInstance): NuxtLinkSsrState | undefined {
+    const props = directRenderProps(rawProps)
+    const rawTo = props?.to
+    if (!props || !rawTo || !isStaticInternalLink(props, rawTo)) { return }
     const router = ((parent.appContext.app as { $nuxt?: NuxtApp }).$nuxt?.$router ?? useRouter()) as Router
-    const link = resolveStaticLink(props as NuxtLinkProps, router, rawTo)
-    let openTag: string
-    if (props.class || props.style) {
-      const attrs = staticInternalLinkAttrs(props as NuxtLinkProps, router, link)
-      if (props.class) { attrs.class = [attrs.class, props.class] }
-      if (props.style) { attrs.style = props.style }
-      openTag = `<a${ssrRenderAttrs(attrs)}`
-    } else {
-      openTag = staticInternalLinkOpenTag(props as NuxtLinkProps, router, link)
+    const link = resolveStaticLink(props, router, rawTo)
+    return {
+      link,
+      openTag: props.class || props.style ? undefined : staticInternalLinkOpenTag(props, router, link),
+      attrs: () => {
+        const attrs = staticInternalLinkAttrs(props, router, link)
+        if (props.class) { attrs.class = [attrs.class, props.class] }
+        if (props.style) { attrs.style = props.style }
+        return attrs
+      },
     }
-    openTag += ssrScopeIds(slotScopeId) + '>'
-    let html = openTag
-    let buffer: SSRBuffer | undefined
-    const push = (item: SSRBufferItem) => {
-      if (buffer) {
-        buffer.push(item)
-      } else if (typeof item === 'string') {
-        html += item
-      } else {
-        buffer = [html, item]
-        buffer.hasAsync = true
-      }
-    }
-    const slotFn = slots.default
-    const ret = slotFn ? slotFn(link as any, push as any, parent, slotScopeId ? ' ' + slotScopeId : '') : undefined
-    // a slot returning vnodes instead of pushing takes Vue's generic path
-    if (ret !== undefined) {
-      const generic: SSRBuffer = [openTag]
-      ssrRenderSlotInner(slots, 'default', link as unknown as Record<string, unknown>, null, item => generic.push(item), parent, slotScopeId)
-      for (let i = 1; i < generic.length; i++) {
-        if (typeof generic[i] !== 'string') { generic.hasAsync = true }
-      }
-      generic.push('</a>')
-      return generic.hasAsync ? generic : generic.join('')
-    }
-    if (buffer) {
-      buffer.push('</a>')
-      return buffer
-    }
-    return html + '</a>'
   }
 
   /**
@@ -787,7 +757,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
   }) as unknown as NuxtLinkComponent & Record<string, any>
 
   if (import.meta.server && !import.meta.dev) {
-    component.__ssrRender = ssrRender
+    component.__ssrLink = resolveSsrLink
   }
 
   return component
@@ -830,27 +800,46 @@ function isSameRouteLocationParams (a: RouteParamsGeneric, b: RouteParamsGeneric
   return true
 }
 
-function ssrScopeIds (slotScopeId?: string): string {
-  const scopeId = (getCurrentInstance()?.type as { __scopeId?: string } | undefined)?.__scopeId
-  let ids = scopeId ? ' ' + scopeId : ''
-  if (slotScopeId) {
-    for (const id of slotScopeId.trim().split(' ')) {
-      if (id && id !== scopeId) { ids += ' ' + id }
-    }
-  }
-  return ids
+/** @internal */
+export interface NuxtLinkSsrState {
+  link: object
+  /** The opening tag without its closing `>`, when no fallthrough `class` or `style` needs merging. */
+  openTag?: string
+  attrs: () => Record<string, unknown>
 }
 
-type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
-interface SSRBuffer extends Array<SSRBufferItem> { hasAsync?: boolean }
+type DirectRenderProps = NuxtLinkProps & { to: RouteLocationRaw, class?: unknown, style?: unknown }
 
 // Boolean props are excluded: without prop normalisation a bare attribute arrives as `''`.
-const DIRECT_RENDER_KEYS = new Set(['key', 'to', 'class', 'style', 'rel', 'activeClass', 'exactActiveClass', 'ariaCurrentValue', 'prefetchOn', 'prefetchedClass'])
-function canRenderDirectly (props: Record<string, unknown>): boolean {
-  for (const key in props) {
-    if (!DIRECT_RENDER_KEYS.has(key)) { return false }
+const DIRECT_RENDER_PROPS = new Map([
+  ['key', 'key'],
+  ['to', 'to'],
+  ['class', 'class'],
+  ['style', 'style'],
+  ['rel', 'rel'],
+  ['activeClass', 'activeClass'],
+  ['active-class', 'activeClass'],
+  ['exactActiveClass', 'exactActiveClass'],
+  ['exact-active-class', 'exactActiveClass'],
+  ['ariaCurrentValue', 'ariaCurrentValue'],
+  ['aria-current-value', 'ariaCurrentValue'],
+  ['prefetchOn', 'prefetchOn'],
+  ['prefetch-on', 'prefetchOn'],
+  ['prefetchedClass', 'prefetchedClass'],
+  ['prefetched-class', 'prefetchedClass'],
+])
+
+function directRenderProps (raw: Record<string, unknown>): DirectRenderProps | undefined {
+  let props = raw
+  for (const key in raw) {
+    const name = DIRECT_RENDER_PROPS.get(key)
+    if (!name) { return }
+    if (name !== key) {
+      if (props === raw) { props = { ...raw } }
+      props[name] = raw[key]
+    }
   }
-  return true
+  return props as unknown as DirectRenderProps
 }
 
 function includesParams (outer: RouteParamsGeneric, inner: RouteParamsGeneric): boolean {

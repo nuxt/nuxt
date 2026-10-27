@@ -9,15 +9,17 @@ async function transform (code: string, id = 'test.vue'): Promise<string | undef
 }
 
 describe('nuxt:nuxt-link-ssr', () => {
-  it('renders template links with the component SSR renderer', async () => {
-    expect(await transform('_push(_ssrRenderComponent(_component_NuxtLink, { to: "/" }, null, _parent))'))
-      .toBe('_push((_component_NuxtLink.__ssrRender || _ssrRenderComponent)(_component_NuxtLink, { to: "/" }, null, _parent))')
+  it('renders template links with `ssrRenderNuxtLink`', async () => {
+    expect(await transform('_push(_ssrRenderComponent(_component_NuxtLink, { to: "/" }, null, _parent))')).toMatchInlineSnapshot(`
+      "import { ssrRenderNuxtLink as __nuxt_ssrRenderNuxtLink } from "#app/components/nuxt-link-ssr-render";
+      _push(__nuxt_ssrRenderNuxtLink(_component_NuxtLink, { to: "/" }, null, _parent))"
+    `)
   })
 
   it('handles kebab-case links, the un-prefixed helper and several calls', async () => {
     const code = 'ssrRenderComponent(_component_nuxt_link, a, b, c); ssrRenderComponent(_component_NuxtLink, a, b, c)'
-    expect(await transform(code))
-      .toBe('(_component_nuxt_link.__ssrRender || ssrRenderComponent)(_component_nuxt_link, a, b, c); (_component_NuxtLink.__ssrRender || ssrRenderComponent)(_component_NuxtLink, a, b, c)')
+    expect((await transform(code))?.split('\n')[1])
+      .toBe('__nuxt_ssrRenderNuxtLink(_component_nuxt_link, a, b, c); __nuxt_ssrRenderNuxtLink(_component_NuxtLink, a, b, c)')
   })
 
   it('leaves other components alone', async () => {
