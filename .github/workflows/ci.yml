@@ -409,8 +409,13 @@ jobs:
       - name: Prepare test fixtures
         run: vp run test:prepare
 
+      - name: Build benchmark fixtures
+        run: node test/bench/setup-renderer.ts
+
       - name: Run benchmarks
         uses: CodSpeedHQ/action@78102a468f96d8e0ccb92d0ec49425753fc42062 # v5.6.0
+        env:
+          NUXT_BENCH_PREBUILT: 'true'
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
