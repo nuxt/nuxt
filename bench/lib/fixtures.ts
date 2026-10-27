@@ -30,8 +30,8 @@ export const fixtures: Fixture[] = [
     id: 'large',
     description: 'generated app with ~170 pages, ~370 components, plugins, middleware, server routes and a layer',
     routes: [
-      { path: '/', match: 'home 0' },
-      { path: '/catalog/3', match: 'catalog 1' },
+      { path: '/', match: '<h1>home 0</h1>' },
+      { path: '/catalog/3', match: '<h1>catalog 3</h1>' },
     ],
     hmr: { file: 'app/components/base/Item0.vue', text: 'BaseItem0', route: '/' },
     async create (dir) {

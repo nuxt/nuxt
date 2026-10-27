@@ -27,7 +27,9 @@
     ".": {
       "entry": [
         "scripts/*",
+        "bench/**/*.{ts,mjs}",
         "test/*.ts",
+        "test/bench/*.ts",
         "test/e2e/*.ts",
         "test/renderer/*.ts",
         "test/no-jiti/*.mjs",

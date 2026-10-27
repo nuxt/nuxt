@@ -39,10 +39,8 @@ describe('dev server transform', () => {
         environment.optimizeDeps = { noDiscovery: true, include: [] }
       }
     })
-    server = await new Promise<ViteDevServer>((resolve, reject) => {
-      nuxt.hook('vite:serverCreated', resolve)
-      build(nuxt).catch(reject)
-    })
+    nuxt.hook('vite:serverCreated', (created) => { server = created })
+    await build(nuxt)
   })
 
   afterAll(() => nuxt?.close())

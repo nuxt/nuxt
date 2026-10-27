@@ -47,7 +47,7 @@ if (values.help) {
 Compares the working tree (packed from source) with a baseline, alternating runs between them.
 
   --baseline <spec>   ref:<git-ref> to pack from git, or an npm version, tag or alias
-                      for nuxt, such as latest or npm:nuxt-nightly@5x (default: ref:origin/main)
+                      for nuxt, such as npm:nuxt-nightly@5x (default: ref:origin/main)
   --suite <name>      ${Object.keys(suites).join(', ')} (repeatable, default: all)
   --fixture <name>    ${allFixtures.map(f => f.id).join(', ')} (repeatable, default: all)
   --reps <n>          override the number of repetitions for every suite
@@ -61,6 +61,10 @@ for (const name of selectedSuites) {
   if (!(name in suites)) {
     throw new Error(`unknown suite \`${name}\`; expected one of ${Object.keys(suites).join(', ')}`)
   }
+}
+const reps = values.reps === undefined ? undefined : Number(values.reps)
+if (reps !== undefined && (!Number.isInteger(reps) || reps < 1)) {
+  throw new Error(`\`--reps\` must be a positive integer, received \`${values.reps}\``)
 }
 const fixtures = values.fixture ? values.fixture.map(id => allFixtures.find(f => f.id === id) ?? (() => { throw new Error(`unknown fixture \`${id}\``) })()) : allFixtures
 const workdir = resolve(values.workdir)
@@ -81,7 +85,7 @@ for (const target of targets) {
 const results: Record<string, SuiteResult> = {}
 for (const name of selectedSuites) {
   const suite = suites[name]
-  results[name] = await suite.run({ targets, fixtures, reps: values.reps ? Number(values.reps) : suite.reps, log })
+  results[name] = await suite.run({ targets, fixtures, reps: reps ?? suite.reps, log })
 }
 
 const env = environment()

@@ -94,7 +94,7 @@ export async function waitForHttp (url: string, options: { since?: number, timeo
   const since = options.since ?? performance.now()
   const timeout = options.timeout ?? 300_000
   while (performance.now() - since < timeout) {
-    if (options.server && options.server.child.exitCode !== null) {
+    if (options.server && (options.server.child.exitCode !== null || options.server.child.signalCode !== null)) {
       throw new Error(`server exited before ${url} responded:\n${options.server.output().slice(-3000)}`)
     }
     try {

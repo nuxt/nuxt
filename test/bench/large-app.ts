@@ -16,7 +16,7 @@ definePageMeta({ layout: '${index % 3 === 0 ? 'dashboard' : 'default'}', middlew
 const route = useRoute()
 const { data } = await useAsyncData('${section}-${index}', () => fetch${pascal(section)}Item(String(route.params.id ?? ${index})))
 useHead({ title: \`${section} ${index}\` })
-const count = useCounter${index % 10}()
+const { count } = useCounter${index % 10}()
 </script>
 
 <template>
@@ -112,7 +112,9 @@ export async function createLargeApp (dir = largeAppDir): Promise<string> {
     files[`app/middleware/${section}-guard.ts`] = `export default defineNuxtRouteMiddleware((to) => {\n  if (to.query.blocked === '${section}') {\n    return navigateTo('/')\n  }\n})\n`
     files[`app/utils/${section}.ts`] = sectionUtil(section)
     for (let i = 0; i < 8; i++) {
-      files[`server/api/${section}/${i === 0 ? '[id]' : `action-${i}`}.get.ts`] = `export default defineEventHandler(event => ({ title: '${section} ${i}', id: getRouterParam(event, 'id') ?? '${i}' }))\n`
+      files[`server/api/${section}/${i === 0 ? '[id]' : `action-${i}`}.get.ts`] = i === 0
+        ? `import { defineEventHandler, getRouterParam } from 'nuxt/server'\n\nexport default defineEventHandler(event => ({ title: \`${section} \${getRouterParam(event, 'id')}\` }))\n`
+        : `import { defineEventHandler } from 'nuxt/server'\n\nexport default defineEventHandler(() => ({ title: '${section} ${i}' }))\n`
     }
   }
 
