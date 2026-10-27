@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { mkdir, readFile } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
-import { dirname, join, relative, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
@@ -405,23 +405,12 @@ export default defineNuxtModule({
 
       const { createRoutesContext, resolveOptions } = await import('vue-router/unplugin')
       const context = createRoutesContext(resolveOptions(typedRouterOptions))
-      await mkdir(dirname(declarationFile), { recursive: true })
 
-      if (nuxt.options._prepare || !nuxt.options.dev) {
-        await context.scanPages(false)
-        // TODO: could we generate this from context instead?
-        const dts = await readFile(declarationFile, 'utf-8')
-        addTemplate({
-          filename: 'types/typed-router.d.ts',
-          dependsOn: [],
-          getContents: () => dts,
-        })
-      }
-
-      // Regenerate types/typed-router.d.ts when adding or removing pages
+      // Generate types/typed-router.d.ts once app pages are resolved, and again when they change
       nuxt.hook('app:templatesGenerated', async (_app, _templates, options) => {
         if (!options?.filter || options.filter({ filename: 'routes.mjs' } as any)) {
-          await context.scanPages()
+          // Nuxt watches pages itself; a vue-router watcher would turn later scans into no-ops
+          await context.scanPages(false)
         }
       })
     }
