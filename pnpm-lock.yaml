@@ -1438,6 +1438,9 @@ importers:
       '@vitejs/plugin-vue-jsx':
         specifier: catalog:dev
         version: 5.1.6(supports-color@10.2.2)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
+      '@vue/compiler-core':
+        specifier: catalog:dev
+        version: 3.5.44
       '@vue/compiler-sfc':
         specifier: 3.5.44
         version: 3.5.44
@@ -2483,6 +2486,12 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+
+  test/fixtures/template-diagnostics:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/ui-templates:
     dependencies:

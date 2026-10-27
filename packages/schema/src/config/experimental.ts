@@ -170,6 +170,23 @@ export default defineResolvers({
      */
     early404: false,
 
+    /**
+     * Warn at build time about template mistakes the Vue compiler cannot detect:
+     *
+     * - a `<NuxtLink>` whose static `to` matches no page route
+     * - `v-on` or `v-model` on a server component
+     * - a function or class instance passed as a prop to a server component, or in the `props`
+     *   of a `<NuxtIsland>`
+     *
+     * Warnings are printed to the terminal and, in development, sent to open error pages and
+     * overlays.
+     *
+     * The route check cannot see routes added at runtime with `router.addRoute()` or paths
+     * that route middleware redirects, and is skipped when a custom `app/router.options` file
+     * may modify `routes`.
+     */
+    templateDiagnostics: true,
+
     clientFallback: false,
     crossOriginPrefetch: false,
 
