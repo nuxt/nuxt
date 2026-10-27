@@ -783,6 +783,7 @@ export function useObserver (): { observe: ObserveFn } | undefined {
 
   const callbacks = new Map<Element, CallbackFn>()
   const pending = new Set<Element>()
+  let flushScheduled = false
 
   const start = (element: Element) => {
     observer ||= new IntersectionObserver((entries) => {
@@ -801,8 +802,10 @@ export function useObserver (): { observe: ObserveFn } | undefined {
       start(element)
     } else {
       pending.add(element)
-      if (pending.size === 1) {
+      if (!flushScheduled) {
+        flushScheduled = true
         nuxtApp.runWithContext(() => onNuxtReady(() => {
+          flushScheduled = false
           pending.forEach(start)
           pending.clear()
         }))

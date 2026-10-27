@@ -91,6 +91,8 @@ describe('nuxt-link:prefetch', () => {
     const wrappers: Array<{ unmount: () => void }> = []
 
     try {
+      const removed = await mountSuspended(component, { props: { to: '/removed' } })
+      removed.unmount()
       for (const to of ['/a', '/b', '/c']) {
         wrappers.push(await mountSuspended(component, { props: { to } }))
       }
