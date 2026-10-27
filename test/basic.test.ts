@@ -1182,6 +1182,89 @@ describe.skipIf(!runsOnceInMatrix)('rich payloads', () => {
 })
 
 describe('nuxt links', () => {
+  async function ssrStaticLinks (path: string) {
+    const html = await $fetch<string>(path)
+    const scopeIds: string[] = []
+    return html.match(/<div id="ssr-static-links"[^>]*>(.*?)<\/div>/s)![1]!
+      .replace(/data-v-([\da-f]+)/g, (_, id) => `data-v-${scopeIds.includes(id) ? scopeIds.indexOf(id) : scopeIds.push(id) - 1}`)
+      .replace(/<a /g, '\n<a ')
+      .trim()
+  }
+
+  it('renders static anchors on the server', async () => {
+    expect(await ssrStaticLinks('/nuxt-link/ssr-static')).toMatchInlineSnapshot(`
+      "<a aria-current="page" href="/nuxt-link/ssr-static" class="foo-active-class bar-exact-active-class" data-v-0>self</a>
+      <a aria-current="page" href="/nuxt-link/ssr-static/" class="foo-active-class bar-exact-active-class" data-v-0>self-slash</a>
+      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0>child</a>
+      <a href="/Nuxt-Link/ssr-static" class="" data-v-0>self-case</a>
+      <a href="/" class="" data-v-0>root</a>
+      <a aria-current="page" href="/nuxt-link/ssr-static" class="foo-active-class bar-exact-active-class" data-v-0>object</a>
+      <a aria-current="page" href="/nuxt-link/ssr-static?x=1" class="foo-active-class bar-exact-active-class" data-v-0>query</a>
+      <a href="/nuxt-link/a%20b" class="" data-v-0>encoded</a>
+      <a href="/nuxt-link/ssr-static/abc" class="foo" style="color:red;" data-v-0>class-style</a>
+      <a href="/nuxt-link/ssr-static/abc" class="" rel="no&quot;follow" data-v-0>attrs</a>
+      <a href="/nuxt-link/ssr-static/a&quot;b" class="" data-v-0>escaped</a>
+      <a href="https://example.com/" rel="noopener noreferrer" data-v-0>external</a>
+      <a href="https://example.com/x" data-v-0>external-object</a>
+      <a href="/x" data-v-0>external-bool</a>
+      <a href="//example.com/x" rel="noopener noreferrer" data-v-0>protocol-relative</a>
+      <a href="/x" rel="noopener noreferrer" target="_blank" data-v-0>blank</a>
+      <a href="/x" class="" data-v-0>replace</a>
+      <a href="#hash" data-v-0>hash</a>
+      <a data-v-0>empty</a>
+      <a href="/href" class="" data-v-0>href</a><span data-v-0>/nuxt-link/ssr-static|/nuxt-link/ssr-static|true|true</span>
+      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0><span data-v-0>nuxt-link-ssr-static-id|false</span></a>
+      <a aria-current="page" href="/nuxt-link/ssr-static" class="foo-active-class bar-exact-active-class" data-v-0>
+      <a href="/" class="" data-v-0>nested</a></a>
+      <a aria-current="page" href="/nuxt-link/ssr-static" class="foo-active-class bar-exact-active-class" data-v-0>listener</a>
+      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0><!-- only a comment --></a>
+      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0><span data-v-0>async child</span></a>
+      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0> dynamic </a>
+      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0>same-class</a>
+      <a aria-current="page" href="/nuxt-link/ssr-static" class="same" data-v-0>same-class-parent</a><!--[-->
+      <a href="/" class="" data-v-0>list</a>
+      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0>list</a><!--]--><span data-v-0 data-v-1><!--[-->
+      <a href="/nuxt-link/ssr-static/abc" class="" data-v-0 data-v-1-s>slotted</a><!--]--></span>"
+    `)
+  })
+
+  it('renders static anchors on the server for a child route', async () => {
+    expect(await ssrStaticLinks('/nuxt-link/ssr-static/abc')).toMatchInlineSnapshot(`
+      "<a href="/nuxt-link/ssr-static" class="foo-active-class" data-v-0>self</a>
+      <a href="/nuxt-link/ssr-static/" class="foo-active-class" data-v-0>self-slash</a>
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0>child</a>
+      <a href="/Nuxt-Link/ssr-static" class="" data-v-0>self-case</a>
+      <a href="/" class="" data-v-0>root</a>
+      <a href="/nuxt-link/ssr-static" class="foo-active-class" data-v-0>object</a>
+      <a href="/nuxt-link/ssr-static?x=1" class="foo-active-class" data-v-0>query</a>
+      <a href="/nuxt-link/a%20b" class="" data-v-0>encoded</a>
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class foo" style="color:red;" data-v-0>class-style</a>
+      <a aria-current="step" href="/nuxt-link/ssr-static/abc" class="act bar-exact-active-class" rel="no&quot;follow" data-v-0>attrs</a>
+      <a href="/nuxt-link/ssr-static/a&quot;b" class="" data-v-0>escaped</a>
+      <a href="https://example.com/" rel="noopener noreferrer" data-v-0>external</a>
+      <a href="https://example.com/x" data-v-0>external-object</a>
+      <a href="/x" data-v-0>external-bool</a>
+      <a href="//example.com/x" rel="noopener noreferrer" data-v-0>protocol-relative</a>
+      <a href="/x" rel="noopener noreferrer" target="_blank" data-v-0>blank</a>
+      <a href="/x" class="" data-v-0>replace</a>
+      <a href="#hash" data-v-0>hash</a>
+      <a data-v-0>empty</a>
+      <a href="/href" class="" data-v-0>href</a><span data-v-0>/nuxt-link/ssr-static|/nuxt-link/ssr-static|true|false</span>
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0><span data-v-0>nuxt-link-ssr-static-id|true</span></a>
+      <a href="/nuxt-link/ssr-static" class="foo-active-class" data-v-0>
+      <a href="/" class="" data-v-0>nested</a></a>
+      <a href="/nuxt-link/ssr-static" class="foo-active-class" data-v-0>listener</a>
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0><!-- only a comment --></a>
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0><span data-v-0>async child</span></a>
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0> dynamic </a>
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="same" data-v-0>same-class</a>
+      <a href="/nuxt-link/ssr-static" class="" data-v-0>same-class-parent</a><!--[-->
+      <a href="/" class="" data-v-0>list</a>
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0>list</a><!--]--><span data-v-0 data-v-1><!--[-->
+      <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0 data-v-1-s>slotted</a><!--]--></span>"
+    `)
+  })
+
   it('handles trailing slashes', async () => {
     const html = await $fetch<string>('/nuxt-link/trailing-slash')
     const data: Record<string, string[]> = {}
