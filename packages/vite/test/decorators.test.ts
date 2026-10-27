@@ -86,6 +86,17 @@ describe('DecoratorsPlugin transform filter', () => {
     '@ sealed class C {}',
     '@/* comment */sealed class C {}',
     'function f () { return@sealed class C {} }',
+    'do {} while (false)@sealed class C {}',
+    'const C = /x/*@sealed class {}',
+    'x / @sealed @frozen class C {}',
+    '// note *\n@sealed class C {}',
+    '@sealed//comment\nclass C {}',
+    'class C { /* note */@logged method () {} }',
+    'class C { @logged "method" () {} }',
+    'class C { @logged *#method () {} }',
+    'class C { @logged * .5 () {} }',
+    'class C { @logged *//comment\nmethod () {} }',
+    'class C { @logged \u{1D465} = 1 }',
   ])('matches possible decorator in %s', (code) => {
     expect(matchesFilter(filter, code, '/src/example.ts')).toBe(true)
   })
@@ -93,9 +104,14 @@ describe('DecoratorsPlugin transform filter', () => {
   it.each([
     'import value from "@scope/package"',
     'const value = "@scope/package"',
+    'import { foo } from \'@vue/shared\'',
     'const x = /*@__PURE__*/ foo()',
-    '/*@__PURE__*/',
+    'const x = /* @__PURE__ */ foo()',
+    '// @__NO_SIDE_EFFECTS__\nfunction foo () {}',
     '//@ts-ignore\nconst x = 1',
+    '// @ts-expect-error\nconst x = 1',
+    '/**\n * @param {string} name\n * @returns the value\n */',
+    '/** @deprecated use bar */',
   ])('does not match non-decorator at signs in %s', (code) => {
     expect(matchesFilter(filter, code, '/src/example.ts')).toBe(false)
   })

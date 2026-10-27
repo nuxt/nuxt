@@ -8,10 +8,20 @@ import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../util
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx'] as const
 
-// Cheap filter for `hasDecoratorSyntax`. It keeps any `@` except those directly
-// preceded by a quote, backtick, `)`, `]` or a comment start; none of those can
-// begin a decorator, so a `@` it drops is never one.
-const MAY_CONTAIN_DECORATOR_RE = /(?<!["'`)\]])(?<!\/\*)(?<!\/\/)@/
+// A decorator `@` is followed by code, so a `@` is dropped only when the text after
+// it cannot continue a decorator. This holds whether or not the `@` is in a comment,
+// string or regex, and keeps `/*@__PURE__*/`, scoped package names and most JSDoc
+// tags away from `hasDecoratorSyntax`.
+const NOT_COMMENT = String.raw`\/(?![*/])`
+// ASCII that cannot follow `@x`, start a member name after `@x *`, or follow `@x`
+// where only a class expression is allowed (after `*`, or a `/` not closing a comment).
+const NOT_AFTER_DECORATOR = String.raw`[!%&)+,\-:;<=>?\]^\x60{|}~]`
+const NOT_AFTER_STAR = String.raw`[!%&()*+,\-:;<=>?@\]^\x60{|}~]`
+const NOT_IN_EXPRESSION = String.raw`[!"#%&')*+,\-:;<=>?[\]^\x60{|}~]`
+const EXPRESSION_BEFORE = String.raw`(?<=(?:\*|(?<!\*)\/)[ \t]*)`
+const NEVER_DECORATOR = String.raw`[\w$]+\s*(?:${NOT_AFTER_DECORATOR}|$|${NOT_COMMENT}|\*\s*(?:${NOT_AFTER_STAR}|$|${NOT_COMMENT}))`
+const NEVER_DECORATOR_IN_EXPRESSION = String.raw`[\w$]+\s*(?:${NOT_IN_EXPRESSION}|$|${NOT_COMMENT}|(?<=\s)(?!class(?![\w$]))[A-Za-z_$])`
+const MAY_CONTAIN_DECORATOR_RE = new RegExp(String.raw`(?!${EXPRESSION_BEFORE}@${NEVER_DECORATOR_IN_EXPRESSION})@(?!${NEVER_DECORATOR})`)
 
 export function hasDecoratorSyntax (code: string, jsx = false) {
   const tokens = jsx ? jsTokens(code, { jsx: true }) : jsTokens(code)
