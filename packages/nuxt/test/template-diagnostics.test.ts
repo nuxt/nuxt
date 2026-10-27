@@ -99,7 +99,7 @@ describe('template diagnostics', () => {
     it('checks `href` and kebab-case tags', () => {
       const { compile, warnings } = setup()
       compile(`<template><nuxt-link href="/nope" /></template>`)
-      expect(warnings.map(warning => warning.name)).toStrictEqual(['NUXT_B4025'])
+      expect(warnings).toMatchObject([{ name: 'NUXT_B4025', message: '`<nuxt-link href="/nope">` in `/app/pages/index.vue` does not match any page route.' }])
     })
 
     it.each([

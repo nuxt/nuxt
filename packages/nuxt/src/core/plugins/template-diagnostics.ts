@@ -6,7 +6,7 @@ import { parseModule } from '../utils/parse.ts'
 type Finding =
   | { code: 'NUXT_B3014', loc: SourceLocation, params: { component: string, directive: string } }
   | { code: 'NUXT_B3015', loc: SourceLocation, params: { component: string, prop: string, value: string } }
-  | { code: 'NUXT_B4025', loc: SourceLocation, params: { to: string } }
+  | { code: 'NUXT_B4025', loc: SourceLocation, params: { tag: string, attribute: string, to: string } }
 
 export interface TemplateDiagnosticsOptions {
   /** Whether a path matches a route the app can render. Return `undefined` to skip the `<NuxtLink>` check. */
@@ -111,7 +111,7 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
       const to = target?.value?.content
       const path = to && toRoutePath(to)
       if (path && !matchRoute(path)) {
-        findings.push({ code: 'NUXT_B4025', loc: target!.loc, params: { to } })
+        findings.push({ code: 'NUXT_B4025', loc: target!.loc, params: { tag: element.tag, attribute: target!.name, to } })
       }
     }
 
