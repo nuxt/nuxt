@@ -336,6 +336,14 @@ describe('route rules', () => {
     }
   })
 
+  it('should apply route rules to a catch-all page when the path has encoded slashes', async () => {
+    for (const path of ['/catchall/route-rules/spa', '/catchall/route-rules%2Fspa', '/catchall/Route-Rules%2fspa']) {
+      const res = await fetch(path)
+      expect(res.headers.get('x-catchall-route-rules'), path).toEqual('applied')
+      expect(parseData(await res.text()).script.serverRendered, path).toEqual(false)
+    }
+  })
+
   it('should run appMiddleware from an uppercase-keyed route rule on client navigation', async () => {
     const { page } = await renderPage('/')
     await page.waitForLoadState('networkidle')

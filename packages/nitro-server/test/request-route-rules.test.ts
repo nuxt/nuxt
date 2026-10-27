@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { H3Event } from 'h3'
 
+import { matchAllRouteRules } from '../../nuxt/src/core/utils/index.ts'
 import { normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
 
 const state = vi.hoisted(() => ({
@@ -14,6 +15,7 @@ vi.mock('nitropack/runtime', () => ({
 }))
 vi.mock('#internal/nuxt/route-rules.mjs', () => ({
   normalizeRouteRulePath: (path: string) => normalizeRouteRulePath(path, state.fold),
+  matchAllRouteRules,
 }))
 
 function load (options: Partial<typeof state>) {
@@ -80,6 +82,23 @@ describe('request route rules', () => {
     for (const path of ['/./old', '/old/.', '/%2e%2e/old', '/a/b/../../old?x=1']) {
       expect(resolveRequestRouteRules(event(path))).toEqual({ redirect: { to: '/new', statusCode: 307 } })
     }
+  })
+
+  it('resolves rules for a request path with encoded slashes', async () => {
+    const { resolveRequestRouteRules } = await load({
+      routeRules: {
+        '/**': { headers: { 'x-a': 'all' } },
+        '/admin/**': { redirect: { to: '/login', statusCode: 307 } },
+        '/content/admin/secret': { headers: { 'x-a': 'secret' } },
+        '/users/*': { headers: { 'x-a': 'user' } },
+      },
+    })
+    for (const path of ['/admin%2Fx', '/admin%2fx', '/Admin%2Fx/y', '/x/..%2Fadmin%2Fy']) {
+      expect(resolveRequestRouteRules(event(path)), path).toEqual({ headers: { 'x-a': 'all' }, redirect: { to: '/login', statusCode: 307 } })
+    }
+    expect(resolveRequestRouteRules(event('/content/admin%2Fsecret?x=%2F'))).toEqual({ headers: { 'x-a': 'secret' } })
+    expect(resolveRequestRouteRules(event('/users/a%2Fb'))).toEqual({ headers: { 'x-a': 'user' } })
+    expect(resolveRequestRouteRules(event('/admin%252Fx'))).toEqual({ headers: { 'x-a': 'all' } })
   })
 
   it('reuses rules already resolved for a request', async () => {

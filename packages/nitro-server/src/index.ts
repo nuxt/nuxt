@@ -361,6 +361,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '#internal/nuxt/route-rules.mjs': () => [
         normalizePathCode,
         `export const normalizeRouteRulePath = path => normalizePath(path, ${!nuxt.options.router.options.sensitive})`,
+        `export { matchAllRouteRules }`,
       ].join('\n'),
     },
     routeRules: {

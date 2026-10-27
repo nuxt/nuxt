@@ -899,10 +899,10 @@ export const routeRulesTemplate: NuxtTemplate = {
       needsRouterOptions
         ? [
             `export default (path) => routerOptions.sensitive`,
-            `  ? defu({}, ...sensitiveMatcher('', normalizePath(path, false)).map(r => r.data).reverse())`,
-            `  : defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
+            `  ? defu({}, ...matchAllRouteRules(path => sensitiveMatcher('', normalizePath(path, false)).map(r => r.data), path).reverse())`,
+            `  : defu({}, ...matchAllRouteRules(path => foldedMatcher('', normalizePath(path, true)).map(r => r.data), path).reverse())`,
           ].join('\n')
-        : `export default path => defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
+        : `export default path => defu({}, ...matchAllRouteRules(path => foldedMatcher('', normalizePath(path, true)).map(r => r.data), path).reverse())`,
     ].filter(Boolean).join('\n')
   },
 }
