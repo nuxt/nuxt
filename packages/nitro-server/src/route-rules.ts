@@ -2,6 +2,7 @@ import { pathToFileURL } from 'node:url'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
 import type { Nitro, NitroConfig } from 'nitro/types'
+import type { RouteRuleLayer } from 'h3/rules'
 import { foldRouteCase, foldRouteRulePath } from '../../nuxt/src/core/utils/index.ts'
 import { assertCaseIndependentRouteRuleKey, foldRouteRulePattern } from '../../nuxt/src/core/utils/route-rules.ts'
 
@@ -44,6 +45,20 @@ function isObject (value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object'
 }
 
+function withRequestBases (layers: RouteRuleLayer[], path: string): RouteRuleLayer[] {
+  return layers.map((layer) => {
+    const rules = Array.isArray(layer.data) ? layer.data : layer.data.rules
+    const entries = rules.map((entry) => {
+      if (entry.name !== 'redirect' && entry.name !== 'proxy') { return entry }
+      const options = entry.options
+      if (!isObject(options) || typeof options.base !== 'string' || !options.base || /[:*()\\]/.test(options.base)) { return entry }
+      const base = path.split('/', options.base.split('/').length).join('/')
+      return base === options.base ? entry : { ...entry, options: { ...options, base } }
+    })
+    return { ...layer, data: Array.isArray(layer.data) ? entries : { ...layer.data, rules: entries } }
+  })
+}
+
 const ROUTING_ID = '#nitro/virtual/routing'
 const FIND_ROUTE_RULES_EXPORT = 'export const findRouteRules = '
 
@@ -79,10 +94,12 @@ export function routeRulesCaseFoldPlugin (getNitro: () => Nitro) {
           `const findFoldedRouteRules = ${compileFindRouteRules(rules, options)}`,
           `const foldRouteCase = ${foldRouteCase.toString()}`,
           `const foldRouteRulePath = ${foldRouteRulePath.toString()}`,
+          `const isObject = ${isObject.toString()}`,
+          `const withRequestBases = ${withRequestBases.toString()}`,
           `export const findRouteRules = (method, path) => {`,
           `  const sensitive = findSensitiveRouteRules(method, path)`,
           `  const folded = findFoldedRouteRules(method, foldRouteRulePath(path))`,
-          `  return folded.length > sensitive.length ? folded : sensitive`,
+          `  return folded.length > sensitive.length ? withRequestBases(folded, path) : sensitive`,
           `}`,
         ].join('\n')
       },

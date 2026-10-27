@@ -70,7 +70,7 @@ describe('normalizeLegacyRouteRules', () => {
 describe('routeRulesCaseFoldPlugin', () => {
   const nitroPackage = resolveModulePath('nitro/package.json', { from: import.meta.url })
 
-  async function loadMatcher (routeRules: NonNullable<NitroConfig['routeRules']>, baseURL = '/') {
+  async function loadMatcher (routeRules: NonNullable<NitroConfig['routeRules']>, baseURL = '/', middleware = false) {
     const options = { runtimeRules: { cache: '#nitro/runtime/route-rule-handlers' }, baseURL, preMerge: true }
     const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules, baseURL } }) as Nitro)
     const code = await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing')
@@ -78,7 +78,10 @@ describe('routeRulesCaseFoldPlugin', () => {
     await writeFile(file, code!.replace(/from "(h3[^"]*)"/g, (_, id) => `from ${JSON.stringify(pathToFileURL(resolveModulePath(id, { from: nitroPackage })).href)}`))
     const { findRouteRules } = await import(pathToFileURL(file).href)
     const match = createMatcherFromFind(findRouteRules)
-    return (path: string, method = 'GET') => match(method, path).routeRules as Record<string, any>
+    return (path: string, method = 'GET') => {
+      const matched = match(method, path)
+      return (middleware ? matched : matched.routeRules) as Record<string, any>
+    }
   }
 
   it('matches rules regardless of the casing of the path or the pattern', async () => {
@@ -119,6 +122,43 @@ describe('routeRulesCaseFoldPlugin', () => {
 
     expect(match('/Old/page')).toEqual({ headers: { 'x-all': '1' }, redirect: { to: '/new/**', status: 307, base: '/Old' } })
     expect(match('/old/page').redirect).toMatchObject({ to: '/new/**' })
+  })
+
+  it('preserves wildcard redirect tails and query strings regardless of base casing', async () => {
+    for (const baseURL of ['/', '/App/']) {
+      const match = await loadMatcher({ '/Old/**': { redirect: '/new/**' } }, baseURL, true)
+      for (const base of [baseURL.slice(0, -1), baseURL.slice(0, -1).toUpperCase()]) {
+        for (const path of ['/Old/A/b', '/old/A/b', '/OLD/A/b', '/%4Fld/A/b']) {
+          const { routeRuleMiddleware } = match(base + path)
+          const response = await routeRuleMiddleware[0]({ url: new URL(`http://localhost${base}${path}?q=Value`) })
+          expect(response.headers.get('location'), base + path).toBe('/new/A/b?q=Value')
+        }
+      }
+    }
+  })
+
+  it('uses the request casing for wildcard redirect and proxy bases without mutating other matches', async () => {
+    for (const name of ['redirect', 'proxy']) {
+      const match = await loadMatcher({ '/old/**': { [name]: '/new/**' } })
+      const first = match('/OLD/A/b')[name]
+      expect(first.base).toBe('/OLD')
+      expect(match('/old/A/b')[name].base).toBe('/old')
+      expect(match('/Old/x')[name].base).toBe('/Old')
+      expect(first.base).toBe('/OLD')
+    }
+  })
+
+  it('preserves wildcard tails under encoded and dynamic bases', async () => {
+    for (const [pattern, path] of [
+      ['/cafÉ/**', '/caf%C3%89/A/b'],
+      ['/cafÉ/**', '/CAF%C3%A9/A/b'],
+      ['/old/:id/**', '/OLD/Some-ID/A/b'],
+    ] as const) {
+      const match = await loadMatcher({ [pattern]: { redirect: '/new/**' } }, '/', true)
+      const { routeRuleMiddleware } = match(path)
+      const response = await routeRuleMiddleware[0]({ url: new URL(`http://localhost${path}`) })
+      expect(response.headers.get('location'), path).toBe('/new/A/b')
+    }
   })
 
   it('merges the options of rules whose keys fold together', async () => {
