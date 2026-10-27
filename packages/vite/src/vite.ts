@@ -269,6 +269,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       appType: 'custom',
       server: {
         middlewareMode: true,
+        allowedHosts: nuxt.options.devServer.allowedHosts,
         watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
         fs: {
           allow: allowDirs,
@@ -286,6 +287,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         }
       : viteConfig,
   )
+
+  if (Array.isArray(config.server?.allowedHosts)) {
+    config.server.allowedHosts = [...new Set(config.server.allowedHosts)]
+  }
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)

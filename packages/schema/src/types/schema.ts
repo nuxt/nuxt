@@ -1033,6 +1033,15 @@ export interface ConfigSchema {
     host: string | undefined
 
     /**
+     * Hostnames the dev server accepts in the `Host` header, in addition to `localhost`, `*.localhost` and IP addresses.
+     *
+     * An entry with a leading `.` also allows its subdomains. Set to `true` to allow any host.
+     *
+     * Includes `devServer.host` and `vite.server.allowedHosts`.
+     */
+    allowedHosts: string[] | true
+
+    /**
      * Listening dev server URL.
      *
      * This should not be set directly as it will always be overridden by the dev server with the full URL (for module and internal use).

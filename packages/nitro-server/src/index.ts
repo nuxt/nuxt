@@ -1314,7 +1314,7 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
 }
 
 function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
-  const allowedHosts = nuxt.options.vite?.server?.allowedHosts
+  const allowedHosts = nuxt.options.devServer.allowedHosts
   if (allowedHosts === true) {
     return true
   }
