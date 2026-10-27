@@ -450,6 +450,33 @@ export const clientConfigTemplate: NuxtTemplate = {
   },
 }
 
+/**
+ * Serialise the inline app config with primitives replaced by fixed values of the same type, which
+ * TypeScript infers identically, so the declaration changes only with the shape of the config.
+ */
+function serializeAppConfigShape (appConfig: unknown) {
+  const toShape = (value: unknown): unknown => {
+    if (Array.isArray(value)) {
+      const elements = new Map<string, unknown>()
+      for (const element of value) {
+        const shape = toShape(element)
+        elements.set(JSON.stringify(shape), shape)
+      }
+      return [...elements.values()]
+    }
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, toShape(entry)]))
+    }
+    switch (typeof value) {
+      case 'string': return ''
+      case 'number': return 0
+      case 'boolean': return false
+      default: return value
+    }
+  }
+  return JSON.stringify(toShape(JSON.parse(JSON.stringify(appConfig))), null, 2)
+}
+
 const APP_CONFIG_MERGE_TYPES = `type IsAny<T> = 0 extends 1 & T ? true : false
 
 type IsMergeable<T> = T extends readonly any[] | ((...args: any[]) => any) ? false : T extends Record<string, any> ? true : false
@@ -484,7 +511,7 @@ declare global {
   const defineAppConfig: <C extends AppConfigInput> (config: C) => C
 }
 
-declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
+declare const inlineConfig = ${serializeAppConfigShape(nuxt.options.appConfig)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
 ${APP_CONFIG_MERGE_TYPES}
 
@@ -514,7 +541,7 @@ export const sharedAppConfigDeclarationTemplate: NuxtTemplate = {
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
 
-declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
+declare const inlineConfig = ${serializeAppConfigShape(nuxt.options.appConfig)}
 ${APP_CONFIG_MERGE_TYPES}
 
 declare module 'nuxt/schema' {

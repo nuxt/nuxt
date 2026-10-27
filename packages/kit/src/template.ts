@@ -667,21 +667,24 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const serverReferences: TSReference[] = []
 
   // This adds types of all modules
-  await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async (id) => {
+  const moduleTypes = await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async (id) => {
     if (typeof id !== 'string') { return }
 
     for (const parent of nestedModulesDirs) {
       const pkg = await readPackageJSON(id, { parent }).catch(() => null)
       if (pkg) {
-        nodeReferences.push(({ types: pkg.name ?? id }))
-        references.push(({ types: pkg.name ?? id }))
-        return
+        return pkg.name ?? id
       }
     }
 
-    nodeReferences.push(({ types: id }))
-    references.push(({ types: id }))
+    return id
   }))
+  for (const types of moduleTypes) {
+    if (types) {
+      nodeReferences.push({ types })
+      references.push({ types })
+    }
+  }
 
   const declarations: string[] = []
 
