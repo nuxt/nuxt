@@ -17,10 +17,14 @@ export interface TemplateDiagnosticsOptions {
   displayPath?: (file: string) => string
   /** Whether a file is checked. Defaults to every file. */
   filter?: (file: string) => boolean
-  /** Called once for each new warning, until a compile of the file no longer raises it. */
-  onWarning?: (diagnostic: Diagnostic<unknown>) => void
-  /** Called with the diagnostic `onWarning` received, once a compile of the file no longer raises it. */
-  onWarningResolved?: (diagnostic: Diagnostic<unknown>) => void
+  /**
+   * Called once for each new warning, until a compile of the file no longer raises it. `id` names the
+   * finding by its file, code, params and place among identical findings, so it survives an edit that
+   * moves the finding, which is reported as a new warning and the resolution of the old one.
+   */
+  onWarning?: (diagnostic: Diagnostic<unknown>, id: string) => void
+  /** Called with the diagnostic and id `onWarning` received, once a compile of the file no longer raises it. */
+  onWarningResolved?: (diagnostic: Diagnostic<unknown>, id: string) => void
 }
 
 const NODE_ROOT = 0
@@ -46,7 +50,7 @@ const IDENTIFIER_RE = /^[$A-Z_][\w$]*$/i
  */
 export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions = {}): { nodeTransform: NodeTransform } {
   const displayPath = options.displayPath ?? ((file: string) => file)
-  const files = new Map<string, Map<string, Diagnostic<unknown>>>()
+  const files = new Map<string, Map<string, [Diagnostic<unknown>, string]>>()
   const scripts = new WeakMap<RootNode, Map<string, string | undefined>>()
 
   const nodeTransform: NodeTransform = (node, context) => {
@@ -225,21 +229,26 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
   }
 
   function finalise (file: string, findings: Finding[]) {
-    const reported = files.get(file) ?? new Map<string, Diagnostic<unknown>>()
+    const reported = files.get(file) ?? new Map<string, [Diagnostic<unknown>, string]>()
     const keys = new Set<string>()
+    const occurrences = new Map<string, number>()
     for (const finding of findings) {
       const key = `${finding.code}:${finding.loc.start.offset}:${JSON.stringify(finding.params)}`
       keys.add(key)
+      const identity = `${file}:${finding.code}:${JSON.stringify(finding.params)}`
+      const occurrence = occurrences.get(identity) ?? 0
+      occurrences.set(identity, occurrence + 1)
       if (!reported.has(key)) {
         const diagnostic = report(finding, file)
-        reported.set(key, diagnostic)
-        options.onWarning?.(diagnostic)
+        const id = `${identity}:${occurrence}`
+        reported.set(key, [diagnostic, id])
+        options.onWarning?.(diagnostic, id)
       }
     }
-    for (const [key, diagnostic] of reported) {
+    for (const [key, [diagnostic, id]] of reported) {
       if (!keys.has(key)) {
         reported.delete(key)
-        options.onWarningResolved?.(diagnostic)
+        options.onWarningResolved?.(diagnostic, id)
       }
     }
     if (reported.size) {

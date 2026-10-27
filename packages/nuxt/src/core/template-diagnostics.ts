@@ -1,5 +1,6 @@
 import { normalize, relative } from 'pathe'
 import { withTrailingSlash } from 'ufo'
+import { hash } from 'ohash'
 import type { CompilerOptions } from '@vue/compiler-core'
 import type { Diagnostic } from 'nostics'
 import type { Component, Nuxt } from 'nuxt/schema'
@@ -81,25 +82,40 @@ function resolveServerComponentTags (components: Component[]): Set<string> {
 /** Sends warnings to the dev error channel, which shows them on every open page, and retires them once fixed. */
 function createWarningPublisher (nuxt: Nuxt) {
   let broadcast: ReturnType<typeof openErrorBroadcast> | undefined
-  const published = new Map<Diagnostic<unknown>, Promise<string | undefined>>()
   const post = (message: ErrorChannelMessage) => (broadcast ||= openErrorBroadcast()).postMessage(message)
-  const warn = (diagnostic: Diagnostic<unknown>) => {
-    published.set(diagnostic, Promise.all([import('my-bad'), import('my-bad/presets')])
-      .then(async ([{ createReport }, { nuxtPreset }]) => {
-        const report = await createReport(diagnostic, { cwd: nuxt.options.rootDir, kind: 'warning', presets: [nuxtPreset()] })
-        post({ type: 'nuxt:dev:error:warning', report })
-        return report.id
-      })
-      .catch(() => undefined))
+  // a moved finding is raised at its new position before the old one resolves
+  const raised = new Map<string, number>()
+  let queue: Promise<unknown> = Promise.resolve()
+  const enqueue = (task: () => unknown) => {
+    queue = queue.then(task).catch(() => {})
   }
-  const clear = (diagnostic: Diagnostic<unknown>) => {
-    const id = published.get(diagnostic)
-    published.delete(diagnostic)
-    return id?.then(id => id && post({ type: 'nuxt:dev:error:warning:clear', id })).catch(() => {})
+  const retire = (id: string) => enqueue(() => post({ type: 'nuxt:dev:error:warning:clear', id }))
+  const warn = (diagnostic: Diagnostic<unknown>, finding: string) => {
+    const id = hash(finding)
+    raised.set(id, (raised.get(id) ?? 0) + 1)
+    enqueue(async () => {
+      const [{ createReport }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/presets')])
+      const report = await createReport(diagnostic, { cwd: nuxt.options.rootDir, kind: 'warning', presets: [nuxtPreset()] })
+      post({ type: 'nuxt:dev:error:warning', report: { ...report, id } })
+    })
+  }
+  const clear = (_diagnostic: Diagnostic<unknown>, finding: string) => {
+    const id = hash(finding)
+    const count = (raised.get(id) ?? 1) - 1
+    if (count > 0) {
+      raised.set(id, count)
+      return
+    }
+    raised.delete(id)
+    retire(id)
   }
   // the channel can outlive this instance, and a restart raises the same warnings again
   nuxt.hook('close', async () => {
-    await Promise.all([...published.keys()].map(clear))
+    for (const id of raised.keys()) {
+      retire(id)
+    }
+    raised.clear()
+    await queue
     broadcast?.close()
   })
   return { warn, clear }
