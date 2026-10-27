@@ -269,6 +269,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       appType: 'custom',
       server: {
         middlewareMode: true,
+        allowedHosts: nuxt.options.devServer.allowedHosts,
         watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
         fs: {
           allow: allowDirs,
