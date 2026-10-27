@@ -20,6 +20,9 @@ export const typescriptBundlerResolution = process.env.MODULE_RESOLUTION !== 'no
 
 export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
 
+/** Whether to resolve template components with the build transform rather than in the template compiler. */
+export const legacyComponentResolution = process.env.TEST_COMPONENT_RESOLUTION === 'legacy'
+
 /**
  * Suffix identifying the current matrix combination.
  */
@@ -30,6 +33,7 @@ export const projectSuffix = [
   process.env.TEST_MANIFEST,
   process.env.TEST_PAYLOAD,
   process.env.TEST_ERROR_RENDERING,
+  process.env.TEST_COMPONENT_RESOLUTION,
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER
@@ -69,6 +73,7 @@ export function withMatrix (config: NuxtConfig) {
       renderJsonPayloads: isRenderingJson,
       viteEnvironmentApi: _builder === 'vite-env-api',
       ...inlineErrorRendering ? { inlineErrorRendering: true } : {},
+      ...legacyComponentResolution ? { compilerComponentResolution: false } : {},
     },
     compatibilityDate: 'latest',
   })

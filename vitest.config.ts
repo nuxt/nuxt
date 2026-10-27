@@ -76,6 +76,7 @@ interface FixtureMatrixEntry {
   manifest: 'manifest-on' | 'manifest-off'
   payload: 'json' | 'js'
   inlineErrors?: boolean
+  legacyComponentResolution?: boolean
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
@@ -116,8 +117,19 @@ const inlineErrorMatrix: FixtureMatrixEntry[] = [
 
 const inlineErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
 
+// re-runs the basic fixture with `experimental.compilerComponentResolution` disabled
+const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', legacyComponentResolution: true },
+]
+
+function fixtureProjectInclude (entry: FixtureMatrixEntry) {
+  if (entry.inlineErrors) { return inlineErrorInclude }
+  if (entry.legacyComponentResolution) { return ['test/basic.test.ts'] }
+  return ['test/*.test.ts']
+}
+
 function fixtureProjectName (entry: FixtureMatrixEntry) {
-  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}-${entry.payload}${entry.inlineErrors ? '-inline-errors' : ''}`
+  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}-${entry.payload}${entry.inlineErrors ? '-inline-errors' : ''}${entry.legacyComponentResolution ? '-legacy-component-resolution' : ''}`
 }
 
 function fixtureProjectEnv (entry: FixtureMatrixEntry) {
@@ -128,6 +140,7 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_MANIFEST: entry.manifest,
     TEST_PAYLOAD: entry.payload,
     ...entry.inlineErrors ? { TEST_ERROR_RENDERING: 'inline-errors' } : {},
+    ...entry.legacyComponentResolution ? { TEST_COMPONENT_RESOLUTION: 'legacy' } : {},
   }
 }
 
@@ -213,11 +226,11 @@ export default defineConfig({
           benchmark: { include: ['test/bench/renderer.bench.ts'] },
         },
       },
-      ...[...fixtureMatrix, ...inlineErrorMatrix].map(entry => ({
+      ...[...fixtureMatrix, ...inlineErrorMatrix, ...legacyComponentResolutionMatrix].map(entry => ({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
-          include: entry.inlineErrors ? inlineErrorInclude : ['test/*.test.ts'],
+          include: fixtureProjectInclude(entry),
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],

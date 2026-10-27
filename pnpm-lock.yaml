@@ -592,6 +592,9 @@ catalogs:
     prettier:
       specifier: 3.9.10
       version: 3.9.10
+    pug:
+      specifier: 3.0.4
+      version: 3.0.4
     rollup:
       specifier: 4.67.4
       version: 4.67.4
@@ -1425,6 +1428,9 @@ importers:
       '@vue/compiler-sfc':
         specifier: 3.5.44
         version: 3.5.44
+      pug:
+        specifier: catalog:dev
+        version: 3.0.4
       rolldown:
         specifier: ~1.2.15
         version: 1.2.15
@@ -2245,6 +2251,10 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+    devDependencies:
+      pug:
+        specifier: catalog:dev
+        version: 3.0.4
 
   test/fixtures/minimal:
     dependencies:
