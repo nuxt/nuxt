@@ -132,14 +132,7 @@ function applyHeaders (response: Response, headers: Record<string, string> | und
  * parameter of the matched pattern are not resolved; those need a server runtime.
  */
 function redirectResponse (event: ReturnType<typeof createRequestEvent>, redirect: { to: string, status?: number, base?: string }, headers: Record<string, string> | undefined): Response {
-  let location = redirect.to
-  if (location.includes('**')) {
-    const path = event.url.pathname
-    const tail = redirect.base && path.startsWith(redirect.base) ? path.slice(redirect.base.length) : path
-    location = location.endsWith('/**')
-      ? joinURL(location.slice(0, -3), tail)
-      : location.replace('**', tail.replace(/^\//, ''))
-  }
+  const location = redirect.to.includes('**') ? resolveRedirectTarget(redirect.to, redirectTail(event.url.pathname, redirect.base)) : redirect.to
   const target = appendSearch(location, event.url.search)
   const response = new Response(redirectBody(target), {
     status: redirect.status ?? 307,
@@ -147,6 +140,35 @@ function redirectResponse (event: ReturnType<typeof createRequestEvent>, redirec
   })
   applyHeaders(response, headers)
   return response
+}
+
+const VARIABLE_WIDTH_RE = /\*\*|:\w+[?*+]/
+const LEADING_SEPARATORS_RE = /^(?:[/\\]|%(?:25)*(?:2f|5c))+/i
+const QUERY_UNSAFE_RE = /[#&+;=?]/g
+
+/**
+ * Interpolate a tail into the `**` of a redirect target. A run of separators leading the tail
+ * collapses to one, so the target stays on the origin it names, and a tail in the query or
+ * fragment of the target is encoded as a single value.
+ */
+function resolveRedirectTarget (to: string, tail: string): string {
+  const path = tail.replace(LEADING_SEPARATORS_RE, '/')
+  if (to.endsWith('/**')) {
+    return joinURL(to.slice(0, -3), path)
+  }
+  const index = to.indexOf('**')
+  const query = to.search(/[?#]/)
+  const value = path.replace(/^\//, '')
+  return to.slice(0, index) + (query !== -1 && index > query ? value.replace(QUERY_UNSAFE_RE, char => '%' + char.charCodeAt(0).toString(16).toUpperCase()) : value) + to.slice(index + 2)
+}
+
+/** The part of `path` past the segments `base` matched, which may differ in spelling from `base`. */
+function redirectTail (path: string, base: string | undefined): string {
+  if (!base) { return path }
+  if (VARIABLE_WIDTH_RE.test(base)) {
+    return path.startsWith(base) ? path.slice(base.length) : path
+  }
+  return path.split('/').slice(base.split('/').length).map(segment => '/' + segment).join('')
 }
 
 /** A meta-refresh document, so a prerendered redirect is followed when served as a static file. */
