@@ -1546,6 +1546,12 @@ definePageMeta({
       expect(b4024).toHaveBeenCalledWith({ key: 'title', sources: [expect.stringContaining('component.vue')] })
     })
 
+    it('should not report a computed key by the name of its variable', () => {
+      const b4024 = vi.spyOn(pageDiagnostics, 'NUXT_B4024').mockReturnValue(undefined as never)
+      transform(`const { foo } = defineProps<{ foo: string }>()\nconst key = 'title'\ndefinePageMeta({ [key]: foo })`)
+      expect(b4024).toHaveBeenCalledWith({ key: '[computed]', sources: [expect.stringContaining('component.vue')] })
+    })
+
     it('should guard evaluation of hoisted setup values', () => {
       expect(transform(`const route = useRoute()\ndefinePageMeta({ key: route.path, name: 'page' })`)).toMatchInlineSnapshot(`
         "import { createPageMetaError as __nuxt_createPageMetaError } from "#page-meta"

@@ -500,7 +500,7 @@ function propertyKeyName (prop: ESTree.ObjectPropertyKind): string {
   if (prop.type === 'SpreadElement') {
     return prop.argument.type === 'Identifier' ? `...${prop.argument.name}` : '...'
   }
-  if (prop.key.type === 'Identifier') { return prop.key.name }
+  if (prop.key.type === 'Identifier' && !prop.computed) { return prop.key.name }
   if (prop.key.type === 'Literal') { return String(prop.key.value) }
   return '[computed]'
 }
