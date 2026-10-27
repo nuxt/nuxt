@@ -286,6 +286,33 @@ function _sfc_render(_ctx) {
     expect(code?.code).toContain('_createAssetComponent("UnknownComponent")')
   })
 
+  it('should only treat hydration strategies after a lazy prefix as modifiers', async () => {
+    const content = `import { h } from 'vue'
+const a = _resolveComponent("TimeLine")
+const b = _resolveComponent("time-line")
+const c = h(TimeLine)
+const d = _createAssetComponent("TimeLine")
+const e = _resolveComponent("LazyTimeLine")
+`
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }).transform.handler(
+      content,
+      '/pages/index.vue',
+    ))
+    expect(code?.code).toMatchInlineSnapshot(`
+      "import { default as __nuxt_component_0 } from "/components/TimeLine.vue";
+      import { createComponentWithFallback as __nuxt_createComponentWithFallback } from "vue";
+      import { createLazyTimeComponent } from "/client-runtime.mjs";
+      const __nuxt_component_1_lazy_time = createLazyTimeComponent("components/Line.vue", () => import("/components/Line.vue").then(c => c.default || c))
+      import { h } from 'vue'
+      const a = __nuxt_component_0
+      const b = __nuxt_component_0
+      const c = h(__nuxt_component_0)
+      const d = __nuxt_createComponentWithFallback(__nuxt_component_0)
+      const e = __nuxt_component_1_lazy_time
+      "
+    `)
+  })
+
   it.each([
     ['hydrate-on-idle', 'createLazyIdleComponent'],
     ['hydrate-on-visible', 'createLazyVisibleComponent'],
@@ -373,7 +400,11 @@ function _sfc_render(_ctx) {
     })
   })
 })
-const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
+const components = ([
+  { name: 'MyComponent', filePath: '/components/MyComponent.vue' },
+  { name: 'Line', filePath: '/components/Line.vue' },
+  { name: 'TimeLine', filePath: '/components/TimeLine.vue' },
+] as AddComponentOptions[]).map(opts => ({
   export: opts.export || 'default',
   chunkName: 'components/' + kebabCase(opts.name),
   global: opts.global ?? false,
