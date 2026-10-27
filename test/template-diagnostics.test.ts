@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import { stripVTControlCharacters } from 'node:util'
 import { describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { runsOncePerBuilderInMatrix } from './matrix'
@@ -8,7 +9,7 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('template diagnostics', () => {
 
   it('prints a warning with its template location for each check', async () => {
     const result = await exec('pnpm', ['nuxt', 'build', rootDir], { throwOnError: false })
-    const output = result.stdout + result.stderr
+    const output = stripVTControlCharacters(result.stdout + result.stderr)
 
     expect(result.exitCode, output).toBe(0)
     expect(output).toMatch(/\[NUXT_B4025\].*\/abuot.*app\/pages\/broken-link\.vue/)
