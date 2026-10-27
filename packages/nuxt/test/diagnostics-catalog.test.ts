@@ -50,6 +50,7 @@ const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
 
 /** Codes defined on `origin/main` that 4.x does not define, each with the reason. */
 const MAIN_ONLY: Record<string, string> = {
+  NUXT_B4023: '`router.options.sensitive` can still be set from `app/router.options` on 4.x',
   NUXT_B5016: '`experimental.parseErrorData` is still supported on 4.x',
   NUXT_B5029: 'validates `future.compatibilityVersion` against Nuxt 5',
   NUXT_B9001: 'Nitro v2 compatibility layer',
