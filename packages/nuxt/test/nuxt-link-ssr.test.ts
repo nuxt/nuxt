@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createApp, defineComponent, h } from 'vue'
-import type { VNode } from 'vue'
+import type { ComponentInternalInstance, VNode } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { Router } from 'vue-router'
@@ -19,6 +19,7 @@ vi.mock('#app/nuxt', () => ({
 }))
 
 const { defineNuxtLink } = await import('#app/components/nuxt-link')
+const { ssrRenderNuxtLink } = await import('#app/components/nuxt-link-ssr-render')
 
 const Stub = defineComponent({ setup: () => () => h('div') })
 const routes = [
@@ -45,7 +46,7 @@ interface Case {
   routerOptions?: Record<string, unknown>
 }
 
-async function renderLink (testCase: Case, server: boolean) {
+async function renderLink (testCase: Case, server: boolean, buffer = false) {
   vi.stubGlobal('__TEST_SERVER__', server)
 
   const router = createRouter({ history: createMemoryHistory(), routes, ...testCase.routerOptions })
@@ -54,9 +55,19 @@ async function renderLink (testCase: Case, server: boolean) {
   await router.isReady()
 
   const Link = defineNuxtLink({ componentName: 'NuxtLink', ...testCase.options })
-  const app = createApp(defineComponent({
-    setup: () => () => h('div', [h(Link as any, { ...testCase.props, ...testCase.attrs }, testCase.slot ?? (() => 'text'))]),
-  }))
+  const props = { ...testCase.props, ...testCase.attrs }
+  const slot = testCase.slot ?? (() => 'text')
+  const app = createApp(buffer
+    ? defineComponent({
+        ssrRender: (_ctx: unknown, push: (item: unknown) => void, parent: ComponentInternalInstance) => {
+          push('<div>')
+          push(ssrRenderNuxtLink(Link as any, props, { default: testCase.slot ?? ((_: unknown, push?: (item: string) => void) => push ? push('text') : 'text') } as any, parent))
+          push('</div>')
+        },
+      })
+    : defineComponent({
+        setup: () => () => h('div', [h(Link as any, props, slot)]),
+      }))
   app.use(router)
 
   return renderToString(app)
@@ -82,6 +93,10 @@ const cases: Case[] = [
   { name: 'applies `activeClass` from options', options: { activeClass: 'opt-on' }, props: { to: '/parent' }, at: '/parent' },
   { name: 'applies active classes from router options', routerOptions: { linkActiveClass: 'r-on', linkExactActiveClass: 'r-exact-on' }, props: { to: '/parent' }, at: '/parent' },
   { name: 'applies `ariaCurrentValue`', props: { to: '/parent', ariaCurrentValue: 'step' }, at: '/parent' },
+  { name: 'applies equal active classes to an active parent link', props: { to: '/parent', activeClass: 'on', exactActiveClass: 'on' }, at: '/parent/child/1' },
+  { name: 'applies equal active classes to an exact active link', props: { to: '/parent', activeClass: 'on', exactActiveClass: 'on' }, at: '/parent' },
+  { name: 'applies kebab-case props', props: { 'to': '/parent', 'active-class': 'on', 'exact-active-class': 'exact-on', 'aria-current-value': 'step' }, at: '/parent' },
+  { name: 'merges a fallthrough `class` and `style`', props: { to: '/parent' }, attrs: { class: 'user', style: { color: 'red' } }, at: '/parent' },
   { name: 'appends a trailing slash', options: { trailingSlash: 'append' }, props: { to: '/parent' } },
   { name: 'removes a trailing slash', props: { to: '/parent/', trailingSlash: 'remove' } },
   { name: 'passes slot props', props: { to: '/parent' }, at: '/parent', slot: (p: any) => h('span', { 'class': [p.isActive && 'a', p.isExactActive && 'ea'], 'data-href': p.href, 'data-path': p.route.path }, 'x') },
@@ -134,8 +149,15 @@ describe('nuxt-link ssr', () => {
       const viaRouterLink = await renderLink(testCase, false)
       const viaServerPath = await renderLink(testCase, true)
       expect(viaServerPath).toBe(viaRouterLink)
+      expect(await renderLink(testCase, true, true)).toBe(viaRouterLink)
     })
   }
+
+  it('renders a render-function slot once', async () => {
+    const slot = vi.fn(() => 'text')
+    await renderLink({ name: 'slot', props: { to: '/parent' }, slot }, true, true)
+    expect(slot).toHaveBeenCalledOnce()
+  })
 
   describe('custom', () => {
     for (const { props, slot, ...testCase } of customCases) {
