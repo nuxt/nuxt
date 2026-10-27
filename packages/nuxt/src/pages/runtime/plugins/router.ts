@@ -105,8 +105,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // not by Vue Router. Since Nuxt sets scrollRestoration to 'manual' for router
     // navigations, the browser won't restore the scroll position on Back after a
     // native hash click. This handler switches back to native restoration so the
-    // browser tracks and restores the position itself (#36660).
-    if (import.meta.client && 'scrollRestoration' in window.history) {
+    // browser tracks and restores the position itself (#36660). In hash mode every
+    // `#…` href is a router link, so there are no native in-page anchors to handle.
+    if (import.meta.client && !hashMode && 'scrollRestoration' in window.history) {
       document.addEventListener('click', (e: MouseEvent) => {
         const target = e.target as Node
         const anchor = target instanceof Element
