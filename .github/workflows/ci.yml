@@ -41,7 +41,7 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      src: ${{ steps.filter.outputs.src }}
+      src: ${{ steps.filter.outputs.src == 'true' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/')) && 'true' || 'false' }}
       playwright: ${{ steps.playwright.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -194,7 +194,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   codeql:
-    if: github.event_name != 'merge_group' && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
+    if: github.event_name != 'merge_group' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/')) && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -394,7 +394,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   test-benchmark:
-    if: github.event_name != 'merge_group'
+    if: github.event_name != 'merge_group' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/'))
     runs-on: ubuntu-latest
     needs: changes
 

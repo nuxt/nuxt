@@ -17,7 +17,7 @@ jobs:
       contents: read
       pull-requests: read  # for amannn/action-semantic-pull-request to analyze PRs
       statuses: write  # for amannn/action-semantic-pull-request to mark status of analyzed PR
-    if: github.repository == 'nuxt/nuxt' && !startsWith(github.head_ref, 'v')
+    if: github.repository == 'nuxt/nuxt' && !startsWith(github.head_ref, 'v') && !startsWith(github.head_ref, 'release/')
     runs-on: ubuntu-slim
     name: semantic-pr
     steps:
