@@ -60,4 +60,12 @@ describe('collectDevCss', () => {
       '/@id/virtual:theme.css',
     ])
   })
+
+  it('should serve windows absolute paths from `/@fs/`', () => {
+    expect(collectDevCss(nuxt, graph([
+      'D:/project/node_modules/lib/dist/lib.css',
+    ]))).toEqual([
+      '/@fs/D:/project/node_modules/lib/dist/lib.css',
+    ])
+  })
 })
