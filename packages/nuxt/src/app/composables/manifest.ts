@@ -21,6 +21,7 @@ export interface NuxtAppManifest extends NuxtAppManifestMeta {
   prerendered: string[]
 }
 
+const UPDATE_CHECK_TIMEOUT = 30_000
 let manifest: Promise<NuxtAppManifest> | undefined
 
 function fetchManifest (): Promise<NuxtAppManifest> {
@@ -31,8 +32,11 @@ function fetchManifest (): Promise<NuxtAppManifest> {
   if (import.meta.server) {
     _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest') as unknown as Promise<NuxtAppManifest>
   } else {
+    const url = buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), UPDATE_CHECK_TIMEOUT)
     // Low priority so this background warm-up does not contend with LCP-critical resources.
-    _manifest = fetch(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), { priority: 'low' })
+    _manifest = fetch(url, { priority: 'low', signal: controller.signal })
       .then((res) => {
         // native `fetch` resolves non-2xx responses; surface them with a `status` so callers
         // (e.g. the outdated-build check) can distinguish a missing manifest from a bad payload
@@ -50,6 +54,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
         }
         return res
       })
+      .finally(() => clearTimeout(timeout))
   }
   manifest = _manifest
   _manifest.catch((e) => {
@@ -71,7 +76,6 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
   return manifest || fetchManifest()
 }
 
-const UPDATE_CHECK_TIMEOUT = 30_000
 const pendingUpdateChecks = new WeakMap<NuxtApp, Promise<NuxtAppManifestMeta | undefined>>()
 
 /** Check for a newer deployment and emit `app:manifest:update` if one is available. */

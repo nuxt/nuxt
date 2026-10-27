@@ -32,6 +32,21 @@ function respond (meta: unknown, status = 200) {
   return new Response(JSON.stringify(meta), { status })
 }
 
+function stallCurrentManifest (phase: 'request' | 'body') {
+  fetchMock.mockImplementationOnce((_url, options) => {
+    if (phase === 'request') {
+      return new Promise((_resolve, reject) => {
+        options?.signal?.addEventListener('abort', () => reject(options.signal!.reason), { once: true })
+      })
+    }
+    return Promise.resolve(new Response(new ReadableStream({
+      start (controller) {
+        options?.signal?.addEventListener('abort', () => controller.error(options.signal!.reason), { once: true })
+      },
+    })))
+  })
+}
+
 beforeEach(async () => {
   vi.resetModules()
   vi.useFakeTimers()
@@ -171,6 +186,29 @@ describe('checkForAppUpdate', () => {
     await expect(checkForAppUpdate()).resolves.toEqual(newManifest)
   })
 
+  it.each(['request', 'body'] as const)('times out a stalled current manifest %s and clears both cached promises', async (phase) => {
+    stallCurrentManifest(phase)
+    const results = Promise.allSettled([checkForAppUpdate(), checkForAppUpdate()])
+    let settled = false
+    results.then(() => { settled = true })
+
+    await vi.advanceTimersByTimeAsync(29_999)
+    expect(settled).toBe(false)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(settled).toBe(true)
+    await expect(results).resolves.toEqual([
+      { status: 'rejected', reason: expect.objectContaining({ name: 'AbortError' }) },
+      { status: 'rejected', reason: expect.objectContaining({ name: 'AbortError' }) },
+    ])
+    expect(vi.getTimerCount()).toBe(0)
+
+    await expect(checkForAppUpdate()).resolves.toEqual(newManifest)
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('/meta/'))).toHaveLength(2)
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('/latest.json'))).toHaveLength(1)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
   it('does nothing when the app manifest is disabled', async () => {
     state.appManifest = false
     await expect(checkForAppUpdate()).resolves.toBeUndefined()
@@ -245,6 +283,17 @@ describe('outdated build polling', () => {
     await vi.advanceTimersByTimeAsync(1000)
     expect(vi.getTimerCount()).toBe(1)
     await vi.advanceTimersByTimeAsync(1000)
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('/latest.json'))).toHaveLength(1)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it.each(['request', 'body'] as const)('continues polling after a current manifest %s times out', async (phase) => {
+    stallCurrentManifest(phase)
+    await startPolling()
+    await vi.advanceTimersByTimeAsync(31_000)
+    expect(vi.getTimerCount()).toBe(1)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('/meta/'))).toHaveLength(2)
     expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('/latest.json'))).toHaveLength(1)
     expect(vi.getTimerCount()).toBe(0)
   })
