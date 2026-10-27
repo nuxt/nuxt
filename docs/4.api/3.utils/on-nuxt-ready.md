@@ -50,12 +50,12 @@ The function to run once your app has finished initializing and the browser is i
 
   **Type**: `number`
 
-  The maximum number of milliseconds to wait for the browser to become idle. It is passed to [`requestIdleCallback`](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback#timeout). Without it, the callback may be delayed for several seconds if the browser does not schedule an idle period, which can happen in headless browsers.
+  The maximum number of milliseconds to wait for the browser to become idle once your app is ready. It is passed to [`requestIdleCallback`](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback#timeout). Without it, the callback may be delayed for several seconds if the browser does not schedule an idle period, which can happen in headless browsers.
 
 ```ts [app/plugins/ready.client.ts]
 export default defineNuxtPlugin(() => {
   onNuxtReady(() => {
-    // runs when the browser is idle, or after at most 2 seconds
+    // runs when the browser is idle, or about 2 seconds after your app is ready, whichever comes first
   }, { timeout: 2000 })
 })
 ```
