@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import type { EnvironmentModuleGraph, EnvironmentModuleNode, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
@@ -32,10 +32,13 @@ const DEV_CLIENT_CSS_SEED = 'nuxt:dev-client-css:seed'
 function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): { urls: string[], files: Set<string> } {
   const urls = new Set<string>()
   const files = new Set<string>()
+  const seen = new Set<EnvironmentModuleNode>()
   for (const [mod, node] of moduleGraph.urlToModuleMap.entries()) {
     if (!IS_CSS_RE.test(mod) || 'raw' in getQuery(mod)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.url && 'raw' in getQuery(i.url))) { continue }
+    if (seen.has(node)) { continue }
+    seen.add(node)
     urls.add(toDevUrl(mod))
     if (node.file) { files.add(node.file) }
   }
