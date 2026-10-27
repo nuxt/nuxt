@@ -152,6 +152,7 @@
     "@vue/compiler-core": "catalog:dev",
     "@vue/compiler-sfc": "catalog:vue",
     "jiti": "catalog:build",
+    "pug": "catalog:dev",
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",

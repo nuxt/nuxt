@@ -604,6 +604,9 @@ catalogs:
     prettier:
       specifier: 3.9.10
       version: 3.9.10
+    pug:
+      specifier: 3.0.4
+      version: 3.0.4
     rollup:
       specifier: 4.65.0
       version: 4.65.0
@@ -1447,6 +1450,9 @@ importers:
       jiti:
         specifier: catalog:build
         version: 2.7.0
+      pug:
+        specifier: catalog:dev
+        version: 3.0.4
       rolldown:
         specifier: 1.2.15
         version: 1.2.15
@@ -2280,6 +2286,10 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+    devDependencies:
+      pug:
+        specifier: catalog:dev
+        version: 3.0.4
 
   test/fixtures/minimal:
     dependencies:

@@ -85,6 +85,17 @@
         "nested-dep"
       ]
     },
+    "test/fixtures/lazy-hydration": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreDependencies": ["pug"]
+    },
     "packages/nitro-server": {
       "entry": [
         "src/runtime/**/*.{js,ts,mjs}!"
@@ -137,7 +148,8 @@
         "@nuxt/nitro-server",
         "@nuxt/telemetry",
         "@nuxt/vite-builder",
-        "@nuxt/vite-server"
+        "@nuxt/vite-server",
+        "pug"
       ]
     },
     "packages/ui-templates": {

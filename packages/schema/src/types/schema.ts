@@ -1878,6 +1878,29 @@ export interface ConfigSchema {
      * multiple times on the same Nuxt instance (e.g. in benchmarks).
      */
     clearBuildHooks: boolean
+
+    /**
+     * Resolve auto-imported components in the Vue template compiler.
+     *
+     * Components used in `.vue` templates are imported by a `compilerOptions.nodeTransforms` entry, which also applies
+     * lazy hydration props such as `hydrate-on-visible` and omits the default slot of `<ClientOnly>` and the slots of
+     * client-only components from the server build, including when they are nested in another component's slot.
+     *
+     * `resolveComponent()` calls in scripts and `h()` calls in JSX/TSX are resolved by a separate build transform.
+     *
+     * This works with the Vite, webpack and rspack builders. Set it to `false` to resolve template components with a build transform
+     * on the compiled output.
+     * @default true
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     compilerComponentResolution: false,
+     *   },
+     * })
+     * ```
+     */
+    compilerComponentResolution: boolean
   }
 
   /**
