@@ -280,9 +280,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     baseURL: nitroBaseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
-      '#internal/nuxt/onigiri-server.mjs': () => nuxt.options.experimental.componentIslands === 'vue-onigiri'
-        ? `export { provideMarkerNonce } from ${JSON.stringify(resolve(resolveModulePath('vue-onigiri/server', { from: import.meta.url })))}`
-        : 'export const provideMarkerNonce = undefined',
       // the asset URL helpers the app also uses on the client
       [PATHS_SPECIFIER]: () => nuxt.vfs['#build/paths.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',

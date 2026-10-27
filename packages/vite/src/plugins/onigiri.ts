@@ -9,17 +9,12 @@ interface ComponentImport {
 
 const PATH_SPECIFIER_RE = /^(?:[/.]|[a-z]:[\\/])/i
 
-/**
- * vue-onigiri's scan, compiler and manifest plugins, fed with the components Nuxt registers.
- * Empty unless `experimental.componentIslands` is `'vue-onigiri'`.
- */
 export function OnigiriPlugins (nuxt: Nuxt): Plugin[] {
   if (nuxt.options.experimental.componentIslands !== 'vue-onigiri') {
     return []
   }
 
   const componentImports = new Map<string, ComponentImport>()
-  // Derived from `componentImports` on every update; the manifest plugin reads it at load time.
   const extraEntries: Record<string, string> = {}
 
   const setComponents = (components: Iterable<Component>) => {
@@ -31,7 +26,6 @@ export function OnigiriPlugins (nuxt: Nuxt): Plugin[] {
       if (!component.pascalName || !component.filePath || component._raw) { continue }
       const path = component.filePath.replaceAll('\\', '/')
       componentImports.set(component.pascalName, { path, export: component.export })
-      // package components only; app files are globbed
       if (!PATH_SPECIFIER_RE.test(path)) {
         extraEntries[path] = path
       }
@@ -50,8 +44,6 @@ export function OnigiriPlugins (nuxt: Nuxt): Plugin[] {
     }),
     {
       name: 'nuxt:onigiri',
-      // The loader imports `vue-onigiri/manifest`, a stub the manifest plugin replaces by id;
-      // externalized, Node would load the stub, which throws at request time.
       config: () => ({ ssr: { noExternal: ['vue-onigiri'] } }),
     },
   ]

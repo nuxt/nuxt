@@ -16,7 +16,6 @@ import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 import { isDev, isWebpack, nitroViteEnvironment, runsOncePerEnvInMatrix } from './matrix'
 import { renderPage } from './utils'
 
-// also run under the nitro vite environment, which bundles the app into nitro's `ssr` environment
 const shouldRun = runsOncePerEnvInMatrix || nitroViteEnvironment
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
@@ -44,11 +43,9 @@ describe.runIf(shouldRun)('server components/islands', () => {
     await page.locator('#increase-pure-component').click()
     await islandRequest
 
-    // TODO: consumer slot content is dropped under onigiri (deferred: slot marker design)
     expect(await page.locator('#slot-in-server').count()).toBe(0)
     expect(await page.locator('#test-slot').count()).toBe(0)
 
-    // the island's own unfilled-slot fallbacks render inline
     expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
     await page.locator('.box').getByText('Sugar Counter 12 x 101').first().waitFor()
     const requests = [
@@ -61,7 +58,6 @@ describe.runIf(shouldRun)('server components/islands', () => {
     await page.locator('#async-server-component-count').getByText('1').waitFor()
     await page.locator('#long-async-component-count').getByText('1').waitFor()
 
-    // test islands mounted client side (passed slot content is dropped)
     await page.locator('#show-island').click()
     await page.locator('#island-mounted-client-side').getByText('hello world !!!').waitFor()
     expect(await page.locator('#island-mounted-client-side').innerHTML()).not.toContain('Interactive testing slot post SSR')
@@ -90,7 +86,6 @@ describe.runIf(shouldRun)('server components/islands', () => {
 
     await page.getByText('Go to page with lazy server component').click()
 
-    // the `#fallback` slot is consumer content, so pending lazy islands render placeholders
     const text = await page.innerText('pre')
     expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><!----></section><section id="no-fallback"><!----></section><!---->"')
     expect(text).not.toContain('async component that was very long')
@@ -214,8 +209,6 @@ describe.runIf(shouldRun)('server components/islands', () => {
     await page.close()
   })
 
-  // The client rebuilds the island from its SSR DOM, so the payload carries only the
-  // marker nonce and the island body appears once, in the markup.
   it('/server-page - ships the island body only in the markup', async () => {
     const html = await $fetch<string>('/server-page')
     const [markup = '', payload = ''] = html.split(/<script[^>]*id="__NUXT_DATA__"[^>]*>/)
@@ -252,8 +245,24 @@ describe.runIf(shouldRun)('server components/islands', () => {
     expect(html).toContain('Parent body')
   })
 
+  it('re-mounts a hydrated island without refetching it', async () => {
+    const { page, requests } = await renderPage('/island-remount')
+
+    try {
+      await expect.poll(() => page.locator('#remount-island').textContent()).toContain('Route: /remount')
+      for (let i = 0; i < 2; i++) {
+        await page.locator('#toggle-remount-island').click()
+        await page.locator('#remount-island').waitFor({ state: 'detached' })
+        await page.locator('#toggle-remount-island').click()
+        await expect.poll(() => page.locator('#remount-island').textContent()).toContain('Route: /remount')
+      }
+      expect(requests.filter(request => request.includes('/__nuxt_island/'))).toEqual([])
+    } finally {
+      await page.close()
+    }
+  })
+
   // https://github.com/nuxt/nuxt/issues/31510
-  // TODO: restore the scoped-style assertions once island slots render again
   it.skipIf(isWebpack)('does not render consumer slot content in server components', async () => {
     const { page } = await renderPage('/slotted-styles')
 
@@ -280,7 +289,6 @@ describe.runIf(shouldRun)('component islands', () => {
     expect(html).not.toContain(isDev ? 'onigiri prod-only fallback' : 'onigiri dev-only content')
 
     if (isDev) { return }
-    // the dev-only branch must not be bundled either
     // @ts-expect-error ssssh! untyped secret property
     const { output } = useTestContext().nuxt._nitro.options
     for (const dir of [output.serverDir, output.publicDir]) {
@@ -291,7 +299,6 @@ describe.runIf(shouldRun)('component islands', () => {
   })
 
   it.skipIf(isDev)('keeps server component implementations out of the client bundle', async () => {
-    // `ServerWithClient.server.vue` is used by tag from `pages/server-components/lazy/end.vue`
     const marker = 'ServerWithClient.server.vue :'
     // @ts-expect-error ssssh! untyped secret property
     const { output } = useTestContext().nuxt._nitro.options
@@ -309,8 +316,6 @@ describe.runIf(shouldRun)('component islands', () => {
     expect(html).toContain('that was very long')
     expect(html).toMatch(/id="long-async-component-count">\s*3\s*</)
     expect(html).toContain('<p>hello world !!!</p>')
-    // caller slot content does not travel over the island protocol, so the
-    // unfilled named slots render their fallback content inline
     expect(html).toContain('fallback slot -- index: 0')
     expect(html).toContain('fallback slot -- index: 2')
     expect(html).toMatch(/fall slot -- index: 0/)
@@ -325,7 +330,6 @@ describe.runIf(shouldRun)('component islands', () => {
     expect(html).toContain('This is a .server (20ms) async component')
     expect(html).toContain('that was very long')
     expect(html).toMatch(/id="async-server-component-count">\s*2\s*</)
-    // the non-interactive <Counter> renders inline, not as a client component
     expect(html).toContain('Sugar Counter 12 x 1 = 12')
     expect(components).toEqual([])
   })
@@ -338,10 +342,7 @@ describe.runIf(shouldRun)('component islands', () => {
       expect(html).toContain('ServerWithClient.server.vue')
       expect(html).toContain('<p>count: 0</p>')
       expect(html).toContain('This component should not be preloaded')
-      // the non-interactive <Counter> renders inline without markers...
       expect(html.replace(MARKED_REGION_RE, '')).toContain('Sugar Counter 12 x 1 = 12')
-      // ...while the `v-load-client` one is wrapped in markers carrying its chunk and props,
-      // replacing the legacy `components` teleport channel
       expect(components).toHaveLength(1)
       const [type, props, chunk, exportName] = components[0]!.marker
       expect(type).toBe(1)
@@ -355,7 +356,6 @@ describe.runIf(shouldRun)('component islands', () => {
     it('render nested server components with one client component', async () => {
       const result = await $fetch<NuxtIslandResponse>(islandURL('ServerOuter'))
 
-      // `ServerInner` renders as a nested island; its markers are rebound to the outer nonce
       const { html, components } = readIsland(result)
       expect(html).toContain('server-outer')
       expect(html).toContain('server-inner-counter')
@@ -401,25 +401,19 @@ describe.runIf(shouldRun)('component islands', () => {
       expect(result.head.link).toBeUndefined()
       expect(result.head.style).toBeUndefined()
     } else {
-      // the dev module graph accumulates scoped styles of islands rendered by earlier
-      // tests, so assert this island's own stylesheet rather than snapshotting the list
       const links = result.head.link ?? []
       expect(links.some(link => /PureComponent\.vue\?vue&type=style&index=0&scoped=[^&]+&lang\.css$/.test(String(link.href)))).toBe(true)
     }
 
     const { html, components } = readIsland(result)
     expect(html).toContain('Was router enabled: true')
-    // the scope id is in the island HTML so scoped styles keep matching
     expect(html).toMatch(/<pre[^>]*data-v-xxxxx/)
-    // only the outer `v-load-client` <Counter> is marked: it never renders its default slot,
-    // so no slot HTML is captured and the slot's own `v-load-client` <Counter> never renders
     expect(components).toHaveLength(1)
     const [, props, chunk, , slots] = components[0]!.marker
     expect(props).toEqual({ multiplier: 3487 })
     expect(chunk).toMatch(/\/components\/Counter\.vue$/)
     expect(slots ?? {}).toEqual({})
     expect(html).not.toContain('This Counter is loaded client side')
-    // `v-html` raw JSON of the props
     expect(html).toContain('"number": 3487')
     expect(html).toContain('"str": "something"')
     expect(html).toContain('"foo": 42')
@@ -434,12 +428,10 @@ describe.runIf(shouldRun)('component islands', () => {
     await page.locator('#increase-pure-component').click()
     await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
 
-    // consumer slot content does not travel over the island protocol under onigiri
     expect(await page.locator('#slot-in-server').count()).toBe(0)
     expect(await page.locator('#test-slot').count()).toBe(0)
 
-    // test islands update (see the StaticHtml note in the `/islands` test for why this
-    // asserts through the client component's prop)
+    // test islands update
     await page.locator('.box').getByText('Sugar Counter 12 x 101').first().waitFor()
     const islandRequests = [
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
@@ -501,8 +493,6 @@ describe.runIf(shouldRun)('component islands', () => {
     await page.getByText('This is the error page').waitFor()
   })
 
-  // `showError(404)` inside a `.server.vue` page must surface as the SSR response status,
-  // not render a 200 with an empty island.
   it('maps a server page error to the SSR response status', async () => {
     const res = await fetch('/server-components/lost-page')
     expect(res.status).toBe(404)
@@ -663,7 +653,7 @@ describe.runIf(shouldRun)('denial-of-service protections', () => {
 
 describe.runIf(shouldRun)('hash/render input alignment', () => {
   // `data-v-*` props are stripped before both hashing and rendering, so adding only those
-  // keys resolves to the same hash and an identical payload.
+  // keys resolves to the same hash and identical HTML.
   it('ignores data-v-* props so the same hashId yields an identical payload', async () => {
     const name = 'PureComponent'
     const props = { bool: false, number: 1, str: 's', obj: {} }
@@ -677,7 +667,6 @@ describe.runIf(shouldRun)('hash/render input alignment', () => {
     }))
 
     expect(withScopeMarkers.html).not.toContain('data-v-abc123')
-    // each render has its own nonce, so compare the HTML with it masked
     const masked = (r: NuxtIslandResponse) => r.html!.replaceAll(r.nonce!, 'NONCE')
     expect(masked(withScopeMarkers)).toEqual(masked(plain))
   })
@@ -757,7 +746,7 @@ describe.runIf(shouldRun)('page-island middleware', () => {
 })
 
 describe.skipIf(!shouldRun || isDev)('regressions', () => {
-  // https://github.com/nuxt/nuxt/issues/26527 — fixed under vue-onigiri since 0.6.0
+  // https://github.com/nuxt/nuxt/issues/26527
   it('renders <Counter v-load-client /> when nested two levels deep in server components', async () => {
     const { page } = await renderPage('/nested-nuxt-client')
 
@@ -826,7 +815,6 @@ describe.runIf(shouldRun)('onigiri rendering matrix', () => {
     const html = await $fetch<string>('/multi')
     expect(html).toContain('block:multi-a x2')
     expect(html).toContain('block:multi-b x5')
-    // `v-load-client` components still render inline during SSR
     expect(html).toContain('Sugar Counter 12 x 2 = 24')
     expect(html).toContain('Sugar Counter 12 x 5 = 60')
   })
@@ -835,7 +823,6 @@ describe.runIf(shouldRun)('onigiri rendering matrix', () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('PureComponent', { props: { bool: true, number: 3, str: 'hi', obj: { foo: 42 } } }))
     expect(Object.keys(result).filter(key => key !== 'id').sort()).toEqual(['head', 'html', 'nonce'])
     expect(result.nonce).toMatch(/^[a-z0-9]{16,}$/i)
-    // every marker carries the nonce, and each component region is closed
     const markerNonces = [...result.html!.matchAll(/<!--\/?o:[ct]:(\w+)/g)].map(m => m[1])
     expect(markerNonces.length).toBeGreaterThan(0)
     expect(new Set(markerNonces)).toEqual(new Set([result.nonce]))
@@ -855,7 +842,6 @@ describe.runIf(shouldRun)('onigiri rendering matrix', () => {
     await page.locator('#hydration-island .sugar-counter button').click()
     expect(await page.locator('#hydration-island .sugar-counter').innerText()).toContain('Sugar Counter 13 x 4 = 52')
 
-    // the page-level counter hydrates independently of the island one
     await page.locator('.page-counter .sugar-counter button').click()
     expect(await page.locator('.page-counter .sugar-counter').innerText()).toContain('Sugar Counter 13 x 3 = 39')
 
@@ -972,24 +958,17 @@ describe.runIf(shouldRun)('island request headers', () => {
 
 interface MarkedComponent {
   marker: OnigiriComponentMarker
-  /** Server HTML between the component's opening and closing markers. */
   html: string
 }
 
 interface IslandMarkers {
-  /** Island HTML with scope ids normalised. */
   html: string
-  /** Top-level `v-load-client` components; slot HTML is left for `readMarkers` on the slot. */
   components: MarkedComponent[]
   teleports: OnigiriTeleportMarker[]
 }
 
-// a component's marked region, assuming no nested region in the same HTML string
 const MARKED_REGION_RE = /<!--o:c:(\w+)\[[\s\S]*?<!--\/o:c:\1-->/g
 
-/**
- * Asserts the island response follows the HTML contract and parses its markers.
- */
 function readIsland (result: NuxtIslandResponse): IslandMarkers {
   expect(result).not.toHaveProperty('ast')
   expect(typeof result.html).toBe('string')
@@ -997,10 +976,6 @@ function readIsland (result: NuxtIslandResponse): IslandMarkers {
   return readMarkers(result.html!, result.nonce!)
 }
 
-/**
- * Parses the nonce-bound markers of an HTML string, pairing each top-level
- * component marker with the HTML up to its closing comment.
- */
 function readMarkers (html: string, nonce: string): IslandMarkers {
   const open = `<!--o:c:${nonce}`
   const close = `<!--/o:c:${nonce}-->`
@@ -1011,7 +986,6 @@ function readMarkers (html: string, nonce: string): IslandMarkers {
   let current: { marker: OnigiriComponentMarker, start: number } | undefined
   for (const match of html.matchAll(/<!--\/?o:[ct]:[a-z0-9]+/gi)) {
     const [prefix] = match
-    // marker JSON escapes `--`, so the first `-->` closes the comment
     const end = html.indexOf('-->', match.index)
     const comment = html.slice(match.index, end + 3)
     const json = html.slice(match.index + prefix.length, end)

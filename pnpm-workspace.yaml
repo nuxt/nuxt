@@ -104,7 +104,7 @@ catalogs:
     unctx: ^3.0.1
     unhead: ^3.4.3
     vue: ^3.5.44
-    vue-onigiri: ^0.8.0
+    vue-onigiri: ^0.8.1
     vue-bundle-renderer: ^2.4.0
     vue-router: ^5.4.0
 

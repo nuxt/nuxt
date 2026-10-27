@@ -231,8 +231,8 @@ catalogs:
       specifier: ^2.4.0
       version: 2.4.0
     vue-onigiri:
-      specifier: ^0.8.0
-      version: 0.8.0
+      specifier: ^0.8.1
+      version: 0.8.1
     vue-router:
       specifier: ^5.4.0
       version: 5.4.0
@@ -982,7 +982,7 @@ importers:
         version: 3.3.13
       vue-onigiri:
         specifier: catalog:app-runtime
-        version: 0.8.0(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
+        version: 0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.4.0(@rsbuild/core@2.2.13)(@rspack/core@2.2.9(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.44)(esbuild@0.28.2)(rolldown@1.2.14)(rollup@4.64.6)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))(webpack@5.111.1(cssnano@9.8.0(postcss@8.5.30))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.30)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -1207,7 +1207,7 @@ importers:
         version: 0.1.0
       vue-onigiri:
         specifier: catalog:app-runtime
-        version: 0.8.0(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
+        version: 0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -1430,7 +1430,7 @@ importers:
         version: 3.3.13
       vue-onigiri:
         specifier: catalog:app-runtime
-        version: 0.8.0(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
+        version: 0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.4.0(@rsbuild/core@2.2.13)(@rspack/core@2.2.9(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.44)(esbuild@0.28.2)(rolldown@1.2.14)(rollup@4.64.6)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))(webpack@5.111.1(cssnano@7.1.9(postcss@8.5.30))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.30)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -1868,7 +1868,7 @@ importers:
         version: 2.4.0
       vue-onigiri:
         specifier: catalog:app-runtime
-        version: 0.8.0(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
+        version: 0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -12010,8 +12010,8 @@ packages:
       vue:
         optional: true
 
-  vue-onigiri@0.8.0:
-    resolution: {integrity: sha512-WiNSzoPhZirxNn8LqPTxUKztu/SzrTnwpC6nt5jp7FuVIWiXVBbPLu/n/G1Z+ZjwDIUDNnwjpNYwPSZljhKkig==}
+  vue-onigiri@0.8.1:
+    resolution: {integrity: sha512-YgSbjKeQwRCc8nKQXPRDg06bHy3vvF6JfVBduw2QQGLPMh80/8EohvVGxpo6sd8+f9uw70+m9/5B+fMUgAKFJw==}
     peerDependencies:
       '@vue/server-renderer': ^3.5.0
       vite: 8.3.4
@@ -22869,7 +22869,7 @@ snapshots:
       '@vue/compiler-sfc': 3.5.44
       vue: 3.5.44(typescript@6.0.3)
 
-  vue-onigiri@0.8.0(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3)):
+  vue-onigiri@0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3)):
     dependencies:
       '@vue/compiler-dom': 3.5.44
       '@vue/compiler-sfc': 3.5.44

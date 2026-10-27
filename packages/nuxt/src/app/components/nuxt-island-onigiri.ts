@@ -27,7 +27,6 @@ type NuxtIslandSlots = SlotsType<{
 
 interface MarkedHTML {
   html: string
-  /** Nonce the markers inside `html` are bound to. */
   nonce: string
 }
 
@@ -60,9 +59,7 @@ const NuxtIsland = defineComponent({
   async setup (props, { expose, emit }) {
     const nuxtApp = useNuxtApp()
     const instance = getCurrentInstance()!
-    // Island HTML from Vue's SSR render with the nonce its markers are bound to; the server inlines it as static content.
     const marked = shallowRef<MarkedHTML | undefined>()
-    // Shallow: the tree is swapped whole, walking a deeply reactive one would cost more than rendering it.
     const tree = shallowRef<VNode | undefined>()
     const uid = ref<string>(useId() || getId())
 
@@ -70,12 +67,11 @@ const NuxtIsland = defineComponent({
       props,
       uid,
       emit,
-      // The DOM already carries the HTML; the client only needs the nonce to read its markers.
-      toPayload: ({ html: _html, ...data }) => {
+      toPayload: ({ html, ...data }) => {
         const revive: Partial<NuxtIslandResponse> = {}
         if (data.head) { revive.head = data.head }
         if (data.nonce) { revive.nonce = data.nonce }
-        return { revive, data }
+        return { revive, data: import.meta.client ? { ...data, html } : data }
       },
       apply: (res) => {
         const nonce = res.nonce
@@ -85,12 +81,10 @@ const NuxtIsland = defineComponent({
         let html = res.html
         const outerNonce = import.meta.server ? (nuxtApp.ssrContext as { onigiriNonce?: string } | undefined)?.onigiriNonce : undefined
         if (outerNonce && outerNonce !== nonce) {
-          // Nested in another island's render: the client reads this HTML with the outer island's nonce.
           html = html.replace(new RegExp(`<!--(/?o:[ct]):${nonce}`, 'g'), `<!--$1:${outerNonce}`)
         }
         marked.value = { html, nonce }
         if (import.meta.client) {
-          // Unchanged static runs keep their VNode, so the patch only touches what the server changed.
           tree.value = htmlToVNode(res.html, { nonce, previous: tree.value })
         }
       },
@@ -101,20 +95,18 @@ const NuxtIsland = defineComponent({
     })
 
     await load(() => guard(() => {
-      // Without a valid nonce no marker can be trusted, and the legacy prefixes must never be honoured here.
-      const nonce = toRaw(nuxtApp.payload.data[islandKey.value])?.nonce
+      const entry = toRaw(nuxtApp.payload.data[islandKey.value])
+      const nonce = entry?.nonce
       if (!isMarkerNonce(nonce)) {
         throw createError({ status: 500, statusText: `Island ${props.name} has no valid marker nonce in the payload` })
       }
-      tree.value = domToVNode(instance.vnode.el as Node, { nonce })
+      const el = instance.vnode.el as Node
+      entry.html = readIslandHTML(el)
+      tree.value = domToVNode(el, { nonce })
     }))
 
-    // No custom `importFn`: marker chunk references are source paths (and bare package
-    // specifiers), which the generated `vue-onigiri/manifest` module resolves in both
-    // environments via its globs and `extraEntries`.
     return () => {
       if (import.meta.server) {
-        // Vue's SSR renderer pushes static content raw; the node count only matters on the client.
         return marked.value ? createStaticVNode(marked.value.html, 1) : null
       }
       return tree.value ?? null
@@ -123,3 +115,37 @@ const NuxtIsland = defineComponent({
 }) as unknown as DefineSetupFnComponent<NuxtIslandProps, NuxtIslandEmits, NuxtIslandSlots>
 
 export default NuxtIsland
+
+function readIslandHTML (start: Node): string {
+  if (!isFragmentComment(start, '[')) {
+    return nodeHTML(start)
+  }
+  let html = ''
+  let depth = 0
+  for (let node: Node | null = start; node; node = node.nextSibling) {
+    html += nodeHTML(node)
+    if (isFragmentComment(node, '[')) {
+      depth++
+    } else if (isFragmentComment(node, ']') && --depth === 0) {
+      break
+    }
+  }
+  return html
+}
+
+function isFragmentComment (node: Node, data: '[' | ']'): boolean {
+  return node.nodeType === Node.COMMENT_NODE && (node as Comment).data === data
+}
+
+const TEXT_ESCAPE_RE = /[&<>]/g
+const TEXT_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;' }
+
+function nodeHTML (node: Node): string {
+  if (node.nodeType === Node.ELEMENT_NODE) {
+    return (node as Element).outerHTML
+  }
+  if (node.nodeType === Node.COMMENT_NODE) {
+    return `<!--${(node as Comment).data}-->`
+  }
+  return (node.textContent ?? '').replace(TEXT_ESCAPE_RE, char => TEXT_ESCAPES[char]!)
+}

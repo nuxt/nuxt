@@ -24,21 +24,15 @@ export interface IslandFetchProps {
 }
 
 export interface IslandPayload {
-  /** Response fields the payload reviver refetches the island with. */
   revive: Partial<NuxtIslandResponse>
-  /** Response fields stored in the payload entry. */
   data: Partial<NuxtIslandResponse>
 }
 
 export interface IslandFetchOptions {
-  /** The island component's props, watched deeply to refetch on change. */
   props: IslandFetchProps
-  /** Instance id an in-flight fetch is deduped under. */
   uid: Ref<string>
   emit: (event: 'error', error: unknown) => void
-  /** Splits a response into its payload entry. */
   toPayload: (result: NuxtIslandResponse) => IslandPayload
-  /** Applies a fetched response to the island's render state. */
   apply: (result: NuxtIslandResponse) => void | Promise<void>
 }
 
@@ -46,21 +40,14 @@ export interface IslandFetch {
   error: Ref<unknown>
   serializedProps: ComputedRef<string>
   hashId: ComputedRef<string>
-  /** Payload key of the island, `<name>_<hashId>`. */
   islandKey: ComputedRef<string>
   fetchComponent: (force?: boolean) => Promise<void>
-  /** Runs `fn`, reporting a failure through `error` and the `error` event instead of throwing. */
   guard: (fn: () => unknown) => Promise<void>
-  /** Fetches the island, or hands over to `hydrate` when it was server rendered. */
   load: (hydrate?: () => unknown) => Promise<void>
 }
 
 const PROMISES_KEY = '_islandPromises'
 
-/**
- * Fetch, payload and head machinery shared by the `<NuxtIsland>` implementations.
- * Must run synchronously in `setup`, before its first `await`.
- */
 export function useIslandFetch (options: IslandFetchOptions): IslandFetch {
   const { props, uid, emit } = options
   const nuxtApp = useNuxtApp()
@@ -93,8 +80,6 @@ export function useIslandFetch (options: IslandFetchOptions): IslandFetch {
     const key = islandKey.value
 
     if (!force) {
-      // The payload reviver stores its in-flight fetch of an island at this key, so a
-      // plain property check would miss it and fetch the island a second time.
       const cached = await nuxtApp.payload.data[key]
       if (cached?.html) { return cached }
     }

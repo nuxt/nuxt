@@ -832,7 +832,6 @@ async function initNuxt (nuxt: Nuxt) {
     addComponent({
       name: 'NuxtIsland',
       priority: 10, // built-in that we do not expect the user to override
-      // follows the `#app/components/nuxt-island` alias, which vue-onigiri repoints
       filePath: resolveAlias('#app/components/nuxt-island', nuxt.options.alias),
       meta: getBuiltinComponentMeta('NuxtIsland'),
     })
@@ -1013,7 +1012,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
   options.alias['nuxt/app'] ||= options.appDir
   if (options.experimental.componentIslands === 'vue-onigiri') {
-    // Listed before `#app`, which bundlers would otherwise match first as a prefix.
     options.alias = { '#app/components/nuxt-island': resolve(options.appDir, 'components/nuxt-island-onigiri'), ...options.alias }
   }
   options._majorVersion = 4

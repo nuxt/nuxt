@@ -14,7 +14,6 @@ interface IslandRendererProps {
 }
 
 const PAGE_ISLAND_PREFIX = 'page_'
-// vue-onigiri islands are rebuilt from their markers, so their root carries no uid
 const ROOT_ATTRS = onigiriEnabled ? {} : { 'data-island-uid': '' }
 
 const IslandRenderer = defineComponent({
