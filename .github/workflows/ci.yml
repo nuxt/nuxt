@@ -394,6 +394,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   test-benchmark:
+    if: github.event_name != 'merge_group'
     runs-on: ubuntu-latest
     needs: changes
 
