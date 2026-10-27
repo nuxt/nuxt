@@ -32,18 +32,13 @@ const DEV_CLIENT_CSS_SEED = 'nuxt:dev-client-css:seed'
 function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): { urls: string[], files: Set<string> } {
   const urls = new Set<string>()
   const files = new Set<string>()
-  const seenModules = new Set<EnvironmentModuleNode>()
-  const seenIds = new Set<string>()
-
+  const seen = new Set<EnvironmentModuleNode>()
   for (const [mod, node] of moduleGraph.urlToModuleMap.entries()) {
     if (!IS_CSS_RE.test(mod) || 'raw' in getQuery(mod)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.url && 'raw' in getQuery(i.url))) { continue }
-    if (seenModules.has(node) || (node.id && seenIds.has(node.id))) { continue }
-    if (node.file && IS_CSS_RE.test(node.file) && files.has(node.file)) { continue }
-
-    seenModules.add(node)
-    if (node.id) { seenIds.add(node.id) }
+    if (seen.has(node)) { continue }
+    seen.add(node)
     urls.add(toDevUrl(mod))
     if (node.file) { files.add(node.file) }
   }
