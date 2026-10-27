@@ -8,7 +8,7 @@ defineProps<{
   <div class="nav-server-block">
     <span class="nav-server-label">nav-island:{{ label }}</span>
     <Counter
-      v-load-client
+      nuxt-client
       :multiplier="2"
     />
   </div>

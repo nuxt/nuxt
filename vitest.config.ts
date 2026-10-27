@@ -127,10 +127,18 @@ const legacyErrorMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
 ]
 
+// The same islands suite against the `vue-onigiri` fixture, on the builders that implementation supports.
+const onigiriMatrix: FixtureMatrixEntry[] = [
+  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', islands: 'vue-onigiri' },
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', islands: 'vue-onigiri' },
+  { env: 'dev', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on', islands: 'vue-onigiri' },
+  { env: 'built', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on', islands: 'vue-onigiri' },
+]
+
 const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
 
 function fixtureProjectName (entry: FixtureMatrixEntry) {
-  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}${entry.legacyErrors ? '-legacy-errors' : ''}`
+  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}${entry.legacyErrors ? '-legacy-errors' : ''}${entry.islands ? `-${entry.islands}` : ''}`
 }
 
 function fixtureProjectEnv (entry: FixtureMatrixEntry) {
@@ -210,11 +218,11 @@ export default defineConfig({
           },
         },
       },
-      ...[...fixtureMatrix, ...legacyErrorMatrix].map(entry => ({
+      ...[...fixtureMatrix, ...legacyErrorMatrix, ...onigiriMatrix].map(entry => ({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
-          include: entry.legacyErrors ? legacyErrorInclude : ['test/*.test.ts'],
+          include: entry.legacyErrors ? legacyErrorInclude : entry.islands ? ['test/server-components.test.ts'] : ['test/*.test.ts'],
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],

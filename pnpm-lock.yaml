@@ -2555,12 +2555,6 @@ importers:
         specifier: 0.1.11
         version: 0.1.11(h3@1.15.11)(srvx@1.0.5)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
 
-  test/fixtures/vue-onigiri:
-    dependencies:
-      nuxt:
-        specifier: workspace:*
-        version: link:../../../packages/nuxt
-
   test/fixtures/worker-assets:
     dependencies:
       nuxt:

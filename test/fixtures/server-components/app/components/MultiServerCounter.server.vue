@@ -12,7 +12,7 @@ defineProps<{
   >
     <span class="multi-label">block:{{ blockId }} x{{ multiplier }}</span>
     <Counter
-      v-load-client
+      nuxt-client
       :multiplier="multiplier"
     />
   </div>
