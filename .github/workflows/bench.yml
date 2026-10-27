@@ -1,0 +1,77 @@
+name: bench
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+    branches:
+      - main
+      - 4.x
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: '`ref:<branch, tag or commit>`, or an npm version, tag or alias for nuxt'
+        default: 'ref:main'
+      suites:
+        description: 'Space-separated suites to run (all when empty)'
+        default: ''
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  bench:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, '⚡ performance')
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 60
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          node-version: lts
+          cache: true
+
+      - name: Resolve baseline
+        id: baseline
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            echo "spec=ref:$BASE_SHA" >> "$GITHUB_OUTPUT"
+          else
+            case "$BASELINE" in
+              ref:*)
+                git fetch --no-tags --depth=1 origin "${BASELINE#ref:}"
+                echo "spec=ref:$(git rev-parse FETCH_HEAD)" >> "$GITHUB_OUTPUT"
+                ;;
+              *) echo "spec=$BASELINE" >> "$GITHUB_OUTPUT" ;;
+            esac
+          fi
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASELINE: ${{ inputs.baseline }}
+
+      - name: Run benchmarks
+        run: |
+          args=()
+          for suite in $SUITES; do args+=(--suite "$suite"); done
+          node bench/run.ts --baseline "$BASELINE" "${args[@]}" --out bench-report/report.md
+        env:
+          BASELINE: ${{ steps.baseline.outputs.spec }}
+          SUITES: ${{ inputs.suites }}
+
+      - name: Add report to job summary
+        run: cat bench-report/report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bench-report
+          path: bench-report/
