@@ -23,13 +23,21 @@ export function payloadRequestToRoute (path: string, filename = '_payload.json')
 }
 
 const LEADING_SLASHES_RE = /^\/+/
-const TRAILING_SLASHES_RE = /\/*$/
+
+/** Strip every trailing `/` from a path. */
+export function withoutTrailingSlashes (path: string): string {
+  let end = path.length
+  while (end > 0 && path[end - 1] === '/') {
+    end--
+  }
+  return path.slice(0, end)
+}
 
 /** The same-origin `_payload.json` (or `_payload.js`) URL for a page route, tagged with the build id. */
 export function routeToPayloadURL (baseURL: string, path: string, buildId: string, filename = '_payload.json'): string {
   const request = parseRequestPath(path)
-  const base = new URL(baseURL.replace(TRAILING_SLASHES_RE, '/'), 'http://localhost')
-  const route = request.pathname.replace(LEADING_SLASHES_RE, '').replace(TRAILING_SLASHES_RE, '/')
+  const base = new URL(withoutTrailingSlashes(baseURL) + '/', 'http://localhost')
+  const route = withoutTrailingSlashes(request.pathname.replace(LEADING_SLASHES_RE, '')) + '/'
   const url = new URL('./' + (route === '/' ? '' : route) + filename, base)
   url.search = request.search
   url.searchParams.set(PAYLOAD_BUILD_ID_PARAM, buildId)
