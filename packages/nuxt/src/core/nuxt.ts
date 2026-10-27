@@ -62,6 +62,7 @@ import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
 import { BundledVuePlugin } from './plugins/bundled-vue.ts'
+import { setupTemplateDiagnostics } from './template-diagnostics.ts'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -818,6 +819,10 @@ async function initNuxt (nuxt: Nuxt) {
   // Registered after modules so its `post` transform runs after auto-import injection.
   if (nuxt.options.experimental.navigateToEarlyReturn) {
     addBuildPlugin(NavigateToEarlyReturnPlugin())
+  }
+
+  if (nuxt.options.experimental.templateDiagnostics) {
+    setupTemplateDiagnostics(nuxt)
   }
 
   if (nuxt.options.experimental.debugModuleMutation) {

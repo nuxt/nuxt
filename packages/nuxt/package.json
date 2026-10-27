@@ -149,6 +149,7 @@
     "@types/picomatch": "catalog:dev",
     "@vitejs/plugin-vue": "catalog:vue",
     "@vitejs/plugin-vue-jsx": "catalog:dev",
+    "@vue/compiler-core": "catalog:dev",
     "@vue/compiler-sfc": "catalog:vue",
     "jiti": "catalog:build",
     "rolldown": "catalog:vite",
