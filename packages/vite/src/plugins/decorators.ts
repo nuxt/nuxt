@@ -8,6 +8,11 @@ import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../util
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx'] as const
 
+// Cheap filter for `hasDecoratorSyntax`. It keeps any `@` except those directly
+// preceded by a quote, backtick, `)`, `]` or a comment start; none of those can
+// begin a decorator, so a `@` it drops is never one.
+const MAY_CONTAIN_DECORATOR_RE = /(?<!["'`)\]])(?<!\/\*)(?<!\/\/)@/
+
 export function hasDecoratorSyntax (code: string, jsx = false) {
   const tokens = jsx ? jsTokens(code, { jsx: true }) : jsTokens(code)
 
@@ -63,9 +68,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
     },
     transform: {
       filter: {
-        // Only run on files that may contain decorator syntax
-        // (JS/TS/Vue files) and that include "@" as a quick check
-        code: '@',
+        code: MAY_CONTAIN_DECORATOR_RE,
 
         id: {
           include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],

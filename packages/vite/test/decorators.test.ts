@@ -4,7 +4,7 @@ import { DecoratorsPlugin, hasDecoratorSyntax } from '../src/plugins/decorators'
 
 function matchesFilter (
   filter: {
-    code?: string
+    code?: RegExp
     id?: {
       include?: RegExp[]
       exclude?: RegExp | RegExp[]
@@ -13,7 +13,7 @@ function matchesFilter (
   code: string,
   id: string,
 ) {
-  if (filter.code && !code.includes(filter.code)) {
+  if (filter.code && !filter.code.test(code)) {
     return false
   }
 
@@ -45,7 +45,7 @@ describe('DecoratorsPlugin transform filter', () => {
   }
 
   const filter = plugin.transform.filter as {
-    code?: string
+    code?: RegExp
     id?: {
       include?: RegExp[]
       exclude?: RegExp | RegExp[]
@@ -59,6 +59,45 @@ describe('DecoratorsPlugin transform filter', () => {
   it('does not match CSS files', () => {
     expect(matchesFilter(filter, '@import "./base.css";', '/src/styles.css')).toBe(false)
     expect(matchesFilter(filter, '@import "./base.scss";', '/src/styles.scss')).toBe(false)
+  })
+
+  it.each([
+    '@sealed class Example {}',
+    'class Example { @logged method () {} }',
+    'const Example = @sealed class {}',
+    'x / @sealed class C {}',
+    'x * @sealed class C {}',
+    'x *@sealed class C {}',
+    'const r = [...@sealed class C {}]',
+    'f(...@sealed class C {})',
+    'f(@sealed class C {})',
+    'new (@sealed class C {})()',
+    '@(sealed) class C {}',
+    '@\\u0073ealed class C {}',
+    'if (x) {}@sealed class C {}',
+    'x = cond ? @sealed class C {} : null',
+    'const s = "//"; @sealed class C {}',
+    'const s = "/*"; @sealed class C {}',
+    'const s = "a/b"; @sealed class C {}',
+    'export@sealed class C {}',
+    'export @sealed class C {}',
+    'export default@sealed class C {}',
+    '@sealed export class C {}',
+    '@ sealed class C {}',
+    '@/* comment */sealed class C {}',
+    'function f () { return@sealed class C {} }',
+  ])('matches possible decorator in %s', (code) => {
+    expect(matchesFilter(filter, code, '/src/example.ts')).toBe(true)
+  })
+
+  it.each([
+    'import value from "@scope/package"',
+    'const value = "@scope/package"',
+    'const x = /*@__PURE__*/ foo()',
+    '/*@__PURE__*/',
+    '//@ts-ignore\nconst x = 1',
+  ])('does not match non-decorator at signs in %s', (code) => {
+    expect(matchesFilter(filter, code, '/src/example.ts')).toBe(false)
   })
 })
 
