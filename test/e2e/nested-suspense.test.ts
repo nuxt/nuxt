@@ -179,6 +179,17 @@ test.describe('nested suspense', () => {
   }
 })
 
+test.describe('boot', () => {
+  test('should start app creation and mount in new tasks', async ({ page, goto }) => {
+    await goto('/route-provider/foo')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+    expect(await page.evaluate(() => (window as Window & { __bootTasks?: Record<string, boolean> }).__bootTasks)).toEqual({
+      createdAfterModuleTask: true,
+      beforeMountAfterPluginTask: true,
+    })
+  })
+})
+
 test.describe('route provider', () => {
   test('should preserve current route when navigation is suspended', async ({ page, goto }) => {
     await goto('/route-provider/foo')
