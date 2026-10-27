@@ -16,6 +16,7 @@ import { createViteLogger } from './utils/logger.ts'
 import { DevErrorsPlugin, getDevErrorReporter, reportTransformError } from './dev-errors.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks } from './plugins/optimize-deps-hint.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
+import { CompileHintsPlugin } from './plugins/compile-hints.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
 import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
@@ -55,6 +56,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       ModulePreloadPolyfillPlugin(),
       // ensure changes in chunks do not invalidate whole build
       StableEntryPlugin(nuxt),
+      CompileHintsPlugin(nuxt),
       AnalyzePlugin(nuxt),
       DevServerPlugin(nuxt),
       TemplateHMRPlugin(nuxt),
