@@ -1767,6 +1767,17 @@ describe('errors', () => {
     }
   })
 
+  it.skipIf(isDev)('should not expose the details of an upstream failure the app did not handle', async () => {
+    const res = await fetch('/error/upstream', { headers: { accept: 'text/html' } })
+    expect(res.status).toBe(502)
+    const html = await res.text()
+    expect(html).toContain('This is the error page')
+    expect(html).not.toMatch(/upstream-failure|upstream-token|upstream-secret/)
+
+    const json = await fetch('/error/upstream', { headers: { accept: 'application/json' } }).then(r => r.text())
+    expect(json).not.toMatch(/upstream-failure|upstream-token|upstream-secret/)
+  })
+
   it.skipIf(!legacyErrorRendering)('should not allow accessing error route directly', async () => {
     const res = await fetch('/__nuxt_error', {
       headers: {
