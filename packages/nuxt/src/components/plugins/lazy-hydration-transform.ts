@@ -47,7 +47,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       },
 
       async handler (code, id, meta?: unknown) {
-        // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
+        // change <LazyMyComponent hydrate-on-idle /> to <LazyIdle_MyComponent hydrate-on-idle />
         const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE) || {}
         if (!template) {
           return
@@ -104,7 +104,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             }
 
             if (strategy) {
-              const newName = 'Lazy' + strategy + pascalName
+              const newName = 'Lazy' + strategy + '_' + pascalName
               const chunk = template.slice(node.loc[0].start, node.loc.at(-1)!.end)
               const chunkOffset = node.loc[0].start + offset
               const { 0: startingChunk, index: startingPoint = 0 } = chunk.match(new RegExp(`<${node.name}[^>]*>`)) || {}
