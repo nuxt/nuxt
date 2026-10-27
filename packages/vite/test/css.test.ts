@@ -20,6 +20,31 @@ describe('collectDevCss', () => {
     return { urlToModuleMap: new Map(urls.map(url => [url, { importers: new Set() }])) } as unknown as EnvironmentModuleGraph
   }
 
+  it('should link a module registered under several urls once', () => {
+    const tokens = { file: '/layer/tokens.css', importers: new Set() }
+    const theme = { file: '/app/theme.css', importers: new Set() }
+    const urlToModuleMap = new Map([
+      ['/@fs/layer/tokens.css', tokens],
+      ['/theme.css', theme],
+      ['/layer/tokens.css', tokens],
+    ])
+    expect(collectDevCss(nuxt, { urlToModuleMap } as unknown as EnvironmentModuleGraph)).toEqual([
+      '/@fs/layer/tokens.css',
+      '/theme.css',
+    ])
+  })
+
+  it('should link every style block of a component', () => {
+    const urlToModuleMap = new Map([
+      ['/app.vue?vue&type=style&index=0&lang.css', { file: '/app/app.vue', importers: new Set() }],
+      ['/app.vue?vue&type=style&index=1&lang.css', { file: '/app/app.vue', importers: new Set() }],
+    ])
+    expect(collectDevCss(nuxt, { urlToModuleMap } as unknown as EnvironmentModuleGraph)).toEqual([
+      '/app.vue?vue&type=style&index=0&lang.css',
+      '/app.vue?vue&type=style&index=1&lang.css',
+    ])
+  })
+
   it('should serve non-path ids from `/@id/`', () => {
     expect(collectDevCss(nuxt, graph([
       '/assets/main.css',
