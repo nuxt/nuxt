@@ -52,6 +52,9 @@ describe('renderer request event url', () => {
     '/.well-known/x',
     '/a.b/...',
     '/%61dmin',
+    '//admin',
+    '//x/admin',
+    '///x/admin?y=1',
   ])('reads %s with the same path as h3', async (path) => {
     const { status, body } = await request(path)
     expect(status).toBe(200)
