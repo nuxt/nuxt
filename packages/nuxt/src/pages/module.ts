@@ -12,6 +12,7 @@ import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
+import { addRoute, createRouter, findRoute } from 'rou3'
 import { rou3PatternToURLPattern } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, findRouterOptionsFileDefining, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, resolveRouterOptions, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
@@ -21,6 +22,7 @@ import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
 import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath, resolveRouteRules, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
+import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
@@ -608,6 +610,29 @@ export default defineNuxtModule({
       ;(nitro.options as { _early404PagePatterns?: string[] })._early404PagePatterns
         = [...new Set(patterns.map(pattern => normalizeRouteRulePath(pattern, true)))]
     })
+
+    if (nuxt.options.experimental.templateDiagnostics) {
+      nuxt.hook('app:templatesGenerated', async (app) => {
+        setTemplateDiagnosticsRouteMatcher(nuxt, await resolveLinkRouteMatcher(app.pages))
+      })
+    }
+
+    /** Matches the paths a `<NuxtLink>` can navigate to: page routes and redirecting route rules. */
+    async function resolveLinkRouteMatcher (pages?: NuxtPage[]): Promise<((path: string) => boolean) | undefined> {
+      const patterns = pages && collectRou3PagePatterns(pages)
+      if (!patterns || await findRouterOptionsFileDefining(nuxt, 'routes', builtInRouterOptions)) { return }
+      for (const route of resolveRouteRulesRoutes(nuxt).routes) {
+        if (route.data.redirect) {
+          patterns.push(route.route)
+        }
+      }
+      const fold = !nuxt.options.router.options.sensitive
+      const router = createRouter<true>()
+      for (const pattern of patterns) {
+        addRoute(router, '', normalizeRouteRulePath(pattern, fold), true)
+      }
+      return path => !!findRoute(router, '', normalizeRouteRulePath(path, fold))
+    }
 
     nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
