@@ -3,7 +3,7 @@ import fsp from 'node:fs/promises'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { glob } from 'tinyglobby'
-import { join } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
@@ -87,10 +87,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"127k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"283k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1642k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"325k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -98,26 +98,36 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@babel/parser",
-        "@vue/compiler-core",
-        "@vue/compiler-dom",
-        "@vue/compiler-ssr",
         "@vue/reactivity",
         "@vue/runtime-core",
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared",
         "devalue",
-        "entities",
-        "entities/dist/commonjs",
-        "estree-walker",
         "hookable",
         "nostics",
-        "source-map-js",
         "ufo",
         "unhead",
         "vue",
         "vue-bundle-renderer",
+      ]
+    `)
+  })
+
+  it('emits vue packages that only import the bundled vue chunk', async () => {
+    const serverDir = join(rootDir, '.output/server')
+    const imports = new Set<string>()
+    for (const file of await glob(['node_modules/{vue,@vue/*}/*.mjs'], { cwd: serverDir })) {
+      const code = await fsp.readFile(join(serverDir, file), 'utf8')
+      expect(code).not.toMatch(/globalThis\._importMeta_\s*=\s*\{/)
+      for (const [, id] of code.matchAll(/(?:from|import)\s*["']([^"']+)["']/g)) {
+        imports.add(id!.startsWith('.') ? relative(serverDir, resolve(serverDir, dirname(file), id!)) : id!)
+      }
+    }
+    expect([...imports].sort()).toMatchInlineSnapshot(`
+      [
+        "chunks/_/vue.mjs",
+        "node:process",
       ]
     `)
   })
@@ -149,10 +159,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"162k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"317k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1766k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"449k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -160,10 +170,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       .sort()
     expect(packages).toMatchInlineSnapshot(`
       [
-        "@babel/parser",
-        "@vue/compiler-core",
-        "@vue/compiler-dom",
-        "@vue/compiler-ssr",
         "@vue/devtools-api",
         "@vue/reactivity",
         "@vue/runtime-core",
@@ -171,12 +177,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/server-renderer",
         "@vue/shared",
         "devalue",
-        "entities",
-        "entities/dist/commonjs",
-        "estree-walker",
         "hookable",
         "nostics",
-        "source-map-js",
         "ufo",
         "unhead",
         "vue",

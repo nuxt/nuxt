@@ -1178,7 +1178,9 @@ export interface ConfigSchema {
     asyncEntry: boolean
 
     /**
-     * Externalize `vue`, `@vue/*` and `vue-router` when building.
+     * Externalize `vue`, `@vue/*` and `vue-router` when building, so that server dependencies importing them share the same copy.
+     *
+     * In production builds, the Vue runtime is bundled and emitted as the `vue` and `@vue/*` packages in the server output.
      *
      * @default true
      * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
