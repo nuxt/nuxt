@@ -194,6 +194,10 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
         case 'TSSatisfiesExpression':
         case 'TSNonNullExpression':
           return node.expression && describeNode(node.expression)
+        case 'ConditionalExpression':
+          return (node.consequent && describeNode(node.consequent)) || (node.alternate && describeNode(node.alternate))
+        case 'LogicalExpression':
+          return (node.left && describeNode(node.left)) || (node.right && describeNode(node.right))
         case 'ObjectExpression':
           for (const property of node.properties || []) {
             const value = property.type === 'ObjectProperty' ? property.value : property.type === 'ObjectMethod' ? property : undefined
@@ -264,6 +268,10 @@ interface EstreeLike {
   computed?: boolean
   key?: { name?: string, value?: unknown }
   expression?: EstreeLike
+  consequent?: EstreeLike
+  alternate?: EstreeLike
+  left?: EstreeLike
+  right?: EstreeLike
   value?: EstreeLike
   properties?: EstreeLike[]
   elements?: (EstreeLike | null)[]

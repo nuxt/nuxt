@@ -207,6 +207,8 @@ describe('template diagnostics', () => {
       [':options="{ nested: { format: () => 1 } }"', 'a function'],
       [':options="{ format () {} }"', 'a function'],
       [':items="[1, () => 2]"', 'a function'],
+      [':format="enabled ? (value) => value : undefined"', 'a function'],
+      [':date="value || new Date()"', 'a class instance'],
     ])('warns about %s', (prop, value) => {
       const { compile, warnings } = setup()
       compile(`<template>\n  <ServerCard ${prop} />\n</template>`)
@@ -232,6 +234,8 @@ describe('template diagnostics', () => {
       ':options="options"',
       ':list="list"',
       ':count="count + 1"',
+      ':label="count ? title : \'none\'"',
+      ':title="title || \'x\'"',
       ':label="`n: ${count}`"',
       ':value="getValue()"',
       ':ref="(el) => {}"',
