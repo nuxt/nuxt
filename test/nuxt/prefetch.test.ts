@@ -107,6 +107,8 @@ describe('prefetch scheduler connection state', () => {
       const nuxtApp = useNuxtApp()
       delete nuxtApp._prefetch
       const scheduler = usePrefetchScheduler(nuxtApp)
+      await useRouter().push('/index')
+      document.dispatchEvent(new Event('visibilitychange'))
       expect(read).not.toHaveBeenCalled()
 
       const started: string[] = []
@@ -120,6 +122,7 @@ describe('prefetch scheduler connection state', () => {
       expect(started).toEqual(['payload:/held-on-save-data'])
     } finally {
       delete (navigator as { connection?: unknown }).connection
+      await useRouter().push('/')
     }
   })
 })
