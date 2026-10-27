@@ -20,6 +20,7 @@ export function toFsUrl (path: string): string {
 /** Vite serves non-path ids, such as `\0` virtual modules, from `/@id/`. */
 function toDevUrl (url: string): string {
   if (url[0] === '/' || url[0] === '.') { return url }
+  if (isAbsolute(url)) { return toFsUrl(url) }
   return '/@id/' + url.replace('\0', '__x00__')
 }
 
