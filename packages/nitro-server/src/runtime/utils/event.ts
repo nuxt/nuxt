@@ -359,6 +359,17 @@ export function toRequestEvent (event: H3Event): RendererEvent {
   return requestEvent
 }
 
+// assigned through `pathname`, as a path starting with `//` would otherwise be read as a host
+function resolveEventURL (event: H3Event): URL {
+  const url = new URL(`${getRequestProtocol(event, { xForwardedProto: false })}://${getRequestHost(event)}`)
+  const path = encodeEventPath(event.path)
+  const queryIndex = path.indexOf('?')
+  url.pathname = queryIndex === -1 ? path : path.slice(0, queryIndex)
+  url.search = queryIndex === -1 ? '' : path.slice(queryIndex)
+  url.hash = ''
+  return url
+}
+
 /**
  * Describe an h3 v1 event in the web-standard shape, rather than adapting it in place:
  * `event.req` and `event.res` already name the node request and response, and that is the
@@ -368,7 +379,7 @@ export function toRequestEvent (event: H3Event): RendererEvent {
  * than a copy of it, so a header the application sets through h3 and a header the renderer
  * sets are the same header.
  */
-function toWebView (event: H3Event, resolveURL = () => new URL(encodeEventPath(event.path), `${getRequestProtocol(event, { xForwardedProto: false })}://${getRequestHost(event)}`)): RendererEvent {
+function toWebView (event: H3Event, resolveURL = () => resolveEventURL(event)): RendererEvent {
   const node = event.node
   let request: Request | undefined
   let url: URL | undefined
