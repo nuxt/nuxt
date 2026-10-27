@@ -126,5 +126,10 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Move `sensitive` to `router.options` in your `nuxt.config`.',
       docs: false,
     },
+    NUXT_B4024: {
+      why: (p: { key: string }) => `\`definePageMeta()\` reads \`${p.key}\` from the page's setup scope, which is not available outside the component.`,
+      fix: (p: { key: string }) => `Use a static value for \`${p.key}\`, or import it from another module.`,
+      docs: false,
+    },
   },
 })

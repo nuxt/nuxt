@@ -1,6 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { generateTransform, rolldownString } from 'rolldown-string'
+import { resolve } from 'pathe'
 import { ScopeTracker, getUndeclaredIdentifiersInFunction, isReferenceIdentifier, walk } from 'oxc-walker'
 import type { ScopeTrackerNode } from 'oxc-walker'
 
@@ -10,11 +11,13 @@ import { parseModule } from '../../core/utils/parse.ts'
 import { getStaticImports } from '../../core/utils/static-imports.ts'
 import type { ParsedStaticImport } from '../../core/utils/static-imports.ts'
 import { classifyPageMetaProperty, isScannablePageFile } from '../utils.ts'
-import { linkToAlias } from '../../utils.ts'
+import { linkToAlias, resolveToAlias } from '../../utils.ts'
+import { distDir } from '../../dirs.ts'
 import type { ESTree, ParserOptions } from 'rolldown/utils'
 
 interface PageMetaPluginOptions {
   dev?: boolean
+  pageMetaRuntime?: string
   isPage?: (file: string) => boolean
   routesId?: string
   extractedKeys?: string[]
@@ -243,6 +246,31 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
         scopeTracker.freeze()
 
+        /** Whether evaluating `node` at module scope cannot throw, ignoring the bodies of nested functions. */
+        function isSafeToEvaluate (node: ESTree.Node) {
+          let safe = true
+          let functionDepth = 0
+          walk(node, {
+            enter (child, parent) {
+              if (isFunctionNode(child)) {
+                functionDepth++
+                return
+              }
+              if (!safe || functionDepth) { return }
+              if (UNSAFE_EXPRESSION_TYPES.has(child.type)) {
+                safe = false
+              } else if (child.type === 'Identifier' && isReferenceIdentifier(child, parent)) {
+                const declaration = scopeTracker.getDeclaration(child.name)
+                safe = !!declaration && !isSetupParam(declaration)
+              }
+            },
+            leave (child) {
+              if (isFunctionNode(child)) { functionDepth-- }
+            },
+          })
+          return safe
+        }
+
         let instances = 0
 
         walk(ast, {
@@ -305,6 +333,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             }
 
             const definePageMetaScope = scopeTracker.getCurrentScope()
+            const setupReferences: ESTree.Node[] = []
 
             walk(meta, {
               scopeTracker,
@@ -330,11 +359,21 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
                 if (isStaticIdentifier(node.name)) {
                   addImport(node.name)
+                } else if (declaration && isSetupParam(declaration)) {
+                  setupReferences.push(node)
                 } else if (declaration) {
                   processDeclaration(declaration)
                 }
               },
             })
+
+            if (meta.type === 'ObjectExpression') {
+              for (const prop of meta.properties) {
+                if (setupReferences.some(ref => ref.start >= prop.start && ref.end <= prop.end)) {
+                  pageDiagnostics.NUXT_B4024({ key: propertyKeyName(prop), sources: [linkToAlias(id)] })
+                }
+              }
+            }
 
             const importStatements = Array.from(addedImports).join('\n')
 
@@ -343,13 +382,28 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
               .map(node => code.slice(resolveStart(node), resolveEnd(node)))
               .join('\n')
 
-            const extracted = [
-              importStatements,
-              declarations,
-              `const __nuxt_page_meta = ${m.toString() || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
-            ].join('\n')
+            const metaExpression = m.toString() || 'null'
+            const isGuarded = !isSafeToEvaluate(meta) || declarationNodes.some(node =>
+              node.type === 'Variable' && node.variableNode.declarations.some(decl => decl.init && !isSafeToEvaluate(decl.init)),
+            )
 
-            s.overwrite(0, code.length, extracted.trim())
+            const extracted = isGuarded
+              ? [
+                  importStatements,
+                  `import { createPageMetaError as __nuxt_createPageMetaError } from ${JSON.stringify(options.pageMetaRuntime ?? resolve(distDir, 'pages/runtime/page-meta'))}`,
+                  'let __nuxt_page_meta\ntry {',
+                  declarations,
+                  `__nuxt_page_meta = ${metaExpression}`,
+                  `} catch (error) {\n__nuxt_page_meta = __nuxt_createPageMetaError(error${options.dev ? `, ${JSON.stringify(resolveToAlias(parseModuleId(id).pathname))}` : ''})\n}`,
+                  'export default __nuxt_page_meta' + (options.dev ? CODE_HMR : ''),
+                ].filter(Boolean)
+              : [
+                  importStatements,
+                  declarations,
+                  `const __nuxt_page_meta = ${metaExpression}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
+                ]
+
+            s.overwrite(0, code.length, extracted.join('\n').trim())
           },
         })
 
@@ -421,6 +475,34 @@ function parseMacroQuery (id: string) {
 const QUOTED_SPECIFIER_RE = /(["']).*\1/
 function getQuotedSpecifier (id: string) {
   return id.match(QUOTED_SPECIFIER_RE)?.[0]
+}
+
+const UNSAFE_EXPRESSION_TYPES = new Set([
+  'AssignmentExpression',
+  'AwaitExpression',
+  'CallExpression',
+  'ClassExpression',
+  'MemberExpression',
+  'NewExpression',
+  'TaggedTemplateExpression',
+  'UpdateExpression',
+])
+
+function isFunctionNode (node: ESTree.Node) {
+  return node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression'
+}
+
+function isSetupParam (node: ScopeTrackerNode) {
+  return node.type === 'FunctionParam' || node.type === 'FunctionArguments' || node.type === 'CatchParam'
+}
+
+function propertyKeyName (prop: ESTree.ObjectPropertyKind): string {
+  if (prop.type === 'SpreadElement') {
+    return prop.argument.type === 'Identifier' ? `...${prop.argument.name}` : '...'
+  }
+  if (prop.key.type === 'Identifier' && !prop.computed) { return prop.key.name }
+  if (prop.key.type === 'Literal') { return String(prop.key.value) }
+  return '[computed]'
 }
 
 function resolveStart (node: ScopeTrackerNode) {
