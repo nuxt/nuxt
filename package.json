@@ -9,6 +9,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm --filter './packages/**' build",
+    "bench": "node bench/run.ts",
     "build:kit": "pnpm --filter @nuxt/kit build",
     "build:stub": "pnpm dev:prepare",
     "dev": "pnpm play",
