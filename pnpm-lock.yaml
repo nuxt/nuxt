@@ -2286,6 +2286,10 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+    devDependencies:
+      pug:
+        specifier: catalog:dev
+        version: 3.0.4
 
   test/fixtures/minimal:
     dependencies:
