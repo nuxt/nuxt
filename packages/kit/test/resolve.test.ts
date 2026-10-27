@@ -2,7 +2,7 @@ import { stat } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { resolve } from 'pathe'
 import { loadNuxt } from '../src/loader/nuxt.ts'
-import { findPath, resolveNuxtModule, resolvePath } from '../src/resolve.ts'
+import { findPath, resolveAlias, resolveNuxtModule, resolvePath } from '../src/resolve.ts'
 import { defineNuxtModule } from '../src/module/define.ts'
 import { addTemplate } from '../src/template.ts'
 
@@ -17,6 +17,42 @@ const nuxt = await loadNuxt({
       }),
     ],
   },
+})
+
+describe('resolveAlias', () => {
+  it('reflects aliases added after the alias map is first resolved', () => {
+    const aliases: Record<string, string> = { '~': '/src' }
+    expect(resolveAlias('~/App.vue', aliases)).toBe('/src/App.vue')
+
+    aliases['#imports'] = '/tmp/imports'
+    expect(resolveAlias('#imports/foo', aliases)).toBe('/tmp/imports/foo')
+  })
+
+  it('reflects aliases changed after the alias map is first resolved', () => {
+    const aliases: Record<string, string> = { '~': '/src' }
+    expect(resolveAlias('~/App.vue', aliases)).toBe('/src/App.vue')
+
+    aliases['~'] = '/other'
+    expect(resolveAlias('~/App.vue', aliases)).toBe('/other/App.vue')
+  })
+
+  it('reflects aliases removed after the alias map is first resolved', () => {
+    const aliases: Record<string, string | undefined> = { '~': '/src', 'gone': undefined }
+    expect(resolveAlias('new/x', aliases as Record<string, string>)).toBe('new/x')
+
+    delete aliases.gone
+    aliases.new = '/new'
+    expect(resolveAlias('new/x', aliases as Record<string, string>)).toBe('/new/x')
+  })
+
+  it('reflects aliases reordered after the alias map is first resolved', () => {
+    const aliases: Record<string, string> = { c: '/root', b: 'c/y', a: 'b/x' }
+    resolveAlias('a/z', aliases)
+
+    delete aliases.b
+    aliases.b = 'c/y'
+    expect(resolveAlias('a/z', aliases)).toBe(resolveAlias('a/z', { ...aliases }))
+  })
 })
 
 describe('resolvePath', () => {
