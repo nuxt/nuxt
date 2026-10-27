@@ -1,0 +1,21 @@
+{
+  "name": "nuxt-example-eve",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "ai": "^7.0.137",
+    "eve": "^0.84.0",
+    "nuxt": "^4.0.0",
+    "vue": "^3.5.0",
+    "zod": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
