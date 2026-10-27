@@ -1,8 +1,8 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { decodeRoutePath } from '../src/core/utils/index.ts'
-import { normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
+import { decodeRoutePath, foldRouteCase, foldRouteRulePath } from '../src/core/utils/index.ts'
+import { assertCaseIndependentRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
 
 const RESERVED_RE = /[%;/?:@&=+$,#]/g
 
@@ -61,9 +61,9 @@ describe('decodeRoutePath', () => {
 })
 
 describe('normalizeRouteRulePath', () => {
-  it('should fold by lowercasing the unfolded key', () => {
+  it('should fold by case-folding the unfolded key', () => {
     fc.assert(fc.property(routePath, (path) => {
-      expect(normalizeRouteRulePath(path, true)).toBe(normalizeRouteRulePath(path, false).toLowerCase())
+      expect(normalizeRouteRulePath(path, true)).toBe(foldRouteCase(normalizeRouteRulePath(path, false)))
     }), { numRuns: 1000 })
   })
 
@@ -74,5 +74,167 @@ describe('normalizeRouteRulePath', () => {
       const encoded = '/' + segments.map(segment => encodeURIComponent(segment)).join('/')
       expect(normalizeRouteRulePath(encoded, fold)).toBe(normalizeRouteRulePath(decoded, fold))
     }), { numRuns: 1000 })
+  })
+})
+
+describe('foldRouteCase', () => {
+  const equalIgnoringCase = (a: string, b: string) => new RegExp(`^\\u${a.charCodeAt(0).toString(16).padStart(4, '0')}$`, 'i').test(b)
+
+  it('should fold two code units together exactly when a case-insensitive regex treats them as equal', () => {
+    for (let code = 0; code <= 0xFFFF; code++) {
+      const char = String.fromCharCode(code)
+      const folded = foldRouteCase(char)
+      expect(folded.length, char).toBe(1)
+      expect(equalIgnoringCase(char, folded), char).toBe(true)
+      for (const other of [char.toUpperCase(), char.toLowerCase()]) {
+        if (other.length !== 1) { continue }
+        expect(foldRouteCase(other) === folded, `${char} / ${other}`).toBe(equalIgnoringCase(char, other))
+      }
+    }
+  })
+
+  it('should fold two characters together exactly when a case-insensitive vue-router route matches one with the other', () => {
+    const chars = [...'aAzZéÉßſİiKkςσΣµμΜϐβᲂоОᲃсС𐐀𐐨']
+    for (const a of chars) {
+      for (const b of chars) {
+        expect(foldRouteCase(a) === foldRouteCase(b), `${a} ${b}`).toBe(new RegExp(`^${a}$`, 'i').test(b))
+      }
+    }
+  })
+
+  it('should fold letters the way vue-router compares them', () => {
+    expect(foldRouteCase('/ΣΊΓΜΑ/ςίγμα')).toBe('/σίγμα/σίγμα')
+    expect(foldRouteCase('/µ/ᲂкно/ABC')).toBe('/μ/окно/abc')
+    expect(foldRouteCase('/İ/\u212A/ẞ/ß/\u{10400}')).toBe('/İ/\u212A/ẞ/ß/\u{10400}')
+  })
+})
+
+describe('foldRouteRulePath', () => {
+  it('should fold plain and percent-encoded characters', () => {
+    expect(foldRouteRulePath('/Admin/%C3%89cole')).toBe('/admin/%C3%A9cole')
+    expect(foldRouteRulePath('/%41dmin')).toBe('/admin')
+    expect(foldRouteRulePath(encodeURI('/ΣΊΓΜΑ/ςίγμα'))).toBe(encodeURI('/σίγμα/σίγμα'))
+  })
+
+  it('should leave escapes without a folded form as written', () => {
+    expect(foldRouteRulePath('/a%2Fb/%e6%b5%8b')).toBe('/a%2Fb/%e6%b5%8b')
+    expect(foldRouteRulePath('/%zz/%C3')).toBe('/%zz/%C3')
+  })
+})
+
+describe('foldRouteRulePattern', () => {
+  it('should keep param names and backslash escapes', () => {
+    expect(foldRouteRulePattern('GET /Users/:userId/**:Rest')).toBe('get /users/:userId/**:Rest')
+    expect(foldRouteRulePattern('/N/:id(\\D+)')).toBe('/n/:id(\\D+)')
+  })
+
+  it('should keep constraints as written', () => {
+    expect(foldRouteRulePattern('/X/:id((?:foo|bar))/:Rest')).toBe('/x/:id((?:foo|bar))/:Rest')
+    expect(foldRouteRulePattern('/X/:id([A-z]+)')).toBe('/x/:id([A-z]+)')
+    expect(foldRouteRulePattern('/X/:id([A-Z]+)')).toBe('/x/:id([A-Z]+)')
+  })
+})
+
+describe('normalizeRouteRuleKey', () => {
+  it('should fold literal text but not regex constraints', () => {
+    expect(normalizeRouteRuleKey('/X/:id(\\D+)', true)).toBe('/x/:id(\\D+)')
+    expect(normalizeRouteRuleKey('/X/:id(\\W|\\S|\\B)/Y', true)).toBe('/x/:id(\\W|\\S|\\B)/y')
+    expect(normalizeRouteRuleKey('/X/:id([A-z]+)', true)).toBe('/x/:id([A-z]+)')
+    expect(normalizeRouteRuleKey('/:a(\\P{Lu}+)-:b([A-Z](?:\\D))', true)).toBe('/:a(\\P{Lu}+)-:b([A-Z](?:\\D))')
+    expect(normalizeRouteRuleKey('/:role(Admin|User)', true)).toBe('/:role(Admin|User)')
+    expect(normalizeRouteRuleKey('/X/:id([A-Z]\\D+)', false)).toBe('/X/:id([A-Z]\\D+)')
+  })
+
+  it('should treat escaped and bracketed parentheses as part of their group', () => {
+    expect(normalizeRouteRuleKey('/A\\(B/:id([)]A)C', true)).toBe('/a\\(b/:id([)]A)c')
+    expect(normalizeRouteRuleKey('/A/:id(\\)A)B', true)).toBe('/a/:id(\\)A)b')
+    expect(normalizeRouteRuleKey('/A/:id(\\D', true)).toBe('/a/:id(\\D')
+  })
+
+  it('should decode constraints and literals', () => {
+    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', true)).toBe('/café/:id(café|CAFÉ)')
+    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', false)).toBe('/CafÉ/:id(café|CAFÉ)')
+  })
+
+  it('should decode percent-encoded regex syntax in constraints to a literal match', () => {
+    expect(normalizeRouteRuleKey('/:id(a%5Cd%2E%5B%2D%5D)', true)).toBe('/:id(a\\\\d\\.\\[\\-\\])')
+    expect(normalizeRouteRuleKey('/:id(a%2Fb%3Fc)', false)).toBe('/:id(a%2Fb%3Fc)')
+    expect(normalizeRouteRuleKey('/:id(100%)', true)).toBe('/:id(100%)')
+  })
+
+  it('should match lookups against regex constraints as written', () => {
+    for (const fold of [false, true]) {
+      const router = createNormalizedRouteRulesRouter([
+        { route: '/n/:id(\\D+)', data: { n: true } },
+        { route: '/range/:id([A-Za-z_]+)', data: { range: true } },
+        { route: '/blog/:slug(caf%C3%A9|tea)', data: { blog: true } },
+      ], '', fold)
+      const match = (path: string) => router.matchAll('', normalizeRouteRulePath(path, fold))
+      expect(match('/n/abc'), `fold: ${fold}`).toEqual([{ n: true }])
+      expect(match('/n/123'), `fold: ${fold}`).toEqual([])
+      expect(match('/range/ABC'), `fold: ${fold}`).toEqual([{ range: true }])
+      expect(match('/range/_'), `fold: ${fold}`).toEqual([{ range: true }])
+      expect(match('/range/123'), `fold: ${fold}`).toEqual([])
+      expect(match('/blog/caf%C3%A9'), `fold: ${fold}`).toEqual([{ blog: true }])
+      expect(match('/blog/tea'), `fold: ${fold}`).toEqual([{ blog: true }])
+    }
+    const folded = createNormalizedRouteRulesRouter([{ route: '/Range/:id([A-Za-z_]+)', data: { range: true } }], '', true)
+    expect(folded.matchAll('', normalizeRouteRulePath('/RANGE/_', true))).toEqual([{ range: true }])
+  })
+})
+
+describe('findCaseDependentRouteRuleKeyPart', () => {
+  it('should find the case-dependent part in any constraint of a key', () => {
+    expect(findCaseDependentRouteRuleKeyPart('/X/:id([a-z]+)/:rest((?:FOO|bar))')).toBe('F')
+    expect(findCaseDependentRouteRuleKeyPart('/X/:id([A-z]+)/Y')).toBeUndefined()
+  })
+
+  it('should check percent-encoded characters in a constraint as the matcher decodes them', () => {
+    expect(findCaseDependentRouteRuleKeyPart('/X/:id([%41-%5A]+)')).toBe('[A-Z]')
+    expect(findCaseDependentRouteRuleKeyPart('/X/:id([%41]+)')).toBe('[A]')
+    expect(findCaseDependentRouteRuleKeyPart('/X/:id(caf%C3%89)')).toBe('É')
+    expect(findCaseDependentRouteRuleKeyPart('/X/:id([%61-%7A%5F]+)')).toBeUndefined()
+    expect(findCaseDependentRouteRuleKeyPart('/X/:id(caf%C3%A9)')).toBeUndefined()
+  })
+})
+
+describe('assertCaseIndependentRouteRuleKey', () => {
+  it('should throw on a key with a constraint that depends on letter case', () => {
+    expect(() => assertCaseIndependentRouteRuleKey('/X/:id([a-z]+)/:rest((?:FOO|bar))')).toThrow('The route rule `/X/:id([a-z]+)/:rest((?:FOO|bar))` has a regex constraint that depends on letter case (`F`)')
+    expect(() => assertCaseIndependentRouteRuleKey('/X/:id([A-z]+)/Y')).not.toThrow()
+  })
+})
+
+describe('findCaseDependentConstraint', () => {
+  it('should accept constraints that match a case-folded path the way they read', () => {
+    for (const constraint of ['([a-z]+)', '([A-z]+)', '([!-~]+)', '([0-9a-zA-Z_]+)', '(\\D+)', '(\\w+)', '(\\W\\S\\B\\b\\d\\s)', '((?:foo|bar))', '(café)', '(\\x61\\x31)', '([^a-zA-Z])', '(\\1)', '(.{2,3})', '((?<Name>[a-z]+))']) {
+      expect(findCaseDependentConstraint(constraint), constraint).toBeUndefined()
+    }
+  })
+
+  it('should find the part of a constraint that depends on letter case', () => {
+    expect(findCaseDependentConstraint('(A)')).toBe('A')
+    expect(findCaseDependentConstraint('([A-Z]+)')).toBe('[A-Z]')
+    expect(findCaseDependentConstraint('((?:FOO))')).toBe('F')
+    expect(findCaseDependentConstraint('((?:foo|BAR))')).toBe('B')
+    expect(findCaseDependentConstraint('([!-a]+)')).toBe('[!-a]')
+    expect(findCaseDependentConstraint('([^a-z])')).toBe('[^a-z]')
+    expect(findCaseDependentConstraint('([^A-Z])')).toBe('[^A-Z]')
+    expect(findCaseDependentConstraint('(\\x41+)')).toBe('\\x41')
+    expect(findCaseDependentConstraint('(\\u00C9)')).toBe('\\u00C9')
+    expect(findCaseDependentConstraint('(\\101)')).toBe('\\101')
+    expect(findCaseDependentConstraint('(\\cA)')).toBeUndefined()
+    expect(findCaseDependentConstraint('(cafÉ)')).toBe('É')
+    expect(findCaseDependentConstraint('(\\p{Lu})')).toBe('L')
+  })
+
+  it('should check constraints against the case folding vue-router uses', () => {
+    for (const constraint of ['([a-zçğıöşüİ]+)', '([\\u0130]+)', '(\\u212A)', '([\u{10400}]+)', '(\u{10400}+)', '([a-zσς]+)', '([^a-zA-Z]+)', '(\\W+)', '([^/]+)']) {
+      expect(findCaseDependentConstraint(constraint), constraint).toBeUndefined()
+    }
+    expect(findCaseDependentConstraint('([a-zς]+)')).toBe('[a-zς]')
+    expect(findCaseDependentConstraint('(ς)')).toBe('ς')
+    expect(findCaseDependentConstraint('(µ)')).toBe('µ')
+    expect(findCaseDependentConstraint('(ᲂ)')).toBe('ᲂ')
   })
 })

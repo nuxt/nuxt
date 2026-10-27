@@ -21,7 +21,7 @@ import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from './
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from './app'
 import { mergeHeaders } from './headers'
 import { patchDevClientCss } from './dev-css'
-import { renderInlineStyles } from './inline-styles'
+import { renderInlineStyles, renderSplitInlineStyles } from './inline-styles'
 import { createInlinedCSSFilter } from './inlined-css'
 import { throwIfUnmatchedPagePath } from './early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands'
@@ -368,9 +368,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   // A scriptless response has no chunk to link a stylesheet from, so it always inlines.
   // Both flags are build-time constants, so writing them out folds the branch away.
-  const inlinedStyles = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) && !ssrContext['~renderResponse'] && !isRenderingPayload
-    ? await renderInlineStyles(ssrContext.modules ?? [])
-    : []
+  const [entryInlinedStyles, componentInlinedStyles] = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) && !ssrContext['~renderResponse'] && !isRenderingPayload
+    ? await renderSplitInlineStyles(ssrContext.modules ?? [], entryIds)
+    : [[], []]
 
   if (import.meta.prerender && ssrError && isPrerenderedErrorPage(event.url.pathname)) {
     delete ssrContext.payload.path
@@ -436,8 +436,8 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   }
 
   // 2. Styles
-  if (inlinedStyles.length) {
-    ssrContext.head.push({ style: inlinedStyles })
+  if (entryInlinedStyles.length) {
+    ssrContext.head.push({ style: entryInlinedStyles })
   }
 
   const link: Link[] = []
@@ -460,6 +460,10 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   if (link.length) {
     ssrContext.head.push({ link })
+  }
+
+  if (componentInlinedStyles.length) {
+    ssrContext.head.push({ style: componentInlinedStyles })
   }
 
   // 4. Resource Hints

@@ -121,5 +121,15 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Request paths are lower-cased before they are matched, so write the constraint for lower-case letters (such as `[a-z]` instead of `[A-Z]`), or set `router.options.sensitive` to `true`.',
       docs: false,
     },
+    NUXT_B4023: {
+      why: (p: { file: string }) => `The \`router.options\` file at \`${p.file}\` sets \`sensitive\`, which is only read from \`router.options.sensitive\` in \`nuxt.config\`.`,
+      fix: 'Move `sensitive` to `router.options` in your `nuxt.config`.',
+      docs: false,
+    },
+    NUXT_B4024: {
+      why: (p: { key: string }) => `\`definePageMeta()\` reads \`${p.key}\` from the page's setup scope, which is not available outside the component.`,
+      fix: (p: { key: string }) => `Use a static value for \`${p.key}\`, or import it from another module.`,
+      docs: false,
+    },
   },
 })

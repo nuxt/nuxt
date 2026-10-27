@@ -146,7 +146,8 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
 const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js']
 
 // stands in for the defines and aliases a server builder applies in its own bundle
-function rendererProject (name: string, include: string[], rendererConfig: string) {
+function rendererProject (name: string, include: string[], rendererConfig: string, fixtureDir = './test/fixtures/standalone-renderer') {
+  const artifact = (path: string) => resolve(fixtureDir, '.nuxt', path)
   return {
     define: {
       'import.meta.dev': 'false',
@@ -157,15 +158,15 @@ function rendererProject (name: string, include: string[], rendererConfig: strin
     resolve: {
       alias: {
         'nuxt/internal/renderer-config': resolve(rendererConfig),
-        'nuxt/internal/entry': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry.mjs'),
-        'nuxt/internal/manifest': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/manifest.mjs'),
-        'nuxt/internal/precomputed': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/precomputed.mjs'),
-        'nuxt/internal/styles': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/styles.mjs'),
-        'nuxt/internal/entry-ids': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-ids.mjs'),
-        'nuxt/internal/entry-chunk': resolve('./test/fixtures/standalone-renderer/.nuxt/renderer/entry-chunk.mjs'),
-        '#build': resolve('./test/fixtures/standalone-renderer/.nuxt'),
+        'nuxt/internal/entry': artifact('renderer/entry.mjs'),
+        'nuxt/internal/manifest': artifact('renderer/manifest.mjs'),
+        'nuxt/internal/precomputed': artifact('renderer/precomputed.mjs'),
+        'nuxt/internal/styles': artifact('renderer/styles.mjs'),
+        'nuxt/internal/entry-ids': artifact('renderer/entry-ids.mjs'),
+        'nuxt/internal/entry-chunk': artifact('renderer/entry-chunk.mjs'),
+        '#build': artifact(''),
         // provided by the server builder in a real build; the fixture writes them out
-        '#internal/nuxt/paths': resolve('./test/fixtures/standalone-renderer/.nuxt/paths.mjs'),
+        '#internal/nuxt/paths': artifact('paths.mjs'),
       },
     },
     test: {
@@ -182,6 +183,8 @@ const rendererProjects = [
   rendererProject('renderer', ['test/renderer/*.test.ts', '!test/renderer/legacy-errors.test.ts'], './test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
   rendererProject('renderer-legacy-errors', ['test/renderer/legacy-errors.test.ts'], './test/fixtures/standalone-renderer/renderer-config-legacy-errors.mjs'),
 ]
+
+const benchmarkRendererProject = rendererProject('benchmark-renderer', [], './test/fixtures/bench-renderer/.nuxt/renderer/renderer-config.mjs', './test/fixtures/bench-renderer')
 
 export default defineConfig({
   test: {
@@ -205,9 +208,23 @@ export default defineConfig({
         test: {
           name: 'benchmark',
           include: [],
+          globalSetup: ['./test/bench/setup.ts'],
+          testTimeout: 300_000,
+          hookTimeout: 120_000,
           benchmark: {
             include: ['**/*.bench.ts'],
+            exclude: [...defaultExclude, 'test/bench/renderer.bench.ts'],
           },
+        },
+      },
+      {
+        ...benchmarkRendererProject,
+        plugins: isCI ? [codspeedPlugin()] : [],
+        test: {
+          ...benchmarkRendererProject.test,
+          globalSetup: ['./test/bench/setup-renderer.ts'],
+          testTimeout: 300_000,
+          benchmark: { include: ['test/bench/renderer.bench.ts'] },
         },
       },
       ...[...fixtureMatrix, ...legacyErrorMatrix].map(entry => ({

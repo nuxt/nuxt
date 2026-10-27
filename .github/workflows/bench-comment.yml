@@ -1,0 +1,92 @@
+name: bench-comment
+
+on:
+  # zizmor: ignore[dangerous-triggers] - no checkout; only reads the report artifact and posts it, sanitised, as a comment
+  workflow_run:
+    workflows: [bench]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  comment:
+    if: github.repository_owner == 'nuxt' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      pull-requests: write
+    steps:
+      - name: Download report
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: bench-report
+          path: bench-report
+
+      - name: Post or update comment
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { readFileSync } = require('node:fs')
+
+            const run = context.payload.workflow_run
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${run.head_repository.owner.login}:${run.head_branch}`,
+              per_page: 10,
+            })
+            const pr = prs.find(pr => pr.head.sha === run.head_sha)
+            if (!pr) {
+              console.log(`no open PR found for ${run.head_sha}, skipping`)
+              return
+            }
+
+            const marker = '<!-- nuxt-bench-report -->'
+            // the report is produced by PR code, so strip anything that could render as HTML, a link or an image
+            const sanitise = path => readFileSync(path, 'utf8')
+              .slice(0, 50_000)
+              .replace(/</g, '&lt;')
+              .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+              .replace(/(?:https?:\/\/|www\.)\S+/gi, '[url removed]')
+              .replace(/\[/g, '\\[')
+            const body = [
+              marker,
+              '### Benchmark',
+              '',
+              sanitise('bench-report/summary.md'),
+              '',
+              '<details>',
+              '<summary>Full report</summary>',
+              '',
+              sanitise('bench-report/report.md'),
+              '',
+              '</details>',
+              '',
+              '_Interleaved runs on a shared runner: compare the deltas rather than the absolute timings. Run locally with `pnpm bench`._',
+            ].join('\n')
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+            })
+            const existing = comments.find(comment => comment.user.type === 'Bot' && comment.body.includes(marker))
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body,
+              })
+            }

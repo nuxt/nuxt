@@ -938,7 +938,7 @@ describe('normalizeRoutes', () => {
 })
 
 describe('rewrite page meta', () => {
-  const transformPlugin = PageMetaPlugin({ extractedKeys: ['extracted'] }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
+  const transformPlugin = PageMetaPlugin({ extractedKeys: ['extracted'], pageMetaRuntime: '#page-meta' }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
   it('should throw when multiple definePageMeta', () => {
     const sfc = `
@@ -1022,10 +1022,15 @@ definePageMeta({
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
     expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
       "import { validateIdParam } from './utils.ts'
-
-      const __nuxt_page_meta = {
+      import { createPageMetaError as __nuxt_createPageMetaError } from "#page-meta"
+      let __nuxt_page_meta
+      try {
+      __nuxt_page_meta = {
         validate: validateIdParam,
         dynamic: ref(true),
+      }
+      } catch (error) {
+      __nuxt_page_meta = __nuxt_createPageMetaError(error)
       }
       export default __nuxt_page_meta"
     `)
@@ -1306,7 +1311,10 @@ const hoisted = ref('hoisted')
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
     expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
-      "const foo = 'foo'
+      "import { createPageMetaError as __nuxt_createPageMetaError } from "#page-meta"
+      let __nuxt_page_meta
+      try {
+      const foo = 'foo'
       const num = 1
       const bar = { bar: 'bar' }.bar, baz = { baz: 'baz' }.baz, x = { foo }
       const useVal = () => ({ val: 'val' })
@@ -1314,7 +1322,7 @@ const hoisted = ref('hoisted')
         recursive()
       }
       const hoisted = ref('hoisted')
-      const __nuxt_page_meta = {
+      __nuxt_page_meta = {
         middleware: [
           () => {
             console.log(bar, baz)
@@ -1342,6 +1350,9 @@ const hoisted = ref('hoisted')
         validate: (route) => {
           return route.params.id === 'test'
         }
+      }
+      } catch (error) {
+      __nuxt_page_meta = __nuxt_createPageMetaError(error)
       }
       export default __nuxt_page_meta"
     `)
@@ -1401,10 +1412,16 @@ definePageMeta({
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
     expect(transformPlugin.transform.handler(res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
-      "const helper = ({ sep }, spacer) => sep + spacer
+      "import { createPageMetaError as __nuxt_createPageMetaError } from "#page-meta"
+      let __nuxt_page_meta
+      try {
+      const helper = ({ sep }, spacer) => sep + spacer
       const title = (() => { const t = 'hello'; return t })()
-      const __nuxt_page_meta = {
+      __nuxt_page_meta = {
         validate: () => helper({ sep: 'x' }, '-') === title,
+      }
+      } catch (error) {
+      __nuxt_page_meta = __nuxt_createPageMetaError(error)
       }
       export default __nuxt_page_meta"
     `)
@@ -1505,6 +1522,81 @@ definePageMeta({
       }
       export default __nuxt_page_meta"
     `)
+  })
+
+  describe('setup-only values', () => {
+    const transform = (script: string, plugin = transformPlugin) => {
+      const res = compileScript(parse(`<script setup lang="ts">\n${script}\n</script>`).descriptor, { id: 'component.vue' })
+      return plugin.transform.handler(res.content, 'component.vue?macro=true')?.code ?? ''
+    }
+
+    const toDataURL = (code: string) => `data:text/javascript,${encodeURIComponent(code)}`
+    const evaluatingPlugin = PageMetaPlugin({
+      pageMetaRuntime: toDataURL('export const createPageMetaError = error => ({ error: String(error) })'),
+    }).raw({}, {} as any) as typeof transformPlugin
+
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('should warn when a key reads a destructured prop', () => {
+      const b4024 = vi.spyOn(pageDiagnostics, 'NUXT_B4024').mockReturnValue(undefined as never)
+      transform(`const { foo } = defineProps<{ foo: string }>()\ndefinePageMeta({ title: foo, name: 'page' })`)
+      expect(b4024).toHaveBeenCalledTimes(1)
+      expect(b4024).toHaveBeenCalledWith({ key: 'title', sources: [expect.stringContaining('component.vue')] })
+    })
+
+    it('should not report a computed key by the name of its variable', () => {
+      const b4024 = vi.spyOn(pageDiagnostics, 'NUXT_B4024').mockReturnValue(undefined as never)
+      transform(`const { foo } = defineProps<{ foo: string }>()\nconst key = 'title'\ndefinePageMeta({ [key]: foo })`)
+      expect(b4024).toHaveBeenCalledWith({ key: '[computed]', sources: [expect.stringContaining('component.vue')] })
+    })
+
+    it('should guard evaluation of hoisted setup values', () => {
+      expect(transform(`const route = useRoute()\ndefinePageMeta({ key: route.path, name: 'page' })`)).toMatchInlineSnapshot(`
+        "import { createPageMetaError as __nuxt_createPageMetaError } from "#page-meta"
+        let __nuxt_page_meta
+        try {
+        const route = useRoute()
+        __nuxt_page_meta = { key: route.path, name: 'page' }
+        } catch (error) {
+        __nuxt_page_meta = __nuxt_createPageMetaError(error)
+        }
+        export default __nuxt_page_meta"
+      `)
+    })
+
+    it.each([
+      ['a destructured prop', `const { foo } = defineProps<{ foo: string }>()\ndefinePageMeta({ title: foo })`, '__props is not defined'],
+      ['a composable result', `const route = useRoute()\ndefinePageMeta({ key: route.path })`, 'useRoute is not defined'],
+      ['a composable result in a callback', `const route = useRoute()\ndefinePageMeta({ validate: () => !!route.query.ok })`, 'useRoute is not defined'],
+      ['the current instance', `const instance = getCurrentInstance()\ndefinePageMeta({ title: instance.props.title })`, 'getCurrentInstance is not defined'],
+    ])('should not throw when page metadata reads %s', async (_, script, message) => {
+      vi.spyOn(pageDiagnostics, 'NUXT_B4024').mockReturnValue(undefined as never)
+      const { default: meta } = await import(/* @vite-ignore */ toDataURL(transform(script, evaluatingPlugin)))
+      expect(meta).toEqual({ error: expect.stringContaining(message) })
+    })
+
+    it.each([
+      ['static values', `definePageMeta({ layout: 'custom', middleware: ['auth'] })`],
+      ['inline functions', `definePageMeta({ middleware: [to => to.query.ok ? undefined : navigateTo('/')] })`],
+      ['hoisted literals and functions', `const title = 'hello'\nfunction validate () { return true }\ndefinePageMeta({ title, validate })`],
+    ])('should not guard evaluation of %s', (_, script) => {
+      expect(transform(script)).not.toContain('__nuxt_createPageMetaError')
+    })
+
+    it.each([
+      ['a member of an import', `import { config } from './config'\nconst layout = config.layout\ndefinePageMeta({ layout })`, 'const layout = config.layout'],
+      ['a route middleware', `const auth = defineNuxtRouteMiddleware(() => {})\ndefinePageMeta({ middleware: [auth] })`, 'const auth = defineNuxtRouteMiddleware(() => {})'],
+      ['an imported helper call', `import { make } from './utils'\nconst title = make('x')\ndefinePageMeta({ title })`, `const title = make('x')`],
+      ['a concatenation', `const suffix = 'x'\nconst title = 'a' + suffix\ndefinePageMeta({ title })`, `const title = 'a' + suffix`],
+      ['an `import.meta.dev` ternary', `const title = import.meta.dev ? 'a' : 'b'\ndefinePageMeta({ title })`, `const title = (globalThis.__TEST_DEV__ ?? false) ? 'a' : 'b'`],
+      ['a `let` declaration', `let title = 'x'\ndefinePageMeta({ title })`, `let title = 'x'`],
+    ])('should hoist %s', (_, script, declaration) => {
+      const b4024 = vi.spyOn(pageDiagnostics, 'NUXT_B4024').mockReturnValue(undefined as never)
+      expect(transform(script)).toContain(declaration)
+      expect(b4024).not.toHaveBeenCalled()
+    })
   })
 
   describe('strip extracted metadata', () => {
