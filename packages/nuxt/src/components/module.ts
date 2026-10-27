@@ -23,6 +23,9 @@ import { ClientComponentStubPlugin } from './plugins/client-component-stub.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
 import { LazyHydrationTransformPlugin } from './plugins/lazy-hydration-transform.ts'
 import { LazyHydrationMacroTransformPlugin } from './plugins/lazy-hydration-macro-transform.ts'
+import { ComponentWrapperPlugin } from './plugins/component-wrappers.ts'
+import { createComponentResolver } from './compiler-resolver.ts'
+import type { ComponentResolver } from './compiler-resolver.ts'
 import type { Component, ComponentsDir, ComponentsOptions, Nuxt, NuxtPage } from 'nuxt/schema'
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
@@ -252,7 +255,11 @@ export default defineNuxtModule<ComponentsOptions>({
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
     })
 
-    addBuildPlugin(TreeShakeTemplatePlugin({ getComponents }), { client: false })
+    const compilerComponentResolution = nuxt.options.experimental.compilerComponentResolution
+
+    if (!compilerComponentResolution) {
+      addBuildPlugin(TreeShakeTemplatePlugin({ getComponents }), { client: false })
+    }
     if (!nuxt.options.dev) {
       addBuildPlugin(NuxtLinkSsrPlugin, { client: false })
     }
@@ -317,10 +324,36 @@ export default defineNuxtModule<ComponentsOptions>({
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'client', refreshComponents: nuxt.options.dev ? refreshComponents : undefined }), { server: false })
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, mode: 'server', refreshComponents: nuxt.options.dev ? refreshComponents : undefined }), { client: false })
 
+    if (compilerComponentResolution) {
+      const resolver = createComponentResolver({
+        getComponents,
+        rootDir: nuxt.options.rootDir,
+        serverPlaceholderPath,
+        lazyHydration: nuxt.options.experimental.lazyHydration,
+        experimentalComponentIslands: sharedLoaderOptions.experimentalComponentIslands,
+        transform: sharedLoaderOptions.transform,
+        trackResolutions: nuxt.options.dev,
+      })
+      nuxt.hook('modules:done', () => addTemplateNodeTransform(nuxt, resolver))
+      addBuildPlugin(TreeShakeTemplatePlugin({ getComponents, getPrunedBindings: file => resolver.prunedBindings.get(file) }), { client: false })
+
+      const wrapperOptions = {
+        resolver,
+        srcDir: nuxt.options.srcDir,
+        serverComponentRuntime,
+        clientDelayedComponentRuntime,
+        refreshComponents: nuxt.options.dev ? refreshComponents : undefined,
+      }
+      addBuildPlugin(ComponentWrapperPlugin({ ...wrapperOptions, mode: 'client' }), { server: false })
+      addBuildPlugin(ComponentWrapperPlugin({ ...wrapperOptions, mode: 'server' }), { client: false })
+    }
+
     if (nuxt.options.experimental.lazyHydration) {
-      addBuildPlugin(LazyHydrationTransformPlugin({
-        ...sharedLoaderOptions,
-      }), { prepend: true })
+      if (!compilerComponentResolution) {
+        addBuildPlugin(LazyHydrationTransformPlugin({
+          ...sharedLoaderOptions,
+        }), { prepend: true })
+      }
 
       addBuildPlugin(LazyHydrationMacroTransformPlugin({
         ...sharedLoaderOptions,
@@ -431,4 +464,20 @@ function normalizeDirs (dir: undefined | boolean | ComponentsOptions | Component
   }
 
   return normalizedDirs.sort(compareDirByPathLength)
+}
+
+function addTemplateNodeTransform (nuxt: Nuxt, resolver: ComponentResolver) {
+  const vite = nuxt.options.vite.vue ||= {}
+  vite.template ||= {}
+  vite.template.compilerOptions = withNodeTransform(vite.template.compilerOptions, resolver)
+
+  const vueLoader = nuxt.options.webpack.loaders.vue
+  vueLoader.compilerOptions = withNodeTransform(vueLoader.compilerOptions, resolver)
+}
+
+function withNodeTransform<T extends { nodeTransforms?: unknown[] }> (compilerOptions: T | undefined, resolver: ComponentResolver): T {
+  return {
+    ...compilerOptions,
+    nodeTransforms: [...compilerOptions?.nodeTransforms || [], resolver.nodeTransform],
+  } as T
 }

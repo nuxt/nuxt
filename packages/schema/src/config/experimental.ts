@@ -405,5 +405,6 @@ export default defineResolvers({
       },
     },
     clearBuildHooks: true,
+    compilerComponentResolution: true,
   },
 })

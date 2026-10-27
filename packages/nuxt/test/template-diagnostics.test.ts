@@ -346,7 +346,7 @@ describe('template diagnostics in a Nuxt app', () => {
   })
 
   it('registers on the vite and webpack template compilers without changing `vue.compilerOptions`', async () => {
-    const { nuxt, compile, printed } = await loadApp(pages)
+    const { nuxt, compile, printed } = await loadApp(pages, { experimental: { compilerComponentResolution: false } })
 
     expect(nuxt.options.vite.vue!.template!.compilerOptions!.nodeTransforms).toHaveLength(1)
     expect(nuxt.options.webpack.loaders.vue.compilerOptions!.nodeTransforms).toHaveLength(1)
@@ -370,7 +370,7 @@ describe('template diagnostics in a Nuxt app', () => {
   })
 
   it('can be disabled', async () => {
-    const { nuxt } = await loadApp(pages, { experimental: { templateDiagnostics: false } })
+    const { nuxt } = await loadApp(pages, { experimental: { templateDiagnostics: false, compilerComponentResolution: false } })
     expect(nuxt.options.vite.vue!.template!.compilerOptions!.nodeTransforms).toBeUndefined()
     expect(nuxt.options.webpack.loaders.vue.compilerOptions!.nodeTransforms).toBeUndefined()
   })
