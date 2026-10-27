@@ -19,7 +19,7 @@ export function setTemplateDiagnosticsRouteMatcher (nuxt: Nuxt, matcher: RouteMa
 /** Register the template diagnostics on the Vue compiler used by the Vite, webpack and rspack builders. */
 export function setupTemplateDiagnostics (nuxt: Nuxt): void {
   const serverComponents = new WeakMap<Component[], Set<string>>()
-  const publishWarning = nuxt.options.dev ? createWarningPublisher(nuxt) : undefined
+  const publisher = nuxt.options.dev ? createWarningPublisher(nuxt) : undefined
   const layerDirs = nuxt.options._layers
     .map(layer => withTrailingSlash(normalize(layer.config.rootDir)))
     .filter(dir => dir === withTrailingSlash(normalize(nuxt.options.rootDir)) || !dir.includes('/node_modules/'))
@@ -43,7 +43,8 @@ export function setupTemplateDiagnostics (nuxt: Nuxt): void {
       const path = normalize(file)
       return layerDirs.some(dir => path.startsWith(dir) && !path.slice(dir.length).includes('node_modules/'))
     },
-    onWarning: publishWarning,
+    onWarning: publisher?.warn,
+    onWarningResolved: publisher?.clear,
   })
 
   const withDiagnostics = (compilerOptions?: CompilerOptions): CompilerOptions => ({
@@ -77,18 +78,29 @@ function resolveServerComponentTags (components: Component[]): Set<string> {
   return tags
 }
 
-/** Sends warnings to the dev error channel, which shows them on open error pages and overlays. */
-function createWarningPublisher (nuxt: Nuxt): (diagnostic: Diagnostic<unknown>) => void {
+/** Sends warnings to the dev error channel, which shows them on every open page, and retires them once fixed. */
+function createWarningPublisher (nuxt: Nuxt) {
   let broadcast: ReturnType<typeof openErrorBroadcast> | undefined
-  nuxt.hook('close', () => broadcast?.close())
-  return (diagnostic) => {
-    broadcast ||= openErrorBroadcast()
-    const channel = broadcast
-    Promise.all([import('my-bad'), import('my-bad/presets')])
+  const published = new Map<Diagnostic<unknown>, Promise<string | undefined>>()
+  const post = (message: ErrorChannelMessage) => (broadcast ||= openErrorBroadcast()).postMessage(message)
+  const warn = (diagnostic: Diagnostic<unknown>) => {
+    published.set(diagnostic, Promise.all([import('my-bad'), import('my-bad/presets')])
       .then(async ([{ createReport }, { nuxtPreset }]) => {
         const report = await createReport(diagnostic, { cwd: nuxt.options.rootDir, kind: 'warning', presets: [nuxtPreset()] })
-        channel.postMessage({ type: 'nuxt:dev:error:warning', report } satisfies ErrorChannelMessage)
+        post({ type: 'nuxt:dev:error:warning', report })
+        return report.id
       })
-      .catch(() => {})
+      .catch(() => undefined))
   }
+  const clear = (diagnostic: Diagnostic<unknown>) => {
+    const id = published.get(diagnostic)
+    published.delete(diagnostic)
+    return id?.then(id => id && post({ type: 'nuxt:dev:error:warning:clear', id })).catch(() => {})
+  }
+  // the channel can outlive this instance, and a restart raises the same warnings again
+  nuxt.hook('close', async () => {
+    await Promise.all([...published.keys()].map(clear))
+    broadcast?.close()
+  })
+  return { warn, clear }
 }

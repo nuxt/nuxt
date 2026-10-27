@@ -197,6 +197,21 @@ describe('template diagnostics', () => {
       compile(broken, { ssr: true })
       expect(warnings).toHaveLength(2)
     })
+
+    it('resolves a warning with the diagnostic it was reported as, once a compile no longer raises it', () => {
+      const resolved: Diagnostic<unknown>[] = []
+      const { compile, warnings } = setup({ onWarningResolved: diagnostic => resolved.push(diagnostic) })
+      const broken = `<template><ServerCard v-model="value" /><ServerCard @click="go" /></template>`
+      const fixed = `<template><ServerCard v-model="value" /><ServerCard /></template>`
+      compile(broken)
+      compile(broken, { ssr: true })
+
+      compile(fixed)
+      expect(warnings).toHaveLength(2)
+      expect(resolved).toStrictEqual([warnings[1]])
+      compile(fixed, { ssr: true })
+      expect(resolved).toHaveLength(1)
+    })
   })
 
   describe('server component props', () => {
@@ -367,6 +382,28 @@ describe('template diagnostics in a Nuxt app', () => {
     const { compile, printed } = await loadApp({ ...pages, 'app/router.options.ts': 'export default { routes: routes => routes }' })
     compile('<template><NuxtLink to="/missing" /></template>')
     expect(printed('NUXT_B4025')).toStrictEqual([])
+  })
+
+  it('publishes warnings to the dev error channel in development, and retires them once fixed or closed', async () => {
+    const { nuxt, compile } = await loadApp(pages, { dev: true })
+    const messages: Array<{ type: string, id?: string, report?: { id: string, name: string } }> = []
+    const channel = new BroadcastChannel('nuxt:dev:error')
+    onTestFinished(() => channel.close())
+    channel.onmessage = event => messages.push(event.data)
+
+    compile('<template><NuxtLink to="/missing" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+    expect(messages[0]).toMatchObject({ type: 'nuxt:dev:error:warning', report: { name: 'NUXT_B4025' } })
+
+    compile('<template><NuxtLink to="/users/1" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(2))
+    expect(messages[1]).toStrictEqual({ type: 'nuxt:dev:error:warning:clear', id: messages[0]!.report!.id })
+
+    compile('<template><NuxtLink to="/missing" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(3))
+    await nuxt.close()
+    await vi.waitFor(() => expect(messages).toHaveLength(4))
+    expect(messages[3]).toStrictEqual({ type: 'nuxt:dev:error:warning:clear', id: messages[2]!.report!.id })
   })
 
   it('can be disabled', async () => {

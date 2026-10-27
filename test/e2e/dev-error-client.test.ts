@@ -44,7 +44,7 @@ test('does not overlay an error the browser raised on a page loaded afterwards',
   await page.getByRole('button', { name: 'throw' }).click()
   await expect(page.locator('nuxt-error-overlay')).toHaveCount(1)
 
-  const ready = page.waitForEvent('websocket').then(ws => ws.waitForEvent('framesent', frame => String(frame.payload).includes('nuxt:dev:error:ready')))
+  const ready = page.waitForResponse(response => response.url().includes('/__nuxt_dev__/error/events'))
   await page.reload()
   await ready
   await page.waitForTimeout(1000)

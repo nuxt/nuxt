@@ -1,7 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { fetch, setup } from '@nuxt/test-utils/e2e'
-import type { ErrorReport } from 'my-bad'
 
 import { asyncContext, isDev, isTestingAppManifest, isWebpack } from './matrix'
 import { channelState, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
@@ -74,13 +73,14 @@ describe.skipIf(!runs)('dev ssr error page', () => {
     expect(res.headers.get('content-type')).toContain('application/json')
   })
 
-  it('publishes the error to the channel, and clears it once a page renders', async () => {
+  it('publishes the error to the channel, and keeps it open while another page renders', async () => {
     const { report } = await renderErrorPage()
     expect((await channelState()).current?.id).toBe(report.id)
 
     const ok = await fetch('/ok', { headers: { accept: 'text/html' } })
     expect(ok.status).toBe(200)
     expect(await ok.text()).toContain('rendered without error')
-    await expect.poll(async () => (await channelState()).current as ErrorReport | undefined, { timeout: 5000 }).toBeUndefined()
+    await new Promise(resolve => setTimeout(resolve, 500))
+    expect((await channelState()).current?.id).toBe(report.id)
   })
 })

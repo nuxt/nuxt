@@ -1,3 +1,5 @@
+import { rmSync, writeFileSync } from 'node:fs'
+import { join } from 'pathe'
 import { isWindows } from 'std-env'
 import type { Page } from '@playwright/test'
 import { expect, test } from './test-utils'
@@ -37,6 +39,47 @@ test('renders the healthy page once an ssr runtime error is fixed, without a man
 
   fixture.write('app/pages/boom-page.vue', healthy.replace(HEALTHY_PAGE, ''))
   await expect(page.locator('body')).toContainText('boom page healthy', { timeout: 30_000 })
+})
+
+test('dismisses the overlay of an error page whose error was fixed before it connected to the channel', async ({ page }) => {
+  const healthy = fixture.read('app/pages/boom-page.vue')
+  let connect!: () => void
+  const connected = new Promise<void>((resolve) => { connect = resolve })
+  await page.route('**/__nuxt_dev__/error/events*', route => connected.then(() => route.continue()))
+
+  await page.goto('/boom-page')
+  await expect(overlayOf(page)).toHaveCount(1)
+
+  fixture.write('app/pages/boom-page.vue', healthy.replace(HEALTHY_PAGE, ''))
+  const other = await page.context().newPage()
+  try {
+    await other.goto('/boom-page')
+    await expect(other.locator('body')).toContainText('boom page healthy', { timeout: 30_000 })
+  } finally {
+    await other.close()
+  }
+
+  connect()
+  await expect(overlayOf(page)).toHaveCount(0, { timeout: 30_000 })
+  await expect(page.locator('body')).toContainText('boom page healthy', { timeout: 30_000 })
+})
+
+test('keeps a page on its error while another page renders', async ({ page }) => {
+  await page.goto('/boom-page')
+  await expect(overlayOf(page)).toHaveCount(1)
+  await markPage(page)
+
+  const other = await page.context().newPage()
+  try {
+    await other.goto('/ok')
+    await expect(other.locator('body')).toContainText('ok page')
+    await other.waitForTimeout(2000)
+  } finally {
+    await other.close()
+  }
+
+  await expect(overlayOf(page)).toHaveCount(1)
+  expect(await pageIsMarked(page)).toBe(true)
 })
 
 test('reports the new position when the page throws on a different line', async ({ page }) => {
@@ -86,6 +129,30 @@ test('reloads the page when an error during hydration is fixed', async ({ page }
   await expect(overlayOf(page)).toHaveCount(0, { timeout: 30_000 })
   await expect(page.locator('body')).toContainText('hydration boom healthy', { timeout: 30_000 })
   expect(await pageIsMarked(page)).toBe(false)
+})
+
+test('reloads a page whose app never started once the file it failed on compiles', async ({ page }) => {
+  const child = join(fixture.fixtureDir, 'app/components/StaticChild.vue')
+  const healthy = '<template>\n  <span>static child</span>\n</template>\n'
+  writeFileSync(child, healthy)
+  try {
+    fixture.replace('app/app.vue', '    <NuxtPage />\n', '    <StaticChild />\n    <NuxtPage />\n')
+    await page.goto('/client-only')
+    await expect(page.locator('body')).toContainText('static child', { timeout: 30_000 })
+
+    writeFileSync(child, healthy.replace('<span>static child</span>', '<span\n    static child\n  </span>'))
+    await page.reload()
+    await expect(overlayOf(page)).toHaveCount(1, { timeout: 30_000 })
+    await expect(page.locator('body')).not.toContainText('client only healthy')
+
+    await markPage(page)
+    writeFileSync(child, healthy)
+    await expect(page.locator('body')).toContainText('client only healthy', { timeout: 30_000 })
+    expect(await pageIsMarked(page)).toBe(false)
+  } finally {
+    fixture.restore()
+    rmSync(child, { force: true })
+  }
 })
 
 test('keeps an overlay over the error page when an unrelated file changes', async ({ page }) => {

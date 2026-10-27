@@ -7,7 +7,7 @@ const fixtures: [source: string, dest: string][] = [
   ['hmr', 'hmr'],
   ['hmr-sibling-layer', 'hmr-sibling-layer'],
   ['dev-error-client', 'dev-error-client'],
-  ...['dev-error-sourcemap', 'dev-error-recovery', 'dev-error-compile', 'dev-error-expected']
+  ...['dev-error-sourcemap', 'dev-error-recovery', 'dev-error-compile', 'dev-error-expected', 'dev-error-warnings']
     .map(dest => ['dev-error-sourcemap', dest] as [string, string]),
 ]
 

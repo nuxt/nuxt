@@ -89,6 +89,8 @@ export interface NuxtRendererOptions {
    * or when the builder has no channel open.
    */
   onDevError?: (error: unknown, event: RendererEvent, options?: DevErrorObserveOptions) => Promise<DevErrorReport | undefined>
+  /** Dev-only: render the badge added to the head of every page, which shows the live error channel's errors and warnings. */
+  renderDevBadge?: (event: RendererEvent) => Promise<string | undefined>
   /** Prerender-only capabilities, absent from a runtime build. */
   prerender?: {
     payloadCache: PayloadCache

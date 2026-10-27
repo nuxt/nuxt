@@ -74,6 +74,23 @@ describe('dev error reporter', () => {
     expect(console.error).not.toHaveBeenCalled()
   })
 
+  it('publishes a compile report to every page, whichever request ran into it', async () => {
+    const messages: Array<{ report: ErrorReport, requestId?: string, request?: string }> = []
+    const listener = new BroadcastChannel('nuxt:dev:error')
+    listener.onmessage = event => messages.push(event.data)
+    const compile = { ...report, kind: 'compile' } as ErrorReport
+    const { reporter } = reporterFor({ createReport: vi.fn().mockResolvedValueOnce(report).mockResolvedValueOnce(compile) })
+    const headers = { 'x-nuxt-dev-request-id': 'module-request' }
+
+    await reporter(new Error('boom'), new Request('http://localhost/failing', { headers }))
+    await reporter(new Error('boom'), new Request('http://localhost/_nuxt/app.vue', { headers }))
+    await vi.waitFor(() => expect(messages).toHaveLength(2))
+
+    expect(messages[0]).toMatchObject({ requestId: 'module-request', request: 'GET /failing' })
+    expect(messages[1]).toMatchObject({ report: { kind: 'compile' }, requestId: undefined, request: undefined })
+    listener.close()
+  })
+
   it('swallows a report that cannot be built', async () => {
     const { reporter, mapStack } = reporterFor({ createReport: () => Promise.reject(new Error('no sourcemaps')) })
     const error = new Error('boom')

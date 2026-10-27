@@ -19,6 +19,8 @@ export interface TemplateDiagnosticsOptions {
   filter?: (file: string) => boolean
   /** Called once for each new warning, until a compile of the file no longer raises it. */
   onWarning?: (diagnostic: Diagnostic<unknown>) => void
+  /** Called with the diagnostic `onWarning` received, once a compile of the file no longer raises it. */
+  onWarningResolved?: (diagnostic: Diagnostic<unknown>) => void
 }
 
 const NODE_ROOT = 0
@@ -44,7 +46,7 @@ const IDENTIFIER_RE = /^[$A-Z_][\w$]*$/i
  */
 export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions = {}): { nodeTransform: NodeTransform } {
   const displayPath = options.displayPath ?? ((file: string) => file)
-  const files = new Map<string, Set<string>>()
+  const files = new Map<string, Map<string, Diagnostic<unknown>>>()
   const scripts = new WeakMap<RootNode, Map<string, string | undefined>>()
 
   const nodeTransform: NodeTransform = (node, context) => {
@@ -223,18 +225,25 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
   }
 
   function finalise (file: string, findings: Finding[]) {
-    const reported = files.get(file)
+    const reported = files.get(file) ?? new Map<string, Diagnostic<unknown>>()
     const keys = new Set<string>()
     for (const finding of findings) {
       const key = `${finding.code}:${finding.loc.start.offset}:${JSON.stringify(finding.params)}`
       keys.add(key)
-      if (!reported?.has(key)) {
+      if (!reported.has(key)) {
         const diagnostic = report(finding, file)
+        reported.set(key, diagnostic)
         options.onWarning?.(diagnostic)
       }
     }
-    if (keys.size) {
-      files.set(file, keys)
+    for (const [key, diagnostic] of reported) {
+      if (!keys.has(key)) {
+        reported.delete(key)
+        options.onWarningResolved?.(diagnostic)
+      }
+    }
+    if (reported.size) {
+      files.set(file, reported)
     } else {
       files.delete(file)
     }

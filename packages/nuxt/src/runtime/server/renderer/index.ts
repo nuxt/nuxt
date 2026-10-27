@@ -540,7 +540,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([headTags]),
+    head: normalizeChunks([headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS) : undefined]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
@@ -750,7 +750,7 @@ async function renderStreamedResponse (ctx: {
   }
   const shellContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([bootstrapScript, headTags]),
+    head: normalizeChunks([bootstrapScript, headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS) : undefined]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
     body: [],
@@ -1101,6 +1101,12 @@ function pushSpeculationRulesScript (ssrContext: NuxtSSRContext, patterns: strin
 /** Rendered without `href`, so the browser ignores it until the client activates it. */
 function inertPrefetchLink ({ href, ...link }: Link): Link {
   return { ...link, 'data-href': href } as Link
+}
+
+function renderDevBadge (runtime: NuxtRendererOptions, event: RendererEvent, noScripts: boolean): Promise<string | undefined> | undefined {
+  if (!import.meta.test && !noScripts) {
+    return runtime.renderDevBadge?.(event).catch(() => undefined)
+  }
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext): string {

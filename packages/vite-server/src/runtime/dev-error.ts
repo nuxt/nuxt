@@ -1,7 +1,7 @@
 import type { ViteDevServer } from 'vite'
 import type { ViteHotContext } from 'vite/types/hot.d.ts'
 import type { ErrorReport } from 'my-bad'
-import { ERROR_CHANNEL_ENV, clearErrorReport as clearChannelReport, createDevErrorReporter, createErrorReport, serializeErrorCause, setErrorChannelForwarding, useErrorChannel } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, clearErrorReport as clearChannelReport, createDevErrorReporter, createErrorReport, renderDevBadge as renderBadge, serializeErrorCause, setErrorChannelForwarding, useErrorChannel } from 'nuxt/internal/dev-error'
 import type { DevErrorObserveOptions, DevErrorReport, SerializedErrorCause } from 'nuxt/internal/dev-error'
 import { isLoopbackAddress } from 'nuxt/internal/dev/peer'
 
@@ -70,12 +70,18 @@ export function observeDevError (error: unknown, request?: Request, observe?: De
   return Promise.resolve(undefined)
 }
 
-/** Retire the current report, dismissing overlays showing it. */
-export function clearErrorReport (): Promise<void> {
+/** Render the badge for the head of a page rendered for `request`, when a channel is served for it. */
+export function renderDevBadge (request: Request): Promise<string | undefined> {
+  const channel = env()[ERROR_CHANNEL_ENV] || context?.channel
+  return channel ? renderBadge({ cwd: context?.cwd, channel, request }) : Promise.resolve(undefined)
+}
+
+/** Retire the reports published for requests to `url`, which has since rendered. */
+export function clearErrorReport (url: URL): Promise<void> {
   if (context || !hot) {
-    return clearChannelReport()
+    return clearChannelReport(url)
   }
-  hot.send(REMOTE_DEV_ERROR_CLEAR_EVENT)
+  hot.send(REMOTE_DEV_ERROR_CLEAR_EVENT, { url: url.href })
   return Promise.resolve()
 }
 

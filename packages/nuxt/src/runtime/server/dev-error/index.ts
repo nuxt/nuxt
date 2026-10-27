@@ -31,6 +31,7 @@ export type ErrorChannelMessage =
   | { type: 'nuxt:dev:error:sync' }
   | { type: 'nuxt:dev:error:log', entry: LogEntry }
   | { type: 'nuxt:dev:error:warning', report: ErrorReport }
+  | { type: 'nuxt:dev:error:warning:clear', id?: string }
   | { type: 'nuxt:dev:error:progress', progress: BuildProgress }
 
 const CHANNEL_KEY = Symbol.for('nuxt:dev:error-channel')
@@ -86,6 +87,8 @@ function createOwnedChannel (channel: Channel): Channel {
         return channel.log(message.entry)
       case 'nuxt:dev:error:warning':
         return channel.warn(message.report)
+      case 'nuxt:dev:error:warning:clear':
+        return channel.clearWarning(message.id)
       case 'nuxt:dev:error:progress':
         return channel.progress(message.progress)
     }
@@ -130,6 +133,9 @@ function createForwardingChannel (): Channel {
     warn (report) {
       post({ type: 'nuxt:dev:error:warning', report })
     },
+    clearWarning (id) {
+      post({ type: 'nuxt:dev:error:warning:clear', id })
+    },
     log (entry) {
       post({ type: 'nuxt:dev:error:log', entry: { timestamp: Date.now(), ...entry } })
     },
@@ -155,11 +161,23 @@ export interface ErrorRequestInfo {
   headers: Headers
 }
 
-/** Publish a report as the current error, paired with the request it came from. */
+const PUBLISHED_KEY = Symbol.for('nuxt:dev:error-published')
+
+/** Ids of the reports published for each requested path, which a successful render of that path retires. */
+function publishedByPath (): Map<string, Set<string>> {
+  const store = globalThis as { [PUBLISHED_KEY]?: Map<string, Set<string>> }
+  return store[PUBLISHED_KEY] ||= new Map()
+}
+
+/** Publish a report as an open error, paired with the request it came from. */
 export async function publishErrorReport (report: ErrorReport, request?: ErrorRequestInfo): Promise<void> {
   const channel = await useErrorChannel()
-  const description = request && `${request.method} ${request.url.pathname}${request.url.search}`
-  channel.setError(report, requestIdOf(request), description)
+  const path = request && `${request.url.pathname}${request.url.search}`
+  channel.setError(report, requestIdOf(request), path && `${request.method} ${path}`)
+  if (path) {
+    const published = publishedByPath()
+    published.set(path, (published.get(path) ?? new Set()).add(report.id))
+  }
 }
 
 /** The id a dev server in front gave the request. */
@@ -167,11 +185,17 @@ function requestIdOf (request?: Pick<ErrorRequestInfo, 'headers'>): string | und
   return request?.headers.get(REQUEST_ID_HEADER) ?? undefined
 }
 
-/** Retire the current report, dismissing overlays showing it. */
-export async function clearErrorReport (): Promise<void> {
+/** Retire the reports published for requests to `url`, which has since rendered. */
+export async function clearErrorReport (url: URL): Promise<void> {
+  const path = `${url.pathname}${url.search}`
+  const ids = publishedByPath().get(path)
+  if (!ids) {
+    return
+  }
+  publishedByPath().delete(path)
   const channel = await useErrorChannel()
-  if (channel.current) {
-    channel.clearError()
+  for (const id of ids) {
+    channel.clearError(id)
   }
 }
 
@@ -246,6 +270,22 @@ async function withErrorOverlay (html: string, report: ErrorReport, options: Err
     tag: 'nuxt-error-overlay',
     startMinimized: options.startMinimized,
   })
+}
+
+/**
+ * Render the badge for the head of a dev page, which shows the channel's errors and warnings
+ * on it. The page reloads once its error clears, unless `window.__NUXT_DEV_ERROR__.recovers()`
+ * reports that the app can update in place.
+ */
+export async function renderDevBadge (options: { cwd?: string, channel: string, request?: Pick<ErrorRequestInfo, 'headers'> }): Promise<string> {
+  const [{ renderBadge }, { nuxtTheme }] = await Promise.all([
+    import('my-bad'),
+    import('my-bad/presets'),
+  ])
+  const requestId = requestIdOf(options.request) ?? crypto.randomUUID()
+  const state = JSON.stringify({ requestId }).replaceAll('<', '\\u003c')
+  return `<script>window.__NUXT_DEV_ERROR__=${state};addEventListener('my-bad:error:clear',()=>__NUXT_DEV_ERROR__.recovers?.()||location.reload())</script>`
+    + renderBadge({ channel: options.channel, cwd: options.cwd, theme: nuxtTheme, tag: 'nuxt-error-overlay', requestId })
 }
 
 /** Render a standalone error page, for when the app itself cannot render one. */
@@ -323,7 +363,8 @@ export function createDevErrorReporter<E> (options: DevErrorReporterOptions<E>):
       return undefined
     }
     if (observe.publish !== false) {
-      await publishErrorReport(report, request).catch(() => {})
+      // a file that does not compile is broken for every page, whichever request ran into it
+      await publishErrorReport(report, report.kind === 'compile' ? undefined : request).catch(() => {})
     }
     if (observe.print !== false && !isForwarding()) {
       await printErrorReport(report, { cwd: options.cwd, error, request })

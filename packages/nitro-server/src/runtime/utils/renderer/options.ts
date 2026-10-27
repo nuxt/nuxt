@@ -54,8 +54,8 @@ export const rendererOptions: NuxtRendererOptions = {
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints),
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
   onRenderSuccess: import.meta.dev
-    ? () => {
-        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+    ? (event) => {
+        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport(event.url)).catch(() => {})
       }
     : undefined,
   captureError: (error, { event, tags }) => {
@@ -67,6 +67,9 @@ export const rendererOptions: NuxtRendererOptions = {
   },
   onDevError: import.meta.dev
     ? (error, event, options) => import('#internal/nuxt/error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
+    : undefined,
+  renderDevBadge: import.meta.dev
+    ? event => import('#internal/nuxt/error-channel').then(({ renderDevBadge }) => renderDevBadge(appEvent(event) as H3Event))
     : undefined,
   prerender: import.meta.prerender
     ? {

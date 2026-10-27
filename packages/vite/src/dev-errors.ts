@@ -2,8 +2,7 @@ import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import type { ErrorReport } from 'my-bad'
 import type { BuildProgress } from 'my-bad/channel'
-import type { NormalizedHotChannelClient, ViteDevServer, Plugin as VitePlugin } from 'vite'
-import { joinURL } from 'ufo'
+import type { ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { ERROR_CHANNEL_ENV, openErrorBroadcast } from 'nuxt/internal/dev-error'
 
 /** The shape Vite gives transform failures. */
@@ -26,9 +25,8 @@ export interface ClientRuntimeError {
   name?: string
   message: string
   stack?: string
-  /** Whether the app is left without a page to update, so it reloads once the report clears. */
-  fatal?: boolean
-
+  /** The page load that raised it, which the report is shown to. */
+  requestId?: string
 }
 
 export interface DevErrorReporter {
@@ -42,7 +40,7 @@ export interface DevErrorReporter {
   readonly isRuntime: boolean
   /** Show what the bundler is busy with on pages showing a report. */
   progress: (progress: BuildProgress) => void
-  /** Push overlays to open pages over the HMR channel. */
+  /** Report the errors open pages raise, and the compile errors Vite only sends to them. */
   attach: (server: ViteDevServer) => void
 }
 
@@ -52,42 +50,25 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   nuxt.hook('close', () => broadcast.close())
 
   let server: ViteDevServer | undefined
-  // an error raised while the page loads predates its hmr connection
-  let pendingOverlay: { type: 'custom', event: string, data: unknown } | undefined
-  const channelPath = () => process.env[ERROR_CHANNEL_ENV] || joinURL(nuxt.options.app.baseURL, nuxt.options.devServer.errorChannel)
-  const overlayPath = joinURL(nuxt.options.app.baseURL, `${nuxt.options.devServer.errorChannel}-overlay`)
-  function showOverlay (report: ErrorReport, options: { reloadOnClear?: boolean } = {}) {
-    const hot = server?.environments.client?.hot
-    if (!hot) {
-      return
-    }
-    pendingOverlay = { type: 'custom', event: 'nuxt:dev:error', data: { id: report.id, url: joinURL(overlayPath, report.id), reloadOnClear: options.reloadOnClear } }
-    hot.send(pendingOverlay)
-  }
-
-  async function renderOverlayFor (report: ErrorReport): Promise<string> {
-    const [{ renderOverlay }, { nuxtTheme }] = await Promise.all([import('my-bad'), import('my-bad/presets')])
-    return renderOverlay(report, { cwd: nuxt.options.rootDir, channel: channelPath(), theme: nuxtTheme, tag: 'nuxt-error-overlay', startMinimized: true })
-  }
-
-  // a page rendered into a report may connect after the update that retired it, and asks
-  let clearedAt = 0
 
   let lastKey: string | undefined
   let current: ErrorReport | undefined
   let file: string | undefined
   let isRuntime = false
+  let runtimeRequestId: string | undefined
   // the file of a compile report another process published, which vite's hmr payload would replace without its name
   let publishedFile: string | undefined
+  // the reports another process published that are still open
+  const published = new Set<string>()
   // the same failure reaches the logger and the hot channel worded differently, at one position
   const keyOf = (error: ViteTransformError) => [error.loc?.file ?? error.id, error.loc?.line, error.loc?.column, error.loc ? '' : error.message].join(':')
 
   broadcast.onmessage = (event) => {
-    const message = event.data as { type?: string, report?: ErrorReport }
+    const message = event.data as { type?: string, report?: ErrorReport, id?: string }
     switch (message?.type) {
       case 'nuxt:dev:error:sync':
         if (current) {
-          broadcast.postMessage({ type: 'nuxt:dev:error:report', report: current })
+          broadcast.postMessage({ type: 'nuxt:dev:error:report', report: current, requestId: runtimeRequestId })
         }
         return
       // a compile error is remembered by file, so fixing the file clears it;
@@ -95,13 +76,23 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       case 'nuxt:dev:error:report':
 
         if (message.report && message.report.id !== current?.id) {
+          published.add(message.report.id)
           const compiled = compileFile(message.report)
           file = compiled ?? file
           isRuntime ||= !compiled
+          runtimeRequestId = undefined
           publishedFile = compiled
         }
         return
       case 'nuxt:dev:error:clear':
+        if (message.id) {
+          published.delete(message.id)
+        } else {
+          published.clear()
+        }
+        if (published.size) {
+          return
+        }
         publishedFile = undefined
         if (!current) {
           file = undefined
@@ -126,7 +117,6 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         const report = await createReport(error, { cwd: nuxt.options.rootDir, kind: 'compile', presets: [nuxtPreset()] })
         current = report
         broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
-        showOverlay(report)
         if (!process.env[ERROR_CHANNEL_ENV]) {
           options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
         }
@@ -142,13 +132,12 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       }
       lastKey = undefined
       publishedFile = undefined
-      clearedAt = Date.now()
+      published.clear()
       current = undefined
       file = undefined
       isRuntime = false
-      pendingOverlay = undefined
+      runtimeRequestId = undefined
       broadcast.postMessage({ type: 'nuxt:dev:error:clear' })
-      server?.environments.client?.hot.send({ type: 'custom', event: 'nuxt:dev:error:clear' })
     },
     get file () {
       return file
@@ -161,18 +150,6 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
     },
     attach (devServer) {
       server = devServer
-      devServer.middlewares.use(overlayPath, (req, res, next) => {
-        const id = req.url?.split('?')[0]?.replace(/^\//, '')
-        // a report quotes source, so it is only served to the page that was told about it
-        const site = req.headers['sec-fetch-site']
-        if (!id || !current || current.id !== id || (site !== undefined && site !== 'same-origin')) {
-          return next()
-        }
-        renderOverlayFor(current).then((html) => {
-          res.setHeader('content-type', 'text/html;charset=utf-8')
-          res.end(html)
-        }, next)
-      })
       // a hot update that fails to transform is only sent to the client, whose overlay is off
       for (const environment of Object.values(devServer.environments)) {
         const send = environment.hot.send.bind(environment.hot) as (...args: unknown[]) => void
@@ -185,18 +162,12 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }) as typeof environment.hot.send
       }
       const hot = devServer.environments.client?.hot
-      hot?.on?.('nuxt:dev:client-error', (data: ClientRuntimeError, client) => {
-        reportRuntimeError(data, client).catch(() => {})
+      hot?.on?.('nuxt:dev:client-error', (data: ClientRuntimeError) => {
+        reportRuntimeError(data).catch(() => {})
       })
-      hot?.on?.('nuxt:dev:error:shown', ({ since }: { since?: number }, client) => {
-        if (typeof since === 'number' && since < clearedAt) {
-          client.send({ type: 'custom', event: 'nuxt:dev:error:clear' })
-        }
-      })
-      hot?.on?.('nuxt:dev:error:ready', (_data: unknown, client) => {
-        // a runtime report belongs to the page load that raised it
-        if (pendingOverlay && current?.kind === 'compile') {
-          client.send(pendingOverlay)
+      hot?.on?.('nuxt:dev:client-error:clear', ({ requestId }: { requestId?: string }) => {
+        if (isRuntime && requestId === runtimeRequestId) {
+          reporter.clear()
         }
       })
     },
@@ -208,7 +179,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   }
 
   /** Report an error the browser raised, whose stack points at the modules Vite served. */
-  async function reportRuntimeError (error: ClientRuntimeError, client: NormalizedHotChannelClient): Promise<void> {
+  async function reportRuntimeError (error: ClientRuntimeError): Promise<void> {
     if (!server) {
       return
     }
@@ -217,15 +188,14 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
  && !isRuntime && IMPORT_FAILURE_RE.test(error.message)) {
       return
     }
-    const key = `runtime:${error.name}:${error.message}:${error.stack}`
+    // a runtime report belongs to the page load that raised it
+    const key = `runtime:${error.requestId}:${error.name}:${error.message}:${error.stack}`
     if (key === lastKey) {
-      if (pendingOverlay) {
-        client.send(pendingOverlay)
-      }
       return
     }
     lastKey = key
     isRuntime = true
+    runtimeRequestId = error.requestId
     file = undefined
     try {
       const [{ createReport, renderAnsi }, { viteLoader }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/vite'), import('my-bad/presets')])
@@ -241,8 +211,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         presets: [nuxtPreset()],
       })
       current = report
-      broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
-      showOverlay(report, { reloadOnClear: error.fatal !== false })
+      broadcast.postMessage({ type: 'nuxt:dev:error:report', report, requestId: error.requestId })
       if (!process.env[ERROR_CHANNEL_ENV]) {
         options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
       }

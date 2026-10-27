@@ -11,6 +11,7 @@ const fixtureDirs = [
   fileURLToPath(new URL('../fixtures-temp/dev-error-recovery', import.meta.url)),
   fileURLToPath(new URL('../fixtures-temp/dev-error-compile', import.meta.url)),
   fileURLToPath(new URL('../fixtures-temp/dev-error-expected', import.meta.url)),
+  fileURLToPath(new URL('../fixtures-temp/dev-error-warnings', import.meta.url)),
 ]
 
 teardown('remove temporary hmr fixture directory', async () => {

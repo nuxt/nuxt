@@ -1,7 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { fetch, setup } from '@nuxt/test-utils/e2e'
-import type { ErrorReport } from 'my-bad'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
 import { channelState, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
@@ -60,7 +59,7 @@ describe.skipIf(!runs)('pure vite dev server error reporting', () => {
     })
   })
 
-  it('serves the live error channel, publishing the error and clearing it once a page renders', async () => {
+  it('serves the live error channel, publishing the error and keeping it open while another page renders', async () => {
     const res = await fetch('/__nuxt_dev__/error/history/unknown-report')
     expect(res.status).toBe(404)
     expect(res.headers.get('content-type')).toContain('application/json')
@@ -71,6 +70,7 @@ describe.skipIf(!runs)('pure vite dev server error reporting', () => {
     const ok = await fetch('/ok', { headers: { accept: 'text/html' } })
     expect(ok.status).toBe(200)
     expect(await ok.text()).toContain('rendered without error')
-    await expect.poll(async () => (await channelState()).current as ErrorReport | undefined, { timeout: 5000 }).toBeUndefined()
+    await new Promise(resolve => setTimeout(resolve, 500))
+    expect((await channelState()).current?.id).toBe(report.id)
   })
 })

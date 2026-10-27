@@ -41,6 +41,11 @@ export function publishErrorReport (report: ErrorReport, event?: H3Event): Promi
   return devError.publishErrorReport(report, event && { method: event.req.method, url: event.url, headers: event.req.headers })
 }
 
+/** Render the badge for the head of a page rendered for `event`. */
+export function renderDevBadge (event: H3Event): Promise<string> {
+  return devError.renderDevBadge({ cwd: rootDir, channel: getErrorChannelPath(), request: event.req })
+}
+
 /**
  * Build a report for an error raised while rendering. Must run on the stack as it was
  * raised, since frames are mapped through the SSR bundle's sourcemaps.

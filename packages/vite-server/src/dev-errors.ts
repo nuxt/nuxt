@@ -36,8 +36,8 @@ export function listenForRemoteDevErrors (nuxt: Nuxt, server: ViteDevServer, cha
       const [overlay, page] = result ? await Promise.all([result.overlay(''), result.page()]).catch(() => []) : []
       client.send(REMOTE_DEV_ERROR_REPORT_EVENT, { id: message.id, report: result?.report, overlay, page } satisfies RemoteDevErrorReport)
     })
-    environment.hot.on(REMOTE_DEV_ERROR_CLEAR_EVENT, () => {
-      clearErrorReport().catch(() => {})
+    environment.hot.on(REMOTE_DEV_ERROR_CLEAR_EVENT, ({ url }: { url: string }) => {
+      clearErrorReport(new URL(url)).catch(() => {})
     })
   }
 }

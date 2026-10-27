@@ -23,35 +23,16 @@ function createNuxt () {
   } as unknown as Nuxt & { close: () => void }
 }
 
-type OverlayRoute = { path: string, handle: (req: { url?: string, headers?: Record<string, string>, socket?: { remoteAddress?: string } }, res: { setHeader: (name: string, value: string) => void, end: (body: string) => void }, next: () => void) => void }
-
-/** A stand-in dev server, capturing the overlay route and the messages pushed over hmr. */
+/** A stand-in dev server, capturing the messages pushed over hmr. */
 function devServer (options: { graph?: unknown } = {}) {
   const send = vi.fn()
   const listeners: Record<string, (data?: any, client?: any) => void> = {}
-  const routes: OverlayRoute[] = []
   const server = {
     config: { base: '/_nuxt/' },
-    middlewares: { use: (path: string, handle: OverlayRoute['handle']) => routes.push({ path, handle }) },
     environments: { client: { hot: { send, on: (event: string, fn: (data?: any, client?: any) => void) => { listeners[event] = fn } }, moduleGraph: options.graph } },
   } as unknown as ViteDevServer
 
-  /** Request the overlay the last pushed payload points at, as a page on this machine. */
-  async function overlay (headers: Record<string, string> = { 'sec-fetch-site': 'same-origin' }, remoteAddress = '127.0.0.1'): Promise<string | undefined> {
-    const { data } = send.mock.lastCall![0] as { data: { url: string } }
-    const route = routes[0]!
-    let body: string | undefined
-    await new Promise<void>((resolve) => {
-      route.handle(
-        { url: data.url.slice(route.path.length), headers, socket: { remoteAddress } },
-        { setHeader: () => {}, end: (html: string) => { body = html; resolve() } },
-        resolve,
-      )
-    })
-    return body
-  }
-
-  return { server, send, listeners, overlay }
+  return { server, send, listeners }
 }
 
 function listen () {
@@ -120,62 +101,19 @@ describe('createDevErrorReporter', () => {
     nuxt.close()
   })
 
-  it('announces the overlay to open pages, and serves it to the page that asks', async () => {
+  it('leaves showing a report to the channel open pages listen to', async () => {
     const nuxt = createNuxt()
+    const { messages, channel } = listen()
     const reporter = createDevErrorReporter(nuxt, { print: () => {} })
-    const { server, send, overlay } = devServer()
+    const { server, send } = devServer()
     reporter.attach(server)
 
-    const report = await reporter.report(transformError)
-    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
-    expect(send.mock.calls[0]![0]).toMatchObject({
-      type: 'custom',
-      event: 'nuxt:dev:error',
-      data: { id: report!.id, url: `/__nuxt_dev__/error-overlay/${report!.id}` },
-    })
-
-    const html = await overlay()
-    expect(html).toContain('<nuxt-error-overlay>')
-    expect(html).toContain('"channel":"/__nuxt_dev__/error"')
-    expect(html).toContain('"startMinimized":true')
-
+    await reporter.report(transformError)
     reporter.clear()
-    expect(send).toHaveBeenLastCalledWith({ type: 'custom', event: 'nuxt:dev:error:clear' })
-    nuxt.close()
-  })
+    await vi.waitFor(() => expect(messages.map(message => message.type)).toEqual(['nuxt:dev:error:report', 'nuxt:dev:error:clear']))
+    expect(send).not.toHaveBeenCalled()
 
-  it('sends the current report to a page that asks once it listens', async () => {
-    const nuxt = createNuxt()
-    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
-    const { server, send, listeners } = devServer()
-    reporter.attach(server)
-    const client = { send: vi.fn() }
-
-    listeners['nuxt:dev:error:ready']!(undefined, client)
-    expect(client.send).not.toHaveBeenCalled()
-
-    await reporter.report(transformError)
-    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
-    listeners['nuxt:dev:error:ready']!(undefined, client)
-    expect(client.send).toHaveBeenCalledWith(send.mock.calls[0]![0])
-    expect(send).toHaveBeenCalledTimes(1)
-
-    nuxt.close()
-  })
-
-  it('serves the overlay to a same-origin request from any peer', async () => {
-    const nuxt = createNuxt()
-    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
-    const { server, send, overlay } = devServer()
-    reporter.attach(server)
-
-    await reporter.report(transformError)
-    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
-
-    expect(await overlay({ 'sec-fetch-site': 'cross-site' })).toBeUndefined()
-    expect(await overlay({ 'sec-fetch-site': 'same-origin' }, '192.168.1.24')).toContain('<nuxt-error-overlay>')
-    expect(await overlay()).toContain('<nuxt-error-overlay>')
-
+    channel.close()
     nuxt.close()
   })
 
@@ -205,16 +143,15 @@ describe('createDevErrorReporter', () => {
     const nuxt = createNuxt()
     const print = vi.fn()
     const reporter = createDevErrorReporter(nuxt, { print })
-    const { server, send, overlay } = devServer()
+    const { server } = devServer()
     reporter.attach(server)
 
     const report = await reporter.report(transformError)
     expect(report).toMatchObject({ kind: 'compile' })
     expect(print).toHaveBeenCalledTimes(1)
-    expect(await overlay()).toContain('<nuxt-error-overlay>')
     reporter.progress({ phase: 'transform', message: 'Rebuilding' })
     reporter.clear()
-    expect(send).toHaveBeenLastCalledWith({ type: 'custom', event: 'nuxt:dev:error:clear' })
+    expect(reporter.file).toBeUndefined()
 
     nuxt.close()
   })
@@ -241,21 +178,20 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     const print = vi.fn()
     const { messages, channel } = listen()
     const reporter = createDevErrorReporter(nuxt, { print })
-    const { server, send, listeners } = devServer({ graph: clientGraph() })
+    const { server, listeners } = devServer({ graph: clientGraph() })
     reporter.attach(server)
 
     // the browser loaded the module under the bundler's base
-    listeners['nuxt:dev:client-error']!({ name: 'Error', message: 'boom', stack: 'Error: boom\n    at setup (http://localhost:3000/_nuxt/pages/index.vue?t=1:3:1)' })
+    listeners['nuxt:dev:client-error']!({ name: 'Error', message: 'boom', stack: 'Error: boom\n    at setup (http://localhost:3000/_nuxt/pages/index.vue?t=1:3:1)', requestId: 'page-load' })
     await vi.waitFor(() => expect(messages).toHaveLength(1))
 
     expect(reporter.isRuntime).toBe(true)
+    expect(messages[0]).toMatchObject({ type: 'nuxt:dev:error:report', requestId: 'page-load' })
     expect(messages[0].report).toMatchObject({
       name: 'Error',
       message: 'boom',
       frames: [{ function: 'setup', file: '/src/pages/index.vue', line: 2, compiled: { line: 3 } }],
     })
-    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
-    expect(send.mock.calls[0]![0]).toMatchObject({ type: 'custom', event: 'nuxt:dev:error', data: { reloadOnClear: true } })
     expect(print).toHaveBeenCalledTimes(1)
 
     channel.close()
@@ -311,30 +247,43 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     nuxt.close()
   })
 
-  it('replays a runtime error only to a page that raises it again', async () => {
+  it('reports a runtime error once per page load that raises it', async () => {
     const nuxt = createNuxt()
-    const print = vi.fn()
-    const reporter = createDevErrorReporter(nuxt, { print })
-    const { server, send, listeners } = devServer({ graph: clientGraph() })
+    const { messages, channel } = listen()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    const { server, listeners } = devServer({ graph: clientGraph() })
     reporter.attach(server)
-    const noisy = { send: vi.fn() }
-    const quiet = { send: vi.fn() }
 
     const error = { name: 'Error', message: 'boom', stack: 'Error: boom\n    at setup (http://localhost:3000/_nuxt/pages/index.vue?t=1:3:1)' }
-    listeners['nuxt:dev:client-error']!(error, noisy)
-    await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1))
+    listeners['nuxt:dev:client-error']!({ ...error, requestId: 'first' })
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+    listeners['nuxt:dev:client-error']!({ ...error, requestId: 'first' })
+    listeners['nuxt:dev:client-error']!({ ...error, requestId: 'reloaded' })
+    await vi.waitFor(() => expect(messages).toHaveLength(2))
 
-    listeners['nuxt:dev:error:ready']!(undefined, quiet)
-    expect(quiet.send).not.toHaveBeenCalled()
+    expect(messages.map(message => message.requestId)).toEqual(['first', 'reloaded'])
 
-    listeners['nuxt:dev:error:ready']!(undefined, noisy)
-    listeners['nuxt:dev:client-error']!({ ...error }, noisy)
-    expect(noisy.send).toHaveBeenCalledExactlyOnceWith(send.mock.calls[0]![0])
-    expect(send).toHaveBeenCalledTimes(1)
-    expect(print).toHaveBeenCalledTimes(1)
+    channel.close()
+    nuxt.close()
+  })
 
-    reporter.clear()
-    expect(send).toHaveBeenLastCalledWith({ type: 'custom', event: 'nuxt:dev:error:clear' })
+  it('clears a runtime error once the page that raised it renders another route', async () => {
+    const nuxt = createNuxt()
+    const { messages, channel } = listen()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    const { server, listeners } = devServer({ graph: clientGraph() })
+    reporter.attach(server)
+
+    listeners['nuxt:dev:client-error']!({ name: 'Error', message: 'boom', stack: 'Error: boom', requestId: 'raised' })
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+
+    listeners['nuxt:dev:client-error:clear']!({ requestId: 'another' })
+    expect(reporter.isRuntime).toBe(true)
+    listeners['nuxt:dev:client-error:clear']!({ requestId: 'raised' })
+    expect(reporter.isRuntime).toBe(false)
+    await vi.waitFor(() => expect(messages[1]).toEqual({ type: 'nuxt:dev:error:clear' }))
+
+    channel.close()
     nuxt.close()
   })
 })
@@ -352,6 +301,24 @@ describe('createDevErrorReporter (errors reported elsewhere)', () => {
     reporter.clear()
     await vi.waitFor(() => expect(messages.some(message => message.type === 'nuxt:dev:error:clear')).toBe(true))
     expect(reporter.isRuntime).toBe(false)
+
+    channel.close()
+    nuxt.close()
+  })
+
+  it('keeps clearing on updates while another report the server published is still open', async () => {
+    const nuxt = createNuxt()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    const { channel } = listen()
+    const serverReport = { kind: 'error', name: 'HTTPError', message: 'hi', frames: [], causes: [], sections: [], timestamp: 0 }
+    channel.postMessage({ type: 'nuxt:dev:error:report', report: { ...serverReport, id: 'tab-a' } })
+    channel.postMessage({ type: 'nuxt:dev:error:report', report: { ...serverReport, id: 'tab-b' } })
+    channel.postMessage({ type: 'nuxt:dev:error:clear', id: 'tab-a' })
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(reporter.isRuntime).toBe(true)
+
+    channel.postMessage({ type: 'nuxt:dev:error:clear', id: 'tab-b' })
+    await vi.waitFor(() => expect(reporter.isRuntime).toBe(false))
 
     channel.close()
     nuxt.close()
