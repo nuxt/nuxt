@@ -32,6 +32,7 @@ export function onNuxtReady (callback: () => any, options?: OnNuxtReadyOptions):
 
 interface OnNuxtReadyOptions {
   timeout?: number
+  signal?: AbortSignal
 }
 ```
 
@@ -57,4 +58,24 @@ export default defineNuxtPlugin(() => {
     // runs when the browser is idle, or after at most 2 seconds
   }, { timeout: 2000 })
 })
+```
+
+- `signal` (optional)
+
+  **Type**: `AbortSignal`
+
+  Skips the callback if the signal is aborted before it runs. This is useful when calling `onNuxtReady` from a component that may unmount before your app is ready.
+
+```vue [app/components/MyComponent.vue]
+<script setup lang="ts">
+const controller = new AbortController()
+
+onMounted(() => {
+  onNuxtReady(() => {
+    // does not run if the component unmounts first
+  }, { signal: controller.signal })
+})
+
+onBeforeUnmount(() => controller.abort())
+</script>
 ```

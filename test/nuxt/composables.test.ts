@@ -257,6 +257,58 @@ describe('onNuxtReady', () => {
       requestIdleCallbackSpy.mockRestore()
     }
   })
+
+  it('should not schedule the callback if the signal is already aborted', () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback')
+    try {
+      nuxtApp.isHydrating = false
+      onNuxtReady(() => {}, { signal: AbortSignal.abort() })
+      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
+  })
+
+  it('should not run the callback if the signal is aborted during hydration', async () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: false, timeRemaining: () => 50 }); return 0 })
+    try {
+      nuxtApp.isHydrating = true
+      const fn = vi.fn()
+      const controller = new AbortController()
+      onNuxtReady(fn, { signal: controller.signal })
+      controller.abort()
+      await nuxtApp.hooks.callHook('app:suspense:resolve')
+      expect(fn).not.toHaveBeenCalled()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
+  })
+
+  it('should not run the callback if the signal is aborted while waiting for idle', () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    let idle: IdleRequestCallback | undefined
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { idle = cb; return 0 })
+    try {
+      nuxtApp.isHydrating = false
+      const fn = vi.fn()
+      const controller = new AbortController()
+      onNuxtReady(fn, { signal: controller.signal })
+      controller.abort()
+      expect(idle).toBeDefined()
+      idle?.({ didTimeout: false, timeRemaining: () => 50 })
+      expect(fn).not.toHaveBeenCalled()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
+  })
 })
 
 describe('ssr composables', () => {
