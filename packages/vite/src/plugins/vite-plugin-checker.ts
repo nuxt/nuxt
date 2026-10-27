@@ -18,6 +18,9 @@ export async function VitePluginCheckerPlugin (nuxt: Nuxt, environment?: string)
           buildMode: supportsProjects,
         },
       }),
+      // Opt into per-env buildStart/buildEnd so SSR's buildEnd can terminate the vue-tsc worker
+      // on soft reload (Vite only runs those hooks for client by default during dev).
+      perEnvironmentStartEndDuringDev: true,
     }))
   }
 }
