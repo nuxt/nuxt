@@ -344,6 +344,24 @@ describe('route rules', () => {
     }
   })
 
+  it('should preserve wildcard redirect tails and query strings regardless of request casing', async () => {
+    for (const base of ['/route-rules/old', '/Route-Rules/OLD', '/ROUTE-RULES/Old', '/route-rules/%4Fld']) {
+      for (const tail of ['/x', '/A/b', '/A/b?q=Value&other=two']) {
+        const res = await fetch(base + tail, { redirect: 'manual' })
+        expect(res.status, base + tail).toBe(307)
+        expect(res.headers.get('location'), base + tail).toBe('/new' + tail)
+      }
+    }
+  })
+
+  it('should preserve wildcard proxy tails and query strings regardless of request casing', async () => {
+    for (const base of ['/route-rules/wildcard-proxy', '/Route-Rules/WILDCARD-PROXY', '/ROUTE-RULES/Wildcard-Proxy']) {
+      for (const tail of ['/x', '/A/b', '/A/b?q=Value&other=two']) {
+        expect(await $fetch<string>(base + tail), base + tail).toBe('/api/tail' + tail)
+      }
+    }
+  })
+
   it('should run appMiddleware from an uppercase-keyed route rule on client navigation', async () => {
     const { page } = await renderPage('/')
     await page.waitForLoadState('networkidle')

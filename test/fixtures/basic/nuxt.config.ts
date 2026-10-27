@@ -212,6 +212,8 @@ export default withMatrix({
       '/no-scripts': { noScripts: true },
       '/prerender/**': { prerender: true },
       '/route-rules/redirect': { redirect: '/' },
+      '/route-rules/old/**': { redirect: '/new/**' },
+      '/route-rules/wildcard-proxy/**': { proxy: '/api/tail/**' },
       '/isr': { isr: 60 },
       '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/route-rules/swr-in-spa/**': { ssr: false },
