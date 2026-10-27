@@ -1,4 +1,4 @@
-import { hash } from 'ohash'
+import { digest } from 'ohash'
 
 /**
  * Strip Vue scoped-style attributes (`data-v-*`) from island props before hashing
@@ -50,7 +50,16 @@ export function getIslandHash (input: {
   source?: string
 }): string {
   const props = typeof input.props === 'string' ? parseSerializedProps(input.props) : (input.props ?? {})
-  return hash([input.name, props, input.context ?? {}, input.source]).replace(/[-_]/g, '')
+  return digest(canonicalJSON([input.name, props, input.context ?? {}, input.source])).replace(/[-_]/g, '')
+}
+
+function canonicalJSON (value: unknown): string {
+  return JSON.stringify(value, (_key, val) => {
+    if (val === null || typeof val !== 'object' || Array.isArray(val)) {
+      return val
+    }
+    return Object.fromEntries(Object.keys(val).sort().map(key => [key, val[key]]))
+  })
 }
 
 /**
