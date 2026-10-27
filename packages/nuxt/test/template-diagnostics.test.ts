@@ -219,6 +219,23 @@ describe('template diagnostics', () => {
       }])
     })
 
+    it.each([
+      '<ServerCard v-for="item in items" :item="item" />',
+      '<div v-for="(item, index) of items"><ServerCard :item="item" :index="index" /></div>',
+      '<List v-slot="{ item }"><ServerCard :item="item" /></List>',
+      '<List><template #row="{ item: index }"><ServerCard :index="index" /></template></List>',
+    ])('skips names a template scope declares: %s', (template) => {
+      const { compile, warnings } = setup()
+      compile(`<script setup>\nfunction item () {}\nfunction index () {}\nconst items = [1]\n</script>\n<template>${template}</template>`)
+      expect(warnings).toStrictEqual([])
+    })
+
+    it('checks a setup binding outside the template scope that shadows it', () => {
+      const { compile, warnings } = setup()
+      compile(`<script setup>\nfunction item () {}\nconst items = [1]\n</script>\n<template><ServerCard v-slot="{ item }" :format="item"><span v-for="item in items">{{ item }}</span></ServerCard></template>`)
+      expect(warnings).toMatchObject([{ name: 'NUXT_B3015', message: expect.stringContaining('The `format` prop') }])
+    })
+
     it('resolves setup bindings that hold functions', () => {
       const { compile, warnings } = setup()
       compile(`<script setup lang="ts">\nconst format = (value: string) => value\nfunction other () {}\nconst options = { a: 1 }\nconst list = [1]\n</script>\n<template>\n  <ServerCard :format="format" />\n</template>`)

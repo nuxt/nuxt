@@ -67,13 +67,19 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
     const matchRoute = options.getRouteMatcher?.()
     const serverComponents = options.getServerComponents?.()
     const findings: Finding[] = []
+    let scope: ReadonlySet<string> = new Set()
 
     const visit = (children: RootNode['children']) => {
       for (const child of children) {
-        if (child.type === NODE_ELEMENT) {
-          checkElement(child)
-          visit(child.children)
+        if (child.type !== NODE_ELEMENT) {
+          continue
         }
+        const outer = scope
+        scope = withScopedNames(outer, child, 'for')
+        checkElement(child)
+        scope = withScopedNames(scope, child, 'slot')
+        visit(child.children)
+        scope = outer
       }
     }
 
@@ -166,7 +172,7 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
     }
 
     const describeBinding = (name: string): string | undefined => {
-      if (!IDENTIFIER_RE.test(name) || bindings[name] !== 'setup-const') {
+      if (!IDENTIFIER_RE.test(name) || scope.has(name) || bindings[name] !== 'setup-const') {
         return
       }
       let declarations = scripts.get(root)
@@ -275,6 +281,21 @@ interface EstreeLike {
   value?: EstreeLike
   properties?: EstreeLike[]
   elements?: (EstreeLike | null)[]
+}
+
+const SCOPED_NAME_RE = /[$A-Z_][\w$]*/gi
+const FOR_SOURCE_RE = /\s+(?:in|of)\s+/
+
+/** `scope` with the names an element's `v-for` alias or `v-slot` props declare. */
+function withScopedNames (scope: ReadonlySet<string>, element: ElementNode, directive: 'for' | 'slot'): ReadonlySet<string> {
+  const names: string[] = []
+  for (const prop of element.props) {
+    if (prop.type === NODE_DIRECTIVE && prop.name === directive && prop.exp) {
+      const source = directive === 'for' ? prop.exp.loc.source.split(FOR_SOURCE_RE)[0]! : prop.exp.loc.source
+      names.push(...source.match(SCOPED_NAME_RE) || [])
+    }
+  }
+  return names.length ? new Set([...scope, ...names]) : scope
 }
 
 /** The router path a static link target points at, or `undefined` when it is not an absolute in-app path. */
