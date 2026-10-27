@@ -13,7 +13,7 @@ import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG } from './build-files'
 import type { SSRError } from './error'
 import { captureError } from './error-page'
 import { returnRenderResponse } from './app'
-import { applyRenderOptions, joinTags, normalizeChunks, renderAppTeleports, renderDocumentOpen } from './document'
+import { applyRenderOptions, joinTags, normalizeChunks, renderAppTeleports, renderDevBadge, renderDocumentOpen } from './document'
 import { inertPrefetchLink, inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript } from './head'
 import { renderInlineStyles } from './inline-styles'
 import { renderPayloadJsonScript } from './payload'
@@ -188,7 +188,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   }
   const shellContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags]),
+    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS) : undefined]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
     body: [],

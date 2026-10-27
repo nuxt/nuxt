@@ -23,7 +23,7 @@ import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RendererEvent } from './runtime'
 import { getPrerenderedErrorPage, isPrerenderedErrorPage, renderErrorResponse } from './error-page'
-import { normalizeChunks, renderAppTeleports, renderHTMLDocument, renderHTMLDocumentChunks } from './document'
+import { normalizeChunks, renderAppTeleports, renderDevBadge, renderHTMLDocument, renderHTMLDocumentChunks } from './document'
 import { inertPrefetchLink, inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript } from './head'
 import { renderStreamedResponse } from './stream'
 import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appHead, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
@@ -369,7 +369,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   const htmlContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([headTags]),
+    head: normalizeChunks([headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS) : undefined]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [

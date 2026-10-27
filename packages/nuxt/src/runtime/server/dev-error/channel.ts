@@ -23,6 +23,7 @@ export type ErrorChannelMessage =
   | { type: 'nuxt:dev:error:sync' }
   | { type: 'nuxt:dev:error:log', entry: LogEntry }
   | { type: 'nuxt:dev:error:warning', report: ErrorReport }
+  | { type: 'nuxt:dev:error:warning:clear', id?: string }
   | { type: 'nuxt:dev:error:progress', progress: BuildProgress }
   /** Replaces the problem set for `source`. */
   | { type: 'nuxt:dev:error:problems', source: string, reports: ErrorReport[], meta?: ProblemMeta }
@@ -79,13 +80,15 @@ function createOwnedChannel (channel: Channel): Channel {
     const message = event.data as ErrorChannelMessage
     switch (message?.type) {
       case 'nuxt:dev:error:report':
-        return channel.setError(message.report)
+        return channel.setError(message.report, message.requestId, message.request)
       case 'nuxt:dev:error:clear':
         return channel.clearError(message.id)
       case 'nuxt:dev:error:log':
         return channel.log(message.entry)
       case 'nuxt:dev:error:warning':
         return channel.warn(message.report)
+      case 'nuxt:dev:error:warning:clear':
+        return channel.clearWarning(message.id)
       case 'nuxt:dev:error:progress':
         return channel.progress(message.progress)
       case 'nuxt:dev:error:problems':
@@ -137,6 +140,9 @@ function createForwardingChannel (): Channel {
     warn (report) {
       post({ type: 'nuxt:dev:error:warning', report })
     },
+    clearWarning (id) {
+      post({ type: 'nuxt:dev:error:warning:clear', id })
+    },
     log (entry) {
       post({ type: 'nuxt:dev:error:log', entry: { timestamp: Date.now(), ...entry } })
     },
@@ -171,11 +177,23 @@ export interface ErrorRequestInfo {
   headers: Headers
 }
 
-/** Publish a report as the current error, paired with the request it came from. */
+const PUBLISHED_KEY = Symbol.for('nuxt:dev:error-published')
+
+/** Ids of the reports published for each requested path, which a successful render of that path retires. */
+function publishedByPath (): Map<string, Set<string>> {
+  const store = globalThis as { [PUBLISHED_KEY]?: Map<string, Set<string>> }
+  return store[PUBLISHED_KEY] ||= new Map()
+}
+
+/** Publish a report as an open error, paired with the request it came from. */
 export async function publishErrorReport (report: ErrorReport, request?: ErrorRequestInfo): Promise<void> {
   const channel = await useErrorChannel()
-  const description = request && `${request.method} ${request.url.pathname}${request.url.search}`
-  channel.setError(report, requestIdOf(request), description)
+  const path = request && `${request.url.pathname}${request.url.search}`
+  channel.setError(report, requestIdOf(request), path && `${request.method} ${path}`)
+  if (path) {
+    const published = publishedByPath()
+    published.set(path, (published.get(path) ?? new Set()).add(report.id))
+  }
 }
 
 /** The id a dev server in front gave the request. */
@@ -183,11 +201,17 @@ export function requestIdOf (request?: Pick<ErrorRequestInfo, 'headers'>): strin
   return request?.headers.get(REQUEST_ID_HEADER) ?? undefined
 }
 
-/** Retire the current report, dismissing overlays showing it. */
-export async function clearErrorReport (): Promise<void> {
+/** Retire the reports published for requests to `url`, which has since rendered. */
+export async function clearErrorReport (url: URL): Promise<void> {
+  const path = `${url.pathname}${url.search}`
+  const ids = publishedByPath().get(path)
+  if (!ids) {
+    return
+  }
+  publishedByPath().delete(path)
   const channel = await useErrorChannel()
-  if (channel.current) {
-    channel.clearError()
+  for (const id of ids) {
+    channel.clearError(id)
   }
 }
 

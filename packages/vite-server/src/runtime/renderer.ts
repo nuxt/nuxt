@@ -50,8 +50,8 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     createError: init => createError(init),
     prerender,
     onRenderSuccess: devErrors
-      ? () => {
-          devErrors.then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+      ? (event) => {
+          devErrors.then(({ clearErrorReport }) => clearErrorReport(event.url)).catch(() => {})
         }
       : undefined,
     captureError: (error) => {
@@ -62,6 +62,9 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     },
     onDevError: devErrors
       ? (error, event, options) => devErrors.then(({ observeDevError }) => observeDevError(error, event.req, options))
+      : undefined,
+    renderDevBadge: devErrors
+      ? event => devErrors.then(({ renderDevBadge }) => renderDevBadge(event.req))
       : undefined,
   }
 }

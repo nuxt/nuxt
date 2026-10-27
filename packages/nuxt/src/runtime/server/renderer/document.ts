@@ -2,6 +2,7 @@ import { propsToString } from '@unhead/vue/server'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { NuxtRenderHTMLContext, NuxtSSRContext } from '#app/types'
 import { appTeleportAttrs, appTeleportTag } from 'nuxt/internal/renderer-config'
+import type { NuxtRendererOptions, RendererEvent } from './runtime'
 
 const APP_TELEPORT_ID = appTeleportTag && appTeleportAttrs.id ? `#${appTeleportAttrs.id}` : undefined
 const APP_TELEPORT_OPEN_TAG = APP_TELEPORT_ID ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
@@ -10,6 +11,13 @@ const APP_TELEPORT_CLOSE_TAG = APP_TELEPORT_ID ? `</${appTeleportTag}>` : ''
 /** The app teleport target, holding what the render teleported into it. */
 export function renderAppTeleports (ssrContext: NuxtSSRContext): string {
   return APP_TELEPORT_OPEN_TAG + (APP_TELEPORT_ID ? ssrContext.teleports?.[APP_TELEPORT_ID] ?? '' : '') + APP_TELEPORT_CLOSE_TAG
+}
+
+/** The dev error badge for the head of a page, unless it runs no scripts. */
+export function renderDevBadge (runtime: NuxtRendererOptions, event: RendererEvent, noScripts: boolean): Promise<string | undefined> | undefined {
+  if (!import.meta.test && !noScripts) {
+    return runtime.renderDevBadge?.(event).catch(() => undefined)
+  }
 }
 
 export function normalizeChunks (chunks: (string | undefined)[]): string[] {

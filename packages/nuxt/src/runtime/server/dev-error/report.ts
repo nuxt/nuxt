@@ -123,6 +123,22 @@ async function withErrorOverlay (html: string, report: ErrorReport, options: Err
   })
 }
 
+/**
+ * Render the badge for the head of a dev page, which shows the channel's errors and warnings
+ * on it. The page reloads once its error clears, unless `window.__NUXT_DEV_ERROR__.recovers()`
+ * reports that the app can update in place.
+ */
+export async function renderDevBadge (options: { cwd?: string, channel: string, request?: Pick<ErrorRequestInfo, 'headers'> }): Promise<string> {
+  const [{ renderBadge }, { nuxtTheme }] = await Promise.all([
+    import('my-bad'),
+    import('my-bad/presets'),
+  ])
+  const requestId = requestIdOf(options.request) ?? crypto.randomUUID()
+  const state = JSON.stringify({ requestId }).replaceAll('<', '\\u003c')
+  return `<script>window.__NUXT_DEV_ERROR__=${state};addEventListener('my-bad:error:clear',()=>__NUXT_DEV_ERROR__.recovers?.()||location.reload())</script>`
+    + renderBadge({ channel: options.channel, cwd: options.cwd, theme: nuxtTheme, tag: 'nuxt-error-overlay', requestId })
+}
+
 /** Render a standalone error page, for when the app itself cannot render one. */
 async function renderErrorPage (report: ErrorReport, options: ErrorRenderOptions): Promise<string> {
   const [{ renderPage }, { nuxtTheme }] = await Promise.all([
@@ -207,7 +223,8 @@ export function createDevErrorReporter<E> (options: DevErrorReporterOptions<E>):
       return undefined
     }
     if (observe.publish !== false) {
-      await publishErrorReport(report, request).catch(() => {})
+      // a file that does not compile is broken for every page, whichever request ran into it
+      await publishErrorReport(report, isCompileFailure(report) ? undefined : request).catch(() => {})
     }
     if (observe.print !== false && !isForwardingReports()) {
       await printErrorReport(report, { cwd: options.cwd, error, request })
@@ -219,6 +236,11 @@ export function createDevErrorReporter<E> (options: DevErrorReporterOptions<E>):
       page: () => renderErrorPage(report, { cwd: options.cwd, channel: options.channel(), requestId }),
     }
   }
+}
+
+/** Whether a report, or one of its causes, is a file that does not compile. */
+function isCompileFailure (report: ErrorReport): boolean {
+  return report.kind === 'compile' || report.causes.some(isCompileFailure) || !!report.errors?.some(isCompileFailure)
 }
 
 /** A line of a code frame, as a compiler embeds one in a message. */

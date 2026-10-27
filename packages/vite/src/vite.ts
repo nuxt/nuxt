@@ -18,7 +18,7 @@ import { resolvePostcssPlugins, resolveVuePackages, useServerBuild } from '@nuxt
 import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
-import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
+import { DevErrorsPlugin, DevRequestErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
 import { getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
@@ -319,7 +319,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   })
   config.configFile = false
   if (devErrors) {
-    config.plugins!.push(DevErrorsPlugin(devErrors))
+    config.plugins!.push(DevErrorsPlugin(devErrors), DevRequestErrorsPlugin(devErrors))
   }
 
   for (const environment of ['client', 'ssr']) {

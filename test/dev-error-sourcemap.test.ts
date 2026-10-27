@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { clearServerLogs, fetch, getServerLogs } from '@nuxt/test-utils/e2e'
-import type { ErrorReport, Frame } from 'my-bad'
+import type { Frame } from 'my-bad'
 
 import { isDev, legacyErrorRendering, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
 import { channelState, copyFixture, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
@@ -72,14 +72,15 @@ describe.skipIf(!runs)('dev ssr error page', () => {
     expect(res.headers.get('content-type')).toContain('application/json')
   })
 
-  it('publishes the error to the channel, and clears it once a page renders', async () => {
+  it('publishes the error to the channel, and keeps it open while another page renders', async () => {
     const { report } = await renderErrorPage()
     expect((await channelState()).current?.id).toBe(report.id)
 
     const ok = await fetch('/ok', { headers: { accept: 'text/html' } })
     expect(ok.status).toBe(200)
     expect(await ok.text()).toContain('rendered without error')
-    await expect.poll(async () => (await channelState()).current as ErrorReport | undefined, { timeout: 5000 }).toBeUndefined()
+    await new Promise(resolve => setTimeout(resolve, 500))
+    expect((await channelState()).current?.id).toBe(report.id)
   })
 })
 
