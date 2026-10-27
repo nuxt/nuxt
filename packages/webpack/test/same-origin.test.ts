@@ -50,6 +50,30 @@ describe('isSameOriginRequest', () => {
     })
   })
 
+  describe('Host allowlist', () => {
+    it('rejects a rebound hostname with Sec-Fetch-Site: same-origin', () => {
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', 'host': 'rebind.attacker.com:3000' }))).toBe(false)
+    })
+
+    it('rejects a rebound hostname whose Origin matches Host', () => {
+      expect(isSameOriginRequest(req({ origin: 'http://rebind.attacker.com:3000', host: 'rebind.attacker.com:3000' }))).toBe(false)
+    })
+
+    it('allows localhost subdomains and IP literals', () => {
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', 'host': 'app.localhost:3000' }))).toBe(true)
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', 'host': '192.168.0.31:3000' }))).toBe(true)
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', 'host': '[fe80::1]:3000' }))).toBe(true)
+    })
+
+    it('allows configured hosts', () => {
+      const headers = { 'sec-fetch-site': 'same-origin', 'host': 'my-machine.lan:3000' }
+      expect(isSameOriginRequest(req(headers), ['my-machine.lan'])).toBe(true)
+      expect(isSameOriginRequest(req(headers), ['.lan'])).toBe(true)
+      expect(isSameOriginRequest(req(headers), ['other.lan'])).toBe(false)
+      expect(isSameOriginRequest(req(headers), true)).toBe(true)
+    })
+  })
+
   describe('GHSA-x6qj-4h56-5rj5: no Sec-Fetch-Site, no Origin, no Referer', () => {
     it('allows when the dev server is loopback-bound (localhost)', () => {
       expect(isSameOriginRequest(req({ host: 'localhost:3000' }))).toBe(true)
