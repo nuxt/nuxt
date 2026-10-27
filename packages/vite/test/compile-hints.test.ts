@@ -104,6 +104,27 @@ describe('compile hints', () => {
     }
   }, 240 * 1000)
 
+  it('changes the filename of chunks whose compile hint is toggled', async () => {
+    const snapshot = async (compileHints: boolean) => {
+      const { manifest, read } = await build({ experimental: { compileHints } })
+      const files: Record<string, string> = {}
+      for (const key in manifest) {
+        files[manifest[key]!.file] = await read(key)
+      }
+      return files
+    }
+
+    const hinted = await snapshot(true)
+    const plain = await snapshot(false)
+
+    const shared = Object.keys(hinted).filter(file => file in plain)
+    expect(shared.length).toBeGreaterThan(0)
+    expect(shared.length).toBeLessThan(Object.keys(hinted).length)
+    for (const file of shared) {
+      expect.soft(hinted[file], file).toBe(plain[file])
+    }
+  }, 240 * 1000)
+
   it('shifts inline sourcemaps by one line', async () => {
     const { entry, read } = await build({ sourcemap: { client: true }, vite: { build: { sourcemap: 'inline' } } })
 
