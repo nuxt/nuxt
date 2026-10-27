@@ -83,22 +83,30 @@ export interface ThrownContext {
   route?: unknown
 }
 
+/** An error raised deliberately with an HTTP status, as h3 recognises one. */
+function isHTTPError (value: unknown): boolean {
+  return value instanceof Error && (value.constructor as { __h3_error__?: unknown })?.__h3_error__ === true
+}
+
 /**
- * Wrap whatever the app threw, remembering in development the thrown value and where the
- * app was, for the error report. Outside development this is {@link createError}, so the
- * wrapper leaves no trace in a production bundle.
+ * Wrap whatever the app threw. Anything other than an HTTP error is marked `unhandled`,
+ * which keeps its message and `data` out of the response and the payload. In development
+ * the thrown value and where the app was are remembered for the error report.
  *
  * @internal
  */
-export const createErrorFromThrown: (thrown: unknown, context?: ThrownContext) => NuxtError = import.meta.dev
-  ? function createErrorFromThrown (thrown: unknown, context?: ThrownContext): NuxtError {
-    const error = createError(thrown as string | Error | NuxtErrorDetails)
+export function createErrorFromThrown (thrown: unknown, context?: ThrownContext): NuxtError {
+  const error = createError(thrown as string | Error | NuxtErrorDetails)
+  if (error !== thrown && !isHTTPError(thrown)) {
+    error.unhandled = true
+  }
+  if (import.meta.dev) {
     if (error !== thrown && !(thrown instanceof Error)) {
       Object.defineProperty(error, THROWN_VALUE, { value: thrown, configurable: true })
     }
     if (context && (context.instance || context.route) && !(THROWN_CONTEXT in error)) {
       Object.defineProperty(error, THROWN_CONTEXT, { value: context, configurable: true })
     }
-    return error
   }
-  : createError as (thrown: unknown) => NuxtError
+  return error
+}

@@ -48,7 +48,7 @@ export const showError = <DataT = unknown>(
  * @internal
  */
 export const _notifyCrawlerError = (nuxtApp: NuxtApp, error: Error): Promise<void> | void => {
-  const result = nuxtApp.callHook('app:error', createError(error))
+  const result = nuxtApp.callHook('app:error', createErrorFromThrown(error))
   appDiagnostics.NUXT_E1012({ userAgent: navigator.userAgent, cause: error })
   return result
 }
@@ -64,7 +64,7 @@ export const _showErrorUnlessCrawler = async (nuxtApp: NuxtApp, error: Error): P
     await _notifyCrawlerError(nuxtApp, error)
     return
   }
-  await nuxtApp.runWithContext(() => showError(error))
+  await nuxtApp.runWithContext(() => showError(createErrorFromThrown(error)))
 }
 
 /** @since 3.0.0 */

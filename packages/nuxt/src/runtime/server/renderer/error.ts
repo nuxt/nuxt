@@ -52,7 +52,7 @@ export function describeError (error: unknown): DescribedError {
   const named = status ?? statusCode
   const isHTTPError = typeof named === 'number' && named >= 400 && named <= 599
   const exposed = import.meta.dev || (isHTTPError && isRaisedByApp(error))
-  const reason = (isHTTPError && (statusText || statusMessage)) || (exposed && message) || (isHTTPError ? 'Request failed' : 'Internal Server Error')
+  const reason = (isHTTPError && (statusText || statusMessage)) || (exposed && message) || (isHTTPError && named !== 500 ? 'Request failed' : 'Internal Server Error')
   return {
     status: isHTTPError ? named : 500,
     statusText: reason.replace(INVALID_REASON_PHRASE_RE, '') || 'Error',
