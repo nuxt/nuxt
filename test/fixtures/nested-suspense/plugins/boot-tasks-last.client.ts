@@ -3,8 +3,8 @@ export default defineNuxtPlugin({
   setup (nuxtApp) {
     let crossedTask = false
     scheduler.postTask(() => { crossedTask = true }, { priority: 'user-blocking' })
-    nuxtApp.hook('app:created', () => {
-      window.__bootTasks!.mountedAfterPluginTask = crossedTask
+    nuxtApp.hook('app:beforeMount', () => {
+      window.__bootTasks!.beforeMountAfterPluginTask = crossedTask
     })
   },
 })
