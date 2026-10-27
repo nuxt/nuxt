@@ -21,11 +21,6 @@ export interface TemplateDiagnosticsOptions {
   onWarning?: (diagnostic: Diagnostic<unknown>) => void
 }
 
-interface FileState {
-  environments: Partial<Record<'client' | 'ssr', Set<string>>>
-  reported: Set<string>
-}
-
 const NODE_ROOT = 0
 const NODE_ELEMENT = 1
 const NODE_SIMPLE_EXPRESSION = 4
@@ -44,12 +39,12 @@ const IDENTIFIER_RE = /^[$A-Z_][\w$]*$/i
  * A Vue compiler node transform that checks templates against what Nuxt knows about the app:
  * its page routes and its server components.
  *
- * Each file is checked once per compile and environment. A warning is printed when it first
- * appears in a file and forgotten once no environment raises it any more.
+ * Each file is checked once per compile. A warning is printed when it first appears in a file
+ * and forgotten once a compile of the file, for any environment, no longer raises it.
  */
 export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions = {}): { nodeTransform: NodeTransform } {
   const displayPath = options.displayPath ?? ((file: string) => file)
-  const files = new Map<string, FileState>()
+  const files = new Map<string, Set<string>>()
   const scripts = new WeakMap<RootNode, Map<string, string | undefined>>()
 
   const nodeTransform: NodeTransform = (node, context) => {
@@ -224,29 +219,22 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
     }
 
     visit(root.children)
-    return () => finalise(file, context.ssr ? 'ssr' : 'client', findings)
+    return () => finalise(file, findings)
   }
 
-  function finalise (file: string, environment: 'client' | 'ssr', findings: Finding[]) {
-    const state: FileState = files.get(file) ?? { environments: {}, reported: new Set() }
+  function finalise (file: string, findings: Finding[]) {
+    const reported = files.get(file)
     const keys = new Set<string>()
     for (const finding of findings) {
       const key = `${finding.code}:${finding.loc.start.offset}:${JSON.stringify(finding.params)}`
       keys.add(key)
-      if (!state.reported.has(key)) {
-        state.reported.add(key)
+      if (!reported?.has(key)) {
         const diagnostic = report(finding, file)
         options.onWarning?.(diagnostic)
       }
     }
-    state.environments[environment] = keys
-    for (const key of state.reported) {
-      if (!state.environments.client?.has(key) && !state.environments.ssr?.has(key)) {
-        state.reported.delete(key)
-      }
-    }
-    if (state.reported.size) {
-      files.set(file, state)
+    if (keys.size) {
+      files.set(file, keys)
     } else {
       files.delete(file)
     }

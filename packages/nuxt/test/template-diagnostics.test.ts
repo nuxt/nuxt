@@ -188,14 +188,14 @@ describe('template diagnostics', () => {
       expect(warnings).toHaveLength(2)
     })
 
-    it('keeps a warning while another environment still raises it', () => {
+    it('reports a warning again once a compile for either environment no longer raises it', () => {
       const { compile, warnings } = setup()
       const broken = `<template><ServerCard @click="go" /></template>`
       compile(broken)
       compile(broken, { ssr: true })
       compile(`<template><ServerCard /></template>`)
-      compile(broken)
-      expect(warnings).toHaveLength(1)
+      compile(broken, { ssr: true })
+      expect(warnings).toHaveLength(2)
     })
   })
 
