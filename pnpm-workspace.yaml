@@ -18,6 +18,8 @@ verifyDepsBeforeRun: install
 
 ignoreWorkspaceCycles: true
 
+blockExoticSubdeps: false
+
 overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
@@ -155,7 +157,7 @@ catalogs:
   build:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-2610090719-f2e6cde
+    '@nuxt/cli': https://pkg.pr.new/@nuxt/cli@d98766a
     '@nuxt/devtools-onboard': ^4.1.0
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.44
