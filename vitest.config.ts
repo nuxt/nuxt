@@ -362,6 +362,7 @@ export default defineConfig({
                   '/Secret/Docs/**': { ssr: false },
                   '/Legacy/Home': { redirect: '/target' },
                   '/Range/:id([A-Za-z_]+)': { ssr: false },
+                  '/Wild/**': { redirect: '/target/**' },
                 },
               } satisfies NuxtConfig, commonSettings),
             },
@@ -383,6 +384,7 @@ export default defineConfig({
                 routeRules: {
                   '/Admin/Dashboard': { redirect: '/admin-target' },
                   '/admin/dashboard': { redirect: '/lower-target' },
+                  '/Wild/**': { redirect: '/target/**' },
                 },
               } satisfies NuxtConfig, commonSettings),
             },

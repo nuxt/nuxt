@@ -14,6 +14,11 @@ describe('sensitive routing preserves route-rule casing', () => {
     expect(getRouteRules({ path: '/ADMIN/DASHBOARD' })).not.toHaveProperty('redirect')
   })
 
+  it('moves the tail of the path onto a wildcard redirect target in the configured casing only', () => {
+    expect(getRouteRules({ path: '/Wild/A/b' })).toMatchObject({ redirect: '/target/A/b' })
+    expect(getRouteRules({ path: '/WILD/A/b' })).not.toHaveProperty('redirect')
+  })
+
   it('still decodes percent-encoded paths', () => {
     for (const path of ['/测试', `/${encodeURIComponent('测试')}`]) {
       expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/unicode-target' })
