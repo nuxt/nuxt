@@ -4,7 +4,7 @@ import process from 'node:process'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { glob } from 'tinyglobby'
 import { resolveModulePath } from 'exsolve'
-import { resolveAlias as _resolveAlias } from 'pathe/utils'
+import { resolveAlias as _resolveAlias, normalizeAliases } from 'pathe/utils'
 import { directoryToURL } from './internal/esm.ts'
 import { parseNodeModulePath } from './internal/node-module.ts'
 import { tryUseNuxt } from './context.ts'
@@ -94,7 +94,32 @@ export async function findPath (paths: string | string[], opts?: ResolvePathOpti
  */
 export function resolveAlias (path: string, alias?: Record<string, string>): string {
   alias ||= tryUseNuxt()?.options.alias || {}
-  return _resolveAlias(path, alias)
+  return _resolveAliasWithMemoizedAliases(path, alias)
+}
+
+// TODO: remove once https://github.com/unjs/pathe/pull/280 is released
+const normalizedAliasesCache = new WeakMap<Record<string, string>, { entries: [string, string][], aliases: Record<string, string> }>()
+
+function _resolveAliasWithMemoizedAliases (path: string, aliases: Record<string, string>): string {
+  const entries = Object.entries(aliases)
+  let cached = normalizedAliasesCache.get(aliases)
+  if (!cached || !_entriesEqual(cached.entries, entries)) {
+    cached = { entries, aliases: normalizeAliases(aliases) }
+    normalizedAliasesCache.set(aliases, cached)
+  }
+  return _resolveAlias(path, cached.aliases)
+}
+
+function _entriesEqual (a: [string, string][], b: [string, string][]): boolean {
+  if (a.length !== b.length) {
+    return false
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i]![0] !== b[i]![0] || a[i]![1] !== b[i]![1]) {
+      return false
+    }
+  }
+  return true
 }
 
 export interface Resolver {
@@ -200,7 +225,7 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases
-  path = _resolveAlias(path, opts.alias ?? nuxt?.options.alias ?? {})
+  path = _resolveAliasWithMemoizedAliases(path, opts.alias ?? nuxt?.options.alias ?? {})
 
   // Resolve relative to cwd
   if (!isAbsolute(path)) {
