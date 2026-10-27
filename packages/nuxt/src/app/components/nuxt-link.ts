@@ -13,7 +13,7 @@ import type {
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
 import { escapeHtml } from '@vue/shared'
 import type { ComponentSlots } from 'vue-component-type-helpers'
-import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteLocationResolvedGeneric, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
+import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteLocationResolved, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { prefetchRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -300,7 +300,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     }
 
     const currentRoute = router.currentRoute.value
-    let route: RouteLocationResolvedGeneric | undefined
+    let route: RouteLocationResolved | undefined
     let href: string
     let isActive = false
     let isExactActive = false
