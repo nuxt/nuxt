@@ -1,6 +1,7 @@
 import type { AppRouteRules, NuxtRequestEvent } from '@nuxt/schema'
 import { withoutBase } from 'ufo'
-import { useRuntimeConfig } from '../nuxt'
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtApp } from '../nuxt'
 import { manifestDiagnostics } from '../diagnostics/manifest'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
@@ -68,6 +69,52 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
     throw manifestDiagnostics.NUXT_E5001()
   }
   return manifest || fetchManifest()
+}
+
+const pendingUpdateChecks = new WeakMap<NuxtApp, Promise<NuxtAppManifestMeta | undefined>>()
+
+/** Check for a newer deployment and emit `app:manifest:update` if one is available. */
+export function checkForAppUpdate (): Promise<NuxtAppManifestMeta | undefined> {
+  if (import.meta.server || !isAppManifestEnabled) { return Promise.resolve(undefined) }
+
+  const nuxtApp = useNuxtApp()
+  const pending = pendingUpdateChecks.get(nuxtApp)
+  if (pending) { return pending }
+
+  const promise = checkLatestManifest(nuxtApp).finally(() => {
+    pendingUpdateChecks.delete(nuxtApp)
+  })
+  pendingUpdateChecks.set(nuxtApp, promise)
+  return promise
+}
+
+async function checkLatestManifest (nuxtApp: NuxtApp): Promise<NuxtAppManifestMeta | undefined> {
+  let currentManifest: NuxtAppManifestMeta | undefined
+  try {
+    currentManifest = await getAppManifest()
+  } catch (e) {
+    const err = e as { status?: number } & Error
+    // The build is already outdated but the manifest was not cached.
+    if (!('status' in err && (err.status === 404 || err.status === 403))) {
+      throw err
+    }
+  }
+
+  let meta: NuxtAppManifestMeta
+  try {
+    const res = await fetch(buildAssetsURL('builds/latest.json') + `?${Date.now()}`, { priority: 'low' })
+    if (!res.ok) { return }
+    meta = await res.json() as NuxtAppManifestMeta
+    if (!meta || typeof meta.id !== 'string' || typeof meta.timestamp !== 'number') { return }
+  } catch {
+    // Fail gracefully on network issues.
+    return
+  }
+
+  if (meta.id !== currentManifest?.id) {
+    await nuxtApp.hooks.callHook('app:manifest:update', meta)
+    return meta
+  }
 }
 
 /** @since 3.7.4 */

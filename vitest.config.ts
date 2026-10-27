@@ -261,6 +261,8 @@ export default defineConfig({
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
+            '#app-manifest': resolve('./test/mocks/app-manifest'),
+            '#build/route-rules.mjs': resolve('./test/mocks/route-rules'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#build/pages': resolve('./test/mocks/pages'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
