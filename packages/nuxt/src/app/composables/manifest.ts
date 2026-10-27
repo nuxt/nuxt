@@ -71,6 +71,7 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
   return manifest || fetchManifest()
 }
 
+const UPDATE_CHECK_TIMEOUT = 30_000
 const pendingUpdateChecks = new WeakMap<NuxtApp, Promise<NuxtAppManifestMeta | undefined>>()
 
 /** Check for a newer deployment and emit `app:manifest:update` if one is available. */
@@ -101,14 +102,18 @@ async function checkLatestManifest (nuxtApp: NuxtApp): Promise<NuxtAppManifestMe
   }
 
   let meta: NuxtAppManifestMeta
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), UPDATE_CHECK_TIMEOUT)
   try {
-    const res = await fetch(buildAssetsURL('builds/latest.json') + `?${Date.now()}`, { priority: 'low' })
+    const res = await fetch(buildAssetsURL('builds/latest.json') + `?${Date.now()}`, { priority: 'low', signal: controller.signal })
     if (!res.ok) { return }
     meta = await res.json() as NuxtAppManifestMeta
     if (!meta || typeof meta.id !== 'string' || typeof meta.timestamp !== 'number') { return }
   } catch {
-    // Fail gracefully on network issues.
+    // Fail gracefully on network issues and timeouts.
     return
+  } finally {
+    clearTimeout(timeout)
   }
 
   if (meta.id !== currentManifest?.id) {

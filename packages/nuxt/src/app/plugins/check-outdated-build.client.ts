@@ -16,7 +16,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
   })
 
   async function getLatestManifest () {
-    await nuxtApp.runWithContext(() => checkForAppUpdate())
+    try {
+      await nuxtApp.runWithContext(() => checkForAppUpdate())
+    } catch {
+      // Retry on the next interval if the current manifest cannot be loaded.
+    }
     if (!outdated) {
       timeout = setTimeout(getLatestManifest, outdatedBuildInterval)
     }

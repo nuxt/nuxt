@@ -34,6 +34,8 @@ interface NuxtAppManifestMeta {
 
 Returns the newer build's metadata, or `undefined` when the build is unchanged or the latest manifest cannot be fetched. On the server, or when the app manifest is disabled, it returns `undefined` without making a request.
 
+The latest manifest request times out after 30 seconds, including reading its response body. Later checks can retry after a timeout.
+
 Errors loading the current build's manifest are propagated, except for HTTP 403 and 404 responses, which allow checking for a newer build even when the old manifest has been removed.
 
 The utility emits `app:manifest:update` rather than reloading the application itself. Existing Nuxt hooks, including those configured by `experimental.emitRouteChunkError`, still handle that event.

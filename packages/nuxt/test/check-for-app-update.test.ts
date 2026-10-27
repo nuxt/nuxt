@@ -58,7 +58,7 @@ describe('checkForAppUpdate', () => {
 
     await expect(checkForAppUpdate()).resolves.toEqual(newManifest)
 
-    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/^\/_nuxt\/builds\/latest\.json\?\d+$/), { priority: 'low' })
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/^\/_nuxt\/builds\/latest\.json\?\d+$/), { priority: 'low', signal: expect.any(AbortSignal) })
     expect(updated).toHaveBeenCalledExactlyOnceWith(newManifest)
     expect(vi.getTimerCount()).toBe(0)
   })
@@ -106,6 +106,39 @@ describe('checkForAppUpdate', () => {
     fetchMock.mockResolvedValueOnce(respond(currentManifest)).mockRejectedValueOnce(new TypeError('offline'))
     await expect(checkForAppUpdate()).resolves.toBeUndefined()
     await expect(checkForAppUpdate()).resolves.toEqual(newManifest)
+  })
+
+  it('times out a stalled latest manifest request and allows a retry', async () => {
+    fetchMock.mockResolvedValueOnce(respond(currentManifest)).mockImplementationOnce((_url, options) => new Promise((_resolve, reject) => {
+      options?.signal?.addEventListener('abort', () => reject(options.signal!.reason), { once: true })
+    }))
+
+    const first = checkForAppUpdate()
+    const second = checkForAppUpdate()
+    let settled = false
+    first.then(() => { settled = true })
+
+    await vi.advanceTimersByTimeAsync(29_999)
+    expect(settled).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(settled).toBe(true)
+    await expect(Promise.all([first, second])).resolves.toEqual([undefined, undefined])
+    expect(vi.getTimerCount()).toBe(0)
+    await expect(checkForAppUpdate()).resolves.toEqual(newManifest)
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('/latest.json'))).toHaveLength(2)
+  })
+
+  it('times out a stalled latest manifest response body', async () => {
+    fetchMock.mockResolvedValueOnce(respond(currentManifest)).mockImplementationOnce((_url, options) => Promise.resolve(new Response(new ReadableStream({
+      start (controller) {
+        options?.signal?.addEventListener('abort', () => controller.error(options.signal!.reason), { once: true })
+      },
+    }))))
+
+    const check = checkForAppUpdate()
+    await vi.advanceTimersByTimeAsync(30_000)
+    await expect(check).resolves.toBeUndefined()
+    expect(vi.getTimerCount()).toBe(0)
   })
 
   it('ignores malformed JSON from the latest manifest', async () => {
@@ -203,6 +236,28 @@ describe('outdated build polling', () => {
     await vi.advanceTimersByTimeAsync(1000)
     expect(vi.getTimerCount()).toBe(1)
     await vi.advanceTimersByTimeAsync(1000)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('continues polling after the current manifest fails to load', async () => {
+    fetchMock.mockResolvedValueOnce(respond({}, 500))
+    await startPolling()
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(vi.getTimerCount()).toBe(1)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('/latest.json'))).toHaveLength(1)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('continues polling after a latest manifest request times out', async () => {
+    fetchMock.mockResolvedValueOnce(respond(currentManifest)).mockImplementationOnce((_url, options) => new Promise((_resolve, reject) => {
+      options?.signal?.addEventListener('abort', () => reject(options.signal!.reason), { once: true })
+    }))
+    await startPolling()
+    await vi.advanceTimersByTimeAsync(31_000)
+    expect(vi.getTimerCount()).toBe(1)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(fetchMock.mock.calls.filter(([url]) => String(url).includes('/latest.json'))).toHaveLength(2)
     expect(vi.getTimerCount()).toBe(0)
   })
 })
