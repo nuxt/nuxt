@@ -309,6 +309,14 @@ describe('route rules', () => {
     expect(html).toContain('useLayout: custom')
   })
 
+  it('should apply route rules to a catch-all page when the path has encoded slashes', async () => {
+    for (const path of ['/catchall/route-rules/layout', '/catchall/route-rules%2Flayout', '/catchall/route-rules%2flayout']) {
+      const res = await fetch(path)
+      expect(res.headers.get('x-catchall-route-rules'), path).toEqual('applied')
+      expect(await res.text(), path).toContain('Custom Layout')
+    }
+  })
+
   it('should not extract payload for `ssr: false` routes with useAsyncData (#34279)', async () => {
     const html = await $fetch<string>('/route-rules/spa-async-data')
     const { attrs } = parseData(html)

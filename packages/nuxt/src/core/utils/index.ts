@@ -38,6 +38,27 @@ export function decodeRoutePath (path: string) {
 }
 
 /**
+ * Collect the route rules `match` returns for a route path and, if its path portion contains
+ * an encoded slash (`%2F`), for the path with each encoded slash as a separator, since a page
+ * route param spanning several segments decodes to the same value either way. Rules keep the
+ * order `match` returns them in, and rules matched only through encoded slashes come last.
+ *
+ * Inlined by source into compiled matchers, so it must not reference anything outside itself.
+ *
+ * @internal
+ */
+export function matchAllRouteRules<T> (match: (path: string) => T[], path: string): T[] {
+  const matches = match(path)
+  if (typeof path !== 'string') { return matches }
+  const split = path.replace(/^[^?]*/, pathname => pathname.replace(/%2f/gi, '/'))
+  if (split === path) { return matches }
+  for (const rules of match(split)) {
+    if (!matches.includes(rules)) { matches.push(rules) }
+  }
+  return matches
+}
+
+/**
  * Case-fold a decoded route path so that two paths fold to the same text exactly when a
  * case-insensitive vue-router route (a regex with the `i` flag but not `u`) treats them as
  * equal: each UTF-16 code unit is folded to the lower-case form of its upper-case form.

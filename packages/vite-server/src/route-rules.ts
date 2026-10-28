@@ -3,6 +3,7 @@ import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
+import { matchAllRouteRules } from '../../nuxt/src/core/utils/index.ts'
 import { createNormalizedRouteRulesRouter, genNormalizePathCode, normalizeRouteRuleLookupPath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
@@ -21,7 +22,7 @@ const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url })
 export function createRouteRulesMatcher (nuxt: Nuxt): (path: string) => Record<string, any> {
   const fold = !nuxt.options.router.options.sensitive
   const router = createNormalizedRouteRulesRouter(resolveRouteRulesRoutes(nuxt).routes, '', fold)
-  return path => defu({}, ...router.matchAll('', normalizeRouteRuleLookupPath(path, fold)).reverse()) as Record<string, any>
+  return path => defu({}, ...matchAllRouteRules(path => router.matchAll('', normalizeRouteRuleLookupPath(path, fold)), path).reverse()) as Record<string, any>
 }
 
 /**
@@ -56,7 +57,7 @@ export function addRouteRulesTemplate (): string {
         genNormalizePathCode(fold),
         `export default (path, method = 'GET') => {`,
         `  const matcher = matchers.get(method.toUpperCase()) || matchers.get('')`,
-        `  return defu({}, ...matcher('', normalizePath(path)).map(r => r.data).reverse())`,
+        `  return defu({}, ...matchAllRouteRules(path => matcher('', normalizePath(path)).map(r => r.data), path).reverse())`,
         `}`,
       ].join('\n')
     },

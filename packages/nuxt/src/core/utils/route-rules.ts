@@ -5,7 +5,7 @@ import { defu } from 'defu'
 import { tryUseNitro } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
-import { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath } from './index.ts'
+import { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './index.ts'
 
 /** One entry of a route-rules router: the pattern it matches and the rules it resolves to. */
 export interface RouteRulesRoute {
@@ -408,9 +408,10 @@ export function createRouteRulesRouter (allRoutes: RouteRulesRoute[], baseURL: s
 }
 
 /**
- * Source of the `normalizePath` helper a compiled matcher looks rules up through, case-folding
- * when `fold` is set: `decodeRoutePath` and `foldRouteCase` are inlined by source so that the
- * runtime lookup and the build-time key normalisation cannot drift apart.
+ * Source of the `normalizePath` and `matchAllRouteRules` helpers a compiled matcher looks rules
+ * up through, case-folding when `fold` is set: `decodeRoutePath`, `foldRouteCase` and
+ * `matchAllRouteRules` are inlined by source so that the runtime lookup and the build-time key
+ * normalisation cannot drift apart.
  *
  * @internal
  */
@@ -419,6 +420,7 @@ export function genNormalizePathCode (fold: boolean): string {
     `const decodeRoutePath = ${decodeRoutePath.toString()}`,
     `const encodeRoutePath = ${encodeRoutePath.toString()}`,
     fold ? `const foldRouteCase = ${foldRouteCase.toString()}` : ``,
+    `const matchAllRouteRules = ${matchAllRouteRules.toString()}`,
     `const normalizePath = (path) => {`,
     `  if (typeof path !== 'string') { return path }`,
     `  return encodeRoutePath(${fold ? 'foldRouteCase(decodeRoutePath(path))' : 'decodeRoutePath(path)'})`,
