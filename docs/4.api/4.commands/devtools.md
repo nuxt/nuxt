@@ -33,6 +33,6 @@ Running `nuxt devtools enable` will install the Nuxt DevTools globally, and also
 | `--cwd=<directory>` |         | Specify the working directory, this takes precedence over ROOTDIR (default: `.`) |
 <!--/devtools-opts-->
 
-::read-more{icon="i-simple-icons-nuxtdotjs" to="https://devtools.nuxt.com" target="\_blank"}
+::read-more{icon="i-simple-icons-nuxtdotjs" to="/modules/devtools"}
 Read more about the **Nuxt DevTools**.
 ::
