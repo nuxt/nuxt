@@ -60,7 +60,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5017: {
       why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` could not be loaded: ${p.error}`,
-      fix: (p: { installCommand: string }) => `Relative imports need an explicit file extension (\`./foo.ts\`, not \`./foo\`), and TypeScript syntax that emits code (such as \`enum\`) cannot be stripped. Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
       docs: false,
     },
     NUXT_B5018: {
@@ -85,7 +85,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5023: {
       why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
-      fix: 'Loading it natively is faster, as jiti has to transform the file first. Relative imports need an explicit file extension, and `import.meta.dirname` replaces `__dirname`.',
+      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.`,
       docs: false,
     },
     NUXT_B5024: {

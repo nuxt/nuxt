@@ -13,7 +13,7 @@ import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm.ts'
-import { getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
+import { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { configDiagnostics } from '../diagnostics/config.ts'
 import { ensureDependencyInstalled, getAddDependencyCommand } from '../dependency.ts'
@@ -300,7 +300,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   let jitiImporter: ((id: string) => Promise<unknown>) | undefined
   // Reported once `future.compatibilityVersion` is known, since that is part of deciding whether
   // loading through jiti is worth mentioning at all
-  const jitiFallbacks: Array<{ filePath: string, error: string }> = []
+  const jitiFallbacks: Array<{ filePath: string, error: string, hint: string }> = []
 
   const importConfigFile = async (id: string) => {
     if (jitiImporter) {
@@ -326,6 +326,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
         throw diagnostic({
           filePath: id,
           error: error instanceof Error ? error.message : String(error),
+          hint: describeNativeImportFailure(error),
           installCommand: await getAddDependencyCommand('jiti', rootCwd, { dev: true }),
           cause: error,
         })
@@ -344,6 +345,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       jitiFallbacks.push({
         filePath: id,
         error: error instanceof Error ? error.message : String(error),
+        hint: describeNativeImportFailure(error),
       })
       if (isLoaderError(error)) {
         jitiImporter = id => jiti.import(id)
@@ -560,7 +562,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   for (const fallback of jitiFallbacks) {
     if (shouldReportJitiFallbackOnce(fallback.filePath, options.rootDir, options.future.compatibilityVersion)) {
-      configDiagnostics.NUXT_B5023(fallback)
+      configDiagnostics.NUXT_B5023({ ...fallback, installCommand: await getAddDependencyCommand('jiti', rootCwd, { dev: true }) })
     }
   }
 
