@@ -60,6 +60,49 @@ describe('imports:transform', () => {
   it('should exclude files from transform', async () => {
     expect(await transform('excluded')).toEqual(undefined)
   })
+
+  describe('$fetch', () => {
+    const plugin = (autoImport: boolean) => TransformPlugin({
+      ctx: createUnimport({ injectAtEnd: true, parser: 'oxc', virtualImports: ['#imports'], imports: [...imports, { name: '$fetch', from: '#build/fetch' }] }),
+      options: { autoImport },
+    }).raw({}, { framework: 'rollup', versions: {} }) as Plugin
+    const transformWith = async (autoImport: boolean, source: string, id: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+      const result = await (plugin(autoImport).transform! as Function).call({ error: null, warn: null } as any, source, id)
+      return typeof result === 'string' ? result : result?.code
+    }
+
+    it('should inject `$fetch` into module runtime code', async () => {
+      expect(await transformWith(true, 'const a = ref(0); export const load = () => $fetch(\'/messages.json\')', '/project/node_modules/some-module/dist/runtime/context.js'))
+        .toMatchInlineSnapshot(`
+          "import { $fetch } from '#build/fetch';
+          const a = ref(0); export const load = () => $fetch('/messages.json')"
+        `)
+    })
+
+    it('should inject `$fetch` alongside a module\'s `#imports`', async () => {
+      expect(await transformWith(true, 'import { ref } from \'#imports\'\nexport const load = () => $fetch(\'/messages.json\')', '/project/node_modules/some-module/dist/runtime/context.js'))
+        .toMatchInlineSnapshot(`
+          "import { $fetch } from '#build/fetch';
+          import { ref } from 'vue';
+
+          export const load = () => $fetch('/messages.json')"
+        `)
+    })
+
+    it('should inject `$fetch` when auto-imports are disabled', async () => {
+      expect(await transformWith(false, 'export const load = () => $fetch(\'/api\')', '/project/app/utils/load.ts'))
+        .toMatchInlineSnapshot(`
+          "import { $fetch } from '#build/fetch';
+          export const load = () => $fetch('/api')"
+        `)
+    })
+
+    it('should not inject `$fetch` where it is a property or a local binding', async () => {
+      expect(await transformWith(true, 'export const load = (app) => app.$fetch(\'/api\')', '/project/node_modules/some-module/dist/runtime/context.js')).toBeUndefined()
+      expect(await transformWith(true, 'const $fetch = globalThis.fetch; export const load = () => $fetch(\'/api\')', '/project/node_modules/some-module/dist/runtime/context.js')).toBeUndefined()
+    })
+  })
 })
 
 const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta', 'useId']

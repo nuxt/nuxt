@@ -1,4 +1,6 @@
 import { createUnplugin } from 'unplugin'
+import MagicString from 'magic-string'
+import { createUnimport } from 'unimport'
 import type { Unimport } from 'unimport'
 import { normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
@@ -9,6 +11,7 @@ import type { ImportsOptions } from 'nuxt/schema'
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
 const IMPORTS_RE = /(['"])#imports\1/
+const DOLLAR_FETCH_RE = /(?<![\w$.])\$fetch\b/
 
 interface TransformPluginOptions {
   ctx: Pick<Unimport, 'injectImports'>
@@ -22,6 +25,15 @@ interface TransformPluginOptions {
 }
 
 export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: TransformPluginOptions) => createUnplugin(() => {
+  // `$fetch` is not a global on the client, so code that relies on the global (including
+  // module runtime code, which is not auto-imported) receives an import instead
+  const fetchCtx = createUnimport({
+    parser: 'oxc',
+    injectAtEnd: true,
+    imports: [{ name: '$fetch', from: '#build/fetch' }],
+    addons: { addons: [] },
+  })
+
   return {
     name: 'nuxt:imports-transform',
     enforce: 'post',
@@ -46,12 +58,18 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: Tra
     async transform (code, id) {
       id = normalize(id)
       const isNodeModule = NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))
+      const usesFetch = DOLLAR_FETCH_RE.test(code)
       // For modules in node_modules, we only transform `#imports` but not doing imports
-      if (isNodeModule && !IMPORTS_RE.test(code)) {
+      if (isNodeModule && !usesFetch && !IMPORTS_RE.test(code)) {
         return
       }
 
-      const { s, imports } = await ctx.injectImports(code, id, { autoImport: options.autoImport && !isNodeModule })
+      const { s, imports } = isNodeModule && !IMPORTS_RE.test(code)
+        ? { s: new MagicString(code), imports: [] }
+        : await ctx.injectImports(code, id, { autoImport: options.autoImport && !isNodeModule })
+      if (usesFetch && !imports.some(i => (i.as ?? i.name) === '$fetch')) {
+        await fetchCtx.injectImports(s, id, { autoImport: true })
+      }
       if (imports.some(i => i.from === '#app/composables/script-stubs') && tryUseNuxt()?.options.test === false) {
         installNuxtModule('@nuxt/scripts')
       }
