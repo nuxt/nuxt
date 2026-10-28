@@ -34,7 +34,24 @@ export default defineResolvers({
       },
     },
     includeWorkspace: false,
-    typeCheck: false,
+    typeCheck: {
+      $resolve: async (val, get) => {
+        if (await get('test')) {
+          return false
+        }
+        if (val === true) {
+          return true
+        }
+        const isDev = await get('dev')
+        if (val === 'build') {
+          return !isDev
+        }
+        if (val === 'dev') {
+          return isDev
+        }
+        return false
+      },
+    },
     tsConfig: {},
     shim: false,
   },
