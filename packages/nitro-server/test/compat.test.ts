@@ -170,15 +170,15 @@ describe('setupNitroCompat', () => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9002').mockImplementation(() => ({}) as any)
     const nitroConfig: NitroConfig = {
       handlers: [
-        declared({ handler: '/modules/a.ts' }, 'nitro2'),
-        declared({ handler: '/modules/b.ts' }, 'nitro2'),
+        declared({ handler: '/project/modules/a.ts' }, 'nitro2'),
+        declared({ handler: '/project/node_modules/.pnpm/b@1.0.0/node_modules/b/dist/runtime/b.js' }, 'nitro2'),
       ],
     }
 
     await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
 
     expect(report).toHaveBeenCalledTimes(1)
-    expect(report.mock.calls[0]![0]).toMatchObject({ count: 2 })
+    expect(report.mock.calls[0]![0]).toMatchObject({ count: 2, handlers: '`modules/a.ts`\n  - `b/dist/runtime/b.js`' })
     report.mockRestore()
   })
 
@@ -438,6 +438,38 @@ describe('setupNitroCompat', () => {
     expect((nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()).toContain('legacyCompat = true')
     expect(report).toHaveBeenCalledTimes(1)
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, modules: expect.stringContaining('`legacy-module` (imports `h3`)') })
+    report.mockRestore()
+  })
+
+  it('reports server code from a dependency by its package name', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const root = mkdtempSync(join(tmpdir(), 'nitro-compat-dependency-'))
+    onTestFinished(() => rmSync(root, { recursive: true, force: true }))
+    const dist = join(root, 'node_modules/.pnpm/@scope+utils@1.0.0/node_modules/@scope/utils/dist')
+    mkdirSync(dist, { recursive: true })
+    writeFileSync(join(dist, 'index.mjs'), `import { getQuery } from 'h3'\nexport const query = getQuery`)
+
+    const nitroConfig: NitroConfig = { imports: { imports: [{ name: 'query', from: join(dist, 'index.mjs') }] } as any }
+    await setupNitroCompat(createNuxt({ rootDir: root, srcDir: root }), nitroConfig, legacyOff, [])
+
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toMatchObject({ modules: '`@scope/utils` (imports `h3`)' })
+    report.mockRestore()
+  })
+
+  it('leaves the app\'s own shared auto-import directory out of the v2 scope', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const root = mkdtempSync(join(tmpdir(), 'nitro-compat-shared-'))
+    onTestFinished(() => rmSync(root, { recursive: true, force: true }))
+    mkdirSync(join(root, 'shared/utils'), { recursive: true })
+    writeFileSync(join(root, 'shared/utils/errors.ts'), `import { createError } from 'h3'\nexport const fail = () => createError({ status: 400 })`)
+
+    const nitroConfig: NitroConfig = { imports: { dirs: [join(root, 'shared/utils')] } as any }
+    const layers = [{ config: { rootDir: root, srcDir: root }, cwd: root }]
+    await setupNitroCompat(createNuxt({ rootDir: root, srcDir: root, serverDir: join(root, 'server'), _layers: layers }), nitroConfig, legacyOff, [])
+
+    expect(report).not.toHaveBeenCalled()
+    expect((nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()).toContain('legacyCompat = false')
     report.mockRestore()
   })
 
@@ -886,7 +918,7 @@ export default defineEventHandler((event: H3Event) => event.req.headers)`)
     await nitro.hooks.callHook('build:before', nitro)
 
     expect(report).toHaveBeenCalledTimes(1)
-    expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, files: expect.stringContaining('auth.ts` (uses `event.node`)') })
+    expect(report.mock.calls[0]![0]).toEqual({ count: 1, files: '`server/middleware/auth.ts` (uses `event.node`)' })
 
     report.mockClear()
     const registerLateLegacy = await setupNitroCompat(nuxt, { handlers: [] }, resolveNitroLegacyOptions(true), [])
@@ -951,7 +983,7 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     await setupNitroCompat(createNuxt({ nitro: { esbuild: { options: {} } } as any }), { handlers: [] }, legacyOff, [])
 
     expect(report).toHaveBeenCalledTimes(1)
-    expect(report.mock.calls[0]![0]).toMatchObject({ keys: '`esbuild`' })
+    expect(report.mock.calls[0]![0]).toMatchObject({ keys: '`esbuild`', replacements: expect.stringContaining('`oxc`') })
 
     report.mockClear()
     // still read: by nitro v3 (`ignore`) or by Nuxt itself (`imports`)

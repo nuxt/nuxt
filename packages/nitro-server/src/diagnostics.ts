@@ -16,12 +16,12 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
   codes: {
     NUXT_B9001: {
       why: (p: { keys: string }) => `The following \`nitro\` config options are no longer supported by Nitro v3 and were ignored: ${p.keys}.`,
-      fix: 'Remove them from your `nitro` configuration.',
+      fix: (p: { replacements: string }) => `Remove them from your \`nitro\` configuration.${p.replacements ? ` Settings with a replacement can be moved: ${p.replacements}` : ''}`,
       docs: false,
     },
     NUXT_B9002: {
       why: (p: { count: number, handlers: string }) => `${p.count} Nitro v2 handler${p.count === 1 ? ' has' : 's have'} no \`route\`, which Nitro v3 requires:\n  - ${p.handlers}`,
-      fix: 'They have been registered as middleware on `/**`. Set `middleware: true` on each handler that runs for every request, or give it an explicit `route`.',
+      fix: 'They have been registered as middleware on `/**`. Set `middleware: true` on each handler that runs for every request, or give it an explicit `route`. Report it to the module author if the handler is not your own.',
       docs: false,
     },
     NUXT_B9003: {
