@@ -137,7 +137,7 @@ A skip link as the first tab stop of your app is the conventional fix, and it he
 </style>
 ```
 
-Following a link to `#main` moves the browser's sequential focus navigation starting point to `<main>`, so in current browsers the next <kbd>Tab</kbd> lands inside it even though `<main>` itself is not focusable.
+Following a link to `#main` moves the browser's sequential focus navigation starting point to `<main>`, even though `<main>` itself is not focusable, so in current browsers the next <kbd>Tab</kbd> moves to the first focusable element after that point: inside `<main>` when it contains one, otherwise past it.
 
 If it suits your app, you can go further and move focus to the main region from a plugin whenever navigation changes the path. A script can only focus `<main>` once it has `tabindex="-1"`. Use `-1` rather than a positive value, which would move the element in the tab order and surprise everyone else:
 
@@ -167,7 +167,7 @@ export default defineNuxtPlugin(() => {
 ```
 
 ::note
-With `tabindex="-1"`, a click on anything non-focusable inside `<main>` focuses `<main>` itself, because the browser focuses the nearest focusable ancestor of the clicked element. Take this into account if your app returns focus to the previously focused element, for example when closing a dialog.
+With `tabindex="-1"`, a click inside `<main>` on content that is not inside some other focusable element can focus `<main>` itself, because the browser focuses the nearest focusable ancestor of the clicked element. Take this into account if your app returns focus to the previously focused element, for example when closing a dialog.
 ::
 
 ::tip
