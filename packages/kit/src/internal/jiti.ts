@@ -1,6 +1,6 @@
-import { readFileSync, realpathSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
-import { dirname, join } from 'pathe'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { basename, dirname, join } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { directoryToURL } from './esm.ts'
 import { ensureDependencyInstalled } from '../dependency.ts'
@@ -56,6 +56,56 @@ export function getMissingCjsGlobal (error: unknown): string | undefined {
     return undefined
   }
   return CJS_GLOBAL_ERROR_RE.exec(message)?.[1]
+}
+
+const CJS_GLOBALS_HINT = 'The file was loaded as native ESM, which does not provide the CommonJS globals `__dirname`, `__filename`, `require`, `module` or `exports`. Use `import.meta.url`, `import.meta.dirname` and `createRequire(import.meta.url)` from `node:module` instead.'
+
+/**
+ * Explain a failed native import in terms of what the author can change. The runtime supports
+ * TypeScript, so the fix is never "stop using TypeScript": it is the specific thing the runtime
+ * will not do.
+ *
+ * @param error the error the failed `import()` rejected with
+ */
+export function describeNativeImportFailure (error: unknown): string {
+  if (getMissingCjsGlobal(error)) {
+    return CJS_GLOBALS_HINT
+  }
+  switch ((error as { code?: string } | undefined)?.code) {
+    case 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING': {
+      return 'Published packages cannot ship TypeScript entrypoints, because the runtime does not strip types under `node_modules`. Ask the author to publish compiled JavaScript.'
+    }
+    case 'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX': {
+      return 'The runtime erases type annotations but cannot compile TypeScript syntax that emits code, such as `enum`, `namespace`, decorators or constructor parameter properties. Replace it with erasable syntax.'
+    }
+    case 'ERR_MODULE_NOT_FOUND':
+    case 'ERR_UNSUPPORTED_DIR_IMPORT': {
+      return describeMissingExtension(error) ?? 'A specifier could not be resolved. Relative imports need an explicit file extension (`./foo.ts`, not `./foo`), and aliases such as `~/` are not resolved outside the bundler.'
+    }
+    case 'ERR_IMPORT_ATTRIBUTE_MISSING': {
+      return 'JSON imports need an import attribute: `import pkg from \'./package.json\' with { type: \'json\' }`.'
+    }
+    case 'ERR_PACKAGE_IMPORT_NOT_DEFINED': {
+      return 'Aliases such as `#shared` are not resolved outside the bundler. Use a relative import with an explicit file extension instead.'
+    }
+    default: {
+      return 'Check that the file and everything it imports can be loaded by the runtime directly.'
+    }
+  }
+}
+
+const MISSING_EXTENSIONS = ['.ts', '.mts', '.mjs', '.js']
+
+function describeMissingExtension (error: unknown): string | undefined {
+  const { url } = error as { url?: unknown }
+  if (typeof url !== 'string' || !url.startsWith('file:')) {
+    return
+  }
+  const path = fileURLToPath(url)
+  const extension = MISSING_EXTENSIONS.find(extension => existsSync(path + extension))
+  if (extension) {
+    return `Relative imports need an explicit file extension: import \`${basename(path)}${extension}\` rather than \`${basename(path)}\`.`
+  }
 }
 
 const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'] as const

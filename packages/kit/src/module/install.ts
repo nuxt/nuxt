@@ -2,7 +2,7 @@ import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { performance } from 'node:perf_hooks'
 import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptions } from '@nuxt/schema'
-import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
+import { dirname, isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { readPackageJSON, resolvePackageDir } from '../internal/package-json.ts'
@@ -16,7 +16,7 @@ import { logger } from '../logger.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
-import { getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
+import { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
@@ -333,34 +333,6 @@ async function getSharedJiti (nuxt: Nuxt, install: boolean): Promise<Jiti | unde
   return jiti
 }
 
-const CJS_GLOBALS_HINT = 'The file was loaded as native ESM, which does not provide the CommonJS globals `__dirname`, `__filename`, `require`, `module` or `exports`. Use `import.meta.url`, `import.meta.dirname` and `createRequire(import.meta.url)` from `node:module` instead.'
-
-/**
- * Explain a failed native import in terms of what the author can change. The runtime supports
- * TypeScript, so the fix is never "stop using TypeScript": it is the specific thing the runtime
- * will not do.
- */
-function describeNativeImportFailure (error: unknown): string {
-  if (getMissingCjsGlobal(error)) {
-    return CJS_GLOBALS_HINT
-  }
-  switch ((error as { code?: string } | undefined)?.code) {
-    case 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING': {
-      return 'Published packages cannot ship TypeScript entrypoints, because the runtime does not strip types under `node_modules`. Ask the author to publish compiled JavaScript.'
-    }
-    case 'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX': {
-      return 'The runtime erases type annotations but cannot compile TypeScript syntax that emits code, such as `enum`, `namespace`, decorators or constructor parameter properties. Replace it with erasable syntax.'
-    }
-    case 'ERR_MODULE_NOT_FOUND':
-    case 'ERR_UNSUPPORTED_DIR_IMPORT': {
-      return 'A specifier could not be resolved. Relative imports need an explicit file extension (`./foo.ts`, not `./foo`), and aliases such as `~/` are not resolved outside the bundler.'
-    }
-    default: {
-      return 'Check that the module and everything it imports can be loaded by the runtime directly.'
-    }
-  }
-}
-
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()): Promise<{ nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }> {
   let buildTimeModuleMeta: ModuleMeta = {}
 
@@ -434,6 +406,9 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       kitDiagnostics.NUXT_B8023({
         module: nuxtModule,
         error: nativeError instanceof Error ? nativeError.message : String(nativeError),
+        hint: describeNativeImportFailure(nativeError),
+        installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
+        local: !normalize(resolvedModulePath).includes('/node_modules/'),
       })
     }
   }
