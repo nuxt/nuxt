@@ -49,7 +49,7 @@ function fetchManifest (): Promise<NuxtAppManifest> {
       })
       .then((res: NuxtAppManifest) => {
         // handle errors fetching manifest, e.g. from an improperly configured proxy
-        if (!res || typeof res !== 'object' || !Array.isArray(res.prerendered)) {
+        if (!res || typeof res !== 'object' || typeof res.id !== 'string' || typeof res.timestamp !== 'number' || !Array.isArray(res.prerendered)) {
           throw manifestDiagnostics.NUXT_E5004()
         }
         return res

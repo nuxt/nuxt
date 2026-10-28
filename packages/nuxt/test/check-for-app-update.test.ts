@@ -180,6 +180,25 @@ describe('checkForAppUpdate', () => {
     await expect(checkForAppUpdate()).resolves.toEqual(newManifest)
   })
 
+  it.each([
+    { prerendered: [] },
+    { ...currentManifest, id: 1 },
+    { id: 'current', prerendered: [] },
+    { ...currentManifest, timestamp: '1' },
+  ])('rejects invalid current manifest metadata and allows a retry: %j', async (meta) => {
+    const updated = vi.fn()
+    state.nuxtApp.hooks.hook('app:manifest:update', updated)
+    fetchMock.mockResolvedValueOnce(respond(meta))
+
+    await expect(checkForAppUpdate()).rejects.toThrow()
+    expect(updated).not.toHaveBeenCalled()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(vi.getTimerCount()).toBe(0)
+
+    await expect(checkForAppUpdate()).resolves.toEqual(newManifest)
+    expect(updated).toHaveBeenCalledExactlyOnceWith(newManifest)
+  })
+
   it('preserves errors fetching the current manifest and allows a retry', async () => {
     fetchMock.mockResolvedValueOnce(respond({}, 500))
     await expect(checkForAppUpdate()).rejects.toMatchObject({ status: 500 })
@@ -274,6 +293,20 @@ describe('outdated build polling', () => {
     await vi.advanceTimersByTimeAsync(1000)
     expect(vi.getTimerCount()).toBe(1)
     await vi.advanceTimersByTimeAsync(1000)
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('continues polling after incomplete current manifest metadata', async () => {
+    const updated = vi.fn()
+    state.nuxtApp.hooks.hook('app:manifest:update', updated)
+    fetchMock.mockResolvedValueOnce(respond({ prerendered: [] }))
+    await startPolling()
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(updated).not.toHaveBeenCalled()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(vi.getTimerCount()).toBe(1)
+    await vi.advanceTimersByTimeAsync(1000)
+    expect(updated).toHaveBeenCalledExactlyOnceWith(newManifest)
     expect(vi.getTimerCount()).toBe(0)
   })
 
