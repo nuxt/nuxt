@@ -22,7 +22,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
+import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
 import { setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
@@ -31,10 +31,11 @@ import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKe
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRulePath } from '../../nuxt/src/core/utils/route-rules.ts'
+import { foldRouteCase } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
-import { createServerAutoImports, resolveServerImportDirs } from './auto-imports.ts'
-import { normalizeLegacyRouteRules } from './route-rules.ts'
+import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
+import { normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
@@ -98,7 +99,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   const importDirs = new Set<string>()
   if (nuxt.options.nitro.imports !== false) {
-    for (const dir of resolveServerImportDirs(nuxt)) {
+    for (const dir of resolveServerImportDirs(nuxt, { nestedUtils: legacy.imports })) {
       importDirs.add(dir)
     }
   }
@@ -202,9 +203,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // `noScripts` route rule, so scripted documents can speculatively
       // prefetch/prerender the full-page navigation the client router forces
       // to them.
-      const noScriptsPatterns = [...new Set(nitro.routing.routeRules.routes
+      const noScriptsPatterns = [...new Set(mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)
         .filter(r => r.data.noScripts)
-        .map(r => rou3PatternToURLPattern(r.route).pattern))]
+        .map(r => rou3PatternToURLPattern(r.route, { wildcard: 'segment' }).pattern))]
       // `href_matches` patterns for every page route, provided by the pages
       // module; pages served without scripts scope their blanket speculation
       // rules to these (safe-to-GET) same-origin navigations
@@ -433,7 +434,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nuxt.hook('nitro:init', (nitro) => {
       nitro.hooks.hook('build:before', async (nitro) => {
         const updatedRules: Record<string, Record<string, any>> = {}
-        for (const { route, data: value } of nitro.routing.routeRules.routes) {
+        for (const { route, data: value } of mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)) {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
             if (value.ssr === false) { continue }
             if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
@@ -483,8 +484,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
 
+    // keeps the generated tsconfigs independent of the build id
+    addTemplate({
+      filename: 'types/app-manifest.d.ts',
+      dependsOn: [],
+      getContents: () => 'declare const manifest: { id: string, timestamp: number, prerendered: string[] }\nexport default manifest\n',
+    })
+    nuxt.hook('prepare:types', ({ tsConfig }) => {
+      tsConfig.compilerOptions ||= {}
+      tsConfig.compilerOptions.paths ||= {}
+      tsConfig.compilerOptions.paths['#app-manifest'] = [relativeWithDot(typesDir, resolve(nuxt.options.buildDir, 'types/app-manifest'))]
+    })
+
     // write stub manifest before build so external import of #app-manifest can be resolved
-    if (!nuxt.options.dev || nuxt.options.experimental.nitroViteEnvironment) {
+    if (!nuxt.options._prepare && (!nuxt.options.dev || nuxt.options.experimental.nitroViteEnvironment)) {
       nuxt.hook('build:before', async () => {
         await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
         await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify({
@@ -653,17 +666,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
     ],
   }
-  nitroConfig.rollupConfig!.plugins!.push(ImpoundPlugin.rollup(serverProtectionConfig))
-
-  // register same protection when building
-  if (nuxt.options.experimental.nitroViteEnvironment) {
-    nuxt.options.vite.plugins ||= []
-    for (const plugin of [ImpoundPlugin.vite(serverProtectionConfig)].flat()) {
-      nuxt.options.vite.plugins.push(Object.assign(plugin, {
-        name: `nuxt:server-import-protection:${plugin.name}`,
-        applyToEnvironment: (env: { name: string }) => env.name === 'nitro',
-      }))
+  for (const plugin of toArray(ImpoundPlugin.rollup(serverProtectionConfig))) {
+    // the specifier is checked before any alias or resolver on every server build
+    if (typeof plugin.resolveId === 'function') {
+      plugin.resolveId = { order: 'pre', handler: plugin.resolveId }
     }
+    nitroConfig.rollupConfig!.plugins!.push(plugin)
+  }
+
+  if (!nuxt.options.router.options.sensitive) {
+    nitroConfig.rollupConfig!.plugins!.push(routeRulesCaseFoldPlugin(() => nitro))
   }
 
   // Nitro serialises mount options with `JSON.stringify`, so the patterns have to go
@@ -728,7 +740,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const registerLateNitroCompatScope = await setupNitroCompat(nuxt, nitroConfig, legacy, legacyModulePresets, installedModules, unusedVariants)
   nitroConfig.alias = sortAliasesByPrecedence(nitroConfig.alias!)
 
-  const autoImports = createServerAutoImports(nuxt, nitroConfig.imports || { autoImport: false }, typesDir)
+  const autoImports = createServerAutoImports(nuxt, nitroConfig.imports || { autoImport: false }, typesDir, {
+    nestedUtilsDirs: nuxt.options.nitro.imports !== false && !legacy.imports ? resolveNestedServerUtilsDirs(nuxt) : [],
+  })
   // only for the server bundle: `nuxt.options.alias['#imports']` belongs to the app context
   nitroConfig.alias ||= {}
   nitroConfig.alias['#imports/server'] = autoImports.importsModulePath
@@ -737,22 +751,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitroConfig.alias['#imports'] = autoImports.importsModulePath
 
   if (autoImports.enabled) {
-    const autoImportsPluginOptions = { autoImports, sourcemap: !!nuxt.options.sourcemap.server }
-    nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup(autoImportsPluginOptions))
-
-    if (nuxt.options.experimental.nitroViteEnvironment) {
-      nuxt.options.vite.plugins ||= []
-      for (const plugin of [ServerAutoImportsPlugin.vite(autoImportsPluginOptions)].flat()) {
-        nuxt.options.vite.plugins.push(Object.assign(plugin, {
-          applyToEnvironment: (env: { name: string }) => env.name === 'nitro',
-        }))
-      }
-    }
+    nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
+      autoImports,
+      buildDir: resolve(nitroConfig.rootDir!, nitroConfig.buildDir!),
+      sourcemap: !!nuxt.options.sourcemap.server,
+    }))
   }
 
   // a file added to or removed from a scanned directory changes the set of imports available
   // through `#imports/server`, whether or not they are injected
-  const scannedDirs = (nitroConfig.imports as ServerImportsOptions).dirs ?? []
+  const scannedDirs = ((nitroConfig.imports as ServerImportsOptions).dirs ?? []).map(dir => dir.replace(GLOB_SUFFIX_RE, ''))
   nuxt.hook('builder:watch', async (event, relativePath) => {
     if (event !== 'add' && event !== 'unlink') { return }
     const path = resolve(nuxt.options.srcDir, relativePath)
@@ -1248,7 +1256,7 @@ function compilePageMatcher (patterns: string[]): string {
   for (const pattern of patterns) {
     addRou3Route(router, '', pattern, 1)
   }
-  return compileRouterToString(router)
+  return `/* @__PURE__ */ (() => {const foldRouteCase = ${foldRouteCase.toString()};const match = ${compileRouterToString(router)};return (method, path) => match(method, foldRouteCase(path));})()`
 }
 
 /**

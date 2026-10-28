@@ -5,7 +5,7 @@ import { decodePath, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
-import { isInComponentSetup, useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { isInComponentSetup, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import { sanitizeStatusCode } from '../utils/http-status'
 import { getScriptProtocol, getUserTrace, isAbsoluteHref } from '../utils'
@@ -139,6 +139,11 @@ const isProcessingMiddleware = () => {
   return false
 }
 
+const isNavigationPending = () => {
+  const nuxtApp = tryUseNuxtApp()
+  return !!(nuxtApp?._processingMiddleware || nuxtApp?._middlewareTo)
+}
+
 // Conditional types, either one or other
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
 type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
@@ -191,11 +196,12 @@ function encodeForHtmlAttr (value: string): string {
  * Can be called on the server and on the client, within pages, route middleware, plugins, and more.
  * @param {RouteLocationRaw | undefined | null} [to] - The route to navigate to. Accepts a route object, string path, `undefined`, or `null`. Defaults to '/'.
  * @param {NavigateToOptions} [options] - Optional customization for controlling the behavior of the navigation.
- * @returns {Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw} The navigation result, which varies depending on context and options.
+ * @returns {Promise<void | NavigationFailure | false> | false | void} The navigation result, which varies depending on context and options.
  * @see https://nuxt.com/docs/4.x/api/utils/navigate-to
  * @since 3.0.0
  */
-export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
+export function navigateTo (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void
+export function navigateTo (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw {
   to ||= '/'
 
   const isPathForm = typeof to === 'string' || 'path' in to
@@ -299,8 +305,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Client-side redirection using vue-router
   if (isExternal) {
-    // Run any cleanup steps for the current scope, like ending BroadcastChannel
-    nuxtApp._scope.stop()
+    nuxtApp._cookieWriters?.forEach(write => write())
+    window.addEventListener('pagehide', (event) => {
+      if (!event.persisted) { nuxtApp._scope.stop() }
+    }, { once: true })
     if (options?.replace) {
       location.replace(toPath)
     } else {
@@ -358,7 +366,7 @@ export function _navigateToEarlyReturn () {
  * @since 3.0.0
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
-  if (import.meta.dev && !isProcessingMiddleware()) {
+  if (import.meta.dev && !isNavigationPending()) {
     throw navigationDiagnostics.NUXT_E2003()
   }
 
@@ -389,7 +397,7 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts | false>(layout: 
   if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
     navigationDiagnostics.NUXT_E2008()
   }
-  const inMiddleware = isProcessingMiddleware()
+  const inMiddleware = isNavigationPending()
   const middlewareTo = import.meta.server && inMiddleware && nuxtApp._middlewareTo
   if (middlewareTo) {
     middlewareTo.meta.layout = layout as any

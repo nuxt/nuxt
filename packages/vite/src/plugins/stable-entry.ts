@@ -1,4 +1,5 @@
 import { setBuildOutput } from '@nuxt/kit'
+import { addClientBuildState } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import escapeStringRegexp from 'escape-string-regexp'
 import { generateTransform, rolldownString } from 'rolldown-string'
@@ -12,6 +13,10 @@ export function StableEntryPlugin (nuxt: Nuxt): Plugin {
   let entryChunkFileName: string | undefined
 
   setBuildOutput('entryChunkName', () => `export const entryFileName = ${JSON.stringify(entryFileName)}`)
+  addClientBuildState<string | undefined>('stable-entry', {
+    save: () => entryFileName,
+    restore: (name) => { entryFileName = name },
+  }, nuxt)
 
   return {
     name: 'nuxt:stable-entry',

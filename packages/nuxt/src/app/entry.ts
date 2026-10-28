@@ -9,6 +9,7 @@ import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createError, createErrorFromThrown } from './composables/error'
 import { appDiagnostics } from './diagnostics/core'
+import { waitForPaint, yieldToMain } from './internal/yield'
 
 import '#build/css'
 import plugins from '#build/plugins'
@@ -17,11 +18,21 @@ import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRo
 
 export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>
 
+declare const __VUE_OPTIONS_API__: boolean
+
 let entry: Entry
 
 if (import.meta.server) {
+  const propsCache = new WeakMap()
+  const emitsCache = new WeakMap()
+
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
+    if (!__VUE_OPTIONS_API__) {
+      const context = vueApp._context as typeof vueApp._context & { propsCache: typeof propsCache, emitsCache: typeof emitsCache }
+      context.propsCache = propsCache
+      context.emitsCache = emitsCache
+    }
 
     const nuxt = createNuxtApp({ vueApp, ssrContext })
 
@@ -55,6 +66,10 @@ if (import.meta.client) {
       (multiApp ? window.__NUXT__?.[appId] : window.__NUXT__)?.serverRendered ??
       (multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__'))?.dataset.ssr === 'true',
     )
+    if (isSSR) {
+      await waitForPaint()
+    }
+
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
     const nuxt = createNuxtApp({ vueApp })
@@ -84,6 +99,10 @@ if (import.meta.client) {
       await applyPlugins(nuxt, plugins)
     } catch (err) {
       handleVueError(err)
+    }
+
+    if (isSSR) {
+      await yieldToMain()
     }
 
     try {

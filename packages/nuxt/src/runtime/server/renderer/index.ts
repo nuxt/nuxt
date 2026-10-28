@@ -21,7 +21,7 @@ import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from './
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from './app'
 import { mergeHeaders } from './headers'
 import { patchDevClientCss } from './dev-css'
-import { renderInlineStyles } from './inline-styles'
+import { renderInlineStyles, renderSplitInlineStyles } from './inline-styles'
 import { createInlinedCSSFilter } from './inlined-css'
 import { throwIfUnmatchedPagePath } from './early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands'
@@ -364,11 +364,13 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     throw _err
   })
 
+  const renderedHtml = _rendered.html
+
   // A scriptless response has no chunk to link a stylesheet from, so it always inlines.
   // Both flags are build-time constants, so writing them out folds the branch away.
-  const inlinedStyles = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) && !ssrContext['~renderResponse'] && !isRenderingPayload
-    ? await renderInlineStyles(ssrContext.modules ?? [])
-    : []
+  const [entryInlinedStyles, componentInlinedStyles] = (NUXT_INLINE_STYLES || ((NUXT_NO_SCRIPTS || NUXT_HAS_NO_SCRIPTS_ROUTES) && NO_SCRIPTS)) && !ssrContext['~renderResponse'] && !isRenderingPayload
+    ? await renderSplitInlineStyles(ssrContext.modules ?? [], entryIds)
+    : [[], []]
 
   if (import.meta.prerender && ssrError && isPrerenderedErrorPage(event.url.pathname)) {
     delete ssrContext.payload.path
@@ -434,8 +436,8 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   }
 
   // 2. Styles
-  if (inlinedStyles.length) {
-    ssrContext.head.push({ style: inlinedStyles })
+  if (entryInlinedStyles.length) {
+    ssrContext.head.push({ style: entryInlinedStyles })
   }
 
   const link: Link[] = []
@@ -458,6 +460,10 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   if (link.length) {
     ssrContext.head.push({ link })
+  }
+
+  if (componentInlinedStyles.length) {
+    ssrContext.head.push({ style: componentInlinedStyles })
   }
 
   // 4. Resource Hints
@@ -550,6 +556,11 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
+  // the app markup is sent as rendered chunks unless a listener changed it
+  const chunks = ssrContext['~htmlChunks']
+  if (runtime.createDocumentResponse && chunks && htmlContext.body.length === 2 && htmlContext.body[0] === renderedHtml) {
+    return runtime.createDocumentResponse(renderHTMLDocumentChunks(htmlContext, chunks), event.res)
+  }
   return runtime.createResponse(renderHTMLDocument(htmlContext), event.res)
 }
 
@@ -1108,6 +1119,16 @@ function joinTags (tags: Array<string | undefined>) {
 function joinAttrs (chunks: string[]) {
   if (chunks.length === 0) { return '' }
   return ' ' + chunks.join(' ')
+}
+
+function renderHTMLDocumentChunks (html: NuxtRenderHTMLContext, appChunks: string[]): string[] {
+  const chunks: string[] = ['<!DOCTYPE html>' +
+    `<html${joinAttrs(html.htmlAttrs)}>` +
+    `<head>${joinTags(html.head)}</head>` +
+    `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}`]
+  for (const chunk of appChunks) { chunks.push(chunk) }
+  chunks.push(`${html.body[1]}${joinTags(html.bodyAppend)}</body></html>`)
+  return chunks
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {

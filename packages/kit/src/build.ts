@@ -155,6 +155,10 @@ export function addRspackPlugin (pluginOrGetter: Arrayable<RspackCompatiblePlugi
 
 /**
  * Append Vite plugin to the config.
+ *
+ * The plugin applies to the app's environments (`client` and `ssr`), not to the `nitro`
+ * environment. For server code, add the plugin to `nuxt.options.vite.plugins` with
+ * `applyToEnvironment: environment => environment.name === 'nitro'`.
  */
 export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Thenable<Arrayable<VitePlugin>>), options: ExtendConfigOptions = {}): void {
   const nuxt = useNuxt()

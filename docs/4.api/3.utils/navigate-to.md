@@ -124,7 +124,7 @@ await navigateTo('https://nuxt.com', {
 export function navigateTo (
   to: RouteLocationRaw | undefined | null,
   options?: NavigateToOptions,
-): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw
+): Promise<void | NavigationFailure | false> | false | void
 
 interface NavigateToOptions {
   replace?: boolean

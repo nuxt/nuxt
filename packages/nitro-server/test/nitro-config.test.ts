@@ -2,17 +2,22 @@ import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { isAbsolute, resolve } from 'pathe'
 import { loadNuxt } from '@nuxt/kit'
-import type { NuxtConfig } from '@nuxt/schema'
+import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
 
 const serverReplacements = {
+  'process.env.NODE_ENV': '"production"',
+  '__VUE_OPTIONS_API__': 'false',
   '__VUE_PROD_DEVTOOLS__': 'false',
+  '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': 'false',
   'import.meta.test': 'false',
 }
 
-async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConfig: NitroConfig) => T | Promise<T>) {
+const hasBundledVuePlugin = (nitroConfig: NitroConfig) => (nitroConfig.rollupConfig!.plugins as Array<{ name?: string }>).some(plugin => plugin?.name === 'nuxt:bundled-vue')
+
+async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConfig: NitroConfig, nuxt: Nuxt) => T | Promise<T>) {
   let nitroConfig: NitroConfig | undefined
   let nitro: Nitro | undefined
   const nuxt = await loadNuxt({
@@ -31,13 +36,41 @@ async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConf
     },
   })
   try {
-    return await fn(nitro!, nitroConfig!)
+    return await fn(nitro!, nitroConfig!, nuxt)
   } finally {
     await nuxt.close()
   }
 }
 
 describe('nitro config', () => {
+  it('emits valid single-segment URLPatterns for noScripts wildcard rules', async () => {
+    await withNitro({ routeRules: { '/foo/*': { noScripts: true }, '/scripted/*': { ssr: true } } }, async (_nitro, nitroConfig) => {
+      const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
+      const code = await rendererConfig()
+      const patterns: string[] = JSON.parse(/^export const NUXT_NO_SCRIPTS_PATTERNS = (.+)$/m.exec(code)![1]!)
+
+      expect(patterns).toEqual(['/foo/([^\\/]*)'])
+      const pattern = new URLPattern({ pathname: patterns[0] })
+      expect(pattern.test('https://example.com/foo/bar')).toBe(true)
+      expect(pattern.test('https://example.com/foo/bar/baz')).toBe(false)
+      expect(pattern.test('https://example.com/scripted/bar')).toBe(false)
+    })
+  }, 60_000)
+
+  it('emits noScripts patterns for the rules that apply to a GET request', async () => {
+    const routeRules = {
+      '/foo': { noScripts: true },
+      'GET /foo': { noScripts: false },
+      'GET /bar': { noScripts: true },
+      'POST /baz': { noScripts: true },
+    }
+    await withNitro({ routeRules }, async (_nitro, nitroConfig) => {
+      const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
+      const code = await rendererConfig()
+      expect(JSON.parse(/^export const NUXT_NO_SCRIPTS_PATTERNS = (.+)$/m.exec(code)![1]!)).toEqual(['/bar'])
+    })
+  }, 60_000)
+
   it('passes the server replacements to nitro as `replace` without nitroViteEnvironment', async () => {
     await withNitro({ experimental: { nitroViteEnvironment: false } }, (_nitro, nitroConfig) => {
       expect(nitroConfig.replace).toMatchObject(serverReplacements)
@@ -56,6 +89,15 @@ describe('nitro config', () => {
       const prerendererConfig: NitroConfig = { ...nitro.options._config }
       await nitro.hooks.callHook('prerender:config', prerendererConfig)
       expect(prerendererConfig.replace).toMatchObject(serverReplacements)
+    })
+  })
+
+  it('bundles the esm-bundler builds of vue in production', async () => {
+    await withNitro({ dev: false }, (_nitro, nitroConfig) => {
+      expect(hasBundledVuePlugin(nitroConfig)).toBe(true)
+    })
+    await withNitro({ dev: false, vue: { runtimeCompiler: true } }, (_nitro, nitroConfig) => {
+      expect(hasBundledVuePlugin(nitroConfig)).toBe(false)
     })
   })
 
@@ -95,6 +137,24 @@ describe('nitro config', () => {
   it.for([true, 'hidden'] as const)('leaves `sourcemapExcludeSources` unset for `%s`', async (server) => {
     await withNitro({ sourcemap: { server } }, (_nitro, nitroConfig) => {
       expect(nitroConfig.rollupConfig!.output).not.toHaveProperty('sourcemapExcludeSources')
+    })
+  })
+
+  it.for([true, false])('registers the server auto-imports plugin once when nitroViteEnvironment is %s', async (nitroViteEnvironment) => {
+    await withNitro({ experimental: { nitroViteEnvironment } }, (_nitro, nitroConfig, nuxt) => {
+      const isAutoImportsPlugin = (plugin: unknown) => (plugin as { name?: string } | null)?.name === 'nuxt:server-auto-imports'
+      expect([nitroConfig.rollupConfig!.plugins].flat().filter(isAutoImportsPlugin)).toHaveLength(1)
+      expect(nuxt.options.vite.plugins?.flat().filter(isAutoImportsPlugin) ?? []).toHaveLength(0)
+    })
+  })
+
+  it.for([true, false])('registers server import protection once, ahead of other resolvers, when nitroViteEnvironment is %s', async (nitroViteEnvironment) => {
+    await withNitro({ experimental: { nitroViteEnvironment } }, (_nitro, nitroConfig, nuxt) => {
+      const isImpound = (plugin: unknown) => (plugin as { name?: string } | null)?.name === 'impound'
+      const plugins = [nitroConfig.rollupConfig!.plugins].flat().filter(isImpound) as Array<{ resolveId?: { order?: string } }>
+      expect(plugins).toHaveLength(1)
+      expect(plugins[0]!.resolveId?.order).toBe('pre')
+      expect(nuxt.options.vite.plugins?.flat().filter(isImpound) ?? []).toHaveLength(0)
     })
   })
 })

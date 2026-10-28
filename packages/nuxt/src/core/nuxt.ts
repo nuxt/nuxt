@@ -11,6 +11,7 @@ import type { LoadNuxtOptions, ResolveTypePathsOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolveModuleWithOptions, resolveTypePaths, runWithNuxtContext } from '@nuxt/kit'
 import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
+import type { Unimport } from 'unimport'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 import onChange from 'on-change'
@@ -41,7 +42,7 @@ import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
-import { linkToAlias, logger } from '../utils.ts'
+import { linkToAlias, logger, toArray } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
 import { buildServerRoutes, collectPageRoutes, collectServerRoutes, emitServerRoutesModule, resolveServerRoutes } from './utils/server-routes.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
@@ -60,6 +61,8 @@ import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
+import { BundledVuePlugin } from './plugins/bundled-vue.ts'
+import { setupTemplateDiagnostics } from './template-diagnostics.ts'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -470,6 +473,14 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  if (!nuxt.options.dev && !nuxt.options.vue.runtimeCompiler) {
+    addBuildPlugin({ vite: () => BundledVuePlugin() }, { client: false })
+    nuxt.hook('nitro:config', (config) => {
+      config.rollupConfig ||= {}
+      config.rollupConfig.plugins = [...toArray(config.rollupConfig.plugins || []), BundledVuePlugin()]
+    })
+  }
+
   // Support Nuxt VFS
   addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
   addBuildPlugin(VirtualFSPlugin(nuxt, {
@@ -498,6 +509,9 @@ async function initNuxt (nuxt: Nuxt) {
     }))
   }
 
+  let importsContext: Unimport | undefined
+  nuxt.hook('imports:context', (ctx) => { importsContext = ctx })
+
   nuxt.hook('modules:done', () => {
     // Transform initial composable call within `<script setup>` to preserve context
     if (nuxt.options.experimental.asyncContext) {
@@ -516,14 +530,17 @@ async function initNuxt (nuxt: Nuxt) {
     }), { client: false })
 
     // Add composable tree-shaking optimisations
+    const getAutoImports = () => importsContext?.getImportMap()
     if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
         composables: nuxt.options.optimization.treeShake.composables.server,
+        getAutoImports,
       }), { client: false })
     }
     if (Object.keys(nuxt.options.optimization.treeShake.composables.client).length) {
       addBuildPlugin(TreeShakeComposablesPlugin({
         composables: nuxt.options.optimization.treeShake.composables.client,
+        getAutoImports,
         stubs: { onServerPrefetch: '#app/composables/server-prefetch' },
       }), { server: false })
     }
@@ -781,11 +798,6 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Track components used to render for webpack
-  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.builder === '@nuxt/rspack-builder') {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
-  }
-
   // Add nuxt app hooks debugger
   if (
     nuxt.options.debug
@@ -807,6 +819,10 @@ async function initNuxt (nuxt: Nuxt) {
   // Registered after modules so its `post` transform runs after auto-import injection.
   if (nuxt.options.experimental.navigateToEarlyReturn) {
     addBuildPlugin(NavigateToEarlyReturnPlugin())
+  }
+
+  if (nuxt.options.experimental.templateDiagnostics) {
+    setupTemplateDiagnostics(nuxt)
   }
 
   if (nuxt.options.experimental.debugModuleMutation) {
@@ -1324,6 +1340,11 @@ async function resolveTypescriptPaths (nuxt: Nuxt, options?: ResolveTypePathsOpt
       // Only use direct resolution if nightly didn't already resolve
       paths[pkg] = [path]
     }
+  }
+
+  // a single module identity keeps `nuxt/schema` and `@nuxt/schema` augmentations merged
+  if (paths['@nuxt/schema']) {
+    paths['nuxt/schema'] = paths['@nuxt/schema']
   }
 
   return paths

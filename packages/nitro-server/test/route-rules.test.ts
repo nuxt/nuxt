@@ -1,9 +1,17 @@
+import { mkdtemp, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { pathToFileURL } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
-import type { NitroConfig } from 'nitro/types'
-import { normalizeLegacyRouteRules } from '../src/route-rules.ts'
+import { join } from 'pathe'
+import { resolveModulePath } from 'exsolve'
+import { createMatcherFromFind } from 'h3/rules'
+import { compileRouteRules } from 'h3/rules/compiler'
+import type { Nitro, NitroConfig } from 'nitro/types'
+import { normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
 
 vi.mock('@nuxt/kit/internal', () => ({
   bundlerDiagnostics: { NUXT_B7026: vi.fn() },
+  pageDiagnostics: { NUXT_B4022: vi.fn((p: { route: string, part: string }) => new Error(`NUXT_B4022 ${p.route} ${p.part}`)) },
 }))
 
 const { bundlerDiagnostics } = await import('@nuxt/kit/internal')
@@ -56,5 +64,149 @@ describe('normalizeLegacyRouteRules', () => {
     expect(() => normalizeLegacyRouteRules(undefined)).not.toThrow()
     expect(() => normalizeLegacyRouteRules({})).not.toThrow()
     expect(() => normalizeLegacyRouteRules({ '/x': {} })).not.toThrow()
+  })
+})
+
+describe('routeRulesCaseFoldPlugin', () => {
+  const nitroPackage = resolveModulePath('nitro/package.json', { from: import.meta.url })
+
+  async function loadMatcher (routeRules: NonNullable<NitroConfig['routeRules']>, baseURL = '/', middleware = false) {
+    const options = { runtimeRules: { cache: '#nitro/runtime/route-rule-handlers' }, baseURL, preMerge: true }
+    const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules, baseURL } }) as Nitro)
+    const code = await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing')
+    const file = join(await mkdtemp(join(tmpdir(), 'nuxt-route-rules-')), 'routing.mjs')
+    await writeFile(file, code!.replace(/from "(h3[^"]*)"/g, (_, id) => `from ${JSON.stringify(pathToFileURL(resolveModulePath(id, { from: nitroPackage })).href)}`))
+    const { findRouteRules } = await import(pathToFileURL(file).href)
+    const match = createMatcherFromFind(findRouteRules)
+    return (path: string, method = 'GET') => {
+      const matched = match(method, path)
+      return (middleware ? matched : matched.routeRules) as Record<string, any>
+    }
+  }
+
+  it('matches rules regardless of the casing of the path or the pattern', async () => {
+    const match = await loadMatcher({
+      '/admin/**': { headers: { 'x-admin': '1' } },
+      '/Docs': { headers: { 'x-docs': '1' } },
+      '/école': { headers: { 'x-ecole': '1' } },
+      '/σίγμα/**': { headers: { 'x-sigma': '1' } },
+      '/контакты': { headers: { 'x-contacts': '1' } },
+      '/n/:id(\\D+)': { headers: { 'x-n': '1' } },
+      'POST /Form': { headers: { 'x-form': '1' } },
+    })
+
+    for (const path of ['/admin/a', '/Admin/a', '/ADMIN/a', '/%41dmin/a', '/%61dmin/a']) {
+      expect(match(path).headers, path).toEqual({ 'x-admin': '1' })
+    }
+    for (const path of ['/Docs', '/docs', '/DOCS', '/%64ocs']) {
+      expect(match(path).headers, path).toEqual({ 'x-docs': '1' })
+    }
+    for (const path of ['/%C3%A9cole', '/%C3%89cole', '/%c3%89COLE']) {
+      expect(match(path).headers, path).toEqual({ 'x-ecole': '1' })
+    }
+    for (const path of ['/ςίγμα/a', encodeURI('/ΣΊΓΜΑ/a'), encodeURI('/ςίγμα/a')]) {
+      expect(match(path).headers, path).toEqual({ 'x-sigma': '1' })
+    }
+    for (const path of [encodeURI('/кᲂнтакты'), encodeURI('/КОНТАКТЫ')]) {
+      expect(match(path).headers, path).toEqual({ 'x-contacts': '1' })
+    }
+    expect(match('/N/abc').headers).toEqual({ 'x-n': '1' })
+    expect(match('/N/123').headers).toBeUndefined()
+    expect(match('/form', 'POST').headers).toEqual({ 'x-form': '1' })
+    expect(match('/form').headers).toBeUndefined()
+  })
+
+  it('keeps the base of a rule matched in its own casing', async () => {
+    const routeRules = { '/Old/**': { redirect: '/new/**' }, '/**': { headers: { 'x-all': '1' } } }
+    const match = await loadMatcher(routeRules)
+
+    expect(match('/Old/page')).toEqual({ headers: { 'x-all': '1' }, redirect: { to: '/new/**', status: 307, base: '/Old' } })
+    expect(match('/old/page').redirect).toMatchObject({ to: '/new/**' })
+  })
+
+  it('preserves wildcard redirect tails and query strings regardless of base casing', async () => {
+    for (const baseURL of ['/', '/App/']) {
+      const match = await loadMatcher({ '/Old/**': { redirect: '/new/**' } }, baseURL, true)
+      for (const base of [baseURL.slice(0, -1), baseURL.slice(0, -1).toUpperCase()]) {
+        for (const path of ['/Old/A/b', '/old/A/b', '/OLD/A/b', '/%4Fld/A/b']) {
+          const { routeRuleMiddleware } = match(base + path)
+          const response = await routeRuleMiddleware[0]({ url: new URL(`http://localhost${base}${path}?q=Value`) })
+          expect(response.headers.get('location'), base + path).toBe('/new/A/b?q=Value')
+        }
+      }
+    }
+  })
+
+  it('uses the request casing for wildcard redirect and proxy bases without mutating other matches', async () => {
+    for (const name of ['redirect', 'proxy']) {
+      const match = await loadMatcher({ '/old/**': { [name]: '/new/**' } })
+      const first = match('/OLD/A/b')[name]
+      expect(first.base).toBe('/OLD')
+      expect(match('/old/A/b')[name].base).toBe('/old')
+      expect(match('/Old/x')[name].base).toBe('/Old')
+      expect(first.base).toBe('/OLD')
+    }
+  })
+
+  it('preserves wildcard tails under encoded and dynamic bases', async () => {
+    for (const [pattern, path] of [
+      ['/cafÉ/**', '/caf%C3%89/A/b'],
+      ['/cafÉ/**', '/CAF%C3%A9/A/b'],
+      ['/old/:id/**', '/OLD/Some-ID/A/b'],
+    ] as const) {
+      const match = await loadMatcher({ [pattern]: { redirect: '/new/**' } }, '/', true)
+      const { routeRuleMiddleware } = match(path)
+      const response = await routeRuleMiddleware[0]({ url: new URL(`http://localhost${path}`) })
+      expect(response.headers.get('location'), path).toBe('/new/A/b')
+    }
+  })
+
+  it('merges the options of rules whose keys fold together', async () => {
+    const match = await loadMatcher({
+      '/Admin': { headers: { 'x-a': '1', 'x-c': '1' } },
+      '/admin': { headers: { 'x-b': '1', 'x-c': '2' } },
+    })
+
+    expect(match('/ADMIN').headers).toEqual({ 'x-a': '1', 'x-b': '1', 'x-c': '2' })
+  })
+
+  it('matches constraints regardless of casing', async () => {
+    const match = await loadMatcher({
+      '/x/:id((?:foo|bar))': { headers: { 'x-id': '1' } },
+      '/Y/:id([A-z]+)': { headers: { 'x-id': '2' } },
+      '/n/:id(\\D+)': { headers: { 'x-id': '3' } },
+    })
+
+    for (const path of ['/x/FOO', '/x/foo', '/X/Bar']) {
+      expect(match(path).headers, path).toEqual({ 'x-id': '1' })
+    }
+    for (const path of ['/y/AAA', '/y/a_A', '/Y/_']) {
+      expect(match(path).headers, path).toEqual({ 'x-id': '2' })
+    }
+    expect(match('/y/123').headers).toBeUndefined()
+    expect(match('/N/ABC').headers).toEqual({ 'x-id': '3' })
+    expect(match('/N/123').headers).toBeUndefined()
+  })
+
+  it('rejects constraints that depend on letter case', async () => {
+    await expect(loadMatcher({ '/x/:id((?:FOO|bar))': { headers: { 'x-id': '1' } } })).rejects.toThrow('NUXT_B4022 /x/:id((?:FOO|bar)) F')
+    await expect(loadMatcher({ '/x/:id([a-zς]+)': { headers: { 'x-id': '1' } } })).rejects.toThrow('NUXT_B4022 /x/:id([a-zς]+) [a-zς]')
+  })
+
+  it('matches rules under a base URL regardless of casing', async () => {
+    const match = await loadMatcher({ '/admin': { headers: { 'x-admin': '1' } } }, '/App/')
+
+    expect(match('/App/admin').headers).toEqual({ 'x-admin': '1' })
+    expect(match('/app/Admin').headers).toEqual({ 'x-admin': '1' })
+  })
+
+  it('leaves other modules alone', async () => {
+    const plugin = routeRulesCaseFoldPlugin(() => { throw new Error('unreachable') })
+    expect(await plugin.transform.handler('export const findRouteRules = 1', '#nitro/virtual/app')).toBeUndefined()
+  })
+
+  it('fails the build when the lookup cannot be found', async () => {
+    const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules: {} } }) as unknown as Nitro)
+    await expect(plugin.transform.handler('export function findRouteRules () {}', '#nitro/virtual/routing')).rejects.toThrow('findRouteRules')
   })
 })

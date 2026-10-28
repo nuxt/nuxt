@@ -481,6 +481,9 @@ export function _createUseAsyncData<
         }
       }
 
+      let lastEntry: NuxtApp['_asyncData'][string] | undefined
+      const getEntry = () => nuxtApp._asyncData[key.value] ?? lastEntry
+
       // Create or use a shared asyncData entity
       function createInitialFetch () {
         const initialFetchOptions: AsyncDataExecuteOptions = { cause: 'initial', dedupe: opts.dedupe }
@@ -493,6 +496,7 @@ export function _createUseAsyncData<
           // reuse the cache lookup performed by the first concurrent caller while their fetch is still in flight
           initialFetchOptions.cachedData = existing._initialCachedData
         }
+        lastEntry = nuxtApp._asyncData[key.value]
         // otherwise let execute() perform a fresh getCachedData lookup so subscribers that mount
         // after the initial fetch has settled still go through getCachedData (#35116)
         return () => nuxtApp._asyncData[key.value]!.execute(initialFetchOptions)
@@ -609,6 +613,7 @@ export function _createUseAsyncData<
                 }
 
                 nuxtApp._asyncData[newKey]._deps++
+                lastEntry = nuxtApp._asyncData[newKey]
 
                 // Now it's safe to drop the old container.
                 if (oldKey) {
@@ -665,10 +670,10 @@ export function _createUseAsyncData<
       }
 
       const asyncReturn: _AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)> = {
-        data: writableComputedRef(() => nuxtApp._asyncData[key.value]?.data as Ref<ResT>, !opts.deep),
-        pending: writableComputedRef(() => nuxtApp._asyncData[key.value]?.pending as Ref<boolean>),
-        status: writableComputedRef(() => nuxtApp._asyncData[key.value]?.status as Ref<AsyncDataRequestStatus>),
-        error: writableComputedRef(() => nuxtApp._asyncData[key.value]?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
+        data: writableComputedRef(() => getEntry()?.data as Ref<ResT>, !opts.deep),
+        pending: writableComputedRef(() => getEntry()?.pending as Ref<boolean>),
+        status: writableComputedRef(() => getEntry()?.status as Ref<AsyncDataRequestStatus>),
+        error: writableComputedRef(() => getEntry()?.error as Ref<NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>>),
         refresh: (...args) => {
           if (!nuxtApp._asyncData[key.value]?._init) {
             const initialFetch = createInitialFetch()
@@ -1053,9 +1058,13 @@ function buildAsyncData<
       // TODO: disable in v4 in favour of custom caching strategies
       if (purgeCachedData && !hasCustomGetCachedData) {
         nextTick(() => {
-          if (!nuxtApp._asyncData[key]?._init) {
+          if (asyncData._deps > 0) {
+            return
+          }
+          asyncData.execute = () => Promise.resolve()
+          if (nuxtApp._asyncData[key] === asyncData) {
             clearNuxtDataByKey(nuxtApp, key)
-            asyncData.execute = () => Promise.resolve()
+            delete nuxtApp._asyncData[key]
           }
         })
       }

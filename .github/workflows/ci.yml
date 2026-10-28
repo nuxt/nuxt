@@ -36,12 +36,12 @@ jobs:
         !contains(github.event.head_commit.message, 'v4.') &&
         !contains(github.event.head_commit.message, 'v5.')
       )
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     permissions:
       contents: read
       pull-requests: read
     outputs:
-      src: ${{ steps.filter.outputs.src }}
+      src: ${{ steps.filter.outputs.src == 'true' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/')) && 'true' || 'false' }}
       playwright: ${{ steps.playwright.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -50,7 +50,7 @@ jobs:
       - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: filter
         with:
-          base: ${{ github.event.merge_group.base_sha || github.event.pull_request.base.sha || github.event.before }}
+          base: ${{ github.event.merge_group.base_ref || github.event.pull_request.base.sha || github.event.before }}
           ref: ${{ github.event.merge_group.head_sha || github.sha }}
           filters: |
             src:
@@ -76,10 +76,36 @@ jobs:
           test -n "$version" || { echo "::error::could not resolve playwright-core version from pnpm-workspace.yaml"; exit 1; }
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-  build:
+  gate:
     needs: changes
-    if: needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
+    if: github.event_name == 'merge_group' && needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 160
+    permissions:
+      contents: read
+    outputs:
+      full: ${{ steps.gate.outputs.full }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          node-version: lts
+          run-install: false
+
+      - name: Wait for the merge queue
+        id: gate
+        run: node ./scripts/merge-queue-gate.ts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BASE_REF: ${{ github.event.merge_group.base_ref }}
+          HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+
+  build:
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') }}
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 10
     permissions:
       actions: write
@@ -89,7 +115,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
           node-version: lts
           cache: true
@@ -123,16 +149,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
-          node-version: 22.23.3
+          node-version: 22.23.4
           cache: true
 
   ui-templates-generated:
     # Regenerates the committed @nuxt/ui-templates output and fails on drift.
-    needs: changes
-    if: needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') }}
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
       actions: write
@@ -142,9 +168,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
-          node-version: 22.23.3
+          node-version: 22.23.4
           cache: true
 
       - name: Regenerate ui-templates output
@@ -168,7 +194,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   codeql:
-    if: github.event_name != 'merge_group' && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
+    if: github.event_name != 'merge_group' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/')) && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -185,7 +211,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           config: |
             paths:
@@ -202,14 +228,14 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
           category: '/language:${{ matrix.language }}'
 
   typecheck:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    needs: changes
-    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') && (github.event_name != 'push' || github.ref_name != 'main') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     permissions:
@@ -229,7 +255,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
           node-version: lts
           cache: true
@@ -251,9 +277,9 @@ jobs:
 
   lint-and-test:
     # autofix workflow will be triggered instead for PRs; run in merge queue and on push to maintenance branches
-    needs: changes
-    if: (github.event_name == 'merge_group' || (github.event_name == 'push' && github.ref_name != 'main')) && needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (needs.gate.outputs.full == 'true' || (github.event_name == 'push' && github.ref_name != 'main')) }}
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
       actions: write
@@ -264,7 +290,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
           node-version: lts
           cache: true
@@ -306,9 +332,9 @@ jobs:
   # Runs on pull requests too (unlike the `lint` job) so knip regressions surface
   # before the merge queue.
   knip:
-    needs: changes
-    if: needs.changes.outputs.src == 'true'
-    runs-on: ubuntu-24.04-arm
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') }}
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
       actions: write
@@ -318,7 +344,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
           node-version: lts
           cache: true
@@ -341,9 +367,9 @@ jobs:
 
   test-size:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    needs: changes
-    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
-    runs-on: ubuntu-24.04-arm
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') && (github.event_name != 'push' || github.ref_name != 'main') }}
+    runs-on: ubuntu-26.04-arm
     permissions:
       actions: write
       contents: read
@@ -353,7 +379,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
           node-version: lts
           cache: true
@@ -368,16 +394,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   test-benchmark:
+    if: github.event_name != 'merge_group' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/'))
     runs-on: ubuntu-latest
     needs: changes
-    # TODO: re-enable when `@codspeed/vitest-plugin` supports vitest 5 (peer range is `^3.2 || ^4`)
-    if: false
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
           node-version: lts
           cache: true
@@ -385,8 +410,13 @@ jobs:
       - name: Prepare test fixtures
         run: vp run test:prepare
 
+      - name: Build benchmark fixtures
+        run: node test/bench/setup-renderer.ts
+
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@821a40cd6c80e3cfe387caf55668287addd808da # v5.5.0
+        uses: CodSpeedHQ/action@78102a468f96d8e0ccb92d0ec49425753fc42062 # v5.6.0
+        env:
+          NUXT_BENCH_PREBUILT: 'true'
         with:
           run: vp exec vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -394,8 +424,8 @@ jobs:
 
   test-fixtures:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    needs: changes
-    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') && (github.event_name != 'push' || github.ref_name != 'main') }}
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
@@ -405,6 +435,10 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
+        os: [windows-latest]
+        projects:
+          - '--project "fixtures:vite-dev-*"'
+          - '--project "fixtures:vite-built-*"'
         include:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
@@ -412,10 +446,8 @@ jobs:
             projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*"'
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*"'
-          - os: windows-latest
-            projects: '--project "fixtures:vite-dev-*"'
-          - os: windows-latest
-            projects: '--project "fixtures:vite-built-*"'
+        exclude:
+          - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
     timeout-minutes: 45
 
@@ -427,9 +459,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
-          node-version: 22.23.3
+          node-version: 22.23.4
           cache: true
 
       - name: Cache Playwright browsers
@@ -460,8 +492,8 @@ jobs:
 
   test-e2e:
     # skip on push to main (already tested in merge queue) but run on push to maintenance branches
-    needs: changes
-    if: needs.changes.outputs.src == 'true' && (github.event_name != 'push' || github.ref_name != 'main')
+    needs: [changes, gate]
+    if: ${{ !cancelled() && needs.changes.outputs.src == 'true' && (github.event_name != 'merge_group' || needs.gate.outputs.full == 'true') && (github.event_name != 'push' || github.ref_name != 'main') }}
     runs-on: ${{ matrix.os }}
     permissions:
       actions: write
@@ -471,13 +503,13 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
+        os: [windows-latest]
+        shard: ['--shard=1/2', '--shard=2/2']
         include:
           - os: ubuntu-24.04-arm
             shard: ''
-          - os: windows-latest
-            shard: '--shard=1/2'
-          - os: windows-latest
-            shard: '--shard=2/2'
+        exclude:
+          - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
     timeout-minutes: 25
 
@@ -489,9 +521,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
-          node-version: 22.23.3
+          node-version: 22.23.4
           cache: true
 
       - name: Cache Playwright browsers
@@ -528,9 +560,10 @@ jobs:
     # This job is the single required check for merge queues and branch protection.
     # All other jobs feed into this one. Skipped jobs are treated as successful.
     if: always()
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     needs:
       - changes
+      - gate
       - build
       - codeql
       - typecheck
@@ -542,21 +575,11 @@ jobs:
       - ui-templates-generated
     steps:
       - name: Check required jobs
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
         run: |
           # Fail if any needed job was not successful (skipped counts as success)
-          results=( \
-            "${{ needs.changes.result }}" \
-            "${{ needs.build.result }}" \
-            "${{ needs.codeql.result }}" \
-            "${{ needs.typecheck.result }}" \
-            "${{ needs.lint-and-test.result }}" \
-            "${{ needs.knip.result }}" \
-            "${{ needs.test-size.result }}" \
-            "${{ needs.test-fixtures.result }}" \
-            "${{ needs.test-e2e.result }}" \
-            "${{ needs.ui-templates-generated.result }}" \
-          )
-          for result in "${results[@]}"; do
+          for result in $RESULTS; do
             if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
               echo "One or more required jobs failed or were cancelled: $result"
               exit 1
@@ -574,7 +597,7 @@ jobs:
       !contains(github.event.head_commit.message, '[skip-release]') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs: changes
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
     outputs:
       files: ${{ steps.pack.outputs.files }}
@@ -583,7 +606,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
           node-version: latest
           cache: true
@@ -608,7 +631,7 @@ jobs:
   release-nightly:
     if: needs.pack-nightly.outputs.files != '' && needs.pack-nightly.outputs.files != '[]'
     needs: pack-nightly
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
     concurrency:
       group: release-nightly-${{ github.ref }}
@@ -626,7 +649,7 @@ jobs:
   release-pkg-pr-new:
     if: github.repository_owner == 'nuxt'
     needs: changes
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
 
     steps:
@@ -634,7 +657,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
           node-version: lts
           cache: true

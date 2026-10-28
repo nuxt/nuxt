@@ -14,8 +14,7 @@ import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { createNormalizedRouteRulesRouter, normalizePathCode, resolveRouteRulesRoutes } from './utils/route-rules.ts'
-import type { RouteRulesRouter } from './utils/route-rules.ts'
+import { assertCaseIndependentRouteRuleKey, createNormalizedRouteRulesRouter, genNormalizePathCode, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes } from './utils/route-rules.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
@@ -239,7 +238,7 @@ export const schemaTemplate: NuxtTemplate = {
     }
 
     return [
-      `import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRuntimeConfig } from 'nuxt/schema'`,
+      `import { RuntimeConfig as UserRuntimeConfig } from 'nuxt/schema'`,
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
           interfaceName: 'SharedRuntimeConfig',
@@ -256,14 +255,12 @@ export const schemaTemplate: NuxtTemplate = {
           allowExtraKeys: false,
           indentation: 2,
         }),
-      `declare module '@nuxt/schema' {`,
-      `  interface RuntimeConfig extends UserRuntimeConfig {}`,
-      `  interface PublicRuntimeConfig extends UserPublicRuntimeConfig {}`,
-      `}`,
-      `declare module 'nuxt/schema' {`,
-      `  interface RuntimeConfig extends SharedRuntimeConfig {}`,
-      `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}`,
-      '}',
+      ...['nuxt/schema', '@nuxt/schema'].flatMap(module => [
+        `declare module '${module}' {`,
+        `  interface RuntimeConfig extends SharedRuntimeConfig {}`,
+        `  interface PublicRuntimeConfig extends SharedPublicRuntimeConfig {}`,
+        '}',
+      ]),
       `declare module 'vue' {
         interface ComponentCustomProperties {
           $config: UserRuntimeConfig
@@ -453,6 +450,33 @@ export const clientConfigTemplate: NuxtTemplate = {
   },
 }
 
+/**
+ * Serialise the inline app config with primitives replaced by fixed values of the same type, which
+ * TypeScript infers identically, so the declaration changes only with the shape of the config.
+ */
+function serializeAppConfigShape (appConfig: unknown) {
+  const toShape = (value: unknown): unknown => {
+    if (Array.isArray(value)) {
+      const elements = new Map<string, unknown>()
+      for (const element of value) {
+        const shape = toShape(element)
+        elements.set(JSON.stringify(shape), shape)
+      }
+      return [...elements.values()]
+    }
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, toShape(entry)]))
+    }
+    switch (typeof value) {
+      case 'string': return ''
+      case 'number': return 0
+      case 'boolean': return false
+      default: return value
+    }
+  }
+  return JSON.stringify(toShape(JSON.parse(JSON.stringify(appConfig))), null, 2)
+}
+
 const APP_CONFIG_MERGE_TYPES = `type IsAny<T> = 0 extends 1 & T ? true : false
 
 type IsMergeable<T> = T extends readonly any[] | ((...args: any[]) => any) ? false : T extends Record<string, any> ? true : false
@@ -487,7 +511,7 @@ declare global {
   const defineAppConfig: <C extends AppConfigInput> (config: C) => C
 }
 
-declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
+declare const inlineConfig = ${serializeAppConfigShape(nuxt.options.appConfig)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
 ${APP_CONFIG_MERGE_TYPES}
 
@@ -517,7 +541,7 @@ export const sharedAppConfigDeclarationTemplate: NuxtTemplate = {
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
 
-declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
+declare const inlineConfig = ${serializeAppConfigShape(nuxt.options.appConfig)}
 ${APP_CONFIG_MERGE_TYPES}
 
 declare module 'nuxt/schema' {
@@ -809,78 +833,65 @@ const VALID_MANIFEST_KEYS = ['prerender', 'redirect', 'appMiddleware', 'appLayou
  */
 const warnedKeyCollisions = new WeakMap<Nuxt, Set<string>>()
 
+function serializeAppRouteRules (routeRules: Record<string, any>): string {
+  return `{${Object.entries(routeRules)
+    .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
+    .map(([name, value]) => {
+      if (name === 'redirect') {
+        const redirectOptions = value as { to: string } | string
+        value = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions.to
+      }
+      if (name === 'appMiddleware') {
+        const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
+        if (typeof appMiddlewareOptions === 'string') {
+          value = { [appMiddlewareOptions]: true }
+        } else if (Array.isArray(appMiddlewareOptions)) {
+          const normalizedRules: Record<string, boolean> = {}
+          for (const middleware of appMiddlewareOptions) {
+            normalizedRules[middleware] = true
+          }
+          value = normalizedRules
+        }
+      }
+      if (name === 'cache' || name === 'isr' || name === 'swr') {
+        name = 'payload'
+        value = Boolean(value)
+      }
+      return `${name}: ${JSON.stringify(value)}`
+    }).join(',')
+  }}`
+}
+
 export const routeRulesTemplate: NuxtTemplate = {
   filename: 'route-rules.mjs',
   // `defineRouteRules` is extracted from page sources, so without it route rules come only
   // from configuration
   dependsOn: (_change, { nuxt }) => !!nuxt.options.experimental.inlineRouteRules,
   getContents ({ nuxt }) {
-    const { routes } = resolveRouteRulesRoutes(nuxt)
+    const routes = resolveRouteRulesRoutes(nuxt).routes
+      .filter(({ route, data }) => route !== '/__nuxt_error' && VALID_MANIFEST_KEYS.some(key => data[key] !== undefined))
     if (!routes.length) {
       return `export default () => ({})`
     }
-    // rou3 matches keys case-sensitively, but vue-router matches routes case-insensitively
-    // unless `sensitive`, so an insensitive-routing rule keyed `/Admin` would never match a
-    // folded lookup and silently lose its protections. `sensitive` can also come from
-    // `app/router.options.ts` (runtime-only), so emit both a decoded and a decoded+folded
-    // matcher and pick at runtime.
-    const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
+    const merged = mergeMethodRouteRulesRoutes(routes)
+    if (merged.length === 1 && merged[0]!.route === '/**') {
+      return `export default () => (${serializeAppRouteRules(merged[0]!.data)})`
+    }
+    const fold = !nuxt.options.router.options.sensitive
+    if (fold) {
+      for (const { route } of routes) { assertCaseIndependentRouteRuleKey(route) }
+    }
     const warned = warnedKeyCollisions.get(nuxt) ?? warnedKeyCollisions.set(nuxt, new Set()).get(nuxt)!
-    const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routes, '', fold, (existing, route, key) => {
-      // Only the matcher that will actually be used at runtime should report collisions.
-      if (fold === caseSensitiveRouteRules || warned.has(key)) { return }
+    const router = createNormalizedRouteRulesRouter(routes, '', fold, (existing, route, key) => {
+      if (warned.has(key)) { return }
       warned.add(key)
       bundlerDiagnostics.NUXT_B7022({ existing, route, canFold: fold })
     })
-    const compileOptions: NonNullable<Parameters<RouteRulesRouter['compileToString']>[0]> = {
-      matchAll: true,
-      serialize (routeRules) {
-        return `{${Object.entries(routeRules)
-          .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
-          .map(([name, value]) => {
-            if (name === 'redirect') {
-              const redirectOptions = value as { to: string } | string
-              value = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions.to
-            }
-            if (name === 'appMiddleware') {
-              const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
-              if (typeof appMiddlewareOptions === 'string') {
-                value = { [appMiddlewareOptions]: true }
-              } else if (Array.isArray(appMiddlewareOptions)) {
-                const normalizedRules: Record<string, boolean> = {}
-                for (const middleware of appMiddlewareOptions) {
-                  normalizedRules[middleware] = true
-                }
-                value = normalizedRules
-              }
-            }
-            if (name === 'cache' || name === 'isr' || name === 'swr') {
-              name = 'payload'
-              value = Boolean(value)
-            }
-            return `${name}: ${JSON.stringify(value)}`
-          }).join(',')
-        }}`
-      },
-    }
-    const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
-    const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)
-    const needsRouterOptions = foldedMatcher !== sensitiveMatcher || caseSensitiveRouteRules
     return [
       `import { defu } from ${JSON.stringify(defuPath)}`,
-      needsRouterOptions ? `import routerOptions from '#build/router.options.mjs'` : ``,
-      needsRouterOptions ? `const sensitiveMatcher = ${sensitiveMatcher}` : ``,
-      needsRouterOptions
-        ? (foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`)
-        : `const foldedMatcher = ${foldedMatcher}`,
-      normalizePathCode,
-      needsRouterOptions
-        ? [
-            `export default (path) => routerOptions.sensitive`,
-            `  ? defu({}, ...sensitiveMatcher('', normalizePath(path, false)).map(r => r.data).reverse())`,
-            `  : defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
-          ].join('\n')
-        : `export default path => defu({}, ...foldedMatcher('', normalizePath(path, true)).map(r => r.data).reverse())`,
-    ].filter(Boolean).join('\n')
+      `const matcher = ${router.compileToString({ matchAll: true, serialize: serializeAppRouteRules })}`,
+      genNormalizePathCode(fold),
+      `export default path => defu({}, ...matcher('', normalizePath(path)).map(r => r.data).reverse())`,
+    ].join('\n')
   },
 }

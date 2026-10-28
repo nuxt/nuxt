@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto'
 import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { EnvironmentModuleGraph, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import type { EnvironmentModuleGraph, EnvironmentModuleNode, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
@@ -11,7 +11,7 @@ import escapeRE from 'escape-string-regexp'
 import MagicString from 'magic-string'
 import remapping from '@ampproject/remapping'
 
-import type { Nitro } from 'nitro/types'
+import type { Nitro, NitroHooks } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
@@ -32,10 +32,13 @@ const DEV_CLIENT_CSS_SEED = 'nuxt:dev-client-css:seed'
 function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): { urls: string[], files: Set<string> } {
   const urls = new Set<string>()
   const files = new Set<string>()
+  const seen = new Set<EnvironmentModuleNode>()
   for (const [mod, node] of moduleGraph.urlToModuleMap.entries()) {
     if (!IS_CSS_RE.test(mod) || 'raw' in getQuery(mod)) { continue }
     const importers = node.importers
     if (importers?.size && [...importers].every(i => i.url && 'raw' in getQuery(i.url))) { continue }
+    if (seen.has(node)) { continue }
+    seen.add(node)
     urls.add(toDevUrl(mod))
     if (node.file) { files.add(node.file) }
   }
@@ -70,6 +73,7 @@ function resolveGlobalCss (nuxt: Nuxt): Array<{ file: string, url: string }> {
 /** Vite serves non-path ids, such as `\0` virtual modules, from `/@id/`. */
 function toDevUrl (url: string): string {
   if (url[0] === '/' || url[0] === '.') { return url }
+  if (isAbsolute(url)) { return toFsUrl(url) }
   return '/@id/' + url.replace('\0', '__x00__')
 }
 
@@ -204,13 +208,28 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
     })
   }
 
-  // `compiled` is the only Nitro hook that fires after `copyPublicAssets`, so
-  // it is where `nitro:build:public-assets` can see the copied assets.
   if (!nuxt.options.dev) {
-    // TODO: hook to vite
-    nitro.hooks.hook('compiled', async () => {
+    let publicAssetsHookCalled = false
+    const callPublicAssetsHook = async () => {
+      if (publicAssetsHookCalled) { return }
+      publicAssetsHookCalled = true
       await nuxt.callHook('nitro:build:public-assets', nitro)
+    }
+
+    // runs after public assets are copied and routes are prerendered, and
+    // before the public asset manifest is generated
+    nitro.hooks.hook('vite:compile:before' as keyof NitroHooks, callPublicAssetsHook)
+
+    // TODO: on the next nitro bump, drop the guard and these `buildStart` and `compiled`
+    // fallbacks once we require a version including https://github.com/nitrojs/nitro/pull/4440
+    nuxt.options.vite.plugins.push({
+      name: 'nuxt:nitro-public-assets',
+      applyToEnvironment: env => env.name === 'nitro',
+      buildStart: callPublicAssetsHook,
+    })
+    nitro.hooks.hook('compiled', async () => {
       if (nitro.options.static) {
+        await callPublicAssetsHook()
         await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
       }
     })

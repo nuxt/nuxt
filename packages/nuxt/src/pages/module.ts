@@ -1,8 +1,8 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { mkdir, readFile } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
-import { dirname, join, relative, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import { genImport, genInlineTypeImport, genObjectFromRawEntries, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
 import { resolveModulePath } from 'exsolve'
@@ -12,15 +12,17 @@ import { isEqual } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
+import { addRoute, createRouter, findRoute } from 'rou3'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, getRouterOptionsKeys, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
-import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
+import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
@@ -59,6 +61,17 @@ async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
 
   await nuxt.callHook('pages:routerOptions', context)
   return context.files
+}
+
+/** The first `router.options` file that may modify `routes`. */
+async function findRoutesModifyingRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
+  for (const file of await resolveRouterOptions(nuxt, builtInRouterOptions)) {
+    if (file.optional) { continue }
+    const code = await readFile(file.path, 'utf-8').catch(() => undefined)
+    if (code === undefined || routerOptionsMayModifyRoutes(code, file.path)) {
+      return file
+    }
+  }
 }
 
 export default defineNuxtModule({
@@ -405,23 +418,12 @@ export default defineNuxtModule({
 
       const { createRoutesContext, resolveOptions } = await import('vue-router/unplugin')
       const context = createRoutesContext(resolveOptions(typedRouterOptions))
-      await mkdir(dirname(declarationFile), { recursive: true })
 
-      if (nuxt.options._prepare || !nuxt.options.dev) {
-        await context.scanPages(false)
-        // TODO: could we generate this from context instead?
-        const dts = await readFile(declarationFile, 'utf-8')
-        addTemplate({
-          filename: 'types/typed-router.d.ts',
-          dependsOn: [],
-          getContents: () => dts,
-        })
-      }
-
-      // Regenerate types/typed-router.d.ts when adding or removing pages
+      // Generate types/typed-router.d.ts once app pages are resolved, and again when they change
       nuxt.hook('app:templatesGenerated', async (_app, _templates, options) => {
         if (!options?.filter || options.filter({ filename: 'routes.mjs' } as any)) {
-          await context.scanPages()
+          // Nuxt watches pages itself; a vue-router watcher would turn later scans into no-ops
+          await context.scanPages(false)
         }
       })
     }
@@ -627,14 +629,10 @@ export default defineNuxtModule({
         return
       }
 
-      const routerOptionsFiles = await resolveRouterOptions(nuxt, builtInRouterOptions)
-      for (const file of routerOptionsFiles) {
-        if (file.optional) { continue }
-        const code = await readFile(file.path, 'utf-8').catch(() => undefined)
-        if (code === undefined || routerOptionsMayModifyRoutes(code, file.path)) {
-          pageDiagnostics.NUXT_B4020({ file: linkToAlias(file.path, nuxt) })
-          return
-        }
+      const routesModifyingRouterOptions = await findRoutesModifyingRouterOptions(nuxt, builtInRouterOptions)
+      if (routesModifyingRouterOptions) {
+        pageDiagnostics.NUXT_B4020({ file: linkToAlias(routesModifyingRouterOptions.path, nuxt) })
+        return
       }
 
       // Patterns and lookups are always case-folded: with `sensitive` routing this can
@@ -642,6 +640,29 @@ export default defineNuxtModule({
       ;(nitro.options as { _early404PagePatterns?: string[] })._early404PagePatterns
         = [...new Set(patterns.map(pattern => normalizeRouteRulePath(pattern, true)))]
     })
+
+    if (nuxt.options.experimental.templateDiagnostics) {
+      nuxt.hook('app:templatesGenerated', async (app) => {
+        setTemplateDiagnosticsRouteMatcher(nuxt, await resolveLinkRouteMatcher(app.pages))
+      })
+    }
+
+    /** Matches the paths a `<NuxtLink>` can navigate to: page routes and redirecting route rules. */
+    async function resolveLinkRouteMatcher (pages?: NuxtPage[]): Promise<((path: string) => boolean) | undefined> {
+      const patterns = pages && collectRou3PagePatterns(pages)
+      if (!patterns || await findRoutesModifyingRouterOptions(nuxt, builtInRouterOptions)) { return }
+      for (const route of resolveRouteRulesRoutes(nuxt).routes) {
+        if (route.data.redirect) {
+          patterns.push(parseRouteRulesRoute(route).path)
+        }
+      }
+      const fold = !nuxt.options.router.options.sensitive
+      const router = createRouter<true>()
+      for (const pattern of patterns) {
+        addRoute(router, '', normalizeRouteRulePath(pattern, fold), true)
+      }
+      return path => !!findRoute(router, '', normalizeRouteRulePath(path, fold))
+    }
 
     nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
@@ -707,7 +728,7 @@ export default defineNuxtModule({
     // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
     nuxt.hook('pages:extend', (routes) => {
       let resolvedRoutes: string[]
-      for (const route of resolveRouteRulesRoutes(nuxt).routes) {
+      for (const route of mergeMethodRouteRulesRoutes(resolveRouteRulesRoutes(nuxt).routes)) {
         if (!route.data.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path
@@ -848,6 +869,13 @@ export default defineNuxtModule({
       getContents: async ({ nuxt }) => {
         // Scan and register app/router.options files
         const routerOptionsFiles = await resolveRouterOptions(nuxt, builtInRouterOptions)
+        for (const file of routerOptionsFiles) {
+          if (file.path === builtInRouterOptions) { continue }
+          const code = await readFile(file.path, 'utf-8').catch(() => undefined)
+          if (code !== undefined && getRouterOptionsKeys(code, file.path)?.has('sensitive')) {
+            throw pageDiagnostics.NUXT_B4023({ file: linkToAlias(file.path, nuxt) })
+          }
+        }
 
         const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
           .map(([key, value]) => [key, genString(value as string)]))
@@ -870,6 +898,7 @@ export default defineNuxtModule({
           'export default {',
           '...configRouterOptions,',
           ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
+          `sensitive: ${!!nuxt.options.router.options.sensitive},`,
           '}',
         ].join('\n')
       },

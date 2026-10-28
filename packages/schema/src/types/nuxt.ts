@@ -339,6 +339,11 @@ export interface Nuxt {
    * @internal
    */
   '_moduleOptionsFunctions'?: Map<string | NuxtModule, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>
+  /**
+   * State the client build keeps in memory for the server build, saved and restored by the build cache.
+   * @internal
+   */
+  '_clientBuildState'?: Map<string, { save: () => unknown, restore: (state: any) => void }>
 
   /** The resolved Nuxt configuration. */
   'options': NuxtOptions
