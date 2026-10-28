@@ -1,7 +1,8 @@
 import { H3Event } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
-import { getRouteRules } from '../utils/route-rules.ts'
 import type { H3Event as H3EventType } from 'nitro/h3'
+
+export type RouteRulesResolver = (event: H3EventType) => Record<string, any>
 
 const kEvent = Symbol.for('nuxt.compat.event')
 
@@ -21,7 +22,7 @@ export function useEvent (): H3EventType {
  * populated from `getRouteRules(event)`, and, on runtimes where h3 has no real node
  * objects, an `event.node` bridge forwarding header and status writes onto the web response.
  */
-export function prepareLegacyEvent (event: H3EventType): H3EventType {
+export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRulesResolver): H3EventType {
   const context = event.context as Record<string | symbol, any>
   context[kEvent] = event
 
@@ -43,7 +44,7 @@ export function prepareLegacyEvent (event: H3EventType): H3EventType {
     Object.defineProperty(context, '_nitro', {
       configurable: true,
       enumerable: false,
-      get: () => (slot ||= createLegacyNitroSlot(event)),
+      get: () => (slot ||= createLegacyNitroSlot(event, getRouteRules)),
       set: (value: Record<string, any>) => { slot = value },
     })
   }
@@ -63,13 +64,13 @@ export function prepareLegacyEvent (event: H3EventType): H3EventType {
   return event
 }
 
-function createLegacyNitroSlot (event: H3EventType) {
+function createLegacyNitroSlot (event: H3EventType, getRouteRules?: RouteRulesResolver) {
   const slot: Record<string, any> = {}
   let rules: Record<string, any> | undefined
   Object.defineProperty(slot, 'routeRules', {
     configurable: true,
     enumerable: true,
-    get: () => (rules ||= getRouteRules(event)),
+    get: () => (rules ||= getRouteRules?.(event) ?? event.context.routeRules ?? {}),
     set: (value: Record<string, any>) => { rules = value },
   })
   return slot

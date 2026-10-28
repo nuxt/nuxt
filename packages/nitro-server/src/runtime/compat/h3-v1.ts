@@ -18,6 +18,7 @@ import {
 } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
 
+import { getRouteRules } from '../utils/route-rules.ts'
 import { prepareLegacyEvent } from './event.ts'
 import { toLegacyError } from './error-shape.ts'
 import type { H3ErrorInput } from './error-shape.ts'
@@ -208,7 +209,7 @@ export function defineEventHandler (input: ((event: H3Event) => any) | LegacyHan
   return defineHandler({
     ...rest,
     async handler (event: H3Event) {
-      prepareLegacyEvent(event)
+      prepareLegacyEvent(event, getRouteRules)
       try {
         for (const hook of onRequestHooks) {
           await hook(event)

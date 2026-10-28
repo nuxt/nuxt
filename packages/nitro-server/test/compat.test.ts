@@ -1,5 +1,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import process from 'node:process'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'pathe'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
@@ -8,6 +10,7 @@ import type { NitroConfig } from 'nitro/types'
 import { createHooks } from 'hookable'
 import { createUnimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
+import { exec } from 'tinyexec'
 
 import { getLegacyRuntimeConfigPath, getNitroPackageResolutions, getServerImportsPresets, resolveNitroLegacyOptions, scanLegacyScope, setupNitroCompat } from '../src/compat.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
@@ -1026,6 +1029,14 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     expect(devServerHandlers[3]!.handler).not.toBe(untouched[3])
     expect(devServerHandlers[2]!.handler).toBe(untouched[2])
     vi.restoreAllMocks()
+  })
+
+  it('wraps dev handlers without loading the nitro runtime stubs', async () => {
+    const wrapper = pathToFileURL(fileURLToPath(new URL('../src/runtime/compat/legacy-handler.ts', import.meta.url))).href
+    const { stdout, stderr } = await exec(process.execPath, ['--input-type=module', '-e', `await import(${JSON.stringify(wrapper)})`], {
+      nodeOptions: { env: { ...process.env, NODE_ENV: 'development', TEST: '' } },
+    })
+    expect(stdout + stderr).not.toContain('Nitro runtime imports')
   })
 
   it('mounts a routed v2 dev handler on its route and every path below it', async () => {

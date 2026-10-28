@@ -789,8 +789,8 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
       entry.middleware = true
       const base = widenLegacyHandlerRoute(entry, report) ?? LITERAL_WILDCARD_ROUTE_RE.exec(entry.route!)?.[1]
       if (typeof entry.handler === 'function') {
-        // nitro runtime imports warn when loaded outside a Nitro build
-        const { wrapLegacyHandler } = await import('./runtime/compat/wrapper.ts')
+        // `nitro/app` warns when loaded outside a Nitro build, so the route rules are not looked up
+        const { wrapLegacyHandler } = await import('./runtime/compat/legacy-handler.ts')
         entry.handler = wrapLegacyHandler(entry.handler, base) as typeof entry.handler
       }
     }

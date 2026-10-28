@@ -6,6 +6,7 @@ import plugin from '../src/runtime/compat/event-plugin.ts'
 import { decorateLegacyEvent } from '../src/runtime/compat/decorate.ts'
 import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
 import { wrapLegacyHandler } from '../src/runtime/compat/wrapper.ts'
+import { getRouteRules } from '../src/runtime/utils/route-rules.ts'
 
 vi.mock('nitro/app', () => ({
   fetch: vi.fn(() => Promise.resolve(new Response())),
@@ -136,7 +137,7 @@ describe('v2 event bridge', () => {
   })
 
   it('resolves route rules from the app when the context has none yet', () => {
-    const event = prepareLegacyEvent(mockEvent('http://nuxt/late'))
+    const event = prepareLegacyEvent(mockEvent('http://nuxt/late'), getRouteRules)
 
     expect((event.context as any)._nitro.routeRules).toEqual({ matched: '/late' })
   })
