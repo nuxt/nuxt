@@ -107,23 +107,31 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // native hash click. This handler switches back to native restoration so the
     // browser tracks and restores the position itself (#36660). In hash mode every
     // `#…` href is a router link, so there are no native in-page anchors to handle.
-    if (import.meta.client && !hashMode && 'scrollRestoration' in window.history) {
+    // Native <a href="#hash"> clicks push a history entry that the browser
+    // handles, not Vue Router. Since Nuxt sets scrollRestoration to 'manual',
+    // the browser won't restore the scroll position on Back. We save the
+    // position on click and restore it on popstate (#36660).
+    if (import.meta.client) {
       document.addEventListener('click', (e: MouseEvent) => {
-        const target = e.target as Node
-        const anchor = target instanceof Element
-          ? target.closest('a[href]') as HTMLAnchorElement | null
-          : null
+        const anchor = (e.target as Element)?.closest?.('a[href]') as HTMLAnchorElement | null
         if (!anchor) { return }
-
         const href = anchor.getAttribute('href')
         if (!href || !href.startsWith('#') || href === '#') { return }
+        // save current scroll position into the new history state
+        const state = { ...window.history.state, _nuxtScrollY: window.scrollY }
+        window.history.replaceState(state, '')
+      })
 
-        // same-page native hash click — re-enable native restoration (Nuxt keeps
-        // it 'manual' for router navigations) so the browser snapshots the scroll
-        // position of the current entry and restores it on Back
-        window.history.scrollRestoration = 'auto'
+      window.addEventListener('popstate', (e: PopStateEvent) => {
+        const scrollY = e.state?._nuxtScrollY
+        if (typeof scrollY === 'number') {
+          requestAnimationFrame(() => {
+            window.scrollTo(0, scrollY)
+          })
+        }
       })
     }
+
 
     nuxtApp.vueApp.use(router)
 
