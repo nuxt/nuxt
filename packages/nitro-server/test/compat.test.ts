@@ -546,6 +546,39 @@ describe('setupNitroCompat', () => {
     report.mockRestore()
   })
 
+  it('reports a module again only for imports it has not been reported for', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-late-module-'))
+    onTestFinished(() => rmSync(dir, { recursive: true, force: true }))
+    writeFileSync(join(dir, 'handler.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => 'legacy')`)
+    writeFileSync(join(dir, 'middleware.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => {})`)
+    writeFileSync(join(dir, 'plugin.ts'), `import { defineNitroPlugin } from 'nitropack/runtime'\nexport default defineNitroPlugin(() => {})`)
+
+    const build = async (lateFile: string) => {
+      report.mockClear()
+      const nitroConfig: NitroConfig = {
+        virtual: { '#late-module/entry': () => Promise.resolve(`import ${JSON.stringify(join(dir, lateFile))}`) },
+        handlers: [
+          { route: '/legacy', handler: join(dir, 'handler.ts') } as any,
+          { route: '/late', handler: '#late-module/entry' } as any,
+        ],
+      }
+      const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [], [{ dir, name: 'late-module' }])
+      const nitro = createLateNitro(nitroConfig)
+      registerLateScope(nitro)
+      await nitro.hooks.callHook('build:before', nitro)
+    }
+
+    await build('middleware.ts')
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`late-module` (imports `h3`)' })
+
+    await build('plugin.ts')
+    expect(report).toHaveBeenCalledTimes(2)
+    expect(report.mock.calls[1]![0]).toEqual({ count: 1, modules: '`late-module` (imports `nitropack/runtime`)' })
+    report.mockRestore()
+  })
+
   it('does not wait on a virtual template that needs the nitro instance', async () => {
     vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
     let nitroReady: () => void

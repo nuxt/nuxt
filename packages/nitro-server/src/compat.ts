@@ -931,6 +931,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // layer stays registered: a module can still push v2 code into `nitro.options` later
   let active = isLegacyEnabled(legacy) || declaredLegacy
   const reported = new Set<string>()
+  const reportedModules = new Map<string, Set<string>>()
 
   const reportLegacyScope = (found: Map<string, string[]>) => {
     const byFile = new Map<string, { paths: string[], specifiers: string[] }>()
@@ -958,6 +959,14 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
       for (const specifier of specifiers) {
         set.add(specifier)
       }
+    }
+    for (const [key, specifiers] of byModule) {
+      const previous = reportedModules.get(key)
+      if (previous && [...specifiers].every(s => previous.has(s))) {
+        byModule.delete(key)
+        continue
+      }
+      reportedModules.set(key, new Set([...previous || [], ...specifiers]))
     }
     if (byModule.size > 0) {
       nitroBuildDiagnostics.NUXT_B9003({
