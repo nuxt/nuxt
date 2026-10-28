@@ -131,5 +131,9 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { key: string }) => `Use a static value for \`${p.key}\`, or import it from another module.`,
       docs: false,
     },
+    NUXT_B4025: {
+      why: (p: { tag: string, attribute: string, to: string, file: string }) => `\`<${p.tag} ${p.attribute}="${p.to}">\` in \`${p.file}\` does not match any page route.`,
+      fix: 'Check the path for typos or add a page for it. To link to a server route, a file in `public/` or another site, set the `external` prop.',
+    },
   },
 })

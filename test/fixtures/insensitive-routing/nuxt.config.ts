@@ -9,6 +9,8 @@ export default withMatrix({
   },
   routeRules: {
     '/redirect': { redirect: '/' },
+    '/old/**': { redirect: '/new/**' },
+    '/wildcard-proxy/**': { proxy: '/api/tail/**' },
     '/headers/**': { headers: { 'x-route-rule': 'headers' } },
     '/Mixed-Case': { headers: { 'x-route-rule': 'mixed-case' } },
     '/proxy': { proxy: '/api/proxy-target' },

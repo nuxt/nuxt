@@ -94,6 +94,7 @@ interface FixtureMatrixEntry {
   context: 'async' | 'default'
   manifest: 'manifest-on' | 'manifest-off'
   legacyErrors?: boolean
+  legacyComponentResolution?: boolean
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
@@ -129,8 +130,19 @@ const legacyErrorMatrix: FixtureMatrixEntry[] = [
 
 const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
 
+// re-runs the basic fixture with `experimental.compilerComponentResolution` disabled
+const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyComponentResolution: true },
+]
+
+function fixtureProjectInclude (entry: FixtureMatrixEntry) {
+  if (entry.legacyErrors) { return legacyErrorInclude }
+  if (entry.legacyComponentResolution) { return ['test/basic.test.ts'] }
+  return ['test/*.test.ts']
+}
+
 function fixtureProjectName (entry: FixtureMatrixEntry) {
-  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}${entry.legacyErrors ? '-legacy-errors' : ''}`
+  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}${entry.legacyErrors ? '-legacy-errors' : ''}${entry.legacyComponentResolution ? '-legacy-component-resolution' : ''}`
 }
 
 function fixtureProjectEnv (entry: FixtureMatrixEntry) {
@@ -140,6 +152,7 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_CONTEXT: entry.context,
     TEST_MANIFEST: entry.manifest,
     ...entry.legacyErrors ? { TEST_ERROR_RENDERING: 'legacy-errors' } : {},
+    ...entry.legacyComponentResolution ? { TEST_COMPONENT_RESOLUTION: 'legacy' } : {},
   }
 }
 
@@ -227,11 +240,11 @@ export default defineConfig({
           benchmark: { include: ['test/bench/renderer.bench.ts'] },
         },
       },
-      ...[...fixtureMatrix, ...legacyErrorMatrix].map(entry => ({
+      ...[...fixtureMatrix, ...legacyErrorMatrix, ...legacyComponentResolutionMatrix].map(entry => ({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
-          include: entry.legacyErrors ? legacyErrorInclude : ['test/*.test.ts'],
+          include: fixtureProjectInclude(entry),
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],

@@ -11,9 +11,15 @@ import { VUE_ID_RE } from '../../core/utils/plugins.ts'
 
 interface TreeShakeTemplatePluginOptions {
   getComponents (): Component[]
+  /**
+   * Names of `<script setup>` bindings whose template usages have already been removed from the server build.
+   * When provided, only these bindings are removed, if they are no longer referenced.
+   */
+  getPrunedBindings? (file: string): Set<string> | undefined
 }
 
 const SSR_RENDER_RE = /ssrRenderComponent/
+const QUERY_RE = /\?.*$/
 const PLACEHOLDER_EXACT_RE = /^(?:fallback|placeholder)$/
 const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:client_only|ClientOnly\)?)$/
 
@@ -27,6 +33,15 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
         id: { include: VUE_ID_RE },
       },
       handler (code, id, meta?: unknown) {
+        if (options.getPrunedBindings) {
+          const names = options.getPrunedBindings(id.replace(QUERY_RE, ''))
+          if (!names?.size) { return }
+          const s = rolldownString(code, id, meta)
+          const { program: ast } = parseAndWalk(code, id, () => {})
+          removeUnreferenced(ast, id, s, names)
+          return generateTransform(s, id)
+        }
+
         const components = options.getComponents()
 
         if (!regexpMap.has(components)) {
@@ -77,32 +92,33 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
           }
         })
 
-        // detect which candidates are still called elsewhere with a single re-parse of the transformed code
-        const componentsToRemove: string[] = []
-        if (candidateNames.size) {
-          const referencedNames = getSetupReferencedNames(s.toString(), id)
-          for (const name of candidateNames) {
-            if (!referencedNames.has(name)) {
-              componentsToRemove.push(name)
-            }
-          }
-        }
-        const removedNodes = new WeakSet<ESTree.Node>()
-
-        for (const componentName of componentsToRemove) {
-        // remove import declaration if it exists
-          removeImportDeclaration(ast, componentName, s)
-          // remove variable declaration
-          removeVariableDeclarator(ast, componentName, s, removedNodes)
-          // remove from setup return statement
-          removeFromSetupReturn(ast, componentName, s)
-        }
+        removeUnreferenced(ast, id, s, candidateNames)
 
         return generateTransform(s, id)
       },
     },
   }
 })
+
+/**
+ * remove the declarations of candidate components that are no longer referenced in the setup or ssrRender functions
+ */
+function removeUnreferenced (ast: ESTree.Program, id: string, s: RolldownString, candidateNames: Set<string>) {
+  if (!candidateNames.size) { return }
+  // detect which candidates are still called elsewhere with a single re-parse of the transformed code
+  const referencedNames = getSetupReferencedNames(s.toString(), id)
+  const removedNodes = new WeakSet<ESTree.Node>()
+
+  for (const componentName of candidateNames) {
+    if (referencedNames.has(componentName)) { continue }
+    // remove import declaration if it exists
+    removeImportDeclaration(ast, componentName, s)
+    // remove variable declaration
+    removeVariableDeclarator(ast, componentName, s, removedNodes)
+    // remove from setup return statement
+    removeFromSetupReturn(ast, componentName, s)
+  }
+}
 
 /**
  * find and remove all property with the name parameter from the setup return statement and the __returned__ object

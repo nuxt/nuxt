@@ -604,6 +604,9 @@ catalogs:
     prettier:
       specifier: 3.9.10
       version: 3.9.10
+    pug:
+      specifier: 3.0.4
+      version: 3.0.4
     rollup:
       specifier: 4.65.0
       version: 4.65.0
@@ -1438,12 +1441,18 @@ importers:
       '@vitejs/plugin-vue-jsx':
         specifier: catalog:dev
         version: 5.1.6(supports-color@10.2.2)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
+      '@vue/compiler-core':
+        specifier: catalog:dev
+        version: 3.5.44
       '@vue/compiler-sfc':
         specifier: 3.5.44
         version: 3.5.44
       jiti:
         specifier: catalog:build
         version: 2.7.0
+      pug:
+        specifier: catalog:dev
+        version: 3.0.4
       rolldown:
         specifier: 1.2.15
         version: 1.2.15
@@ -2277,6 +2286,10 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+    devDependencies:
+      pug:
+        specifier: catalog:dev
+        version: 3.0.4
 
   test/fixtures/minimal:
     dependencies:
@@ -2483,6 +2496,12 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+
+  test/fixtures/template-diagnostics:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
 
   test/fixtures/ui-templates:
     dependencies:

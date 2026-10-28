@@ -1248,6 +1248,25 @@ export interface ConfigSchema {
     early404: boolean
 
     /**
+     * Warn at build time about template mistakes the Vue compiler cannot detect:
+     *
+     * - a `<NuxtLink>` whose static `to` matches no page route
+     * - `v-on` or `v-model` on a server component
+     * - a function or class instance passed as a prop to a server component, or in the `props`
+     *   of a `<NuxtIsland>`
+     *
+     * Warnings are printed to the terminal and, in development, sent to open error pages and
+     * overlays.
+     *
+     * The route check cannot see routes added at runtime with `router.addRoute()` or paths
+     * that route middleware redirects, and is skipped when a custom `app/router.options` file
+     * may modify `routes`.
+     *
+     * @default true
+     */
+    templateDiagnostics: boolean
+
+    /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
      * @default false
@@ -1740,6 +1759,14 @@ export interface ConfigSchema {
     entryImportMap: boolean
 
     /**
+     * Whether to add V8 compile hints to the entry, layout and page chunks (and their static imports) in the Vite client build, so supporting browsers compile them eagerly while they download.
+     *
+     * @default true
+     * @see [V8 explicit compile hints](https://v8.dev/blog/explicit-compile-hints)
+     */
+    compileHints: boolean
+
+    /**
      * Extract async data handler functions into separate chunks for better performance and caching.
      *
      * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted
@@ -1851,6 +1878,29 @@ export interface ConfigSchema {
      * multiple times on the same Nuxt instance (e.g. in benchmarks).
      */
     clearBuildHooks: boolean
+
+    /**
+     * Resolve auto-imported components in the Vue template compiler.
+     *
+     * Components used in `.vue` templates are imported by a `compilerOptions.nodeTransforms` entry, which also applies
+     * lazy hydration props such as `hydrate-on-visible` and omits the default slot of `<ClientOnly>` and the slots of
+     * client-only components from the server build, including when they are nested in another component's slot.
+     *
+     * `resolveComponent()` calls in scripts and `h()` calls in JSX/TSX are resolved by a separate build transform.
+     *
+     * This works with the Vite, webpack and rspack builders. Set it to `false` to resolve template components with a build transform
+     * on the compiled output.
+     * @default true
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     compilerComponentResolution: false,
+     *   },
+     * })
+     * ```
+     */
+    compilerComponentResolution: boolean
   }
 
   /**
