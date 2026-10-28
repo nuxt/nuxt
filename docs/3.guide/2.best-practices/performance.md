@@ -256,7 +256,7 @@ Large blocks containing multiple elements can often be reduced by importing only
 
 ### Nuxt DevTools
 
-The [Nuxt DevTools](https://devtools.nuxt.com/) gives you insights and transparency about your Nuxt App to identify performance gaps and seamlessly manage your app configurations.
+The [Nuxt DevTools](/modules/devtools) gives you insights and transparency about your Nuxt App to identify performance gaps and seamlessly manage your app configurations.
 
 ![Nuxt DevTools example](https://user-images.githubusercontent.com/11247099/217670806-fb39aeff-3881-44e5-b9c8-6c757f5925fc.png)
 

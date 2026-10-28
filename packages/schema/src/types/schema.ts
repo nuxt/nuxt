@@ -89,7 +89,7 @@ export interface ConfigSchema {
    *
    * Breaking changes for devtools might not reflect on the version of Nuxt.
    *
-   * @see  [Nuxt DevTools](https://devtools.nuxt.com/) for more information.
+   * @see  [Nuxt DevTools](https://nuxt.com/modules/devtools) for more information.
    */
   devtools: boolean | { enabled: boolean, [key: string]: any }
 
