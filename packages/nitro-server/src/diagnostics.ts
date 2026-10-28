@@ -44,5 +44,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Import each one explicitly, re-export it from a file directly in `server/utils/`, or enable `nitroLegacy.imports` to scan subdirectories of `server/utils/` as Nitro v2 did.',
       docs: false,
     },
+    NUXT_B9007: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? '' : 's'} use${p.count === 1 ? 's' : ''} Nitro or h3 utilities without importing them, and server auto-imports of these are off by default in Nuxt 5:\n  - ${p.files}`,
+      fix: (p: { imports: string }) => `Import them explicitly: ${p.imports}. To keep auto-importing them, enable \`experimental.nitroAutoImports\`.`,
+      docs: false,
+    },
   },
 })

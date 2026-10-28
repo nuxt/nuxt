@@ -245,6 +245,31 @@ describe('createServerAutoImports', () => {
     report.mockRestore()
   })
 
+  it('reports server utilities used without an import while their presets are disabled', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9007').mockImplementation(() => ({}) as any)
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, imports: [{ name: 'useLocal', from: '/app/server/utils/local.ts' }] },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+      { disabledPresets: [nuxtServerImportsPreset, ...v2ImportsPreset] },
+    )
+
+    const cached = 'export const fetchPackage = defineCachedFunction(() => useLocal())'
+    await autoImports.injectImports(cached, '/app/server/utils/npm.ts')
+    await autoImports.injectImports(cached, '/app/server/utils/npm.ts')
+    await autoImports.injectImports('export default defineEventHandler(event => getQuery(event))', '/app/server/api/query.ts')
+    await autoImports.injectImports('import { defineEventHandler } from \'nuxt/server\'\nexport default defineEventHandler(() => 1)', '/app/server/api/imported.ts')
+
+    await vi.waitFor(() => expect(report).toHaveBeenCalled())
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report).toHaveBeenCalledWith({
+      count: 2,
+      files: '`server/api/query.ts` (`defineEventHandler`, `getQuery`)\n  - `server/utils/npm.ts` (`defineCachedFunction`)',
+      imports: '`import { defineEventHandler, getQuery } from \'nuxt/server\'`, `import { defineCachedFunction } from \'nitro/cache\'`',
+    })
+    report.mockRestore()
+  })
+
   it('resolves `#imports` to a path inside the types directory', () => {
     const typesDir = '/app/.nuxt'
     const autoImports = createServerAutoImports(mockNuxt(), { autoImport: true }, typesDir)
