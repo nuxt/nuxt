@@ -247,6 +247,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     framework: {
       name: 'nuxt',
       version: nuxtPkg.version || nitroBuilder.version,
+      previewCommand: 'npx nuxt preview',
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
