@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { performance } from 'node:perf_hooks'
 import { dirname, join } from 'pathe'
+import { normalizeAliases } from 'pathe/utils'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import type { NitroConfig } from 'nitro/types'
@@ -14,12 +14,18 @@ import { getLegacyRuntimeConfigPath, getNitroPackageResolutions, getServerImport
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { kServerApi } from '@nuxt/kit/internal'
+import { resolveAlias } from '@nuxt/kit'
 import { H3 } from 'nitro/h3'
 import { parseSync } from 'rolldown/utils'
 
 vi.mock('rolldown/utils', async (importOriginal) => {
   const utils = await importOriginal<typeof import('rolldown/utils')>()
   return { ...utils, parseSync: vi.fn(utils.parseSync) }
+})
+
+vi.mock('@nuxt/kit', async (importOriginal) => {
+  const kit = await importOriginal<typeof import('@nuxt/kit')>()
+  return { ...kit, resolveAlias: vi.fn(kit.resolveAlias) }
 })
 
 /** An entry as `addServerHandler()` leaves it, having resolved the variant it registered. */
@@ -645,38 +651,41 @@ export default getQuery`)
     vi.restoreAllMocks()
   })
 
-  it('keeps the cost of following imports flat as aliases are added', async () => {
+  it.each([10, 500])('reuses normalized aliases across scan passes with %i aliases', async (aliasCount) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
     const dir = createModuleDir('nitro-compat-alias-cost-', false)
     mkdirSync(join(dir, 'dist/runtime/server'), { recursive: true })
-    const utils = Array.from({ length: 100 }, (_, i) => `util-${i}`)
-    for (const util of utils) {
-      writeFileSync(join(dir, `dist/runtime/server/${util}.ts`), `import { defu } from 'defu'
+    writeFileSync(join(dir, 'dist/runtime/server/util.ts'), `import { defu } from 'defu'
 import { withBase } from 'ufo'
 import { join } from 'pathe'
 import { getQuery } from 'h3'
 export default () => [defu, withBase, join, getQuery]`)
-    }
-    writeFileSync(join(dir, 'dist/runtime/server/handler.ts'), `${utils.map((util, i) => `import u${i} from './${util}'`).join('\n')}
-export default () => [${utils.map((_, i) => `u${i}`).join(', ')}]`)
+    writeFileSync(join(dir, 'dist/runtime/server/handler.ts'), `import util from '#module/util'
+export default util`)
 
-    // the late pass walks the same imports as the first one, and runs synchronously
-    const lateScan = async (aliasCount: number) => {
-      const alias = Object.fromEntries(Array.from({ length: aliasCount }, (_, i) => [`#alias-${i}`, `/project/aliased-${i}`]))
-      const nitroConfig: NitroConfig = { handlers: [{ route: '/server', handler: join(dir, 'dist/runtime/server/handler.ts') } as any] }
-      const registerLateScope = await setupNitroCompat(createNuxt({ alias, extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'alias-cost-module' }])
-      const start = performance.now()
-      registerLateScope(createLateNitro(nitroConfig))
-      return performance.now() - start
+    const alias = Object.fromEntries(Array.from({ length: aliasCount }, (_, i) => [`#alias-${i}`, `/project/aliased-${i}`]))
+    const nitroConfig: NitroConfig = {
+      alias: { '#module': join(dir, 'dist/runtime/server') },
+      handlers: [{ route: '/server', handler: join(dir, 'dist/runtime/server/handler.ts') } as any],
     }
+    const resolutions = vi.mocked(resolveAlias)
+    resolutions.mockClear()
+    const registerLateScope = await setupNitroCompat(createNuxt({ alias, extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'alias-cost-module' }])
+    const initialCalls = resolutions.mock.calls.length
+    registerLateScope(createLateNitro(nitroConfig))
 
-    const few = await lateScan(10)
-    const many = await lateScan(500)
+    expect(initialCalls).toBeGreaterThan(0)
+    expect(resolutions.mock.calls.length).toBeGreaterThan(initialCalls)
+    const normalized = resolutions.mock.calls[0]?.[1]
+    expect(normalized).toBeDefined()
+    expect(normalized).toBe(normalizeAliases(normalized ?? {}))
+    for (const [, aliases] of resolutions.mock.calls) {
+      expect(aliases).toBe(normalized)
+    }
 
     expect(report).toHaveBeenCalledWith(expect.objectContaining({ modules: expect.stringContaining('`alias-cost-module` (imports `h3`)') }))
-    expect(many).toBeLessThan(few * 3 + 50)
     vi.restoreAllMocks()
-  }, 60_000)
+  })
 
   it.each(['linked', 'real'])('attributes files of a symlinked module nested in another module to the nested module (registered: %s)', async (registered) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
