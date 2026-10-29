@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { isAbsolute, resolve } from 'pathe'
 import { loadNuxt } from '@nuxt/kit'
+import { createNitro } from 'nitro/builder'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
 
@@ -22,6 +23,7 @@ async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConf
   let nitro: Nitro | undefined
   const nuxt = await loadNuxt({
     cwd: fixtureDir,
+    dev: overrides.dev,
     ready: true,
     overrides: {
       ...overrides,
@@ -43,16 +45,16 @@ async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConf
 }
 
 describe('nitro config', () => {
-  it('emits valid single-segment URLPatterns for noScripts wildcard rules', async () => {
+  it('emits valid rest-of-path URLPatterns for noScripts wildcard rules', async () => {
     await withNitro({ routeRules: { '/foo/*': { noScripts: true }, '/scripted/*': { ssr: true } } }, async (_nitro, nitroConfig) => {
       const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
       const code = await rendererConfig()
       const patterns: string[] = JSON.parse(/^export const NUXT_NO_SCRIPTS_PATTERNS = (.+)$/m.exec(code)![1]!)
 
-      expect(patterns).toEqual(['/foo/([^\\/]*)'])
+      expect(patterns).toEqual(['/foo/*'])
       const pattern = new URLPattern({ pathname: patterns[0] })
       expect(pattern.test('https://example.com/foo/bar')).toBe(true)
-      expect(pattern.test('https://example.com/foo/bar/baz')).toBe(false)
+      expect(pattern.test('https://example.com/foo/bar/baz')).toBe(true)
       expect(pattern.test('https://example.com/scripted/bar')).toBe(false)
     })
   }, 60_000)
@@ -98,6 +100,33 @@ describe('nitro config', () => {
     })
     await withNitro({ dev: false, vue: { runtimeCompiler: true } }, (_nitro, nitroConfig) => {
       expect(hasBundledVuePlugin(nitroConfig)).toBe(false)
+    })
+  })
+
+  const sourceMounts = {
+    root: { driver: 'fs', readOnly: true, base: fixtureDir },
+    src: { driver: 'fs', readOnly: true, base: resolve(fixtureDir, 'server') },
+  }
+
+  it.for([true, false])('mounts the project sources as read-only kv when dev is %s', async (dev) => {
+    await withNitro({ dev }, (nitro) => {
+      const mounts = { root: nitro.options.kv.root, src: nitro.options.kv.src }
+      if (dev) {
+        expect(mounts).toMatchObject(sourceMounts)
+      } else {
+        expect(mounts).toEqual({ root: undefined, src: undefined })
+      }
+    })
+  })
+
+  it('mounts the project sources as read-only kv in the prerenderer', async () => {
+    await withNitro({ dev: false }, async (nitro) => {
+      const prerenderer = await createNitro({ ...nitro.options._config, rootDir: nitro.options.rootDir, preset: 'nitro-prerender', logLevel: 0 })
+      try {
+        expect(prerenderer.options.kv).toMatchObject(sourceMounts)
+      } finally {
+        await prerenderer.close()
+      }
     })
   })
 

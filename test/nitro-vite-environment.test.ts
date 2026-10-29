@@ -91,6 +91,12 @@ describe.skipIf(builder !== 'nitro-vite' || isBuilt)('nitro/vite environment dev
     ['<buildAssetsDir>', 'dev-handler/file.woff2', undefined],
     ['<buildAssetsDir>', 'dev-handler/file.js', 'script'],
     ['<buildAssetsDir>', 'dev-handler/file.json?import', undefined],
+    ['/_dev-handler/', 'dev-middleware/file.woff2', undefined],
+    ['<buildAssetsDir>', 'dev-middleware/file', undefined],
+    ['<buildAssetsDir>', 'dev-middleware/file', 'font'],
+    ['<buildAssetsDir>', 'dev-middleware/file.woff2', undefined],
+    ['<buildAssetsDir>', 'dev-middleware/file.woff2', 'font'],
+    ['<buildAssetsDir>', 'dev-middleware/file.js', 'script'],
   ])('routes %s%s to a dev server handler (sec-fetch-dest=%s)', async (prefix, path, secFetchDest) => {
     const base = prefix === '<buildAssetsDir>' ? nuxt.options.app.buildAssetsDir : prefix
     const url = `http://127.0.0.1:${port}${base}${path}`

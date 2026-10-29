@@ -5,6 +5,7 @@ import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { describe, expect, it } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import type { Nuxt } from '@nuxt/schema'
 import { loadNuxt } from '../src/index.ts'
 import { routeRulesTemplate } from '../src/core/templates.ts'
 import type { NuxtPage } from '../schema.ts'
@@ -118,13 +119,13 @@ describe('route rules template', () => {
 
   it('applies `appMiddleware` from rules with regex constraints when case-insensitive', async () => {
     const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, undefined, {
-      '/y/:id(\\D+)': { appMiddleware: 'auth' },
+      '/blog/:slug(cafe|tea)': { appMiddleware: 'auth' },
       '/Z/:role(admin|[a-z]\\d)': { appMiddleware: 'admin' },
-      '/Range/:id([A-z]+)': { appMiddleware: 'range' },
+      '/Range/:id([A-Za-z_]+)': { appMiddleware: 'range' },
     }))
-    expect(matcher('/y/abc').appMiddleware).toEqual({ auth: true })
-    expect(matcher('/Y/ABC').appMiddleware).toEqual({ auth: true })
-    expect(matcher('/y/123').appMiddleware).toBeUndefined()
+    expect(matcher('/blog/cafe').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/Blog/TEA').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/blog/caf%C3%A9').appMiddleware).toBeUndefined()
     expect(matcher('/z/Admin').appMiddleware).toEqual({ admin: true })
     expect(matcher('/z/A1').appMiddleware).toEqual({ admin: true })
     expect(matcher('/z/AB').appMiddleware).toBeUndefined()
@@ -135,12 +136,32 @@ describe('route rules template', () => {
 
   it('rejects regex constraints that depend on letter case when case-insensitive', async () => {
     await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([A-Z]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[A-Z]`)')
-    await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([%41-%5A]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[A-Z]`)')
     await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([A-Z]+)': { headers: { 'x-test': '1' } } })).resolves.toBeTypeOf('string')
-    await expect(getRouteRulesTemplate(false, undefined, { '/sigma/:id([a-zς]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[a-zς]`)')
     const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, { '/upper/:id([A-Z]+)': { appMiddleware: 'auth' } }))
     expect(matcher('/upper/ABC').appMiddleware).toEqual({ auth: true })
     expect(matcher('/upper/abc').appMiddleware).toBeUndefined()
+  })
+
+  it('rejects regex constraints that depend on percent-encoding', async () => {
+    for (const sensitive of [true, false]) {
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/accent/:id([é])': { appMiddleware: 'auth' } })).rejects.toThrow('depends on percent-encoding (`[é]`)')
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/sigma/:id([a-zς]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on percent-encoding (`[a-zς]`)')
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/any/:id(.)': { headers: { 'x-test': '1' } } })).rejects.toThrow('depends on percent-encoding (`.`)')
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/é:slug(\\bfoo)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on percent-encoding (`\\b`)')
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/é-:slug(foo\\B)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on percent-encoding (`\\B`)')
+    }
+  })
+
+  it('applies `appMiddleware` from rules with regex constraints read from the config', async () => {
+    const nuxt = {
+      options: {
+        app: { baseURL: '/' },
+        router: { options: {} },
+        routeRules: { '/blog/:slug(cafe)': { appMiddleware: 'auth' } },
+      },
+    } as unknown as Nuxt
+    const matcher = await evaluateMatcher(await routeRulesTemplate.getContents!({ nuxt, app: undefined!, options: routeRulesTemplate.options! }))
+    expect(matcher('/blog/cafe').appMiddleware).toEqual({ auth: true })
   })
 })
 

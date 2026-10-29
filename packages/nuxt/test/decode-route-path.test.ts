@@ -2,7 +2,7 @@ import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
 import { decodeRoutePath, foldRouteCase, foldRouteRulePath } from '../src/core/utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
+import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
 
 const RESERVED_RE = /[%;/?:@&=+$,#]/g
 
@@ -151,35 +151,31 @@ describe('normalizeRouteRuleKey', () => {
     expect(normalizeRouteRuleKey('/A/:id(\\D', true)).toBe('/a/:id(\\D')
   })
 
-  it('should decode constraints and literals', () => {
-    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', true)).toBe('/café/:id(café|CAFÉ)')
-    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', false)).toBe('/CafÉ/:id(café|CAFÉ)')
-  })
-
-  it('should decode percent-encoded regex syntax in constraints to a literal match', () => {
-    expect(normalizeRouteRuleKey('/:id(a%5Cd%2E%5B%2D%5D)', true)).toBe('/:id(a\\\\d\\.\\[\\-\\])')
-    expect(normalizeRouteRuleKey('/:id(a%2Fb%3Fc)', false)).toBe('/:id(a%2Fb%3Fc)')
-    expect(normalizeRouteRuleKey('/:id(100%)', true)).toBe('/:id(100%)')
+  it('should decode literal text and keep regex constraints as written', () => {
+    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', true)).toBe('/café/:id(caf%C3%A9|CAF%C3%89)')
+    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', false)).toBe('/CafÉ/:id(caf%C3%A9|CAF%C3%89)')
+    expect(normalizeRouteRuleKey('/A\\(B\\)/:x([()]+(?:A|B))/C', false)).toBe('/A\\(B\\)/:x([()]+(?:A|B))/C')
   })
 
   it('should match lookups against regex constraints as written', () => {
     for (const fold of [false, true]) {
       const router = createNormalizedRouteRulesRouter([
-        { route: '/n/:id(\\D+)', data: { n: true } },
+        { route: '/blog/:slug(cafe|tea)', data: { blog: true } },
+        { route: '/x/:id([a-z]+)', data: { x: true } },
         { route: '/range/:id([A-Za-z_]+)', data: { range: true } },
-        { route: '/blog/:slug(caf%C3%A9|tea)', data: { blog: true } },
       ], '', fold)
-      const match = (path: string) => router.matchAll('', normalizeRouteRulePath(path, fold))
-      expect(match('/n/abc'), `fold: ${fold}`).toEqual([{ n: true }])
-      expect(match('/n/123'), `fold: ${fold}`).toEqual([])
+      const match = (path: string) => router.matchAll('', normalizeRouteRuleLookupPath(path, fold))
+      expect(match('/blog/cafe'), `fold: ${fold}`).toEqual([{ blog: true }])
+      expect(match('/blog/tea'), `fold: ${fold}`).toEqual([{ blog: true }])
+      expect(match('/blog/caf%C3%A9'), `fold: ${fold}`).toEqual([])
+      expect(match('/x/abc'), `fold: ${fold}`).toEqual([{ x: true }])
+      expect(match('/x/123'), `fold: ${fold}`).toEqual([])
       expect(match('/range/ABC'), `fold: ${fold}`).toEqual([{ range: true }])
       expect(match('/range/_'), `fold: ${fold}`).toEqual([{ range: true }])
       expect(match('/range/123'), `fold: ${fold}`).toEqual([])
-      expect(match('/blog/caf%C3%A9'), `fold: ${fold}`).toEqual([{ blog: true }])
-      expect(match('/blog/tea'), `fold: ${fold}`).toEqual([{ blog: true }])
     }
     const folded = createNormalizedRouteRulesRouter([{ route: '/Range/:id([A-Za-z_]+)', data: { range: true } }], '', true)
-    expect(folded.matchAll('', normalizeRouteRulePath('/RANGE/_', true))).toEqual([{ range: true }])
+    expect(folded.matchAll('', normalizeRouteRuleLookupPath('/RANGE/_', true))).toEqual([{ range: true }])
   })
 })
 
@@ -188,20 +184,45 @@ describe('findCaseDependentRouteRuleKeyPart', () => {
     expect(findCaseDependentRouteRuleKeyPart('/X/:id([a-z]+)/:rest((?:FOO|bar))')).toBe('F')
     expect(findCaseDependentRouteRuleKeyPart('/X/:id([A-z]+)/Y')).toBeUndefined()
   })
-
-  it('should check percent-encoded characters in a constraint as the matcher decodes them', () => {
-    expect(findCaseDependentRouteRuleKeyPart('/X/:id([%41-%5A]+)')).toBe('[A-Z]')
-    expect(findCaseDependentRouteRuleKeyPart('/X/:id([%41]+)')).toBe('[A]')
-    expect(findCaseDependentRouteRuleKeyPart('/X/:id(caf%C3%89)')).toBe('É')
-    expect(findCaseDependentRouteRuleKeyPart('/X/:id([%61-%7A%5F]+)')).toBeUndefined()
-    expect(findCaseDependentRouteRuleKeyPart('/X/:id(caf%C3%A9)')).toBeUndefined()
-  })
 })
 
 describe('assertCaseIndependentRouteRuleKey', () => {
   it('should throw on a key with a constraint that depends on letter case', () => {
     expect(() => assertCaseIndependentRouteRuleKey('/X/:id([a-z]+)/:rest((?:FOO|bar))')).toThrow('The route rule `/X/:id([a-z]+)/:rest((?:FOO|bar))` has a regex constraint that depends on letter case (`F`)')
     expect(() => assertCaseIndependentRouteRuleKey('/X/:id([A-z]+)/Y')).not.toThrow()
+  })
+})
+
+describe('findEncodingDependentConstraint', () => {
+  it('should accept constraints that only match characters a path keeps as they are', () => {
+    for (const constraint of ['([a-z0-9-]+)', '([A-Z]+)', '(\\d{2})', '([a-z]{2,3})', '((?:foo|bar))', '(\\w+)', '([._~-]+)', '((?<name>[a-z]+))', '((?=a)[a-z]+)', '((?<!b)a)', '(^a$)', '([\\uFFFD])']) {
+      expect(findEncodingDependentConstraint(constraint), constraint).toBeUndefined()
+    }
+  })
+
+  it('should find the part of a constraint that depends on percent-encoding', () => {
+    expect(findEncodingDependentConstraint('([é])')).toBe('[é]')
+    expect(findEncodingDependentConstraint('(café)')).toBe('é')
+    expect(findEncodingDependentConstraint('(caf%C3%A9)')).toBe('%')
+    expect(findEncodingDependentConstraint('([%C3%A9]+)')).toBe('[%C3%A9]')
+    expect(findEncodingDependentConstraint('(\\u00e9)')).toBe('\\u00e9')
+    expect(findEncodingDependentConstraint('(.)')).toBe('.')
+    expect(findEncodingDependentConstraint('(.{1,3})')).toBe('.')
+    expect(findEncodingDependentConstraint('(\\S+)')).toBe('\\S')
+    expect(findEncodingDependentConstraint('(\\D+)')).toBe('\\D')
+    expect(findEncodingDependentConstraint('([^a-z]+)')).toBe('[^a-z]')
+    expect(findEncodingDependentConstraint('([!-~]+)')).toBe('[!-~]')
+    expect(findEncodingDependentConstraint('(a b)')).toBe(' ')
+    expect(findEncodingDependentConstraint('(a{)')).toBe('{')
+    expect(findEncodingDependentConstraint('(\\bfoo)')).toBe('\\b')
+    expect(findEncodingDependentConstraint('([a-z]+\\B)')).toBe('\\B')
+    expect(findEncodingDependentConstraint('([\\b])')).toBe('[\\b]')
+  })
+
+  it('should throw on a key with a constraint that depends on percent-encoding', () => {
+    expect(() => assertEncodingIndependentRouteRuleKey('/café/:id([a-z]+)/:rest([^/])')).toThrow('The route rule `/café/:id([a-z]+)/:rest([^/])` has a regex constraint that depends on percent-encoding (`[^/]`)')
+    expect(() => assertEncodingIndependentRouteRuleKey('/é:slug(\\bfoo)')).toThrow('The route rule `/é:slug(\\bfoo)` has a regex constraint that depends on percent-encoding (`\\b`)')
+    expect(() => assertEncodingIndependentRouteRuleKey('/café/:id([a-z]+)')).not.toThrow()
   })
 })
 

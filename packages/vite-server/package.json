@@ -48,7 +48,7 @@
     "vite": "catalog:vite"
   },
   "engines": {
-    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.22.0 || ^24.11.0 || >=26.0.0"
   },
   "publishConfig": {
     "exports": {

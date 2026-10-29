@@ -14,7 +14,7 @@ import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, createNormalizedRouteRulesRouter, genNormalizePathCode, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes } from './utils/route-rules.ts'
+import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, createNormalizedRouteRulesRouter, genNormalizePathCode, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes } from './utils/route-rules.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
@@ -868,7 +868,9 @@ export const routeRulesTemplate: NuxtTemplate = {
   // from configuration
   dependsOn: (_change, { nuxt }) => !!nuxt.options.experimental.inlineRouteRules,
   getContents ({ nuxt }) {
-    const routes = resolveRouteRulesRoutes(nuxt).routes
+    const allRoutes = resolveRouteRulesRoutes(nuxt).routes
+    for (const { route } of allRoutes) { assertEncodingIndependentRouteRuleKey(route) }
+    const routes = allRoutes
       .filter(({ route, data }) => route !== '/__nuxt_error' && VALID_MANIFEST_KEYS.some(key => data[key] !== undefined))
     if (!routes.length) {
       return `export default () => ({})`

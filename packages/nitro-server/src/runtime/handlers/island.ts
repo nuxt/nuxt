@@ -26,11 +26,11 @@ import { recordDevClientCss } from '../utils/renderer/dev-client-css'
 
 import { rendererInstance } from '../utils/renderer/options'
 import { prerenderRenderingURLs } from '../utils/cache'
-import { useStorage } from 'nitro/storage'
+import { useKV } from 'nitro/kv'
 import type { Storage } from 'unstorage'
 
-export const islandCache: Storage<NuxtIslandResponse> | null = import.meta.prerender ? useStorage<NuxtIslandResponse>('internal:nuxt:prerender:island') : null
-export const islandPropCache: Storage<string> | null = import.meta.prerender ? useStorage<string>('internal:nuxt:prerender:island-props') : null
+export const islandCache: Storage<NuxtIslandResponse> | null = import.meta.prerender ? useKV<NuxtIslandResponse>('internal:nuxt:prerender:island') : null
+export const islandPropCache: Storage<string> | null = import.meta.prerender ? useKV<string>('internal:nuxt:prerender:island-props') : null
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
