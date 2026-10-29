@@ -790,6 +790,7 @@ export default defineNuxtModule({
 
     const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
     const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
+    const routeComponentRuntime = nuxt.options.dev ? undefined : await findPath(join(runtimeDir, 'utils')) ?? join(runtimeDir, 'utils')
 
     let nitroForRouteCoverage: NitroInstance | undefined
     nuxt.hook('nitro:init', (nitro) => {
@@ -845,6 +846,7 @@ export default defineNuxtModule({
           restrictedPages,
           serverComponentRuntime,
           clientComponentRuntime,
+          routeComponentRuntime,
           overrideMeta: !!nuxt.options.experimental.scanPageMeta,
         })
         return ROUTES_HMR_CODE + [...imports, `export default ${routes}`].join('\n')

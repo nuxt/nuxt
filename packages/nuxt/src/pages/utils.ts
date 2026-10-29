@@ -644,6 +644,8 @@ interface NormalizeRoutesOptions {
   restrictedPages?: ReadonlyMap<NuxtPage, keyof typeof PAGE_STUBS>
   serverComponentRuntime: string
   clientComponentRuntime: string
+  /** Module exporting `memoizeRouteComponent`, used to share lazy page imports between server requests. */
+  routeComponentRuntime?: string
 }
 
 // A page that can only render in one environment is imported there and stubbed
@@ -775,9 +777,13 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         ? JSON.stringify(hash(relativeFile))
         : undefined
 
-      const component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames
+      let component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames
         ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
         : normalizeComponent(page, pageImport, route.name, islandKey))
+      if (options.routeComponentRuntime && !isSyncImport) {
+        metaImports.add(genImport(options.routeComponentRuntime, [{ name: 'memoizeRouteComponent', as: '_memoizeRouteComponent' }]))
+        component = `import.meta.server ? _memoizeRouteComponent(${component}) : ${component}`
+      }
 
       // Named views from the `name@view.vue` filename convention. The scanner
       // emits `components: { default: <file>, <view>: <file> }`.
