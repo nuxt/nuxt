@@ -78,7 +78,7 @@ await mkdir(join(localLayerSrcDir, 'components'), { recursive: true })
 await writeFile(join(localLayerSrcDir, 'components/local.spec.ts'), 'import x from \'test-only-dep\'\nexport default x\n')
 await writeFile(join(srcDir, 'root.spec.ts'), 'import x from \'root-test-only-dep\'\nexport default x\n')
 // a layer without an `app/` directory
-for (const [file, dep] of [['components/flat.mjs', 'flat-dep'], ['server/api/data.mjs', 'server-only-dep'], ['modules/local.mjs', 'module-only-dep'], ['vitest.config.mjs', 'config-only-dep'], ['node_modules/flat-pkg/index.mjs', 'flat-pkg-dep']]) {
+for (const [file, dep] of [['components/flat.mjs', 'flat-dep'], ['server/api/data.mjs', 'server-only-dep'], ['modules/local.mjs', 'module-only-dep'], ['vitest.config.mjs', 'config-only-dep'], ['node_modules/flat-pkg/index.mjs', 'flat-pkg-dep']] as const) {
   await mkdir(join(flatLayerRoot, file, '..'), { recursive: true })
   await writeFile(join(flatLayerRoot, file), `import x from '${dep}'\nexport default x\n`)
 }
