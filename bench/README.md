@@ -34,8 +34,10 @@ Every suite runs by default except `browser`, which needs `pnpm exec playwright-
 
 - `minimal`: a single `app.vue`.
 - `large`: a generated app with ~170 pages, ~370 components, plugins, middleware, server routes and a layer (see `test/bench/large-app.ts`).
-- `ui`: a [Nuxt UI](https://ui.nuxt.com) landing page and blog index with a shared layout, ~690 component instances in all (see `fixtures/ui`). It installs `@nuxt/ui` alongside `nuxt` in a project of its own, so it is only used by the `client` and `browser` suites unless you pass `--fixture ui`.
+- `ui`: a [Nuxt UI](https://ui.nuxt.com) landing page and blog index with a shared layout, ~690 component instances in all (see `fixtures/ui`). The dependencies in its `package.json` are installed alongside `nuxt` in a project of its own, so it is only used by the `client` and `browser` suites unless you pass `--fixture ui`.
 
 ## CI
 
-The `bench` workflow runs on pull requests labelled `⚡ performance` (and on every push to them afterwards), comparing against the base branch, and can be started manually from the Actions tab with any baseline. The report is added to the job summary and posted as a comment on the pull request.
+The `bench` workflow runs on every ready-for-review pull request that touches `packages/` or the benchmarks (and on drafts once labelled `⚡ performance`), comparing against the base branch. It can also be started manually from the Actions tab with any baseline. The report is added to the job summary.
+
+The summary lists regressions and improvements first and collapses everything else. Counts are flagged on any change, client JS sizes from 0.1% and install or server sizes from 1%. Timings are flagged only when the medians differ by 5% or more and each median falls outside the other target's min/max range. The report is posted as a comment on the pull request when something is flagged or the pull request is labelled `⚡ performance`, and an existing comment is always kept up to date.

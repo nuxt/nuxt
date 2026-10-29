@@ -5,7 +5,7 @@ import process from 'node:process'
 import { parseArgs } from 'node:util'
 import { environment } from './lib/env.ts'
 import { fixtures as allFixtures } from './lib/fixtures.ts'
-import { markdownTable } from './lib/stats.ts'
+import { renderSummary } from './lib/report.ts'
 import type { SuiteContext, SuiteResult } from './lib/suite.ts'
 import { fixtureDir } from './lib/suite.ts'
 import { installFixtureDependencies, prepareTarget } from './lib/targets.ts'
@@ -109,28 +109,25 @@ const header = [
   `Node.js ${env.node} on ${env.os}, ${env.cpu} (${env.cores} cores, ${env.memory}), load average ${env.loadAverage}.`,
 ].join('\n')
 
-const summary = [
+const summary = renderSummary(selectedSuites.flatMap(name => results[name]!.headline))
+const details = [
   header,
-  '',
-  markdownTable(['Metric', 'baseline', 'head', 'delta'], selectedSuites.flatMap(name => results[name]!.headline)),
+  ...selectedSuites.flatMap(name => ['', `## ${suites[name].title}`, '', results[name]!.markdown]),
 ].join('\n')
 
-const report = [
-  '# Nuxt benchmark',
-  '',
-  summary,
-  ...selectedSuites.flatMap(name => ['', `## ${suites[name].title}`, '', results[name]!.markdown]),
-  '',
-].join('\n')
+const report = ['# Nuxt benchmark', '', summary.markdown, '', details, ''].join('\n')
+const comment = [summary.markdown, '', '<details>', '<summary>Full report</summary>', '', details, '', '</details>', ''].join('\n')
 
 mkdirSync(dirname(out), { recursive: true })
 writeFileSync(out, report)
-writeFileSync(join(dirname(out), 'summary.md'), summary + '\n')
+writeFileSync(join(dirname(out), 'comment.md'), comment)
 writeFileSync(out.replace(/\.md$/, '') + '.json', JSON.stringify({
   env,
   baseline: { spec: baseline.spec, version: baseline.version },
   head: { version: head.version },
   fixtures: fixtures.map(f => f.id),
+  regressions: summary.regressions,
+  improvements: summary.improvements,
   results: Object.fromEntries(selectedSuites.map(name => [name, results[name]!.data])),
 }, null, 2))
 

@@ -2,10 +2,17 @@ name: bench
 
 on:
   pull_request:
-    types: [labeled, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review, labeled]
     branches:
       - main
       - 4.x
+    paths:
+      - 'packages/**'
+      - 'bench/**'
+      - 'test/bench/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/bench.yml'
   workflow_dispatch:
     inputs:
       baseline:
@@ -17,13 +24,16 @@ on:
 
 permissions: {}
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
-  cancel-in-progress: true
-
 jobs:
   bench:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, '⚡ performance')
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.action == 'labeled' && github.event.label.name == '⚡ performance') ||
+      (github.event.action != 'labeled' && (!github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, '⚡ performance')))
+    # job-level, so skipped runs from other label events don't cancel a run in progress
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+      cancel-in-progress: true
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 60
     permissions:

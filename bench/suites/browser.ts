@@ -2,7 +2,9 @@ import type { Browser, Page } from 'playwright-core'
 import { chromium } from 'playwright-core'
 import type { Interaction } from '../lib/fixtures.ts'
 import { waitForHttp } from '../lib/proc.ts'
-import { compareHeaders, compareRow, formatDelta, formatMs, markdownTable, summarise } from '../lib/stats.ts'
+import type { Metric } from '../lib/report.ts'
+import { timing } from '../lib/report.ts'
+import { compareHeaders, compareRow, formatMs, markdownTable } from '../lib/stats.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
 import { interleave } from '../lib/suite.ts'
 import { ensureBuilt, startProduction } from './render.ts'
@@ -151,7 +153,7 @@ async function measure (browser: Browser, url: string, interactions: Interaction
 
 export async function browserSuite ({ targets, fixtures, reps, log }: SuiteContext): Promise<SuiteResult> {
   const rows: string[][] = []
-  const headline: string[][] = []
+  const headline: Metric[] = []
   const data: Record<string, Record<string, Sample[]>> = {}
 
   const browser = await chromium.launch()
@@ -188,14 +190,9 @@ export async function browserSuite ({ targets, fixtures, reps, log }: SuiteConte
           metric(interaction.name, s => s.interactions[index]!.done)
         })
 
-        const headlineRow = (name: string, value: (sample: Sample) => number) => {
-          const a = summarise(baseline.map(value)).median
-          const b = summarise(head.map(value)).median
-          headline.push([`${name} (${fixture.id}, noisy)`, formatMs(a), formatMs(b), formatDelta(a, b)])
-        }
-        headlineRow('hydrated', s => s.hydration)
+        headline.push(timing(`hydrated (${fixture.id})`, baseline.map(s => s.hydration), head.map(s => s.hydration), formatMs))
         if (interactions.length) {
-          headlineRow('slowest interaction', inp)
+          headline.push(timing(`slowest interaction (${fixture.id})`, baseline.map(inp), head.map(inp), formatMs))
         }
       } finally {
         for (const { server } of servers) {

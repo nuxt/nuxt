@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { allocatePort, quietEnv, run, start, waitForHttp } from '../lib/proc.ts'
+import type { Metric } from '../lib/report.ts'
+import { timing } from '../lib/report.ts'
 import { formatDelta, formatMs, markdownTable, summarise } from '../lib/stats.ts'
 import type { Fixture } from '../lib/fixtures.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
@@ -56,7 +58,7 @@ async function load (url: string, match: string, duration: number): Promise<Roun
 
 export async function renderSuite ({ targets, fixtures, reps, log }: SuiteContext): Promise<SuiteResult> {
   const rows: string[][] = []
-  const headline: string[][] = []
+  const headline: Metric[] = []
   const data: Record<string, unknown> = {}
 
   for (const fixture of fixtures) {
@@ -97,7 +99,7 @@ export async function renderSuite ({ targets, fixtures, reps, log }: SuiteContex
           formatMs(latency[0]!),
           formatMs(latency[1]!),
         ])
-        headline.push([`SSR requests/s, \`${route.path}\` (${fixture.id})`, throughput[0]!.median.toFixed(0), throughput[1]!.median.toFixed(0), formatDelta(throughput[0]!.median, throughput[1]!.median)])
+        headline.push(timing(`SSR requests/s, \`${route.path}\` (${fixture.id})`, baseline.map(r => r.requests), head.map(r => r.requests), n => n.toFixed(0), { higherIsBetter: true }))
       }
     } finally {
       for (const { server } of servers) {

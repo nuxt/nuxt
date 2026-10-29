@@ -2,6 +2,8 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { waitForHttp } from '../lib/proc.ts'
+import type { Metric } from '../lib/report.ts'
+import { exact } from '../lib/report.ts'
 import { formatBytes, formatDelta, markdownTable } from '../lib/stats.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
 import { fixtureDir } from '../lib/suite.ts'
@@ -49,7 +51,7 @@ function clientJs (publicDir: string): Pick<ClientWeight, 'js' | 'jsFiles'> {
 
 export async function clientSuite ({ targets, fixtures, log }: SuiteContext): Promise<SuiteResult> {
   const rows: string[][] = []
-  const headline: string[][] = []
+  const headline: Metric[] = []
   const data: Record<string, Record<string, ClientWeight>> = {}
 
   for (const fixture of fixtures) {
@@ -88,7 +90,10 @@ export async function clientSuite ({ targets, fixtures, log }: SuiteContext): Pr
         row(`${label} / CSS files`, a.cssFiles, b.cssFiles, String),
         row(`${label} / HTML`, a.html, b.html),
       )
-      headline.push([`initial JS, gzip (\`${route.path}\`, ${fixture.id})`, `${formatBytes(a.js)} in ${a.jsFiles}`, `${formatBytes(b.js)} in ${b.jsFiles}`, formatDelta(a.js, b.js)])
+      headline.push(
+        exact(`initial JS, gzip (\`${route.path}\`, ${fixture.id})`, a.js, b.js, formatBytes),
+        exact(`initial JS files (\`${route.path}\`, ${fixture.id})`, a.jsFiles, b.jsFiles, String, { threshold: 0 }),
+      )
     }
     rows.push(
       row(`${fixture.id} / all client JS`, baseline.js, head.js),

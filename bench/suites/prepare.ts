@@ -1,13 +1,15 @@
 import process from 'node:process'
 import { quietEnv, run } from '../lib/proc.ts'
-import { compareHeaders, compareRow, formatDelta, formatMs, markdownTable, summarise } from '../lib/stats.ts'
+import type { Metric } from '../lib/report.ts'
+import { timing } from '../lib/report.ts'
+import { compareHeaders, compareRow, formatMs, markdownTable } from '../lib/stats.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
 import { fixtureDir, interleave } from '../lib/suite.ts'
 import { clearBuildCache } from '../lib/targets.ts'
 
 export async function prepareSuite ({ targets, fixtures, reps, log }: SuiteContext): Promise<SuiteResult> {
   const rows: string[][] = []
-  const headline: string[][] = []
+  const headline: Metric[] = []
   const data: Record<string, Record<string, number[]>> = {}
 
   for (const fixture of fixtures) {
@@ -21,9 +23,7 @@ export async function prepareSuite ({ targets, fixtures, reps, log }: SuiteConte
     const [baseline, head] = targets.map(target => samples.get(target)!)
     rows.push(compareRow(fixture.id, baseline!, head!))
     data[fixture.id] = { baseline: baseline!, head: head! }
-    const a = summarise(baseline!).median
-    const b = summarise(head!).median
-    headline.push([`\`nuxt prepare\` (${fixture.id})`, formatMs(a), formatMs(b), formatDelta(a, b)])
+    headline.push(timing(`\`nuxt prepare\` (${fixture.id})`, baseline!, head!, formatMs))
   }
 
   const markdown = [
