@@ -121,6 +121,7 @@ describe('component type templates', () => {
 describe('builtin component metadata', () => {
   const expectedNames = [
     'ClientOnly',
+    'ServerOnly',
     'DevOnly',
     'NuxtClientFallback',
     'NuxtPage',
