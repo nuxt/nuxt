@@ -9,6 +9,22 @@ import { joinURL } from 'ufo'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { useServerBuild } from '@nuxt/kit/internal'
 
+/**
+ * Exposes Nuxt's dev server listener as `server.httpServer` (`null` in middleware mode),
+ * so plugins can attach to it, for example to handle WebSocket upgrades.
+ */
+export function DevListenerPlugin (nuxt: Nuxt): Plugin {
+  return {
+    name: 'nuxt:dev-listener',
+    configureServer: {
+      order: 'pre',
+      handler (server) {
+        server.httpServer ||= nuxt._devServerListener ?? null
+      },
+    },
+  }
+}
+
 export function DevServerPlugin (nuxt: Nuxt): Plugin {
   let useViteCors = false
   const nitro = tryUseNitro()

@@ -95,8 +95,6 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
     configureServer: {
       order: 'pre',
       handler (server) {
-        // vite runs in middleware mode, so plugins attach to Nuxt's listener instead
-        server.httpServer ||= nuxt._devServerListener ?? null
         if (serverEntry) {
           listenForRemoteDevErrors(nuxt, server, errorChannel)
         }

@@ -6,6 +6,9 @@ export default withMatrix({
   sourcemap: false,
   compatibilityDate: 'latest',
   nitro: {
+    features: {
+      websocket: true,
+    },
     output: {
       dir: `.output-${projectSuffix}`,
     },

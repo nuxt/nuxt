@@ -58,13 +58,15 @@ describe.skipIf(builder !== 'nitro-vite' || isBuilt)('nitro/vite environment dev
       ready: true,
       dev: true,
     })
-    await buildNuxt(nuxt)
-    server = http.createServer(nuxt.server!.handler).listen(0, '127.0.0.1')
+    server = http.createServer((req, res) => nuxt.server!.handler(req, res)).listen(0, '127.0.0.1')
     await new Promise<void>(resolve => server.once('listening', () => resolve()))
     port = (server.address() as AddressInfo).port
+    await nuxt.callHook('listen', server, {})
+    await buildNuxt(nuxt)
   }, 240 * 1000)
 
   afterAll(async () => {
+    server?.closeAllConnections()
     await new Promise<void>(resolve => server?.close(() => resolve()))
     await nuxt?.close()
   })
@@ -97,6 +99,38 @@ describe.skipIf(builder !== 'nitro-vite' || isBuilt)('nitro/vite environment dev
     const res = await fetch(url, secFetchDest ? { headers: { 'sec-fetch-dest': secFetchDest } } : undefined)
     expect(res.status, url).toBe(200)
     await expect(res.text()).resolves.toBe(`dev-handler:${base}${path.replace(/\?.*$/, '')}`)
+  }, 120 * 1000)
+
+  it('handles websocket upgrades for nitro routes', async () => {
+    // TODO: remove after upgrading past nitro 3.0.260903-beta (https://github.com/nitrojs/nitro/pull/4711)
+    await fetch(`http://127.0.0.1:${port}/api/string-literals`).then(res => res.arrayBuffer())
+    const ws = new WebSocket(`ws://127.0.0.1:${port}/api/ws`)
+    try {
+      await new Promise((resolve, reject) => {
+        ws.onopen = resolve
+        ws.onerror = reject
+      })
+      const message = new Promise<string>((resolve) => {
+        ws.onmessage = event => resolve(String(event.data))
+      })
+      ws.send('ping')
+      await expect(message).resolves.toBe('echo:ping')
+    } finally {
+      ws.close()
+    }
+  }, 120 * 1000)
+
+  it('leaves vite hmr upgrades to vite', async () => {
+    const ws = new WebSocket(`ws://127.0.0.1:${port}${nuxt.options.app.buildAssetsDir}`, 'vite-hmr')
+    try {
+      const message = new Promise<string>((resolve, reject) => {
+        ws.onmessage = event => resolve(String(event.data))
+        ws.onerror = reject
+      })
+      await expect(message.then(JSON.parse)).resolves.toMatchObject({ type: 'connected' })
+    } finally {
+      ws.close()
+    }
   }, 120 * 1000)
 
   it('does not substitute the server constants inside string literals', async () => {
