@@ -3,8 +3,10 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { allocatePort, quietEnv, run, start, waitForHttp } from '../lib/proc.ts'
 import { formatDelta, formatMs, markdownTable, summarise } from '../lib/stats.ts'
+import type { Fixture } from '../lib/fixtures.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
 import { fixtureDir } from '../lib/suite.ts'
+import type { Target } from '../lib/targets.ts'
 
 const CONCURRENCY = 8
 const DURATION = 2_000
@@ -13,6 +15,24 @@ const WARMUP_REQUESTS = 300
 interface Round {
   requests: number
   latencies: number[]
+}
+
+/** Builds the fixture unless an earlier suite left a production build behind. */
+export async function ensureBuilt (target: Target, fixture: Fixture, log: (message: string) => void): Promise<void> {
+  const cwd = fixtureDir(target, fixture)
+  if (!existsSync(join(cwd, '.output/server/index.mjs'))) {
+    log(`building ${fixture.id} for ${target.id}`)
+    await run(process.execPath, [target.bin, 'build'], { cwd, env: quietEnv, timeout: 600_000 })
+  }
+}
+
+export function startProduction (target: Target, fixture: Fixture) {
+  const port = allocatePort()
+  const server = start(process.execPath, ['.output/server/index.mjs'], {
+    cwd: fixtureDir(target, fixture),
+    env: { ...quietEnv, NODE_ENV: 'production', PORT: String(port), HOST: '127.0.0.1' },
+  })
+  return { target, server, url: `http://127.0.0.1:${port}` }
 }
 
 async function load (url: string, match: string, duration: number): Promise<Round> {
@@ -41,22 +61,11 @@ export async function renderSuite ({ targets, fixtures, reps, log }: SuiteContex
 
   for (const fixture of fixtures) {
     for (const target of targets) {
-      const cwd = fixtureDir(target, fixture)
-      if (!existsSync(join(cwd, '.output/server/index.mjs'))) {
-        log(`render: building ${fixture.id} for ${target.id}`)
-        await run(process.execPath, [target.bin, 'build'], { cwd, env: quietEnv, timeout: 600_000 })
-      }
+      await ensureBuilt(target, fixture, message => log(`render: ${message}`))
     }
 
     log(`render: ${fixture.id}`)
-    const servers = targets.map((target) => {
-      const port = allocatePort()
-      const server = start(process.execPath, ['.output/server/index.mjs'], {
-        cwd: fixtureDir(target, fixture),
-        env: { ...quietEnv, NODE_ENV: 'production', PORT: String(port), HOST: '127.0.0.1' },
-      })
-      return { target, server, url: `http://127.0.0.1:${port}` }
-    })
+    const servers = targets.map(target => startProduction(target, fixture))
     try {
       for (const route of fixture.routes) {
         const rounds = new Map(servers.map(s => [s, [] as Round[]]))

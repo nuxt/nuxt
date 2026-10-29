@@ -12,7 +12,7 @@ on:
         description: '`ref:<branch, tag or commit>`, or an npm version, tag or alias for nuxt'
         default: 'ref:main'
       suites:
-        description: 'Space-separated suites to run (all when empty)'
+        description: 'Space-separated suites to run (all except opt-in suites such as `browser` when empty)'
         default: ''
 
 permissions: {}
@@ -57,6 +57,10 @@ jobs:
           EVENT: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           BASELINE: ${{ inputs.baseline }}
+
+      - name: Install Chromium
+        if: contains(inputs.suites, 'browser')
+        run: vp exec playwright-core install chromium-headless-shell
 
       - name: Run benchmarks
         run: |

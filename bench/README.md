@@ -25,11 +25,16 @@ Runs alternate between baseline and head so that drift on a shared or busy machi
 | `hmr` | time from editing a component until a dev server SSR response contains the change |
 | `build` | `nuxt build` wall time, client JS size (raw and gzip) and server output size |
 | `render` | requests per second and latency of the production server |
+| `client` | gzipped JS, CSS and HTML each server-rendered route loads before hydration, and the total client JS |
+| `browser` | hydration time, blocking time and interaction latency in headless Chromium at 8x CPU slowdown (opt-in) |
+
+Every suite runs by default except `browser`, which needs `pnpm exec playwright-core install chromium-headless-shell` once and is too noisy for CI. Its timings spread by up to 2x between runs of the same build, so give it plenty of `--reps` and check the min/max range before trusting a delta. The `client` suite's byte counts are deterministic.
 
 ## Fixtures
 
 - `minimal`: a single `app.vue`.
 - `large`: a generated app with ~170 pages, ~370 components, plugins, middleware, server routes and a layer (see `test/bench/large-app.ts`).
+- `ui`: a [Nuxt UI](https://ui.nuxt.com) landing page and blog index with a shared layout, ~690 component instances in all (see `fixtures/ui`). It installs `@nuxt/ui` alongside `nuxt` in a project of its own, so it is only used by the `client` and `browser` suites unless you pass `--fixture ui`.
 
 ## CI
 

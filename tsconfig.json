@@ -60,6 +60,7 @@
   },
   "exclude": [
     "**/dist/**",
+    "bench/fixtures/**",
     "**/.nuxt/**",
     "packages/nuxt/src/app/types/**",
     "packages/kit/test/types-fixture/**",
