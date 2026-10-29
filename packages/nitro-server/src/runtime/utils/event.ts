@@ -283,6 +283,16 @@ export function toRequestEvent (event: H3Event): RendererEvent {
 }
 
 /**
+ * Collapse a leading run of slashes, as h3 v1's `getRequestURL` does before parsing. Without
+ * this, a path such as `//foo:bar/` is read as a protocol-relative URL and throws on the `foo:`
+ * scheme, while `//de/impressum/` is read as the host `de`. Backslashes are collapsed with the
+ * slashes, and this has to run before encoding, which would otherwise turn them into `%5C`.
+ */
+function collapseLeadingSlashes (path: string): string {
+  return path.replace(/^[/\\]+/, '/')
+}
+
+/**
  * Describe an h3 v1 event in the web-standard shape, rather than adapting it in place:
  * `event.req` and `event.res` already name the node request and response, and that is the
  * shape `useRequestEvent()` and the render hooks must keep seeing.
@@ -291,7 +301,7 @@ export function toRequestEvent (event: H3Event): RendererEvent {
  * than a copy of it, so a header the application sets through h3 and a header the renderer
  * sets are the same header.
  */
-function toWebView (event: H3Event, resolveURL = () => new URL(encodeEventPath(event.path), `${getRequestProtocol(event)}://${getRequestHost(event)}`)): RendererEvent {
+function toWebView (event: H3Event, resolveURL = () => new URL(encodeEventPath(collapseLeadingSlashes(event.path)), `${getRequestProtocol(event)}://${getRequestHost(event)}`)): RendererEvent {
   const node = event.node
   let request: Request | undefined
   let url: URL | undefined

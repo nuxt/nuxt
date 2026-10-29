@@ -7,7 +7,10 @@ import { toRequestEvent } from '../src/runtime/utils/event.ts'
 
 const app = createApp()
 
-app.use(eventHandler(event => ({ path: event.path, url: toRequestEvent(event).url.pathname })))
+app.use(eventHandler((event) => {
+  const url = toRequestEvent(event).url
+  return { path: event.path, url: url.pathname, search: url.search }
+}))
 
 const server = createServer(toNodeListener(app))
 let port: number
@@ -56,5 +59,32 @@ describe('renderer request event url', () => {
     const { status, body } = await request(path)
     expect(status).toBe(200)
     expect(body.url).toBe(body.path.split('?')[0])
+  })
+
+  it('reads a path that starts with a double slash as a path', async () => {
+    const { status, body } = await request('//foo:bar/')
+    expect(status).toBe(200)
+    expect(body.url).toBe('/foo:bar/')
+  })
+
+  it.each([
+    '//foo:bar/',
+    '//:80/x',
+    '//a:b/',
+    '//%41/',
+    '//[x]/',
+    '//x^y/',
+  ])('reads %s with the same path as its single-slash form', async (path) => {
+    const { status, body } = await request(path)
+    const equivalent = await request(path.replace(/^\/+/, '/'))
+    expect(status).toBe(200)
+    expect(body.url).toBe(equivalent.body.url)
+  })
+
+  it('keeps the query when the path starts with a double slash', async () => {
+    const { status, body } = await request('//foo:bar/?a=1')
+    expect(status).toBe(200)
+    expect(body.url).toBe('/foo:bar/')
+    expect(body.search).toBe('?a=1')
   })
 })
