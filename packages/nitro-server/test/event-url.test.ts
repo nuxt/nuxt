@@ -1,4 +1,5 @@
 import { createServer, get } from 'node:http'
+import { connect } from 'node:net'
 import type { AddressInfo } from 'node:net'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createApp, eventHandler, toNodeListener } from 'h3'
@@ -7,7 +8,10 @@ import { toRequestEvent } from '../src/runtime/utils/event.ts'
 
 const app = createApp()
 
-app.use(eventHandler(event => ({ path: event.path, url: toRequestEvent(event).url.pathname })))
+app.use(eventHandler((event) => {
+  const { url } = toRequestEvent(event)
+  return { path: event.path, url: url.pathname, href: url.href }
+}))
 
 const server = createServer(toNodeListener(app))
 let port: number
@@ -52,9 +56,29 @@ describe('renderer request event url', () => {
     '/.well-known/x',
     '/a.b/...',
     '/%61dmin',
+    '//foo:bar/',
+    '//:80/x',
+    '//a:b/',
+    '//%41/',
+    '//[x]/',
+    '//de/impressum/',
+    '//de/impressum/?q=1',
   ])('reads %s with the same path as h3', async (path) => {
     const { status, body } = await request(path)
     expect(status).toBe(200)
     expect(body.url).toBe(body.path.split('?')[0])
+  })
+
+  it('resolves an absolute-form request target as is', async () => {
+    const response = await new Promise<string>((resolve, reject) => {
+      const socket = connect(port, '127.0.0.1', () => {
+        socket.end('GET http://example.com/admin HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n')
+      })
+      let data = ''
+      socket.on('data', (chunk) => { data += chunk })
+      socket.on('end', () => resolve(data))
+      socket.on('error', reject)
+    })
+    expect(JSON.parse(response.slice(response.indexOf('\r\n\r\n') + 4)).href).toBe('http://example.com/admin')
   })
 })
