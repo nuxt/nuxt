@@ -26,21 +26,7 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - Deployment to a variety of [hosting platforms](https://nuxt.com/deploy)
 - ...[and much more](https://nuxt.com) 🚀
 
-### Table of Contents
-
-- 🚀 [Getting Started](#getting-started)
-- 💻 [Vue Development](#vue-development)
-- 📖 [Documentation](#documentation)
-- 🧩 [Modules](#modules)
-- ❤️ [Contribute](#contribute)
-- 🏠 [Local Development](#local-development)
-- 🛟 [Professional Support](#professional-support)
-- 🔗 [Follow Us](#follow-us)
-- ⚖️ [License](#license)
-
----
-
-## <a name="getting-started">🚀 Getting Started</a>
+## 🚀 Getting Started
 
 Use the following command to create a new starter project. This will create a starter project with all the necessary files and dependencies:
 
@@ -51,7 +37,7 @@ npm create nuxt@latest <my-project>
 > [!TIP]
 > Discover also [nuxt.new](https://nuxt.new): Open a Nuxt starter on CodeSandbox, StackBlitz or locally to get up and running in a few seconds.
 
-## <a name="vue-development">💻 Vue Development</a>
+## 💻 Vue Development
 
 Simple, intuitive and powerful, Nuxt lets you write Vue components in a way that makes sense. Every repetitive task is automated, so you can focus on writing your full-stack Vue application with confidence.
 
@@ -81,15 +67,15 @@ useSeoMeta({
 </style>
 ```
 
-## <a name="documentation">📖 Documentation</a>
+## 📖 Documentation
 
 We highly recommend you take a look at the [Nuxt documentation](https://nuxt.com/docs) to level up. It’s a great resource for learning more about the framework. It covers everything from getting started to advanced topics.
 
-## <a name="modules">🧩 Modules</a>
+## 🧩 Modules
 
 Discover our [list of modules](https://nuxt.com/modules) to supercharge your Nuxt project, created by the Nuxt team and community.
 
-## <a name="contribute">❤️ Contribute</a>
+## ❤️ Contribute
 
 We invite you to contribute and help improve Nuxt 💚
 
@@ -98,16 +84,16 @@ Here are a few ways you can get involved:
 - **Suggestions:** Have ideas to enhance Nuxt? We'd love to hear them! Check out the [contribution guide](https://nuxt.com/docs/4.x/community/contribution) to share your suggestions.
 - **Questions:** If you have questions or need assistance, the [getting help guide](https://nuxt.com/docs/4.x/community/getting-help) provides resources to help you out.
 
-## <a name="local-development">🏠 Local Development</a>
+## 🏠 Local Development
 
 Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/4.x/community/framework-contribution#setup) to contribute to the framework and documentation.
 
-## <a name="professional-support">🛟 Professional Support</a>
+## 🛟 Professional Support
 
 - Technical audit & consulting: [Nuxt Experts](https://nuxt.com/enterprise/support)
 - Custom development & more: [Nuxt Agencies Partners](https://nuxt.com/enterprise/agencies)
 
-## <a name="follow-us">🔗 Follow Us</a>
+## 🔗 Follow Us
 
 <p valign="center">
   <a href="https://go.nuxt.com/discord"><img width="20" src="./.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://go.nuxt.com/x"><img width="20" src="./.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://go.nuxt.com/github"><img width="20" src="./.github/assets/github.svg" alt="GitHub"></a>&nbsp;&nbsp;<a href="https://go.nuxt.com/bluesky"><img width="20" src="./.github/assets/bluesky.svg" alt="Bluesky"></a>
