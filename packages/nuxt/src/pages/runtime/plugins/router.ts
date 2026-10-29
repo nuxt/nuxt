@@ -101,6 +101,35 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     if (import.meta.client && 'scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'auto'
     }
+    // Native <a href="#hash"> clicks push a history entry that the browser
+    // handles, not Vue Router. Since Nuxt sets scrollRestoration to 'manual',
+    // the browser won't restore the scroll position on Back. We save the
+    // position on click and restore it on popstate (#36660).
+    if (import.meta.client) {
+      document.addEventListener('click', (e: MouseEvent) => {
+        // Ignore clicks that didn't (or won't) trigger a native navigation:
+        // already handled (e.g. <NuxtLink>), non-primary button, modified
+        // clicks (new tab/window), or anchors targeting another context.
+        if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) { return }
+        const anchor = (e.target as Element)?.closest?.('a[href]') as HTMLAnchorElement | null
+        if (!anchor || (anchor.target && anchor.target !== '_self')) { return }
+        const href = anchor.getAttribute('href')
+        if (!href || !href.startsWith('#') || href === '#') { return }
+        // save current scroll position into the new history state
+        const state = { ...window.history.state, _nuxtScrollY: window.scrollY }
+        window.history.replaceState(state, '')
+      })
+
+      window.addEventListener('popstate', (e: PopStateEvent) => {
+        const scrollY = e.state?._nuxtScrollY
+        if (typeof scrollY === 'number') {
+          requestAnimationFrame(() => {
+            window.scrollTo(0, scrollY)
+          })
+        }
+      })
+    }
+
     nuxtApp.vueApp.use(router)
 
     const previousRoute = shallowRef(router.currentRoute.value)
