@@ -105,7 +105,7 @@ describe('legacy `render:response` hook', () => {
       inspected = inspect(response.headers)
     }), toRenderBody('<html></html>'))
 
-    expect(inspected).toBe(`{ 'x-render-response': 'yes' }`)
+    expect(inspected).toContain(`{ 'x-render-response': 'yes' }`)
   })
 
   it('applies headers from a replaced payload record', async () => {

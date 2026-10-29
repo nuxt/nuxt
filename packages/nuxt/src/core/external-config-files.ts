@@ -8,7 +8,7 @@ import { parseAndWalk } from 'oxc-walker'
 /**
  * Check for those external configuration files that are not compatible with Nuxt,
  * and warns the user about them.
- * @see {@link https://nuxt.com/docs/4.x/getting-started/configuration#external-configuration-files}
+ * @see {@link https://nuxt.com/docs/5.x/getting-started/configuration#external-configuration-files}
  */
 export async function checkForExternalConfigurationFiles () {
   const checkResults = await Promise.all([checkViteConfig(), checkWebpackConfig(), checkNitroConfig(), checkPostCSSConfig()])

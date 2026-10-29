@@ -876,7 +876,7 @@ describe('routing utilities: `navigateTo`', () => {
   })
 
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/4.x/errors/e2001]`)
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/5.x/errors/e2001]`)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
     expect(() => navigateTo('/\t/test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
     expect(() => navigateTo('/\n\\test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
