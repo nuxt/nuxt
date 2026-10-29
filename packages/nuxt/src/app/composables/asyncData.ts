@@ -296,7 +296,7 @@ export function _createUseAsyncData<
   {
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
-     * See {@link https://nuxt.com/docs/4.x/api/composables/use-async-data}
+     * See {@link https://nuxt.com/docs/5.x/api/composables/use-async-data}
      * @since 3.0.0
      * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
      * @param opts customize the behavior of useAsyncData
@@ -343,7 +343,7 @@ export function _createUseAsyncData<
     ): AsyncData<PickFrom<DataT, [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
-     * See {@link https://nuxt.com/docs/4.x/api/composables/use-async-data}
+     * See {@link https://nuxt.com/docs/5.x/api/composables/use-async-data}
      * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
      * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
      * @param opts customize the behavior of useAsyncData

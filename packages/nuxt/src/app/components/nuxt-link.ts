@@ -39,7 +39,7 @@ export type { NuxtLinkOptions } from '../types'
 
 /**
  * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
- * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
+ * @see https://nuxt.com/docs/5.x/api/components/nuxt-link
  */
 export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<RouterLinkProps, 'to'> {
   custom?: CustomProp

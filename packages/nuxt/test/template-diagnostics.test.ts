@@ -66,7 +66,7 @@ describe('template diagnostics', () => {
         name: 'NUXT_B4025',
         message: '`<NuxtLink to="/abuot">` in `/app/pages/index.vue` does not match any page route.',
         fix: expect.stringContaining('`external` prop'),
-        docs: 'https://nuxt.com/docs/4.x/errors/b4025',
+        docs: 'https://nuxt.com/docs/5.x/errors/b4025',
         sources: ['/app/pages/index.vue:3:15'],
       })
     })

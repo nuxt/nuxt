@@ -15,9 +15,8 @@ import { createDevReporter } from 'nostics/reporters/dev'
  * dedicated docs page resolve a `see:` URL via {@link docsBase}; the rest opt
  * out with `docs: false`.
  */
-// TODO: bump the `4.x` path segment to `5.x` when the v5 docs go live.
 export function docsBase (code: string): string {
-  return `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+  return `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 }
 
 // `as const` keeps the tuple shape `defineDiagnostics` reads to type each

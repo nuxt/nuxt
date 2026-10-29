@@ -14,7 +14,7 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('template diagnostics', () => {
     expect(result.exitCode, output).toBe(0)
     expect(output).toMatch(/\[NUXT_B4025\].*\/abuot.*app\/pages\/broken-link\.vue/)
     expect(output).toContain('sources: app/pages/broken-link.vue:3:15')
-    expect(output).toContain('see: https://nuxt.com/docs/4.x/errors/b4025')
+    expect(output).toContain('see: https://nuxt.com/docs/5.x/errors/b4025')
     expect(output).toMatch(/\[NUXT_B3014\].*@click.*app\/pages\/server-listener\.vue/)
     expect(output).toContain('sources: app/pages/server-listener.vue:9:7')
     expect(output).toMatch(/\[NUXT_B3015\].*format.*app\/pages\/island-props\.vue/)
