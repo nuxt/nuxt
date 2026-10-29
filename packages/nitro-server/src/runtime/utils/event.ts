@@ -1,6 +1,7 @@
 import { createError, getRequestHost, getRequestProtocol, getRequestURL, readRawBody } from 'h3'
 import type { H3Event } from 'h3'
 import type { RendererEvent } from 'nuxt/internal/renderer/runtime'
+import { withRequestPath } from 'nuxt/internal/renderer/url'
 import type { NuxtRequestContext, RequestEvent } from 'nuxt/schema'
 
 const ENC_PIPE_RE = /%7C/g
@@ -283,6 +284,17 @@ export function toRequestEvent (event: H3Event): RendererEvent {
 }
 
 /**
+ * The URL the renderer reads for an h3 v1 event. A path is appended to the origin rather than
+ * resolved against it, so a leading `//` stays part of the path instead of naming a host; an
+ * absolute-form request target is resolved as is.
+ */
+function resolveEventURL (event: H3Event): URL {
+  const origin = `${getRequestProtocol(event)}://${getRequestHost(event)}`
+  const path = encodeEventPath(event.path)
+  return path.startsWith('/') ? withRequestPath(new URL(origin), path) : new URL(path, origin)
+}
+
+/**
  * Describe an h3 v1 event in the web-standard shape, rather than adapting it in place:
  * `event.req` and `event.res` already name the node request and response, and that is the
  * shape `useRequestEvent()` and the render hooks must keep seeing.
@@ -291,7 +303,7 @@ export function toRequestEvent (event: H3Event): RendererEvent {
  * than a copy of it, so a header the application sets through h3 and a header the renderer
  * sets are the same header.
  */
-function toWebView (event: H3Event, resolveURL = () => new URL(encodeEventPath(event.path), `${getRequestProtocol(event)}://${getRequestHost(event)}`)): RendererEvent {
+function toWebView (event: H3Event, resolveURL = () => resolveEventURL(event)): RendererEvent {
   const node = event.node
   let request: Request | undefined
   let url: URL | undefined
