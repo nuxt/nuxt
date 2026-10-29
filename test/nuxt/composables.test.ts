@@ -12,6 +12,7 @@ import * as composables from '#app/composables'
 import { refreshNuxtData } from '#app/composables/asyncData'
 import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
+import * as idleCallback from '#app/compat/idle-callback'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
@@ -221,6 +222,92 @@ describe('onNuxtReady', () => {
     onNuxtReady(fn)
     await new Promise(resolve => setTimeout(resolve, 1))
     expect(fn).toHaveBeenCalled()
+  })
+
+  it('should pass the timeout to requestIdleCallback', () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: true, timeRemaining: () => 0 }); return 0 })
+    try {
+      nuxtApp.isHydrating = false
+      const fn = vi.fn()
+      onNuxtReady(fn, { timeout: 500 })
+      expect(requestIdleCallbackSpy).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
+      expect(fn).toHaveBeenCalledOnce()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
+  })
+
+  it('should pass the timeout to requestIdleCallback after hydration', async () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: true, timeRemaining: () => 0 }); return 0 })
+    try {
+      nuxtApp.isHydrating = true
+      const fn = vi.fn()
+      onNuxtReady(fn, { timeout: 500 })
+      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
+      await nuxtApp.hooks.callHook('app:suspense:resolve')
+      expect(requestIdleCallbackSpy).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
+      expect(fn).toHaveBeenCalledOnce()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
+  })
+
+  it('should not schedule the callback if the signal is already aborted', () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback')
+    try {
+      nuxtApp.isHydrating = false
+      onNuxtReady(() => {}, { signal: AbortSignal.abort() })
+      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
+  })
+
+  it('should not run the callback if the signal is aborted during hydration', async () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: false, timeRemaining: () => 50 }); return 0 })
+    try {
+      nuxtApp.isHydrating = true
+      const fn = vi.fn()
+      const controller = new AbortController()
+      onNuxtReady(fn, { signal: controller.signal })
+      controller.abort()
+      await nuxtApp.hooks.callHook('app:suspense:resolve')
+      expect(fn).not.toHaveBeenCalled()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
+  })
+
+  it('should not run the callback if the signal is aborted while waiting for idle', () => {
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    let idle: IdleRequestCallback | undefined
+    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { idle = cb; return 0 })
+    try {
+      nuxtApp.isHydrating = false
+      const fn = vi.fn()
+      const controller = new AbortController()
+      onNuxtReady(fn, { signal: controller.signal })
+      controller.abort()
+      expect(idle).toBeDefined()
+      idle?.({ didTimeout: false, timeRemaining: () => 50 })
+      expect(fn).not.toHaveBeenCalled()
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+      requestIdleCallbackSpy.mockRestore()
+    }
   })
 })
 
@@ -789,7 +876,7 @@ describe('routing utilities: `navigateTo`', () => {
   })
 
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/4.x/errors/e2001]`)
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/5.x/errors/e2001]`)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
     expect(() => navigateTo('/\t/test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
     expect(() => navigateTo('/\n\\test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
@@ -1577,6 +1664,67 @@ describe('useCookie', () => {
     await nextTick()
 
     expect(document.cookie).toContain('refresh-test=initial')
+  })
+
+  it('should not re-write CookieStore updates when refresh is true', async () => {
+    const name = 'refresh-cookiestore-test'
+    const scope = effectScope()
+    const cookie = scope.run(() => useCookie(name, { maxAge: 3600, refresh: true }))!
+
+    let target: any = document
+    let descriptor: PropertyDescriptor | undefined
+    while (target && !descriptor) {
+      descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
+      if (!descriptor) { target = Object.getPrototypeOf(target) }
+    }
+
+    const writes: string[] = []
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get () {
+        return descriptor!.get!.call(document)
+      },
+      set (value: string) {
+        if (value.startsWith(`${name}=`)) { writes.push(value) }
+        descriptor!.set!.call(document, value)
+      },
+    })
+
+    try {
+      cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name, value: 'received' }], deleted: [] }))
+      expect(cookie.value).toBe('received')
+      await nextTick()
+      await nextTick()
+      expect(writes).toEqual([])
+
+      const value = cookie.value
+      cookie.value = value
+      await nextTick()
+      expect(writes).toHaveLength(1)
+      expect(writes[0]).toContain(`${name}=received`)
+
+      cookie.value = 'disposed'
+      scope.stop()
+      expect(writes).toHaveLength(2)
+      expect(writes[1]).toContain(`${name}=disposed`)
+    } finally {
+      scope.stop()
+      delete (document as any).cookie
+    }
+  })
+
+  it('should write an assignment made straight after a CookieStore update when refresh is true', async () => {
+    const name = 'refresh-cookiestore-assign-test'
+    const scope = effectScope()
+    const cookie = scope.run(() => useCookie(name, { maxAge: 3600, refresh: true }))!
+
+    cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name, value: 'received' }], deleted: [] }))
+    await nextTick()
+    cookie.value = 'local'
+    for (let i = 0; i < 4; i++) { await nextTick() }
+    expect(document.cookie).toContain(`${name}=local`)
+
+    scope.stop()
   })
 
   it('should not re-write cookie on same-value assignment when refresh is false', async () => {

@@ -32,7 +32,20 @@ interface LoaderOptions {
 // 3. _createAssetComponent("ComponentName", ...) - Vapor's runtime component resolution.
 //    Only the helper name and its first (name) argument are matched, so the remaining
 //    arguments are preserved; the call is rewritten to `createComponentWithFallback(<import>, ...)`.
-const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\d*\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<modifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>lazy-|Lazy(?=[A-Z]))?(?<hModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<hName>[A-Z][\w$]*)\b|(?<=[\s(=;,])_?createAssetComponent\d*\s*\(\s*(?<vaporQuote>["'`])(?<vaporLazy>lazy-|Lazy(?=[A-Z]))?(?<vaporModifier>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)?(?<vaporName>[^'"`]*)\k<vaporQuote>/g
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\d*\s*\(\s*(?<quote>["'`])(?<lazy>lazy-|Lazy(?=[A-Z]))?(?<name>[^'"`]*)\k<quote>[^)]*\)|(?<=\bh\s*\(\s*)(?<hLazy>Lazy)?(?<hName>[A-Z][\w$]*)\b|(?<=[\s(=;,])_?createAssetComponent\d*\s*\(\s*(?<vaporQuote>["'`])(?<vaporLazy>lazy-|Lazy(?=[A-Z]))?(?<vaporName>[^'"`]*)\k<vaporQuote>/g
+
+const HYDRATION_STRATEGY_RE = /^(?<strategy>Idle|Visible|Interaction|MediaQuery|If|Never|Time)_(?<name>.+)$/
+const LEGACY_HYDRATION_STRATEGY_RE = /^(?<strategy>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)(?<name>.+)$/
+
+const hydrationFactories: Record<string, [factory: string, suffix: string]> = {
+  Visible: ['createLazyVisibleComponent', '_lazy_visible'],
+  Interaction: ['createLazyInteractionComponent', '_lazy_event'],
+  Idle: ['createLazyIdleComponent', '_lazy_idle'],
+  MediaQuery: ['createLazyMediaQueryComponent', '_lazy_media'],
+  If: ['createLazyIfComponent', '_lazy_if'],
+  Never: ['createLazyNeverComponent', '_lazy_never'],
+  Time: ['createLazyTimeComponent', '_lazy_time'],
+}
 
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
@@ -91,14 +104,11 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
         // replace `_resolveComponent("...")` to direct import
         for (const match of code.matchAll(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE)) {
           const groups = match.groups!
-          const lazy = groups.hLazy || groups.lazy || groups.vaporLazy
-          const modifier = groups.hModifier || groups.modifier || groups.vaporModifier
-          const name = groups.hName || groups.name || groups.vaporName
+          const lazy = !!(groups.hLazy || groups.lazy || groups.vaporLazy)
+          const name = (groups.hName || groups.name || groups.vaporName)!
           const isVapor = groups.vaporQuote !== undefined
-          const normalComponent = findComponent(components, name!, options.mode)
-          const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
-          const component = normalComponent || modifierComponent
-          resolved.set((modifier ?? '') + '|' + name, componentKey(components, component))
+          const { component, strategy } = resolveReference(components, lazy, name, options.mode)
+          resolved.set((lazy ? 'lazy' : '') + '|' + name, componentKey(components, component))
 
           if (component) {
             // TODO: refactor to @nuxt/cli
@@ -132,52 +142,12 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 
             if (lazy) {
               const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
-              if (modifier && normalComponent) {
+              if (strategy) {
                 const relativePath = relative(options.srcDir, component.filePath)
-                switch (modifier) {
-                  case 'Visible':
-                  case 'visible-':
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))
-                    identifier += '_lazy_visible'
-                    imports.add(`const ${identifier} = createLazyVisibleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                    break
-                  case 'Interaction':
-                  case 'interaction-':
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyInteractionComponent' }]))
-                    identifier += '_lazy_event'
-                    imports.add(`const ${identifier} = createLazyInteractionComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                    break
-                  case 'Idle':
-                  case 'idle-':
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIdleComponent' }]))
-                    identifier += '_lazy_idle'
-                    imports.add(`const ${identifier} = createLazyIdleComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                    break
-                  case 'MediaQuery':
-                  case 'media-query-':
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyMediaQueryComponent' }]))
-                    identifier += '_lazy_media'
-                    imports.add(`const ${identifier} = createLazyMediaQueryComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                    break
-                  case 'If':
-                  case 'if-':
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
-                    identifier += '_lazy_if'
-                    imports.add(`const ${identifier} = createLazyIfComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                    break
-                  case 'Never':
-                  case 'never-':
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNeverComponent' }]))
-                    identifier += '_lazy_never'
-                    imports.add(`const ${identifier} = createLazyNeverComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                    break
-                  case 'Time':
-                  case 'time-':
-                    imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
-                    identifier += '_lazy_time'
-                    imports.add(`const ${identifier} = createLazyTimeComponent(${JSON.stringify(relativePath)}, ${dynamicImport})`)
-                    break
-                }
+                const [factory, suffix] = hydrationFactories[strategy]!
+                imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: factory }]))
+                identifier += suffix
+                imports.add(`const ${identifier} = ${factory}(${JSON.stringify(relativePath)}, ${dynamicImport})`)
               } else {
                 imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
                 identifier += '_lazy'
@@ -231,10 +201,32 @@ function componentKey (components: Component[], component: Component | null | un
 
 function resolveComponentKey (components: Component[], key: string, mode: LoaderOptions['mode']) {
   const separator = key.indexOf('|')
-  const modifier = key.slice(0, separator)
-  const name = key.slice(separator + 1)
-  const component = findComponent(components, name, mode) || (modifier ? findComponent(components, modifier + name, mode) : null)
+  const { component } = resolveReference(components, separator > 0, key.slice(separator + 1), mode)
   return componentKey(components, component)
+}
+
+function resolveReference (components: Component[], lazy: boolean, name: string, mode: LoaderOptions['mode']): { component?: Component | null, strategy?: string } {
+  if (!lazy) {
+    return { component: findComponent(components, name, mode) }
+  }
+
+  const hydrated = name.match(HYDRATION_STRATEGY_RE)?.groups
+  if (hydrated) {
+    return { component: findComponent(components, hydrated.name!, mode), strategy: hydrated.strategy }
+  }
+
+  const component = findComponent(components, name, mode)
+  if (component) {
+    return { component }
+  }
+
+  const legacy = name.match(LEGACY_HYDRATION_STRATEGY_RE)?.groups
+  const legacyComponent = legacy && findComponent(components, legacy.name!, mode)
+  if (legacyComponent) {
+    return { component: legacyComponent, strategy: pascalCase(legacy.strategy!) }
+  }
+
+  return {}
 }
 
 function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {

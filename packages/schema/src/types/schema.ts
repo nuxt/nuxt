@@ -47,14 +47,14 @@ export interface ConfigSchema {
    *
    * Any components in the directories configured here can be used throughout your pages, layouts (and other components) without needing to explicitly import them.
    *
-   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/components)
+   * @see [`components/` directory documentation](https://nuxt.com/docs/5.x/directory-structure/app/components)
    */
   components: boolean | ComponentsOptions | ComponentsOptions['dirs']
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
    *
-   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/directory-structure/app/composables)
+   * @see [Nuxt documentation](https://nuxt.com/docs/5.x/directory-structure/app/composables)
    */
   imports: ImportsOptions
 
@@ -89,7 +89,7 @@ export interface ConfigSchema {
    *
    * Breaking changes for devtools might not reflect on the version of Nuxt.
    *
-   * @see  [Nuxt DevTools](https://devtools.nuxt.com/) for more information.
+   * @see  [Nuxt DevTools](https://nuxt.com/modules/devtools) for more information.
    */
   devtools: boolean | { enabled: boolean, [key: string]: any }
 
@@ -259,10 +259,10 @@ export interface ConfigSchema {
     /**
      * Default values for view transitions.
      *
-     * This only has an effect when **experimental** support for View Transitions is [enabled in your nuxt.config file](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental).
+     * This only has an effect when **experimental** support for View Transitions is [enabled in your nuxt.config file](https://nuxt.com/docs/5.x/getting-started/transitions#view-transitions-api-experimental).
      * This can be overridden with `definePageMeta` on an individual page.
      *
-     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental)
+     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/5.x/getting-started/transitions#view-transitions-api-experimental)
      */
     viewTransition: NuxtAppConfig['viewTransition']
 
@@ -386,7 +386,7 @@ export interface ConfigSchema {
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
    *
-   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/plugins)
+   * @see [`plugins/` directory documentation](https://nuxt.com/docs/5.x/directory-structure/app/plugins)
    *
    * @example
    * ```js
@@ -1248,6 +1248,25 @@ export interface ConfigSchema {
     early404: boolean
 
     /**
+     * Warn at build time about template mistakes the Vue compiler cannot detect:
+     *
+     * - a `<NuxtLink>` whose static `to` matches no page route
+     * - `v-on` or `v-model` on a server component
+     * - a function or class instance passed as a prop to a server component, or in the `props`
+     *   of a `<NuxtIsland>`
+     *
+     * Warnings are printed to the terminal and, in development, sent to open error pages and
+     * overlays.
+     *
+     * The route check cannot see routes added at runtime with `router.addRoute()` or paths
+     * that route middleware redirects, and is skipped when a custom `app/router.options` file
+     * may modify `routes`.
+     *
+     * @default true
+     */
+    templateDiagnostics: boolean
+
+    /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
      * @default false
@@ -1740,6 +1759,14 @@ export interface ConfigSchema {
     entryImportMap: boolean
 
     /**
+     * Whether to add V8 compile hints to the entry, layout and page chunks (and their static imports) in the Vite client build, so supporting browsers compile them eagerly while they download.
+     *
+     * @default true
+     * @see [V8 explicit compile hints](https://v8.dev/blog/explicit-compile-hints)
+     */
+    compileHints: boolean
+
+    /**
      * Extract async data handler functions into separate chunks for better performance and caching.
      *
      * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted
@@ -1851,6 +1878,29 @@ export interface ConfigSchema {
      * multiple times on the same Nuxt instance (e.g. in benchmarks).
      */
     clearBuildHooks: boolean
+
+    /**
+     * Resolve auto-imported components in the Vue template compiler.
+     *
+     * Components used in `.vue` templates are imported by a `compilerOptions.nodeTransforms` entry, which also applies
+     * lazy hydration props such as `hydrate-on-visible` and omits the default slot of `<ClientOnly>` and the slots of
+     * client-only components from the server build, including when they are nested in another component's slot.
+     *
+     * `resolveComponent()` calls in scripts and `h()` calls in JSX/TSX are resolved by a separate build transform.
+     *
+     * This works with the Vite, webpack and rspack builders. Set it to `false` to resolve template components with a build transform
+     * on the compiled output.
+     * @default true
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   experimental: {
+     *     compilerComponentResolution: false,
+     *   },
+     * })
+     * ```
+     */
+    compilerComponentResolution: boolean
   }
 
   /**
@@ -1962,7 +2012,7 @@ export interface ConfigSchema {
    * Each handler accepts the following options:
    * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
    *
-   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
+   * @see [`server/` directory documentation](https://nuxt.com/docs/5.x/directory-structure/server)
    *
    * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
    *
@@ -2025,7 +2075,7 @@ export interface ConfigSchema {
    * @note Only JSON serializable options should be passed by Nuxt config.
    * For more control, you can use `app/router.options.ts` file.
    *
-   * @note `sensitive` defaults to `true`.
+   * @note `sensitive` defaults to `true`, and can only be set here, not in `app/router.options.ts`.
    *
    * @see [Vue Router documentation](https://router.vuejs.org/api/interfaces/routeroptions)
    */
@@ -2065,7 +2115,7 @@ export interface ConfigSchema {
      *
      * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`. Requires to install `typescript` and `vue-tsc` as dev dependencies.
      *
-     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/4.x/guide/concepts/typescript)
+     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/5.x/guide/concepts/typescript)
      */
     typeCheck: boolean | 'build'
 

@@ -147,4 +147,14 @@ describe('nitro config', () => {
       expect(nuxt.options.vite.plugins?.flat().filter(isAutoImportsPlugin) ?? []).toHaveLength(0)
     })
   })
+
+  it.for([true, false])('registers server import protection once, ahead of other resolvers, when nitroViteEnvironment is %s', async (nitroViteEnvironment) => {
+    await withNitro({ experimental: { nitroViteEnvironment } }, (_nitro, nitroConfig, nuxt) => {
+      const isImpound = (plugin: unknown) => (plugin as { name?: string } | null)?.name === 'impound'
+      const plugins = [nitroConfig.rollupConfig!.plugins].flat().filter(isImpound) as Array<{ resolveId?: { order?: string } }>
+      expect(plugins).toHaveLength(1)
+      expect(plugins[0]!.resolveId?.order).toBe('pre')
+      expect(nuxt.options.vite.plugins?.flat().filter(isImpound) ?? []).toHaveLength(0)
+    })
+  })
 })

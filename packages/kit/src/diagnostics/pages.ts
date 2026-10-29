@@ -116,5 +116,24 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove one of the two rules.',
       docs: false,
     },
+    NUXT_B4022: {
+      why: (p: { route: string, part: string }) => `The route rule \`${p.route}\` has a regex constraint that depends on letter case (\`${p.part}\`), so it cannot be matched with \`router.options.sensitive: false\`.`,
+      fix: 'Request paths are lower-cased before they are matched, so write the constraint for lower-case letters (such as `[a-z]` instead of `[A-Z]`), or set `router.options.sensitive` to `true`.',
+      docs: false,
+    },
+    NUXT_B4023: {
+      why: (p: { file: string }) => `The \`router.options\` file at \`${p.file}\` sets \`sensitive\`, which is only read from \`router.options.sensitive\` in \`nuxt.config\`.`,
+      fix: 'Move `sensitive` to `router.options` in your `nuxt.config`.',
+      docs: false,
+    },
+    NUXT_B4024: {
+      why: (p: { key: string }) => `\`definePageMeta()\` reads \`${p.key}\` from the page's setup scope, which is not available outside the component.`,
+      fix: (p: { key: string }) => `Use a static value for \`${p.key}\`, or import it from another module.`,
+      docs: false,
+    },
+    NUXT_B4025: {
+      why: (p: { tag: string, attribute: string, to: string, file: string }) => `\`<${p.tag} ${p.attribute}="${p.to}">\` in \`${p.file}\` does not match any page route.`,
+      fix: 'Check the path for typos or add a page for it. To link to a server route, a file in `public/` or another site, set the `external` prop.',
+    },
   },
 })

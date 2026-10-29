@@ -7,7 +7,7 @@ import { resolve } from 'pathe'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigTemplate, dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
 
@@ -58,6 +58,27 @@ describe('sharedAppConfigDeclarationTemplate', () => {
       expect(contents).toContain(`declare module '${schema}' {\n  interface SharedAppConfig extends`)
     }
     expect(contents).not.toContain('interface AppConfig extends')
+  })
+})
+
+describe.each([
+  ['appConfigDeclarationTemplate', appConfigDeclarationTemplate],
+  ['sharedAppConfigDeclarationTemplate', sharedAppConfigDeclarationTemplate],
+])('%s', (_name, template) => {
+  const render = (appConfig: Record<string, unknown>) => template.getContents!({ nuxt: makeNuxt({ appConfig } as Partial<Nuxt['options']>), app: makeApp(), options: {} })
+
+  it('does not change when only inline app config values change', async () => {
+    const first = await render({ time: 1, sha: 'abc', enabled: true, empty: null, list: [1, 2], items: [{ id: 'a' }, { id: 'b' }] })
+    const second = await render({ time: 2, sha: 'def', enabled: false, empty: null, list: [3], items: [{ id: 'c' }] })
+    expect(second).toBe(first)
+    expect(first).not.toContain('abc')
+  })
+
+  it('changes when the shape of the inline app config changes', async () => {
+    const first = await render({ time: 1, list: [1] })
+    expect(await render({ time: '1', list: [1] })).not.toBe(first)
+    expect(await render({ time: 1, list: [1, 'a'] })).not.toBe(first)
+    expect(await render({ time: 1, list: [1], extra: true })).not.toBe(first)
   })
 })
 

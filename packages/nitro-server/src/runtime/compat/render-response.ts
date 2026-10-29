@@ -1,4 +1,5 @@
 import type { H3Event } from 'nitro/h3'
+import { encodeDocument } from 'nuxt/internal/renderer/encode'
 
 interface LegacyHooks {
   callHook: (name: any, ...args: any[]) => unknown
@@ -23,12 +24,14 @@ interface LegacyRenderResponse {
  * (`nuxt-security` sets `content-security-policy` with the nonce it injected during
  * `render:html`), so dropping it silently leaves markup claiming a nonce no header allows.
  *
- * Returns the body to send, which the hook may replace on non-streamed responses.
+ * Returns the replacement body a listener set, if any; streamed responses ignore replacements.
  */
-export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHooks, body: string | undefined): Promise<string | undefined> {
+export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHooks, body: Pick<RenderBody, 'html'> | undefined): Promise<string | undefined> {
   const headers = createHeaderRecord(event.res.headers)
+  let replacement: string | undefined
   const response: LegacyRenderResponse = {
-    body,
+    get body () { return replacement ?? body?.html },
+    set body (value: string | undefined) { replacement = value },
     statusCode: event.res.status,
     statusMessage: event.res.statusText,
     headers,
@@ -54,7 +57,7 @@ export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHo
     return undefined
   }
 
-  return typeof response.body === 'string' ? response.body : body
+  return typeof replacement === 'string' ? replacement : undefined
 }
 
 /**
@@ -132,22 +135,42 @@ export function isStreamedResponse (response: Response): boolean {
   return streamedResponses.has(response)
 }
 
-const renderBodies = new WeakMap<Response, string>()
+/** A rendered document: the bytes that are sent, and the HTML they were encoded from. */
+export interface RenderBody {
+  bytes: Uint8Array<ArrayBuffer>
+  readonly html: string
+}
+
+/** Encode a rendered document once; `html` stays available for `render:response` listeners. */
+export function toRenderBody (html: string | string[]): RenderBody {
+  if (typeof html === 'string') {
+    return {
+      bytes: encodeDocument([html]),
+      html,
+    }
+  }
+  const chunks = html
+  let joined: string | undefined
+  return {
+    bytes: encodeDocument(chunks),
+    get html () { return joined ??= chunks.join('') },
+  }
+}
+
+const renderBodies = new WeakMap<Response, RenderBody>()
 
 /**
- * Remember the HTML a response was built from, so that the body can be offered to a
+ * Remember the document a response was built from, so that the body can be offered to a
  * `render:response` listener without reading it back out of the `Response`.
  */
-export function rememberRenderBody (response: Response, body: unknown): void {
-  if (typeof body === 'string') {
-    renderBodies.set(response, body)
-  }
+export function rememberRenderBody (response: Response, body: RenderBody): void {
+  renderBodies.set(response, body)
 }
 
 /**
  * Emit `render:response` for a response the Nuxt renderer produced and rebuild it from
  * `event.res`, which is first given the status and headers of the response. The body is
- * offered only when the response was built from a string.
+ * offered only when the response was built from a rendered document.
  */
 export async function applyLegacyRenderResponseTo (event: H3Event, hooks: LegacyHooks, response: Response, createResponse: (body: BodyInit | null, init?: ResponseInit) => Response): Promise<Response> {
   const body = renderBodies.get(response)
@@ -157,7 +180,7 @@ export async function applyLegacyRenderResponseTo (event: H3Event, hooks: Legacy
   replaceHeaders(event.res.headers, response.headers)
 
   const replaced = await applyLegacyRenderResponse(event, hooks, body)
-  const rebuilt = createResponse(replaced ?? response.body, event.res)
+  const rebuilt = createResponse(replaced ?? body?.bytes ?? response.body, event.res)
   if (isStreamedResponse(response)) {
     markStreamedResponse(rebuilt)
   }

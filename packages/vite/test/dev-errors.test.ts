@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'pathe'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import type { ViteDevServer } from 'vite'
@@ -280,6 +283,30 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
 
     expect(messages[0].report.frames.map((frame: { file?: string }) => frame.file)).toEqual(['/src/pages/index.vue'])
 
+    channel.close()
+    nuxt.close()
+  })
+
+  it('does not read a file a client names in its message', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'nuxt-dev-errors-'))
+    const outside = join(dir, 'outside-of-the-project.txt')
+    writeFileSync(outside, 'should never reach a report\n')
+    const nuxt = createNuxt()
+    const print = vi.fn()
+    const { messages, channel } = listen()
+    const reporter = createDevErrorReporter(nuxt, { print })
+    const { server, listeners } = devServer({ graph: clientGraph() })
+    reporter.attach(server)
+
+    listeners['nuxt:dev:client-error']!({ name: 'Error', message: `boom\n${outside}:1:1`, stack: 'Error: boom' })
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+
+    expect(print).toHaveBeenCalledTimes(1)
+    expect(messages[0].report).toMatchObject({ kind: 'error', name: 'Error', message: `boom\n${outside}:1:1` })
+    expect(messages[0].report.frames).toEqual([])
+    expect(JSON.stringify(messages[0].report)).not.toContain('should never reach a report')
+
+    rmSync(dir, { recursive: true })
     channel.close()
     nuxt.close()
   })

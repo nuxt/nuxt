@@ -1,6 +1,6 @@
 import { withMatrix } from '../../matrix.ts'
 
-// https://nuxt.com/docs/4.x/api/nuxt-config
+// https://nuxt.com/docs/5.x/api/nuxt-config
 export default withMatrix({
   // default title/description so unhead's client-side dev validation (#35468)
   // has no missing-title/description warnings on these title-less test pages

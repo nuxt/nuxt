@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -13,6 +13,21 @@ import { _generateTypes, resolveLayerPaths, writeTypes } from '../src/template.t
 import { getLayerDirectories } from 'nuxt/kit'
 
 const typesFixtureDir = fileURLToPath(new URL('./types-fixture', import.meta.url))
+
+vi.mock('../src/internal/package-json.ts', async (original) => {
+  const mod = await original<typeof import('../src/internal/package-json.ts')>()
+  return {
+    ...mod,
+    readPackageJSON: async (id: string, ...args: any[]) => {
+      const delay = typeof id === 'string' ? Number(id.match(/^delayed-module-(\d+)$/)?.[1] ?? Number.NaN) : Number.NaN
+      if (Number.isNaN(delay)) {
+        return mod.readPackageJSON(id, ...args)
+      }
+      await new Promise(resolve => setTimeout(resolve, delay))
+      return { name: id }
+    },
+  }
+})
 
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends Record<string, any> ? DeepPartial<T[P]> : T[P]
@@ -172,6 +187,42 @@ describe('tsConfig generation', () => {
     expect(legacyTsConfig.exclude).not.toContain('../nuxt.config.*')
   })
 
+  it('should store build info for each project in the build cache', async () => {
+    const { tsConfig, nodeTsConfig, sharedTsConfig, serverTsConfig, legacyTsConfig } = await _generateTypes(mockNuxt)
+    expect(tsConfig.compilerOptions?.tsBuildInfoFile).toBe('./cache/typecheck/tsconfig.app.tsbuildinfo')
+    expect(nodeTsConfig.compilerOptions?.tsBuildInfoFile).toBe('./cache/typecheck/tsconfig.node.tsbuildinfo')
+    expect(sharedTsConfig.compilerOptions?.tsBuildInfoFile).toBe('./cache/typecheck/tsconfig.shared.tsbuildinfo')
+    expect(serverTsConfig.compilerOptions?.tsBuildInfoFile).toBe('./cache/typecheck/tsconfig.server.tsbuildinfo')
+    expect(legacyTsConfig.compilerOptions?.tsBuildInfoFile).toBe('./cache/typecheck/tsconfig.tsbuildinfo')
+    for (const config of [tsConfig, nodeTsConfig, sharedTsConfig, serverTsConfig, legacyTsConfig]) {
+      expect(config.compilerOptions?.incremental).toBeUndefined()
+    }
+  })
+
+  it('should let user options override the build info location', async () => {
+    const global = await _generateTypes(mockNuxtWithOptions({
+      typescript: { tsConfig: { compilerOptions: { tsBuildInfoFile: './global.tsbuildinfo' } } },
+    }))
+    for (const config of [global.tsConfig, global.nodeTsConfig, global.sharedTsConfig, global.serverTsConfig, global.legacyTsConfig]) {
+      expect(config.compilerOptions?.tsBuildInfoFile).toBe('./global.tsbuildinfo')
+    }
+
+    const perContext = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: { compilerOptions: { tsBuildInfoFile: './global.tsbuildinfo' } },
+        appTsConfig: { compilerOptions: { tsBuildInfoFile: './app.tsbuildinfo' } },
+        nodeTsConfig: { compilerOptions: { tsBuildInfoFile: './node.tsbuildinfo' } },
+        sharedTsConfig: { compilerOptions: { tsBuildInfoFile: './shared.tsbuildinfo' } },
+        serverTsConfig: { compilerOptions: { tsBuildInfoFile: './server.tsbuildinfo' } },
+      },
+    }))
+    expect(perContext.tsConfig.compilerOptions?.tsBuildInfoFile).toBe('./app.tsbuildinfo')
+    expect(perContext.nodeTsConfig.compilerOptions?.tsBuildInfoFile).toBe('./node.tsbuildinfo')
+    expect(perContext.sharedTsConfig.compilerOptions?.tsBuildInfoFile).toBe('./shared.tsbuildinfo')
+    expect(perContext.serverTsConfig.compilerOptions?.tsBuildInfoFile).toBe('./server.tsbuildinfo')
+    expect(perContext.legacyTsConfig.compilerOptions?.tsBuildInfoFile).toBe('./global.tsbuildinfo')
+  })
+
   it('should propagate global tsConfig compiler options to node and shared tsconfigs', async () => {
     const { tsConfig, nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
       typescript: { tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } } },
@@ -254,6 +305,14 @@ describe('tsConfig generation', () => {
       expect(config.exclude).not.toContain('my-global-exclude')
       expect(config).not.toHaveProperty('vueCompilerOptions')
     }
+  })
+
+  it('should reference module types in the order modules are registered', async () => {
+    const modules = ['delayed-module-30', 'delayed-module-0', 'delayed-module-15']
+    const { declaration, nodeDeclaration } = await _generateTypes(mockNuxtWithOptions({ modules }))
+    const references = modules.map(id => `/// <reference types="${id}" />`).join('\n')
+    expect(declaration).toContain(references)
+    expect(nodeDeclaration).toContain(references)
   })
 
   it('should keep the generated declaration first in `include`', async () => {
