@@ -58,7 +58,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       AnalyzePlugin(nuxt),
       DevServerPlugin(nuxt),
       TemplateHMRPlugin(nuxt),
-      VitePluginCheckerPlugin(nuxt, 'client'),
+      VitePluginCheckerPlugin(nuxt),
       OptimizeDepsHintPlugin(nuxt),
       {
         name: 'nuxt:capture-client-build',

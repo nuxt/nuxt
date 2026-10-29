@@ -13,7 +13,6 @@ import { getDevErrorReporter, reportTransformError } from './dev-errors.ts'
 import { writeManifest } from './manifest.ts'
 import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
-import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { ssr, ssrEnvironment } from './shared/server.ts'
 
 type ViteServerOptions = NonNullable<ViteConfig['server']>
@@ -46,7 +45,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
       // tell rollup's nitro build about the original sources of the generated vite server build
       SourcemapPreserverPlugin(nuxt),
       TemplateHMRPlugin(nuxt),
-      VitePluginCheckerPlugin(nuxt, 'ssr'),
       {
         name: 'nuxt:server-hmr-port',
         async config (serverConfig) {
