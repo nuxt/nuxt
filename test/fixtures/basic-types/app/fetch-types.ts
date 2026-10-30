@@ -145,6 +145,12 @@ export async function mutationProbe () {
   // @ts-expect-error the handler takes an input
   await save.mutate()
   await useAsyncDataMutation(() => Promise.resolve(true)).mutate()
+  // @ts-expect-error `data` is read-only
+  save.data.value = 1
+  // @ts-expect-error `status` is read-only
+  save.status.value = 'idle'
+  // @ts-expect-error `error` is read-only
+  save.error.value = undefined
 
   // a factory carries its `baseURL`, `transform` and `default` onto what it creates
   const useApiMutation = createUseFetchMutation({ baseURL: '/api' })

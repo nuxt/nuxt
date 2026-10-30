@@ -6,6 +6,7 @@ import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { computed, ref } from 'vue'
 import { createUseAsyncDataMutation, useAsyncDataMutation } from '#app/composables/asyncDataMutation'
+import { createError } from '#app/composables/error'
 import { createUseFetchMutation, useFetchMutation } from '#app/composables/fetchMutation'
 import { defineUseAsyncDataMutationAddon, defineUseFetchMutationAddon } from '#app/composables/addons'
 import type { UseAsyncDataMutationAddonOptions } from '#app/composables/addons'
@@ -24,6 +25,25 @@ describe('useAsyncDataMutation', () => {
     expect(await mutate(21)).toBe('42')
     expect(data.value).toBe('42')
     expect(status.value).toBe('success')
+  })
+
+  it('returns read-only state without making the data itself read-only', async () => {
+    const { data, status, error, mutate } = useAsyncDataMutation(() => Promise.resolve({ count: 1 }))
+    const count = computed(() => data.value?.count)
+    await mutate()
+    expect(count.value).toBe(1)
+
+    data.value!.count = 2
+
+    // @ts-expect-error `data` is read-only
+    data.value = undefined
+    // @ts-expect-error `status` is read-only
+    status.value = 'idle'
+    // @ts-expect-error `error` is read-only
+    error.value = createError('nope')
+    expect(data.value).toStrictEqual({ count: 2 })
+    expect(status.value).toBe('success')
+    expect(error.value).toBeUndefined()
   })
 
   it('reports a failure without rejecting', async () => {

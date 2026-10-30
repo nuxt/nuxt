@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { getCurrentScope, onScopeDispose, ref, shallowRef, unref } from 'vue'
+import { getCurrentScope, onScopeDispose, ref, shallowReadonly, shallowRef, unref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { isAbortError } from '../utils/abort'
 import { runAsyncDataHandler } from '../utils/async-data'
@@ -40,9 +40,9 @@ export type AsyncDataMutationExecuteOptions = Pick<AsyncDataExecuteOptions, 'sig
 
 export interface AsyncDataMutation<Args extends unknown[], DataT, ErrorT, DefaultT = undefined> {
   /** The data of the latest call, or the default before it resolves and after it fails. */
-  data: Ref<DataT | DefaultT>
-  status: Ref<AsyncDataRequestStatus>
-  error: Ref<ErrorT | undefined>
+  data: Readonly<Ref<DataT | DefaultT>>
+  status: Readonly<Ref<AsyncDataRequestStatus>>
+  error: Readonly<Ref<ErrorT | undefined>>
   /**
    * Run the mutation. Every call runs, and `data`, `error` and `status` follow the latest one.
    * Like `execute`, it never rejects: it resolves to this call's data, or `undefined` if the call failed or was aborted.
@@ -149,9 +149,9 @@ export function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, Def
   }
 
   return {
-    data,
-    status,
-    error,
+    data: shallowReadonly(data),
+    status: shallowReadonly(status),
+    error: shallowReadonly(error),
     mutate,
     clear: () => {
       abort('AsyncData mutation aborted by user.')
