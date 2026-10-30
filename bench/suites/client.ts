@@ -68,7 +68,12 @@ export async function clientSuite ({ targets, fixtures, log }: SuiteContext): Pr
         const routes: Record<string, PageWeight> = {}
         for (const route of fixture.routes) {
           await waitForHttp(url + route.path, { match: route.match, server, timeout: 30_000 })
-          routes[route.path] = weigh(await (await fetch(url + route.path)).text(), publicDir)
+          const response = await fetch(url + route.path)
+          const html = await response.text()
+          if (!response.ok || !html.includes(route.match)) {
+            throw new Error(`unexpected ${response.status} response from ${url + route.path} for ${target.id}`)
+          }
+          routes[route.path] = weigh(html, publicDir)
         }
         weights.set(target.id, { routes, ...clientJs(publicDir) })
       } finally {
