@@ -1,0 +1,184 @@
+/// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
+
+import { describe, expect, it } from 'vitest'
+import { defineEventHandler, readBody } from 'h3'
+import { registerEndpoint } from '@nuxt/test-utils/runtime'
+
+import { computed, ref } from 'vue'
+import { createUseAsyncDataMutation, useAsyncDataMutation } from '#app/composables/asyncDataMutation'
+import { createError } from '#app/composables/error'
+import { createUseFetchMutation, useFetchMutation } from '#app/composables/fetchMutation'
+import { defineUseAsyncDataMutationAddon, defineUseFetchMutationAddon } from '#app/composables/addons'
+import type { UseAsyncDataMutationAddonOptions } from '#app/composables/addons'
+
+registerEndpoint('/api/mutation', defineEventHandler(async event => ({
+  method: event.req.method,
+  query: Object.fromEntries(new URL(event.req.url).searchParams),
+  header: event.req.headers.get('x-test'),
+  body: await readBody(event),
+})))
+
+describe('useAsyncDataMutation', () => {
+  it('passes the input to the handler and stores the result', async () => {
+    const { data, status, mutate } = useAsyncDataMutation((input: number) => Promise.resolve(input * 2), { transform: n => `${n}` })
+    expect(status.value).toBe('idle')
+    expect(await mutate(21)).toBe('42')
+    expect(data.value).toBe('42')
+    expect(status.value).toBe('success')
+  })
+
+  it('returns read-only state without making the data itself read-only', async () => {
+    const { data, status, error, mutate } = useAsyncDataMutation(() => Promise.resolve({ count: 1 }))
+    const count = computed(() => data.value?.count)
+    await mutate()
+    expect(count.value).toBe(1)
+
+    data.value!.count = 2
+
+    // @ts-expect-error `data` is read-only
+    data.value = undefined
+    // @ts-expect-error `status` is read-only
+    status.value = 'idle'
+    // @ts-expect-error `error` is read-only
+    error.value = createError('nope')
+    expect(data.value).toStrictEqual({ count: 2 })
+    expect(status.value).toBe('success')
+    expect(error.value).toBeUndefined()
+  })
+
+  it('reports a failure without rejecting', async () => {
+    const { data, error, status, mutate, clear } = useAsyncDataMutation(() => Promise.reject(new Error('nope')), { default: () => 'fallback' })
+    await expect(mutate()).resolves.toBeUndefined()
+    expect(error.value?.message).toBe('nope')
+    expect(status.value).toBe('error')
+    expect(data.value).toBe('fallback')
+    clear()
+    expect(error.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+  })
+
+  it('runs every call, resolving each to its own result while the state follows the latest', async () => {
+    const { data, mutate, clear } = useAsyncDataMutation((delay: number) => new Promise<number>(resolve => setTimeout(() => resolve(delay), delay)))
+    // the earlier call settles last, but does not overwrite the state
+    expect(await Promise.all([mutate(20), mutate(10)])).toStrictEqual([20, 10])
+    expect(data.value).toBe(10)
+
+    const aborted = mutate(10)
+    clear()
+    expect(await aborted).toBeUndefined()
+  })
+
+  it('discards a result whose transform settles after `clear`', async () => {
+    let onTransform!: () => void
+    const transforming = new Promise<void>((resolve) => { onTransform = resolve })
+    const { data, status, mutate, clear } = useAsyncDataMutation((input: string) => Promise.resolve(input), {
+      transform: (input) => {
+        onTransform()
+        return new Promise<string>(resolve => setTimeout(() => resolve(input), 10))
+      },
+    })
+    const promise = mutate('stale')
+    await transforming
+    clear()
+    await promise
+    expect(data.value).toBeUndefined()
+    expect(status.value).toBe('idle')
+  })
+})
+
+describe('useFetchMutation', () => {
+  it('sends the payload passed to each call, merged over the options', async () => {
+    const { data, mutate } = useFetchMutation('/api/mutation', { method: 'post', query: { a: '1' }, headers: { 'x-test': 'static' } })
+    await mutate({ body: { id: 1 }, query: { b: '2' } })
+    expect(data.value).toEqual({ method: 'POST', query: { a: '1', b: '2' }, header: 'static', body: { id: 1 } })
+
+    await mutate({ body: { id: 2 }, headers: { 'x-test': 'call' } })
+    expect(data.value).toMatchObject({ header: 'call', body: { id: 2 } })
+  })
+
+  it('reads the current value of ref and getter options on each call', async () => {
+    const page = ref('1')
+    const token = ref('a')
+    const { data, mutate } = useFetchMutation('/api/mutation', { query: { page }, headers: () => ({ 'x-test': token.value }) })
+    await mutate()
+    expect(data.value).toMatchObject({ query: { page: '1' }, header: 'a' })
+
+    page.value = '2'
+    token.value = 'b'
+    await mutate({ query: { extra: '1' } })
+    expect(data.value).toMatchObject({ query: { page: '2', extra: '1' }, header: 'b' })
+  })
+
+  it('sends a POST request unless another method is set', async () => {
+    const { data, mutate } = useFetchMutation('/api/mutation')
+    await mutate({ body: { id: 1 } })
+    expect(data.value).toMatchObject({ method: 'POST', body: { id: 1 } })
+  })
+
+  it('rejects a protocol-relative URL', async () => {
+    const { error, mutate } = useFetchMutation('//example.com/api', { method: 'post' })
+    await mutate()
+    expect(error.value?.cause).toMatchObject({ code: 'NUXT_E3001' })
+  })
+
+  it('drops `params` rather than sending it as `query`', async () => {
+    // @ts-expect-error `params` is not an option
+    const { data, mutate } = useFetchMutation('/api/mutation', { method: 'post', params: { a: '1' } })
+    await mutate()
+    expect(data.value?.query).toStrictEqual({})
+  })
+
+  it('sends only `body`, `query` and `headers` from the payload', async () => {
+    const { data, mutate } = useFetchMutation('/api/mutation', { method: 'post' })
+    // @ts-expect-error neither `params` nor `method` is part of the payload
+    await mutate({ body: { id: 1 }, params: { a: '1' }, method: 'put' })
+    expect(data.value).toMatchObject({ method: 'POST', body: { id: 1 } })
+    expect(data.value?.query).toStrictEqual({})
+  })
+})
+
+describe('mutation factories', () => {
+  it('applies factory options as defaults, or as overrides when given a function', () => {
+    const withDefaults = createUseAsyncDataMutation({ default: () => 'factory' })
+    expect(withDefaults(() => Promise.resolve('x')).data.value).toBe('factory')
+    expect(withDefaults(() => Promise.resolve('x'), { default: () => 'caller' }).data.value).toBe('caller')
+
+    const withOverrides = createUseAsyncDataMutation(() => ({ default: () => 'factory' }))
+    expect(withOverrides(() => Promise.resolve('x'), { default: () => 'caller' }).data.value).toBe('factory')
+  })
+
+  it('runs addon middleware with custom options and merges extensions', async () => {
+    const suffix = defineUseAsyncDataMutationAddon({
+      setup: (options: UseAsyncDataMutationAddonOptions<{ suffix?: string }>) => {
+        options.suffix ??= '!'
+        options.middleware.push(async next => `${await next()}${options.suffix}`)
+        return mutation => ({ isDone: computed(() => mutation.status.value === 'success') })
+      },
+    })
+    const useSuffixedMutation = createUseAsyncDataMutation({ addons: [suffix] })
+    const { data, isDone, mutate } = useSuffixedMutation((input: string) => Promise.resolve(input), { suffix: '?' })
+    await mutate('hi')
+    expect(data.value).toBe('hi?')
+    expect(isDone.value).toBe(true)
+  })
+
+  it('does not let an addon extension make a mutation awaitable', () => {
+    const thenable = defineUseAsyncDataMutationAddon({
+      setup: () => () => ({ then: () => Promise.resolve() }),
+    })
+    const mutation = createUseAsyncDataMutation({ addons: [thenable] })(() => Promise.resolve(true))
+    expect('then' in mutation).toBe(false)
+  })
+
+  it('applies factory fetch options and addon fetch hooks', async () => {
+    const header = defineUseFetchMutationAddon({
+      setup: (options) => {
+        options.onRequest.push(({ options }) => { options.headers.set('x-test', 'addon') })
+      },
+    })
+    const useApiMutation = createUseFetchMutation({ baseURL: '/api', method: 'post', addons: [header] })
+    const { data, mutate } = useApiMutation('/mutation')
+    await mutate({ body: { id: 1 } })
+    expect(data.value).toMatchObject({ method: 'POST', header: 'addon', body: { id: 1 } })
+  })
+})
