@@ -54,7 +54,7 @@ The handler receives the input passed to `mutate` as its first argument, and the
 ::
 
 ::note
-`data`, `status`, `pending` and `error` are Vue refs. `mutate` and `clear` are plain functions. Unlike `useAsyncData`, the returned object is not a promise, so there is nothing to `await` when calling the composable itself.
+`data`, `status` and `error` are Vue refs. `mutate` and `clear` are plain functions. Unlike `useAsyncData`, the returned object is not a promise, so there is nothing to `await` when calling the composable itself.
 ::
 
 ### Using the Result of a Call
@@ -149,7 +149,6 @@ interface AsyncDataMutationExecuteOptions {
 
 type AsyncDataMutation<Args extends unknown[], DataT, ErrorT, DefaultT> = {
   data: Ref<DataT | DefaultT>
-  pending: ComputedRef<boolean>
   status: Ref<AsyncDataRequestStatus>
   error: Ref<ErrorT | undefined>
   mutate: (...args: Args) => Promise<DataT | undefined>
@@ -179,7 +178,6 @@ type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 | Name      | Type                                                    | Description                                                                                                                                  |
 |-----------|---------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
 | `data`    | `Ref<DataT \| DefaultT>`                                | The result of the latest successful call. Holds the `default` value before the first call resolves and after a call fails.                  |
-| `pending` | `ComputedRef<boolean>`                                  | `true` while the latest call is in progress.                                                                                                 |
 | `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`      | Status of the latest call.                                                                                                                   |
 | `error`   | `Ref<ErrorT \| undefined>`                              | Error object if the latest call failed.                                                                                                      |
 | `mutate`  | `(input, opts?) => Promise<DataT \| undefined>`         | Runs the handler. Resolves to the data of this call, or to `undefined` if it failed or was aborted. It never rejects.                        |

@@ -1,5 +1,5 @@
-import type { ComputedRef, Ref } from 'vue'
-import { computed, getCurrentScope, onScopeDispose, ref, shallowRef, unref } from 'vue'
+import type { Ref } from 'vue'
+import { getCurrentScope, onScopeDispose, ref, shallowRef, unref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { isAbortError } from '../utils/abort'
 import { runAsyncDataHandler } from '../utils/async-data'
@@ -41,7 +41,6 @@ export type AsyncDataMutationExecuteOptions = Pick<AsyncDataExecuteOptions, 'sig
 export interface AsyncDataMutation<Args extends unknown[], DataT, ErrorT, DefaultT = undefined> {
   /** The data of the latest call, or the default before it resolves and after it fails. */
   data: Ref<DataT | DefaultT>
-  pending: ComputedRef<boolean>
   status: Ref<AsyncDataRequestStatus>
   error: Ref<ErrorT | undefined>
   /**
@@ -151,7 +150,6 @@ export function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, Def
 
   return {
     data,
-    pending: computed(() => status.value === 'pending'),
     status,
     error,
     mutate,

@@ -155,7 +155,6 @@ interface AsyncDataMutationExecuteOptions {
 
 type AsyncDataMutation<Args extends unknown[], DataT, ErrorT, DefaultT> = {
   data: Ref<DataT | DefaultT>
-  pending: ComputedRef<boolean>
   status: Ref<AsyncDataRequestStatus>
   error: Ref<ErrorT | undefined>
   mutate: (...args: Args) => Promise<DataT | undefined>
@@ -193,7 +192,6 @@ When the route requires a body, the `payload` argument of `mutate` is required a
 | Name      | Type                                                    | Description                                                                                                                                  |
 |-----------|---------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
 | `data`    | `Ref<DataT \| DefaultT>`                                | The response of the latest successful request. Holds the `default` value before the first request resolves and after a request fails.       |
-| `pending` | `ComputedRef<boolean>`                                  | `true` while the latest request is in progress.                                                                                              |
 | `status`  | `Ref<'idle' \| 'pending' \| 'success' \| 'error'>`      | Status of the latest request.                                                                                                                |
 | `error`   | `Ref<ErrorT \| undefined>`                              | Error object if the latest request failed.                                                                                                   |
 | `mutate`  | `(payload?, opts?) => Promise<DataT \| undefined>`      | Sends the request. Resolves to the response of this request, or to `undefined` if it failed or was aborted. It never rejects.                |
