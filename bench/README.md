@@ -38,6 +38,6 @@ Every suite runs by default except `browser`, which needs `pnpm exec playwright-
 
 ## CI
 
-The `bench` workflow runs on every ready-for-review pull request that touches `packages/` or the benchmarks (and on drafts once labelled `⚡ performance`), comparing against the base branch. It can also be started manually from the Actions tab with any baseline. The report is added to the job summary.
+The `bench` workflow runs on every ready-for-review pull request that touches `packages/` or the benchmarks, and on any pull request labelled `⚡ performance`, comparing against the base branch. It can also be started manually from the Actions tab with any baseline. The report is added to the job summary.
 
 The summary lists regressions and improvements first and collapses everything else. Counts are flagged on any change, client JS sizes from 0.1% and install or server sizes from 1%. Timings are flagged only when the medians differ by 5% or more and each median falls outside the other target's min/max range. The report is posted as a comment on the pull request when something is flagged or the pull request is labelled `⚡ performance`, and an existing comment is always kept up to date.

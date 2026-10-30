@@ -6,13 +6,6 @@ on:
     branches:
       - main
       - 4.x
-    paths:
-      - 'packages/**'
-      - 'bench/**'
-      - 'test/bench/**'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.github/workflows/bench.yml'
   workflow_dispatch:
     inputs:
       baseline:
@@ -25,11 +18,39 @@ on:
 permissions: {}
 
 jobs:
+  changes:
+    if: github.event_name == 'pull_request' && github.event.action != 'labeled'
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    outputs:
+      bench: ${{ steps.filter.outputs.bench }}
+    steps:
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: |
+            bench:
+              - 'packages/**'
+              - 'bench/**'
+              - 'test/bench/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/bench.yml'
+
   bench:
+    needs: changes
+    # the performance label requests a run whatever the pull request changes
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.action == 'labeled' && github.event.label.name == '⚡ performance') ||
-      (github.event.action != 'labeled' && (!github.event.pull_request.draft || contains(github.event.pull_request.labels.*.name, '⚡ performance')))
+      !cancelled() && (
+        github.event_name == 'workflow_dispatch' ||
+        (github.event.action == 'labeled' && github.event.label.name == '⚡ performance') ||
+        (github.event.action != 'labeled' && (
+          contains(github.event.pull_request.labels.*.name, '⚡ performance') ||
+          (!github.event.pull_request.draft && needs.changes.outputs.bench == 'true')
+        ))
+      )
     # job-level, so skipped runs from other label events don't cancel a run in progress
     concurrency:
       group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
