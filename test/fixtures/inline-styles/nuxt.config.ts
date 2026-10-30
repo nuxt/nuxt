@@ -13,6 +13,9 @@ import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 // The `inlineStyles` predicate matches the default (inline styles for `.vue`
 // files) but opts one page out, so a shared CSS source is inlined for one
 // importer while the other still relies on its stylesheet link.
+// Regression for https://github.com/nuxt/nuxt/issues/36741: CSS that a
+// server-rendered page inlines should not keep its stylesheet link because an
+// `ssr: false` page also imports it.
 const layoutStylePlugin = () => {
   return {
     name: 'layout-style-plugin',
@@ -27,6 +30,9 @@ const layoutStylePlugin = () => {
 
 export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
+  routeRules: {
+    '/spa-only': { ssr: false },
+  },
   sourcemap: false,
   features: {
     inlineStyles: (id?: string) => !!id && id.includes('.vue') && !id.includes('predicate-not-inlined'),

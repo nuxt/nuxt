@@ -830,6 +830,19 @@ export default defineNuxtModule({
       nuxt.options._noScriptsPageSources = [...restrictedPages]
         .filter(([page, stub]) => stub === 'noScripts' && page.file)
         .map(([page]) => relative(nuxt.options.srcDir, page.file!))
+      // several routes can share a page file (`pages:extend`), so a file is only
+      // client-only when none of the routes using it is server-rendered
+      const ssrPageFiles = new Set<string>()
+      const collectSSRPageFiles = (pages: NuxtPage[]) => {
+        for (const page of pages) {
+          if (page.file && restrictedPages.get(page) !== 'spaOnly') { ssrPageFiles.add(page.file) }
+          if (page.children?.length) { collectSSRPageFiles(page.children) }
+        }
+      }
+      collectSSRPageFiles(pages)
+      nuxt.options._spaOnlyPageSources = [...restrictedPages]
+        .filter(([page, stub]) => stub === 'spaOnly' && page.file && !ssrPageFiles.has(page.file))
+        .map(([page]) => relative(nuxt.options.srcDir, page.file!))
 
       return restrictedPages
     }

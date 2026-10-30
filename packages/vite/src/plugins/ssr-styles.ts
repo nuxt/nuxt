@@ -95,7 +95,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   // client module graph reaches a component that inlines it. With a
   // function-valued `inlineStyles` (the default is one) a shared CSS source can
   // be inlined for one importer while another still relies on the link.
-  const isInlinedForEveryImporter = (cssId: string) => {
+  // A page that is only ever rendered on the client (`ssr: false`) never needs
+  // the link either: its CSS is loaded along with its chunk on navigation.
+  const isInlinedForEveryImporter = (cssId: string, spaOnlyPages: Set<string>) => {
     const consumers = inlinedCSSConsumers.get(cssId)
     if (!consumers) { return false }
     const seen = new Set<string>()
@@ -104,7 +106,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       const importer = queue.shift()!
       if (seen.has(importer)) { continue }
       seen.add(importer)
-      if (consumers.has(relativeToSrcDir(importer))) { continue }
+      const relativeImporter = relativeToSrcDir(importer)
+      if (consumers.has(relativeImporter) || spaOnlyPages.has(relativeImporter)) { continue }
       const parents = clientImporters.get(importer)
       if (!parents?.size) { return false }
       queue.push(...parents)
@@ -112,11 +115,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     return true
   }
 
-  const isDroppableCSSFile = (file: string) => {
+  const isDroppableCSSFile = (file: string, spaOnlyPages: Set<string>) => {
     const sources = cssSourcesByCSSFile.get(basename(file))
     if (!sources?.size) { return false }
     for (const cssId of sources) {
-      if (!isInlinedForEveryImporter(cssId)) { return false }
+      if (!isInlinedForEveryImporter(cssId, spaOnlyPages)) { return false }
     }
     return true
   }
@@ -234,9 +237,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     // link is therefore only removed here when every source is inlined for an
     // entry module; otherwise it is kept and the renderer drops it for the
     // requests that did inline it. (#36058)
+    const spaOnlyPages = new Set(nuxt.options._spaOnlyPageSources)
     for (const chunk of Object.values(manifest)) {
       if (!chunk.css?.length) { continue }
-      chunk.css = chunk.css.filter(file => !(isDroppableCSSFile(file) && dropCSSFile(file, entryIds)))
+      chunk.css = chunk.css.filter(file => !(isDroppableCSSFile(file, spaOnlyPages) && dropCSSFile(file, entryIds)))
     }
 
     setBuildOutput('entryIds', () => `export default ${JSON.stringify(Array.from(entryIds))}`, nuxt)

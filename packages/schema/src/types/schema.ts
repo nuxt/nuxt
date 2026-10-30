@@ -1972,6 +1972,13 @@ export interface ConfigSchema {
   _noScriptsPageSources: Array<string>
 
   /**
+   * Sources of the pages that are only rendered on the client (`ssr: false` route rules), relative to `srcDir`.
+   *
+   * @private
+   */
+  _spaOnlyPageSources: Array<string>
+
+  /**
    * Configuration for Nuxt's server builder.
    *
    * `'nitro'` and `'vite'` are shorthands for `'@nuxt/nitro-server'` (a full server
