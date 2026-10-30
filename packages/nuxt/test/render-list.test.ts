@@ -99,6 +99,18 @@ describe('render-list plugin', () => {
       `)
   })
 
+  it('keeps inline type specifiers and string import names', () => {
+    expect(transform(`import { type Foo, renderList as _renderList, h } from 'vue'`, 'Component.vue?vue&type=script&setup=true&lang.ts'))
+      .toMatchInlineSnapshot(`
+        "import { type Foo, h } from 'vue'
+        import { renderList as _renderList } from "#app/components/render-list";"
+      `)
+    expect(transform(`import { "renderList" as _rl, h } from 'vue'`)).toMatchInlineSnapshot(`
+      "import { h } from 'vue'
+      import { renderList as _rl } from "#app/components/render-list";"
+    `)
+  })
+
   it('leaves helpers from other sources untouched', () => {
     expect(transform(`import { ssrRenderList, renderList } from './local'\nssrRenderList(1, () => {})`)).toBeUndefined()
     expect(transform(`import { renderList } from 'vue/server-renderer'`)).toBeUndefined()
