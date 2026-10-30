@@ -30,10 +30,11 @@ export interface UseFetchMutationOptions<
   DataT = ResT,
   DefaultT = undefined,
   R extends string = string,
-  M extends AnyServerRouteMethod = 'get',
+  M extends AnyServerRouteMethod = 'post',
   B extends string = string,
 > extends AsyncDataMutationOptions<ResT, DataT, DefaultT>, Omit<FetchOptions<_ResponseType, DataT>, 'baseURL' | 'method' | 'body' | 'query' | 'params' | 'headers' | 'signal' | 'timeout'> {
   baseURL?: B
+  /** Unlike `useFetch`, a mutation is sent as `POST` unless another method is set. */
   method?: AcceptedMethod<R, M>
   /** Merged with the `query` passed to each `mutate` call. */
   query?: TypedRequestShape<R, M>['query']
@@ -50,7 +51,7 @@ export interface UseFetchMutation<FDataT = unknown, FDefaultT = undefined, FBase
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends TypedFetchRequest = TypedFetchRequest,
-    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'post' : AnyServerRouteMethod,
     const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchRequest>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
@@ -65,7 +66,7 @@ export interface UseFetchMutation<FDataT = unknown, FDefaultT = undefined, FBase
     ResT = void,
     ErrorT = NuxtError<unknown>,
     ReqT extends TypedFetchPathInput = TypedFetchPathInput,
-    const Method extends AnyServerRouteMethod = ResT extends void ? 'get' : AnyServerRouteMethod,
+    const Method extends AnyServerRouteMethod = ResT extends void ? 'post' : AnyServerRouteMethod,
     const BaseURL extends string = FallbackBaseURL<ReqT, TypedFetchPathInput>,
     _ReqT = ResolvedFetchPath<ReqT, EffectiveBaseURL<FBaseURL, BaseURL>>,
     _ResT = ResT extends void ? FetchResult<_ReqT, Method> : ResT,
@@ -114,6 +115,7 @@ function _createUseFetchMutation (options: FactoryOptions = {}): UseFetchMutatio
       return _$fetch(_request, {
         ...fetchDefaults,
         ...fetchOptions,
+        method: fetchOptions.method ?? 'POST',
         body: payload?.body,
         query: payload?.query ? { ...fetchOptions.query, ...payload.query } : fetchOptions.query,
         headers: mergeHeaders(fetchOptions.headers, payload?.headers),

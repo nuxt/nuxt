@@ -79,6 +79,12 @@ describe('useFetchMutation', () => {
     expect(data.value).toMatchObject({ header: 'call', body: { id: 2 } })
   })
 
+  it('sends a POST request unless another method is set', async () => {
+    const { data, mutate } = useFetchMutation('/api/mutation')
+    await mutate({ body: { id: 1 } })
+    expect(data.value).toMatchObject({ method: 'POST', body: { id: 1 } })
+  })
+
   it('rejects a protocol-relative URL', async () => {
     const { error, mutate } = useFetchMutation('//example.com/api', { method: 'post' })
     await mutate()

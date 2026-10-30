@@ -113,7 +113,7 @@ export async function namedResponseBaseURLProbe<T extends { id: number }> () {
 
 /** A mutation takes its payload per call, typed from the route like `$fetch` options. */
 export async function mutationProbe () {
-  const created = useFetchMutation('/api/validated', { method: 'post' })
+  const created = useFetchMutation('/api/validated')
   expectTypeOf(created.data.value).toEqualTypeOf<{ created: boolean } | undefined>()
   await created.mutate({ body: { title: 'a', count: 1 } })
   // @ts-expect-error `count` is not a string
@@ -122,11 +122,11 @@ export async function mutationProbe () {
   await created.mutate()
 
   // @ts-expect-error no GET route matches '/api/validated'
-  useFetchMutation('/api/validated')
-  // @ts-expect-error no POST route matches '/api/helo'
-  useFetchMutation('/api/helo', { method: 'post' })
+  useFetchMutation('/api/validated', { method: 'get' })
+  // @ts-expect-error a mutation defaults to POST, and no POST route matches '/api/helo'
+  useFetchMutation('/api/helo')
 
-  const searched = useFetchMutation('/searched', { baseURL: '/api', transform: r => r.results.length })
+  const searched = useFetchMutation('/searched', { baseURL: '/api', method: 'get', transform: r => r.results.length })
   expectTypeOf(searched.data.value).toEqualTypeOf<number | undefined>()
   await searched.mutate({ query: { q: 'nuxt', page: '1' } })
   // @ts-expect-error `q` is validated as a string
@@ -143,9 +143,9 @@ export async function mutationProbe () {
 
   // a factory carries its `baseURL`, `transform` and `default` onto what it creates
   const useApiMutation = createUseFetchMutation({ baseURL: '/api' })
-  expectTypeOf(useApiMutation('/searched').data.value).toEqualTypeOf<{ results: string[] } | undefined>()
+  expectTypeOf(useApiMutation('/searched', { method: 'get' }).data.value).toEqualTypeOf<{ results: string[] } | undefined>()
   // @ts-expect-error no POST route matches '/api/helo'
-  useApiMutation('/helo', { method: 'post' })
+  useApiMutation('/helo')
 
   const useCountMutation = createUseAsyncDataMutation({ transform: (items: string[]) => items.length, default: () => 0 })
   expectTypeOf(useCountMutation(() => Promise.resolve(['a'])).data.value).toEqualTypeOf<number>()
