@@ -27,11 +27,6 @@ export interface AsyncDataMutationOptions<ResT, DataT = ResT, DefaultT = undefin
    */
   deep?: boolean
   /**
-   * What to do when `mutate` is called while a previous call is still pending
-   * @default 'cancel'
-   */
-  dedupe?: 'cancel' | 'defer'
-  /**
    * A timeout in milliseconds after which the mutation will be aborted if it has not resolved yet.
    */
   timeout?: number
@@ -41,20 +36,24 @@ export interface AsyncDataMutationOptions<ResT, DataT = ResT, DefaultT = undefin
   middleware?: AsyncDataMiddleware<NoInfer<ResT>>[]
 }
 
-export type AsyncDataMutationExecuteOptions = Pick<AsyncDataExecuteOptions, 'dedupe' | 'signal' | 'timeout'>
+export type AsyncDataMutationExecuteOptions = Pick<AsyncDataExecuteOptions, 'signal' | 'timeout'>
 
-export interface AsyncDataMutation<Args extends unknown[], DataT, ErrorT> {
-  data: Ref<DataT>
+export interface AsyncDataMutation<Args extends unknown[], DataT, ErrorT, DefaultT = undefined> {
+  /** The data of the latest call, or the default before it resolves and after it fails. */
+  data: Ref<DataT | DefaultT>
   pending: ComputedRef<boolean>
   status: Ref<AsyncDataRequestStatus>
   error: Ref<ErrorT | undefined>
-  /** Run the mutation. Like `execute`, it never rejects: a failure is reported through `error` and `status`. */
-  mutate: (...args: Args) => Promise<void>
-  /** Abort a pending mutation and reset `data`, `error` and `status`. */
+  /**
+   * Run the mutation. Every call runs, and `data`, `error` and `status` follow the latest one.
+   * Like `execute`, it never rejects: it resolves to this call's data, or `undefined` if the call failed or was aborted.
+   */
+  mutate: (...args: Args) => Promise<DataT | undefined>
+  /** Abort every pending call and reset `data`, `error` and `status`. */
   clear: () => void
 }
 
-export type AugmentedAsyncDataMutation<Args extends unknown[], DataT, ErrorT, Ext> = [keyof Ext] extends [never] ? AsyncDataMutation<Args, DataT, ErrorT> : AsyncDataMutation<Args, DataT, ErrorT> & Ext
+export type AugmentedAsyncDataMutation<Args extends unknown[], DataT, ErrorT, DefaultT, Ext> = [keyof Ext] extends [never] ? AsyncDataMutation<Args, DataT, ErrorT, DefaultT> : AsyncDataMutation<Args, DataT, ErrorT, DefaultT> & Ext
 
 /** @internal */
 export type FactoryOptions = Record<string, any> | ((callerOptions: Record<string, any>) => Record<string, any>)
@@ -80,7 +79,7 @@ export function mergeFactoryOptions (options: FactoryOptions, opts: Record<strin
 export function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, DefaultT> (
   handler: AsyncDataMutationHandler<InputT, ResT>,
   opts: AsyncDataMutationOptions<ResT, DataT, DefaultT>,
-): AsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT | DefaultT, NuxtErrorFor<NuxtErrorDataT>> {
+): AsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT, NuxtErrorFor<NuxtErrorDataT>, DefaultT> {
   type ErrorT = NuxtErrorFor<NuxtErrorDataT>
 
   const nuxtApp = useNuxtApp()
@@ -90,52 +89,55 @@ export function createAsyncDataMutation<ResT, InputT, NuxtErrorDataT, DataT, Def
   const error = shallowRef<ErrorT | undefined>()
   const status = shallowRef<AsyncDataRequestStatus>('idle')
 
-  let current: Promise<void> | undefined
-  let abortController: AbortController | undefined
+  // the latest call, which owns the state
+  let current: Promise<DataT | undefined> | undefined
+  const controllers = new Set<AbortController>()
 
   function abort (message: string) {
-    abortController?.abort(new DOMException(message, 'AbortError'))
-    abortController = current = undefined
+    for (const controller of controllers) {
+      controller.abort(new DOMException(message, 'AbortError'))
+    }
+    controllers.clear()
+    current = undefined
   }
 
-  function mutate (input: InputT, executeOpts: AsyncDataMutationExecuteOptions = {}): Promise<void> {
-    if (current && (executeOpts.dedupe ?? opts.dedupe) === 'defer') {
-      return current
-    }
-    abort('AsyncData mutation cancelled by deduplication')
-    const controller = abortController = new AbortController()
+  function mutate (input: InputT, executeOpts: AsyncDataMutationExecuteOptions = {}): Promise<DataT | undefined> {
+    const controller = new AbortController()
+    controllers.add(controller)
     status.value = 'pending'
 
-    const promise: Promise<void> = runAsyncDataHandler(
+    const promise: Promise<DataT | undefined> = runAsyncDataHandler(
       ctx => nuxtApp.runWithContext(() => handler(input, ctx)),
       opts.middleware,
       [controller.signal, executeOpts.signal],
       executeOpts.timeout ?? opts.timeout,
     )
       .then(async (result) => {
-        const value = opts.transform ? await opts.transform(result) : result
-        if (current !== promise) {
-          return current
+        const value = (opts.transform ? await opts.transform(result) : result) as DataT
+        // checked after the transform, as a newer call or `clear` may have taken over while it ran
+        if (current === promise) {
+          data.value = value
+          error.value = undefined
+          status.value = 'success'
         }
-        data.value = value as DataT
-        error.value = undefined
-        status.value = 'success'
+        return value
       })
       .catch((err: unknown) => {
-        if (current !== promise) {
-          return current
+        if (current === promise) {
+          if (isAbortError(err)) {
+            status.value = 'idle'
+          } else {
+            error.value = createError<NuxtErrorDataT>(err as Error) as ErrorT
+            data.value = getDefault()
+            status.value = 'error'
+          }
         }
-        if (isAbortError(err)) {
-          status.value = 'idle'
-          return
-        }
-        error.value = createError<NuxtErrorDataT>(err as Error) as ErrorT
-        data.value = getDefault()
-        status.value = 'error'
+        return undefined
       })
       .finally(() => {
+        controllers.delete(controller)
         if (current === promise) {
-          abortController = current = undefined
+          current = undefined
         }
       })
 
@@ -166,7 +168,7 @@ export interface UseAsyncDataMutation<FDataT = unknown, FDefaultT = undefined, F
   <ResT, InputT = void, NuxtErrorDataT = unknown, DataT = FactoryDataT<FDataT, ResT>, DefaultT = FactoryDefaultT<FDefaultT, undefined>>(
     handler: AsyncDataMutationHandler<InputT, ResT>,
     opts?: AsyncDataMutationOptions<ResT, DataT, DefaultT> & FAddonOpts,
-  ): AugmentedAsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT | DefaultT, NuxtErrorFor<NuxtErrorDataT>, FAddonExt>
+  ): AugmentedAsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT, NuxtErrorFor<NuxtErrorDataT>, DefaultT, FAddonExt>
 }
 
 export type CreateUseAsyncDataMutationOptions<

@@ -134,7 +134,8 @@ export async function mutationProbe () {
 
   const save = useAsyncDataMutation((input: { id: number }) => Promise.resolve(input.id), { default: () => 0 })
   expectTypeOf(save.data.value).toEqualTypeOf<number>()
-  await save.mutate({ id: 1 })
+  // a call resolves to its own data, never to the default
+  expectTypeOf(await save.mutate({ id: 1 })).toEqualTypeOf<number | undefined>()
   // @ts-expect-error the handler takes an input
   await save.mutate()
   await useAsyncDataMutation(() => Promise.resolve(true)).mutate()

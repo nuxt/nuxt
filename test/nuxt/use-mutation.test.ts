@@ -21,7 +21,7 @@ describe('useAsyncDataMutation', () => {
   it('passes the input to the handler and stores the result', async () => {
     const { data, status, mutate } = useAsyncDataMutation((input: number) => Promise.resolve(input * 2), { transform: n => `${n}` })
     expect(status.value).toBe('idle')
-    await mutate(21)
+    expect(await mutate(21)).toBe('42')
     expect(data.value).toBe('42')
     expect(status.value).toBe('success')
   })
@@ -37,18 +37,15 @@ describe('useAsyncDataMutation', () => {
     expect(status.value).toBe('idle')
   })
 
-  it('cancels a pending call by default and joins it with `dedupe: \'defer\'`', async () => {
-    let calls = 0
-    const { data, mutate } = useAsyncDataMutation((input: string) => {
-      calls++
-      return new Promise<string>(resolve => setTimeout(() => resolve(input), 10))
-    })
-    await Promise.all([mutate('first'), mutate('second')])
-    expect(data.value).toBe('second')
+  it('runs every call, resolving each to its own result while the state follows the latest', async () => {
+    const { data, mutate, clear } = useAsyncDataMutation((delay: number) => new Promise<number>(resolve => setTimeout(() => resolve(delay), delay)))
+    // the earlier call settles last, but does not overwrite the state
+    expect(await Promise.all([mutate(20), mutate(10)])).toStrictEqual([20, 10])
+    expect(data.value).toBe(10)
 
-    await Promise.all([mutate('third'), mutate('fourth', { dedupe: 'defer' })])
-    expect(data.value).toBe('third')
-    expect(calls).toBe(3)
+    const aborted = mutate(10)
+    clear()
+    expect(await aborted).toBeUndefined()
   })
 
   it('discards a result whose transform settles after `clear`', async () => {

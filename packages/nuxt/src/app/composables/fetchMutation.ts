@@ -61,7 +61,7 @@ export interface UseFetchMutation<FDataT = unknown, FDefaultT = undefined, FBase
     request: Ref<ReqT> | ReqT | (() => ReqT),
     opts?: UseFetchMutationOptions<_ResT, DataT, DefaultT, _ReqT & string, Method, BaseURL> & FAddonOpts,
     ...unmatched: UnmatchedRouteArgs<_ReqT, Method>
-  ): AugmentedAsyncDataMutation<FetchMutationArgs<_ReqT, Method>, DataT | DefaultT, ErrorT, FAddonExt>
+  ): AugmentedAsyncDataMutation<FetchMutationArgs<_ReqT, Method>, DataT, ErrorT, DefaultT, FAddonExt>
   <
     ResT = void,
     ErrorT = NuxtError<unknown>,
@@ -75,7 +75,7 @@ export interface UseFetchMutation<FDataT = unknown, FDefaultT = undefined, FBase
   >(
     request: (Ref<ReqT> | ReqT | (() => ReqT)) & ValidTypedFetchPath<_ReqT, Method>,
     opts?: UseFetchMutationOptions<_ResT, DataT, DefaultT, _ReqT & string, Method, BaseURL> & FAddonOpts,
-  ): AugmentedAsyncDataMutation<FetchMutationArgs<_ReqT, Method>, DataT | DefaultT, ErrorT, FAddonExt>
+  ): AugmentedAsyncDataMutation<FetchMutationArgs<_ReqT, Method>, DataT, ErrorT, DefaultT, FAddonExt>
 }
 
 type CreateUseFetchMutationBaseOptions<FDataT, FDefaultT, FBaseURL extends string> = Partial<UseFetchMutationOptions<any, FDataT, FDefaultT, string, AnyServerRouteMethod, FBaseURL>>
@@ -97,7 +97,7 @@ export interface CreateUseFetchMutation {
 
 function _createUseFetchMutation (options: FactoryOptions = {}): UseFetchMutation {
   return ((request: MaybeRefOrGetter<unknown>, opts: Record<string, any> = {}) => {
-    const { default: defaultFn, transform, deep, dedupe, timeout, middleware, $fetch: customFetch, ...fetchOptions } = mergeFactoryOptions(options, opts)
+    const { default: defaultFn, transform, deep, timeout, middleware, $fetch: customFetch, ...fetchOptions } = mergeFactoryOptions(options, opts)
     const _$fetch = (customFetch || (import.meta.server ? useRequestFetch() : $fetch)) as (request: unknown, opts: unknown) => Promise<unknown>
 
     if ('params' in fetchOptions) {
@@ -121,7 +121,7 @@ function _createUseFetchMutation (options: FactoryOptions = {}): UseFetchMutatio
         headers: mergeHeaders(fetchOptions.headers, payload?.headers),
         signal,
       })
-    }, { default: defaultFn, transform, deep, dedupe, timeout, middleware })
+    }, { default: defaultFn, transform, deep, timeout, middleware })
   }) as UseFetchMutation
 }
 
