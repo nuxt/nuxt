@@ -132,6 +132,12 @@ export async function mutationProbe () {
   // @ts-expect-error `q` is validated as a string
   await searched.mutate({ query: { q: 1, page: '1' } })
 
+  // the fetch options may be refs or getters, keeping the types the route declares
+  const q = ref('nuxt')
+  useFetchMutation('/searched', { baseURL: '/api', method: 'get', query: { q, page: '1' }, headers: () => ({ 'x-api-key': q.value }) })
+  // @ts-expect-error `q` is validated as a string
+  useFetchMutation('/searched', { baseURL: '/api', method: 'get', query: { q: ref(1), page: '1' } })
+
   const save = useAsyncDataMutation((input: { id: number }) => Promise.resolve(input.id), { default: () => 0 })
   expectTypeOf(save.data.value).toEqualTypeOf<number>()
   // a call resolves to its own data, never to the default

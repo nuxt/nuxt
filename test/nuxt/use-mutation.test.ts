@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { defineEventHandler, readBody } from 'h3'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { createUseAsyncDataMutation, useAsyncDataMutation } from '#app/composables/asyncDataMutation'
 import { createUseFetchMutation, useFetchMutation } from '#app/composables/fetchMutation'
 import { defineUseAsyncDataMutationAddon, defineUseFetchMutationAddon } from '#app/composables/addons'
@@ -74,6 +74,19 @@ describe('useFetchMutation', () => {
 
     await mutate({ body: { id: 2 }, headers: { 'x-test': 'call' } })
     expect(data.value).toMatchObject({ header: 'call', body: { id: 2 } })
+  })
+
+  it('reads the current value of ref and getter options on each call', async () => {
+    const page = ref('1')
+    const token = ref('a')
+    const { data, mutate } = useFetchMutation('/api/mutation', { query: { page }, headers: () => ({ 'x-test': token.value }) })
+    await mutate()
+    expect(data.value).toMatchObject({ query: { page: '1' }, header: 'a' })
+
+    page.value = '2'
+    token.value = 'b'
+    await mutate({ query: { extra: '1' } })
+    expect(data.value).toMatchObject({ query: { page: '2', extra: '1' }, header: 'b' })
   })
 
   it('sends a POST request unless another method is set', async () => {

@@ -1,7 +1,7 @@
 import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { AcceptedMethod, AnyServerRouteMethod, EffectiveBaseURL, FallbackBaseURL, RequiredRequestBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, UnmatchedRouteArgs, ValidTypedFetchPath } from '../types/fetch'
+import type { AcceptedMethod, AnyServerRouteMethod, ComputedOptions, EffectiveBaseURL, FallbackBaseURL, RequiredRequestBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, UnmatchedRouteArgs, ValidTypedFetchPath } from '../types/fetch'
 import type { MaybeRefOrGetter, Ref } from 'vue'
-import { toValue } from 'vue'
+import { reactive, toValue } from 'vue'
 import type { FactoryDataT, FactoryDefaultT } from '../types/async-data'
 import { createAsyncDataMutation, mergeFactoryOptions } from './asyncDataMutation'
 import type { AsyncDataMutationExecuteOptions, AsyncDataMutationOptions, AugmentedAsyncDataMutation, FactoryOptions } from './asyncDataMutation'
@@ -17,6 +17,9 @@ import { $fetch as _$fetch } from '#build/fetch'
 
 const $fetch = _$fetch as TypedFetch
 
+// the options a getter may be given for, as in `useFetch`; the others that are functions are hooks
+const MAYBE_REF_OR_GETTER_OPTION_KEYS = ['method', 'baseURL', 'query', 'headers'] as const
+
 /** The `body`, `query` and `headers` a single `mutate` call sends to `Request`. */
 export type FetchMutationPayload<Request, Method extends AnyServerRouteMethod> = TypedRequestShape<Request, Method>
 
@@ -25,6 +28,20 @@ export type FetchMutationArgs<Request, Method extends AnyServerRouteMethod> = un
   ? [payload?: FetchMutationPayload<Request, Method>, opts?: AsyncDataMutationExecuteOptions]
   : [payload: FetchMutationPayload<Request, Method> & RequiredRequestBody<Request, Method>, opts?: AsyncDataMutationExecuteOptions]
 
+type FetchMutationFetchOptions<DataT, R extends string, M extends AnyServerRouteMethod, B extends string> =
+  & Omit<FetchOptions<_ResponseType, DataT>, 'baseURL' | 'method' | 'body' | 'query' | 'params' | 'headers' | 'signal' | 'timeout'>
+  & {
+    baseURL?: B
+    /** Unlike `useFetch`, a mutation is sent as `POST` unless another method is set. */
+    method?: AcceptedMethod<R, M>
+    /** Merged with the `query` passed to each `mutate` call. */
+    query?: TypedRequestShape<R, M>['query']
+    /** Merged with the `headers` passed to each `mutate` call. */
+    headers?: TypedRequestShape<R, M>['headers']
+  }
+
+// As in `useFetch`, the fetch options may be refs or getters. They are not watched: their current
+// values are read on each `mutate` call.
 export interface UseFetchMutationOptions<
   ResT,
   DataT = ResT,
@@ -32,14 +49,7 @@ export interface UseFetchMutationOptions<
   R extends string = string,
   M extends AnyServerRouteMethod = 'post',
   B extends string = string,
-> extends AsyncDataMutationOptions<ResT, DataT, DefaultT>, Omit<FetchOptions<_ResponseType, DataT>, 'baseURL' | 'method' | 'body' | 'query' | 'params' | 'headers' | 'signal' | 'timeout'> {
-  baseURL?: B
-  /** Unlike `useFetch`, a mutation is sent as `POST` unless another method is set. */
-  method?: AcceptedMethod<R, M>
-  /** Merged with the `query` passed to each `mutate` call. */
-  query?: TypedRequestShape<R, M>['query']
-  /** Merged with the `headers` passed to each `mutate` call. */
-  headers?: TypedRequestShape<R, M>['headers']
+> extends AsyncDataMutationOptions<ResT, DataT, DefaultT>, ComputedOptions<FetchMutationFetchOptions<DataT, R, M, B>> {
   $fetch?: TypedFetch
 }
 
@@ -107,18 +117,27 @@ function _createUseFetchMutation (options: FactoryOptions = {}): UseFetchMutatio
       }
     }
 
+    // reading through `reactive` unwraps refs, nested ones included, without watching them
+    const _fetchOptions = reactive(fetchOptions)
+
     return createAsyncDataMutation((payload: Record<string, any> | undefined, { signal }) => {
       const _request = toValue(request)
-      if (!fetchOptions.baseURL && typeof _request === 'string' && _request[0] === '/' && _request[1] === '/') {
+      const resolvedOptions = { ..._fetchOptions }
+      for (const key of MAYBE_REF_OR_GETTER_OPTION_KEYS) {
+        if (typeof resolvedOptions[key] === 'function') {
+          resolvedOptions[key] = toValue(resolvedOptions[key] as () => unknown)
+        }
+      }
+      if (!resolvedOptions.baseURL && typeof _request === 'string' && _request[0] === '/' && _request[1] === '/') {
         throw dataDiagnostics.NUXT_E3001({ fn: 'useFetchMutation', url: _request })
       }
       return _$fetch(_request, {
         ...fetchDefaults,
-        ...fetchOptions,
-        method: fetchOptions.method ?? 'POST',
+        ...resolvedOptions,
+        method: resolvedOptions.method ?? 'POST',
         body: payload?.body,
-        query: payload?.query ? { ...fetchOptions.query, ...payload.query } : fetchOptions.query,
-        headers: mergeHeaders(fetchOptions.headers, payload?.headers),
+        query: payload?.query ? { ...resolvedOptions.query, ...payload.query } : resolvedOptions.query,
+        headers: mergeHeaders(resolvedOptions.headers, payload?.headers),
         signal,
       })
     }, { default: defaultFn, transform, deep, timeout, middleware })

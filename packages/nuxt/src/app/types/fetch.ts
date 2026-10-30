@@ -1,6 +1,13 @@
 import type { FetchOptions, FetchRequest, FetchResponse } from 'ofetch'
+import type { MaybeRefOrGetter } from 'vue'
 import type { AnyHTTPMethod, LooseTypedHeaders, TypedFetchErrorBody, TypedFetchPath, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, ValidFetchInput } from 'fetchdts'
 import type { ErrorBody, Methods, Path, RequestBody, RequestHeaders, RequestQuery, Requires, Response, StrictFetchPaths, ValidInput } from '#build/server-routes'
+
+/** Options whose values, other than functions, may also be given as a ref or a getter. */
+export type ComputedOptions<T extends Record<string, any>> = {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | MaybeRefOrGetter<T[K]>
+}
 
 /** A lowercased HTTP method a server route can be registered for. */
 export type ServerRouteMethod = 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace'

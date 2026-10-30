@@ -1,5 +1,5 @@
 import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { AcceptedDeclaredMethod, AcceptedMethod, AnyServerRouteMethod, DeclaredFetchRequest, DeclaredRequestShape, DeclaredServerResponse, EffectiveBaseURL, FallbackBaseURL, RequiredDeclaredBody, RequiredFetchBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, TypedServerResponse, UnmatchedDeclaredRouteArgs, UnmatchedRouteArgs, ValidDeclaredFetchPath, ValidTypedFetchPath } from '../types/fetch'
+import type { AcceptedDeclaredMethod, AcceptedMethod, AnyServerRouteMethod, ComputedOptions, DeclaredFetchRequest, DeclaredRequestShape, DeclaredServerResponse, EffectiveBaseURL, FallbackBaseURL, RequiredDeclaredBody, RequiredFetchBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, TypedServerResponse, UnmatchedDeclaredRouteArgs, UnmatchedRouteArgs, ValidDeclaredFetchPath, ValidTypedFetchPath } from '../types/fetch'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { isPlainObject } from '@vue/shared'
@@ -23,11 +23,6 @@ const $fetch = _$fetch as TypedFetch
 // other, detail: https://github.com/nuxt/nuxt/issues/22313
 
 export type FetchResult<ReqT, M extends AnyServerRouteMethod> = TypedServerResponse<ReqT, unknown, M>
-
-type ComputedOptions<T extends Record<string, any>> = {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | MaybeRefOrGetter<T[K]>
-}
 
 type NuxtFetchOptions<R, M extends AnyServerRouteMethod = 'get', DataT = any, B extends string = string> =
   & Omit<FetchOptions<_ResponseType, DataT>, 'baseURL' | 'cache' | 'method' | 'body' | 'query' | 'params' | 'headers'>
