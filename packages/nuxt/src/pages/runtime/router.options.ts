@@ -16,6 +16,17 @@ export default <RouterConfig>{
     // @ts-expect-error untyped, nuxt-injected option
     const hashScrollBehaviour = router.options?.scrollBehaviorType ?? 'auto'
 
+    // Preserve original `from` when navigating again, before the new page has settled
+    if (from !== START_LOCATION) {
+      const pendingFrom = nuxtApp['~scrollFrom']
+      if (pendingFrom) {
+        from = pendingFrom
+      } else {
+        nuxtApp['~scrollFrom'] = from
+        nuxtApp.hooks.hookOnce('page:loading:end', () => { delete nuxtApp['~scrollFrom'] })
+      }
+    }
+
     // Hash routes on the same page, no page hook is fired so resolve here
     if (to.path.replace(/\/$/, '') === from.path.replace(/\/$/, '')) {
       if (from.hash && !to.hash) {
