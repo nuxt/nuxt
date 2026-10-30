@@ -393,7 +393,7 @@ test.describe('SSR Streaming', () => {
   // pushes) that bypass unhead. When a security module has stamped a nonce on
   // the head scripts, the renderer reuses it so a strict `script-src` policy
   // does not block them. The `/nonce` fixture plugin stamps `test-csp-nonce`.
-  test('a head-script nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
+  test('a useHead nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
     const res = await fetch('/nonce')
     const html = await res.text()
 
@@ -401,12 +401,58 @@ test.describe('SSR Streaming', () => {
     expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__\|\|\(window\.__unhead__=\{_q:\[\]/)
     // Streamed head-push chunks carry the nonce
     expect(html).toMatch(/<script nonce="test-csp-nonce">window\.__unhead__\.push/)
+    // Inline script that injected by renderPayloadJsonScript
+    expect(html).toMatch(/<script[^>]*\snonce="test-csp-nonce"[^>]*>window\.__NUXT__=/)
+    // Every script tag must contain exactly one nonce attribute
+    const scriptTags = html.match(/<script\b[^>]*>/g) || []
+    const NONCE_ATTR_RE = /\snonce=/g
+    const NONCE_ATTR_VALUE_RE = /\snonce="test-csp-nonce"(?:\s|>)/
+    for (const scriptTag of scriptTags) {
+      expect(scriptTag).toMatch(NONCE_ATTR_VALUE_RE)
+      expect((scriptTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
+    }
 
     if (!isDev) {
       // Production IIFE chunk is loaded as an external script — also nonced
-      expect(html).toMatch(/<script async nonce="test-csp-nonce" src=/)
+      const iifeScriptMatch = html.match(/<script[^>]*src="[^"]*streaming-iife[^"]*\.js"[^>]*>/)
+      expect(iifeScriptMatch).toBeTruthy()
+      expect(iifeScriptMatch![0]).toContain('nonce="test-csp-nonce"')
       // Route-level inline `<style>` carries the nonce too (strict `style-src`)
       expect(html).toMatch(/<style nonce="test-csp-nonce">[^<]*\.nonce-probe/)
+      // Every style tag must contain exactly one nonce attribute
+      const styleTags = html.match(/<style\b[^>]*>/g) || []
+      for (const styleTag of styleTags) {
+        expect(styleTag).toMatch(NONCE_ATTR_VALUE_RE)
+        expect((styleTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
+      }
+    }
+  })
+
+  test('a render:html nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
+    const res = await fetch('/nonce-by-hook')
+    const html = await res.text()
+
+    expect(html).toMatch(/<script nonce="nonce-by-hook">window\.__unhead__\|\|\(window\.__unhead__=\{_q:\[\]/)
+    expect(html).toMatch(/<script nonce="nonce-by-hook">window\.__unhead__\.push/)
+    expect(html).toMatch(/<script[^>]*\snonce="nonce-by-hook"[^>]*>window\.__NUXT__=/)
+    const scriptTags = html.match(/<script\b[^>]*>/g) || []
+    const NONCE_ATTR_RE = /\snonce=/g
+    const NONCE_ATTR_VALUE_RE = /\snonce="nonce-by-hook"(?:\s|>)/
+    for (const scriptTag of scriptTags) {
+      expect(scriptTag).toMatch(NONCE_ATTR_VALUE_RE)
+      expect((scriptTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
+    }
+
+    if (!isDev) {
+      const iifeScriptMatch = html.match(/<script[^>]*src="[^"]*streaming-iife[^"]*\.js"[^>]*>/)
+      expect(iifeScriptMatch).toBeTruthy()
+      expect(iifeScriptMatch![0]).toContain('nonce="nonce-by-hook"')
+      expect(html).toMatch(/<style nonce="nonce-by-hook">[^<]*\.nonce-probe/)
+      const styleTags = html.match(/<style\b[^>]*>/g) || []
+      for (const styleTag of styleTags) {
+        expect(styleTag).toMatch(NONCE_ATTR_VALUE_RE)
+        expect((styleTag.match(NONCE_ATTR_RE) || []).length).toBe(1)
+      }
     }
   })
 
