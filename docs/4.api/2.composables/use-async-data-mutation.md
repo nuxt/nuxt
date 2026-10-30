@@ -11,7 +11,7 @@ links:
 
 `useAsyncDataMutation` wraps an asynchronous function that changes something, such as saving a form, creating a record or deleting a file. The function only runs when you call `mutate`, and the result, status and error of the call are tracked in reactive refs, so you can show a loading state or an error message without managing them yourself.
 
-Unlike [`useAsyncData`](/docs/api/composables/use-async-data), it never runs on its own. Its state is local to the component that called it: it is not keyed, not shared with other components and not transferred from the server to the client in the payload.
+Unlike [`useAsyncData`](/docs/api/composables/use-async-data), it never runs on its own. Each call to `useAsyncDataMutation` has its own state: it is not keyed, not shared with other calls and not transferred from the server to the client in the payload.
 
 ::tip{to="/docs/api/composables/use-fetch-mutation"}
 Sending a request to an API endpoint? `useFetchMutation` sends it for you, with the request body, query and headers typed from your server routes.
@@ -86,7 +86,7 @@ To stop a form from being submitted twice, disable the button that triggers it w
 
 ### Aborting a Call
 
-The handler receives an `AbortSignal` in its second argument. Pass it on to the request, as with `$fetch` above, so that the request can be aborted.
+The handler receives a context object with an `AbortSignal` as `signal` in its second argument. Pass the signal on to the request, as with `$fetch` above, so that the request can be aborted.
 
 The signal is aborted when:
 
@@ -126,7 +126,9 @@ Aborting a call stops waiting for it, but it cannot undo a change the server has
 export function useAsyncDataMutation<ResT, InputT = void, ErrorDataT = unknown, DataT = ResT, DefaultT = undefined> (
   handler: AsyncDataMutationHandler<InputT, ResT>,
   options?: AsyncDataMutationOptions<ResT, DataT, DefaultT>,
-): AsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT, NuxtError<ErrorDataT>, DefaultT>
+): AsyncDataMutation<[input: InputT, opts?: AsyncDataMutationExecuteOptions], DataT, NuxtErrorFor<ErrorDataT>, DefaultT>
+
+type NuxtErrorFor<T> = T extends Error | NuxtError ? T : NuxtError<T>
 
 type AsyncDataMutationHandler<InputT, ResT> = (input: InputT, ctx: { signal: AbortSignal }) => Promise<ResT>
 

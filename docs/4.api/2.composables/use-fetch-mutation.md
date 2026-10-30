@@ -11,7 +11,7 @@ links:
 
 `useFetchMutation` sends a request with [`$fetch`](/docs/api/utils/dollarfetch) when you call `mutate`, and tracks the result, status and error of the request in reactive refs. Use it for requests that change something, such as submitting a form, creating a record or deleting an item.
 
-It works like [`useAsyncDataMutation`](/docs/api/composables/use-async-data-mutation) with a request as the handler: it never runs on its own, and its state is local to the component that called it. To read data when a page or component renders, use [`useFetch`](/docs/api/composables/use-fetch) instead.
+It works like [`useAsyncDataMutation`](/docs/api/composables/use-async-data-mutation) with a request as the handler: it never runs on its own, and each call to `useFetchMutation` has its own state. To read data when a page or component renders, use [`useFetch`](/docs/api/composables/use-fetch) instead.
 
 ## Usage
 
@@ -54,7 +54,7 @@ The request is sent with the `POST` method unless you set another one. The `body
 
 ### Typed Requests
 
-The URL, the response, and the `body`, `query` and `headers` passed to `mutate` are typed from the routes your server serves, as with [`$fetch`](/docs/getting-started/data-fetching#typed-routes). The method decides which route handles the request, so `/api/todos` is typed by `server/api/todos.post.ts` unless you set another method.
+The URL, the response, and the `body`, `query` and `headers` passed to `mutate` are typed from the routes your server serves, as with [`$fetch`](/docs/getting-started/data-fetching#typed-routes). A path built at runtime resolves to `unknown`. The method decides which route handles the request, so `/api/todos` is typed by `server/api/todos.post.ts` unless you set another method.
 
 For a handler that validates its body:
 
