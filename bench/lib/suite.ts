@@ -1,5 +1,6 @@
 import { join } from 'node:path'
 import type { Fixture } from './fixtures.ts'
+import type { Metric } from './report.ts'
 import type { Target } from './targets.ts'
 
 export interface SuiteContext {
@@ -11,8 +12,8 @@ export interface SuiteContext {
 
 export interface SuiteResult {
   markdown: string
-  /** Headline rows of `[metric, baseline, head, delta]` for the summary table. */
-  headline: string[][]
+  /** Metrics for the summary, which lists the ones that changed. */
+  headline: Metric[]
   data: unknown
 }
 

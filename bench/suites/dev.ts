@@ -1,7 +1,9 @@
 import process from 'node:process'
 import type { Fixture } from '../lib/fixtures.ts'
 import { allocatePort, quietEnv, start, waitForHttp } from '../lib/proc.ts'
-import { compareHeaders, compareRow, formatDelta, formatMs, markdownTable, summarise } from '../lib/stats.ts'
+import type { Metric } from '../lib/report.ts'
+import { timing } from '../lib/report.ts'
+import { compareHeaders, compareRow, formatMs, markdownTable } from '../lib/stats.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
 import { fixtureDir, interleave } from '../lib/suite.ts'
 import type { Target } from '../lib/targets.ts'
@@ -35,7 +37,7 @@ async function measure (target: Target, fixture: Fixture, cold: boolean): Promis
 
 export async function devSuite ({ targets, fixtures, reps, log }: SuiteContext): Promise<SuiteResult> {
   const rows: string[][] = []
-  const headline: string[][] = []
+  const headline: Metric[] = []
   const data: Record<string, Record<string, number[][]>> = {}
 
   for (const fixture of fixtures) {
@@ -49,9 +51,7 @@ export async function devSuite ({ targets, fixtures, reps, log }: SuiteContext):
         rows.push(compareRow(label, baseline.map(s => s[index]!), head.map(s => s[index]!)))
       })
       if (mode === 'cold') {
-        const a = summarise(baseline.map(s => s[0]!)).median
-        const b = summarise(head.map(s => s[0]!)).median
-        headline.push([`cold \`nuxt dev\` to first response (${fixture.id})`, formatMs(a), formatMs(b), formatDelta(a, b)])
+        headline.push(timing(`cold \`nuxt dev\` to first response (${fixture.id})`, baseline.map(s => s[0]!), head.map(s => s[0]!), formatMs))
       }
     }
   }

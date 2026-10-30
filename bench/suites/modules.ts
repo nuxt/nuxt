@@ -1,6 +1,8 @@
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { quietEnv, run } from '../lib/proc.ts'
+import type { Metric } from '../lib/report.ts'
+import { exact } from '../lib/report.ts'
 import { formatBytes, formatDelta, markdownTable } from '../lib/stats.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
 import { fixtureDir } from '../lib/suite.ts'
@@ -16,7 +18,7 @@ interface ModuleCount {
 
 export async function modulesSuite ({ targets, fixtures, log }: SuiteContext): Promise<SuiteResult> {
   const rows: string[][] = []
-  const headline: string[][] = []
+  const headline: Metric[] = []
   const data: Record<string, Record<string, ModuleCount>> = {}
 
   for (const fixture of fixtures) {
@@ -48,7 +50,10 @@ export async function modulesSuite ({ targets, fixtures, log }: SuiteContext): P
       String(baseline.builtins),
       String(head.builtins),
     ])
-    headline.push([`modules loaded by \`nuxt prepare\` (${fixture.id})`, String(baseline.modules), String(head.modules), formatDelta(baseline.modules, head.modules)])
+    headline.push(
+      exact(`modules loaded by \`nuxt prepare\` (${fixture.id})`, baseline.modules, head.modules, String, { threshold: 0 }),
+      exact(`source loaded by \`nuxt prepare\` (${fixture.id})`, baseline.bytes, head.bytes, formatBytes, { threshold: 0.01 }),
+    )
   }
 
   const markdown = [
