@@ -6,7 +6,7 @@ import { createServer } from 'vite'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 
-import { installedScanEntries, resolveOptimizeDepsInclude } from '../src/utils/optimize-deps.ts'
+import { appScanEntries, resolveOptimizeDepsInclude } from '../src/utils/optimize-deps.ts'
 import { OptimizeDepsPlugin } from '../src/plugins/optimize-deps.ts'
 import { userOptimizeDepsInclude } from '../src/plugins/optimize-deps-hint.ts'
 
@@ -21,6 +21,11 @@ const ownComponentsRoot = join(rootDir, 'node_modules/installed-own-components/'
 const ownComponentsPlugin = join(ownComponentsRoot, 'runtime/plugin.mjs')
 const localComponentsRoot = join(rootDir, 'layers/local-components/')
 const localComponentsPlugin = join(localComponentsRoot, 'plugin.mjs')
+const localLayerRoot = join(rootDir, 'layers/local/')
+const localLayerSrcDir = join(localLayerRoot, 'app/')
+const flatLayerRoot = join(rootDir, 'layers/flat/')
+const staleLayerRoot = join(rootDir, 'layers/stale/')
+const staleLayerSrcDir = join(staleLayerRoot, 'app/')
 const entry = join(srcDir, 'entry.mjs')
 const componentsEntry = join(srcDir, 'components-entry.mjs')
 
@@ -67,7 +72,20 @@ await mkdir(localComponentsRoot, { recursive: true })
 await writeFile(join(localComponentsRoot, 'package.json'), JSON.stringify({ name: 'local-components', type: 'module', imports: { '#components': './components.mjs' } }))
 await writeFile(join(localComponentsRoot, 'components.mjs'), 'export { default as Local } from \'local-components-dep\'\n')
 await writeFile(localComponentsPlugin, 'import { Local } from \'#components\'\nimport x from \'root-dep\'\nexport default [Local, x]\n')
-for (const dep of ['plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep', 'imports-module-dep', 'internal-dep', 'own-components-dep', 'local-components-dep']) {
+await mkdir(join(localLayerSrcDir, 'plugins'), { recursive: true })
+await writeFile(join(localLayerSrcDir, 'plugins/local.mjs'), 'import x from \'local-layer-dep\'\nexport default x\n')
+await mkdir(join(localLayerSrcDir, 'components'), { recursive: true })
+await writeFile(join(localLayerSrcDir, 'components/local.spec.ts'), 'import x from \'test-only-dep\'\nexport default x\n')
+await writeFile(join(srcDir, 'root.spec.ts'), 'import x from \'root-test-only-dep\'\nexport default x\n')
+// a layer without an `app/` directory
+for (const [file, dep] of [['components/flat.mjs', 'flat-dep'], ['server/api/data.mjs', 'server-only-dep'], ['modules/local.mjs', 'module-only-dep'], ['vitest.config.mjs', 'config-only-dep'], ['node_modules/flat-pkg/index.mjs', 'flat-pkg-dep']] as const) {
+  await mkdir(join(flatLayerRoot, file, '..'), { recursive: true })
+  await writeFile(join(flatLayerRoot, file), `import x from '${dep}'\nexport default x\n`)
+}
+await mkdir(join(staleLayerSrcDir, 'plugins'), { recursive: true })
+await writeFile(join(staleLayerSrcDir, 'plugins/unused.mjs'), 'import x from \'not-installed-dep\'\nexport default x\n')
+await writeFile(join(staleLayerSrcDir, 'plugins/used.mjs'), 'import x from \'stale-layer-dep\'\nexport default x\n')
+for (const dep of ['test-only-dep', 'root-test-only-dep', 'flat-pkg-dep', 'flat-dep', 'server-only-dep', 'module-only-dep', 'config-only-dep', 'stale-layer-dep', 'local-layer-dep', 'plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep', 'imports-module-dep', 'internal-dep', 'own-components-dep', 'local-components-dep']) {
   await writePackage(join(rootDir, 'node_modules', dep), dep, 'export default 1\n')
 }
 
@@ -80,6 +98,8 @@ function createNuxt (layerDirs: Array<{ app: string, root: string }> = [], apps:
       rootDir,
       srcDir,
       alias: {},
+      // part of Nuxt's defaults
+      ignore: ['**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}'],
       _layers: [
         { cwd: rootDir, config: { rootDir, srcDir } },
         ...layerDirs.map(dirs => ({ cwd: dirs.root, config: { rootDir: dirs.root, srcDir: dirs.app } })),
@@ -89,10 +109,13 @@ function createNuxt (layerDirs: Array<{ app: string, root: string }> = [], apps:
 }
 
 const installedLayer = { app: layerSrcDir, root: layerRoot }
+// entries for the installed layer only, without the root app directory
+const installedLayerEntries = () => appScanEntries(createNuxt([installedLayer])).filter(e => !e.includes(srcDir))
 
 async function optimizedDeps (options: { entries?: string[], include?: string[], plugins?: Plugin[] }) {
   const server = await createServer({
-    root: rootDir,
+    // like Nuxt, which uses `srcDir` as Vite's root
+    root: srcDir,
     configFile: false,
     logLevel: 'silent',
     server: { middlewareMode: true },
@@ -113,17 +136,56 @@ async function optimizedDeps (options: { entries?: string[], include?: string[],
   return deps
 }
 
-describe('installedScanEntries', () => {
-  it('should not scan layers that are part of the project', () => {
-    const nuxt = createNuxt([{ app: join(rootDir, 'layers/local/app/'), root: join(rootDir, 'layers/local/') }])
+describe('appScanEntries', () => {
+  it('should scan the app directory of every layer', () => {
+    const nuxt = createNuxt([{ app: localLayerSrcDir, root: localLayerRoot }])
 
-    expect(installedScanEntries(nuxt)).toEqual([])
+    expect(appScanEntries(nuxt).filter(e => !e.startsWith('!'))).toEqual([
+      join(srcDir, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'),
+      join(localLayerSrcDir, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'),
+    ])
+  })
+
+  it('should not pre-bundle dependencies of files nuxt ignores', async () => {
+    const nuxt = createNuxt([{ app: localLayerSrcDir, root: localLayerRoot }])
+
+    const deps = await optimizedDeps({ plugins: [OptimizeDepsPlugin(nuxt)] })
+
+    expect(deps).toContain('local-layer-dep')
+    expect(deps).not.toContain('test-only-dep')
+    expect(deps).not.toContain('root-test-only-dep')
+  })
+
+  it('should only scan app code of a layer without an `app/` directory', async () => {
+    const nuxt = createNuxt([{ app: flatLayerRoot, root: flatLayerRoot }])
+
+    const deps = await optimizedDeps({ plugins: [OptimizeDepsPlugin(nuxt)] })
+
+    expect(deps).toContain('flat-dep')
+    expect(deps).not.toContain('server-only-dep')
+    expect(deps).not.toContain('module-only-dep')
+    expect(deps).not.toContain('config-only-dep')
+    expect(deps).not.toContain('flat-pkg-dep')
+  })
+
+  it('should keep scanning when an app file imports a package that is not installed', async () => {
+    const nuxt = createNuxt([{ app: staleLayerSrcDir, root: staleLayerRoot }])
+
+    await expect(optimizedDeps({ plugins: [OptimizeDepsPlugin(nuxt)] })).resolves.toContain('stale-layer-dep')
+  })
+
+  it('should pre-bundle dependencies only imported from a local layer', async () => {
+    await expect(optimizedDeps({})).resolves.not.toContain('local-layer-dep')
+
+    const nuxt = createNuxt([{ app: localLayerSrcDir, root: localLayerRoot }])
+
+    await expect(optimizedDeps({ plugins: [OptimizeDepsPlugin(nuxt)] })).resolves.toContain('local-layer-dep')
   })
 
   it('should pre-bundle dependencies only reachable through an installed layer', async () => {
     await expect(optimizedDeps({})).resolves.toEqual([])
 
-    const entries = [entry, ...installedScanEntries(createNuxt([installedLayer]))]
+    const entries = [entry, ...installedLayerEntries()]
 
     await expect(optimizedDeps({ entries })).resolves.toContain('layer-dep')
   })
@@ -131,7 +193,7 @@ describe('installedScanEntries', () => {
   it('should scan app files that modules register from within node_modules', async () => {
     const nuxt = createNuxt([], { default: registered })
 
-    const entries = installedScanEntries(nuxt)
+    const entries = appScanEntries(nuxt).filter(e => !e.includes('*'))
 
     expect(entries.toSorted()).toEqual([
       registered.components[0]!.filePath,
@@ -144,7 +206,7 @@ describe('installedScanEntries', () => {
     )
   })
 
-  it('should not scan app files that are part of the project', () => {
+  it('should not list app files that are part of the project one by one', () => {
     const nuxt = createNuxt([], {
       default: {
         components: [{ filePath: join(srcDir, 'components/Local.vue') }],
@@ -154,11 +216,12 @@ describe('installedScanEntries', () => {
       },
     })
 
-    expect(installedScanEntries(nuxt)).toEqual([])
+    // they are covered by the glob of the app directory
+    expect(appScanEntries(nuxt).filter(e => !e.includes('*'))).toEqual([])
   })
 
   it('should not scan dependencies nested within the layer', async () => {
-    const entries = installedScanEntries(createNuxt([installedLayer]))
+    const entries = installedLayerEntries()
 
     await expect(optimizedDeps({ entries: [entry, ...entries.filter(e => !e.startsWith('!'))] })).resolves.toContain('hoisted-dep')
     await expect(optimizedDeps({ entries: [entry, ...entries] })).resolves.not.toContain('hoisted-dep')
@@ -182,7 +245,7 @@ describe('OptimizeDepsPlugin', () => {
     await configureEnvironment(createNuxt([installedLayer]), 'client', config)
 
     expect(config.optimizeDeps.include).toEqual(['installed-layer > layer-dep'])
-    expect(config.optimizeDeps.entries).toEqual([entry, ...installedScanEntries(createNuxt([installedLayer]))])
+    expect(config.optimizeDeps.entries).toEqual([entry, ...appScanEntries(createNuxt([installedLayer]))])
   })
 
   it('should leave the server environment alone', async () => {
