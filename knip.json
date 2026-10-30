@@ -28,6 +28,7 @@
       "entry": [
         "scripts/*",
         "bench/**/*.{ts,mjs}",
+        "bench/fixtures/**/*.vue",
         "test/*.ts",
         "test/bench/*.ts",
         "test/e2e/*.ts",

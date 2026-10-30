@@ -1,14 +1,16 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { waitForHttp } from '../lib/proc.ts'
-import { compareHeaders, compareRow, formatDelta, formatMs, markdownTable, summarise } from '../lib/stats.ts'
+import type { Metric } from '../lib/report.ts'
+import { timing } from '../lib/report.ts'
+import { compareHeaders, compareRow, formatMs, markdownTable } from '../lib/stats.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
 import { fixtureDir } from '../lib/suite.ts'
 import { startDev } from './dev.ts'
 
 export async function hmrSuite ({ targets, fixtures, reps, log }: SuiteContext): Promise<SuiteResult> {
   const rows: string[][] = []
-  const headline: string[][] = []
+  const headline: Metric[] = []
   const data: Record<string, Record<string, number[]>> = {}
 
   for (const fixture of fixtures) {
@@ -47,9 +49,7 @@ export async function hmrSuite ({ targets, fixtures, reps, log }: SuiteContext):
     const [baseline, head] = servers.map(s => s.samples) as [number[], number[]]
     data[fixture.id] = { baseline, head }
     rows.push(compareRow(`${fixture.id} (\`${hmr.file}\`)`, baseline, head))
-    const a = summarise(baseline).median
-    const b = summarise(head).median
-    headline.push([`edit to updated SSR response (${fixture.id})`, formatMs(a), formatMs(b), formatDelta(a, b)])
+    headline.push(timing(`edit to updated SSR response (${fixture.id})`, baseline, head, formatMs))
   }
 
   const markdown = [

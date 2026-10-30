@@ -2,7 +2,7 @@ name: bench
 
 on:
   pull_request:
-    types: [labeled, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review, labeled]
     branches:
       - main
       - 4.x
@@ -12,18 +12,49 @@ on:
         description: '`ref:<branch, tag or commit>`, or an npm version, tag or alias for nuxt'
         default: 'ref:main'
       suites:
-        description: 'Space-separated suites to run (all when empty)'
+        description: 'Space-separated suites to run (all except opt-in suites such as `browser` when empty)'
         default: ''
 
 permissions: {}
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
-  cancel-in-progress: true
-
 jobs:
+  changes:
+    if: github.event_name == 'pull_request' && github.event.action != 'labeled'
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    outputs:
+      bench: ${{ steps.filter.outputs.bench }}
+    steps:
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: filter
+        with:
+          filters: |
+            bench:
+              - 'packages/**'
+              - 'bench/**'
+              - 'test/bench/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - '.github/workflows/bench.yml'
+
   bench:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, '⚡ performance')
+    needs: changes
+    # the performance label requests a run whatever the pull request changes
+    if: >-
+      !cancelled() && (
+        github.event_name == 'workflow_dispatch' ||
+        (github.event.action == 'labeled' && github.event.label.name == '⚡ performance') ||
+        (github.event.action != 'labeled' && (
+          contains(github.event.pull_request.labels.*.name, '⚡ performance') ||
+          (!github.event.pull_request.draft && needs.changes.outputs.bench == 'true')
+        ))
+      )
+    # job-level, so skipped runs from other label events don't cancel a run in progress
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+      cancel-in-progress: true
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 60
     permissions:
@@ -57,6 +88,10 @@ jobs:
           EVENT: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           BASELINE: ${{ inputs.baseline }}
+
+      - name: Install Chromium
+        if: contains(inputs.suites, 'browser')
+        run: vp exec playwright-core install chromium-headless-shell
 
       - name: Run benchmarks
         run: |

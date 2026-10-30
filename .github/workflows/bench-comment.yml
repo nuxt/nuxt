@@ -46,27 +46,23 @@ jobs:
             }
 
             const marker = '<!-- nuxt-bench-report -->'
-            // the report is produced by PR code, so strip anything that could render as HTML, a link or an image
+            // the report is produced by PR code, so strip anything that could render as HTML (other than bare
+            // <details>, <summary> and their closing tags), a link or an image
             const sanitise = path => readFileSync(path, 'utf8')
               .slice(0, 50_000)
               .replace(/</g, '&lt;')
+              .replace(/&lt;(\/?(?:details|summary))>/g, '<$1>')
               .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
               .replace(/(?:https?:\/\/|www\.)\S+/gi, '[url removed]')
               .replace(/\[/g, '\\[')
+            const { regressions, improvements } = JSON.parse(readFileSync('bench-report/report.json', 'utf8'))
             const body = [
               marker,
               '### Benchmark',
               '',
-              sanitise('bench-report/summary.md'),
+              sanitise('bench-report/comment.md'),
               '',
-              '<details>',
-              '<summary>Full report</summary>',
-              '',
-              sanitise('bench-report/report.md'),
-              '',
-              '</details>',
-              '',
-              '_Interleaved runs on a shared runner: compare the deltas rather than the absolute timings. Run locally with `pnpm bench`._',
+              "_Interleaved runs on a shared runner. Counts are flagged on any change, client JS sizes from 0.1% and install or server sizes from 1%; timings only from 5% and when the medians fall outside each other's min / max range. Run locally with `pnpm bench`._",
             ].join('\n')
 
             const comments = await github.paginate(github.rest.issues.listComments, {
@@ -75,6 +71,11 @@ jobs:
               issue_number: pr.number,
             })
             const existing = comments.find(comment => comment.user.type === 'Bot' && comment.body.includes(marker))
+            const requested = pr.labels.some(label => label.name === '⚡ performance')
+            if (!existing && !requested && !Number(regressions) && !Number(improvements)) {
+              console.log('no significant changes, skipping comment')
+              return
+            }
             if (existing) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,

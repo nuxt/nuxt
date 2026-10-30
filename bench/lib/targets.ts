@@ -16,6 +16,8 @@ export interface Target {
   dir: string
   /** Packed tarballs, keyed by package name. Empty for npm specs. */
   tarballs: Record<string, string>
+  /** npm `overrides` pinning the packages `nuxt` depends on to the target's versions. */
+  overrides: Record<string, string>
   bin: string
 }
 
@@ -42,24 +44,36 @@ export async function prepareTarget (id: Target['id'], spec: string, options: Pr
     version = spec
   }
 
-  const nuxtSpec = tarballs.nuxt ? `file:${tarballs.nuxt}` : spec
-  const overrides = Object.fromEntries(Object.entries(tarballs).filter(([name]) => name !== 'nuxt').map(([name, file]) => [name, `file:${file}`]))
-  writeFileSync(join(dir, 'package.json'), JSON.stringify({
-    name: `nuxt-bench-${id}`,
-    private: true,
-    type: 'module',
-    dependencies: { nuxt: nuxtSpec },
-    overrides,
-  }, null, 2))
-
+  let overrides = Object.fromEntries(Object.entries(tarballs).filter(([name]) => name !== 'nuxt').map(([name, file]) => [name, `file:${file}`]))
   options.log(`installing ${id}`)
-  await run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], { cwd: dir, timeout: 600_000 })
+  await npmInstall(dir, { name: `nuxt-bench-${id}`, private: true, type: 'module', dependencies: { nuxt: tarballs.nuxt ? `file:${tarballs.nuxt}` : spec }, overrides })
 
+  const nuxtManifest = JSON.parse(readFileSync(join(dir, 'node_modules/nuxt/package.json'), 'utf8'))
   if (!tarballs.nuxt) {
-    version = JSON.parse(readFileSync(join(dir, 'node_modules/nuxt/package.json'), 'utf8')).version
+    version = nuxtManifest.version
+    overrides = Object.fromEntries(['@nuxt/kit', '@nuxt/schema'].flatMap(name => nuxtManifest.dependencies?.[name] ? [[name, nuxtManifest.dependencies[name]]] : []))
   }
 
-  return { id, spec, version, dir, tarballs, bin: join(dir, 'node_modules/nuxt/bin/nuxt.mjs') }
+  return { id, spec, version, dir, tarballs, overrides, bin: join(dir, 'node_modules/nuxt/bin/nuxt.mjs') }
+}
+
+async function npmInstall (dir: string, manifest: Record<string, unknown>): Promise<void> {
+  writeFileSync(join(dir, 'package.json'), JSON.stringify(manifest, null, 2))
+  await run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], { cwd: dir, timeout: 600_000 })
+}
+
+/**
+ * Installs a fixture whose `package.json` has `dependencies` as a project of its own, with the target's `nuxt`, so they
+ * stay outside the target's install footprint. Resolves with whether there was anything to install.
+ */
+export async function installFixtureDependencies (target: Target, dir: string): Promise<boolean> {
+  const manifest = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
+  if (!manifest.dependencies) {
+    return false
+  }
+  const nuxt = target.tarballs.nuxt ? `file:${target.tarballs.nuxt}` : target.spec
+  await npmInstall(dir, { ...manifest, dependencies: { nuxt, ...manifest.dependencies }, overrides: target.overrides })
+  return true
 }
 
 function git (args: string[], cwd = repoRoot): string {

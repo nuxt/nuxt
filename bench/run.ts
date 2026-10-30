@@ -5,11 +5,13 @@ import process from 'node:process'
 import { parseArgs } from 'node:util'
 import { environment } from './lib/env.ts'
 import { fixtures as allFixtures } from './lib/fixtures.ts'
-import { markdownTable } from './lib/stats.ts'
+import { renderSummary } from './lib/report.ts'
 import type { SuiteContext, SuiteResult } from './lib/suite.ts'
 import { fixtureDir } from './lib/suite.ts'
-import { prepareTarget } from './lib/targets.ts'
+import { installFixtureDependencies, prepareTarget } from './lib/targets.ts'
+import { browserSuite } from './suites/browser.ts'
 import { buildSuite } from './suites/build.ts'
+import { clientSuite } from './suites/client.ts'
 import { devSuite } from './suites/dev.ts'
 import { footprintSuite } from './suites/footprint.ts'
 import { hmrSuite } from './suites/hmr.ts'
@@ -25,9 +27,13 @@ const suites = {
   hmr: { title: 'Dev server updates', run: hmrSuite, reps: 20 },
   build: { title: '`nuxt build`', run: buildSuite, reps: 3 },
   render: { title: 'Production SSR throughput', run: renderSuite, reps: 5 },
-} satisfies Record<string, { title: string, run: (context: SuiteContext) => Promise<SuiteResult>, reps: number }>
+  client: { title: 'Initial page weight', run: clientSuite, reps: 1 },
+  browser: { title: 'Browser timings', run: browserSuite, reps: 10, optIn: true },
+} satisfies Record<string, { title: string, run: (context: SuiteContext) => Promise<SuiteResult>, reps: number, optIn?: boolean }>
 
 type SuiteName = keyof typeof suites
+
+const optInSuites: string[] = Object.entries(suites).filter(([, suite]) => 'optIn' in suite && suite.optIn).map(([name]) => name)
 
 const { values } = parseArgs({
   options: {
@@ -48,15 +54,15 @@ Compares the working tree (packed from source) with a baseline, alternating runs
 
   --baseline <spec>   ref:<git-ref> to pack from git, or an npm version, tag or alias
                       for nuxt, such as npm:nuxt-nightly@5x (default: ref:origin/main)
-  --suite <name>      ${Object.keys(suites).join(', ')} (repeatable, default: all)
-  --fixture <name>    ${allFixtures.map(f => f.id).join(', ')} (repeatable, default: all)
+  --suite <name>      ${Object.keys(suites).join(', ')} (repeatable, default: all but ${optInSuites.join(', ')})
+  --fixture <name>    ${allFixtures.map(f => f.id).join(', ')} (repeatable, default: each suite's own)
   --reps <n>          override the number of repetitions for every suite
   --workdir <dir>     install and cache directory (default: ~/.cache/nuxt-bench)
   --out <file>        markdown report path (default: <workdir>/report.md)\n`)
   process.exit(0)
 }
 
-const selectedSuites = (values.suite ?? Object.keys(suites)) as SuiteName[]
+const selectedSuites = (values.suite ?? Object.keys(suites).filter(name => !optInSuites.includes(name))) as SuiteName[]
 for (const name of selectedSuites) {
   if (!(name in suites)) {
     throw new Error(`unknown suite \`${name}\`; expected one of ${Object.keys(suites).join(', ')}`)
@@ -66,7 +72,9 @@ const reps = values.reps === undefined ? undefined : Number(values.reps)
 if (reps !== undefined && (!Number.isInteger(reps) || reps < 1)) {
   throw new Error(`\`--reps\` must be a positive integer, received \`${values.reps}\``)
 }
-const fixtures = values.fixture ? values.fixture.map(id => allFixtures.find(f => f.id === id) ?? (() => { throw new Error(`unknown fixture \`${id}\``) })()) : allFixtures
+const requestedFixtures = values.fixture?.map(id => allFixtures.find(f => f.id === id) ?? (() => { throw new Error(`unknown fixture \`${id}\``) })())
+const suiteFixtures = (name: SuiteName) => requestedFixtures ?? allFixtures.filter(f => !f.suites || f.suites.includes(name))
+const fixtures = allFixtures.filter(f => selectedSuites.some(name => suiteFixtures(name).includes(f)))
 const workdir = resolve(values.workdir)
 const out = resolve(values.out ?? join(workdir, 'report.md'))
 const log = (message: string) => console.error(`[bench] ${message}`)
@@ -78,14 +86,18 @@ const targets: SuiteContext['targets'] = [baseline, head]
 
 for (const target of targets) {
   for (const fixture of fixtures) {
-    await fixture.create(fixtureDir(target, fixture))
+    const dir = fixtureDir(target, fixture)
+    await fixture.create(dir)
+    if (await installFixtureDependencies(target, dir)) {
+      log(`installed ${fixture.id} dependencies for ${target.id}`)
+    }
   }
 }
 
 const results: Record<string, SuiteResult> = {}
 for (const name of selectedSuites) {
   const suite = suites[name]
-  results[name] = await suite.run({ targets, fixtures, reps: reps ?? suite.reps, log })
+  results[name] = await suite.run({ targets, fixtures: suiteFixtures(name), reps: reps ?? suite.reps, log })
 }
 
 const env = environment()
@@ -97,28 +109,25 @@ const header = [
   `Node.js ${env.node} on ${env.os}, ${env.cpu} (${env.cores} cores, ${env.memory}), load average ${env.loadAverage}.`,
 ].join('\n')
 
-const summary = [
+const summary = renderSummary(selectedSuites.flatMap(name => results[name]!.headline))
+const details = [
   header,
-  '',
-  markdownTable(['Metric', 'baseline', 'head', 'delta'], selectedSuites.flatMap(name => results[name]!.headline)),
+  ...selectedSuites.flatMap(name => ['', `## ${suites[name].title}`, '', results[name]!.markdown]),
 ].join('\n')
 
-const report = [
-  '# Nuxt benchmark',
-  '',
-  summary,
-  ...selectedSuites.flatMap(name => ['', `## ${suites[name].title}`, '', results[name]!.markdown]),
-  '',
-].join('\n')
+const report = ['# Nuxt benchmark', '', summary.markdown, '', details, ''].join('\n')
+const comment = [summary.markdown, '', '<details>', '<summary>Full report</summary>', '', details, '', '</details>', ''].join('\n')
 
 mkdirSync(dirname(out), { recursive: true })
 writeFileSync(out, report)
-writeFileSync(join(dirname(out), 'summary.md'), summary + '\n')
+writeFileSync(join(dirname(out), 'comment.md'), comment)
 writeFileSync(out.replace(/\.md$/, '') + '.json', JSON.stringify({
   env,
   baseline: { spec: baseline.spec, version: baseline.version },
   head: { version: head.version },
   fixtures: fixtures.map(f => f.id),
+  regressions: summary.regressions,
+  improvements: summary.improvements,
   results: Object.fromEntries(selectedSuites.map(name => [name, results[name]!.data])),
 }, null, 2))
 
