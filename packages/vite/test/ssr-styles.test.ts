@@ -19,11 +19,13 @@ async function writeApp () {
     '<style>.app{color:#123456}</style>',
   ].join('\n'))
   await writeFile(join(tmpDir, 'app/components/Styled.vue'), [
-    '<template><p :class="$style.moduleClass" class="plain scoped">styled</p></template>',
+    '<script setup>import \'./imported.css\'</script>',
+    '<template><p :class="$style.moduleClass" class="plain scoped imported">styled</p></template>',
     '<style>.plain{color:#654321}</style>',
     '<style scoped>.scoped{margin:3px}</style>',
     '<style module>.moduleClass{padding:5px}</style>',
   ].join('\n'))
+  await writeFile(join(tmpDir, 'app/components/imported.css'), '.imported{border-width:7px}')
 }
 
 async function build () {
@@ -92,7 +94,7 @@ describe('ssr styles', () => {
 
     const html = await render()
     const inlined = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('\n')
-    for (const css of ['.app{color:#123456}', '.plain{color:#654321}', 'margin:3px', 'padding:5px']) {
+    for (const css of ['.app{color:#123456}', '.plain{color:#654321}', 'margin:3px', 'padding:5px', 'border-width:7px']) {
       expect(inlined).toContain(css)
     }
     expect(html).not.toMatch(/<link[^>]+rel="stylesheet"/)

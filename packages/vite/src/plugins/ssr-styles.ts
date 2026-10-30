@@ -7,6 +7,7 @@ import { filename as _filename } from 'pathe/utils'
 import { setBuildOutput } from '@nuxt/kit'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import { generateTransform, rolldownString } from 'rolldown-string'
+import { parseSync } from 'rolldown/utils'
 import genericNames from 'generic-names'
 
 import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
@@ -424,7 +425,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     // a `.vue` id can still carry CSS as its module contents (`?type=style&lang.css`)
     if (!SUPPORTED_FILES_RE.test(pathname) || STYLE_QUERY_RE.test(search) || isCSS(search)) { return }
 
-    for (const specifier of getStaticImportSpecifiers(ctx.parse(code))) {
+    for (const specifier of getStaticImportSpecifiers(ctx, code)) {
       if (!IS_CSS_RE.test(specifier) && !STYLE_QUERY_RE.test(specifier)) { continue }
 
       const resolved = await ctx.resolve(specifier, id)
@@ -730,12 +731,14 @@ function filename (name: string) {
   return _filename(name.replace(QUERY_RE, ''))
 }
 
-function getStaticImportSpecifiers (program: ReturnType<Rollup.PluginContext['parse']>) {
-  const specifiers: string[] = []
-  for (const node of program.body) {
-    if (node.type === 'ImportDeclaration') {
-      specifiers.push(node.source.value)
-    }
+/**
+ * Parses `code` as `this.parse` does, but reads the specifiers from the module record so the
+ * AST is never deserialized. Code that doesn't parse goes through `this.parse` for its error.
+ */
+function getStaticImportSpecifiers (ctx: Rollup.PluginContext, code: string) {
+  const result = parseSync('file.js', code, { lang: 'js', preserveParens: false })
+  if (result.errors.length) {
+    ctx.parse(code)
   }
-  return specifiers
+  return result.module.staticImports.map(node => node.moduleRequest.value)
 }
