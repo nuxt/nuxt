@@ -830,6 +830,9 @@ export default defineNuxtModule({
       nuxt.options._noScriptsPageSources = [...restrictedPages]
         .filter(([page, stub]) => stub === 'noScripts' && page.file)
         .map(([page]) => relative(nuxt.options.srcDir, page.file!))
+      nuxt.options._spaOnlyPageSources = [...restrictedPages]
+        .filter(([page, stub]) => stub === 'spaOnly' && page.file)
+        .map(([page]) => relative(nuxt.options.srcDir, page.file!))
 
       return restrictedPages
     }
