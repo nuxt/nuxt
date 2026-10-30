@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
-import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
+import { dirname, isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
@@ -14,6 +14,9 @@ import type { PackageJson } from 'pkg-types'
 import type { Unimport } from 'unimport'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
+import { consola } from 'consola'
+import { colors } from 'consola/utils'
+import { updateConfig } from 'c12/update'
 import onChange from 'on-change'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
@@ -37,6 +40,7 @@ import compilerModule from '../compiler/module.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 
 import { resolveDevAppSecret } from './app-secret.ts'
+import { applyCompatibilityDateUpdate } from './compatibility-date.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -214,7 +218,8 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-let warnedAboutCompatDate = false
+/** `false` = not yet handled; `'pending'` = prompt in flight; `true` = prompt/diagnostic finished */
+let warnedAboutCompatDate: false | 'pending' | true = false
 
 async function initNuxt (nuxt: Nuxt) {
   nuxt._perf?.startPhase('init')
@@ -234,15 +239,127 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Prompt to set compatibility date
+  // Prompt (or warn) if compatibility date is unset
   nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
 
   if (!nuxt.options.compatibilityDate.default) {
+    const todaysDate = formatDate('latest')
     nuxt.options.compatibilityDate.default = fallbackCompatibilityDate
 
-    if (nuxt.options.dev && hasTTY && !isCI && !nuxt.options.test && !warnedAboutCompatDate) {
-      warnedAboutCompatDate = true
-      configDiagnostics.NUXT_B5001({ fallback: fallbackCompatibilityDate, latest: formatDate('latest') })
+    const getLocalConfigFiles = () => [...new Set(
+      nuxt.options._layers
+        .map(layer => layer.configFile)
+        .filter((configFile): configFile is string => !!configFile
+          && !configFile.endsWith('.nuxtrc')
+          && !configFile.includes('node_modules')),
+    )]
+
+    const displayConfigPath = (configFile: string) => {
+      const rel = relative(nuxt.options.rootDir, configFile)
+      return (rel && !rel.startsWith('..')) ? rel : configFile
+    }
+
+    const emitMissingCompatDateDiagnostic = () => {
+      const localConfigFiles = getLocalConfigFiles().map(displayConfigPath)
+      configDiagnostics.NUXT_B5001({
+        fallback: fallbackCompatibilityDate,
+        latest: todaysDate,
+        ...(localConfigFiles.length > 1 ? { configs: localConfigFiles.map(f => `\`${f}\``).join(', ') } : {}),
+      })
+    }
+
+    const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI && !nuxt.options.test
+
+    if (!shouldShowPrompt) {
+      if (nuxt.options.dev && !nuxt.options.test && !warnedAboutCompatDate) {
+        warnedAboutCompatDate = true
+        emitMissingCompatDateDiagnostic()
+      }
+    } else {
+      async function promptAndUpdate () {
+        if (warnedAboutCompatDate) { return }
+        warnedAboutCompatDate = 'pending'
+
+        try {
+          const result = await consola.prompt(`Do you want to set ${colors.cyan(`compatibilityDate: '${todaysDate}'`)} in your Nuxt config?`, {
+            type: 'confirm',
+            default: true,
+          })
+          if (result !== true) {
+            emitMissingCompatDateDiagnostic()
+            return
+          }
+
+          const localConfigs = getLocalConfigFiles()
+          let targetConfigFile = localConfigs[0]
+
+          // With layers, let the user pick a local config (not node_modules) — #27992
+          if (localConfigs.length > 1) {
+            const selected = await consola.prompt('Which config file should be updated?', {
+              type: 'select',
+              options: localConfigs.map(configFile => ({
+                label: displayConfigPath(configFile),
+                value: configFile,
+              })),
+            })
+            if (typeof selected !== 'string') {
+              emitMissingCompatDateDiagnostic()
+              return
+            }
+            targetConfigFile = selected
+          }
+
+          try {
+            const res = await updateConfig({
+              configFile: 'nuxt.config',
+              cwd: targetConfigFile ? dirname(targetConfigFile) : nuxt.options.rootDir,
+              async onCreate ({ configFile }) {
+                const shallCreate = await consola.prompt(`Do you want to create ${colors.cyan(displayConfigPath(configFile))}?`, {
+                  type: 'confirm',
+                  default: true,
+                })
+                if (shallCreate !== true) {
+                  return false
+                }
+                return _getDefaultNuxtConfig()
+              },
+              onUpdate (config) {
+                applyCompatibilityDateUpdate(config, todaysDate)
+              },
+            })
+
+            if (res?.configFile) {
+              applyCompatibilityDateUpdate(nuxt.options, todaysDate)
+              nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
+              consola.success(`Compatibility date set to \`${todaysDate}\` in \`${displayConfigPath(res.configFile)}\``)
+              return
+            }
+          } catch (err) {
+            const message = err instanceof Error ? err.message : err
+            consola.error(`Failed to update config: ${message}`)
+          }
+
+          emitMissingCompatDateDiagnostic()
+        } finally {
+          // Mark complete unless restart cleared `'pending'` mid-prompt (see restart hook below).
+          if (warnedAboutCompatDate === 'pending') {
+            warnedAboutCompatDate = true
+          }
+        }
+      }
+
+      // Soft restart can abandon an in-flight prompt without finishing finally → allow re-prompt/diagnostic.
+      nuxt.hook('restart', () => {
+        if (warnedAboutCompatDate === 'pending') {
+          warnedAboutCompatDate = false
+        }
+      })
+
+      nuxt.hooks.hookOnce('nitro:init', (nitro) => {
+        nitro.hooks.hookOnce('compiled', () => {
+          promptAndUpdate()
+        })
+      })
     }
   }
 
@@ -1389,3 +1506,10 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     }
   }
 }
+
+const _getDefaultNuxtConfig = () => /* js */
+  `// https://nuxt.com/docs/api/configuration/nuxt-config
+export default defineNuxtConfig({
+  compatibilityDate: 'latest',
+})
+`
