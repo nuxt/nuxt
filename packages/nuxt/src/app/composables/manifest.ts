@@ -1,6 +1,7 @@
 import type { AppRouteRules, NuxtRequestEvent } from '@nuxt/schema'
 import { withoutBase } from 'ufo'
-import { useRuntimeConfig } from '../nuxt'
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtApp } from '../nuxt'
 import { manifestDiagnostics } from '../diagnostics/manifest'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
@@ -20,6 +21,7 @@ export interface NuxtAppManifest extends NuxtAppManifestMeta {
   prerendered: string[]
 }
 
+const UPDATE_CHECK_TIMEOUT = 30_000
 let manifest: Promise<NuxtAppManifest> | undefined
 
 function fetchManifest (): Promise<NuxtAppManifest> {
@@ -30,8 +32,11 @@ function fetchManifest (): Promise<NuxtAppManifest> {
   if (import.meta.server) {
     _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest') as unknown as Promise<NuxtAppManifest>
   } else {
+    const url = buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), UPDATE_CHECK_TIMEOUT)
     // Low priority so this background warm-up does not contend with LCP-critical resources.
-    _manifest = fetch(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), { priority: 'low' })
+    _manifest = fetch(url, { priority: 'low', signal: controller.signal })
       .then((res) => {
         // native `fetch` resolves non-2xx responses; surface them with a `status` so callers
         // (e.g. the outdated-build check) can distinguish a missing manifest from a bad payload
@@ -44,11 +49,12 @@ function fetchManifest (): Promise<NuxtAppManifest> {
       })
       .then((res: NuxtAppManifest) => {
         // handle errors fetching manifest, e.g. from an improperly configured proxy
-        if (!res || typeof res !== 'object' || !Array.isArray(res.prerendered)) {
+        if (!res || typeof res !== 'object' || typeof res.id !== 'string' || typeof res.timestamp !== 'number' || !Array.isArray(res.prerendered)) {
           throw manifestDiagnostics.NUXT_E5004()
         }
         return res
       })
+      .finally(() => clearTimeout(timeout))
   }
   manifest = _manifest
   _manifest.catch((e) => {
@@ -68,6 +74,56 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
     throw manifestDiagnostics.NUXT_E5001()
   }
   return manifest || fetchManifest()
+}
+
+const pendingUpdateChecks = new WeakMap<NuxtApp, Promise<NuxtAppManifestMeta | undefined>>()
+
+/** Check for a newer deployment and emit `app:manifest:update` if one is available. */
+export function checkForAppUpdate (): Promise<NuxtAppManifestMeta | undefined> {
+  if (import.meta.server || !isAppManifestEnabled) { return Promise.resolve(undefined) }
+
+  const nuxtApp = useNuxtApp()
+  const pending = pendingUpdateChecks.get(nuxtApp)
+  if (pending) { return pending }
+
+  const promise = checkLatestManifest(nuxtApp).finally(() => {
+    pendingUpdateChecks.delete(nuxtApp)
+  })
+  pendingUpdateChecks.set(nuxtApp, promise)
+  return promise
+}
+
+async function checkLatestManifest (nuxtApp: NuxtApp): Promise<NuxtAppManifestMeta | undefined> {
+  let currentManifest: NuxtAppManifestMeta | undefined
+  try {
+    currentManifest = await getAppManifest()
+  } catch (e) {
+    const err = e as { status?: number } & Error
+    // The build is already outdated but the manifest was not cached.
+    if (!('status' in err && (err.status === 404 || err.status === 403))) {
+      throw err
+    }
+  }
+
+  let meta: NuxtAppManifestMeta
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), UPDATE_CHECK_TIMEOUT)
+  try {
+    const res = await fetch(buildAssetsURL('builds/latest.json') + `?${Date.now()}`, { priority: 'low', signal: controller.signal })
+    if (!res.ok) { return }
+    meta = await res.json() as NuxtAppManifestMeta
+    if (!meta || typeof meta.id !== 'string' || typeof meta.timestamp !== 'number') { return }
+  } catch {
+    // Fail gracefully on network issues and timeouts.
+    return
+  } finally {
+    clearTimeout(timeout)
+  }
+
+  if (meta.id !== currentManifest?.id) {
+    await nuxtApp.hooks.callHook('app:manifest:update', meta)
+    return meta
+  }
 }
 
 /** @since 3.7.4 */

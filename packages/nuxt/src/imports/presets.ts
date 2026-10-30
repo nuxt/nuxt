@@ -90,7 +90,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/loading-indicator',
   },
   {
-    imports: ['getAppManifest', 'getRouteRules'],
+    imports: ['checkForAppUpdate', 'getAppManifest', 'getRouteRules'],
     from: '#app/composables/manifest',
   },
   {

@@ -22,7 +22,7 @@ export type { AddRouteMiddlewareOptions, Early404IncompatibleRouterMethods, Rout
 export { preloadComponents, prefetchComponents, preloadRouteComponents } from './preload'
 export { isPrerendered, loadPayload, preloadPayload, definePayloadReducer, definePayloadReviver } from './payload'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-export { getAppManifest, getRouteRules } from './manifest'
+export { checkForAppUpdate, getAppManifest, getRouteRules } from './manifest'
 export type { NuxtAppManifest, NuxtAppManifestMeta } from './manifest'
 export type { ReloadNuxtAppOptions } from './chunk'
 export { reloadNuxtApp } from './chunk'
