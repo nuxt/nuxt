@@ -32,8 +32,8 @@ describe('deferred prefetch plugin', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
-    for (const link of document.head.querySelectorAll('link[data-test]')) {
-      link.remove()
+    for (const el of document.head.querySelectorAll('[data-test]')) {
+      el.remove()
     }
   })
 
@@ -41,10 +41,37 @@ describe('deferred prefetch plugin', () => {
     addLink({ 'rel': 'prefetch', 'as': 'script', 'crossorigin': '', 'data-href': '/_nuxt/lazy.js' })
     addLink({ 'rel': 'prefetch', 'as': 'style', 'crossorigin': '', 'data-href': '/_nuxt/lazy.css' })
 
-    expect(activeHrefs()).toEqual([])
+    const nuxtApp = useNuxtApp()
+    const isHydrating = nuxtApp.isHydrating
+    nuxtApp.isHydrating = true
+    try {
+      await install()
+      expect(activeHrefs()).toEqual([])
+
+      nuxtApp.isHydrating = false
+      await nuxtApp.hooks.callHook('app:suspense:resolve')
+      await ready()
+      await flushPromises()
+      expect(activeHrefs()).toEqual(['/_nuxt/lazy.js', '/_nuxt/lazy.css'])
+    } finally {
+      nuxtApp.isHydrating = isHydrating
+    }
+  })
+
+  it('resolves hints against the document base', async () => {
+    const base = document.createElement('base')
+    base.href = '/sub/'
+    base.dataset.test = ''
+    document.head.prepend(base)
+    vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
+      { name: new URL('/sub/_nuxt/requested.js', location.href).href } as PerformanceEntry,
+    ])
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '_nuxt/requested.js' })
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '_nuxt/lazy.js' })
+
     await install()
 
-    expect(activeHrefs()).toEqual(['/_nuxt/lazy.js', '/_nuxt/lazy.css'])
+    expect(activeHrefs()).toEqual(['/sub/_nuxt/lazy.js'])
   })
 
   it('skips hints that are already linked or requested', async () => {

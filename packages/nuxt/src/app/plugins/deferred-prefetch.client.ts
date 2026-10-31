@@ -13,7 +13,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         requested.add(link.href)
       }
       for (const link of document.querySelectorAll<HTMLLinkElement>('link[rel="prefetch"][data-href]')) {
-        const href = new URL(link.dataset.href!, location.href).href
+        const href = new URL(link.dataset.href!, document.baseURI).href
         if (!requested.has(href)) {
           link.href = href
         }
