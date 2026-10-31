@@ -1,4 +1,4 @@
-import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
+import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose, untrack } from 'vue'
 import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { decodePath, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
@@ -305,7 +305,7 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
 
   // Client-side redirection using vue-router
   if (isExternal) {
-    nuxtApp._cookieWriters?.forEach(write => write())
+    untrack(() => nuxtApp._cookieWriters?.forEach(write => write()))
     window.addEventListener('pagehide', (event) => {
       if (!event.persisted) { nuxtApp._scope.stop() }
     }, { once: true })
