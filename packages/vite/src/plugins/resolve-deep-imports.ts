@@ -8,7 +8,7 @@ import type { Nuxt } from '@nuxt/schema'
 
 const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
 const ABSOLUTE_RE = /^(?:[/\\](?![/\\])|[/\\]{2}(?!\.)|[A-Z]:[/\\])/i
-const ABSOLUTE_OR_VIRTUAL_RE = /^(?:[/\\](?![/\\])|[/\\]{2}(?!\.)|[A-Za-z]:[/\\]|\0?virtual:)/
+const ABSOLUTE_OR_VIRTUAL_RE = /^(?:[/\\](?![/\\])|[/\\]{2}(?!\.)|[A-Za-z]:[/\\]|\0?\/?virtual:)/
 const HTML_RE = /\.html(?:$|\?)/
 
 export function ResolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
