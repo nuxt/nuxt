@@ -451,7 +451,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       })
     }
     nuxt.hook('nitro:init', (nitro) => {
-      nitro.hooks.hook('build:before', async (nitro) => {
+      nitro.hooks.hook('build:before', (nitro) => {
         const updatedRules: Record<string, Record<string, any>> = {}
         for (const { route, data: value } of mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)) {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
@@ -468,7 +468,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             }
           }
         }
-        await nitro.updateConfig({ routeRules: { ...nitro.options.routeRules, ...updatedRules } })
+        if (Object.keys(updatedRules).length === 0) { return }
+        nitro.options.routeRules = { ...nitro.options.routeRules, ...updatedRules }
         nitro.routing.sync()
       })
     })
