@@ -76,6 +76,9 @@ describe('deferred prefetch plugin', () => {
   it('only activates hints for build assets', async () => {
     addLink({ 'rel': 'prefetch', 'data-href': 'https://attacker.example/beacon' })
     addLink({ 'rel': 'prefetch', 'data-href': '/api/logout' })
+    addLink({ 'rel': 'prefetch', 'data-href': '/_nuxt/../api/logout' })
+    addLink({ 'rel': 'prefetch', 'data-href': '/_nuxt/%2e%2e/api/logout' })
+    addLink({ 'rel': 'prefetch', 'data-href': '/_nuxt-other/chunk.js' })
     addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/lazy.js' })
 
     await install()
