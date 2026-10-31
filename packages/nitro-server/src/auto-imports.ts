@@ -29,6 +29,8 @@ export interface ServerAutoImportsContext {
 }
 
 const MAX_REPORTED_FILES = 10
+const DOLLAR_FETCH_RE = /(?<![\w$.])\$fetch\b/
+const GLOBAL_FETCH_IMPORT: Import = { name: '$fetch', from: 'ofetch' }
 
 /** Creates and applies the auto-imports available to the modules the server builder bundles. */
 export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptions, typesDir: string, context: ServerAutoImportsContext = {}): ServerAutoImports {
@@ -54,11 +56,17 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   const reportedNestedUtils = new Set<string>()
   const disabledPresets = enabled ? context.disabledPresets ?? [] : []
   const disabledPresetsCtx = disabledPresets.length > 0
-    ? createUnimport({ parser: 'oxc', presets: disabledPresets, imports: [], addons: { addons: [] } })
+    ? createUnimport({ parser: 'oxc', presets: disabledPresets, imports: [GLOBAL_FETCH_IMPORT], addons: { addons: [] } })
     : undefined
   const reportedPresetFiles = new Set<string>()
   const pendingPresetReports = new Map<string, Import[]>()
   let presetReportTimer: ReturnType<typeof setTimeout> | undefined
+  const globalFetchCtx = disabledPresetsCtx
+    ? undefined
+    : createUnimport({ parser: 'oxc', presets: [], imports: [GLOBAL_FETCH_IMPORT], addons: { addons: [] } })
+  const reportedGlobalFetch = new Set<string>()
+  const pendingGlobalFetch = new Set<string>()
+  let globalFetchTimer: ReturnType<typeof setTimeout> | undefined
 
   // the project comes first in `_layers`, so it gets the highest priority; the floor of 1 is
   // unimport's default, so a scanned util still takes precedence over a preset of the same name
@@ -108,7 +116,11 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
 
   async function reportDisabledPresets (code: string, id: string) {
     if (!disabledPresetsCtx) { return }
-    const { imports } = await disabledPresetsCtx.injectImports(code, id, { autoImport: true, id } as InjectImportsOptions)
+    const { imports: detected } = await disabledPresetsCtx.injectImports(code, id, { autoImport: true, id } as InjectImportsOptions)
+    const imports = detected.filter(i => i.name !== GLOBAL_FETCH_IMPORT.name || i.from !== GLOBAL_FETCH_IMPORT.from)
+    if (imports.length < detected.length) {
+      queueGlobalFetchReport(id)
+    }
     if (imports.length === 0) { return }
     const key = id + '\0' + imports.map(i => i.as ?? i.name).sort().join('\0')
     if (reportedPresetFiles.has(key)) { return }
@@ -139,6 +151,33 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       files: files.join('\n  - '),
       imports: [...bySource].map(([from, names]) => `\`import { ${[...names].sort().join(', ')} } from '${from}'\``).join(', '),
     })
+  }
+
+  // TODO: remove in Nuxt 6, with `NUXT_B9011`
+  async function reportGlobalFetch (code: string, id: string) {
+    if (!globalFetchCtx || reportedGlobalFetch.has(id) || !DOLLAR_FETCH_RE.test(code)) { return }
+    const { imports } = await globalFetchCtx.injectImports(code, id, { autoImport: true, id } as InjectImportsOptions)
+    if (imports.length > 0) {
+      queueGlobalFetchReport(id)
+    }
+  }
+
+  function queueGlobalFetchReport (id: string) {
+    if (reportedGlobalFetch.has(id)) { return }
+    reportedGlobalFetch.add(id)
+    pendingGlobalFetch.add(id)
+    clearTimeout(globalFetchTimer)
+    globalFetchTimer = setTimeout(flushGlobalFetchReports, 100)
+  }
+
+  function flushGlobalFetchReports () {
+    const ids = [...pendingGlobalFetch].sort()
+    pendingGlobalFetch.clear()
+    const files = ids.slice(0, MAX_REPORTED_FILES).map(id => `\`${relative(nuxt.options.rootDir, id)}\``)
+    if (ids.length > MAX_REPORTED_FILES) {
+      files.push(`and ${ids.length - MAX_REPORTED_FILES} more`)
+    }
+    nitroBuildDiagnostics.NUXT_B9011({ count: ids.length, files: files.join('\n  - ') })
   }
 
   /**
@@ -175,8 +214,10 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       // own language, which it infers from the filename. Server modules arrive untranspiled.
       // TODO: drop the patch, this `id`, and the version pin once unimport threads the id itself.
       const result = await ctx.injectImports(code, id, { autoImport: true, id, ...injectOptions } as InjectImportsOptions)
-      await reportNestedUtils(result.s.toString(), id)
-      await reportDisabledPresets(result.s.toString(), id)
+      const transformed = result.s.toString()
+      await reportNestedUtils(transformed, id)
+      await reportDisabledPresets(transformed, id)
+      await reportGlobalFetch(transformed, id)
       return result
     },
 
