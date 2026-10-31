@@ -1,5 +1,6 @@
 import { promises as fsp, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
+import { createHook, executionAsyncId } from 'node:async_hooks'
 import { performance } from 'node:perf_hooks'
 import { dirname, join, resolve } from 'pathe'
 import { defu } from 'defu'
@@ -86,11 +87,15 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   const dirs = new Set<string>()
   const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
   const FORWARD_SLASH_RE = /\//g
+  const debugTemplates = !!(nuxt.options.debug && nuxt.options.debug.templates)
+  const activity = debugTemplates ? trackTemplateActivity() : undefined
+  const compiled: Array<{ template: ResolvedNuxtTemplate, fullPath: string, elapsed: number }> = []
   async function processTemplate (template: ResolvedNuxtTemplate) {
     const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
     const start = performance.now()
     const oldContents = nuxt.vfs[fullPath]
-    const contents = await trackPendingTemplate(template.filename!, () => compileTemplate(template, templateContext)).catch((e) => {
+    const compile = () => trackPendingTemplate(template.filename!, () => compileTemplate(template, templateContext))
+    const contents = await (activity ? activity.run(template, compile) : compile()).catch((e) => {
       // already-coded template failures (e.g. B1002/B1003) were reported in `compileTemplate`
       if (!(e instanceof Diagnostic)) {
         buildDiagnostics.NUXT_B1001({ filename: template.filename!, src: template.src, cause: e })
@@ -113,11 +118,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       changedTemplates.push(template)
     }
 
-    const perf = performance.now() - start
-    const compileTime = Math.round((perf * 100)) / 100
-
-    if ((nuxt.options.debug && nuxt.options.debug.templates) || compileTime > 500) {
-      logger.info(`Compiled \`${linkToAlias(fullPath, nuxt)}\` in ${compileTime}ms`)
+    if (debugTemplates) {
+      compiled.push({ template, fullPath, elapsed: performance.now() - start })
     }
 
     if (template.modified && template.write && !matchesDisk(fullPath, contents)) {
@@ -129,8 +131,24 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     }
   }
 
-  await Promise.allSettled(filteredTemplates.pre.map(processTemplate))
-  await Promise.allSettled(filteredTemplates.post.map(processTemplate))
+  const compileStart = performance.now()
+  try {
+    await Promise.allSettled(filteredTemplates.pre.map(processTemplate))
+    await Promise.allSettled(filteredTemplates.post.map(processTemplate))
+  } finally {
+    activity?.dispose()
+  }
+  const compileTime = performance.now() - compileStart
+
+  // Templates compile concurrently, so the time between one template starting and finishing
+  // includes the time the event loop spent on the others.
+  if (activity) {
+    for (const { template, fullPath, elapsed } of compiled) {
+      logger.info(`Compiled \`${linkToAlias(fullPath, nuxt)}\` (${roundMs(activity.timeOf(template))}ms running, ${roundMs(elapsed)}ms elapsed)`)
+    }
+  } else if (compileTime > 500) {
+    logger.info(`Generating templates took ${roundMs(compileTime)}ms. Set \`debug: { templates: true }\` to see how long each template's own code ran.`)
+  }
 
   // Write template files in single synchronous step to avoid (possible) additional
   // runtime overhead of cascading HMRs from vite/webpack
@@ -147,6 +165,62 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   if (changedTemplates.length) {
     await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
+  }
+}
+
+function roundMs (ms: number) {
+  return Math.round(ms * 100) / 100
+}
+
+/**
+ * Sums the time spent running each template's own code: its synchronous call, plus every later
+ * callback in an async resource created while that template's code ran. Work in a promise created
+ * outside every template, such as a cache a module started filling earlier, counts for none of them.
+ * Some runtimes, such as Bun and Deno, don't report promise callbacks, so only the synchronous call
+ * is counted there.
+ */
+function trackTemplateActivity () {
+  const activity = new Map<ResolvedNuxtTemplate, number>()
+  const owners = new Map<number, ResolvedNuxtTemplate>()
+  let starting: ResolvedNuxtTemplate | undefined
+  let running: { asyncId: number, template: ResolvedNuxtTemplate, since: number } | undefined
+
+  const addTime = (template: ResolvedNuxtTemplate, ms: number) => activity.set(template, (activity.get(template) ?? 0) + ms)
+
+  const hook = createHook({
+    init (asyncId) {
+      const owner = starting ?? owners.get(executionAsyncId())
+      if (owner) { owners.set(asyncId, owner) }
+    },
+    before (asyncId) {
+      // a callback that runs synchronously inside another one is counted with the outer callback
+      const template = !running && owners.get(asyncId)
+      if (template) { running = { asyncId, template, since: performance.now() } }
+    },
+    after (asyncId) {
+      if (running?.asyncId === asyncId) {
+        addTime(running.template, performance.now() - running.since)
+        running = undefined
+      }
+    },
+  }).enable()
+
+  return {
+    run<T> (template: ResolvedNuxtTemplate, compile: () => Promise<T>): Promise<T> {
+      const start = performance.now()
+      starting = template
+      try {
+        return compile()
+      } finally {
+        starting = undefined
+        addTime(template, performance.now() - start)
+      }
+    },
+    timeOf: (template: ResolvedNuxtTemplate) => activity.get(template) ?? 0,
+    dispose () {
+      hook.disable()
+      owners.clear()
+    },
   }
 }
 
