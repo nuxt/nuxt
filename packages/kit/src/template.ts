@@ -1,6 +1,8 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import process from 'node:process'
+import { setTimeout } from 'node:timers/promises'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -843,12 +845,38 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
 async function writeIfChanged (path: string, contents: string) {
   const existing = await fsp.readFile(path, 'utf8').catch(() => undefined)
   if (existing === contents) { return }
-  await fsp.writeFile(path, contents)
+  await writeFileAtomic(path, contents)
 }
 
 async function writeIfMissing (path: string, contents: string) {
   if (existsSync(path)) { return }
-  await fsp.writeFile(path, contents)
+  await writeFileAtomic(path, contents)
+}
+
+/**
+ * Other processes (editors, `tsc`, bundlers following `extends`) may read these files while
+ * they are regenerated, so write to a temporary file in the same directory and rename it into
+ * place: readers then see either the previous or the new contents, never a truncated file.
+ */
+async function writeFileAtomic (path: string, contents: string) {
+  const tempPath = `${path}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`
+  try {
+    await fsp.writeFile(tempPath, contents, { flag: 'wx' })
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await fsp.rename(tempPath, path)
+        break
+      } catch (error) {
+        if (attempt === 5 || !['EPERM', 'EACCES', 'EBUSY'].includes((error as NodeJS.ErrnoException).code || '')) {
+          throw error
+        }
+        await setTimeout(50 * (attempt + 1))
+      }
+    }
+  } catch (error) {
+    await fsp.rm(tempPath, { force: true })
+    throw error
+  }
 }
 
 /**
