@@ -127,7 +127,7 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       for (const i of imports) {
         const names = bySource.get(i.from) || new Set()
         bySource.set(i.from, names)
-        names.add(i.as ?? i.name)
+        names.add(i.as && i.as !== i.name ? `${i.name} as ${i.as}` : i.name)
       }
     }
     const files = reports.slice(0, MAX_REPORTED_FILES).map(([id, imports]) => `\`${relative(nuxt.options.rootDir, id)}\` (${imports.map(i => `\`${i.as ?? i.name}\``).sort().join(', ')})`)

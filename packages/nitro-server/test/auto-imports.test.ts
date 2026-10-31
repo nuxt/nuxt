@@ -260,13 +260,14 @@ describe('createServerAutoImports', () => {
     await autoImports.injectImports(cached, '/app/server/utils/npm.ts')
     await autoImports.injectImports('export default defineEventHandler(event => getQuery(event))', '/app/server/api/query.ts')
     await autoImports.injectImports('import { defineEventHandler } from \'nuxt/server\'\nexport default defineEventHandler(() => 1)', '/app/server/api/imported.ts')
+    await autoImports.injectImports('export default defineNitroPlugin(() => {})', '/app/server/plugins/setup.ts')
 
     await vi.waitFor(() => expect(report).toHaveBeenCalled())
     expect(report).toHaveBeenCalledTimes(1)
     expect(report).toHaveBeenCalledWith({
-      count: 2,
-      files: '`server/api/query.ts` (`defineEventHandler`, `getQuery`)\n  - `server/utils/npm.ts` (`defineCachedFunction`)',
-      imports: '`import { defineEventHandler, getQuery } from \'nuxt/server\'`, `import { defineCachedFunction } from \'nitro/cache\'`',
+      count: 3,
+      files: '`server/api/query.ts` (`defineEventHandler`, `getQuery`)\n  - `server/plugins/setup.ts` (`defineNitroPlugin`)\n  - `server/utils/npm.ts` (`defineCachedFunction`)',
+      imports: '`import { defineEventHandler, getQuery } from \'nuxt/server\'`, `import { definePlugin as defineNitroPlugin } from \'nitro\'`, `import { defineCachedFunction } from \'nitro/cache\'`',
     })
     report.mockRestore()
   })
