@@ -205,6 +205,9 @@ function stripDebugProxies (value: unknown, seen = new WeakSet<object>()): void 
 
 const fallbackCompatibilityDate = '2025-07-15' as DateString
 
+// TODO: remove in Nuxt 6, with `NUXT_B5030`
+const REMOVED_EXPERIMENTAL_OPTIONS = ['externalVue', 'renderJsonPayloads', 'routeTypedFetch', 'viteEnvironmentApi']
+
 const nightlies = {
   'nitropack': 'nitropack-nightly',
   'nitro': 'nitro-nightly',
@@ -1107,6 +1110,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       configDiagnostics.NUXT_B5003({ key })
       delete options.runtimeConfig.app[key]
     }
+  }
+
+  const removedExperimental = REMOVED_EXPERIMENTAL_OPTIONS.filter(key => key in options.experimental)
+  if (removedExperimental.length > 0) {
+    configDiagnostics.NUXT_B5030({ options: removedExperimental.map(key => `\`experimental.${key}\``).join(', ') })
   }
 
   // Ensure we share key config between Nuxt and Nitro
