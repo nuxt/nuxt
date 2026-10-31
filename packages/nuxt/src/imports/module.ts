@@ -176,6 +176,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     const isIgnored = createIsIgnored(nuxt)
     const nuxtImportSources = new Set(allNuxtPresets.flatMap(i => i.from))
     const nuxtImports = new Set(presets.flatMap(p => nuxtImportSources.has(p.from) ? p.imports : []))
+    const reportedOverrides = new Set<string>()
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
@@ -199,7 +200,11 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             const value = i.as || i.name
             if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
               const relativePath = isAbsolute(i.from) ? linkToAlias(i.from, nuxt) : i.from
-              headDiagnostics.NUXT_B6002({ name: value, file: relativePath })
+              const key = value + '\0' + relativePath
+              if (!reportedOverrides.has(key)) {
+                reportedOverrides.add(key)
+                headDiagnostics.NUXT_B6002({ name: value, file: relativePath })
+              }
             }
           }
         }
