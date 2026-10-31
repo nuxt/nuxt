@@ -853,7 +853,9 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  addPlugin(resolve(nuxt.options.appDir, 'plugins/deferred-prefetch.client'))
+  if (nuxt.options.experimental.deferPrefetchHints) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/deferred-prefetch.client'))
+  }
 
   // Add experimental cross-origin prefetch support using Speculation Rules API
   if (nuxt.options.experimental.crossOriginPrefetch) {

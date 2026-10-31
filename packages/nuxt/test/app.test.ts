@@ -105,6 +105,16 @@ describe('resolveApp', () => {
     `)
   })
 
+  it('does not register the deferred prefetch plugin when deferPrefetchHints is disabled', async () => {
+    const app = await getResolvedApp([
+      {
+        name: 'nuxt.config.ts',
+        contents: 'export default defineNuxtConfig({ experimental: { deferPrefetchHints: false } })',
+      },
+    ])
+    expect(app.plugins.some(p => !('getContents' in p) && p.src.includes('deferred-prefetch'))).toBe(false)
+  })
+
   it('resolves layouts and middleware correctly', async () => {
     const app = await getResolvedApp([
       'middleware/index.ts',

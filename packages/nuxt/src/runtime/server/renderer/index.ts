@@ -33,7 +33,7 @@ import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
-import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -493,7 +493,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   }
   for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
     if (!excludeHrefs.has(l.href)) {
-      hints.push(NO_SCRIPTS ? l : inertPrefetchLink(l))
+      hints.push(NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS ? inertPrefetchLink(l) : l)
     }
   }
   if (hints.length) {
@@ -626,7 +626,7 @@ async function renderStreamedResponse (ctx: {
   // Entry preload/prefetch links
   const entryHints = [
     ...getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
-    ...(getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => NO_SCRIPTS ? l : inertPrefetchLink(l)),
+    ...(getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS ? inertPrefetchLink(l) : l),
   ]
   if (entryHints.length) {
     ssrContext.head.push({ link: entryHints })
