@@ -26,9 +26,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   if (import.meta.server || !payloadExtraction) { return null }
   if (await shouldLoadPayload(url)) {
     const payloadURL = await _getPayloadURL(url, opts)
-    // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
-    // cannot invalidate them - defer to normal HTTP cache semantics instead
-    const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
+    const cache = await _getPayloadCacheMode(url)
     if (opts.fresh) {
       return await _importPayload(payloadURL, cache, opts.signal, opts.promoted) || null
     }
@@ -130,7 +128,8 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
   const payloadURL = joinURL(baseOrCdnURL, u.pathname, filename)
 
-  if (!isCachedPayloadRoute(url)) {
+  // prerendered payloads are rendered once per path, cached and on-demand ones for the requested query
+  if (!isCachedPayloadRoute(url) && !(await isOnDemandPayloadRoute(url))) {
     u.search = ''
   }
   if (hash) {
@@ -158,6 +157,20 @@ async function _importPayload (payloadURL: string, cache: RequestCache, signal?:
     }
   }
   return null
+}
+
+/** The browser cache mode of a payload request, which depends on how the payload is produced. */
+async function _getPayloadCacheMode (url: string): Promise<RequestCache> {
+  // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
+  // cannot invalidate them - defer to normal HTTP cache semantics instead
+  if (isCachedPayloadRoute(url)) {
+    return 'default'
+  }
+  // on-demand payloads are rendered for each request and must not be reused from the browser cache
+  if (await isOnDemandPayloadRoute(url)) {
+    return 'no-cache'
+  }
+  return 'force-cache'
 }
 
 function _shouldLoadPrerenderedPayload (rules: Record<string, any>) {
@@ -201,6 +214,9 @@ export async function shouldLoadPayload (url: string = useRoute().path): Promise
   if (rules.ssr === false) {
     return false
   }
+  if (payloadExtraction === 'always') {
+    return !rules.redirect
+  }
   const res = _shouldLoadPrerenderedPayload(rules)
   if (res !== undefined) {
     return res
@@ -212,6 +228,15 @@ export async function shouldLoadPayload (url: string = useRoute().path): Promise
 
   const prerendered = await _isPrerenderedInManifest(url)
   return prerendered
+}
+
+/**
+ * Whether the payload of this route is rendered on demand (`payloadExtraction: 'always'`), rather
+ * than served as a prerendered or server-cached (`cache`/`isr`/`swr`) asset.
+ * @internal
+ */
+export async function isOnDemandPayloadRoute (url: string): Promise<boolean> {
+  return payloadExtraction === 'always' && !isCachedPayloadRoute(url) && !(await isPrerendered(url))
 }
 
 /** @since 3.0.0 */

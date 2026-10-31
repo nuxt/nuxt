@@ -107,6 +107,7 @@ export default defineResolvers({
      * - `'client'`: inline the payload in the HTML for the initial render and extract it to a `_payload.json` file for client-side navigation.
      * - `true`: extract the payload to a `_payload.json` file for both the initial render and client-side navigation.
      * - `false`: disable payload extraction entirely; the payload is always inlined in the HTML.
+     * - `'always'`: like `'client'`, but payloads are also rendered at runtime and prefetched for routes that are neither prerendered nor cached.
      *
      * Defaults to `'client'`. It is forced to `false` when `ssr` is disabled.
      * @see [Payload Extraction documentation](https://nuxt.com/docs/getting-started/prerendering#payload-extraction)
@@ -114,7 +115,7 @@ export default defineResolvers({
     payloadExtraction: {
       $resolve: async (val, get) => {
         if ((await get('ssr')) === false) { return false }
-        if (val === 'client' || typeof val === 'boolean') { return val }
+        if (val === 'client' || val === 'always' || typeof val === 'boolean') { return val }
         return 'client' as const
       },
     },

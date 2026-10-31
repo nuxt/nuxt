@@ -33,7 +33,7 @@ import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
-import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_EXTRACTION_ALWAYS, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -274,10 +274,11 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     throwIfUnmatchedPagePath(runtime, event, routeOptions)
   }
 
-  // Whether we are prerendering route or using ISR/SWR caching
+  // Whether we are prerendering route, using ISR/SWR caching or extracting payloads for all routes
   const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && !ssrError && !!(
     (import.meta.prerender && NUXT_PAYLOAD_EXTRACTION)
     || (NUXT_RUNTIME_PAYLOAD_EXTRACTION && (routeOptions.isr || routeOptions.cache))
+    || NUXT_PAYLOAD_EXTRACTION_ALWAYS
   )
 
   // When NUXT_PAYLOAD_INLINE is true (payloadExtraction: 'client'), we inline the full payload
