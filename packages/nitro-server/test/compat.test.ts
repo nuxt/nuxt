@@ -30,7 +30,11 @@ function declared<T extends object> (entry: T, api: string): any {
 }
 
 function createNuxt (options: Record<string, any> = {}) {
+  const hooks = createHooks()
   return {
+    hooks,
+    hook: hooks.hook,
+    callHook: hooks.callHook,
     options: {
       alias: {},
       rootDir: '/project',
@@ -702,14 +706,68 @@ export const useRule = () => setHeader`)
 
     const nitroConfig: NitroConfig = { handlers: [{ route: '/server', handler } as any] }
     const registerLateScope = await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'parse-changed-module' }])
+    const legacyCompat = () => (nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()
     expect(report).not.toHaveBeenCalled()
+    expect(legacyCompat()).toContain('legacyCompat = false')
+    expect(nitroConfig.plugins).toEqual([])
 
     writeFileSync(handler, `import { getQuery } from 'h3'
 export default getQuery`)
     registerLateScope(createLateNitro(nitroConfig))
 
-    expect(report).toHaveBeenCalledWith(expect.objectContaining({ modules: expect.stringContaining('`parse-changed-module` (imports `h3`)') }))
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`parse-changed-module` (imports `h3`)' })
+    expect(legacyCompat()).toContain('legacyCompat = true')
+    expect(nitroConfig.plugins!.map(String)).toEqual([expect.stringMatching(/compat[\\/]event-plugin/), expect.stringMatching(/compat[\\/]hooks-plugin/)])
+    const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
+    const transformed = await plugin.transform.handler.call(null, readFileSync(handler, 'utf8'), handler)
+    expect(transformed.code).toMatch(/compat[\\/]h3-v1/)
     vi.restoreAllMocks()
+  })
+
+  describe('parses kept across Nuxt instances', () => {
+    function createModule (prefix: string) {
+      const dir = createModuleDir(prefix, false)
+      mkdirSync(join(dir, 'runtime'), { recursive: true })
+      const handler = join(dir, 'runtime/handler.ts')
+      writeFileSync(handler, `import { getQuery } from 'h3'\nexport default getQuery`)
+      return { dir, handler }
+    }
+
+    /** Sets up the compat layer for a new Nuxt instance, and returns the module files it parsed. */
+    async function scan (modules: Array<{ dir: string, handler: string }>, options: Record<string, any> = {}) {
+      vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+      const parses = vi.mocked(parseSync)
+      parses.mockClear()
+      const nuxt = createNuxt({ extensions: ['.js', '.mjs', '.ts'], ...options })
+      const nitroConfig: NitroConfig = { handlers: modules.map(({ handler }, i) => ({ route: `/module-${i}`, handler }) as any) }
+      await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], modules.map(({ dir }, i) => ({ dir, name: `module-${i}` })))
+      const handlers = new Set(modules.map(({ handler }) => handler))
+      return { nuxt, parsed: parses.mock.calls.filter(([filename]) => handlers.has(filename)).length }
+    }
+
+    it('reuses the parses of the previous dev instance and drops those it did not make', async () => {
+      const first = createModule('nitro-compat-generation-a-')
+      const second = createModule('nitro-compat-generation-b-')
+
+      expect((await scan([first], { dev: true })).parsed).toBe(1)
+      // a restart scanning the same files
+      expect((await scan([first], { dev: true })).parsed).toBe(0)
+      // an instance that no longer scans the first module, and the one after it
+      expect((await scan([second], { dev: true })).parsed).toBe(1)
+      expect((await scan([second], { dev: true })).parsed).toBe(0)
+      expect((await scan([first], { dev: true })).parsed).toBe(1)
+      vi.restoreAllMocks()
+    })
+
+    it('drops the parses once a build closes', async () => {
+      const module = createModule('nitro-compat-generation-build-')
+
+      const { nuxt } = await scan([module])
+      await (nuxt as any).callHook('close', nuxt)
+      expect((await scan([module])).parsed).toBe(1)
+      vi.restoreAllMocks()
+    })
   })
 
   it.each(['linked', 'real'])('attributes files of a symlinked module nested in another module to the nested module (registered: %s)', async (registered) => {
