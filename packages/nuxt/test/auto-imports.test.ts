@@ -7,8 +7,8 @@ import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import type { Plugin } from 'vite'
 import { registry as scriptRegistry } from '@nuxt/scripts/registry'
-import { TransformPlugin } from '../src/imports/transform.ts'
-import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets.ts'
+import { RemovedImportsPlugin, TransformPlugin } from '../src/imports/transform.ts'
+import { defaultPresets, removedImports, scriptsStubsPreset } from '../src/imports/presets.ts'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
@@ -103,9 +103,41 @@ describe('imports:transform', () => {
       expect(await transformWith(true, 'const $fetch = globalThis.fetch; export const load = () => $fetch(\'/api\')', '/project/node_modules/some-module/dist/runtime/context.js')).toBeUndefined()
     })
   })
+
+  describe('removed imports', () => {
+    const transformWith = async (source: string, id: string, autoImport = true) => {
+      const reported: Array<[string, string[]]> = []
+      const plugin = RemovedImportsPlugin({
+        ctx: createUnimport({ parser: 'oxc', imports: [...imports, { name: 'useServerHeadSafe', from: '/project/app/composables/head.ts' }] }),
+        options: { autoImport },
+        imports: removedImports,
+        onRemovedImports: (id, imports) => reported.push([id, imports.map(i => i.name)]),
+      }).raw({}, { framework: 'rollup', versions: {} }) as {
+        transformInclude: (id: string) => boolean
+        transform: { filter: { code: { include: RegExp } }, handler: (code: string, id: string) => Promise<unknown> }
+      }
+      if (plugin.transformInclude(id) && plugin.transform.filter.code.include.test(source)) {
+        await plugin.transform.handler(source, id)
+      }
+      return reported
+    }
+
+    it('should report former auto-imports used without an import', async () => {
+      expect(await transformWith('useServerHead({}); useServerSeoMeta({}); const a = ref(0)', '/project/app/app.vue'))
+        .toEqual([['/project/app/app.vue', ['useServerHead', 'useServerSeoMeta']]])
+    })
+
+    it('should not report former auto-imports that are imported, declared or in a dependency', async () => {
+      expect(await transformWith('import { useServerHead } from \'#app\'\nuseServerHead({})', '/project/app/app.vue')).toEqual([])
+      expect(await transformWith('const useServerHead = () => {}; useServerHead()', '/project/app/app.vue')).toEqual([])
+      expect(await transformWith('useServerHeadSafe({})', '/project/app/app.vue')).toEqual([])
+      expect(await transformWith('useServerHead({})', '/project/node_modules/some-module/dist/runtime/plugin.js')).toEqual([])
+      expect(await transformWith('useServerHead({})', '/project/app/app.vue', false)).toEqual([])
+    })
+  })
 })
 
-const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta', 'useId']
+const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerHead', 'useServerHeadSafe', 'useServerSeoMeta', 'useId']
 
 describe('imports:nuxt', () => {
   try {
