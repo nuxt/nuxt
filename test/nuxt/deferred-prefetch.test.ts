@@ -60,18 +60,43 @@ describe('deferred prefetch plugin', () => {
 
   it('resolves hints against the document base', async () => {
     const base = document.createElement('base')
-    base.href = '/sub/'
+    base.href = 'https://cdn.example/'
     base.dataset.test = ''
     document.head.prepend(base)
     vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
-      { name: new URL('/sub/_nuxt/requested.js', location.href).href } as PerformanceEntry,
+      { name: 'https://cdn.example/_nuxt/requested.js' } as PerformanceEntry,
     ])
-    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '_nuxt/requested.js' })
-    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '_nuxt/lazy.js' })
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/requested.js' })
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/lazy.js' })
 
     await install()
 
-    expect(activeHrefs()).toEqual(['/sub/_nuxt/lazy.js'])
+    expect([...document.head.querySelectorAll<HTMLLinkElement>('link[rel="prefetch"][href]')].map(link => link.href)).toEqual(['https://cdn.example/_nuxt/lazy.js'])
+  })
+
+  it('only activates hints in the document head', async () => {
+    const link = document.createElement('link')
+    link.rel = 'prefetch'
+    link.dataset.href = '/_nuxt/in-body.js'
+    link.dataset.test = ''
+    document.body.appendChild(link)
+    try {
+      await install()
+
+      expect(link.hasAttribute('href')).toBe(false)
+    } finally {
+      link.remove()
+    }
+  })
+
+  it('only activates hints for build assets', async () => {
+    addLink({ 'rel': 'prefetch', 'data-href': 'https://attacker.example/beacon' })
+    addLink({ 'rel': 'prefetch', 'data-href': '/api/logout' })
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/lazy.js' })
+
+    await install()
+
+    expect(activeHrefs()).toEqual(['/_nuxt/lazy.js'])
   })
 
   it('skips hints that are already linked or requested', async () => {
