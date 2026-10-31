@@ -4,10 +4,26 @@ import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { nextFrame } from '../internal/yield'
 
-const plugin: Plugin & ObjectPlugin = defineNuxtPlugin(() => {
+const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
+
+  // the browser does not render while a view transition's update callback is pending
+  let pendingTransition: ViewTransition | undefined
+  nuxtApp.hook('page:view-transition:start', (transition) => {
+    pendingTransition = transition
+    const clear = () => {
+      if (pendingTransition === transition) {
+        pendingTransition = undefined
+      }
+    }
+    transition.updateCallbackDone.then(clear, clear)
+  })
+
   onNuxtReady(() => {
     router.beforeResolve(() => {
+      if (pendingTransition) {
+        return
+      }
       /**
        * This gives an opportunity for the browser to repaint, acknowledging user interaction.
        * It can reduce INP when navigating on prerendered routes.
