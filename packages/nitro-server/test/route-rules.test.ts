@@ -7,7 +7,7 @@ import { resolveModulePath } from 'exsolve'
 import { createMatcherFromFind } from 'h3/rules'
 import { compileRouteRules } from 'h3/rules/compiler'
 import type { Nitro, NitroConfig } from 'nitro/types'
-import { normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
+import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
 
 vi.mock('@nuxt/kit/internal', () => ({
   bundlerDiagnostics: { NUXT_B7026: vi.fn() },
@@ -64,6 +64,35 @@ describe('normalizeLegacyRouteRules', () => {
     expect(() => normalizeLegacyRouteRules(undefined)).not.toThrow()
     expect(() => normalizeLegacyRouteRules({})).not.toThrow()
     expect(() => normalizeLegacyRouteRules({ '/x': {} })).not.toThrow()
+  })
+})
+
+describe('keepCachedIslandQuery', () => {
+  function islandRule (routeRules: NitroConfig['routeRules']) {
+    const config = { routeRules }
+    keepCachedIslandQuery(config, true)
+    return config.routeRules?.['/__nuxt_island/**']
+  }
+
+  it.each([
+    [{ '/**': { swr: true } }],
+    [{ '/**': { cache: { maxAge: 60 } } }],
+    [{ 'GET /**': { swr: 60 } }],
+    [{ '/__NUXT_ISLAND/**': { swr: true } }],
+  ])('keys cached island responses on their query (%j)', (routeRules) => {
+    expect(islandRule(routeRules)).toMatchObject({ cache: { allowQuery: true } })
+  })
+
+  it.each<[NitroConfig['routeRules']]>([
+    [undefined],
+    [{ '/api/**': { swr: true } }],
+    [{ '/**': { swr: true }, '/__nuxt_island/**': { cache: false } }],
+  ])('leaves islands uncached (%j)', (routeRules) => {
+    expect(islandRule(routeRules)?.cache).toBeFalsy()
+  })
+
+  it('keeps an explicit `allowQuery`', () => {
+    expect(islandRule({ '/**': { cache: { allowQuery: ['props'] } } })).toBeUndefined()
   })
 })
 

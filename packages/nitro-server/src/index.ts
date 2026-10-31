@@ -36,7 +36,7 @@ import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normaliz
 import { encodeRoutePath, foldRouteCase } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
-import { normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
+import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
@@ -758,6 +758,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // after the hook, so rules and registrations contributed by modules are covered too
   normalizeLegacyRouteRules(nitroConfig.routeRules)
+  if (nuxt.options.experimental.componentIslands) {
+    keepCachedIslandQuery(nitroConfig, !nuxt.options.router.options.sensitive)
+  }
   normalizeAppMiddlewareRules(nitroConfig.routeRules)
   const unusedVariants = collectServerRegistrations(nuxt, nitroConfig)
 
