@@ -80,7 +80,7 @@ path no route answers.
 
 When we call `$fetch` in the browser, user headers like `cookie` will be directly sent to the API.
 
-However, during Server-Side Rendering, due to security risks such as **Server-Side Request Forgery (SSRF)** or **Authentication Misuse**, the `$fetch` wouldn't include the user's browser cookies, nor pass on cookies from the fetch response.
+During SSR, `$fetch` does not include the user's browser cookies, and it does not pass cookies from the fetch response back to the client. That limits credential leakage and authentication misuse. To reduce **Server-Side Request Forgery (SSRF)** risk, validate or allow-list request destinations instead of treating missing cookies as an SSRF control.
 
 ::code-group
 
