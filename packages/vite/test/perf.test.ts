@@ -60,6 +60,20 @@ describe('PerfPlugin', () => {
     expect(recorded).toEqual(['test-plugin:resolveId'])
   })
 
+  it('should mark a phase for each environment the builder builds', async () => {
+    const phases: string[] = []
+    const perf = { startPhase: (name: string) => phases.push(`start ${name}`), endPhase: (name: string) => phases.push(`end ${name}`) }
+    const builder = {
+      build: (environment: { name: string }) => environment.name === 'nitro' ? Promise.reject(new Error('failed')) : Promise.resolve(environment.name),
+    }
+    await (PerfPlugin(createNuxt({}, perf as any)).buildApp as { handler: (builder: unknown) => Promise<void> }).handler(builder)
+
+    expect(await builder.build({ name: 'client' })).toBe('client')
+    await expect(builder.build({ name: 'nitro' })).rejects.toThrow('failed')
+    // the failed build is left open, for the report to show as unfinished
+    expect(phases).toEqual(['start vite:client', 'end vite:client', 'start vite:nitro'])
+  })
+
   it('should publish server module fetches on `nuxt.bundler.module`', async () => {
     const events = subscribe('nuxt.bundler.module')
     const ssr = { name: 'ssr', plugins: [], fetchModule: (id: string) => Promise.resolve({ code: id }) }

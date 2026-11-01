@@ -870,6 +870,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {
+    const perf = nuxt._perf
+    // `prerender:config` only fires once there are routes to prerender, so the phase always ends unless prerendering fails
+    nitro.hooks.hook('prerender:config', () => perf.startPhase('nitro:prerender'))
+    nitro.hooks.hook('prerender:done', () => perf.endPhase('nitro:prerender'))
     nitro.hooks.hook('build:config', (_nitro, { rollup, rolldown }) => {
       const plugins = ((rollup ?? rolldown)?.plugins || []) as Array<{ name?: string, transform?: (...a: any[]) => any, resolveId?: (...a: any[]) => any, load?: (...a: any[]) => any } | null>
       for (const plugin of plugins) {
