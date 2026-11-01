@@ -256,6 +256,58 @@ export class NuxtPerfProfiler {
     }
   }
 
+  /**
+   * Run a bundler plugin hook with `ctx` as its plugin context and record how long it took.
+   *
+   * Time the hook spends awaiting `this.resolve()` or `this.load()` runs other plugins'
+   * hooks, which record their own time, so it is not charged to this one.
+   */
+  timeBundlerHook<T> (pluginName: string, hookName: string, ctx: unknown, run: (ctx: any) => T): T {
+    const start = performance.now()
+    // parallel calls overlap, so subtract how long at least one of them was pending
+    let pending = 0
+    let pendingSince = 0
+    let nested = 0
+    const exit = () => {
+      if (--pending === 0) { nested += performance.now() - pendingSince }
+    }
+    const proxy = ctx && typeof ctx === 'object'
+      ? new Proxy(ctx, {
+          get (target, key) {
+            const value = Reflect.get(target, key, target)
+            if (typeof value !== 'function') { return value }
+            // bound so that methods relying on private fields or native receivers still work
+            if (key !== 'resolve' && key !== 'load') { return value.bind(target) }
+            return (...args: unknown[]) => {
+              if (pending++ === 0) { pendingSince = performance.now() }
+              try {
+                return Promise.resolve(value.apply(target, args)).finally(exit)
+              } catch (err) {
+                exit()
+                throw err
+              }
+            }
+          },
+          set: (target, key, value) => Reflect.set(target, key, value),
+        })
+      : ctx
+    const record = () => {
+      const end = performance.now()
+      this.recordBundlerPluginHook(pluginName, hookName, end - start - nested - (pending > 0 ? end - pendingSince : 0), start)
+    }
+    try {
+      const result = run(proxy)
+      if (result && typeof result === 'object' && 'then' in result) {
+        return (result as unknown as Promise<unknown>).finally(record) as T
+      }
+      record()
+      return result
+    } catch (err) {
+      record()
+      throw err
+    }
+  }
+
   collectModuleTimings (installedModules: Array<{ meta?: { name?: string }, timings?: Record<string, number | undefined> }>): void {
     for (const mod of installedModules) {
       const setupTime = mod.timings?.setup
