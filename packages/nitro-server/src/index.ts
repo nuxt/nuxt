@@ -890,23 +890,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {
     const perf = nuxt._perf
-    type Handler = (this: unknown, ...args: unknown[]) => unknown
-    type Hook = Handler | { handler?: Handler }
-    const timed = (pluginName: string, hookName: string, handler: Handler): Handler => function (...args) {
-      return perf.timeBundlerHook(pluginName, hookName, this, ctx => handler.apply(ctx, args))
-    }
     nitro.hooks.hook('build:config', (_nitro, { rollup, rolldown }) => {
-      const plugins = ((rollup ?? rolldown)?.plugins || []) as Array<{ name?: string, transform?: Hook, resolveId?: Hook, load?: Hook } | null>
+      const plugins = ((rollup ?? rolldown)?.plugins || []) as Array<{ name?: string, transform?: (...a: any[]) => any, resolveId?: (...a: any[]) => any, load?: (...a: any[]) => any } | null>
       for (const plugin of plugins) {
         if (!plugin || !plugin.name) { continue }
         const pluginName = `nitro:${plugin.name}`
         for (const hookName of ['transform', 'resolveId', 'load'] as const) {
-          const hook = plugin[hookName]
-          if (typeof hook === 'function') {
-            plugin[hookName] = timed(pluginName, hookName, hook)
-          } else if (typeof hook?.handler === 'function') {
-            // Rolldown plugins usually declare hooks as `{ filter, handler }`
-            hook.handler = timed(pluginName, hookName, hook.handler)
+          const hook: any = plugin[hookName]
+          // Rolldown plugins usually declare hooks as `{ filter, handler }`
+          const [owner, key] = typeof hook === 'function' ? [plugin, hookName] : [hook, 'handler']
+          const original = owner?.[key]
+          if (typeof original !== 'function') { continue }
+          owner[key] = function (this: any, ...args: any[]) {
+            return perf.timeBundlerHook(pluginName, hookName, this, ctx => original.apply(ctx, args))
           }
         }
       }

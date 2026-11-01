@@ -70,8 +70,5 @@ function timedCall (fn: (...a: any[]) => any, ctx: any, args: any[], pluginName:
         environment: ctx?.environment?.name,
       }, () => fn.apply(thisArg, args))
     : fn.apply(thisArg, args)
-  if (!nuxt._perf) {
-    return call(ctx)
-  }
-  return nuxt._perf.timeBundlerHook(pluginName, hookName, ctx, call)
+  return nuxt._perf ? nuxt._perf.timeBundlerHook(pluginName, hookName, ctx, call) : call(ctx)
 }
