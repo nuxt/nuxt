@@ -70,9 +70,6 @@ const entrypoints: Record<string, PublicEntrypoint> = {
       'h3',
       // `TSConfig` models `tsconfig.json`, which is TypeScript's format rather than Nuxt's.
       'pkg-types',
-      // `SchemaDefinition` and `Schema` are `untyped`'s schema format, which Nuxt exposes
-      // deliberately through `$schema` and `defineNuxtSchema`.
-      'untyped',
       // `imports:context` hands out the auto-import transformer instance. An escape hatch, in the
       // same category as `useNitro()`.
       'unimport',

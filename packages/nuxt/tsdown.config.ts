@@ -48,7 +48,9 @@ export default defineConfig([
     dts: { generator: 'oxc' },
     entry: 'src/index.ts',
     deps: {
-      onlyBundle: [],
+      // `untyped` is inlined because its package pulls in `jiti` for a loader entry point Nuxt
+      // never imports.
+      onlyBundle: ['untyped'],
       neverBundle: [
         /^nuxt(\/|$)/,
         '@nuxt/schema',
