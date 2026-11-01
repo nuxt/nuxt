@@ -7,6 +7,7 @@ import escapeStringRegexp from 'escape-string-regexp'
 import { parseNodeModulePath } from '@nuxt/kit/internal'
 
 const BARE_ID_RE = /^(?!\.{0,2}[/\\]|[A-Z]:[/\\]|[\0#~]|virtual:)/i
+const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
 function pkgName (id: string) {
   const segments = id.split('/')
@@ -47,10 +48,21 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
         name: 'nuxt:resolve-externals:external',
         resolveId: {
           filter: {
-            id: BARE_ID_RE,
+            id: [BARE_ID_RE, NODE_MODULES_RE],
           },
           async handler (id, importer) {
-            if (!importer || isBuiltin(id) || deduped.has(pkgName(id)) || localImporterRE?.test(importer)) { return }
+            if (!importer || isBuiltin(id) || localImporterRE?.test(importer)) { return }
+            // a template may import a package entry by its absolute path (`paths.mjs` imports ufo);
+            // externalize it like the bare import, or the bundle keeps whichever resolution comes first
+            if (!BARE_ID_RE.test(id)) {
+              const { dir, name } = parseNodeModulePath(id)
+              if (!dir || !name || deduped.has(name)) { return }
+              if (resolveModulePath(name, { try: true, from: `${dir}${name}/`, conditions, extensions: nuxt.options.extensions }) !== id) { return }
+              const res = await this.resolve?.(name, importer, { skipSelf: true })
+              if (!res || res.external !== true || res.id !== name) { return }
+              return { ...res, id, external: 'absolute' }
+            }
+            if (deduped.has(pkgName(id))) { return }
             const res = await this.resolve?.(id, importer, { skipSelf: true })
             if (!res || res.external !== true || res.id !== id) { return res }
             // every file in a package resolves a bare id the same way, so resolving from the

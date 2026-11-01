@@ -110,6 +110,26 @@ describe('ResolveExternalsPlugin', () => {
     expect(context.resolve).not.toHaveBeenCalled()
   })
 
+  it('resolves an absolute import of a package entry like the bare import', async () => {
+    const plugin = environmentPlugin()
+    const template = '\0nuxt-nitro-virtual:#internal/nuxt/paths'
+    const entry = join(rootDep, 'index.js')
+
+    const external = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
+    await expect(resolveId(plugin, external, entry, template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
+    expect(external.resolve).toHaveBeenCalledWith('dep', template, { skipSelf: true })
+
+    // only the entry the bare import resolves to, and only when the bare import is external
+    await expect(resolveId(plugin, external, join(rootDep, 'package.json'), template)).resolves.toBeUndefined()
+    const inlined = { resolve: vi.fn().mockResolvedValue({ id: entry, external: false }) }
+    await expect(resolveId(plugin, inlined, entry, template)).resolves.toBeUndefined()
+
+    const deduped = environmentPlugin(createNuxt(), createEnvironment('ssr', { dedupe: ['dep'] }))
+    const context = { resolve: vi.fn() }
+    await expect(resolveId(deduped, context, entry, template)).resolves.toBeUndefined()
+    expect(context.resolve).not.toHaveBeenCalled()
+  })
+
   it('skips node builtins and ids without an importer', async () => {
     const plugin = environmentPlugin()
     const context = { resolve: vi.fn() }
@@ -123,6 +143,8 @@ describe('ResolveExternalsPlugin', () => {
   it.each([
     ['./relative.js', false],
     ['/abs/path.js', false],
+    ['/abs/node_modules/dep/index.js', true],
+    ['C:\\abs\\node_modules\\dep\\index.js', true],
     ['C:\\abs\\path.js', false],
     ['\0virtual:nuxt', false],
     ['virtual:nuxt', false],
@@ -132,6 +154,6 @@ describe('ResolveExternalsPlugin', () => {
     ['@scope/dep/deep', true],
   ])('filters %s', (id, matches) => {
     const plugin = environmentPlugin()
-    expect(plugin.resolveId.filter.id.test(id)).toBe(matches)
+    expect(plugin.resolveId.filter.id.some((re: RegExp) => re.test(id))).toBe(matches)
   })
 })
