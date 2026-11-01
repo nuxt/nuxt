@@ -58,6 +58,10 @@ describe('resolveApp', () => {
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
           },
           {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/deferred-prefetch.client.ts",
+          },
+          {
             "dependsOn": [],
             "filename": "components.plugin.mjs",
             "getContents": [Function],
@@ -99,6 +103,16 @@ describe('resolveApp', () => {
         "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead-stream.client.ts",
       ]
     `)
+  })
+
+  it('does not register the deferred prefetch plugin when deferPrefetchHints is disabled', async () => {
+    const app = await getResolvedApp([
+      {
+        name: 'nuxt.config.ts',
+        contents: 'export default defineNuxtConfig({ experimental: { deferPrefetchHints: false } })',
+      },
+    ])
+    expect(app.plugins.some(p => !('getContents' in p) && p.src.includes('deferred-prefetch'))).toBe(false)
   })
 
   it('resolves layouts and middleware correctly', async () => {

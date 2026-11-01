@@ -1337,6 +1337,13 @@ export interface ConfigSchema {
     crossOriginPrefetch: boolean
 
     /**
+     * Whether to render `<link rel="prefetch">` hints inert and activate them once the app is ready, so they do not compete with the page's own resources while it loads.
+     *
+     * @default true
+     */
+    deferPrefetchHints: boolean
+
+    /**
      * Enable View Transition API integration with client-side router.
      *
      * @default false
