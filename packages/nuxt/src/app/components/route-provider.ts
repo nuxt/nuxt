@@ -1,6 +1,8 @@
-import { defineComponent, h, nextTick, onMounted, onUnmounted, provide, shallowReactive } from 'vue'
+import { computed, defineComponent, h, inject, nextTick, onMounted, onUnmounted, provide, shallowReactive } from 'vue'
 import type { DefineSetupFnComponent, Ref, VNode } from 'vue'
+import { matchedRouteKey } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, RouteRecordNormalized } from 'vue-router'
+import { staticRoutes } from '#build/nuxt.config.mjs'
 import { renderDiagnostics } from '../diagnostics/render'
 import { trackRenderedRecord } from '../diagnostics/rendered-records'
 import { PageRouteSymbol } from './injections'
@@ -45,6 +47,17 @@ export const defineRouteProvider = (name = 'RouteProvider'): RouteProviderCompon
     }
 
     provide(PageRouteSymbol, shallowReactive(route))
+
+    // in-component guards stay on the matched record until unmount, which never happens on the server
+    if (import.meta.server && staticRoutes) {
+      const matched = inject(matchedRouteKey, undefined)
+      if (matched) {
+        provide(matchedRouteKey, computed(() => {
+          const record = matched.value
+          return record && { ...record, leaveGuards: new Set(), updateGuards: new Set() }
+        }))
+      }
+    }
 
     if (import.meta.dev && import.meta.client) {
       const record = props.routeRecord ?? props.route.matched.find(m => m.components?.default === props.vnode?.type)

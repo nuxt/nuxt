@@ -89,6 +89,10 @@ export default defineNuxtModule({
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
+    if (nuxt.options.experimental.staticRoutes && !nuxt.options._layers.some(layer => layer.config.experimental?.early404 === false)) {
+      nuxt.options.experimental.early404 = true
+    }
+
     let inlineRulesCache: Record<string, RouteRuleConfig> = {}
     let updateRouteConfig: (inlineRules: Record<string, RouteRuleConfig>) => void | Promise<void>
     if (nuxt.options.experimental.inlineRouteRules) {
@@ -963,14 +967,17 @@ export default defineNuxtModule({
     // `router.addRoute()` would bypass the build-time route patterns used for early
     // 404 responses, so remove it from the router type. `removeRoute` stays: it only
     // narrows the real route set, which is the safe direction for the matcher.
-    if (nuxt.options.experimental.early404) {
+    const removedRouterMethods = nuxt.options.experimental.staticRoutes
+      ? ['addRoute', 'removeRoute', 'clearRoutes']
+      : nuxt.options.experimental.early404 ? ['addRoute'] : []
+    if (removedRouterMethods.length) {
       addTypeTemplate({
-        filename: 'types/early404.d.ts',
+        filename: 'types/router-methods.d.ts',
         dependsOn: [],
         getContents: () => [
           'declare module \'nuxt/app\' {',
-          '  interface Early404IncompatibleRouterMethods {',
-          '    addRoute: true',
+          '  interface RemovedRouterMethods {',
+          ...removedRouterMethods.map(method => `    ${method}: true`),
           '  }',
           '}',
           'export {}',

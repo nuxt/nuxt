@@ -30,6 +30,7 @@ export {
   anyValue as devRootDir,
   anyValue as fetchDefaults,
   anyValue as granularCachedData,
+  anyValue as staticRoutes,
   anyValue as hasIslandOptOutPlugins,
   anyValue as hasParallelPlugins,
   anyValue as hasPluginDependencies,
