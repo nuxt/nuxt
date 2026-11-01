@@ -28,6 +28,8 @@ interface PerfPhase {
   memoryAfter: MemorySnapshot
   memoryDelta: MemoryDelta
   retainedMemory?: MemorySnapshot
+  /** The phase had not ended when the report was taken, for example because the build failed. */
+  unfinished?: boolean
 }
 
 interface OpenPhase {
@@ -77,7 +79,10 @@ interface PerfReport {
     memoryDelta: MemoryDelta
     ownMemoryDelta: MemoryDelta
     retainedHeap?: number
+    unfinished?: boolean
   }>
+  /** Time inside `totalDuration` that no phase covers. */
+  unattributedDuration: number
   modules: ModuleTiming[]
   bundlerPlugins: Array<{ name: string, hooks: Record<string, PluginHookTiming> }>
   timestamp: string
@@ -161,6 +166,21 @@ function contains (outer: { startTime: number, endTime: number }, inner: { start
   return inner.startTime >= outer.startTime && inner.endTime <= outer.endTime
 }
 
+/** Total time covered by at least one of `phases`. */
+function coveredDuration (phases: PerfPhase[]): number {
+  let covered = 0
+  let end = -Infinity
+  for (const phase of phases.toSorted((a, b) => a.startTime - b.startTime)) {
+    if (phase.endTime <= end) { continue }
+    covered += phase.endTime - Math.max(phase.startTime, end)
+    end = phase.endTime
+  }
+  return covered
+}
+
+/** Sub-phases are listed under Details, and their time stays in the row of the phase they run in. */
+const isSubPhase = (name: string) => name.startsWith('module:')
+
 /** Hooks taking at least this long are shown alongside the phases. */
 const HOOK_PHASE_THRESHOLD_MS = 5
 
@@ -182,7 +202,20 @@ export class NuxtPerfProfiler {
     // `startTime` is a `Date.now()` timestamp
     this.#globalStart = options?.startTime ? performance.now() - (Date.now() - options.startTime) : performance.now()
     this.#globalMemoryBefore = getMemorySnapshot()
-    this.#baseTs = Date.now() * 1000 - this.#globalStart * 1000
+    this.#baseTs = Date.now() * 1000 - performance.now() * 1000
+    if (options?.startTime) {
+      // the CLI started before the profiler: booting it and importing Nuxt takes this long
+      const now = performance.now()
+      this.#phases.push({
+        name: 'startup',
+        startTime: this.#globalStart,
+        endTime: now,
+        duration: round(now - this.#globalStart),
+        memoryBefore: this.#globalMemoryBefore,
+        memoryAfter: this.#globalMemoryBefore,
+        memoryDelta: { rss: 0, heapUsed: 0 },
+      })
+    }
   }
 
   /**
@@ -376,18 +409,20 @@ export class NuxtPerfProfiler {
   }
 
   getReport (): PerfReport {
-    const totalDuration = round(performance.now() - this.#globalStart)
+    const now = performance.now()
+    const totalDuration = round(now - this.#globalStart)
 
     // hook invocations above the threshold are shown as phases unless a manual phase of the same
     // name already covers them
     const allPhases: PerfPhase[] = [
-      ...this.#phases,
+      ...this.#getPhases(now),
       ...this.#hookPhases.filter(hp => hp.duration >= HOOK_PHASE_THRESHOLD_MS && !this.#phases.some(p => p.name === hp.name && contains(p, hp))),
     ].sort((a, b) => a.startTime - b.startTime)
 
-    // own time and memory exclude direct children (phases nested in this one but in no other child)
+    // own time and memory exclude direct children (phases nested in this one but in no other child);
+    // sub-phases are not subtracted
     function computeOwn (phase: PerfPhase) {
-      const children = allPhases.filter(other => other !== phase && contains(phase, other))
+      const children = allPhases.filter(other => other !== phase && !isSubPhase(other.name) && contains(phase, other))
       const directChildren = children.filter(child => !children.some(other => other !== child && contains(other, child)))
 
       let childTime = 0
@@ -421,7 +456,9 @@ export class NuxtPerfProfiler {
         memoryAfter: p.memoryAfter,
         memoryDelta: p.memoryDelta,
         retainedHeap: p.retainedMemory?.heapUsed,
+        unfinished: p.unfinished,
       })),
+      unattributedDuration: round(Math.max(0, totalDuration - coveredDuration(allPhases))),
       modules: this.#modules.toSorted((a, b) => b.setupTime - a.setupTime),
       bundlerPlugins: [...this.#bundlerPluginTimings.entries()]
         .map(([name, hookMap]) => {
@@ -444,7 +481,6 @@ export class NuxtPerfProfiler {
   printReport (options?: { title?: string }): void {
     const report = this.getReport()
 
-    const isSubPhase = (name: string) => name.startsWith('module:') || name.startsWith('vite:')
     const topPhases = report.phases.filter(p => !isSubPhase(p.name))
     const subPhases = report.phases.filter(p => isSubPhase(p.name))
 
@@ -486,7 +522,10 @@ export class NuxtPerfProfiler {
           ? thresholdColor(phase.retainedHeap, 200 * 1024 * 1024, 100 * 1024 * 1024, colors.green)(formatBytes(phase.retainedHeap))
           : colors.dim('-'))
       }
-      consola.log(`  ${row(cells)}  ${durColor('█'.repeat(durBar)) + memColor('░'.repeat(memBar))}`)
+      consola.log(`  ${row(cells)}  ${durColor('█'.repeat(durBar)) + memColor('░'.repeat(memBar))}${phase.unfinished ? ` ${colors.red('unfinished')}` : ''}`)
+    }
+    if (report.unattributedDuration >= 1) {
+      consola.log(`  ${row([colors.dim('(no phase)'), colors.dim(formatDuration(report.unattributedDuration))])}`)
     }
 
     consola.log(separator)
@@ -539,6 +578,7 @@ export class NuxtPerfProfiler {
     const tidPhases = 1
     const tidHooks = 2
 
+    const globalEnd = performance.now()
     const toUs = (ms: number) => Math.round(ms * 1000 + this.#baseTs)
     const threadName = (tid: number, name: string): TraceEvent => ({ name: 'thread_name', ph: 'M', ts: 0, pid, tid, cat: '', args: { name } })
     const span = (name: string, cat: string, tid: number, start: number, end: number, args?: { begin?: Record<string, unknown>, end?: Record<string, unknown> }): TraceEvent[] => [
@@ -550,10 +590,10 @@ export class NuxtPerfProfiler {
       { name: 'process_name', ph: 'M', ts: 0, pid, tid: 0, cat: '', args: { name: 'Nuxt Build' } },
       threadName(tidPhases, 'Build'),
       threadName(tidHooks, 'Hooks'),
-      ...span('nuxt build', 'build', tidPhases, this.#globalStart, performance.now()),
+      ...span('nuxt build', 'build', tidPhases, this.#globalStart, globalEnd),
     ]
 
-    for (const phase of this.#phases) {
+    for (const phase of this.#getPhases(globalEnd)) {
       events.push(...span(phase.name, 'phase', tidPhases, phase.startTime, phase.endTime, {
         begin: { memoryBefore: { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed } },
         end: { memoryDelta: phase.memoryDelta },
@@ -594,7 +634,7 @@ export class NuxtPerfProfiler {
     emitPluginSpans(this.#bundlerPluginSpans.filter(s => s.pluginName.startsWith('nitro:')), 'Nitro Plugins', 110)
 
     const counter = (name: string, ts: number, args: Record<string, number>): TraceEvent => ({ name, cat: 'memory', ph: 'C', ts, pid, tid: 0, args })
-    for (const phase of this.#phases) {
+    for (const phase of this.#getPhases(globalEnd)) {
       events.push(
         counter('Memory', toUs(phase.startTime), { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed }),
         counter('Memory', toUs(phase.endTime), { rss: phase.memoryAfter.rss, heapUsed: phase.memoryAfter.heapUsed }),
@@ -625,6 +665,22 @@ export class NuxtPerfProfiler {
       // the report is best-effort
     }
     return reportPath
+  }
+
+  /** Ended phases, plus the ones still open, cut off at `now`. */
+  #getPhases (now: number): PerfPhase[] {
+    const memoryNow = getMemorySnapshot()
+    const unfinished = this.#phaseStack.map(open => ({
+      name: open.name,
+      startTime: open.startTime,
+      endTime: now,
+      duration: round(now - open.startTime),
+      memoryBefore: open.memoryBefore,
+      memoryAfter: memoryNow,
+      memoryDelta: getDelta(open.memoryBefore, memoryNow),
+      unfinished: true,
+    }))
+    return [...this.#phases, ...unfinished]
   }
 
   dispose (): void {

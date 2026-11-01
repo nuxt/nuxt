@@ -347,9 +347,11 @@ async function createParcelWatcher () {
 }
 
 async function resolveBuilder (nuxt: Nuxt): Promise<NuxtBuilder> {
+  nuxt._perf?.startPhase('builder:import')
   const source = typeof nuxt.options.builder === 'string'
     ? await loadBuilder(nuxt, nuxt.options.builder)
     : nuxt.options.builder
+  nuxt._perf?.endPhase('builder:import')
 
   // Wrap `bundle` so the `build:error` hook fires for any builder, including
   // user-supplied ones, without each caller having to remember to do it.
