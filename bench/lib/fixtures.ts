@@ -43,10 +43,12 @@ export const fixtures: Fixture[] = [
   },
   {
     id: 'large',
-    description: 'generated app with ~170 pages, ~370 components, plugins, middleware, server routes and a layer',
+    description: 'generated app with ~170 pages, ~370 components, plugins, middleware, server routes and a layer, plus a 1000-row listing page in two flavours (`/table` with a `<NuxtLink>` per row, `/table/plain` with a plain anchor)',
     routes: [
       { path: '/', match: '<h1>home 0</h1>' },
       { path: '/catalog/3', match: '<h1>catalog 3</h1>' },
+      { path: '/table', match: 'href="/table/0999"' },
+      { path: '/table/plain', match: 'href="/table/0999"' },
     ],
     hmr: { file: 'app/components/base/Item0.vue', text: 'BaseItem0', route: '/' },
     async create (dir) {
