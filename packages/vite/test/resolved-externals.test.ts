@@ -130,6 +130,8 @@ describe('ResolveExternalsPlugin', () => {
     await expect(resolveId(plugin, external, join(rootDep, 'package.json'), template)).resolves.toBeUndefined()
     const inlined = { resolve: vi.fn().mockResolvedValue({ id: entry, external: false }) }
     await expect(resolveId(plugin, inlined, entry, template)).resolves.toBeUndefined()
+    const unresolvable = { resolve: vi.fn().mockRejectedValue(new Error('No known conditions for "." specifier in "dep" package')) }
+    await expect(resolveId(plugin, unresolvable, entry, template)).resolves.toBeUndefined()
 
     const deduped = environmentPlugin(createNuxt(), createEnvironment('ssr', { dedupe: ['dep'] }))
     const context = { resolve: vi.fn() }

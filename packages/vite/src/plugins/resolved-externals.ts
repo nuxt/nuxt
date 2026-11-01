@@ -59,8 +59,9 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
               if (!dir || !name || deduped.has(name)) { return }
               const path = resolveModulePath(name, { try: true, from: `${dir}${name}/`, conditions, extensions: nuxt.options.extensions })
               if (!path || normalize(path) !== normalize(id)) { return }
-              // resolve from the entry so the metadata comes from this copy, not the importer's
-              const res = await this.resolve?.(name, path, { skipSelf: true })
+              // resolve from the entry so the metadata comes from this copy, not the importer's;
+              // if that fails, leave the import as it was
+              const res = await this.resolve?.(name, path, { skipSelf: true }).catch(() => undefined)
               if (!res || res.external !== true || res.id !== name) { return }
               return { ...res, id: path, external: 'absolute' }
             }
