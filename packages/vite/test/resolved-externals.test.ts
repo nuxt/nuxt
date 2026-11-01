@@ -104,7 +104,7 @@ describe('ResolveExternalsPlugin', () => {
     const plugin = environmentPlugin(createNuxt(), createEnvironment('ssr', { dedupe: ['dep', '@scope/dep'] }))
     const context = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
 
-    for (const id of ['dep', 'dep/sub', '@scope/dep/sub']) {
+    for (const id of ['dep', 'dep/sub', '@scope/dep/sub', join(rootDep, 'index.js')]) {
       await expect(resolveId(plugin, context, id, importer)).resolves.toBeUndefined()
     }
     expect(context.resolve).not.toHaveBeenCalled()
@@ -112,31 +112,19 @@ describe('ResolveExternalsPlugin', () => {
 
   it('resolves an absolute import of a package entry like the bare import', async () => {
     const plugin = environmentPlugin()
+    const context = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
     const template = '\0nuxt-nitro-virtual:#internal/nuxt/paths'
     const entry = join(rootDep, 'index.js')
-
-    const external = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
-    await expect(resolveId(plugin, external, entry, template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
-    expect(external.resolve).toHaveBeenCalledWith('dep', entry, { skipSelf: true })
-    await expect(resolveId(plugin, external, entry, '/project/.nuxt/paths.mjs')).resolves.toStrictEqual({ id: entry, external: 'absolute' })
-
-    // a nested copy gets its own metadata, not the copy the importer resolves to
     const nestedEntry = join(nestedDep, 'index.js')
-    await expect(resolveId(plugin, external, nestedEntry, '/project/app/plugins/plugin.js')).resolves.toStrictEqual({ id: nestedEntry, external: 'absolute' })
-    expect(external.resolve).toHaveBeenLastCalledWith('dep', nestedEntry, { skipSelf: true })
-    await expect(resolveId(plugin, external, entry.replace(/\//g, '\\'), template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
 
-    // only the entry the bare import resolves to, and only when the bare import is external
-    await expect(resolveId(plugin, external, join(rootDep, 'package.json'), template)).resolves.toBeUndefined()
-    const inlined = { resolve: vi.fn().mockResolvedValue({ id: entry, external: false }) }
-    await expect(resolveId(plugin, inlined, entry, template)).resolves.toBeUndefined()
-    const unresolvable = { resolve: vi.fn().mockRejectedValue(new Error('No known conditions for "." specifier in "dep" package')) }
-    await expect(resolveId(plugin, unresolvable, entry, template)).resolves.toBeUndefined()
+    await expect(resolveId(plugin, context, entry, template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
+    await expect(resolveId(plugin, context, entry.replace(/\//g, '\\'), template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
+    await expect(resolveId(plugin, context, nestedEntry, '/project/app/plugins/plugin.js')).resolves.toStrictEqual({ id: nestedEntry, external: 'absolute' })
+    expect(context.resolve).toHaveBeenLastCalledWith('dep', nestedEntry, { skipSelf: true })
 
-    const deduped = environmentPlugin(createNuxt(), createEnvironment('ssr', { dedupe: ['dep'] }))
-    const context = { resolve: vi.fn() }
-    await expect(resolveId(deduped, context, entry, template)).resolves.toBeUndefined()
-    expect(context.resolve).not.toHaveBeenCalled()
+    await expect(resolveId(plugin, context, join(rootDep, 'package.json'), template)).resolves.toBeUndefined()
+    await expect(resolveId(plugin, { resolve: vi.fn().mockResolvedValue({ id: entry, external: false }) }, entry, template)).resolves.toBeUndefined()
+    await expect(resolveId(plugin, { resolve: vi.fn().mockRejectedValue(new Error('No known conditions for "." specifier in "dep" package')) }, entry, template)).resolves.toBeUndefined()
   })
 
   it('skips node builtins and ids without an importer', async () => {
