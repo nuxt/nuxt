@@ -12,7 +12,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       if (!canPrefetch()) { return }
       const assetsURL = new URL(buildAssetsURL('/'), document.baseURI).href
       for (const link of document.head.querySelectorAll<HTMLLinkElement>('link[rel=prefetch][data-href]')) {
-        const href = new URL(link.dataset.href!, document.baseURI).href
+        let href: string
+        try {
+          href = new URL(link.dataset.href!, document.baseURI).href
+        } catch {
+          continue
+        }
         if (href.startsWith(assetsURL)) {
           link.href = href
         }

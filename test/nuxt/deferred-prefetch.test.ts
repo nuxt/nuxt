@@ -86,6 +86,15 @@ describe('deferred prefetch plugin', () => {
     expect(activeHrefs()).toEqual(['/_nuxt/lazy.js'])
   })
 
+  it('keeps activating hints after one with a malformed url', async () => {
+    addLink({ 'rel': 'prefetch', 'data-href': 'https://[' })
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/lazy.js' })
+
+    await install()
+
+    expect(activeHrefs()).toEqual(['/_nuxt/lazy.js'])
+  })
+
   it('leaves the hints inert when the connection cannot afford to prefetch', async () => {
     vi.stubGlobal('navigator', { ...navigator, connection: { saveData: true } })
     addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/lazy.js' })
