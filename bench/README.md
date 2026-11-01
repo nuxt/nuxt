@@ -33,7 +33,7 @@ Every suite runs by default except `browser`, which needs `pnpm exec playwright-
 ## Fixtures
 
 - `minimal`: a single `app.vue`.
-- `large`: a generated app with ~170 pages, ~370 components, plugins, middleware, server routes and a layer (see `test/bench/large-app.ts`).
+- `large`: a generated app with ~170 pages, ~370 components, plugins, middleware, server routes and a layer (see `test/bench/large-app.ts`). Its `/table` and `/table/plain` routes render a 1000-row listing from `useAsyncData`, with a `<NuxtLink>` or a plain anchor per row, so the `render` suite also covers pages whose cost is proportional to their content (payload serialisation, link rendering, response encoding) rather than per-request overhead.
 - `ui`: a [Nuxt UI](https://ui.nuxt.com) landing page and blog index with a shared layout, ~690 component instances in all (see `fixtures/ui`). The dependencies in its `package.json` are installed alongside `nuxt` in a project of its own, so it is only used by the `client` and `browser` suites unless you pass `--fixture ui`.
 
 ## CI
