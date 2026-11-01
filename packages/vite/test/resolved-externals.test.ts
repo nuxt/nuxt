@@ -117,8 +117,13 @@ describe('ResolveExternalsPlugin', () => {
 
     const external = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
     await expect(resolveId(plugin, external, entry, template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
-    expect(external.resolve).toHaveBeenCalledWith('dep', template, { skipSelf: true })
+    expect(external.resolve).toHaveBeenCalledWith('dep', entry, { skipSelf: true })
     await expect(resolveId(plugin, external, entry, '/project/.nuxt/paths.mjs')).resolves.toStrictEqual({ id: entry, external: 'absolute' })
+
+    // a nested copy gets its own metadata, not the copy the importer resolves to
+    const nestedEntry = join(nestedDep, 'index.js')
+    await expect(resolveId(plugin, external, nestedEntry, '/project/app/plugins/plugin.js')).resolves.toStrictEqual({ id: nestedEntry, external: 'absolute' })
+    expect(external.resolve).toHaveBeenLastCalledWith('dep', nestedEntry, { skipSelf: true })
     await expect(resolveId(plugin, external, entry.replace(/\//g, '\\'), template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
 
     // only the entry the bare import resolves to, and only when the bare import is external
