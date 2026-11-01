@@ -2,7 +2,7 @@ import { isBuiltin } from 'node:module'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
-import { dirname, relative } from 'pathe'
+import { dirname, normalize, relative } from 'pathe'
 import escapeStringRegexp from 'escape-string-regexp'
 import { parseNodeModulePath } from '@nuxt/kit/internal'
 
@@ -51,17 +51,19 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
             id: [BARE_ID_RE, NODE_MODULES_RE],
           },
           async handler (id, importer) {
-            if (!importer || isBuiltin(id) || localImporterRE?.test(importer)) { return }
+            if (!importer || isBuiltin(id)) { return }
             // a template may import a package entry by its absolute path (`paths.mjs` imports ufo);
             // externalize it like the bare import, or the bundle keeps whichever resolution comes first
             if (!BARE_ID_RE.test(id)) {
               const { dir, name } = parseNodeModulePath(id)
               if (!dir || !name || deduped.has(name)) { return }
-              if (resolveModulePath(name, { try: true, from: `${dir}${name}/`, conditions, extensions: nuxt.options.extensions }) !== id) { return }
+              const path = resolveModulePath(name, { try: true, from: `${dir}${name}/`, conditions, extensions: nuxt.options.extensions })
+              if (!path || normalize(path) !== normalize(id)) { return }
               const res = await this.resolve?.(name, importer, { skipSelf: true })
               if (!res || res.external !== true || res.id !== name) { return }
-              return { ...res, id, external: 'absolute' }
+              return { ...res, id: path, external: 'absolute' }
             }
+            if (localImporterRE?.test(importer)) { return }
             if (deduped.has(pkgName(id))) { return }
             const res = await this.resolve?.(id, importer, { skipSelf: true })
             if (!res || res.external !== true || res.id !== id) { return res }

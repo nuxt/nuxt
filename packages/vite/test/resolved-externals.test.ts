@@ -118,6 +118,8 @@ describe('ResolveExternalsPlugin', () => {
     const external = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
     await expect(resolveId(plugin, external, entry, template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
     expect(external.resolve).toHaveBeenCalledWith('dep', template, { skipSelf: true })
+    await expect(resolveId(plugin, external, entry, '/project/.nuxt/paths.mjs')).resolves.toStrictEqual({ id: entry, external: 'absolute' })
+    await expect(resolveId(plugin, external, entry.replace(/\//g, '\\'), template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
 
     // only the entry the bare import resolves to, and only when the bare import is external
     await expect(resolveId(plugin, external, join(rootDep, 'package.json'), template)).resolves.toBeUndefined()
