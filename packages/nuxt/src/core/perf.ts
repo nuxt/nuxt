@@ -139,6 +139,46 @@ interface TraceEvent {
   args?: Record<string, unknown>
 }
 
+/** Plugin context methods that run other plugins' hooks, which record their own time. */
+const NESTED_PLUGIN_CALLS = new Set<PropertyKey>(['resolve', 'load'])
+
+/**
+ * Wraps a plugin context so that calls to `this.resolve()` and `this.load()` are timed.
+ * `nestedTime(now)` returns how long, up to `now`, at least one of those calls was pending.
+ */
+function withNestedTiming<T extends object> (ctx: T): { ctx: T, nestedTime: (now: number) => number } {
+  let pending = 0
+  let pendingSince = 0
+  let settled = 0
+  const enter = () => {
+    if (pending++ === 0) { pendingSince = performance.now() }
+  }
+  const exit = () => {
+    if (--pending === 0) { settled += performance.now() - pendingSince }
+  }
+  const proxy = new Proxy(ctx, {
+    get (target, key) {
+      const value = Reflect.get(target, key, target)
+      if (typeof value !== 'function') { return value }
+      // bound so that methods relying on private fields or native receivers still work
+      if (!NESTED_PLUGIN_CALLS.has(key)) { return value.bind(target) }
+      return (...args: unknown[]) => {
+        enter()
+        try {
+          return Promise.resolve(value.apply(target, args)).finally(exit)
+        } catch (err) {
+          exit()
+          throw err
+        }
+      }
+    },
+    set (target, key, value) {
+      return Reflect.set(target, key, value)
+    },
+  })
+  return { ctx: proxy, nestedTime: now => settled + (pending > 0 ? now - pendingSince : 0) }
+}
+
 const SLOW_HOOK_THRESHOLD_MS = Number(process.env.NUXT_PERF_SLOW_HOOK_MS) || 50
 
 const HOOK_PHASE_THRESHOLD_MS = 5
@@ -277,6 +317,32 @@ export class NuxtPerfProfiler {
     // Store per-invocation span for trace file (only if startTime provided and duration significant)
     if (startTime != null && durationMs > 0.1) {
       this.#bundlerPluginSpans.push({ pluginName, hookName, startTime, durationMs })
+    }
+  }
+
+  /**
+   * Run a bundler plugin hook with `ctx` as its plugin context and record how long it took.
+   *
+   * Time the hook spends awaiting `this.resolve()` or `this.load()` runs other plugins'
+   * hooks, which record their own time, so it is not charged to this one.
+   */
+  timeBundlerHook<T> (pluginName: string, hookName: string, ctx: unknown, run: (ctx: any) => T): T {
+    const start = performance.now()
+    const timed = ctx && typeof ctx === 'object' ? withNestedTiming(ctx) : undefined
+    const record = () => {
+      const end = performance.now()
+      this.recordBundlerPluginHook(pluginName, hookName, end - start - (timed?.nestedTime(end) ?? 0), start)
+    }
+    try {
+      const result = run(timed ? timed.ctx : ctx)
+      if (result && typeof result === 'object' && 'then' in result) {
+        return (result as unknown as Promise<unknown>).finally(record) as T
+      }
+      record()
+      return result
+    } catch (err) {
+      record()
+      throw err
     }
   }
 
