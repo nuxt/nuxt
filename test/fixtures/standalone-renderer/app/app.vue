@@ -22,6 +22,8 @@ useHead({
 })
 
 const { data } = await useAsyncData('greeting', () => Promise.resolve('rendered without nitro'))
+
+const DeferredPanel = defineAsyncComponent(() => import('./components/DeferredPanel.vue'))
 </script>
 
 <template>
@@ -30,5 +32,6 @@ const { data } = await useAsyncData('greeting', () => Promise.resolve('rendered 
     <p id="greeting">
       {{ config.public.greeting }}
     </p>
+    <DeferredPanel v-if="path.startsWith('/deferred-panel')" />
   </div>
 </template>

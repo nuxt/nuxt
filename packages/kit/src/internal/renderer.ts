@@ -61,6 +61,7 @@ export type RendererConfigName =
   | 'NUXT_RUNTIME_PAYLOAD_EXTRACTION'
   | 'NUXT_SSR_STREAMING'
   | 'NUXT_SSR_STREAMING_BOT_RE'
+  | 'NUXT_DEFER_PREFETCH_HINTS'
   | 'appHead'
   | 'appRootTag'
   | 'appRootAttrs'
@@ -125,6 +126,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_RUNTIME_PAYLOAD_EXTRACTION: 'false',
     NUXT_SSR_STREAMING: String(streamingEnabled),
     NUXT_SSR_STREAMING_BOT_RE: streamingEnabled && streaming.botRegex instanceof RegExp ? String(streaming.botRegex) : '/^$/',
+    NUXT_DEFER_PREFETCH_HINTS: String(!!nuxt.options.experimental.deferPrefetchHints),
     appHead: JSON.stringify(app.head),
     appRootTag: JSON.stringify(app.rootTag),
     appRootAttrs: JSON.stringify(app.rootAttrs),
