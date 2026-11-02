@@ -321,7 +321,7 @@ async function initNuxt (nuxt: Nuxt) {
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
-  await installProxyDispatcher()
+  installProxyDispatcher()
 
   // Early-init profiler when CLI passes perf overrides (captures config loading).
   // Otherwise, create after config resolves from nuxt.config / env vars.
