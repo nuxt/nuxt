@@ -264,13 +264,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
       },
     } satisfies ViteConfig,
-    {
-      ...viteConfig,
+    mergeConfig(viteConfig, {
       environments: {
         ssr: $server,
         client: $client,
       },
-    },
+    }),
   )
 
   if (Array.isArray(config.server?.allowedHosts)) {
