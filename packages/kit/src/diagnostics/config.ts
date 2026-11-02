@@ -13,7 +13,9 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
   codes: {
     NUXT_B5001: {
       why: (p: { fallback: string }) => `No \`compatibilityDate\` is set in \`nuxt.config\`, so the \`${p.fallback}\` fallback is being used.`,
-      fix: (p: { latest: string }) => `Add \`compatibilityDate: '${p.latest}'\` to your \`nuxt.config.ts\`.`,
+      fix: (p: { latest: string, configs?: string }) => p.configs
+        ? `Add \`compatibilityDate: '${p.latest}'\` to one of these local configs: ${p.configs}.`
+        : `Add \`compatibilityDate: '${p.latest}'\` to your \`nuxt.config.ts\`.`,
     },
     NUXT_B5002: {
       why: (p: { rootDir: string }) => `\`@nuxt/webpack-builder\` could not be installed in \`${p.rootDir}\`.`,
