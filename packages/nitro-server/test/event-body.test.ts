@@ -62,6 +62,28 @@ router.post('/web-then-stream', eventHandler(async (event) => {
   return { web, stream: await withTimeout(new Response(request.body).text(), 'body stream') }
 }))
 
+router.post('/first-chunk', eventHandler(async (event) => {
+  const reader = toPortableEvent(event).req.body!.getReader()
+  const { value } = await reader.read()
+  await reader.cancel()
+  return { firstChunk: value?.byteLength ?? 0 }
+}))
+
+router.post('/stream-then-h3', eventHandler(async (event) => {
+  const stream = await new Response(toPortableEvent(event).req.body).text()
+  return { stream, h3: await withTimeout(readBody(event), 'readBody') }
+}))
+
+router.post('/partial-stream-then-h3', eventHandler(async (event) => {
+  const reader = toPortableEvent(event).req.body!.getReader()
+  await reader.read()
+  await reader.cancel()
+  return {
+    h3: (await withTimeout(readRawBody(event), 'readRawBody'))!.length,
+    web: (await withTimeout(toPortableEvent(event).req.text(), 'req.text')).length,
+  }
+}))
+
 app.use('/middleware-then-handler', eventHandler(async (event) => {
   const portable = toPortableEvent(event)
   event.context.requestFromMiddleware = portable.req
@@ -160,6 +182,35 @@ describe('portable event body', () => {
       web: { hello: 'world' },
       stream: '{"hello":"world"}',
     })
+  })
+
+  it('streams the body without reading it in full', async () => {
+    let sent = 0
+    const body = new ReadableStream<Uint8Array>({
+      pull (controller) {
+        if (sent >= 64) {
+          return controller.close()
+        }
+        sent++
+        controller.enqueue(new Uint8Array(64 * 1024).fill(0x61))
+      },
+    })
+    const result = await fetch(base + '/first-chunk', { method: 'POST', body, duplex: 'half' } as RequestInit).then(r => r.json())
+
+    expect(result.firstChunk).toBeGreaterThan(0)
+    expect(result.firstChunk).toBeLessThan(64 * 64 * 1024)
+  })
+
+  it('serves an h3 read after the body was streamed', async () => {
+    await expect(postJSON('/stream-then-h3', { hello: 'world' })).resolves.toEqual({
+      stream: '{"hello":"world"}',
+      h3: { hello: 'world' },
+    })
+  })
+
+  it('serves a full read after the body stream was cancelled', async () => {
+    const body = 'a'.repeat(1024 * 1024)
+    await expect(post('/partial-stream-then-h3', body)).resolves.toEqual({ h3: body.length, web: body.length })
   })
 
   it('serves a handler read after a middleware read the body', async () => {

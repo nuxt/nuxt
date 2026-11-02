@@ -124,6 +124,15 @@ const PAYLOAD_METHODS = new Set(['PATCH', 'POST', 'PUT', 'DELETE'])
 
 const BODY_READ_METHODS = new Set(['arrayBuffer', 'blob', 'bytes', 'formData', 'json', 'text'])
 
+const RAW_BODY = Symbol.for('h3RawBody')
+
+interface RequestBody {
+  read (): Promise<Uint8Array<ArrayBuffer>>
+  stream (): ReadableStream<Uint8Array<ArrayBuffer>>
+}
+
+const requestBodies = new WeakMap<object, RequestBody>()
+
 /**
  * The request in the web-standard shape, with every read of its body served from the bytes
  * h3 v1 caches on the node request.
@@ -147,14 +156,13 @@ function toWebRequest (event: H3Event): Request {
   const request = new Request(getRequestURL(event), {
     method,
     headers: event.headers,
-    body: toBufferedBodyStream(event),
+    body: getRequestBody(event).stream(),
     signal: toRequestSignal(event),
     // @ts-expect-error undici option, required to send a stream body
     duplex: 'half',
   })
 
-  const read = () => readRawBody(event, false).then(body => body ? new Uint8Array(body) : new Uint8Array())
-  const copy = () => read().then(body => new Response(body, { headers: request.headers }))
+  const copy = () => getRequestBody(event).read().then(body => new Response(body, { headers: request.headers }))
 
   const buffered: Request = new Proxy(request, {
     get (target, property) {
@@ -162,7 +170,7 @@ function toWebRequest (event: H3Event): Request {
         return false
       }
       if (property === 'body') {
-        return toBufferedBodyStream(event)
+        return getRequestBody(event).stream()
       }
       if (property === 'clone') {
         return () => buffered
@@ -195,16 +203,84 @@ function toRequestSignal (event: H3Event): AbortSignal {
   return controller.signal
 }
 
-function toBufferedBodyStream (event: H3Event): ReadableStream<Uint8Array> {
-  return new ReadableStream({
-    async pull (controller) {
-      const body = await readRawBody(event, false)
-      if (body) {
-        controller.enqueue(new Uint8Array(body))
-      }
-      controller.close()
+/**
+ * The body of the request, shared by every view of it and by h3's own body helpers.
+ *
+ * An unread node request is read incrementally, only as far as a read of the body has
+ * requested, and the chunks are kept so that later reads resolve the same bytes. A body h3
+ * has already read, or one the request carries in memory, is served from h3.
+ */
+function getRequestBody (event: H3Event): RequestBody {
+  const req = event.node.req as H3Event['node']['req'] & Record<PropertyKey, unknown>
+  let body = requestBodies.get(req)
+  if (!body) {
+    const hasBody = Number.parseInt(req.headers['content-length'] || '') || /\bchunked\b/i.test(String(req.headers['transfer-encoding'] ?? ''))
+    const readByH3 = event._requestBody || req[RAW_BODY] || req.rawBody || req.body
+    body = hasBody && !readByH3 ? toIncrementalBody(req) : toRawBody(event)
+    requestBodies.set(req, body)
+  }
+  return body
+}
+
+function toRawBody (event: H3Event): RequestBody {
+  const read = () => readRawBody(event, false).then(body => body ? new Uint8Array(body) : new Uint8Array())
+  return {
+    read,
+    stream: () => new ReadableStream({
+      async pull (controller) {
+        const body = await read()
+        if (body.byteLength) {
+          controller.enqueue(body)
+        }
+        controller.close()
+      },
+    }, { highWaterMark: 0 }),
+  }
+}
+
+function toIncrementalBody (req: H3Event['node']['req']): RequestBody {
+  const chunks: Buffer[] = []
+  let source: AsyncIterator<Buffer> | undefined
+  let done = false
+  let pending: Promise<void> | undefined
+
+  const readChunk = () => (pending ??= (source ??= req[Symbol.asyncIterator]()).next().then((result) => {
+    if (result.done) {
+      done = true
+    } else {
+      chunks.push(result.value)
+    }
+  }).finally(() => {
+    pending = undefined
+  }))
+
+  const readAll = async () => {
+    while (!done) {
+      await readChunk()
+    }
+    return Buffer.concat(chunks)
+  }
+
+  Object.defineProperty(req, RAW_BODY, { configurable: true, get: readAll })
+
+  return {
+    read: () => readAll().then(body => new Uint8Array(body)),
+    stream: () => {
+      let index = 0
+      return new ReadableStream({
+        async pull (controller) {
+          while (index >= chunks.length && !done) {
+            await readChunk()
+          }
+          if (index < chunks.length) {
+            controller.enqueue(new Uint8Array(chunks[index++]!))
+          } else {
+            controller.close()
+          }
+        },
+      }, { highWaterMark: 0 })
     },
-  })
+  }
 }
 
 export const PORTABLE_EVENT = '~portable'
