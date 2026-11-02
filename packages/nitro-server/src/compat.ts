@@ -218,9 +218,9 @@ export function scanLegacyScope (files: Iterable<string>, dirs: Iterable<string>
 const NODE_BRIDGE_RE = /\.node\s*\??\.\s*(?:req|res)\b/
 
 /** Nitro v2 APIs used by a file of user server code, for `NUXT_B9005`. */
-function userLegacySignals (code: string, filename: string, h3Names: Set<string>): string[] {
+function userLegacySignals (code: string, specifiers: ImportSpecifier[], h3Names: Set<string>): string[] {
   const signals = new Set<string>()
-  for (const specifier of findImportSpecifiers(code, filename)) {
+  for (const specifier of specifiers) {
     if (specifier.typeOnly) {
       continue
     }
@@ -240,13 +240,34 @@ function userLegacySignals (code: string, filename: string, h3Names: Set<string>
   return [...signals]
 }
 
-async function reportUserLegacyCode (dirs: string[], rootDir: string): Promise<void> {
+/** The version of h3 v1 that `h3` resolves to from a directory, if it does. */
+function resolveH3V1Version (dir: string, versions: Map<string, string | undefined>): string | undefined {
+  const manifest = resolveModulePath('h3/package.json', { from: withTrailingSlash(dir), try: true })
+  if (!manifest) {
+    return
+  }
+  if (!versions.has(manifest)) {
+    let version: string | undefined
+    try {
+      version = (JSON.parse(readFileSync(manifest, 'utf8')) as { version?: string }).version
+    } catch {
+      version = undefined
+    }
+    versions.set(manifest, version?.startsWith('1.') ? version : undefined)
+  }
+  return versions.get(manifest)
+}
+
+async function reportUserLegacyCode (dirs: string[], rootDir: string, legacy: ResolvedNitroLegacyOptions): Promise<void> {
   const files = listFiles(dirs.map(dir => normalize(dir)))
   if (files.length === 0) {
     return
   }
+  const reportSignals = !isLegacyEnabled(legacy)
   const h3Names = new Set(await getH3ExportNames())
   const found: string[] = []
+  const h3V1Versions = new Map<string, string | undefined>()
+  const h3V1Files = new Map<string, string[]>()
   for (const path of files) {
     let code: string
     try {
@@ -254,13 +275,23 @@ async function reportUserLegacyCode (dirs: string[], rootDir: string): Promise<v
     } catch {
       continue
     }
-    const signals = userLegacySignals(code, path, h3Names)
+    const specifiers = findImportSpecifiers(code, path)
+    if (!legacy.h3 && specifiers.some(specifier => !specifier.typeOnly && (specifier.value === 'h3' || specifier.value === 'h3/utils'))) {
+      const version = resolveH3V1Version(dirname(path), h3V1Versions)
+      if (version) {
+        h3V1Files.set(version, [...h3V1Files.get(version) || [], `\`${displayPath(path, rootDir)}\``])
+      }
+    }
+    const signals = reportSignals ? userLegacySignals(code, specifiers, h3Names) : []
     if (signals.length > 0) {
       found.push(`\`${displayPath(path, rootDir)}\` (uses ${signals.join(', ')})`)
     }
   }
   if (found.length > 0) {
     nitroBuildDiagnostics.NUXT_B9005({ count: found.length, files: found.join('\n  - ') })
+  }
+  for (const [version, paths] of h3V1Files) {
+    nitroBuildDiagnostics.NUXT_B9009({ count: paths.length, version, files: paths.join('\n  - ') })
   }
 }
 
@@ -1185,8 +1216,8 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
       }
     }
 
-    if (!isLegacyEnabled(legacy)) {
-      nitro.hooks.hookOnce('build:before', () => reportUserLegacyCode(getLayerDirectories(nuxt).flatMap(layer => [layer.server, layer.shared]), nuxt.options.rootDir))
+    if (!legacy.h3) {
+      nitro.hooks.hookOnce('build:before', () => reportUserLegacyCode(getLayerDirectories(nuxt).flatMap(layer => [layer.server, layer.shared]), nuxt.options.rootDir, legacy))
     }
   }
 

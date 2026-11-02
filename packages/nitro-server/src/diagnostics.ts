@@ -54,5 +54,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove `nitro.builder` (or `NITRO_BUILDER`), or disable `experimental.nitroViteEnvironment` to build the server with another Nitro builder.',
       docs: false,
     },
+    NUXT_B9009: {
+      why: (p: { count: number, version: string, files: string }) => `${p.count} file${p.count === 1 ? '' : 's'} in your server code import${p.count === 1 ? 's' : ''} from \`h3\`, which your project resolves to \`h3@${p.version}\`. Nitro v3 uses h3 v2, and h3 v1 helpers do not work with its events:\n  - ${p.files}`,
+      fix: 'Remove `h3` from your dependencies and import from `nuxt/server` (or `nitro/h3`) instead. To ship before migrating, enable `nitroLegacy.h3`, which resolves `h3` to the h3 v1 helpers.',
+      docs: false,
+    },
   },
 })
