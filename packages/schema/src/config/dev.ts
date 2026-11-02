@@ -7,6 +7,7 @@ export default defineResolvers({
     https: false,
     port: Number(process.env.NUXT_PORT || process.env.NITRO_PORT || process.env.PORT || 3000),
     host: {
+      $schema: { type: 'string' },
       $resolve: val => typeof val === 'string' && val ? val : process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || undefined,
     },
     allowedHosts: {
