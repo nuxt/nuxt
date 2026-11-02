@@ -50,7 +50,7 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
             id: [BARE_ID_RE, /[/\\]node_modules[/\\]/],
           },
           async handler (id, importer) {
-            // `paths.mjs` imports ufo by its entry path; externalize it like the bare import,
+            // an absolute import of a package entry must externalize like its bare import,
             // or Rolldown keeps whichever resolution comes first
             if (importer && !BARE_ID_RE.test(id)) {
               const { dir, name } = parseNodeModulePath(id)
