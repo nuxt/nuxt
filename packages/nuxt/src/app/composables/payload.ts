@@ -23,6 +23,18 @@ interface LoadPayloadOptions {
 
 /** @since 3.0.0 */
 export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
+  const payload = await _loadPayload(url, opts)
+  return payload && isOutdatedPayload(payload) ? null : payload
+}
+
+/** @internal */
+export function isOutdatedPayload (payload: Record<string, any>): boolean {
+  const buildId = useRuntimeConfig().app.buildId
+  return !!payload.buildId && !!buildId && payload.buildId !== buildId
+}
+
+/** @internal */
+export async function _loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
   if (import.meta.server || !payloadExtraction) { return null }
   if (await shouldLoadPayload(url)) {
     const payloadURL = await _getPayloadURL(url, opts)

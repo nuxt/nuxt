@@ -1,9 +1,10 @@
-import { withoutFragment } from 'ufo'
+import { joinURL, withoutFragment } from 'ufo'
 import type { ResolvableLink } from 'unhead/types'
 
-import { defineNuxtPlugin } from '../nuxt'
+import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
-import { isCachedPayloadRoute, loadPayload } from '../composables/payload'
+import { _loadPayload, isCachedPayloadRoute, isOutdatedPayload } from '../composables/payload'
+import { reloadNuxtApp } from '../composables/chunk'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
 import { getAppManifest } from '../composables/manifest'
@@ -71,7 +72,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     // Load payload after middleware & once final route is resolved
     const staticKeysToRemove = new Set<string>()
     const router = useRouter()
+    const config = useRuntimeConfig()
     const { schedule } = usePrefetchScheduler(nuxtApp)
+    let outdatedBuildDetected = false
     if (prefetchPreloadTags) {
       // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
@@ -86,8 +89,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       const toURL = queryAware ? withoutFragment(to.fullPath) : to.path
       const fromURL = queryAware ? withoutFragment(from.fullPath) : from.path
       if (toURL === fromURL) { return }
-      const payload = await loadPayload(toURL)
+      const payload = await _loadPayload(toURL)
       if (!payload) { return }
+      if (isOutdatedPayload(payload)) {
+        reloadNuxtApp({ path: joinURL(config.app.baseURL, to.fullPath), persistState: true })
+        return
+      }
       if (purgeCachedData) {
         for (const key of staticKeysToRemove) {
           delete nuxtApp.static.data[key]
@@ -143,9 +150,16 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           run: async (signal, promoted) => {
             if (signal.aborted) { return }
             // TODO: use preloadPayload instead once we can support preloading islands too
-            const payload = await loadPayload(url, { signal, promoted }).catch(() => {
+            const payload = await _loadPayload(url, { signal, promoted }).catch(() => {
               stateDiagnostics.NUXT_E7003({ url })
             })
+            if (payload && isOutdatedPayload(payload)) {
+              if (!outdatedBuildDetected) {
+                outdatedBuildDetected = true
+                nuxtApp.callHook('app:manifest:update')
+              }
+              return
+            }
             // a retained payload resolves onto its own route, which renders these hints itself
             if (signal.aborted || !head || !payload?.prefetchLinks?.length || group === prefetchGroup(router.currentRoute.value.fullPath)) { return }
             schedule(selectHints(payload.prefetchLinks).map(({ href, link }) => ({
