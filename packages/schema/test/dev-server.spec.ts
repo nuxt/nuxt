@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { applyDefaults } from 'untyped'
 
 import { NuxtConfigSchema } from '../src/index.ts'
@@ -8,6 +8,20 @@ async function resolveAllowedHosts (config: { devServer?: { host?: string, allow
   const result = await applyDefaults(NuxtConfigSchema, config) as unknown as NuxtOptions
   return result.devServer.allowedHosts
 }
+
+describe('devServer.host', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('defaults to undefined', async () => {
+    for (const key of ['NUXT_HOST', 'NITRO_HOST', 'HOST']) {
+      vi.stubEnv(key, '')
+    }
+    const result = await applyDefaults(NuxtConfigSchema, {}) as unknown as NuxtOptions
+    expect(result.devServer.host).toBeUndefined()
+  })
+})
 
 describe('devServer.allowedHosts', () => {
   it('defaults to an empty list', async () => {
