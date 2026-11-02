@@ -7,6 +7,7 @@ import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImp
 import { ServerAutoImportsPlugin } from '../src/auto-imports-plugin.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
+import { getLayerNodeModulesExcludePattern } from '../src/utils.ts'
 
 const TYPE_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.mts', '.js', '.mjs']
 
@@ -280,15 +281,27 @@ describe('createServerAutoImports', () => {
 })
 
 describe('ServerAutoImportsPlugin', () => {
+  const createPlugin = (layerRoots: string[]) => ServerAutoImportsPlugin.raw({
+    autoImports: createServerAutoImports(mockNuxt(), { autoImport: true }, '/app/.nuxt'),
+    buildDir: '/app/.nuxt',
+    exclude: [getLayerNodeModulesExcludePattern(layerRoots)],
+  }, {} as any) as { transformInclude: (id: string) => boolean }
+
   it('does not transform bundled environment outputs', () => {
-    const plugin = ServerAutoImportsPlugin.raw({
-      autoImports: createServerAutoImports(mockNuxt(), { autoImport: true }, '/app/.nuxt'),
-      buildDir: '/app/.nuxt',
-    }, {} as any) as { transformInclude: (id: string) => boolean }
+    const plugin = createPlugin(['/app/'])
 
     expect(plugin.transformInclude('/app/server/api/hello.ts')).toBe(true)
     expect(plugin.transformInclude('/app/.nuxt/vite/services-utils.ts')).toBe(true)
     expect(plugin.transformInclude('/app/.nuxt/vite/services/ssr/index.mjs')).toBe(false)
     expect(plugin.transformInclude('/app/node_modules/pkg/index.mjs')).toBe(false)
+  })
+
+  // https://github.com/nuxt/nuxt/issues/36811
+  it('transforms the server code of a layer installed in node_modules', () => {
+    const plugin = createPlugin(['/app/', '/app/node_modules/.pnpm/layer@1.0.0/node_modules/layer/'])
+
+    expect(plugin.transformInclude('/app/node_modules/.pnpm/layer@1.0.0/node_modules/layer/server/api/hello.get.ts')).toBe(true)
+    expect(plugin.transformInclude('/app/node_modules/.pnpm/layer@1.0.0/node_modules/layer/server/utils/hello.ts')).toBe(true)
+    expect(plugin.transformInclude('/app/node_modules/.pnpm/pkg@1.0.0/node_modules/pkg/index.mjs')).toBe(false)
   })
 })
