@@ -72,7 +72,7 @@
     "@vitest/coverage-v8": "catalog:dev",
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
-    "autoprefixer": "10.6.1",
+    "autoprefixer": "10.6.2",
     "case-police": "catalog:dev",
     "consola": "catalog:build",
     "cssnano": "9.9.0",
@@ -121,7 +121,7 @@
     "vue-tsc": "catalog:dev",
     "webpack": "catalog:webpack"
   },
-  "packageManager": "pnpm@12.15.0",
+  "packageManager": "pnpm@12.16.1",
   "simple-git-hooks": {
     "pre-commit": "pnpm nano-staged"
   },
