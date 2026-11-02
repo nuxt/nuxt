@@ -65,6 +65,8 @@ minimumReleaseAgeExclude:
   - fetchdts@0.2.0
   - package-manager-detector@1.9.0
   - '@devframes/hub-ui-onboard@1.3.2'
+  # manual bump to 2.13.6; drop once it clears the release-age window
+  - nitropack@2.13.6
 
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
@@ -272,7 +274,7 @@ catalogs:
     magic-regexp: 0.11.2
     markdownlint-cli: 0.50.0
     nano-staged: 1.0.2
-    nitropack: 2.13.5
+    nitropack: 2.13.6
     nuxt-content-twoslash: 0.4.0
     oxc-transform: 0.156.0
     pkg-pr-new: 0.0.93
