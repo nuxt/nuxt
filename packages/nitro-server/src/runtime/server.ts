@@ -159,7 +159,7 @@ export function isNuxtError<DataT = unknown> (error: unknown): error is NuxtErro
 
 /** @see {@link import('nuxt/server').getRequestURL} */
 export function getRequestURL (event: H3Event, options: ForwardedOptions = {}): URL {
-  return getPortableRequestURL(toForwardedEvent(event, options), options)
+  return getPortableRequestURL(toForwardedEvent(event), options)
 }
 
 /** @see {@link import('nuxt/server').getRequestHost} */
@@ -169,12 +169,12 @@ export function getRequestHost (event: H3Event, options: Pick<ForwardedOptions, 
 
 /** @see {@link import('nuxt/server').getRequestProtocol} */
 export function getRequestProtocol (event: H3Event, options: Pick<ForwardedOptions, 'xForwardedProto'> = {}): string {
-  return getPortableRequestProtocol(toForwardedEvent(event, options), options)
+  return getPortableRequestProtocol(toForwardedEvent(event), options)
 }
 
-/** The URL h3 resolves for the request, with the headers to read forwarded values from. */
-function toForwardedEvent (event: H3Event, options: Pick<ForwardedOptions, 'xForwardedProto'>): { req: Request, url: URL } {
-  return { req: { headers: event.headers } as Request, url: getH3RequestURL(event, { xForwardedProto: options.xForwardedProto }) }
+/** The URL h3 resolves for the request, ignoring forwarded headers, with the headers to read them from. */
+function toForwardedEvent (event: H3Event): { req: Request, url: URL } {
+  return { req: { headers: event.headers } as Request, url: getH3RequestURL(event, { xForwardedProto: false }) }
 }
 
 /** @see {@link import('nuxt/server').getRequestHeader} */
