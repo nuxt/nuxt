@@ -69,4 +69,13 @@ describe('the server environment', () => {
     expect(config.build!.rolldownOptions!.input).toEqual({ worker: '/app/worker/index.ts' })
     expect(useServerBuild(nuxt).runtime.handler).toBeUndefined()
   })
+
+  it('leaves a target its own input when vite merges it with the app entry', () => {
+    const { nuxt, configure } = setup()
+
+    const config = configure({ rolldownOptions: { input: { server: '/app/node_modules/nuxt/dist/app/entry.js', index: '/app/worker/index.ts' } } })
+
+    expect(config.build!.rolldownOptions!.input).toEqual({ index: '/app/worker/index.ts' })
+    expect(useServerBuild(nuxt).runtime.handler).toBeUndefined()
+  })
 })
