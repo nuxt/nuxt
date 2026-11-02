@@ -23,7 +23,7 @@ import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
 import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
-import { setupNitroViteEnvironment } from './vite.ts'
+import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
@@ -857,6 +857,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       server: resolve(distDir, 'runtime/server'),
     },
     preview: { command: () => nitro.options.commands.preview },
+    canReuseSsrBuild: environment => canReuseSsrBuild(nitro, environment),
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)
 

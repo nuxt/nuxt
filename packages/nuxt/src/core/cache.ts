@@ -106,8 +106,10 @@ export async function getVueHash (nuxt: Nuxt) {
         },
         // Nitro still needs to build on a cache hit, to prerender and to emit
         // `.output/server`. Its orchestrator skips any environment reporting
-        // `isBuilt`, so flagging the client environment leaves the ssr and
-        // nitro environments to build as usual.
+        // `isBuilt`, so flagging the client environment leaves the nitro
+        // environment to build as usual. The ssr environment reads inputs the
+        // cache key does not cover, so the server builder decides whether its
+        // restored output can be reused.
         //
         // Restoring here rather than before the build starts is deliberate:
         // nitro empties `output.publicDir` from its own `buildApp` hook, which
@@ -120,6 +122,10 @@ export async function getVueHash (nuxt: Nuxt) {
                 const client = builder.environments.client
                 if (client) {
                   client.isBuilt = true
+                }
+                const ssr = builder.environments.ssr
+                if (ssr && !ssr.isBuilt && await useServerBuild(nuxt).canReuseSsrBuild?.(ssr)) {
+                  ssr.isBuilt = true
                 }
               },
             }
