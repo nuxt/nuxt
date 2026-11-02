@@ -11,9 +11,11 @@ import { publicDirs } from './output.ts'
 
 /**
  * The ESM dependencies of the render, which a deploy target's environment loads as they
- * are rather than discovering and pre-bundling them as it reaches them.
+ * are rather than discovering and pre-bundling them as it reaches them. `nuxt` is one, as in
+ * the client environment, since its internals import modules that Nuxt's build provides.
  */
 const SERVER_RUNTIME_DEPS = [
+  'nuxt',
   'vue',
   'vue-router',
   '@vue/shared',
@@ -88,7 +90,7 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
     enforce: 'pre',
     apply: 'serve',
     configEnvironment (name, config) {
-      if (serverEntry && name !== 'client' && name !== 'ssr' && (config.consumer ?? 'server') === 'server') {
+      if (serverEntry && name !== 'client' && (config.consumer ?? 'server') === 'server') {
         return { optimizeDeps: { exclude: [...SERVER_RUNTIME_DEPS] } }
       }
     },
