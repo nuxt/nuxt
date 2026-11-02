@@ -572,7 +572,7 @@ export class NuxtPerfProfiler {
       consola.log('')
       for (const phase of significantSubs) {
         const durColor = phase.duration > 500 ? colors.red : phase.duration > 100 ? colors.yellow : colors.dim
-        consola.log(`  ${colors.dim('•')} ${phase.name} ${colors.dim('—')} ${durColor(formatDuration(phase.duration))}`)
+        consola.log(`  ${colors.dim('•')} ${phase.name} ${colors.dim('—')} ${durColor(formatDuration(phase.duration))}${phase.unfinished ? ` ${colors.red('unfinished')}` : ''}`)
       }
       consola.log('')
     }
@@ -605,13 +605,14 @@ export class NuxtPerfProfiler {
 
     // Root span using B/E (begin/end) pair so nested phases display correctly
     const globalEnd = performance.now()
+    const phases = this.#getPhases(globalEnd)
     events.push(
       { name: 'nuxt build', cat: 'build', ph: 'B', ts: toUs(this.#globalStart), pid, tid: tidPhases },
       { name: 'nuxt build', cat: 'build', ph: 'E', ts: toUs(globalEnd), pid, tid: tidPhases },
     )
 
     // Manual phases as B/E pairs (they nest: e.g. module:* inside modules, vite:* inside build:bundle)
-    for (const phase of this.#getPhases(globalEnd)) {
+    for (const phase of phases) {
       events.push(
         {
           name: phase.name,
@@ -696,7 +697,7 @@ export class NuxtPerfProfiler {
     emitPluginSpans(nitroSpans, 'Nitro Plugins', tidPluginBase + 100)
 
     // Memory counter events at phase boundaries
-    for (const phase of this.#getPhases(globalEnd)) {
+    for (const phase of phases) {
       events.push(
         {
           name: 'Memory',
