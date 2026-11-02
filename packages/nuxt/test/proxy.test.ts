@@ -1,11 +1,17 @@
+import http from 'node:http'
+import https from 'node:https'
 import process from 'node:process'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { Agent, EnvHttpProxyAgent, ProxyAgent, getGlobalDispatcher, setGlobalDispatcher } from 'undici'
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { installProxyDispatcher } from '../src/core/utils/proxy.ts'
 
-describe('installProxyDispatcher', () => {
-  const originalDispatcher = getGlobalDispatcher()
+const globals = globalThis as Record<symbol, object | undefined>
+const dispatcherSymbols = [Symbol.for('undici.globalDispatcher.1'), Symbol.for('undici.globalDispatcher.2')]
+const getGlobalDispatcher = () => globals[dispatcherSymbols[1]!] ?? globals[dispatcherSymbols[0]!]
+
+describe.skipIf(!('setGlobalProxyFromEnv' in http))('installProxyDispatcher', () => {
+  let originalDispatchers: Array<object | undefined>
+  const originalAgents = [http.globalAgent, https.globalAgent] as const
   const originalEnv = {
     HTTPS_PROXY: process.env.HTTPS_PROXY,
     https_proxy: process.env.https_proxy,
@@ -13,12 +19,17 @@ describe('installProxyDispatcher', () => {
     http_proxy: process.env.http_proxy,
   }
 
+  beforeAll(async () => {
+    // Node creates its default dispatcher on the first `fetch`.
+    await fetch('data:,')
+    originalDispatchers = dispatcherSymbols.map(symbol => globals[symbol])
+  })
+
   beforeEach(() => {
     delete process.env.HTTPS_PROXY
     delete process.env.https_proxy
     delete process.env.HTTP_PROXY
     delete process.env.http_proxy
-    setGlobalDispatcher(new Agent())
   })
 
   afterEach(() => {
@@ -29,49 +40,40 @@ describe('installProxyDispatcher', () => {
         process.env[key] = value
       }
     }
-    setGlobalDispatcher(originalDispatcher)
+    dispatcherSymbols.forEach((symbol, index) => {
+      globals[symbol] = originalDispatchers[index]
+    })
+    ;[http.globalAgent, https.globalAgent] = originalAgents
   })
 
-  it('does nothing when no proxy env var is set', async () => {
+  it('does nothing when no proxy env var is set', () => {
     const before = getGlobalDispatcher()
-    await installProxyDispatcher()
+    installProxyDispatcher()
     expect(getGlobalDispatcher()).toBe(before)
   })
 
-  it('installs EnvHttpProxyAgent when HTTPS_PROXY is set and dispatcher is the default Agent', async () => {
+  it('proxies fetch and node:http/https when HTTPS_PROXY or http_proxy is set, once', () => {
     process.env.HTTPS_PROXY = 'http://127.0.0.1:9999'
-    await installProxyDispatcher()
-    expect(getGlobalDispatcher()).toBeInstanceOf(EnvHttpProxyAgent)
-  })
-
-  it('also recognises lowercase variants and HTTP_PROXY', async () => {
     process.env.http_proxy = 'http://127.0.0.1:9999'
-    await installProxyDispatcher()
-    expect(getGlobalDispatcher()).toBeInstanceOf(EnvHttpProxyAgent)
+    installProxyDispatcher()
+    const installed = [getGlobalDispatcher(), http.globalAgent, https.globalAgent]
+    expect(installed[0]?.constructor.name).toBe('EnvHttpProxyAgent')
+    expect(installed[1]).not.toBe(originalAgents[0])
+    expect(installed[2]).not.toBe(originalAgents[1])
+
+    installProxyDispatcher()
+    for (const [index, current] of [getGlobalDispatcher(), http.globalAgent, https.globalAgent].entries()) {
+      expect(current).toBe(installed[index])
+    }
   })
 
-  it('is idempotent when already swapped', async () => {
+  it('leaves a user-installed non-default dispatcher alone', () => {
     process.env.HTTPS_PROXY = 'http://127.0.0.1:9999'
-    const swapped = new EnvHttpProxyAgent()
-    setGlobalDispatcher(swapped)
-    await installProxyDispatcher()
-    expect(getGlobalDispatcher()).toBe(swapped)
-  })
-
-  it('leaves a user-installed non-default dispatcher alone', async () => {
-    process.env.HTTPS_PROXY = 'http://127.0.0.1:9999'
-    const custom = new ProxyAgent('http://127.0.0.1:8888')
-    setGlobalDispatcher(custom)
-    await installProxyDispatcher()
-    expect(getGlobalDispatcher()).toBe(custom)
-  })
-
-  it('leaves a user subclass of Agent alone', async () => {
-    process.env.HTTPS_PROXY = 'http://127.0.0.1:9999'
-    class CustomAgent extends Agent {}
-    const custom = new CustomAgent()
-    setGlobalDispatcher(custom)
-    await installProxyDispatcher()
+    const custom = { dispatch: () => true }
+    for (const symbol of dispatcherSymbols) {
+      globals[symbol] = custom
+    }
+    installProxyDispatcher()
     expect(getGlobalDispatcher()).toBe(custom)
   })
 })
