@@ -4,7 +4,7 @@ import { dirname, join } from 'pathe'
 import { bundlerDiagnostics, parseNodeModulePath } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import type { Nitro } from 'nitropack/types'
-import type { Plugin } from 'rollup'
+import type { ModuleInfo, Plugin } from 'rollup'
 
 import { toArray } from './utils.ts'
 
@@ -66,6 +66,11 @@ export function setupVuePackage (nuxt: Nuxt, nitro: Nitro): void {
   nitro.options.rollupConfig!.plugins = [...toArray(nitro.options.rollupConfig!.plugins || []), VuePackagePlugin(nuxt, ignoredImports)]
 }
 
+// rollup cannot render a module that was loaded with `this.load()` but never imported
+function isInModuleGraph (info: ModuleInfo | null): boolean {
+  return !!info && (info.isEntry || info.importers.length > 0 || info.dynamicImporters.length > 0 || info.implicitlyLoadedAfterOneOf.length > 0)
+}
+
 function VuePackagePlugin (nuxt: Nuxt, ignoredImports: Set<string>): Plugin {
   const packageFiles = new Set<string>()
   return {
@@ -87,7 +92,7 @@ function VuePackagePlugin (nuxt: Nuxt, ignoredImports: Set<string>): Plugin {
       }
       return {
         ...output,
-        manualChunks: (id, meta) => VUE_MODULE_RE.test(id) ? 'vue' : manualChunks?.(id, meta),
+        manualChunks: (id, meta) => VUE_MODULE_RE.test(id) && isInModuleGraph(meta.getModuleInfo(id)) ? 'vue' : manualChunks?.(id, meta),
       }
     },
     async buildStart () {

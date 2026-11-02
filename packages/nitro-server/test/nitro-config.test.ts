@@ -1,8 +1,14 @@
 import { existsSync } from 'node:fs'
+import { mkdir, mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
-import { isAbsolute, resolve } from 'pathe'
+import { isAbsolute, join, resolve } from 'pathe'
+import { resolveModulePath } from 'exsolve'
+import { rollup } from 'rollup'
+import type { InputPluginOption } from 'rollup'
 import { loadNuxt } from '@nuxt/kit'
 import type { NuxtConfig } from '@nuxt/schema'
+import { getRollupConfig } from 'nitropack/rollup'
 import type { Nitro, NitroConfig } from 'nitropack/types'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
@@ -95,6 +101,35 @@ describe('nitro config', () => {
       expect(hasBundledVuePlugin(nitroConfig)).toBe(false)
     })
   })
+
+  it('bundles vue when a vue entry is imported by its resolved commonjs path', async () => {
+    const outputDir = await mkdtemp(join(tmpdir(), 'nuxt-vue-package-'))
+    await withNitro({ dev: false, nitro: { output: { dir: outputDir } } }, async (nitro) => {
+      const shared = resolveModulePath('@vue/shared', { from: nitro.options.nodeModulesDirs, conditions: ['node', 'production'] })
+      expect(shared).toMatch(/shared\.cjs\.prod\.js$/)
+
+      await mkdir(nitro.options.output.serverDir, { recursive: true })
+      const config = getRollupConfig(nitro)
+      const bundle = await rollup({
+        ...config,
+        input: 'entry',
+        plugins: [
+          {
+            name: 'entry',
+            resolveId: id => id === 'entry' ? id : undefined,
+            load: id => id === 'entry' ? `import { isArray } from ${JSON.stringify(shared)}\nexport default isArray` : undefined,
+          },
+          ...config.plugins as InputPluginOption[],
+        ],
+      })
+      const { output } = await bundle.generate(config.output)
+      await bundle.close()
+
+      const modules = output.flatMap(chunk => chunk.type === 'chunk' ? Object.keys(chunk.modules) : [])
+      expect(modules).toContain(shared.replace(/shared\.cjs\.prod\.js$/, 'shared.esm-bundler.js'))
+      expect(modules).not.toContain(shared)
+    }).finally(() => rm(outputDir, { recursive: true, force: true }))
+  }, 60_000)
 
   it('does not inline the dependencies of an absolute `build.transpile` directory', async () => {
     const moduleDir = resolve(fixtureDir, '../workspace-module')
