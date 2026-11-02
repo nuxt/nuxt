@@ -33,7 +33,7 @@ function createResolver (componentsOrGetter: Component[] | (() => Component[]), 
   }
 
   // apply the hook filter the way the bundler does, so the tests cover it too
-  const pattern = hook.filter!.id!
+  const pattern = (hook.filter as { id: RegExp }).id
   return (id: string, importer?: string) => {
     if (!pattern.test(id)) { return }
     return hook.handler.call({} as any, id, importer, { isEntry: false })

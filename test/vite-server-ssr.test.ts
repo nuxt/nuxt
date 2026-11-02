@@ -149,11 +149,13 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
   })
 
   it('answers a `redirect` rule without rendering', async () => {
-    const response = await render('/old/page')
+    for (const path of ['/old/page', '/old%2Fpage']) {
+      const response = await render(path)
 
-    expect(response.status).toBe(301)
-    expect(response.headers.get('location')).toBe('/about')
-    expect(await response.text()).toBe('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/about"></head></html>')
+      expect(response.status, path).toBe(301)
+      expect(response.headers.get('location'), path).toBe('/about')
+      expect(await response.text(), path).toBe('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/about"></head></html>')
+    }
   })
 
   it('carries the request query onto a redirect target that names its own', async () => {

@@ -5,11 +5,11 @@ import { randomUUID } from 'node:crypto'
 import { relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
-import { findWorkspaceDir } from 'pkg-types'
 
 import type { NuxtDebugOptions } from '../types/debug.ts'
 import type { NuxtModule } from '../types/module.ts'
 import { defineResolvers } from '../utils/definition.ts'
+import { findWorkspaceDir } from '../utils/workspace-dir.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
 export default defineResolvers({
@@ -24,10 +24,7 @@ export default defineResolvers({
       const rootDir = await get('rootDir')
       return val && typeof val === 'string'
         ? resolve(rootDir, val)
-        : findWorkspaceDir(rootDir, {
-            gitConfig: 'closest',
-            try: true,
-          }).catch(() => rootDir)
+        : findWorkspaceDir(rootDir)
     },
   },
   srcDir: {

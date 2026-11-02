@@ -414,7 +414,7 @@ jobs:
         run: node test/bench/setup-renderer.ts
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@78102a468f96d8e0ccb92d0ec49425753fc42062 # v5.6.0
+        uses: CodSpeedHQ/action@61efe07e57e55bedeab750c434504de272a56e8c # v5.6.1
         env:
           NUXT_BENCH_PREBUILT: 'true'
         with:
@@ -613,7 +613,7 @@ jobs:
 
       - name: Pack nightly
         id: pack
-        uses: danielroe/uppt/pack@6ec27140623aa835e362f866d8ab0018ab057f4d # v0.6.11
+        uses: danielroe/uppt/pack@6c1a9b480b0f02a3f535dedaf1a113f590aa56f2 # v0.6.12
         with:
           checkout: false
           install: false
@@ -640,7 +640,7 @@ jobs:
       id-token: write
     environment: nightly
     steps:
-      - uses: danielroe/uppt/publish@6ec27140623aa835e362f866d8ab0018ab057f4d # v0.6.11
+      - uses: danielroe/uppt/publish@6c1a9b480b0f02a3f535dedaf1a113f590aa56f2 # v0.6.12
         with:
           nightly: true
           files: ${{ needs.pack-nightly.outputs.files }}

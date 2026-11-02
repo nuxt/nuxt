@@ -11,7 +11,7 @@ import { generateRouteKey, toArray } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
-import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { _showErrorUnlessCrawler, clearError, createError, createErrorFromThrown, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 import { navigationDiagnostics } from '../../../app/diagnostics/navigation'
 
@@ -363,7 +363,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               return result
             }
           } catch (err: any) {
-            const error = createError(err)
+            const error = createErrorFromThrown(err)
             if (error.fatal) {
               await nuxtApp.runWithContext(() => showError(error))
               pushErroredRoute(to)

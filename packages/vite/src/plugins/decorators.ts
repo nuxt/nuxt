@@ -1,5 +1,5 @@
 import type { Plugin } from 'vite'
-import type { SourceMapInput } from 'rollup'
+import type { SourceMapInput } from 'rolldown'
 import { ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'

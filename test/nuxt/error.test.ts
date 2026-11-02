@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { HTTPError } from 'h3'
-import { NUXT_ERROR_SIGNATURE, NuxtError, createError, isNuxtError } from '#app/composables/error'
+import { NUXT_ERROR_SIGNATURE, NuxtError, createError, createErrorFromThrown, isNuxtError } from '#app/composables/error'
 import { reducers } from '#app/plugins/revive-payload.server'
-import { decodeSSRError, encodeSSRError, NUXT_ERROR_SIGNATURE as rendererSignature, stringifyErrorData } from '../../packages/nuxt/src/runtime/server/renderer/error'
+import { decodeSSRError, describeError, encodeSSRError, NUXT_ERROR_SIGNATURE as rendererSignature, stringifyErrorData } from '../../packages/nuxt/src/runtime/server/renderer/error'
 
 const reduceNuxtError = reducers.find(([name]) => name === 'NuxtError')![1]
 
@@ -132,6 +132,41 @@ describe('NuxtError / h3 interop', () => {
   it('should be constructible directly with either signature', () => {
     expect(new NuxtError('boom', { status: 400 }).status).toBe(400)
     expect(new NuxtError({ status: 400, message: 'boom' }).message).toBe('boom')
+  })
+})
+
+describe('createErrorFromThrown', () => {
+  function fetchError () {
+    return Object.assign(new Error('[GET] "http://10.0.0.7/users/1?token=secret": 502 Bad Gateway'), {
+      name: 'FetchError',
+      status: 502,
+      statusText: 'Bad Gateway',
+      data: { secret: 'upstream' },
+    })
+  }
+
+  it('should keep the details of a thrown error out of the response and the payload', () => {
+    const error = createErrorFromThrown(fetchError())
+    expect(error.unhandled).toBe(true)
+    expect(error.fatal).toBe(false)
+
+    const described = describeError(error)
+    expect(described).toMatchObject({ status: 502, statusText: 'Bad Gateway', message: 'Bad Gateway', data: undefined })
+    expect(JSON.stringify(reduceNuxtError(error))).not.toMatch(/10\.0\.0\.7|secret|upstream/)
+  })
+
+  it('should keep the details of an HTTP error the app raised', () => {
+    const nuxtError = createError({ status: 404, message: 'missing', data: { id: 1 } })
+    expect(createErrorFromThrown(nuxtError)).toBe(nuxtError)
+
+    const h3Error = createErrorFromThrown(new HTTPError({ status: 400, message: 'invalid', data: { field: 'name' } }))
+    expect(h3Error.unhandled).toBeUndefined()
+    expect(describeError(h3Error)).toMatchObject({ status: 400, message: 'invalid', data: { field: 'name' } })
+  })
+
+  it('should mark a thrown value that is not an error as unhandled', () => {
+    expect(createErrorFromThrown('boom').unhandled).toBe(true)
+    expect(createErrorFromThrown({ status: 404, message: 'secret' }).unhandled).toBe(true)
   })
 })
 

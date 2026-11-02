@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { hash } from 'ohash'
 import { filterIslandProps, getIslandHash, serializeIslandProps } from '#app/island-hash'
 import { findReservedRootIslandPropKey, findUnsafeIslandPropKey } from '#app/island-props'
 
@@ -61,21 +60,22 @@ describe('serializeIslandProps', () => {
 })
 
 describe('getIslandHash', () => {
-  it('matches the ohash-based shape the client embeds in the URL', () => {
-    const name = 'PureComponent'
-    const serializedProps = '{"count":3,"label":"hi"}'
-    const context = { url: '/foo' }
-    const expected = hash([name, JSON.parse(serializedProps), context, undefined]).replace(/[-_]/g, '')
-    expect(getIslandHash({ name, props: serializedProps, context })).toBe(expected)
+  it('does not collide for props whose string values contain serialization delimiters', () => {
+    const note = '<img src=x onerror="document.body.dataset.collision=\'executed\'">'
+    const a = getIslandHash({ name: 'X', props: { html: '', note } })
+    const b = getIslandHash({ name: 'X', props: { html: `',note:'${note}` } })
+    expect(a).not.toBe(b)
   })
 
-  // External island clients (e.g. `@nuxtjs/og-image`) hash the plain props object and send
-  // `JSON.stringify(props)`; that hash must still validate when the round-trip is identity.
-  it('matches a client that hashes the props object directly', () => {
-    const name = 'OgImageCommunityNuxtSeoSatori'
-    const props = { title: 'Hello World' }
-    const objectHash = hash([name, props, {}, undefined]).replace(/[-_]/g, '')
-    expect(getIslandHash({ name, props: JSON.stringify(props) })).toBe(objectHash)
+  it('does not collide for keys containing serialization delimiters', () => {
+    const a = getIslandHash({ name: 'X', props: { a: 1, b: 2 } })
+    const b = getIslandHash({ name: 'X', props: { 'a:1,b': 2 } })
+    expect(a).not.toBe(b)
+  })
+
+  it('does not depend on property order', () => {
+    expect(getIslandHash({ name: 'X', props: '{"a":1,"b":{"c":2,"d":3}}', context: { y: '1', x: '2' } }))
+      .toBe(getIslandHash({ name: 'X', props: '{"b":{"d":3,"c":2},"a":1}', context: { x: '2', y: '1' } }))
   })
 
   it('agrees whether props are passed as an object or as the serialized string', () => {
@@ -86,8 +86,7 @@ describe('getIslandHash', () => {
   // #35349
   it('is stable across the JSON round-trip for dropped values', () => {
     const serialized = serializeIslandProps({ label: 'hi', onClick: () => {}, missing: undefined })
-    const objectHash = hash(['X', { label: 'hi' }, {}, undefined]).replace(/[-_]/g, '')
-    expect(getIslandHash({ name: 'X', props: serialized })).toBe(objectHash)
+    expect(getIslandHash({ name: 'X', props: serialized })).toBe(getIslandHash({ name: 'X', props: { label: 'hi' } }))
   })
 
   // The server hashes attacker-controllable query input before validating it.
