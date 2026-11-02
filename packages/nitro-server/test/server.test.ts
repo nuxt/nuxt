@@ -240,6 +240,11 @@ describe('the shape of what it reads off an h3 v1 event', () => {
       .toEqual(['https://nuxt.com/api?a=1', 'nuxt.com', 'https'])
   })
 
+  it('ignores forwarded headers in the URL of the event it hands a handler', () => {
+    const portable = toPortableEvent(event('/api?a=1', { headers: { 'x-forwarded-host': 'proxy.com', 'x-forwarded-proto': 'https' } }))
+    expect([portable.url.href, portable.req.url]).toEqual(['http://nuxt.com/api?a=1', 'http://nuxt.com/api?a=1'])
+  })
+
   it('parses every cookie the same way as the shipped implementation', () => {
     const cookie = 'a=1; b=%20; a=2'
     expect(delegate.parseCookies(event('/', { headers: { cookie } }))).toEqual(shipped.parseCookies(webEvent('https://nuxt.com/', { cookie })))
