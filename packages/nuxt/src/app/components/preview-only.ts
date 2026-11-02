@@ -5,7 +5,6 @@ import { useState } from '../composables/state'
 interface PreviewState {
   enabled: boolean
   state: Record<any, unknown>
-  _initialized?: boolean
 }
 
 type PreviewOnlySlots = SlotsType<{
