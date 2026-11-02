@@ -385,6 +385,14 @@ async function readClientState (file: string, version: string): Promise<Record<s
   }
 }
 
+/**
+ * `createTar` cuts entry names to 100 bytes (unjs/nanotar#29), so a file with a longer name is
+ * stored as `LONG_NAME_PREFIX` plus its index in the `LONG_NAMES_ENTRY` list. The glob skips
+ * dotfiles, so these names cannot clash with a real file.
+ */
+const LONG_NAMES_ENTRY = '.nuxt-long-names.json'
+const LONG_NAME_PREFIX = '.nuxt-long-name/'
+
 async function restoreCacheFromFile (cwd: string, cacheFile: string) {
   if (!existsSync(cacheFile)) {
     return false
@@ -392,7 +400,14 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
 
   const resolvedCwd = resolve(cwd) + '/'
   const files = parseTar(await readFile(cacheFile))
+  const longNames: string[] = JSON.parse(files.find(f => f.name === LONG_NAMES_ENTRY)?.text ?? '[]')
   for (const file of files) {
+    if (file.name === LONG_NAMES_ENTRY) {
+      continue
+    }
+    if (file.name.startsWith(LONG_NAME_PREFIX)) {
+      file.name = longNames[Number(file.name.slice(LONG_NAME_PREFIX.length))] ?? file.name
+    }
     let fd: FileHandle | undefined = undefined
     try {
       const filePath = resolve(cwd, file.name)
@@ -432,7 +447,14 @@ async function writeCache (cwd: string, sources: string | string[], cacheFile: s
     patterns,
     cwd,
   })
-  const tarData = createTar(fileEntries)
+  const longNames: string[] = []
+  for (const entry of fileEntries) {
+    if (new TextEncoder().encode(entry.name).length > 100) {
+      longNames.push(entry.name)
+      entry.name = LONG_NAME_PREFIX + (longNames.length - 1)
+    }
+  }
+  const tarData = createTar(longNames.length ? [...fileEntries, { name: LONG_NAMES_ENTRY, data: JSON.stringify(longNames) }] : fileEntries)
   await mkdir(dirname(cacheFile), { recursive: true })
   await writeFile(cacheFile, tarData)
 }
