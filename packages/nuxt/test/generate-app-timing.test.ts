@@ -80,7 +80,7 @@ describe('generateApp compile time', () => {
     }
   }
 
-  it('reports the whole generation once instead of a line for every template that waited', async () => {
+  it('reports slow template generation in a single line', async () => {
     const messages = await generate(false)
     expect(messages.filter(m => m.startsWith('Compiled'))).toStrictEqual([])
     expect(messages).toStrictEqual([expect.stringContaining(`Generating templates took ${SLOW_MS}ms`)])
