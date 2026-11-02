@@ -140,5 +140,10 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Route rules are matched against the percent-encoded path, so a constraint can only match characters that are not encoded, such as `[a-z0-9-]+`, and cannot use a word boundary (`\\b` or `\\B`). To match any value, use a parameter without a constraint (such as `:slug`).',
       docs: false,
     },
+    NUXT_B4027: {
+      why: (p: { route: string }) => `The route rule \`${p.route}\` in \`routeRules\` has more than one \`*\`, \`**\`, \`:name+\` or \`:name*\`, and a route rule pattern can have only one.`,
+      fix: 'Keep one of them and replace the others with named parameters, for example `/:post/comments/**` instead of `/*/comments/**`. A single `*` now matches any number of segments.',
+      docs: false,
+    },
   },
 })
