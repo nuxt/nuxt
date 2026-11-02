@@ -8,6 +8,10 @@ export default {
       return Response.json({ message: 'hello from the worker' })
     }
 
+    if (url.pathname === '/api/throw') {
+      throw new Error('boom from the worker')
+    }
+
     return render(request)
   },
 }

@@ -3,6 +3,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
 import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
 import { joinURL } from 'ufo'
+import { isRunnableDevEnvironment } from 'vite'
 import type { Connect, ViteDevServer } from 'vite'
 
 import { listenForRemoteDevErrors } from './dev-errors.ts'
@@ -68,7 +69,15 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   }
 
   const respond = (request: Request, url: string) => {
-    return serverEntry && viteServer ? render(request) : shell(url)
+    if (!serverEntry || !viteServer) {
+      return shell(url)
+    }
+    // a deploy target that runs the server environment itself handles every request vite
+    // passes on, so one reaching here is one it failed, which vite has already reported
+    if (!isRunnableDevEnvironment(viteServer.environments.ssr)) {
+      return new Response('Internal Server Error', { status: 500 })
+    }
+    return render(request)
   }
 
   const serveStatic = (request: Request): Promise<Response | undefined> => {
