@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { isSameOriginRequest } from '../src/utils/same-origin'
+import { isSameOriginRequest, resolveAllowedHosts } from '../src/utils/same-origin'
 
 function req (headers: Record<string, string | string[] | undefined>) {
   return { headers }
 }
+
+describe('resolveAllowedHosts', () => {
+  it('combines `devServer.allowedHosts` and `vite.server.allowedHosts`', () => {
+    expect(resolveAllowedHosts({ devServer: { allowedHosts: ['a.test'] }, vite: { server: { allowedHosts: ['b.test', 'a.test'] } } })).toEqual(['a.test', 'b.test'])
+  })
+
+  it('allows any host when either option is `true`', () => {
+    expect(resolveAllowedHosts({ devServer: { allowedHosts: ['a.test'] }, vite: { server: { allowedHosts: true } } })).toBe(true)
+    expect(resolveAllowedHosts({ devServer: { allowedHosts: true } })).toBe(true)
+  })
+})
 
 describe('isSameOriginRequest', () => {
   describe('with Sec-Fetch-Site present', () => {

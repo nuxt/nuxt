@@ -16,7 +16,7 @@ import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { ChunkErrorPlugin } from './plugins/chunk.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { createMFS } from './utils/mfs.ts'
-import { isSameOriginRequest } from './utils/same-origin.ts'
+import { isSameOriginRequest, resolveAllowedHosts } from './utils/same-origin.ts'
 import { client, server } from './configs/index.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
@@ -154,7 +154,7 @@ function createRsbuildInstance (configs: Configuration[], nuxt: Nuxt) {
       environments,
       ...nuxt.options.dev
         ? {
-            server: { middlewareMode: true, allowedHosts: nuxt.options.devServer.allowedHosts },
+            server: { middlewareMode: true, allowedHosts: resolveAllowedHosts(nuxt.options) },
             dev: {
               // keep the HMR socket under the build-assets dir so
               // the upgrade won't be forwarded to nitro
@@ -234,7 +234,7 @@ const kHandled = /* @__PURE__ */ Symbol.for('h3.handled')
 function rsbuildToH3Handler (nuxt: Nuxt, middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void, buildAssetsPrefix: string, nitroBuildsPrefix: string) {
   return defineEventHandler((event) => {
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
-    if (!isSameOriginRequest(req, nuxt.options.devServer.allowedHosts)) {
+    if (!isSameOriginRequest(req, resolveAllowedHosts(nuxt.options))) {
       res!.statusCode = 403
       res!.end('Forbidden')
       return kHandled
@@ -295,7 +295,7 @@ async function createDevMiddleware (compiler: Compiler) {
   const devHandler = wdmToH3Handler(devMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
-    if (!isSameOriginRequest(req, nuxt.options.devServer.allowedHosts)) {
+    if (!isSameOriginRequest(req, resolveAllowedHosts(nuxt.options))) {
       res!.statusCode = 403
       res!.end('Forbidden')
       return kHandled

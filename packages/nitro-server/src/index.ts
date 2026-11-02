@@ -1314,16 +1314,14 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
 }
 
 function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
-  const allowedHosts = nuxt.options.devServer.allowedHosts
-  if (allowedHosts === true) {
+  const sources = [nuxt.options.devServer.allowedHosts, nuxt.options.vite?.server?.allowedHosts]
+  if (sources.includes(true)) {
     return true
   }
   const hosts = new Set(LOOPBACK_HOSTS)
-  if (Array.isArray(allowedHosts)) {
-    for (const host of allowedHosts) {
-      if (typeof host === 'string' && host) {
-        hosts.add(host)
-      }
+  for (const host of sources.flatMap(allowedHosts => Array.isArray(allowedHosts) ? allowedHosts : [])) {
+    if (typeof host === 'string' && host) {
+      hosts.add(host)
     }
   }
   return hosts
