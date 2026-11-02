@@ -95,6 +95,24 @@ test('hot reloading route rules', async ({ fetch }) => {
   await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev', { timeout: 20000 })
 })
 
+test('SSR fetches pick up an edited server route', async ({ fetch }) => {
+  const routePath = join(fixtureDir, 'server/api/hmr-value.ts')
+  const original = readFileSync(join(sourceDir, 'server/api/hmr-value.ts'), 'utf8')
+  writeFileSync(routePath, original)
+
+  async function readValue () {
+    const html = await fetch('/server-route').then(r => r.text())
+    return html.match(/data-testid="value"[^>]*>([^<]+)</)?.[1]?.trim()
+  }
+
+  await expect(readValue).toBeWithPolling('v1')
+
+  writeFileSync(routePath, original.replace(`'v1'`, `'v2'`))
+
+  await expect(() => fetch('/api/hmr-value').then(r => r.json()).then(r => r.value)).toBeWithPolling('v2', { timeout: 20000 })
+  await expect(readValue).toBeWithPolling('v2', { timeout: 20000 })
+})
+
 test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) => {
   // Verify CSS <link> is present in initial SSR HTML
   const configPath = join(fixtureDir, 'nuxt.config.ts')
