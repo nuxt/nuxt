@@ -566,7 +566,7 @@ export class NuxtPerfProfiler {
 
     printList('Details', subPhases
       .filter(p => p.duration > 5)
-      .map(p => `${p.name} ${colors.dim('-')} ${thresholdColor(p.duration, 500, 100)(formatDuration(p.duration))}`))
+      .map(p => `${p.name} ${colors.dim('-')} ${thresholdColor(p.duration, 500, 100)(formatDuration(p.duration))}${p.unfinished ? ` ${colors.red('unfinished')}` : ''}`))
   }
 
   /**
@@ -579,6 +579,7 @@ export class NuxtPerfProfiler {
     const tidHooks = 2
 
     const globalEnd = performance.now()
+    const phases = this.#getPhases(globalEnd)
     const toUs = (ms: number) => Math.round(ms * 1000 + this.#baseTs)
     const threadName = (tid: number, name: string): TraceEvent => ({ name: 'thread_name', ph: 'M', ts: 0, pid, tid, cat: '', args: { name } })
     const span = (name: string, cat: string, tid: number, start: number, end: number, args?: { begin?: Record<string, unknown>, end?: Record<string, unknown> }): TraceEvent[] => [
@@ -593,7 +594,7 @@ export class NuxtPerfProfiler {
       ...span('nuxt build', 'build', tidPhases, this.#globalStart, globalEnd),
     ]
 
-    for (const phase of this.#getPhases(globalEnd)) {
+    for (const phase of phases) {
       events.push(...span(phase.name, 'phase', tidPhases, phase.startTime, phase.endTime, {
         begin: { memoryBefore: { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed } },
         end: { memoryDelta: phase.memoryDelta },
@@ -634,7 +635,7 @@ export class NuxtPerfProfiler {
     emitPluginSpans(this.#bundlerPluginSpans.filter(s => s.pluginName.startsWith('nitro:')), 'Nitro Plugins', 110)
 
     const counter = (name: string, ts: number, args: Record<string, number>): TraceEvent => ({ name, cat: 'memory', ph: 'C', ts, pid, tid: 0, args })
-    for (const phase of this.#getPhases(globalEnd)) {
+    for (const phase of phases) {
       events.push(
         counter('Memory', toUs(phase.startTime), { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed }),
         counter('Memory', toUs(phase.endTime), { rss: phase.memoryAfter.rss, heapUsed: phase.memoryAfter.heapUsed }),
