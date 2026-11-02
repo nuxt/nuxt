@@ -66,7 +66,8 @@ describe('PerfPlugin', () => {
     const builder = {
       build: (environment: { name: string }) => environment.name === 'nitro' ? Promise.reject(new Error('failed')) : Promise.resolve(environment.name),
     }
-    await (PerfPlugin(createNuxt({}, perf as any)).buildApp as { handler: (builder: unknown) => Promise<void> }).handler(builder)
+    const plugin = PerfPlugin(createNuxt({}, perf as any)) as { buildApp?: { handler: (builder: unknown) => Promise<void> } }
+    await plugin.buildApp?.handler(builder)
 
     expect(await builder.build({ name: 'client' })).toBe('client')
     await expect(builder.build({ name: 'nitro' })).rejects.toThrow('failed')
