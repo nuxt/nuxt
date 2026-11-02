@@ -744,10 +744,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     'nitro/storage',
     'nitro/task',
     'nitro/types',
-    // route rule augmentations are declared on `h3/rules`, so a project has to resolve it to the
-    // same copy of h3 for them to apply
-    'h3/rules',
   ].filter(pkg => !nuxt._dependencies?.has(packageName(pkg)))
+  // route rule augmentations are declared on `h3/rules`, so a project has to resolve it to the
+  // same copy of h3 for them to apply, even when it depends on another copy of `h3`
+  nitroTypePackages.push('h3/rules')
   const [nitroTypePaths, nitroNodeTypePaths] = await Promise.all([
     resolveNitroTypePaths(nitroTypePackages),
     resolveNitroTypePaths(nitroTypePackages, { entry: true }),
