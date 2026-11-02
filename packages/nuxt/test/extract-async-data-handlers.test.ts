@@ -7,6 +7,7 @@ describe('extract async data handlers plugin', () => {
     enabled: true,
     sourcemap: false,
     rootDir: '/app',
+    appDir: '/project/node_modules/nuxt-nightly/dist/app',
   }
 
   function createTransform (options = defaultOptions) {
@@ -22,6 +23,16 @@ describe('extract async data handlers plugin', () => {
   }
 
   describe('basic functionality', () => {
+    it('should not transform Nuxt\'s own app directory, whatever the package is called', () => {
+      const plugin = ExtractAsyncDataHandlersPlugin(defaultOptions).raw({}, { framework: 'rollup', versions: {} }) as {
+        transform: { filter: { id: { exclude: RegExp[] } } }
+      }
+      const isExcluded = (id: string) => plugin.transform.filter.id.exclude.some(re => re.test(id))
+      expect(isExcluded('/project/node_modules/nuxt-nightly/dist/app/composables/fetch.js')).toBe(true)
+      expect(isExcluded('/project/app/pages/index.vue')).toBe(false)
+      expect(isExcluded('/project/node_modules/nuxt-nightly/dist/application.js')).toBe(false)
+    })
+
     it('should not transform when no async data functions are present', async () => {
       const transform = createTransform()
       const code = `

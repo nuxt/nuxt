@@ -610,6 +610,7 @@ async function initNuxt (nuxt: Nuxt) {
       addBuildPlugin(ExtractAsyncDataHandlersPlugin({
         sourcemap: !!nuxt.options.sourcemap.client,
         rootDir: nuxt.options.rootDir,
+        appDir: nuxt.options.appDir,
       }), { server: false })
     }
   }
