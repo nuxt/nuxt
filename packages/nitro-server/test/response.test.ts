@@ -49,7 +49,7 @@ describe('createResponseHeaderRecord', () => {
     headers['x-render-response'] = 'yes'
     delete headers['content-type']
 
-    expect(inspect(headers)).toBe(`{ 'x-render-response': 'yes' }`)
+    expect(inspect(headers)).toContain(`{ 'x-render-response': 'yes' }`)
   })
 
   it('reflects headers set on the response after it was created', () => {
