@@ -532,15 +532,8 @@ function toRealPath (path: string): string {
 
 /** The file a specifier resolves to, or `undefined` where it leads to none. */
 function resolveFile (specifier: string, options: ResolverOptions): string | undefined {
-  try {
-    const file = resolveModulePath(specifier, { ...options, try: true })
-    return file ? normalize(file) : undefined
-  } catch (error) {
-    // `try` does not cover a path through a file
-    if ((error as NodeJS.ErrnoException).code !== 'ENOTDIR') {
-      throw error
-    }
-  }
+  const file = resolveModulePath(specifier, { ...options, try: true })
+  return file ? normalize(file) : undefined
 }
 
 /** Nitro v3 resolves aliases in insertion order, so a prefix must never precede a longer key. */
