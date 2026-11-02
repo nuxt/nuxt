@@ -41,12 +41,12 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B9006: {
       why: (p: { file: string, count: number, names: string }) => `\`${p.file}\` uses ${p.names} without importing ${p.count === 1 ? 'it' : 'them'}. Files in subdirectories of \`server/utils/\` are not auto-imported.`,
-      fix: 'Import each one explicitly, re-export it from a file directly in `server/utils/`, or enable `nitroLegacy.imports` to scan subdirectories of `server/utils/` as Nitro v2 did.',
+      fix: 'Import each one explicitly, re-export it from a file directly in `server/utils/`, or enable `nitroLegacy.imports` (included in `nitroLegacy: true`) to scan subdirectories of `server/utils/` as Nitro v2 did.',
       docs: false,
     },
     NUXT_B9007: {
       why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? '' : 's'} use${p.count === 1 ? 's' : ''} Nitro or h3 utilities without importing them, and server auto-imports of these are off by default in Nuxt 5:\n  - ${p.files}`,
-      fix: (p: { imports: string }) => `Import them explicitly: ${p.imports}. To keep auto-importing them, enable \`experimental.nitroAutoImports\`.`,
+      fix: (p: { imports: string }) => `Import them explicitly: ${p.imports}. To keep auto-importing them, enable \`experimental.nitroAutoImports\`, or \`nitroLegacy: true\` to also keep the rest of your Nitro v2 server code running while you migrate.`,
       docs: false,
     },
     NUXT_B9008: {
