@@ -24,6 +24,18 @@ function isLoopbackHost (host: string | undefined): boolean {
   return !!hostname && LOOPBACK_HOSTNAMES.has(hostname)
 }
 
+type AllowedHosts = string[] | true
+
+/**
+ * The hosts allowed by `devServer.allowedHosts` and `vite.server.allowedHosts`, read on each call
+ * so that hosts added once the dev server is listening are included.
+ */
+export function resolveAllowedHosts (options: { devServer: { allowedHosts?: AllowedHosts }, vite?: { server?: { allowedHosts?: AllowedHosts } } }): AllowedHosts {
+  const sources = [options.devServer.allowedHosts, options.vite?.server?.allowedHosts]
+  if (sources.includes(true)) { return true }
+  return [...new Set(sources.flatMap(hosts => Array.isArray(hosts) ? hosts : []))]
+}
+
 export function isAllowedHost (host: string | undefined, allowedHosts: readonly string[] | true = []): boolean {
   if (!host || allowedHosts === true) { return true }
   const hostname = parseHostname(host)
