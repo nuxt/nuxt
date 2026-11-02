@@ -9,4 +9,4 @@ export const LayoutMetaSymbol: InjectionKey<LayoutMeta> = Symbol('layout-meta')
 
 export const LayoutSymbol: InjectionKey<Readonly<ComputedRef<string | false>>> = Symbol('layout')
 
-export const PageRouteSymbol: InjectionKey<RouteLocationNormalizedLoaded> = Symbol('route')
+export const PageRouteSymbol: InjectionKey<RouteLocationNormalizedLoaded> = Symbol.for('nuxt:route')
