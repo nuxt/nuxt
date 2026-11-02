@@ -87,6 +87,7 @@ describe('composables', () => {
       'clearError',
       'showError',
       'useError',
+      'checkForAppUpdate',
       'getAppManifest',
       'useHydration',
       'getRouteRules',
