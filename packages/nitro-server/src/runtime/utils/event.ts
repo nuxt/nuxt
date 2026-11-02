@@ -149,11 +149,12 @@ function toWebRequest (event: H3Event): Request {
   }
 
   const method = event.method
+  const url = getRequestURL(event, { xForwardedProto: false })
   if (!PAYLOAD_METHODS.has(method)) {
-    return new Request(getRequestURL(event), { method, headers: event.headers, signal: toRequestSignal(event) })
+    return new Request(url, { method, headers: event.headers, signal: toRequestSignal(event) })
   }
 
-  const request = new Request(getRequestURL(event), {
+  const request = new Request(url, {
     method,
     headers: event.headers,
     body: getRequestBody(event).stream(),
@@ -367,7 +368,7 @@ export function toRequestEvent (event: H3Event): RendererEvent {
  * than a copy of it, so a header the application sets through h3 and a header the renderer
  * sets are the same header.
  */
-function toWebView (event: H3Event, resolveURL = () => new URL(encodeEventPath(event.path), `${getRequestProtocol(event)}://${getRequestHost(event)}`)): RendererEvent {
+function toWebView (event: H3Event, resolveURL = () => new URL(encodeEventPath(event.path), `${getRequestProtocol(event, { xForwardedProto: false })}://${getRequestHost(event)}`)): RendererEvent {
   const node = event.node
   let request: Request | undefined
   let url: URL | undefined

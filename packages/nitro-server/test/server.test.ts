@@ -218,12 +218,13 @@ describe('the shape of what it reads off an h3 v1 event', () => {
   it.for([
     ['no header', {}],
     ['forwarded headers', { 'x-forwarded-host': ' nuxt.com:8443 , proxy', 'x-forwarded-proto': 'https, http' }],
+    ['a forwarded protocol', { 'x-forwarded-proto': 'https' }],
     ['an unsupported forwarded protocol', { 'x-forwarded-proto': 'ftp' }],
     ['a forwarded IPv6 host', { 'x-forwarded-host': '[::1]:99999' }],
   ] as const)('reads the host, protocol and URL from %s the same way as the shipped implementation', ([, forwarded]) => {
     const headers = { host: 'internal:3000', ...forwarded }
     const web = webEvent('http://internal:3000/api?a=1', headers)
-    for (const trust of [false, true]) {
+    for (const trust of [undefined, false, true]) {
       const options = { xForwardedHost: trust, xForwardedProto: trust }
       const e = event('/api?a=1', { headers })
       expect([delegate.getRequestURL(e, options).href, delegate.getRequestHost(e, options), delegate.getRequestProtocol(e, options)])
@@ -237,6 +238,11 @@ describe('the shape of what it reads off an h3 v1 event', () => {
     const options = { xForwardedHost: true, xForwardedProto: true }
     expect([delegate.getRequestURL(portable as never, options).href, delegate.getRequestHost(portable as never, options), delegate.getRequestProtocol(portable as never, options)])
       .toEqual(['https://nuxt.com/api?a=1', 'nuxt.com', 'https'])
+  })
+
+  it('ignores forwarded headers in the URL of the event it hands a handler', () => {
+    const portable = toPortableEvent(event('/api?a=1', { headers: { 'x-forwarded-host': 'proxy.com', 'x-forwarded-proto': 'https' } }))
+    expect([portable.url.href, portable.req.url]).toEqual(['http://nuxt.com/api?a=1', 'http://nuxt.com/api?a=1'])
   })
 
   it('parses every cookie the same way as the shipped implementation', () => {

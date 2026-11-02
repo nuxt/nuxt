@@ -43,17 +43,17 @@ describe('toPortableDevHandlers', () => {
       route: '/_greet',
       handler: (event: RequestEvent) => {
         event.res.headers.set('x-greeting', 'hello')
-        return { request: event.req instanceof Request, path: event.url.pathname, name: event.url.searchParams.get('name') }
+        return { request: event.req instanceof Request, href: event.url.href, name: event.url.searchParams.get('name') }
       },
     }
     Object.defineProperty(entry, kServerApi, { value: 'nuxt' })
 
     const [portable] = toPortableDevHandlers([entry])
     const app = createApp().use(portable!.route!, portable!.handler as EventHandler)
-    const response = await toWebHandler(app)(new Request('http://localhost/_greet/world?name=nuxt'))
+    const response = await toWebHandler(app)(new Request('http://localhost/_greet/world?name=nuxt', { headers: { 'x-forwarded-proto': 'https' } }))
 
     expect(response.headers.get('x-greeting')).toBe('hello')
-    expect(await response.json()).toEqual({ request: true, path: '/_greet/world', name: 'nuxt' })
+    expect(await response.json()).toEqual({ request: true, href: 'http://localhost/_greet/world?name=nuxt', name: 'nuxt' })
   })
 })
 

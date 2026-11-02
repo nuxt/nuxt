@@ -27,7 +27,7 @@ export function toPortableDevHandlers<T extends Pick<DevServerHandler, 'handler'
     return {
       ...entry,
       // nitro mounts dev handlers by prefix, which strips the route from `event.path`
-      handler: defineEventHandler(event => handler(toPortableEvent(event, () => getRequestURL(event)))),
+      handler: defineEventHandler(event => handler(toPortableEvent(event, () => getRequestURL(event, { xForwardedProto: false })))),
     }
   })
 }
