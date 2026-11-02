@@ -415,8 +415,8 @@ catalogs:
       specifier: ^3.7.0
       version: 3.7.0
     unrouting:
-      specifier: ^0.3.1
-      version: 0.3.1
+      specifier: ^0.3.2
+      version: 0.3.2
     untyped:
       specifier: ^2.0.0
       version: 2.0.0
@@ -1187,7 +1187,7 @@ importers:
         version: 3.7.0(@rsbuild/core@2.3.0)(@rspack/core@2.3.0(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.67.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
       unrouting:
         specifier: catalog:build
-        version: 0.3.1
+        version: 0.3.2
       unstorage:
         specifier: catalog:nitro-runtime
         version: 2.0.0-beta.0
@@ -1404,7 +1404,7 @@ importers:
         version: 3.7.0(@rsbuild/core@2.3.0)(@rspack/core@2.3.0(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.15)(rollup@4.67.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
       unrouting:
         specifier: catalog:build
-        version: 0.3.1
+        version: 0.3.2
       untyped:
         specifier: catalog:build
         version: 2.0.0
@@ -11528,8 +11528,8 @@ packages:
       webpack:
         optional: true
 
-  unrouting@0.3.1:
-    resolution: {integrity: sha512-gBrZaBzhZdvnA6eZiDDAbwx2/5sTslga/LqvqrFbdMg4EDcLsvKZuwLcTaOauv2UnVcVz6pb8FlEXhP4VuEqpw==}
+  unrouting@0.3.2:
+    resolution: {integrity: sha512-TwF00VzMVh6O+l5RaDxfVus9DzN38f1lksgaVzwJA5wwpYT8lCqceNzVE4w93zPuUu0A0y35dadXeCWDVNtVgA==}
 
   unrs-resolver@1.12.2:
     resolution: {integrity: sha512-dmlRxBJJayXjqTwC+JtF1HhJmgf3ftQ3YejFcZrf4+KKtJv0qDsK1pjqaaVjG7wJ5NJ6UVP1OqRMQ71Z4C3rxQ==}
@@ -22211,7 +22211,7 @@ snapshots:
       vite: 8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
       webpack: 5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0)
 
-  unrouting@0.3.1:
+  unrouting@0.3.2:
     dependencies:
       escape-string-regexp: 5.0.0
       ufo: 1.6.4
