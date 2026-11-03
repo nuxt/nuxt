@@ -25,6 +25,13 @@ async function declaresWorkspace (dir: string): Promise<boolean> {
   return false
 }
 
+/** Whether `dir` is the root of a git repository, worktree or submodule. */
+async function isGitRoot (dir: string): Promise<boolean> {
+  if (existsSync(join(dir, '.git/config'))) { return true }
+  const gitFile = await readFile(join(dir, '.git'), 'utf8').catch(() => '')
+  return gitFile.startsWith('gitdir:')
+}
+
 async function declaresPackageWorkspaces (path: string): Promise<boolean> {
   try {
     return !!JSON.parse(await readFile(path, 'utf8'))?.workspaces
@@ -49,8 +56,9 @@ export async function findWorkspaceDir (rootDir: string): Promise<string> {
     if (await declaresWorkspace(dir)) { return dir }
   }
 
-  const gitDir = dirs.find(dir => existsSync(join(dir, '.git/config')))
-  if (gitDir) { return gitDir }
+  for (const dir of dirs) {
+    if (await isGitRoot(dir)) { return dir }
+  }
 
   for (const dir of dirs) {
     const path = join(dir, 'package.json')
