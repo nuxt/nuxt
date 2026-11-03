@@ -841,7 +841,7 @@ async function writeFileAtomic (path: string, contents: string) {
       }
     }
   } catch (error) {
-    await fsp.rm(tempPath, { force: true })
+    await fsp.rm(tempPath, { force: true }).catch(() => {})
     throw error
   }
 }
