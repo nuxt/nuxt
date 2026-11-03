@@ -99,11 +99,23 @@ export const createLazyInteractionComponent: LazyComponentFactory<LazyInteractio
   let disposed = false
   const pendingEvents: Array<{ event: Event, target: EventTarget | null }> = []
   const removeListeners = () => {
-    forEach(el => {
+    forEach((el) => {
       for (const interaction of interactions) {
         el.removeEventListener(interaction, onInteraction, interaction === 'focus')
       }
       el.removeEventListener('pointerleave', onPointerLeave, true)
+    })
+  }
+  const stopPropagation = (event: Event) => event.stopPropagation()
+  const toggleStopPropagation = (add: boolean) => {
+    forEach((el) => {
+      for (const interaction of interactions) {
+        if (add) {
+          el.addEventListener(interaction, stopPropagation)
+        } else {
+          el.removeEventListener(interaction, stopPropagation)
+        }
+      }
     })
   }
   const onPointerLeave = (event: Event) => {
@@ -126,17 +138,18 @@ export const createLazyInteractionComponent: LazyComponentFactory<LazyInteractio
     if (triggered) { return }
     triggered = true
     hydrate()
-    // The outer wrapper hydrates before its async child has loaded and attached listeners.
     hydrated.then(() => {
       removeListeners()
+      toggleStopPropagation(true)
       for (const { event, target } of pendingEvents) {
         if (disposed) { break }
         target?.dispatchEvent(new (event.constructor as typeof Event)(event.type, event))
       }
+      toggleStopPropagation(false)
       pendingEvents.length = 0
     })
   }
-  forEach(el => {
+  forEach((el) => {
     for (const interaction of interactions) {
       el.addEventListener(interaction, onInteraction, interaction === 'focus')
     }

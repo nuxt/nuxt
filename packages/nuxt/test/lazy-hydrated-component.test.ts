@@ -10,6 +10,7 @@ vi.mock('#app/nuxt', () => ({ useNuxtApp: () => ({ hook: vi.fn() }) }))
 let app: App | undefined
 
 afterEach(() => {
+  vi.useRealTimers()
   app?.unmount()
   app = undefined
   document.body.innerHTML = ''
@@ -177,12 +178,41 @@ describe('interaction hydration', () => {
     expect(onClick.mock.calls[1]![0]).toMatchObject({ shiftKey: true, target })
   })
 
+  it('does not deliver replayed interactions to ancestors', async () => {
+    const onClick = vi.fn()
+    const onParentClick = vi.fn()
+    const counter = defineComponent({ setup: () => () => h('button', { onClick }, 'Click') })
+    let resolve!: (component: Component) => void
+    const loader = vi.fn(() => new Promise<Component>((res) => { resolve = res }))
+    const lazy = createLazyInteractionComponent('counter', loader)
+    document.body.innerHTML = '<div id="app"><div><button>Click</button></div></div>'
+    app = createSSRApp({ render: () => h('div', { onClick: onParentClick }, [h(lazy)]) })
+    app.mount('#app')
+    await flushPromises()
+
+    const target = document.querySelector('button')!
+    target.click()
+    target.click()
+    await flushPromises()
+    expect(onParentClick).toHaveBeenCalledTimes(2)
+
+    resolve(counter)
+    await flushPromises()
+    expect(onClick).toHaveBeenCalledTimes(2)
+    expect(onParentClick).toHaveBeenCalledTimes(2)
+
+    vi.setSystemTime(Date.now() + 1000)
+    target.click()
+    expect(onClick).toHaveBeenCalledTimes(3)
+    expect(onParentClick).toHaveBeenCalledTimes(3)
+  })
+
   it('replays interactions on fragment roots and respects custom triggers', async () => {
     const onClick = vi.fn()
     const component = defineComponent({
       setup: () => () => [h('button', { onClick }, 'First'), h('button', { onClick }, 'Second')],
     })
-    const loader = vi.fn(async () => component)
+    const loader = vi.fn(() => Promise.resolve(component))
     const lazy = createLazyInteractionComponent('fragment', loader)
     document.body.innerHTML = '<div id="app"><!--[--><button>First</button><button>Second</button><!--]--></div>'
     app = createSSRApp({ render: () => h(lazy, { hydrateOnInteraction: 'click' }) })
