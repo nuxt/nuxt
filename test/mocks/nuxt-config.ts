@@ -12,7 +12,7 @@ export const hasIslandOptOutPlugins = true
 
 export const hasLayouts = true
 
-export const preloadInitialLayout = true
+export const preloadInitialLayout = false
 
 export const componentIslands = true
 
