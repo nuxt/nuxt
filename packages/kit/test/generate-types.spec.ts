@@ -675,6 +675,26 @@ describe('writeTypes', () => {
     })
   })
 
+  it('should report the rename failure when removing the temporary file also fails', async () => {
+    await withRelocatedBuildDir(async (typesDir, nuxt) => {
+      nuxt.options.dev = true
+      const failure = Object.assign(new Error('Rename failed'), { code: 'ENOSPC' })
+      const renameSpy = vi.spyOn(fsp, 'rename').mockRejectedValue(failure)
+      const rmSpy = vi.spyOn(fsp, 'rm').mockRejectedValue(Object.assign(new Error('Remove failed'), { code: 'EIO' }))
+      try {
+        await expect(writeTypes(nuxt)).rejects.toBe(failure)
+      } finally {
+        try {
+          await vi.waitFor(() => expect(rmSpy).toHaveBeenCalledTimes(generatedFiles.length))
+        } finally {
+          await Promise.allSettled([...renameSpy.mock.results, ...rmSpy.mock.results].map(result => result.value))
+          renameSpy.mockRestore()
+          rmSpy.mockRestore()
+        }
+      }
+    })
+  })
+
   it('should never expose a partially written tsconfig to concurrent readers', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
     const buildDir = join(rootDir, '.nuxt')
