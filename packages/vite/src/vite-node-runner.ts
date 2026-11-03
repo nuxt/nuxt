@@ -103,6 +103,9 @@ export function getCompiledPosition (file: string, line: number, column?: number
  * so a module Node loaded itself with `--enable-source-maps` would otherwise lose its map.
  */
 function getNodeOriginalPosition (file: string, line: number, column: number): SourcePosition | undefined {
+  if (!process.sourceMapsEnabled) {
+    return undefined
+  }
   try {
     const origin = findSourceMap(file)?.findOrigin(line, column)
     if (!origin || !('fileName' in origin)) {

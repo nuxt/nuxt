@@ -148,8 +148,9 @@ describe('vite-node runner stacks', () => {
     })
 
     // bundled output of `export function useBoom () {\n  throw new Error('boom')\n}`, a line
-    // down, as a bundle loaded with `import()` rather than through the runner would be
-    const load = (name: string, enabled: boolean) => {
+    // down, as a bundle node loads itself would be. both formats go through `require`, which
+    // node handles itself, as vitest would transform an `import()` of the file through vite
+    const load = (name: string, format: 'cjs' | 'esm', options: { loadWith: boolean, throwWith?: boolean }) => {
       const map = {
         version: 3,
         sources: ['useBoom.ts'],
@@ -157,11 +158,14 @@ describe('vite-node runner stacks', () => {
         mappings: ';AAAO,gBAAS,UAAW;AACzB,QAAM,IAAI,MAAM,MAAM;AACxB;',
         names: [],
       }
-      const file = join(dir, `${name}.cjs`)
-      writeFileSync(file, 'var import_x;\nfunction useBoom() {\n  throw new Error("boom");\n}\nmodule.exports = useBoom;\n'
+      const file = join(dir, `${name}.${format === 'cjs' ? 'cjs' : 'mjs'}`)
+      writeFileSync(file, `var import_x;\nfunction useBoom() {\n  throw new Error("boom");\n}\n${format === 'cjs' ? 'module.exports = useBoom' : 'export default useBoom'};\n`
         + `//# sourceMappingURL=data:application/json;base64,${Buffer.from(JSON.stringify(map)).toString('base64')}\n`)
-      process.setSourceMapsEnabled(enabled)
-      const useBoom = createRequire(import.meta.url)(file) as () => void
+      process.setSourceMapsEnabled(options.loadWith)
+      const loaded = createRequire(import.meta.url)(file)
+      // an ES module, which names its frames by its `file://` url, comes back as its namespace
+      const useBoom: () => void = format === 'cjs' ? loaded : loaded.default
+      process.setSourceMapsEnabled(options.throwWith ?? options.loadWith)
       try {
         useBoom()
       } catch (error) {
@@ -171,12 +175,22 @@ describe('vite-node runner stacks', () => {
     }
 
     it('maps its frames as node would with source maps enabled', () => {
-      const { stack } = load('mapped', true)
+      const { stack } = load('mapped', 'cjs', { loadWith: true })
+      expect(stack).toContain(`    at useBoom (${join(dir, 'useBoom.ts')}:2:9)`)
+    })
+
+    it('maps the frames of an ES module, named by its file url', () => {
+      const { stack } = load('mapped-esm', 'esm', { loadWith: true })
       expect(stack).toContain(`    at useBoom (${join(dir, 'useBoom.ts')}:2:9)`)
     })
 
     it('leaves its frames alone when node loaded it without source maps', () => {
-      const { file, stack } = load('unmapped', false)
+      const { file, stack } = load('unmapped', 'cjs', { loadWith: false })
+      expect(stack).toContain(`    at useBoom (${file}:3:9)`)
+    })
+
+    it('leaves its frames alone once source maps are turned off', () => {
+      const { file, stack } = load('turned-off', 'cjs', { loadWith: true, throwWith: false })
       expect(stack).toContain(`    at useBoom (${file}:3:9)`)
     })
   })
