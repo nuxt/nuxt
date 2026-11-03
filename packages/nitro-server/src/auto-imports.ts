@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { createIsIgnored } from '@nuxt/kit'
 import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
-import type { Import, InjectImportsOptions, Unimport } from 'unimport'
+import type { Import, InjectImportsOptions, InlinePreset, Unimport } from 'unimport'
 import type { Nuxt, ServerImportsOptions } from '@nuxt/schema'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 
@@ -24,7 +24,11 @@ export interface ServerAutoImports {
 export interface ServerAutoImportsContext {
   /** Directories whose exports are not auto-imported, but are reported when used without an import. */
   nestedUtilsDirs?: string[]
+  /** Presets that are not auto-imported, but are reported when used without an import. */
+  disabledPresets?: InlinePreset[]
 }
+
+const MAX_REPORTED_FILES = 10
 
 /** Creates and applies the auto-imports available to the modules the server builder bundles. */
 export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptions, typesDir: string, context: ServerAutoImportsContext = {}): ServerAutoImports {
@@ -48,6 +52,13 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     ? createUnimport({ parser: 'oxc', presets: [], imports: [], addons: { addons: [] } })
     : undefined
   const reportedNestedUtils = new Set<string>()
+  const disabledPresets = enabled ? context.disabledPresets ?? [] : []
+  const disabledPresetsCtx = disabledPresets.length > 0
+    ? createUnimport({ parser: 'oxc', presets: disabledPresets, imports: [], addons: { addons: [] } })
+    : undefined
+  const reportedPresetFiles = new Set<string>()
+  const pendingPresetReports = new Map<string, Import[]>()
+  let presetReportTimer: ReturnType<typeof setTimeout> | undefined
 
   // the project comes first in `_layers`, so it gets the highest priority; the floor of 1 is
   // unimport's default, so a scanned util still takes precedence over a preset of the same name
@@ -95,6 +106,41 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     nitroBuildDiagnostics.NUXT_B9006({ file: relative(nuxt.options.rootDir, id), count: names.length, names: names.join(', ') })
   }
 
+  async function reportDisabledPresets (code: string, id: string) {
+    if (!disabledPresetsCtx) { return }
+    const { imports } = await disabledPresetsCtx.injectImports(code, id, { autoImport: true, id } as InjectImportsOptions)
+    if (imports.length === 0) { return }
+    const key = id + '\0' + imports.map(i => i.as ?? i.name).sort().join('\0')
+    if (reportedPresetFiles.has(key)) { return }
+    reportedPresetFiles.add(key)
+    pendingPresetReports.set(id, imports)
+    // files are transformed one at a time, so the report waits for the rest of the batch
+    clearTimeout(presetReportTimer)
+    presetReportTimer = setTimeout(flushDisabledPresetReports, 100)
+  }
+
+  function flushDisabledPresetReports () {
+    const reports = [...pendingPresetReports].sort(([a], [b]) => a.localeCompare(b))
+    pendingPresetReports.clear()
+    const bySource = new Map<string, Set<string>>()
+    for (const [, imports] of reports) {
+      for (const i of imports) {
+        const names = bySource.get(i.from) || new Set()
+        bySource.set(i.from, names)
+        names.add(i.as ?? i.name)
+      }
+    }
+    const files = reports.slice(0, MAX_REPORTED_FILES).map(([id, imports]) => `\`${relative(nuxt.options.rootDir, id)}\` (${imports.map(i => `\`${i.as ?? i.name}\``).sort().join(', ')})`)
+    if (reports.length > MAX_REPORTED_FILES) {
+      files.push(`and ${reports.length - MAX_REPORTED_FILES} more`)
+    }
+    nitroBuildDiagnostics.NUXT_B9007({
+      count: reports.length,
+      files: files.join('\n  - '),
+      imports: [...bySource].map(([from, names]) => `\`import { ${[...names].sort().join(', ')} } from '${from}'\``).join(', '),
+    })
+  }
+
   /**
    * Resolve the module an import's types are read from to a specifier the generated declaration
    * file can name.
@@ -130,6 +176,7 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       // TODO: drop the patch, this `id`, and the version pin once unimport threads the id itself.
       const result = await ctx.injectImports(code, id, { autoImport: true, id, ...injectOptions } as InjectImportsOptions)
       await reportNestedUtils(result.s.toString(), id)
+      await reportDisabledPresets(result.s.toString(), id)
       return result
     },
 

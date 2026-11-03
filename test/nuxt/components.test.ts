@@ -8,6 +8,7 @@ import { flushPromises } from '@vue/test-utils'
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 import type { RuntimeNuxtHooks } from '#app/nuxt'
 import * as payload from '#app/composables/payload'
+import * as idleCallback from '#app/compat/idle-callback'
 import payloadPlugin from '#app/plugins/payload.client'
 
 describe('nuxt-link:prefetch', () => {
@@ -65,6 +66,54 @@ describe('nuxt-link:prefetch', () => {
 
     await observer.trigger()
     expect(nuxtApp.hooks.callHook).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    ['during hydration', true],
+    ['after hydration', false],
+  ])('should observe links mounted %s in a single idle callback', async (_, hydrating) => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
+    const nuxtApp = useNuxtApp()
+    const originalHooks = nuxtApp.hooks
+    const isHydrating = nuxtApp.isHydrating
+    const OriginalIntersectionObserver = window.IntersectionObserver
+    const observed: Element[] = []
+    window.IntersectionObserver = class {
+      observe = (el: Element) => { observed.push(el) }
+      unobserve = () => {}
+      disconnect = () => {}
+    } as any
+    const idleCallbacks: IdleRequestCallback[] = []
+    const requestIdleCallback = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { idleCallbacks.push(cb); return idleCallbacks.length })
+    nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
+    nuxtApp.isHydrating = hydrating
+    nuxtApp._observer = undefined
+    const wrappers: Array<{ unmount: () => void }> = []
+
+    try {
+      const removed = await mountSuspended(component, { props: { to: '/removed' } })
+      removed.unmount()
+      for (const to of ['/a', '/b', '/c']) {
+        wrappers.push(await mountSuspended(component, { props: { to } }))
+      }
+      if (hydrating) {
+        nuxtApp.isHydrating = false
+        await nuxtApp.hooks.callHook('app:suspense:resolve')
+      }
+      for (const cb of idleCallbacks) {
+        cb({ didTimeout: false, timeRemaining: () => 50 })
+      }
+
+      expect(requestIdleCallback).toHaveBeenCalledOnce()
+      expect(observed).toHaveLength(3)
+    } finally {
+      for (const wrapper of wrappers) { wrapper.unmount() }
+      nuxtApp.hooks = originalHooks
+      nuxtApp.isHydrating = isHydrating
+      nuxtApp._observer = undefined
+      window.IntersectionObserver = OriginalIntersectionObserver
+      requestIdleCallback.mockRestore()
+    }
   })
 
   it('should prefetch with custom string `prefetchOn`', async () => {

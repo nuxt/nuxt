@@ -11,7 +11,10 @@ import type { Nuxt } from '@nuxt/schema'
  */
 export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
   return {
+    'process.env.NODE_ENV': JSON.stringify(nuxt.options.dev ? 'development' : 'production'),
+    '__VUE_OPTIONS_API__': String(!!nuxt.options.vue.optionsApi),
     '__VUE_PROD_DEVTOOLS__': String(false),
+    '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': String(!!nuxt.options.debug && !!nuxt.options.debug.hydration),
     'import.meta.test': String(!!nuxt.options.test),
   }
 }

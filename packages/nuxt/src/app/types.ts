@@ -158,6 +158,8 @@ export interface NuxtSSRContext extends SSRContext {
   islandContext?: NuxtIslandContext
   /** @internal */
   ['~renderResponse']?: Response
+  /** The app markup as rendered chunks, wrapped in the app root tags. @internal */
+  ['~htmlChunks']?: string[]
   /** @internal */
   ['~payloadReducers']: Record<string, (data: any) => any>
   /** @internal */

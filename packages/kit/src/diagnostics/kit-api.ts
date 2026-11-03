@@ -121,7 +121,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B8023: {
       why: (p: { module: string, error: string }) => `The module \`${p.module}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
-      fix: 'Loading it natively is faster, as jiti has to transform the module first. Report it to the module author if the module is not your own.',
+      fix: (p: { hint: string, installCommand: string, local: boolean }) => `${p.local ? p.hint : `Report it to the module author: ${p.hint}`} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.`,
       docs: false,
     },
     NUXT_B8024: {

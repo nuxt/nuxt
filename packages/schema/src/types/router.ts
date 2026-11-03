@@ -19,7 +19,7 @@ export type RouterConfigSerializable = Pick<RouterConfig, 'linkActiveClass' | 'l
  *
  * Declared without reference to `vue-router`'s link types, which would otherwise force a
  * (possibly duplicated) `vue-router` instance into every consuming program.
- * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
+ * @see https://nuxt.com/docs/5.x/api/components/nuxt-link
  */
 export interface NuxtLinkOptions {
   /**

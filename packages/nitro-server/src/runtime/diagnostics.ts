@@ -16,9 +16,8 @@ const colors = {
  * Nitro server runtime (dev server) diagnostics, sharing the range with the
  * SSR renderer.
  */
-// TODO: bump the `4.x` path segment to `5.x` when the v5 docs go live.
 const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+  `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
 export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
@@ -27,7 +26,7 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
   codes: {
     NUXT_E8003: {
       why: (p: { error?: string }) => `Failed to stringify dev server logs.${p.error ? ` Received \`${p.error}\`.` : ''}`,
-      fix: 'You can define your own reducer/reviver for rich types following the instructions in `https://nuxt.com/docs/4.x/api/composables/use-nuxt-app#payload`.',
+      fix: 'You can define your own reducer/reviver for rich types following the instructions in `https://nuxt.com/docs/5.x/api/composables/use-nuxt-app#payload`.',
       docs: false,
     },
     NUXT_E8005: {
@@ -52,7 +51,7 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_E8012: {
       why: (p: { helper: string }) => `\`${p.helper}\` from \`nuxt/server\` was called with an h3 event. The handler was defined with h3's \`defineEventHandler\` (auto-imported), which passes a different event.`,
-      fix: 'Import `defineEventHandler` from `nuxt/server` alongside the helpers. See `https://nuxt.com/docs/4.x/getting-started/upgrade#moving-to-nuxtserver`.',
+      fix: 'Import `defineEventHandler` from `nuxt/server` alongside the helpers. See `https://nuxt.com/docs/5.x/getting-started/upgrade#moving-to-nuxtserver`.',
       docs: false,
     },
   },

@@ -644,6 +644,8 @@ interface NormalizeRoutesOptions {
   restrictedPages?: ReadonlyMap<NuxtPage, keyof typeof PAGE_STUBS>
   serverComponentRuntime: string
   clientComponentRuntime: string
+  /** Module exporting `memoizeRouteComponent`, used to share lazy page imports between server requests. */
+  routeComponentRuntime?: string
 }
 
 // A page that can only render in one environment is imported there and stubbed
@@ -739,7 +741,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
-      const pageImportName = genSafeVariableName(filename(file) + hash(file).replace(/-/g, '_'))
+      const relativeFile = relative(nuxt.options.rootDir, file)
+      const pageImportName = genSafeVariableName(filename(file) + hash(relativeFile).replace(/-/g, '_'))
       const metaImportName = pageImportName + 'Meta'
       const metaImport = genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }])
 
@@ -770,13 +773,17 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         : `${metaImportName}?.name ?? ${route.name}`
 
       // we use this to validate that a server page is rendering the correct url
-      const islandKey = page.mode === 'server' && page.file
-        ? JSON.stringify(hash(relative(nuxt.options.rootDir, page.file)))
+      const islandKey = page.mode === 'server'
+        ? JSON.stringify(hash(relativeFile))
         : undefined
 
-      const component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames
+      let component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames
         ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
         : normalizeComponent(page, pageImport, route.name, islandKey))
+      if (options.routeComponentRuntime && !isSyncImport) {
+        metaImports.add(genImport(options.routeComponentRuntime, [{ name: 'memoizeRouteComponent', as: '_memoizeRouteComponent' }]))
+        component = `import.meta.server ? _memoizeRouteComponent(${component}) : ${component}`
+      }
 
       // Named views from the `name@view.vue` filename convention. The scanner
       // emits `components: { default: <file>, <view>: <file> }`.
@@ -973,7 +980,16 @@ export function isSerializable (node: ESTree.Node): { value?: any, serializable:
  * literal, contains spreads or computed keys, or defines a `routes` property.
  */
 export function routerOptionsMayModifyRoutes (code: string, filename: string): boolean {
-  let mayModify = true
+  const keys = getRouterOptionsKeys(code, filename)
+  return !keys || keys.has('routes')
+}
+
+/**
+ * The keys of the object literal a `router.options` file exports by default, or `undefined`
+ * when the export cannot be analysed or contains spreads or computed keys.
+ */
+export function getRouterOptionsKeys (code: string, filename: string): Set<string> | undefined {
+  let keys: Set<string> | undefined
   try {
     parseAndWalk(code, filename, (node) => {
       if (node.type !== 'ExportDefaultDeclaration') { return }
@@ -982,17 +998,20 @@ export function routerOptionsMayModifyRoutes (code: string, filename: string): b
         declaration = declaration.expression
       }
       if (declaration.type !== 'ObjectExpression') { return }
-      mayModify = declaration.properties.some((property) => {
-        if (property.type === 'SpreadElement') { return true }
+      const names = new Set<string>()
+      for (const property of declaration.properties) {
+        if (property.type === 'SpreadElement') { return }
         const key = property.key
         const name = key.type === 'Identifier' && !property.computed ? key.name : key.type === 'Literal' ? String(key.value) : undefined
-        return name === undefined || name === 'routes'
-      })
+        if (name === undefined) { return }
+        names.add(name)
+      }
+      keys = names
     })
   } catch {
-    return true
+    return undefined
   }
-  return mayModify
+  return keys
 }
 
 /**

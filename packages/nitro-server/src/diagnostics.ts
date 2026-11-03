@@ -3,9 +3,8 @@ import { createConsoleReporter, defineDiagnostics } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
 import { colors } from 'consola/utils'
 
-// TODO: bump the `4.x` path segment to `5.x` when the v5 docs go live.
 const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+  `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
 /**
  * B9xxx
@@ -17,12 +16,12 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
   codes: {
     NUXT_B9001: {
       why: (p: { keys: string }) => `The following \`nitro\` config options are no longer supported by Nitro v3 and were ignored: ${p.keys}.`,
-      fix: 'Remove them from your `nitro` configuration.',
+      fix: (p: { replacements: string }) => `Remove them from your \`nitro\` configuration.${p.replacements ? ` Settings with a replacement can be moved: ${p.replacements}` : ''}`,
       docs: false,
     },
     NUXT_B9002: {
       why: (p: { count: number, handlers: string }) => `${p.count} Nitro v2 handler${p.count === 1 ? ' has' : 's have'} no \`route\`, which Nitro v3 requires:\n  - ${p.handlers}`,
-      fix: 'They have been registered as middleware on `/**`. Set `middleware: true` on each handler that runs for every request, or give it an explicit `route`.',
+      fix: 'They have been registered as middleware on `/**`. Set `middleware: true` on each handler that runs for every request, or give it an explicit `route`. Report it to the module author if the handler is not your own.',
       docs: false,
     },
     NUXT_B9003: {
@@ -43,6 +42,11 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B9006: {
       why: (p: { file: string, count: number, names: string }) => `\`${p.file}\` uses ${p.names} without importing ${p.count === 1 ? 'it' : 'them'}. Files in subdirectories of \`server/utils/\` are not auto-imported.`,
       fix: 'Import each one explicitly, re-export it from a file directly in `server/utils/`, or enable `nitroLegacy.imports` to scan subdirectories of `server/utils/` as Nitro v2 did.',
+      docs: false,
+    },
+    NUXT_B9007: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? '' : 's'} use${p.count === 1 ? 's' : ''} Nitro or h3 utilities without importing them, and server auto-imports of these are off by default in Nuxt 5:\n  - ${p.files}`,
+      fix: (p: { imports: string }) => `Import them explicitly: ${p.imports}. To keep auto-importing them, enable \`experimental.nitroAutoImports\`.`,
       docs: false,
     },
   },

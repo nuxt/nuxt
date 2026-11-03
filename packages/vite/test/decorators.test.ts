@@ -4,7 +4,7 @@ import { DecoratorsPlugin, hasDecoratorSyntax } from '../src/plugins/decorators'
 
 function matchesFilter (
   filter: {
-    code?: string
+    code?: RegExp
     id?: {
       include?: RegExp[]
       exclude?: RegExp | RegExp[]
@@ -13,7 +13,7 @@ function matchesFilter (
   code: string,
   id: string,
 ) {
-  if (filter.code && !code.includes(filter.code)) {
+  if (filter.code && !filter.code.test(code)) {
     return false
   }
 
@@ -45,7 +45,7 @@ describe('DecoratorsPlugin transform filter', () => {
   }
 
   const filter = plugin.transform.filter as {
-    code?: string
+    code?: RegExp
     id?: {
       include?: RegExp[]
       exclude?: RegExp | RegExp[]
@@ -59,6 +59,61 @@ describe('DecoratorsPlugin transform filter', () => {
   it('does not match CSS files', () => {
     expect(matchesFilter(filter, '@import "./base.css";', '/src/styles.css')).toBe(false)
     expect(matchesFilter(filter, '@import "./base.scss";', '/src/styles.scss')).toBe(false)
+  })
+
+  it.each([
+    '@sealed class Example {}',
+    'class Example { @logged method () {} }',
+    'const Example = @sealed class {}',
+    'x / @sealed class C {}',
+    'x * @sealed class C {}',
+    'x *@sealed class C {}',
+    'const r = [...@sealed class C {}]',
+    'f(...@sealed class C {})',
+    'f(@sealed class C {})',
+    'new (@sealed class C {})()',
+    '@(sealed) class C {}',
+    '@\\u0073ealed class C {}',
+    'if (x) {}@sealed class C {}',
+    'x = cond ? @sealed class C {} : null',
+    'const s = "//"; @sealed class C {}',
+    'const s = "/*"; @sealed class C {}',
+    'const s = "a/b"; @sealed class C {}',
+    'export@sealed class C {}',
+    'export @sealed class C {}',
+    'export default@sealed class C {}',
+    '@sealed export class C {}',
+    '@ sealed class C {}',
+    '@/* comment */sealed class C {}',
+    'function f () { return@sealed class C {} }',
+    'do {} while (false)@sealed class C {}',
+    'const C = /x/*@sealed class {}',
+    'x / @sealed @frozen class C {}',
+    '// note *\n@sealed class C {}',
+    '@sealed//comment\nclass C {}',
+    'class C { /* note */@logged method () {} }',
+    'class C { @logged "method" () {} }',
+    'class C { @logged *#method () {} }',
+    'class C { @logged * .5 () {} }',
+    'class C { @logged *//comment\nmethod () {} }',
+    'class C { @logged \u{1D465} = 1 }',
+  ])('matches possible decorator in %s', (code) => {
+    expect(matchesFilter(filter, code, '/src/example.ts')).toBe(true)
+  })
+
+  it.each([
+    'import value from "@scope/package"',
+    'const value = "@scope/package"',
+    'import { foo } from \'@vue/shared\'',
+    'const x = /*@__PURE__*/ foo()',
+    'const x = /* @__PURE__ */ foo()',
+    '// @__NO_SIDE_EFFECTS__\nfunction foo () {}',
+    '//@ts-ignore\nconst x = 1',
+    '// @ts-expect-error\nconst x = 1',
+    '/**\n * @param {string} name\n * @returns the value\n */',
+    '/** @deprecated use bar */',
+  ])('does not match non-decorator at signs in %s', (code) => {
+    expect(matchesFilter(filter, code, '/src/example.ts')).toBe(false)
   })
 })
 

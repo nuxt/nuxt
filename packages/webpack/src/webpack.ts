@@ -9,15 +9,14 @@ import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { pathToFileURL } from 'node:url'
 import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
-import { logger, setBuildOutput, useNitro, useNuxt } from '@nuxt/kit'
+import { logger, setBuildOutput, useNuxt } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
-import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { ChunkErrorPlugin } from './plugins/chunk.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { createMFS } from './utils/mfs.ts'
-import { isSameOriginRequest } from './utils/same-origin.ts'
+import { isSameOriginRequest, resolveAllowedHosts } from './utils/same-origin.ts'
 import { client, server } from './configs/index.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
@@ -33,19 +32,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     await applyPresets(ctx, preset)
     return ctx.config
   }))
-
-  /** Remove Nitro rollup plugin for handling dynamic imports from webpack chunks */
-  if (!nuxt.options.dev) {
-    const nitro = useNitro()
-    nitro.hooks.hook('rollup:before', (_nitro: unknown, config: { plugins?: unknown }) => {
-      const plugins = config.plugins as InputPluginOption[]
-
-      const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
-      if (existingPlugin >= 0) {
-        plugins.splice(existingPlugin, 1)
-      }
-    })
-  }
 
   await nuxt.callHook(`${builder}:config`, webpackConfigs)
 
@@ -155,7 +141,7 @@ function createRsbuildInstance (configs: Configuration[], nuxt: Nuxt) {
       environments,
       ...nuxt.options.dev
         ? {
-            server: { middlewareMode: true },
+            server: { middlewareMode: true, allowedHosts: resolveAllowedHosts(nuxt.options) },
             dev: {
               // keep the HMR socket under the build-assets dir so
               // the upgrade won't be forwarded to nitro
@@ -222,7 +208,7 @@ async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<ty
   const buildAssetsPrefix = joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
   // `builds/` under the assets dir is a Nitro-served virtual route (app manifest), not a bundler asset.
   const nitroBuildsPrefix = joinURL(buildAssetsPrefix, 'builds')
-  await nuxt.callHook('server:devHandler', rsbuildToH3Handler(devServer.middlewares, buildAssetsPrefix, nitroBuildsPrefix), { cors: () => true })
+  await nuxt.callHook('server:devHandler', rsbuildToH3Handler(nuxt, devServer.middlewares, buildAssetsPrefix, nitroBuildsPrefix), { cors: () => true })
 
   await Promise.all(firstCompiles)
 }
@@ -232,10 +218,10 @@ async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<ty
 // request as unhandled and fall through to the SSR catch-all handler.
 const kHandled = /* @__PURE__ */ Symbol.for('h3.handled')
 
-function rsbuildToH3Handler (middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void, buildAssetsPrefix: string, nitroBuildsPrefix: string) {
+function rsbuildToH3Handler (nuxt: Nuxt, middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void, buildAssetsPrefix: string, nitroBuildsPrefix: string) {
   return defineEventHandler((event) => {
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
-    if (!isSameOriginRequest(req)) {
+    if (!isSameOriginRequest(req, resolveAllowedHosts(nuxt.options))) {
       res!.statusCode = 403
       res!.end('Forbidden')
       return kHandled
@@ -295,11 +281,16 @@ async function createDevMiddleware (compiler: Compiler) {
   // Register devMiddleware on server
   const devHandler = wdmToH3Handler(devMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
+    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+    if (!isSameOriginRequest(req, resolveAllowedHosts(nuxt.options))) {
+      res!.statusCode = 403
+      res!.end('Forbidden')
+      return kHandled
+    }
     const body = await devHandler(event)
     if (body !== undefined) {
       return body
     }
-    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
     await new Promise<void>((resolve, reject) => hotMiddleware(req as IncomingMessage, res as ServerResponse, err => err ? reject(err) : resolve()))
   }), { cors: () => true })
 
@@ -310,12 +301,6 @@ async function createDevMiddleware (compiler: Compiler) {
 function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
   return defineEventHandler(async (event) => {
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
-    if (!isSameOriginRequest(req)) {
-      res!.statusCode = 403
-      res!.end('Forbidden')
-      return
-    }
-
     const body = await new Promise((resolve, reject) => {
       // @ts-expect-error handle injected methods
       res.stream = (stream) => {

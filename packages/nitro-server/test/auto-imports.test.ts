@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from '../src/auto-imports.ts'
+import { ServerAutoImportsPlugin } from '../src/auto-imports-plugin.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
 
@@ -244,11 +245,50 @@ describe('createServerAutoImports', () => {
     report.mockRestore()
   })
 
+  it('reports server utilities used without an import while their presets are disabled', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9007').mockImplementation(() => ({}) as any)
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, imports: [{ name: 'useLocal', from: '/app/server/utils/local.ts' }] },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+      { disabledPresets: [nuxtServerImportsPreset, ...v2ImportsPreset] },
+    )
+
+    const cached = 'export const fetchPackage = defineCachedFunction(() => useLocal())'
+    await autoImports.injectImports(cached, '/app/server/utils/npm.ts')
+    await autoImports.injectImports(cached, '/app/server/utils/npm.ts')
+    await autoImports.injectImports('export default defineEventHandler(event => getQuery(event))', '/app/server/api/query.ts')
+    await autoImports.injectImports('import { defineEventHandler } from \'nuxt/server\'\nexport default defineEventHandler(() => 1)', '/app/server/api/imported.ts')
+
+    await vi.waitFor(() => expect(report).toHaveBeenCalled())
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report).toHaveBeenCalledWith({
+      count: 2,
+      files: '`server/api/query.ts` (`defineEventHandler`, `getQuery`)\n  - `server/utils/npm.ts` (`defineCachedFunction`)',
+      imports: '`import { defineEventHandler, getQuery } from \'nuxt/server\'`, `import { defineCachedFunction } from \'nitro/cache\'`',
+    })
+    report.mockRestore()
+  })
+
   it('resolves `#imports` to a path inside the types directory', () => {
     const typesDir = '/app/.nuxt'
     const autoImports = createServerAutoImports(mockNuxt(), { autoImport: true }, typesDir)
 
     expect(isAbsolute(autoImports.importsModulePath)).toBe(true)
     expect(autoImports.importsModulePath.startsWith(typesDir)).toBe(true)
+  })
+})
+
+describe('ServerAutoImportsPlugin', () => {
+  it('does not transform bundled environment outputs', () => {
+    const plugin = ServerAutoImportsPlugin.raw({
+      autoImports: createServerAutoImports(mockNuxt(), { autoImport: true }, '/app/.nuxt'),
+      buildDir: '/app/.nuxt',
+    }, {} as any) as { transformInclude: (id: string) => boolean }
+
+    expect(plugin.transformInclude('/app/server/api/hello.ts')).toBe(true)
+    expect(plugin.transformInclude('/app/.nuxt/vite/services-utils.ts')).toBe(true)
+    expect(plugin.transformInclude('/app/.nuxt/vite/services/ssr/index.mjs')).toBe(false)
+    expect(plugin.transformInclude('/app/node_modules/pkg/index.mjs')).toBe(false)
   })
 })

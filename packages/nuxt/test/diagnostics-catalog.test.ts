@@ -50,7 +50,9 @@ const packagesDir = fileURLToPath(new URL('../..', import.meta.url))
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
 
 /** Codes defined on `origin/4.x` that main does not define, each with the reason. */
-const FOURX_ONLY: Record<string, string> = {}
+const FOURX_ONLY: Record<string, string> = {
+  NUXT_B7028: 'Nitro v2 only: the bundled Vue package emitted into the server `node_modules`.',
+}
 
 const CATALOG_GLOB = '*/src/**/*.ts'
 const CODE_WHY_RE = /\b(NUXT_[A-Z]\d{4}):\s*\{\s*why:\s*([^\n]*)/g

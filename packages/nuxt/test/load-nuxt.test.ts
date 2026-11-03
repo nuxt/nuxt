@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
@@ -228,6 +228,33 @@ describe('loadNuxt', () => {
     expect(() => structuredClone(nuxt.options.runtimeConfig)).not.toThrow()
 
     await nuxt.close()
+  })
+
+  it('maps `#app-manifest` to a path that does not depend on the build id', async () => {
+    const generate = async (buildId: string) => {
+      const nuxt = await loadNuxt({ cwd: repoRoot, ready: true, overrides: { buildId } })
+      onTestFinished(() => nuxt.close())
+      const { tsConfig, sharedTsConfig, legacyTsConfig } = await _generateTypes(nuxt)
+      return [tsConfig, sharedTsConfig, legacyTsConfig].map(config => config.compilerOptions?.paths?.['#app-manifest'])
+    }
+
+    const first = await generate('first-build')
+    const second = await generate('second-build')
+    for (const paths of first) {
+      expect(paths).toEqual([expect.stringMatching(/\/types\/app-manifest$/)])
+    }
+    expect(second).toEqual(first)
+  })
+
+  it('does not write a stub app manifest when only preparing types', async () => {
+    const buildDir = mkdtempSync(join(tmpdir(), 'nuxt-prepare-manifest-'))
+    onTestFinished(() => rmSync(buildDir, { recursive: true, force: true }))
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true, overrides: { _prepare: true, buildDir } })
+    onTestFinished(() => nuxt.close())
+
+    await nuxt.callHook('build:before')
+
+    expect(existsSync(join(buildDir, 'manifest'))).toBe(false)
   })
 
   it('includes #server alias in the server tsconfig paths', async () => {

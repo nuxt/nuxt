@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { performance } from 'node:perf_hooks'
-import { createBuilder, createServer, mergeConfig } from 'vite'
+import { createBuilder, createServer, mergeConfig, resolveConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
@@ -17,7 +17,7 @@ import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
-import { sanitizeFilePath } from './utils/index.ts'
+import { removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
@@ -33,9 +33,10 @@ import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
 import { TypeCheckPlugin } from './plugins/type-check.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
+import { CompileHintsPlugin } from './plugins/compile-hints.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
-import { DevServerPlugin } from './plugins/dev-server.ts'
+import { DevListenerPlugin, DevServerPlugin } from './plugins/dev-server.ts'
 import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { EnvironmentsPlugin } from './plugins/environments.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
@@ -59,7 +60,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
   }
 
-  let allowDirs = [
+  const allowDirs = removeNestedDirs([
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
     ...nuxt.options.modulesDir,
@@ -72,13 +73,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       dirname(nuxt.apps.default!.rootComponent!),
       dirname(nuxt.apps.default!.errorComponent!),
     ]),
-  ].filter(d => d && existsSync(d))
-
-  allowDirs = allowDirs.filter(d =>
-    !allowDirs.some(other => other !== d && d.startsWith(other + '/')),
-  )
+  ]).filter(d => existsSync(d))
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
+
+  let fsDeny: string[] | undefined
+  if (nuxt.options.dev) {
+    // a configured `server.fs.deny` replaces Vite's defaults
+    const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envFile: false, logLevel: 'silent' }, 'serve')).server.fs.deny
+    fsDeny = [...defaultDeny, '**/app-secret']
+  }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
 
@@ -214,7 +218,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ClientManifestPlugin(nuxt),
         // After ClientManifestPlugin so its dev `clientManifest` override wins.
         ViteNodePlugin(nuxt),
-        ServerEntryPlugin(nuxt, entry),
+        ServerEntryPlugin(nuxt, serverEntry),
+        DevListenerPlugin(nuxt),
         DevServerPlugin(nuxt),
         TemplateHMRPlugin(nuxt),
         // lower decorators after Vue SFC compilation and TypeScript stripping
@@ -243,15 +248,18 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ModulePreloadPolyfillPlugin(),
         // ensure changes in chunks do not invalidate whole build
         StableEntryPlugin(nuxt),
+        CompileHintsPlugin(nuxt),
         AnalyzePlugin(nuxt),
         OptimizeDepsHintPlugin(nuxt),
       ],
       appType: 'custom',
       server: {
         middlewareMode: true,
+        allowedHosts: nuxt.options.devServer.allowedHosts,
         watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
         fs: {
-          allow: [...new Set(allowDirs)],
+          allow: allowDirs,
+          deny: fsDeny,
         },
       },
     } satisfies ViteConfig,
@@ -263,6 +271,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       },
     },
   )
+
+  if (Array.isArray(config.server?.allowedHosts)) {
+    config.server.allowedHosts = [...new Set(config.server.allowedHosts)]
+  }
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)

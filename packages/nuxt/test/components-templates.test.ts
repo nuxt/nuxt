@@ -40,7 +40,7 @@ async function renderTemplates (components: Component[]) {
 
 describe('component type templates', () => {
   it('emits JSDoc from component meta for declaration and GlobalComponents entries', async () => {
-    const docsUrl = 'https://nuxt.com/docs/4.x/api/components/nuxt-layout'
+    const docsUrl = 'https://nuxt.com/docs/5.x/api/components/nuxt-layout'
     const { declaration, types } = await renderTemplates([
       makeComponent({
         pascalName: 'NuxtLayout',
@@ -148,7 +148,7 @@ describe('builtin component metadata', () => {
       expect(meta.description?.trim().length).toBeGreaterThan(0)
       expect(meta.description).toMatch(/[.!?]$/)
       expect(meta.description).not.toMatch(/^Nuxt provides\b/)
-      expect(meta.docsUrl).toMatch(/^https:\/\/nuxt\.com\/docs\/4\.x\/api\/components\//)
+      expect(meta.docsUrl).toMatch(/^https:\/\/nuxt\.com\/docs\/5\.x\/api\/components\//)
     }
   })
 
@@ -156,7 +156,7 @@ describe('builtin component metadata', () => {
     const meta: ComponentMeta = getBuiltinComponentMeta('NuxtLayout')
     expect(meta).toEqual({
       description: 'Renders the selected layout around pages or error content.',
-      docsUrl: 'https://nuxt.com/docs/4.x/api/components/nuxt-layout',
+      docsUrl: 'https://nuxt.com/docs/5.x/api/components/nuxt-layout',
     })
   })
 })

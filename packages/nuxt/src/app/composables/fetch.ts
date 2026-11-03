@@ -590,7 +590,7 @@ export function _createUseFetch<
   {
     /**
      * Fetch data from an API endpoint with an SSR-friendly composable.
-     * See {@link https://nuxt.com/docs/4.x/api/composables/use-fetch}
+     * See {@link https://nuxt.com/docs/5.x/api/composables/use-fetch}
      * @since 3.0.0
      * @param request The URL to fetch
      * @param opts extends $fetch options and useAsyncData options

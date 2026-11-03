@@ -1,7 +1,7 @@
 import { NUXT_PAGE_MATCHER } from 'nuxt/internal/renderer-config'
 import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
+import { withoutTrailingSlashes } from './url'
 
-const TRAILING_SLASHES_RE = /\/+$/
 const PAYLOAD_SUFFIX = '/_payload.json'
 
 /**
@@ -17,7 +17,7 @@ function matchesPageRoute (pathname: string): boolean {
     path = path.slice(0, -PAYLOAD_SUFFIX.length) || '/'
   }
   if (path.length > 1) {
-    path = path.replace(TRAILING_SLASHES_RE, '') || '/'
+    path = withoutTrailingSlashes(path) || '/'
   }
   if (path.includes('%')) {
     try {
@@ -26,7 +26,7 @@ function matchesPageRoute (pathname: string): boolean {
       // matched in encoded form
     }
   }
-  return !!NUXT_PAGE_MATCHER?.('', path.toLowerCase())
+  return !!NUXT_PAGE_MATCHER?.('', path)
 }
 
 /**

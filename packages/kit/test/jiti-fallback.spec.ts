@@ -187,6 +187,28 @@ describe('jiti fallback', { concurrent: false }, () => {
     expect(result.logs).toContain('__dirname is not defined')
   }, 60_000)
 
+  it.each([
+    ['extensionless-import.ts', 'import `nested.ts` rather than `nested`'],
+    ['json-import.ts', 'with { type: \'json\' }'],
+    ['alias-import.ts', 'Use a relative import'],
+  ])('should tell the user how to load %s natively', async (file, hint) => {
+    const result = await loadModule(file, { alias: { '#shared/': dir + '/' } })
+    expect(result.logs).toContain('NUXT_B8023')
+    expect(result.logs).toContain(hint)
+    expect(result.logs).toMatch(/add -D jiti|install -D jiti|i -D jiti/)
+  }, 60_000)
+
+  it('should only point at the module author for an installed module', async () => {
+    await mkdir(join(dir, 'node_modules/ts-module'), { recursive: true })
+    await writeFile(join(dir, 'node_modules/ts-module/package.json'), JSON.stringify({ name: 'ts-module', type: 'module' }))
+    await writeFile(join(dir, 'node_modules/ts-module/index.ts'), 'const value: number = 1\nexport default () => value\n')
+    const installed = await loadModule('node_modules/ts-module/index.ts')
+    expect(installed.logs).toContain('Report it to the module author')
+
+    const local = await loadModule('extensionless-import.ts')
+    expect(local.logs).not.toContain('module author')
+  }, 60_000)
+
   it('should not warn when a module loads natively', async () => {
     const result = await loadModule('nested.ts')
     expect(result.logs).not.toContain('NUXT_B8023')
@@ -282,6 +304,7 @@ describe('jiti fallback', { concurrent: false }, () => {
     const result = await loadConfig(cwd)
     expect(result).toMatchObject({ ok: true, value: 'ok' })
     expect(result.logs).toContain('NUXT_B5023')
+    expect(result.logs).toContain('import.meta.dirname')
   }, 60_000)
 
   it('should not warn a Nuxt 5 project that installed jiti itself', async () => {

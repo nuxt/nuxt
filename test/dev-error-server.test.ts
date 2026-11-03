@@ -108,7 +108,7 @@ describe.skipIf(!runs)('dev ssr errors thrown from a page', () => {
     const { report } = await renderErrorPage('/diagnostic')
 
     expect(report.hint).toContain('Move this call inside')
-    expect(report.docsUrl).toBe('https://nuxt.com/docs/4.x/errors/e1001')
+    expect(report.docsUrl).toBe('https://nuxt.com/docs/5.x/errors/e1001')
   })
 
   it('carries the component trace and the route of the page that threw', async () => {

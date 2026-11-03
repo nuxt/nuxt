@@ -36,8 +36,8 @@ export const v2ImportsPreset = [
     ],
   },
   {
-    from: 'nitro/storage',
-    imports: ['useStorage'],
+    from: 'nitro/kv',
+    imports: ['useKV', { name: 'useKV', as: 'useStorage' }],
   },
   {
     from: 'nitro/task',

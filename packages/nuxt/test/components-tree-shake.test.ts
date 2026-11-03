@@ -8,6 +8,7 @@ import { createLogger } from 'vite'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake.ts'
+import { createComponentResolver } from '../src/components/compiler-resolver.ts'
 import { componentsFixtureDir, normalizeLineEndings } from './utils.ts'
 
 // mock due to differences of results between windows and linux
@@ -234,5 +235,46 @@ describe('treeshake client only in ssr', () => {
     }`)
 
     expect(treeshaken).toContain('$setup["Reused"], null, null, _parent))')
+  })
+})
+
+describe('treeshake client only in ssr with compiler component resolution', () => {
+  const components = [
+    ...['NotDotClientComponent', 'DotClientComponent'].map(pascalName => ({ pascalName, kebabName: pascalName, export: 'default', filePath: `/components/${pascalName}.client.vue`, shortPath: '', chunkName: '', prefetch: false, preload: false, mode: 'client' as const })),
+    { pascalName: 'ClientOnly', kebabName: 'client-only', export: 'default', filePath: '/nuxt/client-only.js', shortPath: '', chunkName: '', prefetch: false, preload: false },
+  ]
+  const resolver = createComponentResolver({ getComponents: () => components, rootDir: '/', serverPlaceholderPath: '/nuxt/server-placeholder.js' })
+  const plugin = TreeShakeTemplatePlugin({
+    getComponents: () => components,
+    getPrunedBindings: file => resolver.prunedBindings.get(file),
+  }).raw({}, { framework: 'rollup', versions: {} }) as Plugin
+
+  it.each(stateToTest)('should remove script setup bindings used only in client-only subtrees in $name', async (state) => {
+    const name = `CompilerResolved${state.index}.vue`
+    const ssrResult = await SFCCompile(name, WithClientOnly, { ...state.options, template: { compilerOptions: { nodeTransforms: [resolver.nodeTransform] } } }, true)
+    const result = await ((plugin.transform as any).handler as (code: string, id: string) => Promise<{ code: string } | undefined>)(ssrResult, name)
+    const treeshaken = result?.code ?? ssrResult
+
+    expect(treeshaken).not.toContain('should-be-treeshaken')
+    expect(treeshaken).not.toContain('import HelloWorld from \'../HelloWorld.vue\'')
+    expect(treeshaken).not.toContain('import { Treeshaken } from \'somepath\'')
+    expect(treeshaken).not.toContain('ClientImport')
+    expect(treeshaken).toContain('import {  Glob } from \'#components\'')
+    expect(treeshaken).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
+    expect(treeshaken).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
+    expect(treeshaken).not.toContain('const { ObjectPattern } = await import(\'nuxt.com\')')
+    expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
+    expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
+    expect(treeshaken).toContain('import DontRemoveThisSinceItIsUsedInSetup from \'./ComponentWithProps.vue\'')
+    expect(treeshaken).not.toContain('ByeBye')
+    expect(treeshaken).toContain('NotDotClientComponent')
+    expect(treeshaken).not.toContain('Both')
+    expect(treeshaken).not.toContain('AreTreeshaken')
+    expect(treeshaken).not.toContain('AutoImportedComponent')
+    expect(treeshaken).toContain('AutoImportedNotTreeShakenComponent')
+  })
+
+  it('should leave files without pruned bindings untouched', async () => {
+    expect(await ((plugin.transform as any).handler as (code: string, id: string) => unknown)('import Foo from "./Foo.vue"', 'Untouched.vue')).toBeUndefined()
   })
 })

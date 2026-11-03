@@ -52,6 +52,50 @@ describe('renderer without a server builder', () => {
     expect(html).toContain('"serverRendered":')
   })
 
+  it('sends the document as chunks when the runtime can encode them', async () => {
+    const { html: joined } = await render('/')
+
+    let chunks: string[] | undefined
+    const { html } = await render('/', {
+      createDocumentResponse: (received, init) => {
+        chunks = received
+        return new Response(received.join(''), init)
+      },
+    })
+
+    expect(chunks!.length).toBeGreaterThan(2)
+    expect(chunks!.some(chunk => chunk.includes('<h1>rendered without nitro</h1>'))).toBe(true)
+    expect(html).toBe(joined)
+  })
+
+  it('falls back to a single string once a listener replaces the app markup', async () => {
+    let chunks: string[] | undefined
+    const { html } = await render('/', {
+      hooks: () => ({
+        callHook: ((name: string, context: { body: string[] }) => {
+          if (name === 'render:html') {
+            context.body[0] = context.body[0]!.replace('rendered without nitro', 'rendered and replaced')
+          }
+        }) as never,
+      }),
+      createDocumentResponse: (received, init) => {
+        chunks = received
+        return new Response(received.join(''), init)
+      },
+    })
+
+    expect(chunks).toBeUndefined()
+    expect(html).toContain('<h1>rendered and replaced</h1>')
+  })
+
+  it('sends the app markup an `app:rendered` listener rewrote', async () => {
+    const { html } = await render('/rewritten', {
+      createDocumentResponse: (received, init) => new Response(received.join(''), init),
+    })
+
+    expect(html).toContain('<h1>rewritten after render</h1>')
+  })
+
   it('resolves asset URLs through the helpers it was given', async () => {
     const { html } = await render('/')
 

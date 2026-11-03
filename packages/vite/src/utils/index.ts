@@ -13,6 +13,26 @@ export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
 
+/**
+ * De-duplicate `dirs` and drop any dir nested inside another entry, keeping the first-seen order.
+ */
+export function removeNestedDirs (dirs: string[]): string[] {
+  const unique = new Set<string>()
+  for (const dir of dirs) {
+    if (dir) {
+      unique.add(dir)
+    }
+  }
+  return [...unique].filter((dir) => {
+    for (let i = dir.indexOf('/'); i !== -1; i = dir.indexOf('/', i + 1)) {
+      if (unique.has(dir.slice(0, i))) {
+        return false
+      }
+    }
+    return true
+  })
+}
+
 // eslint-disable-next-line no-control-regex -- control characters are exactly what is being stripped
 const INVALID_FILENAME_CHAR_RE = /[\u0000-\u001F"#$&*+,/:;<=>?@[\]^`{|}\u007F]+/g
 const URI_ESCAPE_RE = /%../g

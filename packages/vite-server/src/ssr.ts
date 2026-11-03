@@ -58,7 +58,6 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handl
   nuxt.options.vite.plugins.push(
     AppServerEnvironmentsPlugin(nuxt),
     ServerEnvironmentPlugin(nuxt, serverRuntime, entry, serverDir, prerender),
-    BundledVuePlugin(nuxt),
     ServerRuntimeModulesPlugin(serverRuntime),
     StaticAssetsURLPlugin(nuxt),
   )
@@ -245,36 +244,6 @@ function StaticAssetsURLPlugin (nuxt: Nuxt): Plugin {
             ? joinRelativeURL(cdnURL || baseURL, buildAssetsDir, path)
             : joinRelativeURL(cdnURL || baseURL, path)
         }
-      },
-    },
-  }
-}
-
-/**
- * Resolves Vue to its bundler builds for the server bundle.
- *
- * Bundling every dependency means resolving Vue ourselves: its `node` export condition is
- * the CommonJS full build, which carries the template compiler the SSR app never calls
- * (~700kB of it, between `vue` and `vue/server-renderer`) and cannot be tree-shaken
- * through cjs interop. The bundler builds are the same runtime without the compiler.
- */
-function BundledVuePlugin (nuxt: Nuxt): Plugin {
-  const BUNDLER_BUILDS: Record<string, string> = {
-    'vue': 'vue/dist/vue.runtime.esm-bundler.js',
-    'vue/server-renderer': '@vue/server-renderer/dist/server-renderer.esm-bundler.js',
-  }
-
-  return {
-    name: 'nuxt:vite-server:bundled-vue',
-    // dev resolves Vue through node, and inlining it into the module graph breaks that
-    apply: 'build',
-    applyToEnvironment: environment => environment.config.consumer === 'server',
-    resolveId: {
-      order: 'pre',
-      filter: { id: /^vue(?:\/server-renderer)?$/ },
-      handler (id, importer) {
-        if (nuxt.options.vue.runtimeCompiler) { return }
-        return this.resolve(BUNDLER_BUILDS[id]!, importer, { skipSelf: true })
       },
     },
   }

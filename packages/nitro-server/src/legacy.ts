@@ -13,7 +13,7 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
 
   // Copy public assets after prerender so app manifest can be present
   if (!nuxt.options.dev) {
-    nitro.hooks.hook('rollup:before', async (nitro) => {
+    nitro.hooks.hook('build:config', async (nitro) => {
       await copyPublicAssets(nitro)
       await nuxt.callHook('nitro:build:public-assets', nitro)
     })
@@ -29,7 +29,7 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
         }
       })
       nuxt.hook(`${builder}:compiled`, () => {
-        if (nitroBuilt) { nitro.hooks.callHook('rollup:reload') }
+        if (nitroBuilt) { nitro.hooks.callHook('build:reload') }
       })
     }
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })

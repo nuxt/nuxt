@@ -35,6 +35,35 @@ describe('markPagesCoveredByRouteRule', () => {
     expect(isCovered(nitro, [{ path: '/:slug()', file: 'slug.vue' }]).get('/:slug()')).toBe(false)
   })
 
+  it('should not report coverage for an unconstrained page from a constrained route rule', () => {
+    const nitro = createNitro({
+      '/foo/:x([a-z_]+)': { ssr: false },
+    })
+    expect(isCovered(nitro, [{ path: '/foo/:x()', file: 'x.vue' }]).get('/foo/:x()')).toBe(false)
+  })
+
+  it('should report coverage for an unconstrained page from an unconstrained route rule', () => {
+    const nitro = createNitro({
+      '/foo/:x': { ssr: false },
+    })
+    expect(isCovered(nitro, [{ path: '/foo/:x()', file: 'x.vue' }]).get('/foo/:x()')).toBe(true)
+  })
+
+  it('should not report coverage when a constrained route rule carves out part of the region', () => {
+    const nitro = createNitro({
+      '/foo/**': { ssr: false },
+      '/foo/:x([0-9]+)': { ssr: true },
+    })
+    expect(isCovered(nitro, [{ path: '/foo/:x()', file: 'x.vue' }]).get('/foo/:x()')).toBe(false)
+  })
+
+  it('should not report coverage for a constrained page from a constrained route rule', () => {
+    const nitro = createNitro({
+      '/foo/:x([a-z_]+)': { ssr: false },
+    })
+    expect(isCovered(nitro, [{ path: '/foo/:x([a-z_]+)', file: 'x.vue' }]).get('/foo/:x([a-z_]+)')).toBe(false)
+  })
+
   it('should treat an escaped colon as a literal segment rather than a param', () => {
     const nitro = createNitro({
       '/test\\:name': { ssr: false },

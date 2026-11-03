@@ -3,6 +3,7 @@ import { beforeAll, describe, test } from 'vitest'
 import { join } from 'pathe'
 import { loadNuxt } from 'nuxt'
 import { findWorkspaceDir } from 'pkg-types'
+import { largeAppDir } from '../../../test/bench/large-app.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -52,6 +53,20 @@ describe('loadNuxt', () => {
         overrides: {
           dev: true,
           buildDir: join(basicTestFixtureDir, 'node_modules/load-nuxt-dev/.nuxt'),
+        },
+      })
+      await nuxt.close()
+    }).run()
+  })
+
+  test('loadNuxt in a large generated app (dev)', async ({ bench }) => {
+    await bench('loadNuxt in a large generated app (dev)', async () => {
+      const nuxt = await loadNuxt({
+        cwd: largeAppDir,
+        ready: true,
+        overrides: {
+          dev: true,
+          buildDir: join(largeAppDir, 'node_modules/load-nuxt-dev/.nuxt'),
         },
       })
       await nuxt.close()

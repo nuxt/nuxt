@@ -23,7 +23,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
     expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"110k"`)
-    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"41.0k"`)
+    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"40.9k"`)
 
     const entry = await fsp.readFile(join(rootDir, '.output/public', clientStats!.files.find(f => f.startsWith('_nuxt/entry'))!), 'utf8')
     expect(entry).not.toContain('[ofetch] global.fetch is not supported')
@@ -40,7 +40,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('does not ship payload revival machinery in a spa build', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(spaRootDir, '.output/public'), spaRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"105k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"104k"`)
 
     const contents = await Promise.all(
       (await glob(['**/*.js'], { cwd: join(spaRootDir, '.output/public') }))
@@ -52,10 +52,21 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(bundle).not.toContain('EmptyShallowRef')
   })
 
+  it('does not ship the app in the server bundle of a spa build', async () => {
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(spaRootDir, '.output/server') }))
+        .map(file => fsp.readFile(join(spaRootDir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    const client = await readClientBundle(join(spaRootDir, '.output/public'))
+
+    expect(server).not.toContain('Hello World!')
+    expect(client).toContain('Hello World!')
+  })
+
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"188k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"185k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -76,21 +87,20 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"281k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"212k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
-        "_vue/server-renderer+[...]",
         "devalue",
         "h3+rou3+srvx",
         "hookable",
-        "scule",
         "ufo",
         "vue",
         "vue__reactivity+vue__shared",
         "vue__runtime-core",
         "vue__runtime-dom",
+        "vue__server-renderer",
       ]
     `)
   })
@@ -99,22 +109,22 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"339k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"281k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
-        "_vue/server-renderer+[...]",
+        "defu",
         "devalue",
         "h3+rou3+srvx",
         "hookable",
-        "scule",
         "ufo",
         "vue",
         "vue-router",
         "vue__reactivity+vue__shared",
         "vue__runtime-core",
         "vue__runtime-dom",
+        "vue__server-renderer",
       ]
     `)
   })

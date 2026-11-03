@@ -41,5 +41,8 @@ export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../cons
 
 export { createServerBuild, setServerBuild, useServerBuild } from './server-build.ts'
 
+export { addClientBuildState, restoreClientBuildState, saveClientBuildState } from './client-build-state.ts'
+export type { ClientBuildState } from './client-build-state.ts'
+
 export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
 export type { NuxtServerRuntime, NuxtServerRuntimeModule, RendererConfigName, ServerRuntimeOptions } from './renderer.ts'

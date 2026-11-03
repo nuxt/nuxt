@@ -50,6 +50,8 @@ export const NUXT_RUNTIME_PAYLOAD_EXTRACTION: boolean = false
 export const NUXT_SSR_STREAMING: boolean = false
 /** User agents that are served a buffered response even when streaming is enabled. */
 export const NUXT_SSR_STREAMING_BOT_RE: RegExp = /^$/
+/** Whether prefetch hints are rendered inert and activated by the client once the app is ready. */
+export const NUXT_DEFER_PREFETCH_HINTS: boolean = true
 
 /** Head entries configured in `app.head`. */
 export const appHead: SerializableHead = {}

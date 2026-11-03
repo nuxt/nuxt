@@ -22,7 +22,7 @@ type BuiltinComponentMeta = Required<Pick<ComponentMeta, 'description' | 'docsUr
 function defineBuiltinMeta (slug: string, description: string): BuiltinComponentMeta {
   return {
     description,
-    docsUrl: `https://nuxt.com/docs/4.x/api/components/${slug}`,
+    docsUrl: `https://nuxt.com/docs/5.x/api/components/${slug}`,
   }
 }
 

@@ -200,9 +200,9 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         }
       } finally {
         if (navigationId === navigationCounter) {
-          delete nuxtApp._processingMiddleware
+          delete nuxtApp._middlewareTo
           if (import.meta.server) {
-            delete nuxtApp._middlewareTo
+            delete nuxtApp._processingMiddleware
           }
         }
       }
@@ -290,16 +290,15 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
     const initialLayout = nuxtApp.payload.state._layout
     const initialLayoutProps = nuxtApp.payload.state._layoutProps
     nuxtApp.hooks.hookOnce('app:created', async () => {
-      router.beforeEach(async (to, from) => {
+      let runningMiddleware = 0
+      async function runMiddleware (to: Route, from: Route): Promise<RouteGuardReturn> {
         to.meta = reactive(to.meta || {})
         if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
           to.meta.layout = initialLayout
           to.meta.layoutProps = initialLayoutProps
         }
         nuxtApp._processingMiddleware = true
-        if (import.meta.server) {
-          nuxtApp._middlewareTo = to
-        }
+        nuxtApp._middlewareTo = to
 
         if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
@@ -350,14 +349,28 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
             if (result || result === false) { return result }
           }
         }
-      })
+      }
 
-      router.afterEach(() => {
-        delete nuxtApp._processingMiddleware
+      router.beforeEach(async (to, from) => {
         if (import.meta.server) {
-          delete nuxtApp._middlewareTo
+          return runMiddleware(to, from)
+        }
+        runningMiddleware++
+        try {
+          return await runMiddleware(to, from)
+        } finally {
+          if (--runningMiddleware === 0) {
+            delete nuxtApp._processingMiddleware
+          }
         }
       })
+
+      if (import.meta.server) {
+        router.afterEach(() => {
+          delete nuxtApp._processingMiddleware
+          delete nuxtApp._middlewareTo
+        })
+      }
 
       await router.replace(initialURL)
       if (!isEqual(route.fullPath, initialURL)) {

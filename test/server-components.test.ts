@@ -695,7 +695,7 @@ describe('denial-of-service protections', () => {
       let received = ''
       socket.on('data', (chunk) => {
         received += chunk.toString()
-        const statuses = [...received.matchAll(/^HTTP\/1\.1 (\d{3})/gm)].map(m => m[1]!)
+        const statuses = [...received.matchAll(/HTTP\/1\.1 (\d{3}) /g)].map(m => m[1]!)
         if (statuses.length === 2) {
           socket.end()
           resolve(statuses)
@@ -842,6 +842,16 @@ describe('page-island middleware', () => {
     expect(body).not.toContain('SUPER-SECRET-PAGE-ISLAND-BODY')
     // this asserts the island handler fires `app:rendered` even when middleware short-circuits response
     expect(res.headers.get('set-cookie')).toContain('island-auth-marker=set-from-island-middleware')
+  })
+
+  it('honours `redirect` route rules for `page_*` islands', async () => {
+    const res = await fetch(islandURL('page_redirected-server-page', {
+      context: { url: '/redirected-server-page' },
+    }), { redirect: 'manual' })
+    expect(res.status).toBe(302)
+    expect(res.headers.get('location')).toBe('/server-page')
+    const body = await res.text()
+    expect(body).not.toContain('REDIRECTED-PAGE-ISLAND-BODY')
   })
 
   it('still renders unguarded `page_*` islands', async () => {
