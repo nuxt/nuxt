@@ -1,7 +1,7 @@
 import { isAbsolute, join } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { readPackageJSON } from 'pkg-types'
-import { getLayerDirectories } from '@nuxt/kit'
+import { getLayerDirectories, resolveIgnorePatterns, runWithNuxtContext } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 
 const NODE_MODULES = '/node_modules/'
@@ -18,7 +18,7 @@ const NODE_MODULES = '/node_modules/'
  */
 export function appScanEntries (nuxt: Nuxt): string[] {
   const entries = new Set<string>()
-  const ignore = nuxt.options.ignore.filter(pattern => !pattern.startsWith('!'))
+  const ignore = runWithNuxtContext(nuxt, () => resolveIgnorePatterns()).filter(pattern => pattern && pattern[0] !== '!' && pattern[0] !== '#')
 
   for (const dirs of getLayerDirectories(nuxt)) {
     entries.add(join(dirs.app, '**/*.{vue,js,jsx,mjs,ts,tsx,mts}'))
@@ -34,8 +34,8 @@ export function appScanEntries (nuxt: Nuxt): string[] {
     for (const dir of [dirs.server, dirs.modules, dirs.public]) {
       entries.add('!' + join(dir, '**'))
     }
-    // config files such as `nuxt.config.ts` or `vitest.config.ts`
-    entries.add('!' + join(dirs.root, '*.{js,jsx,mjs,ts,tsx,mts}'))
+    // config files such as `nuxt.config.ts` or `vitest.config.ts`, but not the app config of a layer without `app/`
+    entries.add('!' + join(dirs.root, '!(app.config).{js,jsx,mjs,ts,tsx,mts}'))
   }
 
   for (const app of Object.values(nuxt.apps)) {

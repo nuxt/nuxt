@@ -77,15 +77,18 @@ await writeFile(join(localLayerSrcDir, 'plugins/local.mjs'), 'import x from \'lo
 await mkdir(join(localLayerSrcDir, 'components'), { recursive: true })
 await writeFile(join(localLayerSrcDir, 'components/local.spec.ts'), 'import x from \'test-only-dep\'\nexport default x\n')
 await writeFile(join(srcDir, 'root.spec.ts'), 'import x from \'root-test-only-dep\'\nexport default x\n')
+await mkdir(join(srcDir, 'drafts'), { recursive: true })
+await writeFile(join(srcDir, 'drafts/page.mjs'), 'import x from \'nuxtignore-only-dep\'\nexport default x\n')
+await writeFile(join(rootDir, '.nuxtignore'), '# drafts\napp/drafts/**\n')
 // a layer without an `app/` directory
-for (const [file, dep] of [['components/flat.mjs', 'flat-dep'], ['server/api/data.mjs', 'server-only-dep'], ['modules/local.mjs', 'module-only-dep'], ['vitest.config.mjs', 'config-only-dep'], ['node_modules/flat-pkg/index.mjs', 'flat-pkg-dep']] as const) {
+for (const [file, dep] of [['components/flat.mjs', 'flat-dep'], ['server/api/data.mjs', 'server-only-dep'], ['modules/local.mjs', 'module-only-dep'], ['vitest.config.mjs', 'config-only-dep'], ['app.config.mjs', 'app-config-dep'], ['node_modules/flat-pkg/index.mjs', 'flat-pkg-dep']] as const) {
   await mkdir(join(flatLayerRoot, file, '..'), { recursive: true })
   await writeFile(join(flatLayerRoot, file), `import x from '${dep}'\nexport default x\n`)
 }
 await mkdir(join(staleLayerSrcDir, 'plugins'), { recursive: true })
 await writeFile(join(staleLayerSrcDir, 'plugins/unused.mjs'), 'import x from \'not-installed-dep\'\nexport default x\n')
 await writeFile(join(staleLayerSrcDir, 'plugins/used.mjs'), 'import x from \'stale-layer-dep\'\nexport default x\n')
-for (const dep of ['test-only-dep', 'root-test-only-dep', 'flat-pkg-dep', 'flat-dep', 'server-only-dep', 'module-only-dep', 'config-only-dep', 'stale-layer-dep', 'local-layer-dep', 'plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep', 'imports-module-dep', 'internal-dep', 'own-components-dep', 'local-components-dep']) {
+for (const dep of ['test-only-dep', 'root-test-only-dep', 'nuxtignore-only-dep', 'app-config-dep', 'flat-pkg-dep', 'flat-dep', 'server-only-dep', 'module-only-dep', 'config-only-dep', 'stale-layer-dep', 'local-layer-dep', 'plugin-dep', 'component-dep', 'middleware-dep', 'layout-dep', 'imports-module-dep', 'internal-dep', 'own-components-dep', 'local-components-dep']) {
   await writePackage(join(rootDir, 'node_modules', dep), dep, 'export default 1\n')
 }
 
@@ -154,6 +157,7 @@ describe('appScanEntries', () => {
     expect(deps).toContain('local-layer-dep')
     expect(deps).not.toContain('test-only-dep')
     expect(deps).not.toContain('root-test-only-dep')
+    expect(deps).not.toContain('nuxtignore-only-dep')
   })
 
   it('should only scan app code of a layer without an `app/` directory', async () => {
@@ -162,6 +166,7 @@ describe('appScanEntries', () => {
     const deps = await optimizedDeps({ plugins: [OptimizeDepsPlugin(nuxt)] })
 
     expect(deps).toContain('flat-dep')
+    expect(deps).toContain('app-config-dep')
     expect(deps).not.toContain('server-only-dep')
     expect(deps).not.toContain('module-only-dep')
     expect(deps).not.toContain('config-only-dep')
@@ -193,7 +198,7 @@ describe('appScanEntries', () => {
   it('should scan app files that modules register from within node_modules', async () => {
     const nuxt = createNuxt([], { default: registered })
 
-    const entries = appScanEntries(nuxt).filter(e => !e.includes('*'))
+    const entries = appScanEntries(nuxt).filter(e => !e.includes('*') && !e.startsWith('!'))
 
     expect(entries.toSorted()).toEqual([
       registered.components[0]!.filePath,
@@ -217,7 +222,7 @@ describe('appScanEntries', () => {
     })
 
     // they are covered by the glob of the app directory
-    expect(appScanEntries(nuxt).filter(e => !e.includes('*'))).toEqual([])
+    expect(appScanEntries(nuxt).filter(e => !e.includes('*') && !e.startsWith('!'))).toEqual([])
   })
 
   it('should not scan dependencies nested within the layer', async () => {
