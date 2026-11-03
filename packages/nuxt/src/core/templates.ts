@@ -728,6 +728,9 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const pluginsRunInParallel = annotatedPlugins ? hasParallelPlugins(annotatedPlugins) : true
     const pluginsHaveHooks = annotatedPlugins ? hasPluginHooks(annotatedPlugins) : true
     const pluginsHaveIslandOptOut = annotatedPlugins ? hasIslandOptOutPlugins(annotatedPlugins) : true
+    const appHasLayouts = ctx.nuxt.options.dev || ctx.nuxt.options.test
+      ? true
+      : Object.keys(ctx.app.layouts).length > 0
     const fetchDefaults = {
       ...ctx.nuxt.options.experimental.defaults.useFetch,
       baseURL: undefined,
@@ -762,6 +765,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
+      `export const preloadInitialLayout = ${!!ctx.nuxt.options.experimental.preloadInitialLayout}`,
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
@@ -783,6 +787,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const hasParallelPlugins = ${pluginsRunInParallel}`,
       `export const hasPluginHooks = ${pluginsHaveHooks}`,
       `export const hasIslandOptOutPlugins = ${pluginsHaveIslandOptOut}`,
+      `export const hasLayouts = ${appHasLayouts}`,
     ].join('\n\n')
   },
 }

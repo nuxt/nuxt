@@ -1297,6 +1297,17 @@ export interface ConfigSchema {
     deferPrefetchHints: boolean
 
     /**
+     * Preload the initial layout during client-side router initialization
+     * when the initial page is not server-rendered.
+     *
+     * This can reduce request waterfalls by starting the layout chunk request
+     * before `<NuxtLayout>` resolves the async layout component.
+     *
+     * @default false
+     */
+    preloadInitialLayout: boolean
+
+    /**
      * Enable View Transition API integration with client-side router.
      *
      * @default false
