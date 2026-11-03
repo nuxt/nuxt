@@ -35,6 +35,7 @@
         "test/renderer/*.ts",
         "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
+        "test/nuxt/preload-initial-layout/fixture/**/*.vue",
         "test/mocks/app-config.ts",
         "test/mocks/paths.ts"
       ]
