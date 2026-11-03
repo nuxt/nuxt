@@ -1,6 +1,11 @@
 import { Buffer } from 'node:buffer'
+import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import process from 'node:process'
 import vm from 'node:vm'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
 import runner, { buildViteError, getCode, getCompiledPosition, prepareStackTrace } from '../src/vite-node-runner.ts'
 import { serializeViteNodeError } from '../src/plugins/vite-node.ts'
 
@@ -132,6 +137,48 @@ describe('vite-node runner stacks', () => {
     } as unknown as NodeJS.CallSite
 
     expect(prepareStackTrace(new Error('boom'), [callSite])).toBe(`Error: boom\n    at useBoom (${driveFile}:2:9)`)
+  })
+
+  describe('in a module node loaded itself', () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'nuxt-vite-node-runner-')))
+    const sourceMapsEnabled = process.sourceMapsEnabled
+    afterAll(() => {
+      process.setSourceMapsEnabled(sourceMapsEnabled)
+      rmSync(dir, { recursive: true, force: true })
+    })
+
+    // bundled output of `export function useBoom () {\n  throw new Error('boom')\n}`, a line
+    // down, as a bundle loaded with `import()` rather than through the runner would be
+    const load = (name: string, enabled: boolean) => {
+      const map = {
+        version: 3,
+        sources: ['useBoom.ts'],
+        sourcesContent: ['export function useBoom () {\n  throw new Error("boom")\n}\n'],
+        mappings: ';AAAO,gBAAS,UAAW;AACzB,QAAM,IAAI,MAAM,MAAM;AACxB;',
+        names: [],
+      }
+      const file = join(dir, `${name}.cjs`)
+      writeFileSync(file, 'var import_x;\nfunction useBoom() {\n  throw new Error("boom");\n}\nmodule.exports = useBoom;\n'
+        + `//# sourceMappingURL=data:application/json;base64,${Buffer.from(JSON.stringify(map)).toString('base64')}\n`)
+      process.setSourceMapsEnabled(enabled)
+      const useBoom = createRequire(import.meta.url)(file) as () => void
+      try {
+        useBoom()
+      } catch (error) {
+        return { file, stack: (error as Error).stack! }
+      }
+      throw new Error('did not throw')
+    }
+
+    it('maps its frames as node would with source maps enabled', () => {
+      const { stack } = load('mapped', true)
+      expect(stack).toContain(`    at useBoom (${join(dir, 'useBoom.ts')}:2:9)`)
+    })
+
+    it('leaves its frames alone when node loaded it without source maps', () => {
+      const { file, stack } = load('unmapped', false)
+      expect(stack).toContain(`    at useBoom (${file}:3:9)`)
+    })
   })
 
   it('leaves a frame alone when its reported position is not in the text', () => {
