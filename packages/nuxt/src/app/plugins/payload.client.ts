@@ -45,7 +45,7 @@ function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): S
   for (const link of prefetchLinks) {
     if (selected.length >= MAX_HINTS_PER_ROUTE) { break }
     if (typeof link.href !== 'string') { continue }
-    const href = new URL(link.href, window.location.href).href
+    const href = new URL(link.href, document.baseURI).href
     if (existingHrefs.has(href) || forwardedHintHrefs.has(href)) { continue }
     forwardedHintHrefs.add(href)
     if (link.as === 'image') {
@@ -131,7 +131,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     nuxtApp.hooks.hook('link:prefetch', (url) => {
       onNuxtReady(() => {
-        const { hostname } = new URL(url, window.location.href)
+        const { hostname } = new URL(url, document.baseURI)
         if (hostname !== window.location.hostname) { return }
         const group = prefetchGroup(url)
         schedule({
