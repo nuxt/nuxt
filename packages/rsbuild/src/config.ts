@@ -75,7 +75,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
         [basename(nuxt.options.dir.assets)]: resolve(nuxt.options.srcDir, nuxt.options.dir.assets),
         ...nuxt.options.alias,
       },
-      // Nuxt aliases are the source of truth, so `tsconfig.json` paths are not used for resolution
+      // Nuxt aliases take precedence over the `paths` of `tsconfig.json`
       aliasStrategy: 'prefer-alias',
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
     },
@@ -86,12 +86,14 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
     tools: {
       // the HTML document is rendered by Nitro
       htmlPlugin: false,
-      cssLoader: {
+      cssLoader: (options) => {
         // root-relative URLs point at files served from the public directory
-        url: { filter: (url: string) => url[0] !== '/' },
-        // resolve `url()` requests with the aliases of the project (such as `~/assets`), as css-loader
-        // only uses the resolver when emitting CommonJS
-        esModule: false,
+        options.url = { filter: (url: string) => url[0] !== '/' }
+        // css-loader only resolves `~`-prefixed `url()` requests (such as `~/assets`) with the aliases of
+        // the project when emitting CommonJS, which the named exports of CSS modules are not compatible with
+        if (!(typeof options.modules === 'object' && options.modules.namedExport)) {
+          options.esModule = false
+        }
       },
       postcss: (loaderOptions) => {
         // PostCSS is configured with the `postcss` option in `nuxt.config` rather than with a config file
