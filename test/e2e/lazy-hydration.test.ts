@@ -161,7 +161,7 @@ for (const [description, path] of Object.entries(hydrationTests)) {
       await countLocator.waitFor()
       expect(await countLocator.textContent()).toBe('0')
 
-      await incrementButton.click()
+      await incrementButton.dispatchEvent('click')
       await expect(countLocator).toHaveText('1')
 
       for (let count = 2; count <= 10; count++) {

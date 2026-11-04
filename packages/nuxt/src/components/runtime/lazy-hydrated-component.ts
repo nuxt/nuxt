@@ -129,10 +129,8 @@ export const createLazyInteractionComponent: LazyComponentFactory<LazyInteractio
   const onInteraction = (event: Event) => {
     const input = event.type === 'input' && pendingEvents.find(pending => pending.event.type === 'input' && pending.target === event.target)
     if (input) {
-      // Input handlers read the current DOM value, so only replay its latest update.
       input.event = event
     } else if (pendingEvents.length < MAX_PENDING_INTERACTIONS) {
-      // Preserve the earliest interactions and drop overflow while a loader is stalled.
       pendingEvents.push({ event, target: event.target })
     }
     if (triggered) { return }
@@ -143,6 +141,7 @@ export const createLazyInteractionComponent: LazyComponentFactory<LazyInteractio
       toggleStopPropagation(true)
       for (const { event, target } of pendingEvents) {
         if (disposed) { break }
+        if (event.type === 'focus' && target !== document.activeElement) { continue }
         target?.dispatchEvent(new (event.constructor as typeof Event)(event.type, event))
       }
       toggleStopPropagation(false)

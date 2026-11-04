@@ -91,6 +91,19 @@ describe('interaction hydration', () => {
     expect(onFocus).toHaveBeenCalledOnce()
   })
 
+  it('does not replay focus after focus has left during loading', async () => {
+    const onFocus = vi.fn()
+    const component = defineComponent({ setup: () => () => h('div', [h('input', { onFocus })]) })
+    const { loader, hydrate } = await mountDeferred(component, '<div><input></div>')
+    const input = document.querySelector('input')!
+    input.focus()
+    input.blur()
+    await flushPromises()
+    expect(loader).toHaveBeenCalledOnce()
+    await hydrate()
+    expect(onFocus).not.toHaveBeenCalled()
+  })
+
   it.each([
     ['default', undefined, 'click'],
     ['array', ['click'], 'click'],
