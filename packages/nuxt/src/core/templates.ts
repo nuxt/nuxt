@@ -893,7 +893,7 @@ export const routeRulesTemplate: NuxtTemplate = {
       `import { defu } from ${JSON.stringify(defuPath)}`,
       `const matcher = ${router.compileToString({ matchAll: true, serialize: serializeAppRouteRules })}`,
       genNormalizePathCode(fold),
-      `export default path => defu({}, ...matcher('', normalizePath(path)).map(r => r.data).reverse())`,
+      `export default path => defu({}, ...matchAllRouteRules(path => matcher('', normalizePath(path)).map(r => r.data), path).reverse())`,
     ].join('\n')
   },
 }

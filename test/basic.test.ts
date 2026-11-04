@@ -309,6 +309,14 @@ describe('route rules', () => {
     expect(html).toContain('useLayout: custom')
   })
 
+  it('should apply route rules to a catch-all page when the path has encoded slashes', async () => {
+    for (const path of ['/catchall/route-rules/layout', '/catchall/route-rules%2Flayout', '/catchall/route-rules%2flayout']) {
+      const res = await fetch(path)
+      expect(res.headers.get('x-catchall-route-rules'), path).toEqual('applied')
+      expect(await res.text(), path).toContain('Custom Layout')
+    }
+  })
+
   it('should not extract payload for `ssr: false` routes with useAsyncData (#34279)', async () => {
     const html = await $fetch<string>('/route-rules/spa-async-data')
     const { attrs } = parseData(html)
@@ -1757,6 +1765,17 @@ describe('errors', () => {
       expect(JSON.stringify(json)).not.toContain('inner error')
       expect(JSON.stringify(json)).not.toContain('root cause')
     }
+  })
+
+  it.skipIf(isDev)('should not expose the details of an upstream failure the app did not handle', async () => {
+    const res = await fetch('/error/upstream', { headers: { accept: 'text/html' } })
+    expect(res.status).toBe(502)
+    const html = await res.text()
+    expect(html).toContain('This is the error page')
+    expect(html).not.toMatch(/upstream-failure|upstream-token|upstream-secret/)
+
+    const json = await fetch('/error/upstream', { headers: { accept: 'application/json' } }).then(r => r.text())
+    expect(json).not.toMatch(/upstream-failure|upstream-token|upstream-secret/)
   })
 
   it.skipIf(!legacyErrorRendering)('should not allow accessing error route directly', async () => {

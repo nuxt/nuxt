@@ -8,7 +8,7 @@ import type { SerializedErrorCause } from '#app/types'
 import { serverFetch } from 'nitro'
 
 import type { SSRErrorInput } from 'nuxt/internal/renderer/error'
-import { SSR_ERROR_PARAM, appendVary, encodeSSRError, isJsonRequest } from 'nuxt/internal/renderer/error'
+import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, appendVary, encodeSSRError, isJsonRequest } from 'nuxt/internal/renderer/error'
 import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
@@ -44,6 +44,13 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
   const defaultRes = await defaultHandler(error, event, { json: true, silent: import.meta.dev && !!devError })
   // a cached module evaluation rethrows the same error, so it must still parse as a stack
   stacks?.restore()
+  // Nitro responds to an unhandled error with a 500; a thrown value wrapped by Nuxt keeps its status
+  if (error.unhandled && NUXT_ERROR_SIGNATURE in error && error.status >= 400 && error.status <= 599) {
+    defaultRes.status = error.status
+    if (defaultRes.body && typeof defaultRes.body === 'object') {
+      defaultRes.body.status = error.status
+    }
+  }
 
   // return Nitro response + our headers for redirects and JSON responses
   const status = error.status || 500

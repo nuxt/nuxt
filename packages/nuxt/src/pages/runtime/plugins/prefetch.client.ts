@@ -57,7 +57,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         },
       })
 
-      if (componentIslands) {
+      // importing the page in dev would transform it and all its components for every visible link,
+      // which `<NuxtLink>` already avoids for route components in dev
+      if (componentIslands && !import.meta.dev) {
         await Promise.all(route.matched.map((record) => {
           const component = record.components?.default
           if (typeof component !== 'function') { return }

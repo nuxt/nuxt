@@ -1,4 +1,5 @@
 import { performance } from 'node:perf_hooks'
+import process from 'node:process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
@@ -39,6 +40,7 @@ import { normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rul
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
+import { nitroBuildDiagnostics } from './diagnostics.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
 export type { NuxtTracingChannelOptions } from './augments.ts'
@@ -233,6 +235,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   }, nuxt)
 
+  const requestedBuilder = nuxt.options.nitro.builder ?? process.env.NITRO_BUILDER
+  if (nuxt.options.experimental.nitroViteEnvironment && requestedBuilder !== undefined && requestedBuilder !== 'vite') {
+    nitroBuildDiagnostics.NUXT_B9008({ builder: String(requestedBuilder) })
+  }
+  const serverBundler = nuxt.options.experimental.nitroViteEnvironment ? 'vite' : requestedBuilder
+  const rspackPath = serverBundler === 'rspack' ? resolveAppBuilderDependency(nuxt, '@rspack/core') : undefined
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
@@ -306,13 +315,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         : { ssr: true },
       '/__nuxt_error': { cache: false },
     },
-    rolldownConfig: {
-      // don't try to resolve rolldown options from the tsconfig we generate
-      tsconfig: false,
-    },
     // nitro otherwise resolves these from the project, installing them if they are missing
     deps: {
       paths: {
+        ...rspackPath ? { '@rspack/core': rspackPath } : {},
         rolldown: resolveModulePath('rolldown', { from: import.meta.url }),
         unenv: resolveModulePath('unenv', { from: import.meta.url }),
         unstorage: resolveModulePath('unstorage', { from: import.meta.url }),
@@ -402,6 +408,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
+
+  if (serverBundler === undefined || serverBundler === 'rolldown' || serverBundler === 'vite') {
+    // don't try to resolve rolldown options from the tsconfig we generate
+    nitroConfig.rolldownConfig = defu(nitroConfig.rolldownConfig, { tsconfig: false as const })
+  }
 
   if (nuxt.options.sourcemap.server === 'nosource') {
     nitroConfig.rollupConfig!.output!.sourcemapExcludeSources ??= true
@@ -768,6 +779,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
       autoImports,
       buildDir: resolve(nitroConfig.rootDir!, nitroConfig.buildDir!),
+      exclude: (nitroConfig.imports as ServerImportsOptions).exclude ?? [],
       sourcemap: !!nuxt.options.sourcemap.server,
     }))
   }
@@ -1204,6 +1216,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 }
 
+/** Resolves a dependency of the app builder, so Nitro shares its copy rather than installing another. */
+function resolveAppBuilderDependency (nuxt: Nuxt, id: string): string | undefined {
+  if (typeof nuxt.options.builder !== 'string') {
+    return
+  }
+  const builderPath = resolveModulePath(nuxt.options.builder, {
+    from: [...nuxt.options.modulesDir.map(dir => pathToFileURL(withTrailingSlash(dir))), import.meta.url],
+    try: true,
+  })
+  return builderPath && resolveModulePath(id, { from: builderPath, try: true })
+}
+
 const RELATIVE_RE = /^([^.])/
 function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
@@ -1220,16 +1244,14 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
 }
 
 function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
-  const allowedHosts = nuxt.options.vite?.server?.allowedHosts
-  if (allowedHosts === true) {
+  const sources = [nuxt.options.devServer.allowedHosts, nuxt.options.vite?.server?.allowedHosts]
+  if (sources.includes(true)) {
     return true
   }
   const hosts = new Set(LOOPBACK_HOSTS)
-  if (Array.isArray(allowedHosts)) {
-    for (const host of allowedHosts) {
-      if (typeof host === 'string' && host) {
-        hosts.add(host)
-      }
+  for (const host of sources.flatMap(allowedHosts => Array.isArray(allowedHosts) ? allowedHosts : [])) {
+    if (typeof host === 'string' && host) {
+      hosts.add(host)
     }
   }
   return hosts

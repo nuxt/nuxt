@@ -3,6 +3,7 @@ import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
+import { matchAllRouteRules } from '../../nuxt/src/core/utils/index.ts'
 import { createNormalizedRouteRulesRouter, genNormalizePathCode, normalizeRouteRuleLookupPath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
@@ -21,7 +22,7 @@ const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url })
 export function createRouteRulesMatcher (nuxt: Nuxt): (path: string) => Record<string, any> {
   const fold = !nuxt.options.router.options.sensitive
   const router = createNormalizedRouteRulesRouter(resolveRouteRulesRoutes(nuxt).routes, '', fold)
-  return path => defu({}, ...router.matchAll('', normalizeRouteRuleLookupPath(path, fold)).reverse()) as Record<string, any>
+  return path => defu({}, ...matchAllRouteRules(path => router.matchAll('', normalizeRouteRuleLookupPath(path, fold)), path).reverse()) as Record<string, any>
 }
 
 /**
@@ -36,6 +37,7 @@ export function addRouteRulesTemplate (): string {
     getContents: ({ nuxt }) => {
       const fold = !nuxt.options.router.options.sensitive
       const { routes, baseURL } = resolveRouteRulesRoutes(nuxt)
+      const basePrefix = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL
       const methods = new Set(routes.map(route => parseRouteRulesRoute(route).method).filter(Boolean))
       if (methods.has('GET')) {
         methods.add('HEAD')
@@ -45,7 +47,7 @@ export function addRouteRulesTemplate (): string {
           matchAll: true,
           serialize: rules => `{${Object.entries(rules)
             .filter(([name, value]) => value !== undefined && SUPPORTED_RULES.has(name))
-            .map(([name, value]) => `${name}: ${JSON.stringify(value)}`)
+            .map(([name, value]) => `${name}: ${JSON.stringify(name === 'redirect' ? withRedirectBase(value, basePrefix) : value)}`)
             .join(',')}}`,
         })
         return `[${JSON.stringify(method)}, ${matcher}]`
@@ -56,10 +58,15 @@ export function addRouteRulesTemplate (): string {
         genNormalizePathCode(fold),
         `export default (path, method = 'GET') => {`,
         `  const matcher = matchers.get(method.toUpperCase()) || matchers.get('')`,
-        `  return defu({}, ...matcher('', normalizePath(path)).map(r => r.data).reverse())`,
+        `  return defu({}, ...matchAllRouteRules(path => matcher('', normalizePath(path)).map(r => r.data), path).reverse())`,
         `}`,
       ].join('\n')
     },
   })
   return dst
+}
+
+function withRedirectBase (redirect: unknown, prefix: string): unknown {
+  if (!prefix || !redirect || typeof redirect !== 'object' || typeof (redirect as { base?: unknown }).base !== 'string') { return redirect }
+  return { ...redirect, base: prefix + (redirect as { base: string }).base }
 }

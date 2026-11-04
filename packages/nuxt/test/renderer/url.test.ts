@@ -22,9 +22,18 @@ describe('payload request paths', () => {
     ['/', '/foo', '/foo/_payload.json?_b=id'],
     ['/', '/', '/_payload.json?_b=id'],
     ['/', '/foo/', '/foo/_payload.json?_b=id'],
+    ['/', '/foo///', '/foo/_payload.json?_b=id'],
+    ['/base///', '/foo///', '/base/foo/_payload.json?_b=id'],
+    ['/', '/foo//bar', '/foo//bar/_payload.json?_b=id'],
     ['/base', '/foo', '/base/foo/_payload.json?_b=id'],
     ['https://cdn.example.com/', '/foo', 'https://cdn.example.com/foo/_payload.json?_b=id'],
   ])('builds a same-origin payload url from %s + %s', (baseURL, path, expected) => {
     expect(routeToPayloadURL(baseURL, path, 'id')).toBe(expected)
+  })
+
+  it('handles long runs of slashes', () => {
+    const slashes = '/'.repeat(200_000)
+    expect(routeToPayloadURL('/', `/foo${slashes}x`, 'id')).toBe(`/foo${slashes}x/_payload.json?_b=id`)
+    expect(routeToPayloadURL(`/base${slashes}x`, '/foo', 'id')).toBe(`/base${slashes}x/foo/_payload.json?_b=id`)
   })
 })

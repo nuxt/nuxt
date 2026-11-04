@@ -1,7 +1,7 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { decodeRoutePath, foldRouteCase, foldRouteRulePath } from '../src/core/utils/index.ts'
+import { decodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from '../src/core/utils/index.ts'
 import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
 
 const RESERVED_RE = /[%;/?:@&=+$,#]/g
@@ -57,6 +57,23 @@ describe('decodeRoutePath', () => {
       const path = '/x' + encodeURIComponent(char) + 'y'
       expect(decodeRoutePath(path)).toBe(path)
     }))
+  })
+})
+
+describe('matchAllRouteRules', () => {
+  const router = createNormalizedRouteRulesRouter([
+    { route: '/**', data: { all: true } },
+    { route: '/docs/**', data: { docs: true, layout: 'docs' } },
+    { route: '/docs/*', data: { page: true } },
+    { route: '/docs/internal/**', data: { internal: true, layout: 'internal' } },
+  ], '', true)
+  const match = (path: string) => router.matchAll('', normalizeRouteRuleLookupPath(path, true))
+
+  it('should match the path and the path with encoded slashes as separators, without duplicates', () => {
+    expect(matchAllRouteRules(match, '/Docs/Internal%2FX')).toEqual([{ all: true }, { docs: true, layout: 'docs' }, { page: true }, { internal: true, layout: 'internal' }])
+    expect(matchAllRouteRules(match, '/docs/internal/x')).toEqual(match('/docs/internal/x'))
+    expect(matchAllRouteRules(match, '/docs/internal%252Fx')).toEqual(match('/docs/internal%252Fx'))
+    expect(matchAllRouteRules(match, '/docs/a?next=%2Fdocs%2Finternal')).toEqual(match('/docs/a'))
   })
 })
 

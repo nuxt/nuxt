@@ -41,7 +41,13 @@ describe('throwIfUnmatchedPagePath', () => {
   it('lets paths that could match a page through', () => {
     expect(errorFor('/known')).toBeUndefined()
     expect(errorFor('/known/')).toBeUndefined()
+    expect(errorFor('/known///')).toBeUndefined()
     expect(errorFor('/known/_payload.json')).toBeUndefined()
+  })
+
+  it('handles long runs of slashes', () => {
+    expect(errorFor(`/known${'/'.repeat(200_000)}`)).toBeUndefined()
+    expect(errorFor(`/known${'/'.repeat(200_000)}x`)?.status).toBe(404)
   })
 
   it('throws a 404 carrying the request path', () => {
