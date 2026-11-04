@@ -21,6 +21,8 @@ describe('vite dev server fs.allow', () => {
     await symlink(nuxtDir, join(rootDir, 'node_modules/nuxt'), 'dir')
     await writeFile(join(rootDir, 'app/app.vue'), '<template><div/></template>')
     await writeFile(join(parentDir, 'secret.txt'), 'secret')
+    await mkdir(join(parentDir, 'node_modules/hoisted'), { recursive: true })
+    await writeFile(join(parentDir, 'node_modules/hoisted/index.js'), 'export default 1')
     for (const dir of [parentDir, rootDir]) {
       await writeFile(join(dir, 'package.json'), '{}')
       await writeFile(join(dir, 'package-lock.json'), '{}')
@@ -31,7 +33,7 @@ describe('vite dev server fs.allow', () => {
     await rm(parentDir, { recursive: true, force: true })
   })
 
-  it('should not serve files next to an ancestor lockfile', async () => {
+  it('should serve files from an ancestor node_modules but not next to an ancestor lockfile', async () => {
     const nuxt = await loadNuxt({ cwd: rootDir, dev: true })
     const middlewares = new Promise<Parameters<typeof createServer>[1]>((resolve) => {
       nuxt.hook('vite:serverCreated', (server, { isClient }) => {
@@ -49,8 +51,8 @@ describe('vite dev server fs.allow', () => {
       try {
         const { port } = server.address() as AddressInfo
         const base = `http://127.0.0.1:${port}${nuxt.options.app.buildAssetsDir}@fs`
-        const files = [join(parentDir, 'secret.txt'), join(rootDir, 'app/app.vue')]
-        expect(await Promise.all(files.map(file => fetch(base + file).then(res => res.status)))).toEqual([403, 200])
+        const files = [join(parentDir, 'secret.txt'), join(rootDir, 'app/app.vue'), join(parentDir, 'node_modules/hoisted/index.js')]
+        expect(await Promise.all(files.map(file => fetch(base + file).then(res => res.status)))).toEqual([403, 200, 200])
       } finally {
         server.close()
       }
