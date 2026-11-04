@@ -327,15 +327,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   # Advisory, so not required by `ci-ok`: a conflict can be resolved on either branch.
+  # Pushes to main are covered by their pull request; pushes to 4.x are checked after the fact.
   diagnostics-drift:
     needs: changes
-    if: github.event_name == 'pull_request' && needs.changes.outputs.src == 'true'
+    if: needs.changes.outputs.src == 'true' && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref_name != 'main'))
     runs-on: ubuntu-26.04-arm
     timeout-minutes: 5
     permissions:
       contents: read
     env:
-      OTHER_BRANCH: ${{ github.base_ref == 'main' && '4.x' || 'main' }}
+      OTHER_BRANCH: ${{ (github.base_ref || github.ref_name) == 'main' && '4.x' || 'main' }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -347,14 +348,16 @@ jobs:
           node-version: lts
           run-install: false
 
-      - name: Fetch the other release line
-        run: git fetch --no-tags --depth=1 origin "$OTHER_BRANCH:refs/remotes/origin/$OTHER_BRANCH"
-
       - name: Check diagnostic codes against the other release line
-        run: node ./scripts/check-diagnostics-drift.ts
+        run: |
+          git fetch --no-tags --depth=1 origin "$OTHER_BRANCH:refs/remotes/origin/$OTHER_BRANCH"
+          BASE_REF='HEAD^1'
+          if [ -n "$BEFORE" ] && git fetch --no-tags --depth=1 origin "$BEFORE"; then
+            BASE_REF="$BEFORE"
+          fi
+          BASE_REF="$BASE_REF" OTHER_REF="origin/$OTHER_BRANCH" node ./scripts/check-diagnostics-drift.ts
         env:
-          BASE_REF: HEAD^1
-          OTHER_REF: origin/${{ env.OTHER_BRANCH }}
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
 
   # Runs on pull requests too (unlike the `lint` job) so knip regressions surface
   # before the merge queue.
