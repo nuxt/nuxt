@@ -71,7 +71,6 @@ describe('PerfPlugin', () => {
 
     expect(await builder.build({ name: 'client' })).toBe('client')
     await expect(builder.build({ name: 'nitro' })).rejects.toThrow('failed')
-    // the failed build is left open, for the report to show as unfinished
     expect(phases).toEqual(['start vite:client', 'end vite:client', 'start vite:nitro'])
   })
 

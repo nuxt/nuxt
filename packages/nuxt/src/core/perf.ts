@@ -330,11 +330,12 @@ export class NuxtPerfProfiler {
 
     // Merge manual phases with hook phases that exceeded the threshold
     // and aren't already covered by a manual phase.
-    const allPhases: PerfPhase[] = this.#getPhases(now)
+    const manualPhases = this.#getPhases(now)
+    const allPhases: PerfPhase[] = [...manualPhases]
     for (const hp of this.#hookPhases) {
       if (hp.duration < HOOK_PHASE_THRESHOLD_MS) { continue }
       const hookName = hp.name.slice(5) // strip "hook:" prefix
-      const alreadyCovered = this.#phases.some(p =>
+      const alreadyCovered = manualPhases.some(p =>
         p.name === hookName && p.startTime <= hp.startTime && p.endTime >= hp.endTime,
       )
       if (!alreadyCovered) {

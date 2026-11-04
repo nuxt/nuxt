@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { createHooks } from 'hookable'
 import { NuxtPerfProfiler } from '../src/core/perf.ts'
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -11,6 +12,17 @@ describe('NuxtPerfProfiler', () => {
     const phase = perf.getReport().phases.find(p => p.name === 'build:bundle')
 
     expect(phase?.unfinished).toBe(true)
+  })
+
+  it('does not report a hook again while a phase of the same name is still open', async () => {
+    const perf = new NuxtPerfProfiler()
+    const hooks = createHooks<{ ready: () => Promise<void> }>()
+    perf.installHookInterceptors(hooks as any)
+    hooks.hook('ready', async () => { await sleep(10) })
+    perf.startPhase('ready')
+    await hooks.callHook('ready')
+
+    expect(perf.getReport().phases.filter(p => p.name === 'ready')).toHaveLength(1)
   })
 
   it('reports time before the profiler started and time outside any phase', async () => {
