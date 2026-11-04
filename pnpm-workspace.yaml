@@ -185,7 +185,7 @@ catalogs:
     microdiff: ^1.6.0
     mlly: ^1.8.2
     mocked-exports: ^0.1.1
-    nanotar: ^0.3.0
+    modern-tar: ^0.8.6
     nostics: ^1.3.0
     ohash: ^2.0.12
     package-manager-detector: ^1.9.0
