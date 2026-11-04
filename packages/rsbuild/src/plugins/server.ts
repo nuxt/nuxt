@@ -11,6 +11,7 @@ import { stripInvalidPureAnnotations } from '../../../webpack/src/plugins/strip-
 const JS_RE = /\.[cm]?js(?:\?[^.]+)?$/
 const ASSET_RE = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
 const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
+const VUE_PACKAGES = new Set(['vue', 'vue/server-renderer', '@vue/server-renderer', '@vue/runtime-dom', '@vue/runtime-core', '@vue/reactivity', '@vue/shared'])
 
 const DYNAMIC_IMPORT_RE = /import\([^)]*\+\s*__webpack_require__[^+]*\)\.then/
 const DYNAMIC_IMPORT_REPLACE_RE = /import\([^)]*\+\s*(__webpack_require__[^+]*)\)\.then/g
@@ -124,6 +125,7 @@ export function createServerExternals (nuxt: Nuxt): ExternalItemFunction {
     'nitropack/runtime',
     '#shared',
     resolve(nuxt.options.rootDir, nuxt.options.dir.shared),
+    ...VUE_PACKAGES,
     ...nuxt['~runtimeDependencies'] || [],
   ])
   if (!nuxt.options.dev) {
@@ -146,7 +148,7 @@ export function createServerExternals (nuxt: Nuxt): ExternalItemFunction {
     }
     if (external.has(request)) {
       // Resolve to absolute path so nitro can handle version resolution
-      const resolved = resolveModulePath(request, {
+      const resolved = resolveModulePath(VUE_PACKAGES.has(request) ? resolveAlias(request, nuxt.options.alias) : request, {
         from: (context ? [context, ...nuxt.options.modulesDir] : nuxt.options.modulesDir).map(d => directoryToURL(d)),
         suffixes: ['', 'index'],
         conditions,
