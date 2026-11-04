@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto'
+import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
 import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
@@ -527,9 +528,15 @@ function NitroVirtualBridge (nitro: Nitro): VitePlugin {
  * depends on them through its environment options and the Nitro virtual modules it bundles.
  */
 export async function canReuseSsrBuild (nitro: Nitro, environment: BuildEnvironment): Promise<boolean> {
+  // TODO: nitro only records a service entry while building it, so a skipped ssr build is imported
+  // as the `vite/services/ssr` directory, which resolves to its `index.mjs`
+  if (!existsSync(resolve(nitro.options.buildDir, 'vite/services/ssr/index.mjs'))) {
+    return false
+  }
   const outDir = resolve(environment.config.root, environment.config.build.outDir)
   const inputs = await readFile(resolve(outDir, SSR_INPUTS_FILE), 'utf8')
-    .then(r => JSON.parse(r) as SsrInputs, () => undefined)
+    .then(r => JSON.parse(r) as SsrInputs)
+    .catch(() => undefined)
   if (!inputs || inputs.config !== hashEnvironmentConfig(environment.config)) {
     return false
   }

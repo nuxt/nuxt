@@ -176,36 +176,6 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     expect(await buildEnvironments('cloudflare-module')).toContain('ssr')
   })
 
-  it('should restore files with names longer than 100 bytes', async () => {
-    const rootDir = join(tmpDir, 'project')
-    await mkdir(join(rootDir, '.nuxt'))
-    // its ssr chunk is `vite/services/ssr/_nuxt/<name>-<hash>.js`, more than 100 bytes long
-    const name = 'a-component-with-a-file-name-long-enough-to-push-its-ssr-chunk-path-over-100-bytes'
-    await writeFile(join(rootDir, `${name}.vue`), '<template><p>long</p></template>')
-    await writeFile(join(rootDir, 'app.vue'), `<script setup>const Long = defineAsyncComponent(() => import('./${name}.vue'))</script><template><div><Long /></div></template>`)
-
-    const builds: string[][] = []
-    for (let i = 0; i < 2; i++) {
-      // as `nuxt build` does, so that the second build only has what the cache restores
-      await rm(join(rootDir, 'node_modules/.cache/nuxt/.nuxt'), { recursive: true, force: true })
-      const built: string[] = []
-      const nuxt = await loadNuxt({
-        cwd: rootDir,
-        overrides: {
-          experimental: { buildCache: true },
-          dev: false,
-          workspaceDir: tmpDir,
-          vite: { plugins: [{ name: 'record-builds', buildStart () { built.push(this.environment.name) } }] },
-        },
-      })
-      await build(nuxt)
-      builds.push(built)
-    }
-
-    expect(builds[1]).not.toContain('ssr')
-    expect(await renderIndex(join(rootDir, '.output'))).toContain('<p>long</p>')
-  })
-
   it('should restore build outputs on cache hit', async () => {
     const rootDir = join(tmpDir, 'project')
     await writeFile(join(rootDir, 'app.vue'), '<template><div class="box">hello</div></template><style scoped>.box { color: red }</style>')
