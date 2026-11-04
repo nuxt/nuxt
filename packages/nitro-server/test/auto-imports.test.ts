@@ -296,7 +296,6 @@ describe('ServerAutoImportsPlugin', () => {
     expect(plugin.transformInclude('/app/node_modules/pkg/index.mjs')).toBe(false)
   })
 
-  // https://github.com/nuxt/nuxt/issues/36811
   it('transforms the server code of a layer installed in node_modules', () => {
     const plugin = createPlugin(['/app/', '/app/node_modules/.pnpm/layer@1.0.0/node_modules/layer/'])
 

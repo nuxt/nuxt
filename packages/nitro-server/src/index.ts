@@ -67,8 +67,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const errorPageOption = nuxt.options.experimental.prerenderErrorPages
   const errorPages = errorPageOption === true ? [404] : errorPageOption || []
   const layerDirs = getLayerDirectories(nuxt)
-  // files the server auto-imports skip: node_modules, except the layers installed there
-  const excludePattern = [getLayerNodeModulesExcludePattern(layerDirs.map(dirs => dirs.root)), /[\\/]\.git[\\/]/]
+  const excludePattern = [getLayerNodeModulesExcludePattern(layerDirs.map(dirs => dirs.root))]
 
   const layerPublicAssetsDirs: Array<{ dir: string, maxAge: number }> = []
   for (const dirs of layerDirs) {
@@ -272,7 +271,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           priority: -1,
         },
       ],
-      exclude: excludePattern,
+      exclude: [...excludePattern, /[\\/]\.git[\\/]/],
     },
     // TODO: support for bundle analyser: https://github.com/nitrojs/nitro/pull/3628
     scanDirs: layerDirs.map(dirs => dirs.server),
@@ -769,7 +768,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
       autoImports,
       buildDir: resolve(nitroConfig.rootDir!, nitroConfig.buildDir!),
-      exclude: excludePattern,
+      exclude: (nitroConfig.imports as ServerImportsOptions).exclude ?? [],
       sourcemap: !!nuxt.options.sourcemap.server,
     }))
   }

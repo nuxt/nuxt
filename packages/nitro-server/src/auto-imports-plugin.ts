@@ -8,7 +8,8 @@ interface ServerAutoImportsPluginOptions {
   autoImports: ServerAutoImports
   /** Nitro build directory. Bundled environment outputs under `<buildDir>/vite/services/` are not transformed. */
   buildDir: string
-  exclude: RegExp[]
+  /** Modules not to transform. Strings match any path containing them. */
+  exclude: Array<string | RegExp>
   sourcemap?: boolean
 }
 
@@ -22,7 +23,7 @@ export const ServerAutoImportsPlugin = createUnplugin(({ autoImports, buildDir, 
 
     transformInclude (id) {
       const path = normalize(id)
-      return INCLUDE_RE.test(path.split('?')[0]!) && !exclude.some(re => re.test(path)) && !path.startsWith(servicesDir)
+      return INCLUDE_RE.test(path.split('?')[0]!) && !exclude.some(pattern => typeof pattern === 'string' ? path.includes(pattern) : pattern.test(path)) && !path.startsWith(servicesDir)
     },
 
     async transform (code, id) {
