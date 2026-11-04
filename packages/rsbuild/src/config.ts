@@ -1,6 +1,7 @@
 import { resolve as resolvePlatformPath } from 'node:path'
 
 import type { Nuxt } from '@nuxt/schema'
+import { directoryToURL } from '@nuxt/kit'
 import type { EnvironmentConfig, RsbuildConfig, RsbuildPlugins } from '@rsbuild/core'
 import { mergeRsbuildConfig } from '@rsbuild/core'
 import { pluginVue } from '@rsbuild/plugin-vue'
@@ -9,6 +10,7 @@ import escapeRegExp from 'escape-string-regexp'
 import { basename, normalize, resolve } from 'pathe'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defineEnv } from 'unenv'
+import { resolveModulePath } from 'exsolve'
 
 import { resolveAllowedHosts } from '../../webpack/src/utils/same-origin.ts'
 import { getHMRPath } from './dev-server.ts'
@@ -183,6 +185,7 @@ function clientEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
     },
     resolve: {
       alias: {
+        ...getVueAliases(nuxt, 'client'),
         'nitro/runtime-config': nitroClientRuntime,
         // TODO: remove in v5
         '#internal/nitro': nitroClientRuntime,
@@ -232,6 +235,9 @@ function serverEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
       define: getDefines(nuxt, 'server'),
       include: getTranspilePatterns(nuxt, { isServer: true }),
     },
+    resolve: {
+      alias: getVueAliases(nuxt, 'server'),
+    },
     output: {
       target: 'node',
       module: true,
@@ -267,6 +273,23 @@ const flatDistPath = {
   media: '',
   assets: '',
   wasm: '',
+}
+
+/**
+ * Resolve the packages holding global Vue state (such as injection keys) to a single entry, so that
+ * copies installed for different peer dependencies are not bundled more than once.
+ */
+function getVueAliases (nuxt: Nuxt, name: 'client' | 'server') {
+  const aliases: Record<string, string> = {}
+  const from = [directoryToURL(nuxt.options.rootDir), directoryToURL(nuxt.options.workspaceDir), import.meta.url]
+  const conditions = name === 'server' ? ['node', 'import', 'default'] : ['browser', 'import', 'default']
+  for (const pkg of ['@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity', '@vue/shared', '@vue/runtime-vapor', 'vue-router']) {
+    const entry = resolveModulePath(pkg, { from, conditions, try: true })
+    if (entry) {
+      aliases[`${pkg}$`] = entry
+    }
+  }
+  return aliases
 }
 
 function getDevtool (sourcemap: boolean | 'hidden' | 'nosource', devtool: 'cheap-module-source-map' | 'source-map') {
