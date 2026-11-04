@@ -125,7 +125,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     if (template.modified && template.write && !matchesDisk(fullPath, contents)) {
       dirs.add(dirname(fullPath))
       writes.push(() => writeFileSync(fullPath, contents, 'utf8'))
-      if (nuxt.options.debug && nuxt.options.debug.templates) {
+      if (debugTemplates) {
         logger.info(`Writing \`${template.filename}\` to \`${linkToAlias(fullPath, nuxt)}\``)
       }
     }
@@ -159,7 +159,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     write()
   }
 
-  if (nuxt.options.debug && nuxt.options.debug.templates) {
+  if (debugTemplates) {
     logger.info(`Generated app in ${Math.round(performance.now() - generateStart)}ms (resolve ${Math.round(resolvedAt - generateStart)}ms, scan ${Math.round(scannedAt - resolvedAt)}ms, compile ${Math.round(performance.now() - scannedAt)}ms), ${changedTemplates.length} template(s) changed`)
   }
 
