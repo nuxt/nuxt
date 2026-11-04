@@ -1,8 +1,9 @@
 import { resolve as resolvePlatformPath } from 'node:path'
 
 import type { Nuxt } from '@nuxt/schema'
-import type { EnvironmentConfig, RsbuildConfig, RsbuildPlugins } from '@rsbuild/core'
+import type { EnvironmentConfig, PostCSSPlugin, RsbuildConfig, RsbuildPlugins } from '@rsbuild/core'
 import { mergeRsbuildConfig } from '@rsbuild/core'
+import { resolvePostcssPlugins } from '@nuxt/kit/internal'
 import { pluginVue } from '@rsbuild/plugin-vue'
 import { defu } from 'defu'
 import escapeRegExp from 'escape-string-regexp'
@@ -21,7 +22,6 @@ import { resolvePreprocessorPlugins, resolveRsdoctorPlugin, resolveTypeCheckPlug
 import { ServerPlugin } from './plugins/server.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { VueSSRPlugin } from './plugins/vue.ts'
-import { resolvePostcssPlugins } from './utils/postcss.ts'
 
 /**
  * Translate Nuxt options into an Rsbuild configuration, with a `client` and
@@ -33,7 +33,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
   const entry = resolve(nuxt.options.appDir, nuxt.options.experimental.asyncEntry ? 'entry.async' : 'entry')
   const assetPrefix = joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
   const [postcssPlugins, preprocessorPlugins, typeCheckPlugin, rsdoctorPlugin] = await Promise.all([
-    resolvePostcssPlugins(nuxt),
+    resolvePostcssPlugins<PostCSSPlugin>(nuxt),
     resolvePreprocessorPlugins(nuxt),
     resolveTypeCheckPlugin(nuxt),
     resolveRsdoctorPlugin(nuxt),

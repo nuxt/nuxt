@@ -25,6 +25,8 @@ export { loadJiti } from './jiti.ts'
 
 export { findPackageMissingSubpath } from '../dependency.ts'
 
+export { resolvePostcssPlugins } from './postcss.ts'
+
 export { lookupNodeModuleSubpath, parseNodeModulePath } from './node-module.ts'
 export type { ParsedNodeModulePath } from './node-module.ts'
 

@@ -1,9 +1,10 @@
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
-import type { PostCSSPlugin } from '@rsbuild/core'
-import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
-import { bundlerDiagnostics, findPackageMissingSubpath } from '@nuxt/kit/internal'
 
-type PostcssPluginFactory = (options: Record<string, any>) => PostCSSPlugin
+import { bundlerDiagnostics } from '../diagnostics/bundler.ts'
+import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand } from '../dependency.ts'
+import { directoryToURL, tryImportModule } from './esm.ts'
+
+type PostcssPluginFactory<T> = (options: Record<string, any>) => T
 
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
@@ -11,19 +12,16 @@ function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
 }
 
 /**
- * Resolve the PostCSS plugins configured with the `postcss` option.
- *
- * Vendor prefixing and minification are handled by Lightning CSS in Rsbuild,
- * so no plugins are added by default.
+ * Load the PostCSS plugins configured with the `postcss` option, in order, offering to install missing ones.
  */
-export async function resolvePostcssPlugins (nuxt: Nuxt): Promise<PostCSSPlugin[]> {
-  const plugins: PostCSSPlugin[] = []
+export async function resolvePostcssPlugins<T = unknown> (nuxt: Nuxt): Promise<T[]> {
+  const plugins: T[] = []
 
   for (const pluginName of sortPlugins(nuxt.options.postcss)) {
     const pluginOptions = nuxt.options.postcss.plugins[pluginName]
     if (!pluginOptions) { continue }
 
-    const pluginFn = await resolvePostcssPlugin(pluginName, nuxt)
+    const pluginFn = await resolvePostcssPlugin<T>(pluginName, nuxt)
     if (typeof pluginFn === 'function') {
       plugins.push(pluginFn(pluginOptions))
     }
@@ -32,10 +30,10 @@ export async function resolvePostcssPlugins (nuxt: Nuxt): Promise<PostCSSPlugin[
   return plugins
 }
 
-async function resolvePostcssPlugin (pluginName: string, nuxt: Nuxt): Promise<PostcssPluginFactory | undefined> {
+async function resolvePostcssPlugin<T> (pluginName: string, nuxt: Nuxt): Promise<PostcssPluginFactory<T> | undefined> {
   const parentURLs = nuxt.options.modulesDir.map(dir => directoryToURL(dir.replace(/\/node_modules\/?$/, '')))
 
-  const importPlugin = () => tryImportModule<PostcssPluginFactory>(pluginName, { url: parentURLs })
+  const importPlugin = () => tryImportModule<PostcssPluginFactory<T>>(pluginName, { url: parentURLs })
 
   let pluginFn = await importPlugin()
   if (typeof pluginFn === 'function') {
@@ -51,7 +49,6 @@ async function resolvePostcssPlugin (pluginName: string, nuxt: Nuxt): Promise<Po
   const installed = await ensureDependencyInstalled(pluginName, {
     rootDir: nuxt.options.rootDir,
     searchPaths: nuxt.options.modulesDir,
-    from: import.meta.url,
   })
 
   if (installed) {
