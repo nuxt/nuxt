@@ -10,7 +10,7 @@ import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/is
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
-import { isDev, isWebpack } from './matrix'
+import { builder, isDev, isWebpack } from './matrix'
 import { renderPage } from './utils'
 
 function islandURL (name: string, opts: { props?: Record<string, any>, context?: Record<string, any> } = {}) {
@@ -772,7 +772,8 @@ describe('denial-of-service protections', () => {
   })
 
   it.each([
-    ['BoundedVForPug', 'pug-item'],
+    // pug templates need `@rsbuild/plugin-pug` with the Rsbuild builder
+    ...builder === 'rsbuild' ? [] : [['BoundedVForPug', 'pug-item']],
     ['BoundedVForSrc', 'src-item'],
     ['BoundedVForSpaced', 'spaced-item'],
     ['BoundedVForForwarded', 'row-item'],
