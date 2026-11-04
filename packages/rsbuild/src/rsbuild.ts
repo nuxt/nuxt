@@ -2,29 +2,15 @@ import { pathToFileURL } from 'node:url'
 import type { NuxtBuilder } from '@nuxt/schema'
 import type { RsbuildInstance, Rspack } from '@rsbuild/core'
 import { createRsbuild } from '@rsbuild/core'
-import { logger, setBuildOutput, useNitro } from '@nuxt/kit'
+import { logger, setBuildOutput } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { resolve } from 'pathe'
-import type { InputPluginOption } from 'rollup'
 
 import { resolveRsbuildConfig } from './config.ts'
 import { setupDevServer } from './dev-server.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const config = await resolveRsbuildConfig(nuxt)
-
-  /** Remove Nitro rollup plugin for handling dynamic imports from rspack chunks */
-  if (!nuxt.options.dev) {
-    const nitro = useNitro()
-    nitro.hooks.hook('rollup:before', (_nitro, config) => {
-      const plugins = config.plugins as InputPluginOption[]
-
-      const existingPlugin = plugins.findIndex(i => i && 'name' in i && i.name === 'dynamic-require')
-      if (existingPlugin >= 0) {
-        plugins.splice(existingPlugin, 1)
-      }
-    })
-  }
 
   // In dev the SSR entry is served from the in-memory bundle via the `rsbuild:compile` hook.
   if (nuxt.options.ssr && !nuxt.options.dev) {

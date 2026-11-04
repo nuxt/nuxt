@@ -1557,9 +1557,6 @@ importers:
       h3-next:
         specifier: catalog:dev
         version: h3@2.0.8(crossws@0.4.17(srvx@1.0.8))(ocache@0.3.1)
-      rollup:
-        specifier: catalog:dev
-        version: 4.67.4
       tsdown:
         specifier: catalog:dev
         version: 0.23.2(@arethetypeswrong/core@0.18.5)(@volar/typescript@2.4.30(typescript@6.0.3))(@vue/language-core@3.3.14)(oxc-resolver@11.24.2)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))
