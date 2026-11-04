@@ -72,7 +72,6 @@ function getModuleId (identifier: string, context: string): string {
   // Module identifier format: /path/loaders!resource?query
   // (the match is anchored to the start of a segment, as identifiers include a long chain of loaders)
   const resourceMatch = id.match(/(?:^|!)([^!]*\.vue)(?:\?|$)/)
-  // Extract relative resource path
   return resourceMatch && resourceMatch[1]
     ? getRelativeModuleId(resourceMatch[1], context)
     : id
@@ -172,7 +171,6 @@ function createWebpackManifest (rspackStats: Rspack.Stats, context: string) {
       }
     }
 
-    // Find all asset modules associated with the same chunk
     for (const module of assetModules) {
       if (module.chunks?.includes(cid)) {
         files.push(...module.assets!.map(fileToIndex))

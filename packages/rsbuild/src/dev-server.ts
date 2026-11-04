@@ -56,7 +56,6 @@ export async function setupDevServer (nuxt: Nuxt, rsbuild: RsbuildInstance) {
     }
   }), { cors: () => true })
 
-  // wait for the initial compilation of all environments
   await Promise.all(Object.values(devServer.environments).map(environment => environment.getStats()))
 }
 

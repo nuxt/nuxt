@@ -48,7 +48,6 @@ async function resolvePostcssPlugin (pluginName: string, nuxt: Nuxt): Promise<Po
     return
   }
 
-  // Plugin not found - prompt the user to install it
   const installed = await ensureDependencyInstalled(pluginName, {
     rootDir: nuxt.options.rootDir,
     searchPaths: nuxt.options.modulesDir,

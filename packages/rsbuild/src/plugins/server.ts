@@ -134,7 +134,6 @@ export function createServerExternals (nuxt: Nuxt): ExternalItemFunction {
     external.add('#app-manifest')
   }
 
-  // Resolve conditions for server build
   const conditions = [
     nuxt.options.dev ? 'development' : 'production',
     'node',

@@ -60,8 +60,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
   ]
 
   const config: RsbuildConfig = {
-    // Rsbuild passes the root to Rspack as `context`, and neither normalizes it. Use the platform's format, like the
-    // `process.cwd()` context of the rspack builder: with forward slashes, unplugin's virtual modules load empty on Windows.
+    // passed to Rspack as `context` as is; unplugin's virtual modules require the platform's path format on Windows
     root: resolvePlatformPath(nuxt.options.rootDir),
     mode: nuxt.options.dev ? 'development' : 'production',
     logLevel: nuxt.options.logLevel === 'silent' ? 'silent' : 'info',
