@@ -54,6 +54,25 @@ app.post('/v1-then-web', defineEventHandler(async (event) => {
   return { v1, web: await withTimeout(event.req.json(), 'req.json') }
 }))
 
+app.post('/first-chunk', defineEventHandler(async (event) => {
+  const reader = event.req.body!.getReader()
+  const { value } = await reader.read()
+  await reader.cancel()
+  return { firstChunk: value?.byteLength ?? 0 }
+}))
+
+app.post('/stream-then-web', defineEventHandler(async (event) => {
+  const stream = await new Response(event.req.body).text()
+  return { stream, web: await withTimeout(event.req.text(), 'req.text') }
+}))
+
+app.post('/partial-stream-then-web', defineEventHandler(async (event) => {
+  const reader = event.req.body!.getReader()
+  await reader.read()
+  await reader.cancel()
+  return { web: (await withTimeout(event.req.text(), 'req.text')).length }
+}))
+
 app.post('/read-once', defineEventHandler(async event => ({ body: await readBody(event) })))
 
 app.use('/middleware-then-handler', defineEventHandler(async (event) => {
@@ -144,6 +163,35 @@ describe('reading a request body more than once', () => {
       v1: { hello: 'world' },
       web: { hello: 'world' },
     })
+  })
+
+  it('streams the body without reading it in full', async () => {
+    let sent = 0
+    const body = new ReadableStream<Uint8Array>({
+      pull (controller) {
+        if (sent >= 64) {
+          return controller.close()
+        }
+        sent++
+        controller.enqueue(new Uint8Array(64 * 1024).fill(0x61))
+      },
+    })
+    const result = await fetch(base + '/first-chunk', { method: 'POST', body, duplex: 'half' } as RequestInit).then(r => r.json())
+
+    expect(result.firstChunk).toBeGreaterThan(0)
+    expect(result.firstChunk).toBeLessThan(64 * 64 * 1024)
+  })
+
+  it('serves a web read after the body was streamed', async () => {
+    await expect(postJSON('/stream-then-web', { hello: 'world' })).resolves.toEqual({
+      stream: '{"hello":"world"}',
+      web: '{"hello":"world"}',
+    })
+  })
+
+  it('serves a full web read after the body stream was cancelled', async () => {
+    const body = 'a'.repeat(1024 * 1024)
+    await expect(post('/partial-stream-then-web', body)).resolves.toEqual({ web: body.length })
   })
 
   it('reads the body of a handler that reads it once', async () => {

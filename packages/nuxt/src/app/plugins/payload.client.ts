@@ -11,6 +11,7 @@ import { injectHead } from '../composables/head'
 import { stateDiagnostics } from '../diagnostics/state'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
+import { documentURL } from '../internal/location'
 
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
@@ -45,7 +46,7 @@ function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): S
   for (const link of prefetchLinks) {
     if (selected.length >= MAX_HINTS_PER_ROUTE) { break }
     if (typeof link.href !== 'string') { continue }
-    const href = new URL(link.href, window.location.href).href
+    const href = new URL(link.href, document.baseURI).href
     if (existingHrefs.has(href) || forwardedHintHrefs.has(href)) { continue }
     forwardedHintHrefs.add(href)
     if (link.as === 'image') {
@@ -131,8 +132,8 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     nuxtApp.hooks.hook('link:prefetch', (url) => {
       onNuxtReady(() => {
-        const { hostname } = new URL(url, window.location.href)
-        if (hostname !== window.location.hostname) { return }
+        const documentLocation = documentURL()
+        if (new URL(url, documentLocation).hostname !== documentLocation.hostname) { return }
         const group = prefetchGroup(url)
         schedule({
           key: `payload:${url}`,
