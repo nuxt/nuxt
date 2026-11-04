@@ -211,13 +211,11 @@ type IslandSerialized<T> = T extends string | number | boolean | null | undefine
   ? T
   : T extends ((...args: any[]) => any) | Date | Map<any, any> | Set<any> | RegExp | bigint | symbol
     ? never
-    : T extends readonly (infer U)[]
-      ? IslandSerialized<U>[]
-      : T extends object
-        ? { [K in keyof T]: IslandSerialized<T[K]> }
-        : T
+    : T extends object
+      ? { [K in keyof T]: IslandSerialized<T[K]> }
+      : T
 type IslandProps<T> = T extends new (...args: any) => { $props: infer P }
-  ? new () => { $props: { [K in keyof P]: K extends \`on\${string}\` | keyof VNodeProps ? P[K] : P[K] & IslandSerialized<P[K]> } }
+  ? new () => { $props: { [K in keyof P]: K extends \`on\${Capitalize<string>}\` | keyof VNodeProps ? P[K] : P[K] & IslandSerialized<P[K]> } }
   : unknown
 type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T & IslandProps<T>
 `
