@@ -181,7 +181,12 @@
     "packages/rsbuild": {
       "ignoreDependencies": [
         "@vue/compiler-sfc",
-        "vue"
+        "exsolve",
+        "knitwork",
+        "ohash",
+        "seroval",
+        "vue",
+        "vue-bundle-renderer"
       ]
     },
     "packages/rspack": {

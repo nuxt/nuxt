@@ -1,7 +1,6 @@
 import { resolve as resolvePlatformPath } from 'node:path'
 
 import type { Nuxt } from '@nuxt/schema'
-import { directoryToURL } from '@nuxt/kit'
 import type { EnvironmentConfig, RsbuildConfig, RsbuildPlugins } from '@rsbuild/core'
 import { mergeRsbuildConfig } from '@rsbuild/core'
 import { pluginVue } from '@rsbuild/plugin-vue'
@@ -10,14 +9,16 @@ import escapeRegExp from 'escape-string-regexp'
 import { basename, normalize, resolve } from 'pathe'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defineEnv } from 'unenv'
-import { resolveModulePath } from 'exsolve'
 
 import { resolveAllowedHosts } from '../../webpack/src/utils/same-origin.ts'
+import { getNuxtDefines } from '../../webpack/src/utils/defines.ts'
+import { createServerExternals } from '../../webpack/src/utils/server-externals.ts'
+import { resolveVueAliases } from '../../webpack/src/utils/vue-aliases.ts'
 import { getHMRPath } from './dev-server.ts'
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { NuxtHooksPlugin } from './plugins/hooks.ts'
 import { resolvePreprocessorPlugins, resolveRsdoctorPlugin, resolveTypeCheckPlugin } from './plugins/optional.ts'
-import { ServerPlugin, createServerExternals } from './plugins/server.ts'
+import { ServerPlugin } from './plugins/server.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { VueSSRPlugin } from './plugins/vue.ts'
 import { resolvePostcssPlugins } from './utils/postcss.ts'
@@ -184,7 +185,7 @@ function clientEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
     },
     resolve: {
       alias: {
-        ...getVueAliases(nuxt, 'client'),
+        ...resolveVueAliases(nuxt, false),
         'nitro/runtime-config': nitroClientRuntime,
         // TODO: remove in v5
         '#internal/nitro': nitroClientRuntime,
@@ -235,7 +236,7 @@ function serverEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
       include: getTranspilePatterns(nuxt, { isServer: true }),
     },
     resolve: {
-      alias: getVueAliases(nuxt, 'server'),
+      alias: resolveVueAliases(nuxt, true),
     },
     output: {
       target: 'node',
@@ -243,7 +244,8 @@ function serverEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
       // asset URLs are shared with the client build, which emits the assets
       emitAssets: false,
       assetPrefix,
-      externals: [createServerExternals(nuxt)],
+      // SWC helpers are resolved from Rsbuild's own dependencies
+      externals: [createServerExternals(nuxt, { inline: ['@swc/helpers'] })],
       minify: false,
       distPath: {
         root: resolve(nuxt.options.buildDir, 'dist/server'),
@@ -274,23 +276,6 @@ const flatDistPath = {
   wasm: '',
 }
 
-/**
- * Resolve the packages holding global Vue state (such as injection keys) to a single entry, so that
- * copies installed for different peer dependencies are not bundled more than once.
- */
-function getVueAliases (nuxt: Nuxt, name: 'client' | 'server') {
-  const aliases: Record<string, string> = {}
-  const from = [directoryToURL(nuxt.options.rootDir), directoryToURL(nuxt.options.workspaceDir), import.meta.url]
-  const conditions = name === 'server' ? ['node', 'import', 'default'] : ['browser', 'import', 'default']
-  for (const pkg of ['@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity', '@vue/shared', '@vue/runtime-vapor', 'vue-router']) {
-    const entry = resolveModulePath(pkg, { from, conditions, try: true })
-    if (entry) {
-      aliases[`${pkg}$`] = entry
-    }
-  }
-  return aliases
-}
-
 function getDevtool (sourcemap: boolean | 'hidden' | 'nosource', devtool: 'cheap-module-source-map' | 'source-map') {
   if (sourcemap === 'hidden') {
     return `hidden-${devtool}` as const
@@ -299,44 +284,12 @@ function getDevtool (sourcemap: boolean | 'hidden' | 'nosource', devtool: 'cheap
 }
 
 function getDefines (nuxt: Nuxt, name: 'client' | 'server') {
-  const isClient = name === 'client'
-  const isServer = name === 'server'
-
-  const define: Record<string, string | boolean> = {
-    '__NUXT_VERSION__': JSON.stringify(nuxt._version),
-    '__NUXT_ASYNC_CONTEXT__': nuxt.options.experimental.asyncContext,
+  return {
+    ...getNuxtDefines(nuxt, name),
     '__VUE_OPTIONS_API__': nuxt.options.vue.optionsApi,
     '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(nuxt.options.debug && nuxt.options.debug.hydration),
-    'process.env.VUE_ENV': JSON.stringify(name),
-    'process.dev': nuxt.options.dev,
-    'process.test': nuxt.options.test,
-    'process.browser': isClient,
-    'process.client': isClient,
-    'process.server': isServer,
-    'import.meta.dev': nuxt.options.dev,
-    'import.meta.test': nuxt.options.test,
-    'import.meta.browser': isClient,
-    'import.meta.client': isClient,
-    'import.meta.envName': JSON.stringify(nuxt.options.envName),
-    'import.meta.server': isServer,
   }
-
-  if (isClient) {
-    define['process.prerender'] = false
-    define['process.nitro'] = false
-    define['import.meta.prerender'] = false
-    define['import.meta.nitro'] = false
-  } else {
-    // wrap in an IIFE, forcing it to be evaluated at runtime
-    define['process.prerender'] = '(()=>process.prerender)()'
-    define['process.nitro'] = '(()=>process.nitro)()'
-    define['import.meta.prerender'] = '(()=>import.meta.prerender)()'
-    define['import.meta.nitro'] = '(()=>import.meta.nitro)()'
-  }
-
-  return define
 }
-
 /**
  * Files outside of the project (such as `node_modules`) are not transpiled by
  * Rsbuild unless they match `source.include`.
