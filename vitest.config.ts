@@ -60,7 +60,7 @@ const commonSettings: NuxtConfig = {
 // Matrix combinations for fixture tests (matches CI matrix with exclusions)
 interface FixtureMatrixEntry {
   env: 'dev' | 'built'
-  builder: 'vite' | 'vite-env-api' | 'rspack' | 'webpack'
+  builder: 'vite' | 'vite-env-api' | 'rsbuild' | 'rspack' | 'webpack'
   context: 'async' | 'default'
   manifest: 'manifest-on' | 'manifest-off'
   payload: 'json' | 'js'
@@ -79,6 +79,8 @@ const fixtureMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-on', payload: 'js' },
   { env: 'dev', builder: 'vite-env-api', context: 'default', manifest: 'manifest-on', payload: 'json' },
   { env: 'built', builder: 'vite-env-api', context: 'default', manifest: 'manifest-on', payload: 'json' },
+  { env: 'dev', builder: 'rsbuild', context: 'async', manifest: 'manifest-on', payload: 'json' },
+  { env: 'built', builder: 'rsbuild', context: 'default', manifest: 'manifest-on', payload: 'json' },
   { env: 'dev', builder: 'rspack', context: 'async', manifest: 'manifest-on', payload: 'json' },
   { env: 'built', builder: 'rspack', context: 'default', manifest: 'manifest-on', payload: 'json' },
   { env: 'dev', builder: 'webpack', context: 'async', manifest: 'manifest-on', payload: 'json' },

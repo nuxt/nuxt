@@ -469,6 +469,15 @@ catalogs:
     '@rollup/plugin-babel':
       specifier: 7.1.0
       version: 7.1.0
+    '@rsbuild/plugin-pug':
+      specifier: 2.0.0
+      version: 2.0.0
+    '@rsbuild/plugin-type-check':
+      specifier: 1.6.1
+      version: 1.6.1
+    '@rsdoctor/types':
+      specifier: 1.6.5
+      version: 1.6.5
     '@rspack/core':
       specifier: 2.3.2
       version: 2.3.2
@@ -679,6 +688,9 @@ catalogs:
       specifier: ^0.14.5
       version: 0.14.5
   vue:
+    '@rsbuild/plugin-vue':
+      specifier: ^2.0.1
+      version: 2.0.1
     '@vitejs/plugin-vue':
       specifier: ^6.0.10
       version: 6.0.10
@@ -799,6 +811,9 @@ importers:
       '@nuxt/kit':
         specifier: workspace:*
         version: link:packages/kit
+      '@nuxt/rsbuild-builder':
+        specifier: workspace:*
+        version: link:packages/rsbuild
       '@nuxt/rspack-builder':
         specifier: workspace:*
         version: link:packages/rspack
@@ -811,6 +826,9 @@ importers:
       '@playwright/test':
         specifier: catalog:dev
         version: 1.65.0
+      '@rsbuild/core':
+        specifier: catalog:webpack
+        version: 2.3.1
       '@rspack/core':
         specifier: catalog:dev
         version: 2.3.2(@swc/helpers@0.5.23)
@@ -1471,6 +1489,79 @@ importers:
         specifier: catalog:dev
         version: 0.3.2(@volar/typescript@2.4.30(typescript@6.0.3))(@vue/compiler-core@3.5.45)(@vue/language-core@3.3.14)(esbuild@0.28.2)(rolldown@1.2.15)(typescript@6.0.3)(vue@3.5.45(typescript@6.0.3))
 
+  packages/rsbuild:
+    dependencies:
+      '@nuxt/kit':
+        specifier: workspace:*
+        version: link:../kit
+      '@rsbuild/core':
+        specifier: catalog:webpack
+        version: 2.3.1
+      '@rsbuild/plugin-vue':
+        specifier: catalog:vue
+        version: 2.0.1(@rsbuild/core@2.3.1)(@rspack/core@2.3.2(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.45)(vue@3.5.45(typescript@6.0.3))
+      '@vue/compiler-sfc':
+        specifier: 3.5.45
+        version: 3.5.45
+      defu:
+        specifier: catalog:build
+        version: 6.1.7
+      escape-string-regexp:
+        specifier: catalog:build
+        version: 5.0.0
+      exsolve:
+        specifier: catalog:build
+        version: 1.2.0
+      knitwork:
+        specifier: catalog:build
+        version: 1.3.0
+      nuxt:
+        specifier: workspace:*
+        version: link:../nuxt
+      ohash:
+        specifier: catalog:build
+        version: 2.0.12
+      pathe:
+        specifier: catalog:build
+        version: 2.0.3
+      rolldown-string:
+        specifier: catalog:vite
+        version: 0.3.1(rolldown@1.2.15)
+      seroval:
+        specifier: catalog:build
+        version: 1.8.0
+      ufo:
+        specifier: catalog:build
+        version: 1.6.4
+      unenv:
+        specifier: catalog:build
+        version: 2.0.0-rc.24
+      vue-bundle-renderer:
+        specifier: catalog:build
+        version: 2.5.0
+    devDependencies:
+      '@nuxt/schema':
+        specifier: workspace:*
+        version: link:../schema
+      '@rsbuild/plugin-type-check':
+        specifier: catalog:dev
+        version: 1.6.1(@rsbuild/core@2.3.1)(@rspack/core@2.3.2(@swc/helpers@0.5.23))(typescript@6.0.3)
+      '@rsdoctor/types':
+        specifier: catalog:dev
+        version: 1.6.5(@rspack/core@2.3.2(@swc/helpers@0.5.23))(webpack@5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.2)(svgo@4.1.0))
+      h3:
+        specifier: 1.15.11
+        version: 1.15.11
+      h3-next:
+        specifier: npm:h3@2.0.2
+        version: h3@2.0.2(crossws@0.4.17(srvx@1.0.5))(ocache@0.3.0)
+      tsdown:
+        specifier: catalog:dev
+        version: 0.23.2(@arethetypeswrong/core@0.18.5)(@volar/typescript@2.4.30(typescript@6.0.3))(@vue/language-core@3.3.14)(oxc-resolver@11.24.2)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))
+      vue:
+        specifier: 3.5.45
+        version: 3.5.45(typescript@6.0.3)
+
   packages/rspack:
     dependencies:
       '@nuxt/kit':
@@ -1634,6 +1725,9 @@ importers:
       '@rsbuild/core':
         specifier: catalog:webpack
         version: 2.3.1
+      '@rsbuild/plugin-vue':
+        specifier: catalog:vue
+        version: 2.0.1(@rsbuild/core@2.3.1)(@rspack/core@2.3.2(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.45)(vue@3.5.45(typescript@6.0.3))
       '@types/pug':
         specifier: catalog:dev
         version: 2.0.10
@@ -2111,6 +2205,9 @@ importers:
 
   test/fixtures/basic:
     dependencies:
+      '@nuxt/rsbuild-builder':
+        specifier: workspace:*
+        version: link:../../../packages/rsbuild
       '@nuxt/rspack-builder':
         specifier: workspace:*
         version: link:../../../packages/rspack
@@ -2127,6 +2224,9 @@ importers:
       '@babel/plugin-syntax-jsx':
         specifier: catalog:dev
         version: 8.0.1(@babel/core@8.1.0)
+      '@rsbuild/plugin-pug':
+        specifier: catalog:dev
+        version: 2.0.0(@rsbuild/core@2.3.1)
       '@vue/devtools-api':
         specifier: catalog:dev
         version: 8.2.1
@@ -2278,6 +2378,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
     devDependencies:
+      '@rsbuild/plugin-pug':
+        specifier: catalog:dev
+        version: 2.0.0(@rsbuild/core@2.3.1)
       pug:
         specifier: catalog:dev
         version: 3.0.4
@@ -5252,6 +5355,44 @@ packages:
       core-js:
         optional: true
 
+  '@rsbuild/plugin-pug@2.0.0':
+    resolution: {integrity: sha512-Vc/doi6WjKBeDFEi0zdMNIrl3lgF4K6kgVLLB9zj6HaBrUDGSuOsk3YBNOUEa0fngvglKpFIvg9ZrHf4EGjm6g==}
+    peerDependencies:
+      '@rsbuild/core': ^1.0.0 || ^2.0.0
+    peerDependenciesMeta:
+      '@rsbuild/core':
+        optional: true
+
+  '@rsbuild/plugin-type-check@1.6.1':
+    resolution: {integrity: sha512-g165ahVlnw4/tj5NssoyEWElMKoS8aloWfbKXk+jWZUXzvEGsFAxgjvTbg0CEKgQU9sSl3Wxg/dZPNlZAVKTpA==}
+    peerDependencies:
+      '@rsbuild/core': ^1.0.0 || ^2.0.0-0
+      '@typescript/native-preview': ^7.0.0-0
+    peerDependenciesMeta:
+      '@rsbuild/core':
+        optional: true
+      '@typescript/native-preview':
+        optional: true
+
+  '@rsbuild/plugin-vue@2.0.1':
+    resolution: {integrity: sha512-JbQ/e4J7lICXC6JpovJS9PHlIT0Vl1XngTni3HuVkXF82Q18k8nd0RmRDVRDFcb/mvqij5ITwZsez9h3DoYcQQ==}
+    peerDependencies:
+      '@rsbuild/core': ^2.0.0
+    peerDependenciesMeta:
+      '@rsbuild/core':
+        optional: true
+
+  '@rsdoctor/types@1.6.5':
+    resolution: {integrity: sha512-qcmJXkkohhGM+7/OKLWBDZ88CCDstc7YFTQNBVNO2bQ4xDyLjjWYg1MiS4Lsy3dC0BC7Sqy35eunIvmlnkMabw==}
+    peerDependencies:
+      '@rspack/core': '*'
+      webpack: 5.x
+    peerDependenciesMeta:
+      '@rspack/core':
+        optional: true
+      webpack:
+        optional: true
+
   '@rspack/binding-darwin-arm64@2.3.2':
     resolution: {integrity: sha512-6ouAc7766psf4i7E1jk4oE99GhHBYh3JwJhHkmortSig9dJzonPM7VIhP7yHdclw7iKNNrC+XMIw9HtcVTLxnw==}
     cpu: [arm64]
@@ -5487,6 +5628,9 @@ packages:
   '@types/estree@1.0.10':
     resolution: {integrity: sha512-lTyOMnOcmRBzdCv6/4zUZCrEhV0xrqQiUZBZtVcbmLHBXKLnN8q89v/wKRF/Q0HbwVsqbIG3o5HDoFl9sduM+g==}
 
+  '@types/estree@1.0.5':
+    resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
+
   '@types/gensync@1.0.5':
     resolution: {integrity: sha512-MbsRCT7mTikHwKZ0X+LVUTLRrZZRLipTuXEO9qOYO+zmjMVk81axyClMROf6uoPD9MRVu46bx8zoR0Ad9q3NAg==}
 
@@ -5540,6 +5684,9 @@ packages:
 
   '@types/retry@0.12.2':
     resolution: {integrity: sha512-XISRgDJ2Tc5q4TRqvgJtzsRkFYNJzZrhTdtMoGVBttwzzQJkPnS3WWTFc7kuDRoPtPakl+T+OfdEUjYJj7Jbow==}
+
+  '@types/tapable@2.3.0':
+    resolution: {integrity: sha512-oMnbAXeVo+KUnje3hzdORXUbfnzTfqD0H92mLl19NE5hFqH9Q4ktq+xehNSxcNeeLm1COopYwa0zeP6Iz+oIXg==}
 
   '@types/triple-beam@1.3.5':
     resolution: {integrity: sha512-6WaYesThRMCl19iryMYP7/x2OVgCtbIVflDGFpWnb9irXI3UjYE4AzmYuiUKY1AJstGijoY+MgUszMgRxIYTYw==}
@@ -7091,7 +7238,7 @@ packages:
       '@swc/css': '*'
       clean-css: '*'
       csso: '*'
-      esbuild: '*'
+      esbuild: 0.28.2
       lightningcss: '*'
       webpack: ^5.0.0
     peerDependenciesMeta:
@@ -9035,6 +9182,9 @@ packages:
   lodash.uniq@4.5.0:
     resolution: {integrity: sha512-xfBaXQd9ryd9dlSDvnvI0lvxfLJlYAZzXomUYzLKtUeOQvOP5piqAWuGtrhWeqaXK9hhoM/iyJc5AV+XfsX3HQ==}
 
+  lodash@4.18.1:
+    resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
+
   logform@2.7.0:
     resolution: {integrity: sha512-TFYA4jnP7PVbmlBIfhlSe+WKxs9dklXMTEGcBCIvLhE/Tn3H6Gk1norupVW7m5Cnd4bLcr08AytbyV/xj7f/kQ==}
     engines: {node: '>= 12.0.0'}
@@ -9370,7 +9520,7 @@ packages:
       clean-css: '*'
       cssnano: '*'
       csso: '*'
-      esbuild: '*'
+      esbuild: 0.28.2
       html-minifier-terser: '*'
       imagemin: '*'
       lightningcss: '*'
@@ -10402,6 +10552,9 @@ packages:
     resolution: {integrity: sha512-DJnGAeenTdpMEH6uAJRK/uiyEIH9WVsUmoLwzudwGJUwZPp80PDBWPHXSAGNPwNvIXAbe7MSUB1zQFugFml66A==}
     engines: {node: '>=4'}
 
+  reduce-configs@1.1.2:
+    resolution: {integrity: sha512-AgBP55V8FC7NaqoOP2RCbTpu6LE+YuX3LUZkNAoitcfyS3/PIC8Obg/TJrBzTkJ+lDvZv0TTAeDpLkzjTtYlbw==}
+
   refa@0.12.1:
     resolution: {integrity: sha512-J8rn6v4DBb2nnFqkqwy6/NnTYMcgLA+sLr0iIO41qpv0n+ngb7ksag2tMRl0inb1bbO/esUwzW1vbJi7K0sI0g==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
@@ -10598,8 +10751,8 @@ packages:
     resolution: {integrity: sha512-i6W3epmp98tibZ2rycV6YP4FhSJvvui9JnJm7SicSC1fXzkPBGSS1g9BNZLGUqVGM6opWEq/Aw2uzD3Q0pnQOg==}
     peerDependencies:
       '@rspack/core': ^1.0.0 || ^2.0.0
-      '@vue/compiler-sfc': '*'
-      vue: '*'
+      '@vue/compiler-sfc': 3.5.45
+      vue: 3.5.45
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -10721,7 +10874,7 @@ packages:
     resolution: {integrity: sha512-Ywn4OnzGukp7CDMrp08RQ50YKmuwG47brZgIVPTvBaaAfQlRlygrRqSrxdCiL9M+LlzLBiJ68IR1QqvzHyjC7g==}
     engines: {node: '>=20.9.0'}
     peerDependencies:
-      '@types/node': '*'
+      '@types/node': 24.19.2
     peerDependenciesMeta:
       '@types/node':
         optional: true
@@ -11858,8 +12011,8 @@ packages:
   vue-loader@17.4.2:
     resolution: {integrity: sha512-yTKOA4R/VN4jqjw4y5HrynFL8AK0Z3/Jt7eOJXEitsm0GMRHDBjCfCiuTiLP7OESvsZYo2pATCWhDqxC5ZrM6w==}
     peerDependencies:
-      '@vue/compiler-sfc': '*'
-      vue: '*'
+      '@vue/compiler-sfc': 3.5.45
+      vue: 3.5.45
       webpack: ^4.1.0 || ^5.0.0-0
     peerDependenciesMeta:
       '@vue/compiler-sfc':
@@ -14847,6 +15000,47 @@ snapshots:
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
 
+  '@rsbuild/plugin-pug@2.0.0(@rsbuild/core@2.3.1)':
+    dependencies:
+      '@types/pug': 2.0.10
+      lodash: 4.18.1
+      pug: 3.0.4
+      reduce-configs: 1.1.2
+    optionalDependencies:
+      '@rsbuild/core': 2.3.1
+
+  '@rsbuild/plugin-type-check@1.6.1(@rsbuild/core@2.3.1)(@rspack/core@2.3.2(@swc/helpers@0.5.23))(typescript@6.0.3)':
+    dependencies:
+      deepmerge: 4.3.1
+      json5: 2.2.3
+      reduce-configs: 1.1.2
+      ts-checker-rspack-plugin: 1.7.2(@rspack/core@2.3.2(@swc/helpers@0.5.23))(typescript@6.0.3)
+    optionalDependencies:
+      '@rsbuild/core': 2.3.1
+    transitivePeerDependencies:
+      - '@rspack/core'
+      - typescript
+
+  '@rsbuild/plugin-vue@2.0.1(@rsbuild/core@2.3.1)(@rspack/core@2.3.2(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.45)(vue@3.5.45(typescript@6.0.3))':
+    dependencies:
+      rspack-vue-loader: 17.7.2(@rspack/core@2.3.2(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.45)(vue@3.5.45(typescript@6.0.3))
+    optionalDependencies:
+      '@rsbuild/core': 2.3.1
+    transitivePeerDependencies:
+      - '@rspack/core'
+      - '@vue/compiler-sfc'
+      - vue
+
+  '@rsdoctor/types@1.6.5(@rspack/core@2.3.2(@swc/helpers@0.5.23))(webpack@5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.2)(svgo@4.1.0))':
+    dependencies:
+      '@types/connect': 3.4.38
+      '@types/estree': 1.0.5
+      '@types/tapable': 2.3.0
+      source-map: 0.7.6
+    optionalDependencies:
+      '@rspack/core': 2.3.2(@swc/helpers@0.5.23)
+      webpack: 5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.2)(svgo@4.1.0)
+
   '@rspack/binding-darwin-arm64@2.3.2':
     optional: true
 
@@ -15101,6 +15295,8 @@ snapshots:
 
   '@types/estree@1.0.10': {}
 
+  '@types/estree@1.0.5': {}
+
   '@types/gensync@1.0.5': {}
 
   '@types/hash-sum@1.0.2': {}
@@ -15146,6 +15342,10 @@ snapshots:
   '@types/resolve@1.20.2': {}
 
   '@types/retry@0.12.2': {}
+
+  '@types/tapable@2.3.0':
+    dependencies:
+      tapable: 2.3.3
 
   '@types/triple-beam@1.3.5': {}
 
@@ -18107,7 +18307,7 @@ snapshots:
   h3@2.0.2(crossws@0.4.17(srvx@1.0.5))(ocache@0.3.0):
     dependencies:
       rou3: 1.0.0
-      srvx: 1.0.5
+      srvx: 1.0.8
     optionalDependencies:
       crossws: 0.4.17(srvx@1.0.5)
       ocache: 0.3.0
@@ -19071,6 +19271,8 @@ snapshots:
   lodash.once@4.1.1: {}
 
   lodash.uniq@4.5.0: {}
+
+  lodash@4.18.1: {}
 
   logform@2.7.0:
     dependencies:
@@ -20838,6 +21040,8 @@ snapshots:
   redis-parser@3.0.0:
     dependencies:
       redis-errors: 1.2.0
+
+  reduce-configs@1.1.2: {}
 
   refa@0.12.1:
     dependencies:

@@ -13,10 +13,12 @@ import { buildServerRoutes, collectPageRoutes, collectServerRoutes, emitServerRo
 
 const builderEnvTypes: Record<string, string> = {
   // defaults from `builder` based on package name
+  '@nuxt/rsbuild-builder': '@rsbuild/core/types',
   '@nuxt/rspack-builder': '@rsbuild/core/types',
   '@nuxt/vite-builder': 'vite/client',
   '@nuxt/webpack-builder': 'webpack/module',
   // simpler overrides from `typescript.builder`
+  'rsbuild': '@rsbuild/core/types',
   'rspack': '@rsbuild/core/types',
   'vite': 'vite/client',
   'webpack': 'webpack/module',

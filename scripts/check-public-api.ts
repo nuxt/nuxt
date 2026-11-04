@@ -40,6 +40,7 @@ const entrypoints: Record<string, PublicEntrypoint> = {
       '@vitejs/plugin-vue',
       '@vitejs/plugin-vue-jsx',
       '@rsbuild/core',
+      '@rsbuild/plugin-vue',
       'webpack',
       'webpack-bundle-analyzer',
       'webpack-dev-middleware',

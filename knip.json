@@ -25,7 +25,9 @@
     "ofetch",
     "verkit",
     "@nuxt/webpack-builder",
+    "@nuxt/rsbuild-builder",
     "@nuxt/rspack-builder",
+    "@rsbuild/core",
     "@rspack/core"
   ],
   "workspaces": {
@@ -66,6 +68,7 @@
       "ignoreDependencies": [
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-jsx",
+        "@rsbuild/plugin-pug",
         "nested-dep"
       ]
     },
@@ -78,7 +81,7 @@
         "~/*": ["./*"],
         "#shared/*": ["./shared/*"]
       },
-      "ignoreDependencies": ["pug"]
+      "ignoreDependencies": ["@rsbuild/plugin-pug", "pug"]
     },
     "test/fixtures/unhead-duplicate": {
       "entry": [
@@ -175,6 +178,18 @@
         "raw-loader",
         "url-loader",
         "vue"
+      ]
+    },
+    "packages/rsbuild": {
+      "ignoreDependencies": [
+        "@vue/compiler-sfc",
+        "escape-string-regexp",
+        "exsolve",
+        "knitwork",
+        "ohash",
+        "seroval",
+        "vue",
+        "vue-bundle-renderer"
       ]
     },
     "packages/rspack": {

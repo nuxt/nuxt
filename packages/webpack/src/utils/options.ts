@@ -1,7 +1,58 @@
 import type { Nuxt } from '@nuxt/schema'
-import { resolveAlias } from '@nuxt/kit'
+import { directoryToURL, resolveAlias } from '@nuxt/kit'
 import escapeRegExp from 'escape-string-regexp'
+import { resolveModulePath } from 'exsolve'
 import { normalize } from 'pathe'
+
+/**
+ * Compile-time constants of the Nuxt app for the client or server bundle.
+ */
+export function getNuxtDefines (nuxt: Nuxt, name: 'client' | 'server'): Record<string, string | boolean> {
+  const isClient = name === 'client'
+  const isServer = name === 'server'
+
+  const define: Record<string, string | boolean> = {
+    '__NUXT_VERSION__': JSON.stringify(nuxt._version),
+    '__NUXT_ASYNC_CONTEXT__': nuxt.options.experimental.asyncContext,
+    'process.env.VUE_ENV': JSON.stringify(name),
+    'process.dev': nuxt.options.dev,
+    'process.test': nuxt.options.test,
+    'process.browser': isClient,
+    'process.client': isClient,
+    'process.server': isServer,
+    'import.meta.dev': nuxt.options.dev,
+    'import.meta.test': nuxt.options.test,
+    'import.meta.browser': isClient,
+    'import.meta.client': isClient,
+    'import.meta.envName': JSON.stringify(nuxt.options.envName),
+    'import.meta.server': isServer,
+  }
+
+  for (const key of ['prerender', 'nitro']) {
+    // wrapped in an IIFE on the server, forcing it to be evaluated at runtime
+    define[`process.${key}`] = isClient ? false : `(()=>process.${key})()`
+    define[`import.meta.${key}`] = isClient ? false : `(()=>import.meta.${key})()`
+  }
+
+  return define
+}
+
+/**
+ * Pin the packages that hold global vue state (`currentInstance`, reactivity
+ * internals, injection keys) to a single resolved entry.
+ */
+export function resolveVueAliases (nuxt: Nuxt, isServer: boolean): Record<string, string> {
+  const aliases: Record<string, string> = {}
+  const from = [directoryToURL(nuxt.options.rootDir), directoryToURL(nuxt.options.workspaceDir), import.meta.url]
+  const conditions = isServer ? ['node', 'import', 'default'] : ['browser', 'import', 'default']
+  for (const pkg of ['@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity', '@vue/shared', '@vue/runtime-vapor', 'vue-router']) {
+    const entry = resolveModulePath(pkg, { from, conditions, try: true })
+    if (entry) {
+      aliases[`${pkg}$`] = entry
+    }
+  }
+  return aliases
+}
 
 /**
  * Patterns of the modules outside of the project to transpile, including `build.transpile`

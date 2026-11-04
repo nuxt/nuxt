@@ -7,7 +7,7 @@ import { joinURL } from 'ufo'
 
 export interface MatrixOptions {
   isDev: boolean
-  builder: 'vite' | 'rspack' | 'webpack'
+  builder: 'vite' | 'rsbuild' | 'rspack' | 'webpack'
 }
 
 export function fixtureDir (name: string): string {

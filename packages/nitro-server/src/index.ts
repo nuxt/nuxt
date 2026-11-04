@@ -1166,6 +1166,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           }
         }
       })
+    }
+    for (const builder of ['webpack', 'rspack', 'rsbuild'] as const) {
       nuxt.hook(`${builder}:compiled`, () => {
         if (nitroBuilt) { nitro.hooks.callHook('rollup:reload') }
       })

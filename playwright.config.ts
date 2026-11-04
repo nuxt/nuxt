@@ -8,6 +8,7 @@ type E2eConfigOptions = ConfigOptions & MatrixOptions
 // dev-mode tests are placed third to spread them across both Windows shards
 const e2eMatrix = [
   { builder: 'webpack', isDev: false },
+  { builder: 'rsbuild', isDev: false },
   { builder: 'rspack', isDev: false },
   { builder: 'vite', isDev: true },
   { builder: 'vite', isDev: false },
@@ -29,7 +30,7 @@ function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
   return [
     ...entry.isDev ? builtOnlyTests : devOnlyTests,
     ...isVite ? [] : [...viteOnlyTests, ...runtimeTests],
-    ...entry.builder === 'rspack' ? rspackExcludedTests : [],
+    ...entry.builder === 'rspack' || entry.builder === 'rsbuild' ? rspackExcludedTests : [],
   ].map(name => `**/${name}.test.ts`)
 }
 

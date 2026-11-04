@@ -91,6 +91,7 @@ catalogs:
     srvx: 1.0.5
     unstorage: ^1.17.5
   vue:
+    '@rsbuild/plugin-vue': ^2.0.1
     '@vitejs/plugin-vue': ^6.0.10
     '@vue/compiler-sfc': 3.5.45
     rspack-vue-loader: ^17.7.2
@@ -209,6 +210,9 @@ catalogs:
     '@parcel/watcher': 2.6.0
     '@playwright/test': 1.65.0
     '@rollup/plugin-babel': 7.1.0
+    '@rsbuild/plugin-pug': 2.0.0
+    '@rsbuild/plugin-type-check': 1.6.1
+    '@rsdoctor/types': 1.6.5
     '@rspack/core': 2.3.2
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5

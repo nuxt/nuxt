@@ -1899,11 +1899,13 @@ describe.skipIf(isDev || !oncePerBuild)('inlining component styles', () => {
     // TODO: currently functional component not associated with ssrContext (upstream bug or perf optimization?)
     // '{--functional:"functional"}', // CSS imported ambiently in a functional component
   ]
+  // Lightning CSS (used by Rsbuild) merges adjacent rules with the same selector when minifying
+  const normalizeStyle = (style: string) => builder === 'rsbuild' ? style.replace(/^\{|\}$/g, '') : style
 
   it('should inline styles', async () => {
     const html = await $fetch<string>('/styles')
     for (const style of inlinedCSS) {
-      expect.soft(html).toContain(style)
+      expect.soft(html).toContain(normalizeStyle(style))
     }
   })
 
@@ -1938,10 +1940,10 @@ describe.skipIf(isDev || !oncePerBuild)('inlining component styles', () => {
       }
       // webpack can hoist component level css up to a shared css file
       if (isWebpack && nonGlobalCSS.includes(style)) {
-        expect.soft(css).toContain(style)
+        expect.soft(css).toContain(normalizeStyle(style))
         continue
       }
-      expect.soft(css).not.toContain(style)
+      expect.soft(css).not.toContain(normalizeStyle(style))
     }
 
     // should include unloadable CSS in generated CSS file

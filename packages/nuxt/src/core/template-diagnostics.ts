@@ -57,6 +57,8 @@ export function setupTemplateDiagnostics (nuxt: Nuxt): void {
     template.compilerOptions = withDiagnostics(template.compilerOptions)
     const loader = nuxt.options.webpack.loaders.vue
     loader.compilerOptions = withDiagnostics(loader.compilerOptions)
+    const rsbuildLoader = (nuxt.options.rsbuild.vue ||= {}).vueLoaderOptions ||= {}
+    rsbuildLoader.compilerOptions = withDiagnostics(rsbuildLoader.compilerOptions)
   })
 }
 
