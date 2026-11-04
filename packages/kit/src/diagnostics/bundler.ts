@@ -143,7 +143,7 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B7029: {
       why: '`@nuxt/rspack-builder` is deprecated and will be removed in a future major version of Nuxt.',
-      fix: 'Set `builder: \'rsbuild\'` in your `nuxt.config` to use `@nuxt/rsbuild-builder` instead.',
+      fix: 'Install `@nuxt/rsbuild-builder` and set `builder: \'rsbuild\'` in your `nuxt.config`. See https://nuxt.com/docs/5.x/getting-started/upgrade#rspack-builder-is-replaced-by-the-rsbuild-builder for the options and hooks that change.',
       docs: false,
     },
     NUXT_B7030: {
