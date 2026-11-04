@@ -11,6 +11,7 @@ import { injectHead } from '../composables/head'
 import { stateDiagnostics } from '../diagnostics/state'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
+import { documentURL } from '../internal/location'
 
 import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
@@ -131,8 +132,8 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     nuxtApp.hooks.hook('link:prefetch', (url) => {
       onNuxtReady(() => {
-        const { hostname } = new URL(url, document.baseURI)
-        if (hostname !== window.location.hostname) { return }
+        const documentLocation = documentURL()
+        if (new URL(url, documentLocation).hostname !== documentLocation.hostname) { return }
         const group = prefetchGroup(url)
         schedule({
           key: `payload:${url}`,

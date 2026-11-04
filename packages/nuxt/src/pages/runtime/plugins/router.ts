@@ -22,6 +22,7 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
 import { serverPathFallback, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import { traceAsync } from '#app/internal/tracing'
+import { documentURL } from '#app/internal/location'
 
 // matches a trailing slash on the path only, leaving query and hash significant
 const PATH_TRAILING_SLASH_RE = /\/(?=$|[?#])/
@@ -260,8 +261,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       router.beforeResolve((to) => {
         // never reload the path this document was served for, so an SPA fallback cannot loop
         if (to.matched.length || isSamePath(to.path, documentPath)) { return }
-        const url = new URL(withBase(to.fullPath, routerBase), window.location.href)
-        if (url.origin === window.location.origin) {
+        const documentLocation = documentURL()
+        const url = new URL(withBase(to.fullPath, routerBase), documentLocation)
+        if (url.origin === documentLocation.origin) {
           window.location.assign(url)
           return false
         }
