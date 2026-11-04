@@ -15,7 +15,81 @@ afterEach(() => {
   document.body.innerHTML = ''
 })
 
+async function mountDeferred (component: Component, html: string, interaction?: keyof HTMLElementEventMap) {
+  let resolve!: (component: Component) => void
+  const loader = vi.fn(() => new Promise<Component>((res) => { resolve = res }))
+  const lazy = createLazyInteractionComponent('deferred', loader)
+  document.body.innerHTML = `<div id="app">${html}</div>`
+  app = createSSRApp({ render: () => h(lazy, { hydrateOnInteraction: interaction }) })
+  app.mount('#app')
+  await flushPromises()
+  return {
+    loader,
+    hydrate: async () => {
+      resolve(component)
+      await flushPromises()
+    },
+  }
+}
+
 describe('interaction hydration', () => {
+  it('coalesces pending input events for each target to its latest update', async () => {
+    const values: string[] = []
+    const onInput = vi.fn((event: Event) => { values.push((event.target as HTMLInputElement).value) })
+    const component = defineComponent({ setup: () => () => h('input', { onInput }) })
+    const { hydrate } = await mountDeferred(component, '<input>', 'input')
+    const input = document.querySelector('input')!
+    for (const value of ['a', 'ab', 'abc']) {
+      input.value = value
+      input.dispatchEvent(new InputEvent('input', { bubbles: true, data: value.at(-1) }))
+    }
+    await flushPromises()
+    await hydrate()
+    expect(values).toEqual(['abc'])
+    expect(onInput.mock.calls[0]![0]).toMatchObject({ data: 'c' })
+  })
+
+  it('bounds queued events when a component takes a long time to load', async () => {
+    const onPointermove = vi.fn()
+    const component = defineComponent({ setup: () => () => h('button', { onPointermove }, 'Move') })
+    const { loader, hydrate } = await mountDeferred(component, '<button>Move</button>', 'pointermove')
+    const target = document.querySelector('button')!
+    for (let clientX = 0; clientX < 500; clientX++) {
+      target.dispatchEvent(new MouseEvent('pointermove', { clientX }))
+    }
+    await flushPromises()
+    await hydrate()
+    expect(loader).toHaveBeenCalledOnce()
+    expect(onPointermove).toHaveBeenCalledTimes(50)
+    expect(onPointermove.mock.calls.map(([event]) => event.clientX)).toEqual(Array.from({ length: 50 }, (_, i) => i))
+  })
+
+  it('does not replay pointerenter after the pointer has left during loading', async () => {
+    const onPointerenter = vi.fn()
+    const onClick = vi.fn()
+    const component = defineComponent({ setup: () => () => h('button', { onPointerenter, onClick }, 'Hover') })
+    const { hydrate } = await mountDeferred(component, '<button>Hover</button>')
+    const target = document.querySelector('button')!
+    target.dispatchEvent(new Event('pointerenter'))
+    target.dispatchEvent(new Event('pointerleave'))
+    target.click()
+    await flushPromises()
+    await hydrate()
+    expect(onPointerenter).not.toHaveBeenCalled()
+    expect(onClick).toHaveBeenCalledOnce()
+  })
+
+  it('hydrates when a nested input receives keyboard focus', async () => {
+    const onFocus = vi.fn()
+    const component = defineComponent({ setup: () => () => h('div', [h('input', { onFocus })]) })
+    const { loader, hydrate } = await mountDeferred(component, '<div><input></div>')
+    document.querySelector('input')!.focus()
+    await flushPromises()
+    expect(loader).toHaveBeenCalledOnce()
+    await hydrate()
+    expect(onFocus).toHaveBeenCalledOnce()
+  })
+
   it.each([
     ['default', undefined, 'click'],
     ['array', ['click'], 'click'],
