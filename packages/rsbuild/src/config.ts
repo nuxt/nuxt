@@ -283,6 +283,7 @@ function getDefines (nuxt: Nuxt, name: 'client' | 'server') {
   const define: Record<string, string | boolean> = {
     '__NUXT_VERSION__': JSON.stringify(nuxt._version),
     '__NUXT_ASYNC_CONTEXT__': nuxt.options.experimental.asyncContext,
+    '__VUE_OPTIONS_API__': nuxt.options.vue.optionsApi,
     '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(nuxt.options.debug && nuxt.options.debug.hydration),
     'process.env.VUE_ENV': JSON.stringify(name),
     'process.dev': nuxt.options.dev,
