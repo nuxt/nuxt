@@ -92,4 +92,9 @@ describe('`defineValidatedHandler`', () => {
   it('rejects an invalid body with a 400', async () => {
     await expect(handler(post({}))).rejects.toMatchObject({ status: 400 })
   })
+
+  it('resolves the same body each time `req.json()` is called', async () => {
+    const twice = defineValidatedHandler({ validate: { body: named }, handler: async event => [await event.req.json(), await event.req.json()] })
+    await expect(twice(post({ name: 'nuxt' }))).resolves.toEqual([{ name: 'NUXT' }, { name: 'NUXT' }])
+  })
 })

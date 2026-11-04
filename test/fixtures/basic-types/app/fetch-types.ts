@@ -40,6 +40,8 @@ export async function probe () {
   expectTypeOf<typeof validated>().not.toBeUnknown()
 
   // the same holds for `nuxt/server`'s `defineValidatedHandler`
+  const portable = await $fetch('/api/portable-validated', { method: 'POST', body: { title: 'a', count: 1 } })
+  expectTypeOf(portable).toEqualTypeOf<{ created: boolean }>()
   // @ts-expect-error `count` is not a string
   await $fetch('/api/portable-validated', { method: 'POST', body: { title: 'a', count: 'no' } })
   // @ts-expect-error the route validates a body, so it cannot be omitted

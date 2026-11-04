@@ -1,6 +1,6 @@
 import type { RequestEvent } from 'nuxt/schema'
 
-import { createError, getQuery, getRequestHeaders, isNuxtError, readBody } from './index'
+import { createError, getQuery, isNuxtError, readBody } from './index'
 import type { EventHandler } from './index'
 import type { NuxtErrorDetails } from '../app/error'
 
@@ -115,6 +115,8 @@ export async function readValidatedBody (event: Pick<RequestEvent, 'req'>, valid
   return validateData(await readBody(event), validate, options)
 }
 
+const BODY_READ_METHODS = new Set<PropertyKey>(['arrayBuffer', 'body', 'formData', 'text'])
+
 /** What a schema validates to, or `never` when there is none. */
 type OutputOf<S> = [S] extends [StandardSchema] ? SchemaOutput<S> : never
 
@@ -174,18 +176,30 @@ export function defineValidatedHandler<
   const { validate, handler } = definition
   return async (event): Promise<Awaited<Result>> => {
     if (validate.headers) {
-      await validateData(getRequestHeaders(event), validate.headers, validate)
+      const headers = await validateData(Object.fromEntries(event.req.headers), validate.headers, validate)
+      for (const [key, value] of Object.entries(headers as Record<string, unknown>)) {
+        event.req.headers.set(key, String(value))
+      }
     }
     if (validate.query) {
-      await validateData(getQuery(event), validate.query, validate)
+      const query = await validateData(Object.fromEntries(event.url.searchParams), validate.query, validate)
+      for (const [key, value] of Object.entries(query as Record<string, unknown>)) {
+        event.url.searchParams.set(key, String(value))
+      }
     }
     const body = validate.body
     if (body) {
+      let json: Promise<unknown> | undefined
       // `req` is reassigned rather than the event copied, which would drop what the runtime defines on it
       ;(event as { req: Request }).req = new Proxy(event.req, {
         get (target, property) {
           if (property === 'json') {
-            return () => readValidatedBody({ req: target }, body, validate)
+            return () => json ||= target.json().catch((error) => {
+              throw isNuxtError(error) ? error : createError({ status: 400, statusText: 'Bad Request', message: 'Invalid JSON body' })
+            }).then(data => validateData(data, body, validate))
+          }
+          if (BODY_READ_METHODS.has(property)) {
+            throw new TypeError(`Cannot access .${String(property)} on request with JSON validation enabled. Use .json() instead.`)
           }
           const value = Reflect.get(target, property, target)
           return typeof value === 'function' ? value.bind(target) : value

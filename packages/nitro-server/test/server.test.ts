@@ -172,6 +172,40 @@ describe('parity between the shipped implementations and h3', () => {
       .toEqual(await settle(h3.getValidatedQuery(query.h3, validate as never)))
   })
 
+  const upper = {
+    '~standard': {
+      version: 1 as const,
+      vendor: 'test',
+      validate: (value: unknown) => {
+        const entries = Object.entries(value as Record<string, unknown>).filter(([key]) => key.startsWith('x-') || key === 'name')
+        return entries.length && entries.every(([, v]) => typeof v === 'string')
+          ? { value: Object.fromEntries(entries.map(([key, v]) => [key, (v as string).toUpperCase()])) }
+          : { issues: [{ message: 'no', path: ['name'] }] }
+      },
+    },
+  }
+  const validatedPost = (body: string, url = 'https://nuxt.com/api', contentType = 'application/json') => new Request(url, {
+    method: 'POST',
+    body,
+    headers: { 'content-type': contentType, 'x-name': 'nuxt' },
+  })
+
+  it.for<[string, Request, Record<string, unknown>, (event: RequestEvent) => unknown]>([
+    ['a valid body', validatedPost('{"name":"nuxt"}'), { body: upper }, event => event.req.json()],
+    ['an invalid body', validatedPost('{"name":1}'), { body: upper }, event => event.req.json()],
+    ['a body that is not JSON', validatedPost('nope'), { body: upper }, event => event.req.json()],
+    ['a URL-encoded body', validatedPost('name=nuxt', undefined, 'application/x-www-form-urlencoded'), { body: upper }, event => event.req.json()],
+    ['a body read as text', validatedPost('{"name":"nuxt"}'), { body: upper }, event => event.req.text()],
+    ['a valid query', new Request('https://nuxt.com/api?name=nuxt'), { query: upper }, event => event.url.searchParams.get('name')],
+    ['an invalid query', new Request('https://nuxt.com/api?page=1'), { query: upper }, () => 'unreachable'],
+    ['valid headers', validatedPost('{}'), { headers: upper }, event => event.req.headers.get('x-name')],
+    ['invalid headers', new Request('https://nuxt.com/api'), { headers: upper }, () => 'unreachable'],
+    ['a custom error', new Request('https://nuxt.com/api'), { headers: upper, onError: () => ({ status: 422, message: 'custom' }) }, () => 'unreachable'],
+  ])('validates %s in a validated handler the same way', async ([, request, validate, read]) => {
+    const { shipped: a, h3: b } = await compare(request, (api, event) => api.defineValidatedHandler({ validate, handler: read } as never)(event))
+    expect(a).toEqual(b)
+  })
+
   const origin = 'https://nuxt.com'
   const preflight = { origin, 'access-control-request-method': 'PUT', 'access-control-request-headers': 'x-custom' }
 
