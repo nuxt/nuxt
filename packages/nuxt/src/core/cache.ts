@@ -8,8 +8,7 @@ import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
 import { dirname, join, relative, resolve } from 'pathe'
-import { createTar, parseTar } from 'nanotar'
-import type { TarFileInput } from 'nanotar'
+import { packTar, unpackTar } from 'modern-tar'
 
 export async function getVueHash (nuxt: Nuxt) {
   const id = 'vue'
@@ -75,6 +74,7 @@ export async function getVueHash (nuxt: Nuxt) {
 }
 
 const BUILD_OUTPUTS_FILE = 'build-outputs.json'
+const CACHE_FORMAT_VERSION = 2
 
 /**
  * The bundler is skipped entirely on a cache hit, so the `nuxt/*` build outputs
@@ -165,6 +165,9 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
   const start = Date.now()
   const hashSources: HashSource[] = []
 
+  // include in the build hash so a cache format change misses older caches
+  hashSources.push({ name: 'cache-format', data: CACHE_FORMAT_VERSION })
+
   // Layers
   let layerCtr = 0
   for (const layer of nuxt.options._layers) {
@@ -232,7 +235,9 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
   return res
 }
 
-type FileWithMeta = TarFileInput & {
+type FileWithMeta = {
+  name: string
+  data: Uint8Array
   attrs: {
     mtime: number
     size: number
@@ -311,15 +316,16 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
   }
 
   const resolvedCwd = resolve(cwd) + '/'
-  const files = parseTar(await readFile(cacheFile))
+  const files = await unpackTar(await readFile(cacheFile))
   for (const file of files) {
+    const name = file.header.name
     let fd: FileHandle | undefined = undefined
     try {
-      const filePath = resolve(cwd, file.name)
+      const filePath = resolve(cwd, name)
 
       // Prevent path traversal attacks
       if (!filePath.startsWith(resolvedCwd)) {
-        buildDiagnostics.NUXT_B1012({ path: file.name })
+        buildDiagnostics.NUXT_B1012({ path: name })
         continue
       }
 
@@ -329,9 +335,9 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       const existingStats = await stat(filePath).catch(() => null)
       const cachedSize = file.data?.byteLength ?? 0
       if (existingStats?.isFile() && existingStats.size === cachedSize) {
-        const lastModified = Number.parseInt(file.attrs?.mtime?.toString().padEnd(13, '0') || '0')
+        const lastModified = file.header.mtime?.getTime() ?? 0
         if (existingStats.mtime.getTime() >= lastModified) {
-          consola.debug(`Skipping \`${file.name}\` (up to date or newer than cache)`)
+          consola.debug(`Skipping \`${name}\` (up to date or newer than cache)`)
           continue
         }
       }
@@ -339,7 +345,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       fd = await open(filePath, 'w')
       await fd.writeFile(file.data!)
     } catch (err) {
-      buildDiagnostics.NUXT_B1013({ file: file.name, cause: err })
+      buildDiagnostics.NUXT_B1013({ file: name, cause: err })
     } finally {
       await fd?.close()
     }
@@ -352,7 +358,14 @@ async function writeCache (cwd: string, sources: string | string[], cacheFile: s
     patterns: ['**/*', '!analyze/**', '!app-secret'],
     cwd,
   })
-  const tarData = createTar(fileEntries)
+  const tarData = await packTar(fileEntries.map(({ name, data, attrs }) => ({
+    header: {
+      name,
+      size: data.byteLength,
+      mtime: new Date(attrs.mtime),
+    },
+    body: data,
+  })))
   await mkdir(dirname(cacheFile), { recursive: true })
   await writeFile(cacheFile, tarData)
 }

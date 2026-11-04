@@ -330,9 +330,9 @@ catalogs:
     mocked-exports:
       specifier: ^0.1.1
       version: 0.1.1
-    nanotar:
-      specifier: ^0.3.0
-      version: 0.3.0
+    modern-tar:
+      specifier: ^0.8.6
+      version: 0.8.6
     nostics:
       specifier: ^1.3.0
       version: 1.3.0
@@ -1307,12 +1307,12 @@ importers:
       magic-string:
         specifier: catalog:vite
         version: 1.4.5
+      modern-tar:
+        specifier: catalog:build
+        version: 0.8.6
       my-bad:
         specifier: catalog:nitro-runtime
         version: 0.2.11(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
-      nanotar:
-        specifier: catalog:build
-        version: 0.3.0
       nostics:
         specifier: catalog:app-runtime
         version: 1.3.0
@@ -9163,6 +9163,10 @@ packages:
   mocked-exports@0.1.1:
     resolution: {integrity: sha512-aF7yRQr/Q0O2/4pIXm6PZ5G+jAd7QS4Yu8m+WEeEHGnbo+7mE36CbLSDQiXYV8bVL3NfmdeqPJct0tUlnjVSnA==}
 
+  modern-tar@0.8.6:
+    resolution: {integrity: sha512-LYSks0tNVqbtez/9OB0YFP6qLRSqkdAxJWOQpVaR67lNTbj2zNLyYpowkRMia5lXLCZKzxwoxkxH2MbbBR2aEg==}
+    engines: {node: '>=18.0.0'}
+
   module-definition@6.0.2:
     resolution: {integrity: sha512-SvAU3lB0+Yjbq55yHY3wkRZBOh+fhU1SnIF3IFbTewv6mtAh7yUT8ACHAJ2mGIJ7tCes2QuCL/cl6m0JSZ/ArA==}
     engines: {node: '>=18'}
@@ -9202,9 +9206,6 @@ packages:
     resolution: {integrity: sha512-uKdg2G3GNCKQn9byYOpxbGqrT2fGO5KRt5J/8b3pok8rT6qxGWF6hxMyJiEYtAf+FVyYuD9hRaDqX5uPFYJ4ZQ==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
-
-  nanotar@0.3.0:
-    resolution: {integrity: sha512-Kv2JYYiCzt16Kt5QwAc9BFG89xfPNBx+oQL4GQXD9nLqPkZBiNaqaCWtwnbk/q7UVsTYevvM1b0UF8zmEI4pCg==}
 
   napi-postinstall@0.3.4:
     resolution: {integrity: sha512-PHI5f1O0EP5xJ9gQmFGMS6IZcrVvTjpXjz7Na41gTE7eE2hK11lg04CECCYEEjdc17EV4DO+fkGEtt7TpTaTiQ==}
@@ -19245,6 +19246,8 @@ snapshots:
 
   mocked-exports@0.1.1: {}
 
+  modern-tar@0.8.6: {}
+
   module-definition@6.0.2:
     dependencies:
       ast-module-types: 6.0.2
@@ -19275,8 +19278,6 @@ snapshots:
   nano-staged@1.0.2: {}
 
   nanoid@3.3.20: {}
-
-  nanotar@0.3.0: {}
 
   napi-postinstall@0.3.4: {}
 
