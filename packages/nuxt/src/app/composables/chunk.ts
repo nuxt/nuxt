@@ -36,7 +36,7 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}): void {
 
   const documentLocation = documentURL()
   const url = new URL(path, documentLocation)
-  if (url.host !== documentLocation.host) {
+  if (url.origin !== documentLocation.origin) {
     throw navigationDiagnostics.NUXT_E2010({ path })
   }
   if (url.protocol && isScriptProtocol(url.protocol)) {
