@@ -368,7 +368,7 @@ export class SSRStylesPlugin {
       ].join('\n')
 
       compilation.emitAsset('styles.mjs', new rawSource(stylesSource))
-      const stylesPath = resolve(this.nuxt.options.buildDir, 'dist/server/styles.mjs')
+      const stylesPath = resolve(compilation.outputOptions.path || resolve(this.nuxt.options.buildDir, 'dist/server'), 'styles.mjs')
       setBuildOutput('ssrStyles', () => [
         `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`,
         'export const inlinedCSS = {}',

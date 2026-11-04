@@ -22,15 +22,14 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
   let waitUntilCompile: Promise<void> | undefined
   if (nuxt.options.dev) {
     let nitroBuilt = false
-    for (const builder of ['webpack', 'rspack', 'rsbuild'] as const) {
-      nuxt.hook(`${builder}:compile`, ({ name, compiler }: { name: string, compiler: { outputFileSystem?: unknown, options?: { output?: { path?: string, filename?: unknown } } } }) => {
-        if (name === 'server' || (builder === 'rsbuild' && name === 'ssr')) {
-          const entryFile = builder === 'rsbuild' && compiler.options?.output?.path
-            ? join(compiler.options.output.path, String(compiler.options.output.filename ?? '[name].js').replace('[name]', 'server'))
-            : join(nuxt.options.buildDir, 'dist/server/server.mjs')
-          nitro.options.virtual['nuxt/internal/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(entryFile, 'utf-8')
+    for (const builder of ['webpack', 'rspack'] as const) {
+      nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
+        if (name === 'server') {
+          nitro.options.virtual['nuxt/internal/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
         }
       })
+    }
+    for (const builder of ['webpack', 'rspack', 'rsbuild'] as const) {
       nuxt.hook(`${builder}:compiled`, () => {
         if (nitroBuilt) { nitro.hooks.callHook('build:reload') }
       })

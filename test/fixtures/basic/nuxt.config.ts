@@ -250,6 +250,13 @@ export default withMatrix({
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
+    'rsbuild:config' (config) {
+      const output = config.environments?.ssr?.output
+      if (output?.distPath && typeof output.distPath === 'object') {
+        output.distPath.root += '-rsbuild'
+        output.filename = { ...output.filename, js: () => '[name].ssr.mjs' }
+      }
+    },
     'webpack:config' (configs) {
       // in order to test bigint serialization we need to set target to a more modern one
       for (const config of configs) {
