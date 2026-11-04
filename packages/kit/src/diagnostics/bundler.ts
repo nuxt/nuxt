@@ -162,8 +162,8 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B7033: {
-      why: (p: { file: string }) => `\`${p.file}\` has a pug template, but \`@rsbuild/plugin-pug\` is not installed, so it is not compiled.`,
-      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to compile pug templates.`,
+      why: (p: { file: string, lang: string, packageName: string, installCommand: string }) => `\`${p.file}\` uses \`${p.lang}\`, but \`${p.packageName}\` is not installed, so it cannot be compiled.`,
+      fix: (p: { file: string, lang: string, packageName: string, installCommand: string }) => `Run \`${p.installCommand}\`.`,
       docs: false,
     },
   },

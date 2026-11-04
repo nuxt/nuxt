@@ -4,18 +4,18 @@ import type { RsbuildPlugin, Rspack } from '@rsbuild/core'
 import type { Plugin as RsdoctorPluginTypes } from '@rsdoctor/types'
 import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
-import { basename, dirname, join, relative, resolve } from 'pathe'
+import { basename, dirname, extname, join, relative, resolve } from 'pathe'
 
 /**
  * Rsbuild plugins enabled when the project depends on them, as they
  * pull in the corresponding preprocessors.
  */
-const preprocessorPlugins = {
-  '@rsbuild/plugin-sass': 'pluginSass',
-  '@rsbuild/plugin-less': 'pluginLess',
-  '@rsbuild/plugin-stylus': 'pluginStylus',
-  '@rsbuild/plugin-pug': 'pluginPug',
-}
+const preprocessorPlugins = [
+  { packageName: '@rsbuild/plugin-sass', exportName: 'pluginSass', langs: ['scss', 'sass'] },
+  { packageName: '@rsbuild/plugin-less', exportName: 'pluginLess', langs: ['less'] },
+  { packageName: '@rsbuild/plugin-stylus', exportName: 'pluginStylus', langs: ['styl', 'stylus'] },
+  { packageName: '@rsbuild/plugin-pug', exportName: 'pluginPug', langs: ['pug'] },
+]
 
 /** Import a package installed in the project, or alongside the builder. */
 function importFromProject<T> (nuxt: Nuxt, name: string) {
@@ -27,35 +27,57 @@ function importFromProject<T> (nuxt: Nuxt, name: string) {
 
 export async function resolvePreprocessorPlugins (nuxt: Nuxt): Promise<RsbuildPlugin[]> {
   const plugins: RsbuildPlugin[] = []
-  for (const [name, exportName] of Object.entries(preprocessorPlugins)) {
-    const module = await importFromProject<Record<string, () => RsbuildPlugin>>(nuxt, name)
+  const missing = new Map<string, string>()
+  for (const { packageName, exportName, langs } of preprocessorPlugins) {
+    const module = await importFromProject<Record<string, () => RsbuildPlugin>>(nuxt, packageName)
     if (module?.[exportName]) {
       plugins.push(module[exportName]())
-    } else if (name === '@rsbuild/plugin-pug') {
-      plugins.push(PugTemplateWarningPlugin(nuxt))
+    } else {
+      for (const lang of langs) {
+        missing.set(lang, packageName)
+      }
     }
+  }
+
+  if (missing.size) {
+    plugins.push(MissingPreprocessorWarningPlugin(nuxt, missing))
   }
 
   return plugins
 }
 
 /**
- * Warn about pug templates, which are not compiled without `@rsbuild/plugin-pug`.
+ * Warn about files and SFC blocks written in a language whose Rsbuild plugin is not installed.
  */
-function PugTemplateWarningPlugin (nuxt: Nuxt): RsbuildPlugin {
+function MissingPreprocessorWarningPlugin (nuxt: Nuxt, missing: Map<string, string>): RsbuildPlugin {
+  const langs = [...missing.keys()].join('|')
+  const langQueryRE = new RegExp(`[?&]lang=(${langs})(?:&|$)`)
+
   return {
-    name: 'nuxt:pug-template-warning',
+    name: 'nuxt:missing-preprocessor-warning',
     setup (api) {
-      let warned = false
-      // template blocks are requested with inline loaders, which only keep `post` rules
-      api.transform({ test: /\.vue$/, resourceQuery: /[?&]lang=pug(?:&|$)/, order: 'post' }, async ({ code, resourcePath, resourceQuery }) => {
-        if (!warned && resourceQuery.includes('type=template')) {
-          warned = true
-          bundlerDiagnostics.NUXT_B7033({
-            file: relative(nuxt.options.rootDir, resourcePath),
-            installCommand: await getAddDependencyCommand('@rsbuild/plugin-pug', nuxt.options.rootDir, { dev: true }),
-          })
+      const warned = new Set<string>()
+      const warn = async (lang: string, resourcePath: string) => {
+        const packageName = missing.get(lang)
+        if (!packageName || warned.has(packageName)) {
+          return
         }
+        warned.add(packageName)
+        bundlerDiagnostics.NUXT_B7033({
+          file: relative(nuxt.options.rootDir, resourcePath),
+          lang,
+          packageName,
+          installCommand: await getAddDependencyCommand(packageName, nuxt.options.rootDir, { dev: true }),
+        })
+      }
+
+      // SFC blocks are requested with inline loaders, which only keep `post` rules
+      api.transform({ test: /\.vue$/, resourceQuery: langQueryRE, order: 'post' }, async ({ code, resourcePath, resourceQuery }) => {
+        await warn(resourceQuery.match(langQueryRE)![1]!, resourcePath)
+        return code
+      })
+      api.transform({ test: new RegExp(`\\.(?:${langs})$`) }, async ({ code, resourcePath }) => {
+        await warn(extname(resourcePath).slice(1), resourcePath)
         return code
       })
     },
