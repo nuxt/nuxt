@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import type { NuxtBuilder } from '@nuxt/schema'
 import type { RsbuildInstance, Rspack } from '@rsbuild/core'
 import { createRsbuild } from '@rsbuild/core'
-import { logger, setBuildOutput } from '@nuxt/kit'
+import { setBuildOutput } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { resolve } from 'pathe'
 
@@ -50,10 +50,10 @@ async function build (rsbuild: RsbuildInstance) {
       throw error
     }
 
-    for (const { stats } of failures) {
-      // eslint-disable-next-line no-restricted-syntax -- raw compiler output; the diagnostic below carries the errors as `cause`
-      logger.error(stats.toString({ errors: true, warnings: false, colors: false, errorDetails: true }))
-    }
-    throw bundlerDiagnostics.NUXT_B7032({ name: failures[0]!.name, cause: failures.flatMap(({ stats }) => stats.compilation.errors) })
+    const names = failures.map(({ name }) => `\`${name}\``)
+    throw bundlerDiagnostics.NUXT_B7032({
+      environments: names.length > 1 ? `${names.join(' and ')} environments` : `${names[0]} environment`,
+      cause: failures.flatMap(({ stats }) => stats.compilation.errors),
+    })
   }
 }

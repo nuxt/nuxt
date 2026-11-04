@@ -157,7 +157,7 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B7032: {
-      why: (p: { name: string }) => `The Rsbuild \`${p.name}\` build failed with errors.`,
+      why: (p: { environments: string }) => `Rsbuild failed to build the ${p.environments}.`,
       fix: 'Fix the build errors listed above. If the errors are unclear, try running `nuxt cleanup` and rebuilding.',
       docs: false,
     },
