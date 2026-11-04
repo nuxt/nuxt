@@ -141,7 +141,15 @@ describe('ResolveExternalsPlugin', () => {
     ['./relative.js', false],
     ['/abs/path.js', false],
     ['/abs/node_modules/dep/index.js', true],
-    ['C:\\abs\\node_modules\\dep\\index.js', true],
+    ['/abs/node_modules/dep/index.cjs', true],
+    ['C:\\abs\\node_modules\\dep\\index.mjs', true],
+    ['/abs/node_modules/dep/index.mjs?macro=true', false],
+    ['/abs/node_modules/dep/style.css', false],
+    ['/abs/node_modules/dep/component.vue', false],
+    ['\0/abs/node_modules/dep/index.js', false],
+    ['virtual:/abs/node_modules/dep/index.js', false],
+    ['/project/node_modules/nuxt/dist/app/entry.js', false],
+    ['/project/node_modules/nuxt/node_modules/ufo/dist/index.mjs', true],
     ['C:\\abs\\path.js', false],
     ['\0virtual:nuxt', false],
     ['virtual:nuxt', false],
@@ -150,7 +158,7 @@ describe('ResolveExternalsPlugin', () => {
     ['dep', true],
     ['@scope/dep/deep', true],
   ])('filters %s', (id, matches) => {
-    const plugin = environmentPlugin()
-    expect(plugin.resolveId.filter.id.some((re: RegExp) => re.test(id))).toBe(matches)
+    const { include, exclude } = environmentPlugin(createNuxt({ appDir: '/project/node_modules/nuxt/dist/app' })).resolveId.filter.id
+    expect(include.some((re: RegExp) => re.test(id)) && !exclude.some((re: RegExp) => re.test(id))).toBe(matches)
   })
 })

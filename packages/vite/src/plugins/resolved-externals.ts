@@ -7,6 +7,7 @@ import escapeStringRegexp from 'escape-string-regexp'
 import { parseNodeModulePath } from '@nuxt/kit/internal'
 
 const BARE_ID_RE = /^(?!\.{0,2}[/\\]|[A-Z]:[/\\]|[\0#~]|virtual:)/i
+const NODE_MODULES_FILE_RE = /^(?:[A-Z]:)?[/\\][^?#]*[/\\]node_modules[/\\][^?#]+\.[cm]?js$/i
 
 function pkgName (id: string) {
   const segments = id.split('/')
@@ -43,15 +44,22 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
       const conditions = [...new Set([...environment.config.resolve.conditions, 'import', 'default'])]
         .map(c => c === 'development|production' ? 'production' : c)
 
+      // nuxt's own files are always inlined
+      const nuxtDistRE = nuxt.options.appDir
+        ? new RegExp('^' + escapeStringRegexp(dirname(nuxt.options.appDir) + '/') + '(?!.*node_modules)')
+        : undefined
+
       return {
         name: 'nuxt:resolve-externals:external',
         resolveId: {
           filter: {
-            id: [BARE_ID_RE, /[/\\]node_modules[/\\]/],
+            id: {
+              include: [BARE_ID_RE, NODE_MODULES_FILE_RE],
+              exclude: nuxtDistRE ? [nuxtDistRE] : [],
+            },
           },
           async handler (id, importer) {
-            // an absolute import of a package entry must externalize like its bare import,
-            // or Rolldown keeps whichever resolution comes first
+            // an absolute import of a package entry resolves like its bare import
             if (importer && !BARE_ID_RE.test(id)) {
               const { dir, name } = parseNodeModulePath(id)
               if (!dir || !name || deduped.has(name)) { return }
