@@ -56,6 +56,15 @@ describe('rsbuild build utilities', () => {
     expect((config.environments!.server!.plugins as RsbuildPlugin[]).map(p => p.name)).toEqual(['server'])
   })
 
+  it('does not add an environment for a plugin scoped to an environment that does not exist', async () => {
+    const nuxt = mockNuxt()
+    addRsbuildPlugin(plugin('server'), { client: false })
+
+    const config: RsbuildConfig = { environments: { client: {} } }
+    await nuxt.callHook('rsbuild:config', config)
+    expect(config.environments).toEqual({ client: {} })
+  })
+
   it('prefers Rsbuild plugins over Rspack plugins when using the Rsbuild builder', async () => {
     const nuxt = mockNuxt()
     const rspackPlugin = { apply () {} }

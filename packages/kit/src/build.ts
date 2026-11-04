@@ -196,9 +196,10 @@ export function addRsbuildPlugin (pluginOrGetter: Arrayable<RsbuildPlugin> | (()
       return
     }
 
-    const environment = options.server === false ? 'client' : 'server'
-    config.environments ||= {}
-    const environmentConfig = config.environments[environment] ||= {}
+    const environmentConfig = config.environments?.[options.server === false ? 'client' : 'server']
+    if (!environmentConfig) {
+      return
+    }
     environmentConfig.plugins ||= []
     environmentConfig.plugins[method](...plugins)
   }, options)
