@@ -93,14 +93,17 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(packages).toMatchInlineSnapshot(`
       [
         "devalue",
+        "h3",
         "h3+rou3+srvx",
+        "h32",
         "hookable",
         "ufo",
         "vue",
-        "vue__reactivity+vue__shared",
+        "vue__reactivity",
         "vue__runtime-core",
         "vue__runtime-dom",
         "vue__server-renderer",
+        "vue__shared",
       ]
     `)
   })
@@ -116,15 +119,18 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       [
         "defu",
         "devalue",
+        "h3",
         "h3+rou3+srvx",
+        "h32",
         "hookable",
         "ufo",
         "vue",
         "vue-router",
-        "vue__reactivity+vue__shared",
+        "vue__reactivity",
         "vue__runtime-core",
         "vue__runtime-dom",
         "vue__server-renderer",
+        "vue__shared",
       ]
     `)
   })
