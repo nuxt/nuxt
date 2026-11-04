@@ -1,19 +1,22 @@
+import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHooks } from 'hookable'
+import { rolldown } from 'rolldown'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { NuxtApp, Plugin, RuntimeNuxtHooks } from '../src/app/nuxt'
 import navigationRepaintPlugin from '../src/app/plugins/navigation-repaint.client'
 import viewTransitionsPlugin from '../src/app/plugins/view-transitions.client'
 
-const { useRouter, onNuxtReady } = vi.hoisted(() => ({
+const { useRouter, onNuxtReady, nuxtConfig } = vi.hoisted(() => ({
   useRouter: vi.fn(),
   onNuxtReady: vi.fn(),
+  nuxtConfig: { viewTransition: true, appViewTransition: { enabled: true } },
 }))
 
 vi.mock('../src/app/nuxt', () => ({ defineNuxtPlugin: (plugin: Plugin) => plugin }))
 vi.mock('../src/app/composables/router', () => ({ useRouter }))
 vi.mock('../src/app/composables/ready', () => ({ onNuxtReady }))
-vi.mock('#build/nuxt.config.mjs', () => ({ appViewTransition: { enabled: true } }))
+vi.mock('#build/nuxt.config.mjs', () => nuxtConfig)
 
 describe('navigation repaint with view transitions', () => {
   let router: ReturnType<typeof createRouter>
@@ -24,6 +27,7 @@ describe('navigation repaint with view transitions', () => {
 
   beforeEach(async () => {
     vi.useFakeTimers()
+    nuxtConfig.viewTransition = true
     prefersReducedMotion = false
     requestFrame = vi.fn()
     const hooks = createHooks<RuntimeNuxtHooks>()
@@ -56,7 +60,9 @@ describe('navigation repaint with view transitions', () => {
   })
 
   async function installPlugins () {
-    await viewTransitionsPlugin(nuxtApp)
+    if (nuxtConfig.viewTransition) {
+      await viewTransitionsPlugin(nuxtApp)
+    }
     await navigationRepaintPlugin(nuxtApp)
     onNuxtReady.mock.lastCall![0]()
   }
@@ -78,6 +84,23 @@ describe('navigation repaint with view transitions', () => {
     expect(navigated).toHaveBeenCalledOnce()
     await navigation
     await nuxtApp.callHook('page:finish')
+  })
+
+  it('does not register transition tracking when the experimental feature is disabled', async () => {
+    nuxtConfig.viewTransition = false
+    const hook = vi.spyOn(nuxtApp, 'hook')
+    await installPlugins()
+    expect(hook).not.toHaveBeenCalled()
+
+    const navigated = vi.fn()
+    const navigation = router.push('/other').then(navigated)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(requestFrame).toHaveBeenCalledOnce()
+    expect(navigated).not.toHaveBeenCalled()
+    requestFrame.mock.lastCall![0]()
+    await vi.advanceTimersByTimeAsync(0)
+    await navigation
+    expect(navigated).toHaveBeenCalledOnce()
   })
 
   it.each(['disabled', 'reduced motion', 'unsupported'] as const)('still waits for a frame when transitions are %s', async (mode) => {
@@ -136,5 +159,33 @@ describe('navigation repaint with view transitions', () => {
     expect(navigated).toHaveBeenCalledOnce()
     await navigation
     second.resolve()
+  })
+})
+
+describe('navigation repaint bundle', () => {
+  it.each([false, true])('only includes transition tracking when viewTransition is enabled (%s)', async (enabled) => {
+    const bundle = await rolldown({
+      input: fileURLToPath(new URL('../src/app/plugins/navigation-repaint.client.ts', import.meta.url)),
+      plugins: [{
+        name: 'nuxt-config',
+        resolveId (id) {
+          if (id === '#build/nuxt.config.mjs') { return '\0nuxt-config' }
+          if (id.startsWith('.')) { return { id, external: true } }
+        },
+        load (id) {
+          if (id === '\0nuxt-config') { return `export const viewTransition = ${enabled}` }
+        },
+      }],
+    })
+    try {
+      const { output } = await bundle.generate({ format: 'esm' })
+      const code = output[0].code
+      expect(code.includes('page:view-transition:start')).toBe(enabled)
+      expect(code.includes('updateCallbackDone')).toBe(enabled)
+      expect(code.includes('let transition')).toBe(enabled)
+      expect(code).toContain('nextFrame()')
+    } finally {
+      await bundle.close()
+    }
   })
 })
