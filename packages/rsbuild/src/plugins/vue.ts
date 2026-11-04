@@ -13,6 +13,8 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { serialize } from 'seroval'
 import { normalizeWebpackManifest, precomputeDependencies } from 'vue-bundle-renderer'
 
+import { appendModuleIdentifier } from '../../../webpack/src/loaders/vue-module-identifier.ts'
+
 const JS_RE = /\.[cm]?js(?:\?[^.]+)?$/
 const CSS_RE = /\.css(?:\?[^.]+)?$/
 
@@ -28,16 +30,12 @@ export function VueSSRPlugin (nuxt: Nuxt): RsbuildPlugin {
   return {
     name: 'nuxt:vue-ssr',
     setup (api) {
-      api.modifyBundlerChain({
-        order: 'post',
-        handler: (chain, { CHAIN_ID, environment }) => {
-          if (environment.name !== 'server') { return }
-          chain.module.rule(CHAIN_ID.RULE.VUE).use(CHAIN_ID.USE.VUE).tap(options => ({
-            ...options as Record<string, unknown>,
-            // record rendered components on the server, so their chunks can be preloaded (see `plugins/preload.server`)
-            exposeModuleIdentifier: (_request: string, { resourcePath }: { resourcePath: string }) => getRelativeModuleId(resourcePath, nuxt.options.srcDir),
-          }))
-        },
+      // record the components rendered on the server, so their chunks can be preloaded
+      api.transform({ test: /\.vue$/, environments: ['server'], order: 'post' }, ({ code, resourcePath, resourceQuery }) => {
+        if (resourceQuery || !code.includes('__exports__')) {
+          return code
+        }
+        return appendModuleIdentifier(code, getRelativeModuleId(resourcePath, nuxt.options.srcDir))
       })
 
       const serverDist = resolve(nuxt.options.buildDir, 'dist/server')
