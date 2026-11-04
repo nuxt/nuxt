@@ -53,7 +53,7 @@ const NODE_MODULES_RE = /\/node_modules\//g
  *
  * Layer paths can contain multiple `/node_modules/` segments (nested npm
  * installs; pnpm's `.pnpm/<id>/node_modules/<name>` store). The exclude
- * pattern is `node_modules/(?!<alts>)` evaluated at every `node_modules/`
+ * pattern is `/node_modules/(?!<alts>)` evaluated at every `node_modules/`
  * boundary, so we push the suffix at each boundary to make the lookahead
  * fail wherever the layer's own files live.
  */
@@ -66,14 +66,14 @@ export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>)
     while ((match = NODE_MODULES_RE.exec(root))) {
       const suffix = root.slice(match.index + match[0].length)
       if (suffix) {
-        excludePaths.push(escapeRE(suffix))
+        excludePaths.push(`${escapeRE(suffix)}(?:\\/|$)`)
       }
       NODE_MODULES_RE.lastIndex = match.index + 1
     }
   }
   return excludePaths.length
-    ? new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)
-    : /node_modules/
+    ? new RegExp(`[\\\\/]node_modules[\\\\/](?!${excludePaths.join('|')})`)
+    : /[\\/]node_modules[\\/]/
 }
 
 /**

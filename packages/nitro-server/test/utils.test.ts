@@ -45,12 +45,15 @@ describe('getLayerNodeModulesExcludePattern', () => {
     const re = getLayerNodeModulesExcludePattern(['/proj/'])
     expect(re.test('/proj/node_modules/anything/x.ts')).toBe(true)
     expect(re.test('/proj/app/x.ts')).toBe(false)
+    expect(re.test('/work/node_modules-repro/server/api/x.ts')).toBe(false)
   })
 
   it('does not exclude files belonging to a flat-installed layer', () => {
     const re = getLayerNodeModulesExcludePattern(['/proj/node_modules/foo/'])
     expect(re.test('/proj/node_modules/foo/server/api/x.ts')).toBe(false)
     expect(re.test('/proj/node_modules/other/x.ts')).toBe(true)
+    expect(re.test('/proj/node_modules/foo-utils/x.ts')).toBe(true)
+    expect(re.test('/proj/my_node_modules/foo-utils/x.ts')).toBe(false)
   })
 
   it('does not exclude files belonging to layers nested inside another layer (npm)', () => {
