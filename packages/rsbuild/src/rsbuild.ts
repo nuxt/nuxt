@@ -4,7 +4,7 @@ import type { RsbuildConfig, RsbuildInstance, Rspack } from '@rsbuild/core'
 import { createRsbuild } from '@rsbuild/core'
 import { setBuildOutput } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
-import { join, resolve } from 'pathe'
+import { resolve } from 'pathe'
 
 import { resolveRsbuildConfig } from './config.ts'
 import { setupDevServer } from './dev-server.ts'
@@ -37,7 +37,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 /** The path of the `ssr` environment entry, as Rsbuild writes it. */
 function resolveSSREntryFile (config: RsbuildConfig): string {
   const output = config.environments?.ssr?.output
-  const root = output?.distPath?.root ?? join(config.root ?? '.', 'dist')
+  const distPath = output?.distPath
+  const root = (typeof distPath === 'string' ? distPath : distPath?.root) ?? 'dist'
   const filename = typeof output?.filename?.js === 'string' ? output.filename.js : '[name].js'
   return resolve(config.root ?? '.', root, filename.replace('[name]', 'server'))
 }

@@ -14,6 +14,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "catalog:dev",
     "@babel/plugin-syntax-jsx": "catalog:dev",
+    "@rsbuild/plugin-pug": "catalog:dev",
     "@vue/devtools-api": "catalog:dev",
     "defu": "catalog:build",
     "nested-dep": "file:./deps/nested-dep",

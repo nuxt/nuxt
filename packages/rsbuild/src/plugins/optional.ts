@@ -2,7 +2,7 @@ import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import type { RsbuildPlugin, Rspack } from '@rsbuild/core'
 import type { Plugin as RsdoctorPluginTypes } from '@rsdoctor/types'
-import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, importModule, logger, tryImportModule, tryResolveModule } from '@nuxt/kit'
+import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, importModule, tryImportModule, tryResolveModule } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { basename, dirname, extname, join, relative, resolve } from 'pathe'
 
@@ -41,61 +41,77 @@ export async function resolvePreprocessorPlugins (nuxt: Nuxt): Promise<RsbuildPl
       }
       continue
     }
-    try {
-      const module = await importModule<Record<string, () => RsbuildPlugin>>(packageName, { url, interopDefault: false })
-      if (module[exportName]) {
-        plugins.push(module[exportName]())
-      } else {
-        logger.error(`\`${packageName}\` is installed but does not export \`${exportName}\`, so \`${langs.join('`, `')}\` files will not be compiled.`)
-      }
-    } catch (error) {
-      logger.error(`Failed to load \`${packageName}\`, so \`${langs.join('`, `')}\` files will not be compiled.`, error)
+    const module = await importModule<Record<string, () => RsbuildPlugin>>(packageName, { url, interopDefault: false }).catch((cause) => {
+      throw bundlerDiagnostics.NUXT_B7035({ packageName, exportName, cause })
+    })
+    if (!module[exportName]) {
+      throw bundlerDiagnostics.NUXT_B7035({ packageName, exportName })
     }
+    plugins.push(module[exportName]())
   }
 
   if (missing.size) {
-    plugins.push(MissingPreprocessorWarningPlugin(nuxt, missing))
+    plugins.push(MissingPreprocessorPlugin(nuxt, missing))
   }
 
   return plugins
 }
 
 /**
- * Warn about files and SFC blocks written in a language whose Rsbuild plugin is not installed.
+ * Offer to install the Rsbuild plugin for files and SFC blocks written in a language whose
+ * plugin is not installed, and fail their compilation when it is not installed.
  */
-function MissingPreprocessorWarningPlugin (nuxt: Nuxt, missing: Map<string, string>): RsbuildPlugin {
+function MissingPreprocessorPlugin (nuxt: Nuxt, missing: Map<string, string>): RsbuildPlugin {
   const langs = [...missing.keys()].join('|')
   const langQueryRE = new RegExp(`[?&]lang=(${langs})(?:&|$)`)
 
   return {
-    name: 'nuxt:missing-preprocessor-warning',
+    name: 'nuxt:missing-preprocessor',
     setup (api) {
-      const warned = new Set<string>()
-      const warn = async (lang: string, resourcePath: string) => {
-        const packageName = missing.get(lang)
-        if (!packageName || warned.has(packageName)) {
-          return
+      const installs = new Map<string, Promise<void>>()
+      const ensureInstalled = (lang: string, resourcePath: string) => {
+        const packageName = missing.get(lang)!
+        let install = installs.get(packageName)
+        if (!install) {
+          install = installPreprocessorPlugin(nuxt, { packageName, lang, file: relative(nuxt.options.rootDir, resourcePath) })
+          installs.set(packageName, install)
         }
-        warned.add(packageName)
-        bundlerDiagnostics.NUXT_B7033({
-          file: relative(nuxt.options.rootDir, resourcePath),
-          lang,
-          packageName,
-          installCommand: await getAddDependencyCommand(packageName, nuxt.options.rootDir, { dev: true }),
-        })
+        return install
       }
 
       // SFC blocks are requested with inline loaders, which only keep `post` rules
       api.transform({ test: /\.vue$/, resourceQuery: langQueryRE, order: 'post' }, async ({ code, resourcePath, resourceQuery }) => {
-        await warn(resourceQuery.match(langQueryRE)![1]!, resourcePath)
+        await ensureInstalled(resourceQuery.match(langQueryRE)![1]!, resourcePath)
         return code
       })
       api.transform({ test: new RegExp(`\\.(?:${langs})$`) }, async ({ code, resourcePath }) => {
-        await warn(extname(resourcePath).slice(1), resourcePath)
+        await ensureInstalled(extname(resourcePath).slice(1), resourcePath)
         return code
       })
     },
   }
+}
+
+async function installPreprocessorPlugin (nuxt: Nuxt, { packageName, lang, file }: { packageName: string, lang: string, file: string }) {
+  const installed = await ensureDependencyInstalled(packageName, {
+    rootDir: nuxt.options.rootDir,
+    searchPaths: nuxt.options.modulesDir,
+    from: import.meta.url,
+  })
+  if (!installed) {
+    throw bundlerDiagnostics.NUXT_B7033({
+      file,
+      lang,
+      packageName,
+      installCommand: await getAddDependencyCommand(packageName, nuxt.options.rootDir, { dev: true }),
+    })
+  }
+  // Rsbuild plugins are applied when the build starts
+  if (nuxt.options.dev) {
+    void nuxt.callHook('restart', { hard: true })
+    return
+  }
+  throw bundlerDiagnostics.NUXT_B7034({ file, packageName })
 }
 
 export async function resolveTypeCheckPlugin (nuxt: Nuxt): Promise<RsbuildPlugin | undefined> {

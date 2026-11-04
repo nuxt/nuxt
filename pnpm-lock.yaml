@@ -475,6 +475,9 @@ catalogs:
     '@rollup/plugin-babel':
       specifier: 7.1.0
       version: 7.1.0
+    '@rsbuild/plugin-pug':
+      specifier: 2.0.0
+      version: 2.0.0
     '@rsbuild/plugin-type-check':
       specifier: 1.6.0
       version: 1.6.0
@@ -2235,6 +2238,9 @@ importers:
       '@babel/plugin-syntax-jsx':
         specifier: catalog:dev
         version: 8.0.1(@babel/core@8.0.10)
+      '@rsbuild/plugin-pug':
+        specifier: catalog:dev
+        version: 2.0.0(@rsbuild/core@2.3.0)
       '@vue/devtools-api':
         specifier: catalog:dev
         version: 8.2.1
@@ -2379,6 +2385,9 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
     devDependencies:
+      '@rsbuild/plugin-pug':
+        specifier: catalog:dev
+        version: 2.0.0(@rsbuild/core@2.3.0)
       pug:
         specifier: catalog:dev
         version: 3.0.4
@@ -5432,6 +5441,14 @@ packages:
       core-js: '>= 3.0.0'
     peerDependenciesMeta:
       core-js:
+        optional: true
+
+  '@rsbuild/plugin-pug@2.0.0':
+    resolution: {integrity: sha512-Vc/doi6WjKBeDFEi0zdMNIrl3lgF4K6kgVLLB9zj6HaBrUDGSuOsk3YBNOUEa0fngvglKpFIvg9ZrHf4EGjm6g==}
+    peerDependencies:
+      '@rsbuild/core': ^1.0.0 || ^2.0.0
+    peerDependenciesMeta:
+      '@rsbuild/core':
         optional: true
 
   '@rsbuild/plugin-type-check@1.6.0':
@@ -9187,6 +9204,9 @@ packages:
 
   lodash.uniq@4.5.0:
     resolution: {integrity: sha512-xfBaXQd9ryd9dlSDvnvI0lvxfLJlYAZzXomUYzLKtUeOQvOP5piqAWuGtrhWeqaXK9hhoM/iyJc5AV+XfsX3HQ==}
+
+  lodash@4.18.1:
+    resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
 
   logform@2.7.0:
     resolution: {integrity: sha512-TFYA4jnP7PVbmlBIfhlSe+WKxs9dklXMTEGcBCIvLhE/Tn3H6Gk1norupVW7m5Cnd4bLcr08AytbyV/xj7f/kQ==}
@@ -14934,6 +14954,15 @@ snapshots:
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
 
+  '@rsbuild/plugin-pug@2.0.0(@rsbuild/core@2.3.0)':
+    dependencies:
+      '@types/pug': 2.0.10
+      lodash: 4.18.1
+      pug: 3.0.4
+      reduce-configs: 1.1.2
+    optionalDependencies:
+      '@rsbuild/core': 2.3.0
+
   '@rsbuild/plugin-type-check@1.6.0(@rsbuild/core@2.3.0)(@rspack/core@2.3.0(@swc/helpers@0.5.23))(typescript@6.0.3)':
     dependencies:
       deepmerge: 4.3.1
@@ -19193,6 +19222,8 @@ snapshots:
   lodash.once@4.1.1: {}
 
   lodash.uniq@4.5.0: {}
+
+  lodash@4.18.1: {}
 
   logform@2.7.0:
     dependencies:
