@@ -40,7 +40,9 @@
         "test/renderer/*.ts",
         "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
-        "test/mocks/app-config.ts"
+        "test/mocks/app-config.ts",
+        "test/mocks/app-manifest.ts",
+        "test/mocks/fetch.ts"
       ]
     },
     "test/fixtures/*": {

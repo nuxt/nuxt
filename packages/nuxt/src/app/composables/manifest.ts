@@ -35,6 +35,8 @@ function fetchManifest (): Promise<NuxtAppManifest> {
   } else {
     _manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
       responseType: 'json',
+      // `keepalive` stops WebKit cancelling (and rejecting) the request when the page is left.
+      keepalive: true,
     }).then((res) => {
       // handle errors fetching manifest, e.g. from an improperly configured proxy
       if (!res || typeof res !== 'object' || !Array.isArray((res as NuxtAppManifest).prerendered)) {
