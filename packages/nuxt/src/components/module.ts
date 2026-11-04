@@ -473,6 +473,9 @@ function addTemplateNodeTransform (nuxt: Nuxt, resolver: ComponentResolver) {
 
   const vueLoader = nuxt.options.webpack.loaders.vue
   vueLoader.compilerOptions = withNodeTransform(vueLoader.compilerOptions, resolver)
+
+  const rsbuildLoader = (nuxt.options.rsbuild.vue ||= {}).vueLoaderOptions ||= {}
+  rsbuildLoader.compilerOptions = withNodeTransform(rsbuildLoader.compilerOptions, resolver)
 }
 
 function withNodeTransform<T extends { nodeTransforms?: unknown[] }> (compilerOptions: T | undefined, resolver: ComponentResolver): T {
