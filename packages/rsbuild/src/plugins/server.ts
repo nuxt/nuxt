@@ -12,7 +12,7 @@ export function ServerPlugin (nuxt: Nuxt): RsbuildPlugin {
     name: 'nuxt:server',
     setup (api) {
       api.modifyRspackConfig((config, { environment }) => {
-        if (environment.name !== 'server') { return }
+        if (environment.name !== 'ssr') { return }
         if (nuxt.options.dev) {
           // Nitro loads the server bundle from memory as a single file in development
           config.output ||= {}

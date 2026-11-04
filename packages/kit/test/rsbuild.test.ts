@@ -49,11 +49,11 @@ describe('rsbuild build utilities', () => {
     addRsbuildPlugin(plugin('server'), { client: false })
     addRsbuildPlugin(plugin('nowhere'), { client: false, server: false })
 
-    const config: RsbuildConfig = { environments: { client: {}, server: {} } }
+    const config: RsbuildConfig = { environments: { client: {}, ssr: {} } }
     await nuxt.callHook('rsbuild:config', config)
     expect((config.plugins as RsbuildPlugin[]).map(p => p.name)).toEqual(['first', 'shared'])
     expect((config.environments!.client!.plugins as RsbuildPlugin[]).map(p => p.name)).toEqual(['client'])
-    expect((config.environments!.server!.plugins as RsbuildPlugin[]).map(p => p.name)).toEqual(['server'])
+    expect((config.environments!.ssr!.plugins as RsbuildPlugin[]).map(p => p.name)).toEqual(['server'])
   })
 
   it('does not add an environment for a plugin scoped to an environment that does not exist', async () => {
@@ -73,7 +73,7 @@ describe('rsbuild build utilities', () => {
 
     const rsbuildConfig: RsbuildConfig = {}
     await nuxt.callHook('rsbuild:config', rsbuildConfig)
-    const rspackConfigs = [{ name: 'client', plugins: [] }, { name: 'server', plugins: [] }]
+    const rspackConfigs = [{ name: 'client', plugins: [] }, { name: 'ssr', plugins: [] }]
     await nuxt.callHook('rspack:config', rspackConfigs as any)
 
     expect((rsbuildConfig.plugins as RsbuildPlugin[]).map(p => p.name)).toEqual(['rsbuild'])
@@ -87,7 +87,7 @@ describe('rsbuild build utilities', () => {
 
     const rsbuildConfig: RsbuildConfig = {}
     await nuxt.callHook('rsbuild:config', rsbuildConfig)
-    const rspackConfigs = [{ name: 'client', plugins: [] }, { name: 'server', plugins: [] }]
+    const rspackConfigs = [{ name: 'client', plugins: [] }, { name: 'ssr', plugins: [] }]
     await nuxt.callHook('rspack:config', rspackConfigs as any)
 
     expect(rsbuildConfig.plugins).toBeUndefined()

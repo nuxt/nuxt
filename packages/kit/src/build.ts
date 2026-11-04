@@ -75,7 +75,8 @@ const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((
 
   nuxt.hook(`${builder}:config`, async (configs) => {
     if (options.server !== false) {
-      const config = configs.find(i => i.name === 'server')
+      // the server environment of the Rsbuild builder is named `ssr`
+      const config = configs.find(i => i.name === 'server' || (builder === 'rspack' && i.name === 'ssr'))
       if (config) {
         await fn(config)
       }
@@ -109,7 +110,7 @@ export const extendRspackConfig: ExtendWebpacklikeConfig = extendWebpackCompatib
 /**
  * Extend Rsbuild config
  *
- * The configuration contains a `client` and a `server` environment, which can be
+ * The configuration contains a `client` and an `ssr` environment, which can be
  * configured individually with `config.environments`.
  */
 export function extendRsbuildConfig (fn: ((config: RsbuildConfig) => Thenable<void>), options: ExtendRsbuildConfigOptions = {}): void {
@@ -196,7 +197,7 @@ export function addRsbuildPlugin (pluginOrGetter: Arrayable<RsbuildPlugin> | (()
       return
     }
 
-    const environmentConfig = config.environments?.[options.server === false ? 'client' : 'server']
+    const environmentConfig = config.environments?.[options.server === false ? 'client' : 'ssr']
     if (!environmentConfig) {
       return
     }

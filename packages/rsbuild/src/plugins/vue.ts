@@ -12,7 +12,7 @@ export function VueSSRPlugin (nuxt: Nuxt): RsbuildPlugin {
   return {
     name: 'nuxt:vue-ssr',
     setup (api) {
-      api.transform({ test: /\.vue$/, environments: ['server'], order: 'post' }, ({ code, resourcePath, resourceQuery }) => {
+      api.transform({ test: /\.vue$/, environments: ['ssr'], order: 'post' }, ({ code, resourcePath, resourceQuery }) => {
         if (resourceQuery || !code.includes('__exports__')) {
           return code
         }

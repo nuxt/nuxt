@@ -25,7 +25,7 @@ import { resolvePostcssPlugins } from './utils/postcss.ts'
 
 /**
  * Translate Nuxt options into an Rsbuild configuration, with a `client` and
- * (when SSR is enabled) a `server` environment.
+ * (when SSR is enabled) an `ssr` environment.
  */
 export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> {
   const { vue: vuePluginOptions, ...userConfig } = nuxt.options.rsbuild
@@ -150,7 +150,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
       },
       ...nuxt.options.ssr
         ? {
-            server: {
+            ssr: {
               ...serverEnvironment(nuxt, { entry, assetPrefix }),
               plugins: [typeCheckPlugin],
             },
@@ -230,7 +230,7 @@ function serverEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
   return {
     source: {
       entry: {
-        app: { import: [entry], html: false },
+        server: { import: [entry], html: false },
       },
       define: getDefines(nuxt, 'server'),
       include: getTranspilePatterns(nuxt, { isServer: true }),
@@ -252,7 +252,7 @@ function serverEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
         ...flatDistPath,
       },
       filename: {
-        js: pathData => pathData.chunk?.name === 'app' ? 'server.mjs' : '[name].mjs',
+        js: '[name].mjs',
       },
       sourceMap: {
         js: sourcemap ? getDevtool(sourcemap, nuxt.options.dev ? 'cheap-module-source-map' : 'source-map') : false,

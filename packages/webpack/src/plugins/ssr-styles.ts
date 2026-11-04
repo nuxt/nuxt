@@ -92,11 +92,17 @@ export interface SSRStylesPluginOptions {
    * Defaults to the hash of the active webpack or rspack builder implementation.
    */
   getVueLoaderHash?: BuilderImpl['getVueLoaderHash']
+  /**
+   * Name of the server compiler.
+   * @default 'server'
+   */
+  serverName?: string
 }
 
 export class SSRStylesPlugin {
   private nuxt: Nuxt
   private getVueLoaderHash: BuilderImpl['getVueLoaderHash']
+  private serverName: string
   private clientCSSByIssuer = new Map<string, Set<string>>()
   private clientVueModules = new Set<string>()
   private chunksWithInlinedCSS = new Set<string>()
@@ -105,6 +111,7 @@ export class SSRStylesPlugin {
   constructor (nuxt: Nuxt, options: SSRStylesPluginOptions = {}) {
     this.nuxt = nuxt
     this.getVueLoaderHash = options.getVueLoaderHash ?? (value => getBuilderImpl().getVueLoaderHash(value))
+    this.serverName = options.serverName ?? 'server'
     this.globalCSSPaths = this.resolveGlobalCSS()
 
     // Remove CSS entries from manifest for global CSS and files that will have inlined styles
@@ -259,7 +266,7 @@ export class SSRStylesPlugin {
   apply (compiler: Compiler) {
     if (this.nuxt.options.dev) { return }
     const isClient = compiler.options.name === 'client'
-    const isServer = compiler.options.name === 'server'
+    const isServer = compiler.options.name === this.serverName
     if (!isClient && !isServer) { return }
 
     compiler.hooks.thisCompilation.tap('SSRStylesPlugin', (compilation) => {
@@ -434,7 +441,7 @@ export class SSRStylesPlugin {
 
   private collectCSS (compilation: Compilation) {
     const { webpack } = compilation.compiler
-    const isServer = compilation.compiler.options.name === 'server'
+    const isServer = compilation.compiler.options.name === this.serverName
     const stage = isServer
       ? webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONS
       : webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER
