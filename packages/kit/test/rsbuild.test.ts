@@ -5,13 +5,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as context from '../src/context.ts'
 import { addBuildPlugin, addRsbuildPlugin, extendRsbuildConfig } from '../src/build.ts'
 
-function mockNuxt (options: { dev?: boolean, builder?: string } = {}) {
+function mockNuxt (options: { dev?: boolean } = {}) {
   const nuxt = {
     hooks: createHooks(),
     options: {
       dev: options.dev ?? false,
       build: true,
-      builder: options.builder ?? '@nuxt/rsbuild-builder',
     },
   } as unknown as Nuxt
   nuxt.hook = nuxt.hooks.hook.bind(nuxt.hooks)
@@ -65,11 +64,11 @@ describe('rsbuild build utilities', () => {
     expect(config.environments).toEqual({ client: {} })
   })
 
-  it('prefers Rsbuild plugins over Rspack plugins when using the Rsbuild builder', async () => {
+  it('prefers Rspack plugins over Rsbuild plugins', async () => {
     const nuxt = mockNuxt()
     const rspackPlugin = { apply () {} }
-    addBuildPlugin({ rsbuild: () => plugin('rsbuild'), rspack: () => rspackPlugin })
-    addBuildPlugin({ rspack: () => rspackPlugin })
+    addBuildPlugin({ rsbuild: () => plugin('both'), rspack: () => rspackPlugin })
+    addBuildPlugin({ rsbuild: () => plugin('rsbuild') })
 
     const rsbuildConfig: RsbuildConfig = {}
     await nuxt.callHook('rsbuild:config', rsbuildConfig)
@@ -77,30 +76,6 @@ describe('rsbuild build utilities', () => {
     await nuxt.callHook('rspack:config', rspackConfigs as any)
 
     expect((rsbuildConfig.plugins as RsbuildPlugin[]).map(p => p.name)).toEqual(['rsbuild'])
-    expect(rspackConfigs.map(c => c.plugins.length)).toEqual([1, 1])
-  })
-
-  it('applies the Rspack plugin of unplugin instances when using the Rsbuild builder', async () => {
-    const nuxt = mockNuxt()
-    const rspackPlugin = { apply () {} }
-    addBuildPlugin({ raw: () => ({}), rsbuild: () => plugin('unplugin'), rspack: () => rspackPlugin } as Parameters<typeof addBuildPlugin>[0])
-
-    const rsbuildConfig: RsbuildConfig = {}
-    await nuxt.callHook('rsbuild:config', rsbuildConfig)
-    const rspackConfigs = [{ name: 'client', plugins: [] }, { name: 'ssr', plugins: [] }]
-    await nuxt.callHook('rspack:config', rspackConfigs as any)
-
-    expect(rsbuildConfig.plugins).toBeUndefined()
-    expect(rspackConfigs.map(c => c.plugins.length)).toEqual([1, 1])
-  })
-
-  it('applies Rspack plugins when using the Rspack builder', async () => {
-    const nuxt = mockNuxt({ builder: '@nuxt/rspack-builder' })
-    const rspackPlugin = { apply () {} }
-    addBuildPlugin({ rsbuild: () => plugin('rsbuild'), rspack: () => rspackPlugin })
-
-    const rspackConfigs = [{ name: 'client', plugins: [] }, { name: 'server', plugins: [] }]
-    await nuxt.callHook('rspack:config', rspackConfigs as any)
     expect(rspackConfigs.map(c => c.plugins.length)).toEqual([1, 1])
   })
 })

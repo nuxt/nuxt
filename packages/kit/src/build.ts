@@ -315,17 +315,12 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
     addWebpackPlugin(pluginFactory.webpack, options)
   }
 
-  // The Rsbuild plugin of an unplugin instance only wraps its Rspack plugin, so the Rspack plugin is used instead.
-  // Rspack plugins are applied in the order they are added (like with the Rspack builder), which the transforms
-  // of Nuxt rely on, while Rsbuild applies plugins scoped to an environment after all other plugins.
-  const rsbuildPlugin = 'raw' in pluginFactory ? undefined : pluginFactory.rsbuild
-  if (rsbuildPlugin) {
-    addRsbuildPlugin(rsbuildPlugin, options)
-  }
-
-  // the Rsbuild builder also applies Rspack plugins, unless an Rsbuild plugin is provided
-  if (pluginFactory.rspack && !(rsbuildPlugin && useNuxt().options.builder === '@nuxt/rsbuild-builder')) {
+  // The Rsbuild builder applies Rspack plugins in the order they are added, which the transforms of Nuxt rely on,
+  // while Rsbuild applies plugins scoped to an environment after all other plugins.
+  if (pluginFactory.rspack) {
     addRspackPlugin(pluginFactory.rspack, options)
+  } else if (pluginFactory.rsbuild) {
+    addRsbuildPlugin(pluginFactory.rsbuild, options)
   }
 }
 
