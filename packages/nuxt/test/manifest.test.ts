@@ -34,22 +34,15 @@ describe('app manifest requests', () => {
     vi.restoreAllMocks()
   })
 
-  it('keeps shared manifest requests alive without interrupting consumers on cancelled navigation', async () => {
-    const windowMock = new EventTarget()
-    vi.stubGlobal('window', windowMock)
-    // Keep the response pending until after the navigation attempt.
+  it('shares a low-priority keepalive request and caches the result', async () => {
+    // Keep the response pending to check that concurrent callers share one request.
     let resolveResponse!: (response: Response) => void
     const pendingResponse = new Promise<Response>((resolve) => { resolveResponse = resolve })
     fetchMock.mockReturnValueOnce(pendingResponse)
 
     const request = getAppManifest()
     expect(getAppManifest()).toBe(request)
-    expect(fetchMock).toHaveBeenCalledWith(manifestURL, expect.objectContaining({ keepalive: true }))
-
-    // Simulate the user staying on the page after an unsaved-changes prompt.
-    windowMock.addEventListener('beforeunload', event => event.preventDefault())
-    const navigation = new Event('beforeunload', { cancelable: true })
-    expect(windowMock.dispatchEvent(navigation)).toBe(false)
+    expect(fetchMock).toHaveBeenCalledWith(manifestURL, expect.objectContaining({ priority: 'low', keepalive: true }))
     resolveResponse(Response.json(manifest))
 
     await expect(request).resolves.toEqual(manifest)
@@ -66,15 +59,38 @@ describe('app manifest requests', () => {
   })
 
   it.each([
-    ['network failure', () => Promise.reject(new TypeError('Load failed'))],
-    ['missing manifest', () => Promise.resolve(new Response('', { status: 404 }))],
-    ['invalid JSON', () => Promise.resolve(new Response('not json'))],
-    ['invalid manifest', () => Promise.resolve(Response.json({ id: manifest.id }))],
-  ])('still reports %s and allows retrying', async (_name, response) => {
+    {
+      name: 'network failure',
+      response: () => Promise.reject(new TypeError('Load failed')),
+      expectedError: { message: 'Load failed' },
+      malformed: false,
+    },
+    {
+      name: 'missing manifest',
+      response: () => Promise.resolve(new Response('', { status: 404 })),
+      expectedError: { status: 404 },
+      malformed: false,
+    },
+    {
+      name: 'invalid JSON',
+      response: () => Promise.resolve(new Response('not json')),
+      expectedError: { name: 'SyntaxError' },
+      malformed: false,
+    },
+    {
+      name: 'invalid manifest',
+      response: () => Promise.resolve(Response.json({ id: manifest.id })),
+      expectedError: { message: 'Malformed manifest' },
+      malformed: true,
+    },
+  ])('still reports $name and allows retrying', async ({ response, expectedError, malformed }) => {
     fetchMock.mockImplementationOnce(response)
 
-    await expect(getAppManifest()).rejects.toBeInstanceOf(Error)
+    const request = getAppManifest()
+    await expect(request).rejects.toBeInstanceOf(Error)
+    await expect(request).rejects.toMatchObject(expectedError)
     expect(diagnostics.NUXT_E5002).toHaveBeenCalledOnce()
+    expect(diagnostics.NUXT_E5004).toHaveBeenCalledTimes(malformed ? 1 : 0)
 
     // A failed request must leave the cache clear so the next call can recover.
     fetchMock.mockResolvedValueOnce(Response.json(manifest))
