@@ -15,7 +15,7 @@ import { isNuxtPrepare, projectSuffix, withMatrix } from '../../matrix.ts'
 // importer while the other still relies on its stylesheet link.
 // Regression for https://github.com/nuxt/nuxt/issues/36741: CSS that a
 // server-rendered page inlines should not keep its stylesheet link because an
-// `ssr: false` page also imports it.
+// `ssr: false` page (or one of its named views) also imports it.
 const layoutStylePlugin = () => {
   return {
     name: 'layout-style-plugin',

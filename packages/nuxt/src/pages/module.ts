@@ -832,17 +832,23 @@ export default defineNuxtModule({
         .map(([page]) => relative(nuxt.options.srcDir, page.file!))
       // several routes can share a page file (`pages:extend`), so a file is only
       // client-only when none of the routes using it is server-rendered
+      const getPageFiles = (page: NuxtPage) => [page.file, ...Object.values(page.components || {})]
+        .filter((file): file is string => !!file)
       const ssrPageFiles = new Set<string>()
       const collectSSRPageFiles = (pages: NuxtPage[]) => {
         for (const page of pages) {
-          if (page.file && restrictedPages.get(page) !== 'spaOnly') { ssrPageFiles.add(page.file) }
+          if (restrictedPages.get(page) !== 'spaOnly') {
+            for (const file of getPageFiles(page)) { ssrPageFiles.add(file) }
+          }
           if (page.children?.length) { collectSSRPageFiles(page.children) }
         }
       }
       collectSSRPageFiles(pages)
-      nuxt.options._spaOnlyPageSources = [...restrictedPages]
-        .filter(([page, stub]) => stub === 'spaOnly' && page.file && !ssrPageFiles.has(page.file))
-        .map(([page]) => relative(nuxt.options.srcDir, page.file!))
+      nuxt.options._spaOnlyPageSources = [...new Set([...restrictedPages]
+        .filter(([, stub]) => stub === 'spaOnly')
+        .flatMap(([page]) => getPageFiles(page))
+        .filter(file => !ssrPageFiles.has(file))
+        .map(file => relative(nuxt.options.srcDir, file)))]
 
       return restrictedPages
     }
