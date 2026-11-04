@@ -85,6 +85,7 @@
       "ignoreDependencies": [
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-jsx",
+        "@rsbuild/plugin-pug",
         "nested-dep"
       ]
     },
@@ -97,7 +98,7 @@
         "~/*": ["./*"],
         "#shared/*": ["./shared/*"]
       },
-      "ignoreDependencies": ["pug"]
+      "ignoreDependencies": ["@rsbuild/plugin-pug", "pug"]
     },
     "packages/nitro-server": {
       "entry": [
