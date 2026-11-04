@@ -14,6 +14,7 @@ import { isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../utils'
 import { globalMiddleware } from '#build/middleware'
 import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import { traceAsync } from '../internal/tracing'
+import { documentURL } from '../internal/location'
 
 interface Route {
   /** Percentage encoded pathname section of the URL. */
@@ -75,7 +76,7 @@ function getRouteFromPath (fullPath: string | Partial<Route>, baseURL: string = 
   const isRooted = isRootedPath(fullPath)
   let parts = isRooted ? splitLiteralPath(fullPath) : undefined
   if (!parts) {
-    const url = new URL(fullPath, import.meta.client ? window.location.href : 'http://localhost')
+    const url = new URL(fullPath, import.meta.client ? documentURL() : 'http://localhost')
     parts = { path: url.pathname, search: url.search, hash: url.hash }
   }
 
