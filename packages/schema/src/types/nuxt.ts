@@ -7,6 +7,7 @@ import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
 import type { Import } from 'unimport'
+import type { BuildEnvironment } from 'vite'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -292,6 +293,11 @@ export interface NuxtServerBuild {
   capabilities: NuxtServerBuildCapabilities
   runtime: NuxtServerBuildRuntime
   preview?: NuxtServerBuildPreview
+  /**
+   * Whether the `ssr` environment output restored by a build cache hit can be used as is.
+   * When omitted, or when it resolves to `false`, the `ssr` environment builds again.
+   */
+  canReuseSsrBuild?: (environment: BuildEnvironment) => Promise<boolean>
 }
 
 export interface Nuxt {

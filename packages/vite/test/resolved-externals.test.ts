@@ -41,6 +41,7 @@ function writePackage (dir: string, value: string) {
 describe('ResolveExternalsPlugin', () => {
   const rootDep = join(root, 'node_modules/dep')
   const nestedDep = join(root, 'node_modules/mod/node_modules/dep')
+  const subpathDep = join(root, 'node_modules/subpath-dep')
   const importer = join(root, 'node_modules/mod/dist/deep/plugin.js')
   const layerImporter = join(root, 'layer/plugins/plugin.js')
 
@@ -51,6 +52,11 @@ describe('ResolveExternalsPlugin', () => {
     mkdirSync(join(root, 'layer/plugins'), { recursive: true })
     writeFileSync(importer, 'import dep from "dep"')
     writeFileSync(layerImporter, 'import dep from "dep"')
+    mkdirSync(join(subpathDep, 'dist'), { recursive: true })
+    writeFileSync(join(subpathDep, 'package.json'), JSON.stringify({ name: 'subpath-dep', type: 'module', exports: { '.': './dist/index.js', './sub': { import: './dist/sub.js' } } }))
+    for (const file of ['index.js', 'sub.js', 'internal.js']) {
+      writeFileSync(join(subpathDep, 'dist', file), 'export default 1')
+    }
   })
 
   afterAll(() => {
@@ -104,9 +110,40 @@ describe('ResolveExternalsPlugin', () => {
     const plugin = environmentPlugin(createNuxt(), createEnvironment('ssr', { dedupe: ['dep', '@scope/dep'] }))
     const context = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
 
-    for (const id of ['dep', 'dep/sub', '@scope/dep/sub']) {
+    for (const id of ['dep', 'dep/sub', '@scope/dep/sub', join(rootDep, 'index.js')]) {
       await expect(resolveId(plugin, context, id, importer)).resolves.toBeUndefined()
     }
+    expect(context.resolve).not.toHaveBeenCalled()
+  })
+
+  it('resolves an absolute import of a package entry like the bare import', async () => {
+    const plugin = environmentPlugin()
+    const context = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
+    const template = '\0nuxt-nitro-virtual:#internal/nuxt/paths'
+    const entry = join(rootDep, 'index.js')
+    const nestedEntry = join(nestedDep, 'index.js')
+
+    await expect(resolveId(plugin, context, entry, template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
+    await expect(resolveId(plugin, context, entry.replace(/\//g, '\\'), template)).resolves.toStrictEqual({ id: entry, external: 'absolute' })
+    await expect(resolveId(plugin, context, nestedEntry, '/project/app/plugins/plugin.js')).resolves.toStrictEqual({ id: nestedEntry, external: 'absolute' })
+    expect(context.resolve).toHaveBeenLastCalledWith('dep', nestedEntry, { skipSelf: true })
+
+    await expect(resolveId(plugin, context, join(rootDep, 'package.json'), template)).resolves.toBeUndefined()
+    await expect(resolveId(plugin, { resolve: vi.fn().mockResolvedValue({ id: entry, external: false }) }, entry, template)).resolves.toBeUndefined()
+    await expect(resolveId(plugin, { resolve: vi.fn().mockRejectedValue(new Error('No known conditions for "." specifier in "dep" package')) }, entry, template)).resolves.toBeUndefined()
+  })
+
+  it('resolves an absolute import of an exported package subpath like the bare import', async () => {
+    const plugin = environmentPlugin()
+    const context = { resolve: vi.fn().mockResolvedValue({ id: 'subpath-dep/sub', external: true }) }
+    const template = '\0nuxt-nitro-virtual:#internal/nuxt/paths'
+    const sub = join(subpathDep, 'dist/sub.js')
+
+    await expect(resolveId(plugin, context, sub, template)).resolves.toStrictEqual({ id: sub, external: 'absolute' })
+    expect(context.resolve).toHaveBeenLastCalledWith('subpath-dep/sub', sub, { skipSelf: true })
+
+    context.resolve.mockClear()
+    await expect(resolveId(plugin, context, join(subpathDep, 'dist/internal.js'), template)).resolves.toBeUndefined()
     expect(context.resolve).not.toHaveBeenCalled()
   })
 
@@ -123,6 +160,16 @@ describe('ResolveExternalsPlugin', () => {
   it.each([
     ['./relative.js', false],
     ['/abs/path.js', false],
+    ['/abs/node_modules/dep/index.js', true],
+    ['/abs/node_modules/dep/index.cjs', true],
+    ['C:\\abs\\node_modules\\dep\\index.mjs', true],
+    ['/abs/node_modules/dep/index.mjs?macro=true', false],
+    ['/abs/node_modules/dep/style.css', false],
+    ['/abs/node_modules/dep/component.vue', false],
+    ['\0/abs/node_modules/dep/index.js', false],
+    ['virtual:/abs/node_modules/dep/index.js', false],
+    ['/project/node_modules/nuxt/dist/app/entry.js', false],
+    ['/project/node_modules/nuxt/node_modules/ufo/dist/index.mjs', true],
     ['C:\\abs\\path.js', false],
     ['\0virtual:nuxt', false],
     ['virtual:nuxt', false],
@@ -131,7 +178,7 @@ describe('ResolveExternalsPlugin', () => {
     ['dep', true],
     ['@scope/dep/deep', true],
   ])('filters %s', (id, matches) => {
-    const plugin = environmentPlugin()
-    expect(plugin.resolveId.filter.id.test(id)).toBe(matches)
+    const { include, exclude } = environmentPlugin(createNuxt({ appDir: '/project/node_modules/nuxt/dist/app' })).resolveId.filter.id
+    expect(include.some((re: RegExp) => re.test(id)) && !exclude.some((re: RegExp) => re.test(id))).toBe(matches)
   })
 })

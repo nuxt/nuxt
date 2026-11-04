@@ -146,6 +146,40 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     expect(buildDoneFired).toBe(true)
   })
 
+  it('should reuse the restored ssr build until its nitro inputs change', async () => {
+    const rootDir = join(tmpDir, 'project')
+    // as after `nuxt prepare`, so that every build uses the same `buildDir`
+    await mkdir(join(rootDir, '.nuxt'))
+    let buildDir = ''
+
+    async function buildEnvironments (preset: string) {
+      const built: string[] = []
+      const nuxt = await loadNuxt({
+        cwd: rootDir,
+        overrides: {
+          experimental: { buildCache: true },
+          dev: false,
+          workspaceDir: tmpDir,
+          nitro: { preset },
+          vite: { plugins: [{ name: 'record-builds', buildStart () { built.push(this.environment.name) } }] },
+        },
+      })
+      buildDir = nuxt.options.buildDir
+      await build(nuxt)
+      return built
+    }
+
+    expect(await buildEnvironments('node-server')).toContain('ssr')
+    await rm(buildDir, { recursive: true, force: true })
+    await rm(join(rootDir, '.output'), { recursive: true, force: true })
+
+    expect(await buildEnvironments('node-server')).not.toContain('ssr')
+    expect(await renderIndex(join(rootDir, '.output'))).toContain('hello')
+
+    // the preset changes the ssr resolve conditions, but not the cache key
+    expect(await buildEnvironments('cloudflare-module')).toContain('ssr')
+  })
+
   it('should restore build outputs on cache hit', async () => {
     const rootDir = join(tmpDir, 'project')
     await writeFile(join(rootDir, 'app.vue'), '<template><div class="box">hello</div></template><style scoped>.box { color: red }</style>')
