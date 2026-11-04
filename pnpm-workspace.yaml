@@ -102,7 +102,7 @@ catalogs:
     destr: ^2.0.5
     flru: ^1.0.2
     my-bad: ^0.2.11
-    nitro: ^3.0.261029-rc
+    nitro: ^3.0.261103-rc
     srvx: ^1.0.8
     unstorage: ^2.0.0-beta.0
 
@@ -185,7 +185,7 @@ catalogs:
     microdiff: ^1.6.0
     mlly: ^1.8.2
     mocked-exports: ^0.1.1
-    nanotar: ^0.3.0
+    modern-tar: ^0.8.6
     nostics: ^1.3.0
     ohash: ^2.0.12
     package-manager-detector: ^1.9.0

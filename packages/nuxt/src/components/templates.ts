@@ -205,7 +205,20 @@ function renderLegacyTypeImport (baseDir: string, filePath: string, exportName: 
   }['${exportName}']`
 }
 
-const islandType = 'type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T'
+// island props are sent through `JSON.stringify`, so values it drops or rewrites are rejected
+const islandType = `
+type IslandSerialized<T> = T extends string | number | boolean | null | undefined
+  ? T
+  : T extends ((...args: any[]) => any) | Date | Map<any, any> | Set<any> | RegExp | bigint | symbol
+    ? never
+    : T extends object
+      ? { [K in keyof T]: IslandSerialized<T[K]> }
+      : T
+type IslandProps<T> = T extends new (...args: any) => { $props: infer P }
+  ? new () => { $props: { [K in keyof P]: K extends \`on\${Capitalize<string>}\` | keyof VNodeProps ? P[K] : P[K] & IslandSerialized<P[K]> } }
+  : unknown
+type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T & IslandProps<T>
+`
 const hydrationTypes = `
 type HydrationStrategies = {
   hydrateOnVisible?: IntersectionObserverInit | true
@@ -225,7 +238,7 @@ export const componentsDeclarationTemplate = {
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, nuxt.options.buildDir, nuxt.options.experimental.typescriptPlugin)
     return `
-import type { DefineComponent, SlotsType } from 'vue'
+import type { DefineComponent, SlotsType, VNodeProps } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 
@@ -258,7 +271,7 @@ export const componentsTypeTemplate = {
       islandComponentNames.size ? `    islandName: ${[...islandComponentNames].map(name => genString(name)).join(' | ')}` : '',
     ].filter(Boolean)
     return `
-import type { DefineComponent, SlotsType } from 'vue'
+import type { DefineComponent, SlotsType, VNodeProps } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 interface _GlobalComponents {

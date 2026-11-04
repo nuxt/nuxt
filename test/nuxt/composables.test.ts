@@ -977,6 +977,7 @@ describe('routing utilities: `navigateTo`', () => {
       '//evil.com',
       'https://evil.com',
       '\\\\evil.com',
+      `${window.location.protocol === 'https:' ? 'http:' : 'https:'}//${window.location.host}/legit/path`,
     ]
     for (const url of urls) {
       expect(() => reloadNuxtApp({ path: url })).toThrow(expect.objectContaining({ code: 'NUXT_E2010' }))

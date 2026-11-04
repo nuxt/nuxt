@@ -49,5 +49,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { imports: string }) => `Import them explicitly: ${p.imports}. To keep auto-importing them, enable \`experimental.nitroAutoImports\`.`,
       docs: false,
     },
+    NUXT_B9008: {
+      why: (p: { builder: string }) => `The Nitro \`${p.builder}\` builder was requested, but with \`experimental.nitroViteEnvironment\` the server is built by Vite, so it is ignored.`,
+      fix: 'Remove `nitro.builder` (or `NITRO_BUILDER`), or disable `experimental.nitroViteEnvironment` to build the server with another Nitro builder.',
+      docs: false,
+    },
   },
 })

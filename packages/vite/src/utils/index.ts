@@ -1,3 +1,5 @@
+import { dirname, join } from 'pathe'
+
 export { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER, isVue, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
 export { toVirtualId } from '../../../nuxt/src/core/utils/virtual.ts'
 
@@ -31,6 +33,19 @@ export function removeNestedDirs (dirs: string[]): string[] {
     }
     return true
   })
+}
+
+/**
+ * The `node_modules` directory of `dir` and of each of its ancestors, where Node resolves packages from.
+ */
+export function getAncestorModulesDirs (dir: string): string[] {
+  const dirs: string[] = []
+  for (let current = dir; ; current = dirname(current)) {
+    dirs.push(join(current, 'node_modules'))
+    if (dirname(current) === current) {
+      return dirs
+    }
+  }
 }
 
 // eslint-disable-next-line no-control-regex -- control characters are exactly what is being stripped

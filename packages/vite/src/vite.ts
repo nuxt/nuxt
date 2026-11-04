@@ -17,7 +17,7 @@ import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
-import { removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
+import { getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
@@ -64,6 +64,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
     ...nuxt.options.modulesDir,
+    ...getAncestorModulesDirs(nuxt.options.rootDir),
     ...getLayerDirectories(nuxt).map(d => d.root),
     ...Object.values(nuxt.apps).flatMap(app => [
       ...app.components.map(c => dirname(c.filePath)),
