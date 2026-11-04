@@ -19,7 +19,6 @@ describe('app manifest requests', () => {
   let getAppManifest: () => Promise<NuxtAppManifest>
 
   beforeEach(async () => {
-    // The composable caches its promise at module scope. Give each test a fresh cache.
     vi.resetModules()
     vi.clearAllMocks()
     fetchMock = vi.fn()
@@ -35,7 +34,6 @@ describe('app manifest requests', () => {
   })
 
   it('shares a low-priority keepalive request and caches the result', async () => {
-    // Keep the response pending to check that concurrent callers share one request.
     let resolveResponse!: (response: Response) => void
     const pendingResponse = new Promise<Response>((resolve) => { resolveResponse = resolve })
     fetchMock.mockReturnValueOnce(pendingResponse)
@@ -92,7 +90,6 @@ describe('app manifest requests', () => {
     expect(diagnostics.NUXT_E5002).toHaveBeenCalledOnce()
     expect(diagnostics.NUXT_E5004).toHaveBeenCalledTimes(malformed ? 1 : 0)
 
-    // A failed request must leave the cache clear so the next call can recover.
     fetchMock.mockResolvedValueOnce(Response.json(manifest))
     await expect(getAppManifest()).resolves.toEqual(manifest)
     expect(fetchMock).toHaveBeenCalledTimes(2)
