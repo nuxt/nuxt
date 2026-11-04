@@ -16,10 +16,16 @@ const vueModuleIdentifierLoader: LoaderDefinitionFunction<LoaderOptions> = funct
   }
 
   const context = srcDir || this.rootContext || this.context || this._compiler?.options?.context
-  const relativePath = context ? relative(context, resourcePath) : resourcePath
-  const moduleId = normalize(relativePath).replace(/^\.\//, '').replace(/\\/g, '/')
+  return appendModuleIdentifier(source, context ? getModuleIdentifier(resourcePath, context) : normalizeModuleIdentifier(resourcePath))
+}
 
-  return appendModuleIdentifier(source, moduleId)
+/** Identifier of a module in the client manifest, relative to `context`. */
+export function getModuleIdentifier (resourcePath: string, context: string): string {
+  return normalizeModuleIdentifier(relative(context, resourcePath))
+}
+
+function normalizeModuleIdentifier (path: string) {
+  return normalize(path).replace(/^\.\//, '').replace(/\\/g, '/')
 }
 
 /**
