@@ -150,6 +150,7 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     const rootDir = join(tmpDir, 'project')
     // as after `nuxt prepare`, so that every build uses the same `buildDir`
     await mkdir(join(rootDir, '.nuxt'))
+    let buildDir = ''
 
     async function buildEnvironments (preset: string) {
       const built: string[] = []
@@ -163,11 +164,14 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
           vite: { plugins: [{ name: 'record-builds', buildStart () { built.push(this.environment.name) } }] },
         },
       })
+      buildDir = nuxt.options.buildDir
       await build(nuxt)
       return built
     }
 
     expect(await buildEnvironments('node-server')).toContain('ssr')
+    await rm(buildDir, { recursive: true, force: true })
+    await rm(join(rootDir, '.output'), { recursive: true, force: true })
 
     expect(await buildEnvironments('node-server')).not.toContain('ssr')
     expect(await renderIndex(join(rootDir, '.output'))).toContain('hello')

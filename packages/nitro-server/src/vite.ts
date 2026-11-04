@@ -527,22 +527,23 @@ function NitroVirtualBridge (nitro: Nitro): VitePlugin {
  * environment again. The cache key leaves out Nitro options and server code, but the ssr build
  * depends on them through its environment options and the Nitro virtual modules it bundles.
  */
-export async function canReuseSsrBuild (nitro: Nitro, environment: BuildEnvironment): Promise<boolean> {
+export function canReuseSsrBuild (nitro: Nitro, environment: BuildEnvironment): Promise<boolean> {
+  return matchesSsrInputs(nitro, environment).catch(() => false)
+}
+
+async function matchesSsrInputs (nitro: Nitro, environment: BuildEnvironment): Promise<boolean> {
   // TODO: nitro only records a service entry while building it, so a skipped ssr build is imported
   // as the `vite/services/ssr` directory, which resolves to its `index.mjs`
   if (!existsSync(resolve(nitro.options.buildDir, 'vite/services/ssr/index.mjs'))) {
     return false
   }
   const outDir = resolve(environment.config.root, environment.config.build.outDir)
-  const inputs = await readFile(resolve(outDir, SSR_INPUTS_FILE), 'utf8')
-    .then(r => JSON.parse(r) as SsrInputs)
-    .catch(() => undefined)
-  if (!inputs || inputs.config !== hashEnvironmentConfig(environment.config)) {
+  const inputs = JSON.parse(await readFile(resolve(outDir, SSR_INPUTS_FILE), 'utf8')) as SsrInputs
+  if (inputs.config !== hashEnvironmentConfig(environment.config)) {
     return false
   }
   for (const [fileName, expected] of Object.entries(inputs.files)) {
-    const content = await readFile(resolve(outDir, fileName)).catch(() => undefined)
-    if (!content || hashFile(content) !== expected) {
+    if (hashFile(await readFile(resolve(outDir, fileName))) !== expected) {
       return false
     }
   }

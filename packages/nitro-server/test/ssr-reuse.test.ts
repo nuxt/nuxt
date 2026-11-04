@@ -51,4 +51,12 @@ describe('canReuseSsrBuild', () => {
     await writeFile(join(outDir, 'nuxt-ssr-inputs.json'), '{')
     expect(await canReuseSsrBuild(nitro, { config } as unknown as BuildEnvironment)).toBe(false)
   })
+
+  it('should not reuse an ssr build with incomplete inputs', async () => {
+    await writeSsrOutput('index.mjs')
+    await writeFile(join(outDir, 'nuxt-ssr-inputs.json'), JSON.stringify({
+      config: hash({ define: config.define, resolve: config.resolve, build: config.build }),
+    }))
+    expect(await canReuseSsrBuild(nitro, { config } as unknown as BuildEnvironment)).toBe(false)
+  })
 })
