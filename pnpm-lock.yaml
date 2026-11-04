@@ -241,7 +241,7 @@ catalogs:
       specifier: ^4.0.1
       version: 4.0.1
     '@nuxt/devtools-onboard':
-      specifier: ^4.0.0-beta.7
+      specifier: ^4.1.0
       version: 4.1.0
     '@nuxt/telemetry':
       specifier: ^2.9.1
