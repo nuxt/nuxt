@@ -1298,7 +1298,7 @@ describe('nuxt links', () => {
       "<a aria-current="page" href="/nuxt-link/ssr-static" class="foo-active-class bar-exact-active-class" data-v-0>self</a>
       <a aria-current="page" href="/nuxt-link/ssr-static/" class="foo-active-class bar-exact-active-class" data-v-0>self-slash</a>
       <a href="/nuxt-link/ssr-static/abc" class="" data-v-0>child</a>
-      <a href="/Nuxt-Link/ssr-static" class="" data-v-0>self-case</a>
+      <a aria-current="page" href="/Nuxt-Link/ssr-static" class="foo-active-class bar-exact-active-class" data-v-0>self-case</a>
       <a href="/" class="" data-v-0>root</a>
       <a aria-current="page" href="/nuxt-link/ssr-static" class="foo-active-class bar-exact-active-class" data-v-0>object</a>
       <a aria-current="page" href="/nuxt-link/ssr-static?x=1" class="foo-active-class bar-exact-active-class" data-v-0>query</a>
@@ -1335,7 +1335,7 @@ describe('nuxt links', () => {
       "<a href="/nuxt-link/ssr-static" class="foo-active-class" data-v-0>self</a>
       <a href="/nuxt-link/ssr-static/" class="foo-active-class" data-v-0>self-slash</a>
       <a aria-current="page" href="/nuxt-link/ssr-static/abc" class="foo-active-class bar-exact-active-class" data-v-0>child</a>
-      <a href="/Nuxt-Link/ssr-static" class="" data-v-0>self-case</a>
+      <a href="/Nuxt-Link/ssr-static" class="foo-active-class" data-v-0>self-case</a>
       <a href="/" class="" data-v-0>root</a>
       <a href="/nuxt-link/ssr-static" class="foo-active-class" data-v-0>object</a>
       <a href="/nuxt-link/ssr-static?x=1" class="foo-active-class" data-v-0>query</a>
