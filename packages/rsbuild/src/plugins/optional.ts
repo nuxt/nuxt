@@ -17,12 +17,18 @@ const preprocessorPlugins = {
   '@rsbuild/plugin-pug': 'pluginPug',
 }
 
-export async function resolvePreprocessorPlugins (nuxt: Nuxt): Promise<RsbuildPlugin[]> {
-  const url = [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir))
+/** Import a package installed in the project, or alongside the builder. */
+function importFromProject<T> (nuxt: Nuxt, name: string) {
+  return tryImportModule<T>(name, {
+    url: [...[nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)), new URL(import.meta.url)],
+    interopDefault: false,
+  })
+}
 
+export async function resolvePreprocessorPlugins (nuxt: Nuxt): Promise<RsbuildPlugin[]> {
   const plugins: RsbuildPlugin[] = []
   for (const [name, exportName] of Object.entries(preprocessorPlugins)) {
-    const module = await tryImportModule<Record<string, () => RsbuildPlugin>>(name, { url, interopDefault: false })
+    const module = await importFromProject<Record<string, () => RsbuildPlugin>>(nuxt, name)
     if (module?.[exportName]) {
       plugins.push(module[exportName]())
     }
@@ -41,19 +47,15 @@ export async function resolveTypeCheckPlugin (nuxt: Nuxt): Promise<RsbuildPlugin
     searchPaths: nuxt.options.modulesDir,
     from: import.meta.url,
   })
-  if (!installed) {
+  const typeCheck = installed ? await importFromProject<typeof import('@rsbuild/plugin-type-check')>(nuxt, '@rsbuild/plugin-type-check') : undefined
+  if (!typeCheck) {
     bundlerDiagnostics.NUXT_B7029({ installCommand: await getAddDependencyCommand('@rsbuild/plugin-type-check', nuxt.options.rootDir, { dev: true }) })
     return
   }
 
-  const { pluginTypeCheck } = await import('@rsbuild/plugin-type-check')
-  return pluginTypeCheck()
+  return typeCheck.pluginTypeCheck()
 }
 
-/**
- * `@rsdoctor/rspack-plugin` is loaded from the project, like the preprocessor plugins. It isn't a (peer) dependency, as
- * pnpm installs optional peers in the monorepo, and its dependencies would lower the provenance of locked packages.
- */
 interface RsdoctorModule {
   RsdoctorRspackPlugin: new (options: RsdoctorPluginTypes.RsdoctorWebpackPluginOptions<[]>) => Rspack.RspackPluginInstance
 }
@@ -76,12 +78,7 @@ export async function resolveRsdoctorPlugin (nuxt: Nuxt): Promise<RsbuildPlugin 
     searchPaths: nuxt.options.modulesDir,
     from: import.meta.url,
   })
-  const rsdoctor = installed
-    ? await tryImportModule<RsdoctorModule>('@rsdoctor/rspack-plugin', {
-        url: [...[nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)), new URL(import.meta.url)],
-        interopDefault: false,
-      })
-    : undefined
+  const rsdoctor = installed ? await importFromProject<RsdoctorModule>(nuxt, '@rsdoctor/rspack-plugin') : undefined
   if (!rsdoctor) {
     bundlerDiagnostics.NUXT_B7030({ installCommand: await getAddDependencyCommand('@rsdoctor/rspack-plugin', nuxt.options.rootDir, { dev: true }) })
     return
