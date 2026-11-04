@@ -23,9 +23,12 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
   if (nuxt.options.dev) {
     let nitroBuilt = false
     for (const builder of ['webpack', 'rspack', 'rsbuild'] as const) {
-      nuxt.hook(`${builder}:compile`, ({ name, compiler }: { name: string, compiler: { outputFileSystem?: unknown } }) => {
+      nuxt.hook(`${builder}:compile`, ({ name, compiler }: { name: string, compiler: { outputFileSystem?: unknown, options?: { output?: { path?: string, filename?: unknown } } } }) => {
         if (name === 'server' || (builder === 'rsbuild' && name === 'ssr')) {
-          nitro.options.virtual['nuxt/internal/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
+          const entryFile = builder === 'rsbuild' && compiler.options?.output?.path
+            ? join(compiler.options.output.path, String(compiler.options.output.filename ?? '[name].js').replace('[name]', 'server'))
+            : join(nuxt.options.buildDir, 'dist/server/server.mjs')
+          nitro.options.virtual['nuxt/internal/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(entryFile, 'utf-8')
         }
       })
       nuxt.hook(`${builder}:compiled`, () => {

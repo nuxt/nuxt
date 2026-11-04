@@ -2,7 +2,7 @@ import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import type { RsbuildPlugin, Rspack } from '@rsbuild/core'
 import type { Plugin as RsdoctorPluginTypes } from '@rsdoctor/types'
-import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
+import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, importModule, logger, tryImportModule, tryResolveModule } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { basename, dirname, extname, join, relative, resolve } from 'pathe'
 
@@ -17,10 +17,15 @@ const preprocessorPlugins = [
   { packageName: '@rsbuild/plugin-pug', exportName: 'pluginPug', langs: ['pug'] },
 ]
 
+/** Locations searched for a package installed in the project, or alongside the builder. */
+function projectURLs (nuxt: Nuxt) {
+  return [...[nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)), new URL(import.meta.url)]
+}
+
 /** Import a package installed in the project, or alongside the builder. */
 function importFromProject<T> (nuxt: Nuxt, name: string) {
   return tryImportModule<T>(name, {
-    url: [...[nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)), new URL(import.meta.url)],
+    url: projectURLs(nuxt),
     interopDefault: false,
   })
 }
@@ -29,13 +34,22 @@ export async function resolvePreprocessorPlugins (nuxt: Nuxt): Promise<RsbuildPl
   const plugins: RsbuildPlugin[] = []
   const missing = new Map<string, string>()
   for (const { packageName, exportName, langs } of preprocessorPlugins) {
-    const module = await importFromProject<Record<string, () => RsbuildPlugin>>(nuxt, packageName)
-    if (module?.[exportName]) {
-      plugins.push(module[exportName]())
-    } else {
+    const url = projectURLs(nuxt)
+    if (!await tryResolveModule(packageName, url)) {
       for (const lang of langs) {
         missing.set(lang, packageName)
       }
+      continue
+    }
+    try {
+      const module = await importModule<Record<string, () => RsbuildPlugin>>(packageName, { url, interopDefault: false })
+      if (module[exportName]) {
+        plugins.push(module[exportName]())
+      } else {
+        logger.error(`\`${packageName}\` is installed but does not export \`${exportName}\`, so \`${langs.join('`, `')}\` files will not be compiled.`)
+      }
+    } catch (error) {
+      logger.error(`Failed to load \`${packageName}\`, so \`${langs.join('`, `')}\` files will not be compiled.`, error)
     }
   }
 

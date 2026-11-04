@@ -1,10 +1,10 @@
 import { pathToFileURL } from 'node:url'
 import type { NuxtBuilder } from '@nuxt/schema'
-import type { RsbuildInstance, Rspack } from '@rsbuild/core'
+import type { RsbuildConfig, RsbuildInstance, Rspack } from '@rsbuild/core'
 import { createRsbuild } from '@rsbuild/core'
 import { setBuildOutput } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
-import { resolve } from 'pathe'
+import { join, resolve } from 'pathe'
 
 import { resolveRsbuildConfig } from './config.ts'
 import { setupDevServer } from './dev-server.ts'
@@ -12,13 +12,13 @@ import { setupDevServer } from './dev-server.ts'
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const config = await resolveRsbuildConfig(nuxt)
 
+  await nuxt.callHook('rsbuild:config', config)
+
   // In dev the SSR entry is served from the in-memory bundle via the `rsbuild:compile` hook.
   if (nuxt.options.ssr && !nuxt.options.dev) {
-    const serverEntryFile = pathToFileURL(resolve(nuxt.options.buildDir, 'dist/server/server.mjs')).href
+    const serverEntryFile = pathToFileURL(resolveSSREntryFile(config)).href
     setBuildOutput('serverEntry', () => `export { default } from ${JSON.stringify(serverEntryFile)}`, nuxt)
   }
-
-  await nuxt.callHook('rsbuild:config', config)
 
   const rsbuild = await createRsbuild({
     cwd: config.root,
@@ -32,6 +32,14 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   await build(rsbuild)
+}
+
+/** The path of the `ssr` environment entry, as Rsbuild writes it. */
+function resolveSSREntryFile (config: RsbuildConfig): string {
+  const output = config.environments?.ssr?.output
+  const root = output?.distPath?.root ?? join(config.root ?? '.', 'dist')
+  const filename = typeof output?.filename?.js === 'string' ? output.filename.js : '[name].js'
+  return resolve(config.root ?? '.', root, filename.replace('[name]', 'server'))
 }
 
 async function build (rsbuild: RsbuildInstance) {
