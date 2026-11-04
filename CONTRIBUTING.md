@@ -21,7 +21,8 @@ For the complete contribution guides, see:
 - `packages/kit` - Toolkit for authoring Nuxt modules ([`@nuxt/kit`](https://npmjs.com/package/@nuxt/kit))
 - `packages/nuxt` - The core of Nuxt ([`nuxt`](https://npmjs.com/package/nuxt))
 - `packages/schema` - Cross-version Nuxt typedefs and defaults ([`@nuxt/schema`](https://npmjs.com/package/@nuxt/schema))
-- `packages/rspack` - The [Rspack](https://rspack.rs) bundler ([`@nuxt/rspack-builder`](https://npmjs.com/package/@nuxt/rspack-builder))
+- `packages/rsbuild` - The [Rsbuild](https://rsbuild.rs) bundler ([`@nuxt/rsbuild-builder`](https://npmjs.com/package/@nuxt/rsbuild-builder))
+- `packages/rspack` - The deprecated [Rspack](https://rspack.rs) bundler, superseded by `packages/rsbuild` ([`@nuxt/rspack-builder`](https://npmjs.com/package/@nuxt/rspack-builder))
 - `packages/vite` - The [Vite](https://vite.dev) bundler ([`@nuxt/vite-builder`](https://npmjs.com/package/@nuxt/vite-builder))
 - `packages/webpack` - The [webpack](https://webpack.js.org) bundler ([`@nuxt/webpack-builder`](https://npmjs.com/package/@nuxt/webpack-builder))
 

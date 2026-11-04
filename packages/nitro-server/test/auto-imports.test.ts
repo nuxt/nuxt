@@ -293,6 +293,8 @@ describe('ServerAutoImportsPlugin', () => {
     expect(plugin.transformInclude('/app/server/api/hello.ts')).toBe(true)
     expect(plugin.transformInclude('/app/.nuxt/vite/services-utils.ts')).toBe(true)
     expect(plugin.transformInclude('/app/.nuxt/vite/services/ssr/index.mjs')).toBe(false)
+    expect(plugin.transformInclude('/app/.nuxt/dist/server/server.mjs')).toBe(false)
+    expect(plugin.transformInclude('/app/.nuxt/dist/server/_nuxt/chunk.mjs')).toBe(false)
     expect(plugin.transformInclude('/app/node_modules/pkg/index.mjs')).toBe(false)
   })
 

@@ -20,7 +20,9 @@
     "ofetch",
     "verkit",
     "@nuxt/webpack-builder",
+    "@nuxt/rsbuild-builder",
     "@nuxt/rspack-builder",
+    "@rsbuild/core",
     "@rspack/core"
   ],
   "workspaces": {
@@ -83,6 +85,7 @@
       "ignoreDependencies": [
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-jsx",
+        "@rsbuild/plugin-pug",
         "nested-dep"
       ]
     },
@@ -95,7 +98,7 @@
         "~/*": ["./*"],
         "#shared/*": ["./shared/*"]
       },
-      "ignoreDependencies": ["pug"]
+      "ignoreDependencies": ["@rsbuild/plugin-pug", "pug"]
     },
     "packages/nitro-server": {
       "entry": [
@@ -178,10 +181,19 @@
         "vue"
       ]
     },
+    "packages/rsbuild": {
+      "ignoreDependencies": [
+        "@vue/compiler-sfc",
+        "exsolve",
+        "knitwork",
+        "ohash",
+        "seroval",
+        "vue",
+        "vue-bundle-renderer"
+      ]
+    },
     "packages/rspack": {
       "ignoreDependencies": [
-        "@nuxt/kit",
-        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",
