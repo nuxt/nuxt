@@ -51,7 +51,7 @@ function PugTemplateWarningPlugin (nuxt: Nuxt): RsbuildPlugin {
       api.transform({ test: /\.vue$/, resourceQuery: /[?&]lang=pug(?:&|$)/, order: 'post' }, async ({ code, resourcePath, resourceQuery }) => {
         if (!warned && resourceQuery.includes('type=template')) {
           warned = true
-          bundlerDiagnostics.NUXT_B7032({
+          bundlerDiagnostics.NUXT_B7033({
             file: relative(nuxt.options.rootDir, resourcePath),
             installCommand: await getAddDependencyCommand('@rsbuild/plugin-pug', nuxt.options.rootDir, { dev: true }),
           })
@@ -74,7 +74,7 @@ export async function resolveTypeCheckPlugin (nuxt: Nuxt): Promise<RsbuildPlugin
   })
   const typeCheck = installed ? await importFromProject<typeof import('@rsbuild/plugin-type-check')>(nuxt, '@rsbuild/plugin-type-check') : undefined
   if (!typeCheck) {
-    bundlerDiagnostics.NUXT_B7029({ installCommand: await getAddDependencyCommand('@rsbuild/plugin-type-check', nuxt.options.rootDir, { dev: true }) })
+    bundlerDiagnostics.NUXT_B7030({ installCommand: await getAddDependencyCommand('@rsbuild/plugin-type-check', nuxt.options.rootDir, { dev: true }) })
     return
   }
 
@@ -105,7 +105,7 @@ export async function resolveRsdoctorPlugin (nuxt: Nuxt): Promise<RsbuildPlugin 
   })
   const rsdoctor = installed ? await importFromProject<RsdoctorModule>(nuxt, '@rsdoctor/rspack-plugin') : undefined
   if (!rsdoctor) {
-    bundlerDiagnostics.NUXT_B7030({ installCommand: await getAddDependencyCommand('@rsdoctor/rspack-plugin', nuxt.options.rootDir, { dev: true }) })
+    bundlerDiagnostics.NUXT_B7031({ installCommand: await getAddDependencyCommand('@rsdoctor/rspack-plugin', nuxt.options.rootDir, { dev: true }) })
     return
   }
 

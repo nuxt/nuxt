@@ -9,6 +9,6 @@ import { bundle as bundleWithRspack } from '../../webpack/src/webpack.ts'
  * @deprecated `@nuxt/rspack-builder` is deprecated in favour of `@nuxt/rsbuild-builder`.
  */
 export const bundle: NuxtBuilder['bundle'] = (nuxt) => {
-  bundlerDiagnostics.NUXT_B7028()
+  bundlerDiagnostics.NUXT_B7029()
   return bundleWithRspack(nuxt)
 }

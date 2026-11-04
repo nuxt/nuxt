@@ -54,6 +54,6 @@ async function build (rsbuild: RsbuildInstance) {
       // eslint-disable-next-line no-restricted-syntax -- raw compiler output; the diagnostic below carries the errors as `cause`
       logger.error(stats.toString({ errors: true, warnings: false, colors: false, errorDetails: true }))
     }
-    throw bundlerDiagnostics.NUXT_B7031({ name: failures[0]!.name, cause: failures.flatMap(({ stats }) => stats.compilation.errors) })
+    throw bundlerDiagnostics.NUXT_B7032({ name: failures[0]!.name, cause: failures.flatMap(({ stats }) => stats.compilation.errors) })
   }
 }
