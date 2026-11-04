@@ -10,6 +10,7 @@ import { basename, normalize, resolve } from 'pathe'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defineEnv } from 'unenv'
 
+import { resolveAllowedHosts } from '../../webpack/src/utils/same-origin.ts'
 import { getHMRPath } from './dev-server.ts'
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { NuxtHooksPlugin } from './plugins/hooks.ts'
@@ -132,6 +133,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
     server: {
       // requests are forwarded by Nuxt's dev server (see `dev-server.ts`)
       middlewareMode: true,
+      allowedHosts: resolveAllowedHosts(nuxt.options),
       cors: false,
       compress: false,
       publicDir: false,

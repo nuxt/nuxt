@@ -7,7 +7,7 @@ import type { H3Event as H3V1Event } from 'h3'
 import type { H3Event as H3V2Event } from 'h3-next'
 import { joinURL } from 'ufo'
 
-import { isSameOriginRequest } from '../../webpack/src/utils/same-origin.ts'
+import { isSameOriginRequest, resolveAllowedHosts } from '../../webpack/src/utils/same-origin.ts'
 
 /**
  * Path of the HMR WebSocket. It is kept under the build assets directory, so the
@@ -41,7 +41,7 @@ export async function setupDevServer (nuxt: Nuxt, rsbuild: RsbuildInstance) {
       return
     }
 
-    if (!isSameOriginRequest(req)) {
+    if (!isSameOriginRequest(req, resolveAllowedHosts(nuxt.options))) {
       res!.statusCode = 403
       res!.end('Forbidden')
     } else if (!await handleRequest(devServer, req as IncomingMessage, res as ServerResponse)) {
