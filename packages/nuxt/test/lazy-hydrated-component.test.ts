@@ -220,6 +220,32 @@ describe('interaction hydration', () => {
     expect(onParentClick).toHaveBeenCalledTimes(3)
   })
 
+  it('delivers events dispatched by replayed handlers to ancestors', async () => {
+    const onParentClick = vi.fn()
+    const component = defineComponent({
+      setup: () => () => h('div', [
+        h('button', { id: 'proxy', onClick: () => document.querySelector<HTMLButtonElement>('#target')!.click() }, 'Proxy'),
+        h('button', { id: 'target' }, 'Target'),
+      ]),
+    })
+    let resolve!: (component: Component) => void
+    const loader = vi.fn(() => new Promise<Component>((res) => { resolve = res }))
+    const lazy = createLazyInteractionComponent('proxy', loader)
+    document.body.innerHTML = '<div id="app"><div><div><button id="proxy">Proxy</button><button id="target">Target</button></div></div></div>'
+    app = createSSRApp({ render: () => h('div', { onClick: onParentClick }, [h(lazy)]) })
+    app.mount('#app')
+    await flushPromises()
+
+    document.querySelector<HTMLButtonElement>('#proxy')!.click()
+    await flushPromises()
+    expect(onParentClick).toHaveBeenCalledTimes(1)
+
+    resolve(component)
+    await flushPromises()
+    expect(onParentClick).toHaveBeenCalledTimes(2)
+    expect(onParentClick.mock.calls[1]![0].target).toBe(document.querySelector('#target'))
+  })
+
   it('replays interactions on fragment roots and respects custom triggers', async () => {
     const onClick = vi.fn()
     const component = defineComponent({

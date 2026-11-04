@@ -106,7 +106,10 @@ export const createLazyInteractionComponent: LazyComponentFactory<LazyInteractio
       el.removeEventListener('pointerleave', onPointerLeave, true)
     })
   }
-  const stopPropagation = (event: Event) => event.stopPropagation()
+  const replayedEvents = new WeakSet<Event>()
+  const stopPropagation = (event: Event) => {
+    if (replayedEvents.has(event)) { event.stopPropagation() }
+  }
   const toggleStopPropagation = (add: boolean) => {
     forEach((el) => {
       for (const interaction of interactions) {
@@ -142,7 +145,9 @@ export const createLazyInteractionComponent: LazyComponentFactory<LazyInteractio
       for (const { event, target } of pendingEvents) {
         if (disposed) { break }
         if (event.type === 'focus' && target !== document.activeElement) { continue }
-        target?.dispatchEvent(new (event.constructor as typeof Event)(event.type, event))
+        const replay = new (event.constructor as typeof Event)(event.type, event)
+        replayedEvents.add(replay)
+        target?.dispatchEvent(replay)
       }
       toggleStopPropagation(false)
       pendingEvents.length = 0
