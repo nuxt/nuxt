@@ -2,8 +2,8 @@ import type { Nuxt, RsbuildConfig, RsbuildPlugin } from '@nuxt/schema'
 import { createHooks } from 'hookable'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import * as context from './context.ts'
-import { addBuildPlugin, addRsbuildPlugin, extendRsbuildConfig } from './build.ts'
+import * as context from '../src/context.ts'
+import { addBuildPlugin, addRsbuildPlugin, extendRsbuildConfig } from '../src/build.ts'
 
 function mockNuxt (options: { dev?: boolean, builder?: string } = {}) {
   const nuxt = {
@@ -68,14 +68,12 @@ describe('rsbuild build utilities', () => {
     await nuxt.callHook('rspack:config', rspackConfigs as any)
 
     expect((rsbuildConfig.plugins as RsbuildPlugin[]).map(p => p.name)).toEqual(['rsbuild'])
-    // the plugin without an Rsbuild variant is applied to both Rspack configurations
     expect(rspackConfigs.map(c => c.plugins.length)).toEqual([1, 1])
   })
 
   it('applies the Rspack plugin of unplugin instances when using the Rsbuild builder', async () => {
     const nuxt = mockNuxt()
     const rspackPlugin = { apply () {} }
-    // the shape of an unplugin instance, whose Rsbuild plugin wraps its Rspack plugin
     addBuildPlugin({ raw: () => ({}), rsbuild: () => plugin('unplugin'), rspack: () => rspackPlugin } as Parameters<typeof addBuildPlugin>[0])
 
     const rsbuildConfig: RsbuildConfig = {}
