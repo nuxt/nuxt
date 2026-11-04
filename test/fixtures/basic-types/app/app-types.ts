@@ -729,6 +729,33 @@ describe('components', () => {
     })
   })
 
+  it('only accepts serializable props on island components', () => {
+    interface Item { id: number, tags?: readonly string[] }
+    const Comp = defineComponent({
+      __typeProps: {} as {
+        item: Item
+        date?: Date
+        dates?: Date[]
+        onboarding?: Date
+        nested?: { at: Date }
+        format?: (value: number) => string
+      },
+    })
+    const IslandComp = Comp as unknown as IslandComponent<typeof Comp>
+    const tags: readonly string[] = ['a']
+    h(IslandComp, { item: { id: 1, tags } })
+    // @ts-expect-error array items are serialized too
+    h(IslandComp, { item: { id: 1 }, dates: [new Date()] })
+    // @ts-expect-error only `on` followed by an uppercase letter is an event listener
+    h(IslandComp, { item: { id: 1 }, onboarding: new Date() })
+    // @ts-expect-error a Date is sent as a string
+    h(IslandComp, { item: { id: 1 }, date: new Date() })
+    // @ts-expect-error nested values are serialized too
+    h(IslandComp, { item: { id: 1 }, nested: { at: new Date() } })
+    // @ts-expect-error functions are dropped
+    h(IslandComp, { item: { id: 1 }, format: (value: number) => String(value) })
+  })
+
   it('correctly includes event types with lazy components', () => {
     const Comp = defineComponent({
       __typeProps: {} as {
