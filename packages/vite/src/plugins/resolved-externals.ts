@@ -1,12 +1,13 @@
 import { isBuiltin } from 'node:module'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
-import { parseNodeModulePath } from '@nuxt/kit/internal'
+import { lookupNodeModuleSubpath, parseNodeModulePath } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
-import { dirname, relative } from 'pathe'
+import { dirname, normalize, relative } from 'pathe'
 import escapeStringRegexp from 'escape-string-regexp'
 
 const BARE_ID_RE = /^(?!\.{0,2}[/\\]|[A-Z]:[/\\]|[\0#~]|virtual:)/i
+const NODE_MODULES_FILE_RE = /^(?:[A-Z]:)?[/\\][^?#]*[/\\]node_modules[/\\][^?#]+\.[cm]?js$/i
 
 function pkgName (id: string) {
   const segments = id.split('/')
@@ -43,13 +44,49 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
       const conditions = [...new Set([...environment.config.resolve.conditions, 'import', 'default'])]
         .map(c => c === 'development|production' ? 'production' : c)
 
+      // nuxt's own files are always inlined
+      const nuxtDistRE = nuxt.options.appDir
+        ? new RegExp('^' + escapeStringRegexp(dirname(nuxt.options.appDir) + '/') + '(?!.*node_modules)')
+        : undefined
+
+      const specifiers = new Map<string, Promise<{ specifier: string, path: string } | undefined>>()
+      async function findSpecifier (file: string) {
+        const { dir, name } = parseNodeModulePath(file)
+        if (!dir || !name || deduped.has(name)) { return }
+        const resolveFile = (specifier: string) => {
+          const path = resolveModulePath(specifier, { try: true, from: `${dir}${name}/`, conditions, extensions: nuxt.options.extensions })
+          return path && normalize(path) === normalize(file) ? { specifier, path } : undefined
+        }
+        const entry = resolveFile(name)
+        if (entry) { return entry }
+        const subpath = await lookupNodeModuleSubpath(file)
+        return subpath?.startsWith('./') && subpath.length > 2 ? resolveFile(`${name}/${subpath.slice(2)}`) : undefined
+      }
+
       return {
         name: 'nuxt:resolve-externals:external',
         resolveId: {
           filter: {
-            id: BARE_ID_RE,
+            id: {
+              include: [BARE_ID_RE, NODE_MODULES_FILE_RE],
+              exclude: nuxtDistRE ? [nuxtDistRE] : [],
+            },
           },
           async handler (id, importer) {
+            // an absolute import of a package file resolves like the bare specifier for that file
+            if (importer && !BARE_ID_RE.test(id)) {
+              let found = specifiers.get(id)
+              if (!found) {
+                found = findSpecifier(id)
+                specifiers.set(id, found)
+              }
+              const { specifier, path } = (await found) ?? {}
+              if (!specifier || !path) { return }
+              // resolve from the file so the metadata comes from this copy, not the importer's
+              const res = await this.resolve?.(specifier, path, { skipSelf: true }).catch(() => undefined)
+              if (!res || res.external !== true || res.id !== specifier) { return }
+              return { ...res, id: path, external: 'absolute' }
+            }
             if (!importer || isBuiltin(id) || deduped.has(pkgName(id)) || localImporterRE?.test(importer)) { return }
             const res = await this.resolve?.(id, importer, { skipSelf: true })
             if (!res || res.external !== true || res.id !== id) { return res }
