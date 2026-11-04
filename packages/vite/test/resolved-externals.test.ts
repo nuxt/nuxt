@@ -41,6 +41,7 @@ function writePackage (dir: string, value: string) {
 describe('ResolveExternalsPlugin', () => {
   const rootDep = join(root, 'node_modules/dep')
   const nestedDep = join(root, 'node_modules/mod/node_modules/dep')
+  const subpathDep = join(root, 'node_modules/subpath-dep')
   const importer = join(root, 'node_modules/mod/dist/deep/plugin.js')
   const layerImporter = join(root, 'layer/plugins/plugin.js')
 
@@ -51,6 +52,11 @@ describe('ResolveExternalsPlugin', () => {
     mkdirSync(join(root, 'layer/plugins'), { recursive: true })
     writeFileSync(importer, 'import dep from "dep"')
     writeFileSync(layerImporter, 'import dep from "dep"')
+    mkdirSync(join(subpathDep, 'dist'), { recursive: true })
+    writeFileSync(join(subpathDep, 'package.json'), JSON.stringify({ name: 'subpath-dep', type: 'module', exports: { '.': './dist/index.js', './sub': { import: './dist/sub.js' } } }))
+    for (const file of ['index.js', 'sub.js', 'internal.js']) {
+      writeFileSync(join(subpathDep, 'dist', file), 'export default 1')
+    }
   })
 
   afterAll(() => {
@@ -125,6 +131,20 @@ describe('ResolveExternalsPlugin', () => {
     await expect(resolveId(plugin, context, join(rootDep, 'package.json'), template)).resolves.toBeUndefined()
     await expect(resolveId(plugin, { resolve: vi.fn().mockResolvedValue({ id: entry, external: false }) }, entry, template)).resolves.toBeUndefined()
     await expect(resolveId(plugin, { resolve: vi.fn().mockRejectedValue(new Error('No known conditions for "." specifier in "dep" package')) }, entry, template)).resolves.toBeUndefined()
+  })
+
+  it('resolves an absolute import of an exported package subpath like the bare import', async () => {
+    const plugin = environmentPlugin()
+    const context = { resolve: vi.fn().mockResolvedValue({ id: 'subpath-dep/sub', external: true }) }
+    const template = '\0nuxt-nitro-virtual:#internal/nuxt/paths'
+    const sub = join(subpathDep, 'dist/sub.js')
+
+    await expect(resolveId(plugin, context, sub, template)).resolves.toStrictEqual({ id: sub, external: 'absolute' })
+    expect(context.resolve).toHaveBeenLastCalledWith('subpath-dep/sub', sub, { skipSelf: true })
+
+    context.resolve.mockClear()
+    await expect(resolveId(plugin, context, join(subpathDep, 'dist/internal.js'), template)).resolves.toBeUndefined()
+    expect(context.resolve).not.toHaveBeenCalled()
   })
 
   it('skips node builtins and ids without an importer', async () => {
