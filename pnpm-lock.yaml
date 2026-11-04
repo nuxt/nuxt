@@ -1514,9 +1514,6 @@ importers:
       knitwork:
         specifier: catalog:build
         version: 1.3.0
-      mlly:
-        specifier: catalog:build
-        version: 1.8.2
       nuxt:
         specifier: workspace:*
         version: link:../nuxt

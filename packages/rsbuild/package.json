@@ -32,7 +32,6 @@
     "escape-string-regexp": "catalog:build",
     "exsolve": "catalog:build",
     "knitwork": "catalog:build",
-    "mlly": "catalog:build",
     "ohash": "catalog:build",
     "pathe": "catalog:build",
     "rolldown-string": "catalog:vite",

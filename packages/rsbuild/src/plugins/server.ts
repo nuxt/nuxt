@@ -1,9 +1,9 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { RsbuildPlugin, Rspack } from '@rsbuild/core'
 import { directoryToURL, resolveAlias } from '@nuxt/kit'
+import { parseNodeModulePath } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
 import { genObjectFromRawEntries, genString } from 'knitwork'
-import { parseNodeModulePath } from 'mlly'
 import { isAbsolute, normalize, resolve } from 'pathe'
 
 import { stripInvalidPureAnnotations } from '../../../webpack/src/plugins/strip-invalid-pure-annotations.ts'
