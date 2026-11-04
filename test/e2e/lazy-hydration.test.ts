@@ -160,20 +160,12 @@ for (const [description, path] of Object.entries(hydrationTests)) {
       await countLocator.waitFor()
       expect(await countLocator.textContent()).toBe('0')
 
-      // The first interaction triggers hydration asynchronously, and the click
-      // that triggers it is not guaranteed to also register as an increment.
-      // Hover to start hydration, then click until the count actually advances
-      // before driving the deterministic loop below.
-      await incrementButton.hover()
-      await expect.poll(async () => {
-        await incrementButton.click()
-        return countLocator.textContent()
-      }).not.toBe('0')
+      await incrementButton.dispatchEvent('click')
+      await expect(countLocator).toHaveText('1')
 
-      let count = Number(await countLocator.textContent())
-      while (count < 10) {
+      for (let count = 2; count <= 10; count++) {
         await incrementButton.click()
-        await expect.poll(() => countLocator.textContent()).toBe(`${++count}`)
+        await expect(countLocator).toHaveText(`${count}`)
       }
 
       expect(await countLocator.textContent()).toBe('10')
