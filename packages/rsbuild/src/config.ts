@@ -22,6 +22,7 @@ import { resolvePreprocessorPlugins, resolveRsdoctorPlugin, resolveTypeCheckPlug
 import { ServerPlugin } from './plugins/server.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { VueSSRPlugin } from './plugins/vue.ts'
+import { TildeAliasPostcssPlugin } from './utils/postcss.ts'
 
 /**
  * Translate Nuxt options into an Rsbuild configuration, with a `client` and
@@ -86,18 +87,13 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
     tools: {
       // the HTML document is rendered by Nitro
       htmlPlugin: false,
-      cssLoader: (options) => {
+      cssLoader: {
         // root-relative URLs point at files served from the public directory
-        options.url = { filter: (url: string) => url[0] !== '/' }
-        // css-loader only resolves `~`-prefixed `url()` requests (such as `~/assets`) with the aliases of
-        // the project when emitting CommonJS, which the named exports of CSS modules are not compatible with
-        if (!(typeof options.modules === 'object' && options.modules.namedExport)) {
-          options.esModule = false
-        }
+        url: { filter: (url: string) => url[0] !== '/' },
       },
       postcss: (loaderOptions) => {
         // PostCSS is configured with the `postcss` option in `nuxt.config` rather than with a config file
-        loaderOptions.postcssOptions = { plugins: [...postcssPlugins] }
+        loaderOptions.postcssOptions = { plugins: [TildeAliasPostcssPlugin(nuxt), ...postcssPlugins] }
       },
       swc: {
         jsc: {
