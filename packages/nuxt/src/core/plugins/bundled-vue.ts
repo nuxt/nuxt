@@ -22,8 +22,8 @@ export function BundledVuePlugin (): Plugin {
     resolveId: {
       order: 'pre',
       filter: { id: VUE_ID_RE },
-      async handler (id, importer) {
-        const resolved = await this.resolve(id, importer, { skipSelf: true })
+      async handler (id, importer, options) {
+        const resolved = await this.resolve(id, importer, { ...options, skipSelf: true })
         if (!resolved || resolved.external) { return resolved }
         const { dir, name, subpath } = parseNodeModulePath(resolved.id)
         if (!dir || !name || !subpath || !VUE_PACKAGES.has(name) || !CJS_ENTRY_RE.test(subpath)) { return resolved }
