@@ -295,9 +295,6 @@ jobs:
           node-version: lts
           cache: true
 
-      - name: Fetch 4.x for cross-branch diagnostics check
-        run: git fetch --no-tags --depth=1 origin 4.x:refs/remotes/origin/4.x
-
       - name: Prepare
         run: vp run dev:prepare && vp run test:prepare && vp run build:kit
 
@@ -328,6 +325,36 @@ jobs:
         run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}
+
+  # Advisory, so not required by `ci-ok`: a conflict can be resolved on either branch.
+  diagnostics-drift:
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.src == 'true'
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      OTHER_BRANCH: ${{ github.base_ref == 'main' && '4.x' || 'main' }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          node-version: lts
+          run-install: false
+
+      - name: Fetch the other release line
+        run: git fetch --no-tags --depth=1 origin "$OTHER_BRANCH:refs/remotes/origin/$OTHER_BRANCH"
+
+      - name: Check diagnostic codes against the other release line
+        run: node ./scripts/check-diagnostics-drift.ts
+        env:
+          BASE_REF: HEAD^1
+          OTHER_REF: origin/${{ env.OTHER_BRANCH }}
 
   # Runs on pull requests too (unlike the `lint` job) so knip regressions surface
   # before the merge queue.
