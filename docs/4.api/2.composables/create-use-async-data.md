@@ -54,17 +54,18 @@ function createUseAsyncData<
   FDataT = FResT,
   FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
   FDefaultT = undefined,
-  const FAddons extends ReadonlyArray<UseAsyncDataAddon<any, any>> = [],
 > (
   options: (callerOptions: AsyncDataOptions<unknown>) => Partial<AsyncDataOptions<FResT, FDataT, FPickKeys, FDefaultT>>,
-): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
+): UseAsyncData<FResT, FDataT, FPickKeys, FDefaultT>
 ```
 
 The returned composable's signature includes any custom options and return-value extensions contributed by the [addons](#addons).
 
 ## Options
 
-`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/api/composables/use-async-data#parameters) — see the full list there.
+`createUseAsyncData` accepts all the same options as [`useAsyncData`](/docs/api/composables/use-async-data#parameters), including `server`, `lazy`, `immediate`, `default`, `transform`, `pick`, `getCachedData`, `deep`, `dedupe`, `timeout`, and `watch`.
+
+See the full list of options in the [`useAsyncData` documentation](/docs/api/composables/use-async-data#parameters).
 
 ## Default vs Override Mode
 
@@ -116,7 +117,6 @@ const refreshOnFocus = defineUseAsyncDataAddon({
     return (asyncData) => {
       // 👈 run code *after* creating the `useAsyncData` instance
       const focused = useWindowFocus()
-
       watch(focused, (focused) => {
         if (focused) { asyncData.refresh() }
       })
@@ -141,3 +141,5 @@ const { data } = await useCustomAsyncData(
 ```
 
 :read-more{to="/docs/api/utils/define-use-async-data-addon"}
+
+:read-more{to="/docs/guide/recipes/custom-usefetch"}

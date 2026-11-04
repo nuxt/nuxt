@@ -184,7 +184,6 @@ const refreshOnFocus = defineUseFetchAddon({
     return (asyncData) => {
       // 👈 run code *after* calling `useAsyncData` in `useFetch`
       const focused = useWindowFocus()
-
       watch(focused, (focused) => {
         if (focused) { asyncData.refresh() }
       })
@@ -208,3 +207,5 @@ const { data } = await useCustomFetch(
 ```
 
 :read-more{to="/docs/api/utils/define-use-fetch-addon"}
+
+:read-more{to="/docs/guide/recipes/custom-usefetch"}
