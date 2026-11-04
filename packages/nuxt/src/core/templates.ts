@@ -15,7 +15,7 @@ import { resolveModulePath } from 'exsolve'
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, findCaseDependentRouteRuleKeyPart, normalizePathCode, resolveRouteRulesRoutes } from './utils/route-rules.ts'
+import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, findCaseDependentRouteRuleKeyPart, isWildcardRedirect, normalizePathCode, resolveRouteRulesRoutes, resolveWildcardRedirect } from './utils/route-rules.ts'
 import type { RouteRulesRouter } from './utils/route-rules.ts'
 import { findRouterOptionsFileDefining } from '../pages/utils.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
@@ -860,8 +860,10 @@ export const routeRulesTemplate: NuxtTemplate = {
           .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
           .map(([name, value]) => {
             if (name === 'redirect') {
-              const redirectOptions = value as { to: string } | string
-              value = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions.to
+              const redirectOptions = value as { to: string, base?: string, _redirectStripBase?: string } | string
+              value = typeof redirectOptions === 'string'
+                ? redirectOptions
+                : isWildcardRedirect(redirectOptions) ? { to: redirectOptions.to, base: redirectOptions.base ?? redirectOptions._redirectStripBase ?? '' } : redirectOptions.to
             }
             if (name === 'appMiddleware') {
               const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
@@ -887,6 +889,8 @@ export const routeRulesTemplate: NuxtTemplate = {
     const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
     const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)
     const needsRouterOptions = foldedMatcher !== sensitiveMatcher || mayBeCaseSensitive
+    const wildcardRedirects = routes.some(({ data }) => isWildcardRedirect(data.redirect))
+    const withWildcardRedirect = (rules: string) => wildcardRedirects ? `resolveWildcardRedirect(${rules}, path)` : rules
     return cache[cacheKey] = [
       `import { defu } from 'defu'`,
       needsRouterOptions ? `import routerOptions from '#build/router.options.mjs'` : ``,
@@ -896,13 +900,14 @@ export const routeRulesTemplate: NuxtTemplate = {
         ? (foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`)
         : `const foldedMatcher = ${foldedMatcher}`,
       normalizePathCode,
+      wildcardRedirects ? `const resolveWildcardRedirect = ${resolveWildcardRedirect.toString()}` : ``,
       needsRouterOptions
         ? [
             `export default (path) => routerOptions.sensitive`,
-            `  ? defu({}, ...matchAllRouteRules(path => sensitiveMatcher('', normalizePath(path, false)).map(r => r.data), path).reverse())`,
-            `  : defu({}, ...matchAllRouteRules(path => foldedMatcher('', normalizePath(path, true)).map(r => r.data), path).reverse())`,
+            `  ? ${withWildcardRedirect(`defu({}, ...matchAllRouteRules(path => sensitiveMatcher('', normalizePath(path, false)).map(r => r.data), path).reverse())`)}`,
+            `  : ${withWildcardRedirect(`defu({}, ...matchAllRouteRules(path => foldedMatcher('', normalizePath(path, true)).map(r => r.data), path).reverse())`)}`,
           ].join('\n')
-        : `export default path => defu({}, ...matchAllRouteRules(path => foldedMatcher('', normalizePath(path, true)).map(r => r.data), path).reverse())`,
+        : `export default path => ${withWildcardRedirect(`defu({}, ...matchAllRouteRules(path => foldedMatcher('', normalizePath(path, true)).map(r => r.data), path).reverse())`)}`,
     ].filter(Boolean).join('\n')
   },
 }

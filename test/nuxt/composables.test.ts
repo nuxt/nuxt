@@ -740,6 +740,9 @@ describe.skipIf(!isTestingAppManifest)('app manifests', () => {
             "/Secret/Docs": {
               "ssr": false,
             },
+            "/Wild": {
+              "redirect": "/target/**",
+            },
             "/isr": {
               "isr": 60,
             },
@@ -800,6 +803,12 @@ describe('case-insensitive route rules', () => {
   it('applies an uppercase-keyed redirect rule for any request casing', () => {
     for (const path of ['/Legacy/Home', '/legacy/home', '/LEGACY/HOME']) {
       expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/target' })
+    }
+  })
+
+  it('moves the tail of the path onto a wildcard redirect target for any request casing', () => {
+    for (const path of ['/Wild/A/b', '/wild/A/b', '/WILD/A/b']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/target/A/b' })
     }
   })
 
