@@ -161,5 +161,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Fix the build errors listed above. If the errors are unclear, try running `nuxt cleanup` and rebuilding.',
       docs: false,
     },
+    NUXT_B7032: {
+      why: (p: { file: string }) => `\`${p.file}\` has a pug template, but \`@rsbuild/plugin-pug\` is not installed, so it is not compiled.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to compile pug templates.`,
+      docs: false,
+    },
   },
 })

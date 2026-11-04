@@ -4,7 +4,7 @@ import type { RsbuildPlugin, Rspack } from '@rsbuild/core'
 import type { Plugin as RsdoctorPluginTypes } from '@rsdoctor/types'
 import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
-import { basename, dirname, join, resolve } from 'pathe'
+import { basename, dirname, join, relative, resolve } from 'pathe'
 
 /**
  * Rsbuild plugins enabled when the project depends on them, as they
@@ -31,10 +31,35 @@ export async function resolvePreprocessorPlugins (nuxt: Nuxt): Promise<RsbuildPl
     const module = await importFromProject<Record<string, () => RsbuildPlugin>>(nuxt, name)
     if (module?.[exportName]) {
       plugins.push(module[exportName]())
+    } else if (name === '@rsbuild/plugin-pug') {
+      plugins.push(PugTemplateWarningPlugin(nuxt))
     }
   }
 
   return plugins
+}
+
+/**
+ * Warn about pug templates, which are not compiled without `@rsbuild/plugin-pug`.
+ */
+function PugTemplateWarningPlugin (nuxt: Nuxt): RsbuildPlugin {
+  return {
+    name: 'nuxt:pug-template-warning',
+    setup (api) {
+      let warned = false
+      // template blocks are requested with inline loaders, which only keep `post` rules
+      api.transform({ test: /\.vue$/, resourceQuery: /[?&]lang=pug(?:&|$)/, order: 'post' }, async ({ code, resourcePath, resourceQuery }) => {
+        if (!warned && resourceQuery.includes('type=template')) {
+          warned = true
+          bundlerDiagnostics.NUXT_B7032({
+            file: relative(nuxt.options.rootDir, resourcePath),
+            installCommand: await getAddDependencyCommand('@rsbuild/plugin-pug', nuxt.options.rootDir, { dev: true }),
+          })
+        }
+        return code
+      })
+    },
+  }
 }
 
 export async function resolveTypeCheckPlugin (nuxt: Nuxt): Promise<RsbuildPlugin | undefined> {
