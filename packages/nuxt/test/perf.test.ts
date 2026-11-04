@@ -274,6 +274,17 @@ describe('NuxtPerfProfiler', () => {
     expect(phase?.unfinished).toBe(true)
   })
 
+  it('does not report a hook again while a phase of the same name is still open', async () => {
+    const perf = new NuxtPerfProfiler()
+    const hooks = createHooks<{ ready: () => Promise<void> }>()
+    perf.installHookInterceptors(hooks as any)
+    hooks.hook('ready', async () => { await sleep(10) })
+    perf.startPhase('ready')
+    await hooks.callHook('ready')
+
+    expect(perf.getReport().phases.filter(p => p.name === 'ready')).toHaveLength(1)
+  })
+
   it('reports time before the profiler started and time outside any phase', async () => {
     const perf = new NuxtPerfProfiler({ startTime: Date.now() - 100 })
     await sleep(30)

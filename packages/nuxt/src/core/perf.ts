@@ -411,12 +411,13 @@ export class NuxtPerfProfiler {
   getReport (): PerfReport {
     const now = performance.now()
     const totalDuration = round(now - this.#globalStart)
+    const manualPhases = this.#getPhases(now)
 
     // hook invocations above the threshold are shown as phases unless a manual phase of the same
     // name already covers them
     const allPhases: PerfPhase[] = [
-      ...this.#getPhases(now),
-      ...this.#hookPhases.filter(hp => hp.duration >= HOOK_PHASE_THRESHOLD_MS && !this.#phases.some(p => p.name === hp.name && contains(p, hp))),
+      ...manualPhases,
+      ...this.#hookPhases.filter(hp => hp.duration >= HOOK_PHASE_THRESHOLD_MS && !manualPhases.some(p => p.name === hp.name && contains(p, hp))),
     ].sort((a, b) => a.startTime - b.startTime)
 
     // own time and memory exclude direct children (phases nested in this one but in no other child);
