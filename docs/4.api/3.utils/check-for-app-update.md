@@ -34,37 +34,18 @@ interface NuxtAppManifestMeta {
 
 Returns the newer build's metadata, or `undefined` when the build is unchanged or the latest manifest cannot be fetched. On the server, or when the app manifest is disabled, it returns `undefined` without making a request.
 
-The current and latest manifest requests each time out after 30 seconds, including reading their response bodies. Later checks can retry after a timeout.
-
-Errors loading the current build's manifest, including timeouts, are propagated, except for HTTP 403 and 404 responses, which allow checking for a newer build even when the old manifest has been removed. Automatic polling retries on the next interval after an error.
+The promise rejects if the current build's manifest cannot be loaded, unless the server responds with HTTP 403 or 404.
 
 The utility emits `app:manifest:update` rather than reloading the application itself. Existing Nuxt hooks, including those configured by `experimental.emitRouteChunkError`, still handle that event.
 
 ## Example
 
-Use `runWithContext` to retain the Nuxt context when calling the utility from an event handler:
-
-```vue [app/components/CheckForUpdate.vue]
-<script setup lang="ts">
-const nuxtApp = useNuxtApp()
-const status = ref('')
-
-async function check () {
-  try {
-    const update = await nuxtApp.runWithContext(() => checkForAppUpdate())
-    status.value = update ? 'An update is available.' : 'No update was found.'
-  } catch {
-    status.value = 'Unable to check for an update.'
-  }
-}
-</script>
-
-<template>
-  <button @click="check">
-    Check for updates
-  </button>
-  <p role="status">
-    {{ status }}
-  </p>
-</template>
+```ts [app/plugins/check-for-update.client.ts]
+export default defineNuxtPlugin(() => {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkForAppUpdate().catch(() => {})
+    }
+  })
+})
 ```
