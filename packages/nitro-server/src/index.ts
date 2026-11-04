@@ -768,6 +768,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
       autoImports,
       buildDir: resolve(nitroConfig.rootDir!, nitroConfig.buildDir!),
+      exclude: (nitroConfig.imports as ServerImportsOptions).exclude ?? [],
       sourcemap: !!nuxt.options.sourcemap.server,
     }))
   }
