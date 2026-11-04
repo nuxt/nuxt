@@ -98,9 +98,8 @@ export function getCompiledPosition (file: string, line: number, column?: number
 }
 
 /**
- * Source position Node's own source map support gives a frame of a module the runner did
- * not evaluate. Replacing `Error.prepareStackTrace` turns that support off for every frame,
- * so a module Node loaded itself with `--enable-source-maps` would otherwise lose its map.
+ * Source position Node's own source map support gives a frame. Node does not apply it
+ * while `Error.prepareStackTrace` is replaced.
  */
 function getNodeOriginalPosition (file: string, line: number, column: number): SourcePosition | undefined {
   if (!process.sourceMapsEnabled) {
@@ -123,8 +122,8 @@ function getNodeOriginalPosition (file: string, line: number, column: number): S
 
 /**
  * Formats a stack as V8 does, with the position of each frame in a transformed module
- * replaced by the source position its current map gives it, and the position of each frame
- * in a module Node loaded with a source map replaced as Node itself would.
+ * replaced by the source position its current map gives it, or else by the one Node's own
+ * source map support gives it.
  */
 export function prepareStackTrace (error: Error, callSites: NodeJS.CallSite[]): string {
   const frames = callSites.map((callSite) => {
