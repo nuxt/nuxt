@@ -236,13 +236,14 @@ describe('server components/islands', () => {
 
     const isServerPageIsland = (req: string) => /^\/__nuxt_island\/page_server-page_/.test(req)
 
-    expect(requests.some(isServerPageIsland)).toBe(true)
+    // in dev, links do not import their pages to prefetch, so the island is fetched on navigation
+    expect(requests.some(isServerPageIsland)).toBe(!isDev)
     requests.length = 0
 
     await page.getByText('to server page').click()
     await page.waitForFunction(() => !!document.head.querySelector('meta[name="author"][content="Nuxt"]'))
 
-    expect(requests.some(isServerPageIsland)).toBe(false)
+    expect(requests.some(isServerPageIsland)).toBe(isDev)
     await page.close()
   })
 
