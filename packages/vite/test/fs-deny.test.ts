@@ -50,7 +50,7 @@ describe('vite dev server fs.deny', () => {
   }, 30000)
 
   afterAll(async () => {
-    await rm(fixtureDir, { recursive: true, force: true })
+    await rm(fixtureDir, { recursive: true, force: true, maxRetries: 3 })
   })
 
   it('should not serve the generated app secret or files denied by vite defaults', async () => {
