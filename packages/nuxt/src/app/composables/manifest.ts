@@ -30,8 +30,13 @@ function fetchManifest (): Promise<NuxtAppManifest> {
   if (import.meta.server) {
     _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest') as unknown as Promise<NuxtAppManifest>
   } else {
-    // Low priority so this background warm-up does not contend with LCP-critical resources.
-    _manifest = fetch(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), { priority: 'low' })
+    const manifestURL = buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`)
+    _manifest = fetch(manifestURL, {
+      // Background loading should not compete with resources needed to render the page.
+      priority: 'low',
+      // Let the request finish during page unload; WebKit otherwise reports a fetch failure.
+      keepalive: true,
+    })
       .then((res) => {
         // native `fetch` resolves non-2xx responses; surface them with a `status` so callers
         // (e.g. the outdated-build check) can distinguish a missing manifest from a bad payload
