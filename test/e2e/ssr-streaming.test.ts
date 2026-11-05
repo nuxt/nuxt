@@ -24,6 +24,16 @@ test.describe('SSR Streaming', () => {
     expect(res.headers.get('content-type')).toContain('text/html')
   })
 
+  test('sends prefetch hints in the shell rather than the link header', async ({ fetch, isDev }) => {
+    test.skip(isDev, 'dev sends no resource hints in the link header')
+    const res = await fetch('/')
+    const html = await res.text()
+
+    expect(res.headers.get('link')).toContain('rel="modulepreload"')
+    expect(res.headers.get('link')).not.toContain('rel="prefetch"')
+    expect(html).toMatch(/<link rel="prefetch"[^>]* data-href="[^"]+\.js"/)
+  })
+
   test('shell contains bootstrap script and IIFE', async ({ fetch, isDev }) => {
     const res = await fetch('/')
     const html = await res.text()

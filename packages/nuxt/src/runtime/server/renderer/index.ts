@@ -261,6 +261,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
   const routeOptions = runtime.getRouteRules(event)
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions.noScripts
+  const DEFER_PREFETCH = NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS
 
   // an error page rendered as an empty SPA shell shows the visitor nothing
   if (!routeOptions.ssr && !ssrError) {
@@ -305,7 +306,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   // Render 103 Early Hints
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
-    const { link } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS })
+    const { link } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS, prefetch: !DEFER_PREFETCH })
     if (link) {
       runtime.writeEarlyHints?.(event, { link })
     }
@@ -493,7 +494,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   }
   for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
     if (!excludeHrefs.has(l.href)) {
-      hints.push(NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS ? inertPrefetchLink(l) : l)
+      hints.push(DEFER_PREFETCH ? inertPrefetchLink(l) : l)
     }
   }
   if (hints.length) {
@@ -579,11 +580,12 @@ async function renderStreamedResponse (ctx: {
   const runtime = instance.options
   const hookEvent = appEvent(event)
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
+  const DEFER_PREFETCH = NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS
 
   pushNoScriptsHints(ssrContext, NO_SCRIPTS)
 
   // 1. Set HTTP Link headers with entry-point preload hints (fastest resource hinting)
-  const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS })
+  const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS, prefetch: !DEFER_PREFETCH })
   if (linkHeader) {
     event.res.headers.append('link', linkHeader)
   }
@@ -626,7 +628,7 @@ async function renderStreamedResponse (ctx: {
   // Entry preload/prefetch links
   const entryHints = [
     ...getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
-    ...(getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS ? inertPrefetchLink(l) : l),
+    ...(getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => DEFER_PREFETCH ? inertPrefetchLink(l) : l),
   ]
   if (entryHints.length) {
     ssrContext.head.push({ link: entryHints })
