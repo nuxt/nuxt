@@ -36,6 +36,7 @@ import { TypeCheckPlugin } from './plugins/type-check.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { CompileHintsPlugin } from './plugins/compile-hints.ts'
+import { ClientChunksPlugin } from './plugins/client-chunks.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
@@ -268,6 +269,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // ensure changes in chunks do not invalidate whole build
               StableEntryPlugin(nuxt),
               CompileHintsPlugin(nuxt),
+              ClientChunksPlugin(nuxt),
               AnalyzePlugin(nuxt),
               OptimizeDepsHintPlugin(nuxt),
             ]
