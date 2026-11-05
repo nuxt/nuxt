@@ -1154,6 +1154,22 @@ describe('composables', () => {
     // @ts-expect-error a declared client is not the app's own `$fetch`
     useFetch('/api/hello', { $fetch: $api })
 
+    // addons combine with a route set read off `$fetch`, as they do with `routes`
+    const auth = defineUseFetchAddon({
+      setup: (options) => {
+        const token = useCookie('token')
+        options.onRequest.push(({ options }) => {
+          if (token.value) {
+            options.headers.set('authorization', `Bearer ${token.value}`)
+          }
+        })
+      },
+    })
+    const useAuthedApi = createUseFetch({ $fetch: $api, addons: [auth] })
+    expectTypeOf(useAuthedApi('/pets/1').data).toEqualTypeOf<Ref<Pet | DefaultAsyncDataValue>>()
+    // @ts-expect-error no GET route matches '/pats'
+    useAuthedApi('/pats')
+
     // and a factory given a client of the app's own routes still resolves against them
     expectTypeOf(createUseFetch({ $fetch })).toEqualTypeOf(createUseFetch())
     expectTypeOf(createUseFetch({ $fetch: useRequestFetch() })('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()

@@ -46,6 +46,11 @@ function createUseFetch (
 function createUseFetch<Routes> (
   options: Partial<UseFetchOptions> & { routes: Routes, addons?: UseFetchAddon[] },
 ): DeclaredUseFetch<Routes>
+
+// where the routes are read off a client created with `createRouteTypedFetch`
+function createUseFetch<Routes> (
+  options: Partial<UseFetchOptions> & { $fetch: RouteTypedFetch<Routes>, addons?: UseFetchAddon[] },
+): DeclaredUseFetch<Routes>
 ```
 
 The returned composable's signature includes any custom options and return-value extensions contributed by the [addons](#addons).
@@ -117,6 +122,52 @@ description - an OpenAPI document, for example - with `compileRoutes` from `fetc
 hand the emitted interface to `routes`.
 ::
 
+<!-- Drafted by an AI agent (Claude Code); not yet reviewed by a human. -->
+
+### Sharing the Route Set with `$fetch`
+
+If you also call the API outside of `useFetch`, create the client with
+[`createRouteTypedFetch`](/docs/api/utils/create-route-typed-fetch) and pass it as `$fetch`. The
+composable reads the route set from the client, so it is declared once:
+
+```ts [app/utils/petStore.ts]
+export const $petStore = createRouteTypedFetch({
+  baseURL: 'https://api.example.com',
+  routes: {} as PetStoreRoutes,
+})
+```
+
+```ts [app/composables/usePetStore.ts]
+export const usePetStore = createUseFetch({ $fetch: $petStore })
+```
+
+`await $petStore('/pets')` and `await usePetStore('/pets')` are then checked against the same routes.
+
+::important
+The route set is only read from `$fetch` when `createUseFetch` is given a **plain object**. In
+[override mode](#override-mode-function) the factory is a function, so its result is only known per
+call and the composable is typed from your own server's routes again.
+
+Behavior that needs the Nuxt context at the call site - such as reading a token with
+[`useCookie`](/docs/api/composables/use-cookie) - therefore belongs in an [addon](#addons) rather
+than in an override function. Addons run in the setup context of every call:
+
+```ts [app/composables/usePetStore.ts]
+const auth = defineUseFetchAddon({
+  setup: (options) => {
+    const token = useCookie('token')
+    options.onRequest.push(({ options }) => {
+      if (token.value) {
+        options.headers.set('authorization', `Bearer ${token.value}`)
+      }
+    })
+  },
+})
+
+export const usePetStore = createUseFetch({ $fetch: $petStore, addons: [auth] })
+```
+::
+
 ## Default vs Override Mode
 
 ### Default Mode (plain object)
@@ -164,6 +215,10 @@ export const useAPI = createUseFetch(callerOptions => ({
 
 ::important
 The **function signature** (override mode) is required here so that [`useNuxtApp()`](/docs/api/composables/use-nuxt-app) is called in the setup context (at the composable call site) rather than in the module scope, where no Nuxt instance is available.
+::
+
+::tip
+A client for another API that you create with [`createRouteTypedFetch`](/docs/api/utils/create-route-typed-fetch) does not need the Nuxt instance, so it can be passed in a plain object instead. That also keeps its route types. See [Sharing the Route Set with `$fetch`](#sharing-the-route-set-with-fetch).
 ::
 
 ## Addons
