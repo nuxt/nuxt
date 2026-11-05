@@ -71,6 +71,38 @@ describe('builder:watch', { concurrent: false, timeout: 60_000 }, async () => {
     ])
   })
 
+  // parcel is left out: in this harness it misses writes in any subdirectory, `app/` included
+  it.each(['chokidar', 'chokidar-granular', 'builder'] as const)('should watch the shared directory with %s strategy', async (watcher) => {
+    const rootDir = join(tmpDir, 'project')
+    // with an `app/` directory, `srcDir` is `app/` and `shared/` sits outside it
+    await mkdir(join(rootDir, 'app'), { recursive: true })
+    await mkdir(join(rootDir, 'shared'), { recursive: true })
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        experimental: { watcher },
+        dev: true,
+        vite: { cacheDir },
+      },
+    })
+    const probe = join(rootDir, 'shared/probe.ts')
+    let probeSeen = false
+    nuxt.hook('builder:watch', (_event, path) => {
+      if (path === probe) { probeSeen = true }
+    })
+
+    await build(nuxt)
+
+    await vi.waitFor(() => {
+      rmSync(probe, { force: true })
+      writeFileSync(probe, 'export const probe = 1')
+      expect(probeSeen).toBe(true)
+    }, { timeout: 8000, interval: 250 })
+
+    await nuxt.close()
+  })
+
   it('should only recompile templates that can be affected by a changed file', async () => {
     const rootDir = join(tmpDir, 'project')
     await mkdir(join(rootDir, 'app/pages'), { recursive: true })
