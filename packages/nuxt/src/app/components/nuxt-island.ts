@@ -1,11 +1,10 @@
 import type { Component, DefineSetupFnComponent, PropType, RendererNode, SlotsType, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, shallowRef, toRaw, withMemo } from 'vue'
-import { randomUUID } from 'uncrypto'
 import { joinURL } from 'ufo'
 
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
-import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
+import { VUE_SCOPE_ID_RE, getFragmentHTML, isEndFragment, isStartFragment, withIslandScopeId } from './utils'
 import { useIslandFetch } from './island-fetch'
 import { renderDiagnostics } from '../diagnostics/render'
 
@@ -15,11 +14,6 @@ const SSR_UID_RE = /data-island-uid="([^"]*)"/
 const DATA_ISLAND_UID_RE = /(?<=<[^<>"]*(?:"[^"]*"[^<>"]*)*\s)data-island-uid(="")?(?=[\s/>])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
-const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
-const VUE_SCOPE_ID_RE = /^data-v-[\w-]+$/
-
-let id = 1
-const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
@@ -98,13 +92,11 @@ const NuxtIsland = defineComponent({
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const nuxtApp = useNuxtApp()
     const instance = getCurrentInstance()!
-    const uid = ref<string>('')
     const payloads: Partial<Pick<NuxtIslandResponse, 'slots' | 'components'>> = {}
     const ssrHTML = ref<string>('')
 
-    const { error, islandKey, fetchComponent, load } = useIslandFetch({
+    const { uid, error, islandKey, fetchComponent, load } = useIslandFetch({
       props,
-      uid,
       emit,
       toPayload: (result) => {
         const revive: Partial<NuxtIslandResponse> = {}
@@ -188,20 +180,13 @@ const NuxtIsland = defineComponent({
       nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), `data-island-uid=""`)
     }
 
-    uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] || getId()
+    const ssrUid = ssrHTML.value.match(SSR_UID_RE)?.[1]
+    if (ssrUid) { uid.value = ssrUid }
 
     const currentSlots = new Set(Object.keys(slots))
     const availableSlots = computed(() => new Set([...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1])))
     const html = computed(() => {
-      let html = ssrHTML.value
-
-      if (props.scopeId) {
-        if (VUE_SCOPE_ID_RE.test(props.scopeId)) {
-          html = html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + props.scopeId)
-        } else if (import.meta.dev) {
-          renderDiagnostics.NUXT_E4019({ scopeId: props.scopeId })
-        }
-      }
+      let html = withIslandScopeId(ssrHTML.value, props.scopeId)
 
       if (import.meta.client && !canLoadClientComponent.value) {
         for (const [key, value] of Object.entries(payloads.components || {})) {

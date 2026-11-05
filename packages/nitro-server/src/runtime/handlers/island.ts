@@ -13,8 +13,8 @@ import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES, exceedsMaxBytes, exceeds
 import { toSafeHeadInput } from '../utils/island-head'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
-import { onigiriEnabled, runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
-import { provideMarkerNonce } from 'vue-onigiri/server'
+import { islandsV2Enabled, runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
+import { createMarkerNonce } from '#app/components/islands-v2/shared'
 import { serverDiagnostics } from '../diagnostics'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/internal/renderer/app'
 import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
@@ -139,7 +139,8 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   // Render app
   const renderer = await rendererInstance.getSSRRenderer()
 
-  const markerNonce = onigiriEnabled ? provideMarkerNonce(ssrContext).onigiriNonce : undefined
+  const markerNonce = islandsV2Enabled ? createMarkerNonce() : undefined
+  ssrContext.islandNonce = markerNonce
 
   const renderResult = await (tracingChannelNuxt
     ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
@@ -209,20 +210,16 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     }
   }
 
-  const islandResponse: NuxtIslandResponse = onigiriEnabled
-    ? {
-        id: islandContext.id,
-        head: islandHead,
-        html: getServerComponentHTML(renderResult.html),
-        nonce: markerNonce,
-      }
-    : {
-        id: islandContext.id,
-        head: islandHead,
-        html: getServerComponentHTML(renderResult.html),
-        components: getClientIslandResponse(ssrContext),
-        slots: getSlotIslandResponse(ssrContext),
-      }
+  // Undefined fields (empty `components`/`slots`, nonces without islands v2) are dropped from the JSON.
+  const islandResponse: NuxtIslandResponse = {
+    id: islandContext.id,
+    head: islandHead,
+    html: getServerComponentHTML(renderResult.html),
+    components: getClientIslandResponse(ssrContext),
+    slots: getSlotIslandResponse(ssrContext),
+    nonce: markerNonce,
+    nonces: ssrContext.islandNonces?.size ? [...ssrContext.islandNonces] : undefined,
+  }
 
   await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })
 

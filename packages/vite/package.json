@@ -32,6 +32,9 @@
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@vitejs/plugin-vue": "catalog:vue",
+    "@vue/compiler-dom": "catalog:vue",
+    "@vue/compiler-sfc": "catalog:vue",
+    "@vue/shared": "catalog:build",
     "clickable-path": "catalog:build",
     "consola": "catalog:build",
     "defu": "catalog:build",
@@ -53,8 +56,7 @@
     "vite": "catalog:vite",
     "vite-node": "catalog:vite",
     "vite-plugin-checker": "catalog:vite",
-    "vue-bundle-renderer": "catalog:build",
-    "vue-onigiri": "catalog:app-runtime"
+    "vue-bundle-renderer": "catalog:build"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "catalog:dev",

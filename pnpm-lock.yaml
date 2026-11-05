@@ -230,9 +230,6 @@ catalogs:
     vue-bundle-renderer:
       specifier: ^2.4.0
       version: 2.4.0
-    vue-onigiri:
-      specifier: ^0.8.1
-      version: 0.8.1
     vue-router:
       specifier: ^5.4.0
       version: 5.4.0
@@ -688,6 +685,9 @@ catalogs:
     '@vitejs/plugin-vue':
       specifier: ^6.0.10
       version: 6.0.10
+    '@vue/compiler-dom':
+      specifier: 3.5.44
+      version: 3.5.44
     rspack-vue-loader:
       specifier: ^17.7.0
       version: 17.7.0
@@ -980,9 +980,6 @@ importers:
       vue-component-type-helpers:
         specifier: catalog:vue
         version: 3.3.13
-      vue-onigiri:
-        specifier: catalog:app-runtime
-        version: 0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.4.0(@rsbuild/core@2.2.13)(@rspack/core@2.2.9(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.44)(esbuild@0.28.2)(rolldown@1.2.14)(rollup@4.64.6)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))(webpack@5.111.1(cssnano@9.8.0(postcss@8.5.30))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.30)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -1205,9 +1202,6 @@ importers:
       vue-devtools-stub:
         specifier: catalog:vue
         version: 0.1.0
-      vue-onigiri:
-        specifier: catalog:app-runtime
-        version: 0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -1428,9 +1422,6 @@ importers:
       vue-component-type-helpers:
         specifier: catalog:vue
         version: 3.3.13
-      vue-onigiri:
-        specifier: catalog:app-runtime
-        version: 0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
       vue-router:
         specifier: catalog:app-runtime
         version: 5.4.0(@rsbuild/core@2.2.13)(@rspack/core@2.2.9(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.44)(esbuild@0.28.2)(rolldown@1.2.14)(rollup@4.64.6)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))(webpack@5.111.1(cssnano@7.1.9(postcss@8.5.30))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.30)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -1797,6 +1788,15 @@ importers:
       '@vitejs/plugin-vue':
         specifier: catalog:vue
         version: 6.0.10(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
+      '@vue/compiler-dom':
+        specifier: catalog:vue
+        version: 3.5.44
+      '@vue/compiler-sfc':
+        specifier: 3.5.44
+        version: 3.5.44
+      '@vue/shared':
+        specifier: catalog:build
+        version: 3.5.44
       clickable-path:
         specifier: catalog:build
         version: 0.1.1
@@ -1866,9 +1866,6 @@ importers:
       vue-bundle-renderer:
         specifier: catalog:build
         version: 2.4.0
-      vue-onigiri:
-        specifier: catalog:app-runtime
-        version: 0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))
     devDependencies:
       '@babel/plugin-proposal-decorators':
         specifier: catalog:dev
@@ -4477,12 +4474,14 @@ packages:
   '@opentelemetry/sdk-trace-base@2.10.0':
     resolution: {integrity: sha512-GuYQQT7QD2EeO8lcZLRQzcbOyhqAzL+6WWTKTU9mSUBYBazkEDl+VrQcXQhbB08OWM9anD1aHleVadzulpOaUQ==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.3.0 <1.10.0'
 
   '@opentelemetry/sdk-trace-node@2.10.0':
     resolution: {integrity: sha512-GZK/G6oZyBLGlH1pUgeDch7D91KoHd2uotUGIkWCPi9GI5T9X0p4L7nNAMDR1BQjkRYoDqo+ddfVx9t5Uhys+Q==}
     engines: {node: ^18.19.0 || >=20.6.0}
+    deprecated: Use @opentelemetry/sdk-trace package
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.10.0'
 
@@ -12002,18 +12001,6 @@ packages:
       '@vue/compiler-sfc':
         optional: true
       vue:
-        optional: true
-
-  vue-onigiri@0.8.1:
-    resolution: {integrity: sha512-YgSbjKeQwRCc8nKQXPRDg06bHy3vvF6JfVBduw2QQGLPMh80/8EohvVGxpo6sd8+f9uw70+m9/5B+fMUgAKFJw==}
-    peerDependencies:
-      '@vue/server-renderer': ^3.5.0
-      vite: 8.3.4
-      vue: 3.5.44
-    peerDependenciesMeta:
-      '@vue/server-renderer':
-        optional: true
-      vite:
         optional: true
 
   vue-router@5.4.0:
@@ -22862,18 +22849,6 @@ snapshots:
     optionalDependencies:
       '@vue/compiler-sfc': 3.5.44
       vue: 3.5.44(typescript@6.0.3)
-
-  vue-onigiri@0.8.1(@vue/server-renderer@3.5.44)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3)):
-    dependencies:
-      '@vue/compiler-dom': 3.5.44
-      '@vue/compiler-sfc': 3.5.44
-      '@vue/shared': 3.5.44
-      knitwork: 1.3.0
-      magic-string: 0.30.21
-      vue: 3.5.44(typescript@6.0.3)
-    optionalDependencies:
-      '@vue/server-renderer': 3.5.44
-      vite: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
 
   vue-router@5.4.0(@rsbuild/core@2.2.13)(@rspack/core@2.2.9(@swc/helpers@0.5.23))(@vue/compiler-sfc@3.5.44)(esbuild@0.28.2)(rolldown@1.2.14)(rollup@4.64.6)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))(webpack@5.111.1(cssnano@7.1.9(postcss@8.5.30))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.30)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0)):
     dependencies:

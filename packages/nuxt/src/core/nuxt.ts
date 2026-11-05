@@ -43,6 +43,7 @@ import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import { installProxyDispatcher } from './utils/proxy.ts'
+import { resolveNuxtIslandPath } from './utils/index.ts'
 import { buildServerRoutes, collectPageRoutes, collectServerRoutes, emitServerRoutesModule, resolveServerRoutes } from './utils/server-routes.ts'
 import { createImportProtectionPatterns } from './plugins/import-protection.ts'
 import { UnctxTransformPlugin } from './plugins/unctx.ts'
@@ -832,7 +833,7 @@ async function initNuxt (nuxt: Nuxt) {
     addComponent({
       name: 'NuxtIsland',
       priority: 10, // built-in that we do not expect the user to override
-      filePath: resolveAlias('#app/components/nuxt-island', nuxt.options.alias),
+      filePath: resolveNuxtIslandPath(nuxt),
       meta: getBuiltinComponentMeta('NuxtIsland'),
     })
   }
@@ -1011,8 +1012,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
   options.alias['nuxt/app'] ||= options.appDir
-  if (options.experimental.componentIslands === 'vue-onigiri') {
-    options.alias = { '#app/components/nuxt-island': resolve(options.appDir, 'components/nuxt-island-onigiri'), ...options.alias }
+  // islands v2 depends on Vite-only plugins (`#islands-v2-manifest`, `v-load-client`)
+  if (options.experimental.componentIslands === 'v2' && options.builder !== '@nuxt/vite-builder') {
+    throw configDiagnostics.NUXT_B5030({ builder: typeof options.builder === 'string' ? options.builder : 'a custom builder' })
   }
   options._majorVersion = 4
 

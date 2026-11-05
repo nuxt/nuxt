@@ -38,6 +38,8 @@ declare module '#build/layouts.mjs'
 declare module '#build/middleware'
 declare module '#build/middleware.mjs'
 declare module '#build/nitro.client.mjs'
+declare module '#build/nuxt-island'
+declare module '#build/nuxt-island.mjs'
 declare module '#build/nuxt.config.mjs'
 declare module '#build/pages'
 declare module '#build/pages.mjs'
@@ -54,4 +56,7 @@ declare module '#build/unhead.config.mjs'
 declare module '#components'
 declare module '#imports'
 declare module '#app-manifest'
+declare module '#islands-v2-manifest' {
+  export const importFn: import('./app/components/islands-v2/import-fn').ImportFn
+}
 declare module '#internal/*'

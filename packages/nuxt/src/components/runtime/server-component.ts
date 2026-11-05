@@ -1,6 +1,6 @@
 import { defineComponent, getCurrentInstance, h, ref } from 'vue'
 import type { DefineSetupFnComponent } from 'vue'
-import NuxtIsland from '#app/components/nuxt-island'
+import NuxtIsland from '#build/nuxt-island'
 import { useRoute } from '#app/composables/router'
 import { isPrerendered, shouldLoadPayload } from '#app/composables/payload'
 import { createError, showError } from '#app/composables/error'

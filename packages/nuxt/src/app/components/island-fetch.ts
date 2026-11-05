@@ -3,6 +3,7 @@ import { computed, getCurrentInstance, onBeforeUnmount, ref, toRaw, watch } from
 import { debounce } from 'perfect-debounce'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
 import { joinURL } from 'ufo'
+import { randomUUID } from 'uncrypto'
 
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
@@ -30,30 +31,33 @@ export interface IslandPayload {
 
 export interface IslandFetchOptions {
   props: IslandFetchProps
-  uid: Ref<string>
+  /** Initial island uid, generated when empty. */
+  uid?: string
   emit: (event: 'error', error: unknown) => void
   toPayload: (result: NuxtIslandResponse) => IslandPayload
   apply: (result: NuxtIslandResponse) => void | Promise<void>
 }
 
 export interface IslandFetch {
+  uid: Ref<string>
   error: Ref<unknown>
-  serializedProps: ComputedRef<string>
-  hashId: ComputedRef<string>
   islandKey: ComputedRef<string>
   fetchComponent: (force?: boolean) => Promise<void>
-  guard: (fn: () => unknown) => Promise<void>
   load: (hydrate?: () => unknown) => Promise<void>
 }
 
 const PROMISES_KEY = '_islandPromises'
 
+let id = 1
+const getId = import.meta.client ? () => (id++).toString() : randomUUID
+
 export function useIslandFetch (options: IslandFetchOptions): IslandFetch {
-  const { props, uid, emit } = options
+  const { props, emit } = options
   const nuxtApp = useNuxtApp()
   const instance = getCurrentInstance()!
   const head = injectHead()
   const islandFetch = import.meta.server ? useRequestFetch() : $fetch
+  const uid = ref<string>(options.uid || getId())
   const error = ref<unknown>(null)
   const serializedProps = computed(() => serializeIslandProps(props.props))
   const hashId = computed(() => getIslandHash({ name: props.name, props: serializedProps.value, context: props.context, source: props.source }))
@@ -175,9 +179,9 @@ export function useIslandFetch (options: IslandFetchOptions): IslandFetch {
     } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     } else if (hydrate) {
-      await hydrate()
+      await guard(hydrate)
     }
   }
 
-  return { error, serializedProps, hashId, islandKey, fetchComponent, guard, load }
+  return { uid, error, islandKey, fetchComponent, load }
 }

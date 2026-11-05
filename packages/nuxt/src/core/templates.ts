@@ -13,7 +13,7 @@ import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
-import { EXTENSION_RE } from './utils/index.ts'
+import { EXTENSION_RE, resolveNuxtIslandPath } from './utils/index.ts'
 import { createNormalizedRouteRulesRouter, normalizePathCode, resolveRouteRulesRoutes } from './utils/route-rules.ts'
 import type { RouteRulesRouter } from './utils/route-rules.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
@@ -76,6 +76,11 @@ export const islandRendererTemplate: NuxtTemplate = {
       'export default IslandRenderer',
     ].join('\n')
   },
+}
+export const nuxtIslandTemplate: NuxtTemplate = {
+  filename: 'nuxt-island.mjs',
+  dependsOn: [],
+  getContents: ctx => genExport(resolveNuxtIslandPath(ctx.nuxt), ['default']),
 }
 // TODO: Use an alias
 export const testComponentWrapperTemplate: NuxtTemplate = {
@@ -757,7 +762,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const hasParallelPlugins = ${pluginsRunInParallel}`,
       `export const hasPluginHooks = ${pluginsHaveHooks}`,
       `export const hasIslandOptOutPlugins = ${pluginsHaveIslandOptOut}`,
-      `export const onigiriEnabled = ${ctx.nuxt.options.experimental.componentIslands === 'vue-onigiri'}`,
+      `export const islandsV2Enabled = ${ctx.nuxt.options.experimental.componentIslands === 'v2'}`,
     ].join('\n\n')
   },
 }

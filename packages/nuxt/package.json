@@ -140,7 +140,6 @@
     "vue": "catalog:app-runtime",
     "vue-bundle-renderer": "catalog:app-runtime",
     "vue-component-type-helpers": "catalog:vue",
-    "vue-onigiri": "catalog:app-runtime",
     "vue-router": "catalog:app-runtime"
   },
   "devDependencies": {

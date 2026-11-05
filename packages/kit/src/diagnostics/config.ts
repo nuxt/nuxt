@@ -108,5 +108,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Set `NUXT_APP_SECRET` in your `.env` to the output of `openssl rand -base64 32`. Builds do not generate a secret.',
       docs: false,
     },
+    NUXT_B5030: {
+      why: (p: { builder: string }) => `\`experimental.componentIslands: 'v2'\` requires the Vite builder, but \`${p.builder}\` is configured.`,
+      fix: 'Set `builder: \'vite\'` in your `nuxt.config`, or use a different `experimental.componentIslands` mode.',
+      docs: false,
+    },
   },
 })

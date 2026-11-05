@@ -7,6 +7,7 @@ import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { NuxtHookRegistry, NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
+import type { MarkerSet } from './components/islands-v2/shared'
 
 export type { NuxtLinkOptions } from '@nuxt/schema'
 export type { Serialize } from './types/serialize.js'
@@ -171,6 +172,24 @@ export interface NuxtSSRContext extends SSRContext {
   ['~lazyHydratedModules']?: Set<string>
   /** @internal */
   ['~neverHydratedModules']?: Set<string>
+  /**
+   * Nonce the islands v2 markers of this render bind to.
+   *
+   * @internal
+   */
+  islandNonce?: string
+  /**
+   * Marker set built from `islandNonce`, cached for the render.
+   *
+   * @internal
+   */
+  islandMarkers?: MarkerSet
+  /**
+   * Nonces of nested islands whose markers this island render embeds.
+   *
+   * @internal
+   */
+  islandNonces?: Set<string>
 }
 
 export interface NuxtIslandSlotResponse {
@@ -200,6 +219,10 @@ export interface NuxtIslandResponse {
   id?: string
   html: string
   nonce?: string
+  /**
+   * Nonces of nested islands whose markers `html` embeds, besides `nonce`.
+   */
+  nonces?: string[]
   head: SerializableHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>

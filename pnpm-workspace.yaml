@@ -61,7 +61,6 @@ minimumReleaseAgeExclude:
   - impound@1.2.0
   - vue
   - '@vue/*'
-  - vue-onigiri
   # nitro betas and the unjs/h3 packages they pin are released in lockstep
   - nitro
   - crossws
@@ -104,7 +103,6 @@ catalogs:
     unctx: ^3.0.1
     unhead: ^3.4.3
     vue: ^3.5.44
-    vue-onigiri: ^0.8.1
     vue-bundle-renderer: ^2.4.0
     vue-router: ^5.4.0
 
@@ -122,6 +120,7 @@ catalogs:
   vue:
     '@vitejs/plugin-vue': ^6.0.10
     # kept in lockstep with the vue override above
+    '@vue/compiler-dom': 3.5.44
     '@vue/compiler-sfc': 3.5.44
     rspack-vue-loader: ^17.7.0
     vue-component-type-helpers: ^3.3.13

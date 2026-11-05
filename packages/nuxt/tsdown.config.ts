@@ -29,6 +29,7 @@ const RUNTIME_NEVER_BUNDLE = [
   /^#build(\/|$)/,
   /^#internal(\/|$)/,
   /^#imports$/,
+  /^#islands-v2-manifest$/,
   /^#pages(\/|$)/,
   /^#unhead(\/|$)/,
   /^nuxt(\/|$)/,

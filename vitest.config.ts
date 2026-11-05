@@ -94,6 +94,7 @@ interface FixtureMatrixEntry {
   context: 'async' | 'default'
   manifest: 'manifest-on' | 'manifest-off'
   legacyErrors?: boolean
+  islands?: 'v2'
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
@@ -127,12 +128,12 @@ const legacyErrorMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
 ]
 
-// The same islands suite against the `vue-onigiri` fixture, on the builders that implementation supports.
-const onigiriMatrix: FixtureMatrixEntry[] = [
-  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', islands: 'vue-onigiri' },
-  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', islands: 'vue-onigiri' },
-  { env: 'dev', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on', islands: 'vue-onigiri' },
-  { env: 'built', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on', islands: 'vue-onigiri' },
+// The same islands suite against the islands v2 fixture, on the builders that implementation supports.
+const islandsV2Matrix: FixtureMatrixEntry[] = [
+  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', islands: 'v2' },
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', islands: 'v2' },
+  { env: 'dev', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on', islands: 'v2' },
+  { env: 'built', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on', islands: 'v2' },
 ]
 
 const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
@@ -148,7 +149,14 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_CONTEXT: entry.context,
     TEST_MANIFEST: entry.manifest,
     ...entry.legacyErrors ? { TEST_ERROR_RENDERING: 'legacy-errors' } : {},
+    ...entry.islands ? { TEST_ISLANDS: entry.islands } : {},
   }
+}
+
+function fixtureProjectInclude (entry: FixtureMatrixEntry) {
+  if (entry.legacyErrors) { return legacyErrorInclude }
+  if (entry.islands) { return ['test/server-components.test.ts'] }
+  return ['test/*.test.ts']
 }
 
 const fixtureExclude = [...configDefaults.exclude, 'test/e2e/**', 'e2e/**', 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js']
@@ -218,11 +226,11 @@ export default defineConfig({
           },
         },
       },
-      ...[...fixtureMatrix, ...legacyErrorMatrix, ...onigiriMatrix].map(entry => ({
+      ...[...fixtureMatrix, ...legacyErrorMatrix, ...islandsV2Matrix].map(entry => ({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
-          include: entry.legacyErrors ? legacyErrorInclude : entry.islands ? ['test/server-components.test.ts'] : ['test/*.test.ts'],
+          include: fixtureProjectInclude(entry),
           exclude: [...fixtureExclude, 'test/bundle.test.ts'],
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-env.ts'],

@@ -7,14 +7,14 @@ import { renderDiagnostics } from '../diagnostics/render'
 import { findReservedRootIslandPropKey } from '../island-props'
 
 import { islandComponents, pageIslandRoutes, providePageIslandDepth } from '#build/components.islands.mjs'
-import { onigiriEnabled } from '#build/nuxt.config.mjs'
+import { islandsV2Enabled } from '#build/nuxt.config.mjs'
 
 interface IslandRendererProps {
   context: { name: string, props?: Record<string, any> }
 }
 
 const PAGE_ISLAND_PREFIX = 'page_'
-const ROOT_ATTRS = onigiriEnabled ? {} : { 'data-island-uid': '' }
+const ROOT_ATTRS = islandsV2Enabled ? {} : { 'data-island-uid': '' }
 
 const IslandRenderer = defineComponent({
   name: 'IslandRenderer',

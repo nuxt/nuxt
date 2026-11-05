@@ -16,8 +16,8 @@ export const asyncContext = process.env.TEST_CONTEXT === 'async'
 /** Whether to opt out of the renderer rendering the error page itself, which v5 does by default. */
 export const legacyErrorRendering = process.env.TEST_ERROR_RENDERING === 'legacy-errors'
 
-/** Whether the fixture matrix runs the islands suite against `experimental.componentIslands: 'vue-onigiri'`. */
-export const onigiriIslands = process.env.TEST_ISLANDS === 'vue-onigiri'
+/** Whether the fixture matrix runs the islands suite against `experimental.componentIslands: 'v2'`. */
+export const islandsV2 = process.env.TEST_ISLANDS === 'v2'
 
 export const typescriptBundlerResolution = process.env.MODULE_RESOLUTION !== 'node'
 
@@ -30,6 +30,7 @@ export const projectSuffix = [
   process.env.TEST_CONTEXT,
   process.env.TEST_MANIFEST,
   process.env.TEST_ERROR_RENDERING,
+  process.env.TEST_ISLANDS,
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER

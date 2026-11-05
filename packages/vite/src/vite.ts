@@ -40,7 +40,7 @@ import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { EnvironmentsPlugin } from './plugins/environments.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
 import { ServerEntryPlugin } from './plugins/server-entry.ts'
-import { OnigiriPlugins } from './plugins/onigiri.ts'
+import { IslandsV2Plugins, withIslandsV2NodeTransform } from './plugins/islands-v2/index.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
@@ -210,9 +210,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
         InlinedVuePlugin(nuxt),
-        vuePlugin(viteConfig.vue),
+        vuePlugin(withIslandsV2NodeTransform(nuxt, viteConfig.vue)),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
-        ...OnigiriPlugins(nuxt),
+        ...IslandsV2Plugins(nuxt),
         ClientManifestPlugin(nuxt),
         // After ClientManifestPlugin so its dev `clientManifest` override wins.
         ViteNodePlugin(nuxt),
