@@ -118,6 +118,17 @@ export function getRequestWebStream (event: H3Event): ReadableStream | undefined
 
 export const getBodyStream = getRequestWebStream
 
+/** v1 `toWebRequest`, a copy of the request whose body is the buffered body. */
+export function toWebRequest (event: H3Event): Request {
+  const body = getRequestWebStream(event)
+  return new Request(event.req.url, {
+    method: event.req.method,
+    headers: event.req.headers,
+    body,
+    ...body && { duplex: 'half' },
+  } as RequestInit)
+}
+
 export const MIMES = {
   html: 'text/html',
   json: 'application/json',
