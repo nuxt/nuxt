@@ -39,6 +39,7 @@ describe('SSR Vue dependencies', () => {
     await writeFile(join(rootDir, 'entry.js'), [
       `export { reactive, effect } from ${JSON.stringify(rootVue ? 'vue' : vue)}`,
       `export { reactive as directReactive } from '@vue/reactivity'`,
+      ...runtimeCompiler ? [`export { compile } from ${JSON.stringify(rootVue ? 'vue' : vue)}`] : [],
     ].join('\n'))
 
     const nuxt = {
@@ -77,13 +78,15 @@ describe('SSR Vue dependencies', () => {
     expect(code).not.toContain(dirname(reactivity))
     await rm(rootDir, { recursive: true, force: true })
     const result = await exec(process.execPath, ['--input-type=module', '-e', `
-      import { reactive, directReactive, effect } from ${JSON.stringify(pathToFileURL(join(outDir, 'entry.mjs')).href)}
+      import * as vue from ${JSON.stringify(pathToFileURL(join(outDir, 'entry.mjs')).href)}
+      const { reactive, directReactive, effect } = vue
       const state = directReactive({ count: 0 })
       let count = -1
       effect(() => { count = state.count })
       state.count++
-      console.log(JSON.stringify({ same: reactive === directReactive, count }))
+      const rendered = ${runtimeCompiler} ? vue.compile('<div>{{ count }}</div>')(state, []).children : null
+      console.log(JSON.stringify({ same: reactive === directReactive, count, rendered }))
     `], { throwOnError: true })
-    expect(JSON.parse(result.stdout)).toEqual({ same: true, count: 1 })
+    expect(JSON.parse(result.stdout)).toEqual({ same: true, count: 1, rendered: runtimeCompiler ? '1' : null })
   })
 })
