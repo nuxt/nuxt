@@ -180,6 +180,8 @@ export default defineResolvers({
      * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
      * file may modify `routes`.
      */
+    staticRoutes: false,
+
     early404: false,
 
     /**

@@ -60,6 +60,11 @@ export const navigationDiagnostics = !import.meta.dev
           fix: 'Script protocols (e.g. `javascript:`) are blocked for security. Use a valid `http:` or `https:` URL.',
           docs: false,
         },
+        NUXT_E2014: {
+          why: (p: { method: string }) => `\`router.${p.method}()\` was called, but \`experimental.staticRoutes\` fixes the route table at build time.`,
+          fix: 'Define the route as a page (or with `pages:extend`) so it is part of the build, or disable `experimental.staticRoutes`.',
+          docs: false,
+        },
         NUXT_E2013: {
           why: (p: { cause: unknown }) => `\`definePageMeta()\` could not be evaluated (${String(p.cause)}), so navigating to this page will fail.`,
           fix: 'Only use static values, imports and functions in `definePageMeta()`. Values from the page\'s setup, such as props or the result of `useRoute()`, are not available there.',
