@@ -5,6 +5,7 @@ import { onNuxtReady } from '../composables/ready'
 import { prefetchRouteComponents } from '../composables/preload'
 import { useObserver } from '../components/nuxt-link'
 import { canPrefetch } from '../internal/prefetch-util'
+import { documentURL } from '../internal/location'
 
 import { componentIslands } from '#build/nuxt.config.mjs'
 
@@ -19,8 +20,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       const href = anchor.getAttribute('href')
       if (!href || href.startsWith('#')) { return }
 
-      const url = new URL(anchor.href, window.location.href)
-      if (url.origin !== window.location.origin) { return }
+      const documentLocation = documentURL()
+      const url = new URL(anchor.href, documentLocation)
+      if (url.origin !== documentLocation.origin) { return }
 
       let path = url.pathname
       const base = (router.options.history.base || '').replace(/\/$/, '')

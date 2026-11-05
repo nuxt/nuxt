@@ -6,7 +6,7 @@
     "url": "git+https://github.com/nuxt/nuxt.git",
     "directory": "packages/rspack"
   },
-  "description": "rspack bundler for Nuxt",
+  "description": "rspack bundler for Nuxt (deprecated: use @nuxt/rsbuild-builder instead)",
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",

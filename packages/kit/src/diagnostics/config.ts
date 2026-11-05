@@ -108,5 +108,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Set `NUXT_APP_SECRET` in your `.env` to the output of `openssl rand -base64 32`. Builds do not generate a secret.',
       docs: false,
     },
+    NUXT_B5030: {
+      why: (p: { options: string }) => `These experimental options were removed in Nuxt 5 and are ignored: ${p.options}. The behaviour they controlled is no longer configurable.`,
+      fix: 'Remove them from `experimental` in your `nuxt.config`. See `https://nuxt.com/docs/5.x/getting-started/upgrade#removed-configuration-options`.',
+      docs: false,
+    },
   },
 })

@@ -216,4 +216,21 @@ describe('loadNuxtConfig', () => {
     const config = await loadNuxtConfig({ cwd, envName: 'staging' })
     expect(config.envName).toBe('staging')
   })
+
+  it('should report an unsupported `future.compatibilityVersion` once', async () => {
+    const tempDir = await mkdtemp(join(tmpdir(), 'nuxt-compat-config-'))
+    await mkdir(join(tempDir, 'layers/base'), { recursive: true })
+    await writeFile(join(tempDir, 'nuxt.config.ts'), 'export default defineNuxtConfig({ future: { compatibilityVersion: 4 } })\n')
+    await writeFile(join(tempDir, 'layers/base/nuxt.config.ts'), 'export default defineNuxtConfig({ future: { compatibilityVersion: 4 } })\n')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    try {
+      const config = await loadNuxtConfig({ cwd: tempDir })
+      expect(config.future.compatibilityVersion).toBe(5)
+      expect(warn.mock.calls.filter(call => String(call[0]).includes('NUXT_B5029'))).toHaveLength(1)
+    } finally {
+      warn.mockRestore()
+      await rm(tempDir, { recursive: true, force: true })
+    }
+  })
 })

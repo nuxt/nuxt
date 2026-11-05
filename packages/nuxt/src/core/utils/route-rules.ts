@@ -211,6 +211,24 @@ export function assertEncodingIndependentRouteRuleKey (key: string): void {
   }
 }
 
+const CATCH_ALL_RE = /\*\*?|:\w+[*+]/g
+
+/**
+ * Throw if a route-rule key has more than one catch-all (`*`, `**`, `:name+` or `:name*`),
+ * which the route-rule router does not support.
+ *
+ * @internal
+ */
+export function assertSingleCatchAllRouteRuleKey (key: string): void {
+  let count = 0
+  for (const { text, constraint } of splitRouteConstraints(key)) {
+    if (!constraint) { count += text.match(CATCH_ALL_RE)?.length ?? 0 }
+  }
+  if (count > 1) {
+    throw pageDiagnostics.NUXT_B4027({ route: key })
+  }
+}
+
 let casePairs: Array<[char: string, folded: string]> | undefined
 
 function getCasePairs (): Array<[char: string, folded: string]> {
@@ -426,6 +444,50 @@ export function genNormalizePathCode (fold: boolean): string {
     `  return encodeRoutePath(${fold ? 'foldRouteCase(decodeRoutePath(path))' : 'decodeRoutePath(path)'})`,
     `}`,
   ].filter(Boolean).join('\n')
+}
+
+/**
+ * Whether a `redirect` rule moves the tail of the path it matches onto its target.
+ *
+ * @internal
+ */
+export function isWildcardRedirect (redirect: unknown): boolean {
+  return !!redirect && typeof redirect === 'object' && typeof (redirect as { to?: unknown }).to === 'string' && (redirect as { to: string }).to.includes('**')
+}
+
+/**
+ * Resolve a wildcard `redirect`, kept by the route-rules matcher as `{ to, base }`, into the
+ * path it redirects to: the part of `path` past the segments `base` matched replaces the `**`
+ * of `to`. A run of separators leading that part collapses to one, so the target stays on the
+ * origin `to` names, and in the query or fragment of `to` it is encoded as a single value.
+ *
+ * Inlined by source into the route-rules matcher, so it must not reference anything outside itself.
+ *
+ * @internal
+ */
+export function resolveWildcardRedirect<T extends { redirect?: unknown }> (rules: T, path: string): T {
+  const redirect = rules.redirect as { to: string, base?: string } | string | undefined
+  if (!redirect || typeof redirect !== 'object') { return rules }
+  const pathname = path.replace(/[?#].*$/, '')
+  const base = redirect.base
+  let tail = pathname
+  if (base) {
+    tail = /\*\*|:\w+[?*+]/.test(base)
+      ? (pathname.startsWith(base) ? pathname.slice(base.length) : pathname)
+      : pathname.split('/').slice(base.split('/').length).map(segment => '/' + segment).join('')
+  }
+  tail = tail.replace(/^(?:[/\\]|%(?:25)*(?:2f|5c))+/i, '/')
+  if (tail === '/') { tail = '' }
+  const to = redirect.to
+  if (to.endsWith('/**')) {
+    rules.redirect = to.slice(0, -3) + tail || '/'
+    return rules
+  }
+  const index = to.indexOf('**')
+  const query = to.search(/[?#]/)
+  const value = tail.replace(/^\//, '')
+  rules.redirect = to.slice(0, index) + (query !== -1 && index > query ? value.replace(/[#&+;=?]/g, char => '%' + char.charCodeAt(0).toString(16).toUpperCase()) : value) + to.slice(index + 2)
+  return rules
 }
 
 /**

@@ -17,7 +17,7 @@ import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
-import { removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
+import { getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
@@ -34,6 +34,7 @@ import { TypeCheckPlugin } from './plugins/type-check.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { CompileHintsPlugin } from './plugins/compile-hints.ts'
+import { ClientChunksPlugin } from './plugins/client-chunks.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevListenerPlugin, DevServerPlugin } from './plugins/dev-server.ts'
@@ -64,6 +65,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
     ...nuxt.options.modulesDir,
+    ...getAncestorModulesDirs(nuxt.options.rootDir),
     ...getLayerDirectories(nuxt).map(d => d.root),
     ...Object.values(nuxt.apps).flatMap(app => [
       ...app.components.map(c => dirname(c.filePath)),
@@ -132,6 +134,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 // run serially to preserve the order of client, server builds
                 const environments = Object.values(builder.environments)
                 for (const environment of environments) {
+                  const { input, build } = environment.config
+                  if (!input && !build.rolldownOptions.input && !build.lib && typeof build.ssr !== 'string') {
+                    continue
+                  }
                   logger.restoreAll()
                   nuxt._perf?.startPhase(`vite:${environment.name}`)
                   try {
@@ -249,6 +255,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         // ensure changes in chunks do not invalidate whole build
         StableEntryPlugin(nuxt),
         CompileHintsPlugin(nuxt),
+        ClientChunksPlugin(nuxt),
         AnalyzePlugin(nuxt),
         OptimizeDepsHintPlugin(nuxt),
       ],
@@ -263,13 +270,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
       },
     } satisfies ViteConfig,
-    {
-      ...viteConfig,
+    mergeConfig(viteConfig, {
       environments: {
         ssr: $server,
         client: $client,
       },
-    },
+    }),
   )
 
   if (Array.isArray(config.server?.allowedHosts)) {

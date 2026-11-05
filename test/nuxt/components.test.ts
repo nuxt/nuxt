@@ -19,7 +19,7 @@ describe('nuxt-link:prefetch', () => {
     const router = useRouter()
     const originalHooks = nuxtApp.hooks
     const isHydrating = nuxtApp.isHydrating
-    const loadPayload = vi.spyOn(payload, 'loadPayload').mockResolvedValue({ data: {} })
+    const loadPayload = vi.spyOn(payload, '_loadPayload').mockResolvedValue({ data: {} })
     const beforeResolve = vi.spyOn(router, 'beforeResolve').mockReturnValue(() => {})
     const afterEach = vi.spyOn(router, 'afterEach').mockReturnValue(() => {})
 

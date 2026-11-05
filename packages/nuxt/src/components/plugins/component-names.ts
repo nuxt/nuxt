@@ -13,6 +13,7 @@ const FILENAME_RE = /([^/\\]+)\.\w+$/
  * Set the default name of components to their PascalCase name
  */
 export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnplugin(() => {
+  const indexes = new WeakMap<Component[], { length: number, byPath: Map<string, Component> }>()
   return {
     name: 'nuxt:component-name-plugin',
     enforce: 'post',
@@ -25,7 +26,19 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
         if (!filename) {
           return
         }
-        const component = options.getComponents().find(c => c.filePath === id)
+        const components = options.getComponents()
+        let index = indexes.get(components)
+        if (!index || index.length !== components.length) {
+          const byPath = new Map<string, Component>()
+          for (const component of components) {
+            if (!byPath.has(component.filePath)) {
+              byPath.set(component.filePath, component)
+            }
+          }
+          index = { length: components.length, byPath }
+          indexes.set(components, index)
+        }
+        const component = index.byPath.get(id)
 
         if (!component) {
           return

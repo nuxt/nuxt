@@ -1,10 +1,12 @@
 import { existsSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
-import { isAbsolute, resolve } from 'pathe'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
+import { isAbsolute, join, resolve } from 'pathe'
 import { loadNuxt } from '@nuxt/kit'
 import { createNitro } from 'nitro/builder'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
+import { resolveModulePath } from 'exsolve'
+import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
 
@@ -174,6 +176,35 @@ describe('nitro config', () => {
       const isAutoImportsPlugin = (plugin: unknown) => (plugin as { name?: string } | null)?.name === 'nuxt:server-auto-imports'
       expect([nitroConfig.rollupConfig!.plugins].flat().filter(isAutoImportsPlugin)).toHaveLength(1)
       expect(nuxt.options.vite.plugins?.flat().filter(isAutoImportsPlugin) ?? []).toHaveLength(0)
+    })
+  })
+
+  it('skips server auto-imports for paths in `nitro.imports.exclude`', async () => {
+    await withNitro({ nitro: { imports: { exclude: [/[\\/]excluded[\\/]/, '/skipped/'] } } }, async (_nitro, nitroConfig) => {
+      const plugin = [nitroConfig.rollupConfig!.plugins].flat().find(plugin => (plugin as { name?: string } | null)?.name === 'nuxt:server-auto-imports') as { transform: (code: string, id: string) => Promise<{ code: string } | undefined> }
+      const code = 'export default () => useAppConfig()'
+
+      expect(await plugin.transform.call({}, code, join(fixtureDir, 'server/api/hello.ts'))).toBeDefined()
+      expect(await plugin.transform.call({}, code, join(fixtureDir, 'server/excluded/hello.ts'))).toBeUndefined()
+      expect(await plugin.transform.call({}, code, join(fixtureDir, 'server/skipped/hello.ts'))).toBeUndefined()
+    })
+  })
+
+  it('shares the `@rspack/core` of the app builder with the nitro `rspack` builder', async () => {
+    await withNitro({ builder: 'rspack', nitro: { builder: 'rspack' } }, (nitro, nitroConfig) => {
+      const builderRspack = resolveModulePath('@rspack/core', { from: resolveModulePath('@nuxt/rspack-builder', { from: import.meta.url }) })
+      expect(nitro.options.builder).toBe('rspack')
+      expect(nitroConfig.deps?.paths?.['@rspack/core']).toBe(builderRspack)
+      expect(nitroConfig.rolldownConfig).toBeUndefined()
+    })
+  })
+
+  it('warns that `nitro.builder` is ignored with nitroViteEnvironment', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9008').mockImplementation(() => ({}) as any)
+    onTestFinished(() => report.mockRestore())
+    await withNitro({ experimental: { nitroViteEnvironment: true }, nitro: { builder: 'rspack' } }, (_nitro, nitroConfig) => {
+      expect(report).toHaveBeenCalledWith({ builder: 'rspack' })
+      expect(nitroConfig.rolldownConfig).toMatchObject({ tsconfig: false })
     })
   })
 

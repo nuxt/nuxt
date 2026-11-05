@@ -13,8 +13,13 @@ afterEach(() => {
   config.deferPrefetchHints = true
 })
 
-function renderPage (rules: Record<string, unknown>) {
-  return render('/', { getRouteRules: () => ({ ssr: true, ...rules }) }, createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } }))
+async function renderPage (rules: Record<string, unknown>) {
+  const earlyHints: string[] = []
+  const { response, html } = await render('/', {
+    getRouteRules: () => ({ ssr: true, ...rules }),
+    writeEarlyHints: (_event, hint) => { earlyHints.push(hint.link) },
+  }, createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } }))
+  return { html, earlyHints, linkHeader: response.headers.get('link') }
 }
 
 function prefetchLinks (html: string) {
@@ -36,6 +41,16 @@ describe.each([
     expect(links).toContainEqual(expect.stringMatching(new RegExp(`as="script".* data-href="${BUILD_ASSETS_DIR}[^"]+\\.js"`)))
     expect(links).toContainEqual(expect.stringMatching(new RegExp(`as="style".* data-href="${BUILD_ASSETS_DIR}DeferredPanel[^"]*\\.css"`)))
   })
+
+  it('are left out of the early hints and link header', async () => {
+    const { earlyHints, linkHeader } = await renderPage(rules)
+
+    expect(earlyHints).toHaveLength(1)
+    for (const link of rules.streaming ? [...earlyHints, linkHeader] : earlyHints) {
+      expect(link).toContain('rel="modulepreload"')
+      expect(link).not.toContain('rel="prefetch"')
+    }
+  })
 })
 
 describe('prefetch hints with `experimental.deferPrefetchHints` disabled', () => {
@@ -49,6 +64,18 @@ describe('prefetch hints with `experimental.deferPrefetchHints` disabled', () =>
     expect(html).not.toContain('data-href')
     expect(prefetchLinks(html)).toContainEqual(expect.stringMatching(new RegExp(`as="script".* href="${BUILD_ASSETS_DIR}[^"]+\\.js"`)))
   })
+
+  it.each([
+    ['buffered render', { ssr: true, streaming: false }],
+    ['streamed render', { ssr: true, streaming: true }],
+  ])('are sent in the early hints and link header of a %s', async (_, rules) => {
+    config.deferPrefetchHints = false
+    const { earlyHints, linkHeader } = await renderPage(rules)
+
+    for (const link of rules.streaming ? [...earlyHints, linkHeader] : earlyHints) {
+      expect(link).toMatch(new RegExp(`<${BUILD_ASSETS_DIR}[^>]+\\.js>; rel="prefetch"; as="script"`))
+    }
+  })
 })
 
 describe('prefetch hints of a noScripts route', () => {
@@ -58,5 +85,11 @@ describe('prefetch hints of a noScripts route', () => {
     expect(html).not.toContain('__NUXT_DATA__')
     expect(prefetchLinks(html)).toContainEqual(expect.stringMatching(/ href="[^"]*DeferredPanel[^"]*\.css"/))
     expect(html).not.toContain('data-href')
+  })
+
+  it('are sent in the early hints', async () => {
+    const { earlyHints } = await renderPage({ noScripts: true })
+
+    expect(earlyHints[0]).toMatch(/DeferredPanel[^>]*\.css>; rel="prefetch"; as="style"/)
   })
 })

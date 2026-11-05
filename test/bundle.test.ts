@@ -77,7 +77,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "_nuxt/default.js",
         "_nuxt/entry.js",
         "_nuxt/pages.js",
-        "_nuxt/runtime-core.js",
         "_nuxt/server-component.js",
       ]
     `)
@@ -87,20 +86,23 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"212k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"213k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
         "devalue",
+        "h3",
         "h3+rou3+srvx",
+        "h32",
         "hookable",
         "ufo",
         "vue",
-        "vue__reactivity+vue__shared",
+        "vue__reactivity",
         "vue__runtime-core",
         "vue__runtime-dom",
         "vue__server-renderer",
+        "vue__shared",
       ]
     `)
   })
@@ -116,15 +118,18 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       [
         "defu",
         "devalue",
+        "h3",
         "h3+rou3+srvx",
+        "h32",
         "hookable",
         "ufo",
         "vue",
         "vue-router",
-        "vue__reactivity+vue__shared",
+        "vue__reactivity",
         "vue__runtime-core",
         "vue__runtime-dom",
         "vue__server-renderer",
+        "vue__shared",
       ]
     `)
   })

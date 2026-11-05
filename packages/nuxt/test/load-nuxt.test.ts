@@ -9,6 +9,7 @@ import { defu } from 'defu'
 import { logger, resolvePath, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
 import { _generateTypes } from '../../kit/src/template.ts'
+import { configDiagnostics } from '@nuxt/kit/internal'
 import { loadNuxt } from '../src/index.ts'
 import type { NitroConfig, NuxtConfig } from '../schema.ts'
 
@@ -67,6 +68,15 @@ describe('loadNuxt', () => {
     expect(await resolvePath('nuxt/app', { alias: nuxt.options.alias })).toBe(customRuntime)
   })
 
+  it.each([
+    [{ staticRoutes: true }, true],
+    [{ staticRoutes: true, early404: false }, false],
+  ])('derives early404 from %o in overrides', async (experimental, early404) => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, overrides: { experimental } })
+    onTestFinished(() => nuxt.close())
+    expect(nuxt.options.experimental.early404).toBe(early404)
+  })
+
   it('respects hook overrides', async () => {
     let hookRan = false
     const nuxt = await loadNuxt({
@@ -116,6 +126,17 @@ describe('loadNuxt', () => {
       }),
     ])
     expect(loggerWarn).not.toHaveBeenCalled()
+  })
+
+  it('reports experimental options that were removed', async () => {
+    const report = vi.spyOn(configDiagnostics, 'NUXT_B5030').mockImplementation(() => ({}) as any)
+    await loadNuxt({
+      cwd: repoRoot,
+      overrides: { experimental: { viteEnvironmentApi: true, renderJsonPayloads: false, asyncContext: true } as NuxtConfig['experimental'] },
+    })
+    expect(report).toHaveBeenCalledOnce()
+    expect(report).toHaveBeenCalledWith({ options: '`experimental.renderJsonPayloads`, `experimental.viteEnvironmentApi`' })
+    report.mockRestore()
   })
 
   it('expect hooks to get the correct context outside of initNuxt', async () => {
@@ -285,6 +306,21 @@ describe('loadNuxt', () => {
 
     await nuxt.close()
     rmSync(modulesDir, { recursive: true, force: true })
+  })
+
+  it('resolves `h3/rules` types from the copy nitro uses when the project depends on `h3`', async () => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
+    expect(nuxt._dependencies?.has('h3')).toBe(true)
+    const { tsConfig, serverTsConfig, sharedTsConfig, nodeTsConfig } = await _generateTypes(nuxt)
+
+    const nitroDir = dirname(resolveModulePath('nitro/package.json', { from: pathToFileURL(resolve(repoRoot, 'packages/nitro-server') + '/') }))
+    const h3Dir = realpathSync(resolve(nitroDir, '../h3'))
+    const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
+    for (const config of [tsConfig, serverTsConfig, sharedTsConfig, nodeTsConfig]) {
+      expect(resolve(typesDir, config.compilerOptions?.paths?.['h3/rules']?.[0] ?? '')).toContain(h3Dir + '/')
+    }
+
+    await nuxt.close()
   })
 
   it('resolves nitro aliases pointing at bare module specifiers', async () => {

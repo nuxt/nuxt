@@ -120,7 +120,7 @@ export function getH3ExportNames (): Promise<string[]> {
 }
 
 /** v1-only h3 helpers, which are provided by the compat shim rather than `nitro/h3`. */
-const h3V1Imports = ['send', 'sendError', 'splitCookiesString', 'isStream', 'isWebResponse', 'defineRequestMiddleware', 'defineResponseMiddleware']
+const h3V1Imports = ['send', 'sendError', 'splitCookiesString', 'isStream', 'isWebResponse', 'defineRequestMiddleware', 'defineResponseMiddleware', 'toWebRequest']
 
 /**
  * h3's remaining helpers, for code that reaches past the portable surface. Names

@@ -83,6 +83,15 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     expect(linked.join('\n')).toContain('--inline-shared-box-token:shared-box')
   })
 
+  // https://github.com/nuxt/nuxt/issues/36741
+  it('drops the stylesheet link for inlined CSS that an `ssr: false` page also imports', async () => {
+    const html = await readFile(join(outputDir, 'public', 'spa-shared', 'index.html'), 'utf-8')
+    expect(html).toContain('--inline-spa-shared-token:spa-shared')
+
+    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    expect(cssLinks).toEqual([])
+  })
+
   // https://github.com/nuxt/nuxt/issues/31558
   it('inlines CSS for a non-island child of a server component', async () => {
     const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')

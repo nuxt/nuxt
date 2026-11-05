@@ -205,6 +205,9 @@ function stripDebugProxies (value: unknown, seen = new WeakSet<object>()): void 
 
 const fallbackCompatibilityDate = '2025-07-15' as DateString
 
+// TODO: remove in Nuxt 6, with `NUXT_B5030`
+const REMOVED_EXPERIMENTAL_OPTIONS = ['externalVue', 'renderJsonPayloads', 'routeTypedFetch', 'viteEnvironmentApi']
+
 const nightlies = {
   'nitropack': 'nitropack-nightly',
   'nitro': 'nitro-nightly',
@@ -320,10 +323,12 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.typescript.builder !== false) {
     const envMap = {
       // defaults from `builder` based on package name
+      '@nuxt/rsbuild-builder': '@rsbuild/core/types',
       '@nuxt/rspack-builder': '@rsbuild/core/types',
       '@nuxt/vite-builder': 'vite/client',
       '@nuxt/webpack-builder': 'webpack/module',
       // simpler overrides from `typescript.builder` for better DX
+      'rsbuild': '@rsbuild/core/types',
       'rspack': '@rsbuild/core/types',
       'vite': 'vite/client',
       'webpack': 'webpack/module',
@@ -608,6 +613,7 @@ async function initNuxt (nuxt: Nuxt) {
       addBuildPlugin(ExtractAsyncDataHandlersPlugin({
         sourcemap: !!nuxt.options.sourcemap.client,
         rootDir: nuxt.options.rootDir,
+        appDir: nuxt.options.appDir,
       }), { server: false })
     }
   }
@@ -1104,6 +1110,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       configDiagnostics.NUXT_B5003({ key })
       delete options.runtimeConfig.app[key]
     }
+  }
+
+  const removedExperimental = REMOVED_EXPERIMENTAL_OPTIONS.filter(key => key in options.experimental)
+  if (removedExperimental.length > 0) {
+    configDiagnostics.NUXT_B5030({ options: removedExperimental.map(key => `\`experimental.${key}\``).join(', ') })
   }
 
   // Ensure we share key config between Nuxt and Nitro

@@ -25,7 +25,7 @@ import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normaliz
 import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
-import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
+import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtConfig, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
@@ -88,6 +88,14 @@ export default defineNuxtModule({
 
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
+
+    if (nuxt.options.experimental.staticRoutes) {
+      const overrides = (nuxt.options._loadOptions as { overrides?: NuxtConfig } | undefined)?.overrides
+      const configs = [overrides, ...nuxt.options._layers.map(layer => layer.config)]
+      if (!configs.some(config => config?.experimental?.early404 === false)) {
+        nuxt.options.experimental.early404 = true
+      }
+    }
 
     let inlineRulesCache: Record<string, RouteRuleConfig> = {}
     let updateRouteConfig: (inlineRules: Record<string, RouteRuleConfig>) => void | Promise<void>
@@ -830,6 +838,25 @@ export default defineNuxtModule({
       nuxt.options._noScriptsPageSources = [...restrictedPages]
         .filter(([page, stub]) => stub === 'noScripts' && page.file)
         .map(([page]) => relative(nuxt.options.srcDir, page.file!))
+      // several routes can share a page file (`pages:extend`), so a file is only
+      // client-only when none of the routes using it is server-rendered
+      const getPageFiles = (page: NuxtPage) => [page.file, ...Object.values(page.components || {})]
+        .filter((file): file is string => !!file)
+      const ssrPageFiles = new Set<string>()
+      const collectSSRPageFiles = (pages: NuxtPage[]) => {
+        for (const page of pages) {
+          if (restrictedPages.get(page) !== 'spaOnly') {
+            for (const file of getPageFiles(page)) { ssrPageFiles.add(file) }
+          }
+          if (page.children?.length) { collectSSRPageFiles(page.children) }
+        }
+      }
+      collectSSRPageFiles(pages)
+      nuxt.options._spaOnlyPageSources = [...new Set([...restrictedPages]
+        .filter(([, stub]) => stub === 'spaOnly')
+        .flatMap(([page]) => getPageFiles(page))
+        .filter(file => !ssrPageFiles.has(file))
+        .map(file => relative(nuxt.options.srcDir, file)))]
 
       return restrictedPages
     }
@@ -944,14 +971,17 @@ export default defineNuxtModule({
     // `router.addRoute()` would bypass the build-time route patterns used for early
     // 404 responses, so remove it from the router type. `removeRoute` stays: it only
     // narrows the real route set, which is the safe direction for the matcher.
-    if (nuxt.options.experimental.early404) {
+    const removedRouterMethods = nuxt.options.experimental.staticRoutes
+      ? ['addRoute', 'removeRoute', 'clearRoutes']
+      : nuxt.options.experimental.early404 ? ['addRoute'] : []
+    if (removedRouterMethods.length) {
       addTypeTemplate({
-        filename: 'types/early404.d.ts',
+        filename: 'types/router-methods.d.ts',
         dependsOn: [],
         getContents: () => [
           'declare module \'nuxt/app\' {',
-          '  interface Early404IncompatibleRouterMethods {',
-          '    addRoute: true',
+          '  interface RemovedRouterMethods {',
+          ...removedRouterMethods.map(method => `    ${method}: true`),
           '  }',
           '}',
           'export {}',
