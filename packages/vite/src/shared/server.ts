@@ -61,6 +61,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
+          polyfillRequire: isEnvApi, // Let the server builder resolve intermediate require() calls.
           ...nuxt.options.sourcemap.server === 'nosource' ? { sourcemapExcludeSources: true } : {},
         },
         onwarn (warning, rollupWarn) {
