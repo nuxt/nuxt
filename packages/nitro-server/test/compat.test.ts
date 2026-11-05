@@ -12,7 +12,7 @@ import { createUnimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
 import { exec } from 'tinyexec'
 
-import { getLegacyRuntimeConfigPath, getNitroPackageResolutions, getServerImportsPresets, resolveNitroLegacyOptions, scanLegacyScope, setupNitroCompat } from '../src/compat.ts'
+import { getLegacyNitroAliases, getLegacyRuntimeConfigPath, getNitroPackageResolutions, getServerImportsPresets, resolveNitroLegacyOptions, scanLegacyScope, setupNitroCompat } from '../src/compat.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { kServerApi } from '@nuxt/kit/internal'
@@ -196,6 +196,26 @@ describe('setupNitroCompat', () => {
     await expect(plugin.resolveId.handler.call(context, '#internal/nitro', '/modules/handler.ts')).resolves.toMatch(/compat[\\/]nitro-v2/)
     await expect(plugin.resolveId.handler.call(context, 'h3', '/other/handler.ts')).resolves.toBeUndefined()
     await expect(plugin.resolveId.handler.call(context, 'ofetch', '/modules/handler.ts')).resolves.toBeUndefined()
+  })
+
+  it('reports a deep nitro v2 import that only resolves into the compatibility barrel', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9010').mockImplementation(p => new Error(`${p.file} ${p.specifier}`) as any)
+    const nitroConfig: NitroConfig = {
+      handlers: [declared({ route: '/v2', handler: '/modules/handler.ts' }, 'nitro2')],
+    }
+    await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+
+    const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
+    const deep = 'nitropack/runtime/internal/error/utils'
+    const aliased = { resolve: () => Promise.resolve({ id: `${getLegacyNitroAliases()['nitropack/runtime']}/internal/error/utils` }) }
+
+    await expect(plugin.resolveId.handler.call(aliased, deep, '/project/server/error.ts')).rejects.toThrow(`server/error.ts ${deep}`)
+    await expect(plugin.resolveId.handler.call({ resolve: () => Promise.resolve(null) }, '#internal/nitro/utils', '/project/server/error.ts')).rejects.toThrow('#internal/nitro/utils')
+    await expect(plugin.resolveId.handler.call(aliased, deep, '/modules/handler.ts')).resolves.toMatch(/compat[\\/]nitro-v2\.\w+$/)
+    await expect(plugin.resolveId.handler.call({ resolve: () => Promise.resolve({ id: '\0virtual' }) }, '#internal/nitro/virtual', '#nitro/virtual/plugins')).resolves.toEqual({ id: '\0virtual' })
+    await expect(plugin.resolveId.handler.call(aliased, 'nitropack/runtime', '/project/server/error.ts')).resolves.toBeUndefined()
+    expect(report).toHaveBeenCalledTimes(2)
+    report.mockRestore()
   })
 
   it('registers its plugins once, on the rollup config, with nitroViteEnvironment', async () => {

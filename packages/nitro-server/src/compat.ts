@@ -83,6 +83,7 @@ interface CompatScope {
 const TAG_SCOPE: CompatScope = { h3: true, specifiers: true, imports: true }
 
 const NITRO_V2_SPECIFIER_RE = /^(?:nitropack(?:\/|$)|#internal\/nitro(?:\/|$))/
+const NITRO_V2_ENTRIES = ['nitropack', 'nitropack/runtime', 'nitropack/runtime/meta', 'nitropack/types', '#internal/nitro']
 const TRANSFORMABLE_RE = /\.[cm]?[jt]sx?$/
 const DECLARATION_RE = /\.d\.[cm]?ts$/
 const OWN_VIRTUAL_RE = /^(?:#internal\/|#nuxt-compat\/|#build\/|#nitro|#spa-template|nuxt\/)/
@@ -492,13 +493,7 @@ export function getNitroPackageResolutions (): Record<string, string> {
  */
 export function getLegacyNitroAliases (): Record<string, string> {
   const barrel = compatRuntimePath('nitro-v2')
-  return {
-    'nitropack': barrel,
-    'nitropack/runtime': barrel,
-    'nitropack/runtime/meta': barrel,
-    'nitropack/types': barrel,
-    '#internal/nitro': barrel,
-  }
+  return Object.fromEntries(NITRO_V2_ENTRIES.map(entry => [entry, barrel]))
 }
 
 /** A package's root, and its real path where the two differ, for a prefix comparison. */
@@ -1260,6 +1255,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     invalidateScopeCache,
     importsBarrel,
     unimport,
+    nuxt.options.rootDir,
   )
 
   const withNitro = nuxt as Nuxt & { _nitro?: { options: NitroOptions } }
@@ -1350,6 +1346,7 @@ function createLegacyResolvePlugin (
   invalidateScope: (id?: string) => void,
   importsBarrel: string,
   unimport: Unimport,
+  rootDir: string,
 ) {
   const h3Shim = compatRuntimePath('h3-v1')
   const nitroShim = compatRuntimePath('nitro-v2')
@@ -1399,13 +1396,22 @@ function createLegacyResolvePlugin (
       }
 
       const scope = scopeFor(importer)
-      if (!scope) {
-        return
-      }
-
-      const mapped = mapSpecifier(source, scope)
+      const mapped = scope && mapSpecifier(source, scope)
       if (mapped) {
         return mapped
+      }
+
+      // the aliased entry points match as prefixes, so a deep import resolves into the barrel
+      if (NITRO_V2_SPECIFIER_RE.test(source) && !NITRO_V2_ENTRIES.includes(source)) {
+        const resolved = await this.resolve(source, importer, { skipSelf: true })
+        if (!resolved || resolved.id.startsWith(`${nitroShim}/`)) {
+          throw nitroBuildDiagnostics.NUXT_B9010({ specifier: source, file: importer ? displayPath(normalize(importer), rootDir) : 'server code' })
+        }
+        return resolved
+      }
+
+      if (!scope) {
+        return
       }
 
       // keep module-local imports of a v2 entry in scope
