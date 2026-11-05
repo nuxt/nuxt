@@ -37,7 +37,6 @@ export function PerfPlugin (nuxt: Nuxt): Plugin {
       wrapPlugins(this.environment.plugins)
     },
     buildApp: {
-      // before `buildApp` hooks that build environments, such as Nitro's
       order: 'pre',
       handler (builder) {
         const perf = nuxt._perf
