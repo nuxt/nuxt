@@ -181,6 +181,16 @@ function coveredDuration (phases: PerfPhase[]): number {
 /** Sub-phases are listed under Details, and their time stays in the row of the phase they run in. */
 const isSubPhase = (name: string) => name.startsWith('module:')
 
+let claimedCliStartTime: number | undefined
+
+/** When the CLI started, or `undefined` if a profiler in this process has already measured from it. */
+export function claimCliStartTime (): number | undefined {
+  const startTime = (globalThis as any).__nuxt_cli__?.startTime as number | undefined
+  if (!startTime || startTime === claimedCliStartTime) { return }
+  claimedCliStartTime = startTime
+  return startTime
+}
+
 /** Hooks taking at least this long are shown alongside the phases. */
 const HOOK_PHASE_THRESHOLD_MS = 5
 
@@ -198,24 +208,31 @@ export class NuxtPerfProfiler {
   /** Offset to convert performance.now() (ms) to epoch microseconds for trace events */
   #baseTs: number
 
-  constructor (options?: { startTime?: number }) {
-    // `startTime` is a `Date.now()` timestamp
+  constructor (options?: {
+    /** When the CLI started, from `Date.now()`. Reported as a `startup` phase. */
+    startTime?: number
+    /** When `startup` ended, from `performance.now()`. Defaults to the time the profiler is created. */
+    startupEndTime?: number
+  }) {
     this.#globalStart = options?.startTime ? performance.now() - (Date.now() - options.startTime) : performance.now()
     this.#globalMemoryBefore = getMemorySnapshot()
     this.#baseTs = Date.now() * 1000 - performance.now() * 1000
     if (options?.startTime) {
-      // the CLI started before the profiler: booting it and importing Nuxt takes this long
-      const now = performance.now()
-      this.#phases.push({
-        name: 'startup',
-        startTime: this.#globalStart,
-        endTime: now,
-        duration: round(now - this.#globalStart),
-        memoryBefore: this.#globalMemoryBefore,
-        memoryAfter: this.#globalMemoryBefore,
-        memoryDelta: { rss: 0, heapUsed: 0 },
-      })
+      this.recordPhase('startup', this.#globalStart, options.startupEndTime)
     }
+  }
+
+  /** Record a phase that ran before the profiler was created. Its memory is not measured. */
+  recordPhase (name: string, startTime: number, endTime = performance.now()): void {
+    this.#phases.push({
+      name,
+      startTime,
+      endTime,
+      duration: round(endTime - startTime),
+      memoryBefore: this.#globalMemoryBefore,
+      memoryAfter: this.#globalMemoryBefore,
+      memoryDelta: { rss: 0, heapUsed: 0 },
+    })
   }
 
   /**
@@ -426,11 +443,10 @@ export class NuxtPerfProfiler {
       const children = allPhases.filter(other => other !== phase && !isSubPhase(other.name) && contains(phase, other))
       const directChildren = children.filter(child => !children.some(other => other !== child && contains(other, child)))
 
-      let childTime = 0
+      const childTime = coveredDuration(directChildren)
       let childRss = 0
       let childHeap = 0
       for (const child of directChildren) {
-        childTime += child.duration
         childRss += child.memoryDelta.rss
         childHeap += child.memoryDelta.heapUsed
       }
@@ -459,7 +475,7 @@ export class NuxtPerfProfiler {
         retainedHeap: p.retainedMemory?.heapUsed,
         unfinished: p.unfinished,
       })),
-      unattributedDuration: round(Math.max(0, totalDuration - coveredDuration(allPhases))),
+      unattributedDuration: round(Math.max(0, totalDuration - coveredDuration(allPhases.filter(p => !isSubPhase(p.name))))),
       modules: this.#modules.toSorted((a, b) => b.setupTime - a.setupTime),
       bundlerPlugins: [...this.#bundlerPluginTimings.entries()]
         .map(([name, hookMap]) => {
