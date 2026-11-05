@@ -14,8 +14,10 @@ vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
 const reloadNuxtApp = vi.hoisted(() => vi.fn())
 vi.mock('#app/composables/chunk', () => ({ reloadNuxtApp }))
 
+const payloadBody = (buildId: string) => `[{"data":1,"buildId":2},{"key":3},"${buildId}","value"]`
+
 function mockPayload (buildId: string) {
-  return vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response(`[{"data":1,"buildId":2},{"key":3},"${buildId}","value"]`)))
+  return vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response(payloadBody(buildId))))
 }
 
 describe('payloads from another build', () => {
@@ -46,6 +48,28 @@ describe('payloads from another build', () => {
     await useRouter().push('/pre/skewed?foo=bar')
     expect(reloadNuxtApp).toHaveBeenCalledWith({ path: '/pre/skewed?foo=bar', persistState: true })
     expect(useNuxtApp().static.data.key).toBeUndefined()
+  })
+
+  it('should reload for a payload from another build that uses types unknown to this build', async () => {
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('[{"data":1,"buildId":3},["UnknownType",2],{},"another-build"]')))
+    await useRouter().push('/pre/unknown-type')
+    expect(reloadNuxtApp).toHaveBeenCalledWith({ path: '/pre/unknown-type', persistState: true })
+  })
+
+  it('should not reload for a payload from another build once the navigation is superseded', async () => {
+    let release!: (response: Response) => void
+    const fetchSpy = mockPayload(useRuntimeConfig().app.buildId)
+    fetchSpy.mockImplementationOnce(() => new Promise(resolve => (release = resolve)))
+    const router = useRouter()
+
+    const superseded = router.push('/pre/superseded')
+    await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1))
+    await router.push('/pre/latest')
+    release(new Response(payloadBody('another-build')))
+    await superseded
+
+    expect(reloadNuxtApp).not.toHaveBeenCalled()
+    expect(router.currentRoute.value.path).toBe('/pre/latest')
   })
 
   it('should apply a payload from the current build on navigation', async () => {

@@ -1,5 +1,5 @@
 import { hasProtocol, joinURL } from 'ufo'
-import { parse } from 'devalue'
+import { parse, unflatten } from 'devalue'
 import { defineLink } from '@unhead/vue'
 import { onServerPrefetch, reactive } from 'vue'
 import { isInComponentSetup, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -42,7 +42,7 @@ export async function _loadPayload (url: string, opts: LoadPayloadOptions = {}):
     // cannot invalidate them - defer to normal HTTP cache semantics instead
     const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
     if (opts.fresh) {
-      return await _importPayload(payloadURL, cache, opts.signal, opts.promoted) || null
+      return await _importPayload(payloadURL, cache, opts.signal, opts.promoted, true) || null
     }
     return await _sharedImportPayload(payloadURL, cache, opts.signal, opts.promoted) || null
   }
@@ -69,7 +69,7 @@ function _sharedImportPayload (payloadURL: string, cache: RequestCache, signal?:
     })
   }
 
-  const attempt = _importPayload(payloadURL, cache, signal, promoted)
+  const attempt = _importPayload(payloadURL, cache, signal, promoted, true)
     .then(payload => ({ payload, aborted: !payload && !!signal?.aborted }))
   attempt.finally(() => {
     if (inFlightPayloads.get(payloadURL) === attempt) {
@@ -152,7 +152,7 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   return payloadURL + u.search
 }
 
-async function _importPayload (payloadURL: string, cache: RequestCache, signal?: AbortSignal, promoted?: boolean) {
+async function _importPayload (payloadURL: string, cache: RequestCache, signal?: AbortSignal, promoted?: boolean, checkBuild?: boolean) {
   if (import.meta.server || !payloadExtraction) { return null }
   const priority = promoted ? 'high' : undefined
   try {
@@ -163,13 +163,25 @@ async function _importPayload (payloadURL: string, cache: RequestCache, signal?:
       }
       return null
     }
-    return await parsePayload(await res.text())
+    const text = await res.text()
+    return checkBuild ? await _parseCurrentBuildPayload(text) : await parsePayload(text)
   } catch (err) {
     if (!signal?.aborted) {
       stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
     }
   }
   return null
+}
+
+/** A payload from another build is returned as `{ buildId }`, as its types may have no reviver in this build. */
+async function _parseCurrentBuildPayload (text: string) {
+  const flat = JSON.parse(text)
+  const index = Array.isArray(flat) ? flat[0]?.buildId : undefined
+  const buildId = typeof index === 'number' ? flat[index] : undefined
+  if (typeof buildId === 'string' && isOutdatedPayload({ buildId })) {
+    return { buildId }
+  }
+  return await unflatten(flat, useNuxtApp()._payloadRevivers)
 }
 
 function _shouldLoadPrerenderedPayload (rules: Record<string, any>) {

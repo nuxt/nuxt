@@ -1,5 +1,6 @@
 import { joinURL, withoutFragment } from 'ufo'
 import type { ResolvableLink } from 'unhead/types'
+import type { RouteLocationNormalized } from 'vue-router'
 
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
@@ -75,6 +76,8 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     const config = useRuntimeConfig()
     const { schedule } = usePrefetchScheduler(nuxtApp)
     let outdatedBuildDetected = false
+    let pendingNavigation: RouteLocationNormalized | undefined
+    router.beforeEach((to) => { pendingNavigation = to })
     if (prefetchPreloadTags) {
       // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
@@ -92,6 +95,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       const payload = await _loadPayload(toURL)
       if (!payload) { return }
       if (isOutdatedPayload(payload)) {
+        if (pendingNavigation !== to) { return }
         reloadNuxtApp({ path: joinURL(config.app.baseURL, to.fullPath), persistState: true })
         return
       }
