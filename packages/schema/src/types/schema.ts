@@ -1254,9 +1254,24 @@ export interface ConfigSchema {
      * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
      * file may modify `routes`.
      *
+     * Enabled by `experimental.staticRoutes` unless set explicitly.
+     *
      * @default false
      */
     early404: boolean
+
+    /**
+     * Treat the page routes as fixed once the app is built.
+     *
+     * With this option the route table cannot change at runtime: `router.addRoute()`,
+     * `router.removeRoute()` and `router.clearRoutes()` throw, and are removed from the type
+     * of the router returned by `useRouter()`. In exchange the server builds the route matcher
+     * once per distinct `routes` array instead of once per request, and `experimental.early404`
+     * is enabled.
+     *
+     * @default false
+     */
+    staticRoutes: boolean
 
     /**
      * Warn at build time about template mistakes the Vue compiler cannot detect:

@@ -16,17 +16,16 @@ import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 /**
- * Augmented by Nuxt when `experimental.early404` is enabled, to remove router methods
- * that are incompatible with it from the router returned by `useRouter`. Dynamically
- * added routes cannot be known at build time, so requests to them would incorrectly
- * receive an early 404 response.
+ * Augmented by Nuxt with the router methods that `experimental.staticRoutes` or
+ * `experimental.early404` remove from the router returned by `useRouter`, as the
+ * route table they change is fixed at build time.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Early404IncompatibleRouterMethods {}
+export interface RemovedRouterMethods {}
 
-type NuxtUseRouter = keyof Early404IncompatibleRouterMethods extends never
+type NuxtUseRouter = keyof RemovedRouterMethods extends never
   ? typeof _useRouter
-  : () => Router & { [K in keyof Early404IncompatibleRouterMethods & keyof Router]: never }
+  : () => Router & { [K in keyof RemovedRouterMethods & keyof Router]: never }
 
 /** @since 3.0.0 */
 export const useRouter: NuxtUseRouter = (() => {
