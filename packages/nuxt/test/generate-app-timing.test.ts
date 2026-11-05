@@ -9,33 +9,8 @@ import { createApp, generateApp } from '../src/core/app.ts'
 import { loadNuxt } from '../src/index.ts'
 import { logger } from '../src/utils.ts'
 
-const hooks = vi.hoisted(() => ({ enabled: 0 }))
-vi.mock('node:async_hooks', async (importOriginal) => {
-  const asyncHooks = await importOriginal<typeof import('node:async_hooks')>()
-  return {
-    ...asyncHooks,
-    createHook: (callbacks: Parameters<typeof asyncHooks.createHook>[0]) => {
-      const hook = asyncHooks.createHook(callbacks)
-      return {
-        enable () {
-          hooks.enabled++
-          hook.enable()
-          return this
-        },
-        disable () {
-          hooks.enabled--
-          hook.disable()
-          return this
-        },
-      }
-    },
-  }
-})
-
 const repoRoot = await findWorkspaceDir()
 
-// A controlled clock: the slow template moves it forward 600ms after an `await`, the way a
-// template blocks the event loop after awaiting something, and nothing else moves it.
 let clock = 0
 const SLOW_MS = 600
 
@@ -82,25 +57,16 @@ describe('generateApp compile time', () => {
 
   it('reports slow template generation in a single line', async () => {
     const messages = await generate(false)
-    expect(messages.filter(m => m.startsWith('Compiled'))).toStrictEqual([])
     expect(messages).toStrictEqual([expect.stringContaining(`Generating templates took ${SLOW_MS}ms`)])
   })
 
-  it('attributes a block after an `await` to the template that blocked when debugging templates', async () => {
+  it('reports only the slow template as slow when debugging templates', async () => {
     const messages = await generate(true)
-    const compiled = messages.filter(m => m.startsWith('Compiled')).sort()
-    expect(compiled).toStrictEqual([
-      `Compiled \`#build/fast-a.mjs\` (0ms running, ${SLOW_MS}ms elapsed)`,
-      `Compiled \`#build/fast-b.mjs\` (0ms running, ${SLOW_MS}ms elapsed)`,
-      `Compiled \`#build/fast-c.mjs\` (0ms running, ${SLOW_MS}ms elapsed)`,
-      `Compiled \`#build/slow.mjs\` (${SLOW_MS}ms running, ${SLOW_MS}ms elapsed)`,
+    expect(messages.filter(m => m.startsWith('Compiled'))).toStrictEqual([
+      'Compiled `#build/fast-a.mjs` in 0ms',
+      'Compiled `#build/fast-b.mjs` in 0ms',
+      `Compiled \`#build/slow.mjs\` in ${SLOW_MS}ms`,
+      'Compiled `#build/fast-c.mjs` in 0ms',
     ])
-  })
-
-  it('turns activity tracking off after every generation', async () => {
-    for (let i = 0; i < 3; i++) {
-      await generate(true)
-      expect(hooks.enabled).toBe(0)
-    }
   })
 })
