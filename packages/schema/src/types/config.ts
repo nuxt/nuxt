@@ -62,6 +62,8 @@ export interface RuntimeConfigApp extends RuntimeConfigNamespace {
   buildAssetsDir: string
   /** An absolute URL the public folder is served from (production-only). */
   cdnURL: string
+  /** The `crossorigin` attribute value for static asset tags (scripts and stylesheets). */
+  crossOrigin: '' | 'anonymous' | 'use-credentials'
   /** Identifier of the current build, regenerated on every build. */
   buildId: string
 }
