@@ -20,9 +20,8 @@ export default defineNuxtModule({
 
     // A schema file's JSDoc annotations are extracted by `untyped/babel-plugin`, which has to run
     // as an import-time transform, so this is the one place Nuxt cannot fall back to loading the
-    // file with the runtime's own importer. `jiti` is an optional peer dependency and
-    // `untyped/babel-plugin` pulls in the whole of `@babel/core`, so neither is loaded unless a
-    // layer actually ships a `nuxt.schema.*` file.
+    // file with the runtime's own importer. The plugin bundles babel, so like `jiti` it is not
+    // installed with Nuxt, and neither is loaded unless a layer actually ships a `nuxt.schema.*` file.
     let _resolveSchema: ReturnType<typeof createSchemaLoader> | undefined
     function getSchemaLoader () {
       _resolveSchema ||= createSchemaLoader()
@@ -30,6 +29,13 @@ export default defineNuxtModule({
     }
 
     async function createSchemaLoader () {
+      const untypedPlugin = await importModule<typeof import('untyped/babel-plugin').default>('untyped/babel-plugin', {
+        url: [...[nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)), new URL(import.meta.url)],
+      }).catch(() => undefined)
+      if (!untypedPlugin) {
+        return undefined
+      }
+
       const jiti = await loadJiti({
         rootDir: nuxt.options.rootDir,
         searchPaths: nuxt.options.modulesDir,
@@ -39,7 +45,6 @@ export default defineNuxtModule({
         return undefined
       }
 
-      const { default: untypedPlugin } = await import('untyped/babel-plugin')
       return jiti.createJiti(fileURLToPath(import.meta.url), {
         fsCache: false,
         transformOptions: {
@@ -140,7 +145,7 @@ export default defineNuxtModule({
           if (!loader) {
             configDiagnostics.NUXT_B5019({
               filePath: linkToAlias(filePath, nuxt),
-              installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
+              installCommand: await getAddDependencyCommand(['jiti', 'untyped'], nuxt.options.rootDir, { dev: true }),
             })
             continue
           }

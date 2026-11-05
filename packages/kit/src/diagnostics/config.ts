@@ -69,7 +69,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B5019: {
-      why: (p: { filePath: string }) => `The Nuxt schema in \`${p.filePath}\` was skipped because \`jiti\` is not installed. A schema file's JSDoc annotations are read by an import-time transform, which is the one part of loading it the runtime cannot do on its own.`,
+      why: (p: { filePath: string }) => `The Nuxt schema in \`${p.filePath}\` was skipped because \`jiti\` or \`untyped\` is not installed. A schema file's JSDoc annotations are read by \`untyped\`'s import-time transform through \`jiti\`, which is the one part of loading it the runtime cannot do on its own.`,
       fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to load it, or remove the \`nuxt.schema\` file.`,
       docs: false,
     },
