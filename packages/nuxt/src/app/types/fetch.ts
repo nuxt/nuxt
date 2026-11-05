@@ -137,10 +137,17 @@ type DeclaredHeaders<Shape> =
     ? FetchOptions['headers']
     : (Shape & Record<string, string>) | LooseTypedHeaders<Shape> | Array<[string, string]>
 
-/** Requires `body` where the route declares one that is not optional, and contributes nothing otherwise. */
+/**
+ * Requires `body` where the route declares one that is not optional, and contributes nothing otherwise.
+ *
+ * `undefined` is excluded because reading the shape's optional `body` adds it, not because the route
+ * declares it: a body the route declares as nullable is not required in the first place, so it never
+ * reaches this branch. Without the exclusion `body: undefined` satisfies the requirement, and ofetch
+ * sends no body at all.
+ */
 export type RequiredRequestBody<Request, Method extends AnyServerRouteMethod> =
   RequiresBody<Request, Method> extends true
-    ? { body: TypedRequestShape<Request, Method>['body'] }
+    ? { body: Exclude<TypedRequestShape<Request, Method>['body'], undefined> }
     : unknown
 
 /**
@@ -305,7 +312,7 @@ export type AcceptedDeclaredMethod<Schema, Request, Method extends AnyServerRout
 /** As {@link RequiredRequestBody}, resolved against a declared route set. */
 export type RequiredDeclaredRequestBody<Schema, Request, Method extends AnyServerRouteMethod> =
   RequiresDeclaredBody<Schema, Request, Method> extends true
-    ? { body: DeclaredRequestShape<Schema, Request, Method>['body'] }
+    ? { body: Exclude<DeclaredRequestShape<Schema, Request, Method>['body'], undefined> }
     : unknown
 
 /**

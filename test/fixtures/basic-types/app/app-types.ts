@@ -381,6 +381,10 @@ describe('API route request shapes', () => {
     $fetch('/api/validated', { method: 'post' })
     // @ts-expect-error the route declares a body, so it cannot be omitted
     useFetch('/api/validated', { method: 'post' })
+    // @ts-expect-error a required body cannot be `undefined`, which ofetch sends as no body at all
+    $fetch('/api/validated', { method: 'post', body: undefined })
+    // @ts-expect-error a required body cannot be `undefined`, which ofetch sends as no body at all
+    $fetch.raw('/api/validated', { method: 'post', body: undefined })
 
     // `defineValidatedHandler` returns a handler whose type drops the query it validated and
     // exposes validated headers only as a `Headers` instance, so neither can be read back from it.
@@ -1093,6 +1097,9 @@ describe('composables', () => {
           [Endpoint]: { GET: { response: Pet } }
         }
       }
+      '/notes': {
+        [Endpoint]: { POST: { response: { ok: true }, body: { text: string } | null } }
+      }
     }
 
     const $api = createRouteTypedFetch({ baseURL: 'https://api.example.com', routes: {} as PetStore })
@@ -1117,6 +1124,16 @@ describe('composables', () => {
     await $api('/pets', { method: 'post', body: { name: 42 } })
     // @ts-expect-error `limit` is not a string
     await $api('/pets', { query: { limit: 'two' } })
+    // @ts-expect-error a required body cannot be `undefined`, which ofetch sends as no body at all
+    await $api('/pets', { method: 'post', body: undefined })
+    // @ts-expect-error a required body cannot be `undefined`, which ofetch sends as no body at all
+    await $api.raw('/pets', { method: 'post', body: undefined })
+
+    // a body the route declares as nullable is not required, so it may be `null`, `undefined` or left out
+    expectTypeOf(await $api('/notes', { method: 'post', body: { text: 'hi' } })).toEqualTypeOf<{ ok: true }>()
+    expectTypeOf(await $api('/notes', { method: 'post', body: null })).toEqualTypeOf<{ ok: true }>()
+    expectTypeOf(await $api('/notes', { method: 'post', body: undefined })).toEqualTypeOf<{ ok: true }>()
+    expectTypeOf(await $api('/notes', { method: 'post' })).toEqualTypeOf<{ ok: true }>()
 
     // a path built at runtime resolves to `unknown`, and a named response type still wins
     const runtime: string = '/pets'
