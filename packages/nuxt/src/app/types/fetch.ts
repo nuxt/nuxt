@@ -357,9 +357,13 @@ export interface RouteTypedFetch<Schema, DefaultT = unknown> {
 
   /**
    * The route set this client resolves against, as a type only. Never set at runtime.
+   *
+   * Required rather than optional, so that a client of the app's own routes - whose own member is
+   * an optional `never` - is not assignable here, and `createUseFetch({ $fetch })` does not read a
+   * route set off it.
    * @internal
    */
-  readonly '~routes'?: Schema
+  readonly '~routes': Schema
 }
 
 /**

@@ -1153,6 +1153,12 @@ describe('composables', () => {
     // the app's own `useFetch` does not take a client of another API
     // @ts-expect-error a declared client is not the app's own `$fetch`
     useFetch('/api/hello', { $fetch: $api })
+
+    // and a factory given a client of the app's own routes still resolves against them
+    expectTypeOf(createUseFetch({ $fetch })).toEqualTypeOf(createUseFetch())
+    expectTypeOf(createUseFetch({ $fetch: useRequestFetch() })('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(createUseFetch({ $fetch, baseURL: '/api' })('/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+    expectTypeOf(createUseFetch({ $fetch: $fetch.create({ baseURL: '/api' }) })('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
   })
 
   it('propagates factory `default` / `pick` types through createUseAsyncData / createUseFetch (#35128)', () => {
