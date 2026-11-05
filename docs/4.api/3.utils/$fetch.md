@@ -110,3 +110,5 @@ const { data } = await useAsyncData(() => requestFetch('/api/cookies'))
 ```
 
 However, when calling `useFetch` with a relative URL on the server, Nuxt will use [`useRequestFetch`](/docs/api/composables/use-request-fetch) to proxy headers and cookies (with the exception of headers not meant to be forwarded, like `host`).
+
+The same applies to the request context itself: platform bindings and other server-only data (for example, Cloudflare bindings available as `event.context.cloudflare`) are only visible to the API route when the call goes through [`useRequestFetch`](/docs/api/composables/use-request-fetch) (or [`useFetch`](/docs/api/composables/use-fetch)).

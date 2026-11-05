@@ -23,6 +23,10 @@ Headers that are **not meant to be forwarded** will **not be included** in the r
 The [`useFetch`](/docs/api/composables/use-fetch) composable uses `useRequestFetch` under the hood to automatically forward the request context and headers.
 ::
 
+::note
+The request context also carries server-only data, such as platform bindings — for example, Cloudflare bindings available as `event.context.cloudflare` in your API route. A plain [`$fetch`](/docs/api/utils/dollarfetch) call during SSR invokes the API route without that context, so the handler cannot see the bindings. Use `useRequestFetch` (or [`useFetch`](/docs/api/composables/use-fetch), which uses it under the hood) when your API route needs them.
+::
+
 ::code-group
 
 ```vue [app/pages/index.vue]
