@@ -1,5 +1,5 @@
 import type { FetchOptions, ResponseType as _ResponseType } from 'ofetch'
-import type { AcceptedDeclaredMethod, AcceptedMethod, AnyServerRouteMethod, DeclaredFetchRequest, DeclaredRequestShape, DeclaredServerResponse, EffectiveBaseURL, FallbackBaseURL, RequiredDeclaredBody, RequiredFetchBody, ResolvedFetchPath, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, TypedServerResponse, UnmatchedDeclaredRouteArgs, UnmatchedRouteArgs, ValidDeclaredFetchPath, ValidTypedFetchPath } from '../types/fetch'
+import type { AcceptedDeclaredMethod, AcceptedMethod, AnyServerRouteMethod, CreateRouteTypedFetchOptions, DeclaredFetchRequest, DeclaredRequestShape, DeclaredServerResponse, EffectiveBaseURL, FallbackBaseURL, RequiredDeclaredBody, RequiredFetchBody, ResolvedFetchPath, RouteTypedFetch, TypedFetch, TypedFetchPathInput, TypedFetchRequest, TypedRequestShape, TypedServerResponse, UnmatchedDeclaredRouteArgs, UnmatchedRouteArgs, ValidDeclaredFetchPath, ValidTypedFetchPath } from '../types/fetch'
 import type { MaybeRef, MaybeRefOrGetter, Ref } from 'vue'
 import { computed, reactive, toValue, watch } from 'vue'
 import { isPlainObject } from '@vue/shared'
@@ -390,7 +390,11 @@ export interface DeclaredUseFetchOptions<
   M extends AnyServerRouteMethod = 'get',
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedOptions<DeclaredFetchOptionsBase<Schema, R, M, DataT>>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
-  $fetch?: TypedFetch
+  /**
+   * The client requests are made with. One `createRouteTypedFetch()` returned for the same route
+   * set is accepted as well as the app's own.
+   */
+  $fetch?: TypedFetch | RouteTypedFetch<Schema>
   watch?: MultiWatchSources | false
   /**
    * The routes this client serves, read as a type only.
@@ -540,6 +544,21 @@ export interface CreateUseFetch {
   >(
     options: Partial<DeclaredUseFetchOptions<FSchema, F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>> & { routes: FSchema, addons?: FAddons },
   ): DeclaredUseFetch<FSchema, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
+  // a client for another API whose route set is read off the `$fetch` it is given, which
+  // `createRouteTypedFetch()` returned, so the routes need not be declared a second time
+  <
+    FSchema,
+    FResT = void,
+    FReqT extends DeclaredFetchRequest<FSchema> = DeclaredFetchRequest<FSchema>,
+    const FMethod extends AnyServerRouteMethod = 'get',
+    F_ResT = FResT extends void ? DeclaredFetchResult<FSchema, FReqT, FMethod> : FResT,
+    FDataT = F_ResT,
+    FPickKeys extends KeysOf<FDataT> = KeysOf<FDataT>,
+    FDefaultT = undefined,
+    const FAddons extends ReadonlyArray<UseFetchAddon<any, any>> = [],
+  >(
+    options: Partial<Omit<DeclaredUseFetchOptions<FSchema, F_ResT, FDataT, FPickKeys, FDefaultT, FReqT, FMethod>, '$fetch' | 'routes'>> & { $fetch: RouteTypedFetch<FSchema>, addons?: FAddons },
+  ): DeclaredUseFetch<FSchema, FDataT, FPickKeys, FDefaultT, MergedAddonsOptions<FAddons>, MergedAddonsExtensions<FAddons>>
   <
     FResT = void,
     FReqT extends TypedFetchRequest = TypedFetchRequest,
@@ -684,12 +703,14 @@ export function _createUseFetch<
         serialize,
         middleware,
         _keySegments: keySegments,
+        // describes the route set for the types only, and is not an option `$fetch` knows
+        routes: _routes,
         ...fetchOptions
       } = {
         ...(typeof options === 'function' ? {} : factoryOptions),
         ...opts,
         ...(typeof options === 'function' ? factoryOptions : {}),
-      } as typeof opts & { _keySegments?: MaybeRefOrGetter<unknown>[] }
+      } as typeof opts & { _keySegments?: MaybeRefOrGetter<unknown>[], routes?: unknown }
 
       if ('params' in fetchOptions) {
         delete (fetchOptions as { params?: unknown }).params
@@ -773,6 +794,24 @@ export function _createUseFetch<
   }
 }
 
+/**
+ * Creates a `$fetch` client for another API, typed from the route set it declares rather than the
+ * routes the app's own server serves.
+ *
+ * `routes` is read as a type only and is dropped before the client is created, so ofetch never
+ * sees it. Pass the client to `createUseFetch({ $fetch })` to get a matching `useFetch`.
+ *
+ * @example
+ * ```ts
+ * const $api = createRouteTypedFetch({ baseURL: 'https://api.example.com', routes: {} as ExternalRoutes })
+ * const useApi = createUseFetch({ $fetch: $api })
+ * ```
+ */
+export function createRouteTypedFetch<Schema> (options: CreateRouteTypedFetchOptions<Schema>): RouteTypedFetch<Schema> {
+  const { routes: _routes, ...defaults } = options
+  return $fetch.create(defaults) as unknown as RouteTypedFetch<Schema>
+}
+
 export const useFetch: UseFetch = _createUseFetch()
 
 export const useLazyFetch: UseFetch = _createUseFetch({
@@ -781,4 +820,4 @@ export const useLazyFetch: UseFetch = _createUseFetch({
   _functionName: 'useLazyFetch',
 })
 
-export type { AnyServerRouteMethod, AvailableServerRouteMethod, ServerRouteMethod, ServerRouteMethods, TypedFetch, TypedFetch as $Fetch, TypedFetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from '../types/fetch'
+export type { AnyServerRouteMethod, AvailableServerRouteMethod, CreateRouteTypedFetchOptions, RouteTypedFetch, RouteTypedFetchOptions, ServerRouteMethod, ServerRouteMethods, TypedFetch, TypedFetch as $Fetch, TypedFetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from '../types/fetch'

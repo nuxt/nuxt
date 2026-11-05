@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type { ComputedRef, Ref, SlotsType } from 'vue'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
-import type { AsyncData, AsyncDataWithExtensions, AugmentedAsyncData, DeclaredUseFetch, DynamicParam, Endpoint, HTTPMethod, KeysOf, MergedAddonsExtensions, PickFrom, TypedFetch, TypedFetchRequest, UseAsyncData, UseFetch } from 'nuxt/app'
+import type { AsyncData, AsyncDataWithExtensions, AugmentedAsyncData, DeclaredUseFetch, DynamicParam, Endpoint, HTTPMethod, KeysOf, MergedAddonsExtensions, PickFrom, RouteTypedFetch, TypedFetch, TypedFetchRequest, UseAsyncData, UseFetch } from 'nuxt/app'
 import type { H3Event, HTTPError } from 'nitro/h3'
 import { $fetch } from '#build/fetch'
 import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHooks as NuxtHooksFromAt } from '@nuxt/schema'
@@ -1078,6 +1078,81 @@ describe('composables', () => {
 
     // and the app's own composable is unaffected by a client declaring its own set
     expectTypeOf(useFetch('/api/hello').data).toEqualTypeOf<Ref<string | DefaultAsyncDataValue>>()
+  })
+
+  it('creates a route-typed `$fetch` client against the route set it declares', async () => {
+    interface Pet { id: number, name: string }
+
+    interface PetStore {
+      '/pets': {
+        [Endpoint]: {
+          GET: { response: Pet[], query: { limit?: number } }
+          POST: { response: Pet, body: { name: string } }
+        }
+        [DynamicParam]: {
+          [Endpoint]: { GET: { response: Pet } }
+        }
+      }
+    }
+
+    const $api = createRouteTypedFetch({ baseURL: 'https://api.example.com', routes: {} as PetStore })
+    expectTypeOf($api).toEqualTypeOf<RouteTypedFetch<PetStore>>()
+
+    expectTypeOf(await $api('/pets')).toEqualTypeOf<Pet[]>()
+    expectTypeOf(await $api('/pets/42')).toEqualTypeOf<Pet>()
+    expectTypeOf(await $api('/pets', { method: 'post', body: { name: 'Rex' } })).toEqualTypeOf<Pet>()
+    expectTypeOf(await $api('/pets', { method: 'POST', body: { name: 'Rex' } })).toEqualTypeOf<Pet>()
+    expectTypeOf(await $api('/pets', { query: { limit: 2 } })).toEqualTypeOf<Pet[]>()
+    expectTypeOf((await $api.raw('/pets/42'))._data).toEqualTypeOf<Pet | undefined>()
+
+    // @ts-expect-error no GET route matches '/pats'
+    await $api('/pats')
+    // @ts-expect-error the app's own routes are not this client's
+    await $api('/api/hello')
+    // @ts-expect-error no PUT route matches '/pets'
+    await $api('/pets', { method: 'put' })
+    // @ts-expect-error the declared route validates a body, so it cannot be omitted
+    await $api('/pets', { method: 'post' })
+    // @ts-expect-error `name` is not a number
+    await $api('/pets', { method: 'post', body: { name: 42 } })
+    // @ts-expect-error `limit` is not a string
+    await $api('/pets', { query: { limit: 'two' } })
+
+    // a path built at runtime resolves to `unknown`, and a named response type still wins
+    const runtime: string = '/pets'
+    expectTypeOf(await $api(runtime)).toEqualTypeOf<unknown>()
+    expectTypeOf(await $api<{ custom: true }>('/pets')).toEqualTypeOf<{ custom: true }>()
+
+    // an instance created from it keeps the route set
+    const $authed = $api.create({ headers: { authorization: 'Bearer x' } })
+    expectTypeOf(await $authed('/pets/1')).toEqualTypeOf<Pet>()
+
+    // `routes` is the factory's, not an option `$fetch.create` takes
+    // @ts-expect-error `routes` is not one of ofetch's options
+    $fetch.create({ routes: {} as PetStore })
+    // @ts-expect-error a route-typed client needs the route set it resolves against
+    createRouteTypedFetch({ baseURL: 'https://api.example.com' })
+
+    // and the app's own `$fetch` and its instances are unaffected
+    expectTypeOf(await $fetch('/api/hello')).toEqualTypeOf<string>()
+    expectTypeOf(await $fetch.create({ baseURL: '/api' })('/hello')).toEqualTypeOf<string>()
+
+    // a declared `useFetch` reads the route set off the `$fetch` it is given
+    const useApi = createUseFetch({ $fetch: $api })
+    expectTypeOf(useApi).toEqualTypeOf(createUseFetch({ routes: {} as PetStore }))
+    expectTypeOf(useApi('/pets').data).toEqualTypeOf<Ref<Pet[] | DefaultAsyncDataValue>>()
+    expectTypeOf(useApi('/pets', { method: 'post', body: { name: 'Rex' } }).data).toEqualTypeOf<Ref<Pet | DefaultAsyncDataValue>>()
+    // @ts-expect-error no GET route matches '/pats'
+    useApi('/pats')
+
+    // declaring `routes` as well still works, and a declared client may be given one per call
+    const useApiWithRoutes = createUseFetch({ routes: {} as PetStore, $fetch: $api })
+    expectTypeOf(useApiWithRoutes('/pets/1').data).toEqualTypeOf<Ref<Pet | DefaultAsyncDataValue>>()
+    expectTypeOf(useApiWithRoutes('/pets/1', { $fetch: $authed }).data).toEqualTypeOf<Ref<Pet | DefaultAsyncDataValue>>()
+
+    // the app's own `useFetch` does not take a client of another API
+    // @ts-expect-error a declared client is not the app's own `$fetch`
+    useFetch('/api/hello', { $fetch: $api })
   })
 
   it('propagates factory `default` / `pick` types through createUseAsyncData / createUseFetch (#35128)', () => {
