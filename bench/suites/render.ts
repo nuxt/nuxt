@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { allocatePort, quietEnv, run, start, waitForHttp } from '../lib/proc.ts'
 import { profileServer } from '../lib/profile.ts'
+import { fetchDocument } from '../lib/http.ts'
 import type { Metric } from '../lib/report.ts'
 import { exact, timing } from '../lib/report.ts'
 import { formatDelta, formatMs, markdownTable, summarise } from '../lib/stats.ts'
@@ -15,10 +16,9 @@ const CONCURRENCY = 16
 const DURATION = 2_000
 const WARMUP_REQUESTS = 300
 const PROFILE_REQUESTS = 2_000
-const HEADERS = { accept: 'text/html,application/xhtml+xml' }
 
 /** Build hashes, build ids and prerender timestamps legitimately differ between the two builds. */
-const BUILD_SPECIFIC_RE = /(\/_nuxt\/)[\w.-]+(\.(?:m?js|css))|(\/_nuxt\/builds\/meta\/)[\w-]+(\.json)|("?buildId"?:")[^"]+(")|("prerenderedAt":)\d+/g
+const BUILD_SPECIFIC_RE = /(\/_nuxt\/(?:[\w-]+\.)*)[\w-]+(\.(?:m?js|css))|(\/_nuxt\/builds\/meta\/)[\w-]+(\.json)|("?buildId"?:")[^"]+(")|("prerenderedAt":)\d+/g
 
 interface Round {
   requests: number
@@ -49,11 +49,7 @@ async function load (url: string, match: string, duration: number): Promise<Roun
   const worker = async () => {
     while (performance.now() < deadline) {
       const started = performance.now()
-      const response = await fetch(url, { headers: HEADERS })
-      const body = await response.text()
-      if (!response.ok || !body.includes(match)) {
-        throw new Error(`unexpected ${response.status} response from ${url}`)
-      }
+      await fetchDocument(url, match)
       latencies.push(performance.now() - started)
     }
   }
@@ -108,9 +104,9 @@ export async function renderSuite ({ targets, fixtures, reps, log, profile }: Su
         for (const { server, url } of servers) {
           await waitForHttp(url + route.path, { match: route.match, server, timeout: 30_000 })
           for (let i = 0; i < WARMUP_REQUESTS; i++) {
-            await (await fetch(url + route.path, { headers: HEADERS })).text()
+            await fetchDocument(url + route.path, route.match)
           }
-          documents.push(normaliseHtml(await (await fetch(url + route.path, { headers: HEADERS })).text()))
+          documents.push(normaliseHtml(await fetchDocument(url + route.path, route.match)))
         }
         const changed = documents[0] !== documents[1]
         headline.push(exact(`SSR html changed, \`${route.path}\` (${fixture.id})`, 0, changed ? 1 : 0, n => n ? 'changed' : 'identical'))

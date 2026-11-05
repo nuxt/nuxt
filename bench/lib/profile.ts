@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { allocatePort, quietEnv, waitForHttp } from './proc.ts'
+import { fetchDocument } from './http.ts'
 import { markdownTable } from './stats.ts'
 
 interface ProfileNode {
@@ -47,7 +48,7 @@ export async function profileServer ({ cwd, routes, requests, concurrency, dir, 
       let remaining = requests
       await Promise.all(Array.from({ length: concurrency }, async () => {
         while (remaining-- > 0) {
-          await (await fetch(url + route.path, { headers: { accept: 'text/html' } })).text()
+          await fetchDocument(url + route.path, route.match)
         }
       }))
     }
@@ -65,7 +66,7 @@ export async function profileServer ({ cwd, routes, requests, concurrency, dir, 
     return { markdown: '', frames: [] }
   }
   const profile = JSON.parse(await readFile(join(dir, files[0]!), 'utf8')) as CpuProfile
-  const frames = topFrames(profile, 20)
+  const frames = topFrames(profile, 20, cwd)
   const markdown = markdownTable(['self time', 'function', 'location'], frames.map(frame => [
     `${frame.share.toFixed(1)}%`,
     `\`${frame.name}\``,
@@ -80,14 +81,14 @@ export interface Frame {
   share: number
 }
 
-function topFrames (profile: CpuProfile, limit: number): Frame[] {
+function topFrames (profile: CpuProfile, limit: number, cwd: string): Frame[] {
   const byId = new Map(profile.nodes.map(node => [node.id, node]))
   const self = new Map<string, { frame: Frame, samples: number }>()
   for (const id of profile.samples) {
     const { callFrame } = byId.get(id)!
-    const file = callFrame.url.replace(/^file:\/\//, '').split('/').slice(-2).join('/')
+    const key = `${callFrame.functionName}@${callFrame.url}:${callFrame.lineNumber}`
+    const file = callFrame.url.replace(/^file:\/\//, '').replace(cwd + '/', '').replace(/^\.output\/server\/(node_modules\/)?/, '')
     const location = file ? `${file}:${callFrame.lineNumber + 1}` : ''
-    const key = `${callFrame.functionName}@${location}`
     const entry = self.get(key) ?? { frame: { name: callFrame.functionName || '(anonymous)', location, share: 0 }, samples: 0 }
     entry.samples++
     self.set(key, entry)
