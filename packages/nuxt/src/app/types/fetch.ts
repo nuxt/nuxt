@@ -302,6 +302,85 @@ export type RequiredDeclaredBody<Schema, Request, Method extends AnyServerRouteM
 export type AcceptedDeclaredMethod<Schema, Request, Method extends AnyServerRouteMethod> =
   unknown extends ValidDeclaredFetchPath<Schema, Request, Method> ? Method : never
 
+/** As {@link RequiredRequestBody}, resolved against a declared route set. */
+export type RequiredDeclaredRequestBody<Schema, Request, Method extends AnyServerRouteMethod> =
+  RequiresDeclaredBody<Schema, Request, Method> extends true
+    ? { body: DeclaredRequestShape<Schema, Request, Method>['body'] }
+    : unknown
+
+/**
+ * As {@link TypedFetchOptions}, resolved against a declared route set.
+ *
+ * `baseURL` stays ofetch's own, as it does for a declared `useFetch`: the declared paths
+ * are the ones the API documents, so they are matched as written and the base is transport.
+ */
+export type RouteTypedFetchOptions<Schema, Request, Method extends AnyServerRouteMethod = 'get'> =
+  & Omit<FetchOptions, 'method' | 'body' | 'query' | 'params' | 'headers'>
+  & { method?: AcceptedDeclaredMethod<Schema, Request, Method> }
+  & DeclaredRequestShape<Schema, Request, Method>
+  & RequiredDeclaredRequestBody<Schema, Request, Method>
+
+/**
+ * A `fetch` implementation whose responses are typed from a route set a client declares, rather
+ * than the routes the app's own server serves. Returned by `createRouteTypedFetch({ routes })`.
+ *
+ * The same two signatures as {@link TypedFetch}: the first completes and resolves the declared
+ * paths, the second only names a path and method that matched nothing.
+ *
+ * `Schema` is also carried on a type-only member, so that `createUseFetch({ $fetch })` can read the
+ * route set back off the instance instead of having it declared a second time.
+ */
+export interface RouteTypedFetch<Schema, DefaultT = unknown> {
+  <T = DefaultT, R extends DeclaredFetchRequest<Schema> = DeclaredFetchRequest<Schema>, M extends AnyServerRouteMethod = unknown extends T ? 'get' : AnyServerRouteMethod>(
+    request: R,
+    opts?: RouteTypedFetchOptions<Schema, R, M>,
+    ...unmatched: UnmatchedDeclaredRouteArgs<Schema, R, M>
+  ): Promise<DeclaredServerResponse<Schema, R, T, M>>
+  <T = DefaultT, R extends string = string, M extends AnyServerRouteMethod = unknown extends T ? 'get' : AnyServerRouteMethod>(
+    request: R & ValidDeclaredFetchPath<Schema, R, M>,
+    opts?: RouteTypedFetchOptions<Schema, R, M>,
+  ): Promise<DeclaredServerResponse<Schema, R, T, M>>
+
+  'raw': {
+    <T = DefaultT, R extends DeclaredFetchRequest<Schema> = DeclaredFetchRequest<Schema>, M extends AnyServerRouteMethod = unknown extends T ? 'get' : AnyServerRouteMethod>(
+      request: R,
+      opts?: RouteTypedFetchOptions<Schema, R, M>,
+      ...unmatched: UnmatchedDeclaredRouteArgs<Schema, R, M>
+    ): Promise<FetchResponse<DeclaredServerResponse<Schema, R, T, M>>>
+    <T = DefaultT, R extends string = string, M extends AnyServerRouteMethod = unknown extends T ? 'get' : AnyServerRouteMethod>(
+      request: R & ValidDeclaredFetchPath<Schema, R, M>,
+      opts?: RouteTypedFetchOptions<Schema, R, M>,
+    ): Promise<FetchResponse<DeclaredServerResponse<Schema, R, T, M>>>
+  }
+
+  'create': <T = DefaultT>(defaults: FetchOptions) => RouteTypedFetch<Schema, T>
+
+  /**
+   * The route set this client resolves against, as a type only. Never set at runtime.
+   *
+   * Required rather than optional, so that a client of the app's own routes - whose own member is
+   * an optional `never` - is not assignable here, and `createUseFetch({ $fetch })` does not read a
+   * route set off it.
+   * @internal
+   */
+  readonly '~routes': Schema
+}
+
+/**
+ * The options `createRouteTypedFetch()` takes: ofetch's own, plus the route set the API serves,
+ * read as a type only.
+ */
+export type CreateRouteTypedFetchOptions<Schema> = FetchOptions & {
+  /**
+   * The routes this client serves, read as a type only.
+   *
+   * Pass `{} as MyRoutes` - by hand, or an interface a generator emitted from an OpenAPI document -
+   * and every request the client makes is resolved against that route set instead of the app's
+   * own. The value is dropped before the client is created, so it never reaches ofetch.
+   */
+  routes: Schema
+}
+
 /**
  * A `fetch` implementation whose responses are typed from the routes the server serves.
  *
@@ -331,7 +410,7 @@ export interface TypedFetch<DefaultT = unknown, DefaultB extends string = ''> {
     opts?: TypedFetchOptions<_R, M, B>,
   ): Promise<TypedServerResponse<_R, T, M>>
 
-  raw: {
+  'raw': {
     <T = DefaultT, R extends TypedFetchRequest = TypedFetchRequest, M extends AnyServerRouteMethod = unknown extends T ? 'get' : AnyServerRouteMethod, const B extends string = FallbackBaseURL<R, TypedFetchRequest>, _R = ResolvedFetchPath<R, EffectiveBaseURL<DefaultB, B>>>(
       request: R,
       opts?: TypedFetchOptions<_R, M, B>,
@@ -343,7 +422,15 @@ export interface TypedFetch<DefaultT = unknown, DefaultB extends string = ''> {
     ): Promise<FetchResponse<TypedServerResponse<_R, T, M>>>
   }
 
-  create: <T = DefaultT, const B extends string = unknown extends T ? DefaultB : string>(defaults: Omit<FetchOptions, 'baseURL'> & { baseURL?: B }) => TypedFetch<T, EffectiveBaseURL<DefaultB, B>>
+  'create': <T = DefaultT, const B extends string = unknown extends T ? DefaultB : string>(defaults: Omit<FetchOptions, 'baseURL'> & { baseURL?: B }) => TypedFetch<T, EffectiveBaseURL<DefaultB, B>>
+
+  /**
+   * Never set: this client resolves against the app's own routes. Present so that a
+   * {@link RouteTypedFetch}, whose signatures are otherwise loose enough to be assignable to these,
+   * is not accepted where a client of the app's own routes is expected.
+   * @internal
+   */
+  readonly '~routes'?: never
 }
 
 export type { AnyHTTPMethod }

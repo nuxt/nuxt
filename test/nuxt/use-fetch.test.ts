@@ -8,7 +8,8 @@ import { registerEndpoint } from '@nuxt/test-utils/runtime'
 import { withQuery } from 'ufo'
 import { flushPromises } from '@vue/test-utils'
 
-import { createUseFetch as _createUseFetch, useFetch, useLazyFetch } from '#app/composables/fetch'
+import { createUseFetch as _createUseFetch, createRouteTypedFetch, useFetch, useLazyFetch } from '#app/composables/fetch'
+import type { TypedFetch } from '#app/composables/fetch'
 import type { EffectScope } from 'vue'
 
 const createUseFetch = (_createUseFetch as unknown as { __nuxt_factory: typeof _createUseFetch }).__nuxt_factory
@@ -85,6 +86,36 @@ describe('useFetch', () => {
     await useFetch('/api/routes-dropped', { key: 'routes-a', routes: {} as { '/x': never } })
 
     expect(seen).toStrictEqual([''])
+  })
+
+  it('does not hand `routes` to `$fetch`', async () => {
+    const received: Array<Record<string, unknown>> = []
+    const spy = ((_request: unknown, opts: Record<string, unknown>) => {
+      received.push(opts)
+      return Promise.resolve({ ok: true })
+    }) as unknown as TypedFetch
+
+    await createUseFetch({ routes: {} as { '/x': never }, $fetch: spy })('/x', { key: 'routes-not-forwarded' })
+
+    expect(received).toHaveLength(1)
+    expect('routes' in received[0]!).toBe(false)
+  })
+
+  it('requests through a `createRouteTypedFetch` client, read off by `createUseFetch`', async () => {
+    const seen: Array<string | null> = []
+    registerEndpoint('/api/declared/pets', defineEventHandler((event) => {
+      seen.push(event.req.headers.get('x-client'))
+      return [{ id: 1 }]
+    }))
+
+    const $api = createRouteTypedFetch({ baseURL: '/api/declared', headers: { 'x-client': 'declared' }, routes: {} as { '/pets': never } })
+    expect(await $api('/pets')).toStrictEqual([{ id: 1 }])
+
+    const useApi = createUseFetch({ $fetch: $api })
+    const { data } = await useApi('/pets', { key: 'declared-fetch' })
+
+    expect(data.value).toStrictEqual([{ id: 1 }])
+    expect(seen).toStrictEqual(['declared', 'declared'])
   })
 
   it('does not write resolved data to the payload with `serialize: false`', async () => {
