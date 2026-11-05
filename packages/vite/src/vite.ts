@@ -133,6 +133,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 // run serially to preserve the order of client, server builds
                 const environments = Object.values(builder.environments)
                 for (const environment of environments) {
+                  const { input, build } = environment.config
+                  if (!input && !build.rolldownOptions.input && !build.lib && typeof build.ssr !== 'string') {
+                    continue
+                  }
                   logger.restoreAll()
                   nuxt._perf?.startPhase(`vite:${environment.name}`)
                   try {
@@ -264,13 +268,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
       },
     } satisfies ViteConfig,
-    {
-      ...viteConfig,
+    mergeConfig(viteConfig, {
       environments: {
         ssr: $server,
         client: $client,
       },
-    },
+    }),
   )
 
   if (Array.isArray(config.server?.allowedHosts)) {

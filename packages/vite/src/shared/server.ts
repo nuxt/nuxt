@@ -80,16 +80,11 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       'import.meta.client': false,
       'import.meta.browser': false,
       'import.meta.envName': JSON.stringify(nuxt.options.envName),
-      // TODO: investigate - issue is onPrehydrate callbacks
-      ...(nuxt.options.dev && isEnvApi)
-        ? {}
-        : {
-            'window': 'undefined',
-            'document': 'undefined',
-            'navigator': 'undefined',
-            'location': 'undefined',
-            'XMLHttpRequest': 'undefined',
-          },
+      'window': 'undefined',
+      'document': 'undefined',
+      'navigator': 'undefined',
+      'location': 'undefined',
+      'XMLHttpRequest': 'undefined',
     },
     optimizeDeps: {
       noDiscovery: true,
