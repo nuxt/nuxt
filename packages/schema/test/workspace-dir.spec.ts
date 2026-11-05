@@ -52,6 +52,11 @@ describe('workspaceDir', () => {
     expect(await resolveWorkspaceDir({ '.git/config': '', 'package-lock.json': '{}' }, { 'package.json': '{}' })).toBe('parent')
   })
 
+  it('resolves to the closest git worktree or submodule', async () => {
+    expect(await resolveWorkspaceDir({ '.git': 'gitdir: /repo/.git/worktrees/project\n', 'package-lock.json': '{}' }, { 'package.json': '{}' })).toBe('parent')
+    expect(await resolveWorkspaceDir({ '.git': 'not a git file' }, { 'package.json': '{}' })).toBe('project')
+  })
+
   it('respects an explicit workspaceDir', async () => {
     expect(await resolveWorkspaceDir({ 'package.json': '{"workspaces":["project"]}' }, { 'package.json': '{}' }, { workspaceDir: '.' })).toBe('project')
   })
