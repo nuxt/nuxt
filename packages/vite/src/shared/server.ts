@@ -3,6 +3,7 @@ import { resolve } from 'pathe'
 import type { EnvironmentOptions } from 'vite'
 import escapeStringRegexp from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts'
 
@@ -48,6 +49,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
+          polyfillRequire: !useServerBuild(nuxt).buildsSeparately, // Let the server builder resolve intermediate require() calls.
           ...nuxt.options.sourcemap.server === 'nosource' ? { sourcemapExcludeSources: true } : {},
         },
         onwarn (warning, rollupWarn) {
