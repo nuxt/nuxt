@@ -59,5 +59,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove `h3` from your dependencies and import from `nuxt/server` (or `nitro/h3`) instead. To ship before migrating, enable `nitroLegacy.h3`, which resolves `h3` to the h3 v1 helpers.',
       docs: false,
     },
+    NUXT_B9010: {
+      why: (p: { file: string, specifier: string }) => `\`${p.file}\` imports \`${p.specifier}\`, a path inside Nitro v2 that Nitro v3 does not provide.`,
+      fix: 'Import from `nuxt/server` (or `nitro/h3` and `nitro/*`) instead. While you migrate, `nitropack/runtime` still resolves, to the Nitro v2 compatibility layer. Report it to the package author if the file is not your own.',
+      docs: false,
+    },
   },
 })
