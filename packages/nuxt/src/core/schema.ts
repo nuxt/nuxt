@@ -1,10 +1,11 @@
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { join, relative, resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
+import { resolveModulePath } from 'exsolve'
 import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule } from '@nuxt/kit'
 import { configDiagnostics, loadJiti } from '@nuxt/kit/internal'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
@@ -24,17 +25,27 @@ export default defineNuxtModule({
     // installed with Nuxt, and neither is loaded unless a layer actually ships a `nuxt.schema.*` file.
     let _resolveSchema: ReturnType<typeof createSchemaLoader> | undefined
     function getSchemaLoader () {
-      _resolveSchema ||= createSchemaLoader()
+      // Forget a failed attempt so installing the missing packages takes effect without a restart.
+      _resolveSchema ||= createSchemaLoader().then((loader) => {
+        if (!loader) {
+          _resolveSchema = undefined
+        }
+        return loader
+      })
       return _resolveSchema
     }
 
     async function createSchemaLoader () {
-      const untypedPlugin = await importModule<typeof import('untyped/babel-plugin').default>('untyped/babel-plugin', {
-        url: [...[nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)), new URL(import.meta.url)],
-      }).catch(() => undefined)
-      if (!untypedPlugin) {
+      // `cache: false` because exsolve otherwise remembers the failed lookup.
+      const pluginPath = resolveModulePath('untyped/babel-plugin', {
+        from: [...[nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)), new URL(import.meta.url)],
+        cache: false,
+        try: true,
+      })
+      if (!pluginPath) {
         return undefined
       }
+      const { default: untypedPlugin } = await import(pathToFileURL(pluginPath).href) as typeof import('untyped/babel-plugin')
 
       const jiti = await loadJiti({
         rootDir: nuxt.options.rootDir,
