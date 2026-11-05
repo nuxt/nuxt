@@ -962,6 +962,39 @@ export default defineEventHandler((event: H3Event) => event.req.headers)`)
     vi.restoreAllMocks()
   })
 
+  it.each([
+    ['1.15.11', 'off', legacyOff, 1],
+    ['1.15.11', 'on for specifiers', resolveNitroLegacyOptions({ h3: false }), 1],
+    ['1.15.11', 'on', resolveNitroLegacyOptions(true), 0],
+    ['2.0.8', 'off', legacyOff, 0],
+  ] as const)('reports user server code importing a project dependency on h3@%s when `nitroLegacy` is %s', async (version, _, legacy, calls) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9009').mockImplementation(() => ({}) as any)
+    const signals = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9005').mockImplementation(() => ({}) as any)
+    const rootDir = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-h3-')))
+    onTestFinished(() => rmSync(rootDir, { recursive: true, force: true }))
+    mkdirSync(join(rootDir, 'node_modules/h3'), { recursive: true })
+    writeFileSync(join(rootDir, 'node_modules/h3/package.json'), JSON.stringify({ name: 'h3', version, exports: { '.': './index.mjs', './package.json': './package.json' } }))
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    writeFileSync(join(rootDir, 'server/api/query.ts'), `import { defineEventHandler, getQuery } from 'h3'
+export default defineEventHandler(event => getQuery(event))`)
+    writeFileSync(join(rootDir, 'server/api/typed.ts'), `import type { H3Event } from 'h3'
+import { defineEventHandler } from 'nuxt/server'
+export default defineEventHandler((event: H3Event) => event.req.url)`)
+
+    const nuxt = createNuxt({ rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    const registerLate = await setupNitroCompat(nuxt, { handlers: [] }, legacy, [])
+    const nitro = { options: { handlers: [], plugins: [] }, hooks: createHooks() } as any
+    registerLate(nitro)
+    await nitro.hooks.callHook('build:before', nitro)
+
+    expect(signals).not.toHaveBeenCalled()
+    expect(report).toHaveBeenCalledTimes(calls)
+    if (calls) {
+      expect(report.mock.calls[0]![0]).toEqual({ count: 1, version, files: '`server/api/query.ts`' })
+    }
+    vi.restoreAllMocks()
+  })
+
   it('treats a file importing a module virtual of nitro v3 code as migrated', async () => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-virtual-gate-'))
