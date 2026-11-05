@@ -5,9 +5,9 @@
  *
  * The types come from `nuxt/server`, so every name it exports must be exported here too.
  */
-import { defineEventHandler as defineH3EventHandler } from 'nitro/h3'
+import { defineEventHandler as defineH3EventHandler, defineValidatedHandler as defineH3ValidatedHandler } from 'nitro/h3'
 import { serverFetch as nitroServerFetch } from 'nitro'
-import type { EventHandler, RequestEvent, ServerFetchInit } from 'nuxt/server'
+import type { defineValidatedHandler as DefineValidatedHandler, EventHandler, RequestEvent, ServerFetchInit } from 'nuxt/server'
 
 import {
   clearSession as clearNuxtSession,
@@ -78,6 +78,9 @@ export function defineEventHandler<Result> (handler: EventHandler<Result>): Even
     return handler(event as RequestEvent) as Result
   }) as unknown as EventHandler<Result>
 }
+
+/** h3's own, with the body buffered as for {@link defineEventHandler}. */
+export const defineValidatedHandler = (definition => defineEventHandler(defineH3ValidatedHandler(definition as never) as never)) as typeof DefineValidatedHandler
 
 export function serverFetch (event: Pick<RequestEvent, 'req' | 'context'>, path: string, init?: ServerFetchInit): Promise<Response> {
   return nitroServerFetch(withBaseURL(path), resolveServerFetchInit(event, init), { nuxt: { '~internal': true } })
