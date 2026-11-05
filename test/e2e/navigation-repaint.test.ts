@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import type { Router } from 'vue-router'
 import { expect, test } from './test-utils'
 
 test.use({
@@ -18,6 +19,7 @@ test('renders the next page without the repaint timeout during a view transition
 
   const durations = await page.evaluate(async () => {
     const nuxtApp = window.useNuxtApp!()
+    const router = nuxtApp.$router as Router
     const durations: number[] = []
     let transition: ViewTransition | undefined
     const unhook = nuxtApp.hook('page:view-transition:start', (currentTransition) => {
@@ -30,7 +32,7 @@ test('renders the next page without the repaint timeout during a view transition
       // Warm both routes before measuring, so loading their chunks is excluded.
       for (let i = 0; i < 4; i++) {
         for (const path of ['/a', '/']) {
-          await nuxtApp.$router.push(path)
+          await router.push(path)
           await transition?.finished
         }
         if (i === 0) { durations.length = 0 }
