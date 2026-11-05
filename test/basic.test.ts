@@ -1261,6 +1261,17 @@ describe('nuxt composables', () => {
     // Check for hydration/syntax errors on client side
     await expectNoClientErrors('/composables/on-prehydrate')
   })
+
+  it.skipIf(isWebpack)('replaces browser globals in server code without affecting onPrehydrate callbacks', async () => {
+    const html = await $fetch<string>('/composables/server-globals')
+    expect(html).toContain('<div id="server-globals">undefined,undefined,undefined,undefined,undefined,undefined</div>')
+    expect(html).toContain('<script>(()=>{document.documentElement.dataset.prehydrate=typeof document})()</script>')
+
+    const { page, pageErrors } = await renderPage('/composables/server-globals')
+    expect(pageErrors).toEqual([])
+    expect(await page.evaluate(() => document.documentElement.dataset.prehydrate)).toBe('object')
+    await page.close()
+  })
 })
 
 describe.skipIf(!runsOnceInMatrix)('rich payloads', () => {
