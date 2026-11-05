@@ -260,15 +260,48 @@ describe('createServerAutoImports', () => {
     await autoImports.injectImports(cached, '/app/server/utils/npm.ts')
     await autoImports.injectImports('export default defineEventHandler(event => getQuery(event))', '/app/server/api/query.ts')
     await autoImports.injectImports('import { defineEventHandler } from \'nuxt/server\'\nexport default defineEventHandler(() => 1)', '/app/server/api/imported.ts')
+    await autoImports.injectImports('export default defineNitroPlugin(() => {})', '/app/server/plugins/setup.ts')
 
     await vi.waitFor(() => expect(report).toHaveBeenCalled())
     expect(report).toHaveBeenCalledTimes(1)
     expect(report).toHaveBeenCalledWith({
-      count: 2,
-      files: '`server/api/query.ts` (`defineEventHandler`, `getQuery`)\n  - `server/utils/npm.ts` (`defineCachedFunction`)',
-      imports: '`import { defineEventHandler, getQuery } from \'nuxt/server\'`, `import { defineCachedFunction } from \'nitro/cache\'`',
+      count: 3,
+      files: '`server/api/query.ts` (`defineEventHandler`, `getQuery`)\n  - `server/plugins/setup.ts` (`defineNitroPlugin`)\n  - `server/utils/npm.ts` (`defineCachedFunction`)',
+      imports: '`import { defineEventHandler, getQuery } from \'nuxt/server\'`, `import { definePlugin as defineNitroPlugin } from \'nitro\'`, `import { defineCachedFunction } from \'nitro/cache\'`',
     })
     report.mockRestore()
+  })
+
+  it.each([
+    ['without', []],
+    ['with', [nuxtServerImportsPreset, ...v2ImportsPreset]],
+  ])('reports server code relying on a global `$fetch` %s disabled presets', async (_, disabledPresets) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9011').mockImplementation(() => ({}) as any)
+    const presetReport = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9007').mockImplementation(() => ({}) as any)
+    const autoImports = createServerAutoImports(mockNuxt(), { autoImport: true }, mkdtempSync(join(tmpdir(), 'server-auto-imports-')), { disabledPresets })
+
+    const handler = 'export default () => $fetch(\'/api/probe\')'
+    await autoImports.injectImports(handler, '/app/server/api/proxy.ts')
+    await autoImports.injectImports(handler, '/app/server/api/proxy.ts')
+    await autoImports.injectImports('export const load = () => $fetch(\'https://example.com\')', '/app/server/utils/load.ts')
+    await autoImports.injectImports('import { $fetch } from \'ofetch\'\nexport default () => $fetch(\'/\')', '/app/server/api/imported.ts')
+    await autoImports.injectImports('export default (app) => app.$fetch(\'/\')', '/app/server/api/property.ts')
+    await autoImports.injectImports('import { defineHandler } from \'nitro/h3\'\nexport default defineHandler(event => $fetch(\'/api/probe\', { query: getQuery(event) }))', '/app/server/api/query.ts')
+
+    await vi.waitFor(() => expect(report).toHaveBeenCalled())
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report).toHaveBeenCalledWith({
+      count: 3,
+      files: '`server/api/proxy.ts`\n  - `server/api/query.ts`\n  - `server/utils/load.ts`',
+    })
+    if (disabledPresets.length) {
+      await vi.waitFor(() => expect(presetReport).toHaveBeenCalled())
+      expect(presetReport).toHaveBeenCalledWith(expect.objectContaining({ count: 1, files: '`server/api/query.ts` (`getQuery`)' }))
+    } else {
+      expect(presetReport).not.toHaveBeenCalled()
+    }
+    report.mockRestore()
+    presetReport.mockRestore()
   })
 
   it('resolves `#imports` to a path inside the types directory', () => {

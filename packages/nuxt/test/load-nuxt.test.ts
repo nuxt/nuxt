@@ -9,6 +9,7 @@ import { defu } from 'defu'
 import { logger, resolvePath, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { findWorkspaceDir } from 'pkg-types'
 import { _generateTypes } from '../../kit/src/template.ts'
+import { configDiagnostics } from '@nuxt/kit/internal'
 import { loadNuxt } from '../src/index.ts'
 import type { NitroConfig, NuxtConfig } from '../schema.ts'
 
@@ -125,6 +126,17 @@ describe('loadNuxt', () => {
       }),
     ])
     expect(loggerWarn).not.toHaveBeenCalled()
+  })
+
+  it('reports experimental options that were removed', async () => {
+    const report = vi.spyOn(configDiagnostics, 'NUXT_B5030').mockImplementation(() => ({}) as any)
+    await loadNuxt({
+      cwd: repoRoot,
+      overrides: { experimental: { viteEnvironmentApi: true, renderJsonPayloads: false, asyncContext: true } as NuxtConfig['experimental'] },
+    })
+    expect(report).toHaveBeenCalledOnce()
+    expect(report).toHaveBeenCalledWith({ options: '`experimental.renderJsonPayloads`, `experimental.viteEnvironmentApi`' })
+    report.mockRestore()
   })
 
   it('expect hooks to get the correct context outside of initNuxt', async () => {
