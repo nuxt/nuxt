@@ -76,4 +76,23 @@ describe.skipIf(!('setGlobalProxyFromEnv' in http))('installProxyDispatcher', ()
     installProxyDispatcher()
     expect(getGlobalDispatcher()).toBe(custom)
   })
+
+  it('leaves a dispatcher without a constructor alone', () => {
+    process.env.HTTPS_PROXY = 'http://127.0.0.1:9999'
+    const custom = Object.assign(Object.create(null), { dispatch: () => true })
+    for (const symbol of dispatcherSymbols) {
+      globals[symbol] = custom
+    }
+    installProxyDispatcher()
+    expect(getGlobalDispatcher()).toBe(custom)
+  })
+
+  it('proxies fetch before node has created its default dispatcher', () => {
+    process.env.HTTPS_PROXY = 'http://127.0.0.1:9999'
+    for (const symbol of dispatcherSymbols) {
+      globals[symbol] = undefined
+    }
+    installProxyDispatcher()
+    expect(getGlobalDispatcher()?.constructor.name).toBe('EnvHttpProxyAgent')
+  })
 })
