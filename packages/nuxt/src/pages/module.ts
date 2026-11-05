@@ -25,7 +25,7 @@ import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normaliz
 import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
-import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
+import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtConfig, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
@@ -89,8 +89,12 @@ export default defineNuxtModule({
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
-    if (nuxt.options.experimental.staticRoutes && !nuxt.options._layers.some(layer => layer.config.experimental?.early404 === false)) {
-      nuxt.options.experimental.early404 = true
+    if (nuxt.options.experimental.staticRoutes) {
+      const overrides = (nuxt.options._loadOptions as { overrides?: NuxtConfig } | undefined)?.overrides
+      const configs = [overrides, ...nuxt.options._layers.map(layer => layer.config)]
+      if (!configs.some(config => config?.experimental?.early404 === false)) {
+        nuxt.options.experimental.early404 = true
+      }
     }
 
     let inlineRulesCache: Record<string, RouteRuleConfig> = {}
