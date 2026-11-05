@@ -20,6 +20,7 @@ import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG } from './build-files'
 import { renderPayloadJsonScript, renderPayloadResponse, splitPayload } from './payload'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from './app'
 import { mergeHeaders } from './headers'
+import { applyCrossOriginToLinkHeader, crossOriginAttribute, getAssetCrossOrigin, withAssetCrossOrigin } from './crossorigin'
 import { patchDevClientCss } from './dev-css'
 import { renderInlineStyles, renderSplitInlineStyles } from './inline-styles'
 import { createInlinedCSSFilter } from './inlined-css'
@@ -248,6 +249,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   ssrContext.head.push(appHead)
 
+  // The `crossorigin` attribute value for build assets, configured via `app.crossOrigin`.
+  const crossOrigin = getAssetCrossOrigin(ssrContext.runtimeConfig)
+
   if (ssrError) {
     if (!PARSE_ERROR_DATA) {
       (ssrError as { data?: unknown }).data = stringifyErrorData(ssrError.data)
@@ -307,7 +311,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   if (NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS })
     if (link) {
-      runtime.writeEarlyHints?.(event, { link })
+      runtime.writeEarlyHints?.(event, { link: applyCrossOriginToLinkHeader(link, crossOrigin) })
     }
   }
 
@@ -455,7 +459,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     // Add CSS links in <head> for CSS files
     // - in production
     // - in dev mode when not rendering an island
-    link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+    link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: crossOrigin })
   }
 
   if (link.length) {
@@ -488,12 +492,12 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   const hints: Link[] = []
   for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
     if (!excludeHrefs.has(l.href)) {
-      hints.push(l)
+      hints.push(withAssetCrossOrigin(l, crossOrigin))
     }
   }
   for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
     if (!excludeHrefs.has(l.href)) {
-      hints.push(NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS ? inertPrefetchLink(l) : l)
+      hints.push(withAssetCrossOrigin(NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS ? inertPrefetchLink(l) : l, crossOrigin))
     }
   }
   if (hints.length) {
@@ -527,7 +531,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
         // if we are rendering script tag payloads that import an async payload
         // we need to ensure this resolves before executing the Nuxt entry
         tagPosition: 'head',
-        crossorigin: '',
+        crossorigin: crossOrigin,
       })),
     })
   }
@@ -580,12 +584,15 @@ async function renderStreamedResponse (ctx: {
   const hookEvent = appEvent(event)
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions?.noScripts
 
+  // The `crossorigin` attribute value for build assets, configured via `app.crossOrigin`.
+  const crossOrigin = getAssetCrossOrigin(ssrContext.runtimeConfig)
+
   pushNoScriptsHints(ssrContext, NO_SCRIPTS)
 
   // 1. Set HTTP Link headers with entry-point preload hints (fastest resource hinting)
   const { link: linkHeader } = renderResourceHeaders({}, renderer.rendererContext, { scripts: !NO_SCRIPTS })
   if (linkHeader) {
-    event.res.headers.append('link', linkHeader)
+    event.res.headers.append('link', applyCrossOriginToLinkHeader(linkHeader, crossOrigin))
   }
 
   // 2. Pre-compute entry-point inline styles for the shell
@@ -603,7 +610,7 @@ async function renderStreamedResponse (ctx: {
   const shellLinks: Link[] = []
   for (const resource of Object.values(entryStyles)) {
     if (import.meta.dev && 'inline' in getURLQuery(resource.file)) { continue }
-    shellLinks.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
+    shellLinks.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: crossOrigin })
   }
   if (shellLinks.length) {
     ssrContext.head.push({ link: shellLinks })
@@ -625,8 +632,8 @@ async function renderStreamedResponse (ctx: {
 
   // Entry preload/prefetch links
   const entryHints = [
-    ...getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
-    ...(getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS ? inertPrefetchLink(l) : l),
+    ...(getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => withAssetCrossOrigin(l, crossOrigin)),
+    ...(getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => withAssetCrossOrigin(NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS ? inertPrefetchLink(l) : l, crossOrigin)),
   ]
   if (entryHints.length) {
     ssrContext.head.push({ link: entryHints })
@@ -640,7 +647,7 @@ async function renderStreamedResponse (ctx: {
         src: renderer.rendererContext.buildAssetsURL(resource.file),
         defer: resource.module ? null : true,
         tagPosition: 'head',
-        crossorigin: '',
+        crossorigin: crossOrigin,
       })),
     })
   }
@@ -825,7 +832,7 @@ async function renderStreamedResponse (ctx: {
       if (emittedStyles.has(resource.file)) { continue }
       if (import.meta.dev && 'inline' in getURLQuery(resource.file)) { continue }
       emittedStyles.add(resource.file)
-      tags += `<link rel="stylesheet" crossorigin href="${renderer.rendererContext.buildAssetsURL(resource.file)}">`
+      tags += `<link rel="stylesheet"${crossOriginAttribute(crossOrigin)} href="${renderer.rendererContext.buildAssetsURL(resource.file)}">`
     }
     return tags
   }

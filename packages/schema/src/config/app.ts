@@ -68,6 +68,22 @@ export default defineResolvers({
       },
     },
 
+    /**
+     * The `crossorigin` attribute value for static asset tags (entry scripts and stylesheets,
+     * as well as their preload/prefetch hints and `Link` headers) served from `buildAssetsDir`
+     * (or `cdnURL` if set).
+     *
+     * This is useful when assets are served from another domain, for example a CDN, and requests
+     * for them need to include credentials (such as cookies). The default (`''`) renders a bare
+     * `crossorigin` attribute, which is equivalent to `anonymous`.
+     */
+    crossOrigin: {
+      $resolve: (val) => {
+        const value = process.env.NUXT_APP_CROSS_ORIGIN || (typeof val === 'string' ? val : '')
+        return value === 'anonymous' || value === 'use-credentials' ? value : ''
+      },
+    },
+
     head: {
       $resolve: (_val) => {
         const val: Partial<NuxtAppConfig['head']> = _val && typeof _val === 'object' ? _val : {}
