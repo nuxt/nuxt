@@ -134,12 +134,13 @@ interface SplitPayload {
     data?: NuxtPayload['data']
     prerenderedAt?: NuxtPayload['prerenderedAt']
     prefetchLinks?: NuxtPayload['prefetchLinks']
+    buildId?: NuxtPayload['buildId']
   }
 }
 
 export function splitPayload (ssrContext: NuxtSSRContext): SplitPayload {
   const { data, prerenderedAt, prefetchLinks, ...initial } = ssrContext.payload
-  const payload: SplitPayload['payload'] = { data, prerenderedAt }
+  const payload: SplitPayload['payload'] = { data, prerenderedAt, buildId: ssrContext.runtimeConfig.app.buildId }
   if (prefetchLinks?.length) {
     payload.prefetchLinks = prefetchLinks
   }
