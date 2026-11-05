@@ -26,11 +26,11 @@ export default defineNuxtModule({
     let _resolveSchema: ReturnType<typeof createSchemaLoader> | undefined
     function getSchemaLoader () {
       // Forget a failed attempt so installing the missing packages takes effect without a restart.
-      _resolveSchema ||= createSchemaLoader().then((loader) => {
-        if (!loader) {
+      _resolveSchema ||= createSchemaLoader().then((result) => {
+        if (result.missing) {
           _resolveSchema = undefined
         }
-        return loader
+        return result
       })
       return _resolveSchema
     }
@@ -42,28 +42,29 @@ export default defineNuxtModule({
         cache: false,
         try: true,
       })
-      if (!pluginPath) {
-        return undefined
-      }
-      const { default: untypedPlugin } = await import(pathToFileURL(pluginPath).href) as typeof import('untyped/babel-plugin')
-
       const jiti = await loadJiti({
         rootDir: nuxt.options.rootDir,
         searchPaths: nuxt.options.modulesDir,
       })
 
-      if (!jiti) {
-        return undefined
+      if (!pluginPath || !jiti) {
+        const missing: string[] = []
+        if (!pluginPath) { missing.push('untyped') }
+        if (!jiti) { missing.push('jiti') }
+        return { missing }
       }
+      const { default: untypedPlugin } = await import(pathToFileURL(pluginPath).href) as typeof import('untyped/babel-plugin')
 
-      return jiti.createJiti(fileURLToPath(import.meta.url), {
-        fsCache: false,
-        transformOptions: {
-          babel: {
-            plugins: [untypedPlugin],
+      return {
+        loader: jiti.createJiti(fileURLToPath(import.meta.url), {
+          fsCache: false,
+          transformOptions: {
+            babel: {
+              plugins: [untypedPlugin],
+            },
           },
-        },
-      })
+        }),
+      }
     }
 
     // Register module types
@@ -152,14 +153,16 @@ export default defineNuxtModule({
       for (const dirs of layerDirs) {
         const filePath = await resolver.resolvePath(join(dirs.root, 'nuxt.schema'))
         if (filePath && existsSync(filePath)) {
-          const loader = await getSchemaLoader()
-          if (!loader) {
-            configDiagnostics.NUXT_B5019({
+          const schemaLoader = await getSchemaLoader()
+          if (schemaLoader.missing) {
+            const diagnostic = schemaLoader.missing.includes('untyped') ? configDiagnostics.NUXT_B5031 : configDiagnostics.NUXT_B5019
+            diagnostic({
               filePath: linkToAlias(filePath, nuxt),
-              installCommand: await getAddDependencyCommand(['jiti', 'untyped'], nuxt.options.rootDir, { dev: true }),
+              installCommand: await getAddDependencyCommand(schemaLoader.missing, nuxt.options.rootDir, { dev: true }),
             })
             continue
           }
+          const { loader } = schemaLoader
           let loadedConfig: SchemaDefinition
           try {
             // TODO: fix type for second argument of `import`

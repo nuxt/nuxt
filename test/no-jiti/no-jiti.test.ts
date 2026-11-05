@@ -85,15 +85,22 @@ describe('jiti is not required', () => {
   })
 
   it('is not installed with nuxt by any of its dependencies', async () => {
-    // walks the installed tree through `dependencies` and `optionalDependencies`, as a consumer's package manager would
+    // walks the installed tree through `dependencies`, `optionalDependencies` and required peers, as a consumer's package manager would
     const seen = new Set<string>()
     const paths: string[] = []
     async function walk (dir: string, path: string[]) {
       const realDir = await realpath(dir)
       if (seen.has(realDir)) { return }
       seen.add(realDir)
-      const pkg = JSON.parse(await readFile(join(realDir, 'package.json'), 'utf8')) as { name: string, dependencies?: Record<string, string>, optionalDependencies?: Record<string, string> }
-      for (const name of Object.keys({ ...pkg.dependencies, ...pkg.optionalDependencies })) {
+      const pkg = JSON.parse(await readFile(join(realDir, 'package.json'), 'utf8')) as {
+        name: string
+        dependencies?: Record<string, string>
+        optionalDependencies?: Record<string, string>
+        peerDependencies?: Record<string, string>
+        peerDependenciesMeta?: Record<string, { optional?: boolean }>
+      }
+      const requiredPeers = Object.keys(pkg.peerDependencies ?? {}).filter(name => !pkg.peerDependenciesMeta?.[name]?.optional)
+      for (const name of new Set([...Object.keys({ ...pkg.dependencies, ...pkg.optionalDependencies }), ...requiredPeers])) {
         if (name === 'jiti') {
           paths.push([...path, pkg.name, name].join(' > '))
           continue
