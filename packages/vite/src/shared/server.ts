@@ -21,6 +21,7 @@ export function ssr (nuxt: Nuxt) {
         ],
     noExternal: [
       ...getTranspilePatterns({ isServer: true, isDev: nuxt.options.dev }),
+      ...nuxt.options.dev ? [] : ['vue', /^@vue\//], // Bundle Vue deps to prevent build-time paths in CJS requires.
       '/__vue-jsx',
       '#app',
       /^nuxt(\/|$)/,
