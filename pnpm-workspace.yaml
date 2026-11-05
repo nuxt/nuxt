@@ -82,7 +82,7 @@ catalogs:
     unctx: ^3.0.1
     unhead: ^3.4.3
     vue: ^3.5.44
-    vue-bundle-renderer: ^2.4.0
+    vue-bundle-renderer: ^2.5.0
     vue-router: ^5.4.0
   nitro-runtime:
     '@jridgewell/trace-mapping': ^0.3.31
@@ -191,7 +191,7 @@ catalogs:
     unrouting: ^0.3.2
     untyped: ^2.0.0
     verkit: ^0.5.0
-    vue-bundle-renderer: ^2.4.0
+    vue-bundle-renderer: ^2.5.0
 
   # dev/test/workspace tooling (pinned)
   dev:
