@@ -101,6 +101,17 @@ describe('useFetch', () => {
     expect('routes' in received[0]!).toBe(false)
   })
 
+  it('does not hand `routes` to `$fetch.create()` in `createRouteTypedFetch`', () => {
+    const create = vi.spyOn(globalThis.$fetch, 'create')
+    try {
+      createRouteTypedFetch({ baseURL: '/api/declared', routes: {} as { '/pets': never } })
+      expect(create).toHaveBeenCalledOnce()
+      expect(create.mock.calls[0]![0]).toStrictEqual({ baseURL: '/api/declared' })
+    } finally {
+      create.mockRestore()
+    }
+  })
+
   it('requests through a `createRouteTypedFetch` client, read off by `createUseFetch`', async () => {
     const seen: Array<string | null> = []
     registerEndpoint('/api/declared/pets', defineEventHandler((event) => {

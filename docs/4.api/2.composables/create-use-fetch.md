@@ -49,7 +49,7 @@ function createUseFetch<Routes> (
 
 // where the routes are read off a client created with `createRouteTypedFetch`
 function createUseFetch<Routes> (
-  options: Partial<UseFetchOptions> & { $fetch: RouteTypedFetch<Routes>, addons?: UseFetchAddon[] },
+  options: Partial<Omit<UseFetchOptions, '$fetch'>> & { $fetch: RouteTypedFetch<Routes>, addons?: UseFetchAddon[] },
 ): DeclaredUseFetch<Routes>
 ```
 
