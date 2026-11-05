@@ -211,6 +211,24 @@ export function assertEncodingIndependentRouteRuleKey (key: string): void {
   }
 }
 
+const CATCH_ALL_RE = /\*\*?|:\w+[*+]/g
+
+/**
+ * Throw if a route-rule key has more than one catch-all (`*`, `**`, `:name+` or `:name*`),
+ * which the route-rule router does not support.
+ *
+ * @internal
+ */
+export function assertSingleCatchAllRouteRuleKey (key: string): void {
+  let count = 0
+  for (const { text, constraint } of splitRouteConstraints(key)) {
+    if (!constraint) { count += text.match(CATCH_ALL_RE)?.length ?? 0 }
+  }
+  if (count > 1) {
+    throw pageDiagnostics.NUXT_B4027({ route: key })
+  }
+}
+
 let casePairs: Array<[char: string, folded: string]> | undefined
 
 function getCasePairs (): Array<[char: string, folded: string]> {

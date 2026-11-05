@@ -32,11 +32,11 @@ import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKe
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRuleLookupPath } from '../../nuxt/src/core/utils/route-rules.ts'
+import { assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRuleLookupPath } from '../../nuxt/src/core/utils/route-rules.ts'
 import { encodeRoutePath, foldRouteCase } from '../../nuxt/src/core/utils/index.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
-import { normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
+import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
@@ -451,7 +451,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       })
     }
     nuxt.hook('nitro:init', (nitro) => {
-      nitro.hooks.hook('build:before', async (nitro) => {
+      nitro.hooks.hook('build:before', (nitro) => {
         const updatedRules: Record<string, Record<string, any>> = {}
         for (const { route, data: value } of mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)) {
           if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
@@ -468,7 +468,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             }
           }
         }
-        await nitro.updateConfig({ routeRules: { ...nitro.options.routeRules, ...updatedRules } })
+        if (Object.keys(updatedRules).length === 0) { return }
+        nitro.options.routeRules = { ...nitro.options.routeRules, ...updatedRules }
         nitro.routing.sync()
       })
     })
@@ -758,6 +759,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // after the hook, so rules and registrations contributed by modules are covered too
   normalizeLegacyRouteRules(nitroConfig.routeRules)
+  for (const key in nitroConfig.routeRules) {
+    assertSingleCatchAllRouteRuleKey(key)
+  }
+  if (nuxt.options.experimental.componentIslands) {
+    keepCachedIslandQuery(nitroConfig, !nuxt.options.router.options.sensitive)
+  }
   normalizeAppMiddlewareRules(nitroConfig.routeRules)
   const unusedVariants = collectServerRegistrations(nuxt, nitroConfig)
 

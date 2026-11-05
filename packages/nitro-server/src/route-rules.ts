@@ -1,10 +1,11 @@
 import { pathToFileURL } from 'node:url'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nitro, NitroConfig } from 'nitro/types'
 import type { RouteRuleLayer } from 'h3/rules'
 import { foldRouteCase, foldRouteRulePath } from '../../nuxt/src/core/utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, foldRouteRulePattern } from '../../nuxt/src/core/utils/route-rules.ts'
+import { assertCaseIndependentRouteRuleKey, createNormalizedRouteRulesRouter, foldRouteRulePattern, normalizeRouteRuleLookupPath, normalizeRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
  * Rewrites `redirect.statusCode` to `redirect.status`, warning once per route.
@@ -21,6 +22,21 @@ export function normalizeLegacyRouteRules (routeRules: NitroConfig['routeRules']
     routeRules[route]!.redirect = { ...rest, status: rest.status ?? statusCode }
     bundlerDiagnostics.NUXT_B7026({ route })
   }
+}
+
+const ISLAND_ROUTE = '/__nuxt_island/**'
+
+/**
+ * Key cached island responses on the query that carries their props, which a cached route
+ * otherwise drops before the handler runs.
+ */
+export function keepCachedIslandQuery (nitroConfig: Pick<NitroConfig, 'routeRules'>, fold: boolean): void {
+  const routes = Object.entries(normalizeRouteRules(nitroConfig.routeRules)).map(([route, data]) => ({ route, method: '', data }))
+  const matched = createNormalizedRouteRulesRouter(routes, '', fold).matchAll('', normalizeRouteRuleLookupPath('/__nuxt_island/_.json', fold))
+  const { cache } = defu({}, ...matched.reverse()) as { cache?: false | { allowQuery?: unknown } }
+  if (!cache || cache.allowQuery !== undefined) { return }
+  nitroConfig.routeRules ||= {}
+  nitroConfig.routeRules[ISLAND_ROUTE] = defu(nitroConfig.routeRules[ISLAND_ROUTE], { cache: { allowQuery: true } })
 }
 
 /**
