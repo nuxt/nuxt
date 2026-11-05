@@ -8,6 +8,8 @@ export interface SuiteContext {
   fixtures: Fixture[]
   reps: number
   log: (message: string) => void
+  /** Record a CPU profile of each production server after measuring (`--profile`). */
+  profile?: boolean
 }
 
 export interface SuiteResult {
