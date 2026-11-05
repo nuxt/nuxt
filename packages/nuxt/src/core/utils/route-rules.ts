@@ -429,6 +429,50 @@ export function genNormalizePathCode (fold: boolean): string {
 }
 
 /**
+ * Whether a `redirect` rule moves the tail of the path it matches onto its target.
+ *
+ * @internal
+ */
+export function isWildcardRedirect (redirect: unknown): boolean {
+  return !!redirect && typeof redirect === 'object' && typeof (redirect as { to?: unknown }).to === 'string' && (redirect as { to: string }).to.includes('**')
+}
+
+/**
+ * Resolve a wildcard `redirect`, kept by the route-rules matcher as `{ to, base }`, into the
+ * path it redirects to: the part of `path` past the segments `base` matched replaces the `**`
+ * of `to`. A run of separators leading that part collapses to one, so the target stays on the
+ * origin `to` names, and in the query or fragment of `to` it is encoded as a single value.
+ *
+ * Inlined by source into the route-rules matcher, so it must not reference anything outside itself.
+ *
+ * @internal
+ */
+export function resolveWildcardRedirect<T extends { redirect?: unknown }> (rules: T, path: string): T {
+  const redirect = rules.redirect as { to: string, base?: string } | string | undefined
+  if (!redirect || typeof redirect !== 'object') { return rules }
+  const pathname = path.replace(/[?#].*$/, '')
+  const base = redirect.base
+  let tail = pathname
+  if (base) {
+    tail = /\*\*|:\w+[?*+]/.test(base)
+      ? (pathname.startsWith(base) ? pathname.slice(base.length) : pathname)
+      : pathname.split('/').slice(base.split('/').length).map(segment => '/' + segment).join('')
+  }
+  tail = tail.replace(/^(?:[/\\]|%(?:25)*(?:2f|5c))+/i, '/')
+  if (tail === '/') { tail = '' }
+  const to = redirect.to
+  if (to.endsWith('/**')) {
+    rules.redirect = to.slice(0, -3) + tail || '/'
+    return rules
+  }
+  const index = to.indexOf('**')
+  const query = to.search(/[?#]/)
+  const value = tail.replace(/^\//, '')
+  rules.redirect = to.slice(0, index) + (query !== -1 && index > query ? value.replace(/[#&+;=?]/g, char => '%' + char.charCodeAt(0).toString(16).toUpperCase()) : value) + to.slice(index + 2)
+  return rules
+}
+
+/**
  * Build a route-rules router whose keys are normalised with {@link normalizeRouteRuleKey},
  * mirroring the normalised lookup path used at runtime.
  *

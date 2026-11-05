@@ -14,7 +14,7 @@ import { bundlerDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, createNormalizedRouteRulesRouter, genNormalizePathCode, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes } from './utils/route-rules.ts'
+import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, createNormalizedRouteRulesRouter, genNormalizePathCode, isWildcardRedirect, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes, resolveWildcardRedirect } from './utils/route-rules.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
@@ -81,7 +81,7 @@ export const testComponentWrapperTemplate: NuxtTemplate = {
   filename: 'test-component-wrapper.mjs',
   dependsOn: [],
   getContents: (ctx) => {
-    const needsComponentMap = ctx.nuxt.options.builder === '@nuxt/webpack-builder' || ctx.nuxt.options.builder === '@nuxt/rspack-builder'
+    const needsComponentMap = ctx.nuxt.options.builder === '@nuxt/webpack-builder' || ctx.nuxt.options.builder === '@nuxt/rspack-builder' || ctx.nuxt.options.builder === '@nuxt/rsbuild-builder'
     if (!ctx.nuxt.options.test || !ctx.nuxt.options.dev || !needsComponentMap) {
       return genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
     }
@@ -838,8 +838,10 @@ function serializeAppRouteRules (routeRules: Record<string, any>): string {
     .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
     .map(([name, value]) => {
       if (name === 'redirect') {
-        const redirectOptions = value as { to: string } | string
-        value = typeof redirectOptions === 'string' ? redirectOptions : redirectOptions.to
+        const redirectOptions = value as { to: string, base?: string } | string
+        value = typeof redirectOptions === 'string'
+          ? redirectOptions
+          : isWildcardRedirect(redirectOptions) ? { to: redirectOptions.to, base: redirectOptions.base ?? '' } : redirectOptions.to
       }
       if (name === 'appMiddleware') {
         const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
@@ -876,8 +878,13 @@ export const routeRulesTemplate: NuxtTemplate = {
       return `export default () => ({})`
     }
     const merged = mergeMethodRouteRulesRoutes(routes)
+    const wildcardRedirects = routes.some(({ data }) => isWildcardRedirect(data.redirect))
+    const resolverCode = wildcardRedirects ? `const resolveWildcardRedirect = ${resolveWildcardRedirect.toString()}` : ''
     if (merged.length === 1 && merged[0]!.route === '/**') {
-      return `export default () => (${serializeAppRouteRules(merged[0]!.data)})`
+      const rules = serializeAppRouteRules(merged[0]!.data)
+      return wildcardRedirects
+        ? [resolverCode, `export default path => resolveWildcardRedirect(${rules}, path)`].join('\n')
+        : `export default () => (${rules})`
     }
     const fold = !nuxt.options.router.options.sensitive
     if (fold) {
@@ -893,7 +900,10 @@ export const routeRulesTemplate: NuxtTemplate = {
       `import { defu } from ${JSON.stringify(defuPath)}`,
       `const matcher = ${router.compileToString({ matchAll: true, serialize: serializeAppRouteRules })}`,
       genNormalizePathCode(fold),
-      `export default path => defu({}, ...matchAllRouteRules(path => matcher('', normalizePath(path)).map(r => r.data), path).reverse())`,
-    ].join('\n')
+      resolverCode,
+      wildcardRedirects
+        ? `export default path => resolveWildcardRedirect(defu({}, ...matchAllRouteRules(path => matcher('', normalizePath(path)).map(r => r.data), path).reverse()), path)`
+        : `export default path => defu({}, ...matchAllRouteRules(path => matcher('', normalizePath(path)).map(r => r.data), path).reverse())`,
+    ].filter(Boolean).join('\n')
   },
 }

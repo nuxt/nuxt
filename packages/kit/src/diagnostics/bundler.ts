@@ -141,5 +141,40 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { pluginName: string, packageName: string }) => `Remove \`${p.pluginName}\` from \`postcss.plugins\` in your \`nuxt.config\` (or report it to the author of the module that adds it), or install a version of \`${p.packageName}\` that provides it.`,
       docs: false,
     },
+    NUXT_B7029: {
+      why: '`@nuxt/rspack-builder` is deprecated and will be removed in a future major version of Nuxt.',
+      fix: 'Install `@nuxt/rsbuild-builder` and set `builder: \'rsbuild\'` in your `nuxt.config`. See https://nuxt.com/docs/5.x/getting-started/upgrade#rspack-builder-is-replaced-by-the-rsbuild-builder for the options and hooks that change.',
+      docs: false,
+    },
+    NUXT_B7030: {
+      why: '`@rsbuild/plugin-type-check` is not installed, so type checking cannot run.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable type checking.`,
+      docs: false,
+    },
+    NUXT_B7031: {
+      why: '`@rsdoctor/rspack-plugin` is not installed, so bundle analysis cannot run.',
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable bundle analysis.`,
+      docs: false,
+    },
+    NUXT_B7032: {
+      why: (p: { environments: string }) => `Rsbuild failed to build the ${p.environments}.`,
+      fix: 'Fix the build errors listed above. If the errors are unclear, try running `nuxt cleanup` and rebuilding.',
+      docs: false,
+    },
+    NUXT_B7033: {
+      why: (p: { file: string, lang: string, packageName: string, installCommand: string }) => `\`${p.file}\` uses \`${p.lang}\`, but \`${p.packageName}\` is not installed, so it cannot be compiled.`,
+      fix: (p: { file: string, lang: string, packageName: string, installCommand: string }) => `Run \`${p.installCommand}\`.`,
+      docs: false,
+    },
+    NUXT_B7034: {
+      why: (p: { file: string, packageName: string }) => `\`${p.packageName}\` was installed during the build, so \`${p.file}\` could not be compiled.`,
+      fix: 'Run the build again.',
+      docs: false,
+    },
+    NUXT_B7035: {
+      why: (p: { packageName: string, exportName: string, cause?: unknown }) => `\`${p.packageName}\` is installed, but its \`${p.exportName}\` export could not be loaded.`,
+      fix: (p: { packageName: string, exportName: string, cause?: unknown }) => `Reinstall \`${p.packageName}\` with a version compatible with \`@rsbuild/core\`.`,
+      docs: false,
+    },
   },
 })

@@ -16,6 +16,8 @@ import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
 import { FriendlyErrorsPlugin } from '../plugins/friendly-errors.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets, fileName } from '../utils/config.ts'
+import { getNuxtDefines } from '../utils/defines.ts'
+import { resolveVueAliases } from '../utils/vue-aliases.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
 import { StripInvalidPureAnnotationsPlugin } from '../plugins/strip-invalid-pure-annotations.ts'
 
@@ -140,29 +142,11 @@ function basePlugins (ctx: WebpackConfigContext) {
   }
 }
 
-/**
- * Pin the packages that hold global vue state (`currentInstance`, reactivity
- * internals, injection keys) to a single resolved entry, mirroring vite's
- * `resolve.dedupe: ['vue']`.
- */
-function vueAliases (ctx: WebpackConfigContext): Record<string, string> {
-  const aliases: Record<string, string> = {}
-  const from = [directoryToURL(ctx.nuxt.options.rootDir), directoryToURL(ctx.nuxt.options.workspaceDir), import.meta.url]
-  const conditions = ctx.isServer ? ['node', 'import', 'default'] : ['browser', 'import', 'default']
-  for (const pkg of ['@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity', '@vue/shared', '@vue/runtime-vapor', 'vue-router']) {
-    const entry = resolveModulePath(pkg, { from, conditions, try: true })
-    if (entry) {
-      aliases[`${pkg}$`] = entry
-    }
-  }
-  return aliases
-}
-
 function baseAlias (ctx: WebpackConfigContext) {
   ctx.alias = {
     '#app': ctx.options.appDir,
     [basename(ctx.nuxt.options.dir.assets)]: resolve(ctx.nuxt.options.srcDir, ctx.nuxt.options.dir.assets),
-    ...vueAliases(ctx),
+    ...resolveVueAliases(ctx.nuxt, ctx.isServer),
     ...ctx.options.alias,
     ...ctx.alias,
   }
@@ -316,33 +300,7 @@ function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
 function getEnv (ctx: WebpackConfigContext) {
   const _env: Record<string, string | boolean | InstanceType<typeof webpack.DefinePlugin>['definitions'][string]> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
-    '__NUXT_VERSION__': JSON.stringify(ctx.nuxt._version),
-    '__NUXT_ASYNC_CONTEXT__': ctx.options.experimental.asyncContext,
-    'process.env.VUE_ENV': JSON.stringify(ctx.name),
-    'process.dev': ctx.options.dev,
-    'process.test': ctx.nuxt.options.test,
-    'process.browser': ctx.isClient,
-    'process.client': ctx.isClient,
-    'process.server': ctx.isServer,
-    'import.meta.dev': ctx.options.dev,
-    'import.meta.test': ctx.nuxt.options.test,
-    'import.meta.browser': ctx.isClient,
-    'import.meta.client': ctx.isClient,
-    'import.meta.envName': JSON.stringify(ctx.options.envName),
-    'import.meta.server': ctx.isServer,
-  }
-
-  if (ctx.isClient) {
-    _env['process.prerender'] = false
-    _env['process.nitro'] = false
-    _env['import.meta.prerender'] = false
-    _env['import.meta.nitro'] = false
-  } else {
-    // wrap in an IIFE, forcing it to be evaluated at runtime
-    _env['process.prerender'] = '(()=>process.prerender)()'
-    _env['process.nitro'] = '(()=>process.nitro)()'
-    _env['import.meta.prerender'] = '(()=>import.meta.prerender)()'
-    _env['import.meta.nitro'] = '(()=>import.meta.nitro)()'
+    ...getNuxtDefines(ctx.nuxt, ctx.isServer ? 'server' : 'client'),
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {

@@ -1,6 +1,11 @@
 import { Buffer } from 'node:buffer'
+import { mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import process from 'node:process'
 import vm from 'node:vm'
-import { describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
 import runner, { buildViteError, getCode, getCompiledPosition, prepareStackTrace } from '../src/vite-node-runner.ts'
 import { serializeViteNodeError } from '../src/plugins/vite-node.ts'
 
@@ -132,6 +137,53 @@ describe('vite-node runner stacks', () => {
     } as unknown as NodeJS.CallSite
 
     expect(prepareStackTrace(new Error('boom'), [callSite])).toBe(`Error: boom\n    at useBoom (${driveFile}:2:9)`)
+  })
+
+  describe('in a module node loaded itself', () => {
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'nuxt-vite-node-runner-')))
+    const sourceMapsEnabled = process.sourceMapsEnabled
+    afterAll(() => {
+      process.setSourceMapsEnabled(sourceMapsEnabled)
+      rmSync(dir, { recursive: true, force: true })
+    })
+
+    // the same source, bundled a line down; loaded with `require`, as vitest transforms `import()`
+    const load = (name: string, format: 'cjs' | 'esm', { enabledWhenThrown = true } = {}) => {
+      const map = {
+        version: 3,
+        sources: ['useBoom.ts'],
+        mappings: ';AAAO,gBAAS,UAAW;AACzB,QAAM,IAAI,MAAM,MAAM;AACxB;',
+        names: [],
+      }
+      const file = join(dir, `${name}.${format === 'cjs' ? 'cjs' : 'mjs'}`)
+      writeFileSync(file, `var import_x;\nfunction useBoom() {\n  throw new Error("boom");\n}\n${format === 'cjs' ? 'module.exports = useBoom' : 'export default useBoom'};\n`
+        + `//# sourceMappingURL=data:application/json;base64,${Buffer.from(JSON.stringify(map)).toString('base64')}\n`)
+      process.setSourceMapsEnabled(true)
+      const loaded = createRequire(import.meta.url)(file)
+      const useBoom: () => void = format === 'cjs' ? loaded : loaded.default
+      process.setSourceMapsEnabled(enabledWhenThrown)
+      try {
+        useBoom()
+      } catch (error) {
+        return { file, stack: (error as Error).stack! }
+      }
+      throw new Error('did not throw')
+    }
+
+    it('maps its frames as node would with source maps enabled', () => {
+      const { stack } = load('mapped', 'cjs')
+      expect(stack).toContain(`    at useBoom (${join(dir, 'useBoom.ts')}:2:9)`)
+    })
+
+    it('maps the frames of an ES module, named by its file url', () => {
+      const { stack } = load('mapped-esm', 'esm')
+      expect(stack).toContain(`    at useBoom (${join(dir, 'useBoom.ts')}:2:9)`)
+    })
+
+    it('leaves its frames alone once source maps are turned off', () => {
+      const { file, stack } = load('turned-off', 'cjs', { enabledWhenThrown: false })
+      expect(stack).toContain(`    at useBoom (${file}:3:9)`)
+    })
   })
 
   it('leaves a frame alone when its reported position is not in the text', () => {
