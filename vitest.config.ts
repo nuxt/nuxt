@@ -337,7 +337,7 @@ export default defineConfig({
         test: {
           name: project,
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/insensitive/**', '**/sensitive/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/insensitive/**', '**/sensitive/**', '**/preload-initial-layout/**'],
           environment: 'nuxt',
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
@@ -392,6 +392,24 @@ export default defineConfig({
                   '/admin/dashboard': { redirect: '/lower-target' },
                   '/Wild/**': { redirect: '/target/**' },
                 },
+              } satisfies NuxtConfig, commonSettings),
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
+        test: {
+          name: 'nuxt-preload-initial-layout',
+          dir: './test/nuxt/preload-initial-layout',
+          environment: 'nuxt',
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: defu({
+                future: { compatibilityVersion: 5 },
+                experimental: { preloadInitialLayout: true },
+                dir: { layouts: resolve('./test/nuxt/preload-initial-layout/fixture/layouts') },
               } satisfies NuxtConfig, commonSettings),
             },
           },
