@@ -71,7 +71,7 @@ describe('builder:watch', { concurrent: false, timeout: 60_000 }, async () => {
     ])
   })
 
-  // parcel is left out: in this harness it misses writes in any subdirectory, `app/` included
+  // skipping parcel as it can miss writes in any subdirectory, `app/` included
   it.each(['chokidar', 'chokidar-granular', 'builder'] as const)('should watch the shared directory with %s strategy', async (watcher) => {
     const rootDir = join(tmpDir, 'project')
     // with an `app/` directory, `srcDir` is `app/` and `shared/` sits outside it
