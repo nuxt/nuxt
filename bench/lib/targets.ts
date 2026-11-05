@@ -59,7 +59,14 @@ export async function prepareTarget (id: Target['id'], spec: string, options: Pr
 
 async function npmInstall (dir: string, manifest: Record<string, unknown>): Promise<void> {
   writeFileSync(join(dir, 'package.json'), JSON.stringify(manifest, null, 2))
-  await run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], { cwd: dir, timeout: 600_000 })
+  try {
+    await run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], { cwd: dir, timeout: 600_000 })
+  } catch (error) {
+    // an interrupted earlier run can leave `node_modules` in a state npm refuses to update
+    if (!String(error).includes('ENOTEMPTY')) { throw error }
+    rmSync(join(dir, 'node_modules'), { recursive: true, force: true })
+    await run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], { cwd: dir, timeout: 600_000 })
+  }
 }
 
 /**
