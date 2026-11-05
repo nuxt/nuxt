@@ -185,9 +185,11 @@ function createWatcher () {
   const paths: string[] = []
   for (const layer of layerDirs) {
     paths.push(layer.app)
-    // Only add server if it's not inside app (avoid double-watching)
-    if (!layer.server.startsWith(layer.app.replace(/\/?$/, '/'))) {
-      paths.push(layer.server)
+    // Only add server and shared if they're not inside app (avoid double-watching)
+    for (const dir of [layer.server, layer.shared]) {
+      if (!dir.startsWith(layer.app.replace(/\/?$/, '/'))) {
+        paths.push(dir)
+      }
     }
   }
 
@@ -406,9 +408,11 @@ function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } 
     if (!isIgnored(dirs.app)) {
       pathsToWatch.add(dirs.app)
     }
-    // Only add server if it's not inside app (avoid double-watching)
-    if (!isIgnored(dirs.server) && !dirs.server.startsWith(dirs.app.replace(/\/?$/, '/'))) {
-      pathsToWatch.add(dirs.server)
+    // Only add server and shared if they're not inside app (avoid double-watching)
+    for (const dir of [dirs.server, dirs.shared]) {
+      if (!isIgnored(dir) && !dir.startsWith(dirs.app.replace(/\/?$/, '/'))) {
+        pathsToWatch.add(dir)
+      }
     }
   }
   for (const pattern of nuxt.options.watch) {
