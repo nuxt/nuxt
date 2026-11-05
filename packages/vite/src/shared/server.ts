@@ -21,7 +21,6 @@ export function ssr (nuxt: Nuxt) {
         ],
     noExternal: [
       ...getTranspilePatterns({ isServer: true, isDev: nuxt.options.dev }),
-      ...nuxt.options.dev ? [] : ['vue', /^@vue\//], // Bundle Vue deps to prevent build-time paths in CJS requires.
       '/__vue-jsx',
       '#app',
       /^nuxt(\/|$)/,
@@ -62,6 +61,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
+          polyfillRequire: isEnvApi, // Let the server builder resolve intermediate require() calls.
           ...nuxt.options.sourcemap.server === 'nosource' ? { sourcemapExcludeSources: true } : {},
         },
         onwarn (warning, rollupWarn) {
