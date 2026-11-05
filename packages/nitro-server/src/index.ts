@@ -1015,6 +1015,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   addDevServerHandlers(nitro.options.devHandlers, nuxt.options.devServerHandlers as NitroBuilderOptions['devHandlers'])
   if (nuxt.options.dev) {
     nitro.options.plugins.push(resolve(distDir, 'runtime/plugins/dev-errors'))
+    nitro.options.plugins.unshift(resolve(distDir, 'runtime/plugins/dev-hooks'))
     nitro.options.handlers.unshift({
       route: joinURL(nuxt.options.devServer.errorChannel, '**'),
       lazy: true,
