@@ -122,9 +122,10 @@ describe.skipIf(!runs)('dev ssr errors thrown from a page', () => {
     const { body, report, status } = await renderErrorPage(`/lookup?id=${encodeURIComponent(id)}`)
 
     const frames = [...reports(report)].flatMap(r => r.frames)
+    const frameAt = (file: string) => frames.find(frame => frame.file?.replaceAll('\\', '/').endsWith(file.replaceAll('\\', '/')))
     expect(status).toBe(500)
-    expect(frames.find(frame => frame.file === outside)).toBeDefined()
-    expect(frames.find(frame => frame.file?.endsWith('app/pages/lookup.vue'))?.snippet).toBeDefined()
+    expect(frameAt(outside)).toBeDefined()
+    expect(frameAt('app/pages/lookup.vue')?.snippet).toBeDefined()
     expect(body).not.toContain('OUTSIDE_SOURCE')
   })
 
