@@ -1,5 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
+import { setFlagsFromString } from 'node:v8'
+import { runInNewContext } from 'node:vm'
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
@@ -1560,6 +1562,29 @@ describe('useAsyncData', () => {
     await flushPromises()
     expect(_signal!.aborted).toBe(true)
     vi.useRealTimers()
+  })
+
+  it('should not keep a settled call reachable from its handler signal', async () => {
+    // A fetch can hold the signal it was given after the call settles (undici's `Request` does).
+    // That signal must not keep the call's scope alive.
+    setFlagsFromString('--expose-gc')
+    const gc = runInNewContext('gc') as () => void
+    let signal: AbortSignal | undefined
+    const { execute } = useAsyncData(uniqueKey, (_, ctx) => {
+      signal = ctx.signal
+      return Promise.resolve('done')
+    }, { immediate: false })
+    // the options object only lives in the call's scope, so it tracks whether that scope is collected
+    const run = async () => {
+      const opts = { dedupe: 'cancel' as const }
+      await execute(opts)
+      return new WeakRef(opts)
+    }
+    const optsRef = await run()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    gc()
+    expect(signal!.aborted).toBe(false)
+    expect(optsRef.deref()).toBeUndefined()
   })
 
   it('should accept timeout', async () => {

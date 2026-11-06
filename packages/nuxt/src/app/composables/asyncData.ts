@@ -947,10 +947,16 @@ function buildAsyncData<
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
               return
             }
-            mergedSignal.addEventListener('abort', () => {
+            const onAbort = () => {
               const reason = mergedSignal.reason
               reject(reason instanceof Error ? reason : new DOMException(String(reason ?? 'Aborted'), 'AbortError'))
-            }, { once: true, signal: cleanupController.signal })
+            }
+            mergedSignal.addEventListener('abort', onAbort, { once: true })
+            // Remove the listener explicitly rather than through the `signal` option: Node 22, and Node 24/26
+            // before 24.22/26.9, keep a listener added with `signal` reachable from `mergedSignal` even after
+            // removal, and `mergedSignal` can outlive the request (undici's `Request` holds its signal until it
+            // is finalized).
+            cleanupController.signal.addEventListener('abort', () => mergedSignal.removeEventListener('abort', onAbort), { once: true })
 
             const ctx: AsyncDataHandlerContext = { signal: mergedSignal }
             let run = () => Promise.resolve(handler(nuxtApp, ctx))
