@@ -13,6 +13,7 @@ function createNuxt (): Nuxt {
       rootDir: '/app',
       srcDir: '/app/app',
       buildDir: '/app/.nuxt',
+      appDir: '/app/node_modules/nuxt/dist/app',
       vite: {},
       nitro: {},
       features: {},
@@ -77,5 +78,23 @@ describe('the server environment', () => {
 
     expect(config.build!.rolldownOptions!.input).toEqual({ index: '/app/worker/index.ts' })
     expect(useServerBuild(nuxt).runtime.handler).toBeUndefined()
+  })
+
+  it('leaves a target an entry it names `server`', () => {
+    const { nuxt, configure } = setup()
+
+    const config = configure({ rolldownOptions: { input: { server: '/app/worker/index.ts' } } })
+
+    expect(config.build!.rolldownOptions!.input).toEqual({ server: '/app/worker/index.ts' })
+    expect(useServerBuild(nuxt).runtime.handler).toBeUndefined()
+  })
+
+  it('replaces the app entry with the server entry', () => {
+    const { nuxt, entry, configure } = setup()
+
+    const config = configure({ rolldownOptions: { input: { server: '/app/node_modules/nuxt/dist/app/entry.js' } } })
+
+    expect(config.build!.rolldownOptions!.input).toEqual({ index: entry })
+    expect(useServerBuild(nuxt).runtime.handler).toBe('/app/.output/server/index.mjs')
   })
 })
