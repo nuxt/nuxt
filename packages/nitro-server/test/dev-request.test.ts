@@ -12,7 +12,7 @@ function event (headers: Record<string, string>, ip?: string, path = '/'): H3Eve
 
 describe('vouchForLoopbackPeer', () => {
   const vouched = (e: H3Event) => {
-    vouchForLoopbackPeer(e, '/__nuxt_dev__/error/', 'token')
+    vouchForLoopbackPeer(e, ['/__nuxt_dev__/error/', '/base/__nuxt_dev__/error/'], 'token')
     return e.req.headers.get(DEV_PEER_HEADER)
   }
 
@@ -28,6 +28,7 @@ describe('vouchForLoopbackPeer', () => {
 
   it('only vouches for requests to the error channel', () => {
     expect(vouched(event({ [DEV_PEER_HEADER]: 'token' }, '127.0.0.1', '/api/echo'))).toBeNull()
+    expect(vouched(event({}, '127.0.0.1', '/api/echo/__nuxt_dev__/error/events'))).toBeNull()
   })
 })
 

@@ -9,12 +9,13 @@ export function isLoopbackPeer (event: H3Event): boolean {
 }
 
 /**
- * Mark a request under `channelPath` from a loopback peer with `token`, for the app behind this
- * server, which only sees this server's socket. A mark the client sent is always dropped.
+ * Mark a request under one of `channelPaths` from a loopback peer with `token`, for the app behind
+ * this server, which only sees this server's socket. A mark the client sent is always dropped.
  */
-export function vouchForLoopbackPeer (event: H3Event, channelPath: string, token: string): void {
+export function vouchForLoopbackPeer (event: H3Event, channelPaths: string[], token: string): void {
   event.req.headers.delete(DEV_PEER_HEADER)
-  if (event.url.pathname.includes(channelPath) && isLoopbackPeer(event)) {
+  const pathname = event.url.pathname
+  if (channelPaths.some(path => pathname.startsWith(path)) && isLoopbackPeer(event)) {
     event.req.headers.set(DEV_PEER_HEADER, token)
   }
 }

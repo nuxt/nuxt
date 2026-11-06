@@ -1032,11 +1032,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       handler: resolve(distDir, 'runtime/handlers/error-channel'),
     })
     const peerToken = process.env[DEV_PEER_TOKEN_ENV] ||= randomBytes(32).toString('base64url')
-    const channelPath = withTrailingSlash(nuxt.options.devServer.errorChannel)
+    const errorChannel = nuxt.options.devServer.errorChannel
+    const channelPaths = [...new Set([errorChannel, joinURL(nuxt.options.app.baseURL, errorChannel)].map(path => withTrailingSlash(path)))]
     nitro.options.devHandlers.unshift({
       route: '/**',
       middleware: true,
-      handler: defineEventHandler(event => vouchForLoopbackPeer(event, channelPath, peerToken)),
+      handler: defineEventHandler(event => vouchForLoopbackPeer(event, channelPaths, peerToken)),
     })
   }
   if (!nuxt.options.experimental.nitroViteEnvironment) {
