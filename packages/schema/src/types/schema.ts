@@ -2160,7 +2160,7 @@ export interface ConfigSchema {
     /**
      * Enable build-time type checking.
      *
-     * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`. Requires to install `typescript` and `vue-tsc` as dev dependencies.
+     * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`. Requires to install `typescript` and `vue-tsc` as dev dependencies, and `vite-plugin-checker` when using the Vite builder.
      *
      * @see [Nuxt TypeScript docs](https://nuxt.com/docs/5.x/guide/concepts/typescript)
      */

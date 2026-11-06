@@ -14,6 +14,7 @@ export function TypeCheckPlugin (nuxt: Nuxt): Plugin {
       return !nuxt.options.test && nuxt.options.typescript.typeCheck === true
     },
     configResolved (config) {
+      if (!config.plugins.some(plugin => plugin.name === 'vite-plugin-checker')) { return }
       try {
         entry = resolveClientEntry(config)
       } catch {

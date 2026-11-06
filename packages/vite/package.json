@@ -52,7 +52,6 @@
     "unenv": "catalog:build",
     "vite": "catalog:vite",
     "vite-node": "catalog:vite",
-    "vite-plugin-checker": "catalog:vite",
     "vue-bundle-renderer": "catalog:build"
   },
   "devDependencies": {
@@ -70,6 +69,7 @@
     "rollup": "catalog:dev",
     "rollup-plugin-visualizer": "catalog:dev",
     "tsdown": "catalog:dev",
+    "vite-plugin-checker": "catalog:vite",
     "vue": "catalog:app-runtime"
   },
   "peerDependencies": {
@@ -81,6 +81,7 @@
     "nuxt": "workspace:*",
     "rolldown": "^1.1.5",
     "rollup-plugin-visualizer": "^6.0.0 || ^7.0.1",
+    "vite-plugin-checker": "^0.14.5",
     "vue": "^3.3.4"
   },
   "peerDependenciesMeta": {
@@ -100,6 +101,9 @@
       "optional": true
     },
     "rollup-plugin-visualizer": {
+      "optional": true
+    },
+    "vite-plugin-checker": {
       "optional": true
     }
   },
