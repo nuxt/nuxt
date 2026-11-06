@@ -6,10 +6,12 @@ import { useNuxtApp } from '#app/nuxt'
 import { requestIdleCallback } from '#app/compat/idle-callback'
 import deferredPrefetchPlugin from '#app/plugins/deferred-prefetch.client'
 
-const idle = vi.hoisted(() => ({ queue: undefined as undefined | Array<() => void> }))
+type IdleTask = (deadline?: IdleDeadline) => void
+
+const idle = vi.hoisted(() => ({ queue: undefined as undefined | IdleTask[] }))
 
 vi.mock('#app/compat/idle-callback', () => ({
-  requestIdleCallback: (cb: () => void) => idle.queue ? idle.queue.push(cb) : cb(),
+  requestIdleCallback: (cb: IdleTask) => idle.queue ? idle.queue.push(cb) : cb(),
   cancelIdleCallback: () => {},
 }))
 
@@ -108,8 +110,9 @@ describe('deferred prefetch plugin', () => {
     addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/a.js' })
     addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/b.js' })
     addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/c.js' })
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/d.js' })
 
-    const queue: Array<() => void> = idle.queue = []
+    const queue: IdleTask[] = idle.queue = []
     try {
       const nuxtApp = useNuxtApp()
       await nuxtApp.runWithContext(() => deferredPrefetchPlugin(nuxtApp))
@@ -121,8 +124,8 @@ describe('deferred prefetch plugin', () => {
       queue.shift()!()
       expect(activeHrefs()).toEqual(['/_nuxt/a.js', '/_nuxt/b.js'])
 
-      queue.shift()!()
-      expect(activeHrefs()).toEqual(['/_nuxt/a.js', '/_nuxt/b.js', '/_nuxt/c.js'])
+      queue.shift()!({ didTimeout: false, timeRemaining: () => 250 })
+      expect(activeHrefs()).toEqual(['/_nuxt/a.js', '/_nuxt/b.js', '/_nuxt/c.js', '/_nuxt/d.js'])
       expect(queue).toEqual([])
     } finally {
       idle.queue = undefined
