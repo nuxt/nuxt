@@ -105,8 +105,33 @@ interface ImportSpecifier {
 const STRING_LITERAL_RE = /^(['"])(.*)\1$/s
 const JSX_RE = /\.[cm]?[jt]sx$/
 
+interface ParsedImports {
+  code: string
+  specifiers: ImportSpecifier[]
+}
+
+/**
+ * The last parse of each file. Every compat scan pass, and every dev restart, parses the
+ * same files again, and the answer only changes with the code. Each Nuxt instance keeps
+ * only what the previous one parsed, so a deleted file or a stale virtual id is dropped
+ * after one restart.
+ */
+let parsedImports = new Map<string, ParsedImports>()
+let previousParsedImports = new Map<string, ParsedImports>()
+
 /** Module specifiers of the static and dynamic imports and re-exports of a file. */
 function findImportSpecifiers (code: string, filename: string): ImportSpecifier[] {
+  const cached = parsedImports.get(filename) ?? previousParsedImports.get(filename)
+  if (cached?.code === code) {
+    parsedImports.set(filename, cached)
+    return cached.specifiers
+  }
+  const specifiers = parseImportSpecifiers(code, filename)
+  parsedImports.set(filename, { code, specifiers })
+  return specifiers
+}
+
+function parseImportSpecifiers (code: string, filename: string): ImportSpecifier[] {
   const { module } = parseSync(filename, code, { lang: JSX_RE.test(filename) ? 'tsx' : 'ts', sourceType: 'module' })
   const specifiers: ImportSpecifier[] = []
   const add = (request: { start: number, end: number }, entries?: Array<{ isType: boolean, importName: { name: string | null } }>) => {
@@ -642,6 +667,16 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // resolved as the server build resolves them: a module may add an alias for the server
   // build only, or point an app alias at different code there
   const aliases: Record<string, string> = { ...nuxt.options.alias, ...nitroConfig.alias as Record<string, string> }
+
+  previousParsedImports = parsedImports
+  parsedImports = new Map()
+  // a build is not restarted, so nothing it parsed is read again
+  if (!nuxt.options.dev) {
+    nuxt.hook('close', () => {
+      parsedImports.clear()
+      previousParsedImports.clear()
+    })
+  }
   const files = new Map<string, CompatScope>()
   const dirs: Array<[prefix: string, scope: CompatScope]> = []
   // every file in these is a server entry, unlike a module runtime directory, which also
