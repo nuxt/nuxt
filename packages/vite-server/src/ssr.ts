@@ -15,6 +15,9 @@ import { addRouteRulesTemplate } from './route-rules.ts'
 /** The contract version this builder is written against. */
 const SUPPORTED_SERVER_RUNTIME_VERSION = 1
 
+/** Browser globals the app build replaces with `undefined` in its server environment. */
+const BROWSER_GLOBALS = ['window', 'document', 'navigator', 'location', 'XMLHttpRequest']
+
 /**
  * Stand up the SSR renderer for the vite server build: the modules it renders with, the
  * entry that creates it, and the environment configuration that compiles it.
@@ -178,9 +181,27 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       // extraction, so the renderer's defines take precedence over a configured value
       config.define = { ...config.define, ...serverRuntime.defines }
 
-      // only this builder's own environment emits the handler it describes; a target's is
-      // built with its own input, output and conditions
-      if (nuxt.options.dev || name !== 'ssr') { return }
+      // a target's environment is built with its own input, output and conditions
+      if (name !== 'ssr') { return }
+
+      // the app build's entry is in Nuxt's app directory, and a repeated resolution pass sees
+      // the entry substituted below; anything else belongs to a target, whose input vite
+      // merges with the app's
+      const input = config.build?.rolldownOptions?.input
+      const appDir = withTrailingSlash(nuxt.options.appDir)
+      const targetEntries = input && typeof input === 'object' && !Array.isArray(input)
+        ? Object.entries(input).filter(([, value]) => value !== entry && !value.startsWith(appDir))
+        : []
+
+      // the runtime a target runs the environment on has its own globals
+      if (targetEntries.length > 0) {
+        for (const name of BROWSER_GLOBALS) {
+          delete config.define[name]
+        }
+      }
+
+      // only this builder's own environment emits the handler it describes
+      if (nuxt.options.dev) { return }
 
       // mutated rather than returned: vite merges what a plugin returns, and the app
       // entry has to be dropped from the input rather than merged with
@@ -189,14 +210,6 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       config.build.emptyOutDir = true
       config.build.rolldownOptions ||= {}
 
-      // the app build's entry is in Nuxt's app directory, and a repeated resolution pass sees
-      // the entry substituted below; anything else belongs to a target, whose input vite
-      // merges with the app's
-      const input = config.build.rolldownOptions.input
-      const appDir = withTrailingSlash(nuxt.options.appDir)
-      const targetEntries = input && typeof input === 'object' && !Array.isArray(input)
-        ? Object.entries(input).filter(([, value]) => value !== entry && !value.startsWith(appDir))
-        : []
       config.build.rolldownOptions.input = targetEntries.length > 0 ? Object.fromEntries(targetEntries) : { index: entry }
       // `nuxt preview` runs `server/index.mjs`, so the entry name is not configurable
       config.build.rolldownOptions.output = {

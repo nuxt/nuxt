@@ -7,10 +7,10 @@ import type { EnvironmentOptions, Plugin, ResolvedConfig } from 'vite'
 
 import { setupSSR } from '../src/ssr.ts'
 
-function createNuxt (): Nuxt {
+function createNuxt (dev: boolean): Nuxt {
   return {
     options: {
-      dev: false,
+      dev,
       rootDir: '/app',
       srcDir: '/app/app',
       buildDir: '/app/.nuxt',
@@ -28,16 +28,16 @@ function createNuxt (): Nuxt {
   } as unknown as Nuxt
 }
 
-function setup ({ prerender = false } = {}) {
-  const nuxt = createNuxt()
+function setup ({ prerender = false, dev = false } = {}) {
+  const nuxt = createNuxt(dev)
   nuxt.options.nitro.static = prerender
   nuxt.serverBuild = createServerBuild(nuxt.options)
   setServerBuild({ runtime: { runtimeConfig: '/app/.nuxt/vite-server/runtime-config.mjs', handler: '/app/.output/server/index.mjs' } }, nuxt)
 
   const { entry } = runWithNuxtContext(nuxt, () => setupSSR(nuxt, '/app/.output'))
   const plugin = (nuxt.options.vite.plugins as Plugin[]).find(p => p.name === 'nuxt:vite-server:server-environment')!
-  const configureEnvironment = (input?: EnvironmentOptions['build']) => {
-    const config = { consumer: 'server', build: input } as unknown as EnvironmentOptions
+  const configureEnvironment = (input?: EnvironmentOptions['build'], define?: EnvironmentOptions['define']) => {
+    const config = { consumer: 'server', build: input, define } as unknown as EnvironmentOptions
     ;(plugin.configEnvironment as (name: string, config: EnvironmentOptions) => void).call(plugin, 'ssr', config)
     return config
   }
@@ -123,5 +123,18 @@ describe('the server environment', () => {
     const config = configureEnvironment({ rolldownOptions: { input: { server: '/app/node_modules/nuxt/dist/app/entry.js' } } })
 
     expect(() => resolve(mergeConfig(config, { build: { rolldownOptions: { input: { index: 'virtual:ud:catch-all' } } } }))).toThrow('cannot prerender through a deploy target')
+  })
+
+  it.each([false, true])('leaves browser globals to the runtime of a target (dev: %s)', (dev) => {
+    const { configureEnvironment } = setup({ dev })
+    const globals = { window: 'undefined', document: 'undefined', navigator: 'undefined', location: 'undefined', XMLHttpRequest: 'undefined' }
+    const define = { ...globals, 'import.meta.server': 'true' }
+
+    const target = configureEnvironment({ rolldownOptions: { input: { server: '/app/node_modules/nuxt/dist/app/entry.js', index: '/app/worker/index.ts' } } }, define)
+    const app = configureEnvironment({ rolldownOptions: { input: { server: '/app/node_modules/nuxt/dist/app/entry.js' } } }, define)
+
+    expect(Object.keys(target.define!).filter(key => key in globals)).toEqual([])
+    expect(target.define).toHaveProperty(['import.meta.server'], 'true')
+    expect(app.define).toMatchObject(globals)
   })
 })
