@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { randomUUID } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtBuildOutputs, NuxtOptions, ServerApi, ServerImportsOptions, ServerRouteSegment } from '@nuxt/schema'
 import { dirname, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
@@ -26,7 +26,8 @@ import nitroBuilder from '../package.json' with { type: 'json' }
 import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
 import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
-import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
+import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from './dev-request.ts'
+import { DEV_PEER_TOKEN_ENV } from 'nuxt/internal/dev/peer'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
@@ -1029,6 +1030,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       route: joinURL(nuxt.options.devServer.errorChannel, '**'),
       lazy: true,
       handler: resolve(distDir, 'runtime/handlers/error-channel'),
+    })
+    const peerToken = process.env[DEV_PEER_TOKEN_ENV] ||= randomBytes(32).toString('base64url')
+    const channelPath = withTrailingSlash(nuxt.options.devServer.errorChannel)
+    nitro.options.devHandlers.unshift({
+      route: '/**',
+      middleware: true,
+      handler: defineEventHandler(event => vouchForLoopbackPeer(event, channelPath, peerToken)),
     })
   }
   if (!nuxt.options.experimental.nitroViteEnvironment) {

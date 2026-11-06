@@ -1,11 +1,22 @@
 import type { H3Event } from 'nitro/h3'
-import { isLoopbackAddress } from 'nuxt/internal/dev/peer'
+import { DEV_PEER_HEADER, isLoopbackAddress } from 'nuxt/internal/dev/peer'
 
 export const LOOPBACK_HOSTS: ReadonlySet<string> = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
 
 /** Whether the connected peer is a loopback address. */
 export function isLoopbackPeer (event: H3Event): boolean {
   return isLoopbackAddress(event.req.ip)
+}
+
+/**
+ * Mark a request under `channelPath` from a loopback peer with `token`, for the app behind this
+ * server, which only sees this server's socket. A mark the client sent is always dropped.
+ */
+export function vouchForLoopbackPeer (event: H3Event, channelPath: string, token: string): void {
+  event.req.headers.delete(DEV_PEER_HEADER)
+  if (event.url.pathname.includes(channelPath) && isLoopbackPeer(event)) {
+    event.req.headers.set(DEV_PEER_HEADER, token)
+  }
 }
 
 /**
