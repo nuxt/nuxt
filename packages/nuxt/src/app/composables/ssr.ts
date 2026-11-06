@@ -123,7 +123,7 @@ const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'
  * The callback will run before Nuxt runtime initializes so it should not rely on the Nuxt or Vue context.
  * @since 3.12.0
  */
-export function onPrehydrate (callback: (el: HTMLElement) => void): void
+export function onPrehydrate (callback: (el: HTMLElement) => void): string | undefined
 export function onPrehydrate (callback: string | ((el: HTMLElement) => void), key?: string): undefined | string {
   if (import.meta.client) { return }
 
