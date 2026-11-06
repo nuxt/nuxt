@@ -922,6 +922,12 @@ describe('composables', () => {
     expectTypeOf(test).toEqualTypeOf<string | undefined>()
   })
 
+  it('returns the prehydrate id from onPrehydrate', () => {
+    expectTypeOf(onPrehydrate((el) => { console.log(el) })).toEqualTypeOf<string | undefined>()
+    // @ts-expect-error string callbacks are not part of the public API
+    onPrehydrate('(()=>{})', 'key')
+  })
+
   it('allows passing reactive values in useFetch', () => {
     useFetch('/api/hey', {
       headers: {
