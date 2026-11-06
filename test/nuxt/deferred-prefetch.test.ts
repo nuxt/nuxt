@@ -6,6 +6,13 @@ import { useNuxtApp } from '#app/nuxt'
 import { requestIdleCallback } from '#app/compat/idle-callback'
 import deferredPrefetchPlugin from '#app/plugins/deferred-prefetch.client'
 
+const idle = vi.hoisted(() => ({ queue: undefined as undefined | Array<() => void> }))
+
+vi.mock('#app/compat/idle-callback', () => ({
+  requestIdleCallback: (cb: () => void) => idle.queue ? idle.queue.push(cb) : cb(),
+  cancelIdleCallback: () => {},
+}))
+
 const ready = () => new Promise<void>(resolve => requestIdleCallback(() => resolve()))
 
 function addLink (attrs: Record<string, string>) {
@@ -93,6 +100,33 @@ describe('deferred prefetch plugin', () => {
     await install()
 
     expect(activeHrefs()).toEqual(['/_nuxt/lazy.js'])
+  })
+
+  it('activates hints across several idle callbacks', async () => {
+    let now = 0
+    vi.spyOn(performance, 'now').mockImplementation(() => now += 100)
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/a.js' })
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/b.js' })
+    addLink({ 'rel': 'prefetch', 'as': 'script', 'data-href': '/_nuxt/c.js' })
+
+    const queue: Array<() => void> = idle.queue = []
+    try {
+      const nuxtApp = useNuxtApp()
+      await nuxtApp.runWithContext(() => deferredPrefetchPlugin(nuxtApp))
+      expect(activeHrefs()).toEqual([])
+
+      queue.shift()!()
+      expect(activeHrefs()).toEqual(['/_nuxt/a.js'])
+
+      queue.shift()!()
+      expect(activeHrefs()).toEqual(['/_nuxt/a.js', '/_nuxt/b.js'])
+
+      queue.shift()!()
+      expect(activeHrefs()).toEqual(['/_nuxt/a.js', '/_nuxt/b.js', '/_nuxt/c.js'])
+      expect(queue).toEqual([])
+    } finally {
+      idle.queue = undefined
+    }
   })
 
   it('leaves the hints inert when the connection cannot afford to prefetch', async () => {
