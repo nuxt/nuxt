@@ -17,6 +17,17 @@ import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '..
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { kServerApi } from '@nuxt/kit/internal'
 import { H3 } from 'nitro/h3'
+import { parseSync } from 'rolldown/utils'
+
+vi.mock('rolldown/utils', async (importOriginal) => {
+  const utils = await importOriginal<typeof import('rolldown/utils')>()
+  return { ...utils, parseSync: vi.fn(utils.parseSync) }
+})
+
+vi.mock('exsolve', async (importOriginal) => {
+  const exsolve = await importOriginal<typeof import('exsolve')>()
+  return { ...exsolve, resolveModulePath: vi.fn(exsolve.resolveModulePath) }
+})
 
 /** An entry as `addServerHandler()` leaves it, having resolved the variant it registered. */
 function declared<T extends object> (entry: T, api: string): any {
@@ -24,7 +35,11 @@ function declared<T extends object> (entry: T, api: string): any {
 }
 
 function createNuxt (options: Record<string, any> = {}) {
+  const hooks = createHooks()
   return {
+    hooks,
+    hook: hooks.hook,
+    callHook: hooks.callHook,
     options: {
       alias: {},
       rootDir: '/project',
@@ -687,6 +702,99 @@ export const useRule = () => setHeader`)
     vi.restoreAllMocks()
   })
 
+  it('parses each file once across the scan passes', async () => {
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = createModuleDir('nitro-compat-parse-once-', false)
+    mkdirSync(join(dir, 'dist/runtime/server'), { recursive: true })
+    writeFileSync(join(dir, 'dist/runtime/server/handler.ts'), `import { useRule } from './rule'
+export default () => useRule()`)
+    writeFileSync(join(dir, 'dist/runtime/server/rule.ts'), `import { setHeader } from 'h3'
+export const useRule = () => setHeader`)
+
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/server', handler: join(dir, 'dist/runtime/server/handler.ts') } as any] }
+    const parses = vi.mocked(parseSync)
+    parses.mockClear()
+    const registerLateScope = await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'parse-once-module' }])
+    registerLateScope(createLateNitro(nitroConfig))
+
+    const parsed = parses.mock.calls.map(([filename]) => filename).filter(filename => filename.startsWith(dir))
+    expect(parsed.sort()).toEqual([join(dir, 'dist/runtime/server/handler.ts'), join(dir, 'dist/runtime/server/rule.ts')])
+    vi.restoreAllMocks()
+  })
+
+  it('reads the imports a file gained between scan passes', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    const dir = createModuleDir('nitro-compat-parse-changed-', false)
+    mkdirSync(join(dir, 'dist/runtime/server'), { recursive: true })
+    const handler = join(dir, 'dist/runtime/server/handler.ts')
+    writeFileSync(handler, `export default () => 'portable'`)
+
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/server', handler } as any] }
+    const registerLateScope = await setupNitroCompat(createNuxt({ extensions: ['.js', '.mjs', '.ts'] }), nitroConfig, legacyOff, [], [{ dir, name: 'parse-changed-module' }])
+    const legacyCompat = () => (nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()
+    expect(report).not.toHaveBeenCalled()
+    expect(legacyCompat()).toContain('legacyCompat = false')
+    expect(nitroConfig.plugins).toEqual([])
+
+    writeFileSync(handler, `import { getQuery } from 'h3'
+export default getQuery`)
+    registerLateScope(createLateNitro(nitroConfig))
+
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toEqual({ count: 1, modules: '`parse-changed-module` (imports `h3`)' })
+    expect(legacyCompat()).toContain('legacyCompat = true')
+    expect(nitroConfig.plugins!.map(String)).toEqual([expect.stringMatching(/compat[\\/]event-plugin/), expect.stringMatching(/compat[\\/]hooks-plugin/)])
+    const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
+    const transformed = await plugin.transform.handler.call(null, readFileSync(handler, 'utf8'), handler)
+    expect(transformed.code).toMatch(/compat[\\/]h3-v1/)
+    vi.restoreAllMocks()
+  })
+
+  describe('parses kept across Nuxt instances', () => {
+    function createModule (prefix: string) {
+      const dir = createModuleDir(prefix, false)
+      mkdirSync(join(dir, 'runtime'), { recursive: true })
+      const handler = join(dir, 'runtime/handler.ts')
+      writeFileSync(handler, `import { getQuery } from 'h3'\nexport default getQuery`)
+      return { dir, handler }
+    }
+
+    /** Sets up the compat layer for a new Nuxt instance, and returns the module files it parsed. */
+    async function scan (modules: Array<{ dir: string, handler: string }>, options: Record<string, any> = {}) {
+      vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+      const parses = vi.mocked(parseSync)
+      parses.mockClear()
+      const nuxt = createNuxt({ extensions: ['.js', '.mjs', '.ts'], ...options })
+      const nitroConfig: NitroConfig = { handlers: modules.map(({ handler }, i) => ({ route: `/module-${i}`, handler }) as any) }
+      await setupNitroCompat(nuxt, nitroConfig, legacyOff, [], modules.map(({ dir }, i) => ({ dir, name: `module-${i}` })))
+      const handlers = new Set(modules.map(({ handler }) => handler))
+      return { nuxt, parsed: parses.mock.calls.filter(([filename]) => handlers.has(filename)).length }
+    }
+
+    it('reuses the parses of the previous dev instance and drops those it did not make', async () => {
+      const first = createModule('nitro-compat-generation-a-')
+      const second = createModule('nitro-compat-generation-b-')
+
+      expect((await scan([first], { dev: true })).parsed).toBe(1)
+      // a restart scanning the same files
+      expect((await scan([first], { dev: true })).parsed).toBe(0)
+      // an instance that no longer scans the first module, and the one after it
+      expect((await scan([second], { dev: true })).parsed).toBe(1)
+      expect((await scan([second], { dev: true })).parsed).toBe(0)
+      expect((await scan([first], { dev: true })).parsed).toBe(1)
+      vi.restoreAllMocks()
+    })
+
+    it('drops the parses once a build closes', async () => {
+      const module = createModule('nitro-compat-generation-build-')
+
+      const { nuxt } = await scan([module])
+      await (nuxt as any).callHook('close', nuxt)
+      expect((await scan([module])).parsed).toBe(1)
+      vi.restoreAllMocks()
+    })
+  })
+
   it.each(['linked', 'real'])('attributes files of a symlinked module nested in another module to the nested module (registered: %s)', async (registered) => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
     const root = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-nested-')))
@@ -1269,16 +1377,33 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     expect(nitroConfig.plugins).toEqual([])
   })
 
-  it('skips an import that resolves through a file', async () => {
+  it('skips an import of nitro v2 code that resolves through a file', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-file-alias-subpath-'))
     onTestFinished(() => rmSync(dir, { recursive: true, force: true }))
+    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
     writeFileSync(join(dir, 'meta.mjs'), '')
-    writeFileSync(join(dir, 'handler.ts'), `import '#meta/other'`)
+    writeFileSync(join(dir, 'handler.ts'), `import { getQuery } from 'h3'\nimport '#meta/other'\nexport default getQuery`)
 
     const nitroConfig: NitroConfig = { handlers: [{ route: '/meta', handler: join(dir, 'handler.ts') } as any] }
     await setupNitroCompat(createNuxt({ extensions: ['.ts'], alias: { '#meta': join(dir, 'meta.mjs') } }), nitroConfig, legacyOff, [])
 
+    expect(nitroConfig.plugins!.map(String)).toEqual([expect.stringMatching(/compat[\\/]event-plugin/), expect.stringMatching(/compat[\\/]hooks-plugin/)])
+    vi.restoreAllMocks()
+  })
+
+  it('does not walk server code imports when the scan finds no nitro v2 code', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-no-walk-'))
+    onTestFinished(() => rmSync(dir, { recursive: true, force: true }))
+    writeFileSync(join(dir, 'util.ts'), `export const ok = () => 'ok'`)
+    writeFileSync(join(dir, 'handler.ts'), `import { ok } from './util.ts'\nexport default ok`)
+
+    const nitroConfig: NitroConfig = { handlers: [{ route: '/ok', handler: join(dir, 'handler.ts') } as any] }
+    const resolves = vi.mocked(resolveModulePath)
+    resolves.mockClear()
+    await setupNitroCompat(createNuxt({ extensions: ['.ts'] }), nitroConfig, legacyOff, [])
+
     expect(nitroConfig.plugins).toEqual([])
+    expect(resolves.mock.calls.map(([specifier]) => String(specifier))).not.toContain(join(dir, 'util.ts'))
   })
 
   it('follows a module virtual rather than a file its id would alias to', async () => {
