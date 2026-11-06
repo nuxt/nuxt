@@ -115,7 +115,7 @@ async function installPreprocessorPlugin (nuxt: Nuxt, { packageName, lang, file 
 }
 
 export async function resolveTypeCheckPlugin (nuxt: Nuxt): Promise<RsbuildPlugin | undefined> {
-  if (nuxt.options.test || !(nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev))) {
+  if (nuxt.options.test || !(nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev) || (nuxt.options.typescript.typeCheck === 'dev' && nuxt.options.dev))) {
     return
   }
 

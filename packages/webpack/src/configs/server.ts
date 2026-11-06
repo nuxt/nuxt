@@ -57,7 +57,7 @@ function serverPlugins (ctx: WebpackConfigContext) {
   }
 
   // Add type-checking
-  if (ctx.nuxt.options.typescript.typeCheck === true) {
+  if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev) || (ctx.nuxt.options.typescript.typeCheck === 'dev' && ctx.nuxt.options.dev))) {
     ctx.config.plugins!.push(new TsCheckerPlugin({
       logger,
     }))
