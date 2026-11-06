@@ -130,7 +130,6 @@
     "ultrahtml": "catalog:build",
     "uncrypto": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
-    "undici": "catalog:build",
     "unhead": "catalog:app-runtime",
     "unimport": "catalog:build",
     "unplugin": "catalog:build",
