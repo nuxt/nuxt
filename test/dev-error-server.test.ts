@@ -1,9 +1,12 @@
+import { mkdtemp, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { clearServerLogs, fetch, getServerLogs, setup } from '@nuxt/test-utils/e2e'
 
 import { asyncContext, isDev, isTestingAppManifest, isWebpack, projectSuffix } from './matrix'
-import { copyFixture, renderErrorPage, sourcePosition } from './dev-error-utils'
+import { copyFixture, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
 
 const runs = isDev && !isWebpack && !asyncContext && isTestingAppManifest
 
@@ -109,6 +112,20 @@ describe.skipIf(!runs)('dev ssr errors thrown from a page', () => {
 
     expect(report.hint).toContain('Move this call inside')
     expect(report.docsUrl).toBe('https://nuxt.com/docs/5.x/errors/e1001')
+  })
+
+  it('does not quote files outside `server.fs.allow` that a stack frame names', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'nuxt-dev-error-outside-'))
+    const outside = join(dir, 'config.js')
+    await writeFile(outside, 'export const secret = "OUTSIDE_SOURCE"\n')
+    const id = `x\n    at handler (${outside}:1:1)`
+    const { body, report, status } = await renderErrorPage(`/lookup?id=${encodeURIComponent(id)}`)
+
+    const frames = [...reports(report)].flatMap(r => r.frames)
+    expect(status).toBe(500)
+    expect(frames.find(frame => frame.file === outside)).toBeDefined()
+    expect(frames.find(frame => frame.file?.endsWith('app/pages/lookup.vue'))?.snippet).toBeDefined()
+    expect(body).not.toContain('OUTSIDE_SOURCE')
   })
 
   it('carries the component trace and the route of the page that threw', async () => {

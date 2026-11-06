@@ -202,8 +202,63 @@ export interface ErrorReportOptions {
   cwd: string
   /** Loaders resolving a frame to its source. A filesystem fallback is added last. */
   loaders?: SourceLoader[]
+  /** Whether the filesystem fallback may read a file, given its real path. Defaults to files within `cwd`. */
+  canRead?: (file: string) => boolean
   /** Context the report's presets read. */
   context?: Record<string, unknown>
+}
+
+/** What the filesystem fallback may read, as Vite's resolved `server.fs` options. */
+export interface DevErrorFsOptions {
+  allow: string[]
+  deny: string[]
+  strict?: boolean
+}
+
+/**
+ * A `canRead` check that allows real paths within `allow` and not matching `deny`, matched as
+ * Vite matches `server.fs`.
+ */
+export async function createFsAccessCheck (fs: DevErrorFsOptions): Promise<(file: string) => boolean> {
+  if (fs.strict === false) {
+    return () => true
+  }
+  const [{ default: picomatch }, { existsSync, realpathSync }] = await Promise.all([import('picomatch'), import('node:fs')])
+  const toRoot = (dir: string) => dir.replaceAll('\\', '/').replace(/\/$/, '')
+  const roots = new Set<string>()
+  for (const dir of fs.allow) {
+    roots.add(toRoot(dir))
+    if (existsSync(dir)) {
+      roots.add(toRoot(realpathSync(dir)))
+    }
+  }
+  const denied = picomatch(fs.deny.map(pattern => pattern.includes('/') ? pattern : `**/${pattern}`), { matchBase: false, nocase: true, dot: true })
+  return (file) => {
+    const path = file.replaceAll('\\', '/')
+    return !denied(path) && [...roots].some(root => path === root || path.startsWith(`${root}/`))
+  }
+}
+
+/** A filesystem loader reading only the real paths `canRead` allows, or files within `cwd` without it. */
+export async function createReportFsLoader (options: Pick<ErrorReportOptions, 'cwd' | 'canRead'>): Promise<SourceLoader> {
+  const [{ fsLoader }, { realpathSync }, { basename, dirname, join }] = await Promise.all([
+    import('my-bad'),
+    import('node:fs'),
+    import('node:path'),
+  ])
+  const canRead = options.canRead
+  if (!canRead) {
+    return fsLoader({ roots: [options.cwd] })
+  }
+  const realPath = (file: string): string => {
+    try {
+      return realpathSync(file)
+    } catch {
+      const parent = dirname(file)
+      return parent === file ? file : join(realPath(parent), basename(file))
+    }
+  }
+  return fsLoader({ canRead: file => canRead(realPath(file).replaceAll('\\', '/')) })
 }
 
 /**
@@ -211,13 +266,14 @@ export interface ErrorReportOptions {
  * `error.stack`, as frames are mapped by the loaders rather than read off the stack.
  */
 export async function createErrorReport (error: unknown, options: ErrorReportOptions): Promise<ErrorReport> {
-  const [{ createReport, fsLoader }, { nuxtPreset }] = await Promise.all([
+  const [{ createReport }, { nuxtPreset }, fs] = await Promise.all([
     import('my-bad'),
     import('my-bad/presets'),
+    createReportFsLoader(options),
   ])
   return withoutEchoingCauses(await createReport(error, {
     cwd: options.cwd,
-    loaders: [...options.loaders ?? [], fsLoader()],
+    loaders: [...options.loaders ?? [], fs],
     presets: [nuxtPreset()],
     context: { ...thrownContext(error), ...options.context },
   }))

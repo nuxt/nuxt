@@ -5,7 +5,7 @@ import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
 import { joinURL } from 'ufo'
 import type { Connect, ViteDevServer } from 'vite'
 
-import { listenForRemoteDevErrors } from './dev-errors.ts'
+import { listenForRemoteDevErrors, reportFileAccess } from './dev-errors.ts'
 import { resolveDocument } from './document.ts'
 import { publicDirs } from './output.ts'
 
@@ -58,10 +58,10 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   const render = async (request: Request) => {
     const module = await viteServer!.ssrLoadModule(serverEntry!) as {
       fetch: (request: Request) => Promise<Response>
-      setDevErrorContext?: (context: { server: ViteDevServer, cwd: string, channel: string }) => void
+      setDevErrorContext?: (context: { server: ViteDevServer, cwd: string, channel: string, canRead: (file: string) => boolean }) => void
     }
     // set per render, since the module holding it is re-evaluated with the graph
-    module.setDevErrorContext?.({ server: viteServer!, cwd: nuxt.options.rootDir, channel: errorChannel })
+    module.setDevErrorContext?.({ server: viteServer!, cwd: nuxt.options.rootDir, channel: errorChannel, canRead: reportFileAccess(viteServer!) })
     return module.fetch(request)
   }
 
