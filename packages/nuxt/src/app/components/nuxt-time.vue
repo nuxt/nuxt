@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeUnmount, ref } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount, ref, watch } from 'vue'
 import { onPrehydrate } from '../composables/ssr'
 import { useNuxtApp } from '../nuxt'
 
@@ -60,12 +60,29 @@ const locale = computed(() => {
 })
 
 const now = ref(import.meta.client && nuxtApp.isHydrating && window._nuxtTimeNow ? new Date(window._nuxtTimeNow) : new Date())
-if (import.meta.client && props.relative) {
+if (import.meta.client) {
   const handler = () => {
     now.value = new Date()
   }
-  const interval = setInterval(handler, 1000)
-  onBeforeUnmount(() => clearInterval(interval))
+  let interval: ReturnType<typeof setInterval> | undefined
+  watch(() => props.relative, (relative) => {
+    if (interval) {
+      clearInterval(interval)
+      interval = undefined
+    }
+    if (relative) {
+      // resync `now` unless hydrating, where it must keep the prehydrate-seeded value
+      if (!nuxtApp.isHydrating) {
+        handler()
+      }
+      interval = setInterval(handler, 1000)
+    }
+  }, { immediate: true })
+  onBeforeUnmount(() => {
+    if (interval) {
+      clearInterval(interval)
+    }
+  })
 }
 
 const formatter = computed(() => {
