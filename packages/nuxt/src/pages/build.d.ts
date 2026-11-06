@@ -2,6 +2,7 @@ declare module '#build/router.options.mjs' {
   import type { RouterOptions } from '@nuxt/schema'
 
   export const hashMode: boolean
+  export const hasCustomScrollBehavior: boolean
   const _default: RouterOptions
   export default _default
 }

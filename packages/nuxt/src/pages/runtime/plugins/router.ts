@@ -17,7 +17,7 @@ import { navigationDiagnostics } from '../../../app/diagnostics/navigation'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import _routeRulesMatcher from '#build/route-rules.mjs'
-import routerOptions, { hashMode } from '#build/router.options.mjs'
+import routerOptions, { hasCustomScrollBehavior, hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
 import { serverPathFallback, tracingChannelNuxt } from '#build/nuxt.config.mjs'
@@ -99,7 +99,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     if (import.meta.client && 'scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'auto'
+      window.history.scrollRestoration = hasCustomScrollBehavior ? 'manual' : 'auto'
     }
     nuxtApp.vueApp.use(router)
 

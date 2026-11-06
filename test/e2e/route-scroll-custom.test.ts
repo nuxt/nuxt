@@ -1,0 +1,34 @@
+import { fileURLToPath } from 'node:url'
+import { expect, test } from './test-utils'
+
+test.use({
+  nuxt: {
+    rootDir: fileURLToPath(new URL('../fixtures/route-scroll-custom', import.meta.url)),
+  },
+})
+
+test('custom scroll behavior controls reload restoration (#26797)', async ({ page, goto }) => {
+  await goto('/big-page-1')
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(200)
+  expect(await page.evaluate(() => window.history.scrollRestoration)).toBe('manual')
+
+  await page.evaluate(() => window.scrollTo(0, 600))
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(600)
+  await page.reload()
+
+  // The browser must not restore 600px before the custom handler can run.
+  await expect(page.locator('html')).toHaveAttribute('data-scroll-start', '0')
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(200)
+})
+
+test('custom scroll behavior still receives saved positions on back navigation', async ({ page, goto }) => {
+  await goto('/big-page-1')
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(200)
+  await page.evaluate(() => window.scrollTo(0, 600))
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(600)
+
+  await page.locator('#big-page-2').dispatchEvent('click')
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(200)
+  await page.goBack()
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(600)
+})
