@@ -36,6 +36,23 @@ export function PerfPlugin (nuxt: Nuxt): Plugin {
     buildStart () {
       wrapPlugins(this.environment.plugins)
     },
+    buildApp: {
+      order: 'pre',
+      handler (builder) {
+        const perf = nuxt._perf
+        if (perf) {
+          const build = builder.build
+          builder.build = async (environment) => {
+            perf.startPhase(`vite:${environment.name}`)
+            const output = await build.call(builder, environment)
+            // a build that throws stays open, so the report shows it as unfinished
+            perf.endPhase(`vite:${environment.name}`)
+            return output
+          }
+        }
+        return Promise.resolve()
+      },
+    },
   }
 }
 
