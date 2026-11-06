@@ -486,7 +486,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const NuxtConfigSchema = await schemaPromise
 
-  const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
+  const layerSchemaKeys = ['srcDir', 'rootDir', 'serverDir', 'dir']
   const layerSchema = Object.create(null)
   for (const key of layerSchemaKeys) {
     if (key in NuxtConfigSchema) {

@@ -170,6 +170,65 @@ async function evaluateMatcher (contents: string) {
   return new Function('defu', contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return'))(defu) as (path: string) => Record<string, any>
 }
 
+describe('wildcard route rule redirects', () => {
+  it('moves the tail of the path onto the target', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, {
+      '/old/**': { redirect: '/new/**' },
+      '/old/kept': { redirect: '/kept' },
+      '/old/sub/**': { redirect: { to: '/sub/**', status: 301 } },
+      '/query/**': { redirect: '/new?path=**' },
+      '/param/:id/**': { redirect: '/new/**' },
+      '/café/**': { redirect: '/new/**' },
+      '/exact': { redirect: '/new/**' },
+    }))
+    expect(matcher('/old/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/old').redirect).toBe('/new')
+    expect(matcher('/%6Fld/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/old/kept').redirect).toBe('/kept')
+    expect(matcher('/old/sub/A/b').redirect).toBe('/sub/A/b')
+    expect(matcher('/query/A/b').redirect).toBe('/new?path=A/b')
+    expect(matcher('/param/Some-ID/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/caf%C3%A9/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/exact').redirect).toBe('/new/exact')
+  })
+
+  it('moves the tail of the path onto the target from a lone catch-all rule', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, { '/**': { redirect: '/new/**' } }))
+    expect(matcher('/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/').redirect).toBe('/new')
+  })
+
+  it('keeps the target on its origin when the tail starts with separators', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, undefined, { '/old/**': { redirect: '/**' } }))
+    for (const tail of ['//evil.com', '///evil.com', '/\\evil.com', '/%2F%2Fevil.com', '/%5C%5Cevil.com', '/%252F%252Fevil.com']) {
+      expect(matcher(`/old${tail}`).redirect, tail).toBe('/evil.com')
+      expect(matcher(`/OLD${tail}`).redirect, tail).toBe('/evil.com')
+    }
+    const catchAll = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, { '/**': { redirect: '/**' } }))
+    expect(catchAll('//evil.com').redirect).toBe('/evil.com')
+  })
+
+  it('encodes a tail in the query of the target', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, {
+      '/query/**': { redirect: '/new?to=**' },
+      '/hash/**': { redirect: '/new#**' },
+      '/literal/**': { redirect: '/new/**/x' },
+    }))
+    expect(matcher('/query/a&admin=1').redirect).toBe('/new?to=a%26admin%3D1')
+    expect(matcher('/hash/a').redirect).toBe('/new#a')
+    expect(matcher('/literal/$&').redirect).toBe('/new/$&/x')
+  })
+
+  it('keeps the casing of the tail when the base matches in another casing', async () => {
+    for (const sensitive of [true, false]) {
+      const matcher = await evaluateMatcher(await getRouteRulesTemplate(sensitive, '/App/', { '/Old/**': { redirect: '/new/**' } }))
+      expect(matcher('/Old/A/b').redirect).toBe('/new/A/b')
+      expect(matcher('/OLD/A/b').redirect).toBe(sensitive ? undefined : '/new/A/b')
+      expect(matcher('/old/A/b').redirect).toBe(sensitive ? undefined : '/new/A/b')
+    }
+  })
+})
+
 describe('route rule redirects', () => {
   it('adds routes for redirects that apply to a page request', async () => {
     const nuxt = await loadNuxt({

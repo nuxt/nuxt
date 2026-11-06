@@ -73,6 +73,12 @@ jobs:
         id: baseline
         run: |
           if [ "$EVENT" = "pull_request" ]; then
+            # the checkout is the PR merged onto the current base branch, so its first parent is
+            # the base commit the head was actually built on (the event's `base.sha` can be older)
+            parents=$(git cat-file -p HEAD | awk '/^parent /{ print $2 }')
+            if [ "$(printf '%s\n' "$parents" | wc -l)" -eq 2 ]; then
+              BASE_SHA=$(printf '%s\n' "$parents" | head -n1)
+            fi
             git fetch --no-tags --depth=1 origin "$BASE_SHA"
             echo "spec=ref:$BASE_SHA" >> "$GITHUB_OUTPUT"
           else

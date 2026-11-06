@@ -23,8 +23,10 @@ export const setupWatcher: NonNullable<NuxtBuilder['setupWatcher']> = (nuxt: Nux
   const extraPaths = new Set<string>()
   for (const layer of getLayerDirectories(nuxt)) {
     extraPaths.add(layer.app)
-    if (!layer.server.startsWith(layer.app.replace(/\/?$/, '/'))) {
-      extraPaths.add(layer.server)
+    for (const dir of [layer.server, layer.shared]) {
+      if (!dir.startsWith(layer.app.replace(/\/?$/, '/'))) {
+        extraPaths.add(dir)
+      }
     }
   }
 

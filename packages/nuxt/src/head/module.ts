@@ -125,17 +125,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       },
     })
 
-    const deprecated = new Set(['useServerHead', 'useServerHeadSafe', 'useServerSeoMeta'])
-    nuxt.hooks.hook('imports:sources', (sources) => {
-      for (const source of sources) {
-        if ('from' in source && source.from === '#app/composables/head' && 'imports' in source && Array.isArray(source.imports)) {
-          source.imports = (source.imports as (string | { name: string })[]).filter(
-            i => !deprecated.has(typeof i === 'string' ? i : i.name),
-          )
-        }
-      }
-    })
-
     // Emit the unhead streaming IIFE as a raw, content-hashed JS asset in
     // production so the renderer can load it as a classic script
     // (`<script async src>` without `type="module"`). The IIFE is a

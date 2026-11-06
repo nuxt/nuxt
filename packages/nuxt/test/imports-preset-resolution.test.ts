@@ -126,4 +126,21 @@ describe('imports preset resolution', () => {
     expect(messages.some(message => message.includes('NUXT_B6005') && message.includes('utils/missing'))).toBe(true)
     expect(messages.some(message => message.includes('utils/existing'))).toBe(false)
   })
+
+  it('warns once about an import overriding a built-in', async () => {
+    const nuxt = await loadFixtureNuxt({
+      hooks: {
+        'imports:extend': (imports: Array<{ name: string, from: string }>) => {
+          imports.push({ name: 'useRoute', from: 'custom-router' })
+        },
+      },
+    })
+
+    await nuxt.ready()
+    await buildNuxt(nuxt)
+    await nuxt.close()
+
+    const messages = warn.mock.calls.map(call => call.join(' '))
+    expect(messages.filter(message => message.includes('NUXT_B6002'))).toHaveLength(1)
+  })
 })

@@ -12,7 +12,7 @@ import { createUnimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
 import { exec } from 'tinyexec'
 
-import { getLegacyRuntimeConfigPath, getNitroPackageResolutions, getServerImportsPresets, resolveNitroLegacyOptions, scanLegacyScope, setupNitroCompat } from '../src/compat.ts'
+import { getLegacyNitroAliases, getLegacyRuntimeConfigPath, getNitroPackageResolutions, getServerImportsPresets, resolveNitroLegacyOptions, scanLegacyScope, setupNitroCompat } from '../src/compat.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { kServerApi } from '@nuxt/kit/internal'
@@ -196,6 +196,26 @@ describe('setupNitroCompat', () => {
     await expect(plugin.resolveId.handler.call(context, '#internal/nitro', '/modules/handler.ts')).resolves.toMatch(/compat[\\/]nitro-v2/)
     await expect(plugin.resolveId.handler.call(context, 'h3', '/other/handler.ts')).resolves.toBeUndefined()
     await expect(plugin.resolveId.handler.call(context, 'ofetch', '/modules/handler.ts')).resolves.toBeUndefined()
+  })
+
+  it('reports a deep nitro v2 import that only resolves into the compatibility barrel', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9010').mockImplementation(p => new Error(`${p.file} ${p.specifier}`) as any)
+    const nitroConfig: NitroConfig = {
+      handlers: [declared({ route: '/v2', handler: '/modules/handler.ts' }, 'nitro2')],
+    }
+    await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+
+    const plugin = (nitroConfig.rollupConfig!.plugins as any[])[0]
+    const deep = 'nitropack/runtime/internal/error/utils'
+    const aliased = { resolve: () => Promise.resolve({ id: `${getLegacyNitroAliases()['nitropack/runtime']}/internal/error/utils` }) }
+
+    await expect(plugin.resolveId.handler.call(aliased, deep, '/project/server/error.ts')).rejects.toThrow(`server/error.ts ${deep}`)
+    await expect(plugin.resolveId.handler.call({ resolve: () => Promise.resolve(null) }, '#internal/nitro/utils', '/project/server/error.ts')).rejects.toThrow('#internal/nitro/utils')
+    await expect(plugin.resolveId.handler.call(aliased, deep, '/modules/handler.ts')).resolves.toMatch(/compat[\\/]nitro-v2\.\w+$/)
+    await expect(plugin.resolveId.handler.call({ resolve: () => Promise.resolve({ id: '\0virtual' }) }, '#internal/nitro/virtual', '#nitro/virtual/plugins')).resolves.toEqual({ id: '\0virtual' })
+    await expect(plugin.resolveId.handler.call(aliased, 'nitropack/runtime', '/project/server/error.ts')).resolves.toBeUndefined()
+    expect(report).toHaveBeenCalledTimes(2)
+    report.mockRestore()
   })
 
   it('registers its plugins once, on the rollup config, with nitroViteEnvironment', async () => {
@@ -959,6 +979,39 @@ export default defineEventHandler((event: H3Event) => event.req.headers)`)
     registerLateLegacy(legacyNitro)
     await legacyNitro.hooks.callHook('build:before', legacyNitro)
     expect(report).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it.each([
+    ['1.15.11', 'off', legacyOff, 1],
+    ['1.15.11', 'on for specifiers', resolveNitroLegacyOptions({ h3: false }), 1],
+    ['1.15.11', 'on', resolveNitroLegacyOptions(true), 0],
+    ['2.0.8', 'off', legacyOff, 0],
+  ] as const)('reports user server code importing a project dependency on h3@%s when `nitroLegacy` is %s', async (version, _, legacy, calls) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9009').mockImplementation(() => ({}) as any)
+    const signals = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9005').mockImplementation(() => ({}) as any)
+    const rootDir = realpathSync(mkdtempSync(join(tmpdir(), 'nitro-compat-h3-')))
+    onTestFinished(() => rmSync(rootDir, { recursive: true, force: true }))
+    mkdirSync(join(rootDir, 'node_modules/h3'), { recursive: true })
+    writeFileSync(join(rootDir, 'node_modules/h3/package.json'), JSON.stringify({ name: 'h3', version, exports: { '.': './index.mjs', './package.json': './package.json' } }))
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    writeFileSync(join(rootDir, 'server/api/query.ts'), `import { defineEventHandler, getQuery } from 'h3'
+export default defineEventHandler(event => getQuery(event))`)
+    writeFileSync(join(rootDir, 'server/api/typed.ts'), `import type { H3Event } from 'h3'
+import { defineEventHandler } from 'nuxt/server'
+export default defineEventHandler((event: H3Event) => event.req.url)`)
+
+    const nuxt = createNuxt({ rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    const registerLate = await setupNitroCompat(nuxt, { handlers: [] }, legacy, [])
+    const nitro = { options: { handlers: [], plugins: [] }, hooks: createHooks() } as any
+    registerLate(nitro)
+    await nitro.hooks.callHook('build:before', nitro)
+
+    expect(signals).not.toHaveBeenCalled()
+    expect(report).toHaveBeenCalledTimes(calls)
+    if (calls) {
+      expect(report.mock.calls[0]![0]).toEqual({ count: 1, version, files: '`server/api/query.ts`' })
+    }
     vi.restoreAllMocks()
   })
 

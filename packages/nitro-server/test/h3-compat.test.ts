@@ -22,6 +22,7 @@ import {
   setResponseStatus,
   splitCookiesString,
   toLegacyError,
+  toWebRequest,
 } from '../src/runtime/compat/h3-v1.ts'
 import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
 
@@ -262,6 +263,25 @@ describe('v1 body readers', () => {
     const stream = getRequestWebStream(event)!
     expect(new TextDecoder().decode((await stream.getReader().read()).value)).toBe(JSON.stringify({ a: 1 }))
     expect(event.req.bodyUsed).toBe(false)
+  })
+
+  it('copies the request with `toWebRequest`, leaving the body readable', async () => {
+    const event = mockEvent('http://nuxt/api/test?foo=bar', {
+      method: 'POST',
+      body: JSON.stringify({ a: 1 }),
+      headers: { 'content-type': 'application/json' },
+    })
+
+    const request = toWebRequest(event)
+    expect(request.url).toBe('http://nuxt/api/test?foo=bar')
+    expect(request.method).toBe('POST')
+    expect(request.headers.get('content-type')).toBe('application/json')
+    expect(await request.json()).toEqual({ a: 1 })
+    expect(await readBody(event)).toEqual({ a: 1 })
+
+    const get = toWebRequest(mockEvent('http://nuxt/api/test'))
+    expect(get.method).toBe('GET')
+    expect(get.body).toBeNull()
   })
 
   it('returns `undefined` for a request with no body', async () => {

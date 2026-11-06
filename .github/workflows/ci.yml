@@ -295,9 +295,6 @@ jobs:
           node-version: lts
           cache: true
 
-      - name: Fetch 4.x for cross-branch diagnostics check
-        run: git fetch --no-tags --depth=1 origin 4.x:refs/remotes/origin/4.x
-
       - name: Prepare
         run: vp run dev:prepare && vp run test:prepare && vp run build:kit
 
@@ -328,6 +325,39 @@ jobs:
         run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}
+
+  # Advisory, so not required by `ci-ok`: a conflict can be resolved on either branch.
+  # Pushes to main are covered by their pull request; pushes to 4.x are checked after the fact.
+  diagnostics-drift:
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref_name != 'main'))
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      OTHER_BRANCH: ${{ (github.base_ref || github.ref_name) == 'main' && '4.x' || 'main' }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          node-version: lts
+          run-install: false
+
+      - name: Check diagnostic codes against the other release line
+        run: |
+          git fetch --no-tags --depth=1 origin "$OTHER_BRANCH:refs/remotes/origin/$OTHER_BRANCH"
+          BASE_REF='HEAD^1'
+          if [ -n "$BEFORE" ] && git fetch --no-tags --depth=1 origin "$BEFORE"; then
+            BASE_REF="$BEFORE"
+          fi
+          BASE_REF="$BASE_REF" OTHER_REF="origin/$OTHER_BRANCH" node ./scripts/check-diagnostics-drift.ts
+        env:
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
 
   # Runs on pull requests too (unlike the `lint` job) so knip regressions surface
   # before the merge queue.
@@ -445,7 +475,7 @@ jobs:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*"'
           - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*"'
+            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*" --project "fixtures:rsbuild-*"'
         exclude:
           - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
@@ -662,4 +692,4 @@ jobs:
           node-version: lts
           cache: true
 
-      - run: vp exec pkg-pr-new publish --compact --pnpm --packageManager=pnpm,npm,yarn './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/vite-server' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step
+      - run: vp exec pkg-pr-new publish --compact --pnpm --packageManager=pnpm,npm,yarn './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rsbuild' './packages/rspack' './packages/schema' './packages/vite' './packages/vite-server' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step

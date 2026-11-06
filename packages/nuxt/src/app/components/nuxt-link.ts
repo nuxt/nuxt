@@ -21,6 +21,7 @@ import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../c
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../utils'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
+import { documentURL } from '../internal/location'
 import type { NuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
 import { navigationDiagnostics } from '../diagnostics/navigation'
@@ -554,7 +555,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         const path = typeof to.value === 'string'
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
-        return isExternal.value ? new URL(path, window.location.href).href : path
+        return isExternal.value ? new URL(path, documentURL()).href : path
       }
 
       function escalate () {
@@ -630,7 +631,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           get route () {
             if (!href.value) { return undefined }
 
-            const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
+            const url = new URL(href.value, import.meta.client ? documentURL() : 'http://localhost')
             return {
               path: url.pathname,
               fullPath: url.pathname,

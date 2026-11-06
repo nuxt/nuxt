@@ -1,4 +1,4 @@
-import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps, provide } from 'vue'
+import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnMediaQuery, hydrateOnVisible, mergeProps, provide } from 'vue'
 import type { AsyncComponentLoader, ComponentObjectPropsOptions, DefineSetupFnComponent, ExtractPropTypes, HydrationStrategy } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 import { neverHydratedSymbol } from '#app/composables/lazy-hydration'
@@ -9,7 +9,7 @@ type LazyHydrationEmits = {
 
 type LazyComponentFactory<Props extends Record<string, any>> = (id: string, loader: AsyncComponentLoader) => DefineSetupFnComponent<Props, LazyHydrationEmits>
 
-function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extends Record<string, any> = ExtractPropTypes<P>> (props: P, defineStrategy: (props: ExtractPropTypes<P>) => HydrationStrategy | undefined, never = false): LazyComponentFactory<Props> {
+function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extends Record<string, any> = ExtractPropTypes<P>> (props: P, defineStrategy: (props: ExtractPropTypes<P>, hydrated: Promise<void>) => HydrationStrategy | undefined, never = false): LazyComponentFactory<Props> {
   return (id: string, loader: AsyncComponentLoader) => {
     const child = defineAsyncComponent({ loader })
     return defineComponent({
@@ -34,12 +34,17 @@ function defineLazyComponent<P extends ComponentObjectPropsOptions, Props extend
             }
           })
         }
+        let resolveHydrated!: () => void
+        const hydrated = new Promise<void>((resolve) => { resolveHydrated = resolve })
         // wrap the async component in a second component to avoid loading the chunk too soon
         const comp = defineAsyncComponent({
-          hydrate: defineStrategy(props as ExtractPropTypes<P>),
+          hydrate: defineStrategy(props as ExtractPropTypes<P>, hydrated),
           loader: () => Promise.resolve(child),
         })
-        const onVnodeMounted = () => { ctx.emit('hydrated') }
+        const onVnodeMounted = () => {
+          resolveHydrated()
+          ctx.emit('hydrated')
+        }
         return () => h(comp, mergeProps(ctx.attrs, { onVnodeMounted }), ctx.slots)
       },
     }) as unknown as DefineSetupFnComponent<Props, LazyHydrationEmits>
@@ -75,6 +80,7 @@ props => props.hydrateOnIdle === 0
 )
 
 const defaultInteractionEvents: Array<keyof HTMLElementEventMap> = ['pointerenter', 'click', 'focus']
+const MAX_PENDING_INTERACTIONS = 50
 
 interface LazyInteractionProps { hydrateOnInteraction?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap> | true }
 
@@ -86,7 +92,79 @@ export const createLazyInteractionComponent: LazyComponentFactory<LazyInteractio
     default: (): Array<keyof HTMLElementEventMap> => defaultInteractionEvents,
   },
 },
-props => hydrateOnInteraction(props.hydrateOnInteraction === true ? defaultInteractionEvents : (props.hydrateOnInteraction || defaultInteractionEvents)),
+(props, hydrated) => (hydrate, forEach) => {
+  const value = props.hydrateOnInteraction
+  const interactions = value === true || !value ? defaultInteractionEvents : typeof value === 'string' ? [value] : value
+  let triggered = false
+  let disposed = false
+  const pendingEvents: Array<{ event: Event, target: EventTarget | null }> = []
+  const removeListeners = () => {
+    forEach((el) => {
+      for (const interaction of interactions) {
+        el.removeEventListener(interaction, onInteraction, interaction === 'focus')
+      }
+      el.removeEventListener('pointerleave', onPointerLeave, true)
+    })
+  }
+  const replayedEvents = new WeakSet<Event>()
+  const stopPropagation = (event: Event) => {
+    if (replayedEvents.has(event)) { event.stopPropagation() }
+  }
+  const toggleStopPropagation = (add: boolean) => {
+    forEach((el) => {
+      for (const interaction of interactions) {
+        if (add) {
+          el.addEventListener(interaction, stopPropagation)
+        } else {
+          el.removeEventListener(interaction, stopPropagation)
+        }
+      }
+    })
+  }
+  const onPointerLeave = (event: Event) => {
+    for (let index = pendingEvents.length - 1; index >= 0; index--) {
+      const pending = pendingEvents[index]!
+      if (pending.event.type === 'pointerenter' && pending.target === event.target) {
+        pendingEvents.splice(index, 1)
+      }
+    }
+  }
+  const onInteraction = (event: Event) => {
+    const input = event.type === 'input' && pendingEvents.find(pending => pending.event.type === 'input' && pending.target === event.target)
+    if (input) {
+      input.event = event
+    } else if (pendingEvents.length < MAX_PENDING_INTERACTIONS) {
+      pendingEvents.push({ event, target: event.target })
+    }
+    if (triggered) { return }
+    triggered = true
+    hydrate()
+    hydrated.then(() => {
+      removeListeners()
+      toggleStopPropagation(true)
+      for (const { event, target } of pendingEvents) {
+        if (disposed) { break }
+        if (event.type === 'focus' && target !== document.activeElement) { continue }
+        const replay = new (event.constructor as typeof Event)(event.type, event)
+        replayedEvents.add(replay)
+        target?.dispatchEvent(replay)
+      }
+      toggleStopPropagation(false)
+      pendingEvents.length = 0
+    })
+  }
+  forEach((el) => {
+    for (const interaction of interactions) {
+      el.addEventListener(interaction, onInteraction, interaction === 'focus')
+    }
+    if (interactions.includes('pointerenter')) { el.addEventListener('pointerleave', onPointerLeave, true) }
+  })
+  return () => {
+    disposed = true
+    removeListeners()
+    pendingEvents.length = 0
+  }
+},
 )
 
 interface LazyMediaQueryProps { hydrateOnMediaQuery: string }

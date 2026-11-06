@@ -55,4 +55,20 @@ onMounted(() => {
       }, { __name: "TestMe" })"
     `)
   })
+
+  it('should use first matches and refresh after scans or length changes', () => {
+    let current: Component[] = components
+    const plugin = ComponentNamePlugin({ getComponents: () => current }).raw({}, {} as any) as typeof transformPlugin
+    expect(plugin.transform.handler('export default {}', 'test.vue')?.code).toContain('"TestMe"')
+
+    current = [
+      { ...components[1], pascalName: 'First' },
+      { ...components[1], pascalName: 'Second' },
+    ]
+    expect(plugin.transform.handler('export default {}', 'test.vue')?.code).toContain('"First"')
+    expect(plugin.transform.handler('export default {}', 'test.ts')?.code).toBeUndefined()
+
+    current.push(components[0])
+    expect(plugin.transform.handler('export default {}', 'test.ts')?.code).toContain('"TestMe"')
+  })
 })

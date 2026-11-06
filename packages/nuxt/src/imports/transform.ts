@@ -1,7 +1,8 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { createUnimport } from 'unimport'
-import type { Unimport } from 'unimport'
+import type { Import, Unimport } from 'unimport'
+import escapeRE from 'escape-string-regexp'
 import { normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 
@@ -24,6 +25,16 @@ interface TransformPluginOptions {
   refreshImports?: (file: string) => void | Promise<void>
 }
 
+function isTransformed (options: Partial<ImportsOptions>, id: string) {
+  if (options.transform?.include?.some(pattern => pattern.test(id))) {
+    return true
+  }
+  if (options.transform?.exclude?.some(pattern => pattern.test(id))) {
+    return false
+  }
+  return isVue(id, { type: ['script', 'template'] }) || isJS(id)
+}
+
 export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: TransformPluginOptions) => createUnplugin(() => {
   // `$fetch` is not a global on the client, so code that relies on the global (including
   // module runtime code, which is not auto-imported) receives an import instead
@@ -37,24 +48,7 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: Tra
   return {
     name: 'nuxt:imports-transform',
     enforce: 'post',
-    transformInclude (id) {
-      // Included
-      if (options.transform?.include?.some(pattern => pattern.test(id))) {
-        return true
-      }
-      // Excluded
-      if (options.transform?.exclude?.some(pattern => pattern.test(id))) {
-        return false
-      }
-
-      // Vue files
-      if (isVue(id, { type: ['script', 'template'] })) {
-        return true
-      }
-
-      // JavaScript files
-      return isJS(id)
-    },
+    transformInclude: id => isTransformed(options, id),
     async transform (code, id) {
       id = normalize(id)
       const isNodeModule = NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))
@@ -102,6 +96,45 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: Tra
             }
           }
         },
+      },
+    },
+  }
+})
+
+interface RemovedImportsPluginOptions {
+  ctx: Pick<Unimport, 'injectImports'>
+  options: Partial<ImportsOptions>
+  imports: Import[]
+  onRemovedImports: (id: string, imports: Import[]) => void
+}
+
+/** Reports former auto-imports that app code uses without importing or declaring them. */
+export const RemovedImportsPlugin = ({ ctx, options, imports, onRemovedImports }: RemovedImportsPluginOptions) => createUnplugin(() => {
+  const removedCtx = createUnimport({ parser: 'oxc', imports, addons: { addons: [] } })
+
+  return {
+    name: 'nuxt:imports-removed',
+    enforce: 'post',
+    transformInclude: id => options.autoImport !== false && isTransformed(options, id),
+    transform: {
+      filter: {
+        code: { include: new RegExp(`\\b(?:${imports.map(i => escapeRE(i.as ?? i.name)).join('|')})\\b`) },
+      },
+      async handler (code, id) {
+        id = normalize(id)
+        if (NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))) {
+          return
+        }
+        const { imports: used } = await removedCtx.injectImports(code, id, { autoImport: true })
+        if (used.length === 0) {
+          return
+        }
+        const { imports: provided } = await ctx.injectImports(code, id, { autoImport: true })
+        const providedNames = new Set(provided.map(i => i.as ?? i.name))
+        const removed = used.filter(i => !providedNames.has(i.as ?? i.name))
+        if (removed.length > 0) {
+          onRemovedImports(id, removed)
+        }
       },
     },
   }

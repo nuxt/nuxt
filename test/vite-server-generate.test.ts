@@ -143,8 +143,10 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
       'rules/prerendered/_payload.json',
     ])
 
-    const payload = parse(await read('about/_payload.json'), { ShallowReactive: value => value }) as { data: Record<string, unknown> }
+    const payload = parse(await read('about/_payload.json'), { ShallowReactive: value => value }) as { data: Record<string, unknown>, buildId?: string }
     expect(payload.data.about).toBe('about data')
+    expect(payload.buildId).toEqual(expect.any(String))
+    expect(await read('about/index.html')).toContain(`data-src="/about/_payload.json?_b=${payload.buildId}"`)
   })
 
   it('points the document at the payload the client loads on hydration', async () => {

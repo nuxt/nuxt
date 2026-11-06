@@ -2,7 +2,8 @@ import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
 import { decodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from '../src/core/utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
+import { addRoute, createRouter } from 'rou3'
+import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
 
 const RESERVED_RE = /[%;/?:@&=+$,#]/g
 
@@ -274,5 +275,35 @@ describe('findCaseDependentConstraint', () => {
     expect(findCaseDependentConstraint('(ς)')).toBe('ς')
     expect(findCaseDependentConstraint('(µ)')).toBe('µ')
     expect(findCaseDependentConstraint('(ᲂ)')).toBe('ᲂ')
+  })
+})
+
+describe('assertSingleCatchAllRouteRuleKey', () => {
+  it('rejects the keys the route-rule router rejects', () => {
+    const keys = [
+      '/api/content/pull/*/*/blob/**',
+      '/*/comments/**',
+      '/a/:x+/b/**',
+      '/a/:x*/:y*',
+      '/api/content/pull/:repo/:number/blob/**',
+      '/blog/*',
+      '/blog/**',
+      '/a/:x+',
+      '/products/:id([a-z]+)/**',
+      '/products/:id([a-z]*)',
+    ]
+    for (const key of keys) {
+      let routerError: unknown
+      try {
+        addRoute(createRouter(), '', key, {})
+      } catch (error) {
+        routerError = error
+      }
+      if (routerError) {
+        expect(() => assertSingleCatchAllRouteRuleKey(key), key).toThrow(`The route rule \`${key}\` in \`routeRules\` has more than one`)
+      } else {
+        expect(() => assertSingleCatchAllRouteRuleKey(key), key).not.toThrow()
+      }
+    }
   })
 })
