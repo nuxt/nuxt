@@ -414,6 +414,10 @@ jobs:
           node-version: lts
           cache: true
 
+      - uses: flakiness/authenticate-fork-prs@b84c39fb86796b063a9152bdec3020b71c870477 # v1.2.0
+        with:
+          flakiness-project: nuxt/nuxt
+
       - name: Check bundle size
         run: vp exec vitest run bundle
 
@@ -506,6 +510,10 @@ jobs:
       - name: Prepare test fixtures
         run: vp run test:prepare
 
+      - uses: flakiness/authenticate-fork-prs@b84c39fb86796b063a9152bdec3020b71c870477 # v1.2.0
+        with:
+          flakiness-project: nuxt/nuxt
+
       - name: Test (fixtures)
         run: vp exec vitest run ${{ matrix.projects }}
 
@@ -567,6 +575,10 @@ jobs:
 
       - name: Prepare test fixtures
         run: vp run test:prepare
+
+      - uses: flakiness/authenticate-fork-prs@b84c39fb86796b063a9152bdec3020b71c870477 # v1.2.0
+        with:
+          flakiness-project: nuxt/nuxt
 
       - name: Test (e2e)
         run: vp run test:e2e ${{ matrix.shard }}
