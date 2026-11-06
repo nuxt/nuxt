@@ -193,8 +193,9 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       // entry substituted below; anything else belongs to a target, whose input vite merges
       // with the app's
       const input = config.build.rolldownOptions.input
-      const named = !!input && typeof input === 'object' && !Array.isArray(input) ? input as Record<string, string> : undefined
-      const targetEntries = Object.entries(named ?? {}).filter(([name, value]) => name !== 'server' && !(name === 'index' && value === entry))
+      const targetEntries = input && typeof input === 'object' && !Array.isArray(input)
+        ? Object.entries(input).filter(([name, value]) => name !== 'server' && !(name === 'index' && value === entry))
+        : []
       if (targetEntries.length > 0) {
         if (prerender) {
           throw new Error('[nuxt:vite-server] `nuxt generate` cannot prerender through a deploy target: the target owns the server environment and its output is not a node handler. Remove the target, or run `nuxt build`.')
