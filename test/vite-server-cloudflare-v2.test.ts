@@ -84,6 +84,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite build with the cloudflare vite plu
   }, 240 * 1000)
 
   it('writes the client build into the assets of the build output', async () => {
+    expect(await readFile(join(assetsDir, 'static.txt'), 'utf-8')).toContain('static-asset')
     await expect(readFile(join(assetsDir, 'manifest.json'), 'utf-8')).rejects.toThrow()
     // the worker renders every route, so there is no document in front of it
     await expect(readFile(join(assetsDir, 'index.html'), 'utf-8')).rejects.toThrow()
