@@ -35,8 +35,6 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     configEnvironment (name, config) {
-      // In serial builds, only the server build runs with `build.ssr`. A top-level `ssr`
-      // option may come from the user config and is then present in the client build too.
       if (!nuxt.options.experimental.viteEnvironmentApi && viteConfig.build?.ssr) {
         config.optimizeDeps ||= {}
         config.optimizeDeps.include = undefined
