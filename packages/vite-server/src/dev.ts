@@ -68,13 +68,16 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
     return module.fetch(request)
   }
 
+  let reportedFallthrough = false
   const respond = (request: Request, url: string) => {
     if (!serverEntry || !viteServer) {
       return shell(url)
     }
-    // a target that runs the ssr environment itself responds to every request, so one
-    // reaching here has failed and vite has logged the error
     if (!('runner' in viteServer.environments.ssr)) {
+      if (!reportedFallthrough) {
+        reportedFallthrough = true
+        bundlerDiagnostics.NUXT_B7037()
+      }
       return new Response('Internal Server Error', { status: 500 })
     }
     return render(request)

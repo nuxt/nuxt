@@ -181,5 +181,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Fix the error in the stack trace. If it does not point at your app or a module, please report it at https://github.com/nuxt/nuxt/issues.',
       docs: false,
     },
+    NUXT_B7037: {
+      why: 'The deploy target running the `ssr` environment failed or did not handle a request, so Nuxt responded with a 500.',
+      fix: 'In development, Nuxt can only render through `#server-entry` inside the target. Fix the error the target logged, or have it pass the request to `#server-entry`.',
+      docs: false,
+    },
   },
 })

@@ -11,10 +11,10 @@ type Handle = (req: IncomingMessage, res: ServerResponse, next: (error?: unknown
 
 const spyOnFailure = () => vi.spyOn(bundlerDiagnostics, 'NUXT_B7036').mockImplementation(() => undefined as never)
 
-async function serve (options: { ssrLoadModule: () => Promise<unknown>, hasErrorLogged?: (error: unknown) => boolean, handle?: Handle }) {
+async function serve (options: { ssrLoadModule?: () => Promise<unknown>, hasErrorLogged?: (error: unknown) => boolean, handle?: Handle, runnable?: boolean }) {
   const viteServer = {
     middlewares: { handle: options.handle ?? ((_req, _res, next) => next()) satisfies Handle },
-    environments: { ssr: { runner: {} } },
+    environments: { ssr: options.runnable === false ? {} : { runner: {} } },
     config: { logger: { hasErrorLogged: options.hasErrorLogged ?? (() => false) } },
     ssrLoadModule: options.ssrLoadModule,
   }
@@ -82,6 +82,16 @@ describe('the dev server', () => {
 
     await expect(server.fetch('/about').then(response => response.text())).rejects.toThrow()
     expect(await (await server.fetch('/about')).text()).toBe('rendered')
+    await server.close()
+  })
+
+  it('reports once that requests fall through a target running the ssr environment', async () => {
+    const fallthrough = vi.spyOn(bundlerDiagnostics, 'NUXT_B7037').mockImplementation(() => undefined as never)
+    const server = await serve({ runnable: false })
+
+    expect((await server.fetch('/about')).status).toBe(500)
+    expect((await server.fetch('/')).status).toBe(500)
+    expect(fallthrough).toHaveBeenCalledOnce()
     await server.close()
   })
 })
