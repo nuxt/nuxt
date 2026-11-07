@@ -1,11 +1,18 @@
 import { queuePostFlushCb } from 'vue'
 
-export interface DebounceTickOptions {
+export interface DebounceTickOptions<ArgumentsT extends unknown[] = unknown[]> {
   /**
    * Call `fn` immediately on the leading edge, instead of waiting for the next flush.
    * @default false
    */
   readonly leading?: boolean
+  /**
+   * Whether a call made while `fn`'s promise is still pending waits for it to settle, then calls `fn`
+   * again with the latest arguments. When it returns `false`, `fn` is called again at the next flush,
+   * without waiting, and the pending call settling no longer makes a trailing call.
+   * @default () => true
+   */
+  readonly waitForPending?: (...args: ArgumentsT) => boolean
 }
 
 /**
@@ -18,7 +25,7 @@ export interface DebounceTickOptions {
  */
 export function debounceTick<ArgumentsT extends unknown[], ReturnT> (
   fn: (...args: ArgumentsT) => PromiseLike<ReturnT> | ReturnT,
-  options: DebounceTickOptions = {},
+  options: DebounceTickOptions<ArgumentsT> = {},
 ): (...args: ArgumentsT) => Promise<ReturnT> {
   // Last result for leading value
   let leadingValue: PromiseLike<ReturnT> | ReturnT
@@ -39,6 +46,10 @@ export function debounceTick<ArgumentsT extends unknown[], ReturnT> (
     const promise = _applyPromised(fn, _this, args)
     currentPromise = promise
     promise.finally(() => {
+      // A call that didn't wait for this one has taken its place
+      if (currentPromise !== promise) {
+        return
+      }
       currentPromise = undefined
       if (trailingArgs && !active) {
         const args = trailingArgs
@@ -52,7 +63,7 @@ export function debounceTick<ArgumentsT extends unknown[], ReturnT> (
   return function (this: unknown, ...args: ArgumentsT): Promise<ReturnT> {
     trailingArgs = args
 
-    if (currentPromise) {
+    if (currentPromise && (options.waitForPending?.(...args) ?? true)) {
       return currentPromise
     }
     return new Promise<ReturnT>((resolve) => {
