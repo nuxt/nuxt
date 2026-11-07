@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { joinRelativeURL } from 'ufo'
+import { joinRelativeURL, withTrailingSlash } from 'ufo'
 import { addTemplate } from '@nuxt/kit'
 import { getServerRuntime, useServerBuild } from '@nuxt/kit/internal'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
@@ -190,15 +190,19 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       config.build.emptyOutDir = true
       config.build.rolldownOptions ||= {}
 
-      // the app build names its own entry `server`, and a repeated resolution pass sees the
-      // entry substituted below; anything else belongs to a target
+      // the app build's entry is in Nuxt's app directory, and a repeated resolution pass sees
+      // the entry substituted below; anything else belongs to a target, whose input vite
+      // merges with the app's
       const input = config.build.rolldownOptions.input
-      const named = !!input && typeof input === 'object' && !Array.isArray(input) ? input as Record<string, string> : undefined
-      const claimed = !!named && !('server' in named) && named.index !== entry
-      if (claimed) {
+      const appDir = withTrailingSlash(nuxt.options.appDir)
+      const targetEntries = input && typeof input === 'object' && !Array.isArray(input)
+        ? Object.entries(input).filter(([, value]) => value !== entry && !value.startsWith(appDir))
+        : []
+      if (targetEntries.length > 0) {
         if (prerender) {
           throw new Error('[nuxt:vite-server] `nuxt generate` cannot prerender through a deploy target: the target owns the server environment and its output is not a node handler. Remove the target, or run `nuxt build`.')
         }
+        config.build.rolldownOptions.input = Object.fromEntries(targetEntries)
         useServerBuild(nuxt).runtime.handler = undefined
       } else {
         config.build.rolldownOptions.input = { index: entry }

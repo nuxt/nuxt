@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
-import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import { joinURL } from 'ufo'
@@ -135,19 +135,19 @@ export function bundle (nuxt: Nuxt): Promise<void> {
 
     nuxt.options.vite.$client = client
     // Deployment plugins can redirect client output during Vite config resolution.
-    // Finalize the resolved SPA assets instead of a stale default output directory.
-    if (!ssr) {
-      nuxt.options.vite.plugins.push({
-        name: 'nuxt:vite-server:client-output',
-        enforce: 'post',
-        configResolved (config) {
-          const outDir = config.environments?.client?.build?.outDir
-          if (outDir) {
-            publicDir = resolve(config.root, outDir)
-          }
-        },
-      })
-    }
+    // Finalize the resolved assets instead of a stale default output directory, unless
+    // Nuxt's own node server serves them from `../public/` next to itself.
+    nuxt.options.vite.plugins.push({
+      name: 'nuxt:vite-server:client-output',
+      enforce: 'post',
+      configResolved (config) {
+        if (useServerBuild(nuxt).runtime.handler !== undefined) { return }
+        const outDir = config.environments?.client?.build?.outDir
+        if (outDir) {
+          publicDir = resolve(config.root, outDir)
+        }
+      },
+    })
     addVitePlugin(() => [DocumentPlugin(nuxt), EntryImportMapPlugin()], { server: false })
   }
 

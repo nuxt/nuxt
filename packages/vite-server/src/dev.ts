@@ -11,9 +11,11 @@ import { publicDirs } from './output.ts'
 
 /**
  * The ESM dependencies of the render, which a deploy target's environment loads as they
- * are rather than discovering and pre-bundling them as it reaches them.
+ * are rather than discovering and pre-bundling them as it reaches them. `nuxt` is one, since
+ * its internals import modules that Nuxt's build provides.
  */
 const SERVER_RUNTIME_DEPS = [
+  'nuxt',
   'vue',
   'vue-router',
   '@vue/shared',
@@ -66,7 +68,15 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   }
 
   const respond = (request: Request, url: string) => {
-    return serverEntry && viteServer ? render(request) : shell(url)
+    if (!serverEntry || !viteServer) {
+      return shell(url)
+    }
+    // a target that runs the ssr environment itself responds to every request, so one
+    // reaching here has failed and vite has logged the error
+    if (!('runner' in viteServer.environments.ssr)) {
+      return new Response('Internal Server Error', { status: 500 })
+    }
+    return render(request)
   }
 
   const serveStatic = (request: Request): Promise<Response | undefined> => {
@@ -88,7 +98,7 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
     enforce: 'pre',
     apply: 'serve',
     configEnvironment (name, config) {
-      if (serverEntry && name !== 'client' && name !== 'ssr' && (config.consumer ?? 'server') === 'server') {
+      if (serverEntry && name !== 'client' && (config.consumer ?? 'server') === 'server') {
         return { optimizeDeps: { exclude: [...SERVER_RUNTIME_DEPS] } }
       }
     },
