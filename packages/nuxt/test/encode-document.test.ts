@@ -54,6 +54,18 @@ describe.each([
     expect(decode(bytes)).toBe(decode(expected))
   })
 
+  it.each([
+    ['ASCII', 'x'],
+    ['Latin1', 'é'],
+    ['non-Latin1', '日本語 →'],
+    ['a surrogate pair', '😀'],
+    ['a lone surrogate', '\uD83D x \uDE00'],
+  ])('encodes a large chunk containing %s', async (_, content) => {
+    const encodeDocument = await load()
+    const chunk = '<p>' + 'a'.repeat(5000) + content + 'b'.repeat(5000) + '</p>'
+    expect(new Uint8Array(encodeDocument(['<html>', chunk, '😀', chunk, '</html>']))).toEqual(new TextEncoder().encode(`<html>${chunk}😀${chunk}</html>`))
+  })
+
   it('returns bytes that are independent of later calls', async () => {
     const encodeDocument = await load()
     const first = encodeDocument(['first'])
