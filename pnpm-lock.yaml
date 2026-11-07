@@ -2696,6 +2696,19 @@ importers:
         specifier: 0.1.11
         version: 0.1.11(h3@1.15.11)(srvx@1.0.8)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
 
+  test/fixtures/vite-server-universal-deploy-netlify:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      '@netlify/vite-plugin':
+        specifier: 3.0.1
+        version: 3.0.1(@parcel/watcher@2.6.0)(db0@0.3.4(@electric-sql/pglite@0.3.16))(ioredis@5.11.1(supports-color@10.2.2))(rollup@4.67.4)(srvx@1.0.8)(supports-color@10.2.2)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+      '@universal-deploy/vite':
+        specifier: 0.1.11
+        version: 0.1.11(h3@1.15.11)(srvx@1.0.8)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+
   test/fixtures/worker-assets:
     dependencies:
       nuxt:
