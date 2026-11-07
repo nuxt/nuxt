@@ -29,9 +29,11 @@ export function mayMatchCurrentRoute (currentRoute: RouteLocationGeneric, path: 
     routePatternCache.set(currentRoute, patterns)
   }
   if (!patterns) { return true }
-  const target = splitSegments(path)
+  const count = countSegments(path)
+  let target: string[] | undefined
   outer: for (const pattern of patterns) {
-    if (pattern.length !== target.length) { continue }
+    if (pattern.length !== count) { continue }
+    target ??= splitSegments(path)
     for (let i = 0; i < pattern.length; i++) {
       const p = pattern[i]!
       const t = target[i]!
@@ -44,6 +46,13 @@ export function mayMatchCurrentRoute (currentRoute: RouteLocationGeneric, path: 
     return true
   }
   return false
+}
+
+/** The number of segments `splitSegments` returns for `path`. */
+function countSegments (path: string): number {
+  let count = 1
+  for (let i = path.indexOf('/'); i !== -1; i = path.indexOf('/', i + 1)) { count++ }
+  return count > 1 && path.endsWith('/') ? count - 1 : count
 }
 
 function splitSegments (path: string): string[] {

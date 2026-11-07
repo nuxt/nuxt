@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { randomUUID } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtBuildOutputs, NuxtOptions, ServerApi, ServerImportsOptions, ServerRouteSegment } from '@nuxt/schema'
 import { dirname, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
@@ -26,7 +26,8 @@ import nitroBuilder from '../package.json' with { type: 'json' }
 import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
 import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
-import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
+import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from './dev-request.ts'
+import { DEV_PEER_TOKEN_ENV } from 'nuxt/internal/dev/peer'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
@@ -132,10 +133,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   if (nuxt.options.dev) {
+    let reportFs: { allow: string[], deny: string[], strict?: boolean } | undefined
+    nuxt.hook('vite:serverCreated', (server) => {
+      const { allow, deny, strict } = server.config.server.fs
+      reportFs = { allow, deny, strict }
+    })
     nuxt.options.nitro.virtual = defu(nuxt.options.nitro.virtual, {
       '#internal/dev-server-logs-options': () => [
         `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
         `export const srcDir = ${JSON.stringify(nuxt.options.srcDir)};`,
+        `export const reportFs = ${JSON.stringify(reportFs ?? {
+          allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
+          deny: [],
+        })};`,
       ].join('\n'),
     })
     addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'))
@@ -1020,6 +1030,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       route: joinURL(nuxt.options.devServer.errorChannel, '**'),
       lazy: true,
       handler: resolve(distDir, 'runtime/handlers/error-channel'),
+    })
+    const peerToken = process.env[DEV_PEER_TOKEN_ENV] ||= randomBytes(32).toString('base64url')
+    const errorChannel = nuxt.options.devServer.errorChannel
+    const channelPaths = [...new Set([errorChannel, joinURL(nuxt.options.app.baseURL, errorChannel)].map(path => withTrailingSlash(path)))]
+    nitro.options.devHandlers.unshift({
+      route: '/**',
+      middleware: true,
+      handler: defineEventHandler(event => vouchForLoopbackPeer(event, channelPaths, peerToken)),
     })
   }
   if (!nuxt.options.experimental.nitroViteEnvironment) {

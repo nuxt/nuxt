@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { resolve } from 'pathe'
 
 // `templates.ts` re-imports `./app.ts`, which reads `defaultTemplates.*` at
@@ -106,6 +106,32 @@ describe('publicPathTemplate', () => {
 
     expect(contents).not.toMatch(/import \{ useRuntimeConfig \}/)
     expect(contents).toMatch(/getAppConfig = \(\) => \(/)
+  })
+
+  it('builds server asset urls from the current runtime config', async () => {
+    const { joinRelativeURL } = await import('ufo')
+    const contents = await publicPathTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+    const source = contents
+      .replace(/^import .*$/gm, '')
+      .replace(/\bexport /g, '')
+      .replace(/import\.meta\.(server|client)/g, (_, env) => String(env === 'server'))
+    vi.stubGlobal('__TEST_SERVER__', true)
+    onTestFinished(() => { vi.unstubAllGlobals() })
+    let app = { baseURL: '/', buildAssetsDir: '/_nuxt/', cdnURL: '' }
+    const join = vi.fn(joinRelativeURL)
+    const buildAssetsURL = new Function('joinRelativeURL', 'useRuntimeConfig', `${source}\nreturn buildAssetsURL`)(join, () => ({ app })) as (...path: string[]) => string
+
+    expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
+    expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
+    expect(join).toHaveBeenCalledTimes(1)
+    app = { ...app, baseURL: '/base/' }
+    expect(buildAssetsURL('entry.js')).toBe('/base/_nuxt/entry.js')
+    app = { ...app, cdnURL: 'https://cdn.example.com/' }
+    expect(buildAssetsURL('entry.js')).toBe('https://cdn.example.com/_nuxt/entry.js')
+    app = { ...app, buildAssetsDir: '/assets/' }
+    expect(buildAssetsURL('entry.js')).toBe('https://cdn.example.com/assets/entry.js')
+    expect(buildAssetsURL('chunks', 'entry.js')).toBe('https://cdn.example.com/assets/chunks/entry.js')
+    expect(buildAssetsURL()).toBe('https://cdn.example.com/assets/')
   })
 })
 
