@@ -40,6 +40,11 @@ export const defineRouteProvider = (name = 'RouteProvider'): RouteProviderCompon
     // Provide a reactive route within the page
     const route = {} as RouteLocationNormalizedLoaded
     for (const key in props.route) {
+      // a page renders once on the server, so its route cannot change
+      if (import.meta.server) {
+        (route as unknown as Record<string, unknown>)[key] = previousRoute[key as keyof RouteLocationNormalizedLoaded]
+        continue
+      }
       Object.defineProperty(route, key, {
         get: () => previousKey === props.renderKey ? props.route[key as keyof RouteLocationNormalizedLoaded] : previousRoute[key as keyof RouteLocationNormalizedLoaded],
         enumerable: true,
