@@ -7,7 +7,6 @@ import { loadPayload } from '#app/composables/payload'
 import { preloadRouteComponents } from '#app/composables/preload'
 import { useRouter } from '#app/composables/router'
 import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
-import type { PrefetchScheduler } from '#app/internal/prefetch'
 import layouts from '#build/layouts.mjs'
 
 // the test environment builds with `ssr: false`, which disables payload extraction
@@ -18,7 +17,7 @@ vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
 
 const tick = () => new Promise<void>(resolve => setTimeout(resolve, 0))
 
-function scheduleProbe (scheduler: PrefetchScheduler, key: string, started: string[]) {
+function scheduleProbe (scheduler: ReturnType<typeof usePrefetchScheduler>, key: string, started: string[]) {
   scheduler.schedule({
     key,
     priority: 'payload',
@@ -30,7 +29,7 @@ function scheduleProbe (scheduler: PrefetchScheduler, key: string, started: stri
 }
 
 describe('prefetch scheduler navigation state', () => {
-  let scheduler: PrefetchScheduler
+  let scheduler: ReturnType<typeof usePrefetchScheduler>
   let started: string[]
 
   beforeEach(async () => {
