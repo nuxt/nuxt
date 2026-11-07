@@ -53,7 +53,7 @@ describe('the dev server', () => {
     })
 
     expect((await server.fetch('/about')).status).toBe(500)
-    expect(failure).toHaveBeenCalledWith(expect.objectContaining({ method: 'GET', url: '/about', error: expect.stringContaining('cannot load the server entry') }), { method: 'error' })
+    expect(failure).toHaveBeenCalledWith(expect.objectContaining({ method: 'GET', url: '/about', error: expect.stringContaining('cannot load the server entry'), headersSent: false }), { method: 'error' })
     expect(await (await server.fetch('/about')).text()).toBe('rendered')
     await server.close()
   })
@@ -72,7 +72,7 @@ describe('the dev server', () => {
   })
 
   it('cuts off a response it fails after sending the headers, and keeps serving', async () => {
-    spyOnFailure()
+    const failure = spyOnFailure()
     const handle = vi.fn<Handle>((_req, _res, next) => next())
       .mockImplementationOnce((_req, res, next) => {
         res.writeHead(200).write('partial')
@@ -81,6 +81,7 @@ describe('the dev server', () => {
     const server = await serve({ handle, ssrLoadModule: () => Promise.resolve({ fetch: () => new Response('rendered') }) })
 
     await expect(server.fetch('/about').then(response => response.text())).rejects.toThrow()
+    expect(failure).toHaveBeenCalledWith(expect.objectContaining({ headersSent: true }), { method: 'error' })
     expect(await (await server.fetch('/about')).text()).toBe('rendered')
     await server.close()
   })
