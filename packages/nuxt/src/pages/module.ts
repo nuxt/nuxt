@@ -127,11 +127,15 @@ export default defineNuxtModule({
           if (!isEqual(inlineRulesCache, inlineRules)) {
             // TODO: merge onto `nitro.options._config?.routeRules` instead, without pre-normalising,
             // once `nitro.updateConfig()` re-applies the route rules derived from `publicAssets`
-            const normalizedInlineRules: Record<string, RouteRuleConfig> = {}
+            const normalizedInlineRules: Record<string, Record<string, any>> = {}
             for (const [route, rule] of Object.entries(inlineRules as Record<string, Record<string, any>>)) {
-              normalizedInlineRules[route] = rule.swr === false
-                ? { ...rule, cache: rule.cache ? { ...rule.cache, swr: false } : false }
-                : rule
+              if (rule.swr === false) {
+                normalizedInlineRules[route] = { ...rule, cache: rule.cache ? { ...rule.cache, swr: false } : false }
+              } else if (rule.swr !== undefined && rule.cache === undefined) {
+                normalizedInlineRules[route] = { ...rule, cache: { swr: true, ...typeof rule.swr === 'number' ? { maxAge: rule.swr } : {} } }
+              } else {
+                normalizedInlineRules[route] = rule
+              }
             }
             normalizeAppMiddlewareRules(normalizedInlineRules)
             const routeRules: Record<string, RouteRuleConfig> = { ...(nitro.options as { routeRules?: Record<string, RouteRuleConfig> }).routeRules }

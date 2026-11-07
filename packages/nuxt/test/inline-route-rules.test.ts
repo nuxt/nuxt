@@ -35,8 +35,12 @@ describe('inline route rules', () => {
       nitro.options.routeRules['/uncached'].headers = { 'x-module': 'kept' }
       nitro.options.routeRules['/moved'].appMiddleware = { config: true }
       nitro.options.routeRules['/cached'].appMiddleware = ['module']
+      nitro.options.routeRules['/'] = { cache: false }
       nuxt.hook('pages:resolved', (pages) => {
         for (const page of pages) {
+          if (page.path === '/') {
+            page.rules = { ...page.rules, swr: 60 } as typeof page.rules
+          }
           if (page.path === '/moved' || page.path === '/cached') {
             page.rules = { ...page.rules, appMiddleware: ['page'] } as typeof page.rules
           }
@@ -44,6 +48,7 @@ describe('inline route rules', () => {
       })
       await nuxt.callHook('app:templates', {} as NuxtApp)
 
+      expect(nitro.options.routeRules['/'].cache).toMatchObject({ swr: true, maxAge: 60 })
       expect(nitro.options.routeRules['/uncached']).toMatchObject({ cache: false, headers: { 'x-module': 'kept' } })
       expect(nitro.options.routeRules['/cached']).toMatchObject({
         cache: { swr: false, maxAge: 5 },
