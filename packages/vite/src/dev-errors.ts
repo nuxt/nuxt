@@ -2,9 +2,10 @@ import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import type { ErrorReport } from 'my-bad'
 import type { BuildProgress } from 'my-bad/channel'
+import { isFileLoadingAllowed } from 'vite'
 import type { NormalizedHotChannelClient, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { joinURL } from 'ufo'
-import { ERROR_CHANNEL_ENV, openErrorBroadcast } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, createReportFsLoader, openErrorBroadcast } from 'nuxt/internal/dev-error'
 
 /** The shape Vite gives transform failures. */
 export interface ViteTransformError {
@@ -147,8 +148,13 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       publishedFile = undefined
       file = (error.loc?.file ?? error.id)?.split('?')[0]
       try {
-        const [{ createReport, renderAnsi }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/presets')])
-        const report = await createReport(error, { cwd: nuxt.options.rootDir, kind: 'compile', presets: [nuxtPreset()] })
+        const config = server?.config
+        const [{ createReport, renderAnsi }, { nuxtPreset }, fs] = await Promise.all([
+          import('my-bad'),
+          import('my-bad/presets'),
+          createReportFsLoader({ cwd: nuxt.options.rootDir, canRead: config && (file => isFileLoadingAllowed(config, file)) }),
+        ])
+        const report = await createReport(error, { cwd: nuxt.options.rootDir, kind: 'compile', loaders: [fs], presets: [nuxtPreset()] })
         current = report
         broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
         showOverlay(report)

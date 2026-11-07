@@ -1,8 +1,9 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'pathe'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
+import { createServer } from 'vite'
 import type { ViteDevServer } from 'vite'
 import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from '../src/dev-errors.ts'
 
@@ -93,6 +94,44 @@ describe('createDevErrorReporter', () => {
 
     channel.close()
     nuxt.close()
+  })
+
+  it('only quotes compile errors from files the dev server may load', async () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'nuxt-dev-errors-')))
+    const app = join(root, 'app')
+    const shared = join(root, 'shared')
+    mkdirSync(app)
+    mkdirSync(shared)
+    const allowed = join(shared, 'allowed.js')
+    const denied = join(app, 'blocked.js')
+    const outside = join(root, 'outside.js')
+    writeFileSync(allowed, 'export const value = "ALLOWED_SOURCE"\n')
+    writeFileSync(denied, 'export const value = "DENIED_SOURCE"\n')
+    writeFileSync(outside, 'export const value = "OUTSIDE_SOURCE"\n')
+    const nuxt = createNuxt()
+    nuxt.options.rootDir = app
+    const server = await createServer({
+      configFile: false,
+      logLevel: 'silent',
+      root: app,
+      server: { middlewareMode: true, ws: false, watch: null, fs: { allow: [app, shared], deny: ['**/blocked.js'] } },
+    })
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    reporter.attach(server)
+    const failure = (file: string) => ({ message: 'Parse failed', plugin: 'test', id: file, loc: { file, line: 1, column: 1 } })
+
+    try {
+      expect(JSON.stringify(await reporter.report(failure(allowed)))).toContain('ALLOWED_SOURCE')
+      for (const file of [denied, outside]) {
+        const report = await reporter.report(failure(file))
+        expect(report?.frames.some(frame => frame.file === file)).toBe(true)
+        expect(JSON.stringify(report)).not.toMatch(/DENIED_SOURCE|OUTSIDE_SOURCE/)
+      }
+    } finally {
+      await server.close()
+      nuxt.close()
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 
   it('leaves printing to a dev server that owns the channel', async () => {

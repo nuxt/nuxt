@@ -1,10 +1,16 @@
 import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import { ERROR_CHANNEL_ENV, clearErrorReport, createDevErrorReporter, createErrorReport, setErrorChannelForwarding } from 'nuxt/internal/dev-error'
+import { isFileLoadingAllowed } from 'vite'
 import type { ViteDevServer } from 'vite'
 
 import { REMOTE_DEV_ERROR_CLEAR_EVENT, REMOTE_DEV_ERROR_EVENT, REMOTE_DEV_ERROR_REPORT_EVENT, deserializeError } from './runtime/remote-dev-error.ts'
 import type { RemoteDevError, RemoteDevErrorReport } from './runtime/remote-dev-error.ts'
+
+/** Whether a report may quote a file from disk, as the dev server would load it. */
+export function reportFileAccess (server: ViteDevServer): (file: string) => boolean {
+  return file => isFileLoadingAllowed(server.config, file)
+}
 
 /**
  * Report errors raised by renders a deploy target runs outside this process, whose stacks
@@ -18,7 +24,7 @@ export function listenForRemoteDevErrors (nuxt: Nuxt, server: ViteDevServer, cha
   const observe = createDevErrorReporter<NonNullable<RemoteDevError['request']>>({
     cwd: nuxt.options.rootDir,
     channel: channelPath,
-    createReport: (error, request) => createErrorReport(error, { cwd: nuxt.options.rootDir, context: { request } }),
+    createReport: (error, request) => createErrorReport(error, { cwd: nuxt.options.rootDir, canRead: reportFileAccess(server), context: { request } }),
     requestInfo: request => ({ method: request.method, url: new URL(request.url), headers: new Headers(request.headers) }),
   })
 

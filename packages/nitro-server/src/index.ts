@@ -3,7 +3,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { randomUUID } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
+import process from 'node:process'
 import type { Nuxt, NuxtOptions, ServerRouteSegment } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
@@ -26,7 +27,8 @@ import { runtimeDependencies } from 'nitropack/runtime/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
 import { distDir, getLayerNodeModulesExcludePattern, isNuxtDistId, linkStaticDist, resolveNitroCommand, toArray, toFsDriverIgnorePatterns, toTranspileNoExternal } from './utils.ts'
-import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer } from './dev-request.ts'
+import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from './dev-request.ts'
+import { DEV_PEER_TOKEN_ENV } from 'nuxt/internal/dev/peer'
 import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -46,6 +48,7 @@ type NitroTSConfig = NonNullable<NonNullable<NitroConfig['typescript']>['tsConfi
 const REQUEST_TYPES_MODULE = '@nuxt/nitro-server/request-types'
 
 const UNHEAD_IMPORT_RE = /^unhead(?:\/|$)/
+const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
 
 const logLevelMapReverse = {
   silent: 0,
@@ -158,10 +161,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   if (nuxt.options.dev) {
+    let reportFs: { allow: string[], deny: string[], strict?: boolean } | undefined
+    nuxt.hook('vite:serverCreated', (server) => {
+      const { allow, deny, strict } = server.config.server.fs
+      // the dev server is denied nitro's dev output, which reports read to map server frames
+      const serverDir = nuxt._nitro?.options.output.serverDir
+      const outputPattern = serverDir && `${serverDir.replace(GLOB_SPECIAL_CHARS_RE, '\\$&')}/**`
+      reportFs = { allow, deny: deny.filter(pattern => pattern !== outputPattern), strict }
+    })
     nuxt.options.nitro.virtual = defu(nuxt.options.nitro.virtual, {
       '#internal/dev-server-logs-options': () => [
         `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
         `export const srcDir = ${JSON.stringify(nuxt.options.srcDir)};`,
+        `export const reportFs = ${JSON.stringify(reportFs ?? {
+          allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
+          deny: [],
+        })};`,
       ].join('\n'),
     })
     nuxt.options.nitro.externals = defu(nuxt.options.nitro.externals, {
@@ -1060,6 +1075,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       route: joinURL(nuxt.options.devServer.errorChannel, '**'),
       lazy: true,
       handler: resolve(distDir, 'runtime/handlers/error-channel'),
+    })
+    const peerToken = process.env[DEV_PEER_TOKEN_ENV] ||= randomBytes(32).toString('base64url')
+    const errorChannel = nuxt.options.devServer.errorChannel
+    const channelPaths = [...new Set([errorChannel, joinURL(nuxt.options.app.baseURL, errorChannel)].map(path => withTrailingSlash(path)))]
+    nitro.options.devHandlers.unshift({
+      handler: defineEventHandler(event => vouchForLoopbackPeer(event, channelPaths, peerToken)),
     })
   }
   nitro.options.handlers.unshift({
