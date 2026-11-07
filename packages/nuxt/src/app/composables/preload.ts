@@ -7,6 +7,9 @@ import { prefetchGroup } from '../internal/prefetch-util'
 import { toArray } from '../utils'
 import { useRouter } from './router'
 
+export { prefetchGroup }
+export { usePrefetchScheduler } from '../internal/prefetch-scheduler'
+
 /**
  * Preload a component or components that have been globally registered.
  * @param components Pascal-cased name or names of components to prefetch
