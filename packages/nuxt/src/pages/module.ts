@@ -100,12 +100,8 @@ export default defineNuxtModule({
     let inlineRulesCache: Record<string, RouteRuleConfig> = {}
     let updateRouteConfig: (inlineRules: Record<string, RouteRuleConfig>) => void | Promise<void>
     if (nuxt.options.experimental.inlineRouteRules) {
-      // without a server builder to register them with, the rules the build compiles are
-      // the configured ones, so extracted rules are merged into the configuration itself
       const overwritten = new Map<string, RouteRuleConfig | undefined>()
-      updateRouteConfig = (inlineRules) => {
-        if (isEqual(inlineRulesCache, inlineRules)) { return }
-        const rules = (nuxt.options.routeRules ||= {})
+      const applyInlineRules = (rules: Record<string, RouteRuleConfig>, inlineRules: Record<string, RouteRuleConfig>) => {
         for (const [route, previous] of overwritten) {
           if (previous === undefined) {
             delete rules[route]
@@ -118,12 +114,33 @@ export default defineNuxtModule({
           overwritten.set(route, rules[route])
           rules[route] = defu(inline, rules[route])
         }
+      }
+      // without a server builder to register them with, the rules the build compiles are
+      // the configured ones, so extracted rules are merged into the configuration itself
+      updateRouteConfig = (inlineRules) => {
+        if (isEqual(inlineRulesCache, inlineRules)) { return }
+        applyInlineRules((nuxt.options.routeRules ||= {}), inlineRules)
         inlineRulesCache = inlineRules
       }
       nuxt.hook('nitro:init', (nitro) => {
         updateRouteConfig = async (inlineRules) => {
           if (!isEqual(inlineRulesCache, inlineRules)) {
-            const routeRules = defu(inlineRules, nitro.options._config?.routeRules)
+            // TODO: merge onto `nitro.options._config?.routeRules` instead, without pre-normalising,
+            // once `nitro.updateConfig()` re-applies the route rules derived from `publicAssets`
+            const normalizedInlineRules: Record<string, Record<string, any>> = {}
+            for (const [route, rule] of Object.entries(inlineRules as Record<string, Record<string, any>>)) {
+              if (rule.swr === false) {
+                normalizedInlineRules[route] = { ...rule, cache: rule.cache ? { ...rule.cache, swr: false } : false }
+              } else if (rule.swr !== undefined && rule.cache === undefined) {
+                normalizedInlineRules[route] = { ...rule, cache: { swr: true, ...typeof rule.swr === 'number' ? { maxAge: rule.swr } : {} } }
+              } else {
+                normalizedInlineRules[route] = rule
+              }
+            }
+            normalizeAppMiddlewareRules(normalizedInlineRules)
+            const routeRules: Record<string, RouteRuleConfig> = { ...(nitro.options as { routeRules?: Record<string, RouteRuleConfig> }).routeRules }
+            normalizeAppMiddlewareRules(routeRules)
+            applyInlineRules(routeRules, normalizedInlineRules)
             normalizeAppMiddlewareRules(routeRules)
             await nitro.updateConfig({ routeRules })
             nitro.routing?.sync()
