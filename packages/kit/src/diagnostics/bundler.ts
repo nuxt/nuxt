@@ -176,5 +176,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { packageName: string, exportName: string, cause?: unknown }) => `Reinstall \`${p.packageName}\` with a version compatible with \`@rsbuild/core\`.`,
       docs: false,
     },
+    NUXT_B7036: {
+      why: (p: { method: string, url: string, error: string }) => `Handling \`${p.method} ${p.url}\` threw, so the dev server responded with a 500: ${p.error}`,
+      fix: 'Fix the error in the stack trace. If it does not point at your app or a module, please report it at https://github.com/nuxt/nuxt/issues.',
+      docs: false,
+    },
   },
 })

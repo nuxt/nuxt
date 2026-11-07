@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { logger } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
 import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
@@ -140,7 +140,7 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
         await sendNodeResponse(res, await respond(new NodeRequest({ req, res }), req.url || '/'))
       } catch (error) {
         if (!viteServer?.config.logger.hasErrorLogged(error as Error)) {
-          logger.error(`Failed to respond to \`${req.method} ${req.url}\`:`, error)
+          bundlerDiagnostics.NUXT_B7036({ method: req.method!, url: req.url!, error: (error as Error | undefined)?.stack || String(error), cause: error }, { method: 'error' })
         }
         if (res.headersSent) {
           res.destroy()

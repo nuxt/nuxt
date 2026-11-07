@@ -2,12 +2,14 @@ import { createServer } from 'node:http'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { logger } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 
 import { setupDevServer } from '../src/dev.ts'
 
 type Handle = (req: IncomingMessage, res: ServerResponse, next: (error?: unknown) => void) => void
+
+const spyOnFailure = () => vi.spyOn(bundlerDiagnostics, 'NUXT_B7036').mockImplementation(() => undefined as never)
 
 async function serve (options: { ssrLoadModule: () => Promise<unknown>, hasErrorLogged?: (error: unknown) => boolean, handle?: Handle }) {
   const viteServer = {
@@ -43,7 +45,7 @@ describe('the dev server', () => {
   })
 
   it('responds with an error to a request it fails, and keeps serving', async () => {
-    const error = vi.spyOn(logger, 'error').mockImplementation(() => {})
+    const failure = spyOnFailure()
     const server = await serve({
       ssrLoadModule: vi.fn()
         .mockRejectedValueOnce(new Error('cannot load the server entry'))
@@ -51,26 +53,26 @@ describe('the dev server', () => {
     })
 
     expect((await server.fetch('/about')).status).toBe(500)
-    expect(error).toHaveBeenCalledWith('Failed to respond to `GET /about`:', expect.objectContaining({ message: 'cannot load the server entry' }))
+    expect(failure).toHaveBeenCalledWith(expect.objectContaining({ method: 'GET', url: '/about', error: expect.stringContaining('cannot load the server entry') }), { method: 'error' })
     expect(await (await server.fetch('/about')).text()).toBe('rendered')
     await server.close()
   })
 
   it('leaves an error vite has logged to vite', async () => {
-    const error = vi.spyOn(logger, 'error').mockImplementation(() => {})
-    const failure = new Error('cannot evaluate the server entry')
+    const failure = spyOnFailure()
+    const error = new Error('cannot evaluate the server entry')
     const server = await serve({
-      ssrLoadModule: () => Promise.reject(failure),
-      hasErrorLogged: error => error === failure,
+      ssrLoadModule: () => Promise.reject(error),
+      hasErrorLogged: logged => logged === error,
     })
 
     expect((await server.fetch('/about')).status).toBe(500)
-    expect(error).not.toHaveBeenCalled()
+    expect(failure).not.toHaveBeenCalled()
     await server.close()
   })
 
   it('cuts off a response it fails after sending the headers, and keeps serving', async () => {
-    vi.spyOn(logger, 'error').mockImplementation(() => {})
+    spyOnFailure()
     const handle = vi.fn<Handle>((_req, _res, next) => next())
       .mockImplementationOnce((_req, res, next) => {
         res.writeHead(200).write('partial')
