@@ -282,6 +282,20 @@ describe('router options template', () => {
 
   it('uses `sensitive` from the config', async () => {
     const contents = await getRouterOptionsTemplate('const options = { sensitive: false }\nexport default options')
-    expect(contents.trim().split('\n').slice(-2)).toEqual(['sensitive: true,', '}'])
+    expect(contents).toContain('sensitive: true,\n}')
+  })
+
+  it('distinguishes custom scroll handlers from inherited or disabled handlers', async () => {
+    const contents = await getRouterOptionsTemplate('export default {}')
+    const evaluate = new Function('routerOptions0', 'routerOptions1', contents
+      .replace(/^import .*$/gm, '')
+      .replaceAll('export const', 'const')
+      .replace('export default routerOptions', 'return hasCustomScrollBehavior'))
+    const defaults = { scrollBehavior: () => ({ top: 0 }) }
+
+    expect(evaluate(defaults, {})).toBe(false)
+    expect(evaluate(defaults, { scrollBehavior: defaults.scrollBehavior })).toBe(false)
+    expect(evaluate(defaults, { scrollBehavior: () => ({ top: 200 }) })).toBe(true)
+    expect(evaluate(defaults, { scrollBehavior: undefined })).toBe(false)
   })
 })

@@ -307,6 +307,7 @@ export default defineNuxtModule({
         getContents: () => {
           return [
             'export const hashMode = false',
+            'export const hasCustomScrollBehavior = false',
             'export default {}',
           ].join('\n')
         },
@@ -910,6 +911,8 @@ export default defineNuxtModule({
           .map(([key, value]) => [key, genString(value as string)]))
 
         const hashModes: string[] = []
+        const builtInRouterOptionsIndex = routerOptionsFiles.findIndex(file => file.path === builtInRouterOptions)
+        const defaultScrollBehavior = builtInRouterOptionsIndex === -1 ? 'undefined' : `routerOptions${builtInRouterOptionsIndex}.scrollBehavior`
         for (let index = 0; index < routerOptionsFiles.length; index++) {
           const file = routerOptionsFiles[index]!
           if (file.path !== builtInRouterOptions) {
@@ -924,11 +927,13 @@ export default defineNuxtModule({
             ...hashModes,
             nuxt.options.router.options.hashMode,
           ].join(' ?? ')}`,
-          'export default {',
+          'const routerOptions = {',
           '...configRouterOptions,',
           ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
           `sensitive: ${!!nuxt.options.router.options.sensitive},`,
           '}',
+          `export const hasCustomScrollBehavior = typeof routerOptions.scrollBehavior === 'function' && routerOptions.scrollBehavior !== ${defaultScrollBehavior}`,
+          'export default routerOptions',
         ].join('\n')
       },
     })
