@@ -620,6 +620,41 @@ describe('useAsyncData', () => {
     })
   })
 
+  it('should cancel a pending request when a watched dependency changes again, with dedupe: cancel', async () => {
+    const route = ref('/')
+    const pending: Record<string, (value: string) => void> = {}
+    const promiseFn = vi.fn(() => {
+      const path = route.value
+      return new Promise<string>(resolve => (pending[path] = resolve))
+    })
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [route], dedupe: 'cancel', immediate: false })
+        return () => h('div', [data.value])
+      },
+    })
+
+    const c = await mountSuspended(component)
+
+    route.value = '/a'
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    // changed again while the request for '/a' is pending: the request for '/b' is made at once
+    route.value = '/b'
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+
+    // the cancelled request for '/a' settles first, and its data is never committed
+    pending['/a']!('/a')
+    await flushPromises()
+    expect(c.text()).toBe('')
+
+    pending['/b']!('/b')
+    await flushPromises()
+    expect(c.text()).toBe('/b')
+  })
+
   it('should batch watched dependency updates cascading within the same flush into a single refresh', async () => {
     const a = ref(0)
     const b = ref(0)

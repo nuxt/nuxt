@@ -111,6 +111,44 @@ describe('debounceTick', () => {
     expect(fn).toHaveBeenLastCalledWith(2)
   })
 
+  it('calls again at the next flush, without waiting, when `waitForPending` returns false', async () => {
+    const { fn, settled, resolveNext } = createControllableFn()
+    const debounced = debounceTick(fn, { waitForPending: value => value % 2 === 0 })
+
+    debounced(1)
+    await flushPromises()
+    expect(fn).toHaveBeenCalledTimes(1)
+
+    // an even value waits for the pending call to settle
+    debounced(2)
+    await flushPromises()
+    expect(fn).toHaveBeenCalledTimes(1)
+
+    // an odd value doesn't, and is the latest arguments
+    debounced(3)
+    await flushPromises()
+    expect(fn).toHaveBeenCalledTimes(2)
+    expect(fn).toHaveBeenLastCalledWith(3)
+
+    // the call it overtook settling neither calls again nor clears the newer call
+    resolveNext()
+    await flushPromises()
+    expect(fn).toHaveBeenCalledTimes(2)
+    debounced(4)
+    await flushPromises()
+    expect(fn).toHaveBeenCalledTimes(2)
+
+    // the newer call settling makes the trailing call it waited for
+    resolveNext()
+    await flushPromises()
+    expect(fn).toHaveBeenCalledTimes(3)
+    expect(fn).toHaveBeenLastCalledWith(4)
+
+    resolveNext()
+    await flushPromises()
+    expect(settled).toEqual([1, 3, 4])
+  })
+
   it('`this` is preserved', async () => {
     class Fixture {
       _foo = 'fixture'

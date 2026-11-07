@@ -1029,7 +1029,11 @@ function buildAsyncData<
       nuxtApp._asyncDataPromises[key] = promise
       return nuxtApp._asyncDataPromises[key]!
     },
-    _execute: debounceTick((...args) => asyncData.execute(...args)),
+    _execute: debounceTick((...args) => asyncData.execute(...args), {
+      // with `dedupe: 'cancel'`, a request made while one is pending cancels it, rather than waiting
+      // for it and committing its data first
+      waitForPending: opts => (opts?.dedupe ?? options.dedupe) !== 'cancel',
+    }),
     _default: options.default!,
     _deps: 0,
     _init: true,
