@@ -55,7 +55,11 @@ describe('PerfPlugin', () => {
   it('should keep recording perf timings', () => {
     const recorded: string[] = []
     const plugin: Plugin = { name: 'test-plugin', resolveId: id => id }
-    applyPerfPlugin(createNuxt({}, { recordBundlerPluginHook: (name: string, hook: string) => recorded.push(`${name}:${hook}`) } as any), [plugin])
+    const timeBundlerHook = (name: string, hook: string, ctx: unknown, run: (ctx: unknown) => unknown) => {
+      recorded.push(`${name}:${hook}`)
+      return run(ctx)
+    }
+    applyPerfPlugin(createNuxt({}, { timeBundlerHook } as any), [plugin])
     expect((plugin.resolveId as any).call({}, 'x')).toBe('x')
     expect(recorded).toEqual(['test-plugin:resolveId'])
   })
