@@ -34,14 +34,21 @@ describe('inline route rules', () => {
       const nitro = (nuxt as any)._nitro
       nitro.options.routeRules['/uncached'].headers = { 'x-module': 'kept' }
       nitro.options.routeRules['/moved'].appMiddleware = { config: true }
+      nitro.options.routeRules['/cached'].appMiddleware = ['module']
       nuxt.hook('pages:resolved', (pages) => {
-        const page = pages.find(page => page.path === '/moved')!
-        page.rules = { ...page.rules, appMiddleware: ['page'] } as typeof page.rules
+        for (const page of pages) {
+          if (page.path === '/moved' || page.path === '/cached') {
+            page.rules = { ...page.rules, appMiddleware: ['page'] } as typeof page.rules
+          }
+        }
       })
       await nuxt.callHook('app:templates', {} as NuxtApp)
 
       expect(nitro.options.routeRules['/uncached']).toMatchObject({ cache: false, headers: { 'x-module': 'kept' } })
-      expect(nitro.options.routeRules['/cached'].cache).toMatchObject({ swr: false, maxAge: 5 })
+      expect(nitro.options.routeRules['/cached']).toMatchObject({
+        cache: { swr: false, maxAge: 5 },
+        appMiddleware: { module: true, page: true },
+      })
       expect(nitro.options.routeRules['/moved']).toMatchObject({
         redirect: { to: '/', status: 301 },
         appMiddleware: { config: true, page: true },

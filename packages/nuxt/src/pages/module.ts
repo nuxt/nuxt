@@ -135,6 +135,7 @@ export default defineNuxtModule({
             }
             normalizeAppMiddlewareRules(normalizedInlineRules)
             const routeRules: Record<string, RouteRuleConfig> = { ...nitro.options.routeRules }
+            normalizeAppMiddlewareRules(routeRules)
             applyInlineRules(routeRules, normalizedInlineRules)
             normalizeAppMiddlewareRules(routeRules)
             await nitro.updateConfig({ routeRules })
