@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { logger } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
 import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
@@ -132,10 +133,22 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
 
   nuxt.server = {
     handler: async (req: IncomingMessage, res: ServerResponse) => {
-      if (viteServer && await handledByVite(viteServer, req, res)) {
-        return
+      try {
+        if (viteServer && await handledByVite(viteServer, req, res)) {
+          return
+        }
+        await sendNodeResponse(res, await respond(new NodeRequest({ req, res }), req.url || '/'))
+      } catch (error) {
+        if (!viteServer?.config.logger.hasErrorLogged(error as Error)) {
+          logger.error(`Failed to respond to \`${req.method} ${req.url}\`:`, error)
+        }
+        if (res.headersSent) {
+          res.destroy()
+        } else {
+          res.statusCode = 500
+          res.end('Internal Server Error')
+        }
       }
-      await sendNodeResponse(res, await respond(new NodeRequest({ req, res }), req.url || '/'))
     },
   }
 }
