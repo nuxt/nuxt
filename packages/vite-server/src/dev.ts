@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { inspect } from 'node:util'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
@@ -143,7 +144,7 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
         await sendNodeResponse(res, await respond(new NodeRequest({ req, res }), req.url || '/'))
       } catch (error) {
         if (!viteServer?.config.logger.hasErrorLogged(error as Error)) {
-          bundlerDiagnostics.NUXT_B7036({ method: req.method!, url: req.url!, error: (error as Error | undefined)?.stack || String(error), headersSent: res.headersSent, cause: error }, { method: 'error' })
+          bundlerDiagnostics.NUXT_B7036({ method: req.method!, url: req.url!, error: inspect(error), headersSent: res.headersSent, cause: error }, { method: 'error' })
         }
         if (res.headersSent) {
           res.destroy()

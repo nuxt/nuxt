@@ -48,12 +48,12 @@ describe('the dev server', () => {
     const failure = spyOnFailure()
     const server = await serve({
       ssrLoadModule: vi.fn()
-        .mockRejectedValueOnce(new Error('cannot load the server entry'))
+        .mockRejectedValueOnce(new Error('cannot load the server entry', { cause: new Error('missing module') }))
         .mockResolvedValue({ fetch: () => new Response('rendered') }),
     })
 
     expect((await server.fetch('/about')).status).toBe(500)
-    expect(failure).toHaveBeenCalledWith(expect.objectContaining({ method: 'GET', url: '/about', error: expect.stringContaining('cannot load the server entry'), headersSent: false }), { method: 'error' })
+    expect(failure).toHaveBeenCalledWith(expect.objectContaining({ method: 'GET', url: '/about', error: expect.stringMatching(/cannot load the server entry[\s\S]*\[cause\]: Error: missing module/), headersSent: false }), { method: 'error' })
     expect(await (await server.fetch('/about')).text()).toBe('rendered')
     await server.close()
   })
