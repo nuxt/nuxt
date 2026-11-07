@@ -30,7 +30,29 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): vo
   const nitroConfig: NitroConfig = nuxt.options.nitro
   Object.assign(nitroConfig.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nitroConfig.runtimeConfig))
 
-  return tryUseNitro()?.updateConfig({ runtimeConfig: runtimeConfig as any })
+  const nitro = tryUseNitro()
+  if (!nitro) {
+    return
+  }
+  return nitro.updateConfig({
+    // nitro coerces `undefined` to `''`, which would shadow derived keys such as `nitro.envExpansion`
+    runtimeConfig: withoutUndefined(defu(runtimeConfig, nitro.options.runtimeConfig)) as any,
+    // TODO: drop once `nitro.updateConfig({ runtimeConfig })` stops resetting `runtimeConfig.nitro.routeRules` from `config.routeRules`
+    routeRules: (nitro.options as Record<string, any>).routeRules,
+  })
+}
+
+function withoutUndefined<T> (value: T): T {
+  if (!value || typeof value !== 'object' || Object.getPrototypeOf(value) !== Object.prototype) {
+    return value
+  }
+  const result: Record<string, unknown> = {}
+  for (const [key, child] of Object.entries(value)) {
+    if (child !== undefined) {
+      result[key] = withoutUndefined(child)
+    }
+  }
+  return result as T
 }
 
 /**
