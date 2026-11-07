@@ -324,6 +324,14 @@ async function renderErrorAnsi (report: ErrorReport, options: { cwd: string }): 
   return renderAnsi(withoutEchoingCauses(report), { cwd: options.cwd })
 }
 
+// eslint-disable-next-line no-control-regex -- control characters are exactly what is being stripped
+const CONTROL_CHARACTER_RE = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F]/g
+
+/** `text` without the C0 and C1 control characters, other than tab and newline, that could drive a terminal. */
+export function stripControlCharacters (text: string): string {
+  return text.replace(CONTROL_CHARACTER_RE, '')
+}
+
 /** Print a report to the terminal, falling back to the raw error when it cannot be rendered. */
 async function printErrorReport (report: ErrorReport, options: { cwd: string, error?: unknown, request?: ErrorRequestInfo }): Promise<void> {
   const label = options.request ? ` [${options.request.method}] ${options.request.url.href}` : ''
@@ -331,7 +339,8 @@ async function printErrorReport (report: ErrorReport, options: { cwd: string, er
   if (rendered) {
     console.log(`[request error]${label}\n\n${rendered}`)
   } else {
-    console.error(`[request error]${label}\n\n`, options.error ?? report.message)
+    const error = options.error instanceof Error ? options.error.stack || options.error.message : options.error ?? report.message
+    console.error(`[request error]${label}\n\n${stripControlCharacters(String(error))}`)
   }
 }
 

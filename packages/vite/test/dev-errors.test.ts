@@ -159,6 +159,18 @@ describe('createDevErrorReporter', () => {
     nuxt.close()
   })
 
+  it('strips control characters from the raw error it prints', async () => {
+    const nuxt = createNuxt()
+    const print = vi.fn()
+    const reporter = createDevErrorReporter(nuxt, { print })
+    Object.defineProperty(nuxt.options, 'rootDir', { get: () => { throw new Error('nope') } })
+
+    await reporter.report({ ...transformError, message: 'Illegal \u001B\u001B[2J[2J\u001B]52;c;ZXZpbA==\u0007tag\r\nin template' })
+    expect(print).toHaveBeenCalledWith('Illegal [2J[2J]52;c;ZXZpbA==tag\nin template')
+
+    nuxt.close()
+  })
+
   it('announces the overlay to open pages, and serves it to the page that asks', async () => {
     const nuxt = createNuxt()
     const reporter = createDevErrorReporter(nuxt, { print: () => {} })
@@ -346,6 +358,44 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     expect(JSON.stringify(messages[0].report)).not.toContain('should never reach a report')
 
     rmSync(dir, { recursive: true })
+    channel.close()
+    nuxt.close()
+  })
+
+  it('strips control characters from a runtime error it prints raw', async () => {
+    const nuxt = createNuxt()
+    const print = vi.fn()
+    const reporter = createDevErrorReporter(nuxt, { print })
+    const { server, listeners } = devServer({ graph: clientGraph() })
+    reporter.attach(server)
+    Object.defineProperty(nuxt.options, 'rootDir', { get: () => { throw new Error('nope') } })
+
+    listeners['nuxt:dev:client-error']!({ name: '\u001B[2J', message: 'boom', stack: 'Error: \u001B\u001B[31m[31mboom\u0007' }, { send: vi.fn() })
+    await vi.waitFor(() => expect(print).toHaveBeenCalledTimes(1))
+    expect(print).toHaveBeenCalledWith('Error: [31m[31mboom')
+
+    nuxt.close()
+  })
+
+  it('ignores hmr events whose fields do not have the expected types', async () => {
+    const nuxt = createNuxt()
+    const print = vi.fn()
+    const { messages, channel } = listen()
+    const reporter = createDevErrorReporter(nuxt, { print })
+    const { server, listeners } = devServer({ graph: clientGraph() })
+    reporter.attach(server)
+    const client = { send: vi.fn() }
+
+    for (const data of [null, 'boom', { message: 42 }]) {
+      listeners['nuxt:dev:client-error']!(data, client)
+      expect(() => listeners['nuxt:dev:error:shown']!(data, client)).not.toThrow()
+    }
+    listeners['nuxt:dev:client-error']!({ name: 42, message: 'boom', stack: {}, fatal: 'no' }, client)
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+
+    expect(messages[0].report).toMatchObject({ name: 'Error', message: 'boom' })
+    expect(print).toHaveBeenCalledTimes(1)
+
     channel.close()
     nuxt.close()
   })
