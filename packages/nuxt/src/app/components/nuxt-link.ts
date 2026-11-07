@@ -314,13 +314,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       isActive = index > -1 && includesParams(currentRoute.params, route.params)
       isExactActive = index > -1 && index === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.params)
     }
-    return {
-      get route () { return route ??= router.resolve(rawTo) },
-      href: sanitizeAnchorHref(href),
-      isActive,
-      isExactActive,
-      navigate: async () => { await navigateTo(href, { replace: props.replace }) },
-    }
+    return new StaticLink(router, rawTo, route, href, isActive, isExactActive, props.replace)
   }
 
   /**
@@ -411,6 +405,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     const link = resolveStaticLink(props, router, rawTo)
     const vnodes = slots.default?.({
       ...link,
+      route: link.route,
       rel: firstNonUndefined<string | null>(props.noRel ? '' : props.rel, options.externalRelAttribute, '') || null,
       target: props.target || null,
       isExternal: false,
@@ -791,6 +786,31 @@ function isSameRouteLocationParams (a: RouteParamsGeneric, b: RouteParamsGeneric
     if (!isSameParamValue(a[key], b[key])) { return false }
   }
   return true
+}
+
+/** The link state `<RouterLink>` exposes for an internal location, resolving `route` when it is read. */
+class StaticLink {
+  href: string | null
+  isActive: boolean
+  isExactActive: boolean
+  navigate: () => Promise<void>
+  #router: Router
+  #to: RouteLocationRaw
+  #route: RouteLocationResolved | undefined
+
+  constructor (router: Router, to: RouteLocationRaw, route: RouteLocationResolved | undefined, href: string, isActive: boolean, isExactActive: boolean, replace: boolean | undefined) {
+    this.href = sanitizeAnchorHref(href)
+    this.isActive = isActive
+    this.isExactActive = isExactActive
+    this.navigate = async () => { await navigateTo(href, { replace }) }
+    this.#router = router
+    this.#to = to
+    this.#route = route
+  }
+
+  get route (): RouteLocationResolved {
+    return this.#route ??= this.#router.resolve(this.#to)
+  }
 }
 
 /** @internal */
