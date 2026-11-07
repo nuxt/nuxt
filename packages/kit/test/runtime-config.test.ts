@@ -186,7 +186,7 @@ describe('updateRuntimeConfig', () => {
     vi.restoreAllMocks()
   })
 
-  function stubNuxt (nitro?: { updateConfig: (config: unknown) => void }) {
+  function stubNuxt (nitro?: { options: Record<string, unknown>, updateConfig: (config: unknown) => void }) {
     const nuxt = { options: { nitro: { runtimeConfig: { existing: 'value' } } }, _nitro: nitro }
     vi.spyOn(context, 'useNuxt').mockReturnValue(nuxt as any)
     vi.spyOn(context, 'tryUseNuxt').mockReturnValue(nuxt as any)
@@ -203,11 +203,21 @@ describe('updateRuntimeConfig', () => {
 
   it('should update the nitro instance when there is one', () => {
     const updateConfig = vi.fn()
-    stubNuxt({ updateConfig })
+    const routeRules = { '/**': { ssr: true } }
+    stubNuxt({
+      options: {
+        routeRules,
+        runtimeConfig: { existing: 'nitro', example: { baz: 'qux' }, nitro: { envPrefix: 'NUXT_', routeRules } },
+      },
+      updateConfig,
+    })
 
     updateRuntimeConfig({ example: { foo: 'bar' } })
 
-    expect(updateConfig).toHaveBeenCalledWith({ runtimeConfig: { example: { foo: 'bar' } } })
+    expect(updateConfig).toHaveBeenCalledWith({
+      runtimeConfig: { existing: 'nitro', example: { foo: 'bar', baz: 'qux' }, nitro: { envPrefix: 'NUXT_', routeRules } },
+      routeRules,
+    })
   })
 
   it('should not warn when nitro is not initialized yet', () => {
