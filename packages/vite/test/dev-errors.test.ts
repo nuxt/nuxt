@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import { createServer } from 'vite'
 import type { ViteDevServer } from 'vite'
+import type { ErrorReport } from 'my-bad'
 import { DevErrorsPlugin, DevRequestErrorsPlugin, createDevErrorReporter, isTransformError } from '../src/dev-errors.ts'
 
 const transformError = {
@@ -661,6 +662,58 @@ describe('createDevErrorReporter (errors reported elsewhere)', () => {
 
     channel.close()
     nuxt.close()
+  })
+})
+
+describe('createDevErrorReporter (problem sets)', () => {
+  it('posts problem sets, and repeats them to a channel that asks', async () => {
+    const nuxt = createNuxt()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    const { messages, channel } = listen()
+    const report: ErrorReport = { id: 'd1', kind: 'error', name: 'vue-tsc', message: 'x', frames: [], causes: [], sections: [], timestamp: 0 }
+    const problems = { type: 'nuxt:dev:error:problems', source: 'checker:vue-tsc', reports: [report], meta: { label: 'vue-tsc', status: 'idle' } }
+
+    reporter.setProblems('checker:vue-tsc', [report], { label: 'vue-tsc', status: 'idle' })
+    await vi.waitFor(() => expect(messages).toEqual([problems]))
+
+    channel.postMessage({ type: 'nuxt:dev:error:sync' })
+    await vi.waitFor(() => expect(messages).toEqual([problems, problems]))
+
+    reporter.clearProblems('checker:vue-tsc')
+    reporter.clearProblems('checker:vue-tsc')
+    await vi.waitFor(() => expect(messages).toHaveLength(3))
+    expect(messages[2]).toEqual({ type: 'nuxt:dev:error:problems:clear', source: 'checker:vue-tsc' })
+
+    channel.postMessage({ type: 'nuxt:dev:error:sync' })
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(messages).toHaveLength(3)
+
+    channel.close()
+    nuxt.close()
+  })
+
+  it('clears its problem sets when Nuxt closes, and ignores them afterwards', async () => {
+    const nuxt = createNuxt()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    const { messages, channel } = listen()
+    const report: ErrorReport = { id: 'd1', kind: 'error', name: 'vue-tsc', message: 'x', frames: [], causes: [], sections: [], timestamp: 0 }
+
+    reporter.setProblems('checker:vue-tsc', [report], { label: 'vue-tsc' })
+    await reporter.report(transformError)
+    nuxt.close()
+    expect(() => {
+      reporter.setProblems('checker:vue-tsc', [report], { label: 'vue-tsc' })
+      reporter.clearProblems('checker:vue-tsc')
+      reporter.progress({ phase: 'transform', percent: 100 })
+      reporter.clear()
+    }).not.toThrow()
+
+    await vi.waitFor(() => expect(messages).toHaveLength(3))
+    expect(messages[2]).toEqual({ type: 'nuxt:dev:error:problems:clear', source: 'checker:vue-tsc' })
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(messages).toHaveLength(3)
+
+    channel.close()
   })
 })
 

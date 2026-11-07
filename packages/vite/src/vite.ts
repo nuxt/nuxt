@@ -319,7 +319,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   })
   config.configFile = false
   if (devErrors) {
-    config.plugins!.push(DevErrorsPlugin(devErrors), DevRequestErrorsPlugin(devErrors))
+    const { CheckerBridgePlugin } = await import('./checker-bridge.ts')
+    config.plugins!.push(DevErrorsPlugin(devErrors), DevRequestErrorsPlugin(devErrors), CheckerBridgePlugin(devErrors))
   }
 
   for (const environment of ['client', 'ssr']) {

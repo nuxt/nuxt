@@ -1,11 +1,12 @@
 import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import type { ErrorReport } from 'my-bad'
-import type { BuildProgress } from 'my-bad/channel'
+import type { BuildProgress, ProblemMeta } from 'my-bad/channel'
 import { isFileLoadingAllowed } from 'vite'
 import type { ServerResponse } from 'node:http'
 import type { Connect, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { ERROR_CHANNEL_ENV, REQUEST_ID_HEADER, createReportFsLoader, openErrorBroadcast, stripControlCharacters } from 'nuxt/internal/dev-error'
+import type { ErrorChannelMessage } from 'nuxt/internal/dev-error'
 
 /** The shape Vite gives transform failures. */
 export interface ViteTransformError {
@@ -49,6 +50,10 @@ export interface DevErrorReporter {
   progress: (progress: BuildProgress) => void
   /** Report the errors open pages raise, and the compile errors Vite only sends to them. */
   attach: (server: ViteDevServer) => void
+  /** Replace the problem set for `source`. */
+  setProblems: (source: string, reports: ErrorReport[], meta?: ProblemMeta) => void
+  /** Clear the problem set for `source`. */
+  clearProblems: (source: string) => void
   /** Report an error a dev server middleware raised serving `request`, as `METHOD /path`. */
   reportRequestError: (error: unknown, request: string, requestId?: string) => Promise<void>
   /** Whether `request` raised an error that is still open. */
@@ -57,11 +62,12 @@ export interface DevErrorReporter {
   requestServed: (request: string) => void
 }
 
+/** Where a producer publishes its problem sets. */
+export type ProblemSink = Pick<DevErrorReporter, 'setProblems' | 'clearProblems'>
+
 /** Turns the compile errors Vite raises into reports on the dev error channel. */
 export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered: string) => void }): DevErrorReporter {
   const broadcast = openErrorBroadcast()
-  nuxt.hook('close', () => broadcast.close())
-
   let server: ViteDevServer | undefined
 
   let lastKey: string | undefined
@@ -77,6 +83,19 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   let publishedFile: string | undefined
   // the reports another process published that are still open
   const published = new Set<string>()
+  const problems = new Map<string, ErrorChannelMessage & { type: 'nuxt:dev:error:problems' }>()
+  let closed = false
+  // a rebuild or report still pending when Nuxt closes would post to a closed channel
+  const post = (message: ErrorChannelMessage) => closed || broadcast.postMessage(message)
+  // the channel can outlive this instance, and this runs before the dev server closes
+  nuxt.hook('close', () => {
+    closed = true
+    for (const source of problems.keys()) {
+      broadcast.postMessage({ type: 'nuxt:dev:error:problems:clear', source } satisfies ErrorChannelMessage)
+    }
+    problems.clear()
+    broadcast.close()
+  })
   // the same failure reaches the logger and the hot channel worded differently, at one position
   const keyOf = (error: ViteTransformError) => [error.loc?.file ?? error.id, error.loc?.line, error.loc?.column, error.loc ? '' : error.message].join(':')
 
@@ -89,13 +108,16 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }
         for (const [requestId, { report }] of browserReports) {
           if (report) {
-            broadcast.postMessage({ type: 'nuxt:dev:error:report', report, requestId: requestId || undefined })
+            broadcast.postMessage({ type: 'nuxt:dev:error:report', report, requestId: requestId || undefined } satisfies ErrorChannelMessage)
           }
         }
         for (const [request, { report }] of requestReports) {
           if (report) {
-            broadcast.postMessage({ type: 'nuxt:dev:error:report', report, request })
+            broadcast.postMessage({ type: 'nuxt:dev:error:report', report, request } satisfies ErrorChannelMessage)
           }
+        }
+        for (const message of problems.values()) {
+          broadcast.postMessage(message)
         }
         return
       // a compile error is remembered by file, so fixing the file clears it;
@@ -159,7 +181,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
           return undefined
         }
         current = report
-        broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
+        post({ type: 'nuxt:dev:error:report', report })
         if (!process.env[ERROR_CHANNEL_ENV]) {
           options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
         }
@@ -181,7 +203,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       publishedRuntime = false
       browserReports.clear()
       requestReports.clear()
-      broadcast.postMessage({ type: 'nuxt:dev:error:clear' })
+      post({ type: 'nuxt:dev:error:clear' })
     },
     get file () {
       return file
@@ -190,7 +212,20 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       return publishedRuntime || browserReports.size > 0 || requestReports.size > 0
     },
     progress (progress) {
-      broadcast.postMessage({ type: 'nuxt:dev:error:progress', progress })
+      post({ type: 'nuxt:dev:error:progress', progress })
+    },
+    setProblems (source, reports, meta) {
+      if (closed) {
+        return
+      }
+      const message = { type: 'nuxt:dev:error:problems' as const, source, reports, meta }
+      problems.set(source, message)
+      broadcast.postMessage(message)
+    },
+    clearProblems (source) {
+      if (problems.delete(source)) {
+        broadcast.postMessage({ type: 'nuxt:dev:error:problems:clear', source } satisfies ErrorChannelMessage)
+      }
     },
     async reportRequestError (error, request, requestId) {
       if (!server || isTransformError(error) || !(error instanceof Error)) {
@@ -214,7 +249,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
           return
         }
         pending.report = report
-        broadcast.postMessage({ type: 'nuxt:dev:error:report', report, request, ...requestId && { requestId } })
+        post({ type: 'nuxt:dev:error:report', report, request, ...requestId && { requestId } })
       } catch {
         // vite has already logged the error
       }
@@ -229,7 +264,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       }
       requestReports.delete(request)
       if (reported.report) {
-        broadcast.postMessage({ type: 'nuxt:dev:error:clear', id: reported.report.id })
+        post({ type: 'nuxt:dev:error:clear', id: reported.report.id })
       }
     },
     attach (devServer) {
@@ -261,7 +296,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }
         browserReports.delete(slot)
         if (reported.report) {
-          broadcast.postMessage({ type: 'nuxt:dev:error:clear', id: reported.report.id })
+          post({ type: 'nuxt:dev:error:clear', id: reported.report.id })
         }
       })
     },
@@ -312,7 +347,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         return
       }
       pending.report = report
-      broadcast.postMessage({ type: 'nuxt:dev:error:report', report, requestId: error.requestId })
+      post({ type: 'nuxt:dev:error:report', report, requestId: error.requestId })
       if (!process.env[ERROR_CHANNEL_ENV]) {
         options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
       }
