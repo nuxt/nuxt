@@ -35,7 +35,7 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
       }
     },
     configEnvironment (name, config) {
-      if (!nuxt.options.experimental.viteEnvironmentApi && viteConfig.ssr) {
+      if (!nuxt.options.experimental.viteEnvironmentApi && viteConfig.build?.ssr) {
         config.optimizeDeps ||= {}
         config.optimizeDeps.include = undefined
       }
