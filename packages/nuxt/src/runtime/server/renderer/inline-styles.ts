@@ -27,7 +27,7 @@ export async function renderSplitInlineStyles (usedModules: Set<string> | string
   for (const mod of usedModules) {
     if (mod in styleMap && styleMap[mod]) {
       const styles = loadStyles(styleMap[mod])
-      pending.push(styles instanceof Promise ? styles.then(styles => [entry.has(mod), styles]) : [entry.has(mod), styles])
+      pending.push(Array.isArray(styles) ? [entry.has(mod), styles] : styles.then(styles => [entry.has(mod), styles]))
     }
   }
   const results = await Promise.all(pending)

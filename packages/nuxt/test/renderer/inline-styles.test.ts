@@ -1,3 +1,4 @@
+import { runInNewContext } from 'node:vm'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const styleMap = vi.hoisted(() => ({}) as Record<string, () => Promise<string[]>>)
@@ -42,6 +43,12 @@ describe('renderSplitInlineStyles', () => {
       .mockResolvedValue(['.page{}'])
     styleMap.page = loader
     await expect(renderSplitInlineStyles(['page'], [])).rejects.toThrow('failed')
+    expect(await renderSplitInlineStyles(['page'], [])).toEqual([[], [{ innerHTML: '.page{}' }]])
+  })
+
+  it.each([false, true])('awaits a promise from another realm (dev: %s)', async (dev) => {
+    vi.stubGlobal('__TEST_DEV__', dev)
+    styleMap.page = () => runInNewContext('Promise.resolve([".page{}"])')
     expect(await renderSplitInlineStyles(['page'], [])).toEqual([[], [{ innerHTML: '.page{}' }]])
   })
 })
