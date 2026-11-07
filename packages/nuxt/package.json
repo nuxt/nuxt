@@ -135,7 +135,6 @@
     "unimport": "catalog:build",
     "unplugin": "catalog:build",
     "unrouting": "catalog:build",
-    "untyped": "catalog:build",
     "verkit": "catalog:build",
     "vue": "catalog:app-runtime",
     "vue-bundle-renderer": "catalog:app-runtime",
@@ -156,6 +155,7 @@
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
+    "untyped": "catalog:build",
     "vite": "catalog:vite",
     "vitest": "catalog:dev",
     "vue-sfc-transformer": "catalog:dev"
@@ -164,7 +164,8 @@
     "@parcel/watcher": "^2.1.0",
     "@types/node": ">=18.12.0",
     "jiti": "^2.7.0",
-    "rolldown": "^1.1.5"
+    "rolldown": "^1.1.5",
+    "untyped": "^2.0.0"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {
@@ -174,6 +175,9 @@
       "optional": true
     },
     "jiti": {
+      "optional": true
+    },
+    "untyped": {
       "optional": true
     }
   },
@@ -209,5 +213,8 @@
       "#pages/composables": "./dist/pages/runtime/composables.js"
     },
     "types": "./types.d.ts"
+  },
+  "inlinedDependencies": {
+    "untyped": "2.0.0"
   }
 }

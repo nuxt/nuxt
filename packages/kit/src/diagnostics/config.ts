@@ -113,5 +113,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove them from `experimental` in your `nuxt.config`. See `https://nuxt.com/docs/5.x/getting-started/upgrade#removed-configuration-options`.',
       docs: false,
     },
+    NUXT_B5031: {
+      why: (p: { filePath: string }) => `The Nuxt schema in \`${p.filePath}\` was skipped because \`untyped\` is not installed. A schema file's JSDoc annotations are read by \`untyped\`'s babel plugin as an import-time transform, which Nuxt runs through \`jiti\`.`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to load it, or remove the \`nuxt.schema\` file.`,
+      docs: false,
+    },
   },
 })
