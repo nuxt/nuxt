@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import { logger } from '@nuxt/kit'
+import { inspect } from 'node:util'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
 import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
@@ -68,13 +69,16 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
     return module.fetch(request)
   }
 
+  let reportedFallthrough = false
   const respond = (request: Request, url: string) => {
     if (!serverEntry || !viteServer) {
       return shell(url)
     }
-    // a target that runs the ssr environment itself responds to every request, so one
-    // reaching here has failed and vite has logged the error
     if (!('runner' in viteServer.environments.ssr)) {
+      if (!reportedFallthrough) {
+        reportedFallthrough = true
+        bundlerDiagnostics.NUXT_B7037()
+      }
       return new Response('Internal Server Error', { status: 500 })
     }
     return render(request)
@@ -140,7 +144,7 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
         await sendNodeResponse(res, await respond(new NodeRequest({ req, res }), req.url || '/'))
       } catch (error) {
         if (!viteServer?.config.logger.hasErrorLogged(error as Error)) {
-          logger.error(`Failed to respond to \`${req.method} ${req.url}\`:`, error)
+          bundlerDiagnostics.NUXT_B7036({ method: req.method!, url: req.url!, error: inspect(error), headersSent: res.headersSent, cause: error }, { method: 'error' })
         }
         if (res.headersSent) {
           res.destroy()
