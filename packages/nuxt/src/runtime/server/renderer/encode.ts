@@ -11,8 +11,17 @@ let utf16Scratch: Buffer | undefined
 
 type NodeBuffer = Pick<typeof import('node:buffer'), 'transcode'>
 
-// V8 encodes strings with characters beyond Latin1 to UTF-8 much more slowly than ICU's transcoder
-const nodeBuffer = hasBuffer ? resolveTranscoder() : undefined
+// before Node 26.8, strings with characters beyond Latin1 are written as UTF-8 much more slowly than ICU transcodes them (https://github.com/nodejs/node/pull/65324)
+const nodeBuffer = hasBuffer && hasSlowUtf8Write() ? resolveTranscoder() : undefined
+
+function hasSlowUtf8Write (): boolean {
+  const versions = (globalThis as any).process?.versions
+  if (!versions?.node || versions.bun || versions.deno) {
+    return false
+  }
+  const [major = 0, minor = 0] = String(versions.node).split('.').map(Number)
+  return major < 26 || (major === 26 && minor < 8)
+}
 
 function resolveTranscoder (): NodeBuffer | undefined {
   try {

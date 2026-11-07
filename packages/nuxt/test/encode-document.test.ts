@@ -1,6 +1,17 @@
+import process from 'node:process'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const decode = (bytes: Uint8Array) => new TextDecoder().decode(bytes)
+const nodeVersion = process.versions.node
+
+function stubNodeVersion (version: string) {
+  Object.defineProperty(process.versions, 'node', { value: version, configurable: true })
+}
+
+afterEach(() => {
+  stubNodeVersion(nodeVersion)
+  vi.restoreAllMocks()
+})
 
 describe.each([
   ['with Buffer', false],
@@ -61,9 +72,13 @@ describe.each([
     ['a surrogate pair', '😀'],
     ['a lone surrogate', '\uD83D x \uDE00'],
   ])('encodes a large chunk containing %s', async (_, content) => {
-    const encodeDocument = await load()
     const chunk = '<p>' + 'a'.repeat(5000) + content + 'b'.repeat(5000) + '</p>'
-    expect(new Uint8Array(encodeDocument(['<html>', chunk, '😀', chunk, '</html>']))).toEqual(new TextEncoder().encode(`<html>${chunk}😀${chunk}</html>`))
+    const expected = new TextEncoder().encode(`<html>${chunk}😀${chunk}</html>`)
+    for (const version of ['24.0.0', '26.8.0']) {
+      stubNodeVersion(version)
+      const encodeDocument = await load()
+      expect(new Uint8Array(encodeDocument(['<html>', chunk, '😀', chunk, '</html>']))).toEqual(expected)
+    }
   })
 
   it('returns bytes that are independent of later calls', async () => {
@@ -71,5 +86,20 @@ describe.each([
     const first = encodeDocument(['first'])
     encodeDocument(['second'])
     expect(decode(first)).toBe('first')
+  })
+})
+
+describe('encodeDocument transcoder', () => {
+  it.each([
+    ['loads', '24.13.0', 1],
+    ['loads', '26.7.0', 1],
+    ['skips', '26.8.0', 0],
+    ['skips', '27.0.0', 0],
+  ])('%s the ICU transcoder on Node %s', async (_, version, calls) => {
+    stubNodeVersion(version)
+    const getBuiltinModule = vi.spyOn(process, 'getBuiltinModule')
+    vi.resetModules()
+    await import('../src/runtime/server/renderer/encode')
+    expect(getBuiltinModule).toHaveBeenCalledTimes(calls)
   })
 })
