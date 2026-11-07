@@ -38,6 +38,13 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with th
     expect(await response.text()).toMatch(/<p id="runtime">\s*Cloudflare-Workers\s*<\/p>/)
   })
 
+  it('renders app code that reads the browser globals the worker runtime does not have', async () => {
+    const response = await fetch('/announcer', { headers: { accept: 'text/html' } })
+
+    expect(response.status).toBe(200)
+    expect(await response.text()).toMatch(/<p id="announcer">\s*polite\s*<\/p>/)
+  })
+
   it('answers a request the worker fails with an error, and keeps serving', async () => {
     const response = await fetch('/api/throw')
     expect(response.status).toBe(500)

@@ -125,16 +125,16 @@ describe('the server environment', () => {
     expect(() => resolve(mergeConfig(config, { build: { rolldownOptions: { input: { index: 'virtual:ud:catch-all' } } } }))).toThrow('cannot prerender through a deploy target')
   })
 
-  it.each([false, true])('leaves browser globals to the runtime of a target (dev: %s)', (dev) => {
+  it.each([false, true])('leaves `navigator` to the runtime of a target (dev: %s)', (dev) => {
     const { configureEnvironment } = setup({ dev })
-    const globals = { window: 'undefined', document: 'undefined', navigator: 'undefined', location: 'undefined', XMLHttpRequest: 'undefined' }
-    const define = { ...globals, 'import.meta.server': 'true' }
+    const define = { window: 'undefined', document: 'undefined', navigator: 'undefined', location: 'undefined', XMLHttpRequest: 'undefined' }
 
     const target = configureEnvironment({ rolldownOptions: { input: { server: '/app/node_modules/nuxt/dist/app/entry.js', index: '/app/worker/index.ts' } } }, define)
     const app = configureEnvironment({ rolldownOptions: { input: { server: '/app/node_modules/nuxt/dist/app/entry.js' } } }, define)
 
-    expect(Object.keys(target.define!).filter(key => key in globals)).toEqual([])
-    expect(target.define).toHaveProperty(['import.meta.server'], 'true')
-    expect(app.define).toMatchObject(globals)
+    const { navigator: _, ...rest } = define
+    expect(target.define).not.toHaveProperty('navigator')
+    expect(target.define).toMatchObject(rest)
+    expect(app.define).toMatchObject(define)
   })
 })

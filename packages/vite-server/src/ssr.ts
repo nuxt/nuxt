@@ -15,9 +15,6 @@ import { addRouteRulesTemplate } from './route-rules.ts'
 /** The contract version this builder is written against. */
 const SUPPORTED_SERVER_RUNTIME_VERSION = 1
 
-/** Browser globals the app build replaces with `undefined` in its server environment. */
-const BROWSER_GLOBALS = ['window', 'document', 'navigator', 'location', 'XMLHttpRequest']
-
 /**
  * Stand up the SSR renderer for the vite server build: the modules it renders with, the
  * entry that creates it, and the environment configuration that compiles it.
@@ -193,11 +190,10 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
         ? Object.entries(input).filter(([, value]) => value !== entry && !value.startsWith(appDir))
         : []
 
-      // the runtime a target runs the environment on has its own globals
+      // server runtimes provide `navigator`; the other browser globals stay `undefined`, which
+      // the app relies on and which is what a runtime without them reports
       if (targetEntries.length > 0) {
-        for (const name of BROWSER_GLOBALS) {
-          delete config.define[name]
-        }
+        delete config.define.navigator
       }
 
       // only this builder's own environment emits the handler it describes
