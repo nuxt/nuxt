@@ -8,13 +8,16 @@ import { useServerBuild } from '@nuxt/kit/internal'
 import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts'
 
 export function ssr (nuxt: Nuxt) {
+  const isEnvApi = !useServerBuild(nuxt).buildsSeparately
   return {
-    external: [
-      'nitro/runtime',
-      // TODO: remove in v5
-      '#internal/nitro',
-      '#internal/nitro/utils',
-    ],
+    external: isEnvApi
+      ? []
+      : [
+          'nitro/runtime',
+          // TODO: remove in v5
+          '#internal/nitro',
+          '#internal/nitro/utils',
+        ],
     noExternal: [
       ...getTranspilePatterns({ isServer: true, isDev: nuxt.options.dev }),
       '/__vue-jsx',
