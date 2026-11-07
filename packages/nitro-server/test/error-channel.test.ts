@@ -13,6 +13,7 @@ const { paths } = vi.hoisted(() => ({ paths: { rootDir: '/app', srcDir: '/app/ap
 vi.mock('#internal/dev-server-logs-options', () => ({
   get rootDir () { return paths.rootDir },
   get srcDir () { return paths.srcDir },
+  get reportFs () { return { allow: [tmpdir()], deny: [] } },
 }))
 vi.mock('node:worker_threads', () => ({ isMainThread: false }))
 
