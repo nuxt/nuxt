@@ -118,10 +118,12 @@ describe('publicPathTemplate', () => {
     vi.stubGlobal('__TEST_SERVER__', true)
     onTestFinished(() => { vi.unstubAllGlobals() })
     let app = { baseURL: '/', buildAssetsDir: '/_nuxt/', cdnURL: '' }
-    const buildAssetsURL = new Function('joinRelativeURL', 'useRuntimeConfig', `${source}\nreturn buildAssetsURL`)(joinRelativeURL, () => ({ app })) as (...path: string[]) => string
+    const join = vi.fn(joinRelativeURL)
+    const buildAssetsURL = new Function('joinRelativeURL', 'useRuntimeConfig', `${source}\nreturn buildAssetsURL`)(join, () => ({ app })) as (...path: string[]) => string
 
     expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
     expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
+    expect(join).toHaveBeenCalledTimes(1)
     app = { ...app, baseURL: '/base/' }
     expect(buildAssetsURL('entry.js')).toBe('/base/_nuxt/entry.js')
     app = { ...app, cdnURL: 'https://cdn.example.com/' }
