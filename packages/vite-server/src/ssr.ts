@@ -197,15 +197,7 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       const targetEntries = input && typeof input === 'object' && !Array.isArray(input)
         ? Object.entries(input).filter(([, value]) => value !== entry && !value.startsWith(appDir))
         : []
-      if (targetEntries.length > 0) {
-        if (prerender) {
-          throw new Error('[nuxt:vite-server] `nuxt generate` cannot prerender through a deploy target: the target owns the server environment and its output is not a node handler. Remove the target, or run `nuxt build`.')
-        }
-        config.build.rolldownOptions.input = Object.fromEntries(targetEntries)
-        useServerBuild(nuxt).runtime.handler = undefined
-      } else {
-        config.build.rolldownOptions.input = { index: entry }
-      }
+      config.build.rolldownOptions.input = targetEntries.length > 0 ? Object.fromEntries(targetEntries) : { index: entry }
       // `nuxt preview` runs `server/index.mjs`, so the entry name is not configurable
       config.build.rolldownOptions.output = {
         ...defu({ chunkFileNames: '_chunks/[name]-[hash].mjs' }, config.build.rolldownOptions.output),
@@ -217,6 +209,17 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       config.resolve ||= {}
       config.resolve.noExternal = true
       config.resolve.external = []
+    },
+    // a target can also set the input from a later `configEnvironment` hook
+    configResolved (config) {
+      if (nuxt.options.dev) { return }
+      const input = config.environments.ssr?.build.rolldownOptions.input
+      if ((typeof input === 'object' ? Object.values(input) : [input]).some(value => value !== entry)) {
+        if (prerender) {
+          throw new Error('[nuxt:vite-server] `nuxt generate` cannot prerender through a deploy target: the target owns the server environment and its output is not a node handler. Remove the target, or run `nuxt build`.')
+        }
+        useServerBuild(nuxt).runtime.handler = undefined
+      }
     },
   }
 }
