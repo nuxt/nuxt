@@ -110,9 +110,9 @@ describe('renderer without a server builder', () => {
   })
 
   it.each([
-    ['buffered render', { ssr: true }],
+    ['buffered render', { ssr: true, streaming: false }],
     ['streamed render', { ssr: true, streaming: true }],
-    ['spa shell', { ssr: false }],
+    ['spa shell', { ssr: false, streaming: false }],
   ])('does not modulepreload the entry script of a %s', async (_, rules) => {
     const event = createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } })
     const { html } = await render('/', { getRouteRules: () => rules }, event)

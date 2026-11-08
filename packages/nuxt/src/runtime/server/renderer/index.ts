@@ -631,7 +631,7 @@ async function renderStreamedResponse (ctx: {
   // Entry preload/prefetch links
   const entryScriptHrefs = new Set(Object.values(entryScripts).map(resource => renderer.rendererContext.buildAssetsURL(resource.file)))
   const entryHints = [
-    ...(getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).filter(l => !entryScriptHrefs.has(l.href)),
+    ...(getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).filter(l => !(l.href && entryScriptHrefs.has(l.href))),
     ...(getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => DEFER_PREFETCH ? inertPrefetchLink(l) : l),
   ]
   if (entryHints.length) {
