@@ -1,8 +1,10 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
+import fs from 'node:fs'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, dynamicPageMetaCache, getDynamicPageMeta, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, dynamicPageMetaCache, getDynamicPageMeta, getPageComponentNames, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
+import { PageComponentNamePlugin } from '../src/pages/plugins/component-name.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey, memoizeRouteComponent } from '../src/pages/runtime/utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -258,6 +260,195 @@ describe('pages:generateRoutesFromFiles', () => {
       expect(r0.component).toContain('.then((c) => Object.assign(c,')
       expect(r0.component).toContain('__name')
       expect(r0.component).not.toContain('m.default')
+    })
+
+    it('omits the runtime assignment when the name is known at build time', () => {
+      vi.mocked(useNuxt).mockReturnValueOnce({
+        options: {
+          // @ts-expect-error partial
+          experimental: { normalizePageNames: true, scanPageMeta: true },
+        },
+      })
+
+      const pages: NuxtPage[] = [
+        {
+          file: '/pages/async.vue',
+          name: 'async',
+          path: '/async',
+        } as unknown as NuxtPage,
+      ]
+
+      const { routes } = normalizeRoutes(pages, new Set(), {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+        overrideMeta: true,
+      })
+
+      const r0: any = (routes as any)[0]
+      expect(r0.component).not.toContain('Object.assign')
+      expect(r0.component).not.toContain('__name')
+      expect(r0.component).not.toContain('.then')
+    })
+
+    it('omits the runtime assignment for client pages when the name is known at build time', () => {
+      vi.mocked(useNuxt).mockReturnValueOnce({
+        options: {
+          // @ts-expect-error partial
+          experimental: { normalizePageNames: true, scanPageMeta: true },
+        },
+      })
+
+      const pages: NuxtPage[] = [
+        {
+          file: '/pages/client.vue',
+          name: 'client-page',
+          path: '/client',
+          mode: 'client',
+        } as unknown as NuxtPage,
+      ]
+
+      const { routes } = normalizeRoutes(pages, new Set(), {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+        overrideMeta: true,
+      })
+
+      const r0: any = (routes as any)[0]
+      expect(r0.component).toContain('createClientPage(')
+      expect(r0.component).not.toContain('Object.assign')
+      expect(r0.component).not.toContain('__name')
+    })
+
+    it('keeps the runtime assignment when the page name is set dynamically', () => {
+      const nuxt = {
+        options: {
+          experimental: { normalizePageNames: true, scanPageMeta: true },
+        },
+      } as unknown as Nuxt
+      vi.mocked(useNuxt).mockReturnValueOnce(nuxt)
+      const cache = dynamicPageMetaCache(nuxt)
+      cache.set('/pages/async.vue', new Set(['name']))
+
+      const pages: NuxtPage[] = [
+        {
+          file: '/pages/async.vue',
+          name: 'async',
+          path: '/async',
+        } as unknown as NuxtPage,
+      ]
+
+      const options = {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+        overrideMeta: true,
+      }
+
+      const { routes } = normalizeRoutes(pages, new Set(), options)
+      const r0: any = (routes as any)[0]
+      expect(r0.component).toContain('.then((m) => Object.assign(m.default')
+      expect(r0.component).toContain('__name: mockMeta?.name ?? "async"')
+
+      // once the name is static, the runtime assignment is dropped
+      cache.delete('/pages/async.vue')
+      vi.mocked(useNuxt).mockReturnValueOnce(nuxt)
+      const staticRoutes = normalizeRoutes(pages, new Set(), options).routes as any
+      expect(staticRoutes[0].component).not.toContain('Object.assign')
+      expect(staticRoutes[0].component).not.toContain('__name')
+    })
+
+    it('keeps the runtime assignment when a page file is reused with different names', () => {
+      const nuxt = {
+        options: {
+          experimental: { normalizePageNames: true, scanPageMeta: true },
+        },
+      } as unknown as Nuxt
+      vi.mocked(useNuxt).mockReturnValueOnce(nuxt)
+
+      const pages: NuxtPage[] = [
+        { file: '/pages/shared.vue', name: 'first', path: '/first' },
+        { file: '/pages/shared.vue', name: 'second', path: '/second' },
+      ] as unknown as NuxtPage[]
+
+      const { routes } = normalizeRoutes(pages, new Set(), {
+        clientComponentRuntime: '<client>',
+        serverComponentRuntime: '<server>',
+        overrideMeta: true,
+      })
+
+      expect((routes as any)[0].component).toContain('Object.assign')
+      expect((routes as any)[1].component).toContain('Object.assign')
+    })
+  })
+
+  describe('pages:page-component-name', () => {
+    function transform (code: string, id: string, pageName: string) {
+      const nuxt = {
+        apps: { default: { pages: [{ file: id, name: pageName, path: '/' } as NuxtPage] } },
+        options: {
+          experimental: { scanPageMeta: true },
+        },
+      } as unknown as Nuxt
+      const plugin = PageComponentNamePlugin({ nuxt }).raw({}, { framework: 'vite', versions: {} } as any) as {
+        transform: { handler: (code: string, id: string) => { code: string } | undefined }
+      }
+      return plugin.transform.handler(code, id)?.code
+    }
+
+    it('sets the route name on an identifier default export', () => {
+      const code = `const _sfc_main = {}
+export default _sfc_main`
+      expect(transform(code, '/pages/foo.vue', 'foo')).toBe(
+        `const _sfc_main = {}
+export default Object.assign(_sfc_main, { __name: "foo" })`,
+      )
+    })
+
+    it('wraps an object default export', () => {
+      expect(transform('export default { render: () => null }', '/pages/foo.vue', 'foo')).toBe(
+        'export default Object.assign({ render: () => null }, { __name: "foo" })',
+      )
+    })
+
+    it('does not touch an unrelated `__name`', () => {
+      const code = `const other = { __name: "foo" }
+export default { render: () => other }`
+      expect(transform(code, '/pages/foo.vue', 'foo')).toBe(
+        `const other = { __name: "foo" }
+export default Object.assign({ render: () => other }, { __name: "foo" })`,
+      )
+    })
+  })
+
+  describe('pages:pageComponentNames', () => {
+    const nuxt = {
+      options: {
+        experimental: { scanPageMeta: true },
+      },
+    } as unknown as Nuxt
+
+    it('excludes a page file that another route uses as a named view', () => {
+      const pages: NuxtPage[] = [
+        { file: '/pages/foo.vue', name: 'foo', path: '/foo' },
+        { file: '/pages/bar.vue', name: 'bar', path: '/bar', components: { default: '/pages/bar.vue', foo: '/pages/foo.vue' } },
+      ] as unknown as NuxtPage[]
+
+      const names = getPageComponentNames(pages, nuxt)
+      expect(names.get('/pages/foo.vue')).toBeUndefined()
+      expect(names.get('/pages/bar.vue')).toBe('bar')
+    })
+
+    it('excludes a symlinked page file', () => {
+      const spy = vi.spyOn(fs, 'realpathSync').mockReturnValue('/real/foo.vue')
+      try {
+        const pages: NuxtPage[] = [
+          { file: '/pages/foo.vue', name: 'foo', path: '/foo' },
+        ] as unknown as NuxtPage[]
+
+        const names = getPageComponentNames(pages, nuxt)
+        expect(names.get('/pages/foo.vue')).toBeUndefined()
+      } finally {
+        spy.mockRestore()
+      }
     })
   })
 
