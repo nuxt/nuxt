@@ -191,6 +191,9 @@ describe('applyRuntimeConfigSchema', () => {
       config: { port: 8080, mode: 'prod' },
       issues: [],
     })
+    const feature: RuntimeConfigSchemaObject = { p: { feature: { o: ['b', { p: { name: 's' } }] } } }
+    expect(apply({ feature: true }, feature, { FLAG: 'false', NUXT_FEATURE: '{{FLAG}}' }, true).config).toEqual({ feature: false })
+    expect(apply({ feature: true }, feature, { X: '{{Y}}', NUXT_FEATURE: '{"name":"{{X}}"}' }, true).config).toEqual({ feature: { name: '{{Y}}' } })
     expect(apply({ port: 3000, mode: 'dev' }, schema, { MODE: 'other', NUXT_MODE: '{{MODE}}' }, true).issues).toEqual([
       { path: 'mode', env: 'NUXT_MODE', expected: '"dev" | "prod"', received: 'other' },
     ])

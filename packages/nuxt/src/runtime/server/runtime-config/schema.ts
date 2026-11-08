@@ -50,7 +50,7 @@ function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchema
     const envKey = toEnvKey(subKey)
     const prefixed = options.env[options.prefix + envKey]
     const envValue = prefixed ?? options.env[options.altPrefix + envKey]
-    const expandEnv = options.envExpansion && envValue !== undefined && isScalar(child)
+    const expandEnv = options.envExpansion && envValue !== undefined && (isScalar(child) || parseJSON(envValue) === INVALID)
     const raw = expandEnv ? expand(envValue, options.env) : envValue
     const issue: RuntimeConfigIssue = {
       path: path ? `${path}.${key}` : key,
