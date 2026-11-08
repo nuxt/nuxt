@@ -315,8 +315,53 @@ describe('template links without a component instance', () => {
     el.unmount()
   })
 
+  it('creates an anchor for an object location', async () => {
+    const el = await mount(defineComponent({
+      render: () => (openBlock(), createElementBlock('div', null, [
+        createNuxtLinkVNode(NuxtLink, { to: { name: 'inline-link-param', params: { id: '1' }, query: { q: 'a b' } } }, { default: textSlot(() => 'one'), _: 1 }, PatchFlags.PROPS, ['to']),
+      ])),
+    }))
+    const anchor = el.get('a')
+    expect(el.findComponent(NuxtLink).exists()).toBe(false)
+    expect(anchor.attributes('href')).toBe('/inline-link-param/1?q=a+b')
+
+    await anchor.trigger('click')
+    await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe('/inline-link-param/1?q=a+b'))
+    expect(router.currentRoute.value.query).toEqual({ q: 'a b' })
+    await vi.waitFor(() => expect(el.get('a').classes()).toEqual(['router-link-active', 'router-link-exact-active']))
+    el.unmount()
+  })
+
+  it('preserves the route name for an object location', async () => {
+    const removeRoute = router.addRoute({
+      name: 'inline-link-param-alias',
+      path: '/inline-link-param/:id',
+      component: defineComponent({ setup: () => () => h('div', 'alias') }),
+    })
+    try {
+      const el = await mount(defineComponent({
+        render: () => (openBlock(), createElementBlock('div', null, [
+          createNuxtLinkVNode(NuxtLink, { to: { name: 'inline-link-param-alias', params: { id: '1' } } }, { default: textSlot(() => 'one'), _: 1 }, PatchFlags.PROPS, ['to']),
+        ])),
+      }))
+      const anchor = el.get('a')
+      expect(el.findComponent(NuxtLink).exists()).toBe(false)
+      expect(anchor.attributes('href')).toBe('/inline-link-param/1')
+
+      await anchor.trigger('click')
+      await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('inline-link-param-alias'))
+      expect(router.currentRoute.value.params).toEqual({ id: '1' })
+      el.unmount()
+    } finally {
+      await navigateTo('/')
+      removeRoute()
+    }
+  })
+
   it.each([
-    ['an object location', { to: { path: '/inline-link-param/1' } }],
+    ['an object location with history state', { to: { path: '/inline-link-param/1', state: { from: 'list' } } }],
+    ['an object location with `replace`', { to: { path: '/inline-link-param/1', replace: true } }],
+    ['an object location with `force`', { to: { path: '/inline-link-param/1', force: true } }],
     ['an external link', { to: 'https://nuxt.com' }],
     ['a target', { to: '/inline-link-param/1', target: '_blank' }],
     ['custom', { to: '/inline-link-param/1', custom: '' }],

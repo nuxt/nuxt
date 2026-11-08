@@ -765,7 +765,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     const props = rawProps && !hashMode && !options.prefetchedClass ? directRenderProps(rawProps) : undefined
     const rawTo = props?.to
     const slot = slots?.default as (Slot & { _c?: boolean, _d?: boolean }) | undefined
-    if (!props || typeof rawTo !== 'string' || !rawTo || props.prefetchedClass || (slot && !slot._c) || !isStaticInternalLink(props, rawTo)) { return }
+    if (!props || !rawTo || (typeof rawTo === 'object' ? ('state' in rawTo || 'force' in rawTo || 'replace' in rawTo) : typeof rawTo !== 'string') || props.prefetchedClass || (slot && !slot._c) || !isStaticInternalLink(props, rawTo)) { return }
     const prefetchOn = (mode: 'visibility' | 'interaction') => typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])
     if (prefetchOn('interaction')) { return }
     const nuxtApp = useNuxtApp() as NuxtApp & { _inlineLinks?: InlineLinks | false }
@@ -786,7 +786,8 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     if (props.style) { anchorProps.style = normalizeStyle(props.style) }
     if (props.rel) { anchorProps.rel = props.rel }
     if (props.attrs) { Object.assign(anchorProps, props.attrs) }
-    anchorProps.onClick = props.attrs?.onClick ? [inline.onClick].concat(props.attrs.onClick as () => void) : inline.onClick
+    const onClick = typeof rawTo === 'object' ? link.navigate : inline.onClick
+    anchorProps.onClick = props.attrs?.onClick ? [onClick].concat(props.attrs.onClick as () => void) : onClick
     if (prefetchOn('visibility') && options.prefetch !== false) {
       anchorProps.onVnodeMounted = inline.observe
       anchorProps.onVnodeBeforeUnmount = inline.unobserve
