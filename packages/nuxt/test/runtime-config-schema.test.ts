@@ -5,6 +5,7 @@ import type { RuntimeConfigSchemaObject } from '@nuxt/schema/internal'
 
 import { applyRuntimeConfigSchema, formatRuntimeConfigIssues, toEnvKey } from '../src/runtime/server/runtime-config/schema'
 import { createRuntimeConfig } from '../src/runtime/server/runtime-config'
+import { guardMissingRuntimeConfig } from '../src/runtime/server/runtime-config/prerender'
 
 function apply (config: Record<string, unknown>, schema: RuntimeConfigSchemaObject, env: Record<string, string> = {}, envExpansion = false) {
   const issues = applyRuntimeConfigSchema(config, schema, { env, prefix: 'NITRO_', altPrefix: 'NUXT_', envExpansion })
@@ -183,6 +184,31 @@ describe('formatRuntimeConfigIssues', () => {
       { path: 'public.pin', env: 'NUXT_PUBLIC_PIN', expected: 'number', received: '1234x' },
       { path: 'public.port', env: 'NUXT_PUBLIC_PORT', expected: 'number', received: 'abc', public: true },
     ])
+  })
+})
+
+describe('guardMissingRuntimeConfig', () => {
+  it('should throw when a missing required value is read', () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const schema: RuntimeConfigSchemaObject = {
+      p: { cmsUrl: 's', title: 's', public: { o: [{ p: { token: 's', site: 's' }, r: ['token'] }, 's'] } },
+      r: ['cmsUrl', 'title', 'public'],
+    }
+    const { config, issues } = apply({ title: 'a', public: { site: 'b' } }, schema)
+    const guarded = guardMissingRuntimeConfig(config, schema, issues) as Record<string, any>
+
+    expect(guarded.title).toBe('a')
+    expect(guarded.public.site).toBe('b')
+    expect('cmsUrl' in guarded).toBe(false)
+    expect(JSON.stringify(guarded)).toBe('{"title":"a","public":{"site":"b"}}')
+    expect(() => guarded.cmsUrl).toThrow('`cmsUrl` was read while prerendering, but it is required and `NUXT_CMS_URL` is not set.')
+    expect(() => guarded.cmsUrl).toThrow('NUXT_CMS_URL')
+    expect(() => guarded.public.token).toThrow('`public.token` was read while prerendering, but it is required and `NUXT_PUBLIC_TOKEN` is not set.')
+    expect(log).toHaveBeenCalledTimes(2)
+
+    guarded.cmsUrl = 'https://cms.example.com'
+    expect(guarded.cmsUrl).toBe('https://cms.example.com')
+    log.mockRestore()
   })
 })
 

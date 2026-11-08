@@ -37,8 +37,8 @@ export const prerenderDiagnostics = /* #__PURE__ */ defineDiagnostics({
   reporters: [/* #__PURE__ */ (createConsoleReporter(import.meta.dev && process.env.NODE_ENV !== 'test' ? { formatter: ansiFormatter(colors) } : undefined))] as const,
   codes: {
     NUXT_E8015: {
-      why: (p: { issues: string }) => `Required runtime config is missing while prerendering:\n  - ${p.issues}`,
-      fix: 'Set the listed environment variables when prerendering if prerendered pages depend on them. The server will not start without them.',
+      why: (p: { path: string, env: string }) => `\`${p.path}\` was read while prerendering, but it is required and \`${p.env}\` is not set.`,
+      fix: 'Set the environment variable when prerendering, or make the value optional in its schema. The server will not start without it.',
       docs: false,
     },
   },
