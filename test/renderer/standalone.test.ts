@@ -119,13 +119,24 @@ describe('renderer without a server builder', () => {
     ['_errors', {}, { key: 'value' }],
   ] as const)('omits only empty %s payload containers, without mutating the payload', (key, empty, populated) => {
     for (const value of [empty, populated]) {
+      const original = value instanceof Set ? new Set(value) : { ...value }
       const payload = { [key]: value, serverRendered: true }
       const ssrContext = { config: {}, payload } as unknown as NuxtSSRContext
       const [script] = renderPayloadJsonScript({ ssrContext, data: payload })
 
-      expect(parse(script!.innerHTML)).toEqual(value === empty ? { serverRendered: true } : { [key]: populated, serverRendered: true })
+      expect(parse(script!.innerHTML)).toEqual(value === empty ? { serverRendered: true } : { [key]: original, serverRendered: true })
       expect(payload[key]).toBe(value)
+      expect(payload[key]).toEqual(original)
     }
+  })
+
+  it('omits all empty payload containers at once', () => {
+    const payload = { data: {}, state: {}, once: new Set(), _errors: {}, serverRendered: true }
+    const ssrContext = { config: {}, payload } as unknown as NuxtSSRContext
+    const [script] = renderPayloadJsonScript({ ssrContext, data: payload })
+
+    expect(parse(script!.innerHTML)).toEqual({ serverRendered: true })
+    expect(payload).toEqual({ data: {}, state: {}, once: new Set(), _errors: {}, serverRendered: true })
   })
 
   it.each([
