@@ -520,7 +520,7 @@ function intersect (a: RuntimeConfigSchemaNode, b: RuntimeConfigSchemaNode): Run
     const serialized = new Set(bEnum.map(value => JSON.stringify(value)))
     return { e: aEnum.filter(value => serialized.has(JSON.stringify(value))) }
   }
-  return aEnum || b === '*' ? a : b
+  return aEnum || b === '*' || (a === 'i' && b === 'n') ? a : b
 }
 
 function overlay (inferred: RuntimeConfigSchemaNode, declared: RuntimeConfigSchemaNode): RuntimeConfigSchemaNode {

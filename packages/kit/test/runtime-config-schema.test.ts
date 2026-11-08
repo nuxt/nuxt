@@ -70,12 +70,12 @@ describe('compileRuntimeConfigSchema', () => {
 
   it('should intersect overlapping properties of an intersection', () => {
     const schema = z.intersection(
-      z.object({ mode: z.enum(['a', 'b']), db: z.object({ url: z.string() }) }),
-      z.object({ mode: z.enum(['b', 'c']), db: z.object({ pool: z.number() }), name: z.string() }),
+      z.object({ mode: z.enum(['a', 'b']), db: z.object({ url: z.string() }), port: z.int() }),
+      z.object({ mode: z.enum(['b', 'c']), db: z.object({ pool: z.number() }), name: z.string(), port: z.number() }),
     )
     expect(compileRuntimeConfigSchema(schema).node).toEqual({
-      p: { mode: { e: ['b'] }, db: { p: { url: 's', pool: 'n' }, r: ['url', 'pool'] }, name: 's' },
-      r: ['mode', 'db', 'name'],
+      p: { mode: { e: ['b'] }, db: { p: { url: 's', pool: 'n' }, r: ['url', 'pool'] }, port: 'i', name: 's' },
+      r: ['mode', 'db', 'port', 'name'],
     })
   })
 
