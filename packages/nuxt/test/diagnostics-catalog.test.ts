@@ -19,6 +19,7 @@ import { stateDiagnostics } from '../src/app/diagnostics/state.ts'
 import { serverDiagnostics } from '../../nitro-server/src/runtime/diagnostics.ts'
 import { nitroBuildDiagnostics } from '../../nitro-server/src/diagnostics.ts'
 import { rendererDiagnostics } from '../src/runtime/server/renderer/diagnostics.ts'
+import { prerenderDiagnostics, runtimeConfigDiagnostics } from '../src/runtime/server/runtime-config/diagnostics.ts'
 
 // Schema continues kit's B5xxx configuration range, so it has to be swept too.
 import { schemaDiagnostics } from '../../schema/src/diagnostics.ts'
@@ -42,6 +43,8 @@ const catalogs = {
   serverDiagnostics,
   nitroBuildDiagnostics,
   rendererDiagnostics,
+  runtimeConfigDiagnostics,
+  prerenderDiagnostics,
   schemaDiagnostics,
 }
 

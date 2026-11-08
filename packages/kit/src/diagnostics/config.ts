@@ -113,5 +113,23 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove them from `experimental` in your `nuxt.config`. See `https://nuxt.com/docs/5.x/getting-started/upgrade#removed-configuration-options`.',
       docs: false,
     },
+    NUXT_B5031: {
+      why: (p: { path: string, error?: string }) => `The schema for \`${p.path}\` cannot be converted to JSON Schema${p.error ? `: ${p.error}` : '.'}`,
+      fix: 'Use a schema that implements Standard JSON Schema (such as Zod or ArkType, or Valibot with `toStandardJsonSchema()`), without transforms.',
+    },
+    NUXT_B5032: {
+      why: (p: { issues: string }) => `The runtime config does not match its schema with the current environment:\n  - ${p.issues}`,
+      fix: 'Set the listed environment variables before starting the server, or update the schema or default value in `runtimeConfig`.',
+      docs: false,
+    },
+    NUXT_B5033: {
+      why: (p: { path: string }) => `\`${p.path}\` is a schema, but schemas can only be declared in \`nuxt.config\` or with \`updateRuntimeConfig()\`.`,
+      fix: 'In a module, pass the schema to `updateRuntimeConfig()` from `@nuxt/kit` instead of assigning it to `nuxt.options.runtimeConfig`. Report it to the module author if the module is not your own.',
+    },
+    NUXT_B5034: {
+      why: (p: { path: string }) => `The schema for \`${p.path}\` set by a module replaces one set by another module.`,
+      fix: 'Declare the schema in `nuxt.config` to choose one, or report the conflict to the module authors.',
+      docs: false,
+    },
   },
 })

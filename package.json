@@ -71,10 +71,12 @@
     "@types/node": "catalog:dev",
     "@typescript-eslint/parser": "catalog:dev",
     "@unhead/vue": "catalog:app-runtime",
+    "@valibot/to-json-schema": "catalog:dev",
     "@vitest/coverage-v8": "catalog:dev",
     "@vue/shared": "catalog:app-runtime",
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
+    "arktype": "catalog:dev",
     "case-police": "catalog:dev",
     "consola": "catalog:build",
     "defu": "catalog:build",
@@ -113,6 +115,7 @@
     "tinyglobby": "catalog:build",
     "typescript": "catalog:dev",
     "ufo": "catalog:build",
+    "valibot": "catalog:dev",
     "verkit": "catalog:build",
     "vite": "catalog:vite",
     "vitest": "catalog:dev",
@@ -121,7 +124,8 @@
     "vue-component-type-helpers": "catalog:vue",
     "vue-router": "catalog:app-runtime",
     "vue-tsc": "catalog:dev",
-    "webpack": "catalog:webpack"
+    "webpack": "catalog:webpack",
+    "zod": "catalog:dev"
   },
   "packageManager": "pnpm@12.16.1",
   "simple-git-hooks": {

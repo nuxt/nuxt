@@ -125,6 +125,15 @@ describe('the server environment', () => {
     expect(() => resolve(mergeConfig(config, { build: { rolldownOptions: { input: { index: 'virtual:ud:catch-all' } } } }))).toThrow('cannot prerender through a deploy target')
   })
 
+  it('reads the runtime config when the handler is imported, before rendering', async () => {
+    const { nuxt } = setup()
+
+    const template = nuxt.options.build.templates.find(template => template.filename === 'vite-server/server-handler.mjs')!
+    const code = await template.getContents!({ nuxt } as never)
+
+    expect(code).toMatch(/^useRuntimeConfig\(\)\nconst renderer = createNuxtRenderer\(/m)
+  })
+
   it.each([false, true])('leaves `navigator` to the runtime of a target (dev: %s)', (dev) => {
     const { configureEnvironment } = setup({ dev })
     const define = { window: 'undefined', document: 'undefined', navigator: 'undefined', location: 'undefined', XMLHttpRequest: 'undefined' }

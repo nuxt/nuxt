@@ -69,5 +69,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Call routes of your app with `serverFetch(event, path)` from `nuxt/server`, and other URLs with `fetch`, or add `import { $fetch } from \'ofetch\'`.',
       docs: false,
     },
+    NUXT_B9012: {
+      why: (p: { id: string }) => `Nitro does not provide \`${p.id}\` in the form Nuxt reads the runtime config from. This version of Nitro is not supported by this version of Nuxt.`,
+      fix: 'Install the version of `nitro` that `@nuxt/nitro-server` depends on, or upgrade Nuxt.',
+      docs: false,
+    },
   },
 })
