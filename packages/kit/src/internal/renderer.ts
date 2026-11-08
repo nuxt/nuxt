@@ -54,6 +54,7 @@ export type RendererConfigName =
   | 'NUXT_PAGE_PATTERNS'
   | 'NUXT_EARLY_404'
   | 'NUXT_PAGE_MATCHER'
+  | 'NUXT_SPA_PAGE_MATCHER'
   | 'NUXT_INLINE_ERROR_RENDERING'
   | 'PARSE_ERROR_DATA'
   | 'NUXT_PAYLOAD_EXTRACTION'
@@ -118,6 +119,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_PAGE_PATTERNS: '[]',
     NUXT_EARLY_404: 'false',
     NUXT_PAGE_MATCHER: 'undefined',
+    NUXT_SPA_PAGE_MATCHER: 'undefined',
     NUXT_INLINE_ERROR_RENDERING: String(!!nuxt.options.experimental.inlineErrorRendering),
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     PARSE_ERROR_DATA: String(!!nuxt.options.experimental.parseErrorData),

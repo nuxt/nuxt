@@ -229,6 +229,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // SPA fallbacks written out as an empty shell, minus any error page that
       // is server-rendered at build time
       const noSSRRoutes = ['/index.html', '/200.html', '/404.html'].filter(route => !errorPages.includes(Number(route.slice(1, -'.html'.length))))
+      // page sources for client-only responses, provided by the pages module
+      const spaPageSources = !nuxt.options.ssr || nitro.routing.routeRules.routes.some(r => r.data.ssr === false)
+        ? (nitro.options as { _spaPageSources?: Record<string, string[]> })._spaPageSources ?? {}
+        : {}
       return {
         NUXT_PRERENDER_ERROR_PAGES: JSON.stringify(errorPages),
         NUXT_PRERENDER_NO_SSR_ROUTES: JSON.stringify(noSSRRoutes),
@@ -237,6 +241,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         NUXT_PAGE_PATTERNS: JSON.stringify(pagePatterns),
         NUXT_EARLY_404: String(early404Patterns.length > 0),
         NUXT_PAGE_MATCHER: compilePageMatcher(early404Patterns),
+        NUXT_SPA_PAGE_MATCHER: compilePageMatcher(spaPageSources, !nuxt.options.router.options.sensitive),
         NUXT_RUNTIME_PAYLOAD_EXTRACTION: String(nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)),
         spaTemplate: JSON.stringify(await spaLoadingTemplate(nuxt)),
         componentIslands: '_componentIslands',
@@ -1308,19 +1313,22 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
 }
 
 /**
- * Compile page route patterns into a static matcher expression, so the renderer
- * needs no runtime router construction.
+ * Compile page route patterns (or patterns mapped to the data a match returns) into a
+ * static matcher expression, so the renderer needs no runtime router construction.
+ * Lookups are case-folded unless `fold` is `false`.
  */
-function compilePageMatcher (patterns: string[]): string {
-  if (!patterns.length) {
+function compilePageMatcher (patterns: string[] | Record<string, unknown>, fold = true): string {
+  const entries = Array.isArray(patterns) ? patterns.map(pattern => [pattern, 1] as const) : Object.entries(patterns)
+  if (!entries.length) {
     return 'undefined'
   }
   const router = createRou3Router()
-  for (const pattern of patterns) {
-    addRou3Route(router, '', pattern, 1)
+  for (const [pattern, data] of entries) {
+    addRou3Route(router, '', pattern, data)
   }
   // lookups are decoded, while rou3 matches the encoded form of the patterns
-  return `/* @__PURE__ */ (() => {const encodeRoutePath = ${encodeRoutePath.toString()};const foldRouteCase = ${foldRouteCase.toString()};const match = ${compileRouterToString(router)};return (method, path) => match(method, encodeRoutePath(foldRouteCase(path)))})()`
+  const lookup = fold ? `const foldRouteCase = ${foldRouteCase.toString()};return (method, path) => match(method, encodeRoutePath(foldRouteCase(path)))` : 'return (method, path) => match(method, encodeRoutePath(path))'
+  return `/* @__PURE__ */ (() => {const encodeRoutePath = ${encodeRoutePath.toString()};const match = ${compileRouterToString(router)};${lookup}})()`
 }
 
 const ROU3_PARAM_KEY_RE = /^:_\d+$/

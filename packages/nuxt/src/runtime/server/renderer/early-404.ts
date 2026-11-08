@@ -5,13 +5,11 @@ import { withoutTrailingSlashes } from './url'
 const PAYLOAD_SUFFIX = '/_payload.json'
 
 /**
- * Whether a request path could match a page route, using the matcher compiled
- * at build time. The lookup is deliberately looser than vue-router matching
- * (decoded, case-folded, trailing slashes ignored, payload URLs matched
- * against the route they belong to) so that a miss is proof no page can
- * render, while a hit merely lets the request through to the app.
+ * Normalize a request path for the page matchers compiled at build time. The lookup
+ * is deliberately looser than vue-router matching (decoded, trailing slashes ignored,
+ * payload URLs matched against the route they belong to).
  */
-function matchesPageRoute (pathname: string): boolean {
+export function toPageMatcherPath (pathname: string): string {
   let path = pathname
   if (path.endsWith(PAYLOAD_SUFFIX)) {
     path = path.slice(0, -PAYLOAD_SUFFIX.length) || '/'
@@ -26,7 +24,15 @@ function matchesPageRoute (pathname: string): boolean {
       // matched in encoded form
     }
   }
-  return !!NUXT_PAGE_MATCHER?.('', path)
+  return path
+}
+
+/**
+ * Whether a request path could match a page route. A miss is proof no page can
+ * render, while a hit merely lets the request through to the app.
+ */
+function matchesPageRoute (pathname: string): boolean {
+  return !!NUXT_PAGE_MATCHER?.('', toPageMatcherPath(pathname))
 }
 
 /**

@@ -23,7 +23,7 @@ import { mergeHeaders } from './headers'
 import { patchDevClientCss } from './dev-css'
 import { renderInlineStyles, renderSplitInlineStyles } from './inline-styles'
 import { createInlinedCSSFilter } from './inlined-css'
-import { throwIfUnmatchedPagePath } from './early-404'
+import { throwIfUnmatchedPagePath, toPageMatcherPath } from './early-404'
 import { renderStreamedIslandTeleports, replaceIslandTeleports } from './islands'
 import { rendererDiagnostics } from './diagnostics'
 import { warnNoScriptsClientReliance } from './no-scripts'
@@ -33,7 +33,7 @@ import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
-import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_NO_SCRIPTS_PROD, NUXT_PAGE_PATTERNS, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_ERROR_PAGES, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, NUXT_VIEW_TRANSITIONS, PARSE_ERROR_DATA, appHead, appTeleportAttrs, appTeleportTag, componentIslands, componentIslandsActive, iifeChunkFileName, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -490,12 +490,25 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     }
   }
   const hints: Link[] = []
-  for (const l of getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+  let preloadContext: Pick<NuxtSSRContext, 'modules'> = ssrContext
+  if (NUXT_SPA_PAGE_MATCHER && ssrContext.noSSR && !ssrError && !NO_SCRIPTS && !(import.meta.prerender && NUXT_PRERENDER_NO_SSR_ROUTES.includes(event.url.pathname))) {
+    const spaPageSources = NUXT_SPA_PAGE_MATCHER('', toPageMatcherPath(event.url.pathname))?.data
+    if (spaPageSources?.length) {
+      preloadContext = { modules: new Set([...ssrContext.modules ?? [], ...spaPageSources]) }
+      for (const resource of Object.values(getRequestDependencies(preloadContext, renderer.rendererContext).styles)) {
+        const href = renderer.rendererContext.buildAssetsURL(resource.file)
+        if (!excludeHrefs.has(href)) {
+          hints.push({ rel: 'preload', as: 'style', crossorigin: '', href })
+        }
+      }
+    }
+  }
+  for (const l of getPreloadLinks(preloadContext, renderer.rendererContext, dependencyOptions) as Link[]) {
     if (!excludeHrefs.has(l.href)) {
       hints.push(l)
     }
   }
-  for (const l of getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions) as Link[]) {
+  for (const l of getPrefetchLinks(preloadContext, renderer.rendererContext, dependencyOptions) as Link[]) {
     if (!excludeHrefs.has(l.href)) {
       hints.push(DEFER_PREFETCH ? inertPrefetchLink(l) : l)
     }
