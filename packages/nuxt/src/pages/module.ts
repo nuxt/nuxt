@@ -675,7 +675,6 @@ export default defineNuxtModule({
       // lookups ignore trailing slashes, which `strict` routing does not
       const { hashMode, sensitive, strict } = nuxt.options.router.options
       if (nuxt.options.dev || hashMode || strict || !nuxt.apps.default?.pages?.length) { return }
-      if (nuxt.options.ssr && !Object.values(nitro.options.routeRules || {}).some(rules => rules?.ssr === false)) { return }
       if (await findRoutesModifyingRouterOptions(nuxt, builtInRouterOptions, ['hashMode', 'history', 'strict'])) { return }
 
       const pageSources = collectRou3PageSources(nuxt.apps.default.pages, nuxt.options.srcDir)

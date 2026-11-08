@@ -229,6 +229,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // SPA fallbacks written out as an empty shell, minus any error page that
       // is server-rendered at build time
       const noSSRRoutes = ['/index.html', '/200.html', '/404.html'].filter(route => !errorPages.includes(Number(route.slice(1, -'.html'.length))))
+      // page sources for client-only responses, provided by the pages module
+      const spaPageSources = !nuxt.options.ssr || nitro.routing.routeRules.routes.some(r => r.data.ssr === false)
+        ? (nitro.options as { _spaPageSources?: Record<string, string[]> })._spaPageSources ?? {}
+        : {}
       return {
         NUXT_PRERENDER_ERROR_PAGES: JSON.stringify(errorPages),
         NUXT_PRERENDER_NO_SSR_ROUTES: JSON.stringify(noSSRRoutes),
@@ -237,7 +241,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         NUXT_PAGE_PATTERNS: JSON.stringify(pagePatterns),
         NUXT_EARLY_404: String(early404Patterns.length > 0),
         NUXT_PAGE_MATCHER: compilePageMatcher(early404Patterns),
-        NUXT_SPA_PAGE_MATCHER: compilePageMatcher((nitro.options as { _spaPageSources?: Record<string, string[]> })._spaPageSources ?? {}, !nuxt.options.router.options.sensitive),
+        NUXT_SPA_PAGE_MATCHER: compilePageMatcher(spaPageSources, !nuxt.options.router.options.sensitive),
         NUXT_RUNTIME_PAYLOAD_EXTRACTION: String(nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)),
         spaTemplate: JSON.stringify(await spaLoadingTemplate(nuxt)),
         componentIslands: '_componentIslands',
