@@ -947,7 +947,7 @@ function buildAsyncData<
       asyncData._abortController = new AbortController()
       asyncData.status.value = 'pending'
       const cleanupController = new AbortController()
-      const promise: Promise<ResT | void> = new Promise<ResT>(
+      const promise: Promise<ResT | void> = new Promise<DataT | void>(
         (resolve, reject) => {
           try {
             const timeout = opts.timeout ?? options.timeout
@@ -977,24 +977,23 @@ function buildAsyncData<
                 run = () => Promise.resolve(middleware(next, ctx))
               }
             }
-            return run().then(resolve, reject)
+            return run().then((_result) => {
+              if (mergedSignal.aborted || nuxtApp._asyncDataPromises[key] !== promise) {
+                return
+              }
+              return options.transform ? options.transform(_result) : _result as unknown as DataT
+            }).then(resolve, reject)
           } catch (err) {
             reject(err)
           }
         })
-        .then(async (_result) => {
+        .then((_result) => {
           // If the promise was replaced or cleared (e.g. by clearNuxtData), skip the update
           if (nuxtApp._asyncDataPromises[key] !== promise) {
             return nuxtApp._asyncDataPromises[key]
           }
 
           let result = _result as unknown as DataT
-          if (options.transform) {
-            result = await options.transform(_result)
-            if (nuxtApp._asyncDataPromises[key] !== promise) {
-              return nuxtApp._asyncDataPromises[key]
-            }
-          }
           if (options.pick) {
             result = pick(result as any, options.pick) as DataT
           }
