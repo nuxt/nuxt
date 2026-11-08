@@ -93,5 +93,8 @@
       "./package.json": "./package.json"
     },
     "types": "./dist/index.d.mts"
+  },
+  "inlinedDependencies": {
+    "untyped": "2.0.0"
   }
 }
