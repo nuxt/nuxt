@@ -161,6 +161,14 @@ describe('collectRou3PageSources', () => {
     ]
     expect(collectRou3PageSources(pages, '/app')).toBeUndefined()
   })
+
+  it.each(['/foo/%2A', '/foo/%28bar%29', '/foo/%7Bbar%7D'])('should bail out when %s decodes to route syntax', (path) => {
+    const pages: NuxtPage[] = [
+      { name: 'encoded', path, file: '/app/pages/encoded.vue' },
+      { name: 'catchall', path: '/:slug(.*)*', file: '/app/pages/[...slug].vue' },
+    ]
+    expect(collectRou3PageSources(pages, '/app')).toBeUndefined()
+  })
 })
 
 describe('getRouterOptionsKeys', () => {
