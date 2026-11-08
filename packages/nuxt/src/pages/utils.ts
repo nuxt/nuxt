@@ -284,6 +284,43 @@ export function getDynamicPageMeta (page: NuxtPage, cache = dynamicPageMetaCache
   return (page.file ? cache.get(normalize(page.file)) : undefined) ?? EMPTY_DYNAMIC_META
 }
 
+/** Page files whose component can have `__name` rewritten by the build-time transform. */
+const PAGE_COMPONENT_FILE_RE = /\.vue$/
+
+/**
+ * Map each transformable page file to the `__name` to assign to its component at build time.
+ * A file is omitted, or mapped to `undefined`, when its route name cannot be known until runtime
+ * (a dynamic `definePageMeta` name, `scanPageMeta` disabled, several routes sharing the file with
+ * different names, or a non-component file), so the runtime assignment keeps applying to it.
+ */
+export function getPageComponentNames (pages: NuxtPage[], nuxt = useNuxt()): Map<string, string | undefined> {
+  const pageNames = new Map<string, string | undefined>()
+  if (!nuxt || !nuxt.options.experimental.scanPageMeta) {
+    return pageNames
+  }
+  const dynamicPageMeta = dynamicPageMetaCache(nuxt)
+  const visit = (page: NuxtPage) => {
+    if (page.file && PAGE_COMPONENT_FILE_RE.test(page.file)) {
+      const file = normalize(page.file)
+      const name = page.name && !getDynamicPageMeta(page, dynamicPageMeta).has('name')
+        ? page.name
+        : undefined
+      if (!pageNames.has(file)) {
+        pageNames.set(file, name)
+      } else if (pageNames.get(file) !== name) {
+        // Several routes can reuse one file under different names; a single build-time name
+        // cannot express both.
+        pageNames.set(file, undefined)
+      }
+    }
+    if (page.children?.length) {
+      for (const child of page.children) { visit(child) }
+    }
+  }
+  for (const page of pages) { visit(page) }
+  return pageNames
+}
+
 type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }
 
 const STATIC_EXPRESSION_WRAPPERS = new Set([
@@ -646,6 +683,8 @@ interface NormalizeRoutesOptions {
   clientComponentRuntime: string
   /** Module exporting `memoizeRouteComponent`, used to share lazy page imports between server requests. */
   routeComponentRuntime?: string
+  /** Page files with a build-time `__name`, threaded through nested routes. */
+  pageComponentNames?: Map<string, string | undefined>
 }
 
 // A page that can only render in one environment is imported there and stubbed
@@ -701,6 +740,7 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
   const nuxt = useNuxt()
   const dynamicPageMeta = dynamicPageMetaCache(nuxt)
+  const pageNames = options.pageComponentNames ?? getPageComponentNames(routes, nuxt)
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -732,7 +772,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       if (page.children?.length) {
-        route.children = normalizeRoutes(page.children, metaImports, options).routes
+        route.children = normalizeRoutes(page.children, metaImports, { ...options, pageComponentNames: pageNames }).routes
       }
 
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
@@ -777,7 +817,12 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         ? JSON.stringify(hash(relativeFile))
         : undefined
 
-      let component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames
+      // A page whose name is known at build time already carries it in its own chunk, so the
+      // route table can import it without mutating it here.
+      const pageName = nuxt.options.experimental.normalizePageNames
+        ? pageNames.get(file)
+        : undefined
+      let component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames && pageName === undefined
         ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
         : normalizeComponent(page, pageImport, route.name, islandKey))
       if (options.routeComponentRuntime && !isSyncImport) {

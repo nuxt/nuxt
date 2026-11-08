@@ -20,6 +20,7 @@ import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
+import { PageComponentNamePlugin } from './plugins/component-name.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
 import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRuleLookupPath, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
@@ -777,6 +778,12 @@ export default defineNuxtModule({
         extractedKeys: nuxt.options.experimental.scanPageMeta ? extractedKeys : [],
         extractSerializable: shouldExtractSerializablePageMeta(nuxt),
       }))
+      if (nuxt.options.experimental.normalizePageNames) {
+        addBuildPlugin(PageComponentNamePlugin({
+          nuxt,
+          getPages: () => nuxt.apps.default?.pages,
+        }))
+      }
     })
 
     // Add prefetching support for middleware & layouts
