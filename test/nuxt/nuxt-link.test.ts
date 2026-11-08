@@ -272,6 +272,52 @@ describe('template links without a component instance', () => {
     }
   })
 
+  it('leaves `download` links to the browser', async () => {
+    const el = await mount(defineComponent({
+      render: () => (openBlock(), createElementBlock('div', null, [
+        createNuxtLinkVNode(NuxtLink, { to: '/inline-link-param/1', download: '' }, { default: textSlot(() => 'one'), _: 1 }),
+      ])),
+    }))
+    const anchor = el.get('a')
+    expect(el.findComponent(NuxtLink).exists()).toBe(true)
+    expect(anchor.attributes('href')).toBe('/inline-link-param/1')
+    expect(anchor.attributes('download')).toBe('')
+
+    const push = vi.spyOn(router, 'push')
+    try {
+      const event = new MouseEvent('click', { cancelable: true })
+      anchor.element.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(false)
+      expect(push).not.toHaveBeenCalled()
+    } finally {
+      push.mockRestore()
+      el.unmount()
+    }
+  })
+
+  it('leaves an object-location `download` link to the browser', async () => {
+    const el = await mount(defineComponent({
+      render: () => (openBlock(), createElementBlock('div', null, [
+        createNuxtLinkVNode(NuxtLink, { to: { name: 'inline-link-param', params: { id: '1' } }, download: '' }, { default: textSlot(() => 'one'), _: 1 }),
+      ])),
+    }))
+    const anchor = el.get('a')
+    expect(el.findComponent(NuxtLink).exists()).toBe(true)
+    expect(anchor.attributes('href')).toBe('/inline-link-param/1')
+    expect(anchor.attributes('download')).toBe('')
+
+    const push = vi.spyOn(router, 'push')
+    try {
+      const event = new MouseEvent('click', { cancelable: true })
+      anchor.element.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(false)
+      expect(push).not.toHaveBeenCalled()
+    } finally {
+      push.mockRestore()
+      el.unmount()
+    }
+  })
+
   it('patches the anchor and its slot content when the parent re-renders', async () => {
     const id = ref('1')
     const el = await mount(defineComponent({

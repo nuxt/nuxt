@@ -153,6 +153,12 @@ describe('nuxt-link ssr', () => {
     })
   }
 
+  it('resolves an internal download link against the app base', async () => {
+    const html = await renderLink({ props: { to: '/report.pdf', download: '' }, routerOptions: { history: createMemoryHistory('/app/') } }, true)
+    expect(html).toContain('href="/app/report.pdf"')
+    expect(html).toContain('download')
+  })
+
   it('renders a render-function slot once', async () => {
     const slot = vi.fn(() => 'text')
     await renderLink({ name: 'slot', props: { to: '/parent' }, slot }, true, true)
