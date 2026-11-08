@@ -1704,7 +1704,9 @@ describe('errors', () => {
     const html = await fetch('/error', { headers: { accept: 'text/html' } }).then(r => r.text())
     const payload = html.match(/__NUXT_DATA__[^>]*>(.*?)<\/script>/s)![1]!
     const data = JSON.parse(payload)
-    const error = data[data[1]!.error]
+    // the root entry is wrapped when the payload is reactive, so its index varies
+    const root = data[Array.isArray(data[0]) ? data[0][1] : 0]
+    const error = data[root.error]
 
     expect(data[error.status]).toBe(422)
     expect(data[error.statusText]).toBe('This is a custom error')
@@ -1732,8 +1734,9 @@ describe('errors', () => {
     const html = await fetch('/error/not-found', { headers: { accept: 'text/html' } }).then(r => r.text())
     const payload = html.match(/__NUXT_DATA__[^>]*>(.*?)<\/script>/s)![1]!
     const data = JSON.parse(payload)
+    const root = data[Array.isArray(data[0]) ? data[0][1] : 0]
 
-    const errorData = data[data[data[1]!.error].data]
+    const errorData = data[data[root.error].data]
     expect(data[errorData.reason]).toBe('missing')
   })
 
