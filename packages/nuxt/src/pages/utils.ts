@@ -1038,7 +1038,8 @@ function isDecodable (route: string): boolean {
  */
 export function collectRou3PageSources (pages: NuxtPage[], srcDir: string): Map<string, string[] | undefined> | undefined {
   const sources = new Map<string, string[] | undefined>()
-  const collect = (pages: NuxtPage[], prefixes: string[], parentSources: string[]): boolean => {
+  const owners = new Map<string, NuxtPage>()
+  const collect = (pages: NuxtPage[], prefixes: string[], parentSources: string[], ancestors: NuxtPage[]): boolean => {
     for (const page of pages) {
       const pageSources = [...parentSources]
       for (const file of [page.file, ...Object.values(page.components || {})]) {
@@ -1059,16 +1060,17 @@ export function collectRou3PageSources (pages: NuxtPage[], srcDir: string): Map<
         const { patterns, issues } = vueRouterToRou3(route, { collapse: true })
         if (!patterns.length || issues.some(issue => issue.type !== 'collapsed' || !route.endsWith(`:${issue.param}(.*)*`))) { return false }
         for (const pattern of patterns) {
-          const existing = sources.get(pattern)
-          const extendsExisting = !sources.has(pattern) || (existing && existing.length <= pageSources.length && existing.every((file, i) => pageSources[i] === file))
+          const owner = owners.get(pattern)
+          const extendsExisting = !owner || (sources.get(pattern) && (owner === page || ancestors.includes(owner)))
           sources.set(pattern, extendsExisting ? pageSources : undefined)
+          owners.set(pattern, page)
         }
       }
-      if (page.children?.length && !collect(page.children, [...routes], pageSources)) { return false }
+      if (page.children?.length && !collect(page.children, [...routes], pageSources, [...ancestors, page])) { return false }
     }
     return true
   }
-  return collect(pages, ['/'], []) ? sources : undefined
+  return collect(pages, ['/'], [], []) ? sources : undefined
 }
 
 /**

@@ -140,6 +140,20 @@ describe('collectRou3PageSources', () => {
     })
   })
 
+  it('should not resolve a pattern shared by a sibling and a nested route that share a file', () => {
+    const pages: NuxtPage[] = [
+      { name: 'first', path: '/shared', file: '/app/pages/shared.vue' },
+      {
+        path: '/shared',
+        file: '/app/pages/shared.vue',
+        children: [{ name: 'second', path: '', file: '/app/pages/shared/index.vue' }],
+      },
+    ]
+    expect(Object.fromEntries(collectRou3PageSources(pages, '/app')!)).toEqual({
+      '/shared': undefined,
+    })
+  })
+
   it('should bail out when a path is widened', () => {
     const pages: NuxtPage[] = [
       { name: 'numeric', path: '/users/:id(\\d+)', file: '/app/pages/users/numeric.vue' },
