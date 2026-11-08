@@ -11,7 +11,8 @@ export function installClientHead (nuxtApp: NuxtApp, head: ClientHead): void {
   let pauseDOMUpdates = true
   const render = head.render
   head.render = () => {
-    if (!pauseDOMUpdates) { render() }
+    if (pauseDOMUpdates) { return false }
+    return render()
   }
 
   // re-push server-only `app.head` so `titleTemplate` survives hydration (#35468)
