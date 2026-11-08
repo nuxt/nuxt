@@ -118,6 +118,7 @@ describe('renderer without a server builder', () => {
     const { html } = await render('/', { getRouteRules: () => rules }, event)
 
     expect(html.includes('window.__unhead__')).toBe(rules.streaming === true)
+    expect(html).toContain(`rel="preload" as="font" type="font/woff2" crossorigin href="${BUILD_ASSETS_DIR}fonts/standalone.woff2"`)
 
     const entry = html.match(/<script type="module" src="([^"]+)"/)?.[1]
     expect(entry).toBeTruthy()
