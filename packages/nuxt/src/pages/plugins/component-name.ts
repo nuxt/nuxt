@@ -8,7 +8,6 @@ import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
 interface PageComponentNamePluginOptions {
   nuxt: Nuxt
-  getPages: () => NuxtPage[] | undefined
 }
 
 /**
@@ -16,14 +15,14 @@ interface PageComponentNamePluginOptions {
  * table can load pages without assigning the name at runtime.
  */
 export const PageComponentNamePlugin = (options: PageComponentNamePluginOptions) => createUnplugin(() => {
-  let pages: NuxtPage[] | undefined
+  let appPages: Array<NuxtPage[] | undefined> = []
   let pageNames = new Map<string, string | undefined>()
 
   function getPageNames () {
-    const latest = options.getPages()
-    if (latest !== pages) {
-      pages = latest
-      pageNames = latest ? getPageComponentNames(latest, options.nuxt) : new Map<string, string | undefined>()
+    const current = Object.values(options.nuxt.apps).map(app => app.pages)
+    if (current.length !== appPages.length || current.some((pages, i) => pages !== appPages[i])) {
+      appPages = current
+      pageNames = getPageComponentNames(current.flatMap(pages => pages ?? []), options.nuxt)
     }
     return pageNames
   }

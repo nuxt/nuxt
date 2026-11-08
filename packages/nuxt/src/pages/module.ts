@@ -779,10 +779,7 @@ export default defineNuxtModule({
         extractSerializable: shouldExtractSerializablePageMeta(nuxt),
       }))
       if (nuxt.options.experimental.normalizePageNames) {
-        addBuildPlugin(PageComponentNamePlugin({
-          nuxt,
-          getPages: () => nuxt.apps.default?.pages,
-        }))
+        addBuildPlugin(PageComponentNamePlugin({ nuxt }))
       }
     })
 

@@ -299,10 +299,11 @@ export function getPageComponentNames (pages: NuxtPage[], nuxt = useNuxt()): Map
     return pageNames
   }
   const dynamicPageMeta = dynamicPageMetaCache(nuxt)
+  const namedViews = new Set<string>()
   const visit = (page: NuxtPage) => {
     if (page.file && PAGE_COMPONENT_FILE_RE.test(page.file)) {
       const file = normalize(page.file)
-      const name = page.name && !getDynamicPageMeta(page, dynamicPageMeta).has('name')
+      const name = page.name && !getDynamicPageMeta(page, dynamicPageMeta).has('name') && !isSymlink(file)
         ? page.name
         : undefined
       if (!pageNames.has(file)) {
@@ -313,12 +314,30 @@ export function getPageComponentNames (pages: NuxtPage[], nuxt = useNuxt()): Map
         pageNames.set(file, undefined)
       }
     }
+    for (const [view, viewFile] of Object.entries(page.components || {})) {
+      if (view !== 'default' && PAGE_COMPONENT_FILE_RE.test(viewFile)) {
+        namedViews.add(normalize(viewFile))
+      }
+    }
     if (page.children?.length) {
       for (const child of page.children) { visit(child) }
     }
   }
   for (const page of pages) { visit(page) }
+  // The runtime assignment only renames the resolved default (or its client clone), never a
+  // named view's component, so a file shared with a named view keeps it.
+  for (const file of namedViews) {
+    pageNames.set(file, undefined)
+  }
   return pageNames
+}
+
+function isSymlink (file: string): boolean {
+  try {
+    return normalize(fs.realpathSync(file)) !== file
+  } catch {
+    return false
+  }
 }
 
 type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }

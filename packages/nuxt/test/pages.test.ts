@@ -1,8 +1,9 @@
 import type { TestAPI } from 'vitest'
 import { describe, expect, it, vi } from 'vitest'
+import fs from 'node:fs'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { type PagesContextOptions, augmentPages, createPagesContext, dynamicPageMetaCache, getDynamicPageMeta, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
+import { type PagesContextOptions, augmentPages, createPagesContext, dynamicPageMetaCache, getDynamicPageMeta, getPageComponentNames, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
 import { PageComponentNamePlugin } from '../src/pages/plugins/component-name.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey, memoizeRouteComponent } from '../src/pages/runtime/utils.ts'
@@ -380,17 +381,14 @@ describe('pages:generateRoutesFromFiles', () => {
   })
 
   describe('pages:page-component-name', () => {
-    const nuxt = {
-      options: {
-        experimental: { scanPageMeta: true },
-      },
-    } as unknown as Nuxt
-
     function transform (code: string, id: string, pageName: string) {
-      const plugin = PageComponentNamePlugin({
-        nuxt,
-        getPages: () => [{ file: id, name: pageName, path: '/' } as NuxtPage],
-      }).raw({}, { framework: 'vite', versions: {} } as any) as {
+      const nuxt = {
+        apps: { default: { pages: [{ file: id, name: pageName, path: '/' } as NuxtPage] } },
+        options: {
+          experimental: { scanPageMeta: true },
+        },
+      } as unknown as Nuxt
+      const plugin = PageComponentNamePlugin({ nuxt }).raw({}, { framework: 'vite', versions: {} } as any) as {
         transform: { handler: (code: string, id: string) => { code: string } | undefined }
       }
       return plugin.transform.handler(code, id)?.code
@@ -418,6 +416,39 @@ export default { render: () => other }`
         `const other = { __name: "foo" }
 export default Object.assign({ render: () => other }, { __name: "foo" })`,
       )
+    })
+  })
+
+  describe('pages:pageComponentNames', () => {
+    const nuxt = {
+      options: {
+        experimental: { scanPageMeta: true },
+      },
+    } as unknown as Nuxt
+
+    it('excludes a page file that another route uses as a named view', () => {
+      const pages: NuxtPage[] = [
+        { file: '/pages/foo.vue', name: 'foo', path: '/foo' },
+        { file: '/pages/bar.vue', name: 'bar', path: '/bar', components: { default: '/pages/bar.vue', foo: '/pages/foo.vue' } },
+      ] as unknown as NuxtPage[]
+
+      const names = getPageComponentNames(pages, nuxt)
+      expect(names.get('/pages/foo.vue')).toBeUndefined()
+      expect(names.get('/pages/bar.vue')).toBe('bar')
+    })
+
+    it('excludes a symlinked page file', () => {
+      const spy = vi.spyOn(fs, 'realpathSync').mockReturnValue('/real/foo.vue')
+      try {
+        const pages: NuxtPage[] = [
+          { file: '/pages/foo.vue', name: 'foo', path: '/foo' },
+        ] as unknown as NuxtPage[]
+
+        const names = getPageComponentNames(pages, nuxt)
+        expect(names.get('/pages/foo.vue')).toBeUndefined()
+      } finally {
+        spy.mockRestore()
+      }
     })
   })
 
