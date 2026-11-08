@@ -687,6 +687,62 @@ describe('useAsyncData', () => {
     expect(c.status.value).toBe('success')
   })
 
+  it.each(['resolve', 'reject'] as const)('should settle superseded callers before the old transform can %s', async (outcome) => {
+    const route = ref('/a')
+    const pending: Record<string, { resolve: (value: string) => void, reject: (error: Error) => void }> = {}
+    const transform = vi.fn((value: string) => new Promise<string>((resolve, reject) => (pending[value] = { resolve, reject })))
+    const c = await mountWithAsyncData(uniqueKey, () => Promise.resolve(route.value), {
+      watch: [route], dedupe: 'cancel', immediate: false, transform,
+    })
+    const resolved = { first: false, deferred: false }
+
+    const first = c.execute().then(() => { resolved.first = true })
+    await flushPromises()
+    onTestFinished(() => pending['/a']!.resolve('/a'))
+    const deferred = c.execute({ dedupe: 'defer' }).then(() => { resolved.deferred = true })
+    route.value = '/b'
+    await flushPromises()
+
+    pending['/b']!.resolve('/b')
+    await flushPromises()
+    expect(resolved).toEqual({ first: true, deferred: true })
+    expect(c.data.value).toBe('/b')
+
+    if (outcome === 'resolve') {
+      pending['/a']!.resolve('/a')
+    } else {
+      pending['/a']!.reject(new Error('stale transform failed'))
+    }
+    await Promise.all([first, deferred])
+    await flushPromises()
+    expect(c.data.value).toBe('/b')
+    expect(c.error.value).toBeUndefined()
+    expect(c.status.value).toBe('success')
+  })
+
+  it('should settle an aborted execute without waiting for its async transform', async () => {
+    const controller = new AbortController()
+    let finishTransform!: (value: string) => void
+    const c = await mountWithAsyncData(uniqueKey, () => Promise.resolve('stale'), {
+      immediate: false,
+      transform: () => new Promise<string>(resolve => (finishTransform = resolve)),
+    })
+    let resolved = false
+    const request = c.execute({ signal: controller.signal }).then(() => { resolved = true })
+    await flushPromises()
+    onTestFinished(() => finishTransform('stale'))
+
+    controller.abort(new DOMException('test abort', 'AbortError'))
+    await flushPromises()
+    expect(resolved).toBe(true)
+    expect(c.status.value).toBe('idle')
+
+    finishTransform('stale')
+    await request
+    expect(c.data.value).toBeUndefined()
+    expect(c.status.value).toBe('idle')
+  })
+
   it('should preserve cleared state when an async transform finishes', async () => {
     let finishTransform!: (value: string) => void
     const c = await mountWithAsyncData(uniqueKey, () => Promise.resolve('stale'), {
