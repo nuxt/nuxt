@@ -124,7 +124,7 @@ describe('renderer without a server builder', () => {
       const ssrContext = { config: {}, payload } as unknown as NuxtSSRContext
       const [script] = renderPayloadJsonScript({ ssrContext, data: payload })
 
-      expect(parse(script!.innerHTML)).toEqual(value === empty ? { serverRendered: true } : { [key]: original, serverRendered: true })
+      expect(parse(script!.innerHTML as string)).toEqual(value === empty ? { serverRendered: true } : { [key]: original, serverRendered: true })
       expect(payload[key]).toBe(value)
       expect(payload[key]).toEqual(original)
     }
@@ -135,7 +135,7 @@ describe('renderer without a server builder', () => {
     const ssrContext = { config: {}, payload } as unknown as NuxtSSRContext
     const [script] = renderPayloadJsonScript({ ssrContext, data: payload })
 
-    expect(parse(script!.innerHTML)).toEqual({ serverRendered: true })
+    expect(parse(script!.innerHTML as string)).toEqual({ serverRendered: true })
     expect(payload).toEqual({ data: {}, state: {}, once: new Set(), _errors: {}, serverRendered: true })
   })
 
