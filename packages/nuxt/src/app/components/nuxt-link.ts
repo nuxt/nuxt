@@ -14,7 +14,7 @@ import type {
   VNode,
 } from 'vue'
 import { computed, createBlock, createElementBlock, createVNode, defineComponent, h, inject, normalizeClass, normalizeStyle, onBeforeUnmount, onMounted, openBlock, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
-import { escapeHtml } from '@vue/shared'
+import { camelize, escapeHtml } from '@vue/shared'
 import type { ComponentSlots } from 'vue-component-type-helpers'
 import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteLocationResolved, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
@@ -964,34 +964,18 @@ export interface NuxtLinkSsrState {
 type DirectRenderProps = NuxtLinkProps & { to: RouteLocationRaw, class?: unknown, style?: unknown, attrs?: Record<string, unknown> }
 
 // Boolean props are excluded: without prop normalisation a bare attribute arrives as `''`.
-const DIRECT_RENDER_PROPS = new Map([
-  ['key', 'key'],
-  ['to', 'to'],
-  ['class', 'class'],
-  ['style', 'style'],
-  ['rel', 'rel'],
-  ['activeClass', 'activeClass'],
-  ['active-class', 'activeClass'],
-  ['exactActiveClass', 'exactActiveClass'],
-  ['exact-active-class', 'exactActiveClass'],
-  ['ariaCurrentValue', 'ariaCurrentValue'],
-  ['aria-current-value', 'ariaCurrentValue'],
-  ['prefetchOn', 'prefetchOn'],
-  ['prefetch-on', 'prefetchOn'],
-  ['prefetchedClass', 'prefetchedClass'],
-  ['prefetched-class', 'prefetchedClass'],
-])
+const DIRECT_RENDER_PROPS = new Set(['key', 'to', 'class', 'style', 'rel', 'activeClass', 'exactActiveClass', 'ariaCurrentValue', 'prefetchOn', 'prefetchedClass'])
 
 // Props and attributes that need the component: everything else falls through to the anchor.
-const COMPONENT_RENDER_KEYS = new Set(['href', 'target', 'noRel', 'no-rel', 'prefetch', 'noPrefetch', 'no-prefetch', 'replace', 'external', 'custom', 'trailingSlash', 'trailing-slash', 'viewTransition', 'view-transition', 'ref', 'ref_for', 'ref_key', 'innerHTML', 'textContent'])
+const COMPONENT_RENDER_KEYS = new Set(['href', 'target', 'noRel', 'prefetch', 'noPrefetch', 'replace', 'external', 'custom', 'trailingSlash', 'viewTransition', 'ref', 'ref_for', 'ref_key', 'innerHTML', 'textContent'])
 
 function directRenderProps (raw: Record<string, unknown>): DirectRenderProps | undefined {
   let props = raw
   let attrs: Record<string, unknown> | undefined
   for (const key in raw) {
-    const name = DIRECT_RENDER_PROPS.get(key)
-    if (!name) {
-      if (COMPONENT_RENDER_KEYS.has(key) || key.startsWith('onVnode')) { return }
+    const name = key.includes('-') ? camelize(key) : key
+    if (!DIRECT_RENDER_PROPS.has(name)) {
+      if (COMPONENT_RENDER_KEYS.has(name) || key.startsWith('onVnode')) { return }
       (attrs ??= {})[key] = raw[key]
     } else if (name !== key) {
       if (props === raw) { props = { ...raw } }
