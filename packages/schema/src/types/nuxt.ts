@@ -304,6 +304,8 @@ export interface Nuxt {
   // Private fields.
   '__name': string
   '_version': string
+  /** Early script for SPA shells when the merged router options declare a custom scroll handler inline. */
+  '_spaScrollRestorationScript'?: string
   '_ignore'?: NuxtIgnoreMatcher
   '_dependencies'?: Set<string>
   '~runtimeDependencies'?: string[]

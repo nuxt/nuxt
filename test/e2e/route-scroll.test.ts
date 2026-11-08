@@ -16,6 +16,17 @@ test.use({
 })
 
 test.describe('route scroll behavior', () => {
+  test('preserves native scroll restoration on reload with the default handler', async ({ page, goto }) => {
+    await goto('/route-scroll-behavior/scroll-to-top/do-not-scroll-to-top?scrollToTop=false')
+    await expect.poll(() => page.evaluate(() => window.history.scrollRestoration)).toBe('auto')
+    await page.evaluate(() => window.scrollTo(0, 300))
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(300)
+
+    await page.reload()
+    await page.waitForFunction(() => window.useNuxtApp && !window.useNuxtApp().isHydrating)
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(300)
+  })
+
   test('expect scroll to top on routes with same component', async ({ page, goto }) => {
     // #22402
     await goto('/big-page-1')

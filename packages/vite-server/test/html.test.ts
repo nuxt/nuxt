@@ -67,6 +67,18 @@ describe('renderIndexHtml', () => {
     expect(renderIndexHtml(createNuxt({ ssr: false }), './entry.js')).toContain('<div id="__nuxt"></div>')
   })
 
+  it('emits the early scroll restoration script only for a script-enabled SPA', () => {
+    const nuxt = createNuxt()
+    nuxt._spaScrollRestorationScript = 'history.scrollRestoration="manual"'
+    const script = '<script>history.scrollRestoration="manual"</script>'
+    expect(renderIndexHtml(nuxt, './entry.js')).toContain(script)
+    nuxt.options.ssr = true
+    expect(renderIndexHtml(nuxt, './entry.js')).not.toContain(script)
+    nuxt.options.ssr = false
+    nuxt.options.features = { ...nuxt.options.features, noScripts: 'all' }
+    expect(renderIndexHtml(nuxt, './entry.js')).not.toContain(script)
+  })
+
   it('wraps a provided loading template', () => {
     const html = renderIndexHtml(createNuxt(), './entry.js', '<p>loading</p>')
 

@@ -14,12 +14,13 @@ import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { addRoute, createRouter, findRoute } from 'rou3'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, getRouterOptionsKeys, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, getRouterOptionTypes, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
+import { manualScrollRestoration } from './runtime/scroll-restoration.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
 import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRuleLookupPath, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
@@ -324,6 +325,7 @@ export default defineNuxtModule({
         getContents: () => {
           return [
             'export const hashMode = false',
+            'export const hasCustomScrollBehavior = false',
             'export default {}',
           ].join('\n')
         },
@@ -915,13 +917,24 @@ export default defineNuxtModule({
       getContents: async ({ nuxt }) => {
         // Scan and register app/router.options files
         const routerOptionsFiles = await resolveRouterOptions(nuxt, builtInRouterOptions)
+        let hasInlineScrollBehavior = false
         for (const file of routerOptionsFiles) {
-          if (file.path === builtInRouterOptions) { continue }
+          if (file.path === builtInRouterOptions) {
+            hasInlineScrollBehavior = false
+            continue
+          }
           const code = await readFile(file.path, 'utf-8').catch(() => undefined)
-          if (code !== undefined && getRouterOptionsKeys(code, file.path)?.has('sensitive')) {
+          const types = code === undefined ? undefined : getRouterOptionTypes(code, file.path)
+          if (!types || types.has('scrollBehavior')) {
+            const type = types?.get('scrollBehavior')
+            hasInlineScrollBehavior = type === 'FunctionExpression' || type === 'ArrowFunctionExpression'
+          }
+          if (types?.has('sensitive')) {
             throw pageDiagnostics.NUXT_B4023({ file: linkToAlias(file.path, nuxt) })
           }
         }
+
+        nuxt._spaScrollRestorationScript = hasInlineScrollBehavior ? manualScrollRestoration : undefined
 
         const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
           .map(([key, value]) => [key, genString(value as string)]))
@@ -935,17 +948,20 @@ export default defineNuxtModule({
         }
 
         return [
+          genImport(builtInRouterOptions, 'defaultRouterOptions'),
           ...routerOptionsFiles.map((file, index) => genImport(file.path, `routerOptions${index}`)),
           `const configRouterOptions = ${configRouterOptions}`,
           `export const hashMode = ${[
             ...hashModes,
             nuxt.options.router.options.hashMode,
           ].join(' ?? ')}`,
-          'export default {',
+          'const routerOptions = {',
           '...configRouterOptions,',
           ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
           `sensitive: ${!!nuxt.options.router.options.sensitive},`,
           '}',
+          `export const hasCustomScrollBehavior = typeof routerOptions.scrollBehavior === 'function' && routerOptions.scrollBehavior !== defaultRouterOptions.scrollBehavior`,
+          'export default routerOptions',
         ].join('\n')
       },
     })

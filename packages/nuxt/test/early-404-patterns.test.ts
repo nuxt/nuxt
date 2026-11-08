@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, getRouterOptionsKeys, routerOptionsMayModifyRoutes } from '../src/pages/utils.ts'
+import { collectRou3PagePatterns, getRouterOptionTypes, routerOptionsMayModifyRoutes } from '../src/pages/utils.ts'
 
 describe('collectRou3PagePatterns', () => {
   it('should collect patterns for static and dynamic pages', () => {
@@ -90,11 +90,11 @@ describe('collectRou3PagePatterns', () => {
   })
 })
 
-describe('getRouterOptionsKeys', () => {
+describe('getRouterOptionTypes', () => {
   it('should list the keys of an object literal default export', () => {
-    expect(getRouterOptionsKeys('export default <RouterConfig> { sensitive: true, "strict": false }', 'router.options.ts')).toEqual(new Set(['sensitive', 'strict']))
-    expect(getRouterOptionsKeys('export default { ...shared, sensitive: true }', 'router.options.ts')).toBeUndefined()
-    expect(getRouterOptionsKeys('export default defineRouterOptions({ sensitive: true })', 'router.options.ts')).toBeUndefined()
+    expect(getRouterOptionTypes('export default <RouterConfig> { sensitive: true, "strict": false }', 'router.options.ts')).toEqual(new Map([['sensitive', 'Literal'], ['strict', 'Literal']]))
+    expect(getRouterOptionTypes('export default { ...shared, sensitive: true }', 'router.options.ts')).toBeUndefined()
+    expect(getRouterOptionTypes('export default defineRouterOptions({ sensitive: true })', 'router.options.ts')).toBeUndefined()
   })
 })
 

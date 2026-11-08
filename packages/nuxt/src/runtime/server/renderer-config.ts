@@ -64,6 +64,8 @@ export const appSpaLoaderAttrs: Record<string, string> = { id: '__nuxt-loader' }
 export const spaLoadingTemplateOutside: boolean = false
 /** Markup rendered inside the app root while a client-only app boots. */
 export const spaTemplate: string = ''
+/** Early scroll restoration script for a client-rendered document. */
+export const spaScrollRestorationScript: string = ''
 export const appId: string = 'nuxt-app'
 export const multiApp: boolean = false
 /** Whether island rendering is compiled into the build. */

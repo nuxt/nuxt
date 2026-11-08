@@ -71,6 +71,7 @@ export type RendererConfigName =
   | 'appSpaLoaderAttrs'
   | 'spaLoadingTemplateOutside'
   | 'spaTemplate'
+  | 'spaScrollRestorationScript'
   | 'appId'
   | 'multiApp'
   | 'componentIslands'
@@ -136,6 +137,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     appSpaLoaderAttrs: JSON.stringify(app.spaLoaderAttrs),
     spaLoadingTemplateOutside: String(nuxt.options.experimental.spaLoadingTemplateLocation === 'body'),
     spaTemplate: '""',
+    spaScrollRestorationScript: JSON.stringify(nuxt._spaScrollRestorationScript || ''),
     appId: JSON.stringify(nuxt.options.appId),
     multiApp: String(!!nuxt.options.future.multiApp),
     componentIslands: 'false',

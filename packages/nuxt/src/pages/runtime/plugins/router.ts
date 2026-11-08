@@ -7,6 +7,7 @@ import { isSamePath, withBase, withoutBase } from 'ufo'
 import type { NuxtApp, Plugin } from '#app/nuxt'
 import type { RouteMiddleware } from '#app/composables/router'
 
+import { manualScrollRestoration } from '../scroll-restoration'
 import { generateRouteKey, toArray } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
@@ -17,7 +18,7 @@ import { navigationDiagnostics } from '../../../app/diagnostics/navigation'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import _routeRulesMatcher from '#build/route-rules.mjs'
-import routerOptions, { hashMode } from '#build/router.options.mjs'
+import routerOptions, { hasCustomScrollBehavior, hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
 import { serverPathFallback, staticRoutes, tracingChannelNuxt } from '#build/nuxt.config.mjs'
@@ -79,28 +80,38 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     const routes = routerOptions.routes ? await routerOptions.routes(_routes) ?? _routes : _routes
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const scrollBehavior = routerOptions.scrollBehavior
+    let startupReplacementPath: string | undefined
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
 
-    const router = createRouter({
+    const router: Router = createRouter({
       ...routerOptions,
       scrollBehavior: (to, from, savedPosition) => {
         if (from === START_LOCATION) {
           startPosition = savedPosition
+          if (hasCustomScrollBehavior && scrollBehavior) {
+            // If middleware aborts the startup replacement, the initial route is still current at mount.
+            return new Promise<void>((resolve) => {
+              nuxtApp.hooks.hookOnce('app:mounted', () => resolve())
+            }).then(() => router.currentRoute.value === to && scrollBehavior(to, from, savedPosition))
+          }
           return
         }
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        if (routerOptions.scrollBehavior) {
+        if (scrollBehavior) {
           // reset scroll behavior to initial value
           // eslint-disable-next-line @typescript-eslint/no-deprecated
-          router.options.scrollBehavior = routerOptions.scrollBehavior
+          router.options.scrollBehavior = scrollBehavior
           if ('scrollRestoration' in window.history) {
             const unsub = router.beforeEach(() => {
               unsub()
               window.history.scrollRestoration = 'manual'
             })
           }
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          return routerOptions.scrollBehavior(to, START_LOCATION, startPosition || savedPosition)
+          if (hasCustomScrollBehavior && (to.fullPath !== startupReplacementPath || to.redirectedFrom)) {
+            return scrollBehavior(to, from, savedPosition)
+          }
+          return scrollBehavior(to, START_LOCATION, startPosition || savedPosition)
         }
       },
       history,
@@ -118,8 +129,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
     }
 
+    const ssrContext = nuxtApp.ssrContext
+    if (import.meta.server && hasCustomScrollBehavior && ssrContext && !ssrContext.noScripts && !ssrContext.islandContext) {
+      ssrContext.head.push({
+        script: [{ innerHTML: manualScrollRestoration, tagPriority: 'critical' }],
+      })
+    }
     if (import.meta.client && 'scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'auto'
+      window.history.scrollRestoration = hasCustomScrollBehavior ? 'manual' : 'auto'
     }
     nuxtApp.vueApp.use(router)
 
@@ -443,6 +460,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           if ('name' in payloadRoute) {
             ;(payloadRoute as { name: unknown }).name = undefined
           }
+          startupReplacementPath = payloadRoute.fullPath
           await router.replace({ ...payloadRoute, force: true })
 
           const restoreDeferredRoute = () => {
@@ -465,6 +483,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           nuxtApp['~restoreDeferredRoute'] = restoreDeferredRoute
           nuxtApp.hooks.hookOnce('app:suspense:resolve', restoreDeferredRoute)
         } else {
+          startupReplacementPath = resolvedInitialRoute.fullPath
           await router.replace({
             ...resolvedInitialRoute,
             force: true,
@@ -472,7 +491,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
         // reset scroll behavior to initial value
         // eslint-disable-next-line @typescript-eslint/no-deprecated
-        router.options.scrollBehavior = routerOptions.scrollBehavior
+        router.options.scrollBehavior = scrollBehavior
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here
         await _showErrorUnlessCrawler(nuxtApp, error)

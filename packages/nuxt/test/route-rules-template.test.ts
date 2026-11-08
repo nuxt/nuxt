@@ -1,6 +1,7 @@
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
+import { genImport } from 'knitwork'
 import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { describe, expect, it } from 'vitest'
@@ -255,21 +256,29 @@ describe('route rule redirects', () => {
 })
 
 describe('router options template', () => {
-  async function getRouterOptionsTemplate (code: string) {
+  /** Generate the real options module with a layer registered before, after, or in place of the built-in options. */
+  async function getRouterOptionsTemplate (code: string, position: 'append' | 'prepend' | 'replace' = 'append') {
     const dir = await mkdtemp(join(tmpdir(), 'nuxt-router-options-'))
-    const file = join(dir, 'router.options.ts')
+    const file = join(dir, 'layer.options.ts')
     await writeFile(file, code)
     const nuxt = await loadNuxt({
       cwd: pagesFixtureDir,
       ready: true,
       overrides: {
         router: { options: { sensitive: true } },
-        hooks: { 'pages:routerOptions' ({ files }) { files.push({ path: file }) } },
+        hooks: {
+          'pages:routerOptions' ({ files }) {
+            if (position === 'append') { files.push({ path: file }) }
+            if (position === 'prepend') { files.unshift({ path: file }) }
+            if (position === 'replace') { files.splice(0, 1, { path: file }) }
+          },
+        },
       },
     })
     try {
       const template = nuxt.options.build.templates.find(t => t.filename === 'router.options.mjs')!
-      return await template.getContents!({ nuxt, app: undefined!, options: template.options })
+      const contents = await template.getContents!({ nuxt, app: undefined!, options: template.options })
+      return { contents, file, spaScrollRestorationScript: nuxt._spaScrollRestorationScript }
     } finally {
       await nuxt.close()
       await rm(dir, { recursive: true, force: true })
@@ -281,7 +290,30 @@ describe('router options template', () => {
   })
 
   it('uses `sensitive` from the config', async () => {
-    const contents = await getRouterOptionsTemplate('const options = { sensitive: false }\nexport default options')
-    expect(contents.trim().split('\n').slice(-2)).toEqual(['sensitive: true,', '}'])
+    const { contents } = await getRouterOptionsTemplate('const options = { sensitive: false }\nexport default options')
+    expect(contents).toContain('sensitive: true,\n}')
+  })
+
+  it.each(['append', 'prepend', 'replace'] as const)('detects custom handlers when hooks %s router options', async (position) => {
+    const { contents, file, spaScrollRestorationScript } = await getRouterOptionsTemplate('export default { scrollBehavior () {} }', position)
+    expect(!!spaScrollRestorationScript).toBe(position !== 'prepend')
+    const toDataURL = (code: string) => `data:text/javascript,${encodeURIComponent(code)}`
+    const defaults = toDataURL('export default { scrollBehavior () {} }')
+
+    const builtinPath = normalize(fileURLToPath(new URL('../src/pages/runtime/router.options.ts', import.meta.url)))
+    expect(contents).toContain(genImport(builtinPath, 'defaultRouterOptions'))
+
+    async function hasCustomScrollBehavior (layer: string) {
+      const source = contents.replace(/from (['"])(.+?)\1/g, (_, _quote, path: string) => {
+        expect([builtinPath, file]).toContain(path)
+        return 'from ' + JSON.stringify(path === file ? toDataURL(layer) : defaults)
+      })
+      return (await import(toDataURL(source))).hasCustomScrollBehavior
+    }
+
+    expect(await hasCustomScrollBehavior('export default {}')).toBe(false)
+    expect(await hasCustomScrollBehavior(`export { default } from ${JSON.stringify(defaults)}`)).toBe(false)
+    expect(await hasCustomScrollBehavior('export default { scrollBehavior () { return { top: 200 } } }')).toBe(position !== 'prepend')
+    expect(await hasCustomScrollBehavior('export default { scrollBehavior: undefined }')).toBe(false)
   })
 })

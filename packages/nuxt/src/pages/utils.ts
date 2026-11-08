@@ -980,16 +980,16 @@ export function isSerializable (node: ESTree.Node): { value?: any, serializable:
  * literal, contains spreads or computed keys, or defines a `routes` property.
  */
 export function routerOptionsMayModifyRoutes (code: string, filename: string): boolean {
-  const keys = getRouterOptionsKeys(code, filename)
-  return !keys || keys.has('routes')
+  const types = getRouterOptionTypes(code, filename)
+  return !types || types.has('routes')
 }
 
 /**
- * The keys of the object literal a `router.options` file exports by default, or `undefined`
+ * The property value types of the object literal a `router.options` file exports by default, or `undefined`
  * when the export cannot be analysed or contains spreads or computed keys.
  */
-export function getRouterOptionsKeys (code: string, filename: string): Set<string> | undefined {
-  let keys: Set<string> | undefined
+export function getRouterOptionTypes (code: string, filename: string): Map<string, string> | undefined {
+  let types: Map<string, string> | undefined
   try {
     parseAndWalk(code, filename, (node) => {
       if (node.type !== 'ExportDefaultDeclaration') { return }
@@ -998,20 +998,20 @@ export function getRouterOptionsKeys (code: string, filename: string): Set<strin
         declaration = declaration.expression
       }
       if (declaration.type !== 'ObjectExpression') { return }
-      const names = new Set<string>()
+      const properties = new Map<string, string>()
       for (const property of declaration.properties) {
         if (property.type === 'SpreadElement') { return }
         const key = property.key
         const name = key.type === 'Identifier' && !property.computed ? key.name : key.type === 'Literal' ? String(key.value) : undefined
         if (name === undefined) { return }
-        names.add(name)
+        properties.set(name, property.kind === 'init' ? property.value.type : property.kind)
       }
-      keys = names
+      types = properties
     })
   } catch {
     return undefined
   }
-  return keys
+  return types
 }
 
 /**

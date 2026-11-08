@@ -239,6 +239,7 @@ function getPrerenderedErrorPage (event: RendererEvent): SSRError | undefined {
   } as unknown as SSRError
 }
 
+/** Apply the request’s route rules before rendering its payload, SSR document, or SPA shell. */
 async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<Response> {
   const runtime = instance.options
 
@@ -261,6 +262,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   // Get route options (for `ssr: false`, `isr`, `cache` and `noScripts`)
   const routeOptions = runtime.getRouteRules(event)
   const NO_SCRIPTS = NUXT_NO_SCRIPTS || !!routeOptions.noScripts
+  ssrContext.noScripts = NO_SCRIPTS
   const DEFER_PREFETCH = NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS
 
   // an error page rendered as an empty SPA shell shows the visitor nothing
