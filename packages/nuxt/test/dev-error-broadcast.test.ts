@@ -44,3 +44,42 @@ describe('dev error channel without a working `BroadcastChannel`', () => {
     expect(channel.current).toBeUndefined()
   })
 })
+
+describe('dev error channel problem sets', () => {
+  afterEach(async () => {
+    const store = globalThis as Record<symbol, Promise<{ close: () => void }> | undefined>
+    ;(await store[Symbol.for('nuxt:dev:error-channel')])?.close()
+    delete store[Symbol.for('nuxt:dev:error-channel')]
+    setErrorChannelForwarding(() => false)
+  })
+
+  it('applies problem sets another thread posts to an owned channel', async () => {
+    setErrorChannelForwarding(() => false)
+    const channel = await useErrorChannel()
+    const sender = new BroadcastChannel('nuxt:dev:error')
+
+    const meta = { label: 'vue-tsc', status: 'idle', url: '/_nuxt/__checker/?embed', devtoolsDock: 'vite-plugin-checker' } as const
+    sender.postMessage({ type: 'nuxt:dev:error:problems', source: 'checker:vue-tsc', reports: [report], meta })
+    await vi.waitFor(() => expect(channel.problems).toEqual([{ source: 'checker:vue-tsc', ...meta, reports: [report] }]))
+
+    sender.postMessage({ type: 'nuxt:dev:error:problems:clear', source: 'checker:vue-tsc' })
+    await vi.waitFor(() => expect(channel.problems).toEqual([]))
+    sender.close()
+  })
+
+  it('forwards problem sets to the owning dev server', async () => {
+    setErrorChannelForwarding(() => true)
+    const channel = await useErrorChannel()
+    const messages: unknown[] = []
+    const listener = new BroadcastChannel('nuxt:dev:error')
+    listener.onmessage = event => messages.push(event.data)
+
+    channel.setProblems('checker:vue-tsc', [report], { label: 'vue-tsc' })
+    channel.clearProblems('checker:vue-tsc')
+    await vi.waitFor(() => expect(messages).toEqual([
+      { type: 'nuxt:dev:error:problems', source: 'checker:vue-tsc', reports: [report], meta: { label: 'vue-tsc' } },
+      { type: 'nuxt:dev:error:problems:clear', source: 'checker:vue-tsc' },
+    ]))
+    listener.close()
+  })
+})
