@@ -184,6 +184,17 @@ describe('applyRuntimeConfigSchema', () => {
     const { config } = apply({ url: '{{HOST}}/api', other: '' }, { p: { url: 's', other: 's' } }, { HOST: 'https://{{X}}', X: 'x', NUXT_OTHER: '{{X}}' }, true)
     expect(config).toEqual({ url: 'https://{{X}}/api', other: 'x' })
   })
+
+  it('should expand variables before checking them', () => {
+    const schema: RuntimeConfigSchemaObject = { p: { port: 'n', mode: { e: ['dev', 'prod'] } } }
+    expect(apply({ port: 3000, mode: '{{MODE}}' }, schema, { PORT: '8080', MODE: 'prod', NUXT_PORT: '{{PORT}}' }, true)).toEqual({
+      config: { port: 8080, mode: 'prod' },
+      issues: [],
+    })
+    expect(apply({ port: 3000, mode: 'dev' }, schema, { MODE: 'other', NUXT_MODE: '{{MODE}}' }, true).issues).toEqual([
+      { path: 'mode', env: 'NUXT_MODE', expected: '"dev" | "prod"', received: 'other' },
+    ])
+  })
 })
 
 describe('formatRuntimeConfigIssues', () => {

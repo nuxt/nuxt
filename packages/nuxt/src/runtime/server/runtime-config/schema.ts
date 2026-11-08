@@ -49,7 +49,9 @@ function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchema
     const subKey = envPath ? `${envPath}_${key}` : key
     const envKey = toEnvKey(subKey)
     const prefixed = options.env[options.prefix + envKey]
-    const raw = prefixed ?? options.env[options.altPrefix + envKey]
+    const envValue = prefixed ?? options.env[options.altPrefix + envKey]
+    const expandEnv = options.envExpansion && envValue !== undefined && isScalar(child)
+    const raw = expandEnv ? expand(envValue, options.env) : envValue
     const issue: RuntimeConfigIssue = {
       path: path ? `${path}.${key}` : key,
       env: (prefixed === undefined ? options.altPrefix : options.prefix) + envKey,
@@ -120,14 +122,26 @@ function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchema
       }
       continue
     }
+    if (options.envExpansion && !expandEnv && typeof value === 'string') {
+      value = expand(value, options.env)
+    }
     if (!check(value, child)) {
       reject(key, { ...issue, received: value })
       continue
     }
-    target[key] = options.envExpansion && typeof value === 'string'
-      ? value.replace(ENV_EXPANSION_RE, (match, name) => options.env[name] || match)
-      : value
+    target[key] = value
   }
+}
+
+function expand (value: string, env: Record<string, string | undefined>): string {
+  return value.replace(ENV_EXPANSION_RE, (match, name) => env[name] || match)
+}
+
+function isScalar (node: RuntimeConfigSchemaNode): boolean {
+  if (typeof node === 'string') {
+    return node !== '*'
+  }
+  return 'e' in node || ('o' in node && node.o.every(isScalar))
 }
 
 /**
