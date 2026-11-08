@@ -516,6 +516,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   for (const href of inlinedHrefs) {
     excludeHrefs.add(href)
   }
+  for (const resource of Object.values(scripts)) {
+    excludeHrefs.add(renderer.rendererContext.buildAssetsURL(resource.file))
+  }
   for (const id of ssrContext['~neverHydratedModules'] ?? []) {
     const file = renderer.rendererContext.manifest?.[id]?.file
     if (file) {
@@ -685,8 +688,9 @@ async function renderStreamedResponse (ctx: {
   }
 
   // Entry preload/prefetch links
+  const entryScriptHrefs = new Set(Object.values(entryScripts).map(resource => renderer.rendererContext.buildAssetsURL(resource.file)))
   const entryHints = [
-    ...getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
+    ...(getPreloadLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).filter(l => !(l.href && entryScriptHrefs.has(l.href))),
     ...(getPrefetchLinks({}, renderer.rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => DEFER_PREFETCH ? inertPrefetchLink(l) : l),
   ]
   if (entryHints.length) {
