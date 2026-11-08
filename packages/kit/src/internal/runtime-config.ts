@@ -1,7 +1,13 @@
+import process from 'node:process'
+import destr from 'destr'
 import { defu } from 'defu'
-import type { RuntimeConfigSchema } from '@nuxt/schema'
+import { klona } from 'klona'
+import { snakeCase } from 'scule'
+import type { NitroConfig, Nuxt, RuntimeConfigSchema } from '@nuxt/schema'
 import type { RuntimeConfigSchemaEntry, RuntimeConfigSchemaNode, RuntimeConfigSchemaObject } from '@nuxt/schema/internal'
 
+import { applyRuntimeConfigSchema } from '../../../nuxt/src/runtime/server/runtime-config/schema.ts'
+import type { RuntimeConfigIssue } from '../../../nuxt/src/runtime/server/runtime-config/schema.ts'
 import { configDiagnostics } from '../diagnostics/config.ts'
 
 type JSONSchema = Record<string, unknown>
@@ -510,4 +516,76 @@ function isPlainRecord (value: unknown): value is Record<string, unknown> {
   }
   const prototype = Object.getPrototypeOf(value)
   return prototype === null || prototype === Object.prototype
+}
+
+/**
+ * Apply the current environment to the runtime config, returning it alongside the values
+ * that do not match their schema.
+ */
+export function resolveRuntimeConfig (nuxt: Nuxt): { config: Record<string, any>, issues: RuntimeConfigIssue[] } {
+  const runtimeConfig = (nuxt.options.nitro as NitroConfig).runtimeConfig as Record<string, unknown>
+  const config = klona(runtimeConfig)
+  const options = {
+    env: process.env,
+    prefix: 'NITRO_',
+    altPrefix: 'NUXT_',
+    envExpansion: nuxt.options.nitro.experimental?.envExpansion ?? !!process.env.NITRO_ENV_EXPANSION,
+  }
+  if (!supportsRuntimeConfigSchemas(nuxt)) {
+    return { config: applyEnv(config, options), issues: [] }
+  }
+  const infer = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
+  const schema = getRuntimeConfigSchema(runtimeConfig, nuxt.options._runtimeConfigSchemas, { infer })
+  if (!infer) {
+    applyEnv(config, options, schema)
+  }
+  return { config, issues: applyRuntimeConfigSchema(config, schema, options) }
+}
+
+export function supportsRuntimeConfigSchemas (nuxt: Nuxt): nuxt is Nuxt & { options: { _runtimeConfigSchemas: NonNullable<Nuxt['options']['_runtimeConfigSchemas']> } } {
+  return Array.isArray(nuxt.options._runtimeConfigSchemas)
+}
+
+interface EnvOptions {
+  prefix: string
+  altPrefix: string
+  envExpansion?: boolean
+}
+
+/**
+ * Apply environment variables as Nitro does without runtime config schemas, casting each value
+ * with `destr`. Values that `schema` describes are left to the schema.
+ */
+function applyEnv (obj: Record<string, any>, opts: EnvOptions, schema?: RuntimeConfigSchemaNode, parentKey = '') {
+  for (const key in obj) {
+    const node = typeof schema === 'object' && 'p' in schema ? schema.p[key] : undefined
+    if (node && !(typeof node === 'object' && 'p' in node)) {
+      continue
+    }
+    const subKey = parentKey ? `${parentKey}_${key}` : key
+    const envKey = snakeCase(subKey).toUpperCase()
+    const envValue = destr(process.env[opts.prefix + envKey] ?? process.env[opts.altPrefix + envKey])
+    if (isObject(obj[key])) {
+      if (isObject(envValue)) {
+        obj[key] = { ...obj[key], ...envValue }
+        applyEnv(obj[key], opts, node, subKey)
+      } else if (envValue === undefined) {
+        applyEnv(obj[key], opts, node, subKey)
+      } else {
+        obj[key] = envValue ?? obj[key]
+      }
+    } else {
+      obj[key] = envValue ?? obj[key]
+    }
+    if (opts.envExpansion && typeof obj[key] === 'string') {
+      obj[key] = obj[key].replace(ENV_EXPANSION_RE, (match: string, name: string) => process.env[name] || match)
+    }
+  }
+  return obj
+}
+
+const ENV_EXPANSION_RE = /\{\{([^{}]*)\}\}/g
+
+function isObject (value: unknown): value is Record<string, any> {
+  return typeof value === 'object' && !Array.isArray(value)
 }

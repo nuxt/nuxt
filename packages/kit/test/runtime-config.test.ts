@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { snakeCase } from 'scule'
 import { z } from 'zod'
 import * as context from '../src/context.ts'
-import { resolveRuntimeConfig, updateRuntimeConfig, useRuntimeConfig } from '../src/runtime-config.ts'
+import { updateRuntimeConfig, useRuntimeConfig } from '../src/runtime-config.ts'
+import { resolveRuntimeConfig } from '../src/internal/runtime-config.ts'
 
 const { mockKlona } = vi.hoisted(() => ({
   mockKlona: vi.fn(),

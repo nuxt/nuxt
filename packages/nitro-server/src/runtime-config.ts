@@ -1,5 +1,6 @@
 import type { Nuxt } from '@nuxt/schema'
 import { getRuntimeConfigSchema } from '@nuxt/kit/internal'
+import { normalize } from 'pathe'
 import type { Nitro } from 'nitro/types'
 
 import { nitroBuildDiagnostics } from './diagnostics.ts'
@@ -25,7 +26,8 @@ export function getRuntimeConfigSchemaModule (nuxt: Nuxt, nitro: Nitro): string 
  * With `strict`, the build fails if no module was replaced.
  */
 export function runtimeConfigPlugin (runtimeConfigPath: string, { strict = false } = {}) {
-  const isOwnModule = (id: string) => id.startsWith(runtimeConfigPath)
+  const ownPath = normalize(runtimeConfigPath)
+  const isOwnModule = (id: string) => normalize(id).startsWith(ownPath)
   let replaced = false
   return {
     name: 'nuxt:runtime-config',

@@ -58,6 +58,26 @@ describe('runtimeConfigPlugin', () => {
     await expect(build).rejects.toThrow('NUXT_B9012')
   })
 
+  it('should not replace its own module when ids use windows separators', async () => {
+    const id = 'C:\\nuxt\\nitro-server\\dist\\runtime\\runtime-config.mjs'
+    const build = await rolldown({
+      input: { entry: id },
+      plugins: [
+        runtimeConfigPlugin('C:/nuxt/nitro-server/dist/runtime/runtime-config'),
+        {
+          name: 'virtual',
+          resolveId: source => source === id || source === '#nitro/virtual/runtime-config' ? source : undefined,
+          load: source => source === id
+            ? `import { runtimeConfig } from '#nitro/virtual/runtime-config'\nexport const useRuntimeConfig = () => runtimeConfig`
+            : source === '#nitro/virtual/runtime-config' ? 'export const runtimeConfig = { windows: true }' : undefined,
+        },
+      ],
+    })
+    const { output } = await build.generate({ format: 'esm' }).finally(() => build.close())
+
+    expect(output[0].code).toContain('windows: true')
+  })
+
   it('should leave modules that only read the runtime config', async () => {
     const code = await bundle([
       `import { runtimeConfig } from '#nitro/virtual/runtime-config'`,
