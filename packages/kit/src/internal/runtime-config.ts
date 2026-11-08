@@ -389,7 +389,13 @@ function toNode (schema: unknown, root: JSONSchema, seen: Set<unknown>): Runtime
   }
   const variants = schema.anyOf ?? schema.oneOf
   if (Array.isArray(variants)) {
-    return union(variants.map(variant => toNode(variant, root, seen)))
+    return union(variants.map((variant) => {
+      const node = toNode(variant, root, seen)
+      if (isObjectNode(node)) {
+        attachDefaults(node, jsonDefault(variant, root))
+      }
+      return node
+    }))
   }
   if (Array.isArray(schema.allOf)) {
     return schema.allOf.map(member => toNode(member, root, seen)).reduce(intersect, '*')

@@ -84,6 +84,12 @@ describe('applyRuntimeConfigSchema', () => {
     expect(apply({ db: { host: 'y' } }, schema)).toEqual({ config: { db: { host: 'y', port: 5432 } }, issues: [] })
   })
 
+  it('should apply the defaults of the object member of a union', () => {
+    const schema: RuntimeConfigSchemaObject = { p: { storage: { o: [{ e: [false] }, { p: { driver: 's', port: 'n' }, r: ['driver', 'port'], d: { port: 6379 } }] } } }
+    expect(apply({}, schema, { NUXT_STORAGE_DRIVER: 'redis' })).toEqual({ config: { storage: { driver: 'redis', port: 6379 } }, issues: [] })
+    expect(apply({ storage: false }, schema, { NUXT_STORAGE: '{"driver":"redis"}' })).toEqual({ config: { storage: { driver: 'redis', port: 6379 } }, issues: [] })
+  })
+
   it('should report invalid variables within an optional object that is not provided', () => {
     expect(apply({}, { p: { db: { p: { pool: 'n' } } } }, { NUXT_DB_POOL: 'abc' })).toEqual({
       config: {},

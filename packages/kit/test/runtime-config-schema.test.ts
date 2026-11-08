@@ -114,6 +114,13 @@ describe('compileRuntimeConfigSchema', () => {
     })
   })
 
+  it('should resolve the defaults of object members of a union', () => {
+    const storage = z.union([z.literal(false), z.object({ driver: z.string(), port: z.number().default(6379) })])
+    expect(compileRuntimeConfigSchema(z.object({ storage: storage.optional() })).node).toEqual({
+      p: { storage: { o: [{ e: [false] }, { p: { driver: 's', port: 'n' }, r: ['driver', 'port'], d: { port: 6379 } }] } },
+    })
+  })
+
   it('should not create optional objects from the defaults in their JSON Schema', () => {
     const schema = (required: string[]): RuntimeConfigSchema => ({
       '~standard': {
