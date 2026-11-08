@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
+import { parse } from 'devalue'
 import { joinURL } from 'ufo'
 import { createNuxtRenderer } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
 import type { NuxtRendererOptions } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
+import { renderPayloadJsonScript } from '../../packages/nuxt/src/runtime/server/renderer/payload.ts'
+import type { NuxtSSRContext } from '../../packages/nuxt/src/app/types.ts'
 
 vi.mock('nuxt/internal/renderer-config', async importOriginal => ({
   ...await importOriginal<Record<string, unknown>>(),
@@ -107,6 +110,22 @@ describe('renderer without a server builder', () => {
     expect(html).toContain(`<script type="importmap">{"imports":{"#entry":"${BUILD_ASSETS_DIR}`)
     expect(html).toContain(`<script type="module" src="${BUILD_ASSETS_DIR}`)
     expect(html).not.toContain('src="/_nuxt/')
+  })
+
+  it.each([
+    ['data', {}, { key: 'value' }],
+    ['state', {}, { key: 'value' }],
+    ['once', new Set<string>(), new Set(['key'])],
+    ['_errors', {}, { key: 'value' }],
+  ] as const)('omits only empty %s payload containers, without mutating the payload', (key, empty, populated) => {
+    for (const value of [empty, populated]) {
+      const payload = { [key]: value, serverRendered: true }
+      const ssrContext = { config: {}, payload } as unknown as NuxtSSRContext
+      const [script] = renderPayloadJsonScript({ ssrContext, data: payload })
+
+      expect(parse(script!.innerHTML)).toEqual(value === empty ? { serverRendered: true } : { [key]: populated, serverRendered: true })
+      expect(payload[key]).toBe(value)
+    }
   })
 
   it.each([
