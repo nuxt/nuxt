@@ -635,8 +635,8 @@ async function initNuxt (nuxt: Nuxt) {
     })
 
     // Do not prefetch the default error page chunks
-    const errorPageSources = new Set(['error-404.vue', 'error-500.vue'].map(f => relative(nuxt.options.srcDir, resolve(nuxt.options.appDir, 'components', f))))
     nuxt.hook('build:manifest', (manifest) => {
+      const errorPageSources = new Set(['error-404.vue', 'error-500.vue'].map(f => relative(nuxt.options.vite.root, resolve(nuxt.options.appDir, 'components', f))))
       for (const chunk of Object.values(manifest)) {
         if (chunk.isEntry && chunk.dynamicImports) {
           chunk.dynamicImports = chunk.dynamicImports.filter(i => !errorPageSources.has(i))
