@@ -285,6 +285,15 @@ describe('getRuntimeConfigSchema', () => {
     })
   })
 
+  it('should keep module defaults for properties a schema in `nuxt.config` does not declare', () => {
+    expect(getRuntimeConfigSchema({}, [
+      { path: ['db'], node: { p: { host: 's', port: 'n', ssl: 'b' }, r: ['host', 'port', 'ssl'], d: { port: 5432, ssl: false } }, required: false, module: true },
+      { path: ['db'], node: { p: { ssl: 'b' }, r: ['ssl'], d: { ssl: true } }, required: false },
+    ])).toEqual({
+      p: { db: { p: { host: 's', port: 'n', ssl: 'b' }, r: ['host', 'port', 'ssl'], d: { port: 5432, ssl: true } } },
+    })
+  })
+
   it('should only describe declared schemas without inference', () => {
     const { config, entries } = extractRuntimeConfigSchemas({ port: 3000, db: { url: z.url(), pool: 5 } })
     expect(getRuntimeConfigSchema(config as Record<string, unknown>, entries, { infer: false })).toEqual({
