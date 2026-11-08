@@ -63,7 +63,7 @@ function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchema
       const parsed = coerce(raw, child)
       if (parsed === INVALID) {
         if (raw !== '') {
-          issues.push({ ...issue, received: raw })
+          reject(key, { ...issue, received: raw })
           continue
         }
       } else {

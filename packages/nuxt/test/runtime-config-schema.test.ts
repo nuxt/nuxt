@@ -48,6 +48,16 @@ describe('applyRuntimeConfigSchema', () => {
     expect(issues.map(issue => issue.path)).toEqual(['session.maxAge', 'session.cookie', 'session.pin'])
   })
 
+  it('should keep the default when a JSON object and a nested variable are both invalid', () => {
+    const { config, issues } = apply(
+      { session: { maxAge: 1 } },
+      { p: { session: { p: { maxAge: 'n' } } } },
+      { NUXT_SESSION: '{"maxAge":"x"}', NUXT_SESSION_MAX_AGE: 'y' },
+    )
+    expect(config.session).toEqual({ maxAge: 1 })
+    expect(issues).toEqual([{ path: 'session.maxAge', env: 'NUXT_SESSION_MAX_AGE', expected: 'number', received: 'y' }])
+  })
+
   it('should treat an empty variable as unset for a value that cannot be empty', () => {
     const { config, issues } = apply({ port: 3000, name: 'a' }, { p: { port: 'n', name: 's' } }, { NUXT_PORT: '', NUXT_NAME: '' })
     expect(issues).toEqual([])
