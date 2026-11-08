@@ -1,7 +1,9 @@
+import fc from 'fast-check'
+import { snakeCase } from 'scule'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { RuntimeConfigSchemaObject } from '@nuxt/schema/internal'
 
-import { applyRuntimeConfigSchema, formatRuntimeConfigIssues } from '../src/runtime/server/runtime-config/schema'
+import { applyRuntimeConfigSchema, formatRuntimeConfigIssues, toEnvKey } from '../src/runtime/server/runtime-config/schema'
 import { createRuntimeConfig } from '../src/runtime/server/runtime-config'
 
 function apply (config: Record<string, unknown>, schema: RuntimeConfigSchemaObject, env: Record<string, string> = {}, envExpansion = false) {
@@ -182,5 +184,16 @@ describe('createRuntimeConfig', () => {
 
     expect(() => useRuntimeConfig()).toThrow('`port` (`NUXT_PORT`) must be number')
     expect(() => useRuntimeConfig()).toThrow('`port` (`NUXT_PORT`) must be number')
+  })
+})
+
+describe('toEnvKey', () => {
+  it('should split words as `scule` does', () => {
+    const char = fc.constantFrom('a', 'b', 'A', 'B', '1', '_', '-', '.', '/', 'é', 'É')
+    fc.assert(fc.property(fc.array(char, { maxLength: 12 }).map(chars => chars.join('')), (key) => {
+      expect(toEnvKey(key)).toBe(snakeCase(key).toUpperCase())
+    }), { numRuns: 5000 })
+    expect(toEnvKey('session_apiKey')).toBe('SESSION_API_KEY')
+    expect(toEnvKey('myAPIKey')).toBe('MY_API_KEY')
   })
 })

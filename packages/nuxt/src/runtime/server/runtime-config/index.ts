@@ -27,10 +27,13 @@ export function createRuntimeConfig<T extends Record<string, any>> (config: T, s
     })
     applied = true
     if (issues.length) {
+      const formatted = formatRuntimeConfigIssues(issues)
       if (import.meta.prerender && !issues.some(issue => 'received' in issue)) {
-        prerenderDiagnostics.NUXT_E8015({ issues: formatRuntimeConfigIssues(issues) })
+        prerenderDiagnostics.NUXT_E8015({ issues: formatted })
+      } else if (import.meta.dev || import.meta.prerender) {
+        throw error = runtimeConfigDiagnostics.NUXT_E8014({ issues: formatted })
       } else {
-        throw error = runtimeConfigDiagnostics.NUXT_E8014({ issues: formatRuntimeConfigIssues(issues) })
+        throw error = new Error(`[NUXT_E8014] The runtime config does not match its schema:\n  - ${formatted}\n\nSee https://nuxt.com/docs/5.x/errors/e8014`)
       }
     }
     return config

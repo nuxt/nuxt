@@ -1,4 +1,3 @@
-import { snakeCase } from 'scule'
 import type { RuntimeConfigSchemaNode, RuntimeConfigSchemaObject } from '@nuxt/schema/internal'
 
 export interface RuntimeConfigEnvOptions {
@@ -38,7 +37,7 @@ function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchema
   for (const key in node.p) {
     const child = node.p[key]!
     const subKey = envPath ? `${envPath}_${key}` : key
-    const envKey = snakeCase(subKey).toUpperCase()
+    const envKey = toEnvKey(subKey)
     const prefixed = options.env[options.prefix + envKey]
     const raw = prefixed ?? options.env[options.altPrefix + envKey]
     const issue: RuntimeConfigIssue = {
@@ -222,6 +221,39 @@ function describe (node: RuntimeConfigSchemaNode): string {
     return 'array'
   }
   return 'object'
+}
+
+const SEPARATORS = new Set(['-', '_', '/', '.'])
+const DIGIT_RE = /\d/
+
+/** Convert a key to the name of its environment variable. */
+export function toEnvKey (key: string): string {
+  const words: string[] = []
+  let word = ''
+  let upper: boolean | undefined
+  let started = false
+  for (const char of key) {
+    if (SEPARATORS.has(char)) {
+      words.push(word)
+      word = ''
+      upper = undefined
+      continue
+    }
+    const charUpper = DIGIT_RE.test(char) ? undefined : char !== char.toLowerCase()
+    if (started && upper === false && charUpper === true) {
+      words.push(word)
+      word = char
+    } else if (started && upper === true && charUpper === false && word.length > 1) {
+      words.push(word.slice(0, -1))
+      word = word.at(-1)! + char
+    } else {
+      word += char
+      started = true
+    }
+    upper = charUpper
+  }
+  words.push(word)
+  return words.join('_').toUpperCase()
 }
 
 function parseJSON (raw: string): unknown {
