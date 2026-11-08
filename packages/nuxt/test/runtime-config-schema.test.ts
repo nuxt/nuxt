@@ -37,6 +37,16 @@ describe('applyRuntimeConfigSchema', () => {
     ])
   })
 
+  it('should keep the defaults of invalid values within a JSON object', () => {
+    const { config, issues } = apply(
+      { session: { name: 'a', maxAge: 1, cookie: { secure: true } } },
+      { p: { session: { p: { name: 's', maxAge: 'n', cookie: { p: { secure: 'b' } }, pin: 'n' } } } },
+      { NUXT_SESSION: '{"name":"b","maxAge":"invalid","cookie":"x","pin":"1234"}' },
+    )
+    expect(config.session).toEqual({ name: 'b', maxAge: 1, cookie: { secure: true } })
+    expect(issues.map(issue => issue.path)).toEqual(['session.maxAge', 'session.cookie', 'session.pin'])
+  })
+
   it('should treat an empty variable as unset for a value that cannot be empty', () => {
     const { config, issues } = apply({ port: 3000, name: 'a' }, { p: { port: 'n', name: 's' } }, { NUXT_PORT: '', NUXT_NAME: '' })
     expect(issues).toEqual([])
@@ -63,6 +73,14 @@ describe('applyRuntimeConfigSchema', () => {
     const { config, issues } = apply({}, { p: { db: { p: { url: 's' }, r: ['url'] } } })
     expect(issues).toEqual([])
     expect(config).toEqual({})
+  })
+
+  it('should apply the defaults of an optional object that is provided', () => {
+    const schema: RuntimeConfigSchemaObject = { p: { db: { p: { host: 's', port: 'n' }, r: ['host', 'port'], d: { port: 5432 } } } }
+    expect(apply({}, schema)).toEqual({ config: {}, issues: [] })
+    expect(apply({}, schema, { NUXT_DB_HOST: 'x' })).toEqual({ config: { db: { host: 'x', port: 5432 } }, issues: [] })
+    expect(apply({}, schema, { NUXT_DB_HOST: 'x', NUXT_DB_PORT: '1' })).toEqual({ config: { db: { host: 'x', port: 1 } }, issues: [] })
+    expect(apply({ db: { host: 'y' } }, schema)).toEqual({ config: { db: { host: 'y', port: 5432 } }, issues: [] })
   })
 
   it('should report invalid variables within an optional object that is not provided', () => {
@@ -143,14 +161,28 @@ describe('applyRuntimeConfigSchema', () => {
 describe('formatRuntimeConfigIssues', () => {
   it('should only show received values for public runtime config', () => {
     expect(formatRuntimeConfigIssues([
-      { path: 'public.port', env: 'NUXT_PUBLIC_PORT', expected: 'number', received: 'abc' },
+      { path: 'public.port', env: 'NUXT_PUBLIC_PORT', expected: 'number', received: 'abc', public: true },
       { path: 'secret', env: 'NUXT_SECRET', expected: '"a" | "b"', received: 'hunter2' },
+      { path: 'public.pin', env: 'NUXT_PUBLIC_PIN', expected: 'number', received: '1234' },
+      { path: 'list', env: 'NUXT_LIST', expected: 'string[]', received: [1] },
+      { path: 'options', env: 'NUXT_OPTIONS', expected: 'object', received: null },
       { path: 'token', env: 'NUXT_TOKEN', expected: 'string' },
     ])).toMatchInlineSnapshot(`
       "\`public.port\` (\`NUXT_PUBLIC_PORT\`) must be number, but received "abc".
         - \`secret\` (\`NUXT_SECRET\`) must be "a" | "b", but received a string.
+        - \`public.pin\` (\`NUXT_PUBLIC_PIN\`) must be number, but received a string.
+        - \`list\` (\`NUXT_LIST\`) must be string[], but received an array.
+        - \`options\` (\`NUXT_OPTIONS\`) must be object, but received null.
         - \`token\` is required. Set \`NUXT_TOKEN\` or provide a default."
     `)
+  })
+
+  it('should mark issues within the public runtime config', () => {
+    const { issues } = apply({ 'public.pin': 0, 'public': { port: 0 } }, { p: { 'public.pin': 'n', 'public': { p: { port: 'n' } } } }, { NUXT_PUBLIC_PIN: '1234x', NUXT_PUBLIC_PORT: 'abc' })
+    expect(issues).toEqual([
+      { path: 'public.pin', env: 'NUXT_PUBLIC_PIN', expected: 'number', received: '1234x' },
+      { path: 'public.port', env: 'NUXT_PUBLIC_PORT', expected: 'number', received: 'abc', public: true },
+    ])
   })
 })
 

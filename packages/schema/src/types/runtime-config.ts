@@ -7,7 +7,8 @@
  * - `{ e }`: one of the listed values
  * - `{ o }`: any of the listed schemas, tried in order
  * - `{ a }`: an array of the given schema
- * - `{ p, r }`: an object with the given properties, of which `r` are required
+ * - `{ p, r, d }`: an object with the given properties, of which `r` are required, and `d` are
+ *   the defaults of its properties
  */
 export type RuntimeConfigSchemaNode =
   | 's' | 'n' | 'i' | 'b' | 'z' | '*'
@@ -19,6 +20,7 @@ export type RuntimeConfigSchemaNode =
 export interface RuntimeConfigSchemaObject {
   p: Record<string, RuntimeConfigSchemaNode>
   r?: string[]
+  d?: Record<string, unknown>
 }
 
 /** A schema declared at a path within `runtimeConfig`. */

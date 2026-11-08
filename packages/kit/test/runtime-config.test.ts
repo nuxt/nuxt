@@ -140,6 +140,10 @@ describe('useRuntimeConfig', () => {
 
     vi.stubEnv('NUXT_SESSION_MAX_AGE', '60')
     expect(useRuntimeConfig().session).toEqual({ secure: false, maxAge: 60 })
+
+    vi.stubEnv('NUXT_SESSION_MAX_AGE', '')
+    vi.stubEnv('NUXT_SESSION', '{"secure":true,"maxAge":5}')
+    expect(useRuntimeConfig().session).toEqual({ secure: false, maxAge: 5 })
   })
 })
 
@@ -172,6 +176,10 @@ describe('useRuntimeConfig env value coercion', () => {
     { defaultValue: { a: 1 }, envValue: '{"b":2}', expected: { a: 1, b: 2 } },
   ])('coerces $envValue to the type of $defaultValue', ({ defaultValue, envValue, expected }) => {
     expect(run({ myVar: defaultValue }, envValue === undefined ? {} : { NUXT_MY_VAR: envValue }).myVar).toEqual(expected)
+  })
+
+  it('should read environment variables with the configured prefix', () => {
+    expect(run({ token: '', nitro: { envPrefix: 'APP_' } }, { APP_TOKEN: 'secret', NUXT_TOKEN: 'ignored' }).token).toBe('secret')
   })
 
   it('should apply nested environment variables over a JSON object', () => {

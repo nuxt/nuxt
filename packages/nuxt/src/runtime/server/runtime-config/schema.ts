@@ -15,6 +15,8 @@ export interface RuntimeConfigIssue {
   expected: string
   /** The value that failed validation, absent when no value was provided. */
   received?: unknown
+  /** Whether the value is part of the public runtime config. */
+  public?: true
 }
 
 const INVALID = Symbol('invalid')
@@ -33,7 +35,15 @@ export function applyRuntimeConfigSchema (config: Record<string, unknown>, schem
   return issues
 }
 
-function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchemaObject, envPath: string, path: string, options: RuntimeConfigEnvOptions, issues: RuntimeConfigIssue[]) {
+function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchemaObject, envPath: string, path: string, options: RuntimeConfigEnvOptions, issues: RuntimeConfigIssue[], isPublic = false, defaults?: Record<string, unknown>) {
+  const reject = (key: string, issue: RuntimeConfigIssue) => {
+    issues.push(issue)
+    if (defaults && Object.hasOwn(defaults, key)) {
+      target[key] = defaults[key]
+    } else if (defaults) {
+      delete target[key]
+    }
+  }
   for (const key in node.p) {
     const child = node.p[key]!
     const subKey = envPath ? `${envPath}_${key}` : key
@@ -44,6 +54,7 @@ function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchema
       path: path ? `${path}.${key}` : key,
       env: (prefixed === undefined ? options.altPrefix : options.prefix) + envKey,
       expected: describe(child),
+      ...(isPublic || (!path && key === 'public')) && { public: true },
     }
     const required = !!node.r?.includes(key)
 
@@ -63,23 +74,36 @@ function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchema
     const objectNode = isObjectNode(child) ? child : value === undefined || isObject(value) ? findObjectNode(child, value ?? {}) : undefined
     if (objectNode) {
       if (value !== undefined && !isObject(value)) {
-        issues.push({ ...issue, received: value })
+        reject(key, { ...issue, received: value })
         continue
       }
       const members = typeof child === 'object' && 'o' in child ? child.o.filter(isObjectNode) : []
-      let nested = (value ?? {}) as Record<string, unknown>
-      let nestedIssues: RuntimeConfigIssue[] = []
-      for (const member of [objectNode, ...members.filter(member => member !== objectNode)]) {
-        const candidate = members.length > 1 ? structuredClone(value ?? {}) as Record<string, unknown> : nested
-        const candidateIssues: RuntimeConfigIssue[] = []
-        applyObject(candidate, member, subKey, issue.path, options, candidateIssues)
-        if (member === objectNode || !candidateIssues.length) {
-          nested = candidate
-          nestedIssues = candidateIssues
+      const order = [objectNode, ...members.filter(member => member !== objectNode)]
+      const resolve = (start: Record<string, unknown>, fill: boolean) => {
+        let nested = start
+        let nestedIssues: RuntimeConfigIssue[] = []
+        for (const member of order) {
+          const candidate = members.length > 1 ? structuredClone(start) : nested
+          if (fill && member.d) {
+            for (const name in member.d) {
+              candidate[name] ??= structuredClone(member.d[name])
+            }
+          }
+          const candidateIssues: RuntimeConfigIssue[] = []
+          applyObject(candidate, member, subKey, issue.path, options, candidateIssues, !!issue.public, isObject(target[key]) ? target[key] : undefined)
+          if (member === objectNode || !candidateIssues.length) {
+            nested = candidate
+            nestedIssues = candidateIssues
+          }
+          if (!candidateIssues.length) {
+            break
+          }
         }
-        if (!candidateIssues.length) {
-          break
-        }
+        return { nested, nestedIssues }
+      }
+      let { nested, nestedIssues } = resolve((value ?? {}) as Record<string, unknown>, value !== undefined)
+      if (value === undefined && Object.keys(nested).length && order.some(member => member.d)) {
+        ({ nested, nestedIssues } = resolve({}, true))
       }
       if (value === undefined && !required && !Object.keys(nested).length) {
         issues.push(...nestedIssues.filter(nestedIssue => 'received' in nestedIssue))
@@ -97,7 +121,7 @@ function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchema
       continue
     }
     if (!check(value, child)) {
-      issues.push({ ...issue, received: value })
+      reject(key, { ...issue, received: value })
       continue
     }
     target[key] = options.envExpansion && typeof value === 'string'
@@ -115,7 +139,8 @@ export function formatRuntimeConfigIssues (issues: RuntimeConfigIssue[]): string
     if (!('received' in issue)) {
       return `\`${issue.path}\` is required. Set \`${issue.env}\` or provide a default.`
     }
-    const received = issue.path.startsWith('public.') ? JSON.stringify(issue.received) : `a ${Array.isArray(issue.received) ? 'array' : typeof issue.received}`
+    const kind = Array.isArray(issue.received) ? 'an array' : isObject(issue.received) ? 'an object' : `a ${typeof issue.received}`
+    const received = issue.public || issue.received === null ? JSON.stringify(issue.received) : kind
     return `\`${issue.path}\` (\`${issue.env}\`) must be ${issue.expected}, but received ${received}.`
   }).join('\n  - ')
 }

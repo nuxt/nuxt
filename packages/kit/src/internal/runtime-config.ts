@@ -63,6 +63,9 @@ export function extractRuntimeConfigSchemas (runtimeConfig: unknown): { config: 
   const entries: RuntimeConfigSchemaEntry[] = []
   const config = extract(runtimeConfig, [], (schema, path, configured) => {
     const compiled = compileRuntimeConfigSchema(schema, path)
+    if (!path.length && !isObjectNode(compiled.node)) {
+      throw configDiagnostics.NUXT_B5031({ path: 'runtimeConfig', error: 'a schema for the whole runtime config must describe a single object' })
+    }
     const resolved = mergeDefaults(configured, compiled.value)
     entries.push({ path, node: compiled.node, required: resolved === undefined && compiled.required })
     return resolved
@@ -227,17 +230,61 @@ export function compileRuntimeConfigSchema (schema: RuntimeConfigSchema, path: s
     return result
   }
   const empty = validate(undefined)
-  if (!empty.issues) {
+  const optional = !empty.issues
+  if (optional && (empty.value !== undefined || !isObjectNode(node))) {
     return { node, value: empty.value, required: false }
   }
-  if (typeof node === 'object' && 'p' in node) {
-    const object = probeDefault(node, validate)
-    if (object !== undefined) {
-      return { node, value: object, required: false }
+  if (isObjectNode(node)) {
+    const probed = probeDefault(node, json, validate)
+    if (probed) {
+      if (optional) {
+        attachDefaults(node, probed.value)
+      }
+      probeOptionalDefaults(node, node, json, validate, probed, [])
+    }
+    if (optional || probed) {
+      return { node, value: optional ? undefined : probed!.value, required: false }
     }
   }
   const value = jsonDefault(json, json)
   return { node, value, required: value === undefined }
+}
+
+interface Probe {
+  value: unknown
+  input: Record<string, unknown>
+  placeholders: string[][]
+}
+
+function probeOptionalDefaults (root: RuntimeConfigSchemaObject, node: RuntimeConfigSchemaObject, json: JSONSchema, validate: (value: unknown) => ValidationResult, probed: Probe, path: string[]) {
+  for (const key in node.p) {
+    const child = node.p[key]!
+    if (!isObjectNode(child)) {
+      continue
+    }
+    const childPath = [...path, key]
+    if (getAt(probed.value, childPath) !== undefined) {
+      probeOptionalDefaults(root, child, json, validate, probed, childPath)
+      continue
+    }
+    const input = structuredClone(probed.input)
+    const parent = getAt(input, path)
+    if (!isPlainObject(parent)) {
+      continue
+    }
+    parent[key] = {}
+    const result = probeDefault(root, json, validate, input, [...probed.placeholders])
+    if (result) {
+      attachDefaults(child, getAt(result.value, childPath))
+      probeOptionalDefaults(root, child, json, validate, result, childPath)
+    }
+  }
+}
+
+function attachDefaults (node: RuntimeConfigSchemaObject, defaults: unknown) {
+  if (isPlainObject(defaults) && Object.keys(defaults).length) {
+    node.d = defaults
+  }
 }
 
 type ValidationResult = ReturnType<RuntimeConfigSchema['~standard']['validate']> extends infer R ? Exclude<R, Promise<unknown>> : never
@@ -246,11 +293,9 @@ type ValidationResult = ReturnType<RuntimeConfigSchema['~standard']['validate']>
  * Resolve the defaults of an object schema by validating it, with placeholders for the
  * values it requires. Defaults are not always part of the JSON Schema of a schema.
  */
-function probeDefault (node: RuntimeConfigSchemaObject, validate: (value: unknown) => ValidationResult): unknown {
-  const probe: Record<string, unknown> = {}
-  const placeholders: string[][] = []
+function probeDefault (node: RuntimeConfigSchemaObject, json: JSONSchema, validate: (value: unknown) => ValidationResult, probe: Record<string, unknown> = {}, placeholders: string[][] = []): Probe | undefined {
   for (let attempt = 0; attempt < 32; attempt++) {
-    const result = validate(probe)
+    const result = validate(structuredClone(probe))
     if (!result.issues) {
       for (const path of placeholders) {
         const parent = getAt(result.value, path.slice(0, -1))
@@ -258,7 +303,7 @@ function probeDefault (node: RuntimeConfigSchemaObject, validate: (value: unknow
           delete parent[path.at(-1)!]
         }
       }
-      return result.value
+      return { value: result.value, input: probe, placeholders }
     }
     let filled = false
     for (const issue of result.issues) {
@@ -268,7 +313,7 @@ function probeDefault (node: RuntimeConfigSchemaObject, validate: (value: unknow
       if (!path || !child || !isPlainObject(parent) || path.at(-1)! in parent) {
         return
       }
-      parent[path.at(-1)!] = placeholder(child)
+      parent[path.at(-1)!] = placeholder(child, jsonAt(json, path))
       if (typeof child !== 'object' || !('p' in child)) {
         placeholders.push(path)
       }
@@ -289,11 +334,37 @@ function nodeAt (node: RuntimeConfigSchemaNode, path: string[]): RuntimeConfigSc
   return current
 }
 
-function placeholder (node: RuntimeConfigSchemaNode): unknown {
+function jsonAt (root: JSONSchema, path: string[]): JSONSchema | undefined {
+  let current: JSONSchema | undefined = root
+  for (const key of path) {
+    const resolved = resolveJSON(root, current)
+    const members = [resolved, ...[resolved?.allOf, resolved?.anyOf, resolved?.oneOf].flatMap(list => Array.isArray(list) ? list.map(member => resolveJSON(root, member)) : [])]
+    const owner = members.find(member => isPlainObject(member?.properties) && isPlainObject(member.properties[key]))
+    current = owner ? (owner.properties as Record<string, JSONSchema>)[key] : undefined
+  }
+  return resolveJSON(root, current)
+}
+
+function resolveJSON (root: JSONSchema, schema: unknown): JSONSchema | undefined {
+  for (let depth = 0; isPlainObject(schema) && typeof schema.$ref === 'string' && depth < 32; depth++) {
+    schema = resolveRef(root, schema.$ref)
+  }
+  return isPlainObject(schema) ? schema : undefined
+}
+
+function placeholder (node: RuntimeConfigSchemaNode, schema?: JSONSchema): unknown {
   if (typeof node === 'object') {
     return 'e' in node ? node.e[0] : 'o' in node ? placeholder(node.o[0]!) : 'a' in node ? [] : {}
   }
-  return node === 's' ? '' : node === 'n' || node === 'i' ? 0 : node === 'b' ? false : null
+  if (node === 's') {
+    return 'a'.repeat(typeof schema?.minLength === 'number' ? schema.minLength : 0)
+  }
+  if (node === 'n' || node === 'i') {
+    const min = typeof schema?.minimum === 'number' ? schema.minimum : typeof schema?.exclusiveMinimum === 'number' ? schema.exclusiveMinimum + 1 : undefined
+    const max = typeof schema?.maximum === 'number' ? schema.maximum : typeof schema?.exclusiveMaximum === 'number' ? schema.exclusiveMaximum - 1 : undefined
+    return Math.ceil(min ?? Math.min(0, max ?? 0))
+  }
+  return node === 'b' ? false : null
 }
 
 function toNode (schema: unknown, root: JSONSchema, seen: Set<unknown>): RuntimeConfigSchemaNode {
@@ -321,13 +392,7 @@ function toNode (schema: unknown, root: JSONSchema, seen: Set<unknown>): Runtime
     return union(variants.map(variant => toNode(variant, root, seen)))
   }
   if (Array.isArray(schema.allOf)) {
-    const nodes = schema.allOf.map(member => toNode(member, root, seen))
-    if (nodes.length === 1) {
-      return nodes[0]!
-    }
-    return nodes.every(isObjectNode)
-      ? nodes.reduce<RuntimeConfigSchemaObject>((merged, node) => withRequired({ p: { ...merged.p, ...node.p } }, [...merged.r ?? [], ...node.r ?? []]), { p: {} })
-      : '*'
+    return schema.allOf.map(member => toNode(member, root, seen)).reduce(intersect, '*')
   }
   if (Array.isArray(schema.type)) {
     return union(schema.type.map(type => toNode({ ...schema, type }, root, seen)))
@@ -364,6 +429,9 @@ function jsonDefault (schema: unknown, root: JSONSchema, seen = new Set<unknown>
     return jsonDefault(resolveRef(root, schema.$ref), root, seen, required)
   }
   if (isPlainObject(schema.properties)) {
+    if (!required) {
+      return
+    }
     const requiredKeys = Array.isArray(schema.required) ? schema.required : []
     const result: Record<string, unknown> = {}
     for (const key in schema.properties) {
@@ -372,7 +440,7 @@ function jsonDefault (schema: unknown, root: JSONSchema, seen = new Set<unknown>
         result[key] = value
       }
     }
-    return required || Object.keys(result).length ? result : undefined
+    return result
   }
 }
 
@@ -417,7 +485,7 @@ export function inferRuntimeConfigSchema (value: unknown): RuntimeConfigSchemaNo
 export function getRuntimeConfigSchema (runtimeConfig: Record<string, unknown>, entries: RuntimeConfigSchemaEntry[] = [], { infer = true } = {}): RuntimeConfigSchemaObject {
   const { nitro: _nitro, ...config } = runtimeConfig
   let root: RuntimeConfigSchemaObject = infer ? inferRuntimeConfigSchema(config) as RuntimeConfigSchemaObject : { p: {} }
-  for (const entry of [...entries].sort((a, b) => a.path.length - b.path.length)) {
+  for (const entry of [...entries].sort((a, b) => Number(!a.module) - Number(!b.module) || a.path.length - b.path.length)) {
     if (!entry.path.length) {
       root = isObjectNode(entry.node) ? overlay(root, entry.node) as RuntimeConfigSchemaObject : root
       continue
@@ -431,9 +499,28 @@ export function getRuntimeConfigSchema (runtimeConfig: Record<string, unknown>, 
     parent.p[key] = parent.p[key] ? overlay(parent.p[key], entry.node) : entry.node
     if (entry.required && !parent.r?.includes(key)) {
       parent.r = [...parent.r ?? [], key]
+    } else if (!entry.required && parent.r?.includes(key)) {
+      parent.r = parent.r.filter(name => name !== key)
     }
   }
   return root
+}
+
+function intersect (a: RuntimeConfigSchemaNode, b: RuntimeConfigSchemaNode): RuntimeConfigSchemaNode {
+  if (isObjectNode(a) && isObjectNode(b)) {
+    const p = { ...a.p }
+    for (const key in b.p) {
+      p[key] = p[key] ? intersect(p[key], b.p[key]!) : b.p[key]!
+    }
+    return withRequired({ p }, [...a.r ?? [], ...b.r ?? []])
+  }
+  const aEnum = typeof a === 'object' && 'e' in a ? a.e : undefined
+  const bEnum = typeof b === 'object' && 'e' in b ? b.e : undefined
+  if (aEnum && bEnum) {
+    const serialized = new Set(bEnum.map(value => JSON.stringify(value)))
+    return { e: aEnum.filter(value => serialized.has(JSON.stringify(value))) }
+  }
+  return aEnum || b === '*' ? a : b
 }
 
 function overlay (inferred: RuntimeConfigSchemaNode, declared: RuntimeConfigSchemaNode): RuntimeConfigSchemaNode {
@@ -444,7 +531,7 @@ function overlay (inferred: RuntimeConfigSchemaNode, declared: RuntimeConfigSche
   for (const key in declared.p) {
     p[key] = p[key] ? overlay(p[key], declared.p[key]!) : declared.p[key]!
   }
-  return withRequired({ p }, [...inferred.r ?? [], ...declared.r ?? []])
+  return withRequired(declared.d ? { p, d: declared.d } : { p }, [...inferred.r ?? [], ...declared.r ?? []])
 }
 
 /**
@@ -528,7 +615,7 @@ export function resolveRuntimeConfig (nuxt: Nuxt): { config: Record<string, any>
   const options = {
     env: process.env,
     prefix: 'NITRO_',
-    altPrefix: 'NUXT_',
+    altPrefix: (runtimeConfig.nitro as { envPrefix?: string } | undefined)?.envPrefix ?? process.env.NITRO_ENV_PREFIX ?? 'NUXT_',
     envExpansion: nuxt.options.nitro.experimental?.envExpansion ?? !!process.env.NITRO_ENV_EXPANSION,
   }
   if (!supportsRuntimeConfigSchemas(nuxt)) {
@@ -536,10 +623,11 @@ export function resolveRuntimeConfig (nuxt: Nuxt): { config: Record<string, any>
   }
   const infer = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
   const schema = getRuntimeConfigSchema(runtimeConfig, nuxt.options._runtimeConfigSchemas, { infer })
+  const issues = applyRuntimeConfigSchema(config, schema, options)
   if (!infer) {
     applyEnv(config, options, schema)
   }
-  return { config, issues: applyRuntimeConfigSchema(config, schema, options) }
+  return { config, issues }
 }
 
 export function supportsRuntimeConfigSchemas (nuxt: Nuxt): nuxt is Nuxt & { options: { _runtimeConfigSchemas: NonNullable<Nuxt['options']['_runtimeConfigSchemas']> } } {
@@ -554,7 +642,7 @@ interface EnvOptions {
 
 /**
  * Apply environment variables as Nitro does without runtime config schemas, casting each value
- * with `destr`. Values that `schema` describes are left to the schema.
+ * with `destr`. Values that `schema` describes are left as they are.
  */
 function applyEnv (obj: Record<string, any>, opts: EnvOptions, schema?: RuntimeConfigSchemaNode, parentKey = '') {
   for (const key in obj) {
@@ -567,7 +655,8 @@ function applyEnv (obj: Record<string, any>, opts: EnvOptions, schema?: RuntimeC
     const envValue = destr(process.env[opts.prefix + envKey] ?? process.env[opts.altPrefix + envKey])
     if (isObject(obj[key])) {
       if (isObject(envValue)) {
-        obj[key] = { ...obj[key], ...envValue }
+        const described = typeof node === 'object' && 'p' in node ? node.p : {}
+        obj[key] = { ...obj[key], ...Object.fromEntries(Object.entries(envValue).filter(([child]) => !Object.hasOwn(described, child))) }
         applyEnv(obj[key], opts, node, subKey)
       } else if (envValue === undefined) {
         applyEnv(obj[key], opts, node, subKey)

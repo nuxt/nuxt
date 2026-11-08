@@ -62,6 +62,21 @@ describe('compileRuntimeConfigSchema', () => {
       value: { secure: true, db: { pool: 5 } },
       required: false,
     })
+    expect(compileRuntimeConfigSchema(type({ token: 'string > 2', port: '1024 <= number.integer < 65536', retries: 'number = 3' }))).toMatchObject({
+      value: { retries: 3 },
+      required: false,
+    })
+  })
+
+  it('should intersect overlapping properties of an intersection', () => {
+    const schema = z.intersection(
+      z.object({ mode: z.enum(['a', 'b']), db: z.object({ url: z.string() }) }),
+      z.object({ mode: z.enum(['b', 'c']), db: z.object({ pool: z.number() }), name: z.string() }),
+    )
+    expect(compileRuntimeConfigSchema(schema).node).toEqual({
+      p: { mode: { e: ['b'] }, db: { p: { url: 's', pool: 'n' }, r: ['url', 'pool'] }, name: 's' },
+      r: ['mode', 'db', 'name'],
+    })
   })
 
   it('should describe a recursive schema', () => {
@@ -79,6 +94,47 @@ describe('compileRuntimeConfigSchema', () => {
   it('should resolve an object schema without defaults to an object', () => {
     const schema = z.object({ apiKey: z.string(), db: z.object({ url: z.string() }), cache: z.object({ ttl: z.number() }).optional() })
     expect(compileRuntimeConfigSchema(schema)).toMatchObject({ value: { db: {} }, required: false })
+  })
+
+  it('should resolve the defaults of optional objects', () => {
+    const db = z.object({ host: z.string(), port: z.number().default(5432) })
+    expect(compileRuntimeConfigSchema(db.optional())).toEqual({
+      node: { p: { host: 's', port: 'n' }, r: ['host', 'port'], d: { port: 5432 } },
+      value: undefined,
+      required: false,
+    })
+    expect(compileRuntimeConfigSchema(z.object({ name: z.string().default('a'), db: db.optional() }))).toEqual({
+      node: { p: { name: 's', db: { p: { host: 's', port: 'n' }, r: ['host', 'port'], d: { port: 5432 } } }, r: ['name'] },
+      value: { name: 'a' },
+      required: false,
+    })
+    expect(compileRuntimeConfigSchema(type({ 'token': 'string', 'db?': { host: 'string', port: 'number = 5432' } })).node).toEqual({
+      p: { db: { p: { host: 's', port: 'n' }, r: ['host', 'port'], d: { port: 5432 } }, token: 's' },
+      r: ['token'],
+    })
+  })
+
+  it('should not create optional objects from the defaults in their JSON Schema', () => {
+    const schema = (required: string[]): RuntimeConfigSchema => ({
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: () => ({ issues: [{ message: 'invalid' }] }),
+        jsonSchema: {
+          input: () => ({}),
+          output: () => ({
+            type: 'object',
+            properties: {
+              db: { type: 'object', properties: { host: { type: 'string' }, port: { type: 'number', default: 5432 } }, required: ['host', 'port'] },
+              name: { type: 'string', default: 'a' },
+            },
+            required,
+          }),
+        },
+      },
+    })
+    expect(compileRuntimeConfigSchema(schema(['db', 'name'])).value).toEqual({ db: { port: 5432 }, name: 'a' })
+    expect(compileRuntimeConfigSchema(schema(['name'])).value).toEqual({ name: 'a' })
   })
 
   it('should reject a schema that cannot be converted to JSON Schema', () => {
@@ -105,6 +161,10 @@ describe('extractRuntimeConfigSchemas', () => {
       { path: ['apiSecret'], node: 's', required: true },
       { path: ['session', 'secure'], node: 'b', required: false },
     ])
+  })
+
+  it('should reject a schema for the whole runtime config that is not a single object', () => {
+    expect(() => extractRuntimeConfigSchemas(z.union([z.object({ token: z.string() }), z.object({ mode: z.literal('a') })]))).toThrow('must describe a single object')
   })
 
   it('should use a value merged over a schema as its default', () => {
@@ -188,6 +248,27 @@ describe('getRuntimeConfigSchema', () => {
         apiSecret: string,
       }"
     `)
+  })
+
+  it('should prefer schemas declared in `nuxt.config` over module schemas at overlapping paths', () => {
+    const entries: RuntimeConfigSchemaEntry[] = [
+      { path: ['myModule'], node: { p: { token: 's' }, r: ['token'] }, required: false },
+      { path: ['myModule', 'token'], node: 'n', required: false, module: true },
+      { path: ['myModule', 'debug'], node: 'b', required: false, module: true },
+    ]
+    expect(getRuntimeConfigSchema({}, entries)).toEqual({
+      p: { myModule: { p: { token: 's', debug: 'b' }, r: ['token'] } },
+    })
+  })
+
+  it('should let an optional schema in `nuxt.config` override a required module property', () => {
+    const entries: RuntimeConfigSchemaEntry[] = [
+      { path: ['myModule'], node: { p: { token: 's', debug: 'b' }, r: ['token', 'debug'] }, required: false, module: true },
+      { path: ['myModule', 'token'], node: 's', required: false },
+    ]
+    expect(getRuntimeConfigSchema({}, entries)).toEqual({
+      p: { myModule: { p: { token: 's', debug: 'b' }, r: ['debug'] } },
+    })
   })
 
   it('should only describe declared schemas without inference', () => {
