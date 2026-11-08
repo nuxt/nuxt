@@ -239,6 +239,7 @@ function getPrerenderedErrorPage (event: RendererEvent): SSRError | undefined {
   } as unknown as SSRError
 }
 
+/** Apply the request’s route rules before rendering its payload, SSR document, or SPA shell. */
 async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent, ssrError?: (NuxtPayload['error'] & { url: string })): Promise<Response> {
   const runtime = instance.options
 

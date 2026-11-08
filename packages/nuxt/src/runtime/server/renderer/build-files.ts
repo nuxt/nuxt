@@ -8,7 +8,7 @@ import type { App } from 'vue'
 
 import type { NuxtSSRContext } from '#app/types'
 
-import { NUXT_NO_SSR, appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside, spaTemplate } from 'nuxt/internal/renderer-config'
+import { NUXT_NO_SSR, appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, spaLoadingTemplateOutside, spaScrollRestorationScript, spaTemplate } from 'nuxt/internal/renderer-config'
 import { lazyCachedFunction } from './cache'
 import { rendererDiagnostics } from './diagnostics'
 import type { NuxtRendererOptions } from './runtime'
@@ -109,6 +109,9 @@ export function createBuildFiles (options: NuxtRendererOptions): BuildFiles {
     const result = await renderer.renderToString({})
 
     const renderToString = (ssrContext: NuxtSSRContext) => {
+      if (spaScrollRestorationScript && !ssrContext.noScripts) {
+        ssrContext.head.push({ script: [{ innerHTML: spaScrollRestorationScript, tagPriority: 'critical' }] })
+      }
       const config = ssrContext.runtimeConfig
       ssrContext.modules ||= new Set<string>()
       ssrContext.payload.serverRendered = false

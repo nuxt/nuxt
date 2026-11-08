@@ -91,7 +91,11 @@ export function renderIndexHtml (nuxt: Nuxt, entry: string, spaLoadingTemplate =
   const rootAttrs = renderAttrs(app.rootAttrs as Record<string, unknown>)
   const teleportAttrs = renderAttrs(app.teleportAttrs as Record<string, unknown>)
 
-  const head = renderConfiguredHead(nuxt)
+  let head = renderConfiguredHead(nuxt)
+  const noScripts = nuxt.options.features?.noScripts
+  if (nuxt.options.ssr === false && nuxt._spaScrollRestorationScript && !(noScripts === 'all' || (noScripts && !nuxt.options.dev))) {
+    head += renderTag('script', { innerHTML: nuxt._spaScrollRestorationScript })
+  }
 
   // as in the nitro renderer, `within` renders the template as the root's content: vue
   // clears it on mount, so it needs no wrapper for the client to remove

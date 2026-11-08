@@ -7,6 +7,7 @@ import { isSamePath, withBase, withoutBase } from 'ufo'
 import type { NuxtApp, Plugin } from '#app/nuxt'
 import type { RouteMiddleware } from '#app/composables/router'
 
+import { manualScrollRestoration } from '../scroll-restoration'
 import { generateRouteKey, toArray } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
@@ -81,6 +82,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const scrollBehavior = routerOptions.scrollBehavior
+    let startupReplacementPath: string | undefined
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
 
     const router: Router = createRouter({
@@ -106,6 +108,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
               window.history.scrollRestoration = 'manual'
             })
           }
+          if (hasCustomScrollBehavior && (to.fullPath !== startupReplacementPath || to.redirectedFrom)) {
+            return scrollBehavior(to, from, savedPosition)
+          }
           return scrollBehavior(to, START_LOCATION, startPosition || savedPosition)
         }
       },
@@ -127,7 +132,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const ssrContext = nuxtApp.ssrContext
     if (import.meta.server && hasCustomScrollBehavior && ssrContext && !ssrContext.noScripts && !ssrContext.islandContext) {
       ssrContext.head.push({
-        script: [{ innerHTML: 'if ("scrollRestoration" in history) history.scrollRestoration = "manual"', tagPriority: 'critical' }],
+        script: [{ innerHTML: manualScrollRestoration, tagPriority: 'critical' }],
       })
     }
     if (import.meta.client && 'scrollRestoration' in window.history) {
@@ -455,6 +460,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           if ('name' in payloadRoute) {
             ;(payloadRoute as { name: unknown }).name = undefined
           }
+          startupReplacementPath = payloadRoute.fullPath
           await router.replace({ ...payloadRoute, force: true })
 
           const restoreDeferredRoute = () => {
@@ -477,6 +483,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           nuxtApp['~restoreDeferredRoute'] = restoreDeferredRoute
           nuxtApp.hooks.hookOnce('app:suspense:resolve', restoreDeferredRoute)
         } else {
+          startupReplacementPath = resolvedInitialRoute.fullPath
           await router.replace({
             ...resolvedInitialRoute,
             force: true,
