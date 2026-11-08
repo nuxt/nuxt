@@ -7,16 +7,22 @@ import { appHead } from '#build/nuxt.config.mjs'
 type ClientHead = ReturnType<typeof createClientHead>
 
 export function installClientHead (nuxtApp: NuxtApp, head: ClientHead): void {
+  // pause dom updates until page is ready and between page transitions
+  let pauseDOMUpdates = true
+  const render = head.render
+  head.render = () => {
+    if (pauseDOMUpdates) { return false }
+    return render()
+  }
+
   // re-push server-only `app.head` so `titleTemplate` survives hydration (#35468)
   head.push(appHead)
 
   nuxtApp.vueApp.use(head)
 
-  // pause dom updates until page is ready and between page transitions
-  let pauseDOMUpdates = true
   const syncHead = () => {
     pauseDOMUpdates = false
-    head.render()
+    render()
   }
   head.hooks?.hook('dom:beforeRender', (context) => { context.shouldRender = !pauseDOMUpdates })
   nuxtApp.hooks.hook('page:start', () => { pauseDOMUpdates = true })
