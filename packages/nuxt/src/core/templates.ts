@@ -1,14 +1,12 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import type { JSValue } from 'untyped'
-import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { tryUseNitro } from '@nuxt/kit'
-import { bundlerDiagnostics, pageDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, getRuntimeConfigSchema, pageDiagnostics, runtimeConfigSchemaToType, useServerBuild } from '@nuxt/kit/internal'
 import type { Nitro } from 'nitropack/types'
 import { resolveModulePath } from 'exsolve'
 
@@ -234,32 +232,16 @@ const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/runtime-config.d.ts',
   dependsOn: [],
-  getContents: async ({ nuxt }) => {
-    const privateRuntimeConfig = Object.create(null)
-    for (const key in nuxt.options.runtimeConfig) {
-      if (key !== 'public' && key !== 'nitro') {
-        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
-      }
-    }
+  getContents: ({ nuxt }) => {
+    const schema = getRuntimeConfigSchema(nuxt.options.runtimeConfig, nuxt.options._runtimeConfigSchemas)
+    const { public: publicNode, ...privateProperties } = schema.p
+    const publicSchema = typeof publicNode === 'object' && 'p' in publicNode ? publicNode : { p: {} }
+    const { public: publicConfig, ...privateConfig } = nuxt.options.runtimeConfig
 
     return [
       `import { RuntimeConfig as UserRuntimeConfig } from 'nuxt/schema'`,
-      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-        {
-          interfaceName: 'SharedRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
-      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
-        {
-          interfaceName: 'SharedPublicRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
+      `interface SharedRuntimeConfig ${runtimeConfigSchemaToType({ p: privateProperties, r: schema.r }, privateConfig)}`,
+      `interface SharedPublicRuntimeConfig ${runtimeConfigSchemaToType(publicSchema, publicConfig)}`,
       ...['nuxt/schema', '@nuxt/schema'].flatMap(module => [
         `declare module '${module}' {`,
         `  interface RuntimeConfig extends SharedRuntimeConfig {}`,

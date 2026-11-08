@@ -35,6 +35,7 @@ import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/impo
 import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizePathCode, resolveRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
 import { foldRouteCase } from '../../nuxt/src/core/utils/index.ts'
 import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
+import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin, usesRuntimeConfigSchema } from './runtime-config.ts'
 import { addDevServerHandlers, collectServerRegistrations, toPortableDevHandlers } from './registrations.ts'
 import { nitroInternalApiTemplate, nitroSchemaTemplate } from './templates.ts'
 import { setupVuePackage } from './vue-package.ts'
@@ -763,6 +764,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
     ],
   }))
+
+  if (usesRuntimeConfigSchema(nuxt)) {
+    nitroConfig.plugins!.unshift(resolve(distDir, 'runtime/plugins/runtime-config'))
+    nitroConfig.rollupConfig!.plugins!.push(runtimeConfigPlugin(resolve(distDir, 'runtime/runtime-config'), { strict: !nuxt.options.dev }))
+    nitroConfig.virtual![RUNTIME_CONFIG_SCHEMA_ID] = () => getRuntimeConfigSchemaModule(nuxt, nitro)
+  }
 
   // resolve from nuxt's own dependency tree, where the bundled runtime imports unhead from
   const nuxtRuntimeImporter = join(nuxt.options.appDir, 'index.js')

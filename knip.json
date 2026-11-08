@@ -104,7 +104,8 @@
         "vue-devtools-stub",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-typescript"
-      ]
+      ],
+      "ignoreUnresolved": ["#nitro-internal-virtual/app-config"]
     },
     "packages/vite-server": {
       "ignoreDependencies": [

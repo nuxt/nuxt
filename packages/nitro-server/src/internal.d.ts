@@ -15,3 +15,11 @@ declare module '#internal/nuxt/island-renderer.mjs'
 declare module '#internal/unhead.config.mjs'
 declare module '#internal/unhead-options.mjs'
 declare module '#internal/dev-server-logs-options'
+declare module '#nitro-internal-virtual/app-config' {
+  export const appConfig: Record<string, unknown>
+}
+declare module '#internal/nuxt/runtime-config-schema' {
+  const schema: import('@nuxt/schema/internal').RuntimeConfigSchemaObject
+  export default schema
+  export const strictPaths: string[] | undefined
+}

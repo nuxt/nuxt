@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 
-import type { NuxtConfig } from '@nuxt/schema'
+import type { NitroConfig, NuxtConfig } from '@nuxt/schema'
 
 import type { ResolvedNuxtConfigContext } from '../src/loader/config.ts'
 import { diffNuxtConfig, loadNuxtConfig } from '../src/loader/config.ts'
@@ -305,5 +305,42 @@ describe('loadNuxtConfig confbox formats', () => {
     await writeFile(join(tempDir, 'nuxt.config.yaml'), 'ssr: false\n')
     const config = await loadNuxtConfig({ cwd: tempDir })
     expect(config.ssr).toBe(false)
+  })
+})
+
+describe('loadNuxtConfig runtime config schemas', () => {
+  const tempDir = join(repoRoot, 'temp', 'runtime-config-schemas')
+
+  beforeAll(async () => {
+    await mkdir(join(tempDir, 'layers', 'base'), { recursive: true })
+    await writeFile(join(tempDir, 'layers', 'base', 'nuxt.config.ts'), [
+      `import { z } from 'zod'`,
+      `export default defineNuxtConfig({`,
+      `  runtimeConfig: {`,
+      `    apiSecret: z.string(),`,
+      `    session: z.object({ name: z.string(), secure: z.boolean().default(true) }),`,
+      `    public: { mode: z.enum(['a', 'b']).default('a'), limit: z.number().nullable().default(null) },`,
+      `  },`,
+      `})`,
+    ].join('\n'))
+    await writeFile(join(tempDir, 'nuxt.config.ts'), `export default defineNuxtConfig({ runtimeConfig: { session: { name: 'user' }, public: { mode: 'b' } } })`)
+  })
+
+  afterAll(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  it('replaces schemas from layers with their defaults, merged with values from higher layers', async () => {
+    const config = await loadNuxtConfig({ cwd: tempDir })
+    expect(config.runtimeConfig).not.toHaveProperty('apiSecret')
+    expect(config.runtimeConfig.session).toEqual({ name: 'user', secure: true })
+    expect(config.runtimeConfig.public).toEqual({ mode: 'b', limit: null })
+    expect((config.nitro as NitroConfig).runtimeConfig!.public).toEqual({ mode: 'b', limit: null })
+    expect(config._runtimeConfigSchemas!.map(entry => [entry.path.join('.'), entry.required])).toEqual([
+      ['apiSecret', true],
+      ['session', false],
+      ['public.mode', false],
+      ['public.limit', false],
+    ])
   })
 })

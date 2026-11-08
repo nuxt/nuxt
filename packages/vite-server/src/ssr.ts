@@ -104,11 +104,12 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
     write: true,
     getContents: () => [
       `import { createNuxtRenderer } from ${JSON.stringify(serverRuntime.entry)}`,
-      `import { useRuntimeConfig } from ${JSON.stringify(resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'))}`,
+      `import { useRuntimeConfig } from ${JSON.stringify(useServerBuild(nuxt).runtime.runtimeConfig)}`,
       `import { createFetchHandler, createRendererOptions } from ${JSON.stringify(resolve(distDir, 'runtime/renderer'))}`,
       `import matchRouteRules from ${JSON.stringify(routeRules)}`,
       ...prerender ? [`import { createPrerenderOptions } from ${JSON.stringify(resolve(distDir, 'runtime/prerender'))}`] : [],
       '',
+      `useRuntimeConfig()`,
       `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig, matchRouteRules${prerender ? `, createPrerenderOptions({ sharedData: ${!!nuxt.options.experimental.sharedPrerenderData} })` : ''}))`,
       `export const fetch = createFetchHandler(renderer, matchRouteRules)`,
       `export default { fetch }`,
@@ -241,8 +242,8 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
 const ASSETS_URL_RE = /^(?:globalThis\.)?__(build|public)AssetsURL\(("(?:[^"\\]|\\.)*")\)$/
 
 /**
- * Resolves the asset URLs of the server build at build time. The server reads the `app`
- * runtime config serialised by the build, so each URL is a constant.
+ * Resolves the asset URLs of the server build at build time, from the `app` runtime config
+ * known to the build, so each URL is a constant.
  */
 function StaticAssetsURLPlugin (nuxt: Nuxt): Plugin {
   return {
