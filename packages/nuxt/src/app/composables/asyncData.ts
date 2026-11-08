@@ -969,12 +969,15 @@ function buildAsyncData<
         .then(async (_result) => {
           // If the promise was replaced or cleared (e.g. by clearNuxtData), skip the update
           if (nuxtApp._asyncDataPromises[key] !== promise) {
-            return
+            return nuxtApp._asyncDataPromises[key]
           }
 
           let result = _result as unknown as DataT
           if (options.transform) {
             result = await options.transform(_result)
+          }
+          if (nuxtApp._asyncDataPromises[key] !== promise) {
+            return nuxtApp._asyncDataPromises[key]
           }
           if (options.pick) {
             result = pick(result as any, options.pick) as DataT

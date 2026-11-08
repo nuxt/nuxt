@@ -655,6 +655,56 @@ describe('useAsyncData', () => {
     expect(c.text()).toBe('/b')
   })
 
+  it('should await the replacement when a watched request changes during an async transform', async () => {
+    const route = ref('/a')
+    const pending: Record<string, (value: string) => void> = {}
+    const transform = vi.fn((value: string) => new Promise<string>(resolve => (pending[value] = resolve)))
+    const c = await mountWithAsyncData(uniqueKey, () => Promise.resolve(route.value), {
+      watch: [route], dedupe: 'cancel', immediate: false, transform,
+    })
+    const resolved = { first: false, deferred: false }
+
+    const first = c.execute().then(() => { resolved.first = true })
+    await flushPromises()
+    expect(transform).toHaveBeenCalledTimes(1)
+
+    const deferred = c.execute({ dedupe: 'defer' }).then(() => { resolved.deferred = true })
+    route.value = '/b'
+    await flushPromises()
+    expect(transform).toHaveBeenCalledTimes(2)
+
+    pending['/a']!('/a')
+    await flushPromises()
+    expect(c.data.value).toBeUndefined()
+    expect(useNuxtApp().payload.data[uniqueKey]).toBeUndefined()
+    expect(c.status.value).toBe('pending')
+    expect(resolved).toEqual({ first: false, deferred: false })
+
+    pending['/b']!('/b')
+    await Promise.all([first, deferred])
+    expect(c.data.value).toBe('/b')
+    expect(useNuxtApp().payload.data[uniqueKey]).toBe('/b')
+    expect(c.status.value).toBe('success')
+  })
+
+  it('should preserve cleared state when an async transform finishes', async () => {
+    let finishTransform!: (value: string) => void
+    const c = await mountWithAsyncData(uniqueKey, () => Promise.resolve('stale'), {
+      immediate: false,
+      transform: () => new Promise<string>(resolve => (finishTransform = resolve)),
+    })
+
+    const request = c.execute()
+    await flushPromises()
+    c.clear()
+    finishTransform('stale')
+    await request
+
+    expect(c.data.value).toBeUndefined()
+    expect(useNuxtApp().payload.data[uniqueKey]).toBeUndefined()
+    expect(c.status.value).toBe('idle')
+  })
+
   it('should batch watched dependency updates cascading within the same flush into a single refresh', async () => {
     const a = ref(0)
     const b = ref(0)
