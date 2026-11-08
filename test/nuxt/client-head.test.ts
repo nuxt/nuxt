@@ -5,9 +5,9 @@ import type { NuxtApp } from '#app/nuxt'
 
 import { installClientHead } from '../../packages/nuxt/src/head/runtime/install-client-head'
 
-function createApp () {
+function createApp (isHydrating = false) {
   const hooks = createHooks()
-  return { hooks, callHook: hooks.callHook, vueApp: { use: () => {} }, isHydrating: false } as unknown as NuxtApp
+  return { hooks, callHook: hooks.callHook, vueApp: { use: () => {} }, isHydrating } as unknown as NuxtApp
 }
 
 describe('client head', () => {
@@ -55,5 +55,22 @@ describe('client head', () => {
     await nuxtApp.hooks.callHook('page:finish')
     await vi.runAllTimersAsync()
     expect(document.title).toBe('pending navigation head')
+  })
+
+  it('does not unpause on page:finish while hydrating', async () => {
+    vi.useFakeTimers()
+    const nuxtApp = createApp(true)
+    const head = createHead({ document })
+
+    installClientHead(nuxtApp, head)
+    head.push({ title: 'hydration title' })
+
+    await nuxtApp.hooks.callHook('page:finish')
+    await vi.runAllTimersAsync()
+    expect(document.title).not.toBe('hydration title')
+
+    await nuxtApp.hooks.callHook('app:suspense:resolve')
+    await vi.runAllTimersAsync()
+    expect(document.title).toBe('hydration title')
   })
 })
