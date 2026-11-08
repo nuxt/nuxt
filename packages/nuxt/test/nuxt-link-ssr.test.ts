@@ -74,7 +74,7 @@ async function renderLink (testCase: Case, server: boolean, buffer = false) {
 }
 
 // Server-rendered internal links bypass `<RouterLink>`, so the two paths must produce identical
-// markup or the client would fail to hydrate the anchor.
+// markup (apart from an empty `class`) or the client would fail to hydrate the anchor.
 const cases: Case[] = [
   { name: 'renders an inactive link' },
   { name: 'renders an active parent link', props: { to: '/parent' }, at: '/parent/child/1' },
@@ -146,7 +146,7 @@ const customCases: Case[] = [
 describe('nuxt-link ssr', () => {
   for (const testCase of cases) {
     it(testCase.name, async () => {
-      const viaRouterLink = await renderLink(testCase, false)
+      const viaRouterLink = (await renderLink(testCase, false)).replaceAll(' class=""', '')
       const viaServerPath = await renderLink(testCase, true)
       expect(viaServerPath).toBe(viaRouterLink)
       expect(await renderLink(testCase, true, true)).toBe(viaRouterLink)
