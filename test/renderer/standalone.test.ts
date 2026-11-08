@@ -1,7 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { createNuxtRenderer } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
 import type { NuxtRendererOptions } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
+
+vi.mock('nuxt/internal/renderer-config', async importOriginal => ({
+  ...await importOriginal<Record<string, unknown>>(),
+  NUXT_SSR_STREAMING: true,
+}))
 
 type RendererEvent = Parameters<ReturnType<typeof createNuxtRenderer>['fetch']>[0]
 
@@ -22,19 +27,19 @@ const options: NuxtRendererOptions = {
   createError: init => Object.assign(new Error(init.statusText), init),
 }
 
-function createEvent (path: string): RendererEvent {
+function createEvent (path: string, init?: RequestInit): RendererEvent {
   const url = new URL(path, 'http://localhost')
   return {
-    req: new Request(url),
+    req: new Request(url, init),
     url,
     res: { headers: new Headers() },
     context: {},
   } as unknown as RendererEvent
 }
 
-function render (path: string, overrides?: Partial<NuxtRendererOptions>) {
+function render (path: string, overrides?: Partial<NuxtRendererOptions>, event = createEvent(path)) {
   const renderer = createNuxtRenderer({ ...options, ...overrides })
-  return renderer.fetch(createEvent(path)).then(async response => ({ response, html: await response.text() }))
+  return renderer.fetch(event).then(async response => ({ response, html: await response.text() }))
 }
 
 describe('renderer without a server builder', () => {
@@ -102,6 +107,21 @@ describe('renderer without a server builder', () => {
     expect(html).toContain(`<script type="importmap">{"imports":{"#entry":"${BUILD_ASSETS_DIR}`)
     expect(html).toContain(`<script type="module" src="${BUILD_ASSETS_DIR}`)
     expect(html).not.toContain('src="/_nuxt/')
+  })
+
+  it.each([
+    ['buffered render', { ssr: true }],
+    ['streamed render', { ssr: true, streaming: true }],
+    ['spa shell', { ssr: false }],
+  ])('does not modulepreload the entry script of a %s', async (_, rules) => {
+    const event = createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } })
+    const { html } = await render('/', { getRouteRules: () => rules }, event)
+
+    expect(html.includes('window.__unhead__')).toBe(rules.streaming === true)
+
+    const entry = html.match(/<script type="module" src="([^"]+)"/)?.[1]
+    expect(entry).toBeTruthy()
+    expect(html).not.toMatch(new RegExp(`<link rel="modulepreload"[^>]*href="${entry}"`))
   })
 
   it('serves the client-only shell for a route the rules opt out of ssr', async () => {
