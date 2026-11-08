@@ -67,7 +67,7 @@ function applyObject (target: Record<string, unknown>, node: RuntimeConfigSchema
           continue
         }
       } else {
-        value = isObject(parsed) && isObject(value) ? { ...value, ...parsed } : parsed
+        value = isObject(parsed) && isObject(value) ? merge(value, parsed) : parsed
       }
     }
 
@@ -279,6 +279,17 @@ export function toEnvKey (key: string): string {
   }
   words.push(word)
   return words.join('_').toUpperCase()
+}
+
+function merge (base: Record<string, unknown>, override: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...base }
+  for (const key in override) {
+    if (key !== '__proto__') {
+      const value = override[key]
+      result[key] = isObject(result[key]) && isObject(value) ? merge(result[key], value) : value
+    }
+  }
+  return result
 }
 
 function parseJSON (raw: string): unknown {

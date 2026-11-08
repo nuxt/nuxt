@@ -116,6 +116,17 @@ describe('applyRuntimeConfigSchema', () => {
     expect(config.session).toEqual({ name: 'b', maxAge: 60, cookie: { secure: false } })
   })
 
+  it('should keep nested defaults when merging a JSON object', () => {
+    const { config, issues } = apply(
+      { session: { cookie: { name: 'a', secure: true } } },
+      { p: { session: { p: { cookie: { p: { name: 's', secure: 'b' }, r: ['name', 'secure'] } } } } },
+      { NUXT_SESSION: '{"cookie":{"name":"b"},"__proto__":{"polluted":true}}' },
+    )
+    expect(issues).toEqual([])
+    expect(config.session).toEqual({ cookie: { name: 'b', secure: true } })
+    expect(Object.getPrototypeOf(config.session)).toBe(Object.prototype)
+  })
+
   it('should try each member of a union in order', () => {
     const schema: RuntimeConfigSchemaObject = { p: { feature: { o: ['b', { p: { option: 'b' } }] }, id: { o: ['n', 's'] } } }
     expect(apply({ feature: { option: true }, id: 1 }, schema, { NUXT_FEATURE: 'false', NUXT_ID: 'abc' })).toEqual({ config: { feature: false, id: 'abc' }, issues: [] })
