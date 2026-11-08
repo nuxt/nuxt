@@ -495,6 +495,13 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
   }
 
+  // disabled links are not fetched, but stop the client from loading a stylesheet whose rules are inlined
+  if (!NO_SCRIPTS) {
+    for (const href of inlinedHrefs) {
+      link.push({ rel: 'stylesheet', href, disabled: true })
+    }
+  }
+
   if (link.length) {
     ssrContext.head.push({ link })
   }

@@ -2383,7 +2383,7 @@ describe.skipIf(isDev)('inlining component styles', () => {
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch<string>('/styles')
-    const cssFiles = html.match(/<link [^>]*href="[^"]*\.css"/g)
+    const cssFiles = html.match(/<link (?![^>]*\sdisabled[\s>])[^>]*href="[^"]*\.css"/g)
     expect(cssFiles?.length).toBeGreaterThan(0)
     if (isWebpack) {
       // TODO: use non-hash name for webpack css files in test fixture
@@ -2402,6 +2402,24 @@ describe.skipIf(isDev)('inlining component styles', () => {
     const page = await createPage()
     await page.goto(url('/styles'), { waitUntil: 'networkidle' })
     expect(await page.$eval('.client-only-css', e => getComputedStyle(e).color)).toBe('rgb(50, 50, 50)')
+
+    await page.close()
+  })
+
+  it.skipIf(isDev || isWebpack)('does not fetch inlined stylesheets on hydration', async () => {
+    const html = await $fetch<string>('/styles')
+    const inlined = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)" disabled>/g)].map(m => url(m[1]!))
+    expect(inlined.length).toBeGreaterThan(0)
+
+    const inlinedCss = await Promise.all(inlined.map(href => $fetch<string>(href)))
+    expect(inlinedCss.some(css => css.includes('--postcss')), 'the page stylesheet should be inlined with a disabled link').toBe(true)
+
+    const page = await createPage()
+    const requests: string[] = []
+    page.on('request', request => requests.push(request.url()))
+    await page.goto(url('/styles'), { waitUntil: 'networkidle' })
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+    expect(requests.filter(request => inlined.includes(request))).toEqual([])
 
     await page.close()
   })
