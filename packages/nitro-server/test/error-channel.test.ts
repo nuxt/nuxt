@@ -214,6 +214,10 @@ describe('renderDevBadge', () => {
     expect(html).toContain('src="/__nuxt_dev__/error/badge.js?v=')
   })
 
+  it('gives Vite DevTools a moment to take over the badge', async () => {
+    expect(await render()).toContain('"awaitHost":500')
+  })
+
   it('identifies a page load the dev server in front did not name', async () => {
     const [first, second] = await Promise.all([render(), render()])
     expect(requestIdOf(first)).toBeTypeOf('string')

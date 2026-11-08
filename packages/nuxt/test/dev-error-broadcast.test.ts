@@ -85,7 +85,25 @@ describe('dev error channel problem sets', () => {
     sender.close()
   })
 
-  it('forwards problem sets to the owning dev server', async () => {
+  it('tells pages of an owned channel that another thread registered a DevTools dock', async () => {
+    setErrorChannelForwarding(() => false)
+    const channel = await useErrorChannel()
+    const sender = new BroadcastChannel('nuxt:dev:error')
+    const hello = async () => {
+      const response = await channel.fetchHandler(new Request('http://localhost/__nuxt_dev__/error/events'), { trusted: true })
+      const reader = response!.body!.getReader()
+      const { value } = await reader.read()
+      await reader.cancel()
+      return new TextDecoder().decode(value)
+    }
+
+    expect(await hello()).not.toContain('"devtools":true')
+    sender.postMessage({ type: 'nuxt:dev:error:devtools', registered: true })
+    await vi.waitFor(async () => expect(await hello()).toContain('"devtools":true'))
+    sender.close()
+  })
+
+  it('forwards problem sets and DevTools registration to the owning dev server', async () => {
     setErrorChannelForwarding(() => true)
     const channel = await useErrorChannel()
     const messages: unknown[] = []
@@ -94,9 +112,11 @@ describe('dev error channel problem sets', () => {
 
     channel.setProblems('checker:vue-tsc', [report], { label: 'vue-tsc' })
     channel.clearProblems('checker:vue-tsc')
+    channel.setDevTools(true)
     await vi.waitFor(() => expect(messages).toEqual([
       { type: 'nuxt:dev:error:problems', source: 'checker:vue-tsc', reports: [report], meta: { label: 'vue-tsc' } },
       { type: 'nuxt:dev:error:problems:clear', source: 'checker:vue-tsc' },
+      { type: 'nuxt:dev:error:devtools', registered: true },
     ]))
     listener.close()
   })

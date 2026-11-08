@@ -29,6 +29,8 @@ export type ErrorChannelMessage =
   | { type: 'nuxt:dev:error:problems', source: string, reports: ErrorReport[], meta?: ProblemMeta }
   /** Clears the problem set for `source`, or every set without one. */
   | { type: 'nuxt:dev:error:problems:clear', source?: string }
+  /** Whether a my-bad dock is registered in Vite DevTools. */
+  | { type: 'nuxt:dev:error:devtools', registered: boolean }
 
 const CHANNEL_KEY = Symbol.for('nuxt:dev:error-channel')
 
@@ -95,6 +97,8 @@ function createOwnedChannel (channel: Channel): Channel {
         return channel.setProblems(message.source, message.reports, message.meta)
       case 'nuxt:dev:error:problems:clear':
         return channel.clearProblems(message.source)
+      case 'nuxt:dev:error:devtools':
+        return channel.setDevTools(message.registered)
     }
   }
   post({ type: 'nuxt:dev:error:sync' })
@@ -154,6 +158,9 @@ function createForwardingChannel (): Channel {
     },
     clearProblems (source) {
       post({ type: 'nuxt:dev:error:problems:clear', source })
+    },
+    setDevTools (registered) {
+      post({ type: 'nuxt:dev:error:devtools', registered })
     },
     get current () {
       return current

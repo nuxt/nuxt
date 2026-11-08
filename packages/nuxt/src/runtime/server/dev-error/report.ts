@@ -136,7 +136,7 @@ export async function renderDevBadge (options: { cwd?: string, channel: string, 
   const requestId = requestIdOf(options.request) ?? crypto.randomUUID()
   const state = JSON.stringify({ requestId }).replaceAll('<', '\\u003c')
   return `<script>window.__NUXT_DEV_ERROR__=${state};addEventListener('my-bad:error:clear',()=>__NUXT_DEV_ERROR__.recovers?.()||location.reload())</script>`
-    + renderBadge({ channel: options.channel, cwd: options.cwd, theme: nuxtTheme, tag: 'nuxt-error-overlay', requestId })
+    + renderBadge({ channel: options.channel, cwd: options.cwd, theme: nuxtTheme, tag: 'nuxt-error-overlay', requestId, awaitHost: 500 })
 }
 
 /** Render a standalone error page, for when the app itself cannot render one. */

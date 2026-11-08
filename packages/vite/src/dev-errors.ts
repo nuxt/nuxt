@@ -5,6 +5,7 @@ import type { BuildProgress, ProblemMeta } from 'my-bad/channel'
 import { isFileLoadingAllowed } from 'vite'
 import type { ServerResponse } from 'node:http'
 import type { Connect, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import { joinURL } from 'ufo'
 import { ERROR_CHANNEL_ENV, REQUEST_ID_HEADER, createReportFsLoader, openErrorBroadcast, stripControlCharacters } from 'nuxt/internal/dev-error'
 import type { ErrorChannelMessage } from 'nuxt/internal/dev-error'
 
@@ -54,6 +55,8 @@ export interface DevErrorReporter {
   setProblems: (source: string, reports: ErrorReport[], meta?: ProblemMeta) => void
   /** Clear the problem set for `source`. */
   clearProblems: (source: string) => void
+  /** Tell the channel a my-bad dock is registered in Vite DevTools. */
+  registerDevTools: () => void
   /** Report an error a dev server middleware raised serving `request`, as `METHOD /path`. */
   reportRequestError: (error: unknown, request: string, requestId?: string) => Promise<void>
   /** Whether `request` raised an error that is still open. */
@@ -84,6 +87,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   // the reports another process published that are still open
   const published = new Set<string>()
   const problems = new Map<string, ErrorChannelMessage & { type: 'nuxt:dev:error:problems' }>()
+  let devtools = false
   let closed = false
   // a rebuild or report still pending when Nuxt closes would post to a closed channel
   const post = (message: ErrorChannelMessage) => closed || broadcast.postMessage(message)
@@ -94,6 +98,9 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       broadcast.postMessage({ type: 'nuxt:dev:error:problems:clear', source } satisfies ErrorChannelMessage)
     }
     problems.clear()
+    if (devtools) {
+      broadcast.postMessage({ type: 'nuxt:dev:error:devtools', registered: false } satisfies ErrorChannelMessage)
+    }
     broadcast.close()
   })
   // the same failure reaches the logger and the hot channel worded differently, at one position
@@ -118,6 +125,9 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }
         for (const message of problems.values()) {
           broadcast.postMessage(message)
+        }
+        if (devtools) {
+          broadcast.postMessage({ type: 'nuxt:dev:error:devtools', registered: true } satisfies ErrorChannelMessage)
         }
         return
       // a compile error is remembered by file, so fixing the file clears it;
@@ -226,6 +236,13 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       if (problems.delete(source)) {
         broadcast.postMessage({ type: 'nuxt:dev:error:problems:clear', source } satisfies ErrorChannelMessage)
       }
+    },
+    registerDevTools () {
+      if (closed || devtools) {
+        return
+      }
+      devtools = true
+      broadcast.postMessage({ type: 'nuxt:dev:error:devtools', registered: true } satisfies ErrorChannelMessage)
     },
     async reportRequestError (error, request, requestId) {
       if (!server || isTransformError(error) || !(error instanceof Error)) {
@@ -476,6 +493,16 @@ function compileFile (report: ErrorReport): string | undefined {
       return file
     }
   }
+}
+
+/** Adds the dev error channel's dock to Vite DevTools, when it is installed. */
+export async function DevErrorsDevToolsPlugin (nuxt: Nuxt, reporter: DevErrorReporter): Promise<VitePlugin> {
+  const { myBadDevTools } = await import('my-bad/vite')
+  return myBadDevTools({
+    channel: process.env[ERROR_CHANNEL_ENV] || joinURL(nuxt.options.app.baseURL, nuxt.options.devServer.errorChannel),
+    title: 'Problems',
+    onRegister: () => reporter.registerDevTools(),
+  })
 }
 
 /**

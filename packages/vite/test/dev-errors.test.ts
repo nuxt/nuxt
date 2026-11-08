@@ -6,7 +6,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { createServer } from 'vite'
 import type { ViteDevServer } from 'vite'
 import type { ErrorReport } from 'my-bad'
-import { DevErrorsPlugin, DevRequestErrorsPlugin, createDevErrorReporter, isTransformError } from '../src/dev-errors.ts'
+import { DevErrorsDevToolsPlugin, DevErrorsPlugin, DevRequestErrorsPlugin, createDevErrorReporter, isTransformError } from '../src/dev-errors.ts'
 
 const transformError = {
   message: 'Illegal \'/\' in tags.',
@@ -732,6 +732,50 @@ describe('createDevErrorReporter (error names)', () => {
     expect(report).toMatchObject({ kind: 'compile', name, message: expect.stringContaining('Unexpected token'), frames: [{ file: '/src/app.vue', line: 2, column: 10 }] })
 
     nuxt.close()
+  })
+})
+
+describe('DevErrorsDevToolsPlugin', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  async function dockOf (nuxt: Nuxt) {
+    const plugin = await DevErrorsDevToolsPlugin(nuxt, createDevErrorReporter(nuxt, { print: () => {} }))
+    const register = vi.fn()
+    ;(plugin as { devtools?: { setup: (ctx: unknown) => void } }).devtools!.setup({ docks: { register } })
+    return register.mock.calls[0]![0] as { url: string, title: string }
+  }
+
+  it('adds a Problems dock for the channel under the app base URL', async () => {
+    const nuxt = createNuxt()
+    nuxt.options.app.baseURL = '/base/'
+    const dock = await dockOf(nuxt)
+    expect(dock.url).toBe('/base/__nuxt_dev__/error/panel?embed')
+    expect(dock.title).toBe('Problems')
+    nuxt.close()
+  })
+
+  it('adds a dock for the channel a dev server in front serves', async () => {
+    vi.stubEnv('NUXT_DEV_ERROR_CHANNEL', '/__cli__/error')
+    const nuxt = createNuxt()
+    expect((await dockOf(nuxt)).url).toBe('/__cli__/error/panel?embed')
+    nuxt.close()
+  })
+
+  it('tells the channel once the dock is registered, again when it asks, and retracts it when Nuxt closes', async () => {
+    const nuxt = createNuxt()
+    const { messages, channel } = listen()
+    await dockOf(nuxt)
+    const devtools = (registered: boolean) => ({ type: 'nuxt:dev:error:devtools', registered })
+
+    await vi.waitFor(() => expect(messages).toEqual([devtools(true)]))
+    channel.postMessage({ type: 'nuxt:dev:error:sync' })
+    await vi.waitFor(() => expect(messages).toEqual([devtools(true), devtools(true)]))
+    nuxt.close()
+    await vi.waitFor(() => expect(messages).toEqual([devtools(true), devtools(true), devtools(false)]))
+
+    channel.close()
   })
 })
 
