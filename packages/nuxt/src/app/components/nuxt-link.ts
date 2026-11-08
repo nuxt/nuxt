@@ -812,7 +812,7 @@ interface InlineLinks {
 function createInlineLinks (nuxtApp: NuxtApp): InlineLinks | false {
   const routerLink = nuxtApp.vueApp.component('RouterLink')
   if (!routerLink || !('useLink' in routerLink)) { return false }
-  const router = nuxtApp.$router as Router
+  const router = nuxtApp.$router as unknown as Router
   const base = router.options.history.base
   const pathOf = (el: Element) => {
     const href = el.getAttribute('href') || ''
