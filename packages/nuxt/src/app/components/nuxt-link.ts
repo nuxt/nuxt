@@ -243,6 +243,11 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         return router.resolve(to.value)?.href ?? null
       }
 
+      // A rooted download URL must not carry the router's hash prefix
+      if (download.value && isRootedPath(to.value)) {
+        return joinURL(config.app.baseURL, to.value)
+      }
+
       // only a relative path needs resolving against the current route
       const href = isRootedPath(to.value) ? rootedHref(to.value) : router.resolve(to.value).href
       return applyTrailingSlashBehavior(href, effectiveTrailingSlash)
