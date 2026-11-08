@@ -153,6 +153,29 @@ describe('nuxt-link ssr', () => {
     })
   }
 
+  it('resolves an internal download link against the app base', async () => {
+    nuxtApp.$config.app.baseURL = '/app/'
+    try {
+      const html = await renderLink({ name: 'internal download link', props: { to: '/report.pdf', download: '' } }, true)
+      expect(html).toContain('href="/app/report.pdf"')
+      expect(html).toContain('download')
+    } finally {
+      nuxtApp.$config.app.baseURL = '/'
+    }
+  })
+
+  it('resolves a download link without the hash-history prefix', async () => {
+    nuxtApp.$config.app.baseURL = '/app/'
+    try {
+      const hashHistory = { ...createMemoryHistory(), createHref: (to: string) => '#' + to }
+      const html = await renderLink({ name: 'hash-mode download', props: { to: '/report.pdf', download: '' }, routerOptions: { history: hashHistory } }, true)
+      expect(html).toContain('href="/app/report.pdf"')
+      expect(html).not.toContain('#/report.pdf')
+    } finally {
+      nuxtApp.$config.app.baseURL = '/'
+    }
+  })
+
   it('renders a render-function slot once', async () => {
     const slot = vi.fn(() => 'text')
     await renderLink({ name: 'slot', props: { to: '/parent' }, slot }, true, true)
