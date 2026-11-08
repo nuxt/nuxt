@@ -255,16 +255,22 @@ describe('route rule redirects', () => {
 })
 
 describe('router options template', () => {
-  async function getRouterOptionsTemplate (code: string) {
+  async function getRouterOptionsTemplate (code: string, position: 'append' | 'prepend' | 'replace' = 'append') {
     const dir = await mkdtemp(join(tmpdir(), 'nuxt-router-options-'))
-    const file = join(dir, 'router.options.ts')
+    const file = join(dir, 'layer.options.ts')
     await writeFile(file, code)
     const nuxt = await loadNuxt({
       cwd: pagesFixtureDir,
       ready: true,
       overrides: {
         router: { options: { sensitive: true } },
-        hooks: { 'pages:routerOptions' ({ files }) { files.push({ path: file }) } },
+        hooks: {
+          'pages:routerOptions' ({ files }) {
+            if (position === 'append') { files.push({ path: file }) }
+            if (position === 'prepend') { files.unshift({ path: file }) }
+            if (position === 'replace') { files.splice(0, 1, { path: file }) }
+          },
+        },
       },
     })
     try {
@@ -285,17 +291,20 @@ describe('router options template', () => {
     expect(contents).toContain('sensitive: true,\n}')
   })
 
-  it('distinguishes custom scroll handlers from inherited or disabled handlers', async () => {
-    const contents = await getRouterOptionsTemplate('export default {}')
-    const evaluate = new Function('routerOptions0', 'routerOptions1', contents
-      .replace(/^import .*$/gm, '')
-      .replaceAll('export const', 'const')
-      .replace('export default routerOptions', 'return hasCustomScrollBehavior'))
-    const defaults = { scrollBehavior: () => ({ top: 0 }) }
+  it.each(['append', 'prepend', 'replace'] as const)('detects custom handlers when hooks %s router options', async (position) => {
+    const contents = await getRouterOptionsTemplate('export default {}', position)
+    const toDataURL = (code: string) => `data:text/javascript,${encodeURIComponent(code)}`
+    const defaults = toDataURL('export default { scrollBehavior () {} }')
 
-    expect(evaluate(defaults, {})).toBe(false)
-    expect(evaluate(defaults, { scrollBehavior: defaults.scrollBehavior })).toBe(false)
-    expect(evaluate(defaults, { scrollBehavior: () => ({ top: 200 }) })).toBe(true)
-    expect(evaluate(defaults, { scrollBehavior: undefined })).toBe(false)
+    async function hasCustomScrollBehavior (layer: string) {
+      const source = contents.replace(/from (['"])(.+?)\1/g, (_, _quote, path: string) =>
+        'from ' + JSON.stringify(path.endsWith('/layer.options.ts') ? toDataURL(layer) : defaults))
+      return (await import(toDataURL(source))).hasCustomScrollBehavior
+    }
+
+    expect(await hasCustomScrollBehavior('export default {}')).toBe(false)
+    expect(await hasCustomScrollBehavior(`export { default } from ${JSON.stringify(defaults)}`)).toBe(false)
+    expect(await hasCustomScrollBehavior('export default { scrollBehavior () { return { top: 200 } } }')).toBe(position !== 'prepend')
+    expect(await hasCustomScrollBehavior('export default { scrollBehavior: undefined }')).toBe(false)
   })
 })

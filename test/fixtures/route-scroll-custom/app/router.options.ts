@@ -1,8 +1,10 @@
 import type { RouterConfig } from 'nuxt/schema'
 
 export default {
-  scrollBehavior (_to, _from, savedPosition) {
+  scrollBehavior (to, _from, savedPosition) {
     document.documentElement.dataset.scrollStart = String(window.scrollY)
+    document.documentElement.dataset.scrollCalls = String(Number(document.documentElement.dataset.scrollCalls || 0) + 1)
+    if ('keepScroll' in to.query) { return false }
     return savedPosition || { left: 0, top: 200 }
   },
 } satisfies RouterConfig

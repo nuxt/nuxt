@@ -152,6 +152,7 @@ export interface NuxtSSRContext extends SSRContext {
   event: NuxtRequestEvent
   runtimeConfig: RuntimeConfig
   noSSR: boolean
+  noScripts?: boolean
   /** whether we are rendering an SSR error */
   error?: boolean
   nuxt: NuxtServerApp
