@@ -244,4 +244,26 @@ describe.skipIf(!runsOnceInMatrix)('prerendered output served statically', () =>
     expect(await page.evaluate(() => document.querySelectorAll('#__nuxt').length)).toBe(1)
     await page.close()
   }, 120 * 1000)
+
+  it('does not warm up the app manifest on load but fetches it on navigation', async () => {
+    const page = await browser.newPage()
+    const manifestRequests: string[] = []
+    page.on('request', request => void (request.url().includes('/_nuxt/builds/meta/') && manifestRequests.push(new URL(request.url()).pathname)))
+
+    await page.goto(`${host.origin}/about`, { waitUntil: 'networkidle' })
+    expect(await page.locator('#about').textContent()).toContain('about data')
+
+    // Idle long enough that a 1s-delayed ready callback would have fired.
+    await page.waitForTimeout(1500)
+    expect(manifestRequests).toEqual([])
+
+    const manifestResponse = page.waitForResponse(response => new URL(response.url()).pathname.startsWith('/_nuxt/builds/meta/'))
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/'))
+    expect((await manifestResponse).ok()).toBe(true)
+    await page.waitForSelector('#async-data')
+    expect(await page.locator('#async-data').textContent()).toContain('from useAsyncData')
+    expect(new URL(page.url()).pathname).toBe('/')
+
+    await page.close()
+  }, 120 * 1000)
 })
