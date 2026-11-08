@@ -531,7 +531,8 @@ function overlay (inferred: RuntimeConfigSchemaNode, declared: RuntimeConfigSche
   for (const key in declared.p) {
     p[key] = p[key] ? overlay(p[key], declared.p[key]!) : declared.p[key]!
   }
-  return withRequired(declared.d ? { p, d: declared.d } : { p }, [...inferred.r ?? [], ...declared.r ?? []])
+  const required = [...(inferred.r ?? []).filter(key => !(key in declared.p)), ...declared.r ?? []]
+  return withRequired(declared.d ? { p, d: declared.d } : { p }, required)
 }
 
 /**

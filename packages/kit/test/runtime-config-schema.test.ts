@@ -269,6 +269,13 @@ describe('getRuntimeConfigSchema', () => {
     expect(getRuntimeConfigSchema({}, entries)).toEqual({
       p: { myModule: { p: { token: 's', debug: 'b' }, r: ['debug'] } },
     })
+    expect(getRuntimeConfigSchema({}, [
+      { path: ['myModule', 'token'], node: 's', required: true, module: true },
+      { path: ['myModule', 'debug'], node: 'b', required: true, module: true },
+      { path: ['myModule'], node: { p: { token: 's' } }, required: false },
+    ])).toEqual({
+      p: { myModule: { p: { token: 's', debug: 'b' }, r: ['debug'] } },
+    })
   })
 
   it('should only describe declared schemas without inference', () => {
