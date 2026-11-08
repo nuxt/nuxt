@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import { loadConfig, setupDotenv } from 'c12'
-import type { NuxtConfig, NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtOptions } from '@nuxt/schema'
+import type { NitroConfig, NuxtConfig, NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
 import { klona } from 'klona'
@@ -16,6 +16,7 @@ import { directoryToURL } from '../internal/esm.ts'
 import { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { configDiagnostics } from '../diagnostics/config.ts'
+import { extractRuntimeConfigSchemas, mergeRuntimeConfigSchemas, restoreRuntimeConfigSchemaNulls } from '../internal/runtime-config.ts'
 import { ensureDependencyInstalled, getAddDependencyCommand } from '../dependency.ts'
 
 /**
@@ -229,7 +230,14 @@ function isMissingConfbox (error: unknown): boolean {
   return code === 'ERR_MODULE_NOT_FOUND' && typeof message === 'string' && message.includes(`'confbox`)
 }
 
-const merger = createDefu((obj, key, value) => {
+const merger = createDefu((obj, key, value, namespace) => {
+  if (namespace ? namespace === 'runtimeConfig' || namespace.startsWith('runtimeConfig.') : key === 'runtimeConfig') {
+    const merged = mergeRuntimeConfigSchemas(value, obj[key])
+    if (merged !== undefined) {
+      obj[key] = merged as typeof obj[typeof key]
+      return true
+    }
+  }
   if (Array.isArray(obj[key]) && Array.isArray(value)) {
     obj[key] = obj[key].concat(value)
     return true
@@ -439,6 +447,11 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   })
 
   const { configFile, layers = [], cwd, meta } = resolved
+  // schemas cannot be cloned, so they are replaced with their defaults first
+  const runtimeConfigSchemas = extractRuntimeConfigSchemas(resolved.config.runtimeConfig)
+  if (runtimeConfigSchemas.entries.length) {
+    resolved.config.runtimeConfig = runtimeConfigSchemas.config as NuxtConfig['runtimeConfig']
+  }
   // Clone with `klona` rather than `klona/full`: jiti-imported JSON/CJS modules in user config
   // carry a non-enumerable, self-referential `default` interop property, which `klona/full`
   // would follow into infinite recursion.
@@ -559,6 +572,12 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   // Resolve and apply defaults
   const options = await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+  options._runtimeConfigSchemas = runtimeConfigSchemas.entries
+  restoreRuntimeConfigSchemaNulls(options.runtimeConfig, runtimeConfigSchemas.config, runtimeConfigSchemas.entries)
+  const nitroRuntimeConfig = (options.nitro as NitroConfig).runtimeConfig
+  if (nitroRuntimeConfig) {
+    restoreRuntimeConfigSchemaNulls(nitroRuntimeConfig, runtimeConfigSchemas.config, runtimeConfigSchemas.entries)
+  }
 
   for (const fallback of jitiFallbacks) {
     if (shouldReportJitiFallbackOnce(fallback.filePath, options.rootDir, options.future.compatibilityVersion)) {

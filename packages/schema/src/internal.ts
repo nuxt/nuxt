@@ -14,3 +14,9 @@ export type {
   NuxtServerBuildPreview,
   NuxtServerBuildRuntime,
 } from './types/nuxt.ts'
+
+export type {
+  RuntimeConfigSchemaEntry,
+  RuntimeConfigSchemaNode,
+  RuntimeConfigSchemaObject,
+} from './types/runtime-config.ts'

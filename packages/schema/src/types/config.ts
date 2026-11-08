@@ -11,6 +11,7 @@ import type { NuxtConfigLayer, NuxtConfigLayerMeta } from './layers.ts'
 import type { ConfigSchema } from './schema.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { AppHeadMetaObject } from './head.ts'
+import type { RuntimeConfigSchemaEntry } from './runtime-config.ts'
 
 export type { SchemaDefinition } from 'untyped'
 
@@ -39,11 +40,35 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
     ? unknown extends T[K]
       ? unknown
       : T[K] extends Record<string, unknown>
-        ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-        : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+        ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`> | RuntimeConfigSchema<T[K]>
+        : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`> | RuntimeConfigSchema<T[K]>
     : K extends number
       ? T[K]
       : never
+}
+
+type RuntimeConfigSchemaResult<Output> =
+  | { readonly value: Output, readonly issues?: undefined }
+  | { readonly issues: ReadonlyArray<{ readonly message: string, readonly path?: ReadonlyArray<PropertyKey | { readonly key: PropertyKey }> | undefined }> }
+
+/**
+ * A [Standard Schema](https://standardschema.dev) that can also be converted to JSON Schema
+ * ([Standard JSON Schema](https://standardschema.dev/json-schema)), for describing a runtime config value.
+ *
+ * Zod and ArkType schemas implement it directly; wrap a Valibot schema with `toStandardJsonSchema()`
+ * from `@valibot/to-json-schema`.
+ */
+export interface RuntimeConfigSchema<Output = unknown> {
+  readonly '~standard': {
+    readonly version: 1
+    readonly vendor: string
+    readonly validate: (value: unknown) => RuntimeConfigSchemaResult<Output> | Promise<RuntimeConfigSchemaResult<Output>>
+    readonly jsonSchema: {
+      readonly input: (options: { readonly target: 'draft-2020-12' }) => Record<string, unknown>
+      readonly output: (options: { readonly target: 'draft-2020-12' }) => Record<string, unknown>
+    }
+    readonly types?: { readonly input: unknown, readonly output: Output } | undefined
+  }
 }
 
 // Runtime Config
@@ -84,7 +109,7 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' 
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   vite?: ConfigSchema['vite']
   nitro?: ConfigSchema['nitro']
-  runtimeConfig?: Overrideable<RuntimeConfig>
+  runtimeConfig?: Overrideable<RuntimeConfig> | RuntimeConfigSchema<Record<string, unknown>>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
     $server?: DeepPartial<ConfigSchema['webpack']>
@@ -139,6 +164,8 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'd
     $server: ConfigSchema['webpack']
   }
   _layers: readonly NuxtConfigLayer[]
+  /** Schemas declared in `runtimeConfig` or with `updateRuntimeConfig()`. */
+  _runtimeConfigSchemas?: RuntimeConfigSchemaEntry[]
   $schema: SchemaDefinition
 }
 
