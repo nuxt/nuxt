@@ -8,14 +8,13 @@ import { _loadPayload, isCachedPayloadRoute, isOutdatedPayload } from '../compos
 import { reloadNuxtApp } from '../composables/chunk'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
-import { getAppManifest } from '../composables/manifest'
 import { injectHead } from '../composables/head'
 import { stateDiagnostics } from '../diagnostics/state'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
-import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
+import { prefetchGroup } from '../internal/prefetch-util'
 import { documentURL } from '../internal/location'
 
-import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
+import { prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
 interface ActiveHeadEntryLike { dispose: () => void }
 
@@ -176,12 +175,6 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           },
         })
       })
-    })
-
-    onNuxtReady(() => {
-      if (isAppManifestEnabled && canPrefetch()) {
-        setTimeout(getAppManifest, 1000)
-      }
     })
   },
 })
