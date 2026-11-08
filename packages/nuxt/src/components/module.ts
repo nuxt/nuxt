@@ -17,7 +17,7 @@ import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
 import { TransformPlugin } from './plugins/transform.ts'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
-import { NuxtLinkSsrPlugin } from './plugins/nuxt-link-ssr.ts'
+import { NuxtLinkClientPlugin, NuxtLinkSsrPlugin } from './plugins/nuxt-link-ssr.ts'
 import { RenderListPlugin } from './plugins/render-list.ts'
 import { ClientComponentStubPlugin } from './plugins/client-component-stub.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
@@ -262,6 +262,7 @@ export default defineNuxtModule<ComponentsOptions>({
     }
     if (!nuxt.options.dev) {
       addBuildPlugin(NuxtLinkSsrPlugin, { client: false })
+      addBuildPlugin(NuxtLinkClientPlugin, { server: false })
     }
 
     addBuildPlugin(ClientComponentStubPlugin({

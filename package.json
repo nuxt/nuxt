@@ -70,6 +70,7 @@
     "@typescript-eslint/parser": "catalog:dev",
     "@unhead/vue": "catalog:app-runtime",
     "@vitest/coverage-v8": "catalog:dev",
+    "@vue/shared": "catalog:app-runtime",
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
     "autoprefixer": "10.6.2",
