@@ -75,6 +75,23 @@ describe('app in an `<iframe srcdoc>` document', () => {
     }
   })
 
+  it('should leave a `download` link to the browser', () => {
+    mockSrcdocDocument()
+    const anchor = document.createElement('a')
+    anchor.setAttribute('href', '/index')
+    anchor.setAttribute('data-internal', '')
+    anchor.setAttribute('download', '')
+    document.body.appendChild(anchor)
+    try {
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })
+      anchor.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(false)
+      expect(useRouter().currentRoute.value.fullPath).not.toBe('/index')
+    } finally {
+      anchor.remove()
+    }
+  })
+
   it('should reload the current document', () => {
     const location = mockSrcdocDocument()
     reloadNuxtApp({ force: true })
