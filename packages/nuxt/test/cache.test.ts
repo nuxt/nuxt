@@ -44,7 +44,7 @@ async function renderIndex (outputDir: string) {
 
 // the inline style extracted from the fixture's scoped `<style>` block
 const INLINE_STYLE_RE = /<style[^>]*>[^<]*color\s*:\s*red/
-const STYLESHEET_LINK_RE = /<link[^>]+rel="stylesheet"/
+const STYLESHEET_LINK_RE = /<link(?![^>]*\sdisabled[\s>])[^>]+rel="stylesheet"/
 
 describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
   const workspaceDir = await findWorkspaceDir()
