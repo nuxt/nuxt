@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, getRouterOptionsKeys, routerOptionsMayModifyRoutes } from '../src/pages/utils.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, getRouterOptionsKeys, routerOptionsMayModifyRoutes } from '../src/pages/utils.ts'
 
 describe('collectRou3PagePatterns', () => {
   it('should collect patterns for static and dynamic pages', () => {
@@ -87,6 +87,65 @@ describe('collectRou3PagePatterns', () => {
       '/parent/**',
     ])
     expect(unconvertible).toStrictEqual([])
+  })
+})
+
+describe('collectRou3PageSources', () => {
+  it('should map every page path to the sources of its matched route records', () => {
+    const pages: NuxtPage[] = [
+      { name: 'index', path: '/', file: '/app/pages/index.vue' },
+      { name: 'product', path: '/products/:id()', alias: ['/p/:id()'], file: '/app/pages/products/[id].vue' },
+      {
+        path: '/parent',
+        file: '/app/pages/parent.vue',
+        children: [
+          { name: 'parent', path: '', file: '/app/pages/parent/index.vue' },
+          { name: 'parent-child', path: 'child', file: '/app/pages/parent/child.vue', components: { sidebar: '/app/components/sidebar.vue' } },
+        ],
+      },
+    ]
+    expect(Object.fromEntries(collectRou3PageSources(pages, '/app')!)).toMatchInlineSnapshot(`
+      {
+        "/": [
+          "pages/index.vue",
+        ],
+        "/p/:_0": [
+          "pages/products/[id].vue",
+        ],
+        "/parent": [
+          "pages/parent.vue",
+          "pages/parent/index.vue",
+        ],
+        "/parent/child": [
+          "pages/parent.vue",
+          "pages/parent/child.vue",
+          "components/sidebar.vue",
+        ],
+        "/products/:_0": [
+          "pages/products/[id].vue",
+        ],
+      }
+    `)
+  })
+
+  it('should not resolve patterns shared by unrelated pages', () => {
+    const pages: NuxtPage[] = [
+      { name: 'user', path: '/users/:id()', file: '/app/pages/users/[id].vue' },
+      { name: 'member', path: '/users/:name()', file: '/app/pages/users/[name].vue' },
+      { name: 'catchall', path: '/:slug(.*)*', file: '/app/pages/[...slug].vue' },
+    ]
+    expect(Object.fromEntries(collectRou3PageSources(pages, '/app')!)).toEqual({
+      '/users/:_0': undefined,
+      '/**': ['pages/[...slug].vue'],
+    })
+  })
+
+  it('should bail out when a path is widened', () => {
+    const pages: NuxtPage[] = [
+      { name: 'numeric', path: '/users/:id(\\d+)', file: '/app/pages/users/numeric.vue' },
+      { name: 'named', path: '/users/:name()', file: '/app/pages/users/named.vue' },
+    ]
+    expect(collectRou3PageSources(pages, '/app')).toBeUndefined()
   })
 })
 

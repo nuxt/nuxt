@@ -1031,6 +1031,47 @@ function isDecodable (route: string): boolean {
 }
 
 /**
+ * Map the rou3 pattern of every page path to the source files (relative to `srcDir`)
+ * of the route records it renders, parents first. Patterns shared by unrelated pages
+ * map to `undefined`. Returns `undefined` when any path cannot be converted exactly
+ * (a trailing catch-all aside), as rou3 could then pick a different page than vue-router.
+ */
+export function collectRou3PageSources (pages: NuxtPage[], srcDir: string): Map<string, string[] | undefined> | undefined {
+  const sources = new Map<string, string[] | undefined>()
+  const collect = (pages: NuxtPage[], prefixes: string[], parentSources: string[]): boolean => {
+    for (const page of pages) {
+      const pageSources = [...parentSources]
+      for (const file of [page.file, ...Object.values(page.components || {})]) {
+        if (file) { pageSources.push(relative(srcDir, file)) }
+      }
+      const routes = new Set<string>()
+      for (const route of [page.path, ...toArray(page.alias || [])]) {
+        if (route.startsWith('/')) {
+          routes.add(route)
+        } else {
+          for (const prefix of prefixes) {
+            routes.add(joinURL(prefix, route))
+          }
+        }
+      }
+      for (const route of routes) {
+        if (!isDecodable(route)) { return false }
+        const { patterns, issues } = vueRouterToRou3(route, { collapse: true })
+        if (!patterns.length || issues.some(issue => issue.type !== 'collapsed' || !route.endsWith(`:${issue.param}(.*)*`))) { return false }
+        for (const pattern of patterns) {
+          const existing = sources.get(pattern)
+          const extendsExisting = !sources.has(pattern) || (existing && existing.length <= pageSources.length && existing.every((file, i) => pageSources[i] === file))
+          sources.set(pattern, extendsExisting ? pageSources : undefined)
+        }
+      }
+      if (page.children?.length && !collect(page.children, [...routes], pageSources)) { return false }
+    }
+    return true
+  }
+  return collect(pages, ['/'], []) ? sources : undefined
+}
+
+/**
  * Collect a rou3 pattern for every path a page can be reached by: its canonical
  * path, each alias, and the whole subtree below it. Returns `undefined` when any
  * path cannot be converted, so callers can fall back to matching everything;

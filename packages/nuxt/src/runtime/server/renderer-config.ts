@@ -36,6 +36,8 @@ export const NUXT_PAGE_PATTERNS: string[] = []
 export const NUXT_EARLY_404: boolean = false
 /** Matcher compiled from every page route, present when {@link NUXT_EARLY_404} is set. */
 export const NUXT_PAGE_MATCHER: ((method: string, path: string) => unknown) | undefined = undefined
+/** Matcher resolving a path to the page sources preloaded by client-only responses. */
+export const NUXT_SPA_PAGE_MATCHER: ((method: string, path: string) => { data: string[] } | undefined) | undefined = undefined
 /** Whether the renderer renders the error page itself, rather than the server runtime doing it. */
 export const NUXT_INLINE_ERROR_RENDERING: boolean = false
 /** Whether `error.data` reaches the error page stringified. */

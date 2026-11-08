@@ -14,7 +14,7 @@ import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { addRoute, createRouter, findRoute } from 'rou3'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, getRouterOptionsKeys, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, collectRou3PageSources, createPagesContext, getRouterOptionsKeys, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, routerOptionsMayModifyRoutes, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
@@ -63,13 +63,17 @@ async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
   return context.files
 }
 
-/** The first `router.options` file that may modify `routes`. */
-async function findRoutesModifyingRouterOptions (nuxt: Nuxt, builtInRouterOptions: string) {
+/** The first `router.options` file that may modify `routes`, or set any of `keys`. */
+async function findRoutesModifyingRouterOptions (nuxt: Nuxt, builtInRouterOptions: string, keys: string[] = []) {
   for (const file of await resolveRouterOptions(nuxt, builtInRouterOptions)) {
     if (file.optional) { continue }
     const code = await readFile(file.path, 'utf-8').catch(() => undefined)
     if (code === undefined || routerOptionsMayModifyRoutes(code, file.path)) {
       return file
+    }
+    if (keys.length) {
+      const fileKeys = getRouterOptionsKeys(code, file.path)
+      if (keys.some(key => fileKeys?.has(key))) { return file }
     }
   }
 }
@@ -664,6 +668,25 @@ export default defineNuxtModule({
       // only let a request through to the app (which still 404s), never wrongly 404 it.
       ;(nitro.options as { _early404PagePatterns?: string[] })._early404PagePatterns
         = [...new Set(patterns.map(pattern => normalizeRouteRulePath(pattern, true)))]
+    })
+
+    // The page sources the renderer preloads for client-only (`ssr: false`) responses
+    nuxt.hook('nitro:build:before', async (nitro) => {
+      // lookups ignore trailing slashes, which `strict` routing does not
+      const { hashMode, sensitive, strict } = nuxt.options.router.options
+      if (nuxt.options.dev || hashMode || strict || !nuxt.apps.default?.pages?.length) { return }
+      if (nuxt.options.ssr && !Object.values(nitro.options.routeRules || {}).some(rules => rules?.ssr === false)) { return }
+      if (await findRoutesModifyingRouterOptions(nuxt, builtInRouterOptions, ['hashMode', 'history', 'strict'])) { return }
+
+      const pageSources = collectRou3PageSources(nuxt.apps.default.pages, nuxt.options.srcDir)
+      if (!pageSources) { return }
+      // ambiguous patterns stay in the matcher, without sources, so no broader pattern matches their paths
+      const sources: Record<string, string[]> = {}
+      for (const [pattern, files] of pageSources) {
+        const key = normalizeRouteRulePath(pattern, !sensitive)
+        sources[key] = files && !(key in sources) ? files : []
+      }
+      ;(nitro.options as { _spaPageSources?: Record<string, string[]> })._spaPageSources = sources
     })
 
     if (nuxt.options.experimental.templateDiagnostics) {
