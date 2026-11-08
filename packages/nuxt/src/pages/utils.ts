@@ -13,7 +13,7 @@ import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4, vueRouterToRou3 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
-import { getLoader, parseModuleId } from '../core/utils/index.ts'
+import { decodeRoutePath, getLoader, parseModuleId } from '../core/utils/index.ts'
 import { linkToAlias, logger, offsetToPosition, toArray } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
@@ -1000,7 +1000,7 @@ export async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions?: s
  * The first non-optional `router.options` file that may define `key` (see
  * {@link routerOptionsMayDefine}), counting files that cannot be read.
  */
-export async function findRouterOptionsFileDefining (nuxt: Nuxt, key: 'routes' | 'sensitive', builtInRouterOptions?: string): Promise<string | undefined> {
+export async function findRouterOptionsFileDefining (nuxt: Nuxt, key: RouterOptionsKey, builtInRouterOptions?: string): Promise<string | undefined> {
   for (const file of await resolveRouterOptions(nuxt, builtInRouterOptions)) {
     if (file.optional) { continue }
     const code = await fs.promises.readFile(file.path, 'utf-8').catch(() => undefined)
@@ -1015,7 +1015,9 @@ export async function findRouterOptionsFileDefining (nuxt: Nuxt, key: 'routes' |
  * Returns `true` (conservatively) when the default export is not a plain object
  * literal, contains spreads or computed keys, or defines `key`.
  */
-export function routerOptionsMayDefine (code: string, filename: string, key: 'routes' | 'sensitive'): boolean {
+type RouterOptionsKey = 'routes' | 'sensitive' | 'hashMode' | 'history' | 'strict'
+
+export function routerOptionsMayDefine (code: string, filename: string, key: RouterOptionsKey): boolean {
   let mayDefine = true
   try {
     parseAndWalk(code, filename, (node) => {
@@ -1052,6 +1054,53 @@ function isDecodable (route: string): boolean {
   } catch {
     return false
   }
+}
+
+const ROU3_SYNTAX_RE = /[*(){}\\]/g
+
+/**
+ * Map the rou3 pattern of every page path to the source files (relative to `srcDir`)
+ * of the route records it renders, parents first. Patterns shared by unrelated pages
+ * map to `undefined`. Returns `undefined` when any path cannot be converted exactly
+ * (a trailing catch-all aside), or decodes to rou3 syntax, as rou3 could then pick a
+ * different page than vue-router.
+ */
+export function collectRou3PageSources (pages: NuxtPage[], srcDir: string): Map<string, string[] | undefined> | undefined {
+  const sources = new Map<string, string[] | undefined>()
+  const owners = new Map<string, NuxtPage>()
+  const collect = (pages: NuxtPage[], prefixes: string[], parentSources: string[], ancestors: NuxtPage[]): boolean => {
+    for (const page of pages) {
+      const pageSources = [...parentSources]
+      for (const file of [page.file, ...Object.values(page.components || {})]) {
+        if (file) { pageSources.push(relative(srcDir, file)) }
+      }
+      const routes = new Set<string>()
+      for (const route of [page.path, ...toArray(page.alias || [])]) {
+        if (route.startsWith('/')) {
+          routes.add(route)
+        } else {
+          for (const prefix of prefixes) {
+            routes.add(joinURL(prefix, route))
+          }
+        }
+      }
+      for (const route of routes) {
+        if (!isDecodable(route)) { return false }
+        const { patterns, issues } = vueRouterToRou3(route, { collapse: true })
+        if (!patterns.length || issues.some(issue => issue.type !== 'collapsed' || !route.endsWith(`:${issue.param}(.*)*`))) { return false }
+        for (const pattern of patterns) {
+          if (decodeRoutePath(pattern).match(ROU3_SYNTAX_RE)?.length !== pattern.match(ROU3_SYNTAX_RE)?.length) { return false }
+          const owner = owners.get(pattern)
+          const extendsExisting = !owner || (sources.get(pattern) && (owner === page || ancestors.includes(owner)))
+          sources.set(pattern, extendsExisting ? pageSources : undefined)
+          owners.set(pattern, page)
+        }
+      }
+      if (page.children?.length && !collect(page.children, [...routes], pageSources, [...ancestors, page])) { return false }
+    }
+    return true
+  }
+  return collect(pages, ['/'], [], []) ? sources : undefined
 }
 
 /**

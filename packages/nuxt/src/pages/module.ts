@@ -14,7 +14,7 @@ import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { addRoute, createRouter, findRoute } from 'rou3'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, findRouterOptionsFileDefining, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, resolveRouterOptions, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, collectRou3PageSources, createPagesContext, findRouterOptionsFileDefining, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, resolveRouterOptions, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
@@ -634,6 +634,26 @@ export default defineNuxtModule({
       // only let a request through to the app (which still 404s), never wrongly 404 it.
       ;(nitro.options as { _early404PagePatterns?: string[] })._early404PagePatterns
         = [...new Set(patterns.map(pattern => normalizeRouteRulePath(pattern, true)))]
+    })
+
+    // The page sources the renderer preloads for client-only (`ssr: false`) responses
+    nuxt.hook('nitro:build:before', async (nitro) => {
+      // lookups ignore trailing slashes, which `strict` routing does not
+      const { hashMode, sensitive, strict } = nuxt.options.router.options
+      if (nuxt.options.dev || hashMode || strict || !nuxt.apps.default?.pages?.length) { return }
+      for (const key of ['routes', 'hashMode', 'history', 'strict', 'sensitive'] as const) {
+        if (await findRouterOptionsFileDefining(nuxt, key, builtInRouterOptions)) { return }
+      }
+
+      const pageSources = collectRou3PageSources(nuxt.apps.default.pages, nuxt.options.srcDir)
+      if (!pageSources) { return }
+      // ambiguous patterns stay in the matcher, without sources, so no broader pattern matches their paths
+      const sources: Record<string, string[]> = {}
+      for (const [pattern, files] of pageSources) {
+        const key = normalizeRouteRulePath(pattern, !sensitive)
+        sources[key] = files && !(key in sources) ? files : []
+      }
+      ;(nitro.options as { _spaPageSources?: Record<string, string[]> })._spaPageSources = sources
     })
 
     if (nuxt.options.experimental.templateDiagnostics) {
