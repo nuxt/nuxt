@@ -553,7 +553,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       }
 
       function prefetchAllowed (): boolean {
-        return Boolean(!download.value && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && canPrefetch())
+        return Boolean((props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && canPrefetch())
       }
 
       function shouldPrefetch (mode: 'visibility' | 'interaction'): boolean {
@@ -581,7 +581,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       async function prefetch (nuxtApp = useNuxtApp()) {
         if (import.meta.server) { return }
 
-        if (prefetched.value) { return }
+        if (download.value || prefetched.value) { return }
 
         if (href.value === null) { return }
 
