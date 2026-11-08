@@ -633,6 +633,16 @@ async function initNuxt (nuxt: Nuxt) {
         manifest[src] ||= { file: '', src }
       }
     })
+
+    // Do not prefetch the default error page chunks
+    const errorPageSources = new Set(['error-404.vue', 'error-500.vue'].map(f => relative(nuxt.options.srcDir, resolve(nuxt.options.appDir, 'components', f))))
+    nuxt.hook('build:manifest', (manifest) => {
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.isEntry && chunk.dynamicImports) {
+          chunk.dynamicImports = chunk.dynamicImports.filter(i => !errorPageSources.has(i))
+        }
+      }
+    })
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
