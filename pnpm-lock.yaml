@@ -517,6 +517,9 @@ catalogs:
     '@unocss/reset':
       specifier: 66.12.0
       version: 66.12.0
+    '@valibot/to-json-schema':
+      specifier: 1.8.0
+      version: 1.8.0
     '@vitejs/plugin-vue-jsx':
       specifier: 5.1.6
       version: 5.1.6
@@ -538,6 +541,9 @@ catalogs:
     acorn:
       specifier: 8.19.0
       version: 8.19.0
+    arktype:
+      specifier: 2.2.9
+      version: 2.2.9
     beasties:
       specifier: 0.5.5
       version: 0.5.5
@@ -643,6 +649,9 @@ catalogs:
     unocss:
       specifier: 66.12.0
       version: 66.12.0
+    valibot:
+      specifier: 1.5.0
+      version: 1.5.0
     vitest:
       specifier: 5.1.0
       version: 5.1.0
@@ -655,6 +664,9 @@ catalogs:
     vue-tsc:
       specifier: 3.3.14
       version: 3.3.14
+    zod:
+      specifier: 4.6.6
+      version: 4.6.6
   nitro-runtime:
     '@jridgewell/trace-mapping':
       specifier: ^0.3.31
@@ -852,6 +864,9 @@ importers:
       '@unhead/vue':
         specifier: catalog:app-runtime
         version: 3.4.3(@oxc-project/types@0.155.0)(@rsbuild/core@2.3.0)(@rspack/core@2.3.0(@swc/helpers@0.5.23))(esbuild@0.28.2)(lightningcss@1.33.0)(oxc-parser@0.155.0)(rolldown@1.2.15)(rollup@4.67.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.44(typescript@6.0.3))(webpack@5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
+      '@valibot/to-json-schema':
+        specifier: catalog:dev
+        version: 1.8.0(valibot@1.5.0(typescript@6.0.3))
       '@vitest/coverage-v8':
         specifier: catalog:dev
         version: 5.1.0(vitest@5.1.0)
@@ -864,6 +879,9 @@ importers:
       acorn:
         specifier: catalog:dev
         version: 8.19.0
+      arktype:
+        specifier: catalog:dev
+        version: 2.2.9
       case-police:
         specifier: catalog:dev
         version: 2.2.1
@@ -978,6 +996,9 @@ importers:
       ufo:
         specifier: catalog:build
         version: 1.6.4
+      valibot:
+        specifier: catalog:dev
+        version: 1.5.0(typescript@6.0.3)
       verkit:
         specifier: catalog:build
         version: 0.5.0
@@ -1005,6 +1026,9 @@ importers:
       webpack:
         specifier: catalog:webpack
         version: 5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0)
+      zod:
+        specifier: catalog:dev
+        version: 4.6.6
 
   docs: {}
 
@@ -2744,6 +2768,12 @@ packages:
   '@arethetypeswrong/core@0.18.5':
     resolution: {integrity: sha512-9ytjzGwxjm9Uz7I9avfbt5vlQt6uk9uRRESzJjqrznl6WKvI6dwYTo+vJ3U02Wrq/mR3iql/PzhvHhKdJIAjDQ==}
     engines: {node: '>=20'}
+
+  '@ark/schema@0.56.8':
+    resolution: {integrity: sha512-R05TOe85oQBGFFw2zKMuZpqkXibLKuC/aJt6VwFn5Cjc4x3NkWfhvGRpRDycNkj3ddcHnOPtIsmjVowJO9Yxdw==}
+
+  '@ark/util@0.56.8':
+    resolution: {integrity: sha512-XLiQyGfpJcws1zCtp2Cva8s1oheCdFn1Rt6JSyC4NnkDrpwCJnlaiawuuOc1Z97vMH+jEzW5vyyf0xOju5wUQA==}
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -6486,6 +6516,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@valibot/to-json-schema@1.8.0':
+    resolution: {integrity: sha512-a0M+uwCuQZEPAo65NYkFSJ14O5c213KoSZmPdoCfuFvUhfULi4T2Z6Tpjv6lTVMW9RoLm74RpRAjNEa43KcN+g==}
+    peerDependencies:
+      valibot: ^1.5.0
+
   '@vercel/nft@1.11.0':
     resolution: {integrity: sha512-m1QFg+U+3yPOnP1xSYJ73UIRxLOXdts1JOhiOiyPYqEsALgrXFFINvgUaD6R6iNvaBFAjHllBCbkfx4FuOdpaA==}
     engines: {node: '>=20'}
@@ -6936,6 +6971,12 @@ packages:
 
   aria-query@5.1.3:
     resolution: {integrity: sha512-R5iJ5lkuHybztUfuOAznmboyjWq8O6sqNqtK7CLOqdydi54VNbORp49mb14KbWgG1QD3JFO9hJdZ+y4KutfdOQ==}
+
+  arkregex@0.0.14:
+    resolution: {integrity: sha512-G3I/uCtWE0IKQiPh0qqmmAFDdtjZKZQ5mNPR6gJBeAMZ7VqYCpoaDeXnLju2Zo6ywExtmxZJELeVFb0MPDjPyA==}
+
+  arktype@2.2.9:
+    resolution: {integrity: sha512-Cja0IMEn19rB35on9da1i1z6QMasuS7ULffXbetCry09jvCGYT8Bi1KgYiqri5FymF4nQAXkM90yksYkgSK2EA==}
 
   array-buffer-byte-length@1.0.2:
     resolution: {integrity: sha512-LHE+8BuR7RYGDKvnrmcuSq3tDcKv9OFEXQt/HpbZhY7V6h0zlUXutnAD82GiFx9rdieCMjkvtcsPqBwgUl1Iiw==}
@@ -12592,9 +12633,6 @@ packages:
     resolution: {integrity: sha512-dSvYKdvLsAHCDqPOhIwk/q5CvuWtTB3Dgpoe0uVEFjTzIOAmsQpprX25InCvrvJsirEbu1OHyy67n/kAj1Sw/w==}
     engines: {node: '>=18'}
 
-  zod@4.6.5:
-    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
-
   zod@4.6.6:
     resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
@@ -12640,6 +12678,12 @@ snapshots:
       semver: 7.8.5
       typescript: 5.6.1-rc
       validate-npm-package-name: 5.0.1
+
+  '@ark/schema@0.56.8':
+    dependencies:
+      '@ark/util': 0.56.8
+
+  '@ark/util@0.56.8': {}
 
   '@babel/code-frame@7.29.7':
     dependencies:
@@ -14205,7 +14249,7 @@ snapshots:
       validate-npm-package-name: 5.0.1
       yaml: 2.9.1
       yargs: 17.7.3
-      zod: 4.6.5
+      zod: 4.6.6
 
   '@netlify/database-dev@1.0.1':
     dependencies:
@@ -14494,7 +14538,7 @@ snapshots:
       unixify: 1.0.0
       urlpattern-polyfill: 8.0.2
       yargs: 17.7.3
-      zod: 4.6.5
+      zod: 4.6.6
     transitivePeerDependencies:
       - bare-abort-controller
       - bare-buffer
@@ -16379,6 +16423,10 @@ snapshots:
   '@unrs/resolver-binding-win32-x64-msvc@1.12.2':
     optional: true
 
+  '@valibot/to-json-schema@1.8.0(valibot@1.5.0(typescript@6.0.3))':
+    dependencies:
+      valibot: 1.5.0(typescript@6.0.3)
+
   '@vercel/nft@1.11.0(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
       '@mapbox/node-pre-gyp': 2.0.3(supports-color@10.2.2)
@@ -16900,6 +16948,16 @@ snapshots:
   aria-query@5.1.3:
     dependencies:
       deep-equal: 2.2.3
+
+  arkregex@0.0.14:
+    dependencies:
+      '@ark/util': 0.56.8
+
+  arktype@2.2.9:
+    dependencies:
+      '@ark/schema': 0.56.8
+      '@ark/util': 0.56.8
+      arkregex: 0.0.14
 
   array-buffer-byte-length@1.0.2:
     dependencies:
@@ -19447,7 +19505,7 @@ snapshots:
       tinyglobby: 0.2.17
       unbash: 6.0.1
       yaml: 2.9.1
-      zod: 4.6.5
+      zod: 4.6.6
 
   knitwork@1.3.0: {}
 
@@ -23618,8 +23676,6 @@ snapshots:
       compress-commons: 7.0.1
       normalize-path: 3.0.0
       readable-stream: 4.7.0
-
-  zod@4.6.5: {}
 
   zod@4.6.6: {}
 

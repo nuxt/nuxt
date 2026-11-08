@@ -37,6 +37,7 @@ import compilerModule from '../compiler/module.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 
 import { resolveDevAppSecret } from './app-secret.ts'
+import { assertRuntimeConfigWithoutSchemas, checkRuntimeConfig } from './runtime-config.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -850,6 +851,7 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore.add(resolveIgnorePatterns())
 
   await nuxt.callHook('modules:done')
+  assertRuntimeConfigWithoutSchemas(nuxt)
   nuxt._perf?.endPhase('modules')
   nuxt._perf?.collectModuleTimings(nuxt.options._installedModules)
 
@@ -858,6 +860,10 @@ async function initNuxt (nuxt: Nuxt) {
     .filter((value, index, array) => !array.includes(value, index + 1))
 
   warnUnresolvableGlobalCss(nuxt)
+
+  if (!nuxt.options._prepare) {
+    checkRuntimeConfig(nuxt)
+  }
 
   // Add <NuxtIsland>
   if (nuxt.options.experimental.componentIslands) {

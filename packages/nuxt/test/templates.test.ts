@@ -1,15 +1,17 @@
 import { existsSync } from 'node:fs'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { resolve } from 'pathe'
+import ts from 'typescript'
 
 // `templates.ts` re-imports `./app.ts`, which reads `defaultTemplates.*` at
 // module init. Pulling `app.ts` in first lets that cycle resolve the same way
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, publicPathTemplate, schemaTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
+import type { RuntimeConfigSchemaNode } from '@nuxt/schema/internal'
 
 // deliberately partial, as the objects that reach a template in a unit test, in
 // `@nuxt/test-utils` or in devtools are: `serverBuild` is only present when a caller
@@ -159,5 +161,19 @@ describe('dollarFetchTemplate', () => {
     expect(contents).not.toMatch(/createFetch/)
     expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from "\/[^"]*ofetch[^"]*"/)
     expect(contents).toMatch(/globalThis\.\$fetch = _\$fetch\.create\(\{\s*baseURL: baseURL\(\)/)
+  })
+})
+
+describe('schemaTemplate', () => {
+  it('emits valid declarations for a public runtime config schema that is a union', async () => {
+    const node: RuntimeConfigSchemaNode = { o: [{ p: { mode: { e: ['preview'] } } }, { p: { mode: { e: ['production'] } } }] }
+    const runtimeConfig = { apiKey: '', public: { mode: 'preview' } }
+    const contents = await schemaTemplate.getContents!({
+      nuxt: makeNuxt({ runtimeConfig, _runtimeConfigSchemas: [{ path: ['public'], node, required: false }] } as unknown as Partial<Nuxt['options']>),
+      app: makeApp(),
+      options: {},
+    })
+    expect(ts.transpileModule(contents, { reportDiagnostics: true }).diagnostics).toEqual([])
+    expect(contents).toContain('interface SharedRuntimeConfig {\n  apiKey: string,\n}')
   })
 })

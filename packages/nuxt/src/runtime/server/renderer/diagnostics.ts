@@ -52,5 +52,14 @@ export const rendererDiagnostics = /* #__PURE__ */ defineDiagnostics({
       why: (p: { path: string, what: string, cause: string }) => `A page error interrupted the stream for \`${p.path}\`, and ${p.what} also failed while rendering the error response.\n  ${p.cause}`,
       fix: 'Fix the page error first. If it keeps happening, report the failure below - the browser will show a blank or partial page instead of the error page.',
     },
+    NUXT_E8014: {
+      why: (p: { issues: string }) => `The runtime config does not match its schema:\n  - ${p.issues}`,
+      fix: 'Set the listed environment variables to valid values, or update the schema or default value in `runtimeConfig` in `nuxt.config`.',
+    },
+    NUXT_E8015: {
+      why: (p: { issues: string }) => `Required runtime config is missing while prerendering:\n  - ${p.issues}`,
+      fix: 'Set the listed environment variables when prerendering if prerendered pages depend on them. The server will not start without them.',
+      docs: false,
+    },
   },
 })

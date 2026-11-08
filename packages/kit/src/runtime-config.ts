@@ -2,33 +2,90 @@ import process from 'node:process'
 import destr from 'destr'
 import { snakeCase } from 'scule'
 import { klona } from 'klona'
-import type { NitroConfig } from '@nuxt/schema'
+import type { NitroConfig, Nuxt } from '@nuxt/schema'
+import type { RuntimeConfigSchemaEntry, RuntimeConfigSchemaNode } from '@nuxt/schema/internal'
 
 import { defu } from 'defu'
+import { applyRuntimeConfigSchema } from '../../nuxt/src/runtime/server/runtime-config/schema.ts'
+import type { RuntimeConfigIssue } from '../../nuxt/src/runtime/server/runtime-config/schema.ts'
 import { useNuxt } from './context.ts'
+import { extractModuleRuntimeConfigSchemas, findRuntimeConfigSchema, getRuntimeConfigSchema, restoreRuntimeConfigSchemaNulls, stripRuntimeConfigSchemas } from './internal/runtime-config.ts'
 import { tryUseNitro } from './nitro.ts'
 
 /**
  * Access 'resolved' Nuxt runtime configuration, with values updated from environment.
  *
- * This mirrors the runtime behavior of Nitro.
+ * Environment variables are coerced to the type of the value they override, or of the schema
+ * declared for it. A value that does not match keeps its default. Before
+ * `compatibilityVersion: 5`, values without a schema are cast with `destr`, as at runtime.
  */
 export function useRuntimeConfig (): Record<string, any> {
-  const nuxt = useNuxt()
-  return applyEnv(klona((nuxt.options.nitro as NitroConfig).runtimeConfig!), {
+  return resolveRuntimeConfig(useNuxt()).config
+}
+
+/**
+ * Apply the current environment to the runtime config, returning it alongside the values
+ * that do not match their schema.
+ *
+ * @internal
+ */
+export function resolveRuntimeConfig (nuxt: Nuxt): { config: Record<string, any>, issues: RuntimeConfigIssue[] } {
+  const runtimeConfig = (nuxt.options.nitro as NitroConfig).runtimeConfig as Record<string, unknown>
+  const config = klona(runtimeConfig)
+  const options = {
+    env: process.env,
     prefix: 'NITRO_',
     altPrefix: 'NUXT_',
     envExpansion: nuxt.options.nitro.experimental?.envExpansion ?? !!process.env.NITRO_ENV_EXPANSION,
-  })
+  }
+  if (!supportsRuntimeConfigSchemas(nuxt)) {
+    return { config: applyEnv(config, options), issues: [] }
+  }
+  const infer = (nuxt.options.future?.compatibilityVersion ?? 4) >= 5
+  const schema = getRuntimeConfigSchema(runtimeConfig, nuxt.options._runtimeConfigSchemas, { infer })
+  if (!infer) {
+    applyEnv(config, options, schema)
+  }
+  return { config, issues: applyRuntimeConfigSchema(config, schema, options) }
 }
 
 /**
  * Update Nuxt runtime configuration.
+ *
+ * A value can be a [Standard Schema](https://standardschema.dev) that implements Standard JSON
+ * Schema, which sets the type of the value and its default. A value already in the runtime
+ * config, such as one set in `nuxt.config`, becomes the default of the schema, and a schema
+ * declared in `nuxt.config` at the same path takes precedence. On versions of Nuxt without
+ * support for runtime config schemas, a schema is replaced by its default value and is not
+ * validated.
+ *
+ * @example
+ * ```ts
+ * updateRuntimeConfig({
+ *   myModule: z.object({ apiKey: z.string(), retries: z.number().default(3) }),
+ * })
+ * ```
  */
 export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): void | Promise<void> {
   const nuxt = useNuxt()
   const nitroConfig: NitroConfig = nuxt.options.nitro
-  Object.assign(nitroConfig.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nitroConfig.runtimeConfig))
+  let entries: RuntimeConfigSchemaEntry[] = []
+  if (findRuntimeConfigSchema(runtimeConfig)) {
+    const current = nitroConfig.runtimeConfig as Record<string, unknown>
+    if (supportsRuntimeConfigSchemas(nuxt)) {
+      const previous = new Set(nuxt.options._runtimeConfigSchemas)
+      runtimeConfig = extractModuleRuntimeConfigSchemas(runtimeConfig, current, nuxt.options._runtimeConfigSchemas)
+      entries = nuxt.options._runtimeConfigSchemas.filter(entry => !previous.has(entry))
+    } else {
+      runtimeConfig = stripRuntimeConfigSchemas(runtimeConfig, current)
+    }
+  }
+  const merge = (target: Record<string, unknown>) => {
+    const merged = defu(runtimeConfig, target)
+    restoreRuntimeConfigSchemaNulls(merged, runtimeConfig, entries)
+    return merged
+  }
+  Object.assign(nitroConfig.runtimeConfig as Record<string, unknown>, merge(nitroConfig.runtimeConfig as Record<string, unknown>))
 
   const nitro = tryUseNitro()
   if (!nitro) {
@@ -36,10 +93,14 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): vo
   }
   return nitro.updateConfig({
     // nitro coerces `undefined` to `''`, which would shadow derived keys such as `nitro.envExpansion`
-    runtimeConfig: withoutUndefined(defu(runtimeConfig, nitro.options.runtimeConfig)) as any,
+    runtimeConfig: withoutUndefined(merge(nitro.options.runtimeConfig as Record<string, unknown>)) as any,
     // TODO: drop once `nitro.updateConfig({ runtimeConfig })` stops resetting `runtimeConfig.nitro.routeRules` from `config.routeRules`
     routeRules: (nitro.options as Record<string, any>).routeRules,
   })
+}
+
+function supportsRuntimeConfigSchemas (nuxt: Nuxt): nuxt is Nuxt & { options: { _runtimeConfigSchemas: NonNullable<Nuxt['options']['_runtimeConfigSchemas']> } } {
+  return Array.isArray(nuxt.options._runtimeConfigSchemas)
 }
 
 function withoutUndefined<T> (value: T): T {
@@ -55,69 +116,46 @@ function withoutUndefined<T> (value: T): T {
   return result as T
 }
 
-/**
- * https://github.com/nitrojs/nitro/blob/v2/src/runtime/internal/utils.env.ts.
-*
- * These utils will be replaced by util exposed from nitropack. See https://github.com/nitrojs/nitro/pull/2404
- * for more context and future plans.)
- *
- * @internal
- */
-
-type EnvOptions = {
-  prefix?: string
-  altPrefix?: string
+interface EnvOptions {
+  prefix: string
+  altPrefix: string
   envExpansion?: boolean
 }
 
-function getEnv (key: string, opts: EnvOptions, env = process.env) {
-  const envKey = snakeCase(key).toUpperCase()
-  return destr(
-    env[opts.prefix + envKey] ?? env[opts.altPrefix + envKey],
-  )
-}
-
-function _isObject (input: unknown) {
-  return typeof input === 'object' && !Array.isArray(input)
-}
-
-function applyEnv (
-  obj: Record<string, any>,
-  opts: EnvOptions,
-  parentKey = '',
-) {
+/**
+ * Apply environment variables as Nitro does without runtime config schemas, casting each value
+ * with `destr`. Values that `schema` describes are left to the schema.
+ */
+function applyEnv (obj: Record<string, any>, opts: EnvOptions, schema?: RuntimeConfigSchemaNode, parentKey = '') {
   for (const key in obj) {
+    const node = typeof schema === 'object' && 'p' in schema ? schema.p[key] : undefined
+    if (node && !(typeof node === 'object' && 'p' in node)) {
+      continue
+    }
     const subKey = parentKey ? `${parentKey}_${key}` : key
-    const envValue = getEnv(subKey, opts)
-    if (_isObject(obj[key])) {
-      // Same as before
-      if (_isObject(envValue)) {
-        obj[key] = { ...(obj[key] as any), ...(envValue as any) }
-        applyEnv(obj[key], opts, subKey)
+    const envKey = snakeCase(subKey).toUpperCase()
+    const envValue = destr(process.env[opts.prefix + envKey] ?? process.env[opts.altPrefix + envKey])
+    if (isObject(obj[key])) {
+      if (isObject(envValue)) {
+        obj[key] = { ...obj[key], ...envValue }
+        applyEnv(obj[key], opts, node, subKey)
       } else if (envValue === undefined) {
-        // If envValue is undefined
-        // Then proceed to nested properties
-        applyEnv(obj[key], opts, subKey)
+        applyEnv(obj[key], opts, node, subKey)
       } else {
-        // If envValue is a primitive other than undefined
-        // Then set objValue and ignore the nested properties
         obj[key] = envValue ?? obj[key]
       }
     } else {
       obj[key] = envValue ?? obj[key]
     }
-    // Experimental env expansion
     if (opts.envExpansion && typeof obj[key] === 'string') {
-      obj[key] = _expandFromEnv(obj[key])
+      obj[key] = obj[key].replace(ENV_EXPANSION_RE, (match: string, name: string) => process.env[name] || match)
     }
   }
   return obj
 }
 
-const envExpandRx = /\{\{([^{}]*)\}\}/g
+const ENV_EXPANSION_RE = /\{\{([^{}]*)\}\}/g
 
-function _expandFromEnv (value: string, env: Record<string, any> = process.env) {
-  return value.replace(envExpandRx, (match, key) => {
-    return env[key] || match
-  })
+function isObject (value: unknown): value is Record<string, any> {
+  return typeof value === 'object' && !Array.isArray(value)
 }

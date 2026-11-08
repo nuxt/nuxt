@@ -38,6 +38,7 @@ import { encodeRoutePath, foldRouteCase } from '../../nuxt/src/core/utils/index.
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
 import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
+import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
@@ -110,6 +111,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Resolve aliases in user-provided input - so `~~/server/test` will work
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
+  nuxt.options.nitro.plugins.unshift(resolve(distDir, 'runtime/plugins/runtime-config'))
 
   for (const asset of [...nuxt.options.nitro.publicAssets || [], ...nuxt.options.nitro.serverAssets || []]) {
     if (asset?.dir) {
@@ -707,6 +709,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
     nitroConfig.rollupConfig!.plugins!.push(plugin)
   }
+
+  nitroConfig.rollupConfig!.plugins!.push(runtimeConfigPlugin(resolve(distDir, 'runtime/runtime-config'), { strict: !nuxt.options.dev }))
+  nitroConfig.virtual![RUNTIME_CONFIG_SCHEMA_ID] = () => getRuntimeConfigSchemaModule(nuxt, nitro)
 
   if (!nuxt.options.router.options.sensitive) {
     nitroConfig.rollupConfig!.plugins!.push(routeRulesCaseFoldPlugin(() => nitro))

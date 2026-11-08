@@ -47,4 +47,7 @@ export { addClientBuildState, restoreClientBuildState, saveClientBuildState } fr
 export type { ClientBuildState } from './client-build-state.ts'
 
 export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
+
+export { findRuntimeConfigSchema, getRuntimeConfigSchema, runtimeConfigSchemaToType } from './runtime-config.ts'
+export { resolveRuntimeConfig } from '../runtime-config.ts'
 export type { NuxtServerRuntime, NuxtServerRuntimeModule, RendererConfigName, ServerRuntimeOptions } from './renderer.ts'
