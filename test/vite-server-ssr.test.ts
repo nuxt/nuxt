@@ -9,6 +9,7 @@ import { isWindows } from 'std-env'
 import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { parseData } from './utils'
 
 const rootDir = fileURLToPath(new URL('./fixtures/vite-server-ssr', import.meta.url))
 
@@ -94,7 +95,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
   it('resolves data on the server and serialises it into the payload', () => {
     expect(html).toContain('<p id="async-data">from useAsyncData</p>')
-    expect(html).toContain('"rendered":5},"from useAsyncData"')
+    expect(parseData(html).script.data.greeting.rendered).toBe('from useAsyncData')
     expect(html).toContain('data-ssr="true"')
   })
 
