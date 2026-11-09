@@ -336,6 +336,10 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
         await enqueueChunk(controller, encoder.encode(closingHtml))
         controller.close()
 
+        if (import.meta.dev && !ssrError && !ssrContext.payload?.error) {
+          runtime.onRenderSuccess?.(event)
+        }
+
         if (import.meta.dev && NUXT_NO_SCRIPTS_PROD && !NO_SCRIPTS && !ssrError) {
           warnNoScriptsClientReliance(ssrContext, event.url.pathname)
         }

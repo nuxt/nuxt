@@ -82,6 +82,16 @@ describe.skipIf(!runs)('dev ssr error page', () => {
     await new Promise(resolve => setTimeout(resolve, 500))
     expect((await channelState()).current?.id).toBe(report.id)
   })
+
+  it('retires the error once its page streams without one', async () => {
+    const { report } = await renderErrorPage('/streamed')
+    expect((await channelState('/streamed')).current?.id).toBe(report.id)
+
+    const fixed = await fetch('/streamed', { headers: { 'accept': 'text/html', 'x-boom': 'fixed' } })
+    expect(fixed.headers.get('transfer-encoding')).toBe('chunked')
+    expect(await fixed.text()).toContain('streamed without error')
+    await expect.poll(async () => (await channelState('/streamed')).current?.id, { timeout: 5000 }).not.toBe(report.id)
+  })
 })
 
 /** Wait for the dev server to flush a report for `path`, and return everything it logged. */
