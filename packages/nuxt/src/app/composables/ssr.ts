@@ -93,7 +93,7 @@ function createRequestFetch (event: NuxtRequestEvent): TypedFetch {
         }
         options = { ...options, headers }
       }
-      return (base.native as unknown as InProcessFetch)(request, options, event.context)
+      return (base.native as unknown as InProcessFetch)(request, options, { ...event.context, nuxt: undefined })
     },
   }) as unknown as TypedFetch
 }
