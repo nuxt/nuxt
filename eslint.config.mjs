@@ -221,12 +221,7 @@ export default createConfigForNuxt({
         'import-x': importX,
       },
       rules: {
-        'import/extensions': ['error', 'always', {
-          ignorePackages: true,
-          js: 'always',
-          ts: 'always',
-          vue: 'always',
-        }],
+        'import/extensions': ['error', 'always', { ignorePackages: true }],
       },
     },
     {
