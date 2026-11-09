@@ -156,6 +156,14 @@ describe('`$fetch` on the vite server', () => {
       .rejects.toThrow('streamed body')
   })
 
+  it('sends a lowercase POST redirected by a 302 as a GET', async () => {
+    const handler = vi.fn((request: Request) => Promise.resolve(request.url.endsWith('/old')
+      ? new Response(null, { status: 302, headers: { location: '/new' } })
+      : new Response(request.method)))
+
+    expect(await (await createAppFetch(() => Promise.resolve(handler))('/old', { method: 'post', body: 'a=1' })).text()).toBe('GET')
+  })
+
   it('sends any other request to the platform', async () => {
     const platform = vi.fn(() => Promise.resolve(new Response('platform')))
     vi.stubGlobal('fetch', platform)
