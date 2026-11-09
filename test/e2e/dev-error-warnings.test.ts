@@ -14,7 +14,7 @@ test.describe.configure({ mode: 'serial' })
 
 test.afterEach(() => fixture.restore())
 
-const badgeOf = (page: Page) => page.locator('nuxt-error-overlay-badge').getByRole('button')
+const badgeOf = (page: Page) => page.locator('nuxt-error-overlay-badge .mb-badge')
 
 /** The line the channel's open warning points at, read without touching the page's badge. */
 function warningLine (page: Page): Promise<number | undefined> {

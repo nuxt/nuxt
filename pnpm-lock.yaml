@@ -675,7 +675,7 @@ catalogs:
       specifier: ^1.0.2
       version: 1.0.2
     my-bad:
-      specifier: ^1.1.1
+      specifier: ^1.2.0
       version: 1.2.0
     nitro:
       specifier: ^3.0.261103-rc
