@@ -231,6 +231,7 @@ catalogs:
     '@eslint/markdown': 8.0.3
     '@flakiness/playwright': 2.0.3
     '@flakiness/vitest': 1.12.0
+    '@nuxt/devtools': 4.1.0
     '@nuxt/eslint-config': 1.17.0
     '@nuxt/scripts': 1.3.12
     '@nuxt/test-utils': 4.4.0

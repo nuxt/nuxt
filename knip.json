@@ -17,6 +17,7 @@
     "nonexistent-package",
     "ofetch",
     "verkit",
+    "@nuxt/devtools",
     "@nuxt/webpack-builder",
     "@nuxt/rsbuild-builder",
     "@nuxt/rspack-builder",
