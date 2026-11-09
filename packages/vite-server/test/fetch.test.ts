@@ -129,7 +129,7 @@ describe('`$fetch` on the vite server', () => {
   })
 
   it('does not send the credentials of a request to a redirect on another origin', async () => {
-    const platform = vi.fn(() => Promise.resolve(new Response('platform')))
+    const platform = vi.fn((_input: RequestInfo | URL, _init?: RequestInit) => Promise.resolve(new Response('platform')))
     vi.stubGlobal('fetch', platform)
     const handler = vi.fn(() => Promise.resolve(new Response(null, { status: 302, headers: { location: 'https://example.com/x' } })))
 
