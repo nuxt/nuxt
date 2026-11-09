@@ -83,6 +83,7 @@ export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: Mat
         return devErrors.fetchErrorChannel(request)
       }
     }
+    request.signal.throwIfAborted()
     const event = createRequestEvent(request, context)
     const rules = matchRouteRules(event.url.pathname, request.method)
     if (rules.redirect) {
@@ -96,6 +97,7 @@ export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: Mat
       }
       return response
     } catch (error) {
+      request.signal.throwIfAborted()
       const response = await renderError(renderer, request, error, event, context)
       applyHeaders(response, rules.headers)
       if (import.meta.prerender) {

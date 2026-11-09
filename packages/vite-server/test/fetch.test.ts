@@ -164,6 +164,30 @@ describe('`$fetch` on the vite server', () => {
     expect(await (await createAppFetch(() => Promise.resolve(handler))('/old', { method: 'post', body: 'a=1' })).text()).toBe('GET')
   })
 
+  it('does not render a request whose signal is already aborted', async () => {
+    const renderer: NuxtRenderer = { fetch: vi.fn(() => Promise.resolve(new Response('rendered'))) }
+    const controller = new AbortController()
+    controller.abort(new Error('timeout'))
+
+    await expect(createFetchHandler(renderer, () => ({}))(new Request('http://localhost/about', { signal: controller.signal })))
+      .rejects.toThrow('timeout')
+    expect(renderer.fetch).not.toHaveBeenCalled()
+  })
+
+  it('does not render an error page for a request aborted while rendering', async () => {
+    const controller = new AbortController()
+    const renderer: NuxtRenderer = {
+      fetch: vi.fn(() => {
+        controller.abort(new Error('timeout'))
+        return Promise.reject(new Error('boom'))
+      }),
+    }
+
+    await expect(createFetchHandler(renderer, () => ({}))(new Request('http://localhost/about', { signal: controller.signal })))
+      .rejects.toThrow('timeout')
+    expect(renderer.fetch).toHaveBeenCalledTimes(1)
+  })
+
   it('sends any other request to the platform', async () => {
     const platform = vi.fn(() => Promise.resolve(new Response('platform')))
     vi.stubGlobal('fetch', platform)
