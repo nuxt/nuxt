@@ -115,6 +115,16 @@ describe('useRuntimeConfig', () => {
     expect(useRuntimeConfig()).toEqual({ name: 4848, port: 'abc', session: { secure: false } })
   })
 
+  it('should keep an object value when its env var is `null`', () => {
+    const runtimeConfig = { app: { name: 'nuxt' } }
+    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: {} } } } as any)
+    mockKlona.mockReturnValue(structuredClone(runtimeConfig))
+    vi.stubEnv('NUXT_APP', 'null')
+    vi.stubEnv('NUXT_APP_NAME', 'override')
+
+    expect(useRuntimeConfig()).toEqual({ app: { name: 'override' } })
+  })
+
   it('should only coerce values with a schema before `compatibilityVersion: 5`', () => {
     const runtimeConfig = { name: '', port: 3000, session: { secure: true, maxAge: 0 } }
     vi.spyOn(context, 'useNuxt').mockReturnValue({
