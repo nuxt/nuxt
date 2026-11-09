@@ -77,7 +77,8 @@ const UNFORWARDED_HEADERS = new Set([
 function forwardRequestHeaders (event: NuxtRequestEvent, request: unknown, options?: RequestInit): RequestInit {
   const isLocal = typeof request === 'string' && request[0] === '/'
   const headers = new Headers(options?.headers)
-  for (const [name, value] of event.headers) {
+  // a web-standard request event (`@nuxt/vite-server`) carries its headers on `req`
+  for (const [name, value] of event.headers || (event as unknown as { req: Request }).req.headers) {
     if ((!UNFORWARDED_HEADERS.has(name) || (name === 'host' && isLocal)) && !headers.has(name)) {
       headers.set(name, value)
     }
@@ -94,12 +95,19 @@ export function fetchWithRequestHeaders (event: NuxtRequestEvent, request: strin
   return ($fetch as unknown as OFetch).native(request, forwardRequestHeaders(event, request))
 }
 
+// the builder's `fetch` takes the request context as an internal third argument
+type InProcessFetch = (request: unknown, options: unknown, context: Record<string, unknown>) => Promise<Response>
+
 const requestFetchers = new WeakMap<NuxtRequestEvent, TypedFetch>()
 
 function createRequestFetch (event: NuxtRequestEvent): TypedFetch {
   const base = $fetch as unknown as OFetch
   return base.create({}, {
-    fetch: (request, options) => base.native(request, forwardRequestHeaders(event, request, options)),
+    fetch: (request, options) => {
+      const init = forwardRequestHeaders(event, request, options)
+      const context = (init as { context?: Record<string, unknown> }).context
+      return (base.native as unknown as InProcessFetch)(request, init, { ...context, nuxt: undefined })
+    },
   }) as unknown as TypedFetch
 }
 
@@ -109,7 +117,7 @@ export function useRequestFetch (): TypedFetch {
     return $fetch
   }
   const event = useRequestEvent()
-  if (!event?.$fetch) {
+  if (!event) {
     return $fetch
   }
   let fetcher = requestFetchers.get(event)

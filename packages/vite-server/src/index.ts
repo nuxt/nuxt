@@ -7,6 +7,7 @@ import { resolveModulePath } from 'exsolve'
 import { joinURL } from 'ufo'
 import type { Nuxt } from '@nuxt/schema'
 
+import { distDir } from './dirs.ts'
 import { setupSSR } from './ssr.ts'
 import { setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
@@ -59,6 +60,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     buildsSeparately: false,
     // `nitropack/runtime` does not resolve in a build without nitro
     runtime: {
+      fetch: ssr ? resolve(nuxt.options.buildDir, 'vite-server/fetch.mjs') : resolve(distDir, 'runtime/fetch'),
       runtimeConfig: RUNTIME_CONFIG_ID,
       server: ssr ? resolve(nuxt.options.buildDir, 'vite-server/server.mjs') : undefined,
       // the emitted entry, which only exists once a build has run

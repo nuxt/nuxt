@@ -36,6 +36,10 @@ describe.skipIf(!runsDev)('pure vite dev server with ssr', () => {
     expect(await $fetch<string>('/static.txt')).toContain('static-asset')
   })
 
+  it('fetches a path of the app in-process while rendering', async () => {
+    expect(await $fetch<string>('/fetched')).toContain('<p id="fetched">fetched the about page</p>')
+  })
+
   it('renders the error page for a route no page matches', async () => {
     const response = await fetch('/not-a-page', { headers: { accept: 'text/html' } })
 
@@ -94,6 +98,14 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
   it('renders each route it serves', async () => {
     expect(await (await render('/about')).text()).toContain('<p id="about"> about page </p>')
+  })
+
+  it('fetches a path of the app in-process while rendering', async () => {
+    expect(await (await render('/fetched')).text()).toContain('<p id="fetched">fetched the about page</p>')
+  })
+
+  it('seeds an in-process fetch with the context of the request that made it', async () => {
+    expect(await (await render('/fetched-context')).text()).toContain('<p id="fetched-context">seeded with daniel and isolated</p>')
   })
 
   it('renders asset URLs without process-wide helpers', async () => {
