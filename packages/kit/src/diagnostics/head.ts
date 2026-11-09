@@ -36,5 +36,10 @@ export const headDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Check the `from` path in `imports.presets` (or the module that registered this import). Auto-imports from an unresolvable module are silently skipped and can surface as unrelated type errors elsewhere.',
       docs: false,
     },
+    NUXT_B6006: {
+      why: (p: { file: string, count: number, names: string }) => `\`${p.file}\` uses ${p.names} without importing ${p.count === 1 ? 'it' : 'them'}, and ${p.count === 1 ? 'it is' : 'they are'} no longer auto-imported.`,
+      fix: (p: { imports: string }) => `Call \`useHead\` or \`useSeoMeta\` inside \`if (import.meta.server)\` instead, or add ${p.imports}.`,
+      docs: false,
+    },
   },
 })

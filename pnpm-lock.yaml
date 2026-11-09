@@ -1613,6 +1613,9 @@ importers:
         specifier: catalog:build
         version: 4.3.0
     devDependencies:
+      '@rsbuild/core':
+        specifier: catalog:webpack
+        version: 2.3.0
       '@types/pug':
         specifier: catalog:dev
         version: 2.0.10
