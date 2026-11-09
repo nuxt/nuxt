@@ -131,6 +131,16 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
     ].join('\n'),
   })
 
+  addTemplate({
+    filename: 'vite-server/fetch.mjs',
+    write: true,
+    getContents: () => [
+      `import { createAppFetch } from ${JSON.stringify(resolve(distDir, 'runtime/fetch'))}`,
+      '',
+      `export const fetch = createAppFetch(() => import(${JSON.stringify(handler)}).then(m => m.fetch))`,
+    ].join('\n'),
+  })
+
   const { dst: entry } = addTemplate({
     filename: 'vite-server/server-entry.mjs',
     write: true,

@@ -73,6 +73,9 @@ const UNFORWARDED_HEADERS = new Set([
   'upgrade',
 ])
 
+// the builder's `fetch` takes the request context as an internal third argument
+type InProcessFetch = (request: unknown, options: unknown, context: Record<string, unknown>) => Promise<Response>
+
 const requestFetchers = new WeakMap<NuxtRequestEvent, TypedFetch>()
 
 function createRequestFetch (event: NuxtRequestEvent): TypedFetch {
@@ -90,7 +93,7 @@ function createRequestFetch (event: NuxtRequestEvent): TypedFetch {
         }
         options = { ...options, headers }
       }
-      return base.native(request, options)
+      return (base.native as unknown as InProcessFetch)(request, options, { ...event.context, nuxt: undefined })
     },
   }) as unknown as TypedFetch
 }
