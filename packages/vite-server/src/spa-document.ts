@@ -5,10 +5,9 @@ import type { Nuxt } from '@nuxt/schema'
 import type { Plugin, ViteDevServer } from 'vite'
 
 import { distDir } from './dirs.ts'
+import { ServerRuntimeModulesPlugin } from './ssr.ts'
 
 type DocumentRenderer = (html: string, url: string) => Promise<string>
-
-const RENDERER_PLUGINS_SPECIFIER = 'nuxt/internal/renderer-plugins'
 
 /** Whether the static SPA document is rendered through the renderer plugins. */
 export function rendersSpaDocument (nuxt: Nuxt): boolean {
@@ -25,8 +24,6 @@ export function SpaDocumentPlugins (nuxt: Nuxt): Plugin[] {
   const entry = resolve(distDir, 'runtime/spa-document')
   const outDir = resolve(nuxt.options.buildDir, 'vite-server/spa-document')
   const serverRuntime = getServerRuntime({ phase: nuxt.options.dev ? 'server' : 'prerender' }, nuxt)
-  const rendererPlugins = serverRuntime.modules[RENDERER_PLUGINS_SPECIFIER]!
-  const prefix = '\0nuxt-server-runtime:'
 
   let server: ViteDevServer | undefined
   let render: Promise<DocumentRenderer> | undefined
@@ -58,22 +55,7 @@ export function SpaDocumentPlugins (nuxt: Nuxt): Plugin[] {
         config.resolve.external = []
       },
     },
-    {
-      name: 'nuxt:vite-server:renderer-plugins',
-      applyToEnvironment: environment => environment.name === 'ssr',
-      resolveId: {
-        order: 'pre',
-        handler: id => id === RENDERER_PLUGINS_SPECIFIER ? prefix + id : undefined,
-      },
-      load: {
-        order: 'pre',
-        async handler (id) {
-          if (id === prefix + RENDERER_PLUGINS_SPECIFIER) {
-            return { code: await rendererPlugins.code(), map: null }
-          }
-        },
-      },
-    },
+    ServerRuntimeModulesPlugin(serverRuntime),
     {
       name: 'nuxt:vite-server:spa-document',
       applyToEnvironment: environment => environment.name === 'client',

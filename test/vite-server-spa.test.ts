@@ -37,6 +37,7 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server', () =>
   it('renders the shell through renderer plugins for each navigation', async () => {
     const html = await $fetch<string>('/about', { headers: { accept: 'text/html' } })
     expect(html.match(/<meta name="renderer-plugin"[^>]*>/g)).toEqual(['<meta name="renderer-plugin" content="request /about">'])
+    expect(html).toContain('<meta name="renderer-plugin-config" content="hello from runtime config">')
     expect(html).toMatch(/<body[^>]* data-renderer-plugin>/)
   })
 
@@ -80,6 +81,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
 
   it('renders the document through renderer plugins, as a prerendered route', () => {
     expect(html.match(/<meta name="renderer-plugin"[^>]*>/g)).toEqual(['<meta name="renderer-plugin" content="prerender /">'])
+    expect(html).toContain('<meta name="renderer-plugin-config" content="hello from runtime config">')
     expect(html).toMatch(/<body[^>]* data-renderer-plugin>/)
   })
 
