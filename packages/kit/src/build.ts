@@ -1,4 +1,4 @@
-import type { Nuxt, NuxtBuildOutputs, ViteConfig, VitePlugin, WebpackConfig, WebpackPluginInstance } from '@nuxt/schema'
+import type { Nuxt, NuxtBuildOutputs, RsbuildConfig, RsbuildPlugin, ViteConfig, VitePlugin, WebpackConfig, WebpackPluginInstance } from '@nuxt/schema'
 import { useNuxt } from './context.ts'
 import { toArray } from './utils.ts'
 import { resolveAlias } from './resolve.ts'
@@ -41,6 +41,9 @@ export interface ExtendConfigOptions {
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ExtendRsbuildConfigOptions extends Omit<ExtendConfigOptions, 'server' | 'client' | 'prepend'> {}
+
 export interface ExtendViteConfigOptions extends Omit<ExtendConfigOptions, 'server' | 'client'> {
   /**
    * Extend server Vite configuration
@@ -72,7 +75,8 @@ const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((
 
   nuxt.hook(`${builder}:config`, async (configs) => {
     if (options.server !== false) {
-      const config = configs.find(i => i.name === 'server')
+      // the server environment of the Rsbuild builder is named `ssr`
+      const config = configs.find(i => i.name === 'server' || (builder === 'rspack' && i.name === 'ssr'))
       if (config) {
         await fn(config)
       }
@@ -102,6 +106,25 @@ export const extendWebpackConfig: ExtendWebpacklikeConfig = extendWebpackCompati
  * when applying to both client and server builds.
  */
 export const extendRspackConfig: ExtendWebpacklikeConfig = extendWebpackCompatibleConfig('rspack')
+
+/**
+ * Extend Rsbuild config
+ *
+ * The configuration contains a `client` and an `ssr` environment, which can be
+ * configured individually with `config.environments`.
+ */
+export function extendRsbuildConfig (fn: ((config: RsbuildConfig) => Thenable<void>), options: ExtendRsbuildConfigOptions = {}): void {
+  const nuxt = useNuxt()
+
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
+    return
+  }
+
+  nuxt.hook('rsbuild:config', config => fn(config))
+}
 
 /**
  * Extend Vite config
@@ -154,7 +177,41 @@ export function addRspackPlugin (pluginOrGetter: Arrayable<RspackCompatiblePlugi
 }
 
 /**
+ * Append Rsbuild plugin to the config.
+ *
+ * The plugin is registered for both the client and server environments,
+ * unless `client: false` or `server: false` is passed.
+ */
+export function addRsbuildPlugin (pluginOrGetter: Arrayable<RsbuildPlugin> | (() => Thenable<Arrayable<RsbuildPlugin>>), options: ExtendConfigOptions = {}): void {
+  if (options.server === false && options.client === false) {
+    return
+  }
+
+  extendRsbuildConfig(async (config) => {
+    const method: 'push' | 'unshift' = options.prepend ? 'unshift' : 'push'
+    const plugins = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
+
+    if (options.server !== false && options.client !== false) {
+      config.plugins ||= []
+      config.plugins[method](...plugins)
+      return
+    }
+
+    const environmentConfig = config.environments?.[options.server === false ? 'client' : 'ssr']
+    if (!environmentConfig) {
+      return
+    }
+    environmentConfig.plugins ||= []
+    environmentConfig.plugins[method](...plugins)
+  }, options)
+}
+
+/**
  * Append Vite plugin to the config.
+ *
+ * The plugin applies to the app's environments (`client` and `ssr`), not to the `nitro`
+ * environment. For server code, add the plugin to `nuxt.options.vite.plugins` with
+ * `applyToEnvironment: environment => environment.name === 'nitro'`.
  */
 export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Thenable<Arrayable<VitePlugin>>), options: ExtendConfigOptions = {}): void {
   const nuxt = useNuxt()
@@ -245,6 +302,7 @@ function scopeToEnvironments (plugin: VitePlugin, defaultEnforce: VitePlugin['en
 interface AddBuildPluginFactory {
   vite?: () => Thenable<Arrayable<VitePlugin>>
   webpack?: () => Thenable<Arrayable<WebpackPluginInstance>>
+  rsbuild?: () => Thenable<Arrayable<RsbuildPlugin>>
   rspack?: () => Thenable<Arrayable<RspackCompatiblePluginInstance>>
 }
 
@@ -257,8 +315,12 @@ export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: 
     addWebpackPlugin(pluginFactory.webpack, options)
   }
 
+  // The Rsbuild builder applies Rspack plugins in the order they are added, which the transforms of Nuxt rely on,
+  // while Rsbuild applies plugins scoped to an environment after all other plugins.
   if (pluginFactory.rspack) {
     addRspackPlugin(pluginFactory.rspack, options)
+  } else if (pluginFactory.rsbuild) {
+    addRsbuildPlugin(pluginFactory.rsbuild, options)
   }
 }
 

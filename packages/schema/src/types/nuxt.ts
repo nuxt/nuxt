@@ -296,6 +296,11 @@ export interface Nuxt {
   '~runtimeDependencies'?: string[]
   '_debug'?: NuxtDebugContext
   /**
+   * State the client build keeps in memory for the server build, saved and restored by the build cache.
+   * @internal
+   */
+  '_clientBuildState'?: Map<string, { save: () => unknown, restore: (state: any) => void }>
+  /**
    * Performance profiler instance, available when `debug.perf` is enabled.
    * @internal
    */

@@ -25,6 +25,8 @@ export { loadJiti } from './jiti.ts'
 
 export { findPackageMissingSubpath } from '../dependency.ts'
 
+export { resolvePostcssPlugins } from './postcss.ts'
+
 export { lookupNodeModuleSubpath, parseNodeModulePath } from './node-module.ts'
 export type { ParsedNodeModulePath } from './node-module.ts'
 
@@ -40,6 +42,9 @@ export { installModules } from '../module/install.ts'
 export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../constants.ts'
 
 export { createServerBuild, setServerBuild, useServerBuild } from './server-build.ts'
+
+export { addClientBuildState, restoreClientBuildState, saveClientBuildState } from './client-build-state.ts'
+export type { ClientBuildState } from './client-build-state.ts'
 
 export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
 export type { NuxtServerRuntime, NuxtServerRuntimeModule, RendererConfigName, ServerRuntimeOptions } from './renderer.ts'

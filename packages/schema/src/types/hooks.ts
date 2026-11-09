@@ -4,6 +4,7 @@ import type { TSConfig } from 'pkg-types'
 import type { ViteDevServer } from 'vite'
 import type { Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
+import type { RsbuildConfig } from '@rsbuild/core'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { RawVueCompilerOptions } from '@vue/language-core'
@@ -561,6 +562,14 @@ export interface NuxtHooks {
    * @returns void
    */
   'rspack:progress': (statesArray: any[]) => void
+
+  // rsbuild
+  /**
+   * Called before creating the Rsbuild instance of `@nuxt/rsbuild-builder`.
+   * @param rsbuildConfig The Rsbuild config, with the `client` and `ssr` environments
+   * @returns Promise
+   */
+  'rsbuild:config': (rsbuildConfig: RsbuildConfig) => HookResult
 }
 
 export type NuxtHookName = keyof NuxtHooks

@@ -1,6 +1,7 @@
 import type { KeepAliveProps, TransitionProps, AppConfig as VueAppConfig } from 'vue'
 import type { Plugin as VitePluginType, ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
 import type { Configuration as WebpackConfiguration, WebpackPluginInstance as WebpackPluginInstanceType } from 'webpack'
+import type { RsbuildConfig as RsbuildConfigType, RsbuildPlugin as RsbuildPluginType } from '@rsbuild/core'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
@@ -16,13 +17,15 @@ export type { SchemaDefinition } from 'untyped'
 /**
  * Bundler types re-exported for the utilities that extend a bundler's own configuration.
  *
- * Authoring a Vite or webpack plugin is not possible without the bundler's types, so these are a
+ * Authoring a Vite, webpack or Rsbuild plugin is not possible without the bundler's types, so these are a
  * deliberate exception to Nuxt owning its public types: `@nuxt/kit` takes them from here rather
  * than importing the bundlers itself.
  */
 export type VitePlugin = VitePluginType
 export type WebpackConfig = WebpackConfiguration
 export type WebpackPluginInstance = WebpackPluginInstanceType
+export type RsbuildConfig = RsbuildConfigType
+export type RsbuildPlugin = RsbuildPluginType
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
