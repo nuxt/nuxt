@@ -44,7 +44,7 @@ export type { NuxtErrorJSON } from '../app/types'
 export type { NuxtRequestEvent } from 'nuxt/schema'
 
 /**
- * A request handler, as {@link defineEventHandler} returns it.
+ * A request handler, as {@link defineHandler} returns it.
  *
  * @since 4.6.0
  */
@@ -60,9 +60,9 @@ export type EventHandler<Result = unknown> = (event: RequestEvent) => Result
  * @example
  * ```ts
  * // server/api/hello.ts
- * import { defineEventHandler, getQuery } from 'nuxt/server'
+ * import { defineHandler, getQuery } from 'nuxt/server'
  *
- * export default defineEventHandler((event) => {
+ * export default defineHandler((event) => {
  *   const { name } = getQuery<{ name?: string }>(event)
  *   return { message: `Hello, ${name ?? 'world'}!` }
  * })
@@ -70,9 +70,16 @@ export type EventHandler<Result = unknown> = (event: RequestEvent) => Result
  *
  * @since 4.6.0
  */
-export function defineEventHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
+export function defineHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
   return handler
 }
+
+/**
+ * Alias of {@link defineHandler}.
+ *
+ * @since 4.6.0
+ */
+export const defineEventHandler: typeof defineHandler = defineHandler
 
 export { createError, NuxtError }
 
@@ -231,7 +238,7 @@ export function getRequestHeaders (event: EventWithRequest): Record<string, stri
  * @example
  * ```ts
  * // server/api/users/[id].ts
- * export default defineEventHandler((event) => {
+ * export default defineHandler((event) => {
  *   const { id } = getRouterParams(event, { decode: true })
  *   return { id }
  * })
@@ -418,7 +425,7 @@ export function deleteCookie (event: EventWithResponse, name: string, options?: 
  *
  * @example
  * ```ts
- * export default defineEventHandler(event => sendRedirect(event, '/login', 302))
+ * export default defineHandler(event => sendRedirect(event, '/login', 302))
  * ```
  *
  * @since 4.6.0

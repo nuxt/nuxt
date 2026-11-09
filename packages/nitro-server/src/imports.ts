@@ -58,6 +58,7 @@ export const nuxtServerImportsPreset = {
     'clearSession',
     'createError',
     'defineEventHandler',
+    'defineHandler',
     'deleteCookie',
     'deriveSecret',
     'getCookie',

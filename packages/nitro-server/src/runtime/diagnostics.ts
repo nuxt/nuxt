@@ -51,7 +51,7 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_E8012: {
       why: (p: { helper: string }) => `\`${p.helper}\` from \`nuxt/server\` was called with an h3 event. The handler was defined with h3's \`defineEventHandler\` (auto-imported), which passes a different event.`,
-      fix: 'Import `defineEventHandler` from `nuxt/server` alongside the helpers. See `https://nuxt.com/docs/5.x/getting-started/upgrade#moving-to-nuxtserver`.',
+      fix: 'Import `defineHandler` from `nuxt/server` alongside the helpers. See `https://nuxt.com/docs/5.x/getting-started/upgrade#moving-to-nuxtserver`.',
       docs: false,
     },
     NUXT_E8013: {

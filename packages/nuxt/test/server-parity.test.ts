@@ -30,6 +30,7 @@ import type {
  * `NuxtError` as a type, where here it is a value too.
  */
 interface FourXSurface {
+  defineHandler: <Result>(handler: (event: RequestEvent) => Result) => (event: RequestEvent) => Result
   defineEventHandler: <Result>(handler: (event: RequestEvent) => Result) => (event: RequestEvent) => Result
   createError: (...args: never[]) => Error
   isNuxtError: (error: unknown) => boolean
@@ -67,6 +68,7 @@ interface FourXSurface {
 
 /** Value exports 4.x has. */
 const FOURX_VALUE_EXPORTS = [
+  'defineHandler',
   'defineEventHandler',
   'createError',
   'isNuxtError',

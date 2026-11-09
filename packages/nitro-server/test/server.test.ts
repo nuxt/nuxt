@@ -205,7 +205,7 @@ describe('session helpers given an h3 v1 event', () => {
   it('throws NUXT_E8012 naming the helper', async () => {
     const delegate = await import('../src/runtime/server')
     const e = { node: { req: {}, res: {} }, context: {} }
-    expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012.*useSession.*import `defineEventHandler` from `nuxt\/server`/is)
+    expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012.*useSession.*import `defineHandler` from `nuxt\/server`/is)
     expect(() => delegate.clearSession(e as never, { password: 'x'.repeat(32) })).toThrow(expect.objectContaining({ status: 500 }))
   })
 
