@@ -1812,6 +1812,20 @@ export interface ConfigSchema {
     stripNeverHydratedData: boolean
 
     /**
+     * Always install `globalThis.$fetch` on the client, from the app entry.
+     *
+     * By default, a production client build only installs the global (and includes `ofetch`) when a module reads it: an unimported `$fetch`, or `globalThis.$fetch`, `window.$fetch` or `self.$fetch`. Enable this option if the global is read in a way the build cannot detect:
+     * - dynamic property access, such as `globalThis[name]`
+     * - scripts loaded at runtime, inline scripts, or scripts in `public/`
+     * - CommonJS modules
+     * - the browser console
+     *
+     * The server always installs the global.
+     * @default false
+     */
+    globalFetch: boolean
+
+    /**
      * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
      *
      * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.

@@ -15,7 +15,7 @@ During server-side rendering, calling `$fetch` to fetch your internal [API route
 ::
 
 ::note
-In a production client build, `globalThis.$fetch` is installed by the code that reads it: any module, including one in `node_modules`, that calls `$fetch` without importing it or reads `globalThis.$fetch`, `window.$fetch` or `self.$fetch`. A client bundle that never reads `$fetch` does not include `ofetch`. Code Nuxt cannot see at build time, such as a script loaded at runtime or the browser console, should not rely on the global being set.
+In a production client build, `globalThis.$fetch` is installed by the code that reads it: any module, including one in `node_modules`, that calls `$fetch` without importing it or reads `globalThis.$fetch`, `window.$fetch` or `self.$fetch`. A client bundle that never reads `$fetch` does not include `ofetch`. Code Nuxt cannot see at build time, such as a script loaded at runtime or the browser console, should not rely on the global being set unless [`experimental.globalFetch`](/docs/guide/going-further/experimental-features#globalfetch) is enabled.
 ::
 
 ::note{color="blue" icon="i-lucide-info"}
