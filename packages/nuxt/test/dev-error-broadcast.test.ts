@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ErrorReport } from 'my-bad'
-import { publishDevLog, publishDevProgress, publishErrorReport, setErrorChannelForwarding, useErrorChannel } from '../src/runtime/server/dev-error/index'
+import { publishDevLog, publishDevProgress, publishErrorReport, resolveDevAllowedHosts, setErrorChannelAccess, setErrorChannelForwarding, useErrorChannel } from '../src/runtime/server/dev-error/index'
 
 const report = { id: 'abc', kind: 'error', name: 'Error', message: 'boom', frames: [], causes: [], sections: [], timestamp: 0 } as unknown as ErrorReport
 
@@ -119,5 +119,43 @@ describe('dev error channel problem sets', () => {
       { type: 'nuxt:dev:error:devtools', registered: true },
     ]))
     listener.close()
+  })
+})
+
+describe('dev error access', () => {
+  afterEach(async () => {
+    const store = globalThis as Record<symbol, Promise<{ close: () => void }> | undefined>
+    ;(await store[Symbol.for('nuxt:dev:error-channel')])?.close()
+    delete store[Symbol.for('nuxt:dev:error-channel')]
+    setErrorChannelAccess({})
+  })
+
+  const options = (devServer: unknown = ['myapp.test']) => ({
+    devServer: { allowedHosts: devServer },
+    vite: { server: { allowedHosts: ['.example.com', 'myapp.test'] } },
+  }) as unknown as Parameters<typeof resolveDevAllowedHosts>[0]
+
+  it('allows the hosts the dev server allows', () => {
+    expect(resolveDevAllowedHosts(options())).toEqual(['myapp.test', '.example.com'])
+    expect(resolveDevAllowedHosts(options(true))).toBe(true)
+  })
+
+  it('allows the hosts the vite plugins added once the server is configured', () => {
+    expect(resolveDevAllowedHosts(options(), ['.example.com', 'tunnel.test'])).toEqual(['myapp.test', '.example.com', 'tunnel.test'])
+    expect(resolveDevAllowedHosts(options(), true)).toBe(true)
+  })
+
+  it('only answers the hosts it was allowed', async () => {
+    setErrorChannelForwarding(() => false)
+    setErrorChannelAccess({ allowedHosts: resolveDevAllowedHosts(options()) })
+    const channel = await useErrorChannel()
+    const status = async (host: string) => {
+      const response = await channel.fetchHandler(new Request(`http://${host}/__nuxt_dev__/error/events`), { trusted: true })
+      await response?.body?.cancel()
+      return response?.status
+    }
+
+    expect(await status('myapp.test')).toBe(200)
+    expect(await status('other.test')).toBe(403)
   })
 })

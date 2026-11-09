@@ -5,7 +5,8 @@ import type { CompilerOptions } from '@vue/compiler-core'
 import type { Diagnostic } from 'nostics'
 import type { ErrorReport } from 'my-bad'
 import type { Component, Nuxt } from 'nuxt/schema'
-import { openErrorBroadcast } from '../runtime/server/dev-error/index.ts'
+import { getLayerDirectories } from '@nuxt/kit'
+import { createFsAccessCheck, createReportFsLoader, openErrorBroadcast } from '../runtime/server/dev-error/index.ts'
 import type { ErrorChannelMessage } from '../runtime/server/dev-error/index.ts'
 import { createTemplateDiagnostics } from './plugins/template-diagnostics.ts'
 
@@ -118,12 +119,21 @@ function createWarningPublisher (nuxt: Nuxt) {
     queue = queue.then(task).catch(() => {})
   }
   const retire = (id: string) => enqueue(() => post({ type: 'nuxt:dev:error:warning:clear', id }))
+  let canRead: Promise<(file: string) => boolean> | undefined
   const warn = (diagnostic: Diagnostic<unknown>, finding: string) => {
     const id = hash(finding)
     raised.set(id, (raised.get(id) ?? 0) + 1)
     enqueue(async () => {
-      const [{ createReport }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/presets')])
-      const report = await createReport(diagnostic, { cwd: nuxt.options.rootDir, kind: 'warning', presets: [nuxtPreset()] })
+      canRead ||= createFsAccessCheck({
+        allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
+        deny: [],
+      })
+      const [{ createReport }, { nuxtPreset }, fs] = await Promise.all([
+        import('my-bad'),
+        import('my-bad/presets'),
+        createReportFsLoader({ cwd: nuxt.options.rootDir, canRead: await canRead }),
+      ])
+      const report = await createReport(diagnostic, { cwd: nuxt.options.rootDir, kind: 'warning', loaders: [fs], presets: [nuxtPreset()] })
       post({ type: 'nuxt:dev:error:warning', report: { ...report, id } })
     })
   }

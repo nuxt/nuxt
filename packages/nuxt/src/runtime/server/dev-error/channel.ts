@@ -1,5 +1,6 @@
 import type { BuildProgress, Channel, LogEntry, ProblemMeta } from 'my-bad/channel'
 import type { ErrorReport } from 'my-bad'
+import type { NuxtOptions } from 'nuxt/schema'
 
 /** Base path the dev server owning the channel serves it at. */
 export const ERROR_CHANNEL_ENV = 'NUXT_DEV_ERROR_CHANNEL'
@@ -48,12 +49,40 @@ export function isForwardingReports (): boolean {
   return isForwarding()
 }
 
+/** What the channel this process owns may open, and which hosts may reach it. */
+export interface ErrorChannelAccess {
+  /** Directories "open in editor" may open, as Vite's `server.fs.allow`, or `false` for any. */
+  root?: string[] | false
+  /** Hosts a browser may address the channel through, besides loopback ones. */
+  allowedHosts?: string[] | true
+}
+
+/**
+ * The hosts `devServer.allowedHosts` and `vite.server.allowedHosts` allow, along with `resolved`, the
+ * hosts the running Vite server allows once its plugins have configured it.
+ */
+export function resolveDevAllowedHosts (options: Pick<NuxtOptions, 'devServer' | 'vite'>, resolved?: string[] | true): string[] | true {
+  const hosts = [options.devServer.allowedHosts, options.vite?.server?.allowedHosts, resolved]
+  return hosts.includes(true) ? true : [...new Set(hosts.flatMap(host => Array.isArray(host) ? host : []))]
+}
+
+let channelAccess: ErrorChannelAccess = {}
+
+/** Confine the channel this process owns. Read when the channel is first used. */
+export function setErrorChannelAccess (access: ErrorChannelAccess): void {
+  channelAccess = access
+}
+
 /** The live error channel, forwarding to the dev server in front when there is one. */
 export function useErrorChannel (): Promise<Channel> {
   const store = globalThis as { [CHANNEL_KEY]?: Promise<Channel> }
   store[CHANNEL_KEY] ||= isForwarding()
     ? Promise.resolve(createForwardingChannel())
-    : import('my-bad/channel').then(({ createChannel }) => createOwnedChannel(createChannel({ open: true })))
+    : import('my-bad/channel').then(({ createChannel }) => createOwnedChannel(createChannel({
+        open: true,
+        root: channelAccess.root,
+        allowedHosts: channelAccess.allowedHosts,
+      })))
   return store[CHANNEL_KEY]
 }
 

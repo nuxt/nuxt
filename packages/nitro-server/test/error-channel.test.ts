@@ -14,6 +14,7 @@ vi.mock('#internal/dev-server-logs-options', () => ({
   get rootDir () { return paths.rootDir },
   get srcDir () { return paths.srcDir },
   get reportFs () { return { allow: [tmpdir()], deny: [] } },
+  get allowedHosts () { return [] },
 }))
 vi.mock('node:worker_threads', () => ({ isMainThread: false }))
 

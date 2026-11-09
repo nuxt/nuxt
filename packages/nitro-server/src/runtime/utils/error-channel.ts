@@ -7,7 +7,7 @@ import { isMainThread } from 'node:worker_threads'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { reportFs, rootDir, srcDir } from '#internal/dev-server-logs-options'
+import { allowedHosts, reportFs, rootDir, srcDir } from '#internal/dev-server-logs-options'
 import * as devError from 'nuxt/internal/dev-error'
 
 import { NUXT_ERROR_CHANNEL } from '#internal/nuxt/nitro-config.mjs'
@@ -30,6 +30,7 @@ export function getErrorChannelPath (): string {
 }
 
 devError.setErrorChannelForwarding(() => shouldForwardReports())
+devError.setErrorChannelAccess({ root: reportFs.strict === false ? false : reportFs.allow, allowedHosts })
 
 /** The live error channel, forwarding to the dev server in front when there is one. */
 export function useErrorChannel (): Promise<Channel> {

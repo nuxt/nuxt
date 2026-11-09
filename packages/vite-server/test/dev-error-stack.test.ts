@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 vi.mock('nuxt/internal/dev-error', () => ({
   ERROR_CHANNEL_ENV: 'NUXT_DEV_ERROR_CHANNEL',
   setErrorChannelForwarding: () => {},
+  setErrorChannelAccess: () => {},
   useErrorChannel: () => Promise.resolve({ fetchHandler: () => undefined }),
   createErrorReport: () => Promise.resolve({}),
   createDevErrorReporter: (options: { mapStack: (error: unknown) => void }) => (error: unknown) => {

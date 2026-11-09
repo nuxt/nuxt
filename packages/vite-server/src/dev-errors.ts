@@ -1,6 +1,7 @@
 import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
-import { ERROR_CHANNEL_ENV, clearErrorReport, createDevErrorReporter, createErrorReport, setErrorChannelForwarding } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, clearErrorReport, createDevErrorReporter, createErrorReport, resolveDevAllowedHosts, setErrorChannelAccess, setErrorChannelForwarding } from 'nuxt/internal/dev-error'
+import type { ErrorChannelAccess } from 'nuxt/internal/dev-error'
 import { isFileLoadingAllowed } from 'vite'
 import type { ViteDevServer } from 'vite'
 
@@ -12,6 +13,15 @@ export function reportFileAccess (server: ViteDevServer): (file: string) => bool
   return file => isFileLoadingAllowed(server.config, file)
 }
 
+/** What the channel may open, as the dev server would load it, and the hosts it may be reached through. */
+export function errorChannelAccess (nuxt: Nuxt, server: ViteDevServer): ErrorChannelAccess {
+  const { allow, strict } = server.config.server.fs
+  return {
+    root: strict === false ? false : allow,
+    allowedHosts: resolveDevAllowedHosts(nuxt.options, server.config.server.allowedHosts),
+  }
+}
+
 /**
  * Report errors raised by renders a deploy target runs outside this process, whose stacks
  * arrive mapped to source positions.
@@ -19,6 +29,7 @@ export function reportFileAccess (server: ViteDevServer): (file: string) => bool
 export function listenForRemoteDevErrors (nuxt: Nuxt, server: ViteDevServer, channel: string): void {
   const forwarding = () => !!process.env[ERROR_CHANNEL_ENV]
   setErrorChannelForwarding(forwarding)
+  setErrorChannelAccess(errorChannelAccess(nuxt, server))
   const channelPath = () => process.env[ERROR_CHANNEL_ENV] || channel
 
   const observe = createDevErrorReporter<NonNullable<RemoteDevError['request']>>({
