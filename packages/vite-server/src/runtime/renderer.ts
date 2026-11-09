@@ -80,6 +80,7 @@ export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: Mat
     if (import.meta.dev) {
       const devErrors = await import('./dev-error.ts')
       if (devErrors.isErrorChannelRequest(new URL(request.url).pathname)) {
+        request.signal.throwIfAborted()
         return devErrors.fetchErrorChannel(request)
       }
     }
