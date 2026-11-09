@@ -60,7 +60,7 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     buildsSeparately: false,
     // neither `nitro` nor `nitro/runtime-config` resolves in a build without nitro
     runtime: {
-      fetch: resolve(distDir, 'runtime/fetch'),
+      fetch: ssr ? resolve(nuxt.options.buildDir, 'vite-server/fetch.mjs') : resolve(distDir, 'runtime/fetch'),
       runtimeConfig: RUNTIME_CONFIG_ID,
       server: ssr ? resolve(nuxt.options.buildDir, 'vite-server/server.mjs') : undefined,
       // the emitted entry, which only exists once a build has run
