@@ -221,6 +221,11 @@ describe('renderer plugins', () => {
     expect(html.match(/<meta name="renderer-plugin">/g)).toHaveLength(1)
   })
 
+  it('should send the response headers a hook sets', async () => {
+    const res = await fetch('/')
+    expect(res.headers.get('x-renderer-plugin')).toBe('true')
+  })
+
   it('should run for a route with an `ssr: false` route rule', async () => {
     const html = await $fetch<string>('/route-rules/spa')
     expect(html).toContain('<div id="__nuxt"></div>')

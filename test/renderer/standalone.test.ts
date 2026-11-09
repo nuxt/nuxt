@@ -232,6 +232,15 @@ describe('renderer plugins', () => {
     expect(html.indexOf('<meta name="renderer-plugin">')).toBeLessThan(html.indexOf('<meta name="runtime">'))
   })
 
+  it('runs them for a streamed render', async () => {
+    const event = createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } })
+    const { html } = await render('/', { getRouteRules: () => ({ ssr: true, streaming: true }) }, event)
+
+    expect(html).toContain('window.__unhead__')
+    expect(html).toContain('<meta name="renderer-plugin">')
+    expect(html).toMatch(/<!--renderer-plugin-close-->[\s\S]*<\/body>/)
+  })
+
   it('runs them for the client-only shell', async () => {
     const { html } = await render('/', { getRouteRules: () => ({ ssr: false }) })
 

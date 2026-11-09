@@ -168,6 +168,10 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     expect(await (await render('/not-a-page')).text()).toContain('<meta name="renderer-plugin">')
   })
 
+  it('sends the response headers renderer plugins set', async () => {
+    expect((await render('/')).headers.get('x-renderer-plugin')).toBe('true')
+  })
+
   it('renders a route ruled `noScripts` without scripts', async () => {
     const rendered = await (await render('/no-scripts')).text()
 
