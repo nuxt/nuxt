@@ -83,6 +83,37 @@ describe('`$fetch` on the vite server', () => {
     expect(renderer.fetch).not.toHaveBeenCalled()
   })
 
+  it('follows a redirect of the app', async () => {
+    const handler = vi.fn((request: Request) => {
+      const { pathname } = new URL(request.url)
+      return Promise.resolve(pathname === '/old'
+        ? new Response('<meta http-equiv="refresh">', { status: 302, headers: { location: '/new?a=1' } })
+        : new Response(`page ${pathname}`))
+    })
+    const fetch = createAppFetch(() => Promise.resolve(handler))
+
+    expect(await (await fetch('/old')).text()).toBe('page /new')
+    expect(handler).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns a redirect of the app when asked not to follow it', async () => {
+    const handler = () => Promise.resolve(new Response(null, { status: 302, headers: { location: '/new' } }))
+
+    const response = await createAppFetch(() => Promise.resolve(handler))('/old', { redirect: 'manual' })
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/new')
+  })
+
+  it('sends the redirected request of a POST as a GET after a 303', async () => {
+    const handler = vi.fn((request: Request) => Promise.resolve(new Response(
+      request.method,
+      request.url.endsWith('/old') ? { status: 303, headers: { location: '/new' } } : {},
+    )))
+
+    expect(await (await createAppFetch(() => Promise.resolve(handler))('/old', { method: 'POST', body: 'a=1' })).text()).toBe('GET')
+  })
+
   it('sends any other request to the platform', async () => {
     const platform = vi.fn(() => Promise.resolve(new Response('platform')))
     vi.stubGlobal('fetch', platform)
