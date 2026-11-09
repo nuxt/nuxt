@@ -1131,6 +1131,34 @@ describe('nuxt composables', () => {
     expect(absolute).toMatchObject({ cookie: null, authorization: null })
   })
 
+  it('does not forward conditional or range headers to internal fetches', async () => {
+    const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toUTCString()
+    const render = async (headers: Record<string, string>) => {
+      const html = await $fetch<string>('/conditional-headers', { headers })
+      return [...html.matchAll(/<pre id="(?:cached|headers)">([^<]*)<\/pre>/g)].map(m => m[1] ? JSON.parse(m[1].replaceAll('&quot;', '"')) : null)
+    }
+
+    const [cached] = await render({ 'if-modified-since': future })
+    expect(cached).toEqual({ cached: true })
+
+    const [, headers] = await render({
+      'if-match': '*',
+      'if-modified-since': future,
+      'if-none-match': '*',
+      'if-range': future,
+      'if-unmodified-since': future,
+      'range': 'bytes=0-1',
+    })
+    expect(headers).toEqual({
+      'if-match': null,
+      'if-modified-since': null,
+      'if-none-match': null,
+      'if-range': null,
+      'if-unmodified-since': null,
+      'range': null,
+    })
+  })
+
   it('has useRequestURL()', async () => {
     const html = await $fetch<string>('/url')
     expect(html).toContain('path: /url')

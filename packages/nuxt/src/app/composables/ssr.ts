@@ -2,6 +2,7 @@ import { setResponseStatus as _setResponseStatus, getRequestHeader, getRequestHe
 import { computed, getCurrentInstance, ref } from 'vue'
 import type { TypedFetch } from '../types/fetch'
 import type { NuxtRequestEvent } from '@nuxt/schema'
+import type { $Fetch as OFetch } from 'ofetch'
 import { $fetch as _$fetch } from '#build/fetch'
 
 import type { NuxtApp } from '../nuxt'
@@ -48,12 +49,75 @@ export function useRequestHeader (header: string): string | null | undefined {
   return event ? getRequestHeader(event, header) : undefined
 }
 
+// hop-by-hop headers, and headers describing the page request's body or the response it accepts
+const UNFORWARDED_HEADERS = new Set([
+  'accept',
+  'accept-encoding',
+  'connection',
+  'content-length',
+  'content-md5',
+  'content-type',
+  'expect',
+  'host',
+  'if-match',
+  'if-modified-since',
+  'if-none-match',
+  'if-range',
+  'if-unmodified-since',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'range',
+  'te',
+  'trailer',
+  'transfer-encoding',
+  'upgrade',
+])
+
+function forwardRequestHeaders (event: NuxtRequestEvent, request: unknown, options?: RequestInit): RequestInit {
+  const isLocal = typeof request === 'string' && request[0] === '/'
+  const headers = new Headers(options?.headers)
+  for (const [name, value] of event.headers) {
+    if ((!UNFORWARDED_HEADERS.has(name) || (name === 'host' && isLocal)) && !headers.has(name)) {
+      headers.set(name, value)
+    }
+  }
+  const context = (options as { context?: unknown } | undefined)?.context || event.context
+  return { ...options, headers, context } as RequestInit
+}
+
+/**
+ * Fetch `request` in-process with the headers and context of `event`.
+ * @internal
+ */
+export function fetchWithRequestHeaders (event: NuxtRequestEvent, request: string): Promise<Response> {
+  return ($fetch as unknown as OFetch).native(request, forwardRequestHeaders(event, request))
+}
+
+const requestFetchers = new WeakMap<NuxtRequestEvent, TypedFetch>()
+
+function createRequestFetch (event: NuxtRequestEvent): TypedFetch {
+  const base = $fetch as unknown as OFetch
+  return base.create({}, {
+    fetch: (request, options) => base.native(request, forwardRequestHeaders(event, request, options)),
+  }) as unknown as TypedFetch
+}
+
 /** @since 3.2.0 */
 export function useRequestFetch (): TypedFetch {
   if (import.meta.client) {
     return $fetch
   }
-  return (useRequestEvent()?.$fetch as unknown as TypedFetch | undefined) || $fetch
+  const event = useRequestEvent()
+  if (!event?.$fetch) {
+    return $fetch
+  }
+  let fetcher = requestFetchers.get(event)
+  if (!fetcher) {
+    fetcher = createRequestFetch(event)
+    requestFetchers.set(event, fetcher)
+  }
+  return fetcher
 }
 
 /** @since 3.0.0 */
