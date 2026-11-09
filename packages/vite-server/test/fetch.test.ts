@@ -114,6 +114,20 @@ describe('`$fetch` on the vite server', () => {
     expect(await (await createAppFetch(() => Promise.resolve(handler))('/old', { method: 'POST', body: 'a=1' })).text()).toBe('GET')
   })
 
+  it('drops the body headers of a POST redirected to a GET', async () => {
+    const handler = vi.fn((request: Request) => Promise.resolve(request.url.endsWith('/old')
+      ? new Response(null, { status: 303, headers: { location: '/new' } })
+      : new Response(`${request.method} ${request.headers.get('content-type')}`)))
+
+    const response = await createAppFetch(() => Promise.resolve(handler))('/old', {
+      method: 'POST',
+      body: 'a=1',
+      headers: { 'content-type': 'text/plain' },
+    })
+
+    expect(await response.text()).toBe('GET null')
+  })
+
   it('sends any other request to the platform', async () => {
     const platform = vi.fn(() => Promise.resolve(new Response('platform')))
     vi.stubGlobal('fetch', platform)

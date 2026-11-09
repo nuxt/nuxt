@@ -33,14 +33,16 @@ export function createAppFetch (loadFetch: () => Promise<AppFetch>) {
 const LOCAL_ORIGIN = 'http://localhost'
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
 const MAX_REDIRECTS = 20
+const REQUEST_BODY_HEADERS = ['content-encoding', 'content-language', 'content-length', 'content-location', 'content-type']
 
 async function fetchFollowingRedirects (fetch: AppFetch, path: string, init: RequestInit | undefined, context?: Record<string, unknown>): Promise<Response> {
   const redirect = init?.redirect ?? 'follow'
   let url = path
   let method = init?.method ?? 'GET'
   let body = init?.body
+  const headers = new Headers(init?.headers)
   for (let redirects = 0; ; redirects++) {
-    const response = await fetch(new Request(`${LOCAL_ORIGIN}${url}`, { ...init, method, body }), context)
+    const response = await fetch(new Request(`${LOCAL_ORIGIN}${url}`, { ...init, method, body, headers }), context)
     const location = response.headers.get('location')
     if (!REDIRECT_STATUSES.has(response.status) || location === null || redirect === 'manual') {
       return response
@@ -58,11 +60,14 @@ async function fetchFollowingRedirects (fetch: AppFetch, path: string, init: Req
     if (toGet) {
       method = 'GET'
       body = undefined
+      for (const name of REQUEST_BODY_HEADERS) {
+        headers.delete(name)
+      }
     }
 
     const target = new URL(location, `${LOCAL_ORIGIN}${url}`)
     if (target.origin !== LOCAL_ORIGIN) {
-      return globalThis.fetch(target, { ...init, method, body })
+      return globalThis.fetch(target, { ...init, method, body, headers })
     }
     if (redirects >= MAX_REDIRECTS) {
       throw new TypeError('Too many redirects')
