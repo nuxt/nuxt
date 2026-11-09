@@ -13,6 +13,7 @@ import { setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { finishStaticOutput, writeStaticOutput } from './output.ts'
 import { RUNTIME_CONFIG_ID, RuntimeConfigPlugin } from './runtime-config.ts'
+import { SpaDocumentPlugins, rendersSpaDocument } from './spa-document.ts'
 import { isPrerendering, manifestTimestamp, prerenderRoutes, writeAppManifest } from './prerender.ts'
 
 /**
@@ -92,6 +93,10 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   // an environment, where an app-level `buildApp` hook is never called.
   nuxt.options.vite.plugins ||= []
   nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt), RuntimeConfigPlugin(nuxt))
+
+  if (rendersSpaDocument(nuxt)) {
+    nuxt.options.vite.plugins.push(...SpaDocumentPlugins(nuxt))
+  }
 
   if (!nuxt.options.dev) {
     // the document is a real HTML build input, so vite links the entry chunk, injects its

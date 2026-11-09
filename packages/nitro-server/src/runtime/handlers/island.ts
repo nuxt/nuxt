@@ -1,4 +1,3 @@
-import { useNitroApp } from 'nitropack/runtime'
 import type { RenderResponse } from 'nitropack/types'
 import type { Link, SerializableHead } from '@unhead/vue/types'
 import { destr } from 'destr'
@@ -126,8 +125,6 @@ function prerenderIsland (event: H3Event, islandPath: string): Promise<IslandRen
 }
 
 async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
-  const nitroApp = useNitroApp()
-
   const islandContext = await getIslandContext(event)
 
   const ssrContext = {
@@ -219,7 +216,7 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     slots: getSlotIslandResponse(ssrContext),
   }
 
-  await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
+  await rendererInstance.hooks.callHook('render:island', islandResponse, { event, islandContext })
 
   return islandResponse
 }

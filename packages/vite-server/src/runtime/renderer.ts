@@ -3,7 +3,7 @@ import { appendVary, describeError, isExpectedError, isJsonRequest } from 'nuxt/
 import type { DescribedError } from 'nuxt/internal/renderer/error'
 import { encodeDocument } from 'nuxt/internal/renderer/encode'
 import { mergeHeaders } from 'nuxt/internal/renderer/headers'
-import { useServerHooks } from 'nuxt/server'
+import { claimServerHooks } from 'nuxt/internal/server-default'
 import type { NuxtRendererOptions } from 'nuxt/internal/renderer/runtime'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -53,12 +53,14 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
   // loaded up front, as a runtime may drop a request's pending work once it has responded
   const devErrors = import.meta.dev ? import('./dev-error.ts') : undefined
 
+  const hooks = claimServerHooks()
+
   return {
     runtimeConfig,
     buildAssetsURL,
     publicAssetsURL,
     getRouteRules: event => ({ ssr: true, ...matchRouteRules(event.url.pathname) }),
-    hooks: useServerHooks,
+    hooks: () => hooks,
     createResponse: (body, init) => new Response(body, init),
     createDocumentResponse: (chunks, init) => new Response(encodeDocument(chunks), init),
     createError: init => new NuxtServerError(init),

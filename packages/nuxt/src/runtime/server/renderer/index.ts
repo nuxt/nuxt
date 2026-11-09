@@ -99,7 +99,7 @@ function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<R
 
 async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent, ssrError: SSRError | null): Promise<RenderedResponse> {
   const runtime = instance.options
-  const hooks = runtime.hooks()
+  const hooks = instance.hooks
   const hookEvent = appEvent(event)
   const payloadCache = runtime.prerender?.payloadCache
 

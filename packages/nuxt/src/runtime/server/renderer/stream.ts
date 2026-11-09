@@ -40,7 +40,7 @@ export interface StreamedRender {
 /** Render a route as a stream: the shell is flushed before the app renders, and the app markup follows as Vue produces it. */
 export async function renderStreamedResponse ({ instance, event, ssrContext, renderer, routeOptions, noScripts: NO_SCRIPTS, ssrError, payloadExtraction, payloadInline, payloadURL }: StreamedRender): Promise<RenderedResponse> {
   const runtime = instance.options
-  const hooks = runtime.hooks()
+  const hooks = instance.hooks
   const hookEvent = appEvent(event)
   const DEFER_PREFETCH = NUXT_DEFER_PREFETCH_HINTS && !NO_SCRIPTS
   const { rendererContext } = renderer

@@ -1,4 +1,4 @@
-import { addServerImports, addServerImportsDir, createResolver, defineNuxtModule } from 'nuxt/kit'
+import { addRendererPlugin, addServerImports, addServerImportsDir, createResolver, defineNuxtModule } from 'nuxt/kit'
 
 export default defineNuxtModule({
   meta: {
@@ -17,5 +17,7 @@ export default defineNuxtModule({
     }])
 
     addServerImportsDir(resolver.resolve('./runtime/server/utils'))
+
+    addRendererPlugin(resolver.resolve('./runtime/renderer-plugin'))
   },
 })
