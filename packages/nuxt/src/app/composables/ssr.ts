@@ -49,7 +49,7 @@ export function useRequestHeader (header: string): string | null | undefined {
   return event ? event.req.headers.get(header) : undefined
 }
 
-// hop-by-hop headers, and headers describing a request body the subrequest does not have
+// hop-by-hop headers, and headers describing the page request's body or the response it accepts
 const UNFORWARDED_HEADERS = new Set([
   'accept',
   'accept-encoding',
@@ -67,6 +67,7 @@ const UNFORWARDED_HEADERS = new Set([
   'keep-alive',
   'proxy-authenticate',
   'proxy-authorization',
+  'range',
   'te',
   'trailer',
   'transfer-encoding',

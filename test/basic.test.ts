@@ -1042,6 +1042,19 @@ describe('nuxt composables', () => {
     expect(absolute).toMatchObject({ cookie: null, authorization: null })
   })
 
+  it('does not forward the range header from `useFetch` to relative urls', async () => {
+    const html = await $fetch<string>('/forwarded-headers', {
+      headers: {
+        cookie: 'session=alice',
+        range: 'bytes=0-10',
+      },
+    })
+
+    const forwarded = JSON.parse(html.match(/<pre id="forwarded">([^<]*)<\/pre>/)![1]!.replaceAll('&quot;', '"'))
+
+    expect(forwarded).toMatchObject({ cookie: 'session=alice', range: null })
+  })
+
   it('has useRequestURL()', async () => {
     const html = await $fetch<string>('/url')
     expect(html).toContain('path: /url')
