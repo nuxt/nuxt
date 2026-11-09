@@ -143,6 +143,19 @@ describe('`$fetch` on the vite server', () => {
     expect(sent.get('x-keep')).toBe('yes')
   })
 
+  it('rejects a redirect that must resend a streamed body', async () => {
+    const handler = () => Promise.resolve(new Response(null, { status: 307, headers: { location: '/new' } }))
+    const body = new ReadableStream({
+      start (controller) {
+        controller.enqueue(new TextEncoder().encode('a=1'))
+        controller.close()
+      },
+    })
+
+    await expect(createAppFetch(() => Promise.resolve(handler))('/old', { method: 'POST', body, duplex: 'half' } as RequestInit))
+      .rejects.toThrow('streamed body')
+  })
+
   it('sends any other request to the platform', async () => {
     const platform = vi.fn(() => Promise.resolve(new Response('platform')))
     vi.stubGlobal('fetch', platform)

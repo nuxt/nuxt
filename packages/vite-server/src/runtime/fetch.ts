@@ -54,10 +54,10 @@ async function fetchFollowingRedirects (fetch: AppFetch, path: string, init: Req
 
     const toGet = (response.status === 303 && method !== 'GET' && method !== 'HEAD')
       || ((response.status === 301 || response.status === 302) && method === 'POST')
-    if (!toGet && body instanceof ReadableStream) {
-      return response
-    }
     await response.body?.cancel()
+    if (!toGet && body instanceof ReadableStream) {
+      throw new TypeError('Cannot follow a redirect that must resend a streamed body')
+    }
     if (toGet) {
       method = 'GET'
       body = undefined
