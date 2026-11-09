@@ -1,7 +1,9 @@
 <script setup lang="ts">
-const event = useRequestEvent()!
-event.context.user = 'daniel'
-event.context.nuxt = { noSSR: true }
+if (import.meta.server) {
+  const event = useRequestEvent()!
+  event.context.user = 'daniel'
+  event.context.nuxt = { noSSR: true }
+}
 const requestFetch = useRequestFetch()
 const { data } = await useAsyncData('fetched-context', () => requestFetch<string>('/context'))
 </script>
