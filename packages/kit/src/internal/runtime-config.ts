@@ -664,7 +664,7 @@ function applyEnv (obj: Record<string, any>, opts: EnvOptions, schema?: RuntimeC
     if (isObject(obj[key])) {
       if (isObject(envValue)) {
         const described = typeof node === 'object' && 'p' in node ? node.p : {}
-        obj[key] = { ...obj[key], ...Object.fromEntries(Object.entries(envValue).filter(([child]) => !Object.hasOwn(described, child))) }
+        obj[key] = { ...obj[key], ...Object.fromEntries(Object.entries(envValue ?? {}).filter(([child]) => !Object.hasOwn(described, child))) }
         applyEnv(obj[key], opts, node, subKey)
       } else if (envValue === undefined) {
         applyEnv(obj[key], opts, node, subKey)
