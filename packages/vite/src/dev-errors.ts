@@ -148,6 +148,10 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }
         return
       case 'nuxt:dev:error:clear':
+        // a clear naming a request leaves the report open for the other requests that raised it
+        if (message.requestId || message.request) {
+          return
+        }
         if (message.id) {
           published.delete(message.id)
         } else {
@@ -281,7 +285,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       }
       requestReports.delete(request)
       if (reported.report) {
-        post({ type: 'nuxt:dev:error:clear', id: reported.report.id })
+        post({ type: 'nuxt:dev:error:clear', id: reported.report.id, request })
       }
     },
     attach (devServer) {
@@ -313,7 +317,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }
         browserReports.delete(slot)
         if (reported.report) {
-          post({ type: 'nuxt:dev:error:clear', id: reported.report.id })
+          post({ type: 'nuxt:dev:error:clear', id: reported.report.id, ...slot && { requestId: slot } })
         }
       })
     },

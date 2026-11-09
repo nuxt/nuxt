@@ -71,6 +71,28 @@ describe('dev error channel problem sets', () => {
     sender.close()
   })
 
+  it('retires an error another thread clears for one page, leaving it open for the others', async () => {
+    setErrorChannelForwarding(() => false)
+    const channel = await useErrorChannel()
+    const sender = new BroadcastChannel('nuxt:dev:error')
+    const current = async (requestId: string) => {
+      const response = await channel.fetchHandler(new Request(`http://localhost/__nuxt_dev__/error/events?requestId=${requestId}`), { trusted: false })
+      const reader = response!.body!.getReader()
+      const { value } = await reader.read()
+      await reader.cancel()
+      return /"current":\{"id":"([^"]+)"/.exec(new TextDecoder().decode(value))?.[1]
+    }
+
+    sender.postMessage({ type: 'nuxt:dev:error:report', report, requestId: 'page-a' })
+    sender.postMessage({ type: 'nuxt:dev:error:report', report, requestId: 'page-b' })
+    await vi.waitFor(async () => expect(await current('page-b')).toBe(report.id))
+    sender.postMessage({ type: 'nuxt:dev:error:clear', id: report.id, requestId: 'page-a' })
+
+    await vi.waitFor(async () => expect(await current('page-a')).toBeUndefined())
+    expect(await current('page-b')).toBe(report.id)
+    sender.close()
+  })
+
   it('applies problem sets another thread posts to an owned channel', async () => {
     setErrorChannelForwarding(() => false)
     const channel = await useErrorChannel()

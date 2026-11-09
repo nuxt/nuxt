@@ -151,16 +151,20 @@ describe('forwarding channel', () => {
     const received: Array<{ type: string, id?: string }> = []
     const listener = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
     listener.onmessage = event => received.push(event.data)
-    const eventFor = (path: string) => ({ req: { method: 'GET', headers: new Headers() }, url: new URL(path, 'http://localhost') }) as any
+    const eventFor = (path: string, method = 'GET') => ({ req: { method, headers: new Headers() }, url: new URL(path, 'http://localhost') }) as any
 
     await publishErrorReport({ ...report, id: 'tab-a' }, eventFor('/a'))
+    await publishErrorReport({ ...report, id: 'tab-a' }, eventFor('/a', 'POST'))
     await publishErrorReport({ ...report, id: 'tab-b' }, eventFor('/b'))
     await publishErrorReport({ ...report, id: 'unscoped' })
     await clearErrorReport(new URL('http://localhost/a'))
     await clearErrorReport(new URL('http://localhost/a'))
-    await vi.waitFor(() => expect(received).toHaveLength(4))
+    await vi.waitFor(() => expect(received).toHaveLength(6))
 
-    expect(received.filter(message => message.type === 'nuxt:dev:error:clear')).toEqual([{ type: 'nuxt:dev:error:clear', id: 'tab-a' }])
+    expect(received.filter(message => message.type === 'nuxt:dev:error:clear')).toEqual([
+      { type: 'nuxt:dev:error:clear', id: 'tab-a', request: 'GET /a' },
+      { type: 'nuxt:dev:error:clear', id: 'tab-a', request: 'POST /a' },
+    ])
 
     listener.close()
     ;(await useErrorChannel()).close()

@@ -322,7 +322,7 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     await new Promise(resolve => setTimeout(resolve, 100))
 
     expect(messages).toHaveLength(2)
-    expect(messages[1]).toEqual({ type: 'nuxt:dev:error:clear', id: messages[0].report.id })
+    expect(messages[1]).toEqual({ type: 'nuxt:dev:error:clear', id: messages[0].report.id, requestId: 'page-load' })
 
     channel.close()
     nuxt.close()
@@ -500,7 +500,7 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     expect(reporter.isRuntime).toBe(true)
     listeners['nuxt:dev:client-error:clear']!({ requestId: 'raised' })
     expect(reporter.isRuntime).toBe(false)
-    await vi.waitFor(() => expect(messages[1]).toEqual({ type: 'nuxt:dev:error:clear', id: messages[0].report.id }))
+    await vi.waitFor(() => expect(messages[1]).toEqual({ type: 'nuxt:dev:error:clear', id: messages[0].report.id, requestId: 'raised' }))
 
     channel.close()
     nuxt.close()
@@ -527,7 +527,7 @@ describe('createDevErrorReporter (errors serving a request)', () => {
     reporter.requestServed('GET /api/other')
     reporter.requestServed('GET /api/throw')
     await vi.waitFor(() => expect(messages).toHaveLength(2))
-    expect(messages[1]).toEqual({ type: 'nuxt:dev:error:clear', id: messages[0].report.id })
+    expect(messages[1]).toEqual({ type: 'nuxt:dev:error:clear', id: messages[0].report.id, request: 'GET /api/throw' })
     expect(reporter.isRuntime).toBe(false)
 
     channel.close()
@@ -595,6 +595,25 @@ describe('createDevErrorReporter (errors reported elsewhere)', () => {
     reporter.clear()
     await vi.waitFor(() => expect(messages.some(message => message.type === 'nuxt:dev:error:clear')).toBe(true))
     expect(reporter.isRuntime).toBe(false)
+
+    channel.close()
+    nuxt.close()
+  })
+
+  it('keeps a report the server published open after it is cleared for one request', async () => {
+    const nuxt = createNuxt()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    const { channel } = listen()
+    const serverReport = { id: 'from-server', kind: 'error', name: 'HTTPError', message: 'hi', frames: [], causes: [], sections: [], timestamp: 0 }
+    channel.postMessage({ type: 'nuxt:dev:error:report', report: serverReport, request: 'GET /a' })
+    channel.postMessage({ type: 'nuxt:dev:error:report', report: serverReport, request: 'GET /b' })
+    await vi.waitFor(() => expect(reporter.isRuntime).toBe(true))
+
+    channel.postMessage({ type: 'nuxt:dev:error:clear', id: 'from-server', request: 'GET /a' })
+    channel.postMessage({ type: 'nuxt:dev:error:sync' })
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    expect(reporter.isRuntime).toBe(true)
 
     channel.close()
     nuxt.close()

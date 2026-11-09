@@ -19,7 +19,14 @@ export type ErrorChannelMessage =
     /** The request that failed, as `METHOD /path`. */
     request?: string
   }
-  | { type: 'nuxt:dev:error:clear', id?: string }
+  | {
+    type: 'nuxt:dev:error:clear'
+    id?: string
+    /** Retire it only for the page load with this id. */
+    requestId?: string
+    /** Retire it only for this request, as `METHOD /path`. */
+    request?: string
+  }
   /** Asks reporters to repeat their current report. */
   | { type: 'nuxt:dev:error:sync' }
   | { type: 'nuxt:dev:error:log', entry: LogEntry }
@@ -113,7 +120,7 @@ function createOwnedChannel (channel: Channel): Channel {
       case 'nuxt:dev:error:report':
         return channel.setError(message.report, message.requestId, message.request)
       case 'nuxt:dev:error:clear':
-        return channel.clearError(message.id)
+        return channel.clearError(message.id, scopeOf(message))
       case 'nuxt:dev:error:log':
         return channel.log(message.entry)
       case 'nuxt:dev:error:warning':
@@ -137,9 +144,9 @@ function createOwnedChannel (channel: Channel): Channel {
       channel.setError(report, requestId, request)
       post({ type: 'nuxt:dev:error:report', report, requestId, request })
     },
-    clearError (id) {
-      channel.clearError(id)
-      post({ type: 'nuxt:dev:error:clear', id })
+    clearError (id, request) {
+      channel.clearError(id, request)
+      post({ type: 'nuxt:dev:error:clear', id, ...request })
     },
     get current () {
       return channel.current
@@ -166,9 +173,11 @@ function createForwardingChannel (): Channel {
       current = report
       post({ type: 'nuxt:dev:error:report', report, requestId, request })
     },
-    clearError (id) {
-      current = undefined
-      post({ type: 'nuxt:dev:error:clear', id })
+    clearError (id, request) {
+      if (!scopeOf(request ?? {})) {
+        current = undefined
+      }
+      post({ type: 'nuxt:dev:error:clear', id, ...request })
     },
     warn (report) {
       post({ type: 'nuxt:dev:error:warning', report })
@@ -215,20 +224,27 @@ export interface ErrorRequestInfo {
 
 const PUBLISHED_KEY = Symbol.for('nuxt:dev:error-published')
 
-/** Ids of the reports published for each requested path, which a successful render of that path retires. */
-function publishedByPath (): Map<string, Set<string>> {
-  const store = globalThis as { [PUBLISHED_KEY]?: Map<string, Set<string>> }
+/** The ids of the reports published for each requested path, by the request (`METHOD /path`) that raised them. */
+function publishedByPath (): Map<string, Map<string, Set<string>>> {
+  const store = globalThis as { [PUBLISHED_KEY]?: Map<string, Map<string, Set<string>>> }
   return store[PUBLISHED_KEY] ||= new Map()
+}
+
+/** The request a clear names, if it names one. */
+function scopeOf ({ requestId, request }: { requestId?: string, request?: string }): { requestId?: string, request?: string } | undefined {
+  return requestId || request ? { ...requestId && { requestId }, ...request && { request } } : undefined
 }
 
 /** Publish a report as an open error, paired with the request it came from. */
 export async function publishErrorReport (report: ErrorReport, request?: ErrorRequestInfo): Promise<void> {
   const channel = await useErrorChannel()
   const path = request && `${request.url.pathname}${request.url.search}`
-  channel.setError(report, requestIdOf(request), path && `${request.method} ${path}`)
-  if (path) {
+  const scope = path && `${request.method} ${path}`
+  channel.setError(report, requestIdOf(request), scope)
+  if (scope) {
     const published = publishedByPath()
-    published.set(path, (published.get(path) ?? new Set()).add(report.id))
+    const byRequest = published.get(path) ?? new Map<string, Set<string>>()
+    published.set(path, byRequest.set(scope, (byRequest.get(scope) ?? new Set()).add(report.id)))
   }
 }
 
@@ -237,17 +253,22 @@ export function requestIdOf (request?: Pick<ErrorRequestInfo, 'headers'>): strin
   return request?.headers.get(REQUEST_ID_HEADER) ?? undefined
 }
 
-/** Retire the reports published for requests to `url`, which has since rendered. */
+/**
+ * Retire the reports published for requests to `url`, which has since rendered. Each stays open
+ * for any other request that raised it.
+ */
 export async function clearErrorReport (url: URL): Promise<void> {
   const path = `${url.pathname}${url.search}`
-  const ids = publishedByPath().get(path)
-  if (!ids) {
+  const reports = publishedByPath().get(path)
+  if (!reports) {
     return
   }
   publishedByPath().delete(path)
   const channel = await useErrorChannel()
-  for (const id of ids) {
-    channel.clearError(id)
+  for (const [request, ids] of reports) {
+    for (const id of ids) {
+      channel.clearError(id, { request })
+    }
   }
 }
 
