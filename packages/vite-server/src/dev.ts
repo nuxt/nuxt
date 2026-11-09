@@ -55,7 +55,7 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   const shell = async (url: string, request: Request) => {
     const html = await resolveDocument(nuxt)
     const transformed = viteServer ? await viteServer.transformIndexHtml(url, html) : html
-    return new Response(await withDevBadge(nuxt, transformed, errorChannel, request), {
+    return new Response(await withDevBadge(nuxt, transformed, errorChannel, request, viteServer?.config.html?.cspNonce), {
       headers: { 'content-type': 'text/html;charset=utf-8' },
     })
   }

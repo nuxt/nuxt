@@ -3,6 +3,6 @@
  *
  * @module nuxt/internal/dev-error
  */
-export { ERROR_CHANNEL_BROADCAST, ERROR_CHANNEL_ENV, REQUEST_ID_HEADER, clearErrorReport, openErrorBroadcast, publishDevLog, publishDevProgress, publishErrorReport, resolveDevAllowedHosts, setErrorChannelAccess, setErrorChannelForwarding, useErrorChannel } from './channel.ts'
-export type { ErrorChannelAccess, ErrorChannelMessage, ErrorRequestInfo } from './channel.ts'
+export { ERROR_CHANNEL_BROADCAST, ERROR_CHANNEL_ENV, REQUEST_ID_HEADER, clearErrorReport, createProblemSetPublisher, openErrorBroadcast, publishDevLog, publishDevProgress, publishErrorReport, resolveDevAllowedHosts, setErrorChannelAccess, setErrorChannelForwarding, useErrorChannel } from './channel.ts'
+export type { ErrorChannelAccess, ErrorChannelMessage, ErrorRequestInfo, ProblemSetPublisher } from './channel.ts'
 export * from './report.ts'

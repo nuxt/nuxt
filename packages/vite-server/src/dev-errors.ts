@@ -44,11 +44,11 @@ export function serveErrorChannel (nuxt: Nuxt, server: ViteDevServer, channel: s
 }
 
 /** Add the badge to the head of a document served without a render. */
-export async function withDevBadge (nuxt: Nuxt, html: string, channel: string, request: Request): Promise<string> {
+export async function withDevBadge (nuxt: Nuxt, html: string, channel: string, request: Request, nonce?: string): Promise<string> {
   if (nuxt.options.test) {
     return html
   }
-  const badge = await renderDevBadge({ cwd: nuxt.options.rootDir, channel: process.env[ERROR_CHANNEL_ENV] || channel, request }).catch(() => '')
+  const badge = await renderDevBadge({ cwd: nuxt.options.rootDir, channel: process.env[ERROR_CHANNEL_ENV] || channel, request, nonce }).catch(() => '')
   const index = html.indexOf('</head>')
   return index === -1 ? badge + html : html.slice(0, index) + badge + html.slice(index)
 }

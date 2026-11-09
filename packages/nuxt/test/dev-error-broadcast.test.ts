@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ErrorReport } from 'my-bad'
-import { publishDevLog, publishDevProgress, publishErrorReport, resolveDevAllowedHosts, setErrorChannelAccess, setErrorChannelForwarding, useErrorChannel } from '../src/runtime/server/dev-error/index'
+import { createProblemSetPublisher, publishDevLog, publishDevProgress, publishErrorReport, resolveDevAllowedHosts, setErrorChannelAccess, setErrorChannelForwarding, useErrorChannel } from '../src/runtime/server/dev-error/index'
 
 const report = { id: 'abc', kind: 'error', name: 'Error', message: 'boom', frames: [], causes: [], sections: [], timestamp: 0 } as unknown as ErrorReport
 
@@ -141,6 +141,32 @@ describe('dev error channel problem sets', () => {
       { type: 'nuxt:dev:error:devtools', registered: true },
     ]))
     listener.close()
+  })
+})
+
+describe('problem set publisher', () => {
+  it('repeats its latest sets when the channel asks, and clears them when it closes', async () => {
+    const messages: unknown[] = []
+    const channel = new BroadcastChannel('nuxt:dev:error')
+    channel.onmessage = event => messages.push(event.data)
+    const publisher = createProblemSetPublisher()
+    const problems = (source: string) => ({ type: 'nuxt:dev:error:problems', source, reports: [report], meta: { label: source } })
+
+    publisher.set('nuxt:pages', [report], { label: 'nuxt:pages' })
+    publisher.set('nuxt:imports', [report], { label: 'nuxt:imports' })
+    publisher.clear('nuxt:imports')
+    publisher.clear('nuxt:imports')
+    await vi.waitFor(() => expect(messages).toHaveLength(3))
+    channel.postMessage({ type: 'nuxt:dev:error:sync' })
+    await vi.waitFor(() => expect(messages).toHaveLength(4))
+    expect(messages[3]).toEqual(problems('nuxt:pages'))
+
+    publisher.close()
+    publisher.set('nuxt:pages', [report], { label: 'nuxt:pages' })
+    await vi.waitFor(() => expect(messages).toHaveLength(5))
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(messages.slice(4)).toEqual([{ type: 'nuxt:dev:error:problems:clear', source: 'nuxt:pages' }])
+    channel.close()
   })
 })
 

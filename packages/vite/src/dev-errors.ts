@@ -6,7 +6,7 @@ import { isFileLoadingAllowed } from 'vite'
 import type { ServerResponse } from 'node:http'
 import type { Connect, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { joinURL } from 'ufo'
-import { ERROR_CHANNEL_ENV, REQUEST_ID_HEADER, createReportFsLoader, openErrorBroadcast, stripControlCharacters } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, REQUEST_ID_HEADER, createProblemSetPublisher, createReportFsLoader, openErrorBroadcast, stripControlCharacters } from 'nuxt/internal/dev-error'
 import type { ErrorChannelMessage } from 'nuxt/internal/dev-error'
 
 /** The shape Vite gives transform failures. */
@@ -86,7 +86,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   let publishedFile: string | undefined
   // the reports another process published that are still open
   const published = new Set<string>()
-  const problems = new Map<string, ErrorChannelMessage & { type: 'nuxt:dev:error:problems' }>()
+  const problems = createProblemSetPublisher()
   let devtools = false
   let closed = false
   // a rebuild or report still pending when Nuxt closes would post to a closed channel
@@ -94,10 +94,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   // the channel can outlive this instance, and this runs before the dev server closes
   nuxt.hook('close', () => {
     closed = true
-    for (const source of problems.keys()) {
-      broadcast.postMessage({ type: 'nuxt:dev:error:problems:clear', source } satisfies ErrorChannelMessage)
-    }
-    problems.clear()
+    problems.close()
     if (devtools) {
       broadcast.postMessage({ type: 'nuxt:dev:error:devtools', registered: false } satisfies ErrorChannelMessage)
     }
@@ -122,9 +119,6 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
           if (report) {
             broadcast.postMessage({ type: 'nuxt:dev:error:report', report, request } satisfies ErrorChannelMessage)
           }
-        }
-        for (const message of problems.values()) {
-          broadcast.postMessage(message)
         }
         if (devtools) {
           broadcast.postMessage({ type: 'nuxt:dev:error:devtools', registered: true } satisfies ErrorChannelMessage)
@@ -228,19 +222,8 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
     progress (progress) {
       post({ type: 'nuxt:dev:error:progress', progress })
     },
-    setProblems (source, reports, meta) {
-      if (closed) {
-        return
-      }
-      const message = { type: 'nuxt:dev:error:problems' as const, source, reports, meta }
-      problems.set(source, message)
-      broadcast.postMessage(message)
-    },
-    clearProblems (source) {
-      if (problems.delete(source)) {
-        broadcast.postMessage({ type: 'nuxt:dev:error:problems:clear', source } satisfies ErrorChannelMessage)
-      }
-    },
+    setProblems: problems.set,
+    clearProblems: problems.clear,
     registerDevTools () {
       if (closed || devtools) {
         return

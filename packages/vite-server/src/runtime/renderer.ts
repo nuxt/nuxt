@@ -64,7 +64,7 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
       ? (error, event, options) => devErrors.then(({ observeDevError }) => observeDevError(error, event.req, options))
       : undefined,
     renderDevBadge: devErrors
-      ? event => devErrors.then(({ renderDevBadge }) => renderDevBadge(event.req))
+      ? (event, nonce) => devErrors.then(({ renderDevBadge }) => renderDevBadge(event.req, nonce))
       : undefined,
   }
 }

@@ -43,8 +43,8 @@ export function publishErrorReport (report: ErrorReport, event?: H3Event): Promi
 }
 
 /** Render the badge for the head of a page rendered for `event`. */
-export function renderDevBadge (event: H3Event): Promise<string> {
-  return devError.renderDevBadge({ cwd: rootDir, channel: getErrorChannelPath(), request: event.req })
+export function renderDevBadge (event: H3Event, nonce?: string): Promise<string> {
+  return devError.renderDevBadge({ cwd: rootDir, channel: getErrorChannelPath(), request: event.req, nonce })
 }
 
 /**

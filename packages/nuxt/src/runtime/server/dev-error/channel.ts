@@ -106,6 +106,58 @@ export function openErrorBroadcast (): ErrorBroadcast {
   }
 }
 
+export interface ProblemSetPublisher {
+  /** Replace the problem set for `source`. */
+  set: (source: string, reports: ErrorReport[], meta?: ProblemMeta) => void
+  /** Clear the problem set for `source`. */
+  clear: (source: string) => void
+  /** Clear every set it published, and publish nothing more. */
+  close: () => void
+}
+
+/**
+ * Publish problem sets to the live channel from any thread. It repeats the latest set of each
+ * source when the channel asks, so a channel that restarts gets them back.
+ */
+export function createProblemSetPublisher (): ProblemSetPublisher {
+  const broadcast = openErrorBroadcast()
+  const sets = new Map<string, Extract<ErrorChannelMessage, { type: 'nuxt:dev:error:problems' }>>()
+  let closed = false
+  broadcast.onmessage = (event) => {
+    if ((event.data as ErrorChannelMessage | undefined)?.type === 'nuxt:dev:error:sync') {
+      for (const message of sets.values()) {
+        broadcast.postMessage(message)
+      }
+    }
+  }
+  return {
+    set (source, reports, meta) {
+      if (closed) {
+        return
+      }
+      const message = { type: 'nuxt:dev:error:problems' as const, source, reports, meta }
+      sets.set(source, message)
+      broadcast.postMessage(message)
+    },
+    clear (source) {
+      if (!closed && sets.delete(source)) {
+        broadcast.postMessage({ type: 'nuxt:dev:error:problems:clear', source } satisfies ErrorChannelMessage)
+      }
+    },
+    close () {
+      if (closed) {
+        return
+      }
+      closed = true
+      for (const source of sets.keys()) {
+        broadcast.postMessage({ type: 'nuxt:dev:error:problems:clear', source } satisfies ErrorChannelMessage)
+      }
+      sets.clear()
+      broadcast.close()
+    },
+  }
+}
+
 function openBroadcast (): { broadcast: ErrorBroadcast, post: (message: ErrorChannelMessage) => void } {
   const broadcast = openErrorBroadcast()
   return { broadcast, post: message => broadcast.postMessage(message) }

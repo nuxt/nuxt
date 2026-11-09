@@ -120,23 +120,28 @@ async function withErrorOverlay (html: string, report: ErrorReport, options: Err
     theme: nuxtTheme,
     tag: 'nuxt-error-overlay',
     startMinimized: options.startMinimized,
+    nonce: SCRIPT_NONCE_RE.exec(html)?.[1] || undefined,
   })
 }
+
+/** The CSP nonce a page's scripts carry, when it is a valid one. */
+const SCRIPT_NONCE_RE = /<script(?=[\s>])[^>]*?\snonce="([\w+/\-=]*)"/
 
 /**
  * Render the badge for the head of a dev page, which shows the channel's errors and warnings
  * on it. The page reloads once its error clears, unless `window.__NUXT_DEV_ERROR__.recovers()`
  * reports that the app can update in place.
  */
-export async function renderDevBadge (options: { cwd?: string, channel: string, request?: Pick<ErrorRequestInfo, 'headers'> }): Promise<string> {
+export async function renderDevBadge (options: { cwd?: string, channel: string, request?: Pick<ErrorRequestInfo, 'headers'>, nonce?: string }): Promise<string> {
   const [{ renderBadge }, { nuxtTheme }] = await Promise.all([
     import('my-bad'),
     import('my-bad/presets'),
   ])
   const requestId = requestIdOf(options.request) ?? crypto.randomUUID()
   const state = JSON.stringify({ requestId }).replaceAll('<', '\\u003c')
-  return `<script>window.__NUXT_DEV_ERROR__=${state};addEventListener('my-bad:error:clear',()=>__NUXT_DEV_ERROR__.recovers?.()||location.reload())</script>`
-    + renderBadge({ channel: options.channel, cwd: options.cwd, theme: nuxtTheme, tag: 'nuxt-error-overlay', requestId, awaitHost: 500 })
+  const nonce = options.nonce ? ` nonce="${options.nonce.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}"` : ''
+  return `<script${nonce}>window.__NUXT_DEV_ERROR__=${state};addEventListener('my-bad:error:clear',()=>__NUXT_DEV_ERROR__.recovers?.()||location.reload())</script>`
+    + renderBadge({ channel: options.channel, cwd: options.cwd, theme: nuxtTheme, tag: 'nuxt-error-overlay', requestId, awaitHost: 500, nonce: options.nonce })
 }
 
 /** Render a standalone error page, for when the app itself cannot render one. */

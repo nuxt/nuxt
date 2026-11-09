@@ -83,6 +83,17 @@ describe.skipIf(!runs)('dev ssr error page', () => {
     expect((await channelState()).current?.id).toBe(report.id)
   })
 
+  it('stamps the badge with the nonce the page head carries', async () => {
+    const res = await fetch('/nonce', { headers: { accept: 'text/html' } })
+    const html = await res.text()
+    const badge = html.match(/<script[^>]*>(?=window\.__NUXT_DEV_ERROR__)|<script[^>]*badge\.js[^>]*>/g)
+
+    expect(badge).toHaveLength(2)
+    for (const tag of badge!) {
+      expect(tag).toContain('nonce="abc123"')
+    }
+  })
+
   it('retires the error once its page streams without one', async () => {
     const { report } = await renderErrorPage('/streamed')
     expect((await channelState('/streamed')).current?.id).toBe(report.id)

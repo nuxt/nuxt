@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ErrorReport } from 'my-bad'
-import { createDevErrorReporter, setErrorChannelForwarding, useErrorChannel } from '../src/runtime/server/dev-error/index'
+import { createDevErrorReporter, renderDevBadge, setErrorChannelForwarding, useErrorChannel } from '../src/runtime/server/dev-error/index'
 
 const report = { message: 'boom', causes: [], frames: [] } as unknown as ErrorReport
 
@@ -136,5 +136,33 @@ describe('dev error reporter', () => {
     expect(printed).toContain(']52;c;ZXZpbA==boom[2J')
     expect(printed).not.toContain('\u001B')
     expect(printed).not.toContain('\u0007')
+  })
+})
+
+describe('dev error markup on a page with a CSP nonce', () => {
+  const scriptsWithout = (html: string, nonce: string) => html.match(/<script\b[^>]*>/g)!.filter(tag => !tag.includes(`nonce="${nonce}"`))
+
+  it('stamps the page nonce on every script of the badge', async () => {
+    const html = await renderDevBadge({ channel: '/__nuxt_dev__/error', nonce: 'abc123' })
+
+    expect(html.match(/<script\b/g)!.length).toBeGreaterThan(1)
+    expect(scriptsWithout(html, 'abc123')).toEqual([])
+  })
+
+  it('renders the badge without a nonce when the page has none', async () => {
+    expect(await renderDevBadge({ channel: '/__nuxt_dev__/error' })).not.toContain('nonce=')
+  })
+
+  it('stamps the overlay it adds to an error page with that page\'s nonce', async () => {
+    setErrorChannelForwarding(() => true)
+    const { reporter } = reporterFor({
+      createReport: () => Promise.resolve({ id: 'abc', kind: 'error', name: 'Error', message: 'boom', frames: [], causes: [], sections: [], timestamp: 0 } as unknown as ErrorReport),
+    })
+    const result = await reporter(new Error('boom'), request(), { publish: false, print: false })
+
+    const page = await result!.overlay('<html><head><script nonce="abc123" src="/_nuxt/entry.js"></script></head><body></body></html>')
+
+    expect(page).toContain('<nuxt-error-overlay')
+    expect(scriptsWithout(page, 'abc123')).toEqual([])
   })
 })

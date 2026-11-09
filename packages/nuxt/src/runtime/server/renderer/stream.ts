@@ -188,7 +188,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   }
   const shellContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS) : undefined]),
+    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, cspNonce) : undefined]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
     body: [],

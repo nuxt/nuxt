@@ -76,9 +76,9 @@ export function observeDevError (error: unknown, request?: Request, observe?: De
 }
 
 /** Render the badge for the head of a page rendered for `request`, when a channel is served for it. */
-export function renderDevBadge (request: Request): Promise<string | undefined> {
+export function renderDevBadge (request: Request, nonce?: string): Promise<string | undefined> {
   const channel = env()[ERROR_CHANNEL_ENV] || context?.channel
-  return channel ? renderBadge({ cwd: context?.cwd, channel, request }) : Promise.resolve(undefined)
+  return channel ? renderBadge({ cwd: context?.cwd, channel, request, nonce }) : Promise.resolve(undefined)
 }
 
 /** Retire the reports published for requests to `url`, which has since rendered. */

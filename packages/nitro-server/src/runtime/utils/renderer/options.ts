@@ -69,7 +69,7 @@ export const rendererOptions: NuxtRendererOptions = {
     ? (error, event, options) => import('#internal/nuxt/error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
     : undefined,
   renderDevBadge: import.meta.dev
-    ? event => import('#internal/nuxt/error-channel').then(({ renderDevBadge }) => renderDevBadge(appEvent(event) as H3Event))
+    ? (event, nonce) => import('#internal/nuxt/error-channel').then(({ renderDevBadge }) => renderDevBadge(appEvent(event) as H3Event, nonce))
     : undefined,
   prerender: import.meta.prerender
     ? {

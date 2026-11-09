@@ -14,9 +14,9 @@ export function renderAppTeleports (ssrContext: NuxtSSRContext): string {
 }
 
 /** The dev error badge for the head of a page, unless it runs no scripts. */
-export function renderDevBadge (runtime: NuxtRendererOptions, event: RendererEvent, noScripts: boolean): Promise<string | undefined> | undefined {
+export function renderDevBadge (runtime: NuxtRendererOptions, event: RendererEvent, noScripts: boolean, nonce?: string): Promise<string | undefined> | undefined {
   if (!import.meta.test && !noScripts) {
-    return runtime.renderDevBadge?.(event).catch(() => undefined)
+    return runtime.renderDevBadge?.(event, nonce).catch(() => undefined)
   }
 }
 
