@@ -280,10 +280,10 @@ function StaticAssetsURLPlugin (nuxt: Nuxt): Plugin {
  * Resolves the modules the renderer imports for the environment that renders.
  *
  * Every specifier comes from the record, so this plugin never names one: the set is Nuxt's
- * to change. Each body is read when the environment loads it, which is after the client
- * environment has built, so the values it derives from the client build are final.
+ * to change. Each body is read when the environment loads it, so a body the renderer
+ * derives from the client build is read once the client environment has built.
  */
-function ServerRuntimeModulesPlugin (serverRuntime: NuxtServerRuntime): Plugin {
+export function ServerRuntimeModulesPlugin (serverRuntime: NuxtServerRuntime): Plugin {
   const prefix = '\0nuxt-server-runtime:'
 
   return {

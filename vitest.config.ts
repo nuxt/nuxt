@@ -181,6 +181,7 @@ function rendererProject (name: string, include: string[], rendererConfig: strin
         'nuxt/internal/styles': artifact('renderer/styles.mjs'),
         'nuxt/internal/entry-ids': artifact('renderer/entry-ids.mjs'),
         'nuxt/internal/entry-chunk': artifact('renderer/entry-chunk.mjs'),
+        'nuxt/internal/renderer-plugins': artifact('renderer/renderer-plugins.mjs'),
         '#build': artifact(''),
         // provided by the server builder in a real build; the fixture writes them out
         '#internal/nuxt/paths': artifact('paths.mjs'),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addNitroPlugin, addServerHandler, runWithNuxtContext } from '@nuxt/kit'
+import { addNitroPlugin, addRendererPlugin, addServerHandler, runWithNuxtContext } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { NitroConfig } from 'nitro/types'
 
@@ -16,6 +16,7 @@ function createNuxt (options: Record<string, any> = {}) {
       serverHandlers: [],
       devServerHandlers: [],
       _serverPlugins: [],
+      _rendererPlugins: [],
       _nitroMajor: 3,
       ...options,
     },
@@ -28,12 +29,13 @@ describe('collectServerRegistrations', () => {
     runWithNuxtContext(nuxt, () => {
       addServerHandler({ route: '/a', handler: { nitro3: '/a.v3.ts', nitro2: '/a.v2.ts', nuxt: '/a.nuxt.ts' } })
       addNitroPlugin({ nitro3: '/plugin.v3.ts', nitro2: '/plugin.v2.ts' })
+      addRendererPlugin({ nuxt: '/renderer.ts', nitro3: '/renderer.v3.ts' })
     })
     const nitroConfig: NitroConfig = { handlers: nuxt.options.serverHandlers as any }
 
     const unused = collectServerRegistrations(nuxt, nitroConfig)
 
-    expect(unused.sort()).toEqual(['/a.nuxt.ts', '/a.v2.ts', '/plugin.v2.ts'])
+    expect(unused.sort()).toEqual(['/a.nuxt.ts', '/a.v2.ts', '/plugin.v2.ts', '/renderer.v3.ts'])
     expect(serverApiOf(nitroConfig.handlers![0]!)).toBe('nitro3')
     expect(nitroConfig.plugins).toEqual(['/plugin.v3.ts'])
     expect([...migratedPlugins(nuxt)]).toEqual(['/plugin.v3.ts'])

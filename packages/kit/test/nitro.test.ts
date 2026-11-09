@@ -8,7 +8,7 @@ import { runWithNuxtContext } from '../src/context.ts'
 import { kitDiagnostics } from '../src/diagnostics/kit-api.ts'
 import { defineNuxtModule } from '../src/module/define.ts'
 
-import { addDevServerHandler, addNitroPlugin, addServerHandler, addServerImports, addServerImportsDir, addServerPlugin, getHostServerApis, kServerApi, kUnusedVariants, resolveServerVariant } from '../src/nitro.ts'
+import { addDevServerHandler, addNitroPlugin, addRendererPlugin, addServerHandler, addServerImports, addServerImportsDir, addServerPlugin, getHostServerApis, kServerApi, kUnusedVariants, resolveServerVariant } from '../src/nitro.ts'
 import { addServerTemplate } from '../src/template.ts'
 
 const serverApiOf = (entry: object) => (entry as Record<symbol, string | undefined>)[kServerApi]
@@ -33,6 +33,7 @@ function createMockNuxt (nitroVersion?: string) {
       serverHandlers: [],
       devServerHandlers: [],
       _serverPlugins: [],
+      _rendererPlugins: [],
       extensions: ['.js', '.ts', '.mjs'],
       alias: {},
       build: { transpile: [] },
@@ -459,6 +460,88 @@ describe('addNitroPlugin', () => {
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- the alias is what is under test
     runWithNuxtContext(nuxt, () => addServerPlugin('/plugins/test.ts'))
     expect(nuxt.options._serverPlugins).toEqual([{ plugin: '/plugins/test.ts', compatibility: undefined, unused: [] }])
+  })
+})
+
+describe('addRendererPlugin', () => {
+  const withoutRendererPlugins = (nuxt: Nuxt) => {
+    delete (nuxt.options as { _rendererPlugins?: unknown })._rendererPlugins
+    return nuxt
+  }
+
+  it.each([
+    ['nitro v3', '3.0.1', undefined],
+    ['nitro v2', '2.11.0', undefined],
+    ['@nuxt/vite-server', '3.0.1', '@nuxt/vite-server'],
+  ])('registers a renderer plugin on %s', (_case, nitro, builder) => {
+    const nuxt = createMockNuxt(nitro)
+    if (builder) {
+      ;(nuxt.options as any).server = { builder }
+    }
+    runWithNuxtContext(nuxt, () => addRendererPlugin('\\plugins\\renderer.ts'))
+    expect(nuxt.options._rendererPlugins).toEqual([{ plugin: '/plugins/renderer.ts', unused: [] }])
+    expect(nuxt.options._serverPlugins).toEqual([])
+  })
+
+  it('prefers the `nuxt` variant, and reports the nitro variants as unused', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    runWithNuxtContext(nuxt, () => addRendererPlugin({ nuxt: '/plugins/renderer.ts', nitro3: '/plugins/nitro.v3.ts', nitro2: '/plugins/nitro.v2.ts' }))
+    expect(nuxt.options._rendererPlugins).toEqual([{ plugin: '/plugins/renderer.ts', unused: ['/plugins/nitro.v3.ts', '/plugins/nitro.v2.ts'] }])
+  })
+
+  it('registers a plugin once', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    runWithNuxtContext(nuxt, () => {
+      addRendererPlugin('/plugins/renderer.ts')
+      addRendererPlugin({ nuxt: '/plugins/renderer.ts' })
+    })
+    expect(nuxt.options._rendererPlugins).toHaveLength(1)
+  })
+
+  it('registers a nitro variant as a nitro plugin when there is no `nuxt` variant', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    runWithNuxtContext(nuxt, () => addRendererPlugin({ nitro3: '/plugins/nitro.v3.ts' }))
+    expect(nuxt.options._rendererPlugins).toEqual([])
+    expect(nuxt.options._serverPlugins).toEqual([{ plugin: '/plugins/nitro.v3.ts', compatibility: 'nitro3', unused: [] }])
+  })
+
+  it('registers the plugin as a nitro plugin on a nitro host that predates renderer plugins', () => {
+    const nuxt = withoutRendererPlugins(createMockNuxt('3.0.1'))
+    runWithNuxtContext(nuxt, () => addRendererPlugin('/plugins/renderer.ts'))
+    expect(nuxt.options._serverPlugins).toEqual([{ plugin: '/plugins/renderer.ts', compatibility: 'nuxt', unused: [] }])
+  })
+
+  it('registers the nitro variant the host prefers on a host that predates renderer plugins', () => {
+    const nuxt = withoutRendererPlugins(createMockNuxt('2.11.0'))
+    delete (nuxt.options as { _serverPlugins?: unknown })._serverPlugins
+    runWithNuxtContext(nuxt, () => addRendererPlugin({ nuxt: '/plugins/renderer.ts', nitro2: '/plugins/nitro.v2.ts' }))
+    expect(nuxt.options.nitro.plugins).toEqual(['/plugins/nitro.v2.ts'])
+  })
+
+  it('is skipped under a server that predates renderer plugins and runs no nitro plugin', () => {
+    const report = vi.spyOn(kitDiagnostics, 'NUXT_B8024').mockImplementation(() => ({}) as any)
+    const nuxt = withoutRendererPlugins(createMockNuxt('3.0.1'))
+    ;(nuxt.options as any).server = { builder: '@nuxt/vite-server' }
+
+    runWithNuxtContext(nuxt, () => addRendererPlugin('/plugins/renderer.ts'))
+
+    expect(nuxt.options._serverPlugins).toEqual([])
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toMatchObject({ api: 'addRendererPlugin', host: 'nuxt' })
+    report.mockRestore()
+  })
+
+  it('is skipped, given only nitro variants, under a server that runs no nitro plugin', () => {
+    const report = vi.spyOn(kitDiagnostics, 'NUXT_B8024').mockImplementation(() => ({}) as any)
+    const nuxt = createMockNuxt('3.0.1')
+    ;(nuxt.options as any).server = { builder: '@nuxt/vite-server' }
+
+    runWithNuxtContext(nuxt, () => addRendererPlugin({ nitro2: '/plugins/nitro.v2.ts' }))
+
+    expect(nuxt.options._rendererPlugins).toEqual([])
+    expect(nuxt.options._serverPlugins).toEqual([])
+    expect(report).toHaveBeenCalledTimes(1)
+    report.mockRestore()
   })
 })
 

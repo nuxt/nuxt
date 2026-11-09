@@ -3,7 +3,7 @@ import type * as UpstreamV2 from 'nitropack/types'
 import type * as UpstreamV3 from 'nitro/types'
 import type { DevServerHandler, RequestEvent, ServerHandler, ServerHandlerInput } from '@nuxt/schema'
 
-import { addDevServerHandler, addNitroPlugin, addServerHandler } from '../src/nitro.ts'
+import { addDevServerHandler, addNitroPlugin, addRendererPlugin, addServerHandler } from '../src/nitro.ts'
 
 import type { NitroRouteConfig, NitroRouteConfigV2, NitroRouteConfigV3 } from '../src/nitro-types.ts'
 
@@ -64,6 +64,8 @@ describe('registrations', () => {
     addServerHandler({ route: '/a', handler: { nuxt: '/a.ts', nitro2: '/a.v2.ts', nitro3: '/a.v3.ts' } })
     addNitroPlugin('/plugin.ts')
     addNitroPlugin({ nitro3: '/plugin.ts', nitro2: '/plugin.v2.ts' })
+    addRendererPlugin('/plugin.ts')
+    addRendererPlugin({ nuxt: '/plugin.ts', nitro2: '/plugin.v2.ts', nitro3: '/plugin.v3.ts' })
     addDevServerHandler({ route: '/a', handler: () => {} })
     addDevServerHandler({ route: '/a', handler: { nitro2: () => {}, nitro3: { fetch: () => new Response() } } })
   }))
@@ -80,6 +82,8 @@ describe('registrations', () => {
     addServerHandler({ route: '/a', handler: { nitro4: '/a.ts' } })
     // @ts-expect-error a startup plugin has no portable variant
     addNitroPlugin({ nuxt: '/plugin.ts' })
+    // @ts-expect-error `nitro4` is not a server API
+    addRendererPlugin({ nitro4: '/plugin.ts' })
   }))
 
   it('accept a route-less middleware handler', typed(() => {

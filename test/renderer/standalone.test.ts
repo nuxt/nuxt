@@ -202,6 +202,53 @@ describe('renderer without a server builder', () => {
   })
 })
 
+describe('renderer plugins', () => {
+  const state = globalThis as { __rendererPluginCalls?: number }
+
+  it('calls each plugin once for every renderer, with hooks of its own', async () => {
+    const calls = state.__rendererPluginCalls || 0
+    const first = createNuxtRenderer(options)
+    const second = createNuxtRenderer(options)
+
+    expect(state.__rendererPluginCalls).toBe(calls + 2)
+    for (const renderer of [first, second]) {
+      const html = await renderer.fetch(createEvent('/')).then(r => r.text())
+      expect(html.match(/<meta name="renderer-plugin">/g)).toHaveLength(1)
+    }
+  })
+
+  it('runs the hooks of renderer plugins before those of the runtime', async () => {
+    const { html } = await render('/', {
+      hooks: () => ({
+        callHook: ((name: string, context: any) => {
+          if (name === 'render:html') {
+            context.head.push('<meta name="runtime">')
+          }
+        }) as never,
+      }),
+    })
+
+    expect(html.indexOf('<meta name="renderer-plugin">')).toBeGreaterThan(-1)
+    expect(html.indexOf('<meta name="renderer-plugin">')).toBeLessThan(html.indexOf('<meta name="runtime">'))
+  })
+
+  it('runs them for a streamed render', async () => {
+    const event = createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } })
+    const { html } = await render('/', { getRouteRules: () => ({ ssr: true, streaming: true }) }, event)
+
+    expect(html).toContain('window.__unhead__')
+    expect(html).toContain('<meta name="renderer-plugin">')
+    expect(html).toMatch(/<!--renderer-plugin-close-->[\s\S]*<\/body>/)
+  })
+
+  it('runs them for the client-only shell', async () => {
+    const { html } = await render('/', { getRouteRules: () => ({ ssr: false }) })
+
+    expect(html).toContain('<div id="__nuxt"></div>')
+    expect(html).toContain('<meta name="renderer-plugin">')
+  })
+})
+
 describe('noScripts route rules', () => {
   it('renders non-script resource hints without any scripts', async () => {
     const { html } = await render('/', { getRouteRules: () => ({ ssr: true, noScripts: true }) })
