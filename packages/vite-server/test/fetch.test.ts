@@ -128,6 +128,21 @@ describe('`$fetch` on the vite server', () => {
     expect(await response.text()).toBe('GET null')
   })
 
+  it('does not send the credentials of a request to a redirect on another origin', async () => {
+    const platform = vi.fn(() => Promise.resolve(new Response('platform')))
+    vi.stubGlobal('fetch', platform)
+    const handler = vi.fn(() => Promise.resolve(new Response(null, { status: 302, headers: { location: 'https://example.com/x' } })))
+
+    await createAppFetch(() => Promise.resolve(handler))('/old', {
+      headers: { 'authorization': 'Bearer token', 'cookie': 'a=1', 'x-keep': 'yes' },
+    })
+
+    const sent = new Headers(platform.mock.calls[0]![1]!.headers)
+    expect(sent.get('authorization')).toBeNull()
+    expect(sent.get('cookie')).toBeNull()
+    expect(sent.get('x-keep')).toBe('yes')
+  })
+
   it('sends any other request to the platform', async () => {
     const platform = vi.fn(() => Promise.resolve(new Response('platform')))
     vi.stubGlobal('fetch', platform)

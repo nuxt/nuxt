@@ -33,6 +33,7 @@ export function createAppFetch (loadFetch: () => Promise<AppFetch>) {
 const LOCAL_ORIGIN = 'http://localhost'
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
 const MAX_REDIRECTS = 20
+const CREDENTIAL_HEADERS = ['authorization', 'cookie', 'proxy-authorization']
 const REQUEST_BODY_HEADERS = ['content-encoding', 'content-language', 'content-length', 'content-location', 'content-type']
 
 async function fetchFollowingRedirects (fetch: AppFetch, path: string, init: RequestInit | undefined, context?: Record<string, unknown>): Promise<Response> {
@@ -67,6 +68,9 @@ async function fetchFollowingRedirects (fetch: AppFetch, path: string, init: Req
 
     const target = new URL(location, `${LOCAL_ORIGIN}${url}`)
     if (target.origin !== LOCAL_ORIGIN) {
+      for (const name of CREDENTIAL_HEADERS) {
+        headers.delete(name)
+      }
       return globalThis.fetch(target, { ...init, method, body, headers })
     }
     if (redirects >= MAX_REDIRECTS) {
