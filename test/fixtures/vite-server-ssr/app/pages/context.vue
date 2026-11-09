@@ -1,5 +1,7 @@
 <script setup lang="ts">
-const user = (useRequestEvent()!.context as { user?: string }).user
+const context = useRequestEvent()!.context as { user?: string, inner?: string }
+const user = context.user
+context.inner = 'set'
 </script>
 
 <template>

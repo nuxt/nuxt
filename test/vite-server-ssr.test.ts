@@ -121,7 +121,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
   })
 
   it('seeds an in-process fetch with the context of the request that made it', async () => {
-    expect(await (await render('/fetched-context')).text()).toContain('<p id="fetched-context">seeded with daniel</p>')
+    expect(await (await render('/fetched-context')).text()).toContain('<p id="fetched-context">seeded with daniel and isolated</p>')
   })
 
   it('renders asset URLs without process-wide helpers', async () => {
