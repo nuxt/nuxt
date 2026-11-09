@@ -107,6 +107,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
     return pages
   }
 
+  const explicitlyNamedRoutes = new WeakSet<NuxtPage>()
   const augmentCtx = {
     extraExtractionKeys: new Set([
       'middleware',
@@ -116,6 +117,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
     fullyResolvedPaths: trackedFiles,
     originalPagePaths,
     nuxt,
+    explicitlyNamedRoutes,
   }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
@@ -129,6 +131,35 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
 
   await nuxt.callHook('pages:resolved', pages)
 
+  const seen = new Map<string, NuxtPage>()
+  function checkDuplicates (routes: NuxtPage[]) {
+    for (const route of routes) {
+      if (route.name && route.file) {
+        const existing = seen.get(route.name)
+
+        if (
+          existing &&
+          existing.file !== route.file &&
+          (explicitlyNamedRoutes.has(route) || explicitlyNamedRoutes.has(existing))
+        ) {
+          pageDiagnostics.NUXT_B4028({
+            name: route.name,
+            file: linkToAlias(route.file),
+            existingFile: linkToAlias(existing.file!),
+          })
+        } else {
+          seen.set(route.name, route)
+        }
+      }
+
+      if (route.children?.length) {
+        checkDuplicates(route.children)
+      }
+    }
+  }
+
+  checkDuplicates(pages)
+
   return pages
 }
 
@@ -139,6 +170,7 @@ interface AugmentPagesContext {
   extraExtractionKeys?: Set<string>
   extractSerializable?: boolean
   originalPagePaths?: WeakMap<NuxtPage, string>
+  explicitlyNamedRoutes?: WeakSet<NuxtPage>
   /** Owner of the dynamic page meta recorded during augmentation. */
   nuxt?: Nuxt | null
 }
@@ -172,6 +204,10 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
 
       if (routeMeta.path !== undefined && routeMeta.path !== route.path) {
         ctx.originalPagePaths?.set(route, route.path)
+      }
+
+      if (routeMeta.name !== undefined) {
+        ctx.explicitlyNamedRoutes?.add(route)
       }
 
       Object.assign(route, routeMeta)

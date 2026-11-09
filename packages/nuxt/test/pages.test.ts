@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import fs from 'node:fs'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { augmentPages, createPagesContext, getPageComponentNames, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
+import { augmentAndResolve, augmentPages, createPagesContext, getPageComponentNames, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
 import { dynamicPageMetaCache, getDynamicPageMeta } from '../src/pages/page-meta-extraction.ts'
 import { PageComponentNamePlugin } from '../src/pages/plugins/component-name.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
@@ -11,13 +11,17 @@ import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import { useNuxt } from '@nuxt/kit'
 import fc from 'fast-check'
 import { joinURL, withoutTrailingSlash } from 'ufo'
+import { pageDiagnostics } from '../../../packages/kit/src/diagnostics/pages.ts'
 
 const mockNuxt = vi.hoisted(() => ({
   options: {
     experimental: {
       normalizePageNames: false,
+      scanPageMeta: true,
     },
   },
+  vfs: {},
+  callHook: vi.fn(),
 }))
 vi.mock('@nuxt/kit', async (original) => {
   const mod = await original<typeof import('@nuxt/kit')>()
@@ -418,6 +422,128 @@ describe('page:extends', () => {
     for (const file of files) {
       expect(dynamicMetaFor(file)).toEqual(new Set(['meta']))
     }
+  })
+
+  it('warns when two pages define the same route name', async () => {
+    const files: NuxtPage[] = [
+      { path: '/first', file: 'pages/first.vue' },
+      { path: '/second', file: 'pages/second.vue' },
+    ]
+
+    const vfs = {
+      'pages/first.vue': `
+        <script setup lang="ts">
+        definePageMeta({ name: 'report' })
+        </script>
+      `,
+      'pages/second.vue': `
+        <script setup lang="ts">
+        definePageMeta({ name: 'report' })
+        </script>
+      `,
+    }
+
+    mockNuxt.vfs = vfs
+    const spy = vi.spyOn(pageDiagnostics, 'NUXT_B4028')
+    await augmentAndResolve(
+      files,
+      new Set(Object.keys(vfs)),
+      mockNuxt as unknown as Nuxt,
+    )
+
+    expect(spy).toHaveBeenCalledWith({
+      name: 'report',
+      file: expect.stringContaining('second.vue'),
+      existingFile: expect.stringContaining('first.vue'),
+    })
+
+    spy.mockRestore()
+
+    expect(files[0]!.name).toBe('report')
+    expect(files[1]!.name).toBe('report')
+  })
+
+  it('detects collisions between generated and explicit route names', async () => {
+    const ctx = createPagesContext({ roots: ['pages/'] })
+    ctx.rebuild([
+      { path: 'pages/report.vue' },
+      { path: 'pages/first.vue' },
+    ])
+    const files = ctx.emit()
+
+    const vfs = {
+      'pages/report.vue': '<template><div>Report</div></template>',
+      'pages/first.vue': `
+        <script setup lang="ts">
+        definePageMeta({ name: 'report' })
+        </script>
+      `,
+    }
+
+    mockNuxt.vfs = vfs
+    const spy = vi.spyOn(pageDiagnostics, 'NUXT_B4028')
+
+    await augmentAndResolve(
+      files,
+      new Set(Object.keys(vfs)),
+      mockNuxt as unknown as Nuxt,
+    )
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith({
+      name: 'report',
+      file: expect.stringContaining('.vue'),
+      existingFile: expect.stringContaining('.vue'),
+    })
+
+    spy.mockRestore()
+  })
+
+  it('detects duplicate route names in nested pages', async () => {
+    const files: NuxtPage[] = [
+      {
+        path: '/parent',
+        file: 'pages/parent.vue',
+        children: [
+          { path: 'child', file: 'pages/parent/child.vue' },
+        ],
+      },
+      {
+        path: '/other',
+        file: 'pages/other.vue',
+      },
+    ]
+
+    const vfs = {
+      'pages/parent.vue': '<template><NuxtPage /></template>',
+      'pages/parent/child.vue': `
+        <script setup lang="ts">
+        definePageMeta({ name: 'shared' })
+        </script>
+      `,
+      'pages/other.vue': `
+        <script setup lang="ts">
+        definePageMeta({ name: 'shared' })
+        </script>
+      `,
+    }
+
+    mockNuxt.vfs = vfs
+    const spy = vi.spyOn(pageDiagnostics, 'NUXT_B4028')
+
+    await augmentAndResolve(
+      files,
+      new Set(Object.keys(vfs)),
+      mockNuxt as unknown as Nuxt,
+    )
+
+    expect(spy).toHaveBeenCalledExactlyOnceWith({
+      name: 'shared',
+      file: expect.stringContaining('other.vue'),
+      existingFile: expect.stringContaining('child.vue'),
+    })
+
+    spy.mockRestore()
   })
 
   it('keeps an explicit route name/path when reusing a file with a `definePageMeta` name (#27358)', async () => {
