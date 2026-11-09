@@ -48,6 +48,7 @@ describe('fetch global plugin', () => {
     expect(await transform('export const $fetch = createFetch()\nexport default $fetch', '/project/node_modules/ofetch/dist/index.mjs')).toBeUndefined()
     expect(await transform('import { $fetch } from \'#build/fetch\'\nglobalThis.$fetch ||= $fetch', '/project/.nuxt/fetch-global.mjs')).toBeUndefined()
     expect(await transform('import { $fetch } from \'#build/fetch\'\nglobalThis.$fetch ||= $fetch', `virtual:nuxt:${encodeURIComponent('.nuxt/fetch-global.mjs')}`)).toBeUndefined()
+    expect(await transform('import { $fetch } from \'#build/fetch\'\nglobalThis.$fetch ||= $fetch\nexport { $fetch }', `virtual:nuxt:${encodeURIComponent('.nuxt/fetch.mjs')}`)).toBeUndefined()
     expect(await transform('export const $fetch = (() => globalThis.$fetch ||= create())()', `/virtual:nuxt:${encodeURIComponent('.nuxt/fetch.client.mjs')}?v=1`)).toBeUndefined()
     expect(await transform('import { $fetch } from \'#build/fetch\'\nglobalThis.$fetch ||= $fetch', `/project/_virtual_${encodeURIComponent(`virtual:nuxt:${encodeURIComponent('.nuxt/fetch-global.mjs')}`)}`)).toBeUndefined()
     expect(await transform('export const $fetch = (() => globalThis.$fetch ||= create())()', `/project/node_modules/.virtual/${encodeURIComponent(`virtual:nuxt:${encodeURIComponent('.nuxt/fetch.client.mjs')}`)}`)).toBeUndefined()

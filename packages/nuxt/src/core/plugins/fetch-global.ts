@@ -26,7 +26,7 @@ export const DollarFetchGlobalPlugin = (nuxt: Nuxt) => createUnplugin(() => {
     addons: { addons: [] },
   })
   const buildDir = normalize(nuxt.options.buildDir)
-  const fetchTemplates = new Set(['fetch.client.mjs', 'fetch-global.mjs'].map(file => `${buildDir}/${file}`))
+  const fetchTemplates = new Set(['fetch.mjs', 'fetch.client.mjs', 'fetch-global.mjs'].map(file => `${buildDir}/${file}`))
 
   return {
     name: 'nuxt:fetch-global',

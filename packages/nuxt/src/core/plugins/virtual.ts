@@ -26,7 +26,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
   const alias = { ...nuxt.options.alias, ...options.alias }
 
   const resolveWithExt = (id: string) => {
-    for (const suffix of ['', '.' + options.mode]) {
+    for (const suffix of ['.' + options.mode, '']) {
       for (const ext of extensions) {
         const rId = id + suffix + ext
         if (rId in nuxt.vfs) {
