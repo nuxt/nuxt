@@ -771,8 +771,8 @@ catalogs:
       specifier: ^5.112.2
       version: 5.112.2
     webpack-bundle-analyzer:
-      specifier: ^5.4.0
-      version: 5.4.0
+      specifier: ^5.4.2
+      version: 5.4.2
     webpack-dev-middleware:
       specifier: ^8.6.0
       version: 8.6.0
@@ -1703,7 +1703,7 @@ importers:
         version: 2.5.0
       webpack-bundle-analyzer:
         specifier: catalog:webpack
-        version: 5.4.0
+        version: 5.4.2
       webpackbar:
         specifier: catalog:webpack
         version: 7.0.0(@rspack/core@2.3.0(@swc/helpers@0.5.23))(webpack@5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -2193,7 +2193,7 @@ importers:
         version: 5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0)
       webpack-bundle-analyzer:
         specifier: catalog:webpack
-        version: 5.4.0
+        version: 5.4.2
       webpack-dev-middleware:
         specifier: catalog:webpack
         version: 8.6.0(webpack@5.112.2(cssnano@9.9.0(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -11049,8 +11049,8 @@ packages:
     resolution: {integrity: sha512-i6W3epmp98tibZ2rycV6YP4FhSJvvui9JnJm7SicSC1fXzkPBGSS1g9BNZLGUqVGM6opWEq/Aw2uzD3Q0pnQOg==}
     peerDependencies:
       '@rspack/core': ^1.0.0 || ^2.0.0
-      '@vue/compiler-sfc': 3.5.44
-      vue: 3.5.44
+      '@vue/compiler-sfc': '*'
+      vue: '*'
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -12288,8 +12288,8 @@ packages:
   vue-loader@17.4.2:
     resolution: {integrity: sha512-yTKOA4R/VN4jqjw4y5HrynFL8AK0Z3/Jt7eOJXEitsm0GMRHDBjCfCiuTiLP7OESvsZYo2pATCWhDqxC5ZrM6w==}
     peerDependencies:
-      '@vue/compiler-sfc': 3.5.44
-      vue: 3.5.44
+      '@vue/compiler-sfc': '*'
+      vue: '*'
       webpack: ^4.1.0 || ^5.0.0-0
     peerDependenciesMeta:
       '@vue/compiler-sfc':
@@ -12373,8 +12373,8 @@ packages:
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
 
-  webpack-bundle-analyzer@5.4.0:
-    resolution: {integrity: sha512-6OjsEFQIwcRT1nId/O7OyHjDvrE0JSFAef/XCwGarrf9MF5/CaD0lhDvoySbus57dYEdJ3vrRVj5F3i30c4ozw==}
+  webpack-bundle-analyzer@5.4.2:
+    resolution: {integrity: sha512-STw41VwPFXH2SDo/S9E3V1MRNOwusR0OOnqvrO1RYoaFRq01hZaSPsHzn1LuJ0nXnyHVQoe2ELMcJKmUyXPdbg==}
     engines: {node: '>= 20.9.0'}
     hasBin: true
 
@@ -23281,7 +23281,7 @@ snapshots:
 
   webidl-conversions@3.0.1: {}
 
-  webpack-bundle-analyzer@5.4.0:
+  webpack-bundle-analyzer@5.4.2:
     dependencies:
       '@discoveryjs/json-ext': 0.6.3
       acorn: 8.19.0

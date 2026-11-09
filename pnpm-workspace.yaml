@@ -146,7 +146,7 @@ catalogs:
     ts-checker-rspack-plugin: ^1.7.2
     url-loader: ^4.1.1
     webpack: ^5.112.2
-    webpack-bundle-analyzer: ^5.4.0
+    webpack-bundle-analyzer: ^5.4.2
     webpack-dev-middleware: ^8.6.0
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
