@@ -26,6 +26,8 @@ export default defineNuxtConfig({
       },
     }],
   },
+  // the badge is skipped when `test` is set
+  test: false,
   server: {
     builder: 'vite',
   },

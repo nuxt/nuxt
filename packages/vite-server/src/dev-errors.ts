@@ -1,6 +1,7 @@
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
-import { ERROR_CHANNEL_ENV, clearErrorReport, createDevErrorReporter, createErrorReport, resolveDevAllowedHosts, setErrorChannelAccess, setErrorChannelForwarding } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, clearErrorReport, createDevErrorReporter, createErrorReport, renderDevBadge, resolveDevAllowedHosts, setErrorChannelAccess, setErrorChannelForwarding, useErrorChannel } from 'nuxt/internal/dev-error'
 import type { ErrorChannelAccess } from 'nuxt/internal/dev-error'
 import { isFileLoadingAllowed } from 'vite'
 import type { ViteDevServer } from 'vite'
@@ -20,6 +21,36 @@ export function errorChannelAccess (nuxt: Nuxt, server: ViteDevServer): ErrorCha
     root: strict === false ? false : allow,
     allowedHosts: resolveDevAllowedHosts(nuxt.options, server.config.server.allowedHosts),
   }
+}
+
+/**
+ * Serve the live error channel from this process, for an app with no server entry to serve
+ * it, unless a dev server in front owns it. Resolves whether the request was the channel's.
+ */
+export function serveErrorChannel (nuxt: Nuxt, server: ViteDevServer, channel: string): (req: IncomingMessage, res: ServerResponse) => Promise<boolean> {
+  const forwarding = () => !!process.env[ERROR_CHANNEL_ENV]
+  setErrorChannelForwarding(forwarding)
+  setErrorChannelAccess(errorChannelAccess(nuxt, server))
+  // opened eagerly so it is listening for the bundler's reports
+  useErrorChannel().catch(() => {})
+  const base = channel.replace(/\/$/, '')
+  return async (req, res) => {
+    const pathname = (req.url || '/').split('?')[0]!
+    if (forwarding() || (pathname !== base && !pathname.startsWith(`${base}/`))) {
+      return false
+    }
+    return (await useErrorChannel()).handler(req, res)
+  }
+}
+
+/** Add the badge to the head of a document served without a render. */
+export async function withDevBadge (nuxt: Nuxt, html: string, channel: string, request: Request): Promise<string> {
+  if (nuxt.options.test) {
+    return html
+  }
+  const badge = await renderDevBadge({ cwd: nuxt.options.rootDir, channel: process.env[ERROR_CHANNEL_ENV] || channel, request }).catch(() => '')
+  const index = html.indexOf('</head>')
+  return index === -1 ? badge + html : html.slice(0, index) + badge + html.slice(index)
 }
 
 /**
