@@ -527,7 +527,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin())
 
-  if (!nuxt.options.dev) {
+  if (!nuxt.options.dev && !nuxt.options.experimental.globalFetch) {
     addBuildPlugin(DollarFetchGlobalPlugin(nuxt), { server: false })
   }
 

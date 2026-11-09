@@ -179,7 +179,8 @@ describe('client `$fetch` templates', () => {
 
   it('installs the global from the entry in development only', async () => {
     expect(await dollarFetchSetupClientTemplate.getContents!({ nuxt: makeNuxt({ dev: true }), app: makeApp(), options: {} })).toContain('#build/fetch-global')
-    expect(await dollarFetchSetupClientTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })).not.toContain('#build/fetch')
+    expect(await dollarFetchSetupClientTemplate.getContents!({ nuxt: makeNuxt({ experimental: {} } as Partial<Nuxt['options']>), app: makeApp(), options: {} })).not.toContain('#build/fetch')
+    expect(await dollarFetchSetupClientTemplate.getContents!({ nuxt: makeNuxt({ experimental: { globalFetch: true } } as Partial<Nuxt['options']>), app: makeApp(), options: {} })).toContain('#build/fetch-global')
     expect(await dollarFetchSetupServerTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })).toContain('#build/fetch')
   })
 })
