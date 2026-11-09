@@ -2271,6 +2271,16 @@ importers:
         specifier: catalog:dev
         version: 6.0.3
 
+  test/fixtures/fetch-global-always:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+
   test/fixtures/hmr:
     dependencies:
       nuxt:
@@ -7150,7 +7160,7 @@ packages:
       '@swc/css': '*'
       clean-css: '*'
       csso: '*'
-      esbuild: '*'
+      esbuild: 0.28.2
       lightningcss: '*'
       webpack: ^5.0.0
     peerDependenciesMeta:
@@ -9432,7 +9442,7 @@ packages:
       clean-css: '*'
       cssnano: '*'
       csso: '*'
-      esbuild: '*'
+      esbuild: 0.28.2
       html-minifier-terser: '*'
       imagemin: '*'
       lightningcss: '*'
@@ -10663,8 +10673,8 @@ packages:
     resolution: {integrity: sha512-i6W3epmp98tibZ2rycV6YP4FhSJvvui9JnJm7SicSC1fXzkPBGSS1g9BNZLGUqVGM6opWEq/Aw2uzD3Q0pnQOg==}
     peerDependencies:
       '@rspack/core': ^1.0.0 || ^2.0.0
-      '@vue/compiler-sfc': '*'
-      vue: '*'
+      '@vue/compiler-sfc': 3.5.44
+      vue: 3.5.44
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -11926,8 +11936,8 @@ packages:
   vue-loader@17.4.2:
     resolution: {integrity: sha512-yTKOA4R/VN4jqjw4y5HrynFL8AK0Z3/Jt7eOJXEitsm0GMRHDBjCfCiuTiLP7OESvsZYo2pATCWhDqxC5ZrM6w==}
     peerDependencies:
-      '@vue/compiler-sfc': '*'
-      vue: '*'
+      '@vue/compiler-sfc': 3.5.44
+      vue: 3.5.44
       webpack: ^4.1.0 || ^5.0.0-0
     peerDependenciesMeta:
       '@vue/compiler-sfc':

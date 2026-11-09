@@ -702,7 +702,7 @@ export const dollarFetchSetupServerTemplate: NuxtTemplate = {
 export const dollarFetchSetupClientTemplate: NuxtTemplate = {
   filename: 'fetch-setup.client.mjs',
   dependsOn: [],
-  getContents: ({ nuxt }) => nuxt.options.dev ? 'import \'#build/fetch-global\'\n' : 'export {}\n',
+  getContents: ({ nuxt }) => nuxt.options.dev || nuxt.options.experimental.globalFetch ? 'import \'#build/fetch-global\'\n' : 'export {}\n',
 }
 
 export const dollarFetchTypeTemplate: NuxtTemplate = {
