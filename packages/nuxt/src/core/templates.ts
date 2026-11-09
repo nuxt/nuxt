@@ -672,6 +672,12 @@ export const dollarFetchClientTemplate: NuxtTemplate = {
   },
 }
 
+export const dollarFetchCompatTemplate: NuxtTemplate = {
+  filename: 'fetch.mjs',
+  dependsOn: [],
+  getContents: () => 'import { $fetch } from \'#build/fetch\'\nglobalThis.$fetch ||= $fetch\nexport { $fetch }\n',
+}
+
 // `#build/fetch-setup` is imported for its side effects as the first import in the app entry.
 // On the server it seeds `globalThis.$fetch` before any other module evaluates. On the client
 // `$fetch` is an auto-import, so this stays empty to keep a static entry import from pulling
