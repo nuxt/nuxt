@@ -264,6 +264,8 @@ export function addServerPlugin (plugin: ServerPluginInput): void {
  *
  * ```ts
  * // runtime/server/renderer.ts
+ * import type { RendererPlugin } from 'nuxt/server'
+ *
  * export default (({ hooks }) => {
  *   hooks.hook('render:html', (html) => {
  *     html.head.push('<meta name="my-module">')
