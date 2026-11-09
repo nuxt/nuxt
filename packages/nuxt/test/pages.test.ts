@@ -1599,3 +1599,34 @@ export const pageTests: Array<{
     ],
   },
 ]
+
+describe('pages:duplicate route names', () => {
+  it('warns when two pages declare the same route name via `definePageMeta`', async () => {
+    const { augmentAndResolve } = await import('../src/pages/utils.ts')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const nuxt = {
+        ...mockNuxt,
+        options: {
+          ...mockNuxt.options,
+          experimental: { scanPageMeta: true },
+          rootDir: '/',
+        },
+        callHook: vi.fn(),
+        vfs: {
+          '/pages/first.vue': 'definePageMeta({ name: \'report\' })\n',
+          '/pages/second.vue': 'definePageMeta({ name: \'report\' })\n',
+        },
+      } as any
+      const pages: NuxtPage[] = [
+        { name: 'report', path: '/first', file: '/pages/first.vue', children: [] },
+        { name: 'report', path: '/second', file: '/pages/second.vue', children: [] },
+      ]
+      await augmentAndResolve(pages, new Set(), nuxt)
+      expect(warn).toHaveBeenCalled()
+      expect(String(warn.mock.calls[0])).toContain('report')
+    } finally {
+      warn.mockRestore()
+    }
+  })
+})

@@ -162,6 +162,24 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
 
   await nuxt.callHook('pages:resolved', pages)
 
+  // Names set via `definePageMeta` are applied after the route tree is emitted, so the
+  // emit-time duplicate-name check never sees them. Catch collisions here instead.
+  const claimedNames = new Map<string, string>()
+  const checkDuplicateNames = (routes: NuxtPage[]) => {
+    for (const route of routes) {
+      if (route.name && route.file) {
+        const existingFile = claimedNames.get(route.name)
+        if (existingFile && existingFile !== route.file) {
+          pageDiagnostics.NUXT_B4028({ name: route.name, file: linkToAlias(route.file, nuxt), existingFile: linkToAlias(existingFile, nuxt) })
+        } else if (!existingFile) {
+          claimedNames.set(route.name, route.file)
+        }
+      }
+      if (route.children?.length) { checkDuplicateNames(route.children) }
+    }
+  }
+  checkDuplicateNames(pages)
+
   return pages
 }
 
