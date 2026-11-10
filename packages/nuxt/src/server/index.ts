@@ -68,7 +68,7 @@ export type EventHandler<Result = unknown> = (event: RequestEvent) => Result
  * })
  * ```
  *
- * @since 4.6.0
+ * @since 4.7.0
  */
 export function defineHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
   return handler
