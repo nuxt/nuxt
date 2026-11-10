@@ -104,7 +104,7 @@ export function unwrapStaticExpression (node: ESTree.Node | undefined): ESTree.N
 }
 
 /** The key of a plain `key: value` property, or `undefined` when it cannot be known statically. */
-export function getStaticPropertyKey (property: ESTree.ObjectPropertyKind): string | undefined {
+function getStaticPropertyKey (property: ESTree.ObjectPropertyKind): string | undefined {
   if (property.type !== 'Property' || property.computed) { return }
   if (property.key.type === 'Identifier') { return property.key.name }
   if (property.key.type === 'Literal' && (typeof property.key.value === 'string' || typeof property.key.value === 'number')) {

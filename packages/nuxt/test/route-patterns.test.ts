@@ -204,6 +204,8 @@ describe('collectRou3PageSources', () => {
 describe('getRouterOptionsKeys', () => {
   it('should list the keys of an object literal default export', () => {
     expect(getRouterOptionsKeys('export default <RouterConfig> { sensitive: true, "strict": false }', 'router.options.ts')).toEqual(new Set(['sensitive', 'strict']))
+    expect(getRouterOptionsKeys(`export default { ['sensitive']: true }`, 'router.options.ts')).toEqual(new Set(['sensitive']))
+    expect(getRouterOptionsKeys('export default { [key]: true }', 'router.options.ts')).toBeUndefined()
     expect(getRouterOptionsKeys('export default { ...shared, sensitive: true }', 'router.options.ts')).toBeUndefined()
     expect(getRouterOptionsKeys('export default defineRouterOptions({ sensitive: true })', 'router.options.ts')).toBeUndefined()
   })

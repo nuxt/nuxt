@@ -6,7 +6,7 @@ import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { parseAndWalk } from 'oxc-walker'
 
 import { linkToAlias } from '../utils.ts'
-import { getStaticPropertyKey, unwrapStaticExpression } from './page-meta-extraction.ts'
+import { unwrapStaticExpression } from './page-meta-extraction.ts'
 import type { Nuxt } from 'nuxt/schema'
 
 /** Contents of `#build/router.options.mjs`, merging `router.options` config with every `router.options` file. */
@@ -97,7 +97,9 @@ export function getRouterOptionsKeys (code: string, filename: string): Set<strin
       if (declaration?.type !== 'ObjectExpression') { return }
       const names = new Set<string>()
       for (const property of declaration.properties) {
-        const name = getStaticPropertyKey(property)
+        if (property.type === 'SpreadElement') { return }
+        const key = property.key
+        const name = key.type === 'Identifier' && !property.computed ? key.name : key.type === 'Literal' ? String(key.value) : undefined
         if (name === undefined) { return }
         names.add(name)
       }
