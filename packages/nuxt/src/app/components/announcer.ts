@@ -2,12 +2,12 @@ import { computed, defineComponent, h } from 'vue'
 import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
 import type { AnnouncerPoliteness, NuxtAnnouncer, NuxtAnnouncerOpts } from '../composables/announcer'
 
-interface AnnouncerProps {
+export interface AnnouncerProps {
   atomic?: boolean
   politeness?: AnnouncerPoliteness
 }
 
-type AnnouncerSlots = SlotsType<{
+export type AnnouncerSlots = SlotsType<{
   default?: (props: { message: string }) => VNode[]
 }>
 
