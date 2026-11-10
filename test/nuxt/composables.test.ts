@@ -1,13 +1,13 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
 
 import * as composables from '#app/composables'
-import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { _showErrorUnlessCrawler, clearError, showError, useError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
 import { onNuxtReady } from '#app/composables/ready'
@@ -146,33 +146,6 @@ describe('composables', () => {
 })
 
 describe('errors', () => {
-  it('createError', () => {
-    expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
-      {
-        "data": undefined,
-        "message": "HTTPError 404",
-        "status": 404,
-        "statusText": undefined,
-        "unhandled": undefined,
-      }
-    `)
-    expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
-      {
-        "data": undefined,
-        "message": "Message",
-        "status": 500,
-        "statusText": undefined,
-        "unhandled": undefined,
-      }
-    `)
-  })
-
-  it('isNuxtError', () => {
-    const error = createError({ statusCode: 404 })
-    expect(isNuxtError(error)).toBe(true)
-    expect(isNuxtError(new Error('test'))).toBe(false)
-  })
-
   it('global nuxt errors', () => {
     const error = useError()
     expect(error.value).toBeUndefined()
@@ -214,6 +187,23 @@ describe('errors', () => {
 })
 
 describe('onNuxtReady', () => {
+  function stubIdleCallback (isHydrating: boolean, implementation?: typeof idleCallback.requestIdleCallback) {
+    const nuxtApp = useNuxtApp()
+    const wasHydrating = nuxtApp.isHydrating
+    nuxtApp.isHydrating = isHydrating
+    const requestIdleCallback = vi.spyOn(idleCallback, 'requestIdleCallback')
+    if (implementation) {
+      requestIdleCallback.mockImplementation(implementation)
+    }
+    onTestFinished(() => {
+      nuxtApp.isHydrating = wasHydrating
+      requestIdleCallback.mockRestore()
+    })
+    return { nuxtApp, requestIdleCallback }
+  }
+
+  const runIdle: typeof idleCallback.requestIdleCallback = (cb) => { cb({ didTimeout: true, timeRemaining: () => 0 }); return 0 }
+
   it('should call callback once nuxt is hydrated', async () => {
     const fn = vi.fn()
     onNuxtReady(fn)
@@ -222,89 +212,49 @@ describe('onNuxtReady', () => {
   })
 
   it('should pass the timeout to requestIdleCallback', () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: true, timeRemaining: () => 0 }); return 0 })
-    try {
-      nuxtApp.isHydrating = false
-      const fn = vi.fn()
-      onNuxtReady(fn, { timeout: 500 })
-      expect(requestIdleCallbackSpy).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
-      expect(fn).toHaveBeenCalledOnce()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    const { requestIdleCallback } = stubIdleCallback(false, runIdle)
+    const fn = vi.fn()
+    onNuxtReady(fn, { timeout: 500 })
+    expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
+    expect(fn).toHaveBeenCalledOnce()
   })
 
   it('should pass the timeout to requestIdleCallback after hydration', async () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: true, timeRemaining: () => 0 }); return 0 })
-    try {
-      nuxtApp.isHydrating = true
-      const fn = vi.fn()
-      onNuxtReady(fn, { timeout: 500 })
-      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
-      await nuxtApp.hooks.callHook('app:suspense:resolve')
-      expect(requestIdleCallbackSpy).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
-      expect(fn).toHaveBeenCalledOnce()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    const { nuxtApp, requestIdleCallback } = stubIdleCallback(true, runIdle)
+    const fn = vi.fn()
+    onNuxtReady(fn, { timeout: 500 })
+    expect(requestIdleCallback).not.toHaveBeenCalled()
+    await nuxtApp.hooks.callHook('app:suspense:resolve')
+    expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
+    expect(fn).toHaveBeenCalledOnce()
   })
 
   it('should not schedule the callback if the signal is already aborted', () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback')
-    try {
-      nuxtApp.isHydrating = false
-      onNuxtReady(() => {}, { signal: AbortSignal.abort() })
-      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    const { requestIdleCallback } = stubIdleCallback(false)
+    onNuxtReady(() => {}, { signal: AbortSignal.abort() })
+    expect(requestIdleCallback).not.toHaveBeenCalled()
   })
 
   it('should not run the callback if the signal is aborted during hydration', async () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: false, timeRemaining: () => 50 }); return 0 })
-    try {
-      nuxtApp.isHydrating = true
-      const fn = vi.fn()
-      const controller = new AbortController()
-      onNuxtReady(fn, { signal: controller.signal })
-      controller.abort()
-      await nuxtApp.hooks.callHook('app:suspense:resolve')
-      expect(fn).not.toHaveBeenCalled()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    const { nuxtApp } = stubIdleCallback(true, runIdle)
+    const fn = vi.fn()
+    const controller = new AbortController()
+    onNuxtReady(fn, { signal: controller.signal })
+    controller.abort()
+    await nuxtApp.hooks.callHook('app:suspense:resolve')
+    expect(fn).not.toHaveBeenCalled()
   })
 
   it('should not run the callback if the signal is aborted while waiting for idle', () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
     let idle: IdleRequestCallback | undefined
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { idle = cb; return 0 })
-    try {
-      nuxtApp.isHydrating = false
-      const fn = vi.fn()
-      const controller = new AbortController()
-      onNuxtReady(fn, { signal: controller.signal })
-      controller.abort()
-      expect(idle).toBeDefined()
-      idle?.({ didTimeout: false, timeRemaining: () => 50 })
-      expect(fn).not.toHaveBeenCalled()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    stubIdleCallback(false, (cb) => { idle = cb; return 0 })
+    const fn = vi.fn()
+    const controller = new AbortController()
+    onNuxtReady(fn, { signal: controller.signal })
+    controller.abort()
+    expect(idle).toBeDefined()
+    idle?.({ didTimeout: false, timeRemaining: () => 50 })
+    expect(fn).not.toHaveBeenCalled()
   })
 })
 
