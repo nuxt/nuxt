@@ -23,6 +23,8 @@ interface PerfPhase {
   memoryAfter: MemorySnapshot
   memoryDelta: { rss: number, heapUsed: number }
   retainedMemory?: MemorySnapshot
+  /** The phase had not ended when the report was taken, for example because the build failed. */
+  unfinished?: boolean
 }
 
 interface OpenPhase {
@@ -68,7 +70,10 @@ export interface PerfReport {
     memoryDelta: { rss: number, heapUsed: number }
     ownMemoryDelta: { rss: number, heapUsed: number }
     retainedHeap?: number
+    unfinished?: boolean
   }>
+  /** Time inside `totalDuration` that no phase covers. */
+  unattributedDuration: number
   slowHooks: SlowHook[]
   modules: ModuleTiming[]
   bundlerPlugins: BundlerPluginTiming[]
@@ -139,6 +144,31 @@ interface TraceEvent {
   args?: Record<string, unknown>
 }
 
+/** Total time covered by at least one of `phases`. */
+function coveredDuration (phases: PerfPhase[]): number {
+  let covered = 0
+  let end = -Infinity
+  for (const phase of phases.toSorted((a, b) => a.startTime - b.startTime)) {
+    if (phase.endTime <= end) { continue }
+    covered += phase.endTime - Math.max(phase.startTime, end)
+    end = phase.endTime
+  }
+  return covered
+}
+
+/** Sub-phases are listed under Details, and their time stays in the row of the phase they run in. */
+const isSubPhase = (name: string) => name.startsWith('module:')
+
+let claimedCliStartTime: number | undefined
+
+/** When the CLI started, or `undefined` if a profiler in this process has already measured from it. */
+export function claimCliStartTime (): number | undefined {
+  const startTime = (globalThis as any).__nuxt_cli__?.startTime as number | undefined
+  if (!startTime || startTime === claimedCliStartTime) { return }
+  claimedCliStartTime = startTime
+  return startTime
+}
+
 const SLOW_HOOK_THRESHOLD_MS = Number(process.env.NUXT_PERF_SLOW_HOOK_MS) || 50
 
 const HOOK_PHASE_THRESHOLD_MS = 5
@@ -157,7 +187,12 @@ export class NuxtPerfProfiler {
   /** Offset to convert performance.now() (ms) to epoch microseconds for trace events */
   #baseTs: number
 
-  constructor (options?: { startTime?: number }) {
+  constructor (options?: {
+    /** When the CLI started, from `Date.now()`. Reported as a `startup` phase. */
+    startTime?: number
+    /** When `startup` ended, from `performance.now()`. Defaults to the time the profiler is created. */
+    startupEndTime?: number
+  }) {
     if (options?.startTime) {
       // Convert absolute Date.now() timestamp to performance.now() space
       this.#globalStart = performance.now() - (Date.now() - options.startTime)
@@ -166,7 +201,23 @@ export class NuxtPerfProfiler {
     }
     this.#globalMemoryBefore = getMemorySnapshot()
     // Compute offset: epoch_us = (performance.now() * 1000) + baseTs
-    this.#baseTs = Date.now() * 1000 - this.#globalStart * 1000
+    this.#baseTs = Date.now() * 1000 - performance.now() * 1000
+    if (options?.startTime) {
+      this.recordPhase('startup', this.#globalStart, options.startupEndTime)
+    }
+  }
+
+  /** Record a phase that ran before the profiler was created. Its memory is not measured. */
+  recordPhase (name: string, startTime: number, endTime = performance.now()): void {
+    this.#phases.push({
+      name,
+      startTime,
+      endTime,
+      duration: round(endTime - startTime),
+      memoryBefore: this.#globalMemoryBefore,
+      memoryAfter: this.#globalMemoryBefore,
+      memoryDelta: { rss: 0, heapUsed: 0 },
+    })
   }
 
   installHookInterceptors (hooks: NuxtHookRegistry<NuxtHooks>): void {
@@ -291,16 +342,18 @@ export class NuxtPerfProfiler {
   }
 
   getReport (): PerfReport {
-    const totalDuration = round(performance.now() - this.#globalStart)
+    const now = performance.now()
+    const totalDuration = round(now - this.#globalStart)
     const globalMemoryAfter = getMemorySnapshot()
 
     // Merge manual phases with hook phases that exceeded the threshold
     // and aren't already covered by a manual phase.
-    const allPhases: PerfPhase[] = [...this.#phases]
+    const manualPhases = this.#getPhases(now)
+    const allPhases: PerfPhase[] = [...manualPhases]
     for (const hp of this.#hookPhases) {
       if (hp.duration < HOOK_PHASE_THRESHOLD_MS) { continue }
       const hookName = hp.name.slice(5) // strip "hook:" prefix
-      const alreadyCovered = this.#phases.some(p =>
+      const alreadyCovered = manualPhases.some(p =>
         p.name === hookName && p.startTime <= hp.startTime && p.endTime >= hp.endTime,
       )
       if (!alreadyCovered) {
@@ -312,12 +365,13 @@ export class NuxtPerfProfiler {
     allPhases.sort((a, b) => a.startTime - b.startTime)
 
     // Compute own-time and own-memory for each phase by subtracting
-    // child phases nested inside it.
+    // child phases nested inside it. Sub-phases are not subtracted.
     function computeOwn (phase: PerfPhase) {
       // Find direct children: phases nested inside this one that aren't
       // themselves nested inside another child (to avoid double-subtraction).
       const children = allPhases.filter(other =>
         other !== phase
+        && !isSubPhase(other.name)
         && other.startTime >= phase.startTime
         && other.endTime <= phase.endTime,
       )
@@ -329,11 +383,10 @@ export class NuxtPerfProfiler {
         ),
       )
 
-      let childTime = 0
+      const childTime = coveredDuration(directChildren)
       let childRss = 0
       let childHeap = 0
       for (const child of directChildren) {
-        childTime += child.duration
         childRss += child.memoryDelta.rss
         childHeap += child.memoryDelta.heapUsed
       }
@@ -353,6 +406,7 @@ export class NuxtPerfProfiler {
         heapUsed: globalMemoryAfter.heapUsed - this.#globalMemoryBefore.heapUsed,
       },
       hasGCSnapshots: hasGC,
+      unattributedDuration: round(Math.max(0, totalDuration - coveredDuration(allPhases.filter(p => !isSubPhase(p.name))))),
       phases: allPhases.map((p) => {
         const own = computeOwn(p)
         return {
@@ -364,6 +418,7 @@ export class NuxtPerfProfiler {
           memoryDelta: p.memoryDelta,
           ownMemoryDelta: own.ownMemoryDelta,
           retainedHeap: p.retainedMemory?.heapUsed,
+          unfinished: p.unfinished,
         }
       }),
       slowHooks: this.#computeSlowHooks(new Set(allPhases.map(p => p.name))),
@@ -393,8 +448,6 @@ export class NuxtPerfProfiler {
   printReport (options?: { title?: string }): void {
     const report = this.getReport()
 
-    // Sub-phases are module:* and vite:* - everything else goes in the main table
-    const isSubPhase = (name: string) => name.startsWith('module:') || name.startsWith('vite:')
     const topPhases = report.phases.filter(p => !isSubPhase(p.name))
     const subPhases = report.phases.filter(p => isSubPhase(p.name))
 
@@ -461,7 +514,10 @@ export class NuxtPerfProfiler {
           rowCols.push(pad(colors.dim('—'), colRetained, 'right'))
         }
       }
-      consola.log(`  ${rowCols.join('  ')}  ${bar}`)
+      consola.log(`  ${rowCols.join('  ')}  ${bar}${phase.unfinished ? ` ${colors.red('unfinished')}` : ''}`)
+    }
+    if (report.unattributedDuration >= 1) {
+      consola.log(`  ${pad(colors.dim('(no phase)'), colPhase)}  ${pad(colors.dim(formatDuration(report.unattributedDuration)), colDuration, 'right')}`)
     }
 
     consola.log(separator)
@@ -534,7 +590,7 @@ export class NuxtPerfProfiler {
       consola.log('')
       for (const phase of significantSubs) {
         const durColor = phase.duration > 500 ? colors.red : phase.duration > 100 ? colors.yellow : colors.dim
-        consola.log(`  ${colors.dim('•')} ${phase.name} ${colors.dim('—')} ${durColor(formatDuration(phase.duration))}`)
+        consola.log(`  ${colors.dim('•')} ${phase.name} ${colors.dim('—')} ${durColor(formatDuration(phase.duration))}${phase.unfinished ? ` ${colors.red('unfinished')}` : ''}`)
       }
       consola.log('')
     }
@@ -567,13 +623,14 @@ export class NuxtPerfProfiler {
 
     // Root span using B/E (begin/end) pair so nested phases display correctly
     const globalEnd = performance.now()
+    const phases = this.#getPhases(globalEnd)
     events.push(
       { name: 'nuxt build', cat: 'build', ph: 'B', ts: toUs(this.#globalStart), pid, tid: tidPhases },
       { name: 'nuxt build', cat: 'build', ph: 'E', ts: toUs(globalEnd), pid, tid: tidPhases },
     )
 
     // Manual phases as B/E pairs (they nest: e.g. module:* inside modules, vite:* inside build:bundle)
-    for (const phase of this.#phases) {
+    for (const phase of phases) {
       events.push(
         {
           name: phase.name,
@@ -658,7 +715,7 @@ export class NuxtPerfProfiler {
     emitPluginSpans(nitroSpans, 'Nitro Plugins', tidPluginBase + 100)
 
     // Memory counter events at phase boundaries
-    for (const phase of this.#phases) {
+    for (const phase of phases) {
       events.push(
         {
           name: 'Memory',
@@ -720,6 +777,25 @@ export class NuxtPerfProfiler {
 
   dispose (): void {
     this.#unsubscribe?.()
+  }
+
+  /** Ended phases, plus the ones still open, cut off at `now`. */
+  #getPhases (now: number): PerfPhase[] {
+    const memoryNow = getMemorySnapshot()
+    const unfinished = this.#phaseStack.map(open => ({
+      name: open.name,
+      startTime: open.startTime,
+      endTime: now,
+      duration: round(now - open.startTime),
+      memoryBefore: open.memoryBefore,
+      memoryAfter: memoryNow,
+      memoryDelta: {
+        rss: memoryNow.rss - open.memoryBefore.rss,
+        heapUsed: memoryNow.heapUsed - open.memoryBefore.heapUsed,
+      },
+      unfinished: true,
+    }))
+    return [...this.#phases, ...unfinished]
   }
 
   #computeSlowHooks (reportedPhaseNames: Set<string>): SlowHook[] {
