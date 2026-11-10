@@ -37,7 +37,6 @@ vi.mock('knitwork', async (original) => {
   }
 })
 
-/** `augmentPages`, tied to the mocked nuxt instance the way `augmentAndResolve` ties it to a real one. */
 function augmentForNuxt (pages: NuxtPage[], vfs: Record<string, string>, ctx: Parameters<typeof augmentPages>[2] = {}) {
   return augmentPages(pages, vfs, { nuxt: mockNuxt as unknown as Nuxt, ...ctx })
 }
