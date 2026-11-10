@@ -29,16 +29,22 @@ function testBuilderFor (entry: typeof e2eMatrix[number]) {
 const devOnlyTests = ['hmr', 'dev-error-*']
 const builtOnlyTests = ['spa-preloader-*', 'server-page-css', 'chunk-error', 'no-scripts*']
 const viteOnlyTests = ['server-page-css', 'no-scripts*', 'dev-error-*']
+/** Suites of client runtime behaviour, which depends on neither the builder nor the Nitro environment. */
+const runtimeTests = ['nested-suspense', 'navigation-repaint', 'nuxt-time', 'preview', 'route-scroll', 'server-path-fallback', 'spa-preloader-*', 'suspense', 'ui-templates']
 /** Suites that write their fixture mid-test, so cannot share a fixture directory. */
 const singleProjectTests = ['dev-error-recovery', 'dev-error-compile']
-/** The chunk error runtime module is only applied with webpack. */
-const rspackExcludedTests = ['chunk-error']
+/**
+ * The chunk error runtime module is only applied with webpack, and vue-loader compiles vapor
+ * SFCs as vdom components, which the webpack project already covers.
+ */
+const rspackExcludedTests = ['chunk-error', 'vapor']
 
 function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
   const isVite = entry.builder === 'vite'
   return [
     ...entry.isDev ? builtOnlyTests : devOnlyTests,
     ...isVite ? [] : viteOnlyTests,
+    ...isVite && !entry.nitroViteEnvironment ? [] : runtimeTests,
     ...entry.nitroViteEnvironment ? singleProjectTests : [],
     ...entry.builder === 'rspack' || entry.builder === 'rsbuild' ? rspackExcludedTests : [],
   ].map(name => `**/${name}.test.ts`)
