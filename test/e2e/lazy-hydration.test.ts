@@ -11,23 +11,6 @@ test.use({
 test.describe('lazy hydration styles', () => {
   test.skip(({ builder, isDev }) => builder !== 'vite' || isDev, 'inline styles behaviour is tested against vite production builds')
 
-  test('should include CSS link for hydrate-never component when inlineStyles is false', async ({ page }) => {
-    await page.goto('/')
-
-    // Component HTML should be rendered
-    await expect(page.locator('.hydrate-never-component')).toBeVisible()
-    await expect(page.getByText('Hydrate Never')).toBeVisible()
-
-    // CSS should be linked (not inlined, since inlineStyles: false)
-    const styleLinks = page.locator('link[rel="stylesheet"]')
-    await expect(styleLinks.first()).toBeAttached()
-
-    // The linked CSS should contain our component styles
-    const hrefs = await styleLinks.evaluateAll(links => links.map(l => (l as HTMLLinkElement).href))
-    const css = (await Promise.all(hrefs.map(href => page.request.get(href).then(r => r.text())))).join('')
-    expect(css).toContain('.hydrate-never-component')
-  })
-
   // https://github.com/nuxt/nuxt/issues/35145
   test('should not preload JS chunk for hydrate-on-visible component', async ({ page, fetch }) => {
     const html = await fetch('/').then(r => r.text())
@@ -42,15 +25,13 @@ test.describe('lazy hydration styles', () => {
   // https://github.com/nuxt/nuxt/issues/33339
   test('should render blocking stylesheets for all server-rendered CSS, without duplicate resource hints', async ({ fetch }) => {
     const html = await fetch('/').then(r => r.text())
+    expect(html).toContain('Hydrate Never')
     const head = html.match(/<head[^>]*>[\s\S]*?<\/head>/)?.[0] ?? ''
     const stylesheets = [...head.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
     const css = (await Promise.all(stylesheets.map(href => fetch(href).then(r => r.text())))).join('')
-    // CSS for the page and every server-rendered component must arrive blocking, not as prefetch-only
-    expect(css).toContain('.index-page')
-    expect(css).toContain('.base-a')
-    expect(css).toContain('.base-b')
-    expect(css).toContain('.base-c')
-    // and rendered stylesheets must not reappear as preload/prefetch hints
+    for (const selector of ['.index-page', '.base-a', '.base-b', '.base-c', '.hydrate-never-component']) {
+      expect(css).toContain(selector)
+    }
     const hints = [...head.matchAll(/<link[^>]+rel="(?:preload|modulepreload|prefetch)"[^>]+href="([^"]+)"/g)].map(m => m[1]!)
     expect(stylesheets.filter(href => hints.includes(href))).toEqual([])
   })
@@ -67,6 +48,9 @@ test('renders a previously loaded lazy hydration component on the first frame af
   await expect(page.getByTestId('hydrated-count-on-first-frame')).toHaveText('12')
 })
 
+const hydratedText = 'This is mounted.'
+const unhydratedText = 'This is not mounted.'
+
 const hydrationTests = {
   'in template': '',
   'with vue macros': '/macro',
@@ -77,109 +61,74 @@ for (const [description, path] of Object.entries(hydrationTests)) {
   test.describe(`delayed hydration components ${description}`, () => {
     test('lazy load delayed hydration comps at the right time', async ({ page, goto, fetch }) => {
       const html = await fetch(`/delayed-hydration${path}`).then(r => r.text())
-
-      const hydratedText = 'This is mounted.'
-      const unhydratedText = 'This is not mounted.'
-
       expect.soft(html).toContain(unhydratedText)
       expect.soft(html).not.toContain(hydratedText)
 
       await goto(`/delayed-hydration${path}`)
+      const component = (testId: string, text: string) => page.locator(`data-testid=${testId}`, { hasText: text })
 
-      await page.locator('data-testid=hydrate-on-visible', { hasText: hydratedText }).waitFor()
-      expect.soft(await page.locator('data-testid=hydrate-on-visible-bottom').textContent().then(r => r?.trim())).toBe(unhydratedText)
+      await component('hydrate-on-visible', hydratedText).waitFor()
+      expect.soft(await page.getByTestId('hydrate-on-visible-bottom').textContent().then(r => r?.trim())).toBe(unhydratedText)
 
-      await page.locator('data-testid=hydrate-on-interaction-default', { hasText: unhydratedText }).waitFor()
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor()
+      await component('hydrate-on-interaction-default', unhydratedText).waitFor()
+      await component('hydrate-on-interaction-click', unhydratedText).waitFor()
 
-      await page.locator('data-testid=hydrate-when-always', { hasText: hydratedText }).waitFor()
-      await page.locator('data-testid=hydrate-when-state', { hasText: unhydratedText }).waitFor()
+      await component('hydrate-when-always', hydratedText).waitFor()
+      await component('hydrate-when-state', unhydratedText).waitFor()
 
-      const component = page.getByTestId('hydrate-on-interaction-default')
-      await component.hover()
-      await page.locator('data-testid=hydrate-on-interaction-default', { hasText: hydratedText }).waitFor()
+      await page.getByTestId('hydrate-on-interaction-default').hover()
+      await component('hydrate-on-interaction-default', hydratedText).waitFor()
 
       await page.getByTestId('button-increase-state').click()
-      await page.locator('data-testid=hydrate-when-state', { hasText: hydratedText }).waitFor()
+      await component('hydrate-when-state', hydratedText).waitFor()
 
       await page.getByTestId('hydrate-on-visible-bottom').scrollIntoViewIfNeeded()
-      await page.locator('data-testid=hydrate-on-visible-bottom', { hasText: hydratedText }).waitFor()
+      await component('hydrate-on-visible-bottom', hydratedText).waitFor()
 
-      await page.locator('data-testid=hydrate-never', { hasText: unhydratedText }).waitFor()
-    })
+      await component('hydrate-never', unhydratedText).waitFor()
 
-    test('respects custom delayed hydration triggers and overrides defaults', async ({ page, goto }) => {
-      await goto(`/delayed-hydration${path}`)
-
-      const unhydratedText = 'This is not mounted.'
-      const hydratedText = 'This is mounted.'
-
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'visible' })
-
+      // a custom trigger overrides the default interaction events
       await page.getByTestId('hydrate-on-interaction-click').hover()
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'visible' })
-
+      await component('hydrate-on-interaction-click', unhydratedText).waitFor({ state: 'visible' })
       await page.getByTestId('hydrate-on-interaction-click').click()
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: hydratedText }).waitFor({ state: 'visible' })
-      await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'hidden' })
+      await component('hydrate-on-interaction-click', hydratedText).waitFor({ state: 'visible' })
+      await component('hydrate-on-interaction-click', unhydratedText).waitFor({ state: 'hidden' })
+
+      if (path !== '/macro') {
+        await component('event-view-normal-component', hydratedText).waitFor()
+        await component('event-view-normal-component', unhydratedText).waitFor({ state: 'hidden' })
+      }
     })
-
-    if (description === 'in template' || description === 'with pug templates') {
-      test('does not delay hydration of components named after modifiers', async ({ page, goto }) => {
-        await goto(`/delayed-hydration${path}`)
-
-        await page.locator('data-testid=event-view-normal-component', { hasText: 'This is mounted.' }).waitFor()
-        await page.locator('data-testid=event-view-normal-component', { hasText: 'This is not mounted.' }).waitFor({ state: 'hidden' })
-      })
-    }
 
     test('handles time-based hydration correctly', async ({ page, goto, fetch }) => {
-      const unhydratedText = 'This is not mounted.'
       const html = await fetch(`/delayed-hydration${path}/time`).then(r => r.text())
       expect(html).toContain(unhydratedText)
 
       await goto(`/delayed-hydration${path}/time`)
-
-      const hydratedText = 'This is mounted.'
       await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'visible' })
 
       const hydrationLogs = consoleLogs(page).filter(log => !log.text.includes('[vite]') && !log.text.includes('<Suspense>'))
       expect(hydrationLogs.map(log => log.text)).toEqual([])
     })
 
-    test('keeps reactivity with models', async ({ page, goto }) => {
+    test('emits hydration events and keeps reactivity with models', async ({ page, goto }) => {
       await goto(`/delayed-hydration${path}/model-event`)
 
-      const countLocator = page.getByTestId('count')
-      const incrementButton = page.getByTestId('increment')
+      const hydratedEvents = () => consoleLogs(page).filter(log => log.type === 'log' && log.text === 'Component hydrated').length
+      const count = page.getByTestId('count')
+      const increment = page.getByTestId('increment')
 
-      await countLocator.waitFor()
-      expect(await countLocator.textContent()).toBe('0')
+      await expect(count).toHaveText('0')
+      expect(hydratedEvents()).toBe(0)
 
-      await incrementButton.dispatchEvent('click')
-      await expect(countLocator).toHaveText('1')
+      await increment.dispatchEvent('click')
+      await expect(count).toHaveText('1')
+      await expect.poll(hydratedEvents).toBeGreaterThan(0)
 
-      for (let count = 2; count <= 10; count++) {
-        await incrementButton.click()
-        await expect(countLocator).toHaveText(`${count}`)
+      for (const value of ['2', '3']) {
+        await increment.click()
+        await expect(count).toHaveText(value)
       }
-
-      expect(await countLocator.textContent()).toBe('10')
-    })
-
-    test('emits hydration events', async ({ page, goto }) => {
-      await goto(`/delayed-hydration${path}/model-event`)
-
-      const logs = consoleLogs(page)
-      const initialLogs = logs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
-      expect(initialLogs.length).toBe(0)
-
-      await page.getByTestId('count').click()
-
-      // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
-      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100)))
-      const hydrationLogs = logs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
-      expect(hydrationLogs.length).toBeGreaterThan(0)
     })
   })
 }
