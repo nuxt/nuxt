@@ -386,8 +386,19 @@ describe('the shape of what it reads off an h3 v1 event', () => {
   it('explains when given the event of a handler defined with h3\'s `defineEventHandler`', () => {
     const e = event('/api/mixed?name=nuxt')
 
-    expect(() => delegate.getValidatedQuery(e as never, query => query)).toThrow(/NUXT_E8012.*getValidatedQuery.*import `defineEventHandler` from `nuxt\/server`/is)
+    expect(() => delegate.getValidatedQuery(e as never, query => query)).toThrow(/NUXT_E8012.*getValidatedQuery.*import `defineHandler` from `nuxt\/server`/is)
     expect(() => delegate.handleCors(e as never)).toThrow(expect.objectContaining({ statusCode: 500 }))
     expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012/)
+  })
+
+  it('throws NUXT_E8016 pointing to h3 when given an h3 handler object', () => {
+    const input = { onRequest: [], handler: () => 'ok' }
+    const diagnostic = {
+      code: 'NUXT_E8016',
+      message: expect.stringContaining('received `object`'),
+      fix: expect.stringMatching(/import `defineEventHandler` from `h3`/),
+    }
+    expect(() => delegate.defineHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
+    expect(() => delegate.defineEventHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
   })
 })

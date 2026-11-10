@@ -78,17 +78,22 @@ function requirePortableEvent<F extends (event: any, ...args: any[]) => any> (he
 }
 
 export type { AppRouteRules, ServerRoutes } from 'nuxt/schema'
-export type { CorsOptions, EventHandler, ForwardedOptions, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent, NuxtServerHooks, NuxtServerRendererHooks, ServerFetchInit, ServerHookable, ServerHookResult, Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate, ValidateResult } from 'nuxt/server'
+export type { CorsOptions, EventHandler, ForwardedOptions, NuxtError, NuxtErrorJSON, NuxtErrorLike, RequestEvent, RequestEventContext, NuxtRequestEvent, NuxtServerHooks, NuxtServerRendererHooks, RendererPlugin, RendererPluginContext, ServerFetchInit, ServerHookable, ServerHookResult, Session, SessionConfig, SessionData, SessionEvent, SessionManager, SessionPassword, SessionUpdate, ValidateResult } from 'nuxt/server'
 
 /**
- * @see {@link import('nuxt/server').defineEventHandler}
+ * @see {@link import('nuxt/server').defineHandler}
  *
  * The handler is given the event in the portable shape, so that it can read
  * `event.req`/`event.url`/`event.res` as the surface promises.
  */
-export function defineEventHandler<Result> (handler: EventHandler<Result>): (event: H3Event) => Result {
+export function defineHandler<Result> (handler: EventHandler<Result>): (event: H3Event) => Result {
+  if (typeof handler !== 'function') {
+    throw serverDiagnostics.NUXT_E8016({ received: handler === null ? '`null`' : `\`${typeof handler}\`` })
+  }
   return event => handler(toPortableEvent(event))
 }
+
+export const defineEventHandler: typeof defineHandler = defineHandler
 
 /**
  * @see {@link import('nuxt/server').createError}
