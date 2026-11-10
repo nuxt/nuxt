@@ -26,7 +26,7 @@
     "test": "pnpm test:prepare && vitest run && pnpm test:types && pnpm typecheck",
     "test:prepare": "node ./test/prepare.ts",
     "test:fixtures": "pnpm test:prepare && vitest run --project 'fixtures:*'",
-    "test:runtime": "vitest run --project nuxt --project nuxt-universal --project nuxt-dev",
+    "test:runtime": "vitest run --project 'nuxt*'",
     "test:types": "node ./test/ensure-prepared.ts && pnpm --filter './test/fixtures/**' test:types",
     "test:bundle": "vitest run --project bundle",
     "test:no-jiti": "vitest run --project no-jiti",
