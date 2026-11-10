@@ -400,6 +400,11 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     if (!props || !rawTo || !isStaticInternalLink(props, rawTo, props.attrs?.download !== undefined)) { return }
     const router = ((parent.appContext.app as { $nuxt?: NuxtApp }).$nuxt?.$router ?? useRouter()) as Router
     const link = resolveStaticLink(props, router, rawTo)
+    if (props.custom !== undefined && props.custom !== false) {
+      // fallthrough attributes land on the root of the slot, which needs the component
+      if (props.class || props.style || props.attrs) { return }
+      return { link: staticCustomLinkSlotProps(props, link), custom: true, attrs: () => ({}) }
+    }
     return {
       link,
       openTag: props.class || props.style || props.attrs ? undefined : staticInternalLinkOpenTag(props, router, link),
@@ -416,9 +421,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
   /**
    * Render the slot of an internal `custom` link with the props `<RouterLink custom>` passes to it.
    */
-  function renderStaticCustomLink (props: NuxtLinkProps, slots: { default?: (props: NuxtLinkSlotProps<true>) => VNode[] }, router: Router, rawTo: RouteLocationRaw) {
-    const link = resolveStaticLink(props, router, rawTo)
-    const vnodes = slots.default?.({
+  /** The props `<RouterLink custom>` passes to the slot of an internal link. */
+  function staticCustomLinkSlotProps (props: NuxtLinkProps, link: ReturnType<typeof resolveStaticLink>): NuxtLinkSlotProps<true> {
+    return {
       ...link,
       route: link.route,
       rel: firstNonUndefined<string | null>(props.noRel ? '' : props.rel, options.externalRelAttribute, '') || null,
@@ -427,7 +432,11 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       prefetch: async () => {},
       prefetched: false,
       shouldPrefetch: () => false,
-    })
+    } as NuxtLinkSlotProps<true>
+  }
+
+  function renderStaticCustomLink (props: NuxtLinkProps, slots: { default?: (props: NuxtLinkSlotProps<true>) => VNode[] }, router: Router, rawTo: RouteLocationRaw) {
+    const vnodes = slots.default?.(staticCustomLinkSlotProps(props, resolveStaticLink(props, router, rawTo)))
     return vnodes?.length === 1 ? vnodes[0] : vnodes
   }
 
@@ -974,16 +983,19 @@ export interface NuxtLinkSsrState {
   link: object
   /** The opening tag without its closing `>`, when no fallthrough `class` or `style` needs merging. */
   openTag?: string
+  /** A `custom` link renders only its slot, with `link` as the slot props. */
+  custom?: boolean
   attrs: () => Record<string, unknown>
 }
 
 type DirectRenderProps = NuxtLinkProps & { to: RouteLocationRaw, class?: unknown, style?: unknown, attrs?: Record<string, unknown> }
 
 // Boolean props are excluded: without prop normalisation a bare attribute arrives as `''`.
-const DIRECT_RENDER_PROPS = new Set(['key', 'to', 'class', 'style', 'rel', 'activeClass', 'exactActiveClass', 'ariaCurrentValue', 'prefetchOn', 'prefetchedClass'])
+// `custom` is the exception, read as set unless it is `undefined` or `false`.
+const DIRECT_RENDER_PROPS = new Set(['key', 'to', 'class', 'style', 'rel', 'custom', 'activeClass', 'exactActiveClass', 'ariaCurrentValue', 'prefetchOn', 'prefetchedClass'])
 
 // Props and attributes that need the component: everything else falls through to the anchor.
-const COMPONENT_RENDER_KEYS = new Set(['href', 'target', 'noRel', 'prefetch', 'noPrefetch', 'replace', 'external', 'custom', 'trailingSlash', 'viewTransition', 'ref', 'ref_for', 'ref_key', 'innerHTML', 'textContent'])
+const COMPONENT_RENDER_KEYS = new Set(['href', 'target', 'noRel', 'prefetch', 'noPrefetch', 'replace', 'external', 'trailingSlash', 'viewTransition', 'ref', 'ref_for', 'ref_key', 'innerHTML', 'textContent'])
 
 function directRenderProps (raw: Record<string, unknown>): DirectRenderProps | undefined {
   let props = raw
