@@ -1,5 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
@@ -10,7 +9,8 @@ import { join } from 'pathe'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../src/constants.ts'
 import { loadNuxtConfig } from '../src/loader/config.ts'
 import { _generateTypes, resolveLayerPaths, writeTypes } from '../src/template.ts'
-import { getLayerDirectories } from 'nuxt/kit'
+import { getLayerDirectories } from '../src/layers.ts'
+import { withTempDir } from './utils.ts'
 
 const typesFixtureDir = fileURLToPath(new URL('./types-fixture', import.meta.url))
 
@@ -180,9 +180,9 @@ describe('tsConfig generation', () => {
 
   it('should propagate user-defined excludes to legacy tsconfig', async () => {
     const { legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
-      typescript: { tsConfig: { exclude: ['my-custom-exclude'] } },
+      typescript: { tsConfig: { exclude: ['my-custom-exclude'] }, appTsConfig: { exclude: ['my-app-exclude'] } },
     }))
-    expect(legacyTsConfig.exclude).toContain('my-custom-exclude')
+    expect(legacyTsConfig.exclude).toEqual(expect.arrayContaining(['my-custom-exclude', 'my-app-exclude']))
     // but computed app-only paths must still be absent
     expect(legacyTsConfig.exclude).not.toContain('../nuxt.config.*')
   })
@@ -223,22 +223,14 @@ describe('tsConfig generation', () => {
     expect(perContext.legacyTsConfig.compilerOptions?.tsBuildInfoFile).toBe('./global.tsbuildinfo')
   })
 
-  it('should propagate global tsConfig compiler options to node and shared tsconfigs', async () => {
-    const { tsConfig, nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
-      typescript: { tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } } },
-    }))
-    expect(tsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(true)
-    expect(nodeTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(true)
-    expect(sharedTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(true)
-  })
-
-  it('should apply appTsConfig to the app tsconfig only', async () => {
+  it('should apply global tsConfig to every tsconfig and appTsConfig to the app tsconfig only', async () => {
     const { tsConfig, nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
       typescript: {
-        tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } },
+        tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true, noFallthroughCasesInSwitch: true } },
         appTsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: false, exactOptionalPropertyTypes: true } },
       },
     }))
+    expect(tsConfig.compilerOptions?.noFallthroughCasesInSwitch).toBe(true)
     expect(tsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(false)
     expect(tsConfig.compilerOptions?.exactOptionalPropertyTypes).toBe(true)
     for (const config of [nodeTsConfig, sharedTsConfig]) {
@@ -330,13 +322,6 @@ describe('tsConfig generation', () => {
     expect(nodeTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.node.d.ts', '../node/**/*.ts'])
     expect(sharedTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.shared.d.ts', '../shared-extra/**/*.ts'])
     expect(serverTsConfig.include?.slice(0, 2)).toEqual(['./nuxt.server.d.ts', '../server-extra/**/*.ts'])
-  })
-
-  it('should propagate appTsConfig excludes to legacy tsconfig', async () => {
-    const { legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
-      typescript: { appTsConfig: { exclude: ['my-app-exclude'] } },
-    }))
-    expect(legacyTsConfig.exclude).toContain('my-app-exclude')
   })
 
   it('should rewrite `paths` substitutions so TS resolves them to declarations', async () => {
@@ -564,44 +549,17 @@ describe('resolveLayerPaths', async () => {
 })
 
 describe('writeTypes', () => {
-  const generatedFiles = ['tsconfig.app.json', 'tsconfig.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json', 'nuxt.d.ts', 'nuxt.node.d.ts', 'nuxt.shared.d.ts', 'nuxt.server.d.ts']
-
-  async function withRelocatedBuildDir (fn: (typesDir: string, nuxt: Nuxt) => Promise<void>) {
-    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
-    const typesDir = join(rootDir, '.nuxt')
-    await mkdir(typesDir, { recursive: true })
-    try {
-      await fn(typesDir, mockNuxtWithOptions({
+  it('should only write missing types when building into a relocated build directory', async () => {
+    const [missing, ...existing] = ['tsconfig.app.json', 'tsconfig.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json', 'nuxt.d.ts', 'nuxt.node.d.ts', 'nuxt.shared.d.ts', 'nuxt.server.d.ts']
+    await withTempDir(Object.fromEntries(existing.map(file => [`.nuxt/${file}`, '{}'])), async (rootDir) => {
+      const typesDir = join(rootDir, '.nuxt')
+      await writeTypes(mockNuxtWithOptions({
         rootDir,
         srcDir: rootDir,
         buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt'),
         typesDir,
         dev: false,
       }))
-    } finally {
-      await rm(rootDir, { recursive: true, force: true })
-    }
-  }
-
-  it('should not overwrite existing types when building into a relocated build directory', async () => {
-    await withRelocatedBuildDir(async (typesDir, nuxt) => {
-      for (const file of generatedFiles) {
-        await writeFile(join(typesDir, file), '{}')
-      }
-      await writeTypes(nuxt)
-      for (const file of generatedFiles) {
-        expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
-      }
-    })
-  })
-
-  it('should only write missing types when building into a relocated build directory', async () => {
-    await withRelocatedBuildDir(async (typesDir, nuxt) => {
-      const [missing, ...existing] = generatedFiles
-      for (const file of existing) {
-        await writeFile(join(typesDir, file), '{}')
-      }
-      await writeTypes(nuxt)
       expect(await readFile(join(typesDir, missing!), 'utf8')).not.toBe('{}')
       for (const file of existing) {
         expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')

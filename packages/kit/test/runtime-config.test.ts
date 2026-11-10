@@ -13,7 +13,7 @@ vi.mock('klona', () => ({
   klona: mockKlona,
 }))
 
-const testCases = [
+const testCases: Array<{ description: string, runtimeConfig: Record<string, unknown>, envExpansion: boolean, env: Record<string, string>, expected: Record<string, unknown> }> = [
   {
     description:
       'should return runtime config with environment variables applied',
@@ -97,11 +97,7 @@ describe('useRuntimeConfig', () => {
   })
 
   it.each(testCases)('$description', ({ runtimeConfig, envExpansion, env, expected }) => {
-    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion } }, future: { compatibilityVersion: 5 }, _runtimeConfigSchemas: [] } } as any)
-    mockKlona.mockReturnValue(runtimeConfig)
-    Object.entries(env).forEach(([key, value]) => vi.stubEnv(key, value))
-
-    expect(useRuntimeConfig()).toEqual(expected)
+    expect(run(runtimeConfig, env, envExpansion)).toEqual(expected)
   })
 
   it('should cast environment variables with `destr` on versions of Nuxt without runtime config schemas', () => {

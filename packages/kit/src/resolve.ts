@@ -61,7 +61,6 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
     return res.path
   }
 
-  // Return normalized input
   return opts.fallbackToOriginal ? path : res.path
 }
 
@@ -81,7 +80,6 @@ export async function findPath (paths: string | string[], opts?: ResolvePathOpti
       continue
     }
 
-    // Check file system
     if (res.virtual || await existsSensitive(res.path)) {
       return res.path
     }
@@ -206,7 +204,6 @@ function normalizeExtension (ext: string) {
 }
 
 async function _resolvePathGranularly (path: string, opts: RequirePicked<ResolvePathOptions, 'type'> = { type: 'file' }): Promise<PathResolution> {
-  // Always normalize input
   const _path = path
   path = normalize(path)
 
@@ -218,16 +215,13 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
     }
   }
 
-  // Use current nuxt options
   const nuxt = tryUseNuxt()
   const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
   const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : [...DEFAULT_JS_FILE_EXTENSIONS, '.json'])
   const modulesDir = nuxt ? nuxt.options.modulesDir : []
 
-  // Resolve aliases
   path = _resolveAliasWithMemoizedAliases(path, opts.alias ?? nuxt?.options.alias ?? {})
 
-  // Resolve relative to cwd
   if (!isAbsolute(path)) {
     path = resolve(cwd, path)
   }
@@ -237,7 +231,6 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
     return res
   }
 
-  // Check possible extensions
   if (opts.type === 'file') {
     for (const ext of extensions) {
       const normalizedExt = normalizeExtension(ext)
@@ -270,7 +263,6 @@ async function _resolvePathGranularly (path: string, opts: RequirePicked<Resolve
     }
   }
 
-  // Return normalized input
   return {
     path,
   }

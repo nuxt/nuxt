@@ -70,3 +70,13 @@ type Resolvable<Namespace> = keyof Exclude<NonNullable<Namespace>, boolean | str
 export function defineResolvers<C extends Partial<Resolvable<ConfigSchema>>> (config: C) {
   return config as any
 }
+
+/** Resolves to the configured value when it is one of `values`, and to `fallback` otherwise. */
+export function oneOf<const T extends string> (values: readonly T[], fallback: NoInfer<T>): Resolvers<T> {
+  return { $resolve: val => values.includes(val as T) ? val as T : fallback }
+}
+
+/** Resolves to the configured value when it is a boolean, and to `fallback` otherwise. */
+export function booleanOr (fallback: boolean): Resolvers<boolean> {
+  return { $resolve: val => typeof val === 'boolean' ? val : fallback }
+}

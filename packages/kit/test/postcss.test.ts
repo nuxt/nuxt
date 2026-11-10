@@ -1,11 +1,11 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { rm } from 'node:fs/promises'
 import { join } from 'pathe'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 
 import { bundlerDiagnostics } from '../src/diagnostics/bundler.ts'
 import { resolvePostcssPlugins } from '../src/internal/postcss.ts'
+import { createTempDir, fakePackage, writeFiles } from './utils.ts'
 
 const { ensureDependencyInstalled } = vi.hoisted(() => ({ ensureDependencyInstalled: vi.fn(() => Promise.resolve(false)) }))
 vi.mock('../src/dependency.ts', async original => ({ ...await original<typeof import('../src/dependency.ts')>(), ensureDependencyInstalled }))
@@ -13,12 +13,11 @@ vi.mock('../src/dependency.ts', async original => ({ ...await original<typeof im
 let rootDir: string
 
 beforeAll(async () => {
-  rootDir = await mkdtemp(join(tmpdir(), 'nuxt-postcss-'))
-  const tailwind = join(rootDir, 'node_modules/tailwindcss')
-  await mkdir(tailwind, { recursive: true })
-  await writeFile(join(tailwind, 'package.json'), JSON.stringify({ name: 'tailwindcss', type: 'module', exports: { '.': './index.js', './broken': './broken.js' } }))
-  await writeFile(join(tailwind, 'index.js'), 'export default {}\n')
-  await writeFile(join(tailwind, 'broken.js'), 'import "missing-dependency"\nexport default () => ({})\n')
+  rootDir = await createTempDir('nuxt-postcss-')
+  await writeFiles(rootDir, {
+    ...fakePackage('tailwindcss', 'export default {}\n', { exports: { '.': './index.js', './broken': './broken.js' } }),
+    'node_modules/tailwindcss/broken.js': 'import "missing-dependency"\nexport default () => ({})\n',
+  })
 })
 
 afterAll(async () => {

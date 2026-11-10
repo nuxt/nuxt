@@ -27,7 +27,6 @@ import type { LayerDirectories } from './layers.ts'
 export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
   const nuxt = useNuxt()
 
-  // Normalize template
   const template = normalizeTemplate(_template)
 
   // Remove any existing template with the same destination path
@@ -46,7 +45,6 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNu
     // ignore errors as this is an additive feature
   }
 
-  // Add to templates array
   nuxt.options.build.templates.push(template)
 
   return template
@@ -80,7 +78,6 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
     throw kitDiagnostics.NUXT_B8007({ template: template.filename })
   }
 
-  // Add template to types reference
   if (!context || context.nuxt) {
     nuxt.hook('prepare:types', (payload) => {
       payload.references ||= []
@@ -132,14 +129,12 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
     throw kitDiagnostics.NUXT_B8008({ template: JSON.stringify(template) })
   }
 
-  // Normalize
   if (typeof template === 'string') {
     template = { src: template }
   } else {
     template = { ...template }
   }
 
-  // Use src if provided
   if (template.src) {
     if (!existsSync(template.src)) {
       throw kitDiagnostics.NUXT_B8009({ template: template.src })
@@ -158,12 +153,10 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
     throw kitDiagnostics.NUXT_B8011({ template: JSON.stringify(template) })
   }
 
-  // Always write declaration files
   if (template.filename.endsWith('.d.ts') || template.filename.endsWith('.d.mts') || template.filename.endsWith('.d.cts')) {
     template.write = true
   }
 
-  // Resolve dst
   template.dst ||= resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
 
   return template as ResolvedNuxtTemplate<T>
@@ -750,43 +743,22 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     resolveConfig(legacyTsConfig, './nuxt.d.ts'),
   ])
 
-  const declaration = [
+  const renderDeclaration = (references: TSReference[], body: string[] = []) => [
     ...references.map(ref => renderReference(ref, typesDir)),
-    ...declarations,
-    '',
-    'export {}',
-    '',
-  ].join('\n')
-
-  const nodeDeclaration = [
-    ...nodeReferences.map(ref => renderReference(ref, typesDir)),
-    '',
-    'export {}',
-    '',
-  ].join('\n')
-
-  const sharedDeclaration = [
-    ...sharedReferences.map(ref => renderReference(ref, typesDir)),
-    '',
-    'export {}',
-    '',
-  ].join('\n')
-
-  const serverDeclaration = [
-    ...serverReferences.map(ref => renderReference(ref, typesDir)),
+    ...body,
     '',
     'export {}',
     '',
   ].join('\n')
 
   return {
-    declaration,
+    declaration: renderDeclaration(references, declarations),
     sharedTsConfig,
-    sharedDeclaration,
+    sharedDeclaration: renderDeclaration(sharedReferences),
     serverTsConfig,
-    serverDeclaration,
+    serverDeclaration: renderDeclaration(serverReferences),
     nodeTsConfig,
-    nodeDeclaration,
+    nodeDeclaration: renderDeclaration(nodeReferences),
     tsConfig,
     legacyTsConfig,
   }
@@ -802,37 +774,31 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
 
   const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
 
-  const appTsConfigPath = resolve(typesDir, 'tsconfig.app.json')
-  const legacyTsConfigPath = resolve(typesDir, 'tsconfig.json')
-  const nodeTsConfigPath = resolve(typesDir, 'tsconfig.node.json')
-  const sharedTsConfigPath = resolve(typesDir, 'tsconfig.shared.json')
-  const serverTsConfigPath = resolve(typesDir, 'tsconfig.server.json')
-
-  const declarationPath = resolve(typesDir, 'nuxt.d.ts')
-  const nodeDeclarationPath = resolve(typesDir, 'nuxt.node.d.ts')
-  const sharedDeclarationPath = resolve(typesDir, 'nuxt.shared.d.ts')
-  const serverDeclarationPath = resolve(typesDir, 'nuxt.server.d.ts')
+  const files: Record<string, TSConfig | string> = {
+    'tsconfig.app.json': tsConfig,
+    'tsconfig.json': legacyTsConfig,
+    'tsconfig.node.json': nodeTsConfig,
+    'tsconfig.shared.json': sharedTsConfig,
+    'nuxt.d.ts': declaration,
+    'nuxt.node.d.ts': nodeDeclaration,
+    'nuxt.shared.d.ts': sharedDeclaration,
+  }
 
   // nitro v2 writes a `tsconfig.server.json` of its own into the build directory, carrying the
   // auto-import types it generates, so ours is only written where nothing else claims the name
-  const writesServerTsConfig = nuxt.options._nitroMajor !== 2
+  if (nuxt.options._nitroMajor !== 2) {
+    files['tsconfig.server.json'] = serverTsConfig
+    files['nuxt.server.d.ts'] = serverDeclaration
+  }
 
   const write = !nuxt.options._prepare && !nuxt.options.dev && typesDir !== nuxt.options.buildDir
     ? writeIfMissing
     : writeIfChanged
 
   await fsp.mkdir(typesDir, { recursive: true })
-  await Promise.all([
-    write(appTsConfigPath, JSON.stringify(tsConfig, null, 2)),
-    write(legacyTsConfigPath, JSON.stringify(legacyTsConfig, null, 2)),
-    write(nodeTsConfigPath, JSON.stringify(nodeTsConfig, null, 2)),
-    write(sharedTsConfigPath, JSON.stringify(sharedTsConfig, null, 2)),
-    writesServerTsConfig && write(serverTsConfigPath, JSON.stringify(serverTsConfig, null, 2)),
-    write(declarationPath, declaration),
-    write(nodeDeclarationPath, nodeDeclaration),
-    write(sharedDeclarationPath, sharedDeclaration),
-    writesServerTsConfig && write(serverDeclarationPath, serverDeclaration),
-  ])
+  await Promise.all(Object.entries(files).map(([file, contents]) =>
+    write(resolve(typesDir, file), typeof contents === 'string' ? contents : JSON.stringify(contents, null, 2)),
+  ))
 }
 
 /**
