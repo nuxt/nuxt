@@ -11,12 +11,10 @@
   },
   "ignoreDependencies": [
     "bing",
-    "uno.css",
     "somepath",
     "foo",
     "sherif",
     "nonexistent-package",
-    "pkg-pr-new",
     "ofetch",
     "verkit",
     "@nuxt/webpack-builder",
@@ -108,7 +106,6 @@
       "ignoreDependencies": [
         "mocked-exports",
         "vue-devtools-stub",
-        "ohash",
         "unenv",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-typescript"
