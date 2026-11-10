@@ -1,15 +1,14 @@
 import type { RenderResponse } from 'nitropack/types'
-import type { Link, SerializableHead } from '@unhead/vue/types'
+import type { Link } from '@unhead/vue/types'
 import { destr } from 'destr'
 import type { EventHandler, H3Event } from 'h3'
 import { createError, defineEventHandler, getQuery, getRequestHeader, getRequestWebStream, setResponseHeader, setResponseHeaders, setResponseStatus } from 'h3'
-import { VueResolver, walkResolver } from '@unhead/vue/utils'
 import { getRequestDependencies } from 'vue-bundle-renderer/runtime'
 import { getQuery as getURLQuery } from 'ufo'
 import { filterIslandProps, getIslandHash } from '#app/island-hash'
 import { findUnsafeIslandPropKey } from '#app/island-props'
 import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES, exceedsMaxBytes, exceedsMaxDepth } from '../utils/island-props'
-import { toSafeHeadInput } from '../utils/island-head'
+import { mergeIslandHead } from '../utils/island-head'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
@@ -195,22 +194,9 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     }
   }
 
-  const islandHead: SerializableHead = {}
-  for (const entry of ssrContext.head.entries.values()) {
-    const input = walkResolver(entry.input, VueResolver) as SerializableHead
-    for (const [key, value] of Object.entries(entry.options?._safe ? toSafeHeadInput(input) : input)) {
-      const currentValue = islandHead[key as keyof SerializableHead]
-      if (Array.isArray(currentValue)) {
-        currentValue.push(...value)
-      } else {
-        islandHead[key as keyof SerializableHead] = value
-      }
-    }
-  }
-
   const islandResponse: NuxtIslandResponse = {
     id: islandContext.id,
-    head: islandHead,
+    head: mergeIslandHead(ssrContext.head.entries.values()),
     html: getServerComponentHTML(renderResult.html),
     components: getClientIslandResponse(ssrContext),
     slots: getSlotIslandResponse(ssrContext),
