@@ -393,6 +393,20 @@ describe('module compatibility', () => {
     expect(hasNuxtModule('missing-module', nuxt)).toBe(false)
   })
 
+  it('detects inline module instances installed by Nuxt', async () => {
+    nuxt = await loadNuxt({
+      cwd: tempDir,
+      overrides: {
+        modules: [
+          defineNuxtModule({ meta: { name: 'inline-module' } }),
+          [defineNuxtModule({ meta: { name: 'inline-module-with-options' } }), { foo: 'bar' }],
+        ],
+      },
+    })
+    expect(hasNuxtModule('inline-module', nuxt)).toBe(true)
+    expect(hasNuxtModule('inline-module-with-options', nuxt)).toBe(true)
+  })
+
   it('reads the version of a module instance', async () => {
     const module = defineNuxtModule({ meta: { name: 'nuxt-module-foo', version: '1.0.0' } })
     expect(await getNuxtModuleVersion(module, fakeNuxt())).toBe('1.0.0')
