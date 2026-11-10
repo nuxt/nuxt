@@ -72,9 +72,9 @@ function collectRouteRulesFromPages (
   prefix: string,
 ) {
   for (const page of pages) {
+    const path = page.path.startsWith('/') ? page.path : prefix + page.path
     if (page.rules) {
       if (Object.keys(page.rules).length) {
-        const path = prefix + page.path
         const { patterns, issues } = vueRouterToRou3(path, { collapse: true })
         if (issues.length) {
           for (const issue of issues) {
@@ -93,7 +93,7 @@ function collectRouteRulesFromPages (
       delete page.rules
     }
     if (page.children?.length) {
-      collectRouteRulesFromPages(page.children, paths, prefix + page.path + '/')
+      collectRouteRulesFromPages(page.children, paths, path + '/')
     }
   }
   return paths

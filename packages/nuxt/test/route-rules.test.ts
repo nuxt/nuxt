@@ -130,6 +130,31 @@ describe('routeRules from page meta', () => {
     expect(collision).toHaveBeenCalledWith({ path: '/foo/:slug', pattern: '/foo/:_0' })
   })
 
+  it('keys rules of nested pages with absolute paths by their own path', () => {
+    const pages = [
+      {
+        path: '/parent',
+        rules: { ssr: false },
+        children: [
+          { path: '', rules: { prerender: true } },
+          {
+            path: '/elsewhere',
+            rules: { swr: 60 },
+            children: [{ path: 'nested', rules: { ssr: false } }],
+          },
+        ],
+      },
+    ]
+
+    expect(globRouteRulesFromPages(pages)).toEqual({
+      '/parent': { ssr: false },
+      '/parent/': { prerender: true },
+      '/elsewhere': { swr: 60 },
+      '/elsewhere/nested': { ssr: false },
+    })
+    expect(collision).not.toHaveBeenCalled()
+  })
+
   it('removes route rules from pages', () => {
     const pages = getPages()
     removePagesRules(pages)
