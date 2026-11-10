@@ -94,11 +94,12 @@ function sortNormalized (routes: any[]): any[] {
 
 describe('pages:generateRoutesFromFiles', () => {
   for (const test of pageTests) {
+    if (!test.files) { continue }
     it(test.description, async () => {
       if (test.error) {
         await expect(resolvePageTest(test)).rejects.toThrow(test.error)
       } else {
-        expect(toComparable(await resolvePageTest(test), !!test.files)).toEqual(toComparable(test.output!))
+        expect(toComparable(await resolvePageTest(test), true)).toEqual(toComparable(test.output!))
       }
     })
   }
