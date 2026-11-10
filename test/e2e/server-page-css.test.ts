@@ -1,31 +1,19 @@
-import { fileURLToPath } from 'node:url'
-import { expect, test } from './test-utils'
-import { isWindows } from 'std-env'
+import { expect, fixtureDir, test } from './test-utils'
 
 test.use({
   nuxt: {
-    rootDir: fileURLToPath(new URL('../fixtures/server-page-css', import.meta.url)),
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('server-page-css'),
   },
 })
 
 test.describe('server page CSS with inlineStyles false', () => {
-  test('server page scoped CSS is delivered', async ({ fetch }) => {
-    const res = await fetch('/')
-    const html = await res.text()
+  test('server page scoped CSS is inlined, including that of regular children', async ({ fetch }) => {
+    const html = await fetch('/').then(r => r.text())
 
-    // Server page HTML should contain scoped class names
     expect(html).toContain('nuxt-only-shell')
     expect(html).toContain('nuxt-only-card')
-
-    // The island handler always inlines CSS as <style> tags,
-    // regardless of the inlineStyles setting
+    // the island handler inlines CSS regardless of `inlineStyles`
     expect(html).toContain('.nuxt-only-shell')
-  })
-
-  test('CSS of a regular child of a server component is delivered', async ({ fetch }) => {
-    const res = await fetch('/')
-    const html = await res.text()
 
     expect(html).toContain('class="island-child"')
     expect(html).toContain('class="shared-child"')
@@ -33,51 +21,14 @@ test.describe('server page CSS with inlineStyles false', () => {
     expect(html).toMatch(/\.shared-child\[data-v-\w+\]\{/)
   })
 
-  test('normal page scoped CSS is delivered via <link>', async ({ page }) => {
-    await page.goto('/normal')
+  test('normal page CSS, including a component shared with a server component, is delivered via <link>', async ({ fetch }) => {
+    const html = await fetch('/normal').then(r => r.text())
+    expect(html).toContain('class="normal-shell')
+    expect(html).toContain('class="shared-child')
 
-    // Normal page should be visible
-    await expect(page.locator('.normal-shell')).toBeVisible()
-
-    // CSS should be linked (not inlined, since inlineStyles: false)
-    const styleLinks = page.locator('link[rel="stylesheet"]')
-    const count = await styleLinks.count()
-    expect(count).toBeGreaterThan(0)
-
-    // Find the CSS file containing our normal page styles
-    let found = false
-    for (let i = 0; i < count; i++) {
-      const href = await styleLinks.nth(i).getAttribute('href')
-      if (!href) { continue }
-      const cssRes = await page.request.get(href)
-      const css = await cssRes.text()
-      if (css.includes('.normal-shell')) {
-        found = true
-        break
-      }
-    }
-    expect(found).toBe(true)
-  })
-
-  test('a component shared with a server component keeps its <link> on a normal page', async ({ page }) => {
-    await page.goto('/normal')
-
-    await expect(page.locator('.shared-child')).toBeVisible()
-
-    const styleLinks = page.locator('link[rel="stylesheet"]')
-    const count = await styleLinks.count()
-
-    let found = false
-    for (let i = 0; i < count; i++) {
-      const href = await styleLinks.nth(i).getAttribute('href')
-      if (!href) { continue }
-      const cssRes = await page.request.get(href)
-      const css = await cssRes.text()
-      if (css.includes('.shared-child')) {
-        found = true
-        break
-      }
-    }
-    expect(found).toBe(true)
+    const hrefs = [...html.matchAll(/<link rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const css = (await Promise.all(hrefs.map(href => fetch(href).then(r => r.text())))).join('')
+    expect(css).toContain('.normal-shell')
+    expect(css).toContain('.shared-child')
   })
 })

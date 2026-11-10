@@ -1,4 +1,9 @@
 <script setup lang="ts">
+definePageMeta({
+  pageTransition: false,
+  layoutTransition: false,
+})
+
 const route = useRoute()
 const { data } = await useAsyncData(`asyncdata-${route.params.slug}`, async () => {
   await new Promise(resolve => setTimeout(resolve, 200))

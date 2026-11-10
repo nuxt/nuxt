@@ -1,11 +1,10 @@
-import { fileURLToPath } from 'node:url'
 import type { Router } from 'vue-router'
-import { expect, test } from './test-utils'
+import { expect, fixtureDir, test } from './test-utils'
 
 test.use({
   reducedMotion: 'no-preference',
   nuxt: {
-    rootDir: fileURLToPath(new URL('../fixtures/minimal-pages', import.meta.url)),
+    rootDir: fixtureDir('minimal-pages'),
     nuxtConfig: {
       experimental: { viewTransition: true, navigationRepaint: true },
     },
