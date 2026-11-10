@@ -2,12 +2,12 @@ import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { relative, resolve } from 'pathe'
 import { resolvePath } from '@nuxt/kit'
+import { resolveSpaLoadingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import type { Plugin } from 'vite'
 
 import { renderIndexHtml } from './html.ts'
-import { spaLoadingTemplate } from './output.ts'
 
 /**
  * Path of the SPA document, at the root of the Vite project so that it is emitted at the
@@ -29,7 +29,7 @@ export async function resolveDocument (nuxt: Nuxt): Promise<string> {
   // request URL rather than from the document's own location
   const src = nuxt.options.dev ? joinURL('/@fs', entry) : './' + relative(resolve(path, '..'), entry)
 
-  return renderIndexHtml(nuxt, src, await spaLoadingTemplate(nuxt))
+  return renderIndexHtml(nuxt, src, await resolveSpaLoadingTemplate(nuxt))
 }
 
 /**
