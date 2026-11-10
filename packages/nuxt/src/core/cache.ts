@@ -12,39 +12,9 @@ import { packTar, unpackTar } from 'modern-tar'
 import type { Plugin as VitePlugin } from 'vite'
 
 export async function getVueHash (nuxt: Nuxt) {
-  const id = 'vue'
+  const hash = await getVueBuildHash(nuxt)
 
-  const { hash } = await getHashes(nuxt, {
-    id,
-    cwd: (layer) => {
-      const srcDir = layer.config.srcDir || layer.cwd
-      // `shared/` is resolved from the layer root, so it is outside `srcDir` when using an `app/` directory
-      const sharedDir = resolve(layer.config.rootDir || layer.cwd, layer.config.dir?.shared || 'shared')
-      return relative(srcDir, sharedDir).startsWith('../') ? [srcDir, sharedDir] : srcDir
-    },
-    patterns: (layer) => {
-      const srcDir = layer.config.srcDir || layer.cwd
-      return [
-        '**',
-        `!${relative(srcDir, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
-        `!${relative(srcDir, resolve(layer.cwd, layer.config.dir?.public || 'public'))}/**`,
-        '!node_modules/**',
-        '!nuxt.config.*',
-      ]
-    },
-    configOverrides: {
-      buildId: undefined,
-      serverDir: undefined,
-      nitro: undefined,
-      devServer: undefined,
-      runtimeConfig: undefined,
-      logLevel: undefined,
-      devServerHandlers: undefined,
-      devtools: undefined,
-    },
-  })
-
-  const cacheFile = join(getCacheDir(nuxt), id, hash + '.tar')
+  const cacheFile = join(getCacheDir(nuxt), 'vue', hash + '.tar')
   const buildIdCacheFile = cacheFile.replace('.tar', '.buildid')
   const clientCacheFile = cacheFile.replace('.tar', '.client.tar')
   const clientStateFile = cacheFile.replace('.tar', '.client.json')
@@ -169,9 +139,7 @@ async function restoreBuildOutputs (nuxt: Nuxt) {
  * consumers use the same buildId that was used when the Vue build was cached.
  */
 export async function restoreCachedBuildId (nuxt: Nuxt) {
-  const { hash } = await getVueHash(nuxt)
-  const cacheDir = getCacheDir(nuxt)
-  const buildIdCacheFile = join(cacheDir, 'vue', hash + '.buildid')
+  const buildIdCacheFile = join(getCacheDir(nuxt), 'vue', await getVueBuildHash(nuxt) + '.buildid')
 
   if (!existsSync(buildIdCacheFile)) {
     return
@@ -215,21 +183,44 @@ export async function cleanupCaches (nuxt: Nuxt) {
   }
 }
 
-// internal
-
 type HashSource = { name: string, data: any }
-type Hashes = { hash: string, sources: HashSource[] }
 
-interface GetHashOptions {
-  id: string
-  cwd: (layer: NuxtConfigLayer) => string | string[]
-  patterns: (layer: NuxtConfigLayer) => string[]
-  configOverrides: Partial<Record<keyof NuxtConfig, unknown>>
+/** Config that does not affect the Vue build */
+const ignoredConfig: Partial<Record<keyof NuxtConfig, undefined>> = {
+  buildId: undefined,
+  serverDir: undefined,
+  nitro: undefined,
+  devServer: undefined,
+  runtimeConfig: undefined,
+  logLevel: undefined,
+  devServerHandlers: undefined,
+  devtools: undefined,
 }
 
-async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> {
-  if ((nuxt as any)[`_${options.id}BuildHash`]) {
-    return (nuxt as any)[`_${options.id}BuildHash`]
+function getLayerSourceDirs (layer: NuxtConfigLayer) {
+  const srcDir = layer.config.srcDir || layer.cwd
+  // `shared/` is resolved from the layer root, so it is outside `srcDir` when using an `app/` directory
+  const sharedDir = resolve(layer.config.rootDir || layer.cwd, layer.config.dir?.shared || 'shared')
+  return relative(srcDir, sharedDir).startsWith('../') ? [srcDir, sharedDir] : srcDir
+}
+
+function getLayerSourcePatterns (layer: NuxtConfigLayer) {
+  const srcDir = layer.config.srcDir || layer.cwd
+  return [
+    '**',
+    `!${relative(srcDir, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
+    `!${relative(srcDir, resolve(layer.cwd, layer.config.dir?.public || 'public'))}/**`,
+    '!node_modules/**',
+    '!nuxt.config.*',
+  ]
+}
+
+const vueBuildHashes = new WeakMap<Nuxt, string>()
+
+async function getVueBuildHash (nuxt: Nuxt): Promise<string> {
+  const cached = vueBuildHashes.get(nuxt)
+  if (cached) {
+    return cached
   }
 
   const start = Date.now()
@@ -246,10 +237,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
     const layerName = `layer#${layerCtr++}`
     hashSources.push({
       name: `${layerName}:config`,
-      data: serialize({
-        ...layer.config,
-        ...options.configOverrides || {},
-      }),
+      data: serialize({ ...layer.config, ...ignoredConfig }),
     })
 
     const normalizeFiles = (files: Awaited<ReturnType<typeof readFilesRecursive>>) => files.map(f => ({
@@ -259,10 +247,10 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
     })).sort((a, b) => a.name.localeCompare(b.name))
 
     const isIgnored = createIsIgnored(nuxt)
-    const sourceFiles = await readFilesRecursive(options.cwd(layer), {
+    const sourceFiles = await readFilesRecursive(getLayerSourceDirs(layer), {
       shouldIgnore: isIgnored,
       cwd: nuxt.options.rootDir,
-      patterns: options.patterns(layer),
+      patterns: getLayerSourcePatterns(layer),
     })
 
     hashSources.push({
@@ -294,13 +282,10 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
 
   hashSources.sort((a, b) => a.name.localeCompare(b.name))
 
-  const res = ((nuxt as any)[`_${options.id}BuildHash`] = {
-    hash: hash(hashSources),
-    sources: hashSources,
-  })
+  const res = hash(hashSources)
+  vueBuildHashes.set(nuxt, res)
 
-  const elapsed = Date.now() - start
-  consola.debug(`Computed \`${options.id}\` build hash in \`${elapsed}ms\`.`)
+  consola.debug(`Computed \`vue\` build hash in \`${Date.now() - start}ms\`.`)
 
   return res
 }
