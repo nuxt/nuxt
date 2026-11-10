@@ -57,11 +57,15 @@ jobs:
               - 'packages/**'
               - 'test/**'
               - 'scripts/**'
+              - 'bench/**'
               - 'patches/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - 'package.json'
               - 'tsconfig.json'
+              - 'internal.d.ts'
+              - 'nuxt.config.ts'
+              - 'knip.json'
               - 'vitest.config.ts'
               - 'playwright.config.ts'
               - 'eslint.config.mjs'
@@ -245,8 +249,6 @@ jobs:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
-        module: ['bundler']
-        # module: ["bundler", "node"]
         exclude:
           # only run ubuntu in merge queue
           - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
@@ -263,8 +265,6 @@ jobs:
       - parallel:
           - name: Test (types)
             run: vp run test:types
-            env:
-              MODULE_RESOLUTION: ${{ matrix.module }}
 
           - name: Typecheck (docs)
             run: vp run typecheck:docs
