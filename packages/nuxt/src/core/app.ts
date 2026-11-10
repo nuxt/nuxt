@@ -52,18 +52,14 @@ const postTemplates = new Set([
 
 export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean } = {}) {
   const generateStart = performance.now()
-  // Resolve app
   await resolveApp(nuxt, app)
   const resolvedAt = performance.now()
 
-  // User templates from options.build.templates
   app.templates = Object.values(defaultTemplates).concat(nuxt.options.build.templates) as NuxtTemplate[]
 
-  // Extend templates with hook
   await nuxt.callHook('app:templates', app)
   const scannedAt = performance.now()
 
-  // Normalize templates
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl, nuxt.options.buildDir))
 
   // compile plugins first as they are needed within the nuxt.vfs
@@ -79,7 +75,6 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     filteredTemplates[key].push(template)
   }
 
-  // Compile templates into vfs
   const templateContext = { nuxt, app }
 
   const writes: Array<() => void> = []
@@ -200,23 +195,18 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   const version = getAppStructureVersion(nuxt)
   if (nuxt.options.dev && resolvedStructureVersions.get(app) === version) { return }
 
-  // resolve layer
   const layerDirs = getLayerDirectories(nuxt)
   const reversedLayerDirs = layerDirs.toReversed()
 
-  // Resolve main (app.vue)
   app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.app, 'App'), join(d.app, 'app')]))
   app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
 
-  // Resolve root component
   app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
-  // Resolve error component
   app.errorComponent ||= await findPath(layerDirs.map(d => join(d.app, 'error'))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
   const extensionGlob = nuxt.options.extensions.join(',')
 
-  // Resolve layouts/ from all config layers
   const layouts: NuxtApp['layouts'] = {}
   for (const dirs of layerDirs) {
     const layoutFiles = await resolveFiles(dirs.appLayouts, `**/*{${extensionGlob}}`)
@@ -276,7 +266,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   middleware = uniqueBy(await resolvePaths(nuxt, middleware.toReversed(), 'path'), 'name').reverse()
   plugins = uniqueBy(await resolvePaths(nuxt, plugins, 'src'), 'src')
 
-  // Resolve app.config
   const configs: NuxtApp['configs'] = []
   for (const dirs of layerDirs) {
     const appConfigPath = await findPath(join(dirs.app, 'app.config'))
@@ -287,7 +276,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   Object.assign(app, { middleware, plugins, configs, layouts })
 
-  // Extend app
   await nuxt.callHook('app:resolve', app)
 
   // Normalize and de-duplicate plugins, middleware and app configs
