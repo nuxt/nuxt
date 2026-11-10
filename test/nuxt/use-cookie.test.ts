@@ -311,6 +311,9 @@ describe('useCookie', () => {
     })
     expect(cookie.value).toBe('token')
 
+    document.cookie = 'expires-refresh=; Max-Age=0'
+    expect(document.cookie).not.toContain('expires-refresh=token')
+
     const baseline = callCount
     cookie.value = 'token'
     await nextTick()
