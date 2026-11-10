@@ -2536,16 +2536,6 @@ importers:
         specifier: catalog:dev
         version: 6.0.3
 
-  test/fixtures/server-path-fallback-disabled:
-    dependencies:
-      nuxt:
-        specifier: workspace:*
-        version: link:../../../packages/nuxt
-    devDependencies:
-      typescript:
-        specifier: catalog:dev
-        version: 6.0.3
-
   test/fixtures/spa:
     dependencies:
       nuxt:
