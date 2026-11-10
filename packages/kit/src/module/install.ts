@@ -33,6 +33,13 @@ interface ResolvedModule {
   meta: ModuleMeta | undefined
 }
 
+type ModuleOptionsFn = () => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }
+
+function mergeModuleOptions (optionsFns: ModuleOptionsFn[], configured: unknown, inlineOptions?: Record<string, unknown>): Record<string, any> {
+  const options = optionsFns.map(fn => fn())
+  return defu({}, inlineOptions, ...options.map(o => o.overrides), configured as Record<string, unknown> | undefined, ...options.map(o => o.defaults))
+}
+
 // config keys that accept `false` as a valid config value or are known to handle disabling internally
 const ignoredConfigKeys = new Set(['components', 'imports', 'pages', 'devtools', 'telemetry'])
 
@@ -49,7 +56,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     }
   }
 
-  nuxt._moduleOptionsFunctions ||= new Map<ModuleToInstall, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>()
+  nuxt._moduleOptionsFunctions ||= new Map<ModuleToInstall, ModuleOptionsFn[]>()
   const resolvedModules: Array<ResolvedModule> = []
   // allow moduleDependencies to reference modules by their meta.name
   const modulesByMetaName = new Map<string, ModuleToInstall>()
@@ -173,17 +180,8 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
       // TODO: consider dropping options functions keyed by config key
       ...configKey ? nuxt._moduleOptionsFunctions.get(configKey) || [] : [],
     ])
-    if (optionsFns.size > 0) {
-      const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
-      const defaults: Array<Record<string, unknown> | undefined> = []
-      for (const fn of optionsFns) {
-        const options = fn()
-        overrides.push(options.overrides)
-        defaults.push(options.defaults)
-      }
-      if (configKey) {
-        ;(nuxt.options[configKey] as any) = defu(...overrides, nuxt.options[configKey], ...defaults)
-      }
+    if (optionsFns.size > 0 && configKey) {
+      ;(nuxt.options[configKey] as any) = mergeModuleOptions([...optionsFns], nuxt.options[configKey])
     }
 
     // Check if module should be disabled
@@ -233,14 +231,7 @@ export async function installModule<
       ...nuxt._moduleOptionsFunctions.get(configKey) || [],
     ]
     if (optionsFns.length > 0) {
-      const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
-      const defaults: Array<Record<string, unknown> | undefined> = []
-      for (const fn of optionsFns) {
-        const options = fn()
-        overrides.push(options.overrides)
-        defaults.push(options.defaults)
-      }
-      mergedOptions = defu(inlineOptions, ...overrides, nuxt.options[configKey], ...defaults) as any
+      mergedOptions = mergeModuleOptions(optionsFns, nuxt.options[configKey], inlineOptions) as typeof inlineOptions
       ;(nuxt.options[configKey] as any) = mergedOptions
     }
   }
@@ -286,14 +277,11 @@ function resolveModuleDefinition (
   }
 
   const modAlias = resolveAlias(module, nuxt.options.alias)
+  const resolveOptions = moduleResolveOptions(nuxt)
   const modPath = resolveModulePath(modAlias, {
+    ...resolveOptions,
     try: true,
-    from: [
-      ...parentPath ? [pathToFileURL(parentPath)] : [],
-      ...nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
-    ],
-    suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-    extensions: DEFAULT_JS_FILE_EXTENSIONS,
+    from: parentPath ? [pathToFileURL(parentPath), ...resolveOptions.from] : resolveOptions.from,
   })
 
   return {
@@ -303,7 +291,15 @@ function resolveModuleDefinition (
   }
 }
 
-let _jitiCache: WeakMap<Nuxt, Promise<Jiti | undefined>> | undefined
+function moduleResolveOptions (nuxt: Nuxt) {
+  return {
+    from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+    suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
+    extensions: DEFAULT_JS_FILE_EXTENSIONS,
+  }
+}
+
+const jitiCache = new WeakMap<Nuxt, Promise<Jiti | undefined>>()
 
 /**
  * Resolve a jiti instance scoped to the project, or `undefined` if jiti is unavailable and the
@@ -318,17 +314,16 @@ let _jitiCache: WeakMap<Nuxt, Promise<Jiti | undefined>> | undefined
  * appropriate where jiti is expected to be the answer
  */
 async function getSharedJiti (nuxt: Nuxt, install: boolean): Promise<Jiti | undefined> {
-  _jitiCache ||= new WeakMap()
-  let promise = _jitiCache.get(nuxt)
+  let promise = jitiCache.get(nuxt)
   if (!promise) {
     promise = loadJiti({ rootDir: nuxt.options.rootDir, searchPaths: nuxt.options.modulesDir, install })
       .then(mod => mod?.createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias }))
-    _jitiCache.set(nuxt, promise)
+    jitiCache.set(nuxt, promise)
   }
   const jiti = await promise
   // a lookup that was not allowed to install says nothing about one that is
   if (!jiti && !install) {
-    _jitiCache.delete(nuxt)
+    jitiCache.delete(nuxt)
   }
   return jiti
 }
@@ -357,11 +352,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   // resolution failures mean the module isn't installed
   let src: string
   try {
-    src = resolveModuleURL(nuxtModule, {
-      from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
-      suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-      extensions: DEFAULT_JS_FILE_EXTENSIONS,
-    })
+    src = resolveModuleURL(nuxtModule, moduleResolveOptions(nuxt))
   } catch (error: unknown) {
     throw kitDiagnostics.NUXT_B8017({
       module: nuxtModule,

@@ -649,14 +649,7 @@ function reorderLocalLayersByExtends (
   extendsOrder: string[],
   localLayerDirs: Set<string>,
 ) {
-  const layerDir = (layer: LoadedConfigLayer) => {
-    const dir = (layer.config?.rootDir ?? layer.cwd ?? '').replace(/\/$/, '')
-    try {
-      return normalize(realpathSync(dir))
-    } catch {
-      return normalize(dir)
-    }
-  }
+  const layerDir = (layer: LoadedConfigLayer) => normalize(tryRealPath((layer.config?.rootDir ?? layer.cwd ?? '').replace(/\/$/, '')))
 
   const priorityByDir = new Map(extendsOrder.map((dir, index) => [dir, index]))
 
