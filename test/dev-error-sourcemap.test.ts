@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -8,6 +8,7 @@ import type { ErrorReport, Frame } from 'my-bad'
 
 import { inlineErrorRendering, isDev, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
 import { channelState, copyFixture, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
+import { editFixture } from './fixture-copy'
 import { setupFixture } from './utils'
 
 // stack mapping only applies in dev under the vite builders
@@ -182,23 +183,16 @@ describe.skipIf(!runs)('dev ssr errors thrown from a page', () => {
 
 describe.skipIf(!runs)('dev ssr stack mapping across edits', () => {
   const PADDING = Array.from({ length: 6 }, (_, index) => `// padding ${index}`).join('\n') + '\n'
-  const originals = new Map<string, string>()
+  const fixture = editFixture(fileURLToPath(fixtureURL))
 
-  afterEach(async () => {
-    for (const [path, contents] of originals) {
-      await writeFile(path, contents)
-    }
-    originals.clear()
-  })
+  afterEach(() => fixture.restore())
 
   it.each([
     ['a composable', '/', 'app/utils/boom.ts', (contents: string) => PADDING + contents],
     ['a `<script setup>` block', '/boom-page', 'app/pages/boom-page.vue', (contents: string) => contents.replace('throw new Error', PADDING + 'throw new Error')],
   ])('follows %s as lines are added above the throw and taken away again', async (_, path, file, pad) => {
-    const filePath = fileURLToPath(new URL(file, fixtureURL))
-    const contents = (await readFile(filePath, 'utf8')).replaceAll('\r\n', '\n')
-    originals.set(filePath, contents)
-    const start = at(file, 'new Error')
+    const contents = fixture.read(file)
+    const start = fixture.positionOf(file, 'new Error')
 
     async function expectFrameAt (line: number) {
       await expect.poll(async () => frameAt((await renderErrorPage(path)).report, file)?.line, { timeout: 15_000 }).toBe(line)
@@ -208,9 +202,9 @@ describe.skipIf(!runs)('dev ssr stack mapping across edits', () => {
     }
 
     await expectFrameAt(start.line)
-    await writeFile(filePath, pad(contents))
+    fixture.write(file, pad(contents))
     await expectFrameAt(start.line + 6)
-    await writeFile(filePath, contents)
+    fixture.restore()
     await expectFrameAt(start.line)
   })
 })
