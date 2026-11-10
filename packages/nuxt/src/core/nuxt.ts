@@ -22,7 +22,7 @@ import { hasTTY, isCI } from 'std-env'
 import { link } from 'clickable-path'
 import type { DevServerHandler, NitroConfig, Nuxt, NuxtHooks, NuxtOptions, ServerHandler } from 'nuxt/schema'
 
-import { installNuxtModule } from '../core/features.ts'
+import { installNuxtModule } from './features.ts'
 import pagesModule from '../pages/module.ts'
 import metaModule from '../head/module.ts'
 import componentsModule from '../components/module.ts'
