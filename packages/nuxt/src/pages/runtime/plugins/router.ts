@@ -1,7 +1,7 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref, VNode } from 'vue'
-import type { NavigationGuardReturn, RouteLocationNormalized, RouteLocationNormalizedLoadedGeneric, Router, RouterScrollBehavior } from 'vue-router'
-import { NavigationFailureType, START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory, isNavigationFailure } from 'vue-router'
+import type { NavigationGuardReturn, RouteLocationNormalized, RouteLocationNormalizedLoadedGeneric, RouteRecordRaw, Router, RouterMatcher, RouterScrollBehavior } from 'vue-router'
+import { NavigationFailureType, START_LOCATION, createMemoryHistory, createRouter, createRouterMatcher, createWebHashHistory, createWebHistory, isNavigationFailure } from 'vue-router'
 import { isSamePath, withBase, withoutBase } from 'ufo'
 
 import type { NuxtApp, Plugin } from '#app/nuxt'
@@ -20,9 +20,21 @@ import _routeRulesMatcher from '#build/route-rules.mjs'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
-import { serverPathFallback, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { serverPathFallback, staticRoutes, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import { traceAsync } from '#app/internal/tracing'
 import { documentURL } from '#app/internal/location'
+
+const sharedMatchers = new WeakMap<readonly RouteRecordRaw[], RouterMatcher>()
+function getSharedMatcher (routes: readonly RouteRecordRaw[]): RouterMatcher {
+  let matcher = sharedMatchers.get(routes)
+  if (!matcher) {
+    matcher = createRouterMatcher(routes, routerOptions)
+    sharedMatchers.set(routes, matcher)
+  }
+  return matcher
+}
+
+const ROUTE_TABLE_METHODS = ['addRoute', 'removeRoute', 'clearRoutes'] as const
 
 // matches a trailing slash on the path only, leaving query and hash significant
 const PATH_TRAILING_SLASH_RE = /\/(?=$|[?#])/
@@ -93,10 +105,17 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       },
       history,
       routes,
+      matcher: import.meta.server && staticRoutes ? getSharedMatcher(routes) : undefined,
     })
 
     if (import.meta.hot) {
-      handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
+      handleHotUpdate(staticRoutes ? { ...router } : router, routerOptions.routes ? routerOptions.routes : routes => routes)
+    }
+
+    if (staticRoutes) {
+      for (const method of ROUTE_TABLE_METHODS) {
+        router[method] = () => { throw navigationDiagnostics.NUXT_E2014({ method }) }
+      }
     }
 
     if (import.meta.client && 'scrollRestoration' in window.history) {

@@ -13,7 +13,7 @@ import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4, vueRouterToRou3 } from 'unrouting'
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
-import { getLoader, parseModuleId } from '../core/utils/index.ts'
+import { decodeRoutePath, getLoader, parseModuleId } from '../core/utils/index.ts'
 import { linkToAlias, logger, offsetToPosition, toArray } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
@@ -281,6 +281,62 @@ export function dynamicPageMetaCache (nuxt: Nuxt | null | undefined = tryUseNuxt
  */
 export function getDynamicPageMeta (page: NuxtPage, cache = dynamicPageMetaCache()): ReadonlySet<string> {
   return (page.file ? cache.get(normalize(page.file)) : undefined) ?? EMPTY_DYNAMIC_META
+}
+
+/** Page files whose component can have `__name` rewritten by the build-time transform. */
+const PAGE_COMPONENT_FILE_RE = /\.vue$/
+
+/**
+ * Map each transformable page file to the `__name` to assign to its component at build time.
+ * A file is omitted, or mapped to `undefined`, when its route name cannot be known until runtime
+ * (a dynamic `definePageMeta` name, `scanPageMeta` disabled, several routes sharing the file with
+ * different names, or a non-component file), so the runtime assignment keeps applying to it.
+ */
+export function getPageComponentNames (pages: NuxtPage[], nuxt = useNuxt()): Map<string, string | undefined> {
+  const pageNames = new Map<string, string | undefined>()
+  if (!nuxt || !nuxt.options.experimental.scanPageMeta) {
+    return pageNames
+  }
+  const dynamicPageMeta = dynamicPageMetaCache(nuxt)
+  const namedViews = new Set<string>()
+  const visit = (page: NuxtPage) => {
+    if (page.file && PAGE_COMPONENT_FILE_RE.test(page.file)) {
+      const file = normalize(page.file)
+      const name = page.name && !getDynamicPageMeta(page, dynamicPageMeta).has('name') && !isSymlink(file)
+        ? page.name
+        : undefined
+      if (!pageNames.has(file)) {
+        pageNames.set(file, name)
+      } else if (pageNames.get(file) !== name) {
+        // Several routes can reuse one file under different names; a single build-time name
+        // cannot express both.
+        pageNames.set(file, undefined)
+      }
+    }
+    for (const [view, viewFile] of Object.entries(page.components || {})) {
+      if (view !== 'default' && PAGE_COMPONENT_FILE_RE.test(viewFile)) {
+        namedViews.add(normalize(viewFile))
+      }
+    }
+    if (page.children?.length) {
+      for (const child of page.children) { visit(child) }
+    }
+  }
+  for (const page of pages) { visit(page) }
+  // The runtime assignment only renames the resolved default (or its client clone), never a
+  // named view's component, so a file shared with a named view keeps it.
+  for (const file of namedViews) {
+    pageNames.set(file, undefined)
+  }
+  return pageNames
+}
+
+function isSymlink (file: string): boolean {
+  try {
+    return normalize(fs.realpathSync(file)) !== file
+  } catch {
+    return false
+  }
 }
 
 type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }
@@ -645,6 +701,8 @@ interface NormalizeRoutesOptions {
   clientComponentRuntime: string
   /** Module exporting `memoizeRouteComponent`, used to share lazy page imports between server requests. */
   routeComponentRuntime?: string
+  /** Page files with a build-time `__name`, threaded through nested routes. */
+  pageComponentNames?: Map<string, string | undefined>
 }
 
 // A page that can only render in one environment is imported there and stubbed
@@ -700,6 +758,7 @@ function normalizeComponentWithName (page: NuxtPage, isSyncImport: boolean | und
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
   const nuxt = useNuxt()
   const dynamicPageMeta = dynamicPageMetaCache(nuxt)
+  const pageNames = options.pageComponentNames ?? getPageComponentNames(routes, nuxt)
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -731,7 +790,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       if (page.children?.length) {
-        route.children = normalizeRoutes(page.children, metaImports, options).routes
+        route.children = normalizeRoutes(page.children, metaImports, { ...options, pageComponentNames: pageNames }).routes
       }
 
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
@@ -776,7 +835,12 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         ? JSON.stringify(hash(relativeFile))
         : undefined
 
-      let component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames
+      // A page whose name is known at build time already carries it in its own chunk, so the
+      // route table can import it without mutating it here.
+      const pageName = nuxt.options.experimental.normalizePageNames
+        ? pageNames.get(file)
+        : undefined
+      let component = restrictToEnvironment(nuxt.options.experimental.normalizePageNames && pageName === undefined
         ? normalizeComponentWithName(page, isSyncImport, pageImportName, pageImport, route.name, metaRouteName, islandKey)
         : normalizeComponent(page, pageImport, route.name, islandKey))
       if (options.routeComponentRuntime && !isSyncImport) {
@@ -1000,7 +1064,7 @@ export async function resolveRouterOptions (nuxt: Nuxt, builtInRouterOptions?: s
  * The first non-optional `router.options` file that may define `key` (see
  * {@link routerOptionsMayDefine}), counting files that cannot be read.
  */
-export async function findRouterOptionsFileDefining (nuxt: Nuxt, key: 'routes' | 'sensitive', builtInRouterOptions?: string): Promise<string | undefined> {
+export async function findRouterOptionsFileDefining (nuxt: Nuxt, key: RouterOptionsKey, builtInRouterOptions?: string): Promise<string | undefined> {
   for (const file of await resolveRouterOptions(nuxt, builtInRouterOptions)) {
     if (file.optional) { continue }
     const code = await fs.promises.readFile(file.path, 'utf-8').catch(() => undefined)
@@ -1015,7 +1079,9 @@ export async function findRouterOptionsFileDefining (nuxt: Nuxt, key: 'routes' |
  * Returns `true` (conservatively) when the default export is not a plain object
  * literal, contains spreads or computed keys, or defines `key`.
  */
-export function routerOptionsMayDefine (code: string, filename: string, key: 'routes' | 'sensitive'): boolean {
+type RouterOptionsKey = 'routes' | 'sensitive' | 'hashMode' | 'history' | 'strict'
+
+export function routerOptionsMayDefine (code: string, filename: string, key: RouterOptionsKey): boolean {
   let mayDefine = true
   try {
     parseAndWalk(code, filename, (node) => {
@@ -1052,6 +1118,53 @@ function isDecodable (route: string): boolean {
   } catch {
     return false
   }
+}
+
+const ROU3_SYNTAX_RE = /[*(){}\\]/g
+
+/**
+ * Map the rou3 pattern of every page path to the source files (relative to `srcDir`)
+ * of the route records it renders, parents first. Patterns shared by unrelated pages
+ * map to `undefined`. Returns `undefined` when any path cannot be converted exactly
+ * (a trailing catch-all aside), or decodes to rou3 syntax, as rou3 could then pick a
+ * different page than vue-router.
+ */
+export function collectRou3PageSources (pages: NuxtPage[], srcDir: string): Map<string, string[] | undefined> | undefined {
+  const sources = new Map<string, string[] | undefined>()
+  const owners = new Map<string, NuxtPage>()
+  const collect = (pages: NuxtPage[], prefixes: string[], parentSources: string[], ancestors: NuxtPage[]): boolean => {
+    for (const page of pages) {
+      const pageSources = [...parentSources]
+      for (const file of [page.file, ...Object.values(page.components || {})]) {
+        if (file) { pageSources.push(relative(srcDir, file)) }
+      }
+      const routes = new Set<string>()
+      for (const route of [page.path, ...toArray(page.alias || [])]) {
+        if (route.startsWith('/')) {
+          routes.add(route)
+        } else {
+          for (const prefix of prefixes) {
+            routes.add(joinURL(prefix, route))
+          }
+        }
+      }
+      for (const route of routes) {
+        if (!isDecodable(route)) { return false }
+        const { patterns, issues } = vueRouterToRou3(route, { collapse: true })
+        if (!patterns.length || issues.some(issue => issue.type !== 'collapsed' || !route.endsWith(`:${issue.param}(.*)*`))) { return false }
+        for (const pattern of patterns) {
+          if (decodeRoutePath(pattern).match(ROU3_SYNTAX_RE)?.length !== pattern.match(ROU3_SYNTAX_RE)?.length) { return false }
+          const owner = owners.get(pattern)
+          const extendsExisting = !owner || (sources.get(pattern) && (owner === page || ancestors.includes(owner)))
+          sources.set(pattern, extendsExisting ? pageSources : undefined)
+          owners.set(pattern, page)
+        }
+      }
+      if (page.children?.length && !collect(page.children, [...routes], pageSources, [...ancestors, page])) { return false }
+    }
+    return true
+  }
+  return collect(pages, ['/'], [], []) ? sources : undefined
 }
 
 /**

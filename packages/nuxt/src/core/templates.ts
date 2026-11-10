@@ -1,14 +1,12 @@
 import { existsSync } from 'node:fs'
 import { genArrayFromRaw, genDynamicImport, genExport, genImport, genObjectFromRawEntries, genSafeVariableName, genString } from 'knitwork'
 import { isAbsolute, join, relative, resolve } from 'pathe'
-import type { JSValue } from 'untyped'
-import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { tryUseNitro } from '@nuxt/kit'
-import { bundlerDiagnostics, pageDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, getRuntimeConfigSchema, pageDiagnostics, runtimeConfigSchemaToType, useServerBuild } from '@nuxt/kit/internal'
 import type { Nitro } from 'nitropack/types'
 import { resolveModulePath } from 'exsolve'
 
@@ -20,6 +18,7 @@ import type { RouteRulesRouter } from './utils/route-rules.ts'
 import { findRouterOptionsFileDefining } from '../pages/utils.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
+const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
 const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
 
 export const vueShim: NuxtTemplate = {
@@ -233,32 +232,16 @@ const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/runtime-config.d.ts',
   dependsOn: [],
-  getContents: async ({ nuxt }) => {
-    const privateRuntimeConfig = Object.create(null)
-    for (const key in nuxt.options.runtimeConfig) {
-      if (key !== 'public' && key !== 'nitro') {
-        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
-      }
-    }
+  getContents: ({ nuxt }) => {
+    const schema = getRuntimeConfigSchema(nuxt.options.runtimeConfig, nuxt.options._runtimeConfigSchemas)
+    const { public: publicNode, ...privateProperties } = schema.p
+    const publicSchema = typeof publicNode === 'object' && 'p' in publicNode ? publicNode : { p: {} }
+    const { public: publicConfig, ...privateConfig } = nuxt.options.runtimeConfig
 
     return [
       `import { RuntimeConfig as UserRuntimeConfig } from 'nuxt/schema'`,
-      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-        {
-          interfaceName: 'SharedRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
-      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
-        {
-          interfaceName: 'SharedPublicRuntimeConfig',
-          addExport: false,
-          addDefaults: false,
-          allowExtraKeys: false,
-          indentation: 2,
-        }),
+      `interface SharedRuntimeConfig ${runtimeConfigSchemaToType({ p: privateProperties, r: schema.r }, privateConfig)}`,
+      `interface SharedPublicRuntimeConfig ${runtimeConfigSchemaToType(publicSchema, publicConfig)}`,
       ...['nuxt/schema', '@nuxt/schema'].flatMap(module => [
         `declare module '${module}' {`,
         `  interface RuntimeConfig extends SharedRuntimeConfig {}`,
@@ -569,7 +552,7 @@ export const appConfigTemplate: NuxtTemplate = {
   getContents ({ app, nuxt }) {
     return `${app.configs.length
       ? `
-import { defuFn } from 'defu'
+import { defuFn } from ${JSON.stringify(defuPath)}
 `
       : ''}
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
@@ -609,7 +592,21 @@ export const publicPathTemplate: NuxtTemplate = {
       'export const baseURL = () => getAppConfig().baseURL',
       'export const buildAssetsDir = () => getAppConfig().buildAssetsDir',
 
-      'export const buildAssetsURL = (...path) => joinRelativeURL(publicAssetsURL(), buildAssetsDir(), ...path)',
+      'const joinBuildAssetsURL = (...path) => joinRelativeURL(publicAssetsURL(), buildAssetsDir(), ...path)',
+      'const assetsURLs = /* @__PURE__ */ new Map()',
+      'export const buildAssetsURL = !import.meta.server ? joinBuildAssetsURL : (...path) => {',
+      '  if (path.length !== 1 || typeof path[0] !== "string") { return joinBuildAssetsURL(...path) }',
+      '  const base = publicAssetsURL()',
+      '  const dir = buildAssetsDir()',
+      '  const key = base + "\\0" + dir + "\\0" + path[0]',
+      '  let url = assetsURLs.get(key)',
+      '  if (url === undefined) {',
+      '    if (assetsURLs.size >= 1024) { assetsURLs.clear() }',
+      '    url = joinRelativeURL(base, dir, path[0])',
+      '    assetsURLs.set(key, url)',
+      '  }',
+      '  return url',
+      '}',
 
       'export const publicAssetsURL = (...path) => {',
       '  const appConfig = getAppConfig()',
@@ -639,7 +636,7 @@ if (!("global" in globalThis)) {
 }
 
 export const dollarFetchTemplate: NuxtTemplate = {
-  filename: 'fetch.mjs',
+  filename: 'fetch.server.mjs',
   dependsOn: [],
   getContents ({ nuxt }) {
     // the runtime a server build executes in is the server builder's to provide; one that
@@ -670,6 +667,48 @@ export const dollarFetchTemplate: NuxtTemplate = {
       'export const $fetch = globalThis.$fetch',
     ].join('\n')
   },
+}
+
+// On the client the global is installed when the binding is first read, and the annotation lets a
+// bundle in which nothing reads it leave out `ofetch` altogether.
+export const dollarFetchClientTemplate: NuxtTemplate = {
+  filename: 'fetch.client.mjs',
+  dependsOn: [],
+  getContents () {
+    return [
+      'import { $fetch as _$fetch } from \'ofetch\'',
+      'import { baseURL } from \'#internal/nuxt/paths\'',
+      'export const $fetch = /*#__PURE__*/ (() => globalThis.$fetch ||= _$fetch.create({ baseURL: baseURL() }))()',
+    ].join('\n')
+  },
+}
+
+// injected into client modules that read the `$fetch` global
+export const dollarFetchGlobalTemplate: NuxtTemplate = {
+  filename: 'fetch-global.mjs',
+  dependsOn: [],
+  getContents: () => 'import { $fetch } from \'#build/fetch\'\nglobalThis.$fetch ||= $fetch\n',
+}
+
+export const dollarFetchCompatTemplate: NuxtTemplate = {
+  filename: 'fetch.mjs',
+  dependsOn: [],
+  getContents: () => 'import { $fetch } from \'#build/fetch\'\nglobalThis.$fetch ||= $fetch\nexport { $fetch }\n',
+}
+
+// `#build/fetch-setup` is imported for its side effects as the first import in the app entry.
+// On the server it seeds `globalThis.$fetch` before any other module evaluates. A client build
+// installs the global only where client code reads it (see `DollarFetchGlobalPlugin`).
+export const dollarFetchSetupServerTemplate: NuxtTemplate = {
+  filename: 'fetch-setup.server.mjs',
+  dependsOn: [],
+  getContents: () => 'import \'#build/fetch\'\n',
+}
+
+export const dollarFetchSetupClientTemplate: NuxtTemplate = {
+  filename: 'fetch-setup.client.mjs',
+  dependsOn: [],
+  getContents: ({ nuxt }) => nuxt.options.dev || nuxt.options.experimental.globalFetch ? 'import \'#build/fetch-global\'\n' : 'export {}\n',
 }
 
 export const dollarFetchTypeTemplate: NuxtTemplate = {
@@ -746,6 +785,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!nitro?.options.prerender.crawlLinks}`,
+      `export const staticRoutes = ${!!ctx.nuxt.options.experimental.staticRoutes}`,
       `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
       `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
       `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,
@@ -816,6 +856,37 @@ const ROUTER_OPTIONS_FILE_RE = /(?:^|[/\\])router\.options\.\w+$/
 /** Compiled matchers, keyed by a hash of the route rules they were compiled from. */
 const cachedMatchers = new WeakMap<Nuxt, Record<string, string>>()
 
+function serializeAppRouteRules (routeRules: Record<string, any>): string {
+  return `{${Object.entries(routeRules)
+    .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
+    .map(([name, value]) => {
+      if (name === 'redirect') {
+        const redirectOptions = value as { to: string, base?: string, _redirectStripBase?: string } | string
+        value = typeof redirectOptions === 'string'
+          ? redirectOptions
+          : isWildcardRedirect(redirectOptions) ? { to: redirectOptions.to, base: redirectOptions.base ?? redirectOptions._redirectStripBase ?? '' } : redirectOptions.to
+      }
+      if (name === 'appMiddleware') {
+        const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
+        if (typeof appMiddlewareOptions === 'string') {
+          value = { [appMiddlewareOptions]: true }
+        } else if (Array.isArray(appMiddlewareOptions)) {
+          const normalizedRules: Record<string, boolean> = {}
+          for (const middleware of appMiddlewareOptions) {
+            normalizedRules[middleware] = true
+          }
+          value = normalizedRules
+        }
+      }
+      if (name === 'cache' || name === 'isr' || name === 'swr') {
+        name = 'payload'
+        value = Boolean(value)
+      }
+      return `${name}: ${JSON.stringify(value)}`
+    }).join(',')
+  }}`
+}
+
 export const routeRulesTemplate: NuxtTemplate = {
   filename: 'route-rules.mjs',
   // route rules can come from page sources (`defineRouteRules`), and `router.options` files
@@ -834,6 +905,9 @@ export const routeRulesTemplate: NuxtTemplate = {
     }
     if (!routes.length) {
       return `export default () => ({})`
+    }
+    if (routes.length === 1 && routes[0]!.route === '/**' && !isWildcardRedirect(routes[0]!.data.redirect)) {
+      return `export default () => (${serializeAppRouteRules(routes[0]!.data)})`
     }
     const cache = cachedMatchers.get(nuxt) ?? cachedMatchers.set(nuxt, {}).get(nuxt)!
     const cacheKey = hash({ routes, mayBeCaseSensitive })
@@ -855,36 +929,7 @@ export const routeRulesTemplate: NuxtTemplate = {
     })
     const compileOptions: NonNullable<Parameters<RouteRulesRouter['compileToString']>[0]> = {
       matchAll: true,
-      serialize (routeRules) {
-        return `{${Object.entries(routeRules)
-          .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
-          .map(([name, value]) => {
-            if (name === 'redirect') {
-              const redirectOptions = value as { to: string, base?: string, _redirectStripBase?: string } | string
-              value = typeof redirectOptions === 'string'
-                ? redirectOptions
-                : isWildcardRedirect(redirectOptions) ? { to: redirectOptions.to, base: redirectOptions.base ?? redirectOptions._redirectStripBase ?? '' } : redirectOptions.to
-            }
-            if (name === 'appMiddleware') {
-              const appMiddlewareOptions = value as string | string[] | Record<string, boolean>
-              if (typeof appMiddlewareOptions === 'string') {
-                value = { [appMiddlewareOptions]: true }
-              } else if (Array.isArray(appMiddlewareOptions)) {
-                const normalizedRules: Record<string, boolean> = {}
-                for (const middleware of appMiddlewareOptions) {
-                  normalizedRules[middleware] = true
-                }
-                value = normalizedRules
-              }
-            }
-            if (name === 'cache' || name === 'isr' || name === 'swr') {
-              name = 'payload'
-              value = Boolean(value)
-            }
-            return `${name}: ${JSON.stringify(value)}`
-          }).join(',')
-        }}`
-      },
+      serialize: serializeAppRouteRules,
     }
     const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
     const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)

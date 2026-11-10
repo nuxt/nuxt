@@ -12,6 +12,7 @@ export function normalizeSemanticVersion (version: string): string {
 }
 
 const builderMap = {
+  '@nuxt/rsbuild-builder': 'rsbuild',
   '@nuxt/rspack-builder': 'rspack',
   '@nuxt/vite-builder': 'vite',
   '@nuxt/webpack-builder': 'webpack',
@@ -161,7 +162,7 @@ function getNitroFullVersion (nuxt: Nuxt): string | undefined {
       if (path) {
         try {
           const parsed = JSON.parse(readFileSync(path, 'utf8')) as { name?: string, version?: string }
-          if (parsed.name === pkg && parsed.version) {
+          if ((parsed.name === pkg || parsed.name === `${pkg}-nightly`) && parsed.version) {
             version = parsed.version
             break
           }

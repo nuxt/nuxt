@@ -7,5 +7,6 @@ const headers = useRequestHeaders(['cookie', 'authorization'])
     <span id="page-cookie">{{ headers.cookie ?? 'none' }}</span>
     <span id="page-authorization">{{ headers.authorization ?? 'none' }}</span>
     <NuxtIsland name="HeaderEcho" />
+    <NuxtIsland name="ConditionalHeaderEcho" />
   </div>
 </template>

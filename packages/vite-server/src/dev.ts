@@ -1,19 +1,23 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { inspect } from 'node:util'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { NodeRequest, sendNodeResponse } from 'srvx/node'
 import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
 import { joinURL } from 'ufo'
 import type { Connect, ViteDevServer } from 'vite'
 
-import { listenForRemoteDevErrors } from './dev-errors.ts'
+import { listenForRemoteDevErrors, reportFileAccess } from './dev-errors.ts'
 import { resolveDocument } from './document.ts'
 import { publicDirs } from './output.ts'
 
 /**
  * The ESM dependencies of the render, which a deploy target's environment loads as they
- * are rather than discovering and pre-bundling them as it reaches them.
+ * are rather than discovering and pre-bundling them as it reaches them. `nuxt` is one, since
+ * its internals import modules that Nuxt's build provides.
  */
 const SERVER_RUNTIME_DEPS = [
+  'nuxt',
   'vue',
   'vue-router',
   '@vue/shared',
@@ -58,15 +62,26 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   const render = async (request: Request) => {
     const module = await viteServer!.ssrLoadModule(serverEntry!) as {
       fetch: (request: Request) => Promise<Response>
-      setDevErrorContext?: (context: { server: ViteDevServer, cwd: string, channel: string }) => void
+      setDevErrorContext?: (context: { server: ViteDevServer, cwd: string, channel: string, canRead: (file: string) => boolean }) => void
     }
     // set per render, since the module holding it is re-evaluated with the graph
-    module.setDevErrorContext?.({ server: viteServer!, cwd: nuxt.options.rootDir, channel: errorChannel })
+    module.setDevErrorContext?.({ server: viteServer!, cwd: nuxt.options.rootDir, channel: errorChannel, canRead: reportFileAccess(viteServer!) })
     return module.fetch(request)
   }
 
+  let reportedFallthrough = false
   const respond = (request: Request, url: string) => {
-    return serverEntry && viteServer ? render(request) : shell(url)
+    if (!serverEntry || !viteServer) {
+      return shell(url)
+    }
+    if (!('runner' in viteServer.environments.ssr)) {
+      if (!reportedFallthrough) {
+        reportedFallthrough = true
+        bundlerDiagnostics.NUXT_B7037()
+      }
+      return new Response('Internal Server Error', { status: 500 })
+    }
+    return render(request)
   }
 
   const serveStatic = (request: Request): Promise<Response | undefined> => {
@@ -88,7 +103,7 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
     enforce: 'pre',
     apply: 'serve',
     configEnvironment (name, config) {
-      if (serverEntry && name !== 'client' && name !== 'ssr' && (config.consumer ?? 'server') === 'server') {
+      if (serverEntry && name !== 'client' && (config.consumer ?? 'server') === 'server') {
         return { optimizeDeps: { exclude: [...SERVER_RUNTIME_DEPS] } }
       }
     },
@@ -124,10 +139,22 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
 
   nuxt.server = {
     handler: async (req: IncomingMessage, res: ServerResponse) => {
-      if (viteServer && await handledByVite(viteServer, req, res)) {
-        return
+      try {
+        if (viteServer && await handledByVite(viteServer, req, res)) {
+          return
+        }
+        await sendNodeResponse(res, await respond(new NodeRequest({ req, res }), req.url || '/'))
+      } catch (error) {
+        if (!viteServer?.config.logger.hasErrorLogged(error as Error)) {
+          bundlerDiagnostics.NUXT_B7036({ method: req.method!, url: req.url!, error: inspect(error), headersSent: res.headersSent, cause: error }, { method: 'error' })
+        }
+        if (res.headersSent) {
+          res.destroy()
+        } else {
+          res.statusCode = 500
+          res.end('Internal Server Error')
+        }
       }
-      await sendNodeResponse(res, await respond(new NodeRequest({ req, res }), req.url || '/'))
     },
   }
 }

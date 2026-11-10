@@ -220,9 +220,13 @@ export function normalizeAppMiddlewareRules (routeRules: Record<string, Record<s
  */
 export function resolveRouteRulesRoutes (nuxt: Nuxt): { routes: RouteRulesRoute[], baseURL: string } {
   const nitro = tryUseNitro()
-  const rules: Record<string, Record<string, any>> = nitro
-    ? nitro.options.routeRules
-    : normalizeRouteRules(nuxt.options.routeRules)
+  let rules: Record<string, Record<string, any>>
+  if (nitro) {
+    rules = nitro.options.routeRules
+  } else {
+    rules = normalizeRouteRules(nuxt.options.routeRules)
+    normalizeAppMiddlewareRules(rules)
+  }
   const baseURL = (nitro ? nitro.options.baseURL : nuxt.options.app.baseURL) || ''
   const routes = Object.entries(rules).map(([route, data]) => ({ route, method: '', data }))
   return { routes, baseURL }

@@ -1,13 +1,37 @@
 import { describe, expect, it } from 'vitest'
 import type { H3Event } from 'h3'
-import { isLocalDevRequest, isLoopbackPeer } from '../src/dev-request.ts'
+import { DEV_PEER_HEADER } from 'nuxt/internal/dev/peer'
+import { isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from '../src/dev-request.ts'
 
-function event (headers: Record<string, string>, remoteAddress?: string, clientAddress?: string): H3Event {
+function event (headers: Record<string, string>, remoteAddress?: string, clientAddress?: string, path = '/'): H3Event {
   return {
+    path,
     context: clientAddress ? { clientAddress } : {},
     node: { req: { headers, socket: { remoteAddress } } },
   } as unknown as H3Event
 }
+
+describe('vouchForLoopbackPeer', () => {
+  const vouched = (e: H3Event) => {
+    vouchForLoopbackPeer(e, ['/__nuxt_dev__/error/', '/base/__nuxt_dev__/error/'], 'token')
+    return e.node.req.headers[DEV_PEER_HEADER] ?? null
+  }
+
+  it('vouches for a loopback peer of the error channel', () => {
+    expect(vouched(event({}, '127.0.0.1', undefined, '/__nuxt_dev__/error/events'))).toBe('token')
+    expect(vouched(event({}, '::1', undefined, '/base/__nuxt_dev__/error/open?file=a'))).toBe('token')
+  })
+
+  it('drops a voucher sent by a peer elsewhere', () => {
+    expect(vouched(event({ [DEV_PEER_HEADER]: 'token', 'x-forwarded-for': '127.0.0.1' }, '192.168.0.31', undefined, '/__nuxt_dev__/error/events'))).toBeNull()
+    expect(vouched(event({ [DEV_PEER_HEADER]: 'token' }, undefined, undefined, '/__nuxt_dev__/error/events'))).toBeNull()
+  })
+
+  it('only vouches for requests to the error channel', () => {
+    expect(vouched(event({ [DEV_PEER_HEADER]: 'token' }, '127.0.0.1', undefined, '/api/echo'))).toBeNull()
+    expect(vouched(event({}, '127.0.0.1', undefined, '/api/echo/__nuxt_dev__/error/events'))).toBeNull()
+  })
+})
 
 describe('isLoopbackPeer', () => {
   it('trusts the TCP peer address, not the Host header', () => {

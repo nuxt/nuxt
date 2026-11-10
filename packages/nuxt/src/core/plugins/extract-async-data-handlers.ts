@@ -3,6 +3,8 @@ import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import type { RolldownString } from 'rolldown-string'
 import { dirname } from 'pathe'
+import { withTrailingSlash } from 'ufo'
+import escapeStringRegexp from 'escape-string-regexp'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 import { MACRO_QUERY_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE } from '../../utils.ts'
@@ -15,6 +17,8 @@ const ASYNC_DATA_CHUNK_RE = /\/async-data-chunk-\d+\.js$/
 export interface ExtractAsyncDataHandlersOptions {
   sourcemap: boolean
   rootDir: string
+  /** Nuxt's own app directory, whose composables are never extracted. */
+  appDir: string
 }
 
 export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlersOptions) => createUnplugin(() => {
@@ -44,7 +48,7 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
       filter: {
         id: {
           include: SUPPORTED_EXT_RE,
-          exclude: [/nuxt\/(src|dist)\/app/, STYLE_QUERY_RE, MACRO_QUERY_RE],
+          exclude: [new RegExp('^' + escapeStringRegexp(withTrailingSlash(options.appDir))), STYLE_QUERY_RE, MACRO_QUERY_RE],
         },
         code: { include: FUNCTIONS_RE },
       },

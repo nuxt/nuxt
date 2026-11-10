@@ -30,7 +30,9 @@ dist
 .netlify
 # written by `@netlify/dev` into the project it emulates
 test/fixtures/vite-server-netlify/.gitignore
+test/fixtures/vite-server-universal-deploy-netlify/.gitignore
 .wrangler
+.cloudflare
 .output
 .output-*
 .gen

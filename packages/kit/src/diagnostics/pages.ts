@@ -121,6 +121,11 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Request paths are lower-cased before they are matched, so write the constraint for lower-case letters (such as `[a-z]` instead of `[A-Z]`), or set `router.options.sensitive` to `true`.',
       docs: false,
     },
+    NUXT_B4023: {
+      why: (p: { file: string }) => `The \`router.options\` file at \`${p.file}\` sets \`sensitive\`, which is only read from \`router.options.sensitive\` in \`nuxt.config\`.`,
+      fix: 'Move `sensitive` to `router.options` in your `nuxt.config`.',
+      docs: false,
+    },
     NUXT_B4024: {
       why: (p: { key: string }) => `\`definePageMeta()\` reads \`${p.key}\` from the page's setup scope, which is not available outside the component.`,
       fix: (p: { key: string }) => `Use a static value for \`${p.key}\`, or import it from another module.`,
@@ -129,6 +134,16 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B4025: {
       why: (p: { tag: string, attribute: string, to: string, file: string }) => `\`<${p.tag} ${p.attribute}="${p.to}">\` in \`${p.file}\` does not match any page route.`,
       fix: 'Check the path for typos or add a page for it. To link to a server route, a file in `public/` or another site, set the `external` prop.',
+    },
+    NUXT_B4026: {
+      why: (p: { route: string, part: string }) => `The route rule \`${p.route}\` has a regex constraint that depends on percent-encoding (\`${p.part}\`), so it cannot be matched the way it reads.`,
+      fix: 'Route rules are matched against the percent-encoded path, so a constraint can only match characters that are not encoded, such as `[a-z0-9-]+`, and cannot use a word boundary (`\\b` or `\\B`). To match any value, use a parameter without a constraint (such as `:slug`).',
+      docs: false,
+    },
+    NUXT_B4027: {
+      why: (p: { route: string }) => `The route rule \`${p.route}\` in \`routeRules\` has more than one \`*\`, \`**\`, \`:name+\` or \`:name*\`, and a route rule pattern can have only one.`,
+      fix: 'Keep one of them and replace the others with named parameters, for example `/:post/comments/**` instead of `/*/comments/**`. A single `*` now matches any number of segments.',
+      docs: false,
     },
   },
 })

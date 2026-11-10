@@ -86,6 +86,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   const dirs = new Set<string>()
   const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
   const FORWARD_SLASH_RE = /\//g
+  const debugTemplates = !!(nuxt.options.debug && nuxt.options.debug.templates)
   async function processTemplate (template: ResolvedNuxtTemplate) {
     const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
     const start = performance.now()
@@ -113,24 +114,35 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       changedTemplates.push(template)
     }
 
-    const perf = performance.now() - start
-    const compileTime = Math.round((perf * 100)) / 100
-
-    if ((nuxt.options.debug && nuxt.options.debug.templates) || compileTime > 500) {
-      logger.info(`Compiled \`${linkToAlias(fullPath, nuxt)}\` in ${compileTime}ms`)
+    if (debugTemplates) {
+      logger.info(`Compiled \`${linkToAlias(fullPath, nuxt)}\` in ${Math.round((performance.now() - start) * 100) / 100}ms`)
     }
 
     if (template.modified && template.write && !matchesDisk(fullPath, contents)) {
       dirs.add(dirname(fullPath))
       writes.push(() => writeFileSync(fullPath, contents, 'utf8'))
-      if (nuxt.options.debug && nuxt.options.debug.templates) {
+      if (debugTemplates) {
         logger.info(`Writing \`${template.filename}\` to \`${linkToAlias(fullPath, nuxt)}\``)
       }
     }
   }
 
-  await Promise.allSettled(filteredTemplates.pre.map(processTemplate))
-  await Promise.allSettled(filteredTemplates.post.map(processTemplate))
+  const compileStart = performance.now()
+  for (const templates of [filteredTemplates.pre, filteredTemplates.post]) {
+    if (debugTemplates) {
+      // one at a time, so each reported time covers only that template
+      for (const template of templates) {
+        await processTemplate(template).catch(() => {})
+      }
+    } else {
+      await Promise.allSettled(templates.map(processTemplate))
+    }
+  }
+  const compileTime = performance.now() - compileStart
+
+  if (!debugTemplates && compileTime > 500) {
+    logger.info(`Generating templates took ${Math.round(compileTime)}ms. Set \`debug: { templates: true }\` to see how long each template took.`)
+  }
 
   // Write template files in single synchronous step to avoid (possible) additional
   // runtime overhead of cascading HMRs from vite/webpack
@@ -141,7 +153,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     write()
   }
 
-  if (nuxt.options.debug && nuxt.options.debug.templates) {
+  if (debugTemplates) {
     logger.info(`Generated app in ${Math.round(performance.now() - generateStart)}ms (resolve ${Math.round(resolvedAt - generateStart)}ms, scan ${Math.round(scannedAt - resolvedAt)}ms, compile ${Math.round(performance.now() - scannedAt)}ms), ${changedTemplates.length} template(s) changed`)
   }
 

@@ -9,7 +9,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { joinURL } from 'ufo'
-import { rootDir, srcDir } from '#internal/dev-server-logs-options'
+import { reportFs, rootDir, srcDir } from '#internal/dev-server-logs-options'
 import * as devError from 'nuxt/internal/dev-error'
 
 import { NUXT_ERROR_CHANNEL } from '#internal/nuxt/nitro-config.mjs'
@@ -46,15 +46,19 @@ export function publishErrorReport (report: ErrorReport, event?: H3Event): Promi
  * Build a report for an error raised while rendering. Must run on the stack as it was
  * raised, since frames are mapped through the SSR bundle's sourcemaps.
  */
-export function createErrorReport (error: unknown, event?: H3Event): Promise<ErrorReport> {
+export async function createErrorReport (error: unknown, event?: H3Event): Promise<ErrorReport> {
   devError.resolveErrorPaths(error, resolveTransformPath)
   const ssrSourceMaps = useNitroApp().ssrSourceMaps
+  canRead ||= devError.createFsAccessCheck(reportFs).catch(() => () => false)
   return devError.createErrorReport(error, {
     cwd: rootDir,
     loaders: ssrSourceMaps ? [compiledPositionLoader(ssrSourceMaps)] : [],
+    canRead: await canRead,
     context: { event },
   })
 }
+
+let canRead: Promise<(file: string) => boolean> | undefined
 
 /**
  * Resolve a bundler module id such as `/app.vue`, which reads as an absolute path but is

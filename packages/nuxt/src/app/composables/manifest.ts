@@ -1,13 +1,9 @@
 import type { AppRouteRules, NuxtRequestEvent } from '@nuxt/schema'
-import type { $Fetch } from 'nitropack/types'
 import { useRuntimeConfig } from '../nuxt'
 import { manifestDiagnostics } from '../diagnostics/manifest'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
-import { $fetch as _$fetch } from '#build/fetch'
 import _routeRulesMatcher from '#build/route-rules.mjs'
-
-const $fetch = _$fetch as $Fetch
 
 // hoisted so a circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export
 function routeRulesMatcher (path: string): AppRouteRules {
@@ -33,15 +29,26 @@ function fetchManifest (): Promise<NuxtAppManifest> {
   if (import.meta.server) {
     _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest') as unknown as Promise<NuxtAppManifest>
   } else {
-    _manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
-      responseType: 'json',
-    }).then((res) => {
-      // handle errors fetching manifest, e.g. from an improperly configured proxy
-      if (!res || typeof res !== 'object' || !Array.isArray((res as NuxtAppManifest).prerendered)) {
-        throw manifestDiagnostics.NUXT_E5004()
-      }
-      return res
-    })
+    // Low priority so this background warm-up does not contend with LCP-critical resources.
+    // `keepalive` stops WebKit cancelling (and rejecting) the request when the page is left.
+    _manifest = fetch(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), { priority: 'low', keepalive: true })
+      .then((res) => {
+        // native `fetch` resolves non-2xx responses; surface them with a `status` so callers
+        // (e.g. the outdated-build check) can distinguish a missing manifest from a bad payload
+        if (!res.ok) {
+          const error = new Error(`[nuxt] Could not fetch app manifest: ${res.status} ${res.statusText}`) as Error & { status: number }
+          error.status = res.status
+          throw error
+        }
+        return res.json()
+      })
+      .then((res: NuxtAppManifest) => {
+        // handle errors fetching manifest, e.g. from an improperly configured proxy
+        if (!res || typeof res !== 'object' || !Array.isArray(res.prerendered)) {
+          throw manifestDiagnostics.NUXT_E5004()
+        }
+        return res
+      })
   }
   manifest = _manifest
   _manifest.catch((e) => {

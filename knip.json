@@ -40,7 +40,8 @@
         "test/renderer/*.ts",
         "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
-        "test/mocks/app-config.ts"
+        "test/mocks/app-config.ts",
+        "test/mocks/app-manifest.ts"
       ]
     },
     "test/fixtures/*": {
@@ -102,7 +103,8 @@
         "vue-devtools-stub",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-typescript"
-      ]
+      ],
+      "ignoreUnresolved": ["#nitro-internal-virtual/app-config"]
     },
     "packages/vite-server": {
       "ignoreDependencies": [

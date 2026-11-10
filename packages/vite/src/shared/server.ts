@@ -3,17 +3,21 @@ import { resolve } from 'pathe'
 import type { EnvironmentOptions } from 'vite'
 import escapeStringRegexp from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
+import { useServerBuild } from '@nuxt/kit/internal'
 
 import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts'
 
 export function ssr (nuxt: Nuxt) {
+  const isEnvApi = !useServerBuild(nuxt).buildsSeparately
   return {
-    external: [
-      'nitro/runtime',
-      // TODO: remove in v5
-      '#internal/nitro',
-      '#internal/nitro/utils',
-    ],
+    external: isEnvApi
+      ? []
+      : [
+          'nitro/runtime',
+          // TODO: remove in v5
+          '#internal/nitro',
+          '#internal/nitro/utils',
+        ],
     noExternal: [
       ...getTranspilePatterns({ isServer: true, isDev: nuxt.options.dev }),
       '/__vue-jsx',
@@ -48,6 +52,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
+          polyfillRequire: !useServerBuild(nuxt).buildsSeparately, // Let the server builder resolve intermediate require() calls.
           ...nuxt.options.sourcemap.server === 'nosource' ? { sourcemapExcludeSources: true } : {},
         },
         onwarn (warning, rollupWarn) {

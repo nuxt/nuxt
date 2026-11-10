@@ -47,6 +47,15 @@ describe('route rules template', () => {
     expect(contents).toContain('routerOptions.sensitive')
   })
 
+  it('emits a constant when only a catch-all rule applies', async () => {
+    expect(await getRouteRulesTemplate(false, { '/**': { ssr: true, appLayout: 'a' } })).toBe('export default () => ({ssr: true,appLayout: "a"})')
+  })
+
+  it('leaves rules without client-side options out of the matcher', async () => {
+    const contents = await getRouteRulesTemplate(true, { '/headers/**': { headers: { 'x-test': '1' } }, '/__nuxt_error': { cache: false } })
+    expect(contents).toBe(await getRouteRulesTemplate(true, {}))
+  })
+
   it('accepts `appMiddleware` as a name or a list of names', async () => {
     const contents = await getRouteRulesTemplate(false, {
       '/string': { appMiddleware: 'auth' },

@@ -1,8 +1,10 @@
 import fc from 'fast-check'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { snakeCase } from 'scule'
+import { z } from 'zod'
 import * as context from '../src/context.ts'
 import { updateRuntimeConfig, useRuntimeConfig } from '../src/runtime-config.ts'
+import { resolveRuntimeConfig } from '../src/internal/runtime-config.ts'
 
 const { mockKlona } = vi.hoisted(() => ({
   mockKlona: vi.fn(),
@@ -77,7 +79,7 @@ const config = fc.letrec<{ value: unknown }>(tie => ({
 
 function run (runtimeConfig: Record<string, unknown>, env: Record<string, string> = {}, envExpansion = false) {
   vi.unstubAllEnvs()
-  vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion } } } } as any)
+  vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion } }, future: { compatibilityVersion: 5 }, _runtimeConfigSchemas: [] } } as any)
   mockKlona.mockReturnValue(structuredClone(runtimeConfig))
   for (const [key, value] of Object.entries(env)) { vi.stubEnv(key, value) }
   return useRuntimeConfig()
@@ -95,45 +97,114 @@ describe('useRuntimeConfig', () => {
   })
 
   it.each(testCases)('$description', ({ runtimeConfig, envExpansion, env, expected }) => {
-    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion } } } } as any)
+    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion } }, future: { compatibilityVersion: 5 }, _runtimeConfigSchemas: [] } } as any)
     mockKlona.mockReturnValue(runtimeConfig)
     Object.entries(env).forEach(([key, value]) => vi.stubEnv(key, value))
 
     expect(useRuntimeConfig()).toEqual(expected)
   })
+
+  it('should cast environment variables with `destr` on versions of Nuxt without runtime config schemas', () => {
+    const runtimeConfig = { name: '', port: 3000, session: { secure: true } }
+    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: {} } } } as any)
+    mockKlona.mockReturnValue(structuredClone(runtimeConfig))
+    vi.stubEnv('NUXT_NAME', '4848e0')
+    vi.stubEnv('NUXT_PORT', 'abc')
+    vi.stubEnv('NUXT_SESSION_SECURE', 'false')
+
+    expect(useRuntimeConfig()).toEqual({ name: 4848, port: 'abc', session: { secure: false } })
+  })
+
+  it('should only coerce values with a schema before `compatibilityVersion: 5`', () => {
+    const runtimeConfig = { name: '', port: 3000, session: { secure: true, maxAge: 0 } }
+    vi.spyOn(context, 'useNuxt').mockReturnValue({
+      options: {
+        nitro: { runtimeConfig, experimental: {} },
+        future: { compatibilityVersion: 4 },
+        _runtimeConfigSchemas: [{ path: ['session', 'maxAge'], node: 'i', required: false }, { path: ['token'], node: 's', required: true }],
+      },
+    } as any)
+    mockKlona.mockImplementation(() => structuredClone(runtimeConfig))
+    vi.stubEnv('NUXT_NAME', '4848e0')
+    vi.stubEnv('NUXT_PORT', 'abc')
+    vi.stubEnv('NUXT_SESSION_SECURE', 'false')
+    vi.stubEnv('NUXT_SESSION_MAX_AGE', '1.5')
+
+    expect(resolveRuntimeConfig(context.useNuxt())).toEqual({
+      config: { name: 4848, port: 'abc', session: { secure: false, maxAge: 0 } },
+      issues: [
+        { path: 'token', env: 'NUXT_TOKEN', expected: 'string' },
+        { path: 'session.maxAge', env: 'NUXT_SESSION_MAX_AGE', expected: 'integer', received: '1.5' },
+      ],
+    })
+
+    vi.stubEnv('NUXT_SESSION_MAX_AGE', '60')
+    expect(useRuntimeConfig().session).toEqual({ secure: false, maxAge: 60 })
+
+    vi.stubEnv('NUXT_SESSION_MAX_AGE', '')
+    vi.stubEnv('NUXT_SESSION', '{"secure":true,"maxAge":5}')
+    expect(useRuntimeConfig().session).toEqual({ secure: false, maxAge: 5 })
+  })
 })
 
-// These tests document the current environment variable value coercion
-// behaviour (see https://github.com/nuxt/nuxt/issues/24812). Environment
-// variable values are passed through `destr`, so JSON-compatible values are
-// deserialized. They pin the existing behaviour to catch unintended changes.
-describe('useRuntimeConfig env value casting', () => {
+describe('useRuntimeConfig env value coercion', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
     vi.restoreAllMocks()
   })
 
   it.each([
-    { name: 'empty string', envValue: '', expected: '' },
-    { name: 'string `hello-world`', envValue: 'hello-world', expected: 'hello-world' },
-    { name: 'string `0`', envValue: '0', expected: 0 },
-    { name: 'string `3000`', envValue: '3000', expected: 3000 },
-    { name: 'string `true`', envValue: 'true', expected: true },
-    { name: 'string `false`', envValue: 'false', expected: false },
-    { name: 'unset variable', envValue: undefined, expected: '' },
-    { name: 'string `undefined`', envValue: 'undefined', expected: '' },
-    { name: 'string `null`', envValue: 'null', expected: '' },
-    { name: 'string `4848e0`', envValue: '4848e0', expected: 4848 },
-    { name: 'quoted string `"4848e0"`', envValue: '"4848e0"', expected: '4848e0' },
-    { name: 'double-quoted string `""4848e0""`', envValue: '""4848e0""', expected: '"4848e0"' },
-    { name: 'object-like string', envValue: '{ foo: "bar" }', expected: '{ foo: "bar" }' },
-  ])('casts $name to $expected', ({ envValue, expected }) => {
-    const runtimeConfig = { myVar: '' }
-    vi.spyOn(context, 'useNuxt').mockReturnValue({ options: { nitro: { runtimeConfig, experimental: { envExpansion: false } } } } as any)
-    mockKlona.mockReturnValue(runtimeConfig)
-    vi.stubEnv('NITRO_MY_VAR', envValue)
+    { defaultValue: '', envValue: '', expected: '' },
+    { defaultValue: '', envValue: '0', expected: '0' },
+    { defaultValue: '', envValue: '4848e0', expected: '4848e0' },
+    { defaultValue: '', envValue: '4.0', expected: '4.0' },
+    { defaultValue: '', envValue: 'true', expected: 'true' },
+    { defaultValue: '', envValue: 'null', expected: 'null' },
+    { defaultValue: '', envValue: '"4848e0"', expected: '"4848e0"' },
+    { defaultValue: '', envValue: undefined, expected: '' },
+    { defaultValue: 3000, envValue: '8080', expected: 8080 },
+    { defaultValue: 3000, envValue: '4.5', expected: 4.5 },
+    { defaultValue: 3000, envValue: '', expected: 3000 },
+    { defaultValue: 3000, envValue: 'abc', expected: 3000 },
+    { defaultValue: true, envValue: 'false', expected: false },
+    { defaultValue: true, envValue: '0', expected: false },
+    { defaultValue: false, envValue: 'TRUE', expected: true },
+    { defaultValue: false, envValue: 'on', expected: true },
+    { defaultValue: true, envValue: 'flase', expected: true },
+    { defaultValue: ['a'], envValue: '["b","c"]', expected: ['b', 'c'] },
+    { defaultValue: ['a'], envValue: '[1]', expected: ['a'] },
+    { defaultValue: { a: 1 }, envValue: '{"b":2}', expected: { a: 1, b: 2 } },
+  ])('coerces $envValue to the type of $defaultValue', ({ defaultValue, envValue, expected }) => {
+    expect(run({ myVar: defaultValue }, envValue === undefined ? {} : { NUXT_MY_VAR: envValue }).myVar).toEqual(expected)
+  })
 
-    expect(useRuntimeConfig().myVar).toEqual(expected)
+  it('should read environment variables with the configured prefix', () => {
+    expect(run({ token: '', nitro: { envPrefix: 'APP_' } }, { APP_TOKEN: 'secret', NUXT_TOKEN: 'ignored' }).token).toBe('secret')
+  })
+
+  it('should apply nested environment variables over a JSON object', () => {
+    const config = run({ session: { name: 'a', cookie: { secure: true } } }, {
+      NUXT_SESSION: '{"name":"b"}',
+      NUXT_SESSION_COOKIE_SECURE: 'false',
+    })
+    expect(config.session).toEqual({ name: 'b', cookie: { secure: false } })
+  })
+
+  it('should coerce to the type a schema declares', () => {
+    const runtimeConfig = { port: '' }
+    vi.spyOn(context, 'useNuxt').mockReturnValue({
+      options: {
+        nitro: { runtimeConfig, experimental: {} },
+        future: { compatibilityVersion: 5 },
+        _runtimeConfigSchemas: [{ path: ['port'], node: 'i', required: false }],
+      },
+    } as any)
+    mockKlona.mockImplementation(() => structuredClone(runtimeConfig))
+    vi.stubEnv('NUXT_PORT', '8080')
+    expect(useRuntimeConfig().port).toBe(8080)
+
+    vi.stubEnv('NUXT_PORT', '1.5')
+    expect(useRuntimeConfig().port).toBe('')
   })
 })
 
@@ -186,8 +257,8 @@ describe('updateRuntimeConfig', () => {
     vi.restoreAllMocks()
   })
 
-  function stubNuxt (nitro?: { updateConfig: (config: unknown) => void }) {
-    const nuxt = { options: { nitro: { runtimeConfig: { existing: 'value' } } }, _nitro: nitro }
+  function stubNuxt (nitro?: { options: Record<string, unknown>, updateConfig: (config: unknown) => void }, { schemas = true } = {}) {
+    const nuxt = { options: { nitro: { runtimeConfig: { existing: 'value' } }, _runtimeConfigSchemas: schemas ? [] : undefined }, _nitro: nitro }
     vi.spyOn(context, 'useNuxt').mockReturnValue(nuxt as any)
     vi.spyOn(context, 'tryUseNuxt').mockReturnValue(nuxt as any)
     return nuxt
@@ -203,11 +274,63 @@ describe('updateRuntimeConfig', () => {
 
   it('should update the nitro instance when there is one', () => {
     const updateConfig = vi.fn()
-    stubNuxt({ updateConfig })
+    const routeRules = { '/**': { ssr: true } }
+    stubNuxt({
+      options: {
+        routeRules,
+        runtimeConfig: { existing: 'nitro', example: { baz: 'qux' }, nitro: { envPrefix: 'NUXT_', routeRules } },
+      },
+      updateConfig,
+    })
 
     updateRuntimeConfig({ example: { foo: 'bar' } })
 
-    expect(updateConfig).toHaveBeenCalledWith({ runtimeConfig: { example: { foo: 'bar' } } })
+    expect(updateConfig).toHaveBeenCalledWith({
+      runtimeConfig: { existing: 'nitro', example: { foo: 'bar', baz: 'qux' }, nitro: { envPrefix: 'NUXT_', routeRules } },
+      routeRules,
+    })
+  })
+
+  it('should register a schema, keeping configured values as its default', () => {
+    const nuxt = stubNuxt()
+    nuxt.options.nitro.runtimeConfig = { existing: 'value', myModule: { apiKey: 'user' } } as any
+
+    updateRuntimeConfig({ myModule: z.object({ apiKey: z.string(), retries: z.number().default(3) }) })
+
+    expect(nuxt.options.nitro.runtimeConfig).toEqual({ existing: 'value', myModule: { apiKey: 'user', retries: 3 } })
+    expect(nuxt.options._runtimeConfigSchemas).toEqual([
+      { path: ['myModule'], node: { p: { apiKey: 's', retries: 'n' }, r: ['apiKey', 'retries'] }, required: false, module: true },
+    ])
+  })
+
+  it('should keep `null` schema defaults', () => {
+    const updateConfig = vi.fn()
+    const nuxt = stubNuxt({ options: { runtimeConfig: { myModule: { name: 'a' } } }, updateConfig })
+    nuxt.options.nitro.runtimeConfig = { existing: 'value', myModule: { name: 'a' } } as any
+
+    updateRuntimeConfig({ myModule: { url: z.string().nullable().default(null) } })
+
+    expect(nuxt.options.nitro.runtimeConfig).toEqual({ existing: 'value', myModule: { name: 'a', url: null } })
+    expect(updateConfig.mock.calls[0]![0].runtimeConfig).toEqual({ myModule: { name: 'a', url: null } })
+  })
+
+  it('should replace a schema with its default on versions of Nuxt without runtime config schemas', () => {
+    const nuxt = stubNuxt(undefined, { schemas: false })
+    nuxt.options.nitro.runtimeConfig = { existing: 'value', myModule: { retries: 5 } } as any
+
+    updateRuntimeConfig({
+      myModule: z.object({
+        apiKey: z.string(),
+        retries: z.number().default(3),
+        timeout: z.number().optional(),
+        db: z.object({ url: z.string() }),
+      }),
+      token: z.string(),
+      region: z.string().optional(),
+    })
+
+    expect(nuxt.options.nitro.runtimeConfig).toEqual({ existing: 'value', myModule: { apiKey: '', retries: 5, db: { url: '' } }, token: '' })
+    expect(nuxt.options._runtimeConfigSchemas).toBeUndefined()
   })
 
   it('should not warn when nitro is not initialized yet', () => {

@@ -3,7 +3,7 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 import { useRouter } from '../composables/router'
 import { onNuxtReady } from '../composables/ready'
 import { prefetchRouteComponents } from '../composables/preload'
-import { useObserver } from '../components/nuxt-link'
+import { guardEvent, useObserver } from '../components/nuxt-link'
 import { canPrefetch } from '../internal/prefetch-util'
 import { documentURL } from '../internal/location'
 
@@ -41,10 +41,10 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     }
 
     function onClick (e: MouseEvent) {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) { return }
-
       const anchor = (e.target as Element | null)?.closest('a')
       if (!anchor || !anchor.hasAttribute('data-internal') || anchor.hasAttribute('download')) { return }
+
+      if (!guardEvent(e, anchor)) { return }
 
       const route = resolveInternalLink(anchor)
       if (!route) { return }

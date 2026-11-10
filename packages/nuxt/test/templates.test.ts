@@ -1,13 +1,17 @@
-import { describe, expect, it } from 'vitest'
+import { existsSync } from 'node:fs'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
+import { resolve } from 'pathe'
+import ts from 'typescript'
 
 // `templates.ts` re-imports `./app.ts`, which reads `defaultTemplates.*` at
 // module init. Pulling `app.ts` in first lets that cycle resolve the same way
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchClientTemplate, dollarFetchSetupClientTemplate, dollarFetchSetupServerTemplate, dollarFetchTemplate, publicPathTemplate, schemaTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
+import type { RuntimeConfigSchemaNode } from '@nuxt/schema/internal'
 
 // deliberately partial, as the objects that reach a template in a unit test, in
 // `@nuxt/test-utils` or in devtools are: `serverBuild` is only present when a caller
@@ -39,8 +43,18 @@ describe('appConfigTemplate', () => {
   it('merges the layers it is given at runtime', async () => {
     const contents = await appConfigTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(['/app/app.config.ts']), options: {} })
 
-    expect(contents).toContain(`import { defuFn } from 'defu'`)
     expect(contents).toContain('export default /*@__PURE__*/ defuFn(cfg0, inlineConfig)')
+  })
+
+  it('emits an absolute path for the `defu` import so Nitro can resolve it under strict pnpm hoist', async () => {
+    const contents = await appConfigTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(['/app/app.config.ts']), options: {} })
+
+    expect(contents).not.toMatch(/from ['"]defu['"]/)
+    const match = contents.match(/import \{ defuFn \} from ["']([^"']+)["']/)
+    expect(match, 'expected resolved `defuFn` import').toBeTruthy()
+    const resolved = match![1]!
+    expect(resolve(resolved)).toBe(resolved)
+    expect(existsSync(resolved)).toBe(true)
   })
 })
 
@@ -101,6 +115,32 @@ describe('publicPathTemplate', () => {
     expect(contents).not.toMatch(/useRuntimeConfig/)
     expect(contents).toMatch(/getAppConfig = \(\) => \(/)
   })
+
+  it('builds server asset urls from the current runtime config', async () => {
+    const { joinRelativeURL } = await import('ufo')
+    const contents = await publicPathTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+    const source = contents
+      .replace(/^import .*$/gm, '')
+      .replace(/\bexport /g, '')
+      .replace(/import\.meta\.(server|client)/g, (_, env) => String(env === 'server'))
+    vi.stubGlobal('__TEST_SERVER__', true)
+    onTestFinished(() => { vi.unstubAllGlobals() })
+    let app = { baseURL: '/', buildAssetsDir: '/_nuxt/', cdnURL: '' }
+    const join = vi.fn(joinRelativeURL)
+    const buildAssetsURL = new Function('joinRelativeURL', 'useRuntimeConfig', `${source}\nreturn buildAssetsURL`)(join, () => ({ app })) as (...path: string[]) => string
+
+    expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
+    expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
+    expect(join).toHaveBeenCalledTimes(1)
+    app = { ...app, baseURL: '/base/' }
+    expect(buildAssetsURL('entry.js')).toBe('/base/_nuxt/entry.js')
+    app = { ...app, cdnURL: 'https://cdn.example.com/' }
+    expect(buildAssetsURL('entry.js')).toBe('https://cdn.example.com/_nuxt/entry.js')
+    app = { ...app, buildAssetsDir: '/assets/' }
+    expect(buildAssetsURL('entry.js')).toBe('https://cdn.example.com/assets/entry.js')
+    expect(buildAssetsURL('chunks', 'entry.js')).toBe('https://cdn.example.com/assets/chunks/entry.js')
+    expect(buildAssetsURL()).toBe('https://cdn.example.com/assets/')
+  })
 })
 
 describe('dollarFetchTemplate', () => {
@@ -126,5 +166,35 @@ describe('dollarFetchTemplate', () => {
     expect(contents).not.toMatch(/createFetch/)
     expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from ['"]ofetch['"]/)
     expect(contents).toMatch(/globalThis\.\$fetch = _\$fetch\.create\(\{\s*baseURL: baseURL\(\)/)
+  })
+})
+
+describe('client `$fetch` templates', () => {
+  it('installs the global only when the binding is read', async () => {
+    const contents = await dollarFetchClientTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+
+    expect(contents).toContain('export const $fetch = /*#__PURE__*/ (() => globalThis.$fetch ||= _$fetch.create({ baseURL: baseURL() }))()')
+    expect(contents).not.toMatch(/^if /m)
+  })
+
+  it('installs the global from the entry in development only', async () => {
+    expect(await dollarFetchSetupClientTemplate.getContents!({ nuxt: makeNuxt({ dev: true }), app: makeApp(), options: {} })).toContain('#build/fetch-global')
+    expect(await dollarFetchSetupClientTemplate.getContents!({ nuxt: makeNuxt({ experimental: {} } as Partial<Nuxt['options']>), app: makeApp(), options: {} })).not.toContain('#build/fetch')
+    expect(await dollarFetchSetupClientTemplate.getContents!({ nuxt: makeNuxt({ experimental: { globalFetch: true } } as Partial<Nuxt['options']>), app: makeApp(), options: {} })).toContain('#build/fetch-global')
+    expect(await dollarFetchSetupServerTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })).toContain('#build/fetch')
+  })
+})
+
+describe('schemaTemplate', () => {
+  it('emits valid declarations for a public runtime config schema that is a union', async () => {
+    const node: RuntimeConfigSchemaNode = { o: [{ p: { mode: { e: ['preview'] } } }, { p: { mode: { e: ['production'] } } }] }
+    const runtimeConfig = { apiKey: '', public: { mode: 'preview' } }
+    const contents = await schemaTemplate.getContents!({
+      nuxt: makeNuxt({ runtimeConfig, _runtimeConfigSchemas: [{ path: ['public'], node, required: false }] } as unknown as Partial<Nuxt['options']>),
+      app: makeApp(),
+      options: {},
+    })
+    expect(ts.transpileModule(contents, { reportDiagnostics: true }).diagnostics).toEqual([])
+    expect(contents).toContain('interface SharedRuntimeConfig {\n  apiKey: string,\n}')
   })
 })

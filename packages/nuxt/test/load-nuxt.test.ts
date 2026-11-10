@@ -68,6 +68,15 @@ describe('loadNuxt', () => {
     expect(await resolvePath('nuxt/app', { alias: nuxt.options.alias })).toBe(customRuntime)
   })
 
+  it.each([
+    [{ staticRoutes: true }, true],
+    [{ staticRoutes: true, early404: false }, false],
+  ])('derives early404 from %o in overrides', async (experimental, early404) => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, overrides: { experimental } })
+    onTestFinished(() => nuxt.close())
+    expect(nuxt.options.experimental.early404).toBe(early404)
+  })
+
   it('respects hook overrides', async () => {
     let hookRan = false
     const nuxt = await loadNuxt({

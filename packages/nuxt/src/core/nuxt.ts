@@ -37,6 +37,7 @@ import compilerModule from '../compiler/module.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 
 import { resolveDevAppSecret } from './app-secret.ts'
+import { assertRuntimeConfigWithoutSchemas, checkRuntimeConfig } from './runtime-config.ts'
 import { restoreCachedBuildId } from './cache.ts'
 import { distDir, pkgDir } from '../dirs.ts'
 import { runtimeDependencies } from '../../meta.js'
@@ -59,6 +60,7 @@ import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata.ts'
 import { AsyncContextInjectionPlugin } from './plugins/async-context.ts'
 import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
+import { DollarFetchGlobalPlugin } from './plugins/fetch-global.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
 import { BundledVuePlugin } from './plugins/bundled-vue.ts'
@@ -525,6 +527,10 @@ async function initNuxt (nuxt: Nuxt) {
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(PrehydrateTransformPlugin())
 
+  if (!nuxt.options.dev && !nuxt.options.experimental.globalFetch) {
+    addBuildPlugin(DollarFetchGlobalPlugin(nuxt), { server: false })
+  }
+
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addBuildPlugin(LayerAliasingPlugin({
@@ -640,6 +646,7 @@ async function initNuxt (nuxt: Nuxt) {
       addBuildPlugin(ExtractAsyncDataHandlersPlugin({
         sourcemap: !!nuxt.options.sourcemap.client,
         rootDir: nuxt.options.rootDir,
+        appDir: nuxt.options.appDir,
       }), { server: false })
     }
   }
@@ -657,6 +664,16 @@ async function initNuxt (nuxt: Nuxt) {
     nuxt.hook('build:manifest', (manifest) => {
       for (const src of nuxt.options._noScriptsPageSources) {
         manifest[src] ||= { file: '', src }
+      }
+    })
+
+    // Do not prefetch the default error page chunks
+    nuxt.hook('build:manifest', (manifest) => {
+      const errorPageSources = new Set(['error-404.vue', 'error-500.vue'].map(f => relative(nuxt.options.vite.root || nuxt.options.srcDir, resolve(nuxt.options.appDir, 'components', f))))
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.isEntry && chunk.dynamicImports) {
+          chunk.dynamicImports = chunk.dynamicImports.filter(i => !errorPageSources.has(i))
+        }
       }
     })
   }
@@ -866,6 +883,7 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore.add(resolveIgnorePatterns())
 
   await nuxt.callHook('modules:done')
+  assertRuntimeConfigWithoutSchemas(nuxt)
   nuxt._perf?.endPhase('modules')
   nuxt._perf?.collectModuleTimings(nuxt.options._installedModules)
 
@@ -874,6 +892,10 @@ async function initNuxt (nuxt: Nuxt) {
     .filter((value, index, array) => !array.includes(value, index + 1))
 
   warnUnresolvableGlobalCss(nuxt)
+
+  if (!nuxt.options._prepare) {
+    checkRuntimeConfig(nuxt)
+  }
 
   // Add <NuxtIsland>
   if (nuxt.options.experimental.componentIslands) {

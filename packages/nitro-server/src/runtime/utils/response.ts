@@ -12,6 +12,9 @@ export class NodeRenderResponse {
   readonly statusText: string
   readonly headers: Headers
 
+  /** The rendered document as ordered chunks, which the render handler encodes in place of `body`. */
+  chunks?: string[]
+
   constructor (readonly body: BodyInit | null, init?: ResponseInit) {
     this.status = init?.status || 200
     this.statusText = init?.statusText || ''

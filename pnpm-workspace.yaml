@@ -82,7 +82,7 @@ catalogs:
     unctx: ^3.0.1
     unhead: ^3.4.3
     vue: ^3.5.44
-    vue-bundle-renderer: ^2.4.0
+    vue-bundle-renderer: ^2.5.0
     vue-router: ^5.4.0
   nitro-runtime:
     '@jridgewell/trace-mapping': ^0.3.31
@@ -136,7 +136,7 @@ catalogs:
     '@vue/shared': ^3.5.44
     autoprefixer: ^10.6.2
     c12: 4.0.0-rc.4
-    chokidar: ^5.0.0
+    chokidar: ^6.0.0
     clickable-path: ^0.1.1
     compatx: ^0.2.0
     confbox: ^0.3.2
@@ -191,7 +191,7 @@ catalogs:
     unrouting: ^0.3.2
     untyped: ^2.0.0
     verkit: ^0.5.0
-    vue-bundle-renderer: ^2.4.0
+    vue-bundle-renderer: ^2.5.0
 
   # dev/test/workspace tooling (pinned)
   dev:
@@ -223,6 +223,7 @@ catalogs:
     '@types/webpack-hot-middleware': 2.25.12
     '@typescript-eslint/parser': 8.72.1
     '@unocss/reset': 66.12.0
+    '@valibot/to-json-schema': 1.8.0
     '@vitejs/plugin-vue-jsx': ^5.1.6
     '@vitest/coverage-v8': 5.0.5
     '@vue/compiler-core': 3.5.44
@@ -230,6 +231,7 @@ catalogs:
     '@vue/language-core': 3.3.14
     '@vue/test-utils': 2.5.1
     acorn: 8.19.0
+    arktype: 2.2.9
     beasties: 0.5.5
     case-police: 2.2.1
     esbuild: 0.28.2
@@ -264,10 +266,12 @@ catalogs:
     tsdown: 0.23.2
     typescript: 6.0.3
     unocss: 66.12.0
+    valibot: 1.5.0
     vitest: 5.0.5
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.3.1
     vue-tsc: 3.3.14
+    zod: 4.6.6
 
 catalogPrune: true
 minimumReleaseAgeExcludePrune: true

@@ -135,6 +135,11 @@ export interface NuxtPayload {
    * @internal
    */
   prefetchLinks?: Array<Record<string, string | boolean>>
+  /**
+   * The build that rendered an extracted `_payload.json`.
+   * @internal
+   */
+  buildId?: string
   [key: string]: unknown
 }
 
@@ -154,6 +159,8 @@ export interface NuxtSSRContext extends SSRContext {
   islandContext?: NuxtIslandContext
   /** @internal */
   ['~renderResponse']?: Partial<RenderResponse>
+  /** The app markup as rendered chunks, wrapped in the app root tags. @internal */
+  ['~htmlChunks']?: string[]
   /** @internal */
   ['~payloadReducers']: Record<string, (data: any) => any>
   /** @internal */

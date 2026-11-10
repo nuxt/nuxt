@@ -1299,9 +1299,24 @@ export interface ConfigSchema {
      * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
      * file may modify `routes`.
      *
+     * Enabled by `experimental.staticRoutes` unless set explicitly.
+     *
      * @default false
      */
     early404: boolean
+
+    /**
+     * Treat the page routes as fixed once the app is built.
+     *
+     * With this option the route table cannot change at runtime: `router.addRoute()`,
+     * `router.removeRoute()` and `router.clearRoutes()` throw, and are removed from the type
+     * of the router returned by `useRouter()`. In exchange the server builds the route matcher
+     * once per distinct `routes` array instead of once per request, and `experimental.early404`
+     * is enabled.
+     *
+     * @default false
+     */
+    staticRoutes: boolean
 
     /**
      * Warn at build time about template mistakes the Vue compiler cannot detect:
@@ -1797,6 +1812,20 @@ export interface ConfigSchema {
     stripNeverHydratedData: boolean
 
     /**
+     * Always install `globalThis.$fetch` on the client, from the app entry.
+     *
+     * By default, a production client build only installs the global (and includes `ofetch`) when a module reads it: an unimported `$fetch`, or `globalThis.$fetch`, `window.$fetch` or `self.$fetch`. Enable this option if the global is read in a way the build cannot detect:
+     * - dynamic property access, such as `globalThis[name]`
+     * - scripts loaded at runtime, inline scripts, or scripts in `public/`
+     * - CommonJS modules
+     * - the browser console
+     *
+     * The server always installs the global.
+     * @default false
+     */
+    globalFetch: boolean
+
+    /**
      * Whether to run `useFetch` when the key changes, even if it is set to `immediate: false` and it has not been triggered yet.
      *
      * `useFetch` and `useAsyncData` will always run when the key changes if `immediate: true` or if it has been already triggered.
@@ -1840,6 +1869,13 @@ export interface ConfigSchema {
      * @see [V8 explicit compile hints](https://v8.dev/blog/explicit-compile-hints)
      */
     compileHints: boolean
+
+    /**
+     * Whether to bundle the static dependencies of the layout into a single chunk in the Vite client build, when the app has exactly one layout.
+     *
+     * @default true
+     */
+    layoutChunk: boolean
 
     /**
      * Extract async data handler functions into separate chunks for better performance and caching.
@@ -2190,13 +2226,15 @@ export interface ConfigSchema {
     includeWorkspace: boolean
 
     /**
-     * Enable build-time type checking.
+     * Enable type checking.
      *
-     * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`. Requires to install `typescript` and `vue-tsc` as dev dependencies.
+     * If set to true, this will type check in development and at build time.
+     * Set to `build` to type check only when building, or `dev` to type check only in the dev server.
+     * Requires installing `typescript` and `vue-tsc` as dev dependencies.
      *
      * @see [Nuxt TypeScript docs](https://nuxt.com/docs/4.x/guide/concepts/typescript)
      */
-    typeCheck: boolean | 'build'
+    typeCheck: boolean | 'build' | 'dev'
 
     /**
      * Extend the generated tsconfig files with shared options.

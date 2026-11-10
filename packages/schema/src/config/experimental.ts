@@ -180,6 +180,8 @@ export default defineResolvers({
      * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
      * file may modify `routes`.
      */
+    staticRoutes: false,
+
     early404: false,
 
     /**
@@ -348,6 +350,7 @@ export default defineResolvers({
       },
     },
     stripNeverHydratedData: false,
+    globalFetch: false,
     alwaysRunFetchOnKeyChange: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false
@@ -366,6 +369,7 @@ export default defineResolvers({
     },
     entryImportMap: true,
     compileHints: true,
+    layoutChunk: true,
     extractAsyncDataHandlers: {
       $resolve: (val) => {
         return typeof val === 'boolean' ? val : false

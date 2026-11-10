@@ -14,18 +14,19 @@ import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { addRoute, createRouter, findRoute } from 'rou3'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, createPagesContext, findRouterOptionsFileDefining, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, resolveRouterOptions, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, collectRou3PagePatterns, collectRou3PageSources, createPagesContext, findRouterOptionsFileDefining, normalizeRoutes, relativizeToParent, resolvePageMetaExtractionKeys, resolveRoutePaths, resolveRouterOptions, shouldExtractSerializablePageMeta, toRou3Patterns } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { globRouteRulesFromPages, removePagesRules } from './route-rules.ts'
 import { markPagesCoveredByRouteRule } from './route-coverage.ts'
 import { collectStaticPageRoutes, getAssetPathsForRoute } from './public-assets.ts'
 import { PageMetaPlugin } from './plugins/page-meta.ts'
+import { PageComponentNamePlugin } from './plugins/component-name.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
 import { createNormalizedRouteRulesRouter, normalizeAppMiddlewareRules, normalizeRouteRulePath, resolveRouteRules, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
-import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
+import type { NitroInstance, NitroInstanceOptions, Nuxt, NuxtConfig, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
@@ -61,15 +62,19 @@ export default defineNuxtModule({
     const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
+    if (nuxt.options.experimental.staticRoutes) {
+      const overrides = (nuxt.options._loadOptions as { overrides?: NuxtConfig } | undefined)?.overrides
+      const configs = [overrides, ...nuxt.options._layers.map(layer => layer.config)]
+      if (!configs.some(config => config?.experimental?.early404 === false)) {
+        nuxt.options.experimental.early404 = true
+      }
+    }
+
     let inlineRulesCache: Record<string, RouteRuleConfig> = {}
     let updateRouteConfig: (inlineRules: Record<string, RouteRuleConfig>) => void | Promise<void>
     if (nuxt.options.experimental.inlineRouteRules) {
-      // without a server builder to register them with, the rules the build compiles are
-      // the configured ones, so extracted rules are merged into the configuration itself
       const overwritten = new Map<string, RouteRuleConfig | undefined>()
-      updateRouteConfig = (inlineRules) => {
-        if (isEqual(inlineRulesCache, inlineRules)) { return }
-        const rules = (nuxt.options.routeRules ||= {})
+      const applyInlineRules = (rules: Record<string, RouteRuleConfig>, inlineRules: Record<string, RouteRuleConfig>) => {
         for (const [route, previous] of overwritten) {
           if (previous === undefined) {
             delete rules[route]
@@ -82,12 +87,33 @@ export default defineNuxtModule({
           overwritten.set(route, rules[route])
           rules[route] = defu(inline, rules[route])
         }
+      }
+      // without a server builder to register them with, the rules the build compiles are
+      // the configured ones, so extracted rules are merged into the configuration itself
+      updateRouteConfig = (inlineRules) => {
+        if (isEqual(inlineRulesCache, inlineRules)) { return }
+        applyInlineRules((nuxt.options.routeRules ||= {}), inlineRules)
         inlineRulesCache = inlineRules
       }
       nuxt.hook('nitro:init', (nitro) => {
         updateRouteConfig = async (inlineRules) => {
           if (!isEqual(inlineRulesCache, inlineRules)) {
-            const routeRules = defu(inlineRules, nitro.options._config?.routeRules)
+            // TODO: merge onto `nitro.options._config?.routeRules` instead, without pre-normalising,
+            // once `nitro.updateConfig()` re-applies the route rules derived from `publicAssets`
+            const normalizedInlineRules: Record<string, Record<string, any>> = {}
+            for (const [route, rule] of Object.entries(inlineRules as Record<string, Record<string, any>>)) {
+              if (rule.swr === false) {
+                normalizedInlineRules[route] = { ...rule, cache: rule.cache ? { ...rule.cache, swr: false } : false }
+              } else if (rule.swr !== undefined && rule.cache === undefined) {
+                normalizedInlineRules[route] = { ...rule, cache: { swr: true, ...typeof rule.swr === 'number' ? { maxAge: rule.swr } : {} } }
+              } else {
+                normalizedInlineRules[route] = rule
+              }
+            }
+            normalizeAppMiddlewareRules(normalizedInlineRules)
+            const routeRules: Record<string, RouteRuleConfig> = { ...(nitro.options as { routeRules?: Record<string, RouteRuleConfig> }).routeRules }
+            normalizeAppMiddlewareRules(routeRules)
+            applyInlineRules(routeRules, normalizedInlineRules)
             normalizeAppMiddlewareRules(routeRules)
             await nitro.updateConfig({ routeRules })
             inlineRulesCache = inlineRules
@@ -611,6 +637,26 @@ export default defineNuxtModule({
         = [...new Set(patterns.map(pattern => normalizeRouteRulePath(pattern, true)))]
     })
 
+    // The page sources the renderer preloads for client-only (`ssr: false`) responses
+    nuxt.hook('nitro:build:before', async (nitro) => {
+      // lookups ignore trailing slashes, which `strict` routing does not
+      const { hashMode, sensitive, strict } = nuxt.options.router.options
+      if (nuxt.options.dev || hashMode || strict || !nuxt.apps.default?.pages?.length) { return }
+      for (const key of ['routes', 'hashMode', 'history', 'strict', 'sensitive'] as const) {
+        if (await findRouterOptionsFileDefining(nuxt, key, builtInRouterOptions)) { return }
+      }
+
+      const pageSources = collectRou3PageSources(nuxt.apps.default.pages, nuxt.options.srcDir)
+      if (!pageSources) { return }
+      // ambiguous patterns stay in the matcher, without sources, so no broader pattern matches their paths
+      const sources: Record<string, string[]> = {}
+      for (const [pattern, files] of pageSources) {
+        const key = normalizeRouteRulePath(pattern, !sensitive)
+        sources[key] = files && !(key in sources) ? files : []
+      }
+      ;(nitro.options as { _spaPageSources?: Record<string, string[]> })._spaPageSources = sources
+    })
+
     if (nuxt.options.experimental.templateDiagnostics) {
       nuxt.hook('app:templatesGenerated', async (app) => {
         setTemplateDiagnosticsRouteMatcher(nuxt, await resolveLinkRouteMatcher(app.pages))
@@ -720,6 +766,9 @@ export default defineNuxtModule({
         extractedKeys: nuxt.options.experimental.scanPageMeta ? extractedKeys : [],
         extractSerializable: shouldExtractSerializablePageMeta(nuxt),
       }))
+      if (nuxt.options.experimental.normalizePageNames) {
+        addBuildPlugin(PageComponentNamePlugin({ nuxt }))
+      }
     })
 
     // Add prefetching support for middleware & layouts
@@ -927,14 +976,17 @@ export default defineNuxtModule({
     // `router.addRoute()` would bypass the build-time route patterns used for early
     // 404 responses, so remove it from the router type. `removeRoute` stays: it only
     // narrows the real route set, which is the safe direction for the matcher.
-    if (nuxt.options.experimental.early404) {
+    const removedRouterMethods = nuxt.options.experimental.staticRoutes
+      ? ['addRoute', 'removeRoute', 'clearRoutes']
+      : nuxt.options.experimental.early404 ? ['addRoute'] : []
+    if (removedRouterMethods.length) {
       addTypeTemplate({
-        filename: 'types/early404.d.ts',
+        filename: 'types/router-methods.d.ts',
         dependsOn: [],
         getContents: () => [
           'declare module \'nuxt/app\' {',
-          '  interface Early404IncompatibleRouterMethods {',
-          '    addRoute: true',
+          '  interface RemovedRouterMethods {',
+          ...removedRouterMethods.map(method => `    ${method}: true`),
           '  }',
           '}',
           'export {}',

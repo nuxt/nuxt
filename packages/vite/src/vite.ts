@@ -36,6 +36,7 @@ import { TypeCheckPlugin } from './plugins/type-check.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { CompileHintsPlugin } from './plugins/compile-hints.ts'
+import { ClientChunksPlugin } from './plugins/client-chunks.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
 import { DevServerPlugin } from './plugins/dev-server.ts'
@@ -139,6 +140,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                   // a server builder may bring its own orchestration and build environments
                   // from its own `buildApp` hook, which is ordered `pre` and so runs first
                   if (environment.isBuilt) { continue }
+                  const { input, build } = environment.config
+                  if (!input && !build.rolldownOptions.input && !build.lib && typeof build.ssr !== 'string') {
+                    continue
+                  }
                   logger.restoreAll()
                   nuxt._perf?.startPhase(`vite:${environment.name}`)
                   try {
@@ -264,6 +269,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // ensure changes in chunks do not invalidate whole build
               StableEntryPlugin(nuxt),
               CompileHintsPlugin(nuxt),
+              ClientChunksPlugin(nuxt),
               AnalyzePlugin(nuxt),
               OptimizeDepsHintPlugin(nuxt),
             ]
@@ -281,13 +287,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       },
     } satisfies ViteConfig,
     nuxt.options.experimental.viteEnvironmentApi
-      ? {
-          ...viteConfig,
+      ? mergeConfig(viteConfig, {
           environments: {
             ssr: $server,
             client: $client,
           },
-        }
+        })
       : viteConfig,
   )
 
