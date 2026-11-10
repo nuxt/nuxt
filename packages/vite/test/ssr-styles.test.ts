@@ -4,10 +4,11 @@ import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { afterAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
 import { getRandomPort } from 'get-port-please'
 import type { Plugin } from 'vite'
 import { join } from 'pathe'
+
+import { buildFixture } from './utils.ts'
 
 const tmpDir = fileURLToPath(new URL('./.tmp/ssr-styles', import.meta.url))
 
@@ -39,25 +40,7 @@ async function build () {
     },
   }
 
-  const nuxt = await loadNuxt({
-    cwd: tmpDir,
-    ready: true,
-    dev: false,
-    overrides: {
-      compatibilityDate: 'latest',
-      devtools: { enabled: false },
-      ssr: true,
-      features: { inlineStyles: true },
-      vite: { plugins: [recorder] },
-    },
-  })
-
-  try {
-    await buildNuxt(nuxt)
-  } finally {
-    await nuxt.close()
-  }
-
+  await buildFixture(tmpDir, { ssr: true, features: { inlineStyles: true }, vite: { plugins: [recorder] } })
   return ssrTransforms
 }
 
