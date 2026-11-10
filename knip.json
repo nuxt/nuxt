@@ -187,6 +187,7 @@
     "packages/rsbuild": {
       "ignoreDependencies": [
         "@vue/compiler-sfc",
+        "escape-string-regexp",
         "exsolve",
         "knitwork",
         "ohash",
