@@ -881,6 +881,24 @@ describe('island request headers', () => {
     expect(anonymous).toContain('<span id="island-cookie">none</span>')
     expect(anonymous).toContain('<span id="island-authorization">none</span>')
   })
+
+  it('does not forward conditional or range headers to the island subrequest', async () => {
+    const future = new Date(Date.now() + 24 * 60 * 60 * 1000).toUTCString()
+    const html = await $fetch<string>('/island-headers', {
+      headers: {
+        'cookie': 'session=alice',
+        'if-match': '*',
+        'if-modified-since': future,
+        'if-none-match': '*',
+        'if-range': future,
+        'if-unmodified-since': future,
+        'range': 'bytes=0-1',
+      },
+    })
+
+    expect(html).toContain('<span id="island-cookie">session=alice</span>')
+    expect(html).toMatch(/<pre id="island-conditional-headers"[^>]*>\{\}<\/pre>/)
+  })
 })
 
 describe('island head', () => {

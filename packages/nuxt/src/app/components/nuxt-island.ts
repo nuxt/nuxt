@@ -8,7 +8,7 @@ import { joinURL, withQuery } from 'ufo'
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { createError } from '../composables/error'
-import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
+import { fetchWithRequestHeaders, prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { injectHead } from '../composables/head'
 import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
@@ -112,7 +112,7 @@ const NuxtIsland = defineComponent({
 
     let activeHead: ActiveHeadEntry<SerializableHead>
 
-    const eventFetch = import.meta.server ? event!.fetch : globalThis.fetch
+    const eventFetch = import.meta.server ? (request: string) => fetchWithRequestHeaders(event!, request) : globalThis.fetch
     const mounted = shallowRef(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
     onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
