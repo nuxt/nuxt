@@ -21,15 +21,6 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     return true
   }
 
-  it('should work with no overrides', async () => {
-    const html: string = await $fetch<string>('/assets')
-    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[1] || match[2]!
-      if (url.startsWith('data:')) { continue }
-      expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
-    }
-  })
-
   it('should keep url() wrappers in inlined styles', async () => {
     const html: string = await $fetch<string>('/inline-url')
     const inlinedStyles = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g), m => m[1]!).join('\n')
@@ -70,23 +61,21 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     `)
   })
 
-  it('should allow setting base URL and build assets directory', async () => {
-    await startServer({
-      env: {
-        NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
-        NUXT_APP_BASE_URL: '/foo/',
-      },
-    })
+  it.each([
+    ['no overrides', {}, '/assets', '/', '/_nuxt/'],
+    ['a base URL and build assets directory', { NUXT_APP_BUILD_ASSETS_DIR: '/_other/', NUXT_APP_BASE_URL: '/foo/' }, '/foo/assets', '/foo/', '/foo/_other/'],
+    ['a relative base URL', { NUXT_APP_BASE_URL: './' }, '/assets', './', './_nuxt/'],
+    ['a CDN URL', { NUXT_APP_BASE_URL: '/foo/', NUXT_APP_CDN_URL: 'https://example.com/', NUXT_APP_BUILD_ASSETS_DIR: '/_cdn/' }, '/foo/assets', 'https://example.com/', 'https://example.com/_cdn/'],
+  ])('should prefix asset URLs when started with %s', async (_, env, path, base, assetsDir) => {
+    await startServer({ env })
 
-    const html = await $fetch<string>('/foo/assets')
+    const html = await $fetch<string>(path)
     for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[1] || match[2]!
       if (url.startsWith('data:')) { continue }
-      expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
+      expect(url.startsWith(assetsDir) || isPublicFile(base, url)).toBeTruthy()
+      expect(url).not.toContain('_nuxt/_nuxt')
     }
-
-    // TODO: document as breaking change
-    expect(await $fetch<string>('/foo/url')).toContain('path: /url')
   })
 
   // remove `.fails` when webpack applies the base URL to public assets referenced from templates
@@ -100,22 +89,6 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     const html = await $fetch<string>('/foo/assets')
     const sources = Array.from(html.matchAll(/<img[^>]+src="([^"]+)"/g), m => m[1]!)
     expect(sources).toContain('/foo/public.svg')
-  })
-
-  it('should allow setting relative baseURL', async () => {
-    await startServer({
-      env: {
-        NUXT_APP_BASE_URL: './',
-      },
-    })
-
-    const html = await $fetch<string>('/assets')
-    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[1] || match[2]!
-      if (url.startsWith('data:')) { continue }
-      expect(url.startsWith('./_nuxt/') || isPublicFile('./', url)).toBeTruthy()
-      expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
-    }
   })
 
   // https://github.com/nuxt/nuxt/issues/36133
@@ -142,23 +115,8 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     const { headers } = await fetch('/foo/navigate-to/', { redirect: 'manual' })
 
     expect(headers.get('location')).toEqual('/foo/')
-  })
-
-  it('should allow setting CDN URL', async () => {
-    await startServer({
-      env: {
-        NUXT_APP_BASE_URL: '/foo/',
-        NUXT_APP_CDN_URL: 'https://example.com/',
-        NUXT_APP_BUILD_ASSETS_DIR: '/_cdn/',
-      },
-    })
-
-    const html = await $fetch<string>('/foo/assets')
-    for (const match of html.matchAll(/(?:href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[1] || match[2]!
-      if (url.startsWith('data:')) { continue }
-      expect(url.startsWith('https://example.com/_cdn/') || isPublicFile('https://example.com/', url)).toBeTruthy()
-    }
+    // TODO: document as breaking change
+    expect(await $fetch<string>('/foo/url')).toContain('path: /url')
   })
 
   it.skipIf(isWebpack)('should render relative importmap path with relative path', async () => {
