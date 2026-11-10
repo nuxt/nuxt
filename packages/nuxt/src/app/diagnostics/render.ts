@@ -95,7 +95,7 @@ export const renderDiagnostics = !import.meta.dev
           docs: false,
         },
         NUXT_E4018: {
-          why: (p: { name: string, key: string }) => `Island \`${p.name}\` was sent a top-level \`${p.key}\` prop it does not declare. An undeclared prop falls through as an attribute onto the island's root, where a polymorphic component would use it to resolve which component to render, so the request was rejected.`,
+          why: (p: { name: string, key: string }) => `Island \`${p.name}\` was sent a top-level \`${p.key}\` prop it does not declare. An undeclared prop falls through as an attribute onto the island's root, where \`${p.key}\` is reserved, so the request was rejected.`,
           fix: (p: { key: string }) => `Declare \`${p.key}\` as a prop on the island, or set \`inheritAttrs: false\` so request input cannot reach the root element.`,
           docs: false,
         },
