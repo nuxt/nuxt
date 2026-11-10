@@ -76,7 +76,7 @@ const extendWebpackCompatibleConfig = (builder: 'rspack' | 'webpack') => (fn: ((
   if (options.dev === false && nuxt.options.dev) {
     return
   }
-  if (options.build === false && nuxt.options.build) {
+  if (options.build === false && !nuxt.options.dev) {
     return
   }
 
@@ -126,7 +126,7 @@ export function extendRsbuildConfig (fn: ((config: RsbuildConfig) => Thenable<vo
   if (options.dev === false && nuxt.options.dev) {
     return
   }
-  if (options.build === false && nuxt.options.build) {
+  if (options.build === false && !nuxt.options.dev) {
     return
   }
 
@@ -142,7 +142,7 @@ export function extendViteConfig (fn: ((config: ViteConfig) => Thenable<void>), 
   if (options.dev === false && nuxt.options.dev) {
     return
   }
-  if (options.build === false && nuxt.options.build) {
+  if (options.build === false && !nuxt.options.dev) {
     return
   }
 
@@ -220,7 +220,7 @@ export function addVitePlugin (pluginOrGetter: PluginOrGetter<VitePlugin>, optio
   if (options.dev === false && nuxt.options.dev) {
     return
   }
-  if (options.build === false && nuxt.options.build) {
+  if (options.build === false && !nuxt.options.dev) {
     return
   }
 
