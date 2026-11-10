@@ -101,33 +101,20 @@ describe('createErrorReport', () => {
 })
 
 describe('forwarding channel', () => {
-  it('posts log entries to the owning dev server', async () => {
+  it('posts log entries and build progress to the owning dev server', async () => {
     process.env[ERROR_CHANNEL_ENV] = '/__nuxt_dev__/error'
     const received: any[] = []
     const listener = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
     listener.onmessage = event => received.push(event.data)
 
     await publishDevLog({ level: 'warn', text: 'careful' })
-    await vi.waitFor(() => expect(received.some(message => message.type === 'nuxt:dev:error:log')).toBe(true))
-
-    const logged = received.find(message => message.type === 'nuxt:dev:error:log')
-    expect(logged.entry).toMatchObject({ level: 'warn', text: 'careful' })
-    expect(typeof logged.entry.timestamp).toBe('number')
-
-    listener.close()
-    ;(await useErrorChannel()).close()
-  })
-
-  it('posts build progress to the owning dev server', async () => {
-    process.env[ERROR_CHANNEL_ENV] = '/__nuxt_dev__/error'
-    const received: any[] = []
-    const listener = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
-    listener.onmessage = event => received.push(event.data)
-
     await publishDevProgress({ phase: 'transform', message: 'Rebuilding' })
-    await vi.waitFor(() => expect(received.some(message => message.type === 'nuxt:dev:error:progress')).toBe(true))
+    await vi.waitFor(() => expect(received).toHaveLength(2))
 
-    expect(received.find(message => message.type === 'nuxt:dev:error:progress').progress).toEqual({ phase: 'transform', message: 'Rebuilding' })
+    expect(received).toEqual([
+      { type: 'nuxt:dev:error:log', entry: { level: 'warn', text: 'careful', timestamp: expect.any(Number) } },
+      { type: 'nuxt:dev:error:progress', progress: { phase: 'transform', message: 'Rebuilding' } },
+    ])
 
     listener.close()
     ;(await useErrorChannel()).close()
