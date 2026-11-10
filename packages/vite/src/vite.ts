@@ -11,10 +11,11 @@ import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
+import type { Plugin as PostcssPlugin } from 'postcss'
+import { resolvePostcssPlugins, useServerBuild } from '@nuxt/kit/internal'
 
 import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
-import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
 import { getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
@@ -47,7 +48,6 @@ import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 import { InlinedVuePlugin } from './plugins/inlined-vue.ts'
 import { PerfPlugin } from './plugins/perf.ts'
 import { isNavigationRequest, warmupViteServer } from './utils/warmup.ts'
-import { useServerBuild } from '@nuxt/kit/internal'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -182,7 +182,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ],
       },
       // TODO: devSourcemap
-      css: await resolveCSSOptions(nuxt),
+      css: {
+        postcss: {
+          plugins: await resolvePostcssPlugins<PostcssPlugin>(nuxt),
+        },
+      },
       define: {
         __NUXT_VERSION__: JSON.stringify(nuxt._version),
         __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext,

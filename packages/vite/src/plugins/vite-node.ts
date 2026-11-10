@@ -17,12 +17,13 @@ import type { Nitro } from 'nitro/types'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
+import type { H3Error } from 'h3'
+import type { HTTPError } from 'h3-next'
 import { resolveModulePath } from 'exsolve'
 
 import { toVirtualId } from '../utils/index.ts'
 import { collectDevCss } from '../utils/css.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
-import type { ErrorPartial } from '../types.ts'
 import type { ViteNodeErrorData } from '../vite-node-runner.ts'
 import { createMessageDecoder, encodeMessage } from '../utils/ipc.ts'
 
@@ -47,6 +48,8 @@ export function serializeViteNodeError (error: any, moduleId: string, file?: str
   if (error.pluginCode) { errorData.pluginCode = error.pluginCode }
   return errorData
 }
+
+type ErrorPartial = Partial<HTTPError> | Partial<H3Error>
 
 type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 
