@@ -620,6 +620,147 @@ describe('useAsyncData', () => {
     })
   })
 
+  it('should cancel a pending request when a watched dependency changes again, with dedupe: cancel', async () => {
+    const route = ref('/')
+    const pending: Record<string, (value: string) => void> = {}
+    const promiseFn = vi.fn(() => {
+      const path = route.value
+      return new Promise<string>(resolve => (pending[path] = resolve))
+    })
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [route], dedupe: 'cancel', immediate: false })
+        return () => h('div', [data.value])
+      },
+    })
+
+    const c = await mountSuspended(component)
+
+    route.value = '/a'
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    // changed again while the request for '/a' is pending: the request for '/b' is made at once
+    route.value = '/b'
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+
+    // the cancelled request for '/a' settles first, and its data is never committed
+    pending['/a']!('/a')
+    await flushPromises()
+    expect(c.text()).toBe('')
+
+    pending['/b']!('/b')
+    await flushPromises()
+    expect(c.text()).toBe('/b')
+  })
+
+  it('should await the replacement when a watched request changes during an async transform', async () => {
+    const route = ref('/a')
+    const pending: Record<string, (value: string) => void> = {}
+    const transform = vi.fn((value: string) => new Promise<string>(resolve => (pending[value] = resolve)))
+    const c = await mountWithAsyncData(uniqueKey, () => Promise.resolve(route.value), {
+      watch: [route], dedupe: 'cancel', immediate: false, transform,
+    })
+    const resolved = { first: false, deferred: false }
+
+    const first = c.execute().then(() => { resolved.first = true })
+    await flushPromises()
+    expect(transform).toHaveBeenCalledTimes(1)
+
+    const deferred = c.execute({ dedupe: 'defer' }).then(() => { resolved.deferred = true })
+    route.value = '/b'
+    await flushPromises()
+    expect(transform).toHaveBeenCalledTimes(2)
+
+    pending['/a']!('/a')
+    await flushPromises()
+    expect(c.data.value).toBeUndefined()
+    expect(useNuxtApp().payload.data[uniqueKey]).toBeUndefined()
+    expect(c.status.value).toBe('pending')
+    expect(resolved).toEqual({ first: false, deferred: false })
+
+    pending['/b']!('/b')
+    await Promise.all([first, deferred])
+    expect(c.data.value).toBe('/b')
+    expect(useNuxtApp().payload.data[uniqueKey]).toBe('/b')
+    expect(c.status.value).toBe('success')
+  })
+
+  it.each(['resolve', 'reject'] as const)('should settle superseded callers before the old transform can %s', async (outcome) => {
+    const route = ref('/a')
+    const pending: Record<string, { resolve: (value: string) => void, reject: (error: Error) => void }> = {}
+    const transform = vi.fn((value: string) => new Promise<string>((resolve, reject) => (pending[value] = { resolve, reject })))
+    const c = await mountWithAsyncData(uniqueKey, () => Promise.resolve(route.value), {
+      watch: [route], dedupe: 'cancel', immediate: false, transform,
+    })
+    const resolved = { first: false, deferred: false }
+
+    const first = c.execute().then(() => { resolved.first = true })
+    await flushPromises()
+    onTestFinished(() => pending['/a']!.resolve('/a'))
+    const deferred = c.execute({ dedupe: 'defer' }).then(() => { resolved.deferred = true })
+    route.value = '/b'
+    await flushPromises()
+
+    pending['/b']!.resolve('/b')
+    await flushPromises()
+    expect(resolved).toEqual({ first: true, deferred: true })
+    expect(c.data.value).toBe('/b')
+
+    if (outcome === 'resolve') {
+      pending['/a']!.resolve('/a')
+    } else {
+      pending['/a']!.reject(new Error('stale transform failed'))
+    }
+    await Promise.all([first, deferred])
+    await flushPromises()
+    expect(c.data.value).toBe('/b')
+    expect(c.error.value).toBeUndefined()
+    expect(c.status.value).toBe('success')
+  })
+
+  it('should settle an aborted execute without waiting for its async transform', async () => {
+    const controller = new AbortController()
+    let finishTransform!: (value: string) => void
+    const c = await mountWithAsyncData(uniqueKey, () => Promise.resolve('stale'), {
+      immediate: false,
+      transform: () => new Promise<string>(resolve => (finishTransform = resolve)),
+    })
+    let resolved = false
+    const request = c.execute({ signal: controller.signal }).then(() => { resolved = true })
+    await flushPromises()
+    onTestFinished(() => finishTransform('stale'))
+
+    controller.abort(new DOMException('test abort', 'AbortError'))
+    await flushPromises()
+    expect(resolved).toBe(true)
+    expect(c.status.value).toBe('idle')
+
+    finishTransform('stale')
+    await request
+    expect(c.data.value).toBeUndefined()
+    expect(c.status.value).toBe('idle')
+  })
+
+  it('should preserve cleared state when an async transform finishes', async () => {
+    let finishTransform!: (value: string) => void
+    const c = await mountWithAsyncData(uniqueKey, () => Promise.resolve('stale'), {
+      immediate: false,
+      transform: () => new Promise<string>(resolve => (finishTransform = resolve)),
+    })
+
+    const request = c.execute()
+    await flushPromises()
+    c.clear()
+    finishTransform('stale')
+    await request
+
+    expect(c.data.value).toBeUndefined()
+    expect(useNuxtApp().payload.data[uniqueKey]).toBeUndefined()
+    expect(c.status.value).toBe('idle')
+  })
+
   it('should batch watched dependency updates cascading within the same flush into a single refresh', async () => {
     const a = ref(0)
     const b = ref(0)
