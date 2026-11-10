@@ -25,18 +25,21 @@ vi.mock('vite-plugin-checker', () => ({
 
 describe('vite-plugin-checker', () => {
   it.each([
-    [true, true, true],
-    [true, false, true],
-    ['build', true, false],
-    ['build', false, true],
-    ['dev', true, true],
-    ['dev', false, false],
-    [false, true, false],
-    [false, false, false],
-  ] as const)('typeCheck: %s, dev: %s -> enabled: %s', async (typeCheck, dev, enabled) => {
+    [true, true, false, true],
+    [true, false, false, true],
+    ['build', true, false, false],
+    ['build', false, false, true],
+    ['dev', true, false, true],
+    ['dev', false, false, false],
+    [false, true, false, false],
+    [false, false, false, false],
+    [true, true, true, false],
+    ['build', false, true, false],
+    ['dev', true, true, false],
+  ] as const)('typeCheck: %s, dev: %s, test: %s -> enabled: %s', async (typeCheck, dev, test, enabled) => {
     const nuxt = {
       options: {
-        test: false,
+        test,
         dev,
         rootDir: fileURLToPath(new URL('.', import.meta.url)),
         typescript: { typeCheck },
@@ -46,15 +49,27 @@ describe('vite-plugin-checker', () => {
     expect(!!(await VitePluginCheckerPlugin(nuxt))).toBe(enabled)
   })
 
-  it('should not enable type checking in test mode', async () => {
-    for (const typeCheck of [true, 'build', 'dev'] as const) {
-      for (const dev of [true, false]) {
-        const nuxt = {
-          options: { test: true, dev, typescript: { typeCheck } },
-        } as unknown as Nuxt
-        expect(await VitePluginCheckerPlugin(nuxt)).toBeUndefined()
-      }
-    }
+  it('should import the checker runtime into the client entry in development', async () => {
+    const nuxt = {
+      options: {
+        test: false,
+        dev: true,
+        rootDir: fileURLToPath(new URL('.', import.meta.url)),
+        typescript: { typeCheck: true },
+      },
+    } as unknown as Nuxt
+
+    const runtime = (await VitePluginCheckerPlugin(nuxt))!.find(plugin => plugin.name === 'nuxt:type-check')!
+    const applies = runtime.applyToEnvironment as (environment: unknown) => boolean
+    expect(applies({ name: 'client', config: { isProduction: false } })).toBe(true)
+    expect(applies({ name: 'client', config: { isProduction: true } })).toBe(false)
+    expect(applies({ name: 'ssr', config: { isProduction: false } })).toBe(false)
+
+    const configResolved = runtime.configResolved as (config: unknown) => void
+    configResolved({ environments: { client: { build: { rolldownOptions: { input: '/entry.js' } } } } })
+    const transform = runtime.transform as (code: string, id: string) => { code: string } | undefined
+    expect(transform('export default 1', '/entry.js?import')?.code).toBe('import "/@vite-plugin-checker-runtime-entry";\nexport default 1')
+    expect(transform('export default 1', '/other.js')).toBeUndefined()
   })
 
   it('should terminate every checker worker when the dev server closes', async () => {
