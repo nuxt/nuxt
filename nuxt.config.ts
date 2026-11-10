@@ -1,4 +1,4 @@
-// For pnpm typecheck:docs to generate correct types
+// The app for the `test/nuxt` runtime projects, and the types for `pnpm typecheck` and `pnpm typecheck:docs`
 
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
