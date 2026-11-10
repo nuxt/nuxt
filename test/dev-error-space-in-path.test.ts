@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { isDev, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
+import { isDev, legacyErrorRendering, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
 import { copyFixture, frameAt, renderErrorPage, sourcePosition } from './dev-error-utils'
 import { setupFixture } from './utils'
 
-const runs = isDev && runsOncePerViteBuilderInMatrix
+const runs = isDev && (runsOncePerViteBuilderInMatrix || legacyErrorRendering)
 
 const fixtureURL = runs
   ? copyFixture('dev-error-sourcemap', `dev error space ${projectSuffix}`)

@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { fetch } from '@nuxt/test-utils/e2e'
 import type { ErrorReport } from 'my-bad'
 
-import { isDev, runsOncePerEnvInMatrix } from './matrix'
+import { isDev, legacyErrorRendering, runsOncePerEnvInMatrix } from './matrix'
 import { channelState, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
 import { setupFixture } from './utils'
 
 const fixtureURL = new URL('./fixtures/dev-error-sourcemap/', import.meta.url)
 const at = (file: string, needle: string) => sourcePosition(fixtureURL, file, needle)
 
-const runs = runsOncePerEnvInMatrix && isDev
+const runs = isDev && (runsOncePerEnvInMatrix || legacyErrorRendering)
 
 await setupFixture(fixtureURL, runs, { nuxtConfig: { server: { builder: 'vite' } } })
 

@@ -6,12 +6,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { clearServerLogs, fetch, getServerLogs } from '@nuxt/test-utils/e2e'
 import type { ErrorReport, Frame } from 'my-bad'
 
-import { isDev, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
+import { isDev, legacyErrorRendering, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
 import { channelState, copyFixture, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
 import { setupFixture } from './utils'
 
 // stack mapping only applies in dev under the vite builders
-const runs = isDev && runsOncePerViteBuilderInMatrix
+const runs = isDev && (runsOncePerViteBuilderInMatrix || legacyErrorRendering)
 
 const fixtureURL = runs
   ? copyFixture('dev-error-sourcemap', `dev-error-sourcemap-${projectSuffix}`)

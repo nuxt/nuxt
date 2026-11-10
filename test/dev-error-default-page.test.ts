@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { isDev, runsOncePerViteBuilderInMatrix } from './matrix'
+import { isDev, legacyErrorRendering, runsOncePerViteBuilderInMatrix } from './matrix'
 import { renderErrorPage, sourcePosition } from './dev-error-utils'
 import { setupFixture } from './utils'
 
 const fixtureURL = new URL('./fixtures/dev-error-client/', import.meta.url)
 
-const runs = isDev && runsOncePerViteBuilderInMatrix
+const runs = isDev && (runsOncePerViteBuilderInMatrix || legacyErrorRendering)
 
 await setupFixture(fixtureURL, runs)
 

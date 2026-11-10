@@ -4,13 +4,13 @@ import { glob } from 'tinyglobby'
 import { readFile } from 'node:fs/promises'
 import { fetch, useTestContext } from '@nuxt/test-utils/e2e'
 
-import { isBuilt, runsOncePerViteBuilderInMatrix } from './matrix'
+import { isBuilt, legacyErrorRendering, runsOncePerViteBuilderInMatrix } from './matrix'
 import { fixturePath, setupFixture } from './utils'
 
 const rootDir = fixturePath('dev-error-client')
 const repoDir = fileURLToPath(new URL('../', import.meta.url))
 
-const runs = isBuilt && runsOncePerViteBuilderInMatrix
+const runs = isBuilt && (runsOncePerViteBuilderInMatrix || legacyErrorRendering)
 
 await setupFixture('dev-error-client', runs)
 
