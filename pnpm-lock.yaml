@@ -2333,18 +2333,6 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
-  test/fixtures/dev-error-default-page:
-    dependencies:
-      nuxt:
-        specifier: workspace:*
-        version: link:../../../packages/nuxt
-
-  test/fixtures/dev-error-plugin:
-    dependencies:
-      nuxt:
-        specifier: workspace:*
-        version: link:../../../packages/nuxt
-
   test/fixtures/dev-error-sourcemap:
     dependencies:
       nuxt:
