@@ -65,6 +65,12 @@ export const runsOncePerBuilderInMatrix = !isMatrixRun || (isBuilt && isDefaultC
  */
 export const runsOncePerViteBuilderInMatrix = !isMatrixRun || (!isWebpack && isDefaultCombo)
 
+/**
+ * True in one dev and one built project per builder, for behaviour that depends on the compiled
+ * app. The webpack-based builders only have a dev project with async context.
+ */
+export const runsOncePerBuildInMatrix = !isMatrixRun || (!legacyErrorRendering && !legacyComponentResolution && isTestingAppManifest && (!asyncContext || (isWebpack && isDev)))
+
 export const isNuxtPrepare = process.argv.slice(2).includes('prepare')
 
 export function withMatrix (config: NuxtConfig) {
