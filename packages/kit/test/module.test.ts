@@ -255,7 +255,6 @@ describe('module dependencies', { concurrent: false }, () => {
   it('should apply moduleDependencies config when installModule is called explicitly', async () => {
     const setupOrder: string[] = []
     await load([
-      // module-a configures some-module through moduleDependencies
       defineNuxtModule({
         meta: { name: 'module-a' },
         moduleDependencies: {
@@ -267,7 +266,6 @@ describe('module dependencies', { concurrent: false }, () => {
         },
         setup () { setupOrder.push('module-a') },
       }),
-      // module-b installs some-module explicitly
       defineNuxtModule({
         meta: { name: 'module-b' },
         async setup (_, nuxt) {
