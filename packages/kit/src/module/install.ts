@@ -173,7 +173,6 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
   for (const { nuxtModule, meta = {}, moduleToInstall, buildTimeModuleMeta, resolvedModulePath, inlineOptions } of resolvedModules) {
     const configKey = meta.configKey as keyof NuxtOptions | undefined
 
-    // Merge options
     const optionsFns = new Set([
       ...nuxt._moduleOptionsFunctions.get(moduleToInstall) || [],
       ...meta?.name ? nuxt._moduleOptionsFunctions.get(meta.name) || [] : [],
@@ -342,7 +341,6 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
   }
 
-  // Import if input is string
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)
 
   if (nuxtModule.startsWith('./') || nuxtModule.startsWith('../')) {

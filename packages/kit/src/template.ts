@@ -27,7 +27,6 @@ import type { LayerDirectories } from './layers.ts'
 export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
   const nuxt = useNuxt()
 
-  // Normalize template
   const template = normalizeTemplate(_template)
 
   // Remove any existing template with the same destination path
@@ -46,7 +45,6 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNu
     // ignore errors as this is an additive feature
   }
 
-  // Add to templates array
   nuxt.options.build.templates.push(template)
 
   return template
@@ -80,7 +78,6 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>, context?: { 
     throw kitDiagnostics.NUXT_B8007({ template: template.filename })
   }
 
-  // Add template to types reference
   if (!context || context.nuxt) {
     nuxt.hook('prepare:types', (payload) => {
       payload.references ||= []
@@ -132,14 +129,12 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
     throw kitDiagnostics.NUXT_B8008({ template: JSON.stringify(template) })
   }
 
-  // Normalize
   if (typeof template === 'string') {
     template = { src: template }
   } else {
     template = { ...template }
   }
 
-  // Use src if provided
   if (template.src) {
     if (!existsSync(template.src)) {
       throw kitDiagnostics.NUXT_B8009({ template: template.src })
@@ -158,12 +153,10 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
     throw kitDiagnostics.NUXT_B8011({ template: JSON.stringify(template) })
   }
 
-  // Always write declaration files
   if (template.filename.endsWith('.d.ts') || template.filename.endsWith('.d.mts') || template.filename.endsWith('.d.cts')) {
     template.write = true
   }
 
-  // Resolve dst
   template.dst ||= resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
 
   return template as ResolvedNuxtTemplate<T>

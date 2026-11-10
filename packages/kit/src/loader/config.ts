@@ -466,7 +466,6 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       .map(layer => layer.config!)) as NuxtConfig
     : undefined
 
-  // Fill config
   nuxtConfig.rootDir ||= cwd
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
@@ -530,10 +529,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     if (processedLayers.has(resolvedRootDir)) { continue }
     processedLayers.add(resolvedRootDir)
 
-    // Normalise layer directories
     layer.config = await applyDefaults(layerSchema, layer.config as NuxtConfig & Record<string, JSValue>) as unknown as NuxtConfig
 
-    // Filter layers
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
     // Add layer name for local layers
@@ -542,7 +539,6 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       layer.meta.name ||= basename(layerCwd)
     }
 
-    // Add layer alias
     if (layer.meta?.name) {
       const alias = `#layers/${layer.meta.name}`
       nuxtConfig.alias[alias] ||= withTrailingSlash(layer.config.rootDir || layer.cwd)
@@ -570,7 +566,6 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     })
   }
 
-  // Resolve and apply defaults
   const options = await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
   options._runtimeConfigSchemas = runtimeConfigSchemas.entries
   restoreRuntimeConfigSchemaNulls(options.runtimeConfig, runtimeConfigSchemas.config, runtimeConfigSchemas.entries)
