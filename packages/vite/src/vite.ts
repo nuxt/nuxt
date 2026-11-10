@@ -410,9 +410,7 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   }
 }
 
-async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {
-  if (!enabled) { return fn() }
-
+async function withLogs (fn: () => Promise<unknown>, message: string) {
   const start = performance.now()
   await fn()
   const duration = performance.now() - start
