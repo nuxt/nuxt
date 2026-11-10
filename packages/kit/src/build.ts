@@ -10,6 +10,13 @@ type RspackCompatiblePluginInstance = {
   apply: (...args: any[]) => void
   [k: string]: any
 }
+type PluginOrGetter<T> = Arrayable<T> | (() => Thenable<Arrayable<T>>)
+
+async function resolvePlugins<T> (pluginOrGetter: PluginOrGetter<T>): Promise<T[]> {
+  return toArray(typeof pluginOrGetter === 'function' ? await (pluginOrGetter as () => Thenable<Arrayable<T>>)() : pluginOrGetter)
+}
+
+const insertMethod = (options?: { prepend?: boolean }) => options?.prepend ? 'unshift' as const : 'push' as const
 
 export interface ExtendConfigOptions {
   /**
@@ -154,25 +161,19 @@ export function extendViteConfig (fn: ((config: ViteConfig) => Thenable<void>), 
 /**
  * Append webpack plugin to the config.
  */
-export function addWebpackPlugin (pluginOrGetter: Arrayable<WebpackPluginInstance> | (() => Thenable<Arrayable<WebpackPluginInstance>>), options?: ExtendWebpackConfigOptions): void {
+export function addWebpackPlugin (pluginOrGetter: PluginOrGetter<WebpackPluginInstance>, options?: ExtendWebpackConfigOptions): void {
   extendWebpackConfig(async (config) => {
-    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    const plugin = typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter
-
     config.plugins ||= []
-    config.plugins[method](...toArray(plugin))
+    config.plugins[insertMethod(options)](...await resolvePlugins(pluginOrGetter))
   }, options)
 }
 /**
  * Append rspack plugin to the config.
  */
-export function addRspackPlugin (pluginOrGetter: Arrayable<RspackCompatiblePluginInstance> | (() => Thenable<Arrayable<RspackCompatiblePluginInstance>>), options?: ExtendWebpackConfigOptions): void {
+export function addRspackPlugin (pluginOrGetter: PluginOrGetter<RspackCompatiblePluginInstance>, options?: ExtendWebpackConfigOptions): void {
   extendRspackConfig(async (config) => {
-    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    const plugin = typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter
-
     config.plugins ||= []
-    config.plugins[method](...toArray(plugin))
+    config.plugins[insertMethod(options)](...await resolvePlugins(pluginOrGetter))
   }, options)
 }
 
@@ -182,14 +183,14 @@ export function addRspackPlugin (pluginOrGetter: Arrayable<RspackCompatiblePlugi
  * The plugin is registered for both the client and server environments,
  * unless `client: false` or `server: false` is passed.
  */
-export function addRsbuildPlugin (pluginOrGetter: Arrayable<RsbuildPlugin> | (() => Thenable<Arrayable<RsbuildPlugin>>), options: ExtendConfigOptions = {}): void {
+export function addRsbuildPlugin (pluginOrGetter: PluginOrGetter<RsbuildPlugin>, options: ExtendConfigOptions = {}): void {
   if (options.server === false && options.client === false) {
     return
   }
 
   extendRsbuildConfig(async (config) => {
-    const method: 'push' | 'unshift' = options.prepend ? 'unshift' : 'push'
-    const plugins = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
+    const method = insertMethod(options)
+    const plugins = await resolvePlugins(pluginOrGetter)
 
     if (options.server !== false && options.client !== false) {
       config.plugins ||= []
@@ -213,7 +214,7 @@ export function addRsbuildPlugin (pluginOrGetter: Arrayable<RsbuildPlugin> | (()
  * environment. For server code, add the plugin to `nuxt.options.vite.plugins` with
  * `applyToEnvironment: environment => environment.name === 'nitro'`.
  */
-export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Thenable<Arrayable<VitePlugin>>), options: ExtendConfigOptions = {}): void {
+export function addVitePlugin (pluginOrGetter: PluginOrGetter<VitePlugin>, options: ExtendConfigOptions = {}): void {
   const nuxt = useNuxt()
 
   if (options.dev === false && nuxt.options.dev) {
@@ -229,8 +230,8 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
   nuxt.hook('vite:extend', async ({ config }) => {
     config.plugins ||= []
 
-    const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
-    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+    const plugin = await resolvePlugins(pluginOrGetter)
+    const method = insertMethod(options)
 
     // Without the environment API `applyToEnvironment` is ignored, so an isomorphic
     // plugin can be added as-is and anything else has to be injected per environment.
@@ -261,8 +262,8 @@ export function addVitePlugin (pluginOrGetter: Arrayable<VitePlugin> | (() => Th
     if (!needsEnvInjection) {
       return
     }
-    const plugin = toArray(typeof pluginOrGetter === 'function' ? await pluginOrGetter() : pluginOrGetter)
-    const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
+    const plugin = await resolvePlugins(pluginOrGetter)
+    const method = insertMethod(options)
     if (env.isClient && options.server === false) {
       config.plugins![method](...plugin)
     }

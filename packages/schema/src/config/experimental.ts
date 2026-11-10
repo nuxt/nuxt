@@ -1,4 +1,4 @@
-import { defineResolvers } from '../utils/definition.ts'
+import { booleanOr, defineResolvers, oneOf } from '../utils/definition.ts'
 import { schemaDiagnostics } from '../diagnostics.ts'
 
 export default defineResolvers({
@@ -77,9 +77,7 @@ export default defineResolvers({
     },
     runtimeBaseURL: false,
     decorators: false,
-    asyncEntry: {
-      $resolve: val => typeof val === 'boolean' ? val : false,
-    },
+    asyncEntry: booleanOr(false),
 
     // TODO: Remove when nitro has support for mocking traced dependencies
     // https://github.com/nitrojs/nitro/issues/1118
@@ -232,9 +230,7 @@ export default defineResolvers({
         return (await get('future.compatibilityVersion')) >= 5
       },
     },
-    serverPathFallback: {
-      $resolve: val => typeof val === 'boolean' ? val : true,
-    },
+    serverPathFallback: booleanOr(true),
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
     watcher: {
@@ -268,11 +264,7 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
       },
     },
-    sharedPrerenderData: {
-      $resolve (val) {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    sharedPrerenderData: booleanOr(true),
     cookieStore: true,
     defaults: {
       nuxtLink: {
@@ -302,23 +294,13 @@ export default defineResolvers({
       },
     },
     buildCache: false,
-    normalizeComponentNames: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    normalizeComponentNames: booleanOr(true),
     normalizePageNames: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
       },
     },
-    spaLoadingTemplateLocation: {
-      $resolve: (val) => {
-        const validOptions = new Set(['body', 'within'] as const)
-        type SpaLoadingTemplateLocation = typeof validOptions extends Set<infer Option> ? Option : never
-        return typeof val === 'string' && validOptions.has(val as SpaLoadingTemplateLocation) ? val as SpaLoadingTemplateLocation : 'body'
-      },
-    },
+    spaLoadingTemplateLocation: oneOf(['body', 'within'], 'body'),
     browserDevtoolsTiming: {
       $resolve: (val, get) => typeof val === 'boolean' ? val : get('dev'),
     },
@@ -328,53 +310,21 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : Boolean(await get('debug'))
       },
     },
-    lazyHydration: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    lazyHydration: booleanOr(true),
     templateImportResolution: true,
-    purgeCachedData: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
-    prefetchPreloadTags: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
-    granularCachedData: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    purgeCachedData: booleanOr(true),
+    prefetchPreloadTags: booleanOr(false),
+    granularCachedData: booleanOr(true),
     stripNeverHydratedData: false,
     globalFetch: false,
-    alwaysRunFetchOnKeyChange: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
-    parseErrorData: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    alwaysRunFetchOnKeyChange: booleanOr(false),
+    parseErrorData: booleanOr(true),
     enforceModuleCompatibility: false,
-    pendingWhenIdle: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
+    pendingWhenIdle: booleanOr(false),
     entryImportMap: true,
     compileHints: true,
     layoutChunk: true,
-    extractAsyncDataHandlers: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
+    extractAsyncDataHandlers: booleanOr(false),
     viteEnvironmentApi: {
       $resolve: async (val, get) => {
         return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
@@ -388,11 +338,7 @@ export default defineResolvers({
     nitroViteEnvironment: {
       $resolve: () => false,
     },
-    typescriptPlugin: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
+    typescriptPlugin: booleanOr(false),
     ssrStreaming: {
       $resolve (val) {
         // Indexing crawlers only; `chrome-lighthouse` is intentionally absent

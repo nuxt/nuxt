@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as mlly from 'mlly'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'pathe'
@@ -88,5 +88,32 @@ describe('resolveModuleExportNames', () => {
 
   it('should return an empty array for an unresolvable module', async () => {
     await expect(resolveModuleExportNames('./does-not-exist', { url: new URL('index.ts', `${new URL('./exports-fixture/', import.meta.url)}`) })).resolves.toStrictEqual([])
+  })
+
+  describe('without the default parser', () => {
+    const parsers = ['rolldown/utils', 'oxc-parser', 'mlly']
+
+    afterEach(() => {
+      for (const parser of parsers) {
+        vi.doUnmock(parser)
+      }
+    })
+
+    async function importWithout (missing: string[]) {
+      for (const parser of missing) {
+        vi.doMock(parser, () => { throw new Error(`Cannot find package '${parser}'`) })
+      }
+      vi.resetModules()
+      const { resolveModuleExportNames } = await import('../src/internal/exports.ts')
+      return resolveModuleExportNames(resolve(fixtureDir, 'index.ts'))
+    }
+
+    it.each([1, 2])('should fall back to the next parser with %i unavailable', async (count) => {
+      await expect(importWithout(parsers.slice(0, count))).resolves.toContain('fromStar')
+    })
+
+    it('should throw a diagnostic when no parser is available', async () => {
+      await expect(importWithout(parsers)).rejects.toThrow(/needs a parser/)
+    })
   })
 })

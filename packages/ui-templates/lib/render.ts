@@ -7,7 +7,6 @@ import Beasties from 'beasties'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlnano from 'htmlnano'
 import { glob } from 'tinyglobby'
-import { camelCase } from 'scule'
 
 import pkg from '../../nuxt/package.json' with { type: 'json' }
 import genericMessages from '../templates/messages.json' with { type: 'json' }
@@ -38,12 +37,6 @@ export const RenderPlugin = () => {
         cwd: outputDir,
         absolute: true,
       })
-
-      const templateExports: Array<{
-        exportName: string
-        templateName: string
-        types: string
-      }> = []
 
       for (const fileName of htmlFiles) {
         // Infer template name
@@ -196,20 +189,6 @@ export const RenderPlugin = () => {
           styleContent.replace(globalStyles, ''),
           '</style>',
         ].filter(Boolean).join('\n').trim()
-
-        // Generate types
-        const types = [
-          `export type DefaultMessages = Record<${Object.keys(messages).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >`,
-          'declare const template: (data: Partial<DefaultMessages>) => string',
-          'export { template }',
-        ].join('\n')
-
-        // Register exports
-        templateExports.push({
-          exportName: camelCase(templateName),
-          templateName,
-          types,
-        })
 
         // Write new template
         writeFileSync(fileName.replace('/index.html', '.ts'), GENERATED_TS_HEADER + functionalCode)

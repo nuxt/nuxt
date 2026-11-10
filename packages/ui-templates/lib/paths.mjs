@@ -17,6 +17,6 @@ export const generatedTemplateCopies = {
  * Every committed file written by the `@nuxt/ui-templates` build, relative to the repository root.
  */
 export const generatedOutputs = [
-  'packages/ui-templates/test/__snapshots__/templates.spec.ts.snap',
+  'packages/ui-templates/test/__snapshots__/templates.test.ts.snap',
   ...Object.keys(generatedTemplateCopies),
 ]

@@ -79,6 +79,15 @@ describe('getNitroVersion', () => {
     nuxt.options._nitroMajor = 3
     expect(getNitroVersion(nuxt)).toBe(3)
   })
+
+  it('ignores a nonsense marker rather than propagating it', () => {
+    for (const value of [0, 1, 4, -3, 2.5, Number.NaN, 'three', null]) {
+      const nuxt = createMockNuxt('3.0.1')
+      nuxt.options._nitroMajor = value as number
+      // falls through to the initialized instance rather than answering `1`
+      expect(getNitroVersion(nuxt)).toBe(3)
+    }
+  })
 })
 
 describe('nitro detection on an older Nuxt host', () => {
@@ -126,23 +135,6 @@ describe('nitro detection on an older Nuxt host', () => {
 
   it('does not throw from `checkNuxtCompatibility` when the nitro version is unknown', async () => {
     await expect(checkNuxtCompatibility({ nitro: '^3.0.0' }, createHostileHost())).resolves.toHaveLength(0)
-  })
-})
-
-describe('nitro major marker', () => {
-  it('trusts a stamped major over package resolution', () => {
-    const nuxt = createMockNuxt()
-    nuxt.options._nitroMajor = 2
-    expect(getNitroVersion(nuxt)).toBe(2)
-  })
-
-  it('ignores a nonsense marker rather than propagating it', () => {
-    for (const value of [0, 1, 4, -3, 2.5, Number.NaN, 'three', null]) {
-      const nuxt = createMockNuxt('3.0.1')
-      nuxt.options._nitroMajor = value as number
-      // falls through to the initialized instance rather than answering `1`
-      expect(getNitroVersion(nuxt)).toBe(3)
-    }
   })
 })
 
@@ -474,6 +466,20 @@ describe('addServerImports', () => {
     expect(config.imports!.imports).toEqual([{ name: 'useThing', from: '/modules/runtime/utils' }])
     expect(config.imports!.dirs).toEqual(['/modules/runtime/server/utils'])
   })
+
+  it('imports from the module the host prefers', async () => {
+    const report = vi.spyOn(kitDiagnostics, 'NUXT_B8024').mockImplementation(() => ({}) as any)
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => addServerImports([
+      { name: 'verify', from: { nuxt: '/runtime/verify.ts', nitro2: '/runtime/verify.v2.ts' } },
+      { name: 'unsupported', from: { nitro3: '/runtime/unsupported.ts' } },
+    ]))
+    const config: { imports?: { imports?: unknown[] } } = {}
+    await runWithNuxtContext(nuxt, () => nuxt.callHook('nitro:config', config as any))
+    expect(config.imports!.imports).toEqual([{ name: 'verify', from: '/runtime/verify.v2.ts' }])
+    expect(report).toHaveBeenCalledTimes(1)
+    report.mockRestore()
+  })
 })
 
 describe('addServerTemplate', () => {
@@ -528,22 +534,6 @@ describe('resolveServerVariant', () => {
     const report = vi.spyOn(kitDiagnostics, 'NUXT_B8024').mockImplementation(() => ({}) as any)
     expect(runWithNuxtContext(createMockNuxt('2.11.0'), () => resolveServerVariant({ nitro3: 'a' }))).toBeUndefined()
     expect(report.mock.calls[0]![0]).toMatchObject({ api: 'resolveServerVariant', declared: 'nitro3' })
-    report.mockRestore()
-  })
-})
-
-describe('addServerImports with variants', () => {
-  it('imports from the module the host prefers', async () => {
-    const report = vi.spyOn(kitDiagnostics, 'NUXT_B8024').mockImplementation(() => ({}) as any)
-    const nuxt = createMockNuxt('2.11.0')
-    runWithNuxtContext(nuxt, () => addServerImports([
-      { name: 'verify', from: { nuxt: '/runtime/verify.ts', nitro2: '/runtime/verify.v2.ts' } },
-      { name: 'unsupported', from: { nitro3: '/runtime/unsupported.ts' } },
-    ]))
-    const config: { imports?: { imports?: unknown[] } } = {}
-    await runWithNuxtContext(nuxt, () => nuxt.callHook('nitro:config', config as any))
-    expect(config.imports!.imports).toEqual([{ name: 'verify', from: '/runtime/verify.v2.ts' }])
-    expect(report).toHaveBeenCalledTimes(1)
     report.mockRestore()
   })
 })
