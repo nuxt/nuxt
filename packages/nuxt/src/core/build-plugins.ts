@@ -59,7 +59,7 @@ export function addCoreBuildPlugins (nuxt: Nuxt) {
 
   nuxt.hook('modules:done', () => {
     if (nuxt.options.experimental.asyncContext) {
-      addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
+      addBuildPlugin(AsyncContextInjectionPlugin(), { client: false })
     }
 
     // server-only: the `executeAsync` wrappers restore context across `await`, which a
