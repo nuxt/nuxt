@@ -1,14 +1,13 @@
 import { resolve } from 'pathe'
 import { joinRelativeURL, withTrailingSlash } from 'ufo'
 import { addTemplate } from '@nuxt/kit'
-import { getServerRuntime, useServerBuild } from '@nuxt/kit/internal'
+import { getServerRuntime, resolveSpaLoadingTemplate, useServerBuild } from '@nuxt/kit/internal'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { Plugin } from 'vite'
 
 import { distDir } from './dirs.ts'
-import { spaLoadingTemplate } from './output.ts'
 import { isPrerendering } from './prerender.ts'
 import { addRouteRulesTemplate } from './route-rules.ts'
 
@@ -35,7 +34,7 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handl
   const serverRuntime = getServerRuntime({
     phase: prerender ? 'prerender' : 'server',
     overrides: async () => ({
-      spaTemplate: JSON.stringify(await spaLoadingTemplate(nuxt)),
+      spaTemplate: JSON.stringify(await resolveSpaLoadingTemplate(nuxt)),
       ...prerender
         ? {
             NUXT_PRERENDER_ERROR_PAGES: JSON.stringify(errorPages),

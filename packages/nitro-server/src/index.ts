@@ -1,7 +1,7 @@
 import { performance } from 'node:perf_hooks'
 import process from 'node:process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { existsSync, promises as fsp, readFileSync } from 'node:fs'
+import { existsSync, promises as fsp } from 'node:fs'
 import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomBytes, randomUUID } from 'node:crypto'
@@ -11,8 +11,8 @@ import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { createNitro } from 'nitro/builder'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, ensureDependencyInstalled, findPath, getAddDependencyCommand, getDirectory, getLayerDirectories, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
-import { bundlerDiagnostics, getServerRuntime, setServerBuild } from '@nuxt/kit/internal'
+import { addPlugin, addTemplate, addVitePlugin, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
+import { bundlerDiagnostics, getServerRuntime, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
@@ -29,7 +29,6 @@ import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from './dev-request.ts'
 import { DEV_PEER_TOKEN_ENV } from 'nuxt/internal/dev/peer'
-import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.ts'
 import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
@@ -246,7 +245,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         NUXT_PAGE_MATCHER: compilePageMatcher(early404Patterns),
         NUXT_SPA_PAGE_MATCHER: compilePageMatcher(spaPageSources, !nuxt.options.router.options.sensitive),
         NUXT_RUNTIME_PAYLOAD_EXTRACTION: String(nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)),
-        spaTemplate: JSON.stringify(await spaLoadingTemplate(nuxt)),
+        spaTemplate: JSON.stringify(await resolveSpaLoadingTemplate(nuxt)),
         componentIslands: '_componentIslands',
         componentIslandsActive: '_componentIslandsActive',
       }
@@ -713,7 +712,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   // Trigger Nitro reload when SPA loading template changes
-  const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
+  const spaLoadingTemplateFilePath = await resolveSpaLoadingTemplatePath(nuxt)
   nuxt.hook('builder:watch', async (_event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     if (path === spaLoadingTemplateFilePath) {
@@ -1128,16 +1127,6 @@ function resolveAppBuilderDependency (nuxt: Nuxt, id: string): string | undefine
   return builderPath && resolveModulePath(id, { from: builderPath, try: true })
 }
 
-async function spaLoadingTemplatePath (nuxt: Nuxt) {
-  if (typeof nuxt.options.spaLoadingTemplate === 'string') {
-    return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
-  }
-
-  const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
-
-  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
-}
-
 function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
   const sources = [nuxt.options.devServer.allowedHosts, nuxt.options.vite?.server?.allowedHosts]
   if (sources.includes(true)) {
@@ -1150,30 +1139,6 @@ function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
     }
   }
   return hosts
-}
-
-async function spaLoadingTemplate (nuxt: Nuxt) {
-  if (nuxt.options.spaLoadingTemplate === false) { return '' }
-
-  const spaLoadingTemplate = await spaLoadingTemplatePath(nuxt)
-
-  try {
-    if (existsSync(spaLoadingTemplate)) {
-      return readFileSync(spaLoadingTemplate, 'utf-8').trim()
-    }
-  } catch {
-    // fall through if we have issues reading the file
-  }
-
-  if (nuxt.options.spaLoadingTemplate === true) {
-    return defaultSpaLoadingTemplate()
-  }
-
-  if (nuxt.options.spaLoadingTemplate) {
-    bundlerDiagnostics.NUXT_B7016({ path: nuxt.options.spaLoadingTemplate })
-  }
-
-  return ''
 }
 
 /**
