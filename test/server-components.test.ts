@@ -732,6 +732,16 @@ describe.skipIf(!oncePerServer)('reserved island prop keys', () => {
     expect(body).not.toContain('declare')
   })
 
+  it('rejects a top-level `hasOwnProperty` prop and keeps rendering attributes afterwards', async () => {
+    for (const key of ['hasOwnProperty', '^hasOwnProperty']) {
+      const res = await fetch(islandURL('CustomElementRoot', { props: { [key]: 'x' } }))
+      expect(res.status).toBe(400)
+    }
+
+    const result = await $fetch<NuxtIslandResponse>(islandURL('CustomElementRoot', { props: { title: 'ok' } }))
+    expect(result.html).toContain('title="ok"')
+  })
+
   it('renders a top-level `as` prop the island declares', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('AsPropComponent', { props: { as: 'section' } }))
     expect(result.html).toContain('as: section')
