@@ -1,7 +1,8 @@
+// @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { renderList } from 'vue'
-import { getFragmentHTML, vforToArray } from '../../packages/nuxt/src/app/components/utils'
+import { getFragmentHTML, vforToArray } from '../src/app/components/utils'
 
 describe('vforToArray', () => {
   it('matches renderList semantics for number sources', () => {

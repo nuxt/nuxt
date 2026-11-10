@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { HTTPError } from 'h3'
 import { NUXT_ERROR_SIGNATURE, NuxtError, createError, createErrorFromThrown, isNuxtError } from '#app/composables/error'
 import { reducers } from '#app/plugins/revive-payload.server'
-import { decodeSSRError, describeError, encodeSSRError, NUXT_ERROR_SIGNATURE as rendererSignature, stringifyErrorData } from '../../packages/nuxt/src/runtime/server/renderer/error'
+import { decodeSSRError, describeError, encodeSSRError, NUXT_ERROR_SIGNATURE as rendererSignature, stringifyErrorData } from '../src/runtime/server/renderer/error'
 
 const reduceNuxtError = reducers.find(([name]) => name === 'NuxtError')![1]
 
@@ -14,7 +14,7 @@ describe('NuxtError / h3 interop', () => {
   })
 
   it('should expose the same fields as h3 for equivalent input', () => {
-    const inputs = [
+    const inputs: Record<string, any>[] = [
       { status: 404, statusText: 'Not Found', message: 'nope', data: { a: 1 } },
       { statusCode: 418, statusMessage: 'Teapot' },
       { status: 999 },
@@ -23,7 +23,7 @@ describe('NuxtError / h3 interop', () => {
       { status: 400, body: { extra: 'field' } },
       { statusText: 'bad\nvalue' },
       { cause: { status: 403, statusText: 'Forbidden', message: 'from cause' } },
-    ] as const
+    ]
 
     for (const input of inputs) {
       /* eslint-disable @typescript-eslint/no-deprecated */

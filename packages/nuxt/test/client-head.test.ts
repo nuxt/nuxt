@@ -1,9 +1,10 @@
+// @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createHooks } from 'hookable'
 import { createHead } from '@unhead/vue/client'
 import type { NuxtApp } from '#app/nuxt'
 
-import { installClientHead } from '../../packages/nuxt/src/head/runtime/install-client-head'
+import { installClientHead } from '../src/head/runtime/install-client-head'
 
 function createApp (isHydrating = false) {
   const hooks = createHooks()
