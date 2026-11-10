@@ -6,6 +6,8 @@ import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, imp
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { basename, dirname, extname, join, relative, resolve } from 'pathe'
 
+import { shouldTypeCheck } from '../../../webpack/src/utils/options.ts'
+
 /**
  * Rsbuild plugins enabled when the project depends on them, as they
  * pull in the corresponding preprocessors.
@@ -115,7 +117,7 @@ async function installPreprocessorPlugin (nuxt: Nuxt, { packageName, lang, file 
 }
 
 export async function resolveTypeCheckPlugin (nuxt: Nuxt): Promise<RsbuildPlugin | undefined> {
-  if (nuxt.options.test || !(nuxt.options.typescript.typeCheck === true || (nuxt.options.typescript.typeCheck === 'build' && !nuxt.options.dev) || (nuxt.options.typescript.typeCheck === 'dev' && nuxt.options.dev))) {
+  if (!shouldTypeCheck(nuxt)) {
     return
   }
 

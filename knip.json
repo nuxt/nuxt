@@ -187,6 +187,7 @@
     "packages/rsbuild": {
       "ignoreDependencies": [
         "@vue/compiler-sfc",
+        "escape-string-regexp",
         "exsolve",
         "knitwork",
         "ohash",
@@ -213,7 +214,6 @@
         "memfs",
         "mini-css-extract-plugin",
         "ohash",
-        "pathe",
         "postcss",
         "postcss-import",
         "postcss-import-resolver",
@@ -225,7 +225,6 @@
         "seroval",
         "time-fix-plugin",
         "tinyglobby",
-        "ufo",
         "unenv",
         "unplugin",
         "url-loader",

@@ -6,15 +6,13 @@ import { mergeRsbuildConfig } from '@rsbuild/core'
 import { resolvePostcssPlugins } from '@nuxt/kit/internal'
 import { pluginVue } from '@rsbuild/plugin-vue'
 import { defu } from 'defu'
-import escapeRegExp from 'escape-string-regexp'
-import { basename, normalize, resolve } from 'pathe'
+import { basename, resolve } from 'pathe'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defineEnv } from 'unenv'
 
 import { resolveAllowedHosts } from '../../webpack/src/utils/same-origin.ts'
-import { getNuxtDefines } from '../../webpack/src/utils/defines.ts'
+import { getDevtool, getNuxtDefines, getTranspilePatterns, resolveVueAliases } from '../../webpack/src/utils/options.ts'
 import { createServerExternals } from '../../webpack/src/utils/server-externals.ts'
-import { resolveVueAliases } from '../../webpack/src/utils/vue-aliases.ts'
 import { getHMRPath } from './dev-server.ts'
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { NuxtHooksPlugin } from './plugins/hooks.ts'
@@ -179,7 +177,8 @@ function clientEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
         ...getDefines(nuxt, 'client'),
         ...nodeCompat ? { global: 'globalThis' } : {},
       },
-      include: getTranspilePatterns(nuxt, { isClient: true }),
+      // files outside of the project are only transpiled when they match `source.include`
+      include: getTranspilePatterns(nuxt, { isClient: true, isDev: nuxt.options.dev }),
     },
     resolve: {
       alias: {
@@ -198,7 +197,7 @@ function clientEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
         ...flatDistPath,
       },
       sourceMap: {
-        js: sourcemap ? getDevtool(sourcemap, nuxt.options.dev ? 'cheap-module-source-map' : 'source-map') : false,
+        js: getDevtool(sourcemap, nuxt.options.dev ? 'cheap-module-source-map' : 'source-map'),
         css: !!sourcemap && nuxt.options.dev,
       },
     },
@@ -231,7 +230,7 @@ function serverEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
         server: { import: [entry], html: false },
       },
       define: getDefines(nuxt, 'server'),
-      include: getTranspilePatterns(nuxt, { isServer: true }),
+      include: getTranspilePatterns(nuxt, { isServer: true, isDev: nuxt.options.dev }),
     },
     resolve: {
       alias: resolveVueAliases(nuxt, true),
@@ -253,7 +252,7 @@ function serverEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
         js: '[name].mjs',
       },
       sourceMap: {
-        js: sourcemap ? getDevtool(sourcemap, nuxt.options.dev ? 'cheap-module-source-map' : 'source-map') : false,
+        js: getDevtool(sourcemap, nuxt.options.dev ? 'cheap-module-source-map' : 'source-map'),
       },
     },
     splitChunks: false,
@@ -274,43 +273,10 @@ const flatDistPath = {
   wasm: '',
 }
 
-function getDevtool (sourcemap: boolean | 'hidden' | 'nosource', devtool: 'cheap-module-source-map' | 'source-map') {
-  if (sourcemap === 'hidden') {
-    return `hidden-${devtool}` as const
-  }
-  return sourcemap === 'nosource' ? `nosources-${devtool}` as const : devtool
-}
-
 function getDefines (nuxt: Nuxt, name: 'client' | 'server') {
   return {
     ...getNuxtDefines(nuxt, name),
     '__VUE_OPTIONS_API__': nuxt.options.vue.optionsApi,
     '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(nuxt.options.debug && nuxt.options.debug.hydration),
   }
-}
-/**
- * Files outside of the project (such as `node_modules`) are not transpiled by
- * Rsbuild unless they match `source.include`.
- */
-function getTranspilePatterns (nuxt: Nuxt, ctx: { isClient?: boolean, isServer?: boolean }) {
-  const patterns: RegExp[] = [
-    /consola\/src/,
-    /vue-demi/,
-    /(^|\/)nuxt\/(src\/|dist\/)?(app|[^/]+\/runtime)($|\/)/,
-  ]
-
-  for (let pattern of nuxt.options.build.transpile) {
-    if (typeof pattern === 'function') {
-      const result = pattern({ ...ctx, isDev: nuxt.options.dev })
-      if (!result) { continue }
-      pattern = result
-    }
-    if (typeof pattern === 'string') {
-      patterns.push(new RegExp(escapeRegExp(normalize(pattern))))
-    } else if (pattern instanceof RegExp) {
-      patterns.push(pattern)
-    }
-  }
-
-  return patterns
 }
