@@ -26,7 +26,7 @@ jobs:
           cache: true
 
       - name: Check engine ranges, peer dependency ranges and installed versions
-        run: vp run test:engines:fix
+        run: vp run test:engines --fix
         continue-on-error: true
 
       - name: Prepare
@@ -47,20 +47,20 @@ jobs:
             run: vp run test:unit -u
 
           - name: Lint (code)
-            run: vp run lint:fix
+            run: vp run lint --fix
 
       - name: Assert bundle size (renovate)
         if: ${{ contains(github.head_ref, 'renovate') }}
-        run: vp exec vitest run bundle
+        run: vp run test:bundle
 
       - name: Update bundle size (renovate)
         if: failure()
         run: |
-          vp exec vitest run bundle -u
+          vp run test:bundle -u
           vp dedupe
 
       - name: Update bundle size
         if: ${{ !contains(github.head_ref, 'renovate') }}
-        run: vp exec vitest run bundle -u
+        run: vp run test:bundle -u
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1.3.4
