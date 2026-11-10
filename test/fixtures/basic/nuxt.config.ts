@@ -195,7 +195,6 @@ export default withMatrix({
       '/route-rules/spa-async-data': { ssr: false },
       '/redirect/catchall': { ssr: false },
       '/catchall/route-rules/**': { appLayout: 'custom', headers: { 'x-catchall-route-rules': 'applied' } },
-      '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       // Decoded key must still apply to the percent-encoded path generated for the page.
       '/route-rules/测试': { appMiddleware: 'route-rules-middleware' },
@@ -207,7 +206,6 @@ export default withMatrix({
       '/route-rules/redirect': { redirect: '/' },
       '/route-rules/old/**': { redirect: '/new/**' },
       '/isr': { isr: 60 },
-      '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/route-rules/swr-in-spa/**': { ssr: false },
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
       '/payload-query': { cache: { swr: true, maxAge: 60, allowQuery: true } },
