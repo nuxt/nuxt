@@ -1,13 +1,12 @@
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { basename, dirname, normalize, resolve } from 'pathe'
+import { basename, dirname, resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
 import { directoryToURL, logger } from '@nuxt/kit'
 import { DEFAULT_JS_FILE_EXTENSIONS, parseNodeModulePath } from '@nuxt/kit/internal'
-import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -16,8 +15,7 @@ import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
 import { FriendlyErrorsPlugin } from '../plugins/friendly-errors.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets, fileName } from '../utils/config.ts'
-import { getNuxtDefines } from '../utils/defines.ts'
-import { resolveVueAliases } from '../utils/vue-aliases.ts'
+import { getNuxtDefines, getTranspilePatterns, resolveVueAliases } from '../utils/options.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
 import { StripInvalidPureAnnotationsPlugin } from '../plugins/strip-invalid-pure-annotations.ts'
 
@@ -65,7 +63,7 @@ function baseConfig (ctx: WebpackConfigContext) {
       ...ctx.userConfig.experiments,
     },
     mode: ctx.isDev ? 'development' : 'production',
-    cache: getCache(ctx),
+    cache: ctx.isDev ? undefined : false,
     output: getOutput(ctx),
     stats: statsMap[ctx.nuxt.options.logLevel] ?? statsMap.info,
     ...ctx.config,
@@ -75,22 +73,16 @@ function baseConfig (ctx: WebpackConfigContext) {
 function basePlugins (ctx: WebpackConfigContext) {
   ctx.config.plugins ||= []
 
-  // Add timefix-plugin before other plugins
-  if (ctx.options.dev) {
-    if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
-      ctx.config.plugins.push(new TimeFixPlugin())
-    }
+  if (ctx.isDev && builder !== 'rspack') {
+    ctx.config.plugins.push(new TimeFixPlugin())
   }
 
-  // User plugins
   ctx.config.plugins.push(...(ctx.userConfig.plugins || []))
 
-  // Ignore empty warnings
-  if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
+  if (builder !== 'rspack') {
     ctx.config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
   }
 
-  // Provide env via DefinePlugin
   ctx.config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))
 
   if (ctx.isDev && (ctx.isServer || ctx.userConfig.friendlyErrors)) {
@@ -232,48 +224,8 @@ function baseResolve (ctx: WebpackConfigContext) {
 }
 
 function baseTranspile (ctx: WebpackConfigContext) {
-  const transpile = [
-    /\.vue\.js/i, // include SFCs in node_modules
-    /consola\/src/,
-    /vue-demi/,
-    /(^|\/)nuxt\/(src\/|dist\/)?(app|[^/]+\/runtime)($|\/)/,
-  ]
-
-  for (let pattern of ctx.options.build.transpile) {
-    if (typeof pattern === 'function') {
-      const result = pattern(ctx)
-      if (result) { pattern = result }
-    }
-    if (typeof pattern === 'string') {
-      transpile.push(new RegExp(escapeRegExp(normalize(pattern))))
-    } else if (pattern instanceof RegExp) {
-      transpile.push(pattern)
-    }
-  }
-
-  // TODO: unique
-  ctx.transpile = [...transpile, ...ctx.transpile]
-}
-
-function getCache (ctx: WebpackConfigContext): Configuration['cache'] {
-  if (!ctx.options.dev) {
-    return false
-  }
-
-  // TODO: Disable for nuxt internal dev due to inconsistencies
-  // return {
-  //   name: ctx.name,
-  //   type: 'filesystem',
-  //   cacheDirectory: resolve(ctx.options.rootDir, 'node_modules/.cache/webpack'),
-  //   managedPaths: [
-  //     ...ctx.options.modulesDir
-  //   ],
-  //   buildDependencies: {
-  //     config: [
-  //       ...ctx.options._nuxtConfigFiles
-  //     ]
-  //   }
-  // }
+  // `.vue.js` includes SFCs in node_modules
+  ctx.transpile = [/\.vue\.js/i, ...getTranspilePatterns(ctx.nuxt, ctx), ...ctx.transpile]
 }
 
 function getOutput (ctx: WebpackConfigContext): Configuration['output'] {

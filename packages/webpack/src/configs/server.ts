@@ -1,6 +1,7 @@
 import { logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
+import { getDevtool, shouldTypeCheck } from '../utils/options.ts'
 import { createServerExternals } from '../utils/server-externals.ts'
 import { nuxt } from '../presets/nuxt.ts'
 import { node } from '../presets/node.ts'
@@ -22,13 +23,7 @@ export async function server (ctx: WebpackConfigContext) {
 export function serverPreset (ctx: WebpackConfigContext) {
   ctx.config.output!.filename = 'server.mjs'
 
-  if (ctx.nuxt.options.sourcemap.server) {
-    const prefix = ctx.nuxt.options.sourcemap.server === 'hidden' ? 'hidden-' : ''
-    const nosources = ctx.nuxt.options.sourcemap.server === 'nosource' ? 'nosources-' : ''
-    ctx.config.devtool = prefix + nosources + (ctx.isDev ? 'cheap-module-source-map' : 'source-map')
-  } else {
-    ctx.config.devtool = false
-  }
+  ctx.config.devtool = getDevtool(ctx.nuxt.options.sourcemap.server, ctx.isDev ? 'cheap-module-source-map' : 'source-map')
 
   ctx.config.optimization = {
     splitChunks: false,
@@ -48,7 +43,6 @@ export function serverStandalone (ctx: WebpackConfigContext) {
 function serverPlugins (ctx: WebpackConfigContext) {
   ctx.config.plugins ||= []
 
-  // Server polyfills
   if (ctx.userConfig.serverURLPolyfill) {
     ctx.config.plugins.push(new webpack.ProvidePlugin({
       URL: [ctx.userConfig.serverURLPolyfill, 'URL'],
@@ -56,10 +50,7 @@ function serverPlugins (ctx: WebpackConfigContext) {
     }))
   }
 
-  // Add type-checking
-  if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev) || (ctx.nuxt.options.typescript.typeCheck === 'dev' && ctx.nuxt.options.dev))) {
-    ctx.config.plugins!.push(new TsCheckerPlugin({
-      logger,
-    }))
+  if (shouldTypeCheck(ctx.nuxt)) {
+    ctx.config.plugins.push(new TsCheckerPlugin({ logger }))
   }
 }

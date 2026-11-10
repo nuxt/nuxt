@@ -1,28 +1,20 @@
-import { fileURLToPath } from 'node:url'
 import { readFile } from 'node:fs/promises'
 import { glob } from 'tinyglobby'
 import { parse } from 'acorn'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
-import { isWindows } from 'std-env'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
-import { parseData } from './utils'
+import { buildInProcess, fixturePath, parseData, setupFixture } from './utils'
 
-const rootDir = fileURLToPath(new URL('./fixtures/vite-server-ssr', import.meta.url))
+const rootDir = fixturePath('vite-server-ssr')
 
-if (runsOncePerEnvInMatrix && isDev) {
-  await setup({
-    rootDir,
-    dev: true,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+const runsDev = runsOncePerEnvInMatrix && isDev
 
-describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with ssr', () => {
+await setupFixture('vite-server-ssr', runsDev)
+
+describe.skipIf(!runsDev)('pure vite dev server with ssr', () => {
   it('renders the app on the server', async () => {
     const html = await $fetch<string>('/')
 
@@ -78,17 +70,8 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
   let render: (path: string) => Promise<Response>
 
   beforeAll(async () => {
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: { buildDir, nitro: { output: { dir: outputDir } } },
-    })
-    try {
-      await buildNuxt(nuxt)
-      expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
-    } finally {
-      await nuxt.close()
-    }
+    const nuxt = await buildInProcess(rootDir, { buildDir, nitro: { output: { dir: outputDir } } })
+    expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
 
     // the entry only listens when it is the main module
     const server = await import(join(outputDir, 'server/index.mjs')) as {

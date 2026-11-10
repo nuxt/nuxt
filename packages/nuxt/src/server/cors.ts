@@ -117,7 +117,7 @@ function applyHeaders (event: Pick<RequestEvent, 'res'>, headers: HeaderRecord):
  *
  * @example
  * ```ts
- * export default defineEventHandler((event) => {
+ * export default defineHandler((event) => {
  *   const preflight = handleCors(event, { origin: ['https://nuxt.com'], credentials: true })
  *   if (preflight) {
  *     return preflight

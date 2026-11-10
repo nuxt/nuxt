@@ -4,7 +4,7 @@ import { createServer } from 'vite'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { describe, expect, it, vi } from 'vitest'
 
-import { addBuildPlugin, addRsbuildPlugin, addVitePlugin, extendRsbuildConfig } from '../src/build.ts'
+import { addBuildPlugin, addRsbuildPlugin, addVitePlugin, extendRsbuildConfig, extendRspackConfig, extendViteConfig, extendWebpackConfig } from '../src/build.ts'
 import { runWithNuxtContext } from '../src/context.ts'
 
 function createMockNuxt (dev: boolean, build = false) {
@@ -40,6 +40,16 @@ describe('addVitePlugin', () => {
   it('should add plugins to the top-level plugin array', async () => {
     const plugins = await addPlugins(createMockNuxt(true), [{ name: 'a' }, { name: 'b' }])
     expect(plugins.map(p => p.name)).toEqual(['a', 'b'])
+  })
+
+  it('should only skip `build: false` plugins outside development', async () => {
+    expect(await addPlugins(createMockNuxt(true), [{ name: 'a' }], { build: false })).toHaveLength(1)
+    expect(await addPlugins(createMockNuxt(false), [{ name: 'a' }], { build: false })).toHaveLength(0)
+  })
+
+  it('should only skip `dev: false` plugins in development', async () => {
+    expect(await addPlugins(createMockNuxt(true), [{ name: 'a' }], { dev: false })).toHaveLength(0)
+    expect(await addPlugins(createMockNuxt(false), [{ name: 'a' }], { dev: false })).toHaveLength(1)
   })
 
   it('should scope isomorphic plugins to the app environments', async () => {
@@ -275,5 +285,43 @@ describe('rsbuild build utilities', () => {
 
     expect((rsbuildConfig.plugins as RsbuildPlugin[]).map(p => p.name)).toEqual(['rsbuild'])
     expect(rspackConfigs.map(c => c.plugins.length)).toEqual([1, 1])
+  })
+})
+
+describe('build: false guard', () => {
+  const cases = [
+    {
+      name: 'extendWebpackConfig',
+      register: (fn: () => void) => extendWebpackConfig(fn as never, { build: false }),
+      trigger: (nuxt: Nuxt) => nuxt.callHook('webpack:config', [{ name: 'client' }] as never),
+    },
+    {
+      name: 'extendRspackConfig',
+      register: (fn: () => void) => extendRspackConfig(fn as never, { build: false }),
+      trigger: (nuxt: Nuxt) => nuxt.callHook('rspack:config', [{ name: 'client' }] as never),
+    },
+    {
+      name: 'extendRsbuildConfig',
+      register: (fn: () => void) => extendRsbuildConfig(fn as never, { build: false }),
+      trigger: (nuxt: Nuxt) => nuxt.callHook('rsbuild:config', {} as RsbuildConfig),
+    },
+    {
+      name: 'extendViteConfig',
+      register: (fn: () => void) => extendViteConfig(fn as never, { build: false }),
+      trigger: (nuxt: Nuxt) => nuxt.callHook('vite:extend', { config: {} as ViteConfig } as never),
+    },
+  ]
+
+  it.each(cases)('$name only skips build: false callbacks outside development', async ({ register, trigger }) => {
+    const callCount = async (dev: boolean) => {
+      const nuxt = createMockNuxt(dev)
+      const fn = vi.fn()
+      runWithNuxtContext(nuxt, () => register(fn))
+      await trigger(nuxt)
+      return fn.mock.calls.length
+    }
+
+    expect(await callCount(true)).toBe(1)
+    expect(await callCount(false)).toBe(0)
   })
 })

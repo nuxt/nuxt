@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { SerializableHead } from '@unhead/vue/types'
 
-import { toSafeHeadInput } from '../src/runtime/utils/island-head'
+import { mergeIslandHead, toSafeHeadInput } from '../src/runtime/utils/island-head'
 
 describe('toSafeHeadInput', () => {
   it('should drop input that useHeadSafe does not allow', () => {
@@ -44,5 +44,21 @@ describe('toSafeHeadInput', () => {
       link: [{ rel: 'icon', href: '/favicon.ico', tagPriority: 'high' }],
       script: [{ type: 'application/ld+json', textContent: '{"@type":"Person","name":"\\u003C/script>"}' }],
     })
+  })
+})
+
+describe('mergeIslandHead', () => {
+  it('should merge entries without mutating their input', () => {
+    const sharedMeta = [{ name: 'theme-color', content: '#00dc82' }]
+    const head = mergeIslandHead([
+      { input: { meta: sharedMeta } },
+      { input: { meta: [{ name: 'csrf-token', content: 'secret' }] } },
+    ])
+
+    expect(head.meta).toEqual([
+      { name: 'theme-color', content: '#00dc82' },
+      { name: 'csrf-token', content: 'secret' },
+    ])
+    expect(sharedMeta).toEqual([{ name: 'theme-color', content: '#00dc82' }])
   })
 })

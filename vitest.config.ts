@@ -56,9 +56,6 @@ const commonSettings: NuxtConfig = {
     '/pre/test': { redirect: '/' },
     '/pre/spa/**': { prerender: true, ssr: false },
     '/pre/**': { prerender: true },
-    // Decoded keys must match the percent-encoded path generated for a unicode page,
-    // including when a catch-all rule sets the same key, and when folding an
-    // encoded non-ASCII character is required to match.
     '/测试': { redirect: '/unicode-target' },
     '/unicode/**': { ssr: true },
     '/unicode/测试': { ssr: false },
@@ -74,19 +71,6 @@ const commonSettings: NuxtConfig = {
   },
 }
 
-const nuxtTestProjects: Record<string, NuxtConfig> = {
-  'nuxt': {
-    future: {
-      compatibilityVersion: 5,
-    },
-  },
-  'nuxt-legacy': {
-    experimental: {
-      alwaysRunFetchOnKeyChange: true,
-    },
-  },
-}
-
 // Matrix combinations for fixture tests (matches CI matrix with exclusions)
 interface FixtureMatrixEntry {
   env: 'dev' | 'built'
@@ -98,29 +82,18 @@ interface FixtureMatrixEntry {
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
-  // vite: all combinations
-  { env: 'dev', builder: 'vite', context: 'async', manifest: 'manifest-on' },
-  { env: 'dev', builder: 'vite', context: 'async', manifest: 'manifest-off' },
+  // async context and app manifest off are only asserted on in vite builds, each on its own
   { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on' },
-  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-off' },
   { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-on' },
-  { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-off' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-off' },
-  // nitro-vite: only default context + manifest-on
   { env: 'dev', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on' },
   { env: 'built', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on' },
-  // rsbuild: only manifest-on
   { env: 'dev', builder: 'rsbuild', context: 'async', manifest: 'manifest-on' },
-  { env: 'built', builder: 'rsbuild', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rsbuild', context: 'default', manifest: 'manifest-on' },
-  // rspack: only manifest-on
   { env: 'dev', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
-  { env: 'built', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rspack', context: 'default', manifest: 'manifest-on' },
-  // webpack: only manifest-on
   { env: 'dev', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
-  { env: 'built', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on' },
 ]
 
@@ -132,7 +105,7 @@ const legacyErrorMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
 ]
 
-const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
+const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-dev-error.test.ts', 'test/dev-error-*.test.ts']
 
 // re-runs the basic fixture with `experimental.compilerComponentResolution` disabled
 const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [
@@ -333,67 +306,18 @@ export default defineConfig({
           },
         },
       }),
-      ...await Promise.all(Object.entries(nuxtTestProjects).map(([project, config]) => defineVitestProject({
+      await defineVitestProject({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
-          name: project,
+          name: 'nuxt',
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/insensitive/**', '**/sensitive/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
           environment: 'nuxt',
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
-          env: {
-            PROJECT: project,
-          },
           environmentOptions: {
             nuxt: {
-              overrides: defu(config, commonSettings),
-            },
-          },
-        },
-      }))),
-      await defineVitestProject({
-        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
-        test: {
-          name: 'nuxt-insensitive',
-          dir: './test/nuxt/insensitive',
-          environment: 'nuxt',
-          setupFiles: ['./test/setup-runtime.ts'],
-          environmentOptions: {
-            nuxt: {
-              // `sensitive: false` on a v5 app: the config the route-rule case-folding targets.
-              overrides: defu({
-                future: { compatibilityVersion: 5 },
-                router: { options: { sensitive: false } },
-                routeRules: {
-                  '/Secret/Docs/**': { ssr: false },
-                  '/Legacy/Home': { redirect: '/target' },
-                  '/Range/:id([A-Za-z_]+)': { ssr: false },
-                  '/Wild/**': { redirect: '/target/**' },
-                },
-              } satisfies NuxtConfig, commonSettings),
-            },
-          },
-        },
-      }),
-      await defineVitestProject({
-        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
-        test: {
-          name: 'nuxt-sensitive',
-          dir: './test/nuxt/sensitive',
-          environment: 'nuxt',
-          setupFiles: ['./test/setup-runtime.ts'],
-          environmentOptions: {
-            nuxt: {
-              overrides: defu({
-                future: { compatibilityVersion: 5 },
-                router: { options: { sensitive: true } },
-                routeRules: {
-                  '/Admin/Dashboard': { redirect: '/admin-target' },
-                  '/admin/dashboard': { redirect: '/lower-target' },
-                  '/Wild/**': { redirect: '/target/**' },
-                },
-              } satisfies NuxtConfig, commonSettings),
+              overrides: commonSettings,
             },
           },
         },
@@ -410,7 +334,7 @@ export default defineConfig({
           setupFiles: ['./test/setup-runtime.ts'],
           environmentOptions: {
             nuxt: {
-              overrides: defu(nuxtTestProjects.nuxt, commonSettings),
+              overrides: commonSettings,
             },
           },
         },

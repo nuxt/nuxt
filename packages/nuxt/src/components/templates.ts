@@ -2,7 +2,7 @@ import { isAbsolute, join, relative, resolve } from 'pathe'
 import { genDynamicImport, genDynamicTypeImport, genObjectKey, genString } from 'knitwork'
 import { hash } from 'ohash'
 import { distDir } from '../dirs.ts'
-import type { ComponentMeta, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import type { Component, ComponentMeta, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 type ResolvedComponentType = {
   pascalName: string
@@ -23,6 +23,10 @@ const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
     prefetch === true || typeof prefetch === 'number' ? `webpackPrefetch: ${prefetch}` : false,
     preload === true || typeof preload === 'number' ? `webpackPreload: ${preload}` : false,
   ].filter(Boolean).join(', ')
+}
+
+function isIslandComponent (component: Component, components: Component[]) {
+  return component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
 }
 
 const emptyComponentsPlugin = `
@@ -94,11 +98,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
 
     const components = app.components
     const pages = app.pages
-    const islands = components.filter(component =>
-      component.island ||
-      // .server components without a corresponding .client component will need to be rendered as an island
-      (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
-    )
+    const islands = components.filter(component => isIslandComponent(component, components))
 
     const serverPages = pages?.filter(p => (p.mode === 'server' && p.file && p.name)) || []
     const pageExports = serverPages.map((p) => {
@@ -191,18 +191,17 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string, dynamic: boolean)
   return componentTypes
 }
 
+function toTypeImportPath (baseDir: string, filePath: string) {
+  return (isAbsolute(filePath) ? relative(baseDir, filePath) : filePath).replace(NON_VUE_RE, '')
+}
+
 function renderDynamicTypeImport (baseDir: string, filePath: string, exportName: string) {
-  return genDynamicTypeImport(isAbsolute(filePath)
-    ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
-    : filePath.replace(NON_VUE_RE, ''), exportName)
+  return genDynamicTypeImport(toTypeImportPath(baseDir, filePath), exportName)
 }
 
 // TODO: remove when https://youtrack.jetbrains.com/issue/WEB-76306/ is fixed
 function renderLegacyTypeImport (baseDir: string, filePath: string, exportName: string) {
-  return `typeof ${genDynamicImport(isAbsolute(filePath)
-    ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
-    : filePath.replace(NON_VUE_RE, ''), { wrapper: false })
-  }['${exportName}']`
+  return `typeof ${genDynamicImport(toTypeImportPath(baseDir, filePath), { wrapper: false })}['${exportName}']`
 }
 
 // island props are sent through `JSON.stringify`, so values it drops or rewrites are rejected
@@ -262,7 +261,7 @@ export const componentsTypeTemplate = {
         globalComponentNames.add(component.pascalName)
         globalComponentNames.add(`Lazy${component.pascalName}`)
       }
-      if (nuxt.options.experimental.componentIslands && (component.island || (component.mode === 'server' && !app.components.some(c => c.pascalName === component.pascalName && c.mode === 'client')))) {
+      if (nuxt.options.experimental.componentIslands && isIslandComponent(component, app.components)) {
         islandComponentNames.add(component.pascalName)
       }
     }

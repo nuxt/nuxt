@@ -3,7 +3,7 @@ import type { Nuxt } from 'nuxt/schema'
 import { describe, expect, it, vi } from 'vitest'
 import { findWorkspaceDir } from 'pkg-types'
 
-import { checkNuxtCompatibility, getNitroVersion } from '../src/compatibility.ts'
+import { checkNuxtCompatibility, getNitroVersion, isNuxtMajorVersion } from '../src/compatibility.ts'
 import { runWithNuxtContext } from '../src/context.ts'
 import { kitDiagnostics } from '../src/diagnostics/kit-api.ts'
 import { defineNuxtModule } from '../src/module/define.ts'
@@ -149,6 +149,15 @@ describe('checkNuxtCompatibility', () => {
   it('passes when the nitro constraint is satisfied', async () => {
     expect(await checkNuxtCompatibility({ nitro: '^3.0.0' }, createMockNuxt('3.0.1'))).toHaveLength(0)
     expect(await checkNuxtCompatibility({ nitro: '>=2.0.0' }, createMockNuxt('2.11.0'))).toHaveLength(0)
+  })
+})
+
+describe('isNuxtMajorVersion', () => {
+  it('detects Nuxt 5', () => {
+    const nuxt = createMockNuxt()
+    expect(isNuxtMajorVersion(5, nuxt)).toBe(false)
+    ;(nuxt as any)._version = '5.0.0-0'
+    expect(isNuxtMajorVersion(5, nuxt)).toBe(true)
   })
 })
 

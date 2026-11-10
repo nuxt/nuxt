@@ -1359,6 +1359,8 @@ describe('getServerImportsPresets', () => {
     // covered by `nuxt/server` alone, so unaffected by the toggles
     expect(source.get('deriveSecret')).toBe('nuxt/server')
     expect(source.get('getRouteRules')).toBe('nuxt/server')
+    expect(source.get('defineHandler')).toBe('nuxt/server')
+    expect(source.get('defineEventHandler')).toMatch(/compat[\\/]h3-v1/)
     expect(source.get('getQuery')).toMatch(/compat[\\/]h3-v1/)
     expect(source.get('useRuntimeConfig')).toMatch(/compat[\\/]runtime-config/)
   })

@@ -2,10 +2,9 @@ import { createHash } from 'node:crypto'
 
 import type { Nuxt } from '@nuxt/schema'
 import type { RsbuildPlugin, Rspack } from '@rsbuild/core'
-import { resolveAlias } from '@nuxt/kit'
-import { normalize } from 'pathe'
 
 import { SSRStylesPlugin as SSRStylesRspackPlugin } from '../../../webpack/src/plugins/ssr-styles.ts'
+import { getGlobalCSSCacheGroup } from '../../../webpack/src/utils/options.ts'
 
 /**
  * Inline the styles of components rendered on the server.
@@ -14,44 +13,17 @@ export function SSRStylesPlugin (nuxt: Nuxt): RsbuildPlugin {
   return {
     name: 'nuxt:ssr-styles',
     setup (api) {
-      const inlineStyles = nuxt.options.features.inlineStyles
-      if (inlineStyles) {
-        const globalCSSPaths = new Set<string>()
-        for (const css of nuxt.options.css) {
-          if (typeof css === 'string') {
-            globalCSSPaths.add(normalize(resolveAlias(css, nuxt.options.alias)))
-          }
-        }
-
-        // separate global CSS into a dedicated chunk
-        if (globalCSSPaths.size) {
-          api.modifyBundlerChain((chain, { environment }) => {
-            if (environment.name !== 'client') { return }
-            const splitChunks = chain.optimization.splitChunks.values() as Rspack.OptimizationSplitChunksOptions | false
-            if (!splitChunks) { return }
-            chain.optimization.splitChunks({
-              ...splitChunks,
-              cacheGroups: {
-                ...splitChunks.cacheGroups,
-                nuxtGlobalCSS: {
-                  name: 'nuxt-global-css',
-                  chunks: 'all',
-                  enforce: true,
-                  test: (module: Rspack.Module) => {
-                    if (module.type !== 'css/mini-extract') { return false }
-                    const identifier = normalize(module.identifier())
-                    for (const globalPath of globalCSSPaths) {
-                      if (identifier.includes(globalPath)) {
-                        return typeof inlineStyles === 'boolean' ? inlineStyles : inlineStyles(module.identifier())
-                      }
-                    }
-                    return false
-                  },
-                },
-              },
-            })
+      const nuxtGlobalCSS = getGlobalCSSCacheGroup(nuxt)
+      if (nuxtGlobalCSS) {
+        api.modifyBundlerChain((chain, { environment }) => {
+          if (environment.name !== 'client') { return }
+          const splitChunks = chain.optimization.splitChunks.values() as Rspack.OptimizationSplitChunksOptions | false
+          if (!splitChunks) { return }
+          chain.optimization.splitChunks({
+            ...splitChunks,
+            cacheGroups: { ...splitChunks.cacheGroups, nuxtGlobalCSS },
           })
-        }
+        })
       }
 
       if (!nuxt.options.ssr || nuxt.options.dev) { return }
