@@ -2502,12 +2502,6 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
-  test/fixtures/route-scroll:
-    dependencies:
-      nuxt:
-        specifier: workspace:*
-        version: link:../../../packages/nuxt
-
   test/fixtures/route-types-isomorphic:
     dependencies:
       nuxt:

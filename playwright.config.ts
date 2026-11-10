@@ -30,7 +30,7 @@ const devOnlyTests = ['hmr', 'dev-error-*']
 const builtOnlyTests = ['spa-preloader-*', 'server-page-css', 'chunk-error', 'no-scripts*']
 const viteOnlyTests = ['server-page-css', 'no-scripts*', 'dev-error-*']
 /** Suites of client runtime behaviour, which depends on neither the builder nor the Nitro environment. */
-const runtimeTests = ['nested-suspense', 'navigation-repaint', 'nuxt-time', 'preview', 'route-scroll', 'server-path-fallback', 'spa-preloader-*', 'suspense', 'ui-templates']
+const runtimeTests = ['nested-suspense', 'navigation-repaint', 'nuxt-time', 'preview', 'server-path-fallback', 'spa-preloader-*', 'suspense', 'ui-templates']
 /** Suites that write their fixture mid-test, so cannot share a fixture directory. */
 const singleProjectTests = ['dev-error-recovery', 'dev-error-compile']
 /**
