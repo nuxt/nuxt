@@ -8,7 +8,7 @@ import { defu } from 'defu'
 
 import type { NuxtDebugOptions } from '../types/debug.ts'
 import type { NuxtModule } from '../types/module.ts'
-import { defineResolvers } from '../utils/definition.ts'
+import { booleanOr, defineResolvers } from '../utils/definition.ts'
 import { findWorkspaceDir } from '../utils/workspace-dir.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
@@ -163,9 +163,7 @@ export default defineResolvers({
       return false
     },
   },
-  ssr: {
-    $resolve: val => typeof val === 'boolean' ? val : true,
-  },
+  ssr: booleanOr(true),
   modules: {
     $resolve: (val) => {
       const modules: Array<string | NuxtModule | [NuxtModule | string, Record<string, any>]> = []
