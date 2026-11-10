@@ -36,6 +36,10 @@ describe.skipIf(!runs)('base URL set at build time', () => {
     }
   })
 
+  it('should serve files written in the `nitro:build:public-assets` hook', async () => {
+    expect(await $fetch<string>('/foo/hook-asset.txt')).toBe('written in nitro:build:public-assets')
+  })
+
   it('should apply route rules to paths relative to the base URL', async () => {
     expect(await $fetch<string>('/foo/no-ssr')).toContain('data-ssr="false"')
   })
