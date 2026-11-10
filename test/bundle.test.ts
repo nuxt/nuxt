@@ -243,17 +243,16 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('server path fallback', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/server-path-fallback', import.meta.url))
-  const disabledRootDir = fileURLToPath(new URL('./fixtures/server-path-fallback-disabled', import.meta.url))
   let enabled: string
   let disabled: string
 
   beforeAll(async () => {
     await Promise.all([
       exec('pnpm', ['nuxt', 'build', rootDir]),
-      exec('pnpm', ['nuxt', 'build', disabledRootDir]),
+      exec('pnpm', ['nuxt', 'build', rootDir, '--envName', 'fallback-disabled']),
     ])
     enabled = await readClientBundle(join(rootDir, '.output/public'))
-    disabled = await readClientBundle(join(disabledRootDir, '.output/public'))
+    disabled = await readClientBundle(join(rootDir, '.output-fallback-disabled/public'))
   }, 240 * 1000)
 
   it('ships the fallback when enabled', () => {

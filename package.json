@@ -83,7 +83,6 @@
     "hookable": "catalog:app-runtime",
     "installed-check": "catalog:dev",
     "knip": "catalog:dev",
-    "magic-regexp": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
     "my-bad": "catalog:nitro-runtime",
     "nano-staged": "catalog:dev",

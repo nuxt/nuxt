@@ -200,7 +200,6 @@ export default withMatrix({
       '/route-rules/spa-async-data': { ssr: false },
       '/redirect/catchall': { ssr: false },
       '/catchall/route-rules/**': { ssr: false, headers: { 'x-catchall-route-rules': 'applied' } },
-      '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       // Uppercase-keyed rule must still apply to the case-insensitively served page.
       '/Route-Rules/Case-Insensitive': { appMiddleware: 'route-rules-middleware' },
@@ -215,7 +214,6 @@ export default withMatrix({
       '/route-rules/old/**': { redirect: '/new/**' },
       '/route-rules/wildcard-proxy/**': { proxy: '/api/tail/**' },
       '/isr': { isr: 60 },
-      '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/route-rules/swr-in-spa/**': { ssr: false },
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
       '/payload-query': { cache: { swr: true, maxAge: 60 } },

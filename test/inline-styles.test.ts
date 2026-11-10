@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { join } from 'pathe'
-import { isBuilt, projectSuffix, runsOnceInMatrix } from './matrix'
+import { projectSuffix, runsOnceInMatrix } from './matrix'
 
 const stylesheetLinks = (html: string) => [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*>/g)]
   .filter(m => !/\sdisabled[\s>]/.test(m[0]))
@@ -45,7 +45,7 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/35715
-  it.runIf(isBuilt)('inline entry component CSS including not rendered in SSR', async () => {
+  it('inline entry component CSS including not rendered in SSR', async () => {
     const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
     expect(html).toContain('--inline-some-component-token:some-component')
 
@@ -54,7 +54,7 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/33041
-  it.runIf(isBuilt)('inlines child component styles before parent styles', async () => {
+  it('inlines child component styles before parent styles', async () => {
     const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
     const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
     const childIndex = inlinedStyles.indexOf('--inline-some-component-token:some-component')

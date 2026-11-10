@@ -8,6 +8,7 @@ export const isBuilt = !isDev
 
 const _builder = process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' | 'vite-env-api'
 export const builder = _builder === 'vite-env-api' ? 'vite' : (_builder ?? 'vite')
+export const viteEnvironmentApi = _builder === 'vite-env-api'
 
 export const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 
@@ -37,12 +38,16 @@ export const projectSuffix = [
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER
-const isCanonicalCombo = builder === 'vite' && !asyncContext && isTestingAppManifest
+const isDefaultCombo = !asyncContext && isTestingAppManifest && isRenderingJson && !inlineErrorRendering && !legacyComponentResolution
+const isCanonicalCombo = builder === 'vite' && !viteEnvironmentApi && isDefaultCombo
 
 /**
  * True in exactly one fixture-matrix project (vite/built/default/manifest-on), and always true
  * outside the matrix. Guard suites that do not depend on any matrix axis with
  * `describe.skipIf(!runsOnceInMatrix)` so they run a single time instead of once per project.
+ *
+ * None of the `runsOnce*` guards hold in the projects re-running suites with a non-default option,
+ * so a suite asserting on one of those options opts in with `|| inlineErrorRendering`.
  */
 export const runsOnceInMatrix = !isMatrixRun || (isCanonicalCombo && isBuilt)
 
@@ -56,7 +61,19 @@ export const runsOncePerEnvInMatrix = !isMatrixRun || isCanonicalCombo
  * Like `runsOnceInMatrix` but keeps the builder axis: true in exactly one built project per
  * builder. Use for builder-sensitive suites that do not depend on other matrix axes.
  */
-export const runsOncePerBuilderInMatrix = !isMatrixRun || (isBuilt && !asyncContext && isTestingAppManifest)
+export const runsOncePerBuilderInMatrix = !isMatrixRun || (isBuilt && isDefaultCombo)
+
+/**
+ * Like `runsOncePerEnvInMatrix` but keeps `experimental.viteEnvironmentApi`: true in one dev
+ * and one built project for each of the `vite` and `vite-env-api` builders.
+ */
+export const runsOncePerViteBuilderInMatrix = !isMatrixRun || (!isWebpack && isDefaultCombo)
+
+/**
+ * True in one dev and one built project per builder, for behaviour that depends on the compiled
+ * app. The webpack-based builders only have a dev project with async context.
+ */
+export const runsOncePerBuildInMatrix = !isMatrixRun || (!inlineErrorRendering && !legacyComponentResolution && isTestingAppManifest && isRenderingJson && (!asyncContext || (isWebpack && isDev)))
 
 export const isNuxtPrepare = process.argv.slice(2).includes('prepare')
 
@@ -71,7 +88,7 @@ export function withMatrix (config: NuxtConfig) {
       asyncContext,
       appManifest: isTestingAppManifest,
       renderJsonPayloads: isRenderingJson,
-      viteEnvironmentApi: _builder === 'vite-env-api',
+      viteEnvironmentApi,
       ...inlineErrorRendering ? { inlineErrorRendering: true } : {},
       ...legacyComponentResolution ? { compilerComponentResolution: false } : {},
     },

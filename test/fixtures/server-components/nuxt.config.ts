@@ -14,7 +14,6 @@ export default withMatrix({
   nitro: {
     prerender: {
       routes: [
-        '/prefetch/server-components',
         '/prerender/island-a',
         '/prerender/island-b',
       ],

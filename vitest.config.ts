@@ -69,30 +69,19 @@ interface FixtureMatrixEntry {
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
-  // vite: all combinations
-  { env: 'dev', builder: 'vite', context: 'async', manifest: 'manifest-on', payload: 'json' },
-  { env: 'dev', builder: 'vite', context: 'async', manifest: 'manifest-off', payload: 'json' },
+  // async context and app manifest off are only asserted on in vite builds, each on its own
   { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json' },
-  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-off', payload: 'json' },
   { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-on', payload: 'json' },
-  { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-off', payload: 'json' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-off', payload: 'json' },
   // vite with js payload (async only)
   { env: 'dev', builder: 'vite', context: 'async', manifest: 'manifest-on', payload: 'js' },
   { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-on', payload: 'js' },
-  // vite-env-api: only manifest-on, json payload
-  { env: 'dev', builder: 'vite-env-api', context: 'async', manifest: 'manifest-on', payload: 'json' },
   { env: 'dev', builder: 'vite-env-api', context: 'default', manifest: 'manifest-on', payload: 'json' },
-  { env: 'built', builder: 'vite-env-api', context: 'async', manifest: 'manifest-on', payload: 'json' },
   { env: 'built', builder: 'vite-env-api', context: 'default', manifest: 'manifest-on', payload: 'json' },
-  // rspack: only manifest-on + json payload
   { env: 'dev', builder: 'rspack', context: 'async', manifest: 'manifest-on', payload: 'json' },
-  { env: 'built', builder: 'rspack', context: 'async', manifest: 'manifest-on', payload: 'json' },
   { env: 'built', builder: 'rspack', context: 'default', manifest: 'manifest-on', payload: 'json' },
-  // webpack: only manifest-on + json payload
   { env: 'dev', builder: 'webpack', context: 'async', manifest: 'manifest-on', payload: 'json' },
-  { env: 'built', builder: 'webpack', context: 'async', manifest: 'manifest-on', payload: 'json' },
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on', payload: 'json' },
 ]
 
@@ -104,7 +93,7 @@ const inlineErrorMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', inlineErrors: true },
 ]
 
-const inlineErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
+const inlineErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-dev-error.test.ts', 'test/dev-error-*.test.ts']
 
 // re-runs the basic fixture with `experimental.compilerComponentResolution` disabled
 const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [

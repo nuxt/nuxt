@@ -1,29 +1,20 @@
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 import { readFile } from 'node:fs/promises'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
 
 import { runsOnceInMatrix } from './matrix'
+import { buildInProcess, fixturePath } from './utils'
 
-const rootDir = fileURLToPath(new URL('./fixtures/vite-server-universal-deploy', import.meta.url))
+const rootDir = fixturePath('vite-server-universal-deploy')
 const publicDir = join(rootDir, '.output/public')
 
 describe.skipIf(!runsOnceInMatrix)('pure vite build with a universal-deploy target', () => {
   let artifact: { default: { fetch: (request: Request) => Promise<Response> } }
 
   beforeAll(async () => {
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') },
-    })
-    try {
-      await buildNuxt(nuxt)
-      expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
-    } finally {
-      await nuxt.close()
-    }
+    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') })
+    expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
 
     artifact = await import(pathToFileURL(join(rootDir, '.output/server/index.mjs')).href)
   }, 240 * 1000)
