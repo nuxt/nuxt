@@ -19,7 +19,7 @@ ignoreWorkspaceCycles: true
 overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
-  "@types/node": "24.19.2"
+  "@types/node": "26.6.6"
   "@vue/compiler-sfc": "3.5.45"
   nuxt: "workspace:*"
   oxc-parser: "0.155.0"
@@ -244,7 +244,7 @@ catalogs:
     '@types/babel__core': 7.20.5
     '@types/estree': 1.0.10
     '@types/hash-sum': 1.0.2
-    '@types/node': 24.19.2
+    '@types/node': 26.6.6
     '@types/picomatch': 4.0.3
     '@types/pug': 2.0.10
     '@types/webpack-bundle-analyzer': 4.7.0
