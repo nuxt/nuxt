@@ -207,6 +207,21 @@ export default {
     `)
   })
 
+  it('should respect local bindings when a component named like a script tag precedes the script block', async () => {
+    const sfc = `
+    <template>
+      <ScriptGoogleMaps />
+      <LazyMyComponent hydrate-on-idle />
+    </template>
+
+    <script setup>
+    const LazyMyComponent = defineAsyncComponent(() => import('./Local.vue'))
+    </script>
+    `
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).toContain('createVNode(unref(LazyMyComponent), { "hydrate-on-idle": "" })')
+  })
+
   it('should auto-import components resolved via vapor createAssetComponent', async () => {
     const content = `import { createAssetComponent as _createAssetComponent, template as _template } from "vue";
 const t0 = _template("<div></div>", 1);
