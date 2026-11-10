@@ -154,10 +154,21 @@ describe('loadNuxt', () => {
     expect(loggerWarn).not.toHaveBeenCalled()
   })
 
-  it('ensures layer modules remain in order', async () => {
+  it('keeps layer modules in order and includes layer directories in the generated tsconfigs', async () => {
     const layerFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))))
-    const nuxt = await loadNuxt({ cwd: layerFixtureDir })
-    await nuxt.close()
+    const nuxt = await loadNuxt({
+      cwd: layerFixtureDir,
+      overrides: { buildDir: join(layerFixtureDir, 'node_modules/.cache/nuxt/.nuxt') },
+      ready: true,
+    })
+    onTestFinished(() => nuxt.close())
+
+    const nitroTsConfigInclude: string[] = (nuxt as any)._nitro?.options.typescript?.tsConfig?.include ?? []
+    expect(nitroTsConfigInclude.some(p => p.replace(/\\/g, '/').includes('layers/auto/server'))).toBe(true)
+    const { nodeTsConfig } = await _generateTypes(nuxt)
+    // relative to `typesDir`
+    expect(nodeTsConfig.include).toContain('../nuxt.schema.*')
+    expect(nodeTsConfig.include).toContain('../layers/*/nuxt.schema.*')
 
     const modules = nuxt.options._installedModules.map(item => item.meta.name ?? item.module.name)
 
@@ -183,42 +194,6 @@ describe('loadNuxt', () => {
         "@nuxt/telemetry",
       ]
     `)
-  })
-
-  it('includes layer server directories in nitro tsconfig', async () => {
-    const layerFixtureDir = withoutTrailingSlash(
-      normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
-    )
-
-    const nuxt = await loadNuxt({ cwd: layerFixtureDir, ready: true })
-
-    const tsConfigInclude = (nuxt as any)._nitro?.options.typescript?.tsConfig?.include ?? []
-
-    const hasLayerServer = tsConfigInclude.some((p: string) =>
-      p.replace(/\\/g, '/').includes('layers/auto/server'),
-    )
-
-    expect(hasLayerServer).toBe(true)
-
-    await nuxt.close()
-  })
-
-  it('includes nuxt.schema files relative to typesDir in the node tsconfig', async () => {
-    const layerFixtureDir = withoutTrailingSlash(
-      normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))),
-    )
-
-    const nuxt = await loadNuxt({
-      cwd: layerFixtureDir,
-      overrides: { buildDir: join(layerFixtureDir, 'node_modules/.cache/nuxt/.nuxt') },
-      ready: true,
-    })
-    const { nodeTsConfig } = await _generateTypes(nuxt)
-
-    expect(nodeTsConfig.include).toContain('../nuxt.schema.*')
-    expect(nodeTsConfig.include).toContain('../layers/*/nuxt.schema.*')
-
-    await nuxt.close()
   })
 
   describe('when building into a relocated build directory', () => {
@@ -308,18 +283,7 @@ describe('loadNuxt', () => {
     expect(existsSync(join(buildDir, 'manifest'))).toBe(false)
   })
 
-  it('includes #server alias in nitro tsconfig paths', async () => {
-    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true })
-
-    const tsConfigPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
-
-    expect(tsConfigPaths).toHaveProperty('#server')
-    expect(tsConfigPaths).toHaveProperty('#server/*')
-
-    await nuxt.close()
-  })
-
-  it('resolves h3 and crossws types from the copy nitro-server depends on', async () => {
+  it('resolves `#server`, and h3 and crossws types from the copy nitro-server depends on', async () => {
     const modulesDir = mkdtempSync(join(tmpdir(), 'nuxt-modules-dir-'))
     for (const pkg of ['h3', 'crossws']) {
       mkdirSync(join(modulesDir, pkg), { recursive: true })
@@ -333,6 +297,8 @@ describe('loadNuxt', () => {
     const crosswsDir = realpathSync(resolve(h3Dir, '../crossws'))
 
     const nitroPaths = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions?.paths ?? {}
+    expect(nitroPaths).toHaveProperty('#server')
+    expect(nitroPaths).toHaveProperty('#server/*')
     expect(nitroPaths.h3?.[0]).toBe(h3Dir)
     expect(nitroPaths.crossws?.[0]).toBe(crosswsDir)
 
@@ -428,33 +394,20 @@ describe('loadNuxt', () => {
     expect(Reflect.get(compilerOptions, 'baseUrl')).toBe(expectedBaseUrl)
   })
 
-  it('applies global typescript.tsConfig compiler options to the nitro tsconfig', async () => {
+  it.each([
+    ['global typescript.tsConfig compiler options', {}, true],
+    ['typescript.serverTsConfig over the global tsConfig', { serverTsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: false } } }, false],
+  ])('applies %s to the nitro tsconfig', async (_, typescript, expected) => {
     const nuxt = await loadNuxt({
       cwd: repoRoot,
       ready: true,
       overrides: {
-        typescript: { tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } } },
+        typescript: { tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } }, ...typescript },
       },
     })
+    onTestFinished(() => nuxt.close())
     const compilerOptions = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions ?? {}
-    expect(compilerOptions.noPropertyAccessFromIndexSignature).toBe(true)
-    await nuxt.close()
-  })
-
-  it('applies typescript.serverTsConfig over the global tsConfig in the nitro tsconfig', async () => {
-    const nuxt = await loadNuxt({
-      cwd: repoRoot,
-      ready: true,
-      overrides: {
-        typescript: {
-          tsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: true } },
-          serverTsConfig: { compilerOptions: { noPropertyAccessFromIndexSignature: false } },
-        },
-      },
-    })
-    const compilerOptions = (nuxt as any)._nitro?.options.typescript?.tsConfig?.compilerOptions ?? {}
-    expect(compilerOptions.noPropertyAccessFromIndexSignature).toBe(false)
-    await nuxt.close()
+    expect(compilerOptions.noPropertyAccessFromIndexSignature).toBe(expected)
   })
 
   it('keeps typescript.serverTsConfig and nitro.typescript.tsConfig in sync', async () => {

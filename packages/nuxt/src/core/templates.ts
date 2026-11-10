@@ -10,7 +10,8 @@ import { bundlerDiagnostics, getRuntimeConfigSchema, pageDiagnostics, runtimeCon
 import type { Nitro } from 'nitropack/types'
 import { resolveModulePath } from 'exsolve'
 
-import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, sortPluginsByDependsOn } from './app.ts'
+import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasPluginCapability, sortPluginsByDependsOn } from './app.ts'
+import type { PluginCapability } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, findCaseDependentRouteRuleKeyPart, isWildcardRedirect, normalizePathCode, resolveRouteRulesRoutes, resolveWildcardRedirect } from './utils/route-rules.ts'
@@ -112,51 +113,35 @@ export const cssTemplate: NuxtTemplate = {
 }
 
 const PLUGIN_TEMPLATE_RE = /_(?:45|46|47)/g
-export const clientPluginTemplate: NuxtTemplate = {
-  filename: 'plugins.client.mjs',
-  dependsOn: ['plugins'],
-  async getContents (ctx) {
-    const allPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => ctx.nuxt.options.dev || !p.mode || p.mode !== 'server'))
-    const clientPlugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => !p.mode || p.mode !== 'server'), { warn: ctx.nuxt.options.dev, mode: 'client', allPlugins }))
-    setPluginDependenciesForMode(ctx.nuxt, 'client', clientPlugins)
-    checkForCircularDependencies(clientPlugins)
-    const exports: string[] = []
-    const imports: string[] = []
-    for (const plugin of clientPlugins) {
-      const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path).replace(/-/g, '_')
-      exports.push(variable)
-      imports.push(genImport(plugin.src, variable))
-    }
-    return [
-      ...imports,
-      `export default ${genArrayFromRaw(exports)}`,
-    ].join('\n')
-  },
+function createPluginTemplate (mode: 'client' | 'server'): NuxtTemplate {
+  const excludedMode = mode === 'client' ? 'server' : 'client'
+  return {
+    filename: `plugins.${mode}.mjs`,
+    dependsOn: ['plugins'],
+    async getContents ({ nuxt, app }) {
+      // in dev, plugins for the other mode are annotated too, for the cross-mode dependency warning
+      const allPlugins = await annotatePlugins(nuxt, app.plugins.filter(p => nuxt.options.dev || p.mode !== excludedMode))
+      const plugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => p.mode !== excludedMode), { warn: nuxt.options.dev, mode, allPlugins }))
+      setPluginDependenciesForMode(nuxt, mode, plugins)
+      checkForCircularDependencies(plugins)
+      const exports: string[] = []
+      const imports: string[] = []
+      for (const plugin of plugins) {
+        const path = relative(nuxt.options.rootDir, plugin.src)
+        const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path).replace(/-/g, '_')
+        exports.push(variable)
+        imports.push(genImport(plugin.src, variable))
+      }
+      return [
+        ...imports,
+        `export default ${genArrayFromRaw(exports)}`,
+      ].join('\n')
+    },
+  }
 }
 
-export const serverPluginTemplate: NuxtTemplate = {
-  filename: 'plugins.server.mjs',
-  dependsOn: ['plugins'],
-  async getContents (ctx) {
-    const allPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => ctx.nuxt.options.dev || !p.mode || p.mode !== 'client'))
-    const serverPlugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => !p.mode || p.mode !== 'client'), { warn: ctx.nuxt.options.dev, mode: 'server', allPlugins }))
-    setPluginDependenciesForMode(ctx.nuxt, 'server', serverPlugins)
-    checkForCircularDependencies(serverPlugins)
-    const exports: string[] = []
-    const imports: string[] = []
-    for (const plugin of serverPlugins) {
-      const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path).replace(/-/g, '_')
-      exports.push(variable)
-      imports.push(genImport(plugin.src, variable))
-    }
-    return [
-      ...imports,
-      `export default ${genArrayFromRaw(exports)}`,
-    ].join('\n')
-  },
-}
+export const clientPluginTemplate = createPluginTemplate('client')
+export const serverPluginTemplate = createPluginTemplate('server')
 
 const TS_RE = /\.[cm]?tsx?$/
 const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
@@ -197,8 +182,6 @@ export const pluginsDeclaration: NuxtTemplate = {
         }
         tsImports.push(relativePath)
       }
-
-      // No declaration found that TypeScript can use
     }
 
     return `// Generated by Nuxt'
@@ -288,11 +271,9 @@ export const schemaNodeTemplate: NuxtTemplate = {
 
     const modules: [string, string, NuxtOptions['_installedModules'][number]][] = []
     for (const m of nuxt.options._installedModules) {
-      // modules without sufficient metadata
       if (!m.meta || !m.meta.configKey || !m.meta.name) {
         continue
       }
-      // core nuxt modules
       if (m.meta.name.startsWith('nuxt:') || m.meta.name === 'nuxt-config-schema') {
         continue
       }
@@ -371,7 +352,6 @@ export const schemaNodeTemplate: NuxtTemplate = {
   },
 }
 
-// Add layouts template
 export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
   dependsOn: [],
@@ -386,7 +366,6 @@ export const layoutTemplate: NuxtTemplate = {
   },
 }
 
-// Add middleware template
 export const middlewareTemplate: NuxtTemplate = {
   filename: 'middleware.mjs',
   dependsOn: [],
@@ -627,7 +606,6 @@ export const globalPolyfillsTemplate: NuxtTemplate = {
   filename: 'global-polyfills.mjs',
   dependsOn: [],
   getContents () {
-    // Node.js compatibility
     return `
 if (!("global" in globalThis)) {
   globalThis.global = globalThis;
@@ -733,7 +711,6 @@ function shouldEnableComponentIslands (nuxt: { options: NuxtOptions }, app: Nuxt
   )
 }
 
-// Allow direct access to specific exposed nuxt.config
 export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
   // `payloadExtraction` below is derived from nitro route rules, and `defineRouteRules`
@@ -743,10 +720,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const annotatedPlugins = ctx.nuxt.options.dev || ctx.nuxt.options.test
       ? null
       : await annotatePlugins(ctx.nuxt, ctx.app.plugins)
-    const pluginsHaveDependencies = annotatedPlugins ? hasPluginDependencies(annotatedPlugins) : true
-    const pluginsRunInParallel = annotatedPlugins ? hasParallelPlugins(annotatedPlugins) : true
-    const pluginsHaveHooks = annotatedPlugins ? hasPluginHooks(annotatedPlugins) : true
-    const pluginsHaveIslandOptOut = annotatedPlugins ? hasIslandOptOutPlugins(annotatedPlugins) : true
+    const pluginsUse = (capability: PluginCapability) => annotatedPlugins ? hasPluginCapability(annotatedPlugins, capability) : true
     const fetchDefaults = {
       ...ctx.nuxt.options.experimental.defaults.useFetch,
       baseURL: undefined,
@@ -799,10 +773,10 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const runtimeCompiler = ${!!ctx.nuxt.options.vue.runtimeCompiler}`,
       `export const vapor = ${!!ctx.nuxt.options.vue.vapor}`,
       ctx.nuxt.options.vue.vapor ? `import * as __vue from 'vue'\nexport const rawVaporSlotKey = __vue.rawVaporSlotKey` : `export const rawVaporSlotKey = undefined`,
-      `export const hasPluginDependencies = ${pluginsHaveDependencies}`,
-      `export const hasParallelPlugins = ${pluginsRunInParallel}`,
-      `export const hasPluginHooks = ${pluginsHaveHooks}`,
-      `export const hasIslandOptOutPlugins = ${pluginsHaveIslandOptOut}`,
+      `export const hasPluginDependencies = ${pluginsUse('dependsOn')}`,
+      `export const hasParallelPlugins = ${pluginsUse('parallel')}`,
+      `export const hasPluginHooks = ${pluginsUse('hasHooks')}`,
+      `export const hasIslandOptOutPlugins = ${pluginsUse('hasEnv')}`,
     ].join('\n\n')
   },
 }
