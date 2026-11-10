@@ -1,19 +1,12 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
 import { fetch } from 'ofetch'
 import { joinURL } from 'ufo'
-import { expect, test } from './test-utils'
-
-const fixtureDir = fileURLToPath(new URL('../fixtures/ssr-streaming', import.meta.url))
+import { expect, fixtureDir, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('ssr-streaming'),
   },
 })
 

@@ -1,13 +1,10 @@
-import { fileURLToPath } from 'node:url'
-import { expect, test } from './test-utils'
-import { isWindows } from 'std-env'
+import { consoleLogs, expect, fixtureDir, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
-    rootDir: fileURLToPath(new URL('../fixtures/lazy-hydration', import.meta.url)),
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('lazy-hydration'),
   },
 })
 
@@ -146,9 +143,7 @@ for (const [description, path] of Object.entries(hydrationTests)) {
       const hydratedText = 'This is mounted.'
       await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'visible' })
 
-      // @ts-expect-error untyped
-      const consoleLogs: Array<{ type: string, text: string }> = page._consoleLogs
-      const hydrationLogs = consoleLogs.filter(log => !log.text.includes('[vite]') && !log.text.includes('<Suspense>'))
+      const hydrationLogs = consoleLogs(page).filter(log => !log.text.includes('[vite]') && !log.text.includes('<Suspense>'))
       expect(hydrationLogs.map(log => log.text)).toEqual([])
     })
 
@@ -175,16 +170,15 @@ for (const [description, path] of Object.entries(hydrationTests)) {
     test('emits hydration events', async ({ page, goto }) => {
       await goto(`/delayed-hydration${path}/model-event`)
 
-      // @ts-expect-error untyped
-      const consoleLogs: Array<{ type: string, text: string }> = page._consoleLogs
-      const initialLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
+      const logs = consoleLogs(page)
+      const initialLogs = logs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
       expect(initialLogs.length).toBe(0)
 
       await page.getByTestId('count').click()
 
       // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 100)))
-      const hydrationLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
+      const hydrationLogs = logs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
       expect(hydrationLogs.length).toBeGreaterThan(0)
     })
   })

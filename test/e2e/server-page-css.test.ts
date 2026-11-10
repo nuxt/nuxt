@@ -1,11 +1,8 @@
-import { fileURLToPath } from 'node:url'
-import { expect, test } from './test-utils'
-import { isWindows } from 'std-env'
+import { expect, fixtureDir, test } from './test-utils'
 
 test.use({
   nuxt: {
-    rootDir: fileURLToPath(new URL('../fixtures/server-page-css', import.meta.url)),
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('server-page-css'),
   },
 })
 

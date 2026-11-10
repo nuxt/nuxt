@@ -1,24 +1,17 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
 import type { Page } from 'playwright-core'
 import { waitForHydration } from '@nuxt/test-utils'
-import { expect, test } from './test-utils'
+import { expect, fixtureDir, test } from './test-utils'
 
 /**
  * This test suite verifies that the SPA loading template is correctly rendered
  * outside the app tag when spaLoadingTemplateLocation is set to 'body'.
  */
 
-const fixtureDir = fileURLToPath(new URL('../fixtures/spa-loader', import.meta.url))
-
 const loaderHTML = '<div id="__nuxt"></div><div id="__nuxt-loader"><div data-testid="loader">loading...</div></div>'
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('spa-loader'),
     nuxtConfig: {
       spaLoadingTemplate: true,
       experimental: {

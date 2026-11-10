@@ -1,6 +1,4 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
-import { expect, test } from './test-utils'
+import { expect, fixtureDir, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
 
@@ -10,8 +8,7 @@ test.use({
     height: 1000,
   },
   nuxt: {
-    rootDir: fileURLToPath(new URL('../fixtures/route-scroll', import.meta.url)),
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('route-scroll'),
   },
 })
 

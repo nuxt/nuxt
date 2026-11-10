@@ -1,22 +1,15 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
-import { expect, test } from './test-utils'
+import { expect, fixtureDir, test } from './test-utils'
 
 /**
  * This test suite verifies that Nuxt's suspense integration works correctly,
  * testing navigation between pages with suspense boundaries.
  */
 
-const fixtureDir = fileURLToPath(new URL('../fixtures/suspense', import.meta.url))
-
 test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('suspense'),
   },
 })
 

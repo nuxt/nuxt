@@ -1,35 +1,16 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
 import type { Page } from '@playwright/test'
-import { expect, test } from './test-utils'
-
-const fixtureDir = fileURLToPath(new URL('../fixtures/nested-suspense', import.meta.url))
+import { consoleLogs, expect, fixtureDir, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('nested-suspense'),
   },
 })
 
-function consoleLogsFor (page: Page) {
-  // @ts-expect-error untyped
-  return page._consoleLogs as Array<{ type: string, text: string }>
-}
-
 function filteredLogs (page: Page) {
-  return consoleLogsFor(page).map(l => l.text).filter(i =>
-    !i.includes('[vite]')
-    && !i.includes('<Suspense> is an experimental feature')
-    // webpack dev client noise (HMR status logs and echoed build-warning groups)
-    && !i.includes('[HMR]')
-    && !i.startsWith('%c')
-    && i !== 'console.groupEnd',
-  )
+  return consoleLogs(page).map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature'))
 }
 
 // Bug #7337
@@ -42,7 +23,7 @@ test.describe('deferred app suspense resolve', () => {
       // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
-      const hydrationLogs = consoleLogsFor(page).filter(log => log.text.includes('isHydrating'))
+      const hydrationLogs = consoleLogs(page).filter(log => log.text.includes('isHydrating'))
       expect(hydrationLogs.length).toBe(3)
       expect(hydrationLogs.every(log => log.text === 'isHydrating: true')).toBe(true)
     })
