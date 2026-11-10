@@ -9,6 +9,11 @@ import { afterAll, describe, expect, it } from 'vitest'
 import runner, { buildViteError, getCode, getCompiledPosition, prepareStackTrace } from '../src/vite-node-runner.ts'
 import { serializeViteNodeError } from '../src/plugins/vite-node.ts'
 
+// a literal inline map comment in this file would be picked up as its own sourcemap by vitest's module cache
+function sourceMapComment (map: object, type = 'application/json') {
+  return `//# sourceMappingURL=data:${type};base64,${Buffer.from(JSON.stringify(map)).toString('base64')}\n`
+}
+
 // transformed output of `export function useBoom () {\n  throw new Error('boom')\n}`,
 // shifted down a line by an injected import, as an SSR transform would
 function inlineSourceMap (file: string, charset: boolean, mappings = ';AAAO,gBAAS,UAAW;AACzB,QAAM,IAAI,MAAM,MAAM;AACxB;') {
@@ -21,7 +26,7 @@ function inlineSourceMap (file: string, charset: boolean, mappings = ';AAAO,gBAA
   }
   const type = charset ? 'application/json;charset=utf-8' : 'application/json'
   return 'import { x } from "vite";\nexport function useBoom() {\n  throw new Error("boom");\n}\n'
-    + `//# sourceMappingSource=vite-generated\n//# sourceMappingURL=data:${type};base64,${Buffer.from(JSON.stringify(map)).toString('base64')}\n`
+    + `//# sourceMappingSource=vite-generated\n${sourceMapComment(map, type)}`
 }
 
 const viteFile = '/src/useBoom.ts'
@@ -157,7 +162,7 @@ describe('vite-node runner stacks', () => {
       }
       const file = join(dir, `${name}.${format === 'cjs' ? 'cjs' : 'mjs'}`)
       writeFileSync(file, `var import_x;\nfunction useBoom() {\n  throw new Error("boom");\n}\n${format === 'cjs' ? 'module.exports = useBoom' : 'export default useBoom'};\n`
-        + `//# sourceMappingURL=data:application/json;base64,${Buffer.from(JSON.stringify(map)).toString('base64')}\n`)
+        + sourceMapComment(map))
       process.setSourceMapsEnabled(true)
       const loaded = createRequire(import.meta.url)(file)
       const useBoom: () => void = format === 'cjs' ? loaded : loaded.default

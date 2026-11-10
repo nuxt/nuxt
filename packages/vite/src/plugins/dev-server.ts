@@ -91,65 +91,29 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         }
       }
 
-      let _isProxyPath: ((url: string) => boolean) | undefined
-
-      function isProxyPath (url: string) {
-        if (_isProxyPath) {
-          return _isProxyPath(url)
-        }
-
-        // Pre-process proxy configuration once
-        const proxyConfig = viteServer.config.server.proxy
-        const proxyPatterns: Array<{ type: 'string' | 'regex', value: string | RegExp }> = []
-
-        if (proxyConfig) {
-          for (const key in proxyConfig) {
-            if (key.startsWith('^')) {
-              try {
-                proxyPatterns.push({ type: 'regex', value: new RegExp(key) })
-              } catch {
-                // Invalid regex, skip this key
-              }
-            } else {
-              proxyPatterns.push({ type: 'string', value: key })
-            }
+      let proxyPatterns: Array<string | RegExp> | undefined
+      const isProxyPath = (path: string) => {
+        proxyPatterns ||= Object.keys(viteServer.config.server.proxy || {}).flatMap((key): Array<string | RegExp> => {
+          if (!key.startsWith('^')) { return [key] }
+          try {
+            return [new RegExp(key)]
+          } catch {
+            return []
           }
-        }
-
-        _isProxyPath = function isProxyPath (path: string) {
-          for (const pattern of proxyPatterns) {
-            if (pattern.type === 'regex' && (pattern.value as RegExp).test(path)) {
-              return true
-            } else if (pattern.type === 'string' && path.startsWith(pattern.value as string)) {
-              return true
-            }
-          }
-          return false
-        }
-
-        return _isProxyPath(url)
+        })
+        return proxyPatterns.some(pattern => typeof pattern === 'string' ? path.startsWith(pattern) : pattern.test(path))
       }
+
+      // the middleware stack can change, so it is checked on each request
+      const isViteRoute = (url: string) => url.startsWith(viteServer.config.base!)
+        || viteServer.middlewares.stack.some(viteRoute => viteRoute.route.length > 1 && url.startsWith(viteRoute.route))
+        || isProxyPath(url)
 
       const viteMiddleware = defineEventHandler(async (event: H3V1Event | H3V2Event) => {
         const url = 'url' in event ? event.url.pathname + event.url.search + event.url.hash : (event as H3V1Event).path
-        const isBasePath = url.startsWith(viteServer.config.base!)
-
-        // Check if this is a vite-handled route or proxy path
-        let isViteRoute = isBasePath
-        if (!isViteRoute) {
-          // Check vite middleware routes (must be done per-request as middleware stack can change)
-          for (const viteRoute of viteServer.middlewares.stack) {
-            if (viteRoute.route.length > 1 && url.startsWith(viteRoute.route)) {
-              isViteRoute = true
-              break
-            }
-          }
-          // Check proxy paths
-          isViteRoute ||= isProxyPath(url)
-        }
 
         const { req, res } = ('runtime' in event ? event.runtime?.node : (event as any).node) as { req: IncomingMessage, res: ServerResponse }
-        if (!isViteRoute) {
+        if (!isViteRoute(url)) {
           (req as IncomingMessage & { _skip_transform?: boolean })._skip_transform = true
         }
 
@@ -170,25 +134,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         }
       })
       await nuxt.callHook('server:devHandler', viteMiddleware, {
-        cors: (url) => {
-          if (useViteCors) {
-            return false
-          }
-
-          if (url.startsWith(viteServer.config.base!)) {
-            return true
-          }
-
-          // Check vite middleware routes (must be done per-request as middleware stack can change)
-          for (const viteRoute of viteServer.middlewares.stack) {
-            if (viteRoute.route.length > 1 && url.startsWith(viteRoute.route)) {
-              return true
-            }
-          }
-
-          // Check proxy paths
-          return isProxyPath(url)
-        },
+        cors: url => !useViteCors && isViteRoute(url),
       })
 
       // Use a post-hook so this runs after Vite registers its internal middleware.
