@@ -49,7 +49,7 @@ pnpm test:unit     # Unit tests (fast; most changes only need these)
 pnpm test:runtime  # Composables and components in a Nuxt app
 pnpm test:fixtures # Built and dev fixture apps (slow)
 pnpm test:e2e      # Browser tests (slowest)
-pnpm test          # Everything except e2e
+pnpm test          # All vitest suites, type tests and typecheck (not e2e)
 pnpm lint          # Check linting
 pnpm lint --fix    # Auto-fix lint issues
 ```
