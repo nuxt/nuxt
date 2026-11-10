@@ -1,9 +1,13 @@
+import { existsSync } from 'node:fs'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { performance } from 'node:perf_hooks'
+import process from 'node:process'
 import { join } from 'pathe'
 import { createHooks } from 'hookable'
+import { consola } from 'consola'
 import { describe, expect, it, vi } from 'vitest'
+import type { Nuxt } from '@nuxt/schema'
 import { NuxtPerfProfiler } from '../src/core/perf.ts'
 
 function busyWait (ms: number) {
@@ -80,6 +84,38 @@ describe('NuxtPerfProfiler', () => {
       const reportPath = profiler.writeReport(buildDir, { quiet: true })
       expect(JSON.parse(await readFile(reportPath, 'utf-8')).phases[0].name).toBe('init')
       expect(JSON.parse(await readFile(join(buildDir, 'perf-trace.json'), 'utf-8')).traceEvents.length).toBeGreaterThan(0)
+    } finally {
+      log.mockRestore()
+      await rm(buildDir, { recursive: true, force: true })
+    }
+  })
+
+  it.each([
+    [{ dev: true, debug: { perf: true } }, 'Nuxt Performance Report'],
+    [{ dev: false, debug: { perf: true } }, 'Nuxt Build Performance'],
+    [{ dev: true, debug: { perf: 'quiet' } }, undefined],
+  ])('flushes the report once on close when attached with %o', async (options, title) => {
+    const buildDir = await mkdtemp(join(tmpdir(), 'nuxt-perf-'))
+    const exitListeners = process.listenerCount('exit')
+    const log = vi.spyOn(consola, 'log').mockImplementation(() => {})
+    const profiler = new NuxtPerfProfiler()
+    const print = vi.spyOn(profiler, 'printReport')
+    const write = vi.spyOn(profiler, 'writeReport')
+    const hooks = createHooks<Record<string, () => void>>()
+    const nuxt = { hooks, hook: hooks.hook, options: { ...options, buildDir } } as unknown as Nuxt
+    try {
+      profiler.attach(nuxt)
+      expect(nuxt._perf).toBe(profiler)
+      expect(process.listenerCount('exit')).toBe(exitListeners + 1)
+
+      await hooks.callHook('close')
+      await hooks.callHook('close')
+
+      expect(process.listenerCount('exit')).toBe(exitListeners)
+      expect(print.mock.calls).toEqual(title ? [[{ title }]] : [])
+      expect(write).toHaveBeenCalledOnce()
+      expect(log.mock.calls.length > 0).toBe(!!title)
+      expect(existsSync(join(buildDir, 'perf-report.json'))).toBe(true)
     } finally {
       log.mockRestore()
       await rm(buildDir, { recursive: true, force: true })
