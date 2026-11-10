@@ -188,6 +188,7 @@ describe.skipIf(!runs)('dev ssr stack mapping across edits', () => {
     for (const [path, contents] of originals) {
       await writeFile(path, contents)
     }
+    originals.clear()
   })
 
   it.each([
