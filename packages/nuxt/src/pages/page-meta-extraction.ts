@@ -138,13 +138,13 @@ export function resolvePageMetaExtractionKeys (extraKeys: Iterable<string> = [])
  *   reshaped keys are statically known, so the route record owns them; without one the macro
  *   module resolves it.
  * - `runtime` - the property is not extracted at all, so the whole meta object falls back to the
- *   macro module.
+ *   macro module. A `key` is included when the property has a statically known key.
  */
 export type PageMetaProperty =
   | { kind: 'extract', key: string, value: any }
   | { kind: 'dynamic', key: string }
   | { kind: 'reshape', key: string, node: ESTree.ObjectExpression, value?: { name: any, props?: any } }
-  | { kind: 'runtime' }
+  | { kind: 'runtime', key?: string }
 
 export interface ClassifyPageMetaOptions {
   /**
@@ -162,13 +162,15 @@ export interface ClassifyPageMetaOptions {
  * drift apart.
  */
 export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, extractionKeys: ReadonlySet<string>, options: ClassifyPageMetaOptions = {}): PageMetaProperty {
-  // Spreads, computed keys, getters and methods cannot be resolved without evaluating the module.
-  if (!isPlainProperty(property)) {
-    return { kind: 'runtime' }
-  }
+  // Spreads and computed keys cannot be resolved without evaluating the module.
   const key = getStaticPropertyKey(property)
   if (key === undefined) {
     return { kind: 'runtime' }
+  }
+
+  // Getters and methods have a known key but a runtime value.
+  if (!isPlainProperty(property)) {
+    return { kind: 'runtime', key }
   }
 
   const value = unwrapStaticExpression(property.value)
@@ -180,7 +182,7 @@ export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, e
       isPlainProperty(subProperty) && subProperty.key.type === 'Identifier' && (subProperty.key.name === 'name' || subProperty.key.name === 'props'),
     )
     if (!reshapable) {
-      return { kind: 'runtime' }
+      return { kind: 'runtime', key }
     }
     if (options.extractSerializable) {
       const serialized = isSerializable(value)
@@ -195,7 +197,7 @@ export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, e
 
   const isExtractionKey = extractionKeys.has(key)
   if (!isExtractionKey && !options.extractSerializable) {
-    return { kind: 'runtime' }
+    return { kind: 'runtime', key }
   }
 
   const serialized = isSerializable(property.value)
@@ -204,7 +206,7 @@ export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, e
   }
   // An unlisted key has no route field of its own to fall back to, so the whole meta object has
   // to come from the macro module.
-  return isExtractionKey ? { kind: 'dynamic', key } : { kind: 'runtime' }
+  return isExtractionKey ? { kind: 'dynamic', key } : { kind: 'runtime', key }
 }
 
 const pageContentsCache: Record<string, string> = {}
@@ -347,6 +349,29 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
           // A duplicate key keeps its last occurrence, mirroring object-literal evaluation.
           classified.set(classification.key, classification)
           continue
+        }
+
+        // A later runtime value for a previously extracted key must not keep the extracted
+        // value, which would override the macro module's runtime value in the route record.
+        const key = classification.key
+        if (key !== undefined) {
+          if (classified.has(key)) {
+            if (routeFieldKeys.has(key)) {
+              classified.set(key, { kind: 'dynamic', key })
+            } else {
+              classified.delete(key)
+            }
+          }
+        } else {
+          // A spread or computed key can override any earlier key, so earlier classifications
+          // cannot be kept.
+          for (const classifiedKey of classified.keys()) {
+            if (routeFieldKeys.has(classifiedKey)) {
+              classified.set(classifiedKey, { kind: 'dynamic', key: classifiedKey })
+            } else {
+              classified.delete(classifiedKey)
+            }
+          }
         }
         hasRuntimeProperty = true
       }

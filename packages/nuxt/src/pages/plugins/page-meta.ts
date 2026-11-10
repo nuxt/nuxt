@@ -295,12 +295,23 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                 }
               }
 
+              let lastKeylessRuntimeIndex = -1
+              for (let i = 0; i < meta.properties.length; i++) {
+                const classification = classifyPageMetaProperty(meta.properties[i]!, fileExtractedKeys, fileClassifyOptions)
+                if (classification.kind === 'runtime' && classification.key === undefined) {
+                  lastKeylessRuntimeIndex = i
+                }
+              }
+
               for (let i = 0; i < meta.properties.length; i++) {
                 const prop = meta.properties[i]!
                 const classification = classifyPageMetaProperty(prop, fileExtractedKeys, fileClassifyOptions)
 
+                // A later spread or computed key may override this value at runtime, so keep the static fallback.
+                const mayBeOverridden = i < lastKeylessRuntimeIndex
+
                 // The route record now carries the value, so drop it here to keep the two in step.
-                if (classification.kind === 'extract' || (classification.kind === 'reshape' && classification.value)) {
+                if (!mayBeOverridden && (classification.kind === 'extract' || (classification.kind === 'reshape' && classification.value))) {
                   omitProp(prop, i)
                   continue
                 }
