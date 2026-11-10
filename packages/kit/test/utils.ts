@@ -13,6 +13,15 @@ export async function writeFiles (dir: string, files: FixtureFiles) {
   }))
 }
 
+/** Files for a package installed in `node_modules`, with `source` as its entry. */
+export function fakePackage (name: string, source: string, pkg: Record<string, unknown> = {}): FixtureFiles {
+  const entry = typeof pkg.exports === 'string' ? pkg.exports : './index.js'
+  return {
+    [`node_modules/${name}/package.json`]: { name, version: '1.0.0', type: 'module', exports: entry, ...pkg },
+    [`node_modules/${name}/${entry}`]: source,
+  }
+}
+
 /** Creates a directory outside the workspace, so resolution cannot reach the repository's `node_modules`. */
 export async function createTempDir (prefix = 'nuxt-kit-') {
   return realpath(await mkdtemp(join(tmpdir(), prefix)))
