@@ -43,6 +43,8 @@ We use [Conventional Commits](https://www.conventionalcommits.org). Use `fix:` a
 
 ## Testing and Linting
 
+Fixture and e2e tests need a Chromium build: install it once with `pnpm exec playwright-core install chromium`.
+
 ```bash
 pnpm dev           # Run the playground
 pnpm test:unit     # Unit tests (fast; most changes only need these)
