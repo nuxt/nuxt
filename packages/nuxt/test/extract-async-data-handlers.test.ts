@@ -265,21 +265,19 @@ describe('extract async data handlers plugin', () => {
 
     it('should handle Vue SFC script blocks', async () => {
       const transform = createTransform()
-      const code = `
-        <template>
-          <div>{{ data }}</div>
-        </template>
-        
-        <script setup>
-        const { data } = await useAsyncData('key', async () => {
-          return await $fetch('/api/data')
-        })
-        </script>
-      `
+      const code = `<template><div>{{ data }}</div></template>
+<script setup>
+const { data } = await useAsyncData('key', () => 42)
+</script >
+<style scoped>div { color: red }</style>`
       const result = await transform(code, '/app/test.vue')
 
-      expect(result).toBeDefined()
-      expect(result).toContain('() => import(')
+      expect(result).toBe(`<template><div>{{ data }}</div></template>
+<script setup>
+const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))
+</script >
+<style scoped>div { color: red }</style>`)
+      expect(transform.load('/app/async-data-chunk-0.js')).toBe('export default async function () { return 42 }')
     })
   })
 

@@ -7,6 +7,7 @@ import { componentDiagnostics } from '@nuxt/kit/internal'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { VUE_ID_FILTER } from '../../core/utils/index.ts'
+import { findSFCScriptBlocks } from '../../core/utils/parse-utils.ts'
 import { linkToAlias, offsetToPosition } from '../../utils.ts'
 import { HYDRATION_PROPS } from '../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
@@ -16,7 +17,6 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
 }
 
-const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/gi
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 
 const TEMPLATE_WITH_LAZY_HYDRATION_RE = /<template>[\s\S]*\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-visible|hydrateOnVisible|hydrate-on-interaction|hydrateOnInteraction|hydrate-on-media-query|hydrateOnMediaQuery|hydrate-after|hydrateAfter|hydrate-when|hydrateWhen|hydrate-never|hydrateNever)\b[\s\S]*<\/template>/
@@ -48,7 +48,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
           const ast = parse(template)
 
           const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
-          for (const { 0: script } of code.matchAll(SCRIPT_RE)) {
+          for (const { content: script } of findSFCScriptBlocks(code)) {
             if (!script) { continue }
             try {
               parseAndWalk(script, id, { scopeTracker })
