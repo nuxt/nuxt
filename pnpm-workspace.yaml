@@ -30,13 +30,13 @@ overrides:
   "@nuxt/kit": "workspace:*"
   "@nuxt/schema": "workspace:*"
   "@types/node": "24.19.2"
-  "@vue/compiler-sfc": "3.5.44"
+  "@vue/compiler-sfc": "3.5.45"
   esbuild: "0.28.2"
   nuxt: "workspace:*"
   oxc-parser: "0.155.0"
   rolldown: "~1.2.15"
   vite: "8.3.5"
-  vue: "3.5.44"
+  vue: "3.5.45"
 
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
@@ -59,7 +59,7 @@ minimumReleaseAgeExclude:
 catalogs:
   app-runtime:
     '@unhead/vue': ^3.4.3
-    '@vue/shared': ^3.5.44
+    '@vue/shared': ^3.5.45
     consola: ^3.4.2
     cookie-es: ^3.1.1
     defu: ^6.1.7
@@ -79,20 +79,20 @@ catalogs:
     uncrypto: ^0.1.3
     unctx: ^3.0.1
     unhead: ^3.4.3
-    vue: ^3.5.44
+    vue: ^3.5.45
     vue-bundle-renderer: ^2.5.0
     vue-router: ^5.4.0
   nitro-runtime:
     '@jridgewell/trace-mapping': ^0.3.31
     destr: ^2.0.5
     flru: ^1.0.2
-    my-bad: ^0.2.11
+    my-bad: ^0.2.12
     nitro: ^3.0.260903-beta
     srvx: 1.0.5
     unstorage: ^1.17.5
   vue:
     '@vitejs/plugin-vue': ^6.0.10
-    '@vue/compiler-sfc': 3.5.44
+    '@vue/compiler-sfc': 3.5.45
     rspack-vue-loader: ^17.7.2
     vue-component-type-helpers: ^3.3.14
     vue-devtools-stub: ^0.1.0
@@ -107,7 +107,7 @@ catalogs:
     vite-node: ^6.0.0
     vite-plugin-checker: ^0.14.5
   webpack:
-    '@rsbuild/core': ~2.3.0
+    '@rsbuild/core': ~2.3.1
     css-loader: ^7.1.5
     css-minimizer-webpack-plugin: ^8.0.0
     esbuild-loader: ^4.5.0
@@ -122,16 +122,16 @@ catalogs:
     ts-checker-rspack-plugin: ^1.7.2
     url-loader: ^4.1.1
     webpack: ^5.112.2
-    webpack-bundle-analyzer: ^5.4.0
+    webpack-bundle-analyzer: ^5.4.2
     webpack-dev-middleware: ^8.6.0
     webpack-hot-middleware: ^2.26.1
     webpackbar: ^7.0.0
   build:
-    '@dxup/nuxt': ^0.5.10
-    '@nuxt/cli': ^4.0.1
+    '@dxup/nuxt': ^0.5.11
+    '@nuxt/cli': ^4.0.3
     '@nuxt/devtools-onboard': ^4.1.0
     '@nuxt/telemetry': ^2.9.1
-    '@vue/shared': ^3.5.44
+    '@vue/shared': ^3.5.45
     autoprefixer: ^10.6.2
     c12: 4.0.0-rc.4
     chokidar: ^6.0.0
@@ -142,7 +142,7 @@ catalogs:
     cssnano: ^9.9.0
     defu: ^6.1.7
     destr: ^2.0.5
-    dotenv: ^18.0.9
+    dotenv: ^18.0.10
     errx: ^0.2.2
     escape-string-regexp: ^5.0.0
     exsolve: ^1.2.0
@@ -175,14 +175,14 @@ catalogs:
     postcss-url: ^10.1.4
     rc9: ^3.1.0
     scule: ^1.3.0
-    seroval: ^1.7.6
+    seroval: ^1.8.0
     std-env: ^4.3.0
     tinyexec: ^1.3.1
     tinyglobby: ^0.2.17
     ufo: ^1.6.4
     ultrahtml: ^1.7.0
     unctx: ^3.0.1
-    undici: ^8.12.3
+    undici: ^8.12.4
     unenv: ^2.0.0-rc.24
     unimport: ^7.0.2
     unplugin: ^3.7.0
@@ -194,22 +194,22 @@ catalogs:
   # dev/test/workspace tooling (pinned)
   dev:
     '@arethetypeswrong/cli': 0.18.5
-    '@babel/core': 8.0.10
+    '@babel/core': 8.1.0
     '@babel/plugin-proposal-decorators': 8.0.2
     '@babel/plugin-syntax-jsx': 8.0.1
     '@babel/plugin-syntax-typescript': 8.0.3
-    '@codspeed/core': 6.1.0
-    '@codspeed/vitest-plugin': 6.1.0
+    '@codspeed/core': 6.1.1
+    '@codspeed/vitest-plugin': 6.1.1
     '@eslint/markdown': 8.0.3
     '@flakiness/playwright': 2.0.3
     '@flakiness/vitest': 1.12.0
     '@nuxt/eslint-config': 1.17.0
     '@nuxt/scripts': 1.3.12
-    '@nuxt/test-utils': 4.3.4
+    '@nuxt/test-utils': 4.4.0
     '@parcel/watcher': 2.6.0
-    '@playwright/test': 1.64.1
+    '@playwright/test': 1.65.0
     '@rollup/plugin-babel': 7.1.0
-    '@rspack/core': 2.3.0
+    '@rspack/core': 2.3.1
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5
     '@types/estree': 1.0.10
@@ -219,12 +219,12 @@ catalogs:
     '@types/pug': 2.0.10
     '@types/webpack-bundle-analyzer': 4.7.0
     '@types/webpack-hot-middleware': 2.25.12
-    '@typescript-eslint/parser': 8.72.1
+    '@typescript-eslint/parser': 8.72.2
     '@unocss/reset': 66.12.0
     '@valibot/to-json-schema': 1.8.0
     '@vitejs/plugin-vue-jsx': ^5.1.6
-    '@vitest/coverage-v8': 5.0.5
-    '@vue/compiler-core': 3.5.44
+    '@vitest/coverage-v8': 5.1.0
+    '@vue/compiler-core': 3.5.45
     '@vue/devtools-api': 8.2.1
     '@vue/language-core': 3.3.14
     '@vue/test-utils': 2.5.1
@@ -234,28 +234,28 @@ catalogs:
     case-police: 2.2.1
     esbuild: 0.28.2
     eslint: 10.14.0
-    eslint-plugin-import-x: 4.17.1
+    eslint-plugin-import-x: 4.18.1
     eslint-plugin-no-only-tests: 3.4.0
     eslint-plugin-perfectionist: 5.13.0
     eslint-typegen: 2.3.2
     fast-check: 4.10.2
     h3: 1.15.11
     happy-dom: 21.0.4
-    html-validate: 11.17.0
+    html-validate: 11.21.0
     htmlnano: 3.6.1
     installed-check: 11.0.0
-    knip: 6.44.1
+    knip: 6.44.2
     markdownlint-cli: 0.50.0
     nano-staged: 1.0.2
     nitropack: 2.13.6
     nuxt-content-twoslash: 0.4.0
-    oxc-transform: 0.156.0
+    oxc-transform: 0.158.0
     pkg-pr-new: 0.0.93
-    playwright-core: 1.64.1
+    playwright-core: 1.65.0
     prettier: 3.9.10
     pug: 3.0.4
-    rollup: 4.67.4
-    rollup-plugin-visualizer: 7.1.1
+    rollup: 4.68.2
+    rollup-plugin-visualizer: 7.1.3
     sherif: 1.13.0
     simple-git-hooks: 2.14.0
     tinyexec: 1.3.1
@@ -263,11 +263,11 @@ catalogs:
     typescript: 6.0.3
     unocss: 66.12.0
     valibot: 1.5.0
-    vitest: 5.0.5
+    vitest: 5.1.0
     vitest-environment-nuxt: 2.0.0
     vue-sfc-transformer: 0.3.1
     vue-tsc: 3.3.14
-    zod: 4.6.6
+    zod: 4.6.7
 
 catalogPrune: true
 minimumReleaseAgeExcludePrune: true
