@@ -6,7 +6,6 @@ import type VueLoaderPluginConstructor from 'vue-loader/dist/pluginWebpack5.js'
 export interface BuilderImpl {
   builder: 'webpack' | 'rspack'
   webpack: typeof Webpack
-  createRsbuild: undefined | ((options?: any) => Promise<any>)
   WebpackBarPlugin: typeof import('webpackbar').default
   MiniCssExtractPlugin: typeof MiniCssExtractPluginType
   TsCheckerPlugin: typeof TsCheckerPluginType

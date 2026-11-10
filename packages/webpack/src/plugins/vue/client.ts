@@ -15,19 +15,15 @@ import type { Compilation, Compiler } from 'webpack'
 
 import { isCSS, isHotUpdate, isJS } from './util.ts'
 
-interface PluginOptions {
-  nuxt: Nuxt
-}
-
 export default class VueSSRClientPlugin {
   serverDist: string
   nuxt: Nuxt
   precomputedCode = 'export default undefined'
   manifestCode?: string
 
-  constructor (options: PluginOptions) {
-    this.serverDist = resolve(options.nuxt.options.buildDir, 'dist/server')
-    this.nuxt = options.nuxt
+  constructor (nuxt: Nuxt) {
+    this.serverDist = resolve(nuxt.options.buildDir, 'dist/server')
+    this.nuxt = nuxt
 
     // Assigned directly (not via `setBuildOutput`) because the plugin is
     // constructed during webpack config assembly, outside an active Nuxt context.

@@ -179,8 +179,6 @@
     },
     "packages/rspack": {
       "ignoreDependencies": [
-        "@nuxt/kit",
-        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",
@@ -197,7 +195,6 @@
         "memfs",
         "mini-css-extract-plugin",
         "ohash",
-        "pathe",
         "postcss",
         "postcss-import",
         "postcss-import-resolver",
@@ -210,7 +207,6 @@
         "seroval",
         "time-fix-plugin",
         "tinyglobby",
-        "ufo",
         "unenv",
         "unplugin",
         "url-loader",
