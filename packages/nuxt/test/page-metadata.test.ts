@@ -8,7 +8,8 @@ import { parse as toAst } from 'acorn'
 
 import { useNuxt } from '@nuxt/kit'
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta.ts'
-import { getRouteMeta as _getRouteMeta, augmentPages, defaultExtractionKeys, dynamicPageMetaCache, getDynamicMetaKeys, getDynamicPageMeta, normalizeRoutes, shouldExtractSerializablePageMeta } from '../src/pages/utils.ts'
+import { augmentPages, normalizeRoutes } from '../src/pages/utils.ts'
+import { getRouteMeta as _getRouteMeta, defaultExtractionKeys, dynamicPageMetaCache, getDynamicMetaKeys, getDynamicPageMeta, shouldExtractSerializablePageMeta } from '../src/pages/page-meta-extraction.ts'
 import type { Nuxt, NuxtPage } from '../schema.ts'
 
 const filePath = '/app/pages/index.vue'

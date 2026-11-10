@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import fs from 'node:fs'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { augmentPages, createPagesContext, dynamicPageMetaCache, getDynamicPageMeta, getPageComponentNames, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
+import { augmentPages, createPagesContext, getPageComponentNames, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
+import { dynamicPageMetaCache, getDynamicPageMeta } from '../src/pages/page-meta-extraction.ts'
 import { PageComponentNamePlugin } from '../src/pages/plugins/component-name.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey, memoizeRouteComponent } from '../src/pages/runtime/utils.ts'
@@ -76,7 +77,7 @@ const enUSComparator = new Intl.Collator('en-US')
 /** Sort routes by path, omitting empty children, and optionally surface the dynamic keys recorded for their files. */
 function toComparable (routes: NuxtPage[], withDynamic = false): Array<NuxtPage & { dynamic?: string[] }> {
   return routes.map(({ children, ...route }) => {
-    const dynamic = withDynamic ? dynamicMetaFor(route) : new Set()
+    const dynamic = withDynamic ? dynamicMetaFor(route) : new Set<string>()
     return {
       ...route,
       ...dynamic.size ? { dynamic: [...dynamic] } : {},

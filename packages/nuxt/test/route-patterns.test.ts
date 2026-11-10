@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, collectRou3PageSources, getRouterOptionsKeys, routerOptionsMayModifyRoutes, toRou3Patterns } from '../src/pages/utils.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns } from '../src/pages/route-patterns.ts'
+import { getRouterOptionsKeys, routerOptionsMayModifyRoutes } from '../src/pages/router-options.ts'
 
 describe('toRou3Patterns', () => {
   it.each([
