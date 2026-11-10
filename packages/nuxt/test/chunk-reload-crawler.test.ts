@@ -1,5 +1,4 @@
-/// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
-
+// @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createHooks } from 'hookable'
 

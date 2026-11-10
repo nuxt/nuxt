@@ -117,6 +117,13 @@ describe('route rules template', () => {
     }
   })
 
+  it('folds a non-ASCII rule key against any request casing or encoding when case-insensitive', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, undefined, { '/cafÉ': { redirect: '/target' } }))
+    for (const path of ['/cafÉ', '/café', `/caf${encodeURIComponent('É')}`, `/caf${encodeURIComponent('é')}`]) {
+      expect(matcher(path).redirect, path).toBe('/target')
+    }
+  })
+
   it('applies `appMiddleware` from rules with regex constraints when case-insensitive', async () => {
     const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, undefined, {
       '/blog/:slug(cafe|tea)': { appMiddleware: 'auth' },

@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createHead } from '@unhead/vue/server'
 
-import { freezeHead } from '../../packages/nuxt/src/head/runtime/island-head'
+import { freezeHead } from '../src/head/runtime/island-head'
 
-// Regression test for #32100.
 describe('freezeHead', () => {
   it('discards push calls until unfreeze is invoked', () => {
     const head = createHead()
