@@ -4,6 +4,53 @@ import { resolveAlias } from '@nuxt/kit'
 
 import { stripExtension } from '../../utils.ts'
 
+const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/dgi
+
+export interface SFCScriptBlock {
+  /** The raw attributes of the opening tag */
+  attrs: string
+  content: string
+  /** Offset of `content` in the SFC */
+  start: number
+}
+
+/** The `<script>` blocks of a Vue SFC. */
+export function findSFCScriptBlocks (sfc: string): SFCScriptBlock[] {
+  return [...sfc.matchAll(SFC_SCRIPT_RE)].map(match => ({
+    attrs: match.groups!.attrs!,
+    content: match.groups!.content!,
+    start: match.indices!.groups!.content![0],
+  }))
+}
+
+type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }
+
+const STATIC_EXPRESSION_WRAPPERS = new Set([
+  'ParenthesizedExpression',
+  'TSAsExpression',
+  'TSNonNullExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+])
+
+/** Strip parentheses and TypeScript assertions, which do not change the value of an expression. */
+export function unwrapStaticExpression (node: ESTree.Node | undefined): ESTree.Node | undefined {
+  let current = node
+  while (current && STATIC_EXPRESSION_WRAPPERS.has(current.type)) {
+    current = (current as StaticExpressionWrapper).expression
+  }
+  return current
+}
+
+/** The key of a plain `key: value` property, or `undefined` when it cannot be known statically. */
+export function getStaticPropertyKey (property: ESTree.ObjectPropertyKind): string | undefined {
+  if (property.type !== 'Property' || property.computed) { return }
+  if (property.key.type === 'Identifier') { return property.key.name }
+  if (property.key.type === 'Literal' && (typeof property.key.value === 'string' || typeof property.key.value === 'number')) {
+    return String(property.key.value)
+  }
+}
+
 /**
  * Map the bindings introduced by `imports` to their origin. Sources have aliases resolved and
  * extensions stripped.

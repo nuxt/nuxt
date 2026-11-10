@@ -6,7 +6,7 @@ import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { parseAndWalk } from 'oxc-walker'
 
 import { linkToAlias } from '../utils.ts'
-import { unwrapStaticExpression } from './page-meta-extraction.ts'
+import { unwrapStaticExpression } from '../core/utils/parse-utils.ts'
 import type { Nuxt } from 'nuxt/schema'
 
 /** Contents of `#build/router.options.mjs`, merging `router.options` config with every `router.options` file. */
