@@ -1,7 +1,7 @@
 import { lstat, symlink, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, isAbsolute, normalize, resolve } from 'pathe'
+import { dirname, isAbsolute, normalize, relative, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
@@ -31,6 +31,13 @@ export async function linkStaticDist (rootDir: string, publicDir: string): Promi
     await unlink(dist).catch(() => {})
   }
   await symlink(publicDir, dist, 'junction').catch(() => {})
+}
+
+const RELATIVE_RE = /^([^.])/
+
+/** A relative path that always starts with `.`, as tsconfig `paths` require. */
+export function relativeWithDot (from: string, to: string): string {
+  return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
 }
 
 /**
