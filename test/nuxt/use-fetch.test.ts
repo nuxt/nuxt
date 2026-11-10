@@ -11,6 +11,13 @@ import { flushPromises } from '@vue/test-utils'
 import { createUseFetch as _createUseFetch, useFetch, useLazyFetch } from '#app/composables/fetch'
 import type { EffectScope } from 'vue'
 
+const config = vi.hoisted(() => ({ alwaysRunFetchOnKeyChange: false }))
+
+vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
+  ...await importOriginal<Record<string, unknown>>(),
+  get alwaysRunFetchOnKeyChange () { return config.alwaysRunFetchOnKeyChange },
+}))
+
 const createUseFetch = (_createUseFetch as unknown as { __nuxt_factory: typeof _createUseFetch }).__nuxt_factory
 
 interface TestData {
@@ -165,43 +172,6 @@ describe('useFetch', () => {
     expect(data.value).toStrictEqual({ count: 0 })
   })
 
-  it.runIf(process.env.PROJECT === 'nuxt-legacy')('should work with reactive keys and immediate: false', async () => {
-    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
-
-    const q = ref('')
-    const { data } = await useFetch('/api/immediate-false', {
-      query: { q },
-      immediate: false,
-    })
-
-    expect(data.value).toBe(undefined)
-    q.value = 'test'
-
-    await flushPromises()
-    await nextTick()
-    await flushPromises()
-
-    expect(data.value).toEqual({ url: '/api/immediate-false' })
-  })
-
-  it.runIf(process.env.PROJECT === 'nuxt-legacy')('should work with reactive request path and immediate: false', async () => {
-    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
-
-    const q = ref('')
-    const { data } = await useFetch(() => withQuery('/api/immediate-false', { q: q.value }), {
-      immediate: false,
-    })
-
-    expect(data.value).toBe(undefined)
-    q.value = 'test'
-
-    await flushPromises()
-    await nextTick()
-    await flushPromises()
-
-    expect(data.value).toEqual({ url: '/api/immediate-false' })
-  })
-
   it('should be accessible immediately', async () => {
     registerEndpoint('/api/watchable-fetch', defineEventHandler(() => ({ url: '/api/watchable-fetch' })))
 
@@ -325,17 +295,6 @@ describe('useFetch', () => {
     expect(error.value?.toString()).toContain(`<no response>`)
 
     vi.useRealTimers()
-  })
-
-  it.runIf(process.env.PROJECT === 'nuxt-legacy')('should fetch if immediate is false and only the key changes with `experimental.alwaysRunFetchOnKeyChange`', async () => {
-    const key = shallowRef('a')
-    const { status } = useFetch('/api/test', { key, immediate: false })
-
-    expect.soft(status.value).toBe('idle')
-
-    key.value += 'a'
-    await nextTick()
-    expect.soft(status.value).toBe('pending')
   })
 
   it('should handle parallel execute with `immediate: false`', async () => {
@@ -476,6 +435,64 @@ describe('useFetch', () => {
     // d1 should have data; d2 should remain untouched
     expect.soft(d1.value).toMatchObject({ url: '/api/key/2' })
     expect.soft(d2.value).toStrictEqual(undefined)
+  })
+})
+
+describe('useFetch with `experimental.alwaysRunFetchOnKeyChange`', () => {
+  beforeEach(() => {
+    config.alwaysRunFetchOnKeyChange = true
+    clearNuxtData()
+  })
+  afterEach(() => {
+    config.alwaysRunFetchOnKeyChange = false
+  })
+
+  it('should work with reactive keys and immediate: false', async () => {
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
+
+    const q = ref('')
+    const { data } = await useFetch('/api/immediate-false', {
+      query: { q },
+      immediate: false,
+    })
+
+    expect(data.value).toBe(undefined)
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/immediate-false' })
+  })
+
+  it('should work with reactive request path and immediate: false', async () => {
+    registerEndpoint('/api/immediate-false', defineEventHandler(() => ({ url: '/api/immediate-false' })))
+
+    const q = ref('')
+    const { data } = await useFetch(() => withQuery('/api/immediate-false', { q: q.value }), {
+      immediate: false,
+    })
+
+    expect(data.value).toBe(undefined)
+    q.value = 'test'
+
+    await flushPromises()
+    await nextTick()
+    await flushPromises()
+
+    expect(data.value).toEqual({ url: '/api/immediate-false' })
+  })
+
+  it('should fetch if immediate is false and only the key changes', async () => {
+    const key = shallowRef('a')
+    const { status } = useFetch('/api/test', { key, immediate: false })
+
+    expect.soft(status.value).toBe('idle')
+
+    key.value += 'a'
+    await nextTick()
+    expect.soft(status.value).toBe('pending')
   })
 })
 
