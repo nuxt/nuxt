@@ -1,3 +1,10 @@
+<script setup lang="ts">
+definePageMeta({
+  pageTransition: false,
+  layoutTransition: false,
+})
+</script>
+
 <template>
   <div>
     <h1 data-testid="index-title">

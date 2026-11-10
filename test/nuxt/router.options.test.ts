@@ -365,6 +365,70 @@ describe('scrollBehavior with hash on the same page', () => {
   })
 })
 
+describe('scrollBehavior between pages', () => {
+  let wrapper: VueWrapper<unknown>
+  let scrollTo: ReturnType<typeof vi.spyOn>
+  const cleanups: Array<() => void> = []
+  const pageLoadingEnd = vi.fn()
+
+  beforeAll(async () => {
+    const router = useRouter()
+    cleanups.push(
+      router.addRoute({ path: '/shared-component-1', component: SyncComponent }),
+      router.addRoute({ path: '/shared-component-2', component: SyncComponent }),
+      router.addRoute({
+        path: '/nested-scroll/:foo',
+        component: NestedPageParent,
+        children: [{ path: ':bar', component: SyncComponent }, { path: 'user-:group', component: SyncComponent }],
+      }),
+      router.addRoute({
+        path: '/scroll-to-top-fn/:id',
+        component: SyncComponent,
+        meta: { scrollToTop: to => to.query.scrollToTop === 'true' },
+      }),
+      useNuxtApp().hook('page:loading:end', pageLoadingEnd),
+    )
+    wrapper = await mountSuspended(defineComponent({ setup: () => () => h(NuxtPage) }))
+  })
+
+  afterAll(() => {
+    wrapper.unmount()
+    for (const cleanup of cleanups) {
+      cleanup()
+    }
+  })
+
+  async function navigateFrom (from: string, to: string) {
+    await navigateTo(from)
+    await flushPromises()
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+    await sleep(50)
+    vi.clearAllMocks()
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
+
+    await navigateTo(to)
+    await flushPromises()
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+  }
+
+  // https://github.com/nuxt/nuxt/issues/22402, https://github.com/nuxt/nuxt/issues/20523
+  it.each([
+    ['between routes sharing a component', '/shared-component-1', '/shared-component-2'],
+    ['between sibling nested routes', '/nested-scroll/foo/test', '/nested-scroll/foo/user-test'],
+    ['when a `scrollToTop` function allows it', '/scroll-to-top-fn/a', '/scroll-to-top-fn/b?scrollToTop=true'],
+  ])('should scroll to top %s', async (_, from, to) => {
+    await navigateFrom(from, to)
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+
+  it('should not scroll to top when a `scrollToTop` function forbids it', async () => {
+    await navigateFrom('/scroll-to-top-fn/a', '/scroll-to-top-fn/b?scrollToTop=false')
+    await sleep(50)
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+})
+
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 const NestedPageParent = defineComponent({

@@ -13,25 +13,24 @@ const e2eMatrix = [
   { builder: 'vite', isDev: false },
 ] as const
 
-const devOnlyTests = ['**/hmr.test.ts', '**/dev-error-overlay.test.ts', '**/dev-error-client.test.ts', '**/dev-error-recovery.test.ts', '**/dev-error-compile.test.ts', '**/dev-error-expected.test.ts']
-const builtOnlyTests = ['**/spa-preloader-*.test.ts', '**/server-page-css.test.ts', '**/chunk-error.test.ts', '**/no-scripts*.test.ts']
-const viteOnlyTests = ['**/server-page-css.test.ts', '**/no-scripts*.test.ts', '**/dev-error-overlay.test.ts', '**/dev-error-client.test.ts', '**/dev-error-recovery.test.ts', '**/dev-error-compile.test.ts', '**/dev-error-expected.test.ts']
-const rspackExcludedTests = ['**/chunk-error.test.ts']
+const devOnlyTests = ['hmr', 'dev-error-*']
+const builtOnlyTests = ['spa-preloader-*', 'server-page-css', 'chunk-error', 'no-scripts*']
+const viteOnlyTests = ['server-page-css', 'no-scripts*', 'dev-error-*']
+/** Suites of client runtime behaviour, which does not depend on the builder. */
+const runtimeTests = ['nested-suspense', 'navigation-repaint', 'nuxt-time', 'preview', 'server-path-fallback', 'spa-preloader-*', 'suspense', 'ui-templates']
+/**
+ * The chunk error runtime module is only applied with webpack, and vue-loader compiles vapor
+ * SFCs as vdom components, which the webpack project already covers.
+ */
+const rspackExcludedTests = ['chunk-error', 'vapor']
 
 function testIgnoreForProject (entry: typeof e2eMatrix[number]) {
-  const ignore: string[] = []
-  if (entry.isDev) {
-    ignore.push(...builtOnlyTests)
-  } else {
-    ignore.push(...devOnlyTests)
-  }
-  if (entry.builder !== 'vite') {
-    ignore.push(...viteOnlyTests)
-  }
-  if (entry.builder === 'rspack') {
-    ignore.push(...rspackExcludedTests)
-  }
-  return ignore
+  const isVite = entry.builder === 'vite'
+  return [
+    ...entry.isDev ? builtOnlyTests : devOnlyTests,
+    ...isVite ? [] : [...viteOnlyTests, ...runtimeTests],
+    ...entry.builder === 'rspack' ? rspackExcludedTests : [],
+  ].map(name => `**/${name}.test.ts`)
 }
 
 /**
@@ -69,8 +68,6 @@ export default defineConfig<E2eConfigOptions>({
         use: {
           ...devices['Desktop Chrome'],
           isDev: entry.isDev,
-          isBuilt: !entry.isDev,
-          isWebpack: entry.builder === 'webpack' || entry.builder === 'rspack',
           builder: entry.builder,
           defaults: {
             nuxt: {
