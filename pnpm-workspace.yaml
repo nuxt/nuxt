@@ -276,7 +276,6 @@ catalogs:
     htmlnano: 3.6.1
     installed-check: 11.0.0
     knip: 6.44.2
-    magic-regexp: 0.11.2
     markdownlint-cli: 0.50.0
     nano-staged: 1.0.2
     nitropack: 2.13.6

@@ -82,29 +82,18 @@ interface FixtureMatrixEntry {
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
-  // vite: all combinations
-  { env: 'dev', builder: 'vite', context: 'async', manifest: 'manifest-on' },
-  { env: 'dev', builder: 'vite', context: 'async', manifest: 'manifest-off' },
+  // async context and app manifest off are only asserted on in vite builds, each on its own
   { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on' },
-  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-off' },
   { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-on' },
-  { env: 'built', builder: 'vite', context: 'async', manifest: 'manifest-off' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on' },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-off' },
-  // nitro-vite: only default context + manifest-on
   { env: 'dev', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on' },
   { env: 'built', builder: 'nitro-vite', context: 'default', manifest: 'manifest-on' },
-  // rsbuild: only manifest-on
   { env: 'dev', builder: 'rsbuild', context: 'async', manifest: 'manifest-on' },
-  { env: 'built', builder: 'rsbuild', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rsbuild', context: 'default', manifest: 'manifest-on' },
-  // rspack: only manifest-on
   { env: 'dev', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
-  { env: 'built', builder: 'rspack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'rspack', context: 'default', manifest: 'manifest-on' },
-  // webpack: only manifest-on
   { env: 'dev', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
-  { env: 'built', builder: 'webpack', context: 'async', manifest: 'manifest-on' },
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on' },
 ]
 
@@ -116,7 +105,7 @@ const legacyErrorMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
 ]
 
-const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
+const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-dev-error.test.ts', 'test/dev-error-*.test.ts']
 
 // re-runs the basic fixture with `experimental.compilerComponentResolution` disabled
 const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [

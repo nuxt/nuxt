@@ -1,36 +1,30 @@
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
-import { isWindows } from 'std-env'
-import { fetch, setup } from '@nuxt/test-utils/e2e'
+import { fetch } from '@nuxt/test-utils/e2e'
 
 import { glob } from 'tinyglobby'
 
 import { isDev, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { buildInProcess, fixturePath, setupFixture } from './utils'
 import { channelState, frameAt, renderErrorPage } from './dev-error-utils'
 
 // workerd provides `node:async_hooks` and `node:diagnostics_channel`, and nothing else the
 // render reaches for; these are what a node server would drag in
 const NODE_SERVER_BUILTINS = new Set(['node:fs', 'node:fs/promises', 'node:http', 'node:https', 'node:net', 'node:path', 'node:stream', 'node:stream/promises', 'node:zlib'])
 
-const rootDir = fileURLToPath(new URL('./fixtures/vite-server-cloudflare-v2', import.meta.url))
+const rootDir = fixturePath('vite-server-cloudflare-v2')
 const outputDir = join(rootDir, '.cloudflare/output/v0/workers/default')
 const bundleDir = join(outputDir, 'bundle')
 const assetsDir = join(outputDir, 'assets')
 
-if (runsOncePerEnvInMatrix && isDev) {
-  await setup({
-    rootDir,
-    dev: true,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+const runsDev = runsOncePerEnvInMatrix && isDev
 
-describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with the cloudflare vite plugin v2', () => {
+await setupFixture('vite-server-cloudflare-v2', runsDev)
+
+describe.skipIf(!runsDev)('pure vite dev server with the cloudflare vite plugin v2', () => {
   it('renders the routes the worker passes to `#server-entry` in the worker runtime', async () => {
     const response = await fetch('/runtime', { headers: { accept: 'text/html' } })
 
@@ -75,17 +69,8 @@ describe.skipIf(!runsOnceInMatrix)('pure vite build with the cloudflare vite plu
   let worker: { default: { fetch: (request: Request) => Promise<Response> } }
 
   beforeAll(async () => {
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') },
-    })
-    try {
-      await buildNuxt(nuxt)
-      expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
-    } finally {
-      await nuxt.close()
-    }
+    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') })
+    expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
     config = JSON.parse(await readFile(join(outputDir, 'worker.config.json'), 'utf-8'))
     worker = await import(pathToFileURL(join(bundleDir, config.manifest.mainModule)).href)
   }, 240 * 1000)

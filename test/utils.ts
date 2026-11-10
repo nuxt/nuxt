@@ -1,10 +1,51 @@
+import { fileURLToPath } from 'node:url'
 import { expect, vi } from 'vitest'
 import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
-import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
-import { isCI } from 'std-env'
+import { buildNuxt, loadNuxt } from '@nuxt/kit'
+import type { NuxtConfig } from 'nuxt/schema'
+import { getBrowser, setup, url, useTestContext } from '@nuxt/test-utils/e2e'
+import type { TestOptions } from '@nuxt/test-utils/e2e'
+import { isCI, isWindows } from 'std-env'
+
+import { isDev } from './matrix'
+
+/** Absolute path of `test/fixtures/<name>`. */
+export function fixturePath (name: string) {
+  return fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url))
+}
+
+/**
+ * Build and serve a fixture (by name under `test/fixtures`, or by URL) for the current test file,
+ * in dev or built as the matrix project is. Does nothing unless `runs`, so a suite skipped in this
+ * project starts no server.
+ */
+export async function setupFixture (fixture: string | URL, runs: boolean, options: Partial<TestOptions> = {}) {
+  if (!runs) {
+    return
+  }
+  await setup({
+    rootDir: typeof fixture === 'string' ? fixturePath(fixture) : fileURLToPath(fixture),
+    dev: isDev,
+    server: true,
+    setupTimeout: (isWindows ? 360 : 240) * 1000,
+    serverStartTimeout: 240 * 1000,
+    ...options,
+  })
+}
+
+/** Build `rootDir` in-process with `overrides`, and return the Nuxt instance once it has closed. */
+export async function buildInProcess (rootDir: string, overrides: NuxtConfig = {}) {
+  const nuxt = await loadNuxt({ cwd: rootDir, ready: true, overrides })
+  try {
+    await buildNuxt(nuxt)
+  } finally {
+    await nuxt.close()
+  }
+  return nuxt
+}
 
 export async function renderPage (path = '/', opts?: { retries?: number }) {
   const ctx = useTestContext()

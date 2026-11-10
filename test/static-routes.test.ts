@@ -1,22 +1,12 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
+import { setupFixture } from './utils'
 
-const shouldRun = runsOncePerEnvInMatrix
+await setupFixture('static-routes', runsOncePerEnvInMatrix)
 
-if (shouldRun) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/static-routes', import.meta.url)),
-    dev: isDev,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
-
-describe.skipIf(!shouldRun)('experimental.staticRoutes', () => {
+describe.skipIf(!runsOncePerEnvInMatrix)('experimental.staticRoutes', () => {
   it('renders pages and links as usual', async () => {
     const html = await $fetch<string>('/')
     expect(html).toContain('static-routes-index')

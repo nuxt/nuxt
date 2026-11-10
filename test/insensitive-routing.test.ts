@@ -1,23 +1,12 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
-import { isDev, nitroViteEnvironment, runsOncePerEnvInMatrix } from './matrix'
-import { parseData } from './utils'
+import { runsOncePerViteBuilderInMatrix } from './matrix'
+import { parseData, setupFixture } from './utils'
 
-const shouldRun = runsOncePerEnvInMatrix || nitroViteEnvironment
+await setupFixture('insensitive-routing', runsOncePerViteBuilderInMatrix)
 
-if (shouldRun) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/insensitive-routing', import.meta.url)),
-    dev: isDev,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
-
-describe.skipIf(!shouldRun)('server route rules with `sensitive: false`', () => {
+describe.skipIf(!runsOncePerViteBuilderInMatrix)('server route rules with `sensitive: false`', () => {
   it('should preserve wildcard redirect tails and query strings', async () => {
     for (const base of ['/old', '/OLD', '/Old', '/%4Fld']) {
       for (const tail of ['/x', '/A/b', '/A/b?q=Value&other=two']) {
