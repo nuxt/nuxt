@@ -665,8 +665,6 @@ jobs:
             @nuxt/cli
           packages: |
             packages/*
-            !packages/nuxi
-            !packages/test-utils
             !packages/ui-templates
             docs
 
