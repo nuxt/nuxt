@@ -14,7 +14,6 @@ import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
 import type { PrefetchScheduler } from './internal/prefetch'
 import type { LoadingIndicator } from './composables/loading-indicator'
-import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, NuxtHookCallback, NuxtHookRegistry, RuntimeConfig } from 'nuxt/schema'
 
@@ -164,7 +163,7 @@ interface _NuxtApp {
   '_prefetch'?: PrefetchScheduler
 
   /** @internal */
-  '_routeAnnouncer'?: RouteAnnouncer
+  '_routeAnnouncer'?: NuxtAnnouncer
   /** @internal */
   '_routeAnnouncerDeps'?: number
 
