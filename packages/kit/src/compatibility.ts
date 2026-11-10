@@ -18,11 +18,6 @@ const builderMap = {
   '@nuxt/webpack-builder': 'webpack',
 }
 
-function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
-  const nuxtVersion = getNuxtVersion(nuxt)
-  return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
-}
-
 /**
  * Check version constraints and return incompatibility issues as an array
  */
@@ -32,7 +27,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
   // Nuxt version check
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
-    if (!checkNuxtVersion(constraints.nuxt, nuxt)) {
+    if (!satisfies(normalizeSemanticVersion(nuxtVersion), constraints.nuxt, { includePrerelease: true })) {
       issues.push({
         name: 'nuxt',
         message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``,
