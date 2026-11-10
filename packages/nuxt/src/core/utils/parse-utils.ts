@@ -78,17 +78,22 @@ function unwrapParenthesized (node: ESTree.Expression): ESTree.Expression {
     : inner
 }
 
+function testFilter (filter: RegExp, name: string) {
+  filter.lastIndex = 0
+  return filter.test(name)
+}
+
 function parseStaticMemberExpression (member: ESTree.MemberExpression, filter: RegExp): Omit<FunctionCallMetadata, 'callExpression'> | null {
   const object = unwrapParenthesized(member.object)
   if (object.type !== 'Identifier') { return null }
 
   // foo.bar()
-  if (member.property.type === 'Identifier' && filter.test(member.property.name)) {
+  if (member.property.type === 'Identifier' && testFilter(filter, member.property.name)) {
     return { name: member.property.name, namespace: object.name, node: member.property }
   }
 
   // foo['bar']()
-  if (member.property.type === 'Literal' && typeof member.property.value === 'string' && filter.test(member.property.value)) {
+  if (member.property.type === 'Literal' && typeof member.property.value === 'string' && testFilter(filter, member.property.value)) {
     return { name: member.property.value, namespace: object.name, node: member }
   }
 
@@ -113,7 +118,7 @@ export function parseStaticFunctionCall (node: ESTree.CallExpression | ESTree.Ch
   const inner = unwrapParenthesized(callee)
 
   if (inner.type === 'Identifier') {
-    return filter.test(inner.name)
+    return testFilter(filter, inner.name)
       ? { name: inner.name, namespace: null, node: callee as FunctionCallMetadata['node'], callExpression }
       : null
   }
@@ -153,7 +158,7 @@ export interface ExportMetadata {
  * @param filter optional regex to filter named exports by their exported names
  */
 export function parseStaticExportIdentifiers (node: ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration | ESTree.TSExportAssignment, filter?: RegExp): ExportMetadata[] {
-  const matches = (name: string) => !filter || filter.test(name)
+  const matches = (name: string) => !filter || testFilter(filter, name)
   const named = (name: string | undefined): ExportMetadata[] => name && matches(name) ? [{ localName: name, exportedName: name }] : []
 
   if (node.type === 'ExportNamedDeclaration') {
