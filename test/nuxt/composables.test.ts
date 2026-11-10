@@ -775,6 +775,9 @@ describe('unicode route rules', () => {
     for (const path of ['/cafÉ', `/caf${encodeURIComponent('É')}`]) {
       expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/accented-target' })
     }
+    for (const path of ['/café', `/caf${encodeURIComponent('é')}`]) {
+      expect(getRouteRules({ path }), path).not.toHaveProperty('redirect')
+    }
   })
 })
 

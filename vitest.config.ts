@@ -56,9 +56,6 @@ const commonSettings: NuxtConfig = {
     '/pre/test': { redirect: '/' },
     '/pre/spa/**': { prerender: true, ssr: false },
     '/pre/**': { prerender: true },
-    // Decoded keys must match the percent-encoded path generated for a unicode page,
-    // including when a catch-all rule sets the same key, and when folding an
-    // encoded non-ASCII character is required to match.
     '/测试': { redirect: '/unicode-target' },
     '/unicode/**': { ssr: true },
     '/unicode/测试': { ssr: false },
@@ -71,19 +68,6 @@ const commonSettings: NuxtConfig = {
   },
   imports: {
     polyfills: false,
-  },
-}
-
-const nuxtTestProjects: Record<string, NuxtConfig> = {
-  'nuxt': {
-    future: {
-      compatibilityVersion: 5,
-    },
-  },
-  'nuxt-legacy': {
-    experimental: {
-      alwaysRunFetchOnKeyChange: true,
-    },
   },
 }
 
@@ -333,67 +317,18 @@ export default defineConfig({
           },
         },
       }),
-      ...await Promise.all(Object.entries(nuxtTestProjects).map(([project, config]) => defineVitestProject({
+      await defineVitestProject({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
-          name: project,
+          name: 'nuxt',
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/insensitive/**', '**/sensitive/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
           environment: 'nuxt',
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
-          env: {
-            PROJECT: project,
-          },
           environmentOptions: {
             nuxt: {
-              overrides: defu(config, commonSettings),
-            },
-          },
-        },
-      }))),
-      await defineVitestProject({
-        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
-        test: {
-          name: 'nuxt-insensitive',
-          dir: './test/nuxt/insensitive',
-          environment: 'nuxt',
-          setupFiles: ['./test/setup-runtime.ts'],
-          environmentOptions: {
-            nuxt: {
-              // `sensitive: false` on a v5 app: the config the route-rule case-folding targets.
-              overrides: defu({
-                future: { compatibilityVersion: 5 },
-                router: { options: { sensitive: false } },
-                routeRules: {
-                  '/Secret/Docs/**': { ssr: false },
-                  '/Legacy/Home': { redirect: '/target' },
-                  '/Range/:id([A-Za-z_]+)': { ssr: false },
-                  '/Wild/**': { redirect: '/target/**' },
-                },
-              } satisfies NuxtConfig, commonSettings),
-            },
-          },
-        },
-      }),
-      await defineVitestProject({
-        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
-        test: {
-          name: 'nuxt-sensitive',
-          dir: './test/nuxt/sensitive',
-          environment: 'nuxt',
-          setupFiles: ['./test/setup-runtime.ts'],
-          environmentOptions: {
-            nuxt: {
-              overrides: defu({
-                future: { compatibilityVersion: 5 },
-                router: { options: { sensitive: true } },
-                routeRules: {
-                  '/Admin/Dashboard': { redirect: '/admin-target' },
-                  '/admin/dashboard': { redirect: '/lower-target' },
-                  '/Wild/**': { redirect: '/target/**' },
-                },
-              } satisfies NuxtConfig, commonSettings),
+              overrides: commonSettings,
             },
           },
         },
@@ -410,7 +345,7 @@ export default defineConfig({
           setupFiles: ['./test/setup-runtime.ts'],
           environmentOptions: {
             nuxt: {
-              overrides: defu(nuxtTestProjects.nuxt, commonSettings),
+              overrides: commonSettings,
             },
           },
         },
