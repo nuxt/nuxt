@@ -4,13 +4,13 @@ import { glob } from 'tinyglobby'
 import { readFile } from 'node:fs/promises'
 import { fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
 
-import { asyncContext, isBuilt, isTestingAppManifest, isWebpack } from './matrix'
+import { isBuilt, runsOncePerViteBuilderInMatrix } from './matrix'
 
 const fixtureURL = new URL('./fixtures/dev-error-client/', import.meta.url)
 const rootDir = fileURLToPath(fixtureURL)
 const repoDir = fileURLToPath(new URL('../', import.meta.url))
 
-const runs = isBuilt && !isWebpack && !asyncContext && isTestingAppManifest
+const runs = isBuilt && runsOncePerViteBuilderInMatrix
 
 if (runs) {
   await setup({

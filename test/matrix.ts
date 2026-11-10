@@ -55,6 +55,12 @@ export const runsOncePerEnvInMatrix = !isMatrixRun || isCanonicalCombo
  */
 export const runsOncePerBuilderInMatrix = !isMatrixRun || (isBuilt && !asyncContext && isTestingAppManifest)
 
+/**
+ * Like `runsOncePerEnvInMatrix` but keeps `experimental.nitroViteEnvironment`: true in one dev
+ * and one built project for each of the `vite` and `nitro-vite` builders.
+ */
+export const runsOncePerViteBuilderInMatrix = !isMatrixRun || (!isWebpack && !asyncContext && isTestingAppManifest)
+
 export const isNuxtPrepare = process.argv.slice(2).includes('prepare')
 
 export function withMatrix (config: NuxtConfig) {

@@ -2,10 +2,10 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { setup } from '@nuxt/test-utils/e2e'
 
-import { asyncContext, isDev, isTestingAppManifest, isWebpack, projectSuffix } from './matrix'
+import { isDev, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
 import { copyFixture, frameAt, renderErrorPage, sourcePosition } from './dev-error-utils'
 
-const runs = isDev && !isWebpack && !asyncContext && isTestingAppManifest
+const runs = isDev && runsOncePerViteBuilderInMatrix
 
 const fixtureURL = runs
   ? copyFixture('dev-error-sourcemap', `dev error space ${projectSuffix}`)
@@ -16,7 +16,6 @@ if (runs) {
     rootDir: fileURLToPath(fixtureURL),
     dev: true,
     server: true,
-    browser: false,
     setupTimeout: 240 * 1000,
     serverStartTimeout: 240 * 1000,
   })
