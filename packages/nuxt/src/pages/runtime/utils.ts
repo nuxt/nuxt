@@ -43,11 +43,6 @@ export const wrapInKeepAlive = (props: any, children: any): { default: () => VNo
   return { default: () => import.meta.client && props ? h(KeepAlive, props === true ? {} : props, children) : children }
 }
 
-/** @since 3.9.0 */
-export function toArray<T> (value: T | T[]): T[] {
-  return Array.isArray(value) ? value : [value]
-}
-
 /**
  * Shares a lazy route component import between every router created from the route table,
  * as vue-router only caches the resolved component per router.

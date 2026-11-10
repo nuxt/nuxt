@@ -1,5 +1,4 @@
 import { hasProtocol } from 'ufo'
-import { toArray } from '../utils'
 import { defineNuxtPlugin } from '#app/nuxt'
 import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
@@ -9,6 +8,7 @@ import { _loadAsyncComponent } from '#app/composables/preload'
 import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
 import { prefetchGroup } from '#app/internal/prefetch-util'
 import { componentIslands } from '#build/nuxt.config.mjs'
+import { toArray } from '#app/utils'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:prefetch',

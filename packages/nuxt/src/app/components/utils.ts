@@ -6,6 +6,7 @@ import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
 import { renderDiagnostics } from '../diagnostics/render'
 import { MAX_VFOR_LENGTH } from './vfor'
+import { toArray } from '../utils'
 import type { NuxtApp } from '../nuxt'
 import { START_LOCATION } from '#build/pages'
 import { rawVaporSlotKey } from '#build/nuxt.config.mjs'
@@ -198,10 +199,6 @@ export function isStartFragment (element: RendererNode): boolean {
 
 export function isEndFragment (element: RendererNode): boolean {
   return element.nodeName === '#comment' && element.nodeValue === ']'
-}
-
-export function toArray<T> (value: T | T[]): T[] {
-  return Array.isArray(value) ? value : [value]
 }
 
 /**

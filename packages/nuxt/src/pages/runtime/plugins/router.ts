@@ -7,7 +7,7 @@ import { isSamePath, withBase, withoutBase } from 'ufo'
 import type { NuxtApp, Plugin } from '#app/nuxt'
 import type { RouteMiddleware } from '#app/composables/router'
 
-import { generateRouteKey, toArray } from '../utils'
+import { generateRouteKey } from '../utils'
 
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
@@ -22,6 +22,7 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
 import { serverPathFallback, staticRoutes, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import { traceAsync } from '#app/internal/tracing'
+import { toArray } from '#app/utils'
 import { documentURL } from '#app/internal/location'
 
 const sharedMatchers = new WeakMap<readonly RouteRecordRaw[], RouterMatcher>()
