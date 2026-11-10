@@ -1,5 +1,7 @@
 import type { EnvironmentModuleNode, HotUpdateOptions, Plugin } from 'vite'
 import { normalize } from 'pathe'
+import { parseAndWalk } from 'oxc-walker'
+import type { RolldownString } from 'rolldown-string'
 import type { Nuxt } from '@nuxt/schema'
 import { componentDiagnostics } from '@nuxt/kit/internal'
 import { installNuxtModule } from '../core/features.ts'
@@ -33,6 +35,16 @@ export function installComponentModule (component: Component, importer: string, 
     throw componentDiagnostics.NUXT_B3004({ file: linkToAlias(importer, nuxt), component: component.pascalName, requiredModule: internalInstall })
   }
   installNuxtModule(internalInstall)
+}
+
+/** Wrap the default export of a module so that the exported component is named `name`. */
+export function assignDefaultExportName (code: string, id: string, s: RolldownString, name: string) {
+  parseAndWalk(code, id, function (node) {
+    if (node.type !== 'ExportDefaultDeclaration') { return }
+    const { start, end } = node.declaration
+    s.overwrite(start, end, `Object.assign(${code.slice(start, end)}, { __name: ${JSON.stringify(name)} })`)
+    this.skip()
+  })
 }
 
 type ResolutionKeys = Map<string, Map<string, string | undefined>>

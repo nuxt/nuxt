@@ -1,8 +1,8 @@
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
-import { parseAndWalk } from 'oxc-walker'
 
 import { VUE_ID_FILTER, parseModuleId } from '../../core/utils/index.ts'
+import { assignDefaultExportName } from '../../components/utils.ts'
 import { getPageComponentNames } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
@@ -48,14 +48,7 @@ export const PageComponentNamePlugin = (options: PageComponentNamePluginOptions)
         }
 
         const s = rolldownString(code, id, meta)
-        parseAndWalk(code, id, function (node) {
-          if (node.type !== 'ExportDefaultDeclaration') {
-            return
-          }
-          const { start, end } = node.declaration
-          s.overwrite(start, end, `Object.assign(${code.slice(start, end)}, { __name: ${JSON.stringify(pageName)} })`)
-          this.skip()
-        })
+        assignDefaultExportName(code, id, s, pageName)
         if (!s.hasChanged()) {
           return
         }
