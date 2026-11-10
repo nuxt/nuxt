@@ -208,7 +208,7 @@ describe('defineHandler given an h3 handler object', () => {
     const diagnostic = {
       code: 'NUXT_E8016',
       message: expect.stringContaining('received `object`'),
-      fix: expect.stringContaining('import `defineHandler` from `nitro/h3`'),
+      fix: expect.stringMatching(/import `defineHandler` from `nitro\/h3`.*`onRequest` or `onBeforeResponse`/),
     }
     expect(() => delegate.defineHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
     expect(() => delegate.defineEventHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
