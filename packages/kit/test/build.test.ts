@@ -42,6 +42,16 @@ describe('addVitePlugin', () => {
     expect(plugins.map(p => p.name)).toEqual(['a', 'b'])
   })
 
+  it('should only skip `build: false` plugins outside development', async () => {
+    expect(await addPlugins(createMockNuxt(true), [{ name: 'a' }], { build: false })).toHaveLength(1)
+    expect(await addPlugins(createMockNuxt(false), [{ name: 'a' }], { build: false })).toHaveLength(0)
+  })
+
+  it('should only skip `dev: false` plugins in development', async () => {
+    expect(await addPlugins(createMockNuxt(true), [{ name: 'a' }], { dev: false })).toHaveLength(0)
+    expect(await addPlugins(createMockNuxt(false), [{ name: 'a' }], { dev: false })).toHaveLength(1)
+  })
+
   it('should scope isomorphic plugins to the app environments', async () => {
     const [plugin] = await addPlugins(createMockNuxt(true), [{ name: 'a' }])
     expect(await appliesTo(plugin!, 'client')).toBe(true)
