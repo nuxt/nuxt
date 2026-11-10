@@ -191,11 +191,6 @@ function internalSpecifier (specifier: string, appDir: string) {
 }
 
 /**
- * Declarations are emitted either as one bundled file or as a tree of modules that re-export
- * each other. Walking the relative imports means both shapes report the same surface: every
- * package a consumer of this entrypoint ends up depending on.
- */
-/**
  * Declarations reference their siblings by the specifier the runtime uses, so the matching
  * declaration has to be found by extension or as a directory index. A reference that resolves
  * to nothing is reported rather than skipped: silently walking less of the graph would quietly
@@ -208,6 +203,11 @@ function resolveDeclaration (from: string, specifier: string) {
   }
 }
 
+/**
+ * Declarations are emitted either as one bundled file or as a tree of modules that re-export
+ * each other. Walking the relative imports means both shapes report the same surface: every
+ * package a consumer of this entrypoint ends up depending on.
+ */
 function collectFromGraph (entry: string, appDir: string) {
   const found = { types: new Set<string>(), augmentations: new Set<string>() }
   const unresolved = new Set<string>()
@@ -258,9 +258,7 @@ for (const [file, entrypoint] of Object.entries(entrypoints)) {
     }
   }
 
-  const contents = files.size === 1
-    ? withoutComments(readFileSync(path, 'utf8'))
-    : [...files].map(file => withoutComments(readFileSync(file, 'utf8'))).join('\n')
+  const contents = [...files].map(file => withoutComments(readFileSync(file, 'utf8'))).join('\n')
 
   const selfReferential = [...new Set([...contents.matchAll(selfReferentialBase)].map(match => match[1]!))].sort()
   if (selfReferential.length) {

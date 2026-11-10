@@ -30,8 +30,6 @@ permissions: {}
 env:
   PACKAGES: |
     packages/*
-    !packages/nuxi
-    !packages/test-utils
     !packages/ui-templates
     docs
 
