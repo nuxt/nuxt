@@ -53,5 +53,10 @@ export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove `future.compatibilityVersion` from your `nuxt.config` (or the layer that sets it). To keep Nuxt 4 behaviour, stay on Nuxt 4.',
       docs: false,
     },
+    NUXT_B5030: {
+      why: (p: { option: string, replacement: string }) => `\`${p.option}\` is deprecated.`,
+      fix: (p: { option: string, replacement: string }) => `Use \`${p.replacement}\` instead.`,
+      docs: false,
+    },
   },
 })

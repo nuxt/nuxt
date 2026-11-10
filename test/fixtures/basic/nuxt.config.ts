@@ -153,7 +153,7 @@ export default withMatrix({
     ],
   },
   optimization: {
-    keyedComposables: [
+    keyedFunctions: [
       {
         name: 'useCustomKeyedComposable',
         source: '~/other-composables-folder/custom-keyed-composable',
