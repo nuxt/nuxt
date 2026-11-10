@@ -1,19 +1,10 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { $fetch, fetch, setup, startServer } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch, startServer } from '@nuxt/test-utils/e2e'
 
 import { isWebpack, runsOncePerBuilderInMatrix } from './matrix'
+import { setupFixture } from './utils'
 
-if (runsOncePerBuilderInMatrix) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/dynamic-paths', import.meta.url)),
-    dev: false,
-    server: true,
-    browser: false,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+await setupFixture('dynamic-paths', runsOncePerBuilderInMatrix)
 
 // TODO: dynamic paths in dev
 describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {

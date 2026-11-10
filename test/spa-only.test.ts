@@ -1,24 +1,15 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { $fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
+import { setupFixture } from './utils'
 
 // Stubbing a page out of the server bundle leaves its route record in place, so
 // every route it touches still has to resolve.
-const shouldRun = runsOncePerEnvInMatrix
 
-if (shouldRun) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/spa-only', import.meta.url)),
-    dev: isDev,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+await setupFixture('spa-only', runsOncePerEnvInMatrix)
 
-describe.skipIf(!shouldRun)('pages served with `ssr: false`', () => {
+describe.skipIf(!runsOncePerEnvInMatrix)('pages served with `ssr: false`', () => {
   it('serves an SPA shell rather than rendered markup', async () => {
     const html = await $fetch<string>('/admin')
     expect(html).not.toContain('admin-index-page')

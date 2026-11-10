@@ -3,11 +3,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { clearServerLogs, fetch, getServerLogs, setup } from '@nuxt/test-utils/e2e'
+import { clearServerLogs, fetch, getServerLogs } from '@nuxt/test-utils/e2e'
 import type { ErrorReport, Frame } from 'my-bad'
 
 import { isDev, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
 import { channelState, copyFixture, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
+import { setupFixture } from './utils'
 
 // stack mapping only applies in dev under the vite builders
 const runs = isDev && runsOncePerViteBuilderInMatrix
@@ -17,15 +18,7 @@ const fixtureURL = runs
   : new URL('./fixtures/dev-error-sourcemap/', import.meta.url)
 const at = (file: string, needle: string) => sourcePosition(fixtureURL, file, needle)
 
-if (runs) {
-  await setup({
-    rootDir: fileURLToPath(fixtureURL),
-    dev: true,
-    server: true,
-    setupTimeout: 240 * 1000,
-    serverStartTimeout: 240 * 1000,
-  })
-}
+await setupFixture(fixtureURL, runs)
 
 let pagePromise: Promise<Awaited<ReturnType<typeof renderErrorPage>>> | undefined
 function getErrorPage () {

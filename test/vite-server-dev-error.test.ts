@@ -1,26 +1,17 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { fetch, setup } from '@nuxt/test-utils/e2e'
+import { fetch } from '@nuxt/test-utils/e2e'
 import type { ErrorReport } from 'my-bad'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
 import { channelState, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
+import { setupFixture } from './utils'
 
 const fixtureURL = new URL('./fixtures/dev-error-sourcemap/', import.meta.url)
 const at = (file: string, needle: string) => sourcePosition(fixtureURL, file, needle)
 
 const runs = runsOncePerEnvInMatrix && isDev
 
-if (runs) {
-  await setup({
-    rootDir: fileURLToPath(fixtureURL),
-    dev: true,
-    server: true,
-    nuxtConfig: { server: { builder: 'vite' } },
-    setupTimeout: 240 * 1000,
-    serverStartTimeout: 240 * 1000,
-  })
-}
+await setupFixture(fixtureURL, runs, { nuxtConfig: { server: { builder: 'vite' } } })
 
 describe.skipIf(!runs)('pure vite dev server error reporting', () => {
   it('overlays a report of the mapped stack on the app error page', async () => {

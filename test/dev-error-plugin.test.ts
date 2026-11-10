@@ -1,24 +1,14 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { setup } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOncePerViteBuilderInMatrix } from './matrix'
 import { frameAt, renderErrorPage, sourcePosition } from './dev-error-utils'
+import { setupFixture } from './utils'
 
 const fixtureURL = new URL('./fixtures/dev-error-client/', import.meta.url)
 
 const runs = isDev && runsOncePerViteBuilderInMatrix
 
-if (runs) {
-  await setup({
-    rootDir: fileURLToPath(fixtureURL),
-    dev: true,
-    server: true,
-    nuxtConfig: { plugins: ['~/throwing-plugin'] },
-    setupTimeout: 240 * 1000,
-    serverStartTimeout: 240 * 1000,
-  })
-}
+await setupFixture(fixtureURL, runs, { nuxtConfig: { plugins: ['~/throwing-plugin'] } })
 
 describe.skipIf(!runs)('a plugin that throws while its module evaluates', () => {
   it('reports the plugin frame on every request, not just the first', async () => {
