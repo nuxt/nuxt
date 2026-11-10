@@ -75,4 +75,27 @@ test.describe('route scroll behavior', () => {
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/scroll-to-top/scroll-to-top'))
     await page.waitForFunction(() => window.scrollY === 0)
   })
+
+  test('should stop at the hash when loading a page with `scroll-behavior: smooth`', async ({ page, goto }) => {
+    // hydrate while the browser is still scrolling to the hash
+    await page.route(/\.m?js/, async (route) => {
+      await new Promise(resolve => setTimeout(resolve, 150))
+      await route.continue()
+    }, { times: 1 })
+
+    await goto('/smooth-hash#target')
+
+    // wait for the scroll position to hold
+    await page.evaluate(async () => {
+      let lastScrollY = 0
+      for (let framesHeld = 0; framesHeld < 30;) {
+        await new Promise(requestAnimationFrame)
+        framesHeld = window.scrollY === lastScrollY ? framesHeld + 1 : 0
+        lastScrollY = window.scrollY
+      }
+    })
+
+    const offset = await page.locator('#target').evaluate(el => el.getBoundingClientRect().top)
+    expect(Math.abs(offset)).toBeLessThan(1)
+  })
 })

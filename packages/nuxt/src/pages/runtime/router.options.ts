@@ -86,7 +86,9 @@ function _calculatePosition (
     return {
       el: to.hash,
       top: _getHashElementScrollMarginTop(to.hash),
-      behavior: isChangingPage(to, from) ? defaultHashScrollBehaviour : 'instant',
+      // On first load the browser is already scrolling to the hash, smoothly when the page has
+      // `scroll-behavior: smooth`. An instant jump during that scroll overshoots in Chromium.
+      behavior: from === START_LOCATION || isChangingPage(to, from) ? defaultHashScrollBehaviour : 'instant',
     }
   }
 
