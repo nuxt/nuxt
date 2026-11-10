@@ -20,6 +20,13 @@ export async function linkStaticDist (rootDir: string, publicDir: string): Promi
   await symlink(publicDir, dist, 'junction').catch(() => {})
 }
 
+const RELATIVE_RE = /^([^.])/
+
+/** A relative path that always starts with `.`, as tsconfig `paths` require. */
+export function relativeWithDot (from: string, to: string): string {
+  return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
+}
+
 /**
  * Resolve the `{{ path.to.option }}` placeholders in a Nitro command against the Nitro
  * options, as paths relative to the output directory the command runs in.

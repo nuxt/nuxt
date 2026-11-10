@@ -1,49 +1,15 @@
 import { describe, expect, it, vi } from 'vitest'
 import { parse } from 'devalue'
-import { joinURL } from 'ufo'
 import { createNuxtRenderer } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
-import type { NuxtRendererOptions } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
 import { renderPayloadJsonScript } from '../../packages/nuxt/src/runtime/server/renderer/payload.ts'
 import type { NuxtSSRContext } from '../../packages/nuxt/src/app/types.ts'
+
+import { BUILD_ASSETS_DIR, createEvent, options, render } from './harness'
 
 vi.mock('nuxt/internal/renderer-config', async importOriginal => ({
   ...await importOriginal<Record<string, unknown>>(),
   NUXT_SSR_STREAMING: true,
 }))
-
-type RendererEvent = Parameters<ReturnType<typeof createNuxtRenderer>['fetch']>[0]
-
-const BUILD_ASSETS_DIR = '/_custom-assets/'
-
-const runtimeConfig = {
-  app: { baseURL: '/', buildAssetsDir: BUILD_ASSETS_DIR, cdnURL: '', buildId: 'standalone' },
-  public: { greeting: 'hello from runtime config' },
-} as unknown as ReturnType<NuxtRendererOptions['runtimeConfig']>
-
-const options: NuxtRendererOptions = {
-  runtimeConfig: () => runtimeConfig,
-  buildAssetsURL: (...path) => joinURL(BUILD_ASSETS_DIR, ...path),
-  publicAssetsURL: (...path) => joinURL('/', ...path),
-  getRouteRules: () => ({ ssr: true }),
-  hooks: () => ({ callHook: () => {} }),
-  createResponse: (body, init) => new Response(body, init),
-  createError: init => Object.assign(new Error(init.statusText), init),
-}
-
-function createEvent (path: string, init?: RequestInit): RendererEvent {
-  const url = new URL(path, 'http://localhost')
-  return {
-    req: new Request(url, init),
-    url,
-    res: { headers: new Headers() },
-    context: {},
-  } as unknown as RendererEvent
-}
-
-function render (path: string, overrides?: Partial<NuxtRendererOptions>, event = createEvent(path)) {
-  const renderer = createNuxtRenderer({ ...options, ...overrides })
-  return renderer.fetch(event).then(async response => ({ response, html: await response.text() }))
-}
 
 describe('renderer without a server builder', () => {
   it('renders a document from a web-standard request event', async () => {
@@ -102,6 +68,15 @@ describe('renderer without a server builder', () => {
     })
 
     expect(html).toContain('<h1>rewritten after render</h1>')
+  })
+
+  it.each([false, true])('leaves `prefetchLinks` out of an inlined payload (streaming: %s)', async (streaming) => {
+    const event = createEvent('/prefetch-links', { headers: { 'user-agent': 'Mozilla/5.0' } })
+    const { html } = await render('/prefetch-links', { getRouteRules: () => ({ ssr: true, streaming }) }, event)
+
+    expect(html.includes('window.__unhead__')).toBe(streaming)
+    expect(html).toContain('rendered without nitro')
+    expect(html).not.toContain('next-page.js')
   })
 
   it('resolves asset URLs through the helpers it was given', async () => {
