@@ -37,14 +37,17 @@ export async function setupDevServer (nuxt: Nuxt, rsbuild: RsbuildInstance) {
   const nitroBuildsPath = joinURL(assetsPath, 'builds/')
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
     const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
+    if (!isSameOriginRequest(req, resolveAllowedHosts(nuxt.options))) {
+      res!.statusCode = 403
+      res!.end('Forbidden')
+      return kHandled
+    }
+
     if (!req.url?.startsWith(assetsPath) || req.url.startsWith(nitroBuildsPath)) {
       return
     }
 
-    if (!isSameOriginRequest(req, resolveAllowedHosts(nuxt.options))) {
-      res!.statusCode = 403
-      res!.end('Forbidden')
-    } else if (!await handleRequest(devServer, req as IncomingMessage, res as ServerResponse)) {
+    if (!await handleRequest(devServer, req as IncomingMessage, res as ServerResponse)) {
       // do not render the app for build assets that do not exist
       res!.statusCode = 404
       res!.end()
