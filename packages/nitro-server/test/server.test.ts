@@ -201,6 +201,20 @@ describe('parity between the shipped implementations and h3', () => {
   })
 })
 
+describe('defineHandler given an h3 handler object', () => {
+  it('throws NUXT_E8016 pointing to `nitro/h3`', async () => {
+    const delegate = await import('../src/runtime/server')
+    const input = { middleware: [], handler: () => 'ok' }
+    const diagnostic = {
+      code: 'NUXT_E8016',
+      message: expect.stringContaining('received `object`'),
+      fix: expect.stringContaining('import `defineHandler` from `nitro/h3`'),
+    }
+    expect(() => delegate.defineHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
+    expect(() => delegate.defineEventHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
+  })
+})
+
 describe('session helpers given an h3 v1 event', () => {
   it('throws NUXT_E8012 naming the helper', async () => {
     const delegate = await import('../src/runtime/server')

@@ -73,6 +73,9 @@ function requireRequestEvent<F extends (event: any, ...args: any[]) => any> (hel
 
 /** A handler h3's router can serve directly, whose body can be read more than once. */
 export function defineHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
+  if (typeof handler !== 'function') {
+    throw serverDiagnostics.NUXT_E8016({ received: handler === null ? '`null`' : `\`${typeof handler}\`` })
+  }
   return defineH3Handler((event) => {
     bufferRequestBody(event)
     return handler(event as RequestEvent) as Result
