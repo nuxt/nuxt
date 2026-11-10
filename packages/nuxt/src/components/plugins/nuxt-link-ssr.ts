@@ -1,7 +1,37 @@
 import { createUnplugin } from 'unplugin'
 import { genImport } from 'knitwork'
 import { generateTransform, rolldownString } from 'rolldown-string'
+import type { RolldownString } from 'rolldown-string'
 import { VUE_ID_RE } from '../../core/utils/plugins.ts'
+
+/**
+ * `replace(regex, replacer)` is not supported by rolldown's native
+ * MagicString, which only accepts a string replacement. Iterate the matches
+ * in JS and apply positional overwrites, which both implementations support.
+ */
+function replaceRegexMatches (
+  s: RolldownString,
+  code: string,
+  re: RegExp,
+  replacer: (match: RegExpExecArray) => string,
+): boolean {
+  let matched = false
+  const offset = s.offset
+  re.lastIndex = 0
+  let match: RegExpExecArray | null
+  while ((match = re.exec(code)) !== null) {
+    matched = true
+    const content = replacer(match)
+    if (content !== match[0]) {
+      s.overwrite(match.index - offset, match.index + match[0].length - offset, content)
+    }
+    if (match[0].length === 0) {
+      re.lastIndex++
+    }
+  }
+  re.lastIndex = 0
+  return matched
+}
 
 const NUXT_LINK_SSR_RE = /\b_?ssrRenderComponent\((_component_(?:NuxtLink|nuxt_link)),/
 const NUXT_LINK_SSR_GLOBAL_RE = new RegExp(NUXT_LINK_SSR_RE.source, 'g')
@@ -19,11 +49,7 @@ export const NuxtLinkSsrPlugin = createUnplugin(() => {
       },
       handler (code, id, meta?: unknown) {
         const s = rolldownString(code, id, meta)
-        let found = false
-        s.replace(NUXT_LINK_SSR_GLOBAL_RE, (_, name) => {
-          found = true
-          return `${SSR_RENDER_NUXT_LINK}(${name},`
-        })
+        const found = replaceRegexMatches(s, code, NUXT_LINK_SSR_GLOBAL_RE, ([, name]) => `${SSR_RENDER_NUXT_LINK}(${name},`)
         if (!found) { return }
         s.prepend(genImport('#app/components/nuxt-link-ssr-render', [{ name: 'ssrRenderNuxtLink', as: SSR_RENDER_NUXT_LINK }]) + '\n')
         return generateTransform(s, id)
@@ -52,9 +78,10 @@ export const NuxtLinkClientPlugin = createUnplugin(() => {
         if (CACHED_VNODES_RE.test(code)) { return }
         const s = rolldownString(code, id, meta)
         const used = new Set<'VNode' | 'Block'>()
-        s.replace(NUXT_LINK_CLIENT_GLOBAL_RE, (_, kind: 'VNode' | 'Block', name) => {
+        replaceRegexMatches(s, code, NUXT_LINK_CLIENT_GLOBAL_RE, (match) => {
+          const kind = match[1] as 'VNode' | 'Block'
           used.add(kind)
-          return `${CREATE_NUXT_LINK[kind]}(${name},`
+          return `${CREATE_NUXT_LINK[kind]}(${match[2]},`
         })
         if (!used.size) { return }
         s.prepend(genImport('#app/components/nuxt-link', [...used].map(kind => ({ name: `createNuxtLink${kind}`, as: CREATE_NUXT_LINK[kind] }))) + '\n')
