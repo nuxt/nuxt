@@ -45,16 +45,19 @@ describe.skipIf(!runsDev)('pure vite dev server', () => {
 
 describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
   const configuredDir = join(rootDir, 'node_modules/.cache/nuxt/.client-outdir-override')
+  const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-build')
+  const publicDir = join(outputDir, 'public')
   let html: string
 
   beforeAll(async () => {
-    await rm(configuredDir, { recursive: true, force: true })
+    await Promise.all([configuredDir, outputDir].map(dir => rm(dir, { recursive: true, force: true })))
     // built in-process rather than through the CLI, so the suite also covers a build
     // that never initialises a server
     // its own build directory, so a concurrently running dev project cannot rewrite the
     // output between the build and the assertions
     const nuxt = await buildInProcess(rootDir, {
       buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build'),
+      nitro: { output: { dir: outputDir } },
       // client build options the builder has to override
       vite: {
         $client: {
@@ -66,7 +69,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
       },
     })
     expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
-    html = await readFile(join(rootDir, '.output/public/index.html'), 'utf-8')
+    html = await readFile(join(publicDir, 'index.html'), 'utf-8')
   }, 240 * 1000)
 
   it('writes the client build to the public directory of the output, not the configured `outDir`', () => {
@@ -98,12 +101,12 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
 
   it('emits fallback documents for static hosts', async () => {
     for (const file of ['200.html', '404.html']) {
-      expect(await readFile(join(rootDir, '.output/public', file), 'utf-8')).toBe(html)
+      expect(await readFile(join(publicDir, file), 'utf-8')).toBe(html)
     }
   })
 
   it('copies the public directory', async () => {
-    expect(await readFile(join(rootDir, '.output/public/static.txt'), 'utf-8')).toContain('static-asset')
+    expect(await readFile(join(publicDir, 'static.txt'), 'utf-8')).toContain('static-asset')
   })
 
   it('maps the `#entry` specifier to the emitted entry chunk', () => {
@@ -116,11 +119,11 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
     const references = [...html.matchAll(/(?:src|href)="\.\/([^"]+)"/g)].map(match => match[1]!)
     expect(references.length).toBeGreaterThan(0)
     for (const reference of references) {
-      await expect(readFile(join(rootDir, '.output/public', reference), 'utf-8')).resolves.toBeTruthy()
+      await expect(readFile(join(publicDir, reference), 'utf-8')).resolves.toBeTruthy()
     }
   })
 
   it('does not emit a server bundle', async () => {
-    await expect(readFile(join(rootDir, '.output/server/index.mjs'), 'utf-8')).rejects.toThrow()
+    await expect(readFile(join(outputDir, 'server/index.mjs'), 'utf-8')).rejects.toThrow()
   })
 })
