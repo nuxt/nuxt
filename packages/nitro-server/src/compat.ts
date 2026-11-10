@@ -591,7 +591,8 @@ async function getLegacyImportOverrides (legacy: Pick<ResolvedNitroLegacyOptions
   if (legacy.h3) {
     const h3Names = new Set(await getH3ExportNames())
     for (const name of nuxtServerImportsPreset.imports) {
-      if (h3Names.has(name)) {
+      // h3 v1 has no `defineHandler`, so code calling it was written for `nuxt/server`
+      if (name !== 'defineHandler' && h3Names.has(name)) {
         overrides[name] = getLegacyH3ShimPath()
       }
     }

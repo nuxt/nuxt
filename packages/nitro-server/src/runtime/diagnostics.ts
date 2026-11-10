@@ -51,12 +51,17 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_E8012: {
       why: (p: { helper: string }) => `\`${p.helper}\` from \`nuxt/server\` was called with an h3 event. The handler was defined with h3's \`defineEventHandler\` (auto-imported), which passes a different event.`,
-      fix: 'Import `defineEventHandler` from `nuxt/server` alongside the helpers. See `https://nuxt.com/docs/5.x/getting-started/upgrade#moving-to-nuxtserver`.',
+      fix: 'Import `defineHandler` from `nuxt/server` alongside the helpers. See `https://nuxt.com/docs/5.x/getting-started/upgrade#moving-to-nuxtserver`.',
       docs: false,
     },
     NUXT_E8013: {
       why: (p: { hook: string, location?: string }) => `A \`${p.hook}\` listener was registered${p.location ? ` by \`${p.location}\`` : ''}, but Nuxt 5 does not emit this Nitro v2 hook, so the listener never runs.`,
       fix: (p: { fix: string }) => p.fix,
+      docs: false,
+    },
+    NUXT_E8016: {
+      why: (p: { received: string }) => `\`defineHandler\` from \`nuxt/server\` accepts a handler function, but received ${p.received}. The object form (\`{ handler, middleware, meta }\`) is specific to h3.`,
+      fix: 'Pass the handler function directly, or import `defineHandler` from `nitro/h3` in this file to use the object form. h3 v2 does not run h3 v1 `onRequest` or `onBeforeResponse` hooks, so move them into `middleware` or the handler first.',
       docs: false,
     },
   },

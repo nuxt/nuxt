@@ -76,7 +76,7 @@ describe('createServerAutoImports', () => {
     const imports = await autoImports.getImports()
     const sourceOf = (name: string) => imports.filter(i => (i.as ?? i.name) === name).map(i => i.from)
 
-    for (const name of ['defineEventHandler', 'createError', 'getQuery', 'readBody', 'getCookie', 'useRuntimeConfig', 'getRouteRules', 'readValidatedBody', 'getRouterParam', 'handleCors']) {
+    for (const name of ['defineHandler', 'defineEventHandler', 'createError', 'getQuery', 'readBody', 'getCookie', 'useRuntimeConfig', 'getRouteRules', 'readValidatedBody', 'getRouterParam', 'handleCors']) {
       expect(sourceOf(name), name).toEqual(['nuxt/server'])
     }
 
