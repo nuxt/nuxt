@@ -6,6 +6,7 @@ import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 
 import { getLoader, parseModuleId } from '../core/utils/index.ts'
+import { findSFCScriptBlocks, getStaticPropertyKey, unwrapStaticExpression } from '../core/utils/parse-utils.ts'
 import { linkToAlias, logger, offsetToPosition } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
@@ -20,23 +21,13 @@ export function shouldExtractSerializablePageMeta (nuxt = useNuxt()): boolean {
   return !!nuxt.options.experimental.scanPageMeta && !!nuxt.options.experimental.extractSerializablePageMeta
 }
 
-const SFC_SCRIPT_RE = /<script(?=\s|>)(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script\s*>/dgi
 function extractScriptContent (sfc: string) {
-  const contents: Array<{ loader: 'tsx' | 'ts', code: string, offset: number }> = []
-  for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
-    const content = match?.groups?.content
-    if (content) {
-      const [contentStart] = match.indices!.groups!.content!
-      contents.push({
-        loader: match.groups!.attrs && /[tj]sx/.test(match.groups!.attrs) ? 'tsx' : 'ts',
-        code: content.trim(),
-        // offsets within the trimmed script block are reported against the whole SFC
-        offset: contentStart + content.length - content.trimStart().length,
-      })
-    }
-  }
-
-  return contents
+  return findSFCScriptBlocks(sfc).filter(block => block.content).map(({ attrs, content, start }) => ({
+    loader: /[tj]sx/.test(attrs) ? 'tsx' as const : 'ts' as const,
+    code: content.trim(),
+    // offsets within the trimmed script block are reported against the whole SFC
+    offset: start + content.length - content.trimStart().length,
+  }))
 }
 
 const PAGE_META_MACRO_NAMES = new Set(['definePageMeta', 'defineRouteRules'])
@@ -83,33 +74,6 @@ export function dynamicPageMetaCache (nuxt: Nuxt | null | undefined = tryUseNuxt
  */
 export function getDynamicPageMeta (page: NuxtPage, cache = dynamicPageMetaCache()): ReadonlySet<string> {
   return (page.file ? cache.get(normalize(page.file)) : undefined) ?? EMPTY_DYNAMIC_META
-}
-
-type StaticExpressionWrapper = ESTree.Node & { expression: ESTree.Node }
-
-const STATIC_EXPRESSION_WRAPPERS = new Set([
-  'ParenthesizedExpression',
-  'TSAsExpression',
-  'TSNonNullExpression',
-  'TSSatisfiesExpression',
-  'TSTypeAssertion',
-])
-
-export function unwrapStaticExpression (node: ESTree.Node | undefined): ESTree.Node | undefined {
-  let current = node
-  while (current && STATIC_EXPRESSION_WRAPPERS.has(current.type)) {
-    current = (current as StaticExpressionWrapper).expression
-  }
-  return current
-}
-
-/** The key of a plain `key: value` property, or `undefined` when it cannot be known statically. */
-function getStaticPropertyKey (property: ESTree.ObjectPropertyKind): string | undefined {
-  if (property.type !== 'Property' || property.computed) { return }
-  if (property.key.type === 'Identifier') { return property.key.name }
-  if (property.key.type === 'Literal' && (typeof property.key.value === 'string' || typeof property.key.value === 'number')) {
-    return String(property.key.value)
-  }
 }
 
 function isPlainProperty (property: ESTree.ObjectPropertyKind): property is ESTree.ObjectProperty {

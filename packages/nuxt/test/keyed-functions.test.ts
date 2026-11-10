@@ -144,6 +144,10 @@ useKeyTwo(() => {})
     `)
   })
 
+  it('should not treat script tags in a module string as an SFC script block', async () => {
+    expect(await transform(`const html = '<script>0</script>'\nimport { useKey } from '#app'\nuseKey()`)).toContain(`useKey('$HJiaryoL2y' /* nuxt-injected */)`)
+  })
+
   it('should use different hash for each call of the same function', async () => {
     expect(await transform(`
 import { useKey } from '#app'

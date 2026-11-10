@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
 import { defineKeyedFunctionFactory } from '../src/compiler/runtime'
-import { parseStaticExportIdentifiers, parseStaticFunctionCall } from '../src/core/utils/parse-utils.ts'
+import { findSFCScriptBlocks, parseStaticExportIdentifiers, parseStaticFunctionCall } from '../src/core/utils/parse-utils.ts'
 import type { FunctionCallMetadata } from '../src/core/utils/parse-utils.ts'
 import { createScanPluginContext } from '../src/compiler/utils.ts'
 import * as oxcWalker from 'oxc-walker'
@@ -203,6 +203,20 @@ describe('parseStaticFunctionCall', () => {
     'createUseFetch.call(null)',
   ])('should not parse `%s`', (code) => {
     expect(getFirstParsedFunctionCall(code, /\bcreateUseFetch\b/)).toBeNull()
+  })
+})
+
+describe('findSFCScriptBlocks', () => {
+  it('should find each script block with its attributes and content offset', () => {
+    const sfc = `<template><scripts /></template>\n<script lang="ts">const a = 1</script>\n<script setup>\nconst b = 2\n</script >`
+    const blocks = findSFCScriptBlocks(sfc)
+    expect(blocks.map(({ attrs, content }) => ({ attrs, content }))).toEqual([
+      { attrs: ' lang="ts"', content: 'const a = 1' },
+      { attrs: ' setup', content: '\nconst b = 2\n' },
+    ])
+    for (const block of blocks) {
+      expect(sfc.slice(block.start, block.start + block.content.length)).toBe(block.content)
+    }
   })
 })
 

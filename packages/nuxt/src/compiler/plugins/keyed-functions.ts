@@ -13,8 +13,9 @@ import type { ESTree } from 'rolldown/utils'
 import type { Import } from 'unimport'
 
 import { parseStaticImports } from '../../core/utils/static-imports.ts'
+import { isJS } from '../../core/utils/plugins.ts'
 import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE, isWhitespace, stripExtension } from '../../utils.ts'
-import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
+import { type FunctionCallMetadata, findSFCScriptBlocks, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 import { resolveImportPath } from '../utils.ts'
 
 interface KeyedFunctionsOptions {
@@ -38,7 +39,6 @@ interface KeyedFunctionsOptions {
 }
 
 const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
-const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 const NUXT_INJECTED_MARKER = '/* nuxt-injected */'
 
 // TODO: remove in Nuxt 5
@@ -156,7 +156,9 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           if (!codeIncludeRE.test(code)) { return }
         }
 
-        const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { 0: code, index: 0 }
+        const [block] = isJS(_id) ? [] : findSFCScriptBlocks(code)
+        const script = block?.content ?? code
+        const codeIndex = block?.start ?? 0
         const id = stripExtension(_id)
 
         const { directImports, namespaces } = processImports(parseStaticImports(script, _id), options.alias)
