@@ -783,7 +783,8 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     const props = rawProps && !hashMode && !options.prefetchedClass ? directRenderProps(rawProps) : undefined
     const rawTo = props?.to
     const slot = slots?.default as (Slot & { _c?: boolean, _d?: boolean }) | undefined
-    if (!props || !rawTo || (typeof rawTo === 'object' ? ('state' in rawTo || 'force' in rawTo || 'replace' in rawTo) : typeof rawTo !== 'string') || props.prefetchedClass || (slot && !slot._c) || !isStaticInternalLink(props, rawTo, props.attrs?.download !== undefined)) { return }
+    // a `custom` link renders only its slot, which the inline anchor cannot do on the client
+    if (!props || !rawTo || (props.custom !== undefined && props.custom !== false) || (typeof rawTo === 'object' ? ('state' in rawTo || 'force' in rawTo || 'replace' in rawTo) : typeof rawTo !== 'string') || props.prefetchedClass || (slot && !slot._c) || !isStaticInternalLink(props, rawTo, props.attrs?.download !== undefined)) { return }
     const prefetchOn = (mode: 'visibility' | 'interaction') => typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])
     if (prefetchOn('interaction')) { return }
     const nuxtApp = useNuxtApp() as NuxtApp & { _inlineLinks?: InlineLinks | false }
