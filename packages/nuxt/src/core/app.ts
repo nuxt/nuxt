@@ -444,36 +444,17 @@ export function filterPluginDependencies<T extends AnnotatedPlugin> (plugins: T[
   return filter ? result : plugins
 }
 
-export function hasPluginDependencies (plugins: Array<{ dependsOn?: string[], _metaUnknown?: boolean }>): boolean {
-  for (const plugin of plugins) {
-    if (plugin._metaUnknown) { return true }
-    if (plugin.dependsOn && plugin.dependsOn.length > 0) { return true }
-  }
-  return false
-}
+export type PluginCapability = 'dependsOn' | 'parallel' | 'hasHooks' | 'hasEnv'
 
-export function hasParallelPlugins (plugins: Array<{ parallel?: boolean, _metaUnknown?: boolean }>): boolean {
-  for (const plugin of plugins) {
-    if (plugin._metaUnknown) { return true }
-    if (plugin.parallel) { return true }
-  }
-  return false
-}
-
-export function hasPluginHooks (plugins: Array<{ hasHooks?: boolean, _metaUnknown?: boolean }>): boolean {
-  for (const plugin of plugins) {
-    if (plugin._metaUnknown) { return true }
-    if (plugin.hasHooks) { return true }
-  }
-  return false
-}
-
-export function hasIslandOptOutPlugins (plugins: Array<{ hasEnv?: boolean, _metaUnknown?: boolean }>): boolean {
-  for (const plugin of plugins) {
-    if (plugin._metaUnknown) { return true }
-    if (plugin.hasEnv) { return true }
-  }
-  return false
+/**
+ * Whether any plugin may use a capability, so the runtime can skip the code paths for it otherwise.
+ * Plugins with metadata unknown at build time may use any capability.
+ */
+export function hasPluginCapability (plugins: Array<{ dependsOn?: string[], parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean, _metaUnknown?: boolean }>, capability: PluginCapability): boolean {
+  return plugins.some((plugin) => {
+    const value = plugin[capability]
+    return plugin._metaUnknown || (Array.isArray(value) ? value.length > 0 : !!value)
+  })
 }
 
 export function checkForCircularDependencies (_plugins: AnnotatedPlugin[]) {
