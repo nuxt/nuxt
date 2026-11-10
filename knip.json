@@ -133,6 +133,7 @@
     },
     "packages/kit": {
       "entry": [
+        "test/**/*.ts",
         "test/**/*-fixture/**/*.{js,ts,mjs,cjs,cts,mts,vue}"
       ],
       "ignoreDependencies": [
