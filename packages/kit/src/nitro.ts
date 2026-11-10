@@ -124,8 +124,8 @@ const WILDCARD_SUFFIX_RE = /\/\*\*(?::\w+)?$/
  * A handler already registered on the base path for the same method keeps it: a
  * method-specific handler there does not answer the other methods the wildcard covers.
  *
- * Not applied to middleware, which nitro v2 mounts with `app.use()` and so already runs on
- * the base path, nor to `/**`, whose base would shadow the renderer on `/`.
+ * Not applied to middleware, which nitro v2 mounts with `app.use()` as a literal path prefix,
+ * nor to `/**`, whose base would shadow the renderer on `/`.
  */
 function addLegacyBaseRoute (nuxt: Nuxt, entry: ServerHandler, resolved: ResolvedVariant<string>): void {
   const route = entry.route
