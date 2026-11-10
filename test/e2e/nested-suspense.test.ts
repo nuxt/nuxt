@@ -171,6 +171,39 @@ test.describe('boot', () => {
   })
 })
 
+// https://github.com/nuxt/nuxt/issues/34683, https://github.com/nuxt/nuxt/issues/28425
+test.describe('navigation with a layout change', () => {
+  test('completes when a redirect crosses the layout boundary', async ({ page, goto }) => {
+    await goto('/')
+    await expect(page.getByTestId('index-title')).toBeVisible()
+    await expect(page.getByTestId('alternate-layout')).toBeVisible()
+
+    await page.getByTestId('link-redirect').click()
+
+    await expect(page.getByTestId('target-content')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('default-layout')).toBeVisible()
+    await expect(page.getByTestId('index-title')).not.toBeVisible()
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('settles on the final route after rapid navigation across useAsyncData pages', async ({ page, goto }) => {
+    await goto('/asyncdata/p0')
+    await expect(page.getByTestId('asyncdata-p0')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('default-layout')).toBeVisible()
+
+    await page.getByTestId('link-async-p1').dispatchEvent('click')
+    await page.getByTestId('link-async-p2').dispatchEvent('click')
+    await page.getByTestId('link-async-p3').dispatchEvent('click')
+
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/asyncdata/p3')
+    await expect(page.getByTestId('asyncdata-p3')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('default-layout')).toBeVisible()
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+})
+
 test.describe('route provider', () => {
   test('should preserve current route when navigation is suspended', async ({ page, goto }) => {
     await goto('/route-provider/foo')
