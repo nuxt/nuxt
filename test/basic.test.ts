@@ -1,5 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises'
-import type { Route } from 'playwright-core'
+import type { Page, Route } from 'playwright-core'
 import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
@@ -2503,5 +2503,71 @@ describe.skipIf(!once)('nuxt-time', () => {
   it('injects one script', async () => {
     const html = await $fetch<string>('/components/nuxt-time')
     expect(html.match(/document\.querySelectorAll/g)).toHaveLength(1)
+  })
+})
+
+describe.skipIf(!oncePerEnv)('scroll restoration', () => {
+  async function scrollTo (page: Page, top: number) {
+    await page.evaluate(top => window.scrollTo(0, top), top)
+    await page.waitForFunction(top => window.scrollY === top, top)
+  }
+
+  async function waitForRoute (page: Page, path: string) {
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
+  }
+
+  async function expectScrollY (page: Page, top: number) {
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(top)
+    // the position must stay after the page settles
+    await page.waitForTimeout(300)
+    expect(await page.evaluate(() => window.scrollY)).toBe(top)
+  }
+
+  /** Navigates and waits for the scroll to the top of the new page, which happens after the route changes. */
+  async function clickLink (page: Page, name: string, path: string) {
+    await page.getByRole('link', { name }).click()
+    await waitForRoute(page, path)
+    await expectScrollY(page, 0)
+  }
+
+  it('restores the position when navigating back and forward', async () => {
+    const { page } = await renderPage('/scroll')
+    await scrollTo(page, 1000)
+    await clickLink(page, 'to other', '/scroll/other')
+    await scrollTo(page, 500)
+
+    await page.goBack()
+    await waitForRoute(page, '/scroll')
+    await expectScrollY(page, 1000)
+
+    await page.goForward()
+    await waitForRoute(page, '/scroll/other')
+    await expectScrollY(page, 500)
+    await page.close()
+  })
+
+  it('restores the position when reloading the initial page', async () => {
+    const { page } = await renderPage('/scroll')
+    await scrollTo(page, 1000)
+    await page.reload()
+    await waitForRoute(page, '/scroll')
+    await expectScrollY(page, 1000)
+    await page.close()
+  })
+
+  it('restores the positions when reloading after a client-side navigation', async () => {
+    const { page } = await renderPage('/scroll')
+    await scrollTo(page, 1000)
+    await clickLink(page, 'to other', '/scroll/other')
+    await scrollTo(page, 500)
+
+    await page.reload()
+    await waitForRoute(page, '/scroll/other')
+    await expectScrollY(page, 500)
+
+    await page.goBack()
+    await waitForRoute(page, '/scroll')
+    await expectScrollY(page, 1000)
+    await page.close()
   })
 })
