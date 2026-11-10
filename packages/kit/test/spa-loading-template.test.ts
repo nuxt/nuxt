@@ -6,8 +6,8 @@ import { describe, expect, it } from 'vitest'
 import { resolveSpaLoadingTemplate } from '../src/internal/spa-loading-template.ts'
 import { withTempDir } from './utils.ts'
 
-const nuxtIn = (srcDir: string, spaLoadingTemplate: NuxtOptions['spaLoadingTemplate']) => ({
-  options: { srcDir, dir: { app: 'app' }, spaLoadingTemplate, _layers: [{ config: { srcDir, dir: { app: 'app' } } }] },
+const nuxtIn = (srcDir: string, spaLoadingTemplate: NuxtOptions['spaLoadingTemplate'], layerDirs = [srcDir]) => ({
+  options: { srcDir, dir: { app: 'app' }, spaLoadingTemplate, _layers: layerDirs.map(layerDir => ({ config: { srcDir: layerDir, dir: { app: 'app' } } })) },
 }) as unknown as Nuxt
 
 describe('resolveSpaLoadingTemplate', () => {
@@ -23,5 +23,10 @@ describe('resolveSpaLoadingTemplate', () => {
   it('falls back to the built-in template when the app template cannot be read', () => withTempDir({}, async (dir) => {
     await mkdir(join(dir, 'app/spa-loading-template.html'), { recursive: true })
     expect(await resolveSpaLoadingTemplate(nuxtIn(dir, true))).toContain('class="nuxt-spa-loading"')
+  }))
+
+  it('skips a directory in a higher-priority layer for a lower layer template', () => withTempDir({ 'base/app/spa-loading-template.html': 'base' }, async (dir) => {
+    await mkdir(join(dir, 'app/spa-loading-template.html'), { recursive: true })
+    expect(await resolveSpaLoadingTemplate(nuxtIn(dir, true, [dir, join(dir, 'base')]))).toBe('base')
   }))
 })
