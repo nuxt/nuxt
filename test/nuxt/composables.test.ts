@@ -575,9 +575,7 @@ describe('loading state', () => {
     expect(isLoading.value).toBeFalsy()
     vi.useRealTimers()
   })
-})
 
-describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
     vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
@@ -593,9 +591,7 @@ describe('loading state', () => {
     expect(isLoading.value).toBeFalsy()
     vi.useRealTimers()
   })
-})
 
-describe('loading state', () => {
   it('expect error from loading state to be changed by finish({ error: true })', async () => {
     vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
@@ -610,9 +606,7 @@ describe('loading state', () => {
     finish()
     vi.useRealTimers()
   })
-})
 
-describe('loading state', () => {
   it('expect state from set opts: { force: true }', async () => {
     vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
@@ -1962,48 +1956,16 @@ describe('callOnce', () => {
   })
 })
 
-describe('route announcer', () => {
-  it('should create a route announcer with default politeness', () => {
-    const announcer = useRouteAnnouncer()
-    expect(announcer.politeness.value).toBe('polite')
+describe.each([
+  { name: 'useRouteAnnouncer', useAnnouncer: useRouteAnnouncer, resetsOnDispose: false },
+  { name: 'useAnnouncer', useAnnouncer, resetsOnDispose: true },
+])('$name', ({ useAnnouncer, resetsOnDispose }) => {
+  it('should default to polite politeness', () => {
+    expect(useAnnouncer().politeness.value).toBe('polite')
   })
 
-  it('should create a route announcer with provided politeness', () => {
-    const announcer = useRouteAnnouncer({ politeness: 'assertive' })
-    expect(announcer.politeness.value).toBe('assertive')
-  })
-
-  it('should set message and politeness', () => {
-    const announcer = useRouteAnnouncer()
-    announcer.set('Test message with politeness', 'assertive')
-    expect(announcer.message.value).toBe('Test message with politeness')
-    expect(announcer.politeness.value).toBe('assertive')
-  })
-
-  it('should set message with polite politeness', () => {
-    const announcer = useRouteAnnouncer()
-    announcer.polite('Test message polite')
-    expect(announcer.message.value).toBe('Test message polite')
-    expect(announcer.politeness.value).toBe('polite')
-  })
-
-  it('should set message with assertive politeness', () => {
-    const announcer = useRouteAnnouncer()
-    announcer.assertive('Test message assertive')
-    expect(announcer.message.value).toBe('Test message assertive')
-    expect(announcer.politeness.value).toBe('assertive')
-  })
-})
-
-describe('announcer', () => {
-  it('should create an announcer with default politeness', () => {
-    const announcer = useAnnouncer()
-    expect(announcer.politeness.value).toBe('polite')
-  })
-
-  it('should create an announcer with provided politeness', () => {
-    const announcer = useAnnouncer({ politeness: 'assertive' })
-    expect(announcer.politeness.value).toBe('assertive')
+  it('should accept a politeness', () => {
+    expect(useAnnouncer({ politeness: 'assertive' }).politeness.value).toBe('assertive')
   })
 
   it('should set message and politeness', () => {
@@ -2011,57 +1973,30 @@ describe('announcer', () => {
     announcer.set('Test message with politeness', 'assertive')
     expect(announcer.message.value).toBe('Test message with politeness')
     expect(announcer.politeness.value).toBe('assertive')
-  })
 
-  it('should set message with polite politeness', () => {
-    const announcer = useAnnouncer()
     announcer.polite('Test message polite')
     expect(announcer.message.value).toBe('Test message polite')
     expect(announcer.politeness.value).toBe('polite')
-  })
 
-  it('should set message with assertive politeness', () => {
-    const announcer = useAnnouncer()
     announcer.assertive('Test message assertive')
     expect(announcer.message.value).toBe('Test message assertive')
     expect(announcer.politeness.value).toBe('assertive')
   })
 
-  it('should cleanup announcer when last scope is disposed', () => {
-    const nuxtApp = useNuxtApp()
-
-    // Clean up any pre-existing announcer state
-    delete nuxtApp._announcer
-    delete nuxtApp._announcerDeps
-
+  it('should share the announcer until the last scope using it is disposed', () => {
     const scope1 = effectScope()
-    let announcer: ReturnType<typeof useAnnouncer>
-
-    scope1.run(() => {
-      announcer = useAnnouncer()
-      announcer.set('Test message', 'assertive')
-    })
-
-    expect(nuxtApp._announcerDeps).toBe(1)
-    expect(nuxtApp._announcer).toBeDefined()
-
-    // Create a second consumer in a separate scope
     const scope2 = effectScope()
-    scope2.run(() => {
-      useAnnouncer()
-    })
+    const announcer = scope1.run(() => useAnnouncer())!
+    expect(scope2.run(() => useAnnouncer())).toBe(announcer)
+    announcer.assertive('Still in use')
 
-    expect(nuxtApp._announcerDeps).toBe(2)
-
-    // Dispose first scope — announcer should still exist
     scope1.stop()
-    expect(nuxtApp._announcerDeps).toBe(1)
-    expect(nuxtApp._announcer).toBeDefined()
+    expect(useAnnouncer()).toBe(announcer)
+    expect(announcer.message.value).toBe('Still in use')
 
-    // Dispose second scope — announcer should be cleaned up
     scope2.stop()
-    expect(nuxtApp._announcerDeps).toBe(0)
-    expect(nuxtApp._announcer).toBeUndefined()
+    expect(announcer.message.value).toBe(resetsOnDispose ? '' : 'Still in use')
+    expect(useAnnouncer()).not.toBe(announcer)
   })
 })
 
