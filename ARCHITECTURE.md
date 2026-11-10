@@ -121,7 +121,7 @@ Most behaviour does not depend on every axis. Guard each suite with the narrowes
 - `runsOncePerBuilderInMatrix`: one built project per builder.
 - `runsOncePerBuildInMatrix`: one dev and one built project per builder, for behaviour that depends on the compiled app.
 
-All of these are false in the legacy projects. A suite that asserts on a legacy option opts in with `|| legacyErrorRendering` or `|| legacyComponentResolution`. `test/basic.test.ts` declares a few more guards at the top of the file. Pass the guard to `setupFixture(name, runs, options)` from `test/utils.ts`, so that projects that skip the suite also skip the build.
+All of these are false in the legacy projects. A suite that asserts on a legacy option opts in with `|| legacyErrorRendering` or `|| legacyComponentResolution`, and its file must be in that project's include list in `vitest.config.ts`. `test/basic.test.ts` declares a few more guards at the top of the file. Pass the guard to `setupFixture(name, runs, options)` from `test/utils.ts`, so that projects that skip the suite also skip the build.
 
 To add a fixture test, prefer adding a page to an existing fixture that is already built in the projects you need, or vary one with `setupFixture` config overrides or a `$env` block. Create a new fixture directory only when the config would interfere with others. Suites that edit their fixture or start their own server work on a copy: `copyFixture` and `editFixture` in `test/fixture-copy.ts`, or `useTempFixture` in `test/e2e/temp-fixture.ts` for Playwright.
 
