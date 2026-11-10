@@ -145,5 +145,10 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Keep one of them and replace the others with named parameters, for example `/:post/comments/**` instead of `/*/comments/**`. A single `*` now matches any number of segments.',
       docs: false,
     },
+    NUXT_B4028: {
+      why: (p: { name: string, path: string, file: string, existingPath: string, existingFile: string }) => `The route \`${p.path}\` (\`${p.file}\`) is named \`${p.name}\`, which is already used by \`${p.existingPath}\` (\`${p.existingFile}\`), so \`${p.existingPath}\` cannot be reached.`,
+      fix: 'Give each route a unique name, for example with `definePageMeta({ name })`.',
+      docs: false,
+    },
   },
 })
