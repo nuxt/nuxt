@@ -146,27 +146,18 @@ describe('createDevErrorReporter', () => {
     nuxt.close()
   })
 
-  it('prints the raw error when a report cannot be built', async () => {
+  it.each([
+    [transformError.message, transformError.message],
+    ['Illegal \u001B\u001B[2J[2J\u001B]52;c;ZXZpbA==\u0007tag\r\nin template', 'Illegal [2J[2J]52;c;ZXZpbA==tag\nin template'],
+  ])('prints the raw error, without control characters, when a report cannot be built (%#)', async (message, printed) => {
     const nuxt = createNuxt()
     const print = vi.fn()
     const reporter = createDevErrorReporter(nuxt, { print })
     // `rootDir` is read while building the report, standing in for any failure in `my-bad`
     Object.defineProperty(nuxt.options, 'rootDir', { get: () => { throw new Error('nope') } })
 
-    expect(await reporter.report(transformError)).toBeUndefined()
-    expect(print).toHaveBeenCalledWith(transformError.message)
-
-    nuxt.close()
-  })
-
-  it('strips control characters from the raw error it prints', async () => {
-    const nuxt = createNuxt()
-    const print = vi.fn()
-    const reporter = createDevErrorReporter(nuxt, { print })
-    Object.defineProperty(nuxt.options, 'rootDir', { get: () => { throw new Error('nope') } })
-
-    await reporter.report({ ...transformError, message: 'Illegal \u001B\u001B[2J[2J\u001B]52;c;ZXZpbA==\u0007tag\r\nin template' })
-    expect(print).toHaveBeenCalledWith('Illegal [2J[2J]52;c;ZXZpbA==tag\nin template')
+    expect(await reporter.report({ ...transformError, message })).toBeUndefined()
+    expect(print).toHaveBeenCalledWith(printed)
 
     nuxt.close()
   })
@@ -518,20 +509,14 @@ describe('DevErrorsPlugin', () => {
     hook.call({ environment: { name: 'client', transformRequest: transform } }, { file })
   }
 
-  it('transforms the file that failed once it changes, clearing the report when it compiles', async () => {
+  it('transforms the file that failed once it changes, reporting progress and clearing the report when it compiles', async () => {
     const reporter = { report: vi.fn(() => Promise.resolve(undefined)), clear: vi.fn(), progress: vi.fn(), file: '/src/app.vue' }
     const transform = vi.fn(() => Promise.resolve({}))
 
     hotUpdate(reporter, '/src/app.vue', transform)
-    await vi.waitFor(() => expect(reporter.clear).toHaveBeenCalledTimes(1))
-    expect(transform).toHaveBeenCalledWith('/src/app.vue')
-  })
-
-  it('reports progress while the file that failed is transformed, retiring it afterwards', async () => {
-    const reporter = { report: vi.fn(() => Promise.resolve(undefined)), clear: vi.fn(), progress: vi.fn(), file: '/src/app.vue' }
-
-    hotUpdate(reporter, '/src/app.vue', () => Promise.resolve({}))
     await vi.waitFor(() => expect(reporter.progress).toHaveBeenCalledTimes(2))
+    expect(reporter.clear).toHaveBeenCalledTimes(1)
+    expect(transform).toHaveBeenCalledWith('/src/app.vue')
     expect(reporter.progress.mock.calls).toEqual([
       [{ phase: 'transform', message: 'Rebuilding' }],
       [{ phase: 'transform', percent: 100 }],
