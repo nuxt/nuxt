@@ -15,6 +15,7 @@ import { finishStaticOutput, writeStaticOutput } from './output.ts'
 import { RUNTIME_CONFIG_ID, RuntimeConfigPlugin } from './runtime-config.ts'
 import { SpaDocumentPlugins, rendersSpaDocument } from './spa-document.ts'
 import { isPrerendering, manifestTimestamp, prerenderRoutes, writeAppManifest } from './prerender.ts'
+import { DeployTargetPlugin } from './target.ts'
 
 /**
  * Experimental server builder implemented with Vite alone.
@@ -52,10 +53,13 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   const ssr = nuxt.options.ssr !== false
   const prerender = isPrerendering(nuxt)
   const handler = ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined
+  const deployTarget = ssr && !prerender ? DeployTargetPlugin(nuxt) : undefined
 
   setServerBuild({
     name: 'vite',
     label: ssr ? 'Vite server' : 'Vite SPA',
+    target: () => deployTarget?.target(),
+    targetLabel: 'deploy target',
     output: { dir: () => outputDir, publicDir: () => publicDir },
     capabilities: { server: ssr && !prerender, dev: true },
     buildsSeparately: false,
@@ -89,6 +93,9 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   // an environment, where an app-level `buildApp` hook is never called.
   nuxt.options.vite.plugins ||= []
   nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt), RuntimeConfigPlugin(nuxt))
+  if (deployTarget) {
+    nuxt.options.vite.plugins.push(deployTarget.plugin)
+  }
 
   if (rendersSpaDocument(nuxt)) {
     nuxt.options.vite.plugins.push(...SpaDocumentPlugins(nuxt))

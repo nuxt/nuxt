@@ -53,16 +53,22 @@ function read (path: string) {
 
 describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
   let files: string[]
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
     const nuxt = await buildInProcess(rootDir, {
       buildDir,
       nitro: { static: true, output: { dir: outputDir } },
-    })
+    }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
     expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
 
     files = (await glob('**/*', { cwd: publicDir })).sort()
   }, 240 * 1000)
+
+  it('reports no deploy target', () => {
+    expect(targets).toEqual([undefined, undefined])
+  })
 
   it('writes an html file per prerendered route', () => {
     expect(files.filter(file => file.endsWith('.html'))).toEqual([
