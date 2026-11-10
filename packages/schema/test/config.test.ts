@@ -96,6 +96,27 @@ describe('experimental', () => {
   })
 })
 
+describe('debug', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it.each<[NuxtConfig['debug'], string, unknown]>([
+    [false, '', false],
+    [false, '1', { perf: true }],
+    [{ hooks: true }, 'quiet', { hooks: true, perf: 'quiet' }],
+    [{ hooks: true }, '', { hooks: true }],
+  ])('resolves %j with NUXT_DEBUG_PERF=%j', async (debug, perf, expected) => {
+    vi.stubEnv('NUXT_DEBUG_PERF', perf)
+    expect((await resolveConfig({ debug })).debug).toEqual(expected)
+  })
+
+  it('enables everything for `true`', async () => {
+    vi.stubEnv('NUXT_DEBUG_PERF', '')
+    expect((await resolveConfig({ debug: true })).debug).toMatchObject({ templates: true, hooks: { client: true, server: true }, perf: true })
+  })
+})
+
 describe('router.options.sensitive', () => {
   it('defaults to `true` and respects an explicit `false` value', async () => {
     expect((await resolveConfig({})).router.options.sensitive).toBe(true)

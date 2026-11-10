@@ -9,6 +9,7 @@ import { defu } from 'defu'
 import type { NuxtDebugOptions } from '../types/debug.ts'
 import type { NuxtModule } from '../types/module.ts'
 import { booleanOr, defineResolvers } from '../utils/definition.ts'
+import type { ResolverGetter } from '../utils/definition.ts'
 import { findWorkspaceDir } from '../utils/workspace-dir.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 
@@ -64,18 +65,8 @@ export default defineResolvers({
       return srcDir
     },
   },
-  serverDir: {
-    $resolve: async (val, get) => {
-      const rootDir = await get('rootDir')
-      return resolve(rootDir, val && typeof val === 'string' ? val : 'server')
-    },
-  },
-  buildDir: {
-    $resolve: async (val, get) => {
-      const rootDir = await get('rootDir')
-      return resolve(rootDir, val && typeof val === 'string' ? val : '.nuxt')
-    },
-  },
+  serverDir: fromRootDir('server'),
+  buildDir: fromRootDir('.nuxt'),
   typesDir: {
     $resolve: async (val, get) => {
       if (val && typeof val === 'string') {
@@ -133,6 +124,8 @@ export default defineResolvers({
   debug: {
     $resolve: (val) => {
       val ??= isDebug
+      const perfEnv = process.env.NUXT_DEBUG_PERF
+      const perf = perfEnv === 'quiet' ? 'quiet' : true
       if (val === true) {
         return {
           templates: true,
@@ -145,22 +138,16 @@ export default defineResolvers({
           nitro: true,
           router: true,
           hydration: true,
-          perf: process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true,
+          perf,
         } satisfies Required<NuxtDebugOptions>
       }
       if (val && typeof val === 'object') {
-        // Support NUXT_DEBUG_PERF env var to enable perf profiling
-        if (process.env.NUXT_DEBUG_PERF) {
-          (val as NuxtDebugOptions).perf = process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true
+        if (perfEnv) {
+          (val as NuxtDebugOptions).perf = perf
         }
         return val
       }
-      // Support NUXT_DEBUG_PERF env var without other debug options
-      if (process.env.NUXT_DEBUG_PERF) {
-        const perf: boolean | 'quiet' = process.env.NUXT_DEBUG_PERF === 'quiet' ? 'quiet' : true
-        return { perf } satisfies Partial<NuxtDebugOptions>
-      }
-      return false
+      return perfEnv ? { perf } satisfies Partial<NuxtDebugOptions> : false
     },
   },
   ssr: booleanOr(true),
@@ -184,17 +171,13 @@ export default defineResolvers({
     app: {
       $resolve: async (val, get) => {
         const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')])
-        return resolve(await get('srcDir'), val && typeof val === 'string' ? val : (srcDir === rootDir ? 'app' : '.'))
+        return resolve(srcDir, val && typeof val === 'string' ? val : (srcDir === rootDir ? 'app' : '.'))
       },
     },
     assets: 'assets',
     layouts: 'layouts',
     middleware: 'middleware',
-    modules: {
-      $resolve: async (val, get) => {
-        return resolve(await get('rootDir'), val && typeof val === 'string' ? val : 'modules')
-      },
-    },
+    modules: fromRootDir('modules'),
     pages: 'pages',
     plugins: 'plugins',
     shared: {
@@ -202,11 +185,7 @@ export default defineResolvers({
         return val && typeof val === 'string' ? val : 'shared'
       },
     },
-    public: {
-      $resolve: async (val, get) => {
-        return resolve(await get('rootDir'), val && typeof val === 'string' ? val : 'public')
-      },
-    },
+    public: fromRootDir('public'),
   },
   extensions: {
     $resolve: (val): string[] => {
@@ -314,6 +293,12 @@ export default defineResolvers({
 
   $schema: {},
 })
+
+function fromRootDir (fallback: string) {
+  return {
+    $resolve: async (val: unknown, get: ResolverGetter) => resolve(await get('rootDir'), val && typeof val === 'string' ? val : fallback),
+  }
+}
 
 function provideFallbackValues (obj: Record<string, any>) {
   for (const key in obj) {
