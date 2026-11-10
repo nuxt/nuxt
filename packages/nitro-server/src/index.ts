@@ -367,7 +367,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     scanDirs: layerDirs.map(dirs => dirs.server),
     renderer: resolve(distDir, 'runtime/handlers/renderer'),
     nodeModulesDirs: nuxt.options.modulesDir,
-    baseURL: nuxt.options.app.baseURL,
+    baseURL: nuxt.options.app.baseURL.startsWith('./') ? nuxt.options.app.baseURL.slice(1) : nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
       '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
