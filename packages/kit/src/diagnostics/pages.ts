@@ -146,8 +146,8 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B4028: {
-      why: (p: { name: string, file: string, existingFile: string }) => `The route name \`${p.name}\` defined in \`${p.file}\` is already used by \`${p.existingFile}\`.`,
-      fix: 'Give each page a unique name using `definePageMeta`',
+      why: (p: { name: string, path: string, file: string, existingPath: string, existingFile: string }) => `The route \`${p.path}\` (\`${p.file}\`) is named \`${p.name}\`, which is already used by \`${p.existingPath}\` (\`${p.existingFile}\`), so \`${p.existingPath}\` cannot be reached.`,
+      fix: 'Give each route a unique name, for example with `definePageMeta({ name })`.',
       docs: false,
     },
   },

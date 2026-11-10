@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import fs from 'node:fs'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -9,19 +9,16 @@ import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey, memoizeRouteComponent } from '../src/pages/runtime/utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import { useNuxt } from '@nuxt/kit'
+import { pageDiagnostics } from '@nuxt/kit/internal'
 import fc from 'fast-check'
 import { joinURL, withoutTrailingSlash } from 'ufo'
-import { pageDiagnostics } from '../../../packages/kit/src/diagnostics/pages.ts'
 
 const mockNuxt = vi.hoisted(() => ({
   options: {
     experimental: {
       normalizePageNames: false,
-      scanPageMeta: true,
     },
   },
-  vfs: {},
-  callHook: vi.fn(),
 }))
 vi.mock('@nuxt/kit', async (original) => {
   const mod = await original<typeof import('@nuxt/kit')>()
@@ -424,128 +421,6 @@ describe('page:extends', () => {
     }
   })
 
-  it('warns when two pages define the same route name', async () => {
-    const files: NuxtPage[] = [
-      { path: '/first', file: 'pages/first.vue' },
-      { path: '/second', file: 'pages/second.vue' },
-    ]
-
-    const vfs = {
-      'pages/first.vue': `
-        <script setup lang="ts">
-        definePageMeta({ name: 'report' })
-        </script>
-      `,
-      'pages/second.vue': `
-        <script setup lang="ts">
-        definePageMeta({ name: 'report' })
-        </script>
-      `,
-    }
-
-    mockNuxt.vfs = vfs
-    const spy = vi.spyOn(pageDiagnostics, 'NUXT_B4028')
-    await augmentAndResolve(
-      files,
-      new Set(Object.keys(vfs)),
-      mockNuxt as unknown as Nuxt,
-    )
-
-    expect(spy).toHaveBeenCalledWith({
-      name: 'report',
-      file: expect.stringContaining('second.vue'),
-      existingFile: expect.stringContaining('first.vue'),
-    })
-
-    spy.mockRestore()
-
-    expect(files[0]!.name).toBe('report')
-    expect(files[1]!.name).toBe('report')
-  })
-
-  it('detects collisions between generated and explicit route names', async () => {
-    const ctx = createPagesContext({ roots: ['pages/'] })
-    ctx.rebuild([
-      { path: 'pages/report.vue' },
-      { path: 'pages/first.vue' },
-    ])
-    const files = ctx.emit()
-
-    const vfs = {
-      'pages/report.vue': '<template><div>Report</div></template>',
-      'pages/first.vue': `
-        <script setup lang="ts">
-        definePageMeta({ name: 'report' })
-        </script>
-      `,
-    }
-
-    mockNuxt.vfs = vfs
-    const spy = vi.spyOn(pageDiagnostics, 'NUXT_B4028')
-
-    await augmentAndResolve(
-      files,
-      new Set(Object.keys(vfs)),
-      mockNuxt as unknown as Nuxt,
-    )
-
-    expect(spy).toHaveBeenCalledTimes(1)
-    expect(spy).toHaveBeenCalledWith({
-      name: 'report',
-      file: expect.stringContaining('.vue'),
-      existingFile: expect.stringContaining('.vue'),
-    })
-
-    spy.mockRestore()
-  })
-
-  it('detects duplicate route names in nested pages', async () => {
-    const files: NuxtPage[] = [
-      {
-        path: '/parent',
-        file: 'pages/parent.vue',
-        children: [
-          { path: 'child', file: 'pages/parent/child.vue' },
-        ],
-      },
-      {
-        path: '/other',
-        file: 'pages/other.vue',
-      },
-    ]
-
-    const vfs = {
-      'pages/parent.vue': '<template><NuxtPage /></template>',
-      'pages/parent/child.vue': `
-        <script setup lang="ts">
-        definePageMeta({ name: 'shared' })
-        </script>
-      `,
-      'pages/other.vue': `
-        <script setup lang="ts">
-        definePageMeta({ name: 'shared' })
-        </script>
-      `,
-    }
-
-    mockNuxt.vfs = vfs
-    const spy = vi.spyOn(pageDiagnostics, 'NUXT_B4028')
-
-    await augmentAndResolve(
-      files,
-      new Set(Object.keys(vfs)),
-      mockNuxt as unknown as Nuxt,
-    )
-
-    expect(spy).toHaveBeenCalledExactlyOnceWith({
-      name: 'shared',
-      file: expect.stringContaining('other.vue'),
-      existingFile: expect.stringContaining('child.vue'),
-    })
-
-    spy.mockRestore()
-  })
-
   it('keeps an explicit route name/path when reusing a file with a `definePageMeta` name (#27358)', async () => {
     const files: NuxtPage[] = [
       { path: '/test', file: 'pages/test.vue' },
@@ -556,6 +431,121 @@ describe('page:extends', () => {
     expect(files[0]!.name).toBe('test')
     expect(files[1]!.name).toBe('testExtend')
     expect(files[1]!.path).toBe('/testExtend')
+  })
+})
+
+describe('pages:duplicateRouteNames', () => {
+  type Hook = (pages: NuxtPage[]) => void
+  let warn: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    warn = vi.spyOn(pageDiagnostics, 'NUXT_B4028').mockReturnValue(undefined as never)
+    vi.spyOn(pageDiagnostics, 'NUXT_B4004').mockReturnValue(undefined as never)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  function resolve (vfs: Record<string, string>, hooks: Record<string, Hook> = {}) {
+    const ctx = createPagesContext({ roots: ['pages/'] })
+    ctx.rebuild(Object.keys(vfs).filter(file => file.startsWith('pages/')).map(path => ({ path })))
+    const nuxt = {
+      options: { experimental: { scanPageMeta: true } },
+      vfs,
+      callHook: (name: string, pages: NuxtPage[]) => hooks[name]?.(pages),
+    } as unknown as Nuxt
+    return augmentAndResolve(ctx.emit(), ctx.trackedFiles, nuxt)
+  }
+
+  const named = (name: string) => `<script setup lang="ts">definePageMeta({ name: '${name}' })</script>`
+  const plain = '<template><div /></template>'
+
+  it('warns when two pages define the same route name', async () => {
+    const pages = await resolve({
+      'pages/first.vue': named('report'),
+      'pages/second.vue': named('report'),
+    })
+    expect(pages.map(page => page.name)).toEqual(['report', 'report'])
+    expect(warn).toHaveBeenCalledExactlyOnceWith({
+      name: 'report',
+      path: '/second',
+      file: 'pages/second.vue',
+      existingPath: '/first',
+      existingFile: 'pages/first.vue',
+    })
+  })
+
+  it('warns when an explicit name collides with a generated one', async () => {
+    await resolve({
+      'pages/first.vue': named('report'),
+      'pages/report.vue': plain,
+    })
+    expect(warn).toHaveBeenCalledExactlyOnceWith({
+      name: 'report',
+      path: '/report',
+      file: 'pages/report.vue',
+      existingPath: '/first',
+      existingFile: 'pages/first.vue',
+    })
+  })
+
+  it('warns about duplicate route names in nested pages', async () => {
+    await resolve({
+      'pages/other.vue': named('shared'),
+      'pages/parent.vue': '<template><NuxtPage /></template>',
+      'pages/parent/child.vue': named('shared'),
+    })
+    expect(warn).toHaveBeenCalledExactlyOnceWith({
+      name: 'shared',
+      path: '/parent/child',
+      file: 'pages/parent/child.vue',
+      existingPath: '/other',
+      existingFile: 'pages/other.vue',
+    })
+  })
+
+  it('warns when a route added in `pages:extend` reuses a name', async () => {
+    await resolve({ 'pages/report.vue': plain, 'module/page.vue': plain }, {
+      'pages:extend': pages => pages.push({ name: 'report', path: '/module', file: 'module/page.vue' }),
+    })
+    expect(warn).toHaveBeenCalledExactlyOnceWith({
+      name: 'report',
+      path: '/module',
+      file: 'module/page.vue',
+      existingPath: '/report',
+      existingFile: 'pages/report.vue',
+    })
+  })
+
+  it('warns when routes sharing a file reuse a name', async () => {
+    await resolve({ 'pages/report.vue': plain }, {
+      'pages:extend': pages => pages.push({ name: 'report', path: '/alias', file: 'pages/report.vue' }),
+    })
+    expect(warn).toHaveBeenCalledExactlyOnceWith({
+      name: 'report',
+      path: '/alias',
+      file: 'pages/report.vue',
+      existingPath: '/report',
+      existingFile: 'pages/report.vue',
+    })
+  })
+
+  it('does not warn about collisions between generated names', async () => {
+    const pages = await resolve({
+      'pages/parent/[child].vue': plain,
+      'pages/parent-[child].vue': plain,
+    })
+    expect(pages.map(page => page.name)).toEqual(['parent-child', 'parent-child'])
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('does not warn when the route name is dynamic', async () => {
+    await resolve({
+      'pages/first.vue': named('report'),
+      'pages/report.vue': `<script setup lang="ts">const name = 'other'\ndefinePageMeta({ name })</script>`,
+    })
+    expect(warn).not.toHaveBeenCalled()
   })
 })
 
