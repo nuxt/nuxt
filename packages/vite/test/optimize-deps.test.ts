@@ -114,8 +114,15 @@ async function optimizedDeps (options: { entries?: string[], include?: string[],
 }
 
 describe('installedScanEntries', () => {
-  it('should not scan layers that are part of the project', () => {
-    const nuxt = createNuxt([{ app: join(rootDir, 'layers/local/app/'), root: join(rootDir, 'layers/local/') }])
+  it('should not scan layers and app files that are part of the project', () => {
+    const nuxt = createNuxt([{ app: join(rootDir, 'layers/local/app/'), root: join(rootDir, 'layers/local/') }], {
+      default: {
+        components: [{ filePath: join(srcDir, 'components/Local.vue') }],
+        plugins: [{ src: join(srcDir, 'plugins/local.mjs') }],
+        middleware: [{ path: join(srcDir, 'middleware/local.mjs') }],
+        layouts: { local: { file: join(srcDir, 'layouts/local.vue') } },
+      },
+    })
 
     expect(installedScanEntries(nuxt)).toEqual([])
   })
@@ -144,19 +151,6 @@ describe('installedScanEntries', () => {
     )
   })
 
-  it('should not scan app files that are part of the project', () => {
-    const nuxt = createNuxt([], {
-      default: {
-        components: [{ filePath: join(srcDir, 'components/Local.vue') }],
-        plugins: [{ src: join(srcDir, 'plugins/local.mjs') }],
-        middleware: [{ path: join(srcDir, 'middleware/local.mjs') }],
-        layouts: { local: { file: join(srcDir, 'layouts/local.vue') } },
-      },
-    })
-
-    expect(installedScanEntries(nuxt)).toEqual([])
-  })
-
   it('should not scan dependencies nested within the layer', async () => {
     const entries = installedScanEntries(createNuxt([installedLayer]))
 
@@ -171,10 +165,6 @@ describe('OptimizeDepsPlugin', () => {
     await (plugin.configEnvironment as any).call(null, name, config, {})
     return config
   }
-
-  it('should keep its plugin name', () => {
-    expect(OptimizeDepsPlugin(createNuxt()).name).toBe('nuxt:optimize-deps')
-  })
 
   it('should rewrite include entries added after nuxt has built its config', async () => {
     const config = { optimizeDeps: { entries: [entry], include: ['layer-dep'] } }

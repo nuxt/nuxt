@@ -1,19 +1,16 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { rm } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
 import type { NuxtConfig } from '@nuxt/schema'
-import { dirname, join } from 'pathe'
+import { join } from 'pathe'
 import type { Plugin, Rollup } from 'vite'
+
+import { buildFixture, writeFiles } from './utils.ts'
 
 const tmpDir = fileURLToPath(new URL('./.tmp/client-chunks', import.meta.url))
 
 async function build (files: Record<string, string>, overrides: NuxtConfig = {}) {
-  await rm(tmpDir, { recursive: true, force: true })
-  for (const [path, contents] of Object.entries(files)) {
-    await mkdir(dirname(join(tmpDir, path)), { recursive: true })
-    await writeFile(join(tmpDir, path), contents)
-  }
+  await writeFiles(tmpDir, files)
 
   const chunks: Record<string, Pick<Rollup.OutputChunk, 'name' | 'isEntry' | 'facadeModuleId' | 'imports' | 'moduleIds'>> = {}
   const capture: Plugin = {
@@ -28,22 +25,7 @@ async function build (files: Record<string, string>, overrides: NuxtConfig = {})
     },
   }
 
-  const nuxt = await loadNuxt({
-    cwd: tmpDir,
-    ready: true,
-    dev: false,
-    overrides: {
-      compatibilityDate: 'latest',
-      devtools: { enabled: false },
-      ...overrides,
-      vite: { ...overrides.vite, plugins: [capture] },
-    },
-  })
-  try {
-    await buildNuxt(nuxt)
-  } finally {
-    await nuxt.close()
-  }
+  await buildFixture(tmpDir, { ...overrides, vite: { ...overrides.vite, plugins: [capture] } })
 
   return {
     chunks,

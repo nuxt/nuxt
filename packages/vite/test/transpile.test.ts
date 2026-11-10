@@ -2,9 +2,24 @@ import { fileURLToPath } from 'node:url'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { join } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
+import { buildNuxt, loadNuxt, runWithNuxtContext } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
+
+import { getTranspilePatterns, getTranspileStrings } from '../src/utils/transpile.ts'
 
 const fixtureDir = fileURLToPath(new URL('../../../test/fixtures-temp/transpile-test', import.meta.url))
+
+describe('transpile patterns', () => {
+  it('should resolve strings, regular expressions and functions, skipping falsy function results', () => {
+    const nuxt = { options: { build: { transpile: ['alpha', /beta/, ({ isServer }: { isServer?: boolean }) => isServer && 'gamma', () => '', () => false] } } } as unknown as Nuxt
+
+    runWithNuxtContext(nuxt, () => {
+      expect(getTranspilePatterns({ isDev: false, isServer: true })).toEqual([/alpha/, /beta/, /gamma/])
+      expect(getTranspilePatterns({ isDev: false, isClient: true })).toEqual([/alpha/, /beta/])
+      expect(getTranspileStrings({ isDev: false, isServer: true })).toEqual(['alpha', 'gamma'])
+    })
+  })
+})
 
 // https://github.com/nuxt/nuxt/issues/33828
 describe('async transpile to optimizeDeps.exclude', () => {

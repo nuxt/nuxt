@@ -122,6 +122,9 @@
       ]
     },
     "packages/vite": {
+      "entry": [
+        "test/utils.ts"
+      ],
       "ignoreDependencies": [
         "mocked-exports",
         "nitropack",
