@@ -66,7 +66,7 @@ describe('formatDepLines', () => {
   it('lists ungrouped deps before grouped deps', () => {
     const importers = new Map([['lodash', './app/index.vue']])
     const result = stripAnsi(formatDepLines(['lodash', 'solo'], importers))
-    expect(result.indexOf('solo')).toBeLessThan(result.indexOf('lodash'))
+    expect(result).toBe('  solo\n  lodash ← ./app/index.vue')
   })
 })
 
