@@ -634,9 +634,6 @@ catalogs:
     simple-git-hooks:
       specifier: 2.14.0
       version: 2.14.0
-    svgo:
-      specifier: 4.1.0
-      version: 4.1.0
     tinyexec:
       specifier: 1.3.1
       version: 1.3.1
@@ -1886,12 +1883,6 @@ importers:
       prettier:
         specifier: catalog:dev
         version: 3.9.10
-      scule:
-        specifier: catalog:build
-        version: 1.3.0
-      svgo:
-        specifier: catalog:dev
-        version: 4.1.0
       tinyexec:
         specifier: catalog:dev
         version: 1.3.1
