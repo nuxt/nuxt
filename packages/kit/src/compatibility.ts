@@ -97,7 +97,7 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
   return !issues.length
 }
 
-export type NuxtMajorVersion = 2 | 3 | 4
+export type NuxtMajorVersion = 2 | 3 | 4 | 5
 
 /**
  * Check if current Nuxt instance is of specified major version
