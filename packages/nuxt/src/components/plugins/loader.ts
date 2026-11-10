@@ -2,13 +2,13 @@ import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { pascalCase } from 'scule'
-import { normalize, relative } from 'pathe'
+import { relative } from 'pathe'
 
 import { tryUseNuxt } from '@nuxt/kit'
 import { componentDiagnostics } from '@nuxt/kit/internal'
 import { QUOTE_RE, SX_RE, VUE_SCRIPT_TEMPLATE_ID_FILTER } from '../../core/utils/index.ts'
-import { installNuxtModule } from '../../core/features.ts'
-import { linkToAlias } from '../../utils.ts'
+import { createComponentsHotUpdate, installComponentModule, lazyHydrationFactory } from '../utils.ts'
+import type { HydrationStrategy } from '../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -37,16 +37,6 @@ const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[\s(=;])_?resolveComponent\d*
 const HYDRATION_STRATEGY_RE = /^(?<strategy>Idle|Visible|Interaction|MediaQuery|If|Never|Time)_(?<name>.+)$/
 const LEGACY_HYDRATION_STRATEGY_RE = /^(?<strategy>Idle|Visible|idle-|visible-|Interaction|interaction-|MediaQuery|media-query-|If|if-|Never|never-|Time|time-)(?<name>.+)$/
 
-const hydrationFactories: Record<string, [factory: string, suffix: string]> = {
-  Visible: ['createLazyVisibleComponent', '_lazy_visible'],
-  Interaction: ['createLazyInteractionComponent', '_lazy_event'],
-  Idle: ['createLazyIdleComponent', '_lazy_idle'],
-  MediaQuery: ['createLazyMediaQueryComponent', '_lazy_media'],
-  If: ['createLazyIfComponent', '_lazy_if'],
-  Never: ['createLazyNeverComponent', '_lazy_never'],
-  Time: ['createLazyTimeComponent', '_lazy_time'],
-}
-
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
@@ -58,33 +48,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
     name: 'nuxt:components-loader',
     enforce: 'post',
     vite: {
-      hotUpdate: {
-        order: 'pre',
-        async handler ({ type, file, timestamp, modules }) {
-          if (type === 'update' || !options.refreshComponents) { return }
-          const pending = options.refreshComponents(normalize(file), timestamp)
-          if (!pending) { return }
-          await pending
-
-          const components = options.getComponents()
-          const affected = new Set(modules)
-          for (const [id, names] of resolutions) {
-            for (const [name, resolved] of names) {
-              if (resolveComponentKey(components, name, options.mode) === resolved) { continue }
-              const mod = this.environment.moduleGraph.getModuleById(id)
-              if (mod) {
-                affected.add(mod)
-              } else {
-                resolutions.delete(id)
-              }
-              break
-            }
-          }
-          if (affected.size !== modules.length) {
-            return [...affected]
-          }
-        },
-      },
+      hotUpdate: createComponentsHotUpdate(options.refreshComponents, resolutions, (_id, key) => resolveComponentKey(options.getComponents(), key, options.mode)),
     },
     transform: {
       filter: {
@@ -111,14 +75,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           resolved.set((lazy ? 'lazy' : '') + '|' + name, componentKey(components, component))
 
           if (component) {
-            // TODO: refactor to @nuxt/cli
-            const internalInstall = ((component as any)._internal_install) as string
-            if (internalInstall && nuxt?.options.test === false) {
-              if (!nuxt.options.dev) {
-                throw componentDiagnostics.NUXT_B3004({ file: linkToAlias(id, nuxt), component: component.pascalName, requiredModule: internalInstall })
-              }
-              installNuxtModule(internalInstall)
-            }
+            installComponentModule(component, id, nuxt)
             let identifier = map.get(component) || `__nuxt_component_${num++}`
             map.set(component, identifier)
 
@@ -144,9 +101,9 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
               const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
               if (strategy) {
                 const relativePath = relative(options.srcDir, component.filePath)
-                const [factory, suffix] = hydrationFactories[strategy]!
+                const factory = lazyHydrationFactory(strategy)
                 imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: factory }]))
-                identifier += suffix
+                identifier += '_lazy_' + strategy.toLowerCase()
                 imports.add(`const ${identifier} = ${factory}(${JSON.stringify(relativePath)}, ${dynamicImport})`)
               } else {
                 imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
@@ -205,14 +162,14 @@ function resolveComponentKey (components: Component[], key: string, mode: Loader
   return componentKey(components, component)
 }
 
-function resolveReference (components: Component[], lazy: boolean, name: string, mode: LoaderOptions['mode']): { component?: Component | null, strategy?: string } {
+function resolveReference (components: Component[], lazy: boolean, name: string, mode: LoaderOptions['mode']): { component?: Component | null, strategy?: HydrationStrategy } {
   if (!lazy) {
     return { component: findComponent(components, name, mode) }
   }
 
   const hydrated = name.match(HYDRATION_STRATEGY_RE)?.groups
   if (hydrated) {
-    return { component: findComponent(components, hydrated.name!, mode), strategy: hydrated.strategy }
+    return { component: findComponent(components, hydrated.name!, mode), strategy: hydrated.strategy as HydrationStrategy }
   }
 
   const component = findComponent(components, name, mode)
@@ -223,7 +180,7 @@ function resolveReference (components: Component[], lazy: boolean, name: string,
   const legacy = name.match(LEGACY_HYDRATION_STRATEGY_RE)?.groups
   const legacyComponent = legacy && findComponent(components, legacy.name!, mode)
   if (legacyComponent) {
-    return { component: legacyComponent, strategy: pascalCase(legacy.strategy!) }
+    return { component: legacyComponent, strategy: pascalCase(legacy.strategy!) as HydrationStrategy }
   }
 
   return {}

@@ -10,7 +10,7 @@ import { parseModuleId } from '../../core/utils/plugins.ts'
 import { parseModule } from '../../core/utils/parse.ts'
 import { getStaticImports } from '../../core/utils/static-imports.ts'
 import type { ParsedStaticImport } from '../../core/utils/static-imports.ts'
-import { classifyPageMetaProperty, isScannablePageFile } from '../utils.ts'
+import { classifyPageMetaProperty, isScannablePageFile } from '../page-meta-extraction.ts'
 import { linkToAlias, resolveToAlias } from '../../utils.ts'
 import { distDir } from '../../dirs.ts'
 import type { ESTree, ParserOptions } from 'rolldown/utils'
@@ -148,10 +148,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
         function addImport (name: string | false) {
           if (!isStaticIdentifier(name)) { return }
-          const importValue = importMap.get(name)!.code.trim()
-          if (!addedImports.has(importValue)) {
-            addedImports.add(importValue)
-          }
+          addedImports.add(importMap.get(name)!.code.trim())
         }
 
         const declarationNodes: ScopeTrackerNode[] = []
@@ -316,16 +313,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                   if (layoutProp.type !== 'Property' || layoutProp.key.type !== 'Identifier') {
                     continue
                   }
-                  if (layoutProp.key.name === 'name') {
-                    m.appendLeft(
-                      prop.start - meta.start,
-                      `layout: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
-                    )
-                  } else if (layoutProp.key.name === 'props') {
-                    m.appendLeft(
-                      prop.start - meta.start,
-                      `layoutProps: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`,
-                    )
+                  const key = layoutProp.key.name === 'name' ? 'layout' : layoutProp.key.name === 'props' ? 'layoutProps' : undefined
+                  if (key) {
+                    m.appendLeft(prop.start - meta.start, `${key}: ${code.slice(layoutProp.value.start, layoutProp.value.end)},\n`)
                   }
                 }
                 omitProp(prop, i)
@@ -456,20 +446,15 @@ function rewriteQuery (id: string) {
   return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(QUERY_START_RE, '').replace(MACRO_RE, ''))
 }
 
-const MACRO_QUERY_RE = /[?&]macro=true(?:&|$)/
 const MACRO_STRIP_RE = /\?macro=true&?/
 const TYPE_PARAM_RE = /[?&]type=([^?&]+)/
 const LANG_PARAM_RE = /[?&]lang=([^?&]+)/
 function parseMacroQuery (id: string) {
   const { search } = parseModuleId(id)
-  const query: { macro?: string, type?: string, lang?: ParserOptions['lang'] } = {
+  return {
     type: TYPE_PARAM_RE.exec(search)?.[1],
-    lang: LANG_PARAM_RE.exec(search)?.[1] as ParserOptions['lang'] ?? undefined,
+    lang: LANG_PARAM_RE.exec(search)?.[1] as ParserOptions['lang'] | undefined,
   }
-  if (MACRO_QUERY_RE.test(search)) {
-    query.macro = 'true'
-  }
-  return query
 }
 
 const QUOTED_SPECIFIER_RE = /(["']).*\1/
