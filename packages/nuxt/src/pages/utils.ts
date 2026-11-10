@@ -107,6 +107,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
     return pages
   }
 
+  const generatedNames = recordRouteNames(pages)
   const augmentCtx = {
     extraExtractionKeys: new Set([
       'middleware',
@@ -129,7 +130,58 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
 
   await nuxt.callHook('pages:resolved', pages)
 
+  warnOnDuplicateRouteNames(pages, generatedNames, dynamicPageMetaCache(nuxt))
+
   return pages
+}
+
+function recordRouteNames (routes: NuxtPage[], names = new WeakMap<NuxtPage, string | undefined>()) {
+  for (const route of routes) {
+    names.set(route, route.name)
+    if (route.children) {
+      recordRouteNames(route.children, names)
+    }
+  }
+  return names
+}
+
+interface NamedRoute {
+  route: NuxtPage
+  file: string
+  path: string
+}
+
+/**
+ * Warn when a route name is reused, as Vue Router replaces the earlier route with that name.
+ * Collisions between names that are all still generated from file paths are left to `NUXT_B4004`.
+ */
+function warnOnDuplicateRouteNames (pages: NuxtPage[], generatedNames: WeakMap<NuxtPage, string | undefined>, dynamicPageMeta: Map<string, ReadonlySet<string>>) {
+  const isExplicit = (route: NuxtPage) => !generatedNames.has(route) || generatedNames.get(route) !== route.name
+  const seen = new Map<string, NamedRoute>()
+
+  function walk (routes: NuxtPage[], parentPath: string) {
+    for (const route of routes) {
+      const path = route.path.startsWith('/') ? route.path : joinURL(parentPath, route.path)
+      if (route.name && route.file && !getDynamicPageMeta(route, dynamicPageMeta).has('name')) {
+        const existing = seen.get(route.name)
+        if (existing && existing.route !== route && (isExplicit(route) || isExplicit(existing.route))) {
+          pageDiagnostics.NUXT_B4028({
+            name: route.name,
+            path,
+            file: linkToAlias(route.file),
+            existingPath: existing.path,
+            existingFile: linkToAlias(existing.file),
+          })
+        }
+        seen.set(route.name, { route, file: route.file, path })
+      }
+      if (route.children?.length) {
+        walk(route.children, path)
+      }
+    }
+  }
+
+  walk(pages, '/')
 }
 
 interface AugmentPagesContext {
