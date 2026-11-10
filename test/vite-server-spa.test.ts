@@ -1,26 +1,19 @@
-import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
 import { readFile, rm } from 'node:fs/promises'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
-import { isWindows } from 'std-env'
-import { $fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { buildInProcess, fixturePath, setupFixture } from './utils'
 
-const rootDir = fileURLToPath(new URL('./fixtures/vite-server-spa', import.meta.url))
+const rootDir = fixturePath('vite-server-spa')
 
-if (runsOncePerEnvInMatrix && isDev) {
-  await setup({
-    rootDir,
-    dev: true,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+const runsDev = runsOncePerEnvInMatrix && isDev
 
-describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server', () => {
+await setupFixture('vite-server-spa', runsDev)
+
+describe.skipIf(!runsDev)('pure vite dev server', () => {
   it('serves the SPA shell for a navigation request', async () => {
     const html = await $fetch<string>('/', { headers: { accept: 'text/html' } })
     expect(html).toContain('<div id="__nuxt">')
@@ -51,26 +44,34 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server', () =>
 })
 
 describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
+  const configuredDir = join(rootDir, 'node_modules/.cache/nuxt/.client-outdir-override')
   let html: string
 
   beforeAll(async () => {
+    await rm(configuredDir, { recursive: true, force: true })
     // built in-process rather than through the CLI, so the suite also covers a build
     // that never initialises a server
     // its own build directory, so a concurrently running dev project cannot rewrite the
     // output between the build and the assertions
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') },
+    const nuxt = await buildInProcess(rootDir, {
+      buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build'),
+      // client build options the builder has to override
+      vite: {
+        $client: {
+          build: {
+            outDir: configuredDir,
+            rolldownOptions: { input: join(rootDir, 'app/app.vue') },
+          },
+        },
+      },
     })
-    try {
-      await buildNuxt(nuxt)
-      expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
-    } finally {
-      await nuxt.close()
-    }
+    expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
     html = await readFile(join(rootDir, '.output/public/index.html'), 'utf-8')
   }, 240 * 1000)
+
+  it('writes the client build to the public directory of the output, not the configured `outDir`', () => {
+    expect(existsSync(configuredDir)).toBe(false)
+  })
 
   it('emits an SPA entry document', () => {
     expect(html).toContain('<div id="__nuxt">')
@@ -121,48 +122,5 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
 
   it('does not emit a server bundle', async () => {
     await expect(readFile(join(rootDir, '.output/server/index.mjs'), 'utf-8')).rejects.toThrow()
-  })
-})
-
-describe.skipIf(!runsOnceInMatrix)('overridden client build options', () => {
-  const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt-client-overrides')
-  const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-client-overrides')
-  const configuredDir = join(rootDir, 'node_modules/.cache/nuxt/.client-outdir-override')
-
-  beforeAll(async () => {
-    await rm(configuredDir, { recursive: true, force: true })
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: {
-        buildDir,
-        nitro: { output: { dir: outputDir } },
-        vite: {
-          $client: {
-            build: {
-              outDir: configuredDir,
-              rolldownOptions: { input: join(rootDir, 'app/app.vue') },
-            },
-          },
-        },
-      },
-    })
-    try {
-      await buildNuxt(nuxt)
-    } finally {
-      await nuxt.close()
-    }
-  }, 240 * 1000)
-
-  it('writes the client build to the public directory of the output', async () => {
-    expect(await readFile(join(outputDir, 'public/index.html'), 'utf-8')).toContain('<div id="__nuxt">')
-    expect(existsSync(configuredDir)).toBe(false)
-  })
-
-  it('keeps the document and the app entry as build inputs', async () => {
-    const html = await readFile(join(outputDir, 'public/index.html'), 'utf-8')
-
-    expect(html).toMatch(/<script type="module"[^>]* src="\.\/_nuxt\/[^"]+\.js">/)
-    expect(html).toContain('"#entry"')
   })
 })
