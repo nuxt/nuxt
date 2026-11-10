@@ -198,13 +198,15 @@ export interface ClassifyPageMetaOptions {
  * drift apart.
  */
 export function classifyPageMetaProperty (property: ESTree.ObjectPropertyKind, extractionKeys: ReadonlySet<string>, options: ClassifyPageMetaOptions = {}): PageMetaProperty {
-  // Spreads, computed keys, getters and methods cannot be resolved without evaluating the module.
-  if (!isPlainProperty(property)) {
-    return { kind: 'runtime' }
-  }
+  // Spreads and computed keys cannot be resolved without evaluating the module.
   const key = getStaticPropertyKey(property)
   if (key === undefined) {
     return { kind: 'runtime' }
+  }
+
+  // Getters and methods have a known key but a runtime value.
+  if (!isPlainProperty(property)) {
+    return { kind: 'runtime', key }
   }
 
   const value = unwrapStaticExpression(property.value)
@@ -388,11 +390,23 @@ export function getRouteMeta (contents: string, absolutePath: string, extraExtra
         // A later runtime value for a previously extracted key must not keep the extracted
         // value, which would override the macro module's runtime value in the route record.
         const key = classification.key
-        if (key !== undefined && classified.has(key)) {
-          if (routeFieldKeys.has(key)) {
-            classified.set(key, { kind: 'dynamic', key })
-          } else {
-            classified.delete(key)
+        if (key !== undefined) {
+          if (classified.has(key)) {
+            if (routeFieldKeys.has(key)) {
+              classified.set(key, { kind: 'dynamic', key })
+            } else {
+              classified.delete(key)
+            }
+          }
+        } else {
+          // A spread or computed key can override any earlier key, so earlier classifications
+          // cannot be kept.
+          for (const classifiedKey of classified.keys()) {
+            if (routeFieldKeys.has(classifiedKey)) {
+              classified.set(classifiedKey, { kind: 'dynamic', key: classifiedKey })
+            } else {
+              classified.delete(classifiedKey)
+            }
           }
         }
         hasRuntimeProperty = true
