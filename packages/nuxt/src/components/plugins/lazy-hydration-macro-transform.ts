@@ -7,6 +7,7 @@ import { JS_ID_RE, VUE_SCRIPT_TEMPLATE_ID_FILTER } from '../../core/utils/index.
 import type { ComponentsOptions } from 'nuxt/schema'
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
+import { HYDRATION_STRATEGIES, lazyHydrationFactory } from '../utils.ts'
 
 interface LoaderOptions {
   srcDir: string
@@ -17,15 +18,7 @@ interface LoaderOptions {
 
 const LAZY_HYDRATION_MACRO_RE = /\bdefineLazyHydrationComponent\s*\(/
 
-const HYDRATION_TO_FACTORY = new Map<string, string>([
-  ['visible', 'createLazyVisibleComponent'],
-  ['idle', 'createLazyIdleComponent'],
-  ['interaction', 'createLazyInteractionComponent'],
-  ['mediaQuery', 'createLazyMediaQueryComponent'],
-  ['if', 'createLazyIfComponent'],
-  ['time', 'createLazyTimeComponent'],
-  ['never', 'createLazyNeverComponent'],
-])
+const HYDRATION_TO_FACTORY = new Map<string, string>(HYDRATION_STRATEGIES.map(strategy => [strategy[0]!.toLowerCase() + strategy.slice(1), lazyHydrationFactory(strategy)]))
 
 export const LazyHydrationMacroTransformPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []

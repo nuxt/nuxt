@@ -258,8 +258,8 @@ export default {
     expect(components.join('\n')).toMatchInlineSnapshot(`
       "const __nuxt_component_0_lazy_idle = createLazyIdleComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_visible = createLazyVisibleComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
-      const __nuxt_component_0_lazy_event = createLazyInteractionComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
-      const __nuxt_component_0_lazy_media = createLazyMediaQueryComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
+      const __nuxt_component_0_lazy_interaction = createLazyInteractionComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
+      const __nuxt_component_0_lazy_mediaquery = createLazyMediaQueryComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_time = createLazyTimeComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_if = createLazyIfComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_never = createLazyNeverComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));"
