@@ -116,7 +116,7 @@ const legacyErrorMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyErrors: true },
 ]
 
-const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-*.test.ts', 'test/dev-error-*.test.ts']
+const legacyErrorInclude = ['test/basic.test.ts', 'test/server-components.test.ts', 'test/vite-server-dev-error.test.ts', 'test/dev-error-*.test.ts']
 
 // re-runs the basic fixture with `experimental.compilerComponentResolution` disabled
 const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [
