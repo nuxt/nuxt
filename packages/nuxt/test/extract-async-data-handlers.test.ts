@@ -279,6 +279,12 @@ const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0
 <style scoped>div { color: red }</style>`)
       expect(transform.load('/app/async-data-chunk-0.js')).toBe('export default async function () { return 42 }')
     })
+
+    it('should not treat script tags in a module string as an SFC script block', async () => {
+      const transform = createTransform()
+      const code = `const html = '<script>0</script>'\nconst { data } = await useAsyncData('key', () => 42)`
+      expect(await transform(code)).toBe(`const html = '<script>0</script>'\nconst { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))`)
+    })
   })
 
   describe('variable scope handling', () => {

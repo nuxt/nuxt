@@ -9,6 +9,7 @@ import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 import { MACRO_QUERY_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE } from '../../utils.ts'
 import { findSFCScriptBlocks } from '../utils/parse-utils.ts'
+import { isJS } from '../utils/plugins.ts'
 
 const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
 const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
@@ -53,7 +54,7 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
         code: { include: FUNCTIONS_RE },
       },
       handler (code, id, meta?: unknown) {
-        const [block] = findSFCScriptBlocks(code)
+        const [block] = isJS(id) ? [] : findSFCScriptBlocks(code)
         const script = block?.content ?? code
         const codeIndex = block?.start ?? 0
 

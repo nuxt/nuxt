@@ -12,6 +12,7 @@ import type { KeyedFunction } from '@nuxt/schema'
 import type { ESTree } from 'rolldown/utils'
 
 import { parseStaticImports } from '../../core/utils/static-imports.ts'
+import { isJS } from '../../core/utils/plugins.ts'
 import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE, isWhitespace, stripExtension } from '../../utils.ts'
 import { type FunctionCallMetadata, findSFCScriptBlocks, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 import { resolveImportPath } from '../utils.ts'
@@ -137,7 +138,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           if (!codeIncludeRE.test(code)) { return }
         }
 
-        const [block] = findSFCScriptBlocks(code)
+        const [block] = isJS(_id) ? [] : findSFCScriptBlocks(code)
         const script = block?.content ?? code
         const codeIndex = block?.start ?? 0
         const id = stripExtension(_id)
