@@ -209,9 +209,14 @@ describe('session helpers given an h3 v1 event', () => {
     expect(() => delegate.clearSession(e as never, { password: 'x'.repeat(32) })).toThrow(expect.objectContaining({ status: 500 }))
   })
 
-  it('passes a request event through', async () => {
+  it('round-trips a session over the event h3 hands a handler', async () => {
     const delegate = await import('../src/runtime/server')
-    const event = new H3Event(new Request('http://127.0.0.1/'))
-    await expect(delegate.getSession(event as never, { password: 'x'.repeat(32) })).resolves.toMatchObject({ data: {} })
+    const config = { password: 'x'.repeat(32) }
+    const first = new H3Event(new Request('http://127.0.0.1/'))
+    await delegate.updateSession(first, config, { visits: 1 })
+    const cookie = first.res.headers.getSetCookie()[0]!.split(';')[0]!
+
+    const second = new H3Event(new Request('http://127.0.0.1/', { headers: { cookie } }))
+    await expect(delegate.getSession(second, config)).resolves.toMatchObject({ data: { visits: 1 } })
   })
 })
