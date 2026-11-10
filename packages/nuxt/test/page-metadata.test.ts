@@ -1010,6 +1010,7 @@ definePageMeta({
       ['not extract a duplicate route field whose last value is dynamic', `const dynamicName = ref('from-ref')\ndefinePageMeta({ name: 'static', name: dynamicName })`, { extracted: { dynamic: dynamic('name') }, contains: ['dynamicName'], excludes: [`'static'`] }],
       ['keep the last occurrence of a duplicate unlisted key', `definePageMeta({ title: 'first', title: 'last' })`, { extracted: { meta: { title: 'last' } }, excludes: ['first', 'last'] }],
       ['not keep an extracted key overridden by a non-serializable duplicate', `const runtimeTitle = 'runtime'\ndefinePageMeta({ title: 'static', title: runtimeTitle })`, { extracted: { dynamic: dynamic('meta') }, contains: ['runtimeTitle'], excludes: [`'static'`] }],
+      ['keep a static duplicate that follows a runtime value', `const runtimeTitle = 'runtime'\ndefinePageMeta({ title: runtimeTitle, title: 'static' })`, { extracted: { meta: { title: 'static' }, dynamic: dynamic('meta') }, contains: ['runtimeTitle'], excludes: [`'static'`] }],
       ['extract a string layout', `definePageMeta({ layout: 'dark' })`, { extracted: { meta: { layout: 'dark' } }, excludes: ['dark'] }],
       ['extract `layout: false`', `definePageMeta({ layout: false })`, { extracted: { meta: { layout: false } }, excludes: ['layout'] }],
       ['split `{ name }` into `layout`', `definePageMeta({ layout: { name: 'admin' } })`, { extracted: { meta: { layout: 'admin' } }, excludes: ['admin', 'layoutProps'] }],
