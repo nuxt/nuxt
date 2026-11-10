@@ -1,10 +1,12 @@
 import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
-import { normalize, relative } from 'pathe'
+import { relative } from 'pathe'
 import escapeStringRegexp from 'escape-string-regexp'
 
 import { COMPONENT_WRAPPER_PREFIX } from '../compiler-resolver.ts'
 import type { ComponentResolver } from '../compiler-resolver.ts'
+import { createComponentsHotUpdate, lazyHydrationFactory } from '../utils.ts'
+import type { HydrationStrategy } from '../utils.ts'
 
 interface ComponentWrapperPluginOptions {
   resolver: ComponentResolver
@@ -67,7 +69,7 @@ export const ComponentWrapperPlugin = (options: ComponentWrapperPluginOptions) =
           ].join('\n')
         }
 
-        const factory = `createLazy${wrapper.kind.slice('lazy-'.length)}Component`
+        const factory = lazyHydrationFactory(wrapper.kind.slice('lazy-'.length) as HydrationStrategy)
         return [
           genImport(options.clientDelayedComponentRuntime, [factory]),
           `export default ${factory}(${JSON.stringify(relative(options.srcDir, component.filePath))}, ${loader})`,
@@ -75,32 +77,7 @@ export const ComponentWrapperPlugin = (options: ComponentWrapperPluginOptions) =
       },
     },
     vite: {
-      hotUpdate: {
-        order: 'pre',
-        async handler ({ type, file, timestamp, modules }) {
-          if (type === 'update' || !options.refreshComponents) { return }
-          const pending = options.refreshComponents(normalize(file), timestamp)
-          if (!pending) { return }
-          await pending
-
-          const affected = new Set(modules)
-          for (const [id, tags] of resolutions) {
-            for (const [tag, key] of tags) {
-              if (options.resolver.resolutionKey(options.resolver.resolveTag(tag, options.mode, id)) === key) { continue }
-              const mod = this.environment.moduleGraph.getModuleById(id)
-              if (mod) {
-                affected.add(mod)
-              } else {
-                resolutions.delete(id)
-              }
-              break
-            }
-          }
-          if (affected.size !== modules.length) {
-            return [...affected]
-          }
-        },
-      },
+      hotUpdate: createComponentsHotUpdate(options.refreshComponents, resolutions, (id, tag) => options.resolver.resolutionKey(options.resolver.resolveTag(tag, options.mode, id))),
     },
   }
 })

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { parseSync } from 'rolldown/utils'
 import type { ESTree } from 'rolldown/utils'
 
-import { isSerializable } from '../src/pages/utils.ts'
+import { isSerializable } from '../src/pages/page-meta-extraction.ts'
 
 function parseExpression (source: string): ESTree.Expression {
   // Parse as a variable initialiser so a leading `{` isn't ambiguous with a block, and we get the

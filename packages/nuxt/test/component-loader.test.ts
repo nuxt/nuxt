@@ -133,86 +133,27 @@ export default {
     expect(code?.code).toContain('_createVNode2(__nuxt_component_0, null, null)')
   })
 
-  it('should auto-import JSX components with h() calls', async () => {
-    const component = `
-    import { h } from 'vue'
-    export default {
-      render() {
-        return h('div', [
-          h(MyComponent, { foo: 'bar' }),
-          h(MyComponent, null, 'Hello')
-        ])
-      }
-    }
-    `
-    const code = await transform(component, '/pages/jsx-h.tsx')
-    expect(code).toContain('import __nuxt_component_0 from')
-    expect(code).toContain('/components/MyComponent.vue')
-    expect(code).toContain('h(__nuxt_component_0,')
-  })
-
-  it('should auto-import JSX components in various contexts', async () => {
+  it('should auto-import known PascalCase components referenced by h() calls', async () => {
     const component = `
     import { h, defineComponent } from 'vue'
     export default defineComponent({
       setup() {
         return () => h('div', [
           h(MyComponent),
-          h(MyComponent, {}),
           h(MyComponent, { prop: true }),
           h(MyComponent, null, ['children']),
+          h(OtherComponent, { id: 2 }),
+          h(myComponent),
         ])
       }
     })
     `
-    const code = await transform(component, '/pages/contexts.tsx')
+    const code = await transform(component, '/pages/jsx-h.tsx')
     expect(code).toContain('import __nuxt_component_0 from')
     expect(code).toContain('/components/MyComponent.vue')
-    // Should replace all h(MyComponent) instances
-    const matches = code.match(/h\(__nuxt_component_0/g)
-    expect(matches).toHaveLength(4)
-  })
-
-  it('should handle multiple different JSX components', async () => {
-    const component = `
-    import { h } from 'vue'
-    export default {
-      render() {
-        return h('div', [
-          h(MyComponent, { id: 1 }),
-          h(OtherComponent, { id: 2 }),
-          h(MyComponent, { id: 3 })
-        ])
-      }
-    }
-    `
-    const code = await transform(component, '/pages/multiple.tsx')
-    expect(code).toContain('import __nuxt_component_0 from')
-    expect(code).toContain('/components/MyComponent.vue')
-    // MyComponent should appear twice
-    const myComponentMatches = code.match(/h\(__nuxt_component_0/g)
-    expect(myComponentMatches).toHaveLength(2)
-    // OtherComponent should not be replaced (not in components list)
+    expect(code.match(/h\(__nuxt_component_0/g)).toHaveLength(3)
     expect(code).toContain('h(OtherComponent,')
-  })
-
-  it('should not replace h() calls with lowercase component names', async () => {
-    const component = `
-    import { h } from 'vue'
-    export default {
-      render() {
-        return h('div', [
-          h(myComponent),
-          h(myOtherComponent)
-        ])
-      }
-    }
-    `
-    const code = await transform(component, '/pages/lowercase.tsx')
-    // Should not auto-import lowercase identifiers
-    expect(code).not.toContain('import __nuxt_component')
     expect(code).toContain('h(myComponent')
-    expect(code).toContain('h(myOtherComponent')
   })
 
   it('should handle JSX with lazy components in JSX syntax', async () => {
@@ -258,8 +199,8 @@ export default {
     expect(components.join('\n')).toMatchInlineSnapshot(`
       "const __nuxt_component_0_lazy_idle = createLazyIdleComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_visible = createLazyVisibleComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
-      const __nuxt_component_0_lazy_event = createLazyInteractionComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
-      const __nuxt_component_0_lazy_media = createLazyMediaQueryComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
+      const __nuxt_component_0_lazy_interaction = createLazyInteractionComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
+      const __nuxt_component_0_lazy_mediaquery = createLazyMediaQueryComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_time = createLazyTimeComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_if = createLazyIfComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_never = createLazyNeverComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));"

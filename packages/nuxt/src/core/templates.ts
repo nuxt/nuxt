@@ -15,7 +15,7 @@ import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
 import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, findCaseDependentRouteRuleKeyPart, isWildcardRedirect, normalizePathCode, resolveRouteRulesRoutes, resolveWildcardRedirect } from './utils/route-rules.ts'
 import type { RouteRulesRouter } from './utils/route-rules.ts'
-import { findRouterOptionsFileDefining } from '../pages/utils.ts'
+import { findRouterOptionsFileDefining } from '../pages/router-options.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
 const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
