@@ -113,8 +113,8 @@ describe('createScanPluginContext', () => {
 })
 
 describe('parseStaticFunctionCall', () => {
-  function getFirstParsedFunctionCall (code: string, functions: RegExp): FunctionCallMetadata | null {
-    let result: FunctionCallMetadata | null = null
+  function getParsedFunctionCalls (code: string, functions: RegExp): FunctionCallMetadata[] {
+    const results: FunctionCallMetadata[] = []
 
     parseAndWalk(code, 'file.ts', {
       enter (node) {
@@ -123,13 +123,17 @@ describe('parseStaticFunctionCall', () => {
         }
         const res = parseStaticFunctionCall(node, functions)
         if (res) {
-          result = res
+          results.push(res)
           this.skip()
         }
       },
     })
 
-    return result
+    return results
+  }
+
+  function getFirstParsedFunctionCall (code: string, functions: RegExp): FunctionCallMetadata | null {
+    return getParsedFunctionCalls(code, functions)[0] ?? null
   }
 
   function describeNode (node: FunctionCallMetadata['node']) {
@@ -171,11 +175,10 @@ describe('parseStaticFunctionCall', () => {
   })
 
   it.each([
-    [/^createUseFetch$/, 'factories.createUseFetch()'],
-    // global regexes must not depend on `lastIndex`
-    [/createUseFetch/g, 'createUseFetch(); createUseFetch();'],
-  ])('should match with filter %s', (filter, code) => {
-    expect(getFirstParsedFunctionCall(code, filter)?.name).toBe('createUseFetch')
+    [/^createUseFetch$/, 'factories.createUseFetch()', 1],
+    [/createUseFetch/g, 'createUseFetch(); factories.createUseFetch(); factories[\'createUseFetch\']()', 3],
+  ])('should match with filter %s', (filter, code, count) => {
+    expect(getParsedFunctionCalls(code, filter).map(r => r.name)).toEqual(Array.from({ length: count }, () => 'createUseFetch'))
   })
 
   it.each([
@@ -260,6 +263,10 @@ describe('parseStaticExportIdentifiers', () => {
       export { g as _renamed }
     `
     expect(getAllParsedExports(code, /^(?!_).+/)).toEqual(['a', 'b', 'c', 'd', 'E', 'foo', 'bar', 'f', '_g as renamed'])
+  })
+
+  it('should filter with a global regex', () => {
+    expect(getAllParsedExports('export const foo = 1, bar = 2\nexport { foo as baz }', /^(?:foo|bar|baz)$/g)).toEqual(['foo', 'bar', 'foo as baz'])
   })
 
   it.each([
