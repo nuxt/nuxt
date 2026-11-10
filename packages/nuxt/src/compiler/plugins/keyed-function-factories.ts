@@ -3,7 +3,6 @@ import { buildDiagnostics } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, linkToAlias, logger, stripExtension } from '../../utils.ts'
 import type { ESTree } from 'rolldown/utils'
-import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
@@ -11,7 +10,7 @@ import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
 import type { ScanPlugin } from '../types.ts'
 import type { Import } from 'unimport'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
-import { createScanPluginContext } from '../utils.ts'
+import { createScanPluginContext, resolveImportPath } from '../utils.ts'
 import { type ParsedStaticImport, parseStaticImports } from '../../core/utils/static-imports.ts'
 
 interface ParsedKeyedFunctionFactory {
@@ -105,14 +104,7 @@ function createFactoryProcessor (
   }
   const LOCAL_FACTORY_NAMES_RE = new RegExp(`\\b(${[...localFactoryNames].map(f => escapeRE(f)).join('|')})\\b`)
 
-  // TODO: use async walker or create sync version of `resolvePath` from kit
-  function _resolvePath (path: string) {
-    let p = path
-    if (isAbsolute(p)) { return p }
-    p = resolveAlias(p, alias)
-    if (isAbsolute(p)) { return p }
-    return join(parse(filePath).dir, p)
-  }
+  const _resolvePath = (path: string) => resolveImportPath(path, alias, filePath)
 
   function getFactoryByLocalName (localName: string | undefined) {
     if (!localName) { return undefined }
