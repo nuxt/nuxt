@@ -1,5 +1,3 @@
-/// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
-
 import { describe, expect, it, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 

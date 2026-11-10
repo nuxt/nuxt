@@ -416,7 +416,7 @@ jobs:
           cache: true
 
       - name: Check bundle size
-        run: vp exec vitest run bundle
+        run: vp run test:bundle
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'

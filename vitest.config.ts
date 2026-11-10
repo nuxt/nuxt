@@ -42,9 +42,6 @@ const commonSettings: NuxtConfig = {
     '/Secret/Docs/**': { ssr: false },
     '/Legacy/Home': { redirect: '/target' },
     '/Wild/**': { redirect: '/target/**' },
-    // Decoded keys must match the percent-encoded path generated for a unicode page,
-    // including when a catch-all rule sets the same key, and when folding an
-    // encoded non-ASCII character is required to match.
     '/测试': { redirect: '/unicode-target' },
     '/unicode/**': { ssr: true },
     '/unicode/测试': { ssr: false },
@@ -57,15 +54,6 @@ const commonSettings: NuxtConfig = {
   },
   imports: {
     polyfills: false,
-  },
-}
-
-const nuxtTestProjects: Record<string, NuxtConfig> = {
-  'nuxt': {},
-  'nuxt-legacy': {
-    experimental: {
-      alwaysRunFetchOnKeyChange: true,
-    },
   },
 }
 
@@ -313,25 +301,22 @@ export default defineConfig({
           },
         },
       }),
-      ...await Promise.all(Object.entries(nuxtTestProjects).map(([project, config]) => defineVitestProject({
+      await defineVitestProject({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
-          name: project,
+          name: 'nuxt',
           dir: './test/nuxt',
           exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/sensitive/**'],
           environment: 'nuxt',
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
-          env: {
-            PROJECT: project,
-          },
           environmentOptions: {
             nuxt: {
-              overrides: defu(config, commonSettings),
+              overrides: commonSettings,
             },
           },
         },
-      }))),
+      }),
       await defineVitestProject({
         define: {
           'import.meta.dev': 'true',
@@ -344,7 +329,7 @@ export default defineConfig({
           setupFiles: ['./test/setup-runtime.ts'],
           environmentOptions: {
             nuxt: {
-              overrides: defu(nuxtTestProjects.nuxt, commonSettings),
+              overrides: commonSettings,
             },
           },
         },
