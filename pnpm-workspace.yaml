@@ -48,6 +48,7 @@ minimumReleaseAgeExclude:
   - unrouting
   - unimport
   - oxc-walker@1.1.1
+  - vue-router@5.5.0
   - vue
   - '@vue/*'
   # nitro prereleases and the unjs/h3 packages they pin are released in lockstep
@@ -94,7 +95,7 @@ catalogs:
     unhead: ^3.4.3
     vue: ^3.5.45
     vue-bundle-renderer: ^2.5.0
-    vue-router: ^5.4.0
+    vue-router: ^5.5.0
 
   # imported in the server runtime (packages/nuxt/src/runtime/server, packages/nitro-server/src/runtime)
   nitro-runtime:
