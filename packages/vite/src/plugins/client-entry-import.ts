@@ -14,6 +14,7 @@ export function ClientEntryImportPlugin (name: string, specifier: string, isEnab
       try {
         entry = isEnabled(config) ? resolveClientEntry(config) : undefined
       } catch {
+        entry = undefined
         console.debug(`[${name}] Could not resolve client entry, \`${specifier}\` will not be imported.`)
       }
     },

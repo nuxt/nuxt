@@ -70,6 +70,10 @@ describe('vite-plugin-checker', () => {
     const transform = runtime.transform as (code: string, id: string) => { code: string } | undefined
     expect(transform('export default 1', '/entry.js?import')?.code).toBe('import "/@vite-plugin-checker-runtime-entry";\nexport default 1')
     expect(transform('export default 1', '/other.js')).toBeUndefined()
+
+    vi.spyOn(console, 'debug').mockImplementation(() => {})
+    configResolved({ environments: {}, build: { rolldownOptions: {} } })
+    expect(transform('export default 1', '/entry.js')).toBeUndefined()
   })
 
   it('should terminate every checker worker when the dev server closes', async () => {
