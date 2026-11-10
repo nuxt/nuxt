@@ -17,19 +17,17 @@ import { ChunkErrorPlugin } from './plugins/chunk.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { createMFS } from './utils/mfs.ts'
 import { isSameOriginRequest, resolveAllowedHosts } from './utils/same-origin.ts'
-import { client, server } from './configs/index.ts'
+import { client } from './configs/client.ts'
+import { server } from './configs/server.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
 import { builder, createRsbuild, webpack } from './builder.ts'
-
-// TODO: Support plugins
-// const plugins: string[] = []
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const webpackConfigs = await Promise.all([client, ...(nuxt.options.ssr ? [server] : [])].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
-    await applyPresets(ctx, preset)
+    await applyPresets(ctx, [preset])
     return ctx.config
   }))
 
@@ -45,8 +43,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack())
-    // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
-    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
+    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && builder !== 'rspack') {
       config.plugins!.push(new ChunkErrorPlugin())
     }
     if (ssrStylesPlugin) {
