@@ -11,13 +11,19 @@ const publicDir = join(rootDir, '.output/public')
 
 describe.skipIf(!runsOnceInMatrix)('pure vite build with a universal-deploy target', () => {
   let artifact: { default: { fetch: (request: Request) => Promise<Response> } }
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
-    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') })
+    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
     expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
 
     artifact = await import(pathToFileURL(join(rootDir, '.output/server/index.mjs')).href)
   }, 240 * 1000)
+
+  it('reports `node` as the deploy target once the build has resolved its config', () => {
+    expect(targets).toEqual([undefined, 'node'])
+  })
 
   it('publishes the client build for the target to serve', async () => {
     expect(await readFile(join(publicDir, 'static.txt'), 'utf-8')).toContain('static-asset')

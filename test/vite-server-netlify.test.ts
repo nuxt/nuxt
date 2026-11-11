@@ -44,12 +44,18 @@ describe.skipIf(!runsDev)('netlify dev emulation', () => {
 
 describe.skipIf(!runsOnceInMatrix)('pure vite build with a netlify deploy target', () => {
   let config: string
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
-    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') })
+    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
     expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
     config = await readFile(join(rootDir, 'netlify.toml'), 'utf-8')
   }, 240 * 1000)
+
+  it('reports `netlify` as the deploy target before and after the build', () => {
+    expect(targets).toEqual(['netlify', 'netlify'])
+  })
 
   it('publishes the client build netlify is configured to deploy', async () => {
     expect(config).toContain('publish = ".output/public"')
