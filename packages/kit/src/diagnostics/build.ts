@@ -121,5 +121,10 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'A `getContents` function returned a promise that never settles. Resolve it before the bundler starts (for example from `pages:resolved` or `nitro:init`), rather than waiting on something that happens during or after bundling.',
       docs: false,
     },
+    NUXT_B1023: {
+      why: (p: { version: string, range: string }) => `Nuxt requires \`vue@${p.range}\`, but \`vue@${p.version}\` is installed.`,
+      fix: (p: { installCommand: string, range: string }) => `Run \`${p.installCommand}\` to add a version of Vue matching \`${p.range}\` to your dependencies.`,
+      docs: false,
+    },
   },
 })
