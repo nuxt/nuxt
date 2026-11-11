@@ -118,7 +118,10 @@ function useProblemPublisher (nuxt: Nuxt): ProblemPublisher {
     fs ||= createFsAccessCheck({
       allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
       deny: [],
-    }).then(canRead => createReportFsLoader({ cwd: nuxt.options.rootDir, canRead }))
+    }).then(canRead => createReportFsLoader({ cwd: nuxt.options.rootDir, canRead })).catch((error) => {
+      fs = undefined
+      throw error
+    })
     const loader = fs
     // the snippets of a report are read when it is built, so each scan builds them again
     const built = await Promise.all([...problems.values()].map(found => loader.then(fs => buildReport(found, label, nuxt.options.rootDir, fs)).catch(() => undefined)))

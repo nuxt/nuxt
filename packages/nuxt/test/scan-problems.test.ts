@@ -9,6 +9,14 @@ import { createScanProblems } from '../src/core/scan-problems.ts'
 import { ERROR_CHANNEL_BROADCAST } from '../src/runtime/server/dev-error/index.ts'
 import type { ErrorChannelMessage } from '../src/runtime/server/dev-error/index.ts'
 
+const createFsAccessCheck = vi.hoisted(() => vi.fn())
+
+vi.mock('../src/runtime/server/dev-error/index.ts', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../src/runtime/server/dev-error/index.ts')>()
+  createFsAccessCheck.mockImplementation(original.createFsAccessCheck)
+  return { ...original, createFsAccessCheck }
+})
+
 let rootDir: string
 let files: string[]
 beforeAll(async () => {
@@ -179,6 +187,25 @@ describe('scan problems', () => {
     later.done()
     earlier.done()
     expect(create).toHaveBeenCalledOnce()
+  })
+
+  it('publishes a problem once its sources can be read after a failure', async () => {
+    const { messages } = listen()
+    const nuxt = createNuxt(true)
+    const problems = createScanProblems(nuxt, 'nuxt:components', 'Components')
+    createFsAccessCheck.mockRejectedValueOnce(new Error('ENOENT'))
+
+    for (let i = 0; i < 2; i++) {
+      const scan = problems.scan()
+      scan.report('Foo', [files[0]!], collision)
+      scan.done()
+      await new Promise(resolve => setImmediate(resolve))
+    }
+    expect(createFsAccessCheck).toHaveBeenCalledTimes(2)
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+    expect((messages[0] as ProblemSetMessage).reports).toHaveLength(1)
+
+    await nuxt.callHook('close', nuxt)
   })
 
   it('names a problem without a name after its source', async () => {
