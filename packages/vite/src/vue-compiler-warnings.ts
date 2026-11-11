@@ -172,6 +172,9 @@ type Handler = (this: unknown, ...args: any[]) => unknown
 export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: ProblemSink): VitePlugin {
   const storage = new AsyncLocalStorage<Capture>()
   const store = createVueWarningStore()
+  // vite starts a new transform of a changed module without waiting for the one in flight
+  const latest = new Map<string, { compile: number, code: string | undefined }>()
+  let compiles = 0
   let server: ViteDevServer | undefined
   const publisher = createPublisher(nuxt, sink, () => {
     store.prune((id, environment) => {
@@ -194,10 +197,16 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
   function track (handler: Handler, target: (context: unknown, ...args: any[]) => Omit<CompileRecord, 'warnings'> & { key: string }): Handler {
     return function (this: unknown, ...args: any[]) {
       const { key, ...compiled } = target(this, ...args)
+      const compile = ++compiles
+      latest.set(key, { compile, code: compiled.code })
       const capture: Capture = { file: compiled.file, warnings: [], replays: [] }
       const context = this && typeof this === 'object' ? withWarn(this, capture) : this
       const settle = (result: unknown) => {
         if ((result === undefined || result === null) && !capture.warnings.length) {
+          return result
+        }
+        const newest = latest.get(key)!
+        if (newest.compile !== compile && (newest.code === undefined || newest.code !== compiled.code)) {
           return result
         }
         const added = store.update(key, { ...compiled, warnings: capture.warnings })

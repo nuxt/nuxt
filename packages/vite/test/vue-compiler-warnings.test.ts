@@ -261,6 +261,34 @@ describe('VueCompilerWarningsPlugin', () => {
     await close()
   })
 
+  it('ignores the warnings of a compile that a compile of newer code overtook', async () => {
+    const sink = createSink()
+    const resolvers = new Map<string, () => void>()
+    const vue = {
+      name: 'vite:vue',
+      transform: {
+        handler (this: { warn: (log: unknown) => void }, code: string, _id: string) {
+          this.warn({ message: `warning for ${code}` })
+          return new Promise(resolve => resolvers.set(code, () => resolve({ code })))
+        },
+      },
+    }
+    VueCompilerWarningsPlugin(createNuxt(), vue as any, sink)
+    const context = { warn: () => {}, environment: { name: 'client' } }
+    const transform = (code: string) => vue.transform.handler.call(context, code, join(tmpDir, 'Race.vue'))
+
+    const older = transform('old')
+    const newer = transform('new')
+    resolvers.get('new')!()
+    await newer
+    resolvers.get('old')!()
+    await older
+
+    await vi.waitFor(() => expect(sink.sets).toHaveLength(1))
+    await new Promise(resolve => setTimeout(resolve, 200))
+    expect(sink.sets.map(set => set.reports.map(report => report.message))).toEqual([['warning for new']])
+  })
+
   it('drops the warnings of a deleted SFC', async () => {
     const file = join(tmpDir, 'Deleted.vue')
     await writeFile(file, '<template>\n  <p><p>nested</p></p>\n</template>\n')
