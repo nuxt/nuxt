@@ -81,6 +81,7 @@ const cases: Case[] = [
   { name: 'renders an exact active link', props: { to: '/parent' }, at: '/parent' },
   { name: 'renders an active leaf link', props: { to: '/parent/child/1' }, at: '/parent/child/1' },
   { name: 'distinguishes links differing only by params', props: { to: '/parent/child/1' }, at: '/parent/child/2' },
+  { name: 'renders a link omitting an optional param as active', props: { to: '/parent/child' }, at: '/parent/child/1' },
   { name: 'resolves an aliased route', props: { to: '/aliased/1' }, at: '/named/1' },
   { name: 'resolves a named route object', props: { to: { name: 'named', params: { id: '2' } } } },
   { name: 'resolves a route object with query and hash', props: { to: { path: '/query', query: { a: 'b c' }, hash: '#h' } } },
@@ -125,6 +126,7 @@ const customCases: Case[] = [
   { name: 'renders an exact active link', props: { to: '/parent' }, at: '/parent' },
   { name: 'renders an active leaf link', props: { to: '/parent/child/1' }, at: '/parent/child/1' },
   { name: 'distinguishes links differing only by params', props: { to: '/parent/child/1' }, at: '/parent/child/2' },
+  { name: 'renders a link omitting an optional param as active', props: { to: '/parent/child' }, at: '/parent/child/1' },
   { name: 'resolves an aliased route', props: { to: '/aliased/1' }, at: '/named/1' },
   { name: 'resolves a named route object', props: { to: { name: 'named', params: { id: '2' } } } },
   { name: 'resolves a route object with query and hash', props: { to: { path: '/query', query: { a: 'b c' }, hash: '#h' } }, at: '/query?a=b%20c#h' },
@@ -173,6 +175,19 @@ describe('nuxt-link ssr', () => {
       expect(html).not.toContain('#/report.pdf')
     } finally {
       nuxtApp.$config.app.baseURL = '/'
+    }
+  })
+
+  it.each([
+    { trailingSlash: 'append', to: { name: 'named', params: { id: '2' } }, href: '/named/2/' },
+    { trailingSlash: 'append', to: { path: '/query', query: { a: 'b' }, hash: '#h' }, href: '/query/?a=b#h' },
+    { trailingSlash: 'append', to: { query: { a: 'b' } }, at: '/parent', href: '/parent/?a=b' },
+    { trailingSlash: 'remove', to: { query: { a: 'b' } }, at: '/parent/', href: '/parent?a=b' },
+    { trailingSlash: undefined, to: '/parent/', href: '/parent/' },
+  ])('applies `trailingSlash: $trailingSlash` to $to', async ({ trailingSlash, to, at, href }) => {
+    const testCase = { name: 'trailing slash', options: { trailingSlash }, props: { to }, at }
+    for (const html of [await renderLink(testCase, false), await renderLink(testCase, true), await renderLink(testCase, true, true)]) {
+      expect(html).toContain(`href="${href}"`)
     }
   })
 
