@@ -16,6 +16,7 @@ import { renderDiagnostics } from '../src/app/diagnostics/render.ts'
 import { manifestDiagnostics } from '../src/app/diagnostics/manifest.ts'
 import { unheadDiagnostics } from '../src/app/diagnostics/head.ts'
 import { stateDiagnostics } from '../src/app/diagnostics/state.ts'
+import { agentToolDiagnostics } from '../src/app/diagnostics/agent-tools.ts'
 import { serverDiagnostics } from '../../nitro-server/src/runtime/diagnostics.ts'
 import { nitroBuildDiagnostics } from '../../nitro-server/src/diagnostics.ts'
 import { prerenderDiagnostics, rendererDiagnostics } from '../src/runtime/server/renderer/diagnostics.ts'
@@ -40,6 +41,7 @@ const catalogs = {
   manifestDiagnostics,
   unheadDiagnostics,
   stateDiagnostics,
+  agentToolDiagnostics,
   serverDiagnostics,
   nitroBuildDiagnostics,
   rendererDiagnostics,
