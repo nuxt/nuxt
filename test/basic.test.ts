@@ -358,6 +358,11 @@ describe('pages', () => {
     expect(html).toContain('Sugar Counter 12 x 2 = 24')
   })
 
+  it.skipIf(!oncePerBuild)('renders a page importing from `shared/` with a relative path', async () => {
+    const html = await $fetch<string>('/shared-relative-import')
+    expect(html).toContain('imported relatively from shared/')
+  })
+
   it.skipIf(!once)('respects aliases in page metadata', async () => {
     const html = await $fetch<string>('/some-alias')
     expect(html).toContain('Hello Nuxt 3!')
