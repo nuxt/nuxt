@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { statSync } from 'node:fs'
 import type { Nuxt } from '@nuxt/schema'
 import { createProblemReport } from 'my-bad'
 import type { ErrorReport } from 'my-bad'
@@ -76,8 +77,10 @@ interface CompileRecord {
   file: string
   /** Code the module was compiled from, or `undefined` when it cannot be compared. */
   code: string | undefined
-  /** For a block of an SFC, such as `?vue&type=style&index=0`, the environment that compiled it. */
-  block?: string
+  /** When the file was last modified as the compile started. */
+  version?: number
+  /** A block of an SFC, such as `?vue&type=style&index=0`, and the environment that compiled it. */
+  block?: { id: string, environment: string }
   warnings: VueCompilerWarning[]
 }
 
@@ -99,10 +102,18 @@ export function createVueWarningStore () {
     /**
      * Replace the warnings of the module `key` with those of a compile, returning the keys
      * of the warnings its file did not have before. A compile of the same code adds to them,
-     * as `@vue/compiler-sfc` raises some warnings once per process.
+     * as `@vue/compiler-sfc` raises some warnings once per process. Every module compiled from
+     * an older version of the file is forgotten.
      */
     update (key: string, record: CompileRecord): Set<string> {
       const known = keysOf(record.file)
+      if (record.version !== undefined) {
+        for (const [other, candidate] of records) {
+          if (candidate.file === record.file && candidate.version !== undefined && candidate.version < record.version) {
+            records.delete(other)
+          }
+        }
+      }
       const previous = records.get(key)
       const sameCode = record.code !== undefined && previous?.code === record.code
       const warnings = sameCode ? [...previous!.warnings, ...record.warnings.filter(warning => !previous!.warnings.some(other => warningKey(other) === warningKey(warning)))] : record.warnings
@@ -116,7 +127,7 @@ export function createVueWarningStore () {
     /** Forget the warnings of the SFC blocks for which `isImported` returns `false`. */
     prune (isImported: (id: string, environment: string) => boolean): void {
       for (const [key, record] of records) {
-        if (record.block && !isImported(key, record.block)) {
+        if (record.block && !isImported(record.block.id, record.block.environment)) {
           records.delete(key)
         }
       }
@@ -196,7 +207,8 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
 
   function track (handler: Handler, target: (context: unknown, ...args: any[]) => Omit<CompileRecord, 'warnings'> & { key: string }): Handler {
     return function (this: unknown, ...args: any[]) {
-      const { key, ...compiled } = target(this, ...args)
+      const { key, ...source } = target(this, ...args)
+      const compiled = { ...source, version: versionOf(source.file) }
       const compile = ++compiles
       latest.set(key, { compile, code: compiled.code })
       const capture: Capture = { file: compiled.file, warnings: [], replays: [] }
@@ -256,11 +268,11 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
   wrapHook(vue, 'transform', handler => track(handler, (context, code: string, id: string) => {
     const { filename, query } = parseVueRequest(id)
     const file = normalize(filename)
+    const environment = (context as { environment?: { name?: string } } | undefined)?.environment?.name ?? ''
     if (!query.vue) {
-      return { key: file, file, code }
+      return { key: `${environment}\0${file}`, file, code }
     }
-    const environment = (context as { environment?: { name?: string } } | undefined)?.environment?.name
-    return { key: id, file, code: query.src ? undefined : code, block: environment }
+    return { key: `${environment}\0${id}`, file, code: query.src ? undefined : code, block: { id, environment } }
   }))
   // `@vitejs/plugin-vue` compiles the script of a changed SFC before it is transformed again
   wrapHook(vue, 'handleHotUpdate', handler => track(handler, (_context, { file }: { file: string }) => ({ key: `${normalize(file)}\0hmr`, file: normalize(file), code: undefined })))
@@ -337,6 +349,14 @@ function wrapHook (plugin: VitePlugin, name: 'transform' | 'handleHotUpdate', wr
   } else if (hook && typeof hook.handler === 'function') {
     // the object is kept, as `@vitejs/plugin-vue` sets its `filter` later
     hook.handler = wrap(hook.handler)
+  }
+}
+
+function versionOf (file: string): number | undefined {
+  try {
+    return statSync(file).mtimeMs
+  } catch {
+    return undefined
   }
 }
 

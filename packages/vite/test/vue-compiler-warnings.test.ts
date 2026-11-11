@@ -1,4 +1,4 @@
-import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, realpath, rm, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'pathe'
 import { afterAll, describe, expect, it, onTestFinished, vi } from 'vitest'
@@ -79,7 +79,7 @@ describe('createVueWarningStore', () => {
   it('forgets blocks that are no longer imported, and deleted files', () => {
     const store = createVueWarningStore()
     const style = '/app.vue?vue&type=style&index=0&lang.css'
-    store.update(style, { file: '/app.vue', code: '.a{}', block: 'client', warnings: [warning('style')] })
+    store.update(style, { file: '/app.vue', code: '.a{}', block: { id: style, environment: 'client' }, warnings: [warning('style')] })
     store.update('/other.vue', { file: '/other.vue', code: 'a', warnings: [warning('other', '/other.vue')] })
     store.prune(id => id !== style)
     expect(store.warnings.map(w => w.message)).toEqual(['other'])
@@ -125,6 +125,28 @@ function createSink () {
     sets,
     setProblems: (source: string, reports: ErrorReport[], meta?: ProblemMeta) => { sets.push({ source, reports, meta }) },
     clearProblems: () => {},
+  }
+}
+
+/** A stand-in for `@vitejs/plugin-vue` whose transform warns with the message `warningFor` returns. */
+function fakeVuePlugin (warningFor: (code: string) => string | undefined) {
+  const sink = createSink()
+  const vue = {
+    name: 'vite:vue',
+    transform: {
+      handler (this: { warn: (log: unknown) => void }, code: string, _id: string) {
+        const message = warningFor(code)
+        if (message) {
+          this.warn({ message })
+        }
+        return Promise.resolve({ code })
+      },
+    },
+  }
+  VueCompilerWarningsPlugin(createNuxt(), vue as any, sink)
+  return {
+    sink,
+    transform: (code: string, id: string, environment: string) => vue.transform.handler.call({ warn: () => {}, environment: { name: environment } }, code, id),
   }
 }
 
@@ -279,6 +301,32 @@ describe('VueCompilerWarningsPlugin', () => {
     await vi.waitFor(() => expect(sink.sets).toHaveLength(1))
     await new Promise(resolve => setTimeout(resolve, 200))
     expect(sink.sets.map(set => set.reports.map(report => report.message))).toEqual([['warning for new']])
+  })
+
+  it('keeps the warnings of each environment apart when they compile different code', async () => {
+    const file = join(tmpDir, 'Environments.vue')
+    await writeFile(file, '<template />\n')
+    const { sink, transform } = fakeVuePlugin(code => code === 'client' ? 'client only' : undefined)
+
+    await transform('client', file, 'client')
+    await transform('ssr', file, 'ssr')
+
+    await vi.waitFor(() => expect(sink.sets).toHaveLength(1))
+    await new Promise(resolve => setTimeout(resolve, 200))
+    expect(sink.sets.at(-1)!.reports.map(report => report.message)).toEqual(['client only'])
+  })
+
+  it('forgets the warnings another environment compiled from an older version of the file', async () => {
+    const file = join(tmpDir, 'Versions.vue')
+    await writeFile(file, '<template />\n')
+    const { sink, transform } = fakeVuePlugin(code => code === 'old' ? 'from the old version' : undefined)
+
+    await transform('old', file, 'ssr')
+    await vi.waitFor(() => expect(sink.sets.at(-1)?.reports).toHaveLength(1))
+
+    await utimes(file, new Date(), new Date(Date.now() + 10_000))
+    await transform('new', file, 'client')
+    await vi.waitFor(() => expect(sink.sets.at(-1)?.reports).toEqual([]))
   })
 
   it('drops the warnings of a deleted SFC', async () => {
