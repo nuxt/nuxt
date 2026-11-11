@@ -1,8 +1,7 @@
 import type { ErrorReport, SourceLoader } from 'my-bad'
 import type { Nuxt } from 'nuxt/schema'
 import { getLayerDirectories } from '@nuxt/kit'
-import { createFsAccessCheck, createReportFsLoader, openErrorBroadcast } from '../runtime/server/dev-error/index.ts'
-import type { ErrorChannelMessage } from '../runtime/server/dev-error/index.ts'
+import { createFsAccessCheck, createProblemSetPublisher, createReportFsLoader } from '../runtime/server/dev-error/index.ts'
 
 /** A problem a scan found, such as a diagnostic. */
 export interface ScanProblem {
@@ -81,8 +80,6 @@ interface FoundProblem {
   problem: ScanProblem
 }
 
-type ProblemSetMessage = Extract<ErrorChannelMessage, { type: 'nuxt:dev:error:problems' }>
-
 type ProblemPublisher = (source: string, label: string, problems: Map<string, FoundProblem>) => Promise<void>
 
 const publishers = new WeakMap<Nuxt, ProblemPublisher>()
@@ -92,25 +89,10 @@ function useProblemPublisher (nuxt: Nuxt): ProblemPublisher {
   if (publisher) {
     return publisher
   }
-  const broadcast = openErrorBroadcast()
-  const sets = new Map<string, ProblemSetMessage>()
+  const sets = createProblemSetPublisher()
   const versions = new Map<string, number>()
   let fs: Promise<SourceLoader> | undefined
-
-  broadcast.onmessage = (event) => {
-    if ((event.data as ErrorChannelMessage | undefined)?.type === 'nuxt:dev:error:sync') {
-      for (const message of sets.values()) {
-        broadcast.postMessage(message)
-      }
-    }
-  }
-  nuxt.hook('close', () => {
-    for (const source of sets.keys()) {
-      broadcast.postMessage({ type: 'nuxt:dev:error:problems:clear', source } satisfies ErrorChannelMessage)
-    }
-    sets.clear()
-    broadcast.close()
-  })
+  nuxt.hook('close', () => sets.close())
 
   publisher = async (source, label, problems) => {
     const version = (versions.get(source) ?? 0) + 1
@@ -128,18 +110,12 @@ function useProblemPublisher (nuxt: Nuxt): ProblemPublisher {
     if (versions.get(source) !== version) {
       return
     }
-    const message: ProblemSetMessage = {
-      type: 'nuxt:dev:error:problems',
-      source,
-      reports: built.filter(report => report !== undefined),
-      meta: { group: 'Nuxt', label },
+    const reports = built.filter(report => report !== undefined)
+    if (reports.length) {
+      sets.set(source, reports, { group: 'Nuxt', label })
+    } else {
+      sets.clear(source)
     }
-    if (message.reports.length) {
-      sets.set(source, message)
-    } else if (!sets.delete(source)) {
-      return
-    }
-    broadcast.postMessage(message)
   }
   publishers.set(nuxt, publisher)
   return publisher

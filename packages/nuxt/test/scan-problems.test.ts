@@ -94,7 +94,7 @@ describe('scan problems', () => {
 
     problems.scan().done()
     await vi.waitFor(() => expect(messages).toHaveLength(3))
-    expect(messages[2]).toStrictEqual({ type: 'nuxt:dev:error:problems', source: 'nuxt:components', reports: [], meta: { group: 'Nuxt', label: 'Components' } })
+    expect(messages[2]).toStrictEqual({ type: 'nuxt:dev:error:problems:clear', source: 'nuxt:components' })
 
     await nuxt.callHook('close', nuxt)
   })
