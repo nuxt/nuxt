@@ -128,7 +128,7 @@ catalogs:
     webpackbar: ^7.0.0
   build:
     '@dxup/nuxt': ^0.5.11
-    '@nuxt/cli': ^4.0.3
+    '@nuxt/cli': 4.0.1
     '@nuxt/devtools-onboard': ^4.1.0
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.45
