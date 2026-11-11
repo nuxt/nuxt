@@ -360,15 +360,19 @@ export class SSRStylesPlugin {
     })
   }
 
-  private findIssuerPath (compilation: Compilation, mod: Module): string | null {
+  private findIssuer (compilation: Compilation, mod: Module): (Module & { resource: string }) | null {
     let issuer: Module | null | undefined = compilation.moduleGraph.getIssuer(mod)
     while (issuer) {
       if ('resource' in issuer && typeof issuer.resource === 'string') {
-        return issuer.resource
+        return issuer as Module & { resource: string }
       }
       issuer = compilation.moduleGraph.getIssuer(issuer)
     }
     return null
+  }
+
+  private findIssuerPath (compilation: Compilation, mod: Module): string | null {
+    return this.findIssuer(compilation, mod)?.resource ?? null
   }
 
   private removeGlobalCSSFromClient (compilation: Compilation) {
@@ -466,13 +470,20 @@ export class SSRStylesPlugin {
       }
 
       for (const [chunk, cssAssets] of cssAssetsByChunk) {
-        for (const mod of compilation.chunkGraph.getChunkModulesIterable(chunk)) {
+        const chunkModules = Array.from(compilation.chunkGraph.getChunkModulesIterable(chunk))
+        const chunkPaths = new Set(chunkModules.map(mod => normalizePath(this.nuxt, mod.nameForCondition())))
+        for (const mod of chunkModules) {
           if (!this.shouldInline(mod)) {
             continue
           }
-          const issuerPath = this.findIssuerPath(compilation, mod) || ('resource' in mod && typeof mod.resource === 'string' ? mod.resource : null)
+          const issuer = this.findIssuer(compilation, mod)
+          if (issuer && !this.shouldInline(issuer)) {
+            continue
+          }
+          const issuerPath = issuer?.resource || ('resource' in mod && typeof mod.resource === 'string' ? mod.resource : null)
           const normalized = normalizePath(this.nuxt, issuerPath)
-          if (!normalized) { continue }
+          // the issuer of a module imported from several chunks may be a component in another chunk
+          if (!normalized || !chunkPaths.has(normalized)) { continue }
           const set = this.clientCSSByIssuer.get(normalized) || new Set<string>()
           for (const css of cssAssets) {
             set.add(normalizeCSSContent(css))
