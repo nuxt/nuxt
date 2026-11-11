@@ -58,6 +58,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
           ...legacyExternals,
           sharedDirExternal,
         ],
+        makeAbsoluteExternalsRelative: false,
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
