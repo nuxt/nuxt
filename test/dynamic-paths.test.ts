@@ -30,6 +30,24 @@ describe.skipIf(!runsOncePerBuilderInMatrix)('dynamic paths', () => {
     expect(inlinedStyles).toMatch(/src:\s*url\(['"]?\/css-only-public-asset\.svg['"]?\)\s*format\(/)
   })
 
+  it('should only inline the styles of rendered components that opt in', async () => {
+    async function getStyles (path: string) {
+      const html = await $fetch<string>(path)
+      const stylesheets = Array.from(html.matchAll(/<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g), m => $fetch<string>(m[1]!))
+      return {
+        inlined: Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g), m => m[1]!).join('\n'),
+        linked: (await Promise.all(stylesheets)).join('\n'),
+      }
+    }
+
+    expect((await getStyles('/inline-url')).inlined).not.toMatch(/#__nuxt\s*\{/)
+    for (const [path, rule] of [['/assets', /#__nuxt\s*\{/], ['/script-assets', /\.script-assets\s*\{/]] as const) {
+      const { inlined, linked } = await getStyles(path)
+      expect(inlined, path).not.toMatch(rule)
+      expect(linked, path).toMatch(rule)
+    }
+  })
+
   // https://github.com/nuxt/nuxt/issues/14766
   it.skipIf(isWebpack)('resolves dynamic and glob asset imports during SSR', async () => {
     const testIds = ['dynamic-import-asset', 'lazy-glob-asset', 'eager-glob-asset'] as const
