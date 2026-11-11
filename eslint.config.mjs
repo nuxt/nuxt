@@ -25,12 +25,10 @@ export default createConfigForNuxt({
       // Don't add other attributes to this object
       ignores: [
         '.goff/**',
-        'packages/schema/schema/**',
         ...Object.keys(generatedTemplateCopies),
         'packages/kit/test/types-fixture/**',
         // deliberately does not compile
         'test/fixtures/dev-error-sourcemap/app/components/Broken.vue',
-        'test/fixtures/vite-server-dev-error/app/components/Broken.vue',
       ],
     },
     {
