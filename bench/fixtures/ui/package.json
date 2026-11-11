@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@iconify-json/lucide": "1.2.152",
-    "@iconify-json/simple-icons": "1.2.101",
+    "@iconify-json/lucide": "1.2.153",
+    "@iconify-json/simple-icons": "1.2.102",
     "@nuxt/ui": "4.12.0",
     "tailwindcss": "4.3.5"
   }
