@@ -2,7 +2,7 @@
 
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
-import { loadPayload } from '#app/composables/payload'
+import { _loadPayload, loadPayload } from '#app/composables/payload'
 import { useRouter } from '#app/composables/router'
 import payloadPlugin from '#app/plugins/payload.client'
 
@@ -70,6 +70,69 @@ describe('payloads from another build', () => {
 
     expect(reloadNuxtApp).not.toHaveBeenCalled()
     expect(router.currentRoute.value.path).toBe('/pre/latest')
+  })
+
+  it('should only key immutable payload urls on the build id', async () => {
+    const fetchSpy = mockPayload(useRuntimeConfig().app.buildId)
+    await loadPayload('/pre/keyed')
+    await loadPayload('/isr/unkeyed?page=2')
+    expect(fetchSpy.mock.calls.map(([url]) => url)).toEqual([
+      `/pre/keyed/_payload.json?_b=${useRuntimeConfig().app.buildId}`,
+      '/isr/unkeyed/_payload.json?page=2',
+    ])
+  })
+
+  it('should revalidate a cached payload from another build before reloading', async () => {
+    const fetchSpy = mockPayload(useRuntimeConfig().app.buildId)
+    fetchSpy.mockImplementationOnce(() => Promise.resolve(new Response(payloadBody('another-build'))))
+    await useRouter().push('/isr/revalidated')
+    expect(fetchSpy.mock.calls.map(([, init]) => init?.cache)).toEqual(['default', 'no-cache'])
+    expect(reloadNuxtApp).not.toHaveBeenCalled()
+    expect(useNuxtApp().static.data.key).toBe('value')
+  })
+
+  it('should reload when a revalidated cached payload is still from another build', async () => {
+    const fetchSpy = mockPayload('another-build')
+    await useRouter().push('/isr/skewed')
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+    expect(reloadNuxtApp).toHaveBeenCalledWith({ path: '/isr/skewed', persistState: true })
+  })
+
+  it('should reload when a cached payload from another build cannot be revalidated', async () => {
+    const fetchSpy = mockPayload('another-build')
+    fetchSpy.mockImplementationOnce(() => Promise.resolve(new Response(payloadBody('another-build'))))
+    fetchSpy.mockImplementationOnce(() => Promise.reject(new TypeError('offline')))
+    await useRouter().push('/isr/offline')
+    expect(fetchSpy.mock.calls.map(([, init]) => init?.cache)).toEqual(['default', 'no-cache'])
+    expect(reloadNuxtApp).toHaveBeenCalledWith({ path: '/isr/offline', persistState: true })
+  })
+
+  it('should discard a cached payload from another build when revalidation is aborted', async () => {
+    const controller = new AbortController()
+    const fetchSpy = mockPayload('another-build')
+    fetchSpy.mockImplementationOnce(() => Promise.resolve(new Response(payloadBody('another-build'))))
+    fetchSpy.mockImplementationOnce(() => {
+      controller.abort()
+      return Promise.reject(new DOMException('aborted', 'AbortError'))
+    })
+    expect(await _loadPayload('/isr/aborted', { signal: controller.signal })).toBeNull()
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
+  })
+
+  it('should not signal a newer build when a prefetched cached payload revalidates to the current build', async () => {
+    const fetchSpy = mockPayload(useRuntimeConfig().app.buildId)
+    fetchSpy.mockImplementationOnce(() => Promise.resolve(new Response(payloadBody('another-build'))))
+    const nuxtApp = useNuxtApp()
+    const onUpdate = vi.fn()
+    const unhook = nuxtApp.hook('app:manifest:update', onUpdate)
+    try {
+      await nuxtApp.callHook('link:prefetch', '/isr/prefetched')
+      await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(2))
+      await new Promise(resolve => setTimeout(resolve))
+      expect(onUpdate).not.toHaveBeenCalled()
+    } finally {
+      unhook()
+    }
   })
 
   it('should apply a payload from the current build on navigation', async () => {
