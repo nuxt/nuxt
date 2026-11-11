@@ -1,4 +1,5 @@
 import { stringify, uneval } from 'devalue'
+import { isReactive, isShallow, reactive, shallowReactive, toRaw } from 'vue'
 import type { Script } from '@unhead/vue'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
@@ -9,7 +10,7 @@ import { NUXT_NO_SSR, appId, multiApp } from 'nuxt/internal/renderer-config'
 
 export function renderPayloadResponse (ssrContext: NuxtSSRContext, event: RendererEvent): CachedResponse {
   return {
-    body: encodeForwardSlashes(stringify(splitPayload(ssrContext).payload, ssrContext['~payloadReducers'])),
+    body: encodeForwardSlashes(stringify(sortContainers(splitPayload(ssrContext).payload), ssrContext['~payloadReducers'])),
     status: event.res.status || 200,
     statusText: event.res.statusText || '',
     headers: {
@@ -20,7 +21,7 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext, event: Render
 }
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
-  const contents = opts.data ? encodeForwardSlashes(stringify(omitEmptyContainers(opts.data), opts.ssrContext['~payloadReducers'])) : ''
+  const contents = opts.data ? encodeForwardSlashes(stringify(sortContainers(omitEmptyContainers(opts.data)), opts.ssrContext['~payloadReducers'])) : ''
   if (import.meta.dev) {
     warnOnLargePayload(opts.ssrContext, opts.data, contents.length)
   }
@@ -60,6 +61,30 @@ function omitEmptyContainers (data: Record<string, unknown>): Record<string, unk
     }
   }
   return result
+}
+
+/** Keys are added in the order async work settles, so they are sorted to keep the output stable. */
+function sortContainers (data: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...data }
+  for (const key of PAYLOAD_CONTAINERS) {
+    const value = data[key]
+    if (value instanceof Set) {
+      result[key] = new Set([...value].sort())
+    } else if (value && typeof value === 'object') {
+      result[key] = withSortedKeys(value)
+    }
+  }
+  return result
+}
+
+function withSortedKeys (container: object): object {
+  const raw = toRaw(container) as Record<string, unknown>
+  const sorted: Record<string, unknown> = {}
+  for (const key of Object.keys(raw).sort()) {
+    sorted[key] = raw[key]
+  }
+  if (!isReactive(container)) { return sorted }
+  return isShallow(container) ? shallowReactive(sorted) : reactive(sorted)
 }
 
 /**
