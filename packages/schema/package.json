@@ -27,9 +27,7 @@
   },
   "files": [
     "dist",
-    "schema",
-    "builder-env.d.ts",
-    "env.d.ts"
+    "builder-env.d.ts"
   ],
   "scripts": {
     "prepack": "node ../../scripts/prepack.ts && tsdown",
