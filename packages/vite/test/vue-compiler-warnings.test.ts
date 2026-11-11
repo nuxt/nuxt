@@ -1,4 +1,5 @@
 import { mkdtemp, realpath, rm, utimes, writeFile } from 'node:fs/promises'
+import { EventEmitter } from 'node:events'
 import { tmpdir } from 'node:os'
 import { join } from 'pathe'
 import { afterAll, describe, expect, it, onTestFinished, vi } from 'vitest'
@@ -327,6 +328,36 @@ describe('VueCompilerWarningsPlugin', () => {
     await utimes(file, new Date(), new Date(Date.now() + 10_000))
     await transform('new', file, 'client')
     await vi.waitFor(() => expect(sink.sets.at(-1)?.reports).toEqual([]))
+  })
+
+  it('ignores the warnings of a compile that finishes after its file was deleted', async () => {
+    const file = join(tmpDir, 'Unlinked.vue')
+    await writeFile(file, '<template />\n')
+    const sink = createSink()
+    const nuxt = createNuxt()
+    onTestFinished(() => nuxt.close())
+    let finish!: () => void
+    const vue = {
+      name: 'vite:vue',
+      transform: {
+        handler (this: { warn: (log: unknown) => void }, code: string, _id: string) {
+          this.warn({ message: 'from a deleted file' })
+          return new Promise((resolve) => { finish = () => resolve({ code }) })
+        },
+      },
+    }
+    const plugin = VueCompilerWarningsPlugin(nuxt, vue as any, sink)
+    const watcher = new EventEmitter()
+    ;(plugin.configureServer as (server: unknown) => void)({ watcher })
+
+    const pending = vue.transform.handler.call({ warn: () => {}, environment: { name: 'client' } }, '<template />', file)
+    await rm(file)
+    watcher.emit('unlink', file)
+    finish()
+    await pending
+
+    await new Promise(resolve => setTimeout(resolve, 200))
+    expect(sink.sets.flatMap(set => set.reports)).toEqual([])
   })
 
   it('drops the warnings of a deleted SFC', async () => {

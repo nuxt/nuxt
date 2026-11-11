@@ -186,6 +186,8 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
   // vite starts a new transform of a changed module without waiting for the one in flight
   const latest = new Map<string, { compile: number, code: string | undefined }>()
   let compiles = 0
+  // the last compile to start before each file was deleted
+  const deletedAfter = new Map<string, number>()
   let server: ViteDevServer | undefined
   const publisher = createPublisher(nuxt, sink, () => {
     store.prune((id, environment) => {
@@ -219,6 +221,9 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
         }
         const newest = latest.get(key)!
         if (newest.compile !== compile && (newest.code === undefined || newest.code !== compiled.code)) {
+          return result
+        }
+        if (compile <= (deletedAfter.get(compiled.file) ?? 0)) {
           return result
         }
         const added = store.update(key, { ...compiled, warnings: capture.warnings })
@@ -299,6 +304,7 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
         }
       })
       devServer.watcher.on('unlink', (file) => {
+        deletedAfter.set(normalize(file), compiles)
         if (store.remove(normalize(file))) {
           publisher.schedule()
         }
