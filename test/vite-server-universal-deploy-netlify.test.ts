@@ -26,12 +26,18 @@ describe.skipIf(!runsDev)('universal-deploy dev server with netlify emulation', 
 
 describe.skipIf(!runsOnceInMatrix)('pure vite build with a universal-deploy target on netlify', () => {
   let serverBuild: Nuxt['serverBuild']
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
-    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') })
+    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
     expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
     serverBuild = nuxt.serverBuild
   }, 240 * 1000)
+
+  it('reports `netlify` as the deploy target before and after the build', () => {
+    expect(targets).toEqual(['netlify', 'netlify'])
+  })
 
   it('publishes the client build for the target to serve', async () => {
     expect(await readFile(join(publicDir, 'static.txt'), 'utf-8')).toContain('static-asset')

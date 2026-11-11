@@ -48,6 +48,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
   const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-build')
   const publicDir = join(outputDir, 'public')
   let html: string
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
     await Promise.all([configuredDir, outputDir].map(dir => rm(dir, { recursive: true, force: true })))
@@ -67,10 +68,15 @@ describe.skipIf(!runsOnceInMatrix)('pure vite static SPA build', () => {
           },
         },
       },
-    })
+    }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
     expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
     html = await readFile(join(publicDir, 'index.html'), 'utf-8')
   }, 240 * 1000)
+
+  it('reports no deploy target', () => {
+    expect(targets).toEqual([undefined, undefined])
+  })
 
   it('writes the client build to the public directory of the output, not the configured `outDir`', () => {
     expect(existsSync(configuredDir)).toBe(false)

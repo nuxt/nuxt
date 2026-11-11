@@ -68,9 +68,11 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
   const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-build')
   let html: string
   let render: (path: string) => Promise<Response>
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
-    const nuxt = await buildInProcess(rootDir, { buildDir, nitro: { output: { dir: outputDir } } })
+    const nuxt = await buildInProcess(rootDir, { buildDir, nitro: { output: { dir: outputDir } } }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
     expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
 
     // the entry only listens when it is the main module
@@ -80,6 +82,10 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     render = path => server.default.fetch(new Request(new URL(path, 'http://localhost')))
     html = await (await render('/')).text()
   }, 240 * 1000)
+
+  it('reports `node` as the deploy target once the build has resolved its config', () => {
+    expect(targets).toEqual([undefined, 'node'])
+  })
 
   it('renders the app', () => {
     expect(html).toContain('<h1>vite-server-ssr</h1>')

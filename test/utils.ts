@@ -5,7 +5,7 @@ import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { buildNuxt, loadNuxt } from '@nuxt/kit'
-import type { NuxtConfig } from 'nuxt/schema'
+import type { Nuxt, NuxtConfig } from 'nuxt/schema'
 import { getBrowser, setup, url, useTestContext } from '@nuxt/test-utils/e2e'
 import type { TestOptions } from '@nuxt/test-utils/e2e'
 import { isCI, isWindows } from 'std-env'
@@ -36,10 +36,14 @@ export async function setupFixture (fixture: string | URL, runs: boolean, option
   })
 }
 
-/** Build `rootDir` in-process with `overrides`, and return the Nuxt instance once it has closed. */
-export async function buildInProcess (rootDir: string, overrides: NuxtConfig = {}) {
+/**
+ * Build `rootDir` in-process with `overrides`, and return the Nuxt instance once it has closed.
+ * `beforeBuild` is called with the loaded instance before it builds.
+ */
+export async function buildInProcess (rootDir: string, overrides: NuxtConfig = {}, beforeBuild?: (nuxt: Nuxt) => void) {
   const nuxt = await loadNuxt({ cwd: rootDir, ready: true, overrides })
   try {
+    beforeBuild?.(nuxt)
     await buildNuxt(nuxt)
   } finally {
     await nuxt.close()

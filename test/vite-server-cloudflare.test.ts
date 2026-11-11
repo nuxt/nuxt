@@ -57,13 +57,19 @@ describe.skipIf(!runsDev)('pure vite dev server with a cloudflare deploy target'
 describe.skipIf(!runsOnceInMatrix)('pure vite build with a cloudflare deploy target', () => {
   let wrangler: { main: string, assets: { directory: string, not_found_handling: string } }
   let worker: { default: { fetch: (request: Request) => Promise<Response> } }
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
-    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') })
+    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
     expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
     wrangler = JSON.parse(await readFile(join(workerDir, 'wrangler.json'), 'utf-8'))
     worker = await import(pathToFileURL(join(workerDir, 'index.js')).href)
   }, 240 * 1000)
+
+  it('reports `cloudflare` as the deploy target before and after the build', () => {
+    expect(targets).toEqual(['cloudflare', 'cloudflare'])
+  })
 
   it('points the worker at the assets the builder wrote, and at itself for everything else', () => {
     expect(wrangler.assets).toMatchObject({
