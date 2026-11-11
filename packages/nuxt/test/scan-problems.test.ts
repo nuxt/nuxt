@@ -148,6 +148,19 @@ describe('scan problems', () => {
     expect(create).toHaveBeenCalledOnce()
   })
 
+  it('logs a new problem once when scans overlap', () => {
+    const problems = createScanProblems(createNuxt(false), 'nuxt:imports', 'Imports')
+    const create = vi.fn(collision)
+
+    const earlier = problems.scan()
+    const later = problems.scan()
+    earlier.report('Foo', [], create)
+    later.report('Foo', [], create)
+    later.done()
+    earlier.done()
+    expect(create).toHaveBeenCalledOnce()
+  })
+
   it('names a problem without a name after its source', async () => {
     const { messages } = listen()
     const nuxt = createNuxt(true)

@@ -44,6 +44,8 @@ export interface ScanProblems {
 export function createScanProblems (nuxt: Nuxt, source: string, label: string): ScanProblems {
   const publish: ProblemPublisher | undefined = nuxt.options.dev ? (...args) => useProblemPublisher(nuxt)(...args) : undefined
   let found = new Map<string, FoundProblem>()
+  // problems logged by scans still running, which overlapping scans must not log again
+  const pending = new Map<string, ScanProblem>()
   let started = 0
   return {
     scan () {
@@ -51,15 +53,22 @@ export function createScanProblems (nuxt: Nuxt, source: string, label: string): 
       const next = new Map<string, FoundProblem>()
       return {
         report (key, files, create) {
-          if (!next.has(key)) {
-            next.set(key, { files, problem: found.get(key)?.problem ?? create() })
+          if (next.has(key)) {
+            return
           }
+          let problem = found.get(key)?.problem ?? pending.get(key)
+          if (!problem) {
+            problem = create()
+            pending.set(key, problem)
+          }
+          next.set(key, { files, problem })
         },
         done () {
           if (id !== started) {
             return
           }
           found = next
+          pending.clear()
           publish?.(source, label, next).catch(() => {})
         },
       }
