@@ -76,7 +76,7 @@ interface CompileRecord {
   file: string
   /** Code the module was compiled from, or `undefined` when it cannot be compared. */
   code: string | undefined
-  /** The environment that compiled a block of an SFC, such as `?vue&type=style&index=0`. */
+  /** For a block of an SFC, such as `?vue&type=style&index=0`, the environment that compiled it. */
   block?: string
   warnings: VueCompilerWarning[]
 }
