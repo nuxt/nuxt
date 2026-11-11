@@ -1,7 +1,7 @@
 import { mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'pathe'
-import { afterAll, describe, expect, it, vi } from 'vitest'
+import { afterAll, describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import type { ErrorReport } from 'my-bad'
 import type { ProblemMeta } from 'my-bad/channel'
@@ -136,6 +136,7 @@ async function startServer () {
   const logger = createLogger('warn')
   const loggerWarn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
   const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+  onTestFinished(() => consoleWarn.mockRestore())
   const server = await createServer({
     root: tmpDir,
     configFile: false,
@@ -144,6 +145,10 @@ async function startServer () {
     plugins: [vue, VueCompilerWarningsPlugin(nuxt, vue, sink)],
     server: { middlewareMode: true, ws: false, watch: null },
   })
+  onTestFinished(async () => {
+    nuxt.close()
+    await server.close()
+  })
   return {
     server,
     sets: sink.sets,
@@ -151,11 +156,6 @@ async function startServer () {
     hotUpdate: (file: string, content: string) => handleHotUpdate()({ file, modules: [...server.environments.client.moduleGraph.getModulesByFile(file) || []], read: () => content, server, timestamp: Date.now() }),
     /** Terminal output of the warnings, through Vite's logger and `console.warn`. */
     printed: () => [...loggerWarn.mock.calls, ...consoleWarn.mock.calls].map(call => String(call[0])),
-    async close () {
-      nuxt.close()
-      await server.close()
-      consoleWarn.mockRestore()
-    },
   }
 }
 
@@ -173,7 +173,7 @@ describe('VueCompilerWarningsPlugin', () => {
       '.a >>> .b { color: red }',
       '</style>',
     ].join('\n'))
-    const { server, sets, printed, close } = await startServer()
+    const { server, sets, printed } = await startServer()
     const client = server.environments.client
 
     await client.transformRequest('/Nested.vue')
@@ -201,15 +201,13 @@ describe('VueCompilerWarningsPlugin', () => {
     await client.transformRequest('/Nested.vue?vue&type=style&index=0&scoped=true&lang.css')
     await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ source: 'vue:compiler', reports: [] }))
     expect(printed()).toHaveLength(3)
-
-    await close()
   })
 
   it('prints a warning raised by a hot update once', async () => {
     const file = join(tmpDir, 'Hot.vue')
     const updated = '<script setup lang="ts">\nconst { a } = withDefaults(defineProps<{ a?: string }>(), { a: \'x\' })\n</script>\n<template>{{ a }}</template>\n'
     await writeFile(file, '<template>{{ 1 }}</template>\n')
-    const { server, sets, printed, hotUpdate, close } = await startServer()
+    const { server, sets, printed, hotUpdate } = await startServer()
     const client = server.environments.client
 
     await client.transformRequest('/Hot.vue')
@@ -220,14 +218,12 @@ describe('VueCompilerWarningsPlugin', () => {
 
     await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ reports: [{ message: expect.stringContaining('withDefaults() is unnecessary') }] }))
     expect(printed()).toEqual([expect.stringContaining('withDefaults() is unnecessary')])
-
-    await close()
   })
 
   it('drops the warnings of a style block removed from its SFC', async () => {
     const file = join(tmpDir, 'Styled.vue')
     await writeFile(file, '<template>\n  <div class="a" />\n</template>\n<style scoped>\n.a >>> .b { color: red }\n</style>\n')
-    const { server, sets, close } = await startServer()
+    const { server, sets } = await startServer()
     const client = server.environments.client
 
     await client.transformRequest('/Styled.vue')
@@ -238,14 +234,12 @@ describe('VueCompilerWarningsPlugin', () => {
     client.moduleGraph.invalidateAll()
     await client.transformRequest('/Styled.vue')
     await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ reports: [] }))
-
-    await close()
   })
 
   it('publishes a warning again when its snippet changes', async () => {
     const file = join(tmpDir, 'Snippet.vue')
     await writeFile(file, '<template>\n  <a href="/">\n    <a href="/a">one</a>\n  </a>\n</template>\n')
-    const { server, sets, close } = await startServer()
+    const { server, sets } = await startServer()
     const client = server.environments.client
 
     await client.transformRequest('/Snippet.vue')
@@ -257,8 +251,6 @@ describe('VueCompilerWarningsPlugin', () => {
     await vi.waitFor(() => expect(sets).toHaveLength(2))
     expect(sets[1]!.reports[0]!.id).toBe(sets[0]!.reports[0]!.id)
     expect(sets[1]!.reports[0]!.frames[0]!.snippet!.lines).toContain('    <a href="/a">two</a>')
-
-    await close()
   })
 
   it('ignores the warnings of a compile that a compile of newer code overtook', async () => {
@@ -292,7 +284,7 @@ describe('VueCompilerWarningsPlugin', () => {
   it('drops the warnings of a deleted SFC', async () => {
     const file = join(tmpDir, 'Deleted.vue')
     await writeFile(file, '<template>\n  <p><p>nested</p></p>\n</template>\n')
-    const { server, sets, close } = await startServer()
+    const { server, sets } = await startServer()
 
     await server.environments.client.transformRequest('/Deleted.vue')
     await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ reports: [{ message: NESTING }] }))
@@ -300,7 +292,5 @@ describe('VueCompilerWarningsPlugin', () => {
     await rm(file)
     server.watcher.emit('unlink', file)
     await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ reports: [] }))
-
-    await close()
   })
 })
