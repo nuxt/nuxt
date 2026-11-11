@@ -31,7 +31,7 @@ function installPackageWithHoistedVue (rootDir: string) {
 
   mkdirSync(dir, { recursive: true })
   if (!existsSync(join(rootDir, 'node_modules/duplicate-vue-ui'))) {
-    symlinkSync(dir, join(rootDir, 'node_modules/duplicate-vue-ui'), 'dir')
+    symlinkSync(dir, join(rootDir, 'node_modules/duplicate-vue-ui'), 'junction')
   }
   cpSync(join(rootDir, 'ui/package.json'), join(dir, 'package.json'))
   writeFileSync(join(dir, 'index.js'), entry)

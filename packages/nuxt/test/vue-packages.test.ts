@@ -19,7 +19,7 @@ async function write (path: string, contents: string) {
 
 async function link (target: string, path: string) {
   await mkdir(dirname(path), { recursive: true })
-  await symlink(target, path, 'dir')
+  await symlink(target, path, 'junction')
 }
 
 const DEPENDENCIES: Record<string, string | undefined> = {
