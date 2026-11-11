@@ -22,8 +22,8 @@ overrides:
   "@types/node": "24.19.2"
   "@vue/compiler-sfc": "3.5.45"
   nuxt: "workspace:*"
-  oxc-parser: "0.158.0"
-  rolldown: "1.3.1"
+  oxc-parser: "0.156.0"
+  rolldown: "1.2.18"
   vite: "8.3.7"
   vue: "3.5.45"
 
@@ -120,8 +120,8 @@ catalogs:
   vite:
     magic-string: ^1.4.5
     oxc-walker: ^1.1.1
-    # needs to match vite's own `~1.1.5` pin
-    rolldown: ~1.3.1
+    # needs to match vite's own `~1.2.18` pin
+    rolldown: ~1.2.18
     rolldown-string: ^0.3.1
     # resolution is pinned via the vite override above
     vite: ^8.3.7
@@ -190,7 +190,7 @@ catalogs:
     ohash: ^2.0.12
     package-manager-detector: ^1.9.0
     on-change: ^6.0.2
-    oxc-parser: ^0.158.0
+    oxc-parser: ^0.156.0
     pathe: ^2.0.3
     picomatch: ^4.0.7
     pkg-types: ^2.4.0
@@ -290,7 +290,7 @@ catalogs:
     sherif: 1.13.0
     simple-git-hooks: 2.14.0
     tinyexec: 1.3.1
-    tsdown: 0.23.7
+    tsdown: 0.23.5
     typescript: 6.0.3
     unocss: 66.12.0
     valibot: 1.5.0
