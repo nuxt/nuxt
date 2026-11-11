@@ -69,6 +69,18 @@ test('hot reloading route rules', async ({ fetch }) => {
   await poll(header, 20_000).toBe('edited in dev')
 })
 
+test.fail('removing and adding a server plugin', async ({ fetch }) => {
+  const response = () => fetch('/api/slow').then(r => `${r.status} ${r.headers.get('x-hmr-plugin')}`)
+  await poll(response).toBe('200 v1')
+
+  const plugin = fixture.read('server/plugins/hmr-header.ts')
+  fixture.remove('server/plugins/hmr-header.ts')
+  await poll(response, 20_000).toBe('200 null')
+
+  fixture.write('server/plugins/hmr-header.ts', plugin.replace(`'v1'`, `'v2'`))
+  await poll(response, 20_000).toBe('200 v2')
+})
+
 test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) => {
   const hasStylesheet = () => fetch('/').then(r => r.text()).then(html => /href="[^"]*test\.css[^"]*"/.test(html))
   const afterRestart = { timeout: 30_000, intervals: [1000] }
