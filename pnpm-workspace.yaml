@@ -239,7 +239,7 @@ catalogs:
     '@rsbuild/plugin-pug': 2.0.0
     '@rsbuild/plugin-type-check': 1.6.1
     '@rsdoctor/types': 1.6.5
-    '@rspack/core': 2.3.1
+    '@rspack/core': 2.3.2
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5
     '@types/estree': 1.0.10
@@ -296,7 +296,7 @@ catalogs:
     valibot: 1.5.0
     vitest: 5.1.0
     vitest-environment-nuxt: 2.0.0
-    vue-sfc-transformer: 0.3.1
+    vue-sfc-transformer: 0.3.2
     vue-tsc: 3.3.14
     zod: 4.6.7
 
