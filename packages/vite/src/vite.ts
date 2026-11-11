@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { performance } from 'node:perf_hooks'
+import { pathToFileURL } from 'node:url'
 import { createBuilder, createServer, mergeConfig, resolveConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
@@ -12,7 +13,7 @@ import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 import type { Plugin as PostcssPlugin } from 'postcss'
-import { resolvePostcssPlugins, useServerBuild } from '@nuxt/kit/internal'
+import { resolvePostcssPlugins, resolveVuePackages, useServerBuild } from '@nuxt/kit/internal'
 
 import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
@@ -86,6 +87,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+
+  const vueDir = resolveVuePackages(nuxt).dirs.vue
+  const compilerSfc = !viteConfig.vue?.compiler && vueDir
+    ? resolveModulePath('vue/compiler-sfc', { from: vueDir + '/', try: true })
+    : undefined
+  const vueOptions = compilerSfc ? { ...viteConfig.vue, compiler: await import(pathToFileURL(compilerSfc).href) } : viteConfig.vue
 
   const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
 
@@ -222,7 +229,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
         InlinedVuePlugin(nuxt),
-        vuePlugin(viteConfig.vue),
+        vuePlugin(vueOptions),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
         ClientManifestPlugin(nuxt),
         // After ClientManifestPlugin so its dev `clientManifest` override wins.
