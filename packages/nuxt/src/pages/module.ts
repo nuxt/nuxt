@@ -27,6 +27,8 @@ import { toVirtualId } from '../core/utils/virtual.ts'
 import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeRouteRuleLookupPath, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
 import { checkPeerVersion } from '../core/peer-version.ts'
+import { createScanProblems } from '../core/scan-problems.ts'
+import type { ScanReporter } from '../core/scan-problems.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import type { NitroInstance, NitroInstanceOptions, NuxtConfig, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
@@ -120,7 +122,15 @@ export default defineNuxtModule({
       return pages
     }
 
-    const resolvePagesRoutes = async () => handleRouteRules(await _resolvePagesRoutes(options.pattern, nuxt, pagesCtx, originalPagePaths))
+    const problems = createScanProblems(nuxt, 'nuxt:pages', 'Pages')
+    const scanPages = async (resolvePages: (report: ScanReporter) => Promise<NuxtPage[]>) => {
+      const scan = problems.scan()
+      const pages = await resolvePages(scan.report)
+      scan.done()
+      return handleRouteRules(pages)
+    }
+
+    const resolvePagesRoutes = () => scanPages(report => _resolvePagesRoutes(options.pattern, nuxt, pagesCtx, originalPagePaths, report))
 
     nuxt.options.alias['#vue-router'] = 'vue-router'
     const routerPath = (await resolveTypePaths(['vue-router'], nuxt.options.modulesDir))[0]?.[1] || 'vue-router'
@@ -336,7 +346,7 @@ export default defineNuxtModule({
           } else if (event === 'unlink') {
             if (!pagesCtx.removeFile(path)) { return }
           }
-          nuxt.apps.default!.pages = await handleRouteRules(await augmentAndResolve(pagesCtx.emit(), pagesCtx.trackedFiles, nuxt, originalPagePaths))
+          nuxt.apps.default!.pages = await scanPages(report => augmentAndResolve(pagesCtx.emit(report), pagesCtx.trackedFiles, nuxt, originalPagePaths, report))
         } catch (err) {
           // Fallback: full rebuild on unexpected tree error
           pageDiagnostics.NUXT_B4012({ event, path, cause: err })

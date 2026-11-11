@@ -12,13 +12,18 @@ import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from '
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 
 import { linkToAlias, toArray } from '../utils.ts'
-import { defaultExtractionKeys, dynamicPageMetaCache, getDynamicMetaKeys, getDynamicPageMeta, getRouteMeta, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
+import { reportScanProblem } from '../core/scan-problems.ts'
+import type { ScanReporter } from '../core/scan-problems.ts'
+import { defaultExtractionKeys, dynamicPageMetaCache, getDynamicMetaKeys, getDynamicPageMeta, getRouteMeta, locatePageMetaKey, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
 /** A persistent route tree, updated incrementally as page files are added and removed in development. */
 export interface PagesContext {
-  /** Emit NuxtPage[] from the current tree state. */
-  emit: () => NuxtPage[]
+  /**
+   * Emit NuxtPage[] from the current tree state. Its route name collisions go to `report`,
+   * and with no `report` they are logged only when the tree changed.
+   */
+  emit: (report?: ScanReporter) => NuxtPage[]
   /** Add a file to the tree (incremental). */
   addFile: (filePath: string, priority?: number) => void
   /** Remove a file from the tree. Returns `true` if the file was found and removed. */
@@ -35,6 +40,9 @@ export interface PagesContextOptions {
 }
 
 export function createPagesContext (options: PagesContextOptions = {}): PagesContext {
+  // an unchanged tree is emitted from cache, which reports no collisions, so they are kept
+  let changed = true
+  let collisions: Array<{ file: string, existingFile: string }> = []
   const modes = options.shouldUseServerComponents ? ['server', 'client'] : ['client']
   const treeOptions: BuildTreeOptions = {
     roots: options.roots,
@@ -43,7 +51,7 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   }
   const emitOptions: VueRouterEmitOptions = {
     onDuplicateRouteName: (_name, file, existingFile) => {
-      pageDiagnostics.NUXT_B4004({ file: linkToAlias(file), existingFile: linkToAlias(existingFile) })
+      collisions.push({ file, existingFile })
     },
     attrs: { mode: modes },
   }
@@ -54,21 +62,35 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
   const trackedFiles = new Set<string>()
 
   return {
-    emit () {
-      return toVueRouter4(tree, emitOptions)
+    emit (report) {
+      const recomputed = changed
+      if (recomputed) {
+        collisions = []
+      }
+      const pages = toVueRouter4(tree, emitOptions)
+      changed = false
+      if (report || recomputed) {
+        for (const { file, existingFile } of collisions) {
+          (report ?? reportScanProblem)(`NUXT_B4004\0${file}\0${existingFile}`, [file, existingFile], () => pageDiagnostics.NUXT_B4004({ file: linkToAlias(file), existingFile: linkToAlias(existingFile) }))
+        }
+      }
+      return pages
     },
     addFile (filePath: string, priority = 0) {
+      changed = true
       addFile(tree, { path: filePath, priority }, compiledParse)
       trackedFiles.add(filePath)
     },
     removeFile (filePath: string) {
       const removed = removeFile(tree, filePath)
       if (removed) {
+        changed = true
         trackedFiles.delete(filePath)
       }
       return removed
     },
     rebuild (files: InputFile[]) {
+      changed = true
       tree = buildTree(files, treeOptions)
       trackedFiles.clear()
       for (const f of files) {
@@ -80,7 +102,7 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
 }
 
 /** Scan the pages directories of every layer and resolve the full route tree. */
-export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt(), ctx?: PagesContext, originalPagePaths?: WeakMap<NuxtPage, string>): Promise<NuxtPage[]> {
+export async function resolvePagesRoutes (pattern: string | string[], nuxt = useNuxt(), ctx?: PagesContext, originalPagePaths?: WeakMap<NuxtPage, string>, report?: ScanReporter): Promise<NuxtPage[]> {
   const pagesDirs = getLayerDirectories(nuxt).map(d => d.appPages)
 
   const inputFiles: InputFile[] = []
@@ -95,11 +117,11 @@ export async function resolvePagesRoutes (pattern: string | string[], nuxt = use
   const pagesCtx = ctx ?? createPagesContext({ roots: pagesDirs, shouldUseServerComponents: !!nuxt.options.experimental.componentIslands })
   pagesCtx.rebuild(inputFiles)
 
-  return augmentAndResolve(pagesCtx.emit(), pagesCtx.trackedFiles, nuxt, originalPagePaths)
+  return augmentAndResolve(pagesCtx.emit(report), pagesCtx.trackedFiles, nuxt, originalPagePaths, report)
 }
 
 /** Augment pages with their extracted page metadata and run the `pages:extend` and `pages:resolved` hooks. */
-export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt(), originalPagePaths?: WeakMap<NuxtPage, string>): Promise<NuxtPage[]> {
+export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<string>, nuxt = useNuxt(), originalPagePaths?: WeakMap<NuxtPage, string>, report: ScanReporter = reportScanProblem): Promise<NuxtPage[]> {
   const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
   if (shouldAugment === false) {
@@ -130,7 +152,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
 
   await nuxt.callHook('pages:resolved', pages)
 
-  warnOnDuplicateRouteNames(pages, generatedNames, dynamicPageMetaCache(nuxt))
+  warnOnDuplicateRouteNames(pages, generatedNames, dynamicPageMetaCache(nuxt), nuxt.vfs, report)
 
   return pages
 }
@@ -155,9 +177,21 @@ interface NamedRoute {
  * Warn when a route name is reused, as Vue Router replaces the earlier route with that name.
  * Collisions between names that are all still generated from file paths are left to `NUXT_B4004`.
  */
-function warnOnDuplicateRouteNames (pages: NuxtPage[], generatedNames: WeakMap<NuxtPage, string | undefined>, dynamicPageMeta: Map<string, ReadonlySet<string>>) {
+function warnOnDuplicateRouteNames (pages: NuxtPage[], generatedNames: WeakMap<NuxtPage, string | undefined>, dynamicPageMeta: Map<string, ReadonlySet<string>>, vfs: Record<string, string>, report: ScanReporter) {
   const isExplicit = (route: NuxtPage) => !generatedNames.has(route) || generatedNames.get(route) !== route.name
   const seen = new Map<string, NamedRoute>()
+
+  /** Where the page names `route`, when its name comes from `definePageMeta`. */
+  function locate (route: NuxtPage, file: string): string {
+    if (!generatedNames.has(route) || generatedNames.get(route) === route.name) {
+      return file
+    }
+    try {
+      return locatePageMetaKey(vfs[file] ?? fs.readFileSync(file, 'utf-8'), file, 'name') ?? file
+    } catch {
+      return file
+    }
+  }
 
   function walk (routes: NuxtPage[], parentPath: string) {
     for (const route of routes) {
@@ -165,13 +199,14 @@ function warnOnDuplicateRouteNames (pages: NuxtPage[], generatedNames: WeakMap<N
       if (route.name && route.file && !getDynamicPageMeta(route, dynamicPageMeta).has('name')) {
         const existing = seen.get(route.name)
         if (existing && existing.route !== route && (isExplicit(route) || isExplicit(existing.route))) {
-          pageDiagnostics.NUXT_B4028({
-            name: route.name,
+          const { name, file } = route
+          report(`NUXT_B4028\0${name}\0${path}\0${file}\0${existing.path}\0${existing.file}`, [locate(route, file), locate(existing.route, existing.file)], () => pageDiagnostics.NUXT_B4028({
+            name,
             path,
-            file: linkToAlias(route.file),
+            file: linkToAlias(file),
             existingPath: existing.path,
             existingFile: linkToAlias(existing.file),
-          })
+          }))
         }
         seen.set(route.name, { route, file: route.file, path })
       }

@@ -1,6 +1,8 @@
-import { resolve } from 'pathe'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'pathe'
 import { consola } from 'consola'
-import { expect, it, vi } from 'vitest'
+import { expect, it, onTestFinished, vi } from 'vitest'
 
 import { scanComponents } from '../src/components/scan.ts'
 import { componentsFixtureDir } from './utils.ts'
@@ -251,4 +253,18 @@ it('components:scanComponents', async () => {
     delete c._scanned
   }
   expect(scannedComponents).deep.eq(expectedComponents)
+})
+
+it('components:scanComponents reports both files of components resolving to the same name', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'nuxt-scan-components-'))
+  onTestFinished(() => rm(dir, { recursive: true, force: true }))
+  await mkdir(join(dir, 'foo'))
+  await writeFile(join(dir, 'Foo.vue'), '<template><div /></template>')
+  await writeFile(join(dir, 'foo/index.vue'), '<template><div /></template>')
+
+  const report = vi.fn()
+  const components = await scanComponents([{ path: dir, pattern: '**/*.vue' }], dir, report)
+
+  expect(components.map(c => c.filePath)).toStrictEqual([join(dir, 'Foo.vue')])
+  expect(report).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('NUXT_B3011'), [join(dir, 'foo/index.vue'), join(dir, 'Foo.vue')], expect.any(Function))
 })

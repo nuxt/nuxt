@@ -244,6 +244,31 @@ export function getDynamicMetaKeys (absolutePath: string, extraExtractionKeys: S
  * macro once transformed, so all of its metadata has to be left to the runtime macro module.
  * Extensionless entries have no module to transform and so nothing to fall back to.
  */
+/** Where the first `definePageMeta` call of a page sets `key`, as `file:line:column`. */
+export function locatePageMetaKey (contents: string, absolutePath: string, key: string): string | undefined {
+  const loader = getLoader(absolutePath)
+  if (!loader) {
+    return
+  }
+  const scriptBlocks = loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
+  for (const script of scriptBlocks) {
+    if (!script.code.includes('definePageMeta')) { continue }
+    let call: ESTree.CallExpression | undefined
+    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+      if (!call && node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'definePageMeta') {
+        call = node
+      }
+    })
+    const argument = unwrapStaticExpression(call?.arguments[0])
+    if (argument?.type !== 'ObjectExpression') { continue }
+    const property = argument.properties.findLast(property => getStaticPropertyKey(property) === key)
+    if (property) {
+      const { line, column } = offsetToPosition(contents, script.offset + property.start)
+      return `${absolutePath}:${line}:${column}`
+    }
+  }
+}
+
 export function isScannablePageFile (path: string) {
   const { pathname } = parseModuleId(path)
   return !!getLoader(pathname) || !extname(pathname)
