@@ -94,7 +94,6 @@ function useProblemPublisher (nuxt: Nuxt): ProblemPublisher {
   }
   const broadcast = openErrorBroadcast()
   const sets = new Map<string, ProblemSetMessage>()
-  const reports = new Map<string, Map<string, Promise<ErrorReport | undefined>>>()
   const versions = new Map<string, number>()
   let fs: Promise<SourceLoader> | undefined
 
@@ -116,22 +115,13 @@ function useProblemPublisher (nuxt: Nuxt): ProblemPublisher {
   publisher = async (source, label, problems) => {
     const version = (versions.get(source) ?? 0) + 1
     versions.set(source, version)
-    const previous = reports.get(source)
-    const current = new Map<string, Promise<ErrorReport | undefined>>()
-    for (const [key, found] of problems) {
-      const id = [key, ...found.files].join('\0')
-      let report = previous?.get(id)
-      if (!report) {
-        fs ||= createFsAccessCheck({
-          allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
-          deny: [],
-        }).then(canRead => createReportFsLoader({ cwd: nuxt.options.rootDir, canRead }))
-        report = fs.then(loader => buildReport(found, label, nuxt.options.rootDir, loader)).catch(() => undefined)
-      }
-      current.set(id, report)
-    }
-    reports.set(source, current)
-    const built = await Promise.all(current.values())
+    fs ||= createFsAccessCheck({
+      allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
+      deny: [],
+    }).then(canRead => createReportFsLoader({ cwd: nuxt.options.rootDir, canRead }))
+    const loader = fs
+    // the snippets of a report are read when it is built, so each scan builds them again
+    const built = await Promise.all([...problems.values()].map(found => loader.then(fs => buildReport(found, label, nuxt.options.rootDir, fs)).catch(() => undefined)))
     if (versions.get(source) !== version) {
       return
     }

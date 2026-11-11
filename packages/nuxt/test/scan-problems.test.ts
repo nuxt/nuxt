@@ -82,7 +82,7 @@ describe('scan problems', () => {
     expect(first).toMatchObject({ type: 'nuxt:dev:error:problems', source: 'nuxt:components', meta: { group: 'Nuxt', label: 'Components' } })
     expect(first!.reports).toMatchObject([{ kind: 'warning', name: 'NUXT_B3011', code: 'NUXT_B3011', hint: 'Rename one of the files.' }])
     expect(first!.reports[0]!.frames.map(frame => [frame.file, frame.line])).toStrictEqual(files.map(file => [file, undefined]))
-    expect(second).toStrictEqual(first)
+    expect(second!.reports.map(report => report.id)).toStrictEqual(first!.reports.map(report => report.id))
 
     problems.scan().done()
     await vi.waitFor(() => expect(messages).toHaveLength(3))
@@ -108,7 +108,27 @@ describe('scan problems', () => {
     second.report('foo', [files[1]!], collision)
     second.done()
     await vi.waitFor(() => expect(messages).toHaveLength(2))
-    expect((messages[1] as ProblemSetMessage).reports).toStrictEqual([reports[1]])
+    expect((messages[1] as ProblemSetMessage).reports.map(report => report.id)).toStrictEqual([reports[1]!.id])
+
+    await nuxt.callHook('close', nuxt)
+  })
+
+  it('reads the snippet of a problem again on each scan', async () => {
+    const { messages } = listen()
+    const nuxt = createNuxt(true)
+    const problems = createScanProblems(nuxt, 'nuxt:imports', 'Imports')
+    const file = join(rootDir, 'composables.ts')
+
+    for (const value of [1, 2]) {
+      await writeFile(file, `export const useFoo = () => ${value}\n`)
+      const scan = problems.scan()
+      scan.report('useFoo', [`${file}:1:14`], () => ({ message: 'Duplicated imports "useFoo"' }))
+      scan.done()
+      await vi.waitFor(() => expect(messages).toHaveLength(value))
+    }
+
+    const snippets = (messages as ProblemSetMessage[]).map(message => message.reports[0]!.frames[0]!.snippet?.lines[0])
+    expect(snippets).toStrictEqual(['export const useFoo = () => 1', 'export const useFoo = () => 2'])
 
     await nuxt.callHook('close', nuxt)
   })
