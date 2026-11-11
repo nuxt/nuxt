@@ -87,6 +87,7 @@ function extractVueStyles (filePath: string, rootContext: string): string[] {
 export class SSRStylesPlugin {
   private nuxt: Nuxt
   private clientCSSByIssuer = new Map<string, Set<string>>()
+  private clientVueModules = new Set<string>()
   private chunksWithInlinedCSS = new Set<string>()
   private globalCSSPaths = new Set<string>()
 
@@ -305,6 +306,8 @@ export class SSRStylesPlugin {
         const rel = normalizePath(this.nuxt, resource)
         if (!rel) { continue }
         if (collected.has(rel)) { continue }
+        // server-only components have no client chunk to load their styles from, so they are always inlined
+        if (this.clientVueModules.has(rel) && !this.shouldInline(module)) { continue }
 
         const vueStyles = extractVueStyles(resolveFilePath(resource) || resource, compilation.compiler.context)
         if (vueStyles.length) {
@@ -427,6 +430,16 @@ export class SSRStylesPlugin {
     const chunkCSSMeta = new Map<any, { files: string[], modules: NormalModule[] }>()
 
     compilation.hooks.processAssets.tap({ name: 'SSRStylesPlugin', stage }, () => {
+      if (!isServer) {
+        for (const mod of compilation.modules) {
+          const resource = (mod as NormalModule).resource
+          const rel = resource && VUE_ID_RE.test(resource) ? normalizePath(this.nuxt, resource) : null
+          if (rel) {
+            this.clientVueModules.add(rel)
+          }
+        }
+      }
+
       // First, associate emitted CSS assets with the modules in their chunks
       const cssAssetsByChunk = new Map<any, string[]>()
       for (const chunk of compilation.chunks) {
