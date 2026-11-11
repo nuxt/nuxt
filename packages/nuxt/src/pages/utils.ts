@@ -152,7 +152,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
 
   await nuxt.callHook('pages:resolved', pages)
 
-  warnOnDuplicateRouteNames(pages, generatedNames, dynamicPageMetaCache(nuxt), nuxt.vfs, report)
+  warnOnDuplicateRouteNames(pages, generatedNames, dynamicPageMetaCache(nuxt), { vfs: nuxt.vfs, trackedFiles }, report)
 
   return pages
 }
@@ -177,17 +177,18 @@ interface NamedRoute {
  * Warn when a route name is reused, as Vue Router replaces the earlier route with that name.
  * Collisions between names that are all still generated from file paths are left to `NUXT_B4004`.
  */
-function warnOnDuplicateRouteNames (pages: NuxtPage[], generatedNames: WeakMap<NuxtPage, string | undefined>, dynamicPageMeta: Map<string, ReadonlySet<string>>, vfs: Record<string, string>, report: ScanReporter) {
+function warnOnDuplicateRouteNames (pages: NuxtPage[], generatedNames: WeakMap<NuxtPage, string | undefined>, dynamicPageMeta: Map<string, ReadonlySet<string>>, sources: { vfs: Record<string, string>, trackedFiles: Set<string> }, report: ScanReporter) {
   const isExplicit = (route: NuxtPage) => !generatedNames.has(route) || generatedNames.get(route) !== route.name
   const seen = new Map<string, NamedRoute>()
 
-  /** Where the page names `route`, when its name comes from `definePageMeta`. */
+  /** Where the page names `route`, when its name comes from `definePageMeta` in a page of the tree. */
   function locate (route: NuxtPage, file: string): string {
-    if (!generatedNames.has(route) || generatedNames.get(route) === route.name) {
+    if (!route.name || !generatedNames.has(route) || generatedNames.get(route) === route.name) {
       return file
     }
     try {
-      return locatePageMetaKey(vfs[file] ?? fs.readFileSync(file, 'utf-8'), file, 'name') ?? file
+      const contents = sources.vfs[file] ?? (sources.trackedFiles.has(file) ? fs.readFileSync(file, 'utf-8') : undefined)
+      return (contents !== undefined && locatePageMetaKey(contents, file, 'name', route.name)) || file
     } catch {
       return file
     }

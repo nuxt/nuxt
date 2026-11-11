@@ -249,8 +249,8 @@ export function isScannablePageFile (path: string) {
   return !!getLoader(pathname) || !extname(pathname)
 }
 
-/** Where the first `definePageMeta` call of a page sets `key`, as `file:line:column`. */
-export function locatePageMetaKey (contents: string, absolutePath: string, key: string): string | undefined {
+/** Where the first `definePageMeta` call of a page sets `key` to the string `value`, as `file:line:column`. */
+export function locatePageMetaKey (contents: string, absolutePath: string, key: string, value: string): string | undefined {
   const loader = getLoader(absolutePath)
   if (!loader) {
     return
@@ -267,7 +267,8 @@ export function locatePageMetaKey (contents: string, absolutePath: string, key: 
     const argument = unwrapStaticExpression(call?.arguments[0])
     if (argument?.type !== 'ObjectExpression') { continue }
     const property = argument.properties.findLast(property => getStaticPropertyKey(property) === key)
-    if (property) {
+    const set = property?.type === 'Property' ? unwrapStaticExpression(property.value) : undefined
+    if (property && set?.type === 'Literal' && set.value === value) {
       const { line, column } = offsetToPosition(contents, script.offset + property.start)
       return `${absolutePath}:${line}:${column}`
     }

@@ -590,6 +590,17 @@ describe('pages:duplicateRouteNames', () => {
     expect(report).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('NUXT_B4028'), ['pages/report.vue', 'pages/first.vue:4:3'], expect.any(Function))
   })
 
+  it('does not locate a route name a hook replaced', async () => {
+    const report = vi.fn<ScanReporter>()
+    await resolve({
+      'pages/first.vue': named('report'),
+      'pages/second.vue': named('other'),
+    }, {
+      'pages:resolved': pages => void (pages.find(page => page.name === 'other')!.name = 'report'),
+    }, report)
+    expect(report).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('NUXT_B4028'), ['pages/second.vue', 'pages/first.vue:1:42'], expect.any(Function))
+  })
+
   it('does not warn when the route name is dynamic', async () => {
     await resolve({
       'pages/first.vue': named('report'),
