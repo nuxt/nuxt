@@ -158,6 +158,7 @@
     "jiti": "catalog:build",
     "pug": "catalog:dev",
     "rolldown": "catalog:vite",
+    "rolldown-inject-filter": "file:../../vendor/rolldown-inject-filter.tgz",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vite": "catalog:vite",
