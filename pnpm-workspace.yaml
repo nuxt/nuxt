@@ -128,7 +128,7 @@ catalogs:
     webpackbar: ^7.0.0
   build:
     '@dxup/nuxt': ^0.5.11
-    '@nuxt/cli': 4.0.1
+    '@nuxt/cli': 4.0.3
     '@nuxt/devtools-onboard': ^4.1.0
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.45
@@ -209,7 +209,7 @@ catalogs:
     '@parcel/watcher': 2.6.0
     '@playwright/test': 1.65.0
     '@rollup/plugin-babel': 7.1.0
-    '@rspack/core': 2.3.1
+    '@rspack/core': 2.3.2
     '@testing-library/vue': 8.1.0
     '@types/babel__core': 7.20.5
     '@types/estree': 1.0.10
@@ -265,7 +265,7 @@ catalogs:
     valibot: 1.5.0
     vitest: 5.1.0
     vitest-environment-nuxt: 2.0.0
-    vue-sfc-transformer: 0.3.1
+    vue-sfc-transformer: 0.3.2
     vue-tsc: 3.3.14
     zod: 4.6.7
 
