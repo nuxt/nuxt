@@ -365,6 +365,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     })
   }
 
+  await ensureDependencyInstalled('vue', { rootDir: options.rootDir, searchPaths: [], dev: false })
+
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
     if (!await ensureDependencyInstalled('@nuxt/webpack-builder', {

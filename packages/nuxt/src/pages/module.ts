@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, ensureDependencyInstalled, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import { join, relative, resolve } from 'pathe'
 import { genInlineTypeImport, genObjectKey, genString, genTypeImport } from 'knitwork'
@@ -151,6 +151,9 @@ export default defineNuxtModule({
       return false
     }
     options.enabled = await isPagesEnabled()
+    if (options.enabled) {
+      await ensureDependencyInstalled('vue-router', { rootDir: nuxt.options.rootDir, searchPaths: [], dev: false })
+    }
     nuxt.options.pages = options
     // For backwards compatibility with `@nuxtjs/i18n` and other modules that serialize `nuxt.options.pages` directly
     // TODO: remove in a future major
