@@ -7,7 +7,7 @@ import type { UseHeadInput, VueHeadClient } from '@unhead/vue/types'
 import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { NuxtHookRegistry, NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
-import type { MarkerSet } from './components/islands-v2/shared'
+import type { IslandRenderState } from './components/islands-v2/shared'
 
 export type { NuxtLinkOptions } from '@nuxt/schema'
 export type { Serialize } from './types/serialize.js'
@@ -173,23 +173,11 @@ export interface NuxtSSRContext extends SSRContext {
   /** @internal */
   ['~neverHydratedModules']?: Set<string>
   /**
-   * Nonce the islands v2 markers of this render bind to.
+   * State of an islands v2 render, set by the island handler; its presence means one is in progress.
    *
    * @internal
    */
-  islandNonce?: string
-  /**
-   * Marker set built from `islandNonce`, cached for the render.
-   *
-   * @internal
-   */
-  islandMarkers?: MarkerSet
-  /**
-   * Nonces of nested islands whose markers this island render embeds.
-   *
-   * @internal
-   */
-  islandNonces?: Set<string>
+  islands?: IslandRenderState
 }
 
 export interface NuxtIslandSlotResponse {

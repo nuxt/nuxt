@@ -9,26 +9,18 @@ import { MAX_VFOR_LENGTH } from './vfor'
 import type { NuxtApp } from '../nuxt'
 import { START_LOCATION } from '#build/pages'
 import { rawVaporSlotKey } from '#build/nuxt.config.mjs'
-
-export interface FragmentHTMLOptions {
-  /** Keep comment and text nodes, nested fragments included, up to the matching end marker. */
-  comments?: boolean
-}
+import { VUE_SCOPE_ID_RE } from './islands-v2/shared'
 
 /**
  * Opening tag of an island's root, which a parent's scope id is appended to.
  */
-export const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
-/**
- * A Vue scope id attribute, the only value an island's `scopeId` prop may add to its root tag.
- */
-export const VUE_SCOPE_ID_RE = /^data-v-[\w-]+$/
+const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
 
 /**
  * Add the parent's scope id to an island's root tag, reporting an invalid one in dev.
- * With `skipCommentRoot`, a root comment (fragment or marker) is left untouched as it has no tag.
+ * A root comment (fragment or marker) is left untouched as it has no tag.
  */
-export function withIslandScopeId (html: string, scopeId: string | null | undefined, skipCommentRoot = false): string {
+export function withIslandScopeId (html: string, scopeId: string | null | undefined): string {
   if (!scopeId) { return html }
   if (!VUE_SCOPE_ID_RE.test(scopeId)) {
     if (import.meta.dev) {
@@ -36,7 +28,7 @@ export function withIslandScopeId (html: string, scopeId: string | null | undefi
     }
     return html
   }
-  if (skipCommentRoot && html.startsWith('<!--')) { return html }
+  if (html.startsWith('<!--')) { return html }
   return html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + scopeId)
 }
 
@@ -174,15 +166,14 @@ export function vforToArray (source: any): any[] {
  * Handles `<!--[-->` Fragment elements
  * @param element the element to retrieve the HTML
  * @param withoutSlots purge all slots from the HTML string retrieved
- * @param options how fragment markers, comments and text nodes are kept
  * @returns {string[]|undefined} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
  */
-export function getFragmentHTML (element: RendererNode | null, withoutSlots = false, options: FragmentHTMLOptions = {}): string[] | undefined {
+export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] | undefined {
   if (element) {
-    if (isStartFragment(element)) {
-      return options.comments ? getFragmentNodes(element, withoutSlots) : getFragmentChildren(element, [], withoutSlots)
+    if (element.nodeName === '#comment' && element.nodeValue === '[') {
+      return getFragmentChildren(element, [], withoutSlots)
     }
-    return [options.comments ? getNodeHTML(element, withoutSlots) : getElementHTML(element, withoutSlots)]
+    return [getElementHTML(element, withoutSlots)]
   }
 }
 
@@ -195,33 +186,6 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     current = current.nextSibling
   }
   return blocks
-}
-
-function getFragmentNodes (start: RendererNode, withoutSlots: boolean) {
-  const blocks: string[] = []
-  let depth = 0
-  for (let current: RendererNode | null = start; current; current = current.nextSibling) {
-    blocks.push(getNodeHTML(current, withoutSlots))
-    if (isStartFragment(current)) {
-      depth++
-    } else if (isEndFragment(current) && --depth === 0) {
-      break
-    }
-  }
-  return blocks
-}
-
-const TEXT_ESCAPE_RE = /[&<>]/g
-const TEXT_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;' }
-
-function getNodeHTML (node: RendererNode, withoutSlots: boolean) {
-  if (node.nodeType === 1) {
-    return getElementHTML(node, withoutSlots)
-  }
-  if (node.nodeType === 8) {
-    return `<!--${node.data}-->`
-  }
-  return (node.textContent ?? '').replace(TEXT_ESCAPE_RE, (char: string) => TEXT_ESCAPES[char]!)
 }
 
 const ISLAND_TELEPORT_TARGET_SELECTOR = '[data-island-slot],[data-island-component]'

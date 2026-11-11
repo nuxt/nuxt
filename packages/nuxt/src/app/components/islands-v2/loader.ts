@@ -1,5 +1,5 @@
 import { ErrorCodes, defineComponent, getCurrentInstance, h, handleError, shallowRef, watch } from 'vue'
-import type { FunctionalComponent, PropType, VNode } from 'vue'
+import type { FunctionalComponent, PropType, Slots, VNode } from 'vue'
 import { importFn } from '#islands-v2-manifest'
 import type { IslandComponentMarker } from './shared'
 import { htmlToVNodes } from './dom-to-vnode'
@@ -22,6 +22,11 @@ export default /* @__PURE__ */ defineComponent({
       required: false,
       default: undefined,
     },
+    islandSlots: {
+      type: Object as PropType<Slots>,
+      required: false,
+      default: undefined,
+    },
   },
   async setup (props) {
     const instance = getCurrentInstance()
@@ -35,10 +40,10 @@ export default /* @__PURE__ */ defineComponent({
       }
     }
 
-    const Loaded = shallowRef(await loadComponent(props.data[2], props.data[3] ?? 'default'))
+    const Loaded = shallowRef(await loadComponent(props.data[1], props.data[2] ?? 'default'))
 
     let loadId = 0
-    watch([() => props.data[2], () => props.data[3]], async ([chunk, exportName]) => {
+    watch([() => props.data[1], () => props.data[2]], async ([chunk, exportName]) => {
       const id = ++loadId
       const component = await loadComponent(chunk, exportName ?? 'default')
       if (id === loadId) { Loaded.value = component }
@@ -48,16 +53,14 @@ export default /* @__PURE__ */ defineComponent({
     const renderHtmlSlot = (html: string): VNode[] => {
       let vnodes = htmlSlots.get(html)
       if (!vnodes) {
-        vnodes = htmlToVNodes(html, { nonce: props.nonce, nonces: props.nonces })
+        vnodes = htmlToVNodes(html, { nonce: props.nonce, nonces: props.nonces, slots: props.islandSlots })
         htmlSlots.set(html, vnodes)
       }
       return vnodes
     }
 
-    const buildSlots = () => Object.fromEntries(
-      Object.entries(props.data[4] ?? {}).map(([name, html]) => [name, () => renderHtmlSlot(html)]),
-    )
-
-    return () => h(Loaded.value, props.data[1], buildSlots())
+    return () => h(Loaded.value, props.data[0], Object.fromEntries(
+      Object.entries(props.data[3] ?? {}).map(([name, html]) => [name, () => renderHtmlSlot(html)]),
+    ))
   },
 })

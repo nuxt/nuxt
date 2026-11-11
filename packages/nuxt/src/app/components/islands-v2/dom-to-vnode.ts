@@ -1,5 +1,6 @@
 import {
   Fragment,
+  type Slots,
   Static,
   Suspense,
   Teleport,
@@ -11,17 +12,30 @@ import {
   h,
   isVNode,
 } from 'vue'
-import { escapeHtml, isPlainObject, isString } from '@vue/shared'
+import { escapeHtml } from '@vue/shared'
 import {
-  COMPONENT_MARKER_TYPE,
   type IslandComponentMarker,
+  type IslandSlotMarker,
   type IslandTeleportMarker,
   type MarkerSet,
-  PROTOTYPE_KEYS,
   VNODE_RESERVED_PROPS,
   createMarkerSet,
 } from './shared'
+import {
+  FRAGMENT_END,
+  FRAGMENT_START,
+  type RegionToken,
+  TELEPORT_END,
+  TELEPORT_START,
+  findRegionEnd,
+  hasMarkerPrefix,
+  isComponentMarker,
+  isSlotMarker,
+  isTeleportMarker,
+  tryDecodeMarker,
+} from './markers'
 import loader from './loader'
+import slotOutlet from './slot-outlet'
 
 export interface DomToVNodeOptions {
   /**
@@ -43,11 +57,16 @@ export interface DomToVNodeOptions {
    * Tree currently rendered for the island, whose static runs are kept where the new DOM is unchanged.
    */
   previous?: VNode
+  /**
+   * Slots the page passed to the island, rendered at the island's own `i:s` slot markers.
+   */
+  slots?: Slots
 }
 
 type DecodedMarker =
   | { kind: 'component', tuple: IslandComponentMarker, markers: MarkerSet }
   | { kind: 'teleport', tuple: IslandTeleportMarker, markers: MarkerSet }
+  | { kind: 'slot', tuple: IslandSlotMarker, markers: MarkerSet }
 
 interface WalkContext {
   adopt: boolean
@@ -75,11 +94,7 @@ interface WalkResult {
 
 const COMMENT_NODE = 8
 const ELEMENT_NODE = 1
-const FRAGMENT_END = ']'
-const FRAGMENT_START = '['
 const SHOW_COMMENT = 128
-const TELEPORT_END = 'teleport end'
-const TELEPORT_START = 'teleport start'
 const TEXT_NODE = 3
 let STATIC_RUN_ID = 0
 
@@ -114,6 +129,16 @@ export function htmlToVNodes (html: string, options: DomToVNodeOptions): VNode[]
   const context = createWalkContextForScope(content, content, { ...options, adopt: false })
   context.serialize = true
   return walkSiblings(content.firstChild, null, context)
+}
+
+export function outerHTMLOf (start: Node): string {
+  const end = isFragmentStart(start) ? findFragmentEnd(start) : start
+  let html = ''
+  for (let current: Node | null = start; current; current = current.nextSibling) {
+    html += serializeNode(current)
+    if (current === end) { break }
+  }
+  return html
 }
 
 function parseHtml (html: string): HTMLTemplateElement {
@@ -194,7 +219,11 @@ function walkNode (node: ChildNode, context: WalkContext): WalkResult {
   if (node.nodeType === ELEMENT_NODE && context.markerAncestors.has(node)) {
     return {
       next: node.nextSibling,
-      vnodes: [walkMarkerAncestorElement(node as Element, context)],
+      vnodes: [createElementVNode(
+        (node as Element).localName,
+        readAttributes(node as Element) ?? null,
+        walkSiblings(node.firstChild, null, context),
+      )],
     }
   }
   if (isStaticNode(node)) {
@@ -227,14 +256,6 @@ function walkSiblings (first: ChildNode | null, stop: Node | null, context: Walk
   return vnodes
 }
 
-function walkMarkerAncestorElement (element: Element, context: WalkContext): VNode {
-  return createElementVNode(
-    element.localName,
-    readAttributes(element) ?? null,
-    walkSiblings(element.firstChild, null, context),
-  )
-}
-
 /**
  * VNodes of a decoded marker, or `undefined` when a teleport marker has no teleport after it.
  */
@@ -243,8 +264,12 @@ function handleMarkerComment (
   marker: DecodedMarker,
   context: WalkContext,
 ): WalkResult | undefined {
+  if (marker.kind === 'slot') {
+    return handleSlotMarker(comment, marker, context)
+  }
+
   if (marker.kind === 'component') {
-    const closing = findClosingMarker(comment, marker.markers, context)
+    const closing = findClosingMarker(comment, marker, context)
     if (!closing) { return }
     return {
       next: closing.nextSibling,
@@ -257,8 +282,8 @@ function handleMarkerComment (
   }
 
   const start = comment.nextSibling
-  if (!start || !isTeleportStart(start)) { return }
-  const end = findTeleportEnd(start)
+  if (!start || start.nodeType !== COMMENT_NODE || (start as Comment).data !== TELEPORT_START) { return }
+  const end = findAnchorEnd(start, TELEPORT_START, TELEPORT_END)
   if (!end) { return }
   const [to, disabled, html] = marker.tuple
   // Disabled content sits inline; otherwise it lives in the target and travels in the marker.
@@ -268,6 +293,34 @@ function handleMarkerComment (
   return {
     next: end.nextSibling,
     vnodes: [createCommentVNode(comment.data), createVNode(Teleport, { to, disabled }, children)],
+  }
+}
+
+/**
+ * Outlet rendering the page's slot in place of an `i:s` region, with the fallback read from the tuple
+ * (see `IslandSlotMarker`).
+ */
+function handleSlotMarker (
+  comment: Comment,
+  marker: Extract<DecodedMarker, { kind: 'slot' }>,
+  context: WalkContext,
+): WalkResult | undefined {
+  const closing = findClosingMarker(comment, marker, context)
+  if (!closing) { return }
+  const [name, props, slotScopeId, fallback] = marker.tuple
+  return {
+    next: closing.nextSibling,
+    vnodes: [
+      createCommentVNode(comment.data),
+      h(slotOutlet, {
+        islandSlots: context.options.slots,
+        name,
+        slotProps: props,
+        fallback: htmlToVNodes(fallback, context.options),
+        slotScopeId: slotScopeId ?? undefined,
+      }),
+      createCommentVNode(marker.markers.slotEnd),
+    ],
   }
 }
 
@@ -284,6 +337,12 @@ function readMarker (comment: Comment, context: WalkContext): DecodedMarker | nu
 }
 
 function decodeMarkerComment (data: string, markerSets: MarkerSet[]): DecodedMarker | null {
+  // Only the island's own slots resolve; a nested island's slot markers stay plain comments.
+  const own = markerSets[0]!
+  if (hasMarkerPrefix(data, own.slot)) {
+    const tuple = tryDecodeMarker(data.slice(own.slot.length))
+    return isSlotMarker(tuple) ? { kind: 'slot', tuple, markers: own } : null
+  }
   for (const markers of markerSets) {
     if (hasMarkerPrefix(data, markers.component)) {
       const tuple = tryDecodeMarker(data.slice(markers.component.length))
@@ -297,88 +356,35 @@ function decodeMarkerComment (data: string, markerSets: MarkerSet[]): DecodedMar
   return null
 }
 
-function tryDecodeMarker (json: string): unknown {
-  try {
-    return JSON.parse(json)
-  } catch {
-    return
-  }
-}
-
-function isComponentMarker (value: unknown): value is IslandComponentMarker {
-  if (!Array.isArray(value)) { return false }
-  const [type, props, chunk, exportName, slots] = value as unknown[]
-  return (
-    type === COMPONENT_MARKER_TYPE &&
-    typeof chunk === 'string' &&
-    (props === null || (isPlainObject(props) && !hasKeyIn(props, PROTOTYPE_KEYS) && !hasKeyIn(props, VNODE_RESERVED_PROPS))) &&
-    (exportName === undefined || typeof exportName === 'string') &&
-    (slots === undefined || (isPlainObject(slots) && !hasKeyIn(slots, PROTOTYPE_KEYS) && Object.values(slots).every(isString)))
-  )
-}
-
-function isTeleportMarker (value: unknown): value is IslandTeleportMarker {
-  if (!Array.isArray(value)) { return false }
-  const [to, disabled, html] = value as unknown[]
-  return (
-    typeof to === 'string' &&
-    typeof disabled === 'boolean' &&
-    (html === undefined || typeof html === 'string')
-  )
-}
-
-// Marker props are plain JSON.parse output, unlike the devalue payload.
-function hasKeyIn (record: object, keys: ReadonlySet<string>): boolean {
-  return Object.keys(record).some(key => keys.has(key))
-}
-
 /**
- * Closing comment of a component marker; only valid open markers of the same nonce count as nested.
+ * Closing comment of a component or slot marker; only valid open markers of the same kind and nonce count as nested.
  */
-function findClosingMarker (start: Comment, markers: MarkerSet, context: WalkContext): Comment | undefined {
-  let depth = 0
-  for (let current = start.nextSibling; current; current = current.nextSibling) {
-    if (current.nodeType !== COMMENT_NODE) { continue }
-    const comment = current as Comment
-    if (comment.data === markers.componentEnd) {
-      if (depth === 0) { return comment }
-      depth--
-    } else {
-      const marker = readMarker(comment, context)
-      if (marker?.kind === 'component' && marker.markers === markers) { depth++ }
-    }
-  }
-  return undefined
-}
-
-function findTeleportEnd (start: Node): Comment | undefined {
-  let depth = 0
-  for (let current: Node | null = start; current; current = current.nextSibling) {
-    if (current.nodeType !== COMMENT_NODE) { continue }
-    const data = (current as Comment).data
-    if (data === TELEPORT_START) {
-      depth++
-    } else if (data === TELEPORT_END) {
-      depth--
-      if (depth === 0) { return current as Comment }
-    }
-  }
-  return undefined
+function findClosingMarker (start: Comment, open: DecodedMarker, context: WalkContext): Comment | undefined {
+  const end = open.kind === 'slot' ? open.markers.slotEnd : open.markers.componentEnd
+  return findRegionEnd(siblingsAfter(start), (node) => {
+    if (node.nodeType !== COMMENT_NODE) { return }
+    if ((node as Comment).data === end) { return 'close' }
+    const marker = readMarker(node as Comment, context)
+    return marker?.kind === open.kind && marker.markers === open.markers ? 'open' : undefined
+  }) as Comment | undefined
 }
 
 function findFragmentEnd (start: Node): Comment | undefined {
-  let depth = 0
-  for (let current = start.nextSibling; current; current = current.nextSibling) {
-    if (current.nodeType !== COMMENT_NODE) { continue }
-    const data = (current as Comment).data
-    if (data === FRAGMENT_START) {
-      depth++
-    } else if (data === FRAGMENT_END) {
-      if (depth === 0) { return current as Comment }
-      depth--
-    }
-  }
-  return undefined
+  return findAnchorEnd(start, FRAGMENT_START, FRAGMENT_END)
+}
+
+function findAnchorEnd (start: Node, open: string, close: string): Comment | undefined {
+  return findRegionEnd(siblingsAfter(start), node => anchorToken(node, open, close)) as Comment | undefined
+}
+
+function anchorToken (node: Node, open: string, close: string): RegionToken {
+  if (node.nodeType !== COMMENT_NODE) { return }
+  const data = (node as Comment).data
+  return data === open ? 'open' : data === close ? 'close' : undefined
+}
+
+function* siblingsAfter (node: Node): Generator<ChildNode> {
+  for (let current = node.nextSibling; current; current = current.nextSibling) { yield current }
 }
 
 function collectStaticRuns (previous: VNode): Map<string, VNode[]> {
@@ -416,7 +422,7 @@ function createStaticRun (nodes: Node[], context: WalkContext): VNode {
   vnode.props = { key: vnode.key }
   if (context.serialize) {
     // Carrying the HTML lets the same VNode mount or hydrate once and be cloned on later renders.
-    vnode.children = nodes.map(serializeStaticNode).join('')
+    vnode.children = nodes.map(serializeNode).join('')
   } else if (!context.adopt) {
     // With anchors set, Vue clones the parsed nodes at mount instead of parsing the HTML again.
     vnode.el = nodes[0]!
@@ -428,9 +434,10 @@ function createStaticRun (nodes: Node[], context: WalkContext): VNode {
   return vnode
 }
 
-function serializeStaticNode (node: Node): string {
+function serializeNode (node: Node): string {
   if (node.nodeType === ELEMENT_NODE) { return (node as Element).outerHTML }
   if (node.nodeType === TEXT_NODE) { return escapeHtml((node as Text).data) }
+  if (node.nodeType === COMMENT_NODE) { return `<!--${(node as Comment).data}-->` }
   return ''
 }
 
@@ -468,16 +475,8 @@ function isFragmentStart (node: Node): boolean {
   return node.nodeType === COMMENT_NODE && (node as Comment).data === FRAGMENT_START
 }
 
-function isTeleportStart (node: Node): boolean {
-  return node.nodeType === COMMENT_NODE && (node as Comment).data === TELEPORT_START
-}
-
 function isStaticNode (node: Node): boolean {
   return node.nodeType === ELEMENT_NODE || node.nodeType === TEXT_NODE
-}
-
-function hasMarkerPrefix (data: string, marker: string): boolean {
-  return data.startsWith(`${marker}[`)
 }
 
 function wrapRoot (vnodes: VNode[]): VNode | undefined {
@@ -491,6 +490,6 @@ function wrapRoot (vnodes: VNode[]): VNode | undefined {
  */
 function renderClientComponent (data: IslandComponentMarker, options: DomToVNodeOptions): VNode {
   return h(Suspense, null, {
-    default: () => h(loader, { data, nonce: options.nonce, nonces: options.nonces }),
+    default: () => h(loader, { data, nonce: options.nonce, nonces: options.nonces, islandSlots: options.slots }),
   })
 }

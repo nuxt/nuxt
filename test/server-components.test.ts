@@ -51,13 +51,8 @@ describe('server components/islands', () => {
     await page.locator('#increase-pure-component').click()
     await islandRequest
 
-    if (islandsV2) {
-      expect(await page.locator('#slot-in-server').count()).toBe(0)
-      expect(await page.locator('#test-slot').count()).toBe(0)
-    } else {
-      await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
-      await page.locator('#test-slot').getByText('Slot with name test').waitFor()
-    }
+    await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
+    await page.locator('#test-slot').getByText('Slot with name test').waitFor()
 
     // test fallback slot with v-for
     expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
@@ -73,21 +68,15 @@ describe('server components/islands', () => {
     await page.locator('#async-server-component-count').getByText('1').waitFor()
     await page.locator('#long-async-component-count').getByText('1').waitFor()
 
-    if (!islandsV2) {
-      // test islands slots interactivity
-      await page.locator('#first-sugar-counter button').click()
-      expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
-    }
+    // test islands slots interactivity
+    await page.locator('#first-sugar-counter button').click()
+    expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
 
     // test islands mounted client side with slot
     await page.locator('#show-island').click()
-    if (islandsV2) {
-      await page.locator('#island-mounted-client-side').getByText('hello world !!!').waitFor()
-      expect(await page.locator('#island-mounted-client-side').innerHTML()).not.toContain('Interactive testing slot post SSR')
-    } else {
-      expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
-      expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Sugar Counter')
-    }
+    await page.locator('#island-mounted-client-side').getByText('hello world !!!').waitFor()
+    expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
+    expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Sugar Counter')
 
     // test islands wrapped with client-only
     expect(await page.locator('#wrapped-client-only').innerHTML()).toContain('Was router enabled')
@@ -156,12 +145,12 @@ describe('server components/islands', () => {
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
 
-    const text = (await page.innerText('pre')).replaceAll(/ data-island-uid="[^"]*"/g, '').replace(/data-island-component="[^"]*"/g, 'data-island-component').replace(/(i:c:)[a-z0-9]+/gi, '$1NONCE')
+    const text = normaliseIslandHTML(await page.innerText('pre'))
 
     if (isWebpack) {
       expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <div class="sugar-counter" nuxt-client=""> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div></div>"')
     } else if (islandsV2) {
-      expect(text).toMatchInlineSnapshot(`" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border: 1px solid red;"> The component below is not a slot but declared as interactive <!--i:c:NONCE[1,{"multiplier":1},"/components/Counter.vue","default"]--><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--/i:c:NONCE--></div></div>"`)
+      expect(text).toMatchInlineSnapshot(`" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--i:s:NONCE["default",{},null,""]--><!--/i:s:NONCE--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--i:s:NONCE["default",{},null,""]--><!--/i:s:NONCE--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border: 1px solid red;"> The component below is not a slot but declared as interactive <!--i:c:NONCE[{"multiplier":1},"/components/Counter.vue","default"]--><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--/i:c:NONCE--></div></div>"`)
     } else {
       expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-component></div><!--teleport start--><!--teleport end--><!--]--></div></div>"')
     }
@@ -296,16 +285,56 @@ describe('server components/islands', () => {
     }
   })
 
+  it.skipIf(!islandsV2)('renders page slots interactively at the island\'s own slot outlets', async () => {
+    // The island response is rendered without the page's slots, so it only holds markers and fallbacks.
+    const island = await $fetch<NuxtIslandResponse>(islandURL('ServerSlots'))
+    expect(normaliseIslandHTML(island.html!)).toMatchInlineSnapshot(`"<div class="server-slots"><div class="slot-box"><!--[--><p class="box-content"> island box content </p><!--]--></div><!--i:s:NONCE["default",{},null,"\\u003Cp class=\\"default-fallback\\"> default fallback \\u003C/p>"]--><!--/i:s:NONCE--><!--i:c:NONCE[null,"/components/SlotEcho.vue","default",{"default":"\\u003C!-\\u002Di:s:NONCE[\\"in-client\\",{},null,\\"\\"]-\\u002D>\\u003C!-\\u002D/i:s:NONCE-\\u002D>"}]--><div class="slot-echo"><button class="slot-echo-inc"> echo 0</button><!--[--><!--i:s:NONCE["in-client",{},null,""]--><!--/i:s:NONCE--><!--]--></div><!--/i:c:NONCE--><!--i:s:NONCE["unused",{},null,"\\u003Cp class=\\"unused-fallback\\"> unused fallback \\u003C/p>"]--><!--/i:s:NONCE--></div>"`)
+
+    const html = await $fetch<string>('/island-slots')
+    expect(html).toContain('id="island-slot-default"')
+    expect(html).toContain('id="island-slot-in-client"')
+    // The fallbacks also travel JSON-escaped in the markers, which this does not match.
+    expect(html).not.toContain('class="default-fallback"')
+    expect(html).toContain('class="unused-fallback"')
+
+    const { page, consoleLogs, requests } = await renderPage('/island-slots')
+    try {
+      const first = page.locator('#first-slots-island')
+      // A universal child's own `<slot>` keeps the island's content.
+      expect(await first.locator('.slot-box').innerText()).toContain('island box content')
+      expect(await page.locator('#island-slot-default').count()).toBe(1)
+      expect(await first.locator('.unused-fallback').count()).toBe(1)
+
+      await page.locator('#island-slot-inc').click()
+      await expect.poll(() => page.locator('#island-slot-default').innerText()).toContain('page 1')
+      // A page slot inside a `v-load-client` component's slot stays reactive.
+      expect(await first.locator('.slot-echo #island-slot-in-client').innerText()).toContain('in client 1')
+      await first.locator('.slot-echo-inc').click()
+      await expect.poll(() => first.locator('.slot-echo-inc').innerText()).toContain('echo 1')
+
+      // The same island mounted again reuses the HTML captured on hydration, with its own slots.
+      await page.locator('#show-second-slots-island').click()
+      const second = page.locator('#second-slots-island')
+      await expect.poll(() => second.locator('#second-island-slot').innerText()).toContain('second 1')
+      expect(await second.locator('#island-slot-default').count()).toBe(0)
+      expect(await second.locator('.default-fallback').count()).toBe(0)
+      expect(await second.locator('.unused-fallback').count()).toBe(1)
+      expect(await second.locator('.slot-box').innerText()).toContain('island box content')
+
+      expect(requests.filter(request => request.includes('/__nuxt_island/'))).toEqual([])
+      expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
+      expect(consoleLogs.filter(l => l.text.includes('Hydration'))).toEqual([])
+    } finally {
+      await page.close()
+    }
+  })
+
   // https://github.com/nuxt/nuxt/issues/31510
   it.skipIf(isWebpack)('applies scoped styles to server component slots', async () => {
     const { page } = await renderPage('/slotted-styles')
 
     try {
       const slotted = page.locator('#slotted-style-in-server')
-      if (islandsV2) {
-        expect(await slotted.count()).toBe(0)
-        return
-      }
       expect(await slotted.count()).toBe(1)
 
       const slottedStyles = await slotted.evaluate((element) => {
@@ -333,22 +362,13 @@ describe('component islands', () => {
   it('renders components with route', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('RouteComponent', { context: { url: '/foo' } }))
 
-    if (islandsV2) {
-      expect(result.html).toContain('Route: /foo')
-      return
-    }
-    result.html = result.html!.replace(/ data-island-uid="[^"]*"/g, '')
-    result.head.link ||= []
-    result.head.style ||= []
-    delete result.id
-
-    expect(result).toMatchInlineSnapshot(`
+    expect(normaliseIslandResponse(result)).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
           "style": [],
         },
-        "html": "<pre data-island-uid>    Route: /foo
+        "html": "<pre>    Route: /foo
         </pre>",
       }
     `)
@@ -365,32 +385,28 @@ describe('component islands', () => {
   })
 
   it('render async component', async () => {
-    const result = await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } }))
+    const result = normaliseIslandResponse(await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } })))
 
+    // Legacy teleports page slots into placeholders and ships fallbacks in `slots`; v2 renders them at `i:s` outlets.
     if (islandsV2) {
-      const html = result.html!
-      expect(html).toContain('count is above 2')
-      expect(html).toContain('that was very long')
-      expect(html).toMatch(/id="long-async-component-count">\s*3\s*</)
-      expect(html).toContain('<p>hello world !!!</p>')
-      expect(html).toContain('fallback slot -- index: 0')
-      expect(html).toContain('fallback slot -- index: 2')
-      expect(html).toMatch(/fall slot -- index: 0/)
-      expect(html).toMatch(/back slot -- index: 1/)
-      expect(html).toContain('wonderful fallback')
+      expect(result).toMatchInlineSnapshot(`
+        {
+          "head": {
+            "link": [],
+            "style": [],
+          },
+          "html": "<div><div> count is above 2 </div><!--i:s:NONCE["default",{},null,""]--><!--/i:s:NONCE--> that was very long ... <div id="long-async-component-count">3</div>  <!--i:s:NONCE["test",{"count":3},null,""]--><!--/i:s:NONCE--><p>hello world !!!</p><!--[--><!--i:s:NONCE["hello",{"t":1},null,"\\u003Cdiv> fallback slot -\\u002D index: 0\\u003C/div>"]--><!--/i:s:NONCE--><!--i:s:NONCE["hello",{"t":2},null,"\\u003Cdiv> fallback slot -\\u002D index: 1\\u003C/div>"]--><!--/i:s:NONCE--><!--i:s:NONCE["hello",{"t":3},null,"\\u003Cdiv> fallback slot -\\u002D index: 2\\u003C/div>"]--><!--/i:s:NONCE--><!--]--><!--[--><!--i:s:NONCE["fallback",{"t":"fall"},null,"\\u003Cdiv>fall slot -\\u002D index: 0\\u003C/div>\\u003Cdiv class=\\"fallback-slot-content\\"> wonderful fallback \\u003C/div>"]--><!--/i:s:NONCE--><!--i:s:NONCE["fallback",{"t":"back"},null,"\\u003Cdiv>back slot -\\u002D index: 1\\u003C/div>\\u003Cdiv class=\\"fallback-slot-content\\"> wonderful fallback \\u003C/div>"]--><!--/i:s:NONCE--><!--]--></div>",
+        }
+      `)
       return
     }
-    result.head.link ||= []
-    result.head.style ||= []
-    result.html = result.html!.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
-    delete result.id
     expect(result).toMatchInlineSnapshot(`
       {
         "head": {
           "link": [],
           "style": [],
         },
-        "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
+        "html": "<div><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
           "default": {
             "props": [],
@@ -433,23 +449,23 @@ describe('component islands', () => {
   })
 
   it('render .server async component', async () => {
-    const result = await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } }))
+    const result = normaliseIslandResponse(await $fetch<NuxtIslandResponse>(islandURL('AsyncServerComponent', { props: { count: 2 } })))
 
     if (islandsV2) {
-      const html = result.html!
-      expect(html).toContain('This is a .server (20ms) async component')
-      expect(html).toContain('that was very long')
-      expect(html).toMatch(/id="async-server-component-count">\s*2\s*</)
-      expect(html).toContain('Sugar Counter 12 x 1 = 12')
+      expect(result).toMatchInlineSnapshot(`
+        {
+          "head": {
+            "link": [],
+            "style": [],
+          },
+          "html": "<div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--i:s:NONCE["default",{},null,""]--><!--/i:s:NONCE--></div>",
+        }
+      `)
       return
     }
-    result.head.link ||= []
-    result.head.style ||= []
     result.props = {}
     result.components = {}
     result.slots = {}
-    result.html = result.html!.replaceAll(/ (?:data-island-uid|data-island-component)="[^"]*"/g, '')
-    delete result.id
 
     expect(result).toMatchInlineSnapshot(`
       {
@@ -458,7 +474,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
+        "html": "<div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
         "slots": {},
       }
@@ -467,27 +483,26 @@ describe('component islands', () => {
 
   if (!isWebpack) {
     it('render server component with selective client hydration', async () => {
-      const result = await $fetch<NuxtIslandResponse>(islandURL('ServerWithClient'))
+      const result = normaliseIslandResponse(await $fetch<NuxtIslandResponse>(islandURL('ServerWithClient')))
 
+      // Legacy teleports client components from `components`; v2 renders them inline between `i:c` markers.
       if (islandsV2) {
-        const html = result.html!
-        expect(html).toContain('ServerWithClient.server.vue')
-        expect(html).toContain('<p>count: 0</p>')
-        expect(html).toContain('This component should not be preloaded')
-        expect(html.match(/Sugar Counter 12 x 1 = 12/g)).toHaveLength(2)
-        expect(html).toContain('class="interactive-component-wrapper"')
+        expect(result).toMatchInlineSnapshot(`
+          {
+            "head": {
+              "link": [],
+              "style": [],
+            },
+            "html": "<div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--i:c:NONCE[{"multiplier":1},"/components/Counter.vue","default"]--><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--/i:c:NONCE--></div></div>",
+          }
+        `)
         return
       }
       const { components } = result
       result.components = {}
       result.slots = {}
-      result.html = result.html!.replace(/data-island-component="[^"]*"/g, 'data-island-component')
 
       const teleportsEntries = Object.entries(components || {})
-
-      result.head.link ||= []
-      result.head.style ||= []
-      delete result.id
 
       expect(result).toMatchInlineSnapshot(`
         {
@@ -496,7 +511,7 @@ describe('component islands', () => {
             "link": [],
             "style": [],
           },
-          "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
+          "html": "<div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-component></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
         }
       `)
@@ -515,9 +530,9 @@ describe('component islands', () => {
       const html = result.html!
       expect(html).toContain('server-outer')
       expect(html).toContain('server-inner-counter')
-      if (!islandsV2) {
-        expect(Object.keys(result.components ?? {})).toHaveLength(1)
-      }
+      // Under v2 the nested island's client component travels in an `i:c` marker instead of `components`.
+      const clientComponents = islandsV2 ? html.match(/<!--i:c:\w+\[/g) ?? [] : Object.keys(result.components ?? {})
+      expect(clientComponents).toHaveLength(1)
     })
   }
 
@@ -558,12 +573,9 @@ describe('component islands', () => {
       // equivalent for in dev: https://github.com/nuxt/nuxt/issues/35573
       expect(result.head.link).toBeUndefined()
       expect(result.head.style).toBeUndefined()
-    } else if (islandsV2) {
-      const links = result.head.link ?? []
-      expect(links.some(link => /PureComponent\.vue\?vue&type=style&index=0&scoped=[^&]+&lang\.css$/.test(String(link.href)))).toBe(true)
     } else {
-      if (result.head.link?.[0]?.href) {
-        result.head.link[0].href = result.head.link[0].href.replace(/scoped=[^?&]+/, 'scoped=xxxxx')
+      for (const link of result.head.link ?? []) {
+        link.href &&= link.href.replace(/scoped=[^?&]+/, 'scoped=xxxxx')
       }
 
       expect(result.head).toMatchInlineSnapshot(`
@@ -579,21 +591,24 @@ describe('component islands', () => {
       `)
     }
 
+    const html = normaliseIslandHTML(result.html!).replaceAll(/data-v-\w+/g, 'data-v-xxxxx')
+    // Legacy teleports the client Counter out of the HTML; v2 renders it inline between `i:c` markers.
     if (islandsV2) {
-      const html = result.html!
-      expect(html).toContain('Was router enabled: true')
-      expect(html).toMatch(/<pre[^>]*data-v-/)
-      expect(html).toContain('Sugar Counter 12 x 3487')
-      expect(html).not.toContain('This Counter is loaded client side')
-      expect(html).toContain('"number": 3487')
-      expect(html).toContain('"str": "something"')
-      expect(html).toContain('"foo": 42')
-      expect(html).toContain('"bool": false')
-      return
+      expect(html).toMatchInlineSnapshot(`
+        "<div data-v-xxxxx> Was router enabled: true <br data-v-xxxxx> Props: <!-- eslint-disable-next-line vue/no-v-html --><pre data-v-xxxxx>{
+          "number": 3487,
+          "str": "something",
+          "obj": {
+            "foo": 42,
+            "bar": false,
+            "me": "hi"
+          },
+          "bool": false
+        }</pre><!--i:c:NONCE[{"multiplier":3487},"/components/Counter.vue","default"]--><div class="sugar-counter" data-v-xxxxx> Sugar Counter 12 x 3487 = 41844 <button> Inc </button></div><!--/i:c:NONCE--></div>"
+      `)
     }
-    result.html = result.html!.replace(/ data-island-uid="[^"]*"/g, '')
-    expect(result.html.replace(/data-v-\w+|"|<!--.*-->/g, '').replace(/data-island-uid="[^"]"/g, '')).toMatchInlineSnapshot(`
-      "<div data-island-uid > Was router enabled: true <br > Props: <pre >{
+    expect(html.replace(/data-v-xxxxx|"|<!--.*-->/g, '')).toMatchInlineSnapshot(`
+      "<div > Was router enabled: true <br > Props: <pre >{
         number: 3487,
         str: something,
         obj: {
@@ -614,13 +629,8 @@ describe('component islands', () => {
     await page.locator('#increase-pure-component').click()
     await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
 
-    if (islandsV2) {
-      expect(await page.locator('#slot-in-server').count()).toBe(0)
-      expect(await page.locator('#test-slot').count()).toBe(0)
-    } else {
-      await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
-      await page.locator('#test-slot').getByText('Slot with name test').waitFor()
-    }
+    await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
+    await page.locator('#test-slot').getByText('Slot with name test').waitFor()
 
     // test islands update
     await page.locator('.box').getByText('"number": 101,').first().waitFor()
@@ -633,11 +643,9 @@ describe('component islands', () => {
 
     await page.locator('#long-async-component-count').getByText('1').waitFor()
 
-    if (!islandsV2) {
-      // test islands slots interactivity
-      await page.locator('#first-sugar-counter button').click()
-      expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
-    }
+    // test islands slots interactivity
+    await page.locator('#first-sugar-counter button').click()
+    expect(await page.locator('#first-sugar-counter').innerHTML()).toContain('Sugar Counter 13')
 
     if (!isWebpack) {
       // test client component interactivity
@@ -883,29 +891,23 @@ describe('denial-of-service protections', () => {
 
   // Bounds both the plain-element path (`ssrRenderList`, rendered inline into `html`) and the
   // slot path (`vforToArray`, whose `:props` array and fallback content are teleported into
-  // the slot response rather than the island body).
+  // the slot response rather than the island body; v2 writes one `i:s` outlet per item).
   it('bounds plain and slot v-for over a large-integer prop', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 10_000_000 } }))
     const html = result.html!
     expect(html.match(/class="plain-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
-    if (islandsV2) {
-      expect(html.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
-    } else {
-      expect(result.slots?.loop?.props?.length ?? 0).toBe(MAX_VFOR_LENGTH)
-      expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
-    }
+    const loop = islandsV2 ? readSlotOutlets(result, 'loop') : result.slots?.loop
+    expect(loop?.props?.length ?? 0).toBe(MAX_VFOR_LENGTH)
+    expect(loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(MAX_VFOR_LENGTH)
   })
 
   it('renders a small v-for prop unchanged', async () => {
     const result = await $fetch<NuxtIslandResponse>(islandURL('BoundedVForComponent', { props: { count: 3 } }))
     const html = result.html!
     expect(html.match(/class="plain-item"/g)?.length ?? 0).toBe(3)
-    if (islandsV2) {
-      expect(html.match(/class="slot-item"/g)?.length ?? 0).toBe(3)
-    } else {
-      expect(result.slots?.loop?.props?.length ?? 0).toBe(3)
-      expect(result.slots?.loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(3)
-    }
+    const loop = islandsV2 ? readSlotOutlets(result, 'loop') : result.slots?.loop
+    expect(loop?.props?.length ?? 0).toBe(3)
+    expect(loop?.fallback?.match(/class="slot-item"/g)?.length ?? 0).toBe(3)
   })
 
   it.each([
@@ -940,12 +942,7 @@ describe('hash/render input alignment', () => {
     }))
 
     expect(withScopeMarkers.html).not.toContain('data-v-abc123')
-    if (islandsV2) {
-      const masked = (r: NuxtIslandResponse) => r.html!.replaceAll(r.nonce!, 'NONCE')
-      expect(masked(withScopeMarkers)).toEqual(masked(plain))
-    } else {
-      expect(withScopeMarkers.html).toBe(plain.html)
-    }
+    expect(normaliseIslandHTML(withScopeMarkers.html!)).toBe(normaliseIslandHTML(plain.html!))
   })
 })
 
@@ -1244,6 +1241,35 @@ describe('rendering matrix', () => {
     await page.close()
   })
 })
+
+/**
+ * Props and joined fallback HTML of a v2 island's own `i:s` outlets named `name`, in the legacy `slots` entry shape.
+ */
+function readSlotOutlets (result: NuxtIslandResponse, name: string): { props: unknown[], fallback: string } {
+  const tuples = [...result.html!.matchAll(new RegExp(`<!--i:s:${result.nonce}(\\[.*?\\])-->`, 'g'))]
+    .map(match => JSON.parse(match[1]!) as [string, unknown, string | null, string])
+    .filter(([slotName]) => slotName === name)
+  return { props: tuples.map(tuple => tuple[1]), fallback: tuples.map(tuple => tuple[3]).join('') }
+}
+
+/**
+ * Island response without its per-render fields, with normalised HTML and defaulted head arrays.
+ */
+function normaliseIslandResponse (result: NuxtIslandResponse): NuxtIslandResponse {
+  const { id: _id, nonce: _nonce, nonces: _nonces, ...rest } = result
+  return { ...rest, head: { link: [], style: [], ...rest.head }, html: normaliseIslandHTML(rest.html ?? '') }
+}
+
+/**
+ * Island HTML without what differs per render or mode only mechanically: `data-island-uid`
+ * (legacy only), `data-island-component` values and v2 marker nonces, JSON-escaped ones included.
+ */
+function normaliseIslandHTML (html: string): string {
+  return html
+    .replaceAll(/ data-island-uid(?:="[^"]*")?/g, '')
+    .replaceAll(/ data-island-component="[^"]*"/g, ' data-island-component')
+    .replaceAll(/(\/?i:[cst]:)[a-z0-9]{16,}/gi, '$1NONCE')
+}
 
 function normaliseIslandResult (result: NuxtIslandResponse) {
   if (result.head.style) {

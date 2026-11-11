@@ -7,6 +7,7 @@ import {
   type JSChildNode,
   type NodeTransform,
   NodeTypes,
+  type Property,
   type RootNode,
   type TemplateChildNode,
   type TransformContext,
@@ -40,10 +41,6 @@ const RENDER_IDENTIFIER = '_islandRenderClient'
 const RENDER_VNODE_IDENTIFIER = '_islandRenderClientVNode'
 const BOUNDARY_MODULE = '#app/components/islands-v2/server'
 const DIRECTIVE_NAME = 'load-client'
-/**
- * `enabled`, `chunk` and `exportName` are always emitted so Vue's appended `_scopeId` lands in a fixed position.
- */
-const NO_VALUE = 'undefined'
 
 /**
  * Pending wraps per (sub)compilation root.
@@ -111,11 +108,11 @@ function wrapSsrCall ({ node, enabled, target }: PendingBoundary): boolean {
   const call = node.ssrCodegenNode
   if (!call || call.type !== NodeTypes.JS_CALL_EXPRESSION) { return false }
   const callee = typeof call.callee === 'symbol' ? helperNameMap[call.callee] : call.callee
-  const tail = [enabled ?? NO_VALUE, ...targetArgs(target)]
-  // `_ssrRenderComponent(comp, props, slots, _parent)` becomes the same-shaped helper call.
+  const options = createObjectExpression(boundaryOptions(enabled, target))
+  // `_ssrRenderComponent(comp, props, slots, _parent)` becomes the helper call plus its options.
   if (callee === 'ssrRenderComponent') {
     call.callee = RENDER_IDENTIFIER
-    call.arguments.push(...tail)
+    call.arguments.push(options)
     return true
   }
   // `_ssrRenderVNode(_push, _createVNode(comp, props, slots), _parent)` becomes the statement twin.
@@ -123,7 +120,7 @@ function wrapSsrCall ({ node, enabled, target }: PendingBoundary): boolean {
     const [push, vnode] = call.arguments as [string, CallExpression]
     const [component, props = 'null', slots = 'null'] = vnode.arguments
     call.callee = RENDER_VNODE_IDENTIFIER
-    call.arguments = [push, component!, props, slots, '_parent', ...tail]
+    call.arguments = [push, component!, props, slots, '_parent', options]
     return true
   }
   return false
@@ -135,36 +132,30 @@ function wrapSsrCall ({ node, enabled, target }: PendingBoundary): boolean {
 function wrapVNodeCall ({ node, enabled, target }: PendingBoundary): boolean {
   const call = node.codegenNode as VNodeCall | undefined
   if (!call || call.type !== NodeTypes.VNODE_CALL) { return false }
-  call.props = boundaryProps(call.tag as JSChildNode | string, call.props ?? 'null', enabled, target)
+  call.props = createObjectExpression([
+    createObjectProperty('is', asNode(call.tag as JSChildNode | string)),
+    createObjectProperty('props', asNode(call.props ?? 'null')),
+    ...boundaryOptions(enabled, target),
+  ])
   call.tag = BOUNDARY_IDENTIFIER
   call.patchFlag = undefined
   call.dynamicProps = undefined
   return true
 }
 
-function targetArgs (target: PendingBoundary['target']): [string, string] {
-  return target ? [genString(target.chunk), genString(target.exportName)] : [NO_VALUE, NO_VALUE]
-}
-
-function boundaryProps (
-  component: JSChildNode | string,
-  props: JSChildNode | string,
-  enabled: ExpressionNode | undefined,
-  target: PendingBoundary['target'],
-) {
-  const properties = [
-    createObjectProperty('is', asNode(component)),
-    createObjectProperty('props', asNode(props)),
-  ]
+/**
+ * `enabled`, `chunk` and `exportName` properties, each only when present.
+ */
+function boundaryOptions (enabled: ExpressionNode | undefined, target: PendingBoundary['target']): Property[] {
+  const properties: Property[] = []
   if (enabled) { properties.push(createObjectProperty('enabled', enabled)) }
   if (target) {
-    const [chunk, exportName] = targetArgs(target)
     properties.push(
-      createObjectProperty('chunk', createSimpleExpression(chunk, false)),
-      createObjectProperty('exportName', createSimpleExpression(exportName, false)),
+      createObjectProperty('chunk', createSimpleExpression(genString(target.chunk), false)),
+      createObjectProperty('exportName', createSimpleExpression(genString(target.exportName), false)),
     )
   }
-  return createObjectExpression(properties)
+  return properties
 }
 
 function asNode (value: JSChildNode | string): JSChildNode {

@@ -1,20 +1,19 @@
 import type { Component, DefineSetupFnComponent, defineAsyncComponent } from 'vue'
 import { createVNode, defineComponent, onErrorCaptured } from 'vue'
 
+import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
 import { useRoute } from '../composables/router'
 import { renderDiagnostics } from '../diagnostics/render'
 import { findReservedRootIslandPropKey } from '../island-props'
 
 import { islandComponents, pageIslandRoutes, providePageIslandDepth } from '#build/components.islands.mjs'
-import { islandsV2Enabled } from '#build/nuxt.config.mjs'
 
 interface IslandRendererProps {
   context: { name: string, props?: Record<string, any> }
 }
 
 const PAGE_ISLAND_PREFIX = 'page_'
-const ROOT_ATTRS = islandsV2Enabled ? {} : { 'data-island-uid': '' }
 
 const IslandRenderer = defineComponent({
   name: 'IslandRenderer',
@@ -26,6 +25,7 @@ const IslandRenderer = defineComponent({
   },
   async setup (props) {
     const name = props.context.name
+    const ssrContext = useNuxtApp().ssrContext
     const component = Object.hasOwn(islandComponents, name)
       ? islandComponents[name] as ReturnType<typeof defineAsyncComponent>
       : undefined
@@ -47,12 +47,9 @@ const IslandRenderer = defineComponent({
       renderDiagnostics.NUXT_E4015({ name, cause: e })
     })
 
-    // Islands are registered as async components, so the declarations that decide whether a
-    // request-supplied prop falls through as an attribute are only visible once loaded. The
-    // loader memoises, so awaiting it here does not add a second import. This has to come
-    // after every call that relies on the active component instance, since awaiting clears it.
     const loader = (component as { __asyncLoader?: () => Promise<Component> }).__asyncLoader
-    const reservedKey = findReservedRootIslandPropKey(props.context.props, loader ? await loader() : component)
+    const resolved = loader ? await loader() : component
+    const reservedKey = findReservedRootIslandPropKey(props.context.props, resolved)
     if (reservedKey) {
       // The detail goes to the server console; the response carries a fixed reason so it
       // cannot be used to probe which islands declare which props.
@@ -65,7 +62,12 @@ const IslandRenderer = defineComponent({
       })
     }
 
-    return () => createVNode(component || 'span', { ...props.context.props, ...ROOT_ATTRS })
+    return () => {
+      const islands = ssrContext?.islands
+      const vnode = createVNode(resolved, islands ? { ...props.context.props } : { ...props.context.props, 'data-island-uid': '' })
+      if (islands) { islands.root = vnode }
+      return vnode
+    }
   },
 }) as unknown as DefineSetupFnComponent<IslandRendererProps>
 

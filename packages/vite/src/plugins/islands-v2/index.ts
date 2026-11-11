@@ -4,6 +4,7 @@ import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { getLayerDirectories, runWithNuxtContext } from '@nuxt/kit'
 import { createSsrLoadClientTransform } from './compiler/ssr-load-client.ts'
+import { ssrSlotFallbackTransform } from './compiler/ssr-slot-fallback.ts'
 import { type IslandsV2Registry, islandsV2ManifestPlugin } from './manifest.ts'
 import { type ScannedImport, collectSfcFiles } from './scan.ts'
 import { islandsV2ScanPlugin } from './scan-plugin.ts'
@@ -52,8 +53,8 @@ export function withIslandsV2NodeTransform (nuxt: Nuxt, options: VuePluginOption
       ...options.template,
       compilerOptions: {
         ...compilerOptions,
-        nodeTransforms: [...compilerOptions?.nodeTransforms ?? [], transform],
-        // Swaps `ssrRenderTeleport` for the marker-writing one; see `ssr-runtime.ts`.
+        nodeTransforms: [...compilerOptions?.nodeTransforms ?? [], transform, ssrSlotFallbackTransform],
+        // Swaps `ssrRenderTeleport` and `ssrRenderSlot` for the marker-writing ones; see `ssr-runtime.ts`.
         ssrRuntimeModuleName: SSR_RUNTIME_MODULE,
       },
     },

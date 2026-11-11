@@ -63,14 +63,10 @@ export function islandsV2ManifestPlugin (registry: IslandsV2Registry): Plugin {
       // `importFn` builds lazily: the root entry imports this module, so its exports may not be live yet.
       return [
         genImport(IMPORT_FN_ID, [{ name: 'createImportFn', as: '__createImportFn' }]),
-        `const __table = ${genChunkTable(registry.targets)}`,
+        `const __table = ${genObjectFromRawEntries([...registry.targets].map(([filePath, chunk]) => [chunk, genDynamicImport(filePath)]))}`,
         'let __importFn',
         'export const importFn = (src, exportName) => (__importFn ??= __createImportFn(__table))(src, exportName)',
       ].join('\n')
     },
   }
-}
-
-function genChunkTable (targets: ReadonlyMap<string, string>): string {
-  return genObjectFromRawEntries([...targets].map(([filePath, chunk]) => [chunk, genDynamicImport(filePath)]))
 }

@@ -14,7 +14,7 @@ import { toSafeHeadInput } from '../utils/island-head'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { islandsV2Enabled, runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
-import { createMarkerNonce } from '#app/components/islands-v2/shared'
+import { createMarkerNonce, createMarkerSet } from '#app/components/islands-v2/shared'
 import { serverDiagnostics } from '../diagnostics'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/internal/renderer/app'
 import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
@@ -139,8 +139,8 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   // Render app
   const renderer = await rendererInstance.getSSRRenderer()
 
-  const markerNonce = islandsV2Enabled ? createMarkerNonce() : undefined
-  ssrContext.islandNonce = markerNonce
+  const islands = islandsV2Enabled ? { markers: createMarkerSet(createMarkerNonce()), nested: new Set<string>() } : undefined
+  ssrContext.islands = islands
 
   const renderResult = await (tracingChannelNuxt
     ? traceAsync('nuxt.island', { event, ssrContext, islandContext }, () => renderer.renderToString(ssrContext))
@@ -217,8 +217,8 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     html: getServerComponentHTML(renderResult.html),
     components: getClientIslandResponse(ssrContext),
     slots: getSlotIslandResponse(ssrContext),
-    nonce: markerNonce,
-    nonces: ssrContext.islandNonces?.size ? [...ssrContext.islandNonces] : undefined,
+    nonce: islands?.markers.nonce,
+    nonces: islands?.nested.size ? [...islands.nested] : undefined,
   }
 
   await useNitroHooks().callHook('render:island', islandResponse, { event, islandContext })

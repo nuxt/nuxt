@@ -112,7 +112,7 @@ export async function scanSfcSource (source: string, filePath: string, options: 
  * Casings Vue's `resolveComponent` tries for a template tag:
  * as written, PascalCase, camelCase and kebab-case.
  */
-function tagCasings (tag: string):[string, string, string, string] {
+function tagCasings (tag: string): [string, string, string, string] {
   const camel = camelize(tag)
   return [tag, capitalize(camel), camel, hyphenate(tag)]
 }

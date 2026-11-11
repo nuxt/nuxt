@@ -4,7 +4,8 @@ import { joinURL } from 'ufo'
 
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
-import { VUE_SCOPE_ID_RE, getFragmentHTML, isEndFragment, isStartFragment, withIslandScopeId } from './utils'
+import { getFragmentHTML, isEndFragment, isStartFragment, withIslandScopeId } from './utils'
+import { VUE_SCOPE_ID_RE } from './islands-v2/shared'
 import { useIslandFetch } from './island-fetch'
 import { renderDiagnostics } from '../diagnostics/render'
 

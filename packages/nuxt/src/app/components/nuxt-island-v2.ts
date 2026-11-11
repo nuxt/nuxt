@@ -1,12 +1,13 @@
 import type { DefineSetupFnComponent, PropType, VNode } from 'vue'
-import { createStaticVNode, defineComponent, getCurrentInstance, shallowRef, toRaw, useId } from 'vue'
+import { defineComponent, getCurrentInstance, shallowRef, toRaw, useId } from 'vue'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
 import { createError } from '../composables/error'
 import { useIslandFetch } from './island-fetch'
-import { getFragmentHTML, withIslandScopeId } from './utils'
-import { domToVNode, htmlToVNode } from './islands-v2/dom-to-vnode'
-import { isMarkerNonce } from './islands-v2/shared'
+import { withIslandScopeId } from './utils'
+import { domToVNode, htmlToVNode, outerHTMLOf } from './islands-v2/dom-to-vnode'
+import { type MarkerSet, createMarkerSet, isMarkerNonce } from './islands-v2/shared'
+import { renderIslandSlots } from './islands-v2/render-slots'
 
 interface NuxtIslandProps {
   name: string
@@ -48,10 +49,10 @@ const NuxtIsland = defineComponent({
     },
   },
   emits: ['error'],
-  async setup (props, { expose, emit }) {
+  async setup (props, { expose, emit, slots }) {
     const nuxtApp = useNuxtApp()
     const instance = getCurrentInstance()!
-    const serverHTML = shallowRef<string | undefined>()
+    const serverIsland = shallowRef<{ html: string, markers: MarkerSet } | undefined>()
     const tree = shallowRef<VNode | undefined>()
 
     const { islandKey, fetchComponent, load } = useIslandFetch({
@@ -70,17 +71,16 @@ const NuxtIsland = defineComponent({
         if (!markerNonces) {
           throw createError({ status: 500, statusText: `Island ${props.name} response has no valid marker nonce` })
         }
-        const html = withIslandScopeId(res.html, props.scopeId, true)
+        const html = withIslandScopeId(res.html, props.scopeId)
         if (import.meta.server) {
           // Inside another island's render, the outer response carries these markers.
-          const ssrContext = nuxtApp.ssrContext
-          if (ssrContext?.islandNonce && ssrContext.islandNonce !== markerNonces.nonce) {
-            const nested = ssrContext.islandNonces ??= new Set()
-            for (const nonce of [markerNonces.nonce, ...markerNonces.nonces ?? []]) { nested.add(nonce) }
+          const islands = nuxtApp.ssrContext?.islands
+          if (islands && islands.markers.nonce !== markerNonces.nonce) {
+            for (const nonce of [markerNonces.nonce, ...markerNonces.nonces ?? []]) { islands.nested.add(nonce) }
           }
-          serverHTML.value = html
+          serverIsland.value = { html, markers: createMarkerSet(markerNonces.nonce) }
         } else {
-          tree.value = htmlToVNode(html, { ...markerNonces, previous: tree.value })
+          tree.value = htmlToVNode(html, { ...markerNonces, previous: tree.value, slots })
         }
       },
     })
@@ -96,13 +96,14 @@ const NuxtIsland = defineComponent({
         throw createError({ status: 500, statusText: `Island ${props.name} has no valid marker nonce in the payload` })
       }
       const el = instance.vnode.el as Node
-      entry.html = getFragmentHTML(el, false, { comments: true })!.join('')
-      tree.value = domToVNode(el, markerNonces)
+      entry.html = outerHTMLOf(el)
+      tree.value = domToVNode(el, { ...markerNonces, slots })
     })
 
     return () => {
       if (import.meta.server) {
-        return serverHTML.value ? createStaticVNode(serverHTML.value, 1) : null
+        const island = serverIsland.value
+        return island?.html ? renderIslandSlots(island.html, island.markers, slots) : null
       }
       return tree.value ?? null
     }

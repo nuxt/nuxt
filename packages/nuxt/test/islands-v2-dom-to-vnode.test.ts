@@ -1,10 +1,11 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest'
-import { Comment, Fragment, Static, Suspense, Teleport, render } from 'vue'
+import { Comment, Fragment, Static, Suspense, Teleport, h, render } from 'vue'
 import type { VNode } from 'vue'
 
-import { domToVNode, htmlToVNode, htmlToVNodes } from '../src/app/components/islands-v2/dom-to-vnode.ts'
-import { encodeMarker } from '../src/app/components/islands-v2/server.ts'
+import { domToVNode, htmlToVNode, htmlToVNodes, outerHTMLOf } from '../src/app/components/islands-v2/dom-to-vnode.ts'
+import { encodeMarker } from '../src/app/components/islands-v2/shared.ts'
+import slotOutlet from '../src/app/components/islands-v2/slot-outlet.ts'
 
 // The real loader imports the build-generated `#islands-v2-manifest`.
 vi.mock('../src/app/components/islands-v2/loader.ts', () => ({ default: { name: 'NuxtIslandComponentLoader' } }))
@@ -39,13 +40,13 @@ describe('htmlToVNode', () => {
   })
 
   it('treats a marker with another nonce as a plain comment', () => {
-    const html = `${open([1, null, '/c.vue'], NESTED_NONCE)}<i>x</i>${close(NESTED_NONCE)}`
+    const html = `${open([null, '/c.vue'], NESTED_NONCE)}<i>x</i>${close(NESTED_NONCE)}`
     const vnodes = children(htmlToVNode(html, { nonce: NONCE }))
     expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Static, Comment])
   })
 
   it('turns a valid marker into a loader boundary', () => {
-    const tuple = [1, { msg: '--><b>' }, '/c.vue', 'default', { default: '<b>slot</b>' }]
+    const tuple = [{ msg: '--><b>' }, '/c.vue', 'default', { default: '<b>slot</b>' }]
     const vnodes = children(htmlToVNode(`${open(tuple)}<i>x</i>${close()}`, { nonce: NONCE }))
     expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Suspense, Comment])
     expect(vnodes[2]!.children).toBe(`/i:c:${NONCE}`)
@@ -53,10 +54,10 @@ describe('htmlToVNode', () => {
   })
 
   it('pairs a marker with its own closing comment when nested', () => {
-    const html = `${open([1, null, '/outer.vue'])}${open([1, null, '/inner.vue'])}<i>x</i>${close()}${close()}<p>after</p>`
+    const html = `${open([null, '/outer.vue'])}${open([null, '/inner.vue'])}<i>x</i>${close()}${close()}<p>after</p>`
     const vnodes = children(htmlToVNode(html, { nonce: NONCE }))
     expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Suspense, Comment, Static])
-    expect(loaderProps(vnodes[1]!).data[2]).toBe('/outer.vue')
+    expect(loaderProps(vnodes[1]!).data[1]).toBe('/outer.vue')
   })
 
   it('rebuilds a disabled teleport from its inline content', () => {
@@ -89,11 +90,11 @@ describe('htmlToVNode', () => {
   })
 
   it('accepts markers of nested island nonces', () => {
-    const html = `${open([1, null, '/outer.vue'])}${open([1, null, '/inner.vue'], NESTED_NONCE)}<i>x</i>${close(NESTED_NONCE)}${close()}${open([1, null, '/nested.vue'], NESTED_NONCE)}<i>y</i>${close(NESTED_NONCE)}`
+    const html = `${open([null, '/outer.vue'])}${open([null, '/inner.vue'], NESTED_NONCE)}<i>x</i>${close(NESTED_NONCE)}${close()}${open([null, '/nested.vue'], NESTED_NONCE)}<i>y</i>${close(NESTED_NONCE)}`
 
     const vnodes = children(htmlToVNode(html, { nonce: NONCE, nonces: [NESTED_NONCE] }))
     expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Suspense, Comment, Comment, Suspense, Comment])
-    expect(loaderProps(vnodes[1]!).data[2]).toBe('/outer.vue')
+    expect(loaderProps(vnodes[1]!).data[1]).toBe('/outer.vue')
     expect(vnodes[2]!.children).toBe(`/i:c:${NONCE}`)
     expect(loaderProps(vnodes[4]!)).toMatchObject({ nonce: NONCE, nonces: [NESTED_NONCE] })
     expect(vnodes[5]!.children).toBe(`/i:c:${NESTED_NONCE}`)
@@ -108,14 +109,14 @@ describe('htmlToVNode', () => {
   })
 
   it.each(['key', 'ref', 'ref_for', 'ref_key', '__proto__', 'constructor', 'prototype'])('rejects a marker whose props carry %s', (key) => {
-    const tuple = `[1,{${JSON.stringify(key)}:{}},"/c.vue"]`
+    const tuple = `[{${JSON.stringify(key)}:{}},"/c.vue"]`
     const html = `<!--i:c:${NONCE}${tuple}--><i>x</i>${close()}`
     const vnodes = children(htmlToVNode(html, { nonce: NONCE }))
     expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Static, Comment])
   })
 
   it('rejects a marker whose slots carry a prototype key', () => {
-    const html = `<!--i:c:${NONCE}[1,null,"/c.vue","default",{"__proto__":"x"}]--><i>x</i>${close()}`
+    const html = `<!--i:c:${NONCE}[null,"/c.vue","default",{"__proto__":"x"}]--><i>x</i>${close()}`
     const vnodes = children(htmlToVNode(html, { nonce: NONCE }))
     expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Static, Comment])
   })
@@ -132,10 +133,100 @@ describe('htmlToVNodes', () => {
 describe('domToVNode', () => {
   it('walks the live DOM down to the markers', () => {
     const container = document.createElement('div')
-    container.innerHTML = `<section class="island"><p>static</p>${open([1, null, '/c.vue'])}<i>x</i>${close()}</section>`
+    container.innerHTML = `<section class="island"><p>static</p>${open([null, '/c.vue'])}<i>x</i>${close()}</section>`
     const root = domToVNode(container.firstChild!, { nonce: NONCE })!
     expect(root.type).toBe('section')
     expect(root.props).toEqual({ class: 'island' })
     expect((root.children as VNode[]).map(vnode => vnode.type)).toEqual([Static, Comment, Suspense, Comment])
+  })
+})
+
+describe('slot markers', () => {
+  const slotOpen = (tuple: unknown[], nonce = NONCE) => `<!--i:s:${nonce}${encodeMarker(tuple)}-->`
+  const slotClose = (nonce = NONCE) => `<!--/i:s:${nonce}-->`
+  // An empty region with the fallback in the tuple, as the island handler sends it.
+  const region = ([name, props, slotScopeId = null]: unknown[], fallback: string, nonce = NONCE) => `${slotOpen([name, props, slotScopeId, fallback], nonce)}${slotClose(nonce)}`
+
+  it('turns an own slot marker into an outlet with the fallback from the tuple', () => {
+    const slots = { default: () => [h('b', 'page')] }
+    const vnodes = children(htmlToVNode(`<p>a</p>${region(['default', { n: 1 }, 'data-v-x-s'], '<i>fb</i>')}`, { nonce: NONCE, slots }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Static, Comment, slotOutlet, Comment])
+    expect(vnodes[3]!.children).toBe(`/i:s:${NONCE}`)
+    const props = vnodes[2]!.props!
+    expect(props).toMatchObject({ islandSlots: slots, name: 'default', slotProps: { n: 1 }, slotScopeId: 'data-v-x-s' })
+    expect(props.fallback.map((vnode: VNode) => vnode.type)).toEqual([Static])
+  })
+
+  it('takes the fallback from the tuple once the page rendered its content in place', () => {
+    const html = `${slotOpen(['default', null, null, '<i>fb</i>'])}<!--[--><b>page</b><!--]-->${slotClose()}`
+    const [, outlet] = children(htmlToVNode(html, { nonce: NONCE }))
+    expect(outlet!.type).toBe(slotOutlet)
+    const [run] = outlet!.props!.fallback as VNode[]
+    expect(run!.children).toBe('<i>fb</i>')
+  })
+
+  it('renders the page slot, or the fallback without one', () => {
+    const html = `<div>${region(['default', { n: 2 }, 'data-v-x-s'], '<i>fb</i>')}</div>`
+    const container = document.createElement('div')
+    render(htmlToVNode(html, { nonce: NONCE, slots: { default: (props: { n: number }) => [h('b', `page ${props.n}`)] } })!, container)
+    expect(container.querySelector('b')?.outerHTML).toBe('<b data-v-x-s="">page 2</b>')
+    expect(container.querySelector('i')).toBeNull()
+
+    const fallback = document.createElement('div')
+    render(htmlToVNode(html, { nonce: NONCE })!, fallback)
+    expect(fallback.querySelector('i')?.textContent).toBe('fb')
+  })
+
+  it('pairs an outlet with its own closing comment when nested in a fallback', () => {
+    const html = `${region(['outer', null], region(['inner', null], '<i>in</i>'))}<p>after</p>`
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, slotOutlet, Comment, Static])
+    const fallback = vnodes[1]!.props!.fallback as VNode[]
+    expect(fallback.map(vnode => vnode.type)).toEqual([Comment, slotOutlet, Comment])
+    expect(fallback[1]!.props!.name).toBe('inner')
+  })
+
+  it('resolves a slot marker inside a client component\'s slot HTML against the island slots', () => {
+    const slots = { default: () => [] }
+    const tuple = [null, '/c.vue', 'default', { default: region(['default', null], '') }]
+    const [, boundary] = children(htmlToVNode(`${open(tuple)}<i>x</i>${close()}`, { nonce: NONCE, slots }))
+    expect(loaderProps(boundary!)).toMatchObject({ islandSlots: slots })
+  })
+
+  it('keeps a slot marker of a nested island as static content', () => {
+    const html = region(['default', null], '<i>fb</i>', NESTED_NONCE)
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE, nonces: [NESTED_NONCE] }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Comment])
+  })
+
+  it.each([
+    ['a prototype slot name', '["__proto__",null]'],
+    ['reserved props', '["default",{"key":1}]'],
+    ['an invalid scope id', '["default",null,"onclick"]'],
+    ['non-string fallback', '["default",null,null,1]'],
+    ['no fallback', '["default",null,null]'],
+    ['a non-array tuple', '{"name":"default"}'],
+  ])('rejects a slot marker with %s', (_, tuple) => {
+    const html = `<!--i:s:${NONCE}${tuple}--><!--[--><i>fb</i><!--]-->${slotClose()}`
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Fragment, Comment])
+  })
+
+  it('hydrates the live DOM with the page content between the anchors', () => {
+    const container = document.createElement('div')
+    container.innerHTML = `<section>${slotOpen(['default', null, null, '<i>fb</i>'])}<!--[--><b>page</b><!--]-->${slotClose()}</section>`
+    const root = domToVNode(container.firstChild!, { nonce: NONCE })!
+    expect(root.type).toBe('section')
+    expect((root.children as VNode[]).map(vnode => vnode.type)).toEqual([Comment, slotOutlet, Comment])
+  })
+})
+
+describe('outerHTMLOf', () => {
+  it('serializes a fragment root up to its matching end, comments and escaped text included', () => {
+    const container = document.createElement('div')
+    const island = `<!--[--><!--i:c:${NONCE}[null,"/c.vue"]-->a &amp; b<!--[--><p>x</p><!--]--><!--/i:c:${NONCE}--><!--]-->`
+    container.innerHTML = `${island}<p>after</p>`
+    expect(outerHTMLOf(container.firstChild!)).toBe(island)
+    expect(outerHTMLOf(container.lastChild!)).toBe('<p>after</p>')
   })
 })
