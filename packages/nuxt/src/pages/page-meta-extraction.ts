@@ -244,6 +244,11 @@ export function getDynamicMetaKeys (absolutePath: string, extraExtractionKeys: S
  * macro once transformed, so all of its metadata has to be left to the runtime macro module.
  * Extensionless entries have no module to transform and so nothing to fall back to.
  */
+export function isScannablePageFile (path: string) {
+  const { pathname } = parseModuleId(path)
+  return !!getLoader(pathname) || !extname(pathname)
+}
+
 /** Where the first `definePageMeta` call of a page sets `key`, as `file:line:column`. */
 export function locatePageMetaKey (contents: string, absolutePath: string, key: string): string | undefined {
   const loader = getLoader(absolutePath)
@@ -267,11 +272,6 @@ export function locatePageMetaKey (contents: string, absolutePath: string, key: 
       return `${absolutePath}:${line}:${column}`
     }
   }
-}
-
-export function isScannablePageFile (path: string) {
-  const { pathname } = parseModuleId(path)
-  return !!getLoader(pathname) || !extname(pathname)
 }
 
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): Partial<Record<keyof NuxtPage, any>> {
