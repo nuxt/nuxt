@@ -141,10 +141,8 @@
     "unrouting": "catalog:build",
     "untyped": "catalog:build",
     "verkit": "catalog:build",
-    "vue": "catalog:app-runtime",
     "vue-bundle-renderer": "catalog:app-runtime",
-    "vue-component-type-helpers": "catalog:vue",
-    "vue-router": "catalog:app-runtime"
+    "vue-component-type-helpers": "catalog:vue"
   },
   "devDependencies": {
     "@nuxt/scripts": "catalog:dev",
@@ -162,13 +160,17 @@
     "typescript": "catalog:dev",
     "vite": "catalog:vite",
     "vitest": "catalog:dev",
+    "vue": "catalog:app-runtime",
+    "vue-router": "catalog:app-runtime",
     "vue-sfc-transformer": "catalog:dev"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
     "@types/node": ">=18.12.0",
     "jiti": "^2.7.0",
-    "rolldown": "^1.1.5"
+    "rolldown": "^1.1.5",
+    "vue": "^3.5.45",
+    "vue-router": "^5.5.0"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {
@@ -178,6 +180,9 @@
       "optional": true
     },
     "jiti": {
+      "optional": true
+    },
+    "vue-router": {
       "optional": true
     }
   },
