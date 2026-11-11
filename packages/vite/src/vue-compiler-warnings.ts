@@ -291,18 +291,19 @@ const DELAY = 100
 const MAX_DELAY = 1000
 
 function createPublisher (nuxt: Nuxt, sink: ProblemSink, read: () => VueCompilerWarning[]) {
-  let published: string[] = []
+  let published = '[]'
   let timer: ReturnType<typeof setTimeout> | undefined
   let burstStart: number | undefined
   nuxt.hook('close', () => clearTimeout(timer))
 
   function flush () {
     const reports = [...new Map(read().map(warning => createVueWarningReport(warning, nuxt.options.rootDir)).map(report => [report.id, report])).values()]
-    const ids = reports.map(report => report.id)
-    if (ids.length === published.length && ids.every((id, index) => id === published[index])) {
+    // a report keeps its id while its snippet or docs link change
+    const signature = JSON.stringify(reports, (key, value) => key === 'timestamp' ? undefined : value)
+    if (signature === published) {
       return
     }
-    published = ids
+    published = signature
     sink.setProblems(VUE_COMPILER_SOURCE, reports, { label: VUE_COMPILER_LABEL })
   }
 

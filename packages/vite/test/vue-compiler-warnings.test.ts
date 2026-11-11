@@ -242,6 +242,25 @@ describe('VueCompilerWarningsPlugin', () => {
     await close()
   })
 
+  it('publishes a warning again when its snippet changes', async () => {
+    const file = join(tmpDir, 'Snippet.vue')
+    await writeFile(file, '<template>\n  <a href="/">\n    <a href="/a">one</a>\n  </a>\n</template>\n')
+    const { server, sets, close } = await startServer()
+    const client = server.environments.client
+
+    await client.transformRequest('/Snippet.vue')
+    await vi.waitFor(() => expect(sets).toHaveLength(1))
+
+    await writeFile(file, '<template>\n  <a href="/">\n    <a href="/a">two</a>\n  </a>\n</template>\n')
+    client.moduleGraph.invalidateAll()
+    await client.transformRequest('/Snippet.vue')
+    await vi.waitFor(() => expect(sets).toHaveLength(2))
+    expect(sets[1]!.reports[0]!.id).toBe(sets[0]!.reports[0]!.id)
+    expect(sets[1]!.reports[0]!.frames[0]!.snippet!.lines).toContain('    <a href="/a">two</a>')
+
+    await close()
+  })
+
   it('drops the warnings of a deleted SFC', async () => {
     const file = join(tmpDir, 'Deleted.vue')
     await writeFile(file, '<template>\n  <p><p>nested</p></p>\n</template>\n')
