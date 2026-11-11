@@ -32,6 +32,9 @@ export type { ParsedNodeModulePath } from './node-module.ts'
 
 export { hasOwnSubpathImport } from './subpath-imports.ts'
 
+export { VUE_PACKAGE_NAMES, VUE_PACKAGE_SPECIFIER_RE, isInVuePackages, resolveVuePackageImporter, resolveVuePackages } from './vue-packages.ts'
+export type { VuePackageName, VuePackages } from './vue-packages.ts'
+
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'
 
