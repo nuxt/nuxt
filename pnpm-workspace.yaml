@@ -160,7 +160,7 @@ catalogs:
     '@vue/shared': ^3.5.45
     autoprefixer: ^10.6.2
     c12: 4.0.0-rc.4
-    chokidar: ^5.0.0
+    chokidar: ^6.0.0
     clickable-path: ^0.1.1
     compatx: ^0.2.0
     confbox: ^0.3.2
