@@ -26,7 +26,7 @@ describe('imports:transform', () => {
   const transformPlugin = TransformPlugin({ ctx, options: { transform: { exclude: [/node_modules/] } } }).raw({}, { framework: 'rollup', versions: {} }) as Plugin
   const transform = async (source: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    const result = await (transformPlugin.transform! as Function).call({ error: null, warn: null } as any, source, '')
+    const result = await (transformPlugin.transform as unknown as { handler: Function }).handler.call({ error: null, warn: null } as any, source, '')
     return typeof result === 'string' ? result : result?.code
   }
 
@@ -68,7 +68,7 @@ describe('imports:transform', () => {
     }).raw({}, { framework: 'rollup', versions: {} }) as Plugin
     const transformWith = async (autoImport: boolean, source: string, id: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-      const result = await (plugin(autoImport).transform! as Function).call({ error: null, warn: null } as any, source, id)
+      const result = await (plugin(autoImport).transform as unknown as { handler: Function }).handler.call({ error: null, warn: null } as any, source, id)
       return typeof result === 'string' ? result : result?.code
     }
 

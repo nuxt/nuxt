@@ -6,16 +6,17 @@ import escapeRE from 'escape-string-regexp'
 import { normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 
-import { isJS, isVue } from '../core/utils/index.ts'
+import { JS_ID_RE, VUE_SCRIPT_TEMPLATE_ID_FILTER, isJS, isVue } from '../core/utils/index.ts'
 import { installNuxtModule } from '../core/features.ts'
 import type { ImportsOptions } from 'nuxt/schema'
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
 const IMPORTS_RE = /(['"])#imports\1/
 const DOLLAR_FETCH_RE = /(?<![\w$.])\$fetch\b/
+const SCRIPT_STUBS = '#app/composables/script-stubs'
 
 interface TransformPluginOptions {
-  ctx: Pick<Unimport, 'injectImports'>
+  ctx: Pick<Unimport, 'injectImports' | 'getNativeInject'>
   options: Partial<ImportsOptions>
   sourcemap?: boolean
   /**
@@ -35,6 +36,15 @@ function isTransformed (options: Partial<ImportsOptions>, id: string) {
   return isVue(id, { type: ['script', 'template'] }) || isJS(id)
 }
 
+const ANY = '[\\s\\S]*?'
+const joinSources = (patterns: RegExp[]) => patterns.map(re => re.source).join('|')
+
+/** `injectFilter` lets `exclude` win, but `transform.include` wins in `isTransformed`. */
+function excludeUnlessIncluded (exclude: RegExp[], include: RegExp[]) {
+  const notIncluded = include.length ? `(?!${ANY}(?:${joinSources(include)}))` : ''
+  return new RegExp(`^${notIncluded}${ANY}(?:${joinSources(exclude)})`)
+}
+
 export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: TransformPluginOptions) => createUnplugin(() => {
   // `$fetch` is not a global on the client, so code that relies on the global (including
   // module runtime code, which is not auto-imported) receives an import instead
@@ -45,11 +55,9 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: Tra
     addons: { addons: [] },
   })
 
-  return {
-    name: 'nuxt:imports-transform',
-    enforce: 'post',
-    transformInclude: id => isTransformed(options, id),
-    async transform (code, id) {
+  const transform = {
+    filter: undefined as { code: RegExp } | undefined,
+    async handler (code: string, id: string) {
       id = normalize(id)
       const isNodeModule = NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))
       const usesFetch = DOLLAR_FETCH_RE.test(code)
@@ -77,7 +85,63 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: Tra
         }
       }
     },
+  }
+
+  let isServe = false
+
+  return {
+    name: 'nuxt:imports-transform',
+    enforce: 'post',
+    transformInclude: id => isTransformed(options, id),
+    transform,
     vite: {
+      configResolved (config) {
+        isServe = config.command === 'serve'
+      },
+      // Rolldown injects the auto-imports itself, so the JS transform only runs where it is still needed
+      async options (rolldownOptions) {
+        transform.filter = undefined
+        const include = options.transform?.include ?? []
+        const exclude = [NODE_MODULES_RE, ...options.transform?.exclude ?? []]
+        // `inject` does not run in dev, and the patterns are joined into one regex below
+        if (!options.nativeInject || options.autoImport === false || isServe || [...include, ...exclude].some(re => re.flags)) {
+          return
+        }
+        const native = await ctx.getNativeInject()
+        if (!native) {
+          return
+        }
+
+        // `$fetch` and script stubs need the JS transform
+        const triggers = [DOLLAR_FETCH_RE.source]
+        const stubs: string[] = []
+        for (const [name, source] of Object.entries(native.inject)) {
+          if (Array.isArray(source) && source[0] === SCRIPT_STUBS) {
+            stubs.push(escapeRE(name))
+            delete native.inject[name]
+          }
+        }
+        if (stubs.length) {
+          triggers.push(`(?<![\\w$.])(?:${stubs.join('|')})\\b`)
+        }
+        if (native.transformFilter) {
+          triggers.push(native.transformFilter.source)
+        }
+        transform.filter = { code: new RegExp(triggers.join('|')) }
+
+        return {
+          ...rolldownOptions,
+          transform: {
+            ...rolldownOptions.transform,
+            inject: { ...native.inject, ...rolldownOptions.transform?.inject },
+            // TODO: drop the cast once Vite ships a Rolldown with `injectFilter` (rolldown/rolldown#11290)
+            injectFilter: {
+              include: [JS_ID_RE, ...VUE_SCRIPT_TEMPLATE_ID_FILTER, ...include],
+              exclude: excludeUnlessIncluded(exclude, include),
+            },
+          } as NonNullable<typeof rolldownOptions.transform>,
+        }
+      },
       hotUpdate: {
         order: 'pre',
         async handler ({ file, modules }) {

@@ -130,6 +130,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     addBuildPlugin(TransformPlugin({
       ctx: {
         injectImports: (code, id, options) => ctx.injectImports(code, id, options),
+        getNativeInject: () => ctx.getNativeInject(),
       },
       options,
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,

@@ -166,6 +166,13 @@ export interface ImportsOptions {
   }
 
   /**
+   * Let Rolldown inject auto-imports with `transform.inject` in production builds, so the JS
+   * transform only runs on files that still need it. Needs a Rolldown with `transform.injectFilter`.
+   * Ignored when `transform.include` is set.
+   */
+  nativeInject?: boolean
+
+  /**
    * Add polyfills for setInterval, requestIdleCallback, and others
    */
   polyfills?: boolean

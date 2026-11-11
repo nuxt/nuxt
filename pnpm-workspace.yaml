@@ -211,7 +211,8 @@ catalogs:
     unctx: ^3.0.1
     undici: ^8.12.4
     unenv: ^2.0.0-rc.24
-    unimport: ^7.0.2
+    # TODO: back to a release once unjs/unimport#583 lands
+    unimport: file:vendor/unimport-native-inject.tgz
     unplugin: ^3.7.0
     unrouting: ^0.3.2
     untyped: ^2.0.0
