@@ -4,7 +4,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { dirname, normalize, relative } from 'pathe'
 import escapeStringRegexp from 'escape-string-regexp'
-import { lookupNodeModuleSubpath, parseNodeModulePath } from '@nuxt/kit/internal'
+import { VUE_PACKAGE_NAMES, lookupNodeModuleSubpath, parseNodeModulePath } from '@nuxt/kit/internal'
 
 const BARE_ID_RE = /^(?!\.{0,2}[/\\]|[A-Z]:[/\\]|[\0#~]|virtual:)/i
 const NODE_MODULES_FILE_RE = /^(?:[A-Z]:)?[/\\][^?#]*[/\\]node_modules[/\\][^?#]+\.[cm]?js$/i
@@ -39,7 +39,7 @@ export function ResolveExternalsPlugin (nuxt: Nuxt): Plugin {
         : new RegExp('^' + escapeStringRegexp(rootDir.replace(/\/$/, '') + '/') + '(?!.*node_modules)')
 
       // a deduped package must resolve to a single copy for the whole app
-      const deduped = new Set(environment.config.resolve.dedupe)
+      const deduped = new Set([...environment.config.resolve.dedupe ?? [], ...VUE_PACKAGE_NAMES])
 
       const conditions = [...new Set([...environment.config.resolve.conditions, 'import', 'default'])]
         .map(c => c === 'development|production' ? 'production' : c)

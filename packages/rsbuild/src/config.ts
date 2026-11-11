@@ -11,7 +11,7 @@ import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defineEnv } from 'unenv'
 
 import { resolveAllowedHosts } from '../../webpack/src/utils/same-origin.ts'
-import { getDevtool, getNuxtDefines, getTranspilePatterns, resolveVueAliases } from '../../webpack/src/utils/options.ts'
+import { getDevtool, getNuxtDefines, getTranspilePatterns, resolveVueRouterAlias } from '../../webpack/src/utils/options.ts'
 import { createServerExternals } from '../../webpack/src/utils/server-externals.ts'
 import { getHMRPath } from './dev-server.ts'
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
@@ -182,7 +182,7 @@ function clientEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
     },
     resolve: {
       alias: {
-        ...resolveVueAliases(nuxt, false),
+        ...resolveVueRouterAlias(nuxt, false),
         'nitro/runtime-config': nitroClientRuntime,
         // TODO: remove in v5
         '#internal/nitro': nitroClientRuntime,
@@ -233,7 +233,7 @@ function serverEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
       include: getTranspilePatterns(nuxt, { isServer: true, isDev: nuxt.options.dev }),
     },
     resolve: {
-      alias: resolveVueAliases(nuxt, true),
+      alias: resolveVueRouterAlias(nuxt, true),
     },
     output: {
       target: 'node',
