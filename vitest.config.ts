@@ -251,7 +251,7 @@ export default defineConfig({
         },
       },
       {
-        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)', test: '(globalThis.__TEST_TEST__ ?? false)' })],
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)', test: '(globalThis.__TEST_TEST__ ?? false)', prerender: '(globalThis.__TEST_PRERENDER__ ?? false)' })],
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
@@ -259,6 +259,7 @@ export default defineConfig({
             '#build/route-rules.mjs': resolve('./test/mocks/route-rules'),
             '#app-manifest': resolve('./test/mocks/app-manifest'),
             '#build/pages': resolve('./test/mocks/pages'),
+            '#build/routes': resolve('./test/mocks/routes'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#internal/nuxt/error-channel': resolve('./packages/nitro-server/src/runtime/utils/error-channel'),
