@@ -50,6 +50,12 @@
         "#shared/*": ["./shared/*"]
       }
     },
+    "test/fixtures/duplicate-vue": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "ignoreDependencies": ["duplicate-vue-ui", "@vue/runtime-core"]
+    },
     "test/fixtures/nitro-legacy": {
       "entry": [
         "**/*.{js,ts,tsx,mjs,mts,vue}!"

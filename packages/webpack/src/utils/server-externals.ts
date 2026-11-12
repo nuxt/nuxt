@@ -62,7 +62,8 @@ export function createServerExternals (nuxt: Nuxt, options: { inline?: string[] 
       const resolved = resolveModulePath(VUE_PACKAGES.has(request) ? resolveAlias(request, nuxt.options.alias) : request, {
         from: (context ? [context, ...nuxt.options.modulesDir] : nuxt.options.modulesDir).map(d => directoryToURL(d)),
         suffixes: ['', 'index'],
-        conditions,
+        // each Vue package entry picks its build from `NODE_ENV` when it loads
+        conditions: VUE_PACKAGES.has(request) ? conditions.slice(1) : conditions,
         try: true,
       })
       return callback(undefined, resolved && isAbsolute(resolved) ? resolved : true)

@@ -1,6 +1,7 @@
 import { join } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { addBuildPlugin } from '@nuxt/kit'
+import { resolveVuePackages } from '@nuxt/kit/internal'
 import type { Unimport } from 'unimport'
 import type { Nuxt } from 'nuxt/schema'
 
@@ -16,12 +17,24 @@ import { PrehydrateTransformPlugin } from './plugins/prehydrate.ts'
 import { ExtractAsyncDataHandlersPlugin } from './plugins/extract-async-data-handlers.ts'
 import { VirtualFSPlugin } from './plugins/virtual.ts'
 import { BundledVuePlugin } from './plugins/bundled-vue.ts'
+import { VuePackagesBundlerPlugin, VuePackagesPlugin } from './plugins/vue-packages.ts'
 
 /**
  * Register the transforms core Nuxt applies to app code. Those that depend on options modules
  * may still change are registered once modules are done.
  */
 export function addCoreBuildPlugins (nuxt: Nuxt) {
+  const vuePackages = resolveVuePackages(nuxt)
+  addBuildPlugin({
+    vite: () => VuePackagesPlugin(vuePackages),
+    webpack: () => VuePackagesBundlerPlugin(vuePackages),
+    rspack: () => VuePackagesBundlerPlugin(vuePackages),
+  })
+  nuxt.hook('nitro:config', (config) => {
+    config.rollupConfig ||= {}
+    config.rollupConfig.plugins = [VuePackagesPlugin(vuePackages), ...toArray(config.rollupConfig.plugins || [])]
+  })
+
   if (!nuxt.options.dev && !nuxt.options.vue.runtimeCompiler) {
     addBuildPlugin({ vite: () => BundledVuePlugin() }, { client: false })
     nuxt.hook('nitro:config', (config) => {

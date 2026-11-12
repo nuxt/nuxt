@@ -110,7 +110,7 @@ describe('ResolveExternalsPlugin', () => {
     const plugin = environmentPlugin(createNuxt(), createEnvironment('ssr', { dedupe: ['dep', '@scope/dep'] }))
     const context = { resolve: vi.fn().mockResolvedValue({ id: 'dep', external: true }) }
 
-    for (const id of ['dep', 'dep/sub', '@scope/dep/sub', join(rootDep, 'index.js')]) {
+    for (const id of ['dep', 'dep/sub', '@scope/dep/sub', join(rootDep, 'index.js'), 'vue', 'vue/server-renderer', '@vue/runtime-core']) {
       await expect(resolveId(plugin, context, id, importer)).resolves.toBeUndefined()
     }
     expect(context.resolve).not.toHaveBeenCalled()
