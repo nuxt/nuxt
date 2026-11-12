@@ -11,6 +11,11 @@ import * as payload from '#app/composables/payload'
 import * as idleCallback from '#app/compat/idle-callback'
 import payloadPlugin from '#app/plugins/payload.client'
 
+vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
+  ...await importOriginal<Record<string, unknown>>(),
+  payloadExtraction: true,
+}))
+
 describe('nuxt-link:prefetch', () => {
   it('should prefetch a link payload after hydration when interacted with during hydration', async () => {
     const component = defineNuxtLink(nuxtLinkDefaults)
