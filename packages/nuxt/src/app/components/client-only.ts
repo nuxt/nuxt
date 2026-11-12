@@ -1,5 +1,5 @@
 import { cloneVNode, createCommentVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
-import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetupFnComponent, InjectionKey, RendererNode, SlotsType, VNode } from 'vue'
+import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetupFnComponent, FunctionalComponent, InjectionKey, RendererNode, Slot, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
@@ -22,6 +22,9 @@ function createPlaceholder (el?: RendererNode | null) {
   }
   return clientNodePlaceholder ? createCommentVNode('placeholder') : h('div')
 }
+
+const SlotRenderer: FunctionalComponent<{ slot: Slot }> = props => props.slot({})
+SlotRenderer.props = ['slot']
 
 interface ClientOnlyProps {
   fallback?: string
@@ -72,7 +75,7 @@ const ClientOnly = defineComponent({
         return vnodes
       }
       const slot = slots.fallback || slots.placeholder
-      if (slot) { return h(slot) }
+      if (slot) { return h(SlotRenderer, { slot }) }
       const fallbackStr = props.fallback || props.placeholder || ''
       const fallbackTag = sanitizeTag(props.fallbackTag || props.placeholderTag, 'span')
       return createElementBlock(fallbackTag, attrs, fallbackStr)
