@@ -14,6 +14,7 @@ afterAll(() => rm(tmpDir, { recursive: true, force: true }))
 
 it.each([
   ['vue', pkg.peerDependencies.vue.replace(/^\^/, ''), false],
+  ['vue', '3.6.0-beta.1', false],
   ['vue', '3.0.0', true],
   ['vue-router', pkg.peerDependencies['vue-router'].replace(/^\^/, ''), false],
   ['vue-router', '4.6.4', true],
