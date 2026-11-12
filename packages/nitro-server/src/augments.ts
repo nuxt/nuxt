@@ -2,7 +2,7 @@
 import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, TracingChannelOptions as NitroTracingChannelOptions, NormalizedRouteRules, RouteRuleConfig } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { NitroLegacyOptions } from './compat.ts'
-import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
+import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
 
 /**
@@ -73,6 +73,7 @@ declare module 'nitro/types' {
     'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event, streaming?: boolean }) => void | Promise<void>
     'render:html:chunk': (chunkContext: NuxtRenderChunkContext, context: { event: H3Event }) => void | Promise<void>
     'render:html:close': (closeContext: NuxtRenderCloseContext, context: { event: H3Event }) => void | Promise<void>
+    'render:document': (documentContext: NuxtRenderDocumentContext, context: { event: H3Event }) => void | Promise<void>
     'render:route': (renderRouteContext: NuxtRenderRouteContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }

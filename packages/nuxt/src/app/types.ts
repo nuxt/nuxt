@@ -222,6 +222,14 @@ export interface NuxtRenderHTMLContext {
 }
 
 /**
+ * Context passed to the `render:document` hook, fired once the `render:html` hooks have run
+ * for a document that is not streamed. Replace `html` to change the document.
+ */
+export interface NuxtRenderDocumentContext {
+  html: string
+}
+
+/**
  * Context passed to the `render:html:chunk` hook, fired for each chunk
  * produced by Vue's renderer (after head-suspense pushes have been
  * injected) before it is enqueued. Mutate `chunk` to transform the bytes.

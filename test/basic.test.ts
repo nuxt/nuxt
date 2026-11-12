@@ -209,6 +209,18 @@ describe('renderer plugins', () => {
     expect(res.status).toBe(404)
     expect(await res.text()).toContain('<meta name="renderer-plugin">')
   })
+
+  it.skipIf(!oncePerServer)('should call `render:document` once every `render:html` handler has run', async () => {
+    const html = await $fetch<string>('/?render-document')
+    expect(html).toContain('<meta name="render-document" content="before after user"></head>')
+    expect(html).toContain('<p class="before-marker"></p><p class="after-marker"></p><p class="user-marker"></p>')
+  })
+
+  it.skipIf(!errorProjects || legacyErrorRendering)('should call `render:document` for the error page', async () => {
+    const res = await fetch('/error/not-found?render-document', { headers: { accept: 'text/html' } })
+    expect(res.status).toBe(404)
+    expect(await res.text()).toContain('<meta name="render-document" content="before after user"></head>')
+  })
 })
 
 describe('route rules', () => {
