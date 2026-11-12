@@ -653,6 +653,6 @@ const cookieUtilDefaults = new WeakMap<$Cookie, CookieOptions>()
 /**
  * Read and write cookies imperatively, on both server and client.
  *
- * @since 4.8.0
+ * @since 5.0.0
  */
 export const $cookie: $Cookie = /* @__PURE__ */ createCookieUtil({})
