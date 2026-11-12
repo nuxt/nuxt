@@ -270,11 +270,16 @@ export function createUseCookie<D = string | null | undefined> (defaults: UseCoo
 
 /** @since 3.10.0 */
 export function refreshCookie (name: string): void {
-  if (import.meta.server || store || typeof BroadcastChannel === 'undefined') { return }
+  if (import.meta.server) { return }
+  broadcastCookie(name, { refresh: true })
+}
+
+function broadcastCookie (name: string, data: { value?: string, refresh?: boolean }) {
+  if (store || typeof BroadcastChannel === 'undefined') { return }
 
   try {
     const channel = new BroadcastChannel(`nuxt:cookies:${name}`)
-    channel.postMessage({ refresh: true })
+    channel.postMessage(data)
     channel.close()
   } catch {
     // BroadcastChannel will fail in certain situations when cookies are disabled
@@ -644,8 +649,7 @@ function createCookieUtil (defaults: CookieOptions): $Cookie<any> {
 
     if (import.meta.client) {
       writeClientCookie(name, encoded, writeOpts)
-      // no-op with `cookieStore`, which dispatches a change event itself
-      refreshCookie(name)
+      broadcastCookie(name, { value: isExpiredWrite(writeOpts) ? undefined : encoded })
     } else {
       const nuxtApp = useNuxtApp()
       writeServerCookie(useRequestEvent(nuxtApp)!, name, encoded, writeOpts)
