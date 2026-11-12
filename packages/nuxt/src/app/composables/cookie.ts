@@ -631,6 +631,10 @@ function createCookieUtil (defaults: CookieOptions): $Cookie<any> {
     const encoded = value === null || value === undefined ? undefined : encode(value)
     const writeOpts = { path: baseCookieOptions.path, ...options }
 
+    if (import.meta.dev && encoded !== undefined && isExpiredWrite(writeOpts)) {
+      stateDiagnostics.NUXT_E7005({ name })
+    }
+
     if (import.meta.client) {
       writeClientCookie(name, encoded, writeOpts)
       // no-op with `cookieStore`, which dispatches a change event itself
