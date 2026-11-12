@@ -48,7 +48,13 @@ describe('route rules template', () => {
   })
 
   it('emits a constant when only a catch-all rule applies', async () => {
-    expect(await getRouteRulesTemplate(false, { '/**': { ssr: true, appLayout: 'a' } })).toBe('export default () => ({ssr: true,appLayout: "a"})')
+    expect(await getRouteRulesTemplate(false, { '/**': { ssr: true, appLayout: 'a' } })).toBe('export const hasRedirects = false\nexport default () => ({ssr: true,appLayout: "a"})')
+  })
+
+  it('reports whether any rule redirects', async () => {
+    expect(await getRouteRulesTemplate(false, { '/admin/**': { prerender: true } })).toContain('export const hasRedirects = false')
+    expect(await getRouteRulesTemplate(false, { '/admin/**': { redirect: '/login' } })).toContain('export const hasRedirects = true')
+    expect(await getRouteRulesTemplate(false, { '/**': { redirect: '/login' } })).toContain('export const hasRedirects = true')
   })
 
   it('leaves rules without client-side options out of the matcher', async () => {
@@ -130,7 +136,7 @@ describe('route rules template', () => {
 })
 
 async function evaluateMatcher (contents: string, routerOptions: { sensitive?: boolean } = {}) {
-  const code = contents.replace(/^import .*$/gm, '').replace('export default', 'return')
+  const code = contents.replace(/^import .*$/gm, '').replace(/^export const hasRedirects = .*$/m, '').replace('export default', 'return')
   const { defu } = await import('defu')
   return new Function('defu', 'routerOptions', code)(defu, routerOptions) as (path: string) => Record<string, any>
 }

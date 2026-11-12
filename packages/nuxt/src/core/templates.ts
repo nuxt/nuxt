@@ -877,11 +877,12 @@ export const routeRulesTemplate: NuxtTemplate = {
     if (caseDependent && !mayBeCaseSensitive) {
       throw pageDiagnostics.NUXT_B4022(caseDependent)
     }
+    const hasRedirects = `export const hasRedirects = ${routes.some(({ data }) => !!data.redirect)}`
     if (!routes.length) {
-      return `export default () => ({})`
+      return [hasRedirects, `export default () => ({})`].join('\n')
     }
     if (routes.length === 1 && routes[0]!.route === '/**' && !isWildcardRedirect(routes[0]!.data.redirect)) {
-      return `export default () => (${serializeAppRouteRules(routes[0]!.data)})`
+      return [hasRedirects, `export default () => (${serializeAppRouteRules(routes[0]!.data)})`].join('\n')
     }
     const cache = cachedMatchers.get(nuxt) ?? cachedMatchers.set(nuxt, {}).get(nuxt)!
     const cacheKey = hash({ routes, mayBeCaseSensitive })
@@ -911,6 +912,7 @@ export const routeRulesTemplate: NuxtTemplate = {
     const wildcardRedirects = routes.some(({ data }) => isWildcardRedirect(data.redirect))
     const withWildcardRedirect = (rules: string) => wildcardRedirects ? `resolveWildcardRedirect(${rules}, path)` : rules
     return cache[cacheKey] = [
+      hasRedirects,
       `import { defu } from 'defu'`,
       needsRouterOptions ? `import routerOptions from '#build/router.options.mjs'` : ``,
       caseDependent ? `if (!routerOptions.sensitive) { throw new Error(${JSON.stringify(`[nuxt] The route rule \`${caseDependent.route}\` has a regex constraint that depends on letter case (\`${caseDependent.part}\`), so it cannot be matched with \`router.options.sensitive: false\`. Write the constraint for lower-case letters, such as \`[a-z]\` instead of \`[A-Z]\`.`)}) }` : ``,

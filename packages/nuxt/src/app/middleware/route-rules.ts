@@ -3,10 +3,12 @@ import type { RouteMiddleware } from '../composables/router'
 import { getRouteRules } from '../composables/manifest'
 import { useNuxtApp } from '../nuxt'
 import { isAbsoluteHref } from '../utils'
+import { hasRedirects } from '#build/route-rules.mjs'
 
 const middleware: RouteMiddleware = defineNuxtRouteMiddleware((to) => {
   // nitro applies `redirect` rules to page requests, but not to the page a `page_*` island renders
   if (import.meta.server ? !useNuxtApp().ssrContext?.islandContext : import.meta.test) { return }
+  if (!hasRedirects) { return }
   const rules = getRouteRules({ path: to.path })
   if (rules.redirect) {
     const path = rules.redirect.includes('#') ? rules.redirect : (rules.redirect + to.hash)
