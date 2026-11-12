@@ -13,16 +13,13 @@ import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { _showErrorUnlessCrawler, clearError, createError, createErrorFromThrown, isNuxtError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
-import { _loadAsyncComponent } from '#app/composables/preload'
-import { resolveLayoutName } from '#app/composables/layout'
 import { navigationDiagnostics } from '../../../app/diagnostics/navigation'
 
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options.mjs'
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 import { pageIslandRoutes } from '#build/components.islands.mjs'
-import layouts from '#build/layouts'
-import { hasLayouts, preloadInitialLayout, serverPathFallback, staticRoutes, tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { serverPathFallback, staticRoutes, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import { traceAsync } from '#app/internal/tracing'
 import { toArray } from '#app/utils'
 import { documentURL } from '#app/internal/location'
@@ -221,13 +218,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       endNavigation(to)
       await nuxtApp.callHook('page:loading:end')
     })
-
-    if (import.meta.client && preloadInitialLayout && hasLayouts && !nuxtApp.payload.serverRendered) {
-      const layout = resolveLayoutName(router.resolve(initialURL))
-      if (typeof layout === 'string' && layout in layouts) {
-        Promise.resolve(_loadAsyncComponent(layouts[layout as keyof typeof layouts])).catch(() => {})
-      }
-    }
 
     try {
       if (import.meta.server) {

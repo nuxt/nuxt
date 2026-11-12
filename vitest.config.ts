@@ -312,31 +312,13 @@ export default defineConfig({
         test: {
           name: 'nuxt',
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/preload-initial-layout/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
           environment: 'nuxt',
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
           environmentOptions: {
             nuxt: {
               overrides: commonSettings,
-            },
-          },
-        },
-      }),
-      await defineVitestProject({
-        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
-        test: {
-          name: 'nuxt-preload-initial-layout',
-          dir: './test/nuxt/preload-initial-layout',
-          environment: 'nuxt',
-          setupFiles: ['./test/setup-runtime.ts'],
-          environmentOptions: {
-            nuxt: {
-              overrides: defu({
-                future: { compatibilityVersion: 5 },
-                experimental: { preloadInitialLayout: true },
-                dir: { layouts: resolve('./test/nuxt/preload-initial-layout/fixture/layouts') },
-              } satisfies NuxtConfig, commonSettings),
             },
           },
         },

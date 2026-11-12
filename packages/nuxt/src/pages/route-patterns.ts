@@ -39,14 +39,49 @@ function resolvePageRoutes (page: NuxtPage, prefixes: string[]): Set<string> {
 
 const ROU3_SYNTAX_RE = /[*(){}\\]/g
 
+export interface PageLayoutResolverOptions {
+  /** Whether the meta of a page is only known once the page has loaded. */
+  isMetaDynamic: (page: NuxtPage) => boolean
+  /** Whether a route rule sets `appLayout`, which names the layout of every path it matches. */
+  hasLayoutRules: boolean
+}
+
+/**
+ * Resolve the file of the layout a matched route renders in, the way `<NuxtLayout>` does (the
+ * `layout` of the page meta, then `default`), from what is known at build time. Resolves to
+ * `undefined` where the layout is not known: a page whose meta is not extracted, or one that
+ * leaves its layout to a route rule, as a rule may apply to only some of the paths a pattern
+ * matches.
+ *
+ * The layout is still a guess, as route middleware and `setPageLayout()` can change it.
+ */
+export function createPageLayoutResolver (layouts: Record<string, { file: string }>, options: PageLayoutResolverOptions): (records: NuxtPage[]) => string | undefined {
+  return (records) => {
+    let layout: unknown
+    for (const record of records) {
+      if (record.rules?.appLayout !== undefined || options.isMetaDynamic(record)) { return }
+      // nested records merge their meta, the innermost last
+      if (record.meta && 'layout' in record.meta) {
+        layout = record.meta.layout
+      }
+    }
+    if (layout === undefined || layout === null) {
+      if (options.hasLayoutRules) { return }
+      layout = 'default'
+    }
+    return typeof layout === 'string' ? layouts[layout]?.file : undefined
+  }
+}
+
 /**
  * Map the rou3 pattern of every page path to the source files (relative to `srcDir`)
- * of the route records it renders, parents first. Patterns shared by unrelated pages
- * map to `undefined`. Returns `undefined` when any path cannot be converted exactly
- * (a trailing catch-all aside), or decodes to rou3 syntax, as rou3 could then pick a
- * different page than vue-router.
+ * of the route records it renders, parents first, followed by the layout they render in
+ * when `resolveLayout` knows it. Patterns shared by unrelated pages map to `undefined`.
+ * Returns `undefined` when any path cannot be converted exactly (a trailing catch-all
+ * aside), or decodes to rou3 syntax, as rou3 could then pick a different page than
+ * vue-router.
  */
-export function collectRou3PageSources (pages: NuxtPage[], srcDir: string): Map<string, string[] | undefined> | undefined {
+export function collectRou3PageSources (pages: NuxtPage[], srcDir: string, resolveLayout?: (records: NuxtPage[]) => string | undefined): Map<string, string[] | undefined> | undefined {
   const sources = new Map<string, string[] | undefined>()
   const owners = new Map<string, NuxtPage>()
   const collect = (pages: NuxtPage[], prefixes: string[], parentSources: string[], ancestors: NuxtPage[]): boolean => {
@@ -55,6 +90,9 @@ export function collectRou3PageSources (pages: NuxtPage[], srcDir: string): Map<
       for (const file of [page.file, ...Object.values(page.components || {})]) {
         if (file) { pageSources.push(relative(srcDir, file)) }
       }
+      // the layout belongs to the matched route, not to the records nested in it
+      const layout = resolveLayout?.([...ancestors, page])
+      const routeSources = layout ? [...pageSources, relative(srcDir, layout)] : pageSources
       const routes = resolvePageRoutes(page, prefixes)
       for (const route of routes) {
         if (!isDecodable(route)) { return false }
@@ -64,7 +102,7 @@ export function collectRou3PageSources (pages: NuxtPage[], srcDir: string): Map<
           if (decodeRoutePath(pattern).match(ROU3_SYNTAX_RE)?.length !== pattern.match(ROU3_SYNTAX_RE)?.length) { return false }
           const owner = owners.get(pattern)
           const extendsExisting = !owner || (sources.get(pattern) && (owner === page || ancestors.includes(owner)))
-          sources.set(pattern, extendsExisting ? pageSources : undefined)
+          sources.set(pattern, extendsExisting ? routeSources : undefined)
           owners.set(pattern, page)
         }
       }

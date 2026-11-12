@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns } from '../src/pages/route-patterns.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, createPageLayoutResolver, toRou3Patterns } from '../src/pages/route-patterns.ts'
 import { getRouterOptionsKeys, routerOptionsMayModifyRoutes } from '../src/pages/router-options.ts'
 
 describe('toRou3Patterns', () => {
@@ -158,6 +158,29 @@ describe('collectRou3PageSources', () => {
     `)
   })
 
+  it('should add the layout of a matched route after its route records', () => {
+    const pages: NuxtPage[] = [
+      { name: 'index', path: '/', file: '/app/pages/index.vue' },
+      {
+        path: '/parent',
+        file: '/app/pages/parent.vue',
+        meta: { layout: 'admin' },
+        children: [
+          { name: 'parent', path: '', file: '/app/pages/parent/index.vue' },
+          { name: 'parent-child', path: 'child', file: '/app/pages/parent/child.vue', meta: { layout: false } },
+        ],
+      },
+    ]
+    const layouts = { default: { file: '/app/layouts/default.vue' }, admin: { file: '/app/layouts/admin.vue' } }
+    const resolveLayout = createPageLayoutResolver(layouts, { isMetaDynamic: () => false, hasLayoutRules: false })
+    expect(Object.fromEntries(collectRou3PageSources(pages, '/app', resolveLayout)!)).toEqual({
+      '/': ['pages/index.vue', 'layouts/default.vue'],
+      // the layout of a parent applies to the routes nested in it, and is not listed twice
+      '/parent': ['pages/parent.vue', 'pages/parent/index.vue', 'layouts/admin.vue'],
+      '/parent/child': ['pages/parent.vue', 'pages/parent/child.vue'],
+    })
+  })
+
   it('should not resolve patterns shared by unrelated pages', () => {
     const pages: NuxtPage[] = [
       { name: 'user', path: '/users/:id()', file: '/app/pages/users/[id].vue' },
@@ -198,6 +221,40 @@ describe('collectRou3PageSources', () => {
       { name: 'catchall', path: '/:slug(.*)*', file: '/app/pages/[...slug].vue' },
     ]
     expect(collectRou3PageSources(pages, '/app')).toBeUndefined()
+  })
+})
+
+describe('createPageLayoutResolver', () => {
+  const layouts = { default: { file: '/app/layouts/default.vue' }, admin: { file: '/app/layouts/admin.vue' } }
+  const page = (extra: Partial<NuxtPage> = {}): NuxtPage => ({ path: '/', file: '/app/pages/index.vue', ...extra })
+  const resolve = (records: NuxtPage[], options: Partial<Parameters<typeof createPageLayoutResolver>[1]> = {}, available: Record<string, { file: string }> = layouts) =>
+    createPageLayoutResolver(available, { isMetaDynamic: () => false, hasLayoutRules: false, ...options })(records)
+
+  it('should resolve the layout of the page meta, then the default layout', () => {
+    expect(resolve([page({ meta: { layout: 'admin' } })])).toBe('/app/layouts/admin.vue')
+    expect(resolve([page()])).toBe('/app/layouts/default.vue')
+    expect(resolve([page({ meta: { title: 'home' } })])).toBe('/app/layouts/default.vue')
+  })
+
+  it('should take the layout of the innermost record that sets one', () => {
+    expect(resolve([page({ meta: { layout: 'admin' } }), page()])).toBe('/app/layouts/admin.vue')
+    expect(resolve([page({ meta: { layout: 'admin' } }), page({ meta: { layout: 'default' } })])).toBe('/app/layouts/default.vue')
+  })
+
+  it.each([
+    ['a page without a layout', [page({ meta: { layout: false } })], {}],
+    ['a layout that does not exist', [page({ meta: { layout: 'missing' } })], {}],
+    ['an app without a default layout', [page()], {}, { admin: layouts.admin }],
+    ['a page whose meta is only known at runtime', [page({ meta: { layout: 'admin' } })], { isMetaDynamic: () => true }],
+    ['a parent whose meta is only known at runtime', [page(), page({ meta: { layout: 'admin' }, file: '/app/pages/child.vue' })], { isMetaDynamic: (record: NuxtPage) => record.file === '/app/pages/index.vue' }],
+    ['a page that leaves its layout to a route rule', [page()], { hasLayoutRules: true }],
+    ['a page with an inline `appLayout` rule', [page({ rules: { appLayout: 'generated' } })], {}],
+  ] as const)('should not resolve a layout for %s', (_, records, options, available?: Record<string, { file: string }>) => {
+    expect(resolve([...records], options, available)).toBeUndefined()
+  })
+
+  it('should resolve the layout of the page meta whatever the route rules', () => {
+    expect(resolve([page({ meta: { layout: 'admin' } })], { hasLayoutRules: true })).toBe('/app/layouts/admin.vue')
   })
 })
 

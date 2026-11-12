@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="fixture-default-layout">
     <slot />
   </div>
 </template>

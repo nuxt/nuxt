@@ -188,7 +188,6 @@ export default defineResolvers({
     clientFallback: false,
     crossOriginPrefetch: false,
     deferPrefetchHints: true,
-    preloadInitialLayout: false,
 
     /**
      * Enable View Transition API integration with client-side router.
