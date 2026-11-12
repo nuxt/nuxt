@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { ComponentOptions } from 'vue'
 import { Suspense, createSSRApp, defineComponent, h, ref, toDisplayString, useAttrs, vShow, withDirectives } from 'vue'
 import { renderToString } from 'vue/server-renderer'
+import { SlotFlags } from '@vue/shared'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { flushPromises, mount } from '@vue/test-utils'
 
@@ -80,6 +81,14 @@ describe('client-only', () => {
     })
     const wrapper = await mountSuspended(component)
     expect(wrapper.html()).toMatchInlineSnapshot(`"<div class="test" id="test">client-only</div>"`)
+  })
+
+  it('should render a fallback slot that accepts ssr render arguments on the server', async () => {
+    const fallback = (_props: unknown, push?: unknown) => push ? (push as (html: string) => void)('<b>push</b>') : [h('i', 'vnode')]
+    const app = createSSRApp(defineComponent({
+      setup: () => () => h(ClientOnly, {}, { fallback, _: SlotFlags.STABLE }),
+    }))
+    expect(await renderToString(app)).toBe('<!--[--><i>vnode</i><!--]-->')
   })
 })
 
