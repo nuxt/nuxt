@@ -12,14 +12,26 @@
 </template>
 
 <script setup lang="ts">
-import { onErrorCaptured, shallowRef } from 'vue'
+import { getCurrentInstance, onErrorCaptured, onMounted, shallowRef, useId } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { onNuxtReady } from '../composables/ready'
+import { useState } from '../composables/state'
+import type { NuxtError } from '../composables/error'
+import { createIdScope } from './utils'
+import { ssrErrorBoundary } from '#build/nuxt.config.mjs'
 
 defineOptions({
   name: 'NuxtErrorBoundary',
   inheritAttrs: false,
 })
+
+const props = defineProps<{
+  /**
+   * When the error was caught during server-side rendering, re-render the default slot on the
+   * client once mounted (falling back to the `#error` slot again if it throws there too).
+   */
+  retryOnClient?: boolean
+}>()
 
 const emit = defineEmits<{
   error: [error: Error]
@@ -38,6 +50,25 @@ function clearError () {
 
 if (import.meta.client) {
   const nuxtApp = useNuxtApp()
+  // after a retry, the default slot is rendered by a client patch rather than by hydration
+  let retried = false
+
+  if (ssrErrorBoundary) {
+    // written by the server component when its default slot threw
+    const ssrError = useState<NuxtError | undefined>(useId())
+    createIdScope(getCurrentInstance()!)
+    if (ssrError.value) {
+      error.value = ssrError.value
+      ssrError.value = undefined
+
+      if (props.retryOnClient) {
+        onMounted(() => {
+          retried = true
+          clearError()
+        })
+      }
+    }
+  }
 
   function handleError (...args: Parameters<Parameters<typeof onErrorCaptured<Error>>[0]>) {
     const [err, instance, info] = args
@@ -50,7 +81,7 @@ if (import.meta.client) {
   }
 
   onErrorCaptured((err, instance, info) => {
-    if (!nuxtApp.isHydrating) {
+    if (retried || !nuxtApp.isHydrating) {
       handleError(err, instance, info)
     } else {
       onNuxtReady(() => handleError(err, instance, info))

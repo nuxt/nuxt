@@ -124,5 +124,15 @@ export const renderDiagnostics = !import.meta.dev
           fix: (p: { name: string }) => `Register \`${p.name}\` globally (\`components/global/\`, or \`global: true\` when adding it from a module), or remove the call.`,
           docs: false,
         },
+        NUXT_E4024: {
+          why: '`<NuxtErrorBoundary>` cannot catch server-side errors from a vapor slot child. Its content is not expressed as VNodes, so the boundary only catches client-side errors for this slot.',
+          fix: 'Wrap the content in a vdom component if you need server-side error handling.',
+          docs: false,
+        },
+        NUXT_E4025: {
+          why: '`<NuxtErrorBoundary>` caught an error during server-side rendering and rendered its `#error` slot instead of its default slot.',
+          fix: 'Fix the error thrown by the content of the boundary, or handle it with the `@error` event.',
+          docs: false,
+        },
       },
     })
