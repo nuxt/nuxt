@@ -9,6 +9,8 @@ import { BUILD_ASSETS_DIR, createEvent, options, render } from './harness'
 vi.mock('nuxt/internal/renderer-config', async importOriginal => ({
   ...await importOriginal<Record<string, unknown>>(),
   NUXT_SSR_STREAMING: true,
+  NUXT_RUNTIME_PAYLOAD_EXTRACTION: true,
+  NUXT_PAYLOAD_INLINE: false,
 }))
 
 describe('renderer without a server builder', () => {
@@ -128,6 +130,13 @@ describe('renderer without a server builder', () => {
     const entry = html.match(/<script type="module" src="([^"]+)"/)?.[1]
     expect(entry).toBeTruthy()
     expect(html).not.toMatch(new RegExp(`<link rel="modulepreload"[^>]*href="${entry}"`))
+  })
+
+  it('does not key the payload url of a cached route on the build id', async () => {
+    const { html } = await render('/?page=2', { getRouteRules: () => ({ ssr: true, isr: 60 }) })
+
+    expect(html).toContain('data-src="/_payload.json?page=2"')
+    expect(html).toContain('rel="preload" as="fetch" crossorigin="anonymous" href="/_payload.json?page=2"')
   })
 
   it('serves the client-only shell for a route the rules opt out of ssr', async () => {

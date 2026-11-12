@@ -198,6 +198,9 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
     for (const route of toRoutes(await glob(['**/*.html', '**/_payload.json'], { cwd: join(nitroOutputDir, 'public') }))) {
       expect(prerendered).toContain(route)
     }
+
+    const cachedRoute = await readFile(join(nitroOutputDir, 'public/rules/prerendered/index.html'), 'utf-8')
+    expect(cachedRoute).toMatch(/data-src="\/rules\/prerendered\/_payload\.json\?_b=[^"]+"/)
   }, 240 * 1000)
 })
 
