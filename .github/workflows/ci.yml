@@ -596,6 +596,53 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+  # Advisory, so not required by `ci-ok`. The vapor suites need vue 3.6, so `test-e2e` skips them.
+  test-e2e-vapor:
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 25
+    permissions:
+      contents: read
+
+    env:
+      # `runner` is not available in job-level `env`, so anchor on `github`
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.pw-browsers
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          node-version: 22.23.4
+          cache: true
+          cache-save: false
+          run-install: false
+
+      - name: Install with the latest vue release candidate
+        run: |
+          version="$(vp pm view vue@rc version)"
+          overrides="$(vp pm config get --location project overrides | jq -c --arg v "$version" '.vue = $v | .["@vue/compiler-sfc"] = $v')"
+          vp pm config set --location project --json overrides "$overrides"
+          vp install --no-frozen-lockfile
+          test "$(node -p "require('vue/package.json').version")" = "$version"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ github.workspace }}/.pw-browsers
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ needs.changes.outputs.playwright }}
+
+      - name: Install Playwright
+        run: vp exec playwright-core install chromium
+
+      - name: Prepare test fixtures
+        run: vp run test:prepare
+
+      - name: Test (vapor e2e)
+        run: vp run test:e2e vapor.test.ts --project 'e2e-*vite-*'
+
   ci-ok:
     # This job is the single required check for merge queues and branch protection.
     # All other jobs feed into this one. Skipped jobs are treated as successful.
