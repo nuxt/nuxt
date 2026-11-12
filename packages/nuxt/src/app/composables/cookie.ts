@@ -174,7 +174,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   if (import.meta.dev && hasExpired) {
-    stateDiagnostics.NUXT_E7005({ name })
+    reportExpiredCookie(name)
   }
 
   if (import.meta.client) {
@@ -328,6 +328,13 @@ function isCurrentPath (path: string) {
  * A write with a non-positive `maxAge` or a past `expires` date deletes the
  * cookie in the browser regardless of the value passed alongside it.
  */
+const reportedExpiredCookies = /* @__PURE__ */ new Set<string>()
+function reportExpiredCookie (name: string) {
+  if (reportedExpiredCookies.has(name)) { return }
+  reportedExpiredCookies.add(name)
+  stateDiagnostics.NUXT_E7005({ name })
+}
+
 function isExpiredWrite (opts: UseCookieOptions) {
   if (opts.maxAge !== undefined) { return opts.maxAge <= 0 }
   const expires = resolveExpires(opts.expires)
@@ -632,7 +639,7 @@ function createCookieUtil (defaults: CookieOptions): $Cookie<any> {
     const writeOpts = { path: baseCookieOptions.path, ...options }
 
     if (import.meta.dev && encoded !== undefined && isExpiredWrite(writeOpts)) {
-      stateDiagnostics.NUXT_E7005({ name })
+      reportExpiredCookie(name)
     }
 
     if (import.meta.client) {

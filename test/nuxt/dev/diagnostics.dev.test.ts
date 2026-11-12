@@ -1,4 +1,4 @@
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, nextTick } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 
@@ -6,7 +6,7 @@ import { navigateTo, useRouter } from '#app/composables/router'
 import { preloadComponents } from '#app/composables/preload'
 import { useNuxtApp } from '#app/nuxt'
 import { useAsyncData } from '#app/composables/asyncData'
-import { $cookie } from '#app/composables/cookie'
+import { $cookie, useCookie } from '#app/composables/cookie'
 import { defineKeyedFunctionFactory } from '../../../packages/nuxt/src/compiler/runtime'
 
 describe('navigation diagnostics (dev)', () => {
@@ -22,7 +22,7 @@ describe('navigation diagnostics (dev)', () => {
 })
 
 describe('cookie diagnostics (dev)', () => {
-  it('warns when $cookie.set writes a cookie that has already expired', () => {
+  it('warns once per cookie when $cookie.set writes one that has already expired', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
     $cookie.set('diagnostics-fresh', 'value', { maxAge: 60 })
@@ -30,10 +30,27 @@ describe('cookie diagnostics (dev)', () => {
     expect(warn).not.toHaveBeenCalled()
 
     $cookie.set('diagnostics-expired', 'value', { maxAge: 0 })
+    $cookie.set('diagnostics-expired', 'again', { maxAge: 0 })
     $cookie.set('diagnostics-expired-date', 'value', { expires: new Date(0) })
     expect(warn).toHaveBeenCalledTimes(2)
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('[NUXT_E7005] Cookie `diagnostics-expired` was not set because it has already expired.'))
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('[NUXT_E7005] Cookie `diagnostics-expired-date` was not set because it has already expired.'))
+
+    warn.mockRestore()
+  })
+
+  it('warns once when useCookie is created with expired options, not on every write', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const cookie = useCookie('diagnostics-use-cookie', { maxAge: 0 })
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[NUXT_E7005] Cookie `diagnostics-use-cookie`'))
+
+    cookie.value = 'first'
+    await nextTick()
+    cookie.value = 'second'
+    await nextTick()
+    expect(warn).toHaveBeenCalledTimes(1)
 
     warn.mockRestore()
   })
