@@ -78,8 +78,8 @@ describe('$cookie', () => {
     const base = $cookie.create({ path: '/', maxAge: 60, encode: v => `x-${v}`, decode: v => v?.slice(2) })
     const child = base.create({ default: () => 'fallback' })
 
-    expect($cookie.options).toEqual({})
-    expect(child.options).toMatchObject({ path: '/', maxAge: 60, default: expect.any(Function) })
+    expect($cookie.options).toMatchObject({ path: '/', encode: expect.any(Function), decode: expect.any(Function) })
+    expect(child.options).toMatchObject({ path: '/', maxAge: 60, encode: base.options.encode, default: expect.any(Function) })
 
     child.set('util-create', 'hi')
     expect(writes.at(-1)).toBe('util-create=x-hi; Max-Age=60; Path=/')
