@@ -103,23 +103,51 @@ export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] =
   return failed ? undefined : patterns
 }
 
-export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {
-  const routes: string[] = []
+// convert to rou3-compatible path (https://github.com/h3js/rou3)
+function toRou3Path (path: string): string {
+  return path
+    // remove all regex patterns
+    .replace(/\([^)]*\)/g, '')
+    // catchalls: `:name([^/]*)*` or `:catchall(.*)*`
+    .replace(/:(\w+)\*.*/g, (_, name) => `**:${name}`)
+    // dynamic paths, including custom patterns, e.g. :id([^/]*)*/suffix
+    .replace(/:([^/*]*)/g, (_, name) => `:${name.replace(/\W/g, (r: string) => r === '?' ? '' : '_')}`)
+}
+
+const COLLAPSED_CATCHALL_RE = /:\w+\*./
+
+const OPTIONAL_SEGMENT_RE = /(?<=^|\/):(\w+)(?:(\(\.\*\))\??|(?:\([^)]*\))?\?)(?=\/|$)/g
+
+function toRou3RoutePath (path: string): string {
+  let pattern = ''
+  let start = 0
+  for (const match of path.matchAll(OPTIONAL_SEGMENT_RE)) {
+    pattern += toRou3Path(path.slice(start, match.index))
+    if (pattern.includes('**:')) { return pattern }
+    pattern += match[2] ? `:${match[1]}(.*)` : `:${match[1]}?`
+    start = match.index + match[0].length
+  }
+  return pattern + toRou3Path(path.slice(start))
+}
+
+/**
+ * The rou3 pattern of every path a page can be reached by (its path, each alias and the
+ * subtree below it), keeping param names, whole-segment optional params and non-repeatable
+ * `(.*)` catch-alls. Paths that can only be matched with a broader `**` catch-all are
+ * left out with `skipCollapsed`.
+ */
+export function toRou3RoutePatterns (pages: NuxtPage[], options: { skipCollapsed?: boolean } = {}, prefixes: string[] = ['/']): string[] {
+  const patterns: string[] = []
   for (const page of pages) {
-    // convert to rou3-compatible path (https://github.com/h3js/rou3)
-    const path = page.path
-      // remove all regex patterns
-      .replace(/\([^)]*\)/g, '')
-      // catchalls: `:name([^/]*)*` or `:catchall(.*)*`
-      .replace(/:(\w+)\*.*/g, (_, name) => `**:${name}`)
-      // dynamic paths, including custom patterns, e.g. :id([^/]*)*/suffix
-      .replace(/:([^/*]*)/g, (_, name) => `:${name.replace(/\W/g, (r: string) => r === '?' ? '' : '_')}`)
-
-    routes.push(joinURL(prefix, path))
-
+    const routes = resolvePageRoutes(page, prefixes)
+    for (const route of routes) {
+      if (!options.skipCollapsed || !COLLAPSED_CATCHALL_RE.test(route.replace(/\([^)]*\)/g, ''))) {
+        patterns.push(toRou3RoutePath(route))
+      }
+    }
     if (page.children) {
-      routes.push(...toRou3Patterns(page.children, joinURL(prefix, path)))
+      patterns.push(...toRou3RoutePatterns(page.children, options, [...routes]))
     }
   }
-  return routes
+  return patterns
 }

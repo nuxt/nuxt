@@ -1,35 +1,96 @@
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns } from '../src/pages/route-patterns.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, toRou3RoutePatterns } from '../src/pages/route-patterns.ts'
 import { routerOptionsMayDefine } from '../src/pages/router-options.ts'
 
-describe('toRou3Patterns', () => {
+describe('toRou3RoutePatterns', () => {
   it.each([
     ['/', '/'],
     ['/parent/:child()', '/parent/:child'],
     ['/parent-:child()', '/parent-:child'],
-    ['/:stories(.*)*', '/**:stories'],
-    ['/:foo?', '/:foo'],
-    ['/:sub?/route-:slug()', '/:sub/route-:slug'],
-    ['/optional/prefix-:opt?', '/optional/prefix-:opt'],
-    ['/optional/:opt?-postfix', '/optional/:opt_postfix'],
-    ['/:id([^/]*)*/suffix', '/**:id'],
     ['/:b2.2b()', '/:b2_2b'],
     ['/:b2()_:2b()', '/:b2__2b'],
     ['/test\\:name', '/test\\:name'],
     ['/a%5Cb', '/a%5Cb'],
     ['/%E6%B5%8B%E8%AF%95', '/%E6%B5%8B%E8%AF%95'],
+    ['/:foo?', '/:foo?'],
+    ['/:org?/:name()', '/:org?/:name'],
+    ['/x/:id?/edit', '/x/:id?/edit'],
+    ['/:sub?/route-:slug()', '/:sub?/route-:slug'],
+    ['/optional/prefix-:opt?', '/optional/prefix-:opt'],
+    ['/optional/:opt?-postfix', '/optional/:opt_postfix'],
+    ['/docs/:slug(.*)', '/docs/:slug(.*)'],
+    ['/docs/:slug(.*)?', '/docs/:slug(.*)'],
+    ['/:slug(.*)?', '/:slug(.*)'],
+    ['/:stories(.*)*', '/**:stories'],
+    ['/docs/:slug(.*)*', '/docs/**:slug'],
+    ['/:id([^/]*)*/suffix', '/**:id'],
+    ['/:slug(.*)*/:id?', '/**:slug'],
+    ['/:slug(.*)/edit', '/:slug(.*)/edit'],
+    ['/users/:id(\\d+)', '/users/:id'],
+    ['/users/:id(\\d+)?', '/users/:id?'],
+    ['/:locale(de|fr)/account', '/:locale/account'],
+    ['/:locale(en|fr)?/about', '/:locale?/about'],
+    ['/files/:id([^/]*)?/raw', '/files/:id?/raw'],
+    ['/package-code/:org?/:name()/v/:version()/:filePath(.*)?', '/package-code/:org?/:name/v/:version/:filePath(.*)'],
   ])('should convert %s to %s', (path, pattern) => {
-    expect(toRou3Patterns([{ path }])).toStrictEqual([pattern])
+    expect(toRou3RoutePatterns([{ path }])).toStrictEqual([pattern])
   })
 
-  it('should join nested routes onto their parent pattern', () => {
+  it('should resolve nested routes against the parent path before converting', () => {
     const pages: NuxtPage[] = [
-      { path: '/parent', children: [{ path: 'child' }, { path: '' }] },
-      { path: '/:slug(.*)*', children: [{ path: ':id()' }] },
+      { path: '/parent', children: [{ path: 'child' }, { path: '' }, { path: '/absolute' }] },
+      { path: '/:org?', children: [{ path: ':name()', children: [{ path: ':file(.*)?' }] }] },
+      { path: '/:slug(.*)*', children: [{ path: ':id?' }] },
     ]
-    expect(toRou3Patterns(pages)).toStrictEqual(['/parent', '/parent/child', '/parent', '/**:slug', '/**:slug/:id'])
+    expect(toRou3RoutePatterns(pages)).toStrictEqual([
+      '/parent',
+      '/parent/child',
+      '/parent',
+      '/absolute',
+      '/:org?',
+      '/:org?/:name',
+      '/:org?/:name/:file(.*)',
+      '/**:slug',
+      '/**:slug',
+    ])
+  })
+
+  it('should emit the same pattern for params that differ only in their regexp', () => {
+    const pages: NuxtPage[] = [{ path: '/foo/:id(a|b)' }, { path: '/foo/:id(a-b)' }, { path: '/foo/:id(\\d+)' }]
+    expect(new Set(toRou3RoutePatterns(pages))).toStrictEqual(new Set(['/foo/:id']))
+  })
+
+  it('should leave out collapsed paths and their children with skipCollapsed', () => {
+    const pages: NuxtPage[] = [
+      { path: '/:id([^/]*)*/suffix', children: [{ path: 'child' }] },
+      { path: '/docs/:a(.*)*/x/:b(.*)*' },
+      { path: '/:slug(.*)*', children: [{ path: ':id?' }] },
+    ]
+    expect(toRou3RoutePatterns(pages)).toStrictEqual(['/**:id', '/**:id', '/docs/**:a', '/**:slug', '/**:slug'])
+    expect(toRou3RoutePatterns(pages, { skipCollapsed: true })).toStrictEqual(['/**:slug'])
+  })
+
+  it('should include aliases and nest children under each of them', () => {
+    const pages: NuxtPage[] = [
+      { path: '/parent', alias: ['/p', '/:org?/p'], children: [{ path: 'kid', alias: ['k', '/abs-kid'] }] },
+      { path: '/x', alias: '/y' },
+    ]
+    expect(toRou3RoutePatterns(pages)).toStrictEqual([
+      '/parent',
+      '/p',
+      '/:org?/p',
+      '/parent/kid',
+      '/p/kid',
+      '/:org?/p/kid',
+      '/parent/k',
+      '/p/k',
+      '/:org?/p/k',
+      '/abs-kid',
+      '/x',
+      '/y',
+    ])
   })
 })
 
