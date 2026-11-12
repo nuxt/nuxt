@@ -464,3 +464,22 @@ describe('template links without a component instance', () => {
     el.unmount()
   })
 })
+
+describe('custom slot route', () => {
+  it('parses the query the same way the router does', async () => {
+    let slotQuery: Record<string, unknown> | undefined
+    const el = await mountSuspended(defineComponent({
+      setup () {
+        return () => h(NuxtLink, { to: 'https://example.com/?flag&empty=', custom: true }, {
+          default: ({ route }: any) => {
+            slotQuery = route.query
+            return h('span')
+          },
+        })
+      },
+    }))
+
+    expect(slotQuery).toEqual(useRouter().resolve('/?flag&empty=').query)
+    el.unmount()
+  })
+})

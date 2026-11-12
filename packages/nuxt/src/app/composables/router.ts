@@ -1,7 +1,7 @@
 import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { decodePath, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { decodePath, joinURL, parseURL, stringifyParsedURL } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
@@ -14,6 +14,8 @@ import { createError, showError } from './error'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
+
+import { parseQuery, stringifyQuery } from '#build/pages'
 
 /**
  * Augmented by Nuxt with the router methods that `experimental.staticRoutes` or
@@ -431,7 +433,9 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts | false>(layout: 
  * @internal
  */
 export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>): string {
-  return withQuery(to.path || '', to.query || {}) + (to.hash || '')
+  const parsed = parseURL(to.path || '')
+  parsed.search = stringifyQuery({ ...parseQuery(parsed.search), ...to.query })
+  return stringifyParsedURL(parsed) + (to.hash || '')
 }
 
 /**
