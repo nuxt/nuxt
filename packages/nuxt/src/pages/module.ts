@@ -29,6 +29,8 @@ import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import type { NitroInstance, NitroInstanceOptions, NuxtConfig, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
+const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
+
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 const ROOT_CATCHALL_PATTERN_RE = /^\/\*\*(?::[\w-]+)?$/
 const RELATIVE_WITH_DOT_RE = /^([^.])/
@@ -230,6 +232,7 @@ export default defineNuxtModule({
         dependsOn: [],
         getContents: () => [
           'export { useRoute } from \'#app/composables/router\'',
+          `export { parseQuery, stringifyQuery } from ${JSON.stringify(ufoPath)}`,
           'export const START_LOCATION = Symbol(\'router:start-location\')',
         ].join('\n'),
       })
@@ -664,7 +667,13 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'pages.mjs',
       dependsOn: [],
-      getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\'',
+      getContents: () => [
+        'import routerOptions from \'#build/router.options.mjs\'',
+        'import { parseQuery as _parseQuery, stringifyQuery as _stringifyQuery } from \'vue-router\'',
+        'export { START_LOCATION, useRoute } from \'vue-router\'',
+        'export const parseQuery = search => (routerOptions.parseQuery || _parseQuery)(search[0] === \'?\' ? search.slice(1) : search)',
+        'export const stringifyQuery = query => (routerOptions.stringifyQuery || _stringifyQuery)(query)',
+      ].join('\n'),
     })
 
     nuxt.options.vite.resolve ||= {}
