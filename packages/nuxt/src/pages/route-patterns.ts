@@ -109,17 +109,21 @@ const PARAM_REGEXP_RE = /(?<!\\)(:\w+)\(((?:\\.|[^\\)])*)\)(?![*+])/g
  * Convert every path a page can be reached by (its path, each alias and the subtree below it)
  * to a rou3 pattern matching those requests, keeping param names and emitting one pattern per path.
  * Custom regexps on params are dropped, other than `(.*)` and those on repeatable params.
+ * Paths rou3 can only match with a broader `**` catch-all are left out with `skipCollapsed`.
  */
-export function toRou3RoutePatterns (pages: NuxtPage[], prefixes: string[] = ['/']): string[] {
+export function toRou3RoutePatterns (pages: NuxtPage[], options: { skipCollapsed?: boolean } = {}, prefixes: string[] = ['/']): string[] {
   const patterns: string[] = []
   for (const page of pages) {
     const routes = resolvePageRoutes(page, prefixes)
     for (const route of routes) {
       const path = route.replace(PARAM_REGEXP_RE, (match, param: string, regexp: string) => regexp === '.*' ? match : `${param}()`)
-      patterns.push(...vueRouterToRou3(path, { expand: false }).patterns)
+      const converted = vueRouterToRou3(path, { expand: false })
+      if (!options.skipCollapsed || !converted.issues.some(issue => issue.type === 'collapsed')) {
+        patterns.push(...converted.patterns)
+      }
     }
     if (page.children) {
-      patterns.push(...toRou3RoutePatterns(page.children, [...routes]))
+      patterns.push(...toRou3RoutePatterns(page.children, options, [...routes]))
     }
   }
   return patterns

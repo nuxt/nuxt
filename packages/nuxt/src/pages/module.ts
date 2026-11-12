@@ -443,7 +443,7 @@ export default defineNuxtModule({
     // (`/products/:id`) rather than using the collapsed early-404 patterns.
     nuxt.hook('nitro:build:before', (nitro) => {
       const urlPatterns = new Set<string>()
-      for (const route of toRou3RoutePatterns(nuxt.apps.default?.pages || [])) {
+      for (const route of toRou3RoutePatterns(nuxt.apps.default?.pages || [], { skipCollapsed: true })) {
         urlPatterns.add(rou3PatternToURLPattern(route).pattern)
       }
       ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...urlPatterns]
