@@ -30,6 +30,7 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   default?: () => T | Ref<T>
 }
 
+/** Options accepted by `useCookie`. */
 export interface UseCookieOptions<T = any> extends Omit<CookieOptions<T>, 'expires'> {
   /**
    * Expiration date for the cookie, or a getter that returns one.
@@ -61,7 +62,7 @@ export interface UseCookieOptions<T = any> extends Omit<CookieOptions<T>, 'expir
    */
   refresh?: boolean
   /** A `$cookie` instance whose defaults this ref uses, e.g. from `$cookie.create()`. */
-  $cookie?: $Cookie
+  $cookie?: $Cookie<T>
 }
 
 function resolveExpires (expires?: Date | (() => Date | undefined)): Date | undefined {
@@ -117,11 +118,17 @@ export const legacyCookieSerializer = {
 // we use globalThis to avoid crashes in web workers
 const store = import.meta.client && cookieStore ? globalThis.cookieStore : undefined
 
+/** A `useCookie` composable whose value type defaults to `D`, as returned by `createUseCookie`. */
+export interface UseCookie<D = string | null | undefined> {
+  <T = D> (name: string, opts?: UseCookieOptions<T> & { readonly?: false }): CookieRef<T>
+  <T = D> (name: string, opts: UseCookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
+}
+
 /** @since 3.0.0 */
 export function useCookie<T = string | null | undefined> (name: string, _opts?: UseCookieOptions<T> & { readonly?: false }): CookieRef<T>
 export function useCookie<T = string | null | undefined> (name: string, _opts: UseCookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
 export function useCookie<T = string | null | undefined> (name: string, _opts?: UseCookieOptions<T>): CookieRef<T> {
-  const opts = { ...CookieDefaults, ...(_opts?.$cookie && cookieUtilDefaults.get(_opts.$cookie)), ..._opts }
+  const opts = { ...CookieDefaults, ..._opts?.$cookie?.options, ..._opts }
   opts.filter ??= key => key === name
 
   const nuxtApp = import.meta.server ? useNuxtApp() : undefined!
@@ -299,8 +306,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
  *
  * @since 5.0.0
  */
-export function createUseCookie (defaults: UseCookieOptions = {}): typeof useCookie {
-  return ((name: string, opts?: UseCookieOptions) => useCookie(name, { ...defaults, ...opts } as UseCookieOptions & { readonly?: false })) as typeof useCookie
+export function createUseCookie<D = string | null | undefined> (defaults: UseCookieOptions<D> = {}): UseCookie<D> {
+  return ((name: string, opts?: UseCookieOptions) => useCookie(name, { ...defaults, ...opts } as UseCookieOptions & { readonly?: false })) as UseCookie<D>
 }
 
 /** @since 3.10.0 */
@@ -589,24 +596,26 @@ function cookieServerRef<T> (name: string, value: T | undefined, opts: UseCookie
   })
 }
 
-export interface $Cookie {
-  get<T = string | null | undefined> (name: string, opts: CookieOptions<T> & { default: () => T | Ref<T> }): T
-  get<T = string | null | undefined> (name: string, opts?: CookieOptions<T>): T | undefined
+export interface $Cookie<D = string | null | undefined> {
+  /** The defaults this instance was created with. */
+  readonly options: CookieOptions<D>
+  get<T = D> (name: string, opts: CookieOptions<T> & { default: () => T | Ref<T> }): T
+  get<T = D> (name: string, opts?: CookieOptions<T>): T | undefined
   /** Read and decode all cookies visible to the current request (server) or document (client). */
-  getAll (opts?: CookieOptions): Record<string, unknown>
+  getAll<T = D> (opts?: CookieOptions<T>): Record<string, T | undefined>
   has (name: string): boolean
   /** Encode and write a cookie. Setting `null` or `undefined` removes it. */
-  set<T = string | null | undefined> (name: string, value: T, opts?: CookieOptions<T>): void
+  set<T = D> (name: string, value: NoInfer<T> | null | undefined, opts?: CookieOptions<T>): void
   /** Remove a cookie. Pass the same `path`/`domain` the cookie was set with. */
   remove (name: string, opts?: CookieOptions): void
-  create (defaults?: CookieOptions): $Cookie
+  create<T = D> (defaults?: CookieOptions<T>): $Cookie<T>
 }
 
 function readCookieJar (): Record<string, string | undefined> {
   return import.meta.client ? readClientCookieJar() : readServerCookieJar(useNuxtApp())
 }
 
-function createCookieUtil (defaults: CookieOptions): $Cookie {
+function createCookieUtil (defaults: CookieOptions): $Cookie<any> {
   const read = (raw: string | undefined, opts?: CookieOptions) => {
     const { decode = CookieDefaults.decode, default: getDefault } = { ...defaults, ...opts }
     const value = raw === undefined ? undefined : decode(raw)
@@ -629,11 +638,12 @@ function createCookieUtil (defaults: CookieOptions): $Cookie {
     }
   }
 
-  const instance: $Cookie = {
-    get: ((name: string, opts?: CookieOptions) => read(readCookieJar()[name], opts)) as $Cookie['get'],
+  return {
+    options: defaults,
+    get: (name: string, opts?: CookieOptions) => read(readCookieJar()[name], opts),
     getAll (opts) {
       const jar = readCookieJar()
-      const result: Record<string, unknown> = {}
+      const result: Record<string, any> = {}
       for (const name in jar) {
         result[name] = read(jar[name], opts)
       }
@@ -644,11 +654,7 @@ function createCookieUtil (defaults: CookieOptions): $Cookie {
     remove: (name, opts) => write(name, undefined, opts),
     create: opts => createCookieUtil({ ...defaults, ...opts }),
   }
-  cookieUtilDefaults.set(instance, defaults)
-  return instance
 }
-
-const cookieUtilDefaults = new WeakMap<$Cookie, CookieOptions>()
 
 /**
  * Read and write cookies imperatively, on both server and client.

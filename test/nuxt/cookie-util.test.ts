@@ -39,14 +39,14 @@ describe('$cookie', () => {
     $cookie.set('util-shared', '"quoted"')
     expect(useCookie('util-shared').value).toBe('"quoted"')
 
-    $cookie.set('util-shared-number', 42)
+    $cookie.set<number>('util-shared-number', 42)
     expect(useCookie('util-shared-number').value).toBe('42')
   })
 
   it('should not serialize values as JSON by default', () => {
     const writes = captureCookieWrites()
     $cookie.set('util-plain', 'true')
-    $cookie.set('util-plain-object', { a: 1 })
+    $cookie.set<{ a: number }>('util-plain-object', { a: 1 })
     expect([...writes]).toEqual(['util-plain=true; Path=/', 'util-plain-object=%5Bobject%20Object%5D; Path=/'])
     expect($cookie.get('util-plain')).toBe('true')
     writes.restore()
@@ -77,6 +77,9 @@ describe('$cookie', () => {
     const writes = captureCookieWrites()
     const base = $cookie.create({ path: '/', maxAge: 60, encode: v => `x-${v}`, decode: v => v?.slice(2) })
     const child = base.create({ default: () => 'fallback' })
+
+    expect($cookie.options).toEqual({})
+    expect(child.options).toMatchObject({ path: '/', maxAge: 60, default: expect.any(Function) })
 
     child.set('util-create', 'hi')
     expect(writes.at(-1)).toBe('util-create=x-hi; Max-Age=60; Path=/')
