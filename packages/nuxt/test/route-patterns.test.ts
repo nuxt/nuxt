@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns } from '../src/pages/route-patterns.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns, toRou3RoutePatterns } from '../src/pages/route-patterns.ts'
 import { routerOptionsMayDefine } from '../src/pages/router-options.ts'
 
 describe('toRou3Patterns', () => {
@@ -30,6 +30,51 @@ describe('toRou3Patterns', () => {
       { path: '/:slug(.*)*', children: [{ path: ':id()' }] },
     ]
     expect(toRou3Patterns(pages)).toStrictEqual(['/parent', '/parent/child', '/parent', '/**:slug', '/**:slug/:id'])
+  })
+})
+
+describe('toRou3RoutePatterns', () => {
+  it.each([
+    ['/', '/'],
+    ['/parent/:child()', '/parent/:child'],
+    ['/:foo?', '/:foo?'],
+    ['/:org?/:name()', '/:org?/:name'],
+    ['/x/:id?/edit', '/x/:id?/edit'],
+    ['/:sub?/route-:slug()', '/:sub?/route-:slug'],
+    ['/optional/prefix-:opt?', '/optional/prefix-:opt'],
+    ['/optional/:opt?-postfix', '/optional/:opt_postfix'],
+    ['/docs/:slug(.*)', '/docs/:slug(.*)'],
+    ['/docs/:slug(.*)?', '/docs/:slug(.*)'],
+    ['/:slug(.*)?', '/:slug(.*)'],
+    ['/:stories(.*)*', '/**:stories'],
+    ['/docs/:slug(.*)*', '/docs/**:slug'],
+    ['/:id([^/]*)*/suffix', '/**:id'],
+    ['/:slug(.*)*/:id?', '/**:slug'],
+    ['/:slug(.*)/edit', '/:slug(.*)/edit'],
+    ['/users/:id(\\d+)', '/users/:id'],
+    ['/users/:id(\\d+)?', '/users/:id'],
+    ['/:locale(de|fr)/account', '/:locale/account'],
+    ['/package-code/:org?/:name()/v/:version()/:filePath(.*)?', '/package-code/:org?/:name/v/:version/:filePath(.*)'],
+  ])('should convert %s to %s', (path, pattern) => {
+    expect(toRou3RoutePatterns([{ path }])).toStrictEqual([pattern])
+  })
+
+  it('should join nested routes onto their parent pattern', () => {
+    const pages: NuxtPage[] = [
+      { path: '/parent', children: [{ path: 'child' }, { path: '' }] },
+      { path: '/:org?', children: [{ path: ':name()', children: [{ path: ':file(.*)?' }] }] },
+      { path: '/:slug(.*)*', children: [{ path: ':id?' }] },
+    ]
+    expect(toRou3RoutePatterns(pages)).toStrictEqual([
+      '/parent',
+      '/parent/child',
+      '/parent',
+      '/:org?',
+      '/:org?/:name',
+      '/:org?/:name/:file(.*)',
+      '/**:slug',
+      '/**:slug/:id?',
+    ])
   })
 })
 
