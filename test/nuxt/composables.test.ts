@@ -1065,6 +1065,15 @@ describe('routing utilities: `resolveRouteObject`', () => {
     onTestFinished(() => { delete routerOptions.stringifyQuery })
     expect(resolveRouteObject({ path: 'https://example.com/test', query: { a: '1', b: '2' } })).toBe('https://example.com/test?a,b')
   })
+  it('resolveRouteObject should only call `parseQuery` from the router options when the path has a query', () => {
+    const parseQuery = vi.fn(() => ({}))
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    routerOptions.parseQuery = parseQuery
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    onTestFinished(() => { delete routerOptions.parseQuery })
+    expect(resolveRouteObject({ path: '/test', query: { a: '1' } })).toBe('/test?a=1')
+    expect(parseQuery).not.toHaveBeenCalled()
+  })
 })
 
 describe('routing utilities: `encodeURL`', () => {

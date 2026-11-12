@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { Fragment, createElementBlock, createElementVNode, createSlots, createTextVNode, openBlock, renderList, resolveComponent, resolveDynamicComponent, shallowReactive, toDisplayString, withCtx } from 'vue'
@@ -9,6 +9,7 @@ import { PatchFlags } from '@vue/shared'
 import { NuxtLink } from '#components'
 import { createNuxtLinkBlock, createNuxtLinkVNode } from '#app/components/nuxt-link'
 import { PageRouteSymbol } from '#app/components/injections'
+import routerOptions from '#build/router.options.mjs'
 
 describe('useLink', () => {
   let router: ReturnType<typeof useRouter>
@@ -480,6 +481,29 @@ describe('custom slot route', () => {
     }))
 
     expect(slotQuery).toEqual(useRouter().resolve('/?flag&empty=').query)
+    el.unmount()
+  })
+
+  it('only calls `parseQuery` from the router options when the link has a query', async () => {
+    const parseQuery = vi.fn(() => ({}))
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    routerOptions.parseQuery = parseQuery
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    onTestFinished(() => { delete routerOptions.parseQuery })
+    let slotQuery: Record<string, unknown> | undefined
+    const el = await mountSuspended(defineComponent({
+      setup () {
+        return () => h(NuxtLink, { to: 'https://example.com/', custom: true }, {
+          default: ({ route }: any) => {
+            slotQuery = route.query
+            return h('span')
+          },
+        })
+      },
+    }))
+
+    expect(slotQuery).toEqual({})
+    expect(parseQuery).not.toHaveBeenCalled()
     el.unmount()
   })
 })

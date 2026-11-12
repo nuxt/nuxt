@@ -646,7 +646,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             return {
               path: url.pathname,
               fullPath: url.pathname,
-              get query () { return parseQuery(url.search) },
+              get query () { return url.search ? parseQuery(url.search) : {} },
               hash: url.hash,
               params: {},
               name: undefined,
