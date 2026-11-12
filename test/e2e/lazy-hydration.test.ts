@@ -22,6 +22,17 @@ test.describe('lazy hydration styles', () => {
     }
   })
 
+  test('should not emit resource hints for the JS chunk of a hydrate-never component', async ({ page, fetch }) => {
+    const html = await fetch('/').then(r => r.text())
+    const head = html.match(/<head[^>]*>[\s\S]*?<\/head>/)?.[0] ?? ''
+    const scriptHints = [...head.matchAll(/<link[^>]+rel="(?:modulepreload|preload|prefetch)"[^>]+href="([^"]+\.js)"/g)].map(m => m[1]!)
+    expect(scriptHints.length).toBeGreaterThan(0)
+    for (const href of scriptHints) {
+      const js = await page.request.get(href).then(r => r.text())
+      expect(js).not.toContain('hydrate-never-title')
+    }
+  })
+
   // https://github.com/nuxt/nuxt/issues/33339
   test('should render blocking stylesheets for all server-rendered CSS, without duplicate resource hints', async ({ fetch }) => {
     const html = await fetch('/').then(r => r.text())
