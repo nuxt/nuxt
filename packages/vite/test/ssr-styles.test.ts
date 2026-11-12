@@ -6,6 +6,7 @@ import { setTimeout as sleep } from 'node:timers/promises'
 import { afterAll, describe, expect, it } from 'vitest'
 import { getRandomPort } from 'get-port-please'
 import type { Plugin } from 'vite'
+import type { NuxtConfig } from 'nuxt/schema'
 import { join } from 'pathe'
 
 import { buildFixture } from './utils.ts'
@@ -29,7 +30,7 @@ async function writeApp () {
   await writeFile(join(tmpDir, 'app/components/imported.css'), '.imported{border-width:7px}')
 }
 
-async function build () {
+async function build (overrides: NuxtConfig = {}, plugins: Plugin[] = []) {
   const ssrTransforms: string[] = []
   const recorder: Plugin = {
     name: 'record-ssr-transforms',
@@ -40,8 +41,19 @@ async function build () {
     },
   }
 
-  await buildFixture(tmpDir, { ssr: true, features: { inlineStyles: true }, vite: { plugins: [recorder] } })
+  await buildFixture(tmpDir, { ssr: true, features: { inlineStyles: true }, ...overrides, vite: { plugins: [recorder, ...plugins] } })
   return ssrTransforms
+}
+
+function rewireClientEntry (wrapperPath: string): Plugin {
+  return {
+    name: 'test:rewire-client-entry',
+    configEnvironment (name) {
+      if (name === 'client') {
+        return { build: { rolldownOptions: { input: { entry: wrapperPath } } } }
+      }
+    },
+  }
 }
 
 async function render () {
@@ -82,5 +94,23 @@ describe('ssr styles', () => {
     }
     expect(html).not.toMatch(/<link[^>]+rel="stylesheet"/)
     expect(html).toMatch(/<p class="[^"]*_moduleClass_/)
+  }, 240 * 1000)
+
+  it.each([false, true])('inlines global CSS when a module rewires the client entry (asyncEntry: %s)', async (asyncEntry) => {
+    await rm(tmpDir, { recursive: true, force: true })
+    await mkdir(join(tmpDir, 'app'), { recursive: true })
+    await mkdir(join(tmpDir, 'app/assets'), { recursive: true })
+    await writeFile(join(tmpDir, 'app/app.vue'), '<template><div class="rewired">app</div></template>')
+    await writeFile(join(tmpDir, 'app/assets/main.css'), '.rewired{color:#abcdef}')
+    await writeFile(join(tmpDir, 'app/entry-wrapper.mjs'), 'import \'#app/entry\'')
+
+    await build(
+      { experimental: { asyncEntry }, css: ['~/assets/main.css'] },
+      [rewireClientEntry(join(tmpDir, 'app/entry-wrapper.mjs'))],
+    )
+
+    const html = await render()
+    const inlined = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('\n')
+    expect(inlined).toContain('.rewired{color:#abcdef}')
   }, 240 * 1000)
 })
