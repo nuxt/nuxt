@@ -269,6 +269,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('ships nothing when disabled', () => {
     expect(disabled.match(/location\.assign/g)).toHaveLength(1)
   })
+
+  it('does not ship `defineAsyncComponent` with the default error page', () => {
+    expect(enabled).not.toContain('Async component timed out')
+  })
 })
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('ssr: false route rules', () => {
