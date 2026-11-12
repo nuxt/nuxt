@@ -2,52 +2,28 @@ import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { createIsIgnored, setBuildOutput } from '@nuxt/kit'
-import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { buildDiagnostics, restoreClientBuildState, saveClientBuildState, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt, NuxtBuildOutputs, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
-import { dirname, join, relative, resolve } from 'pathe'
-import { createTar, parseTar } from 'nanotar'
-import type { TarFileInput } from 'nanotar'
+import { basename, dirname, join, relative, resolve } from 'pathe'
+import { packTar, unpackTar } from 'modern-tar'
 import type { Plugin as VitePlugin } from 'vite'
 
 export async function getVueHash (nuxt: Nuxt) {
-  const id = 'vue'
+  const hash = await getVueBuildHash(nuxt)
 
-  const { hash } = await getHashes(nuxt, {
-    id,
-    cwd: layer => layer.config.srcDir || layer.cwd,
-    patterns: (layer) => {
-      const srcDir = layer.config.srcDir || layer.cwd
-      return [
-        '**',
-        `!${relative(srcDir, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
-        `!${relative(srcDir, resolve(layer.cwd, layer.config.dir?.public || 'public'))}/**`,
-        '!node_modules/**',
-        '!nuxt.config.*',
-      ]
-    },
-    configOverrides: {
-      buildId: undefined,
-      serverDir: undefined,
-      nitro: undefined,
-      devServer: undefined,
-      runtimeConfig: undefined,
-      logLevel: undefined,
-      devServerHandlers: undefined,
-      devtools: undefined,
-    },
-  })
-
-  const cacheFile = join(getCacheDir(nuxt), id, hash + '.tar')
+  const cacheFile = join(getCacheDir(nuxt), 'vue', hash + '.tar')
   const buildIdCacheFile = cacheFile.replace('.tar', '.buildid')
   const clientCacheFile = cacheFile.replace('.tar', '.client.tar')
+  const clientStateFile = cacheFile.replace('.tar', '.client.json')
 
   // When Nitro builds as a Vite environment the client bundle is written to
   // `output.publicDir`, outside `buildDir`, so it needs its own cache entry.
   const cachesClientAssets = !useServerBuild(nuxt).buildsSeparately
   let clientFiles: string[] = []
+  let clientState: Record<string, unknown> | undefined
 
   return {
     hash,
@@ -58,6 +34,7 @@ export async function getVueHash (nuxt: Nuxt) {
       if (cachesClientAssets && clientFiles.length) {
         const publicDir = useServerBuild(nuxt).output.publicDir()
         await writeCache(publicDir, publicDir, clientCacheFile, clientFiles)
+        await writeFile(clientStateFile, JSON.stringify({ version: nuxt._version, state: saveClientBuildState(nuxt) }))
       }
 
       // Cache buildId so it can be restored before modules are initialised on the next build
@@ -69,8 +46,11 @@ export async function getVueHash (nuxt: Nuxt) {
     },
     async restoreCache () {
       const start = Date.now()
-      if (cachesClientAssets && !existsSync(clientCacheFile)) {
-        return false
+      if (cachesClientAssets) {
+        clientState = existsSync(clientCacheFile) ? await readClientState(clientStateFile, nuxt._version) : undefined
+        if (!clientState) {
+          return false
+        }
       }
       const res = await restoreCacheFromFile(nuxt.options.buildDir, cacheFile)
       const elapsed = Date.now() - start
@@ -95,8 +75,10 @@ export async function getVueHash (nuxt: Nuxt) {
         },
         // Nitro still needs to build on a cache hit, to prerender and to emit
         // `.output/server`. Its orchestrator skips any environment reporting
-        // `isBuilt`, so flagging the client environment leaves the ssr and
-        // nitro environments to build as usual.
+        // `isBuilt`, so flagging the client environment leaves the nitro
+        // environment to build as usual. The ssr environment reads inputs the
+        // cache key does not cover, so the server builder decides whether its
+        // restored output can be reused.
         //
         // Restoring here rather than before the build starts is deliberate:
         // nitro empties `output.publicDir` from its own `buildApp` hook, which
@@ -105,10 +87,14 @@ export async function getVueHash (nuxt: Nuxt) {
           ? {
               async buildApp (builder) {
                 await restoreCacheFromFile(useServerBuild(nuxt).output.publicDir(), clientCacheFile)
-                await restoreBuildOutputs(nuxt, CLIENT_BUILD_OUTPUT_KEYS)
+                restoreClientBuildState(clientState!, nuxt)
                 const client = builder.environments.client
                 if (client) {
                   client.isBuilt = true
+                }
+                const ssr = builder.environments.ssr
+                if (ssr && !ssr.isBuilt && await useServerBuild(nuxt).canReuseSsrBuild?.(ssr)) {
+                  ssr.isBuilt = true
                 }
               },
             }
@@ -119,6 +105,7 @@ export async function getVueHash (nuxt: Nuxt) {
 }
 
 const BUILD_OUTPUTS_FILE = 'build-outputs.json'
+const CACHE_FORMAT_VERSION = 2
 
 /**
  * The bundler is skipped entirely on a cache hit, so the `nuxt/*` build outputs
@@ -133,24 +120,15 @@ async function persistBuildOutputs (nuxt: Nuxt) {
   await writeFile(resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE), JSON.stringify(outputs), 'utf8')
 }
 
-async function restoreBuildOutputs (nuxt: Nuxt, keys?: ReadonlyArray<keyof NuxtBuildOutputs>) {
+async function restoreBuildOutputs (nuxt: Nuxt) {
   const file = resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE)
   if (!existsSync(file)) { return }
   const outputs = JSON.parse(await readFile(file, 'utf8')) as Record<keyof NuxtBuildOutputs, string>
   for (const key of Object.keys(outputs) as Array<keyof NuxtBuildOutputs>) {
-    if (keys && !keys.includes(key)) { continue }
     const code = outputs[key]
     setBuildOutput(key, () => code, nuxt)
   }
 }
-
-/**
- * Outputs the client build is the sole source of. Their providers are
- * registered when the client environment's plugins are created, which happens
- * after the cache is restored, so they have to be replayed once the build has
- * started or the stub values would win.
- */
-const CLIENT_BUILD_OUTPUT_KEYS = ['clientManifest', 'clientPrecomputed', 'entryChunkName'] as const
 
 /**
  * Restore cached buildId before modules are initialised.
@@ -161,9 +139,7 @@ const CLIENT_BUILD_OUTPUT_KEYS = ['clientManifest', 'clientPrecomputed', 'entryC
  * consumers use the same buildId that was used when the Vue build was cached.
  */
 export async function restoreCachedBuildId (nuxt: Nuxt) {
-  const { hash } = await getVueHash(nuxt)
-  const cacheDir = getCacheDir(nuxt)
-  const buildIdCacheFile = join(cacheDir, 'vue', hash + '.buildid')
+  const buildIdCacheFile = join(getCacheDir(nuxt), 'vue', await getVueBuildHash(nuxt) + '.buildid')
 
   if (!existsSync(buildIdCacheFile)) {
     return
@@ -181,42 +157,77 @@ export async function restoreCachedBuildId (nuxt: Nuxt) {
 
 export async function cleanupCaches (nuxt: Nuxt) {
   const start = Date.now()
-  const caches = await glob(['*/*.tar', '*/*.buildid'], {
+  const caches = await glob(['*/*.tar', '*/*.client.json', '*/*.buildid'], {
     cwd: getCacheDir(nuxt),
     absolute: true,
   })
-  if (caches.length >= 10) {
-    const cachesWithMeta = await Promise.all(caches.map(async (cache) => {
-      return [cache, await stat(cache).then(r => r.mtime.getTime()).catch(() => 0)] as const
-    }))
-    cachesWithMeta.sort((a, b) => a[1] - b[1])
-    for (const [cache] of cachesWithMeta.slice(0, cachesWithMeta.length - 10)) {
-      await unlink(cache)
+  const entries = new Map<string, { files: string[], mtime: number }>()
+  for (const cache of caches) {
+    const name = basename(cache)
+    const key = join(dirname(cache), name.slice(0, name.indexOf('.')))
+    const mtime = await stat(cache).then(r => r.mtime.getTime()).catch(() => 0)
+    const entry = entries.get(key) ?? { files: [], mtime: 0 }
+    entry.files.push(cache)
+    entry.mtime = Math.max(entry.mtime, mtime)
+    entries.set(key, entry)
+  }
+  if (entries.size > 10) {
+    const sorted = [...entries.values()].sort((a, b) => a.mtime - b.mtime)
+    for (const { files } of sorted.slice(0, sorted.length - 10)) {
+      for (const file of files) {
+        await unlink(file)
+      }
     }
     const elapsed = Date.now() - start
     consola.success(`Cleaned up old build caches in \`${elapsed}ms\`.`)
   }
 }
 
-// internal
-
 type HashSource = { name: string, data: any }
-type Hashes = { hash: string, sources: HashSource[] }
 
-interface GetHashOptions {
-  id: string
-  cwd: (layer: NuxtConfigLayer) => string
-  patterns: (layer: NuxtConfigLayer) => string[]
-  configOverrides: Partial<Record<keyof NuxtConfig, unknown>>
+/** Config that does not affect the Vue build */
+const ignoredConfig: Partial<Record<keyof NuxtConfig, undefined>> = {
+  buildId: undefined,
+  serverDir: undefined,
+  nitro: undefined,
+  devServer: undefined,
+  runtimeConfig: undefined,
+  logLevel: undefined,
+  devServerHandlers: undefined,
+  devtools: undefined,
 }
 
-async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> {
-  if ((nuxt as any)[`_${options.id}BuildHash`]) {
-    return (nuxt as any)[`_${options.id}BuildHash`]
+function getLayerSourceDirs (layer: NuxtConfigLayer) {
+  const srcDir = layer.config.srcDir || layer.cwd
+  // `shared/` is resolved from the layer root, so it is outside `srcDir` when using an `app/` directory
+  const sharedDir = resolve(layer.config.rootDir || layer.cwd, layer.config.dir?.shared || 'shared')
+  return relative(srcDir, sharedDir).startsWith('../') ? [srcDir, sharedDir] : srcDir
+}
+
+function getLayerSourcePatterns (layer: NuxtConfigLayer) {
+  const srcDir = layer.config.srcDir || layer.cwd
+  return [
+    '**',
+    `!${relative(srcDir, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
+    `!${relative(srcDir, resolve(layer.cwd, layer.config.dir?.public || 'public'))}/**`,
+    '!node_modules/**',
+    '!nuxt.config.*',
+  ]
+}
+
+const vueBuildHashes = new WeakMap<Nuxt, string>()
+
+async function getVueBuildHash (nuxt: Nuxt): Promise<string> {
+  const cached = vueBuildHashes.get(nuxt)
+  if (cached) {
+    return cached
   }
 
   const start = Date.now()
   const hashSources: HashSource[] = []
+
+  // include in the build hash so a cache format change misses older caches
+  hashSources.push({ name: 'cache-format', data: CACHE_FORMAT_VERSION })
 
   // Layers
   let layerCtr = 0
@@ -226,10 +237,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
     const layerName = `layer#${layerCtr++}`
     hashSources.push({
       name: `${layerName}:config`,
-      data: serialize({
-        ...layer.config,
-        ...options.configOverrides || {},
-      }),
+      data: serialize({ ...layer.config, ...ignoredConfig }),
     })
 
     const normalizeFiles = (files: Awaited<ReturnType<typeof readFilesRecursive>>) => files.map(f => ({
@@ -239,10 +247,10 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
     })).sort((a, b) => a.name.localeCompare(b.name))
 
     const isIgnored = createIsIgnored(nuxt)
-    const sourceFiles = await readFilesRecursive(options.cwd(layer), {
+    const sourceFiles = await readFilesRecursive(getLayerSourceDirs(layer), {
       shouldIgnore: isIgnored,
       cwd: nuxt.options.rootDir,
-      patterns: options.patterns(layer),
+      patterns: getLayerSourcePatterns(layer),
     })
 
     hashSources.push({
@@ -274,18 +282,17 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
 
   hashSources.sort((a, b) => a.name.localeCompare(b.name))
 
-  const res = ((nuxt as any)[`_${options.id}BuildHash`] = {
-    hash: hash(hashSources),
-    sources: hashSources,
-  })
+  const res = hash(hashSources)
+  vueBuildHashes.set(nuxt, res)
 
-  const elapsed = Date.now() - start
-  consola.debug(`Computed \`${options.id}\` build hash in \`${elapsed}ms\`.`)
+  consola.debug(`Computed \`vue\` build hash in \`${Date.now() - start}ms\`.`)
 
   return res
 }
 
-type FileWithMeta = TarFileInput & {
+type FileWithMeta = {
+  name: string
+  data: Uint8Array
   attrs: {
     mtime: number
     size: number
@@ -358,21 +365,32 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
   }
 }
 
+async function readClientState (file: string, version: string): Promise<Record<string, unknown> | undefined> {
+  try {
+    const { version: savedVersion, state } = JSON.parse(await readFile(file, 'utf8')) ?? {}
+    if (savedVersion !== version) { return }
+    return state && typeof state === 'object' && !Array.isArray(state) ? state : undefined
+  } catch {
+    return undefined
+  }
+}
+
 async function restoreCacheFromFile (cwd: string, cacheFile: string) {
   if (!existsSync(cacheFile)) {
     return false
   }
 
   const resolvedCwd = resolve(cwd) + '/'
-  const files = parseTar(await readFile(cacheFile))
+  const files = await unpackTar(await readFile(cacheFile))
   for (const file of files) {
+    const name = file.header.name
     let fd: FileHandle | undefined = undefined
     try {
-      const filePath = resolve(cwd, file.name)
+      const filePath = resolve(cwd, name)
 
       // Prevent path traversal attacks
       if (!filePath.startsWith(resolvedCwd)) {
-        buildDiagnostics.NUXT_B1012({ path: file.name })
+        buildDiagnostics.NUXT_B1012({ path: name })
         continue
       }
 
@@ -382,9 +400,9 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       const existingStats = await stat(filePath).catch(() => null)
       const cachedSize = file.data?.byteLength ?? 0
       if (existingStats?.isFile() && existingStats.size === cachedSize) {
-        const lastModified = Number.parseInt(file.attrs?.mtime?.toString().padEnd(13, '0') || '0')
+        const lastModified = file.header.mtime?.getTime() ?? 0
         if (existingStats.mtime.getTime() >= lastModified) {
-          consola.debug(`Skipping \`${file.name}\` (up to date or newer than cache)`)
+          consola.debug(`Skipping \`${name}\` (up to date or newer than cache)`)
           continue
         }
       }
@@ -392,7 +410,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       fd = await open(filePath, 'w')
       await fd.writeFile(file.data!)
     } catch (err) {
-      buildDiagnostics.NUXT_B1013({ file: file.name, cause: err })
+      buildDiagnostics.NUXT_B1013({ file: name, cause: err })
     } finally {
       await fd?.close()
     }
@@ -405,7 +423,14 @@ async function writeCache (cwd: string, sources: string | string[], cacheFile: s
     patterns,
     cwd,
   })
-  const tarData = createTar(fileEntries)
+  const tarData = await packTar(fileEntries.map(({ name, data, attrs }) => ({
+    header: {
+      name,
+      size: data.byteLength,
+      mtime: new Date(attrs.mtime),
+    },
+    body: data,
+  })))
   await mkdir(dirname(cacheFile), { recursive: true })
   await writeFile(cacheFile, tarData)
 }

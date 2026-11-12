@@ -17,12 +17,14 @@ describe('inline error rendering', () => {
     expect(html).toContain('http://localhost/throws')
   })
 
-  it('answers a bare throw from the app with a 500 carrying its message', async () => {
+  it('answers a bare throw from the app with a 500 hiding its message', async () => {
     const { response, html } = await render('/unhandled')
 
     expect(response.status).toBe(500)
+    expect(response.statusText).toBe('Internal Server Error')
     expect(html).toContain('<h1>500</h1>')
-    expect(html).toContain('<p id="error-message">an unhandled failure</p>')
+    expect(html).toContain('<p id="error-message">Internal Server Error</p>')
+    expect(html).not.toContain('an unhandled failure')
   })
 
   // an `ofetch` failure against an internal service, and the same error once h3 has wrapped it

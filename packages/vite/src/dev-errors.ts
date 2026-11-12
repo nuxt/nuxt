@@ -2,9 +2,10 @@ import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import type { ErrorReport } from 'my-bad'
 import type { BuildProgress } from 'my-bad/channel'
+import { isFileLoadingAllowed } from 'vite'
 import type { NormalizedHotChannelClient, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { joinURL } from 'ufo'
-import { ERROR_CHANNEL_ENV, openErrorBroadcast } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, createReportFsLoader, openErrorBroadcast, stripControlCharacters } from 'nuxt/internal/dev-error'
 
 /** The shape Vite gives transform failures. */
 export interface ViteTransformError {
@@ -122,8 +123,13 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       publishedFile = undefined
       file = (error.loc?.file ?? error.id)?.split('?')[0]
       try {
-        const [{ createReport, renderAnsi }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/presets')])
-        const report = await createReport(error, { cwd: nuxt.options.rootDir, kind: 'compile', presets: [nuxtPreset()] })
+        const config = server?.config
+        const [{ createReport, renderAnsi }, { nuxtPreset }, fs] = await Promise.all([
+          import('my-bad'),
+          import('my-bad/presets'),
+          createReportFsLoader({ cwd: nuxt.options.rootDir, canRead: config && (file => isFileLoadingAllowed(config, file)) }),
+        ])
+        const report = await createReport(error, { cwd: nuxt.options.rootDir, kind: 'compile', loaders: [fs], presets: [nuxtPreset()] })
         current = report
         broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
         showOverlay(report)
@@ -132,7 +138,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }
         return report
       } catch {
-        options.print(error.stack || error.message)
+        options.print(stripControlCharacters(String(error.stack || error.message)))
         return undefined
       }
     },
@@ -185,10 +191,14 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }) as typeof environment.hot.send
       }
       const hot = devServer.environments.client?.hot
-      hot?.on?.('nuxt:dev:client-error', (data: ClientRuntimeError, client) => {
-        reportRuntimeError(data, client).catch(() => {})
+      hot?.on?.('nuxt:dev:client-error', (data: unknown, client) => {
+        const error = toClientRuntimeError(data)
+        if (error) {
+          reportRuntimeError(error, client).catch(() => {})
+        }
       })
-      hot?.on?.('nuxt:dev:error:shown', ({ since }: { since?: number }, client) => {
+      hot?.on?.('nuxt:dev:error:shown', (data: unknown, client) => {
+        const since = (data as { since?: unknown } | null)?.since
         if (typeof since === 'number' && since < clearedAt) {
           client.send({ type: 'custom', event: 'nuxt:dev:error:clear' })
         }
@@ -235,8 +245,9 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       })
       const report = await createReport(input, {
         cwd: nuxt.options.rootDir,
-        // the stack is client-controlled, so no filesystem loader: only the module graph
-        loaders: [viteLoader(server)],
+        // the message and stack are client-controlled: no compile detection, no filesystem reads, only the module graph
+        kind: 'error',
+        loaders: [viteLoader(server, { fs: false })],
         presets: [nuxtPreset()],
       })
       current = report
@@ -246,7 +257,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
       }
     } catch {
-      options.print(error.stack || error.message)
+      options.print(stripControlCharacters(error.stack || error.message))
     }
   }
 
@@ -292,6 +303,23 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       }
       return undefined
     }
+  }
+}
+
+/** The fields of a browser runtime error that have the expected types, as sent over the HMR channel. */
+function toClientRuntimeError (data: unknown): ClientRuntimeError | undefined {
+  if (typeof data !== 'object' || data === null) {
+    return undefined
+  }
+  const { name, message, stack, fatal } = data as Record<string, unknown>
+  if (typeof message !== 'string') {
+    return undefined
+  }
+  return {
+    message,
+    ...typeof name === 'string' && { name },
+    ...typeof stack === 'string' && { stack },
+    ...typeof fatal === 'boolean' && { fatal },
   }
 }
 

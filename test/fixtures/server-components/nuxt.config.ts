@@ -9,6 +9,9 @@ export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   // islands v2 only knows `v-load-client`, so it builds from a rewritten copy of `app/`
   ...(islandsV2 && !isNuxtPrepare ? { srcDir: prepareIslandsV2App(rootDir, `app-islands-v2-${projectSuffix}`) } : {}),
+  routeRules: {
+    '/redirected-server-page': { redirect: '/server-page' },
+  },
   experimental: {
     componentIslands: islandsV2 ? 'v2' : { selectiveClient: 'deep' },
     runtimeBaseURL: true,
@@ -16,7 +19,6 @@ export default withMatrix({
   nitro: {
     prerender: {
       routes: [
-        '/prefetch/server-components',
         '/prerender/island-a',
         '/prerender/island-b',
       ],

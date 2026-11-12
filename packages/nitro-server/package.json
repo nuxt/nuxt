@@ -67,11 +67,11 @@
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
+    "unenv": "catalog:build",
     "unimport": "catalog:build",
     "unplugin": "catalog:build",
     "unrouting": "catalog:build",
     "unstorage": "catalog:nitro-runtime",
-    "vue": "catalog:app-runtime",
     "vue-bundle-renderer": "catalog:app-runtime",
     "vue-devtools-stub": "catalog:vue"
   },
@@ -79,7 +79,8 @@
     "@babel/plugin-proposal-decorators": "^7.25.0 || ^8.0.0",
     "@babel/plugin-syntax-typescript": "^7.25.0 || ^8.0.0",
     "@rollup/plugin-babel": "^6.0.0 || ^7.0.0",
-    "nuxt": "workspace:^"
+    "nuxt": "workspace:^",
+    "vue": "^3.5.45"
   },
   "peerDependenciesMeta": {
     "@babel/plugin-proposal-decorators": {
@@ -101,10 +102,11 @@
     "hookable": "catalog:app-runtime",
     "nuxt": "workspace:*",
     "tsdown": "catalog:dev",
-    "vitest": "catalog:dev"
+    "vitest": "catalog:dev",
+    "vue": "catalog:app-runtime"
   },
   "engines": {
-    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.22.0 || ^24.11.0 || >=26.0.0"
   },
   "publishConfig": {
     "exports": {

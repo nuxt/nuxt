@@ -11,12 +11,24 @@ if (path.startsWith('/rich-data')) {
 if (path.startsWith('/unhandled')) {
   throw new Error('an unhandled failure')
 }
+if (path.startsWith('/prefetch-links')) {
+  useNuxtApp().hook('app:rendered', ({ ssrContext }) => {
+    ssrContext!.payload.prefetchLinks = [{ rel: 'preload', as: 'script', href: '/next-page.js' }]
+  })
+}
+if (path.startsWith('/rewritten')) {
+  useNuxtApp().hook('app:rendered', ({ renderResult }) => {
+    renderResult!.html = renderResult!.html.replace('rendered without nitro', 'rewritten after render')
+  })
+}
 
 useHead({
   title: 'Standalone renderer',
 })
 
 const { data } = await useAsyncData('greeting', () => Promise.resolve('rendered without nitro'))
+
+const DeferredPanel = defineAsyncComponent(() => import('./components/DeferredPanel.vue'))
 </script>
 
 <template>
@@ -25,5 +37,6 @@ const { data } = await useAsyncData('greeting', () => Promise.resolve('rendered 
     <p id="greeting">
       {{ config.public.greeting }}
     </p>
+    <DeferredPanel v-if="path.startsWith('/deferred-panel')" />
   </div>
 </template>

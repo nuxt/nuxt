@@ -3,7 +3,8 @@ import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
-import { createNormalizedRouteRulesRouter, normalizePathCode, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
+import { matchAllRouteRules } from '../../nuxt/src/core/utils/index.ts'
+import { createNormalizedRouteRulesRouter, genNormalizePathCode, normalizeRouteRuleLookupPath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
  * The rules this builder resolves for itself: the renderer reads `ssr`, `streaming`,
@@ -21,12 +22,13 @@ const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url })
 export function createRouteRulesMatcher (nuxt: Nuxt): (path: string) => Record<string, any> {
   const fold = !nuxt.options.router.options.sensitive
   const router = createNormalizedRouteRulesRouter(resolveRouteRulesRoutes(nuxt).routes, '', fold)
-  return path => defu({}, ...router.matchAll('', normalizeRouteRulePath(path, fold)).reverse()) as Record<string, any>
+  return path => defu({}, ...matchAllRouteRules(path => router.matchAll('', normalizeRouteRuleLookupPath(path, fold)), path).reverse()) as Record<string, any>
 }
 
 /**
  * Emit the matcher the server bundle resolves rules through, so that a render and the
- * handler in front of it read the same rules the build compiled.
+ * handler in front of it read the same rules the build compiled. A lookup takes the request
+ * method, `GET` by default.
  */
 export function addRouteRulesTemplate (): string {
   const { dst } = addTemplate({
@@ -35,20 +37,36 @@ export function addRouteRulesTemplate (): string {
     getContents: ({ nuxt }) => {
       const fold = !nuxt.options.router.options.sensitive
       const { routes, baseURL } = resolveRouteRulesRoutes(nuxt)
-      const matcher = createNormalizedRouteRulesRouter(routes, baseURL, fold).compileToString({
-        matchAll: true,
-        serialize: rules => `{${Object.entries(rules)
-          .filter(([name, value]) => value !== undefined && SUPPORTED_RULES.has(name))
-          .map(([name, value]) => `${name}: ${JSON.stringify(value)}`)
-          .join(',')}}`,
+      const basePrefix = baseURL.endsWith('/') ? baseURL.slice(0, -1) : baseURL
+      const methods = new Set(routes.map(route => parseRouteRulesRoute(route).method).filter(Boolean))
+      if (methods.has('GET')) {
+        methods.add('HEAD')
+      }
+      const matchers = ['', ...methods].map((method) => {
+        const matcher = createNormalizedRouteRulesRouter(routes, baseURL, fold, undefined, method).compileToString({
+          matchAll: true,
+          serialize: rules => `{${Object.entries(rules)
+            .filter(([name, value]) => value !== undefined && SUPPORTED_RULES.has(name))
+            .map(([name, value]) => `${name}: ${JSON.stringify(name === 'redirect' ? withRedirectBase(value, basePrefix) : value)}`)
+            .join(',')}}`,
+        })
+        return `[${JSON.stringify(method)}, ${matcher}]`
       })
       return [
         `import { defu } from ${JSON.stringify(defuPath)}`,
-        `const matcher = ${matcher}`,
-        normalizePathCode,
-        `export default path => defu({}, ...matcher('', normalizePath(path, ${fold})).map(r => r.data).reverse())`,
+        `const matchers = new Map([${matchers.join(',\n')}])`,
+        genNormalizePathCode(fold),
+        `export default (path, method = 'GET') => {`,
+        `  const matcher = matchers.get(method.toUpperCase()) || matchers.get('')`,
+        `  return defu({}, ...matchAllRouteRules(path => matcher('', normalizePath(path)).map(r => r.data), path).reverse())`,
+        `}`,
       ].join('\n')
     },
   })
   return dst
+}
+
+function withRedirectBase (redirect: unknown, prefix: string): unknown {
+  if (!prefix || !redirect || typeof redirect !== 'object' || typeof (redirect as { base?: unknown }).base !== 'string') { return redirect }
+  return { ...redirect, base: prefix + (redirect as { base: string }).base }
 }

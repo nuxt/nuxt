@@ -18,6 +18,7 @@ import {
 } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
 
+import { getRouteRules } from '../utils/route-rules.ts'
 import { prepareLegacyEvent } from './event.ts'
 import { toLegacyError } from './error-shape.ts'
 import type { H3ErrorInput } from './error-shape.ts'
@@ -117,6 +118,17 @@ export function getRequestWebStream (event: H3Event): ReadableStream | undefined
 
 export const getBodyStream = getRequestWebStream
 
+/** v1 `toWebRequest`, a copy of the request whose body is the buffered body. */
+export function toWebRequest (event: H3Event): Request {
+  const body = getRequestWebStream(event)
+  return new Request(event.req.url, {
+    method: event.req.method,
+    headers: event.req.headers,
+    body,
+    ...body && { duplex: 'half' },
+  } as RequestInit)
+}
+
 export const MIMES = {
   html: 'text/html',
   json: 'application/json',
@@ -208,7 +220,7 @@ export function defineEventHandler (input: ((event: H3Event) => any) | LegacyHan
   return defineHandler({
     ...rest,
     async handler (event: H3Event) {
-      prepareLegacyEvent(event)
+      prepareLegacyEvent(event, getRouteRules)
       try {
         for (const hook of onRequestHooks) {
           await hook(event)

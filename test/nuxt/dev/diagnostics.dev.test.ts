@@ -2,7 +2,7 @@ import { defineComponent, h } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 
-import { navigateTo } from '#app/composables/router'
+import { navigateTo, useRouter } from '#app/composables/router'
 import { preloadComponents } from '#app/composables/preload'
 import { useNuxtApp } from '#app/nuxt'
 import { useAsyncData } from '#app/composables/asyncData'
@@ -104,6 +104,34 @@ describe('useAsyncData diagnostics (dev)', () => {
       new RegExp(`\\[NUXT_E3004\\] Incompatible options detected for "${uniqueKey}-${count}":\n- different handler\n├▶ fix: You can use a different key or move the call to a composable to ensure the options are shared across calls.\n╰▶ sources: .*:\\d+:\\d+`),
     ))
 
+    warn.mockReset()
+  })
+
+  it('warns when called outside setup while a navigation is pending', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const router = useRouter()
+    let release!: () => void
+    const blocked = new Promise<void>((resolve) => { release = resolve })
+    let enter!: () => void
+    const entered = new Promise<void>((resolve) => { enter = resolve })
+    const removeGuard = router.beforeResolve(async (to) => {
+      if (to.query.pendingAsyncData) {
+        enter()
+        await blocked
+      }
+    })
+
+    try {
+      const navigation = router.push('/?pendingAsyncData=1')
+      await entered
+      useAsyncData(uniqueKey, () => Promise.resolve('test'))
+      release()
+      await navigation
+    } finally {
+      removeGuard()
+    }
+
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('[NUXT_E3003]'))
     warn.mockReset()
   })
 })

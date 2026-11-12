@@ -65,6 +65,11 @@ export interface NuxtRendererOptions {
   hooks: () => RendererHooks
   /** Response constructor, so a runtime can provide a faster implementation than the platform's `Response`. */
   createResponse: (body: BodyInit | null, init?: ResponseInit) => Response
+  /**
+   * Response constructor for a rendered document given as ordered chunks, so a runtime can
+   * encode them without concatenating. Without it the document is joined and passed to `createResponse`.
+   */
+  createDocumentResponse?: (chunks: string[], init?: ResponseInit) => Response
   /** Error carrying an HTTP status, thrown for requests the renderer refuses. */
   createError: (init: { status: number, statusText?: string, data?: unknown, headers?: Record<string, string> }) => Error
   /** Send `103 Early Hints`, when the runtime supports them. */

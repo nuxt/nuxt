@@ -9,7 +9,7 @@ import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import { setBuildOutput } from '@nuxt/kit'
-import { bundlerDiagnostics, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
+import { addClientBuildState, bundlerDiagnostics, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
 import { collectGlobalCss, toFsUrl } from '../utils/css.ts'
@@ -27,10 +27,24 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
 
   // captured in-memory from the client env's bundle under env-API
   let rawClientManifest: ViteClientManifest | undefined
+  // `finalizeBuildManifest` edits `rawClientManifest` in place, so the build cache keeps
+  // the manifest as the client build emitted it
+  let rawClientManifestSource: string | undefined
 
   let clientBundleGenerated = false
 
   const envApi = !useServerBuild(nuxt).buildsSeparately
+
+  if (envApi && !nuxt.options.dev) {
+    addClientBuildState<string | undefined>('client-manifest', {
+      save: () => rawClientManifestSource,
+      restore: (source) => {
+        if (!source) { return }
+        rawClientManifest = JSON.parse(source) as ViteClientManifest
+        clientBundleGenerated = true
+      },
+    }, nuxt)
+  }
 
   let finalized: Promise<void> | undefined
   const finalize = () => (finalized ??= finalizeBuildManifest())
@@ -87,7 +101,8 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
         if (!envApi) { return }
         const asset = bundle[manifestFileName]
         if (asset?.type === 'asset') {
-          rawClientManifest = JSON.parse(asset.source.toString()) as ViteClientManifest
+          rawClientManifestSource = asset.source.toString()
+          rawClientManifest = JSON.parse(rawClientManifestSource) as ViteClientManifest
         }
       },
     },

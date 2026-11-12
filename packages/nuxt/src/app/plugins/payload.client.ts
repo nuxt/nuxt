@@ -1,18 +1,20 @@
-import { withoutFragment } from 'ufo'
+import { joinURL, withoutFragment } from 'ufo'
 import type { ResolvableLink } from 'unhead/types'
+import type { RouteLocationNormalized } from 'vue-router'
 
-import { defineNuxtPlugin } from '../nuxt'
+import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
-import { isCachedPayloadRoute, loadPayload } from '../composables/payload'
+import { _loadPayload, isCachedPayloadRoute, isOutdatedPayload } from '../composables/payload'
+import { reloadNuxtApp } from '../composables/chunk'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
-import { getAppManifest } from '../composables/manifest'
 import { injectHead } from '../composables/head'
 import { stateDiagnostics } from '../diagnostics/state'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
-import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
+import { prefetchGroup } from '../internal/prefetch-util'
+import { documentURL } from '../internal/location'
 
-import { appManifest as isAppManifestEnabled, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
+import { payloadExtraction, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
 interface ActiveHeadEntryLike { dispose: () => void }
 
@@ -45,7 +47,7 @@ function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): S
   for (const link of prefetchLinks) {
     if (selected.length >= MAX_HINTS_PER_ROUTE) { break }
     if (typeof link.href !== 'string') { continue }
-    const href = new URL(link.href, window.location.href).href
+    const href = new URL(link.href, document.baseURI).href
     if (existingHrefs.has(href) || forwardedHintHrefs.has(href)) { continue }
     forwardedHintHrefs.add(href)
     if (link.as === 'image') {
@@ -67,10 +69,16 @@ function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): S
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:payload',
   setup (nuxtApp) {
+    if (!payloadExtraction) { return }
+
     // Load payload after middleware & once final route is resolved
     const staticKeysToRemove = new Set<string>()
     const router = useRouter()
+    const config = useRuntimeConfig()
     const { schedule } = usePrefetchScheduler(nuxtApp)
+    let outdatedBuildDetected = false
+    let pendingNavigation: RouteLocationNormalized | undefined
+    router.beforeEach((to) => { pendingNavigation = to })
     if (prefetchPreloadTags) {
       // Drop forwarded resource hints so they don't linger indefinitely.
       router.afterEach(() => {
@@ -85,8 +93,13 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       const toURL = queryAware ? withoutFragment(to.fullPath) : to.path
       const fromURL = queryAware ? withoutFragment(from.fullPath) : from.path
       if (toURL === fromURL) { return }
-      const payload = await loadPayload(toURL)
+      const payload = await _loadPayload(toURL)
       if (!payload) { return }
+      if (isOutdatedPayload(payload)) {
+        if (pendingNavigation !== to) { return }
+        reloadNuxtApp({ path: joinURL(config.app.baseURL, to.fullPath), persistState: true })
+        return
+      }
       if (purgeCachedData) {
         for (const key of staticKeysToRemove) {
           delete nuxtApp.static.data[key]
@@ -131,8 +144,8 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     nuxtApp.hooks.hook('link:prefetch', (url) => {
       onNuxtReady(() => {
-        const { hostname } = new URL(url, window.location.href)
-        if (hostname !== window.location.hostname) { return }
+        const documentLocation = documentURL()
+        if (new URL(url, documentLocation).hostname !== documentLocation.hostname) { return }
         const group = prefetchGroup(url)
         schedule({
           key: `payload:${url}`,
@@ -142,9 +155,16 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           run: async (signal, promoted) => {
             if (signal.aborted) { return }
             // TODO: use preloadPayload instead once we can support preloading islands too
-            const payload = await loadPayload(url, { signal, promoted }).catch(() => {
+            const payload = await _loadPayload(url, { signal, promoted }).catch(() => {
               stateDiagnostics.NUXT_E7003({ url })
             })
+            if (payload && isOutdatedPayload(payload)) {
+              if (!outdatedBuildDetected) {
+                outdatedBuildDetected = true
+                nuxtApp.callHook('app:manifest:update')
+              }
+              return
+            }
             // a retained payload resolves onto its own route, which renders these hints itself
             if (signal.aborted || !head || !payload?.prefetchLinks?.length || group === prefetchGroup(router.currentRoute.value.fullPath)) { return }
             schedule(selectHints(payload.prefetchLinks).map(({ href, link }) => ({
@@ -157,12 +177,6 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           },
         })
       })
-    })
-
-    onNuxtReady(() => {
-      if (isAppManifestEnabled && canPrefetch()) {
-        setTimeout(getAppManifest, 1000)
-      }
     })
   },
 })

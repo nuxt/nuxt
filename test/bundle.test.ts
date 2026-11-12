@@ -22,8 +22,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"110k"`)
-    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"41.0k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"112k"`)
+    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"41.6k"`)
 
     const entry = await fsp.readFile(join(rootDir, '.output/public', clientStats!.files.find(f => f.startsWith('_nuxt/entry'))!), 'utf8')
     expect(entry).not.toContain('[ofetch] global.fetch is not supported')
@@ -40,7 +40,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('does not ship payload revival machinery in a spa build', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(spaRootDir, '.output/public'), spaRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"105k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"106k"`)
 
     const contents = await Promise.all(
       (await glob(['**/*.js'], { cwd: join(spaRootDir, '.output/public') }))
@@ -52,10 +52,21 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(bundle).not.toContain('EmptyShallowRef')
   })
 
+  it('does not ship the app in the server bundle of a spa build', async () => {
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(spaRootDir, '.output/server') }))
+        .map(file => fsp.readFile(join(spaRootDir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    const client = await readClientBundle(join(spaRootDir, '.output/public'))
+
+    expect(server).not.toContain('Hello World!')
+    expect(client).toContain('Hello World!')
+  })
+
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"188k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"186k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -66,31 +77,38 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "_nuxt/default.js",
         "_nuxt/entry.js",
         "_nuxt/pages.js",
-        "_nuxt/runtime-core.js",
         "_nuxt/server-component.js",
       ]
     `)
+  })
+
+  it('does not ship payload prefetch machinery when payload extraction is disabled', async () => {
+    const client = await readClientBundle(join(pagesRootDir, '.output/public'))
+
+    expect(client).not.toContain('NUXT_E7003')
   })
 
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"281k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"220k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
-        "_vue/server-renderer+[...]",
         "devalue",
+        "h3",
         "h3+rou3+srvx",
+        "h32",
         "hookable",
-        "scule",
         "ufo",
         "vue",
-        "vue__reactivity+vue__shared",
+        "vue__reactivity",
         "vue__runtime-core",
         "vue__runtime-dom",
+        "vue__server-renderer",
+        "vue__shared",
       ]
     `)
   })
@@ -99,22 +117,25 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"339k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"289k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
       [
-        "_vue/server-renderer+[...]",
+        "defu",
         "devalue",
+        "h3",
         "h3+rou3+srvx",
+        "h32",
         "hookable",
-        "scule",
         "ufo",
         "vue",
         "vue-router",
-        "vue__reactivity+vue__shared",
+        "vue__reactivity",
         "vue__runtime-core",
         "vue__runtime-dom",
+        "vue__server-renderer",
+        "vue__shared",
       ]
     `)
   })
@@ -172,17 +193,16 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('server path fallback', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/server-path-fallback', import.meta.url))
-  const disabledRootDir = fileURLToPath(new URL('./fixtures/server-path-fallback-disabled', import.meta.url))
   let enabled: string
   let disabled: string
 
   beforeAll(async () => {
     await Promise.all([
       exec('pnpm', ['nuxt', 'build', rootDir]),
-      exec('pnpm', ['nuxt', 'build', disabledRootDir]),
+      exec('pnpm', ['nuxt', 'build', rootDir, '--envName', 'fallback-disabled']),
     ])
     enabled = await readClientBundle(join(rootDir, '.output/public'))
-    disabled = await readClientBundle(join(disabledRootDir, '.output/public'))
+    disabled = await readClientBundle(join(rootDir, '.output-fallback-disabled/public'))
   }, 240 * 1000)
 
   it('ships the fallback when enabled', () => {
@@ -192,6 +212,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   it('ships nothing when disabled', () => {
     expect(disabled.match(/location\.assign/g)).toHaveLength(1)
+  })
+
+  it('does not ship `defineAsyncComponent` with the default error page', () => {
+    expect(enabled).not.toContain('Async component timed out')
   })
 })
 

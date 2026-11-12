@@ -16,6 +16,8 @@ export interface DevErrorContext {
   cwd: string
   /** Base path the live channel is reachable at. */
   channel: string
+  /** Whether a report may quote a file from disk, given its real path. */
+  canRead?: (file: string) => boolean
 }
 
 let context: DevErrorContext | undefined
@@ -127,6 +129,7 @@ async function buildReport (error: unknown, request?: Request): Promise<ErrorRep
     cwd: context!.cwd,
     // sources are read by the filesystem loader the report adds after this one
     loaders: [viteLoader(ssrOnly(context!.server), { fs: false })],
+    canRead: context!.canRead,
     context: { request },
   })
 }

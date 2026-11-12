@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { x } from 'tinyexec'
 import { describe, expect, it } from 'vitest'
 import { runsOnceInMatrix } from './matrix'
+import { fixturePath } from './utils'
 
-const rootDir = fileURLToPath(new URL('./fixtures/basic-types', import.meta.url))
+const rootDir = fixturePath('basic-types')
 
 /**
  * Structural checks on the raw generated typed-router.d.ts. Behavioural coverage
@@ -16,55 +16,30 @@ const rootDir = fileURLToPath(new URL('./fixtures/basic-types', import.meta.url)
  * `_RouteFileInfoMap` keys are invisible to any in-SFC assertion.
  */
 describe.skipIf(!runsOnceInMatrix)('typed router integration', () => {
-  const readTypedRouterDts = () => readFileSync(resolve(rootDir, '.nuxt/types/typed-router.d.ts'), 'utf8')
-
-  it('does not duplicate params when a route overrides its path with an absolute path', async () => {
-    const r = await x('nuxt', ['prepare', rootDir])
-    expect(r.exitCode, r.stderr).toBe(0)
-    const typedRouterDts = readTypedRouterDts()
-    // Check for the route definition (accommodates both single-line and multi-line formatting)
-    expect(typedRouterDts).toMatch(/'param-id-view-custom':\s*RouteRecordInfo<\s*'param-id-view-custom',\s*'\/param\/:id\(\)\/view-custom',\s*\{\s*id:\s*ParamValue<true>\s*\},\s*\{\s*id:\s*ParamValue<false>\s*\}/)
-    // Ensure params are not duplicated
-    expect(typedRouterDts).not.toMatch(/\{\s*id:\s*ParamValue<\w+>,\s*id:\s*ParamValue<\w+>\s*\}/)
-  })
+  const readTypes = (file: string) => readFileSync(resolve(rootDir, '.nuxt/types', file), 'utf8')
 
   // The keys in `_RouteFileInfoMap` are consumed by the `sfc-typed-router` Volar
-  // plugin, which resolves each SFC via `relative(rootDir, file)`. If they are
-  // generated relative to `process.cwd()` instead, they only match when
-  // `process.cwd() === rootDir`; otherwise `useRoute()` in a page silently falls
-  // back to `keyof RouteNamedMap`.
-  describe('generates _RouteFileInfoMap keys relative to rootDir, not process.cwd()', () => {
-    it('when prepared from a different cwd (nuxt prepare <rootDir>)', async () => {
-      const r = await x('nuxt', ['prepare', rootDir])
-      expect(r.exitCode, r.stderr).toBe(0)
-      const dts = readTypedRouterDts()
-      // rootDir-relative key present
-      expect(dts).toMatch(/'app\/pages\/page\.vue':/)
-      // never cwd-relative (the regression prefixed keys with the fixture path)
-      expect(dts).not.toMatch(/'[^']*fixtures\/basic-types\/[^']*\.vue':/)
-      // never absolute
-      expect(dts).not.toMatch(/'\/[^']*\.vue':/)
-    })
-
-    it('when prepared with cwd === rootDir', async () => {
-      const r = await x('nuxt', ['prepare'], { nodeOptions: { cwd: rootDir } })
-      expect(r.exitCode, r.stderr).toBe(0)
-      const dts = readTypedRouterDts()
-      expect(dts).toMatch(/'app\/pages\/page\.vue':/)
-      expect(dts).not.toMatch(/'[^']*fixtures\/basic-types\/[^']*\.vue':/)
-      expect(dts).not.toMatch(/'\/[^']*\.vue':/)
-    })
-  })
-
-  // `vue-component-type-helpers` is a dependency of `nuxt`, so a bare specifier is not resolvable
-  // from a project that does not depend on it directly. An absolute path resolves but ties the
-  // generated declaration to the machine that produced it.
-  it('imports ComponentProps in layouts.d.ts via a path relative to the build dir', async () => {
-    const r = await x('nuxt', ['prepare', rootDir])
+  // plugin, which resolves each SFC via `relative(rootDir, file)`, so they have to
+  // be relative to `rootDir` wherever `nuxt prepare` runs from.
+  it.each([
+    ['from a different cwd (nuxt prepare <rootDir>)', ['prepare', rootDir], undefined],
+    ['with cwd === rootDir', ['prepare'], rootDir],
+  ])('generates types when prepared %s', async (_, args, cwd) => {
+    const r = await x('nuxt', args, { nodeOptions: { cwd } })
     expect(r.exitCode, r.stderr).toBe(0)
-    const dts = readFileSync(resolve(rootDir, '.nuxt/types/layouts.d.ts'), 'utf8')
-    const importPath = dts.match(/import type \{ ComponentProps \} from "([^"]+)"/)?.[1]
-    expect(importPath).toBeDefined()
-    expect(importPath).toMatch(/^\.\.\/.*\/vue-component-type-helpers\//)
+
+    const typedRouterDts = readTypes('typed-router.d.ts')
+    expect(typedRouterDts).toMatch(/'app\/pages\/page\.vue':/)
+    expect(typedRouterDts).not.toMatch(/'[^']*fixtures\/basic-types\/[^']*\.vue':/)
+    expect(typedRouterDts).not.toMatch(/'\/[^']*\.vue':/)
+
+    // a route that overrides its path with an absolute path keeps a single `id` param
+    expect(typedRouterDts).toMatch(/'param-id-view-custom':\s*RouteRecordInfo<\s*'param-id-view-custom',\s*'\/param\/:id\(\)\/view-custom',\s*\{\s*id:\s*ParamValue<true>\s*\},\s*\{\s*id:\s*ParamValue<false>\s*\}/)
+    expect(typedRouterDts).not.toMatch(/\{\s*id:\s*ParamValue<\w+>,\s*id:\s*ParamValue<\w+>\s*\}/)
+
+    // `vue-component-type-helpers` is a dependency of `nuxt`, so a bare specifier is not resolvable
+    // from a project that does not depend on it directly, and an absolute path ties the
+    // declaration to the machine that produced it
+    expect(readTypes('layouts.d.ts').match(/import type \{ ComponentProps \} from "([^"]+)"/)?.[1]).toMatch(/^\.\.\/.*\/vue-component-type-helpers\//)
   })
 })

@@ -1,7 +1,8 @@
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import { createRenderer } from 'vue-bundle-renderer/runtime'
 import type { Manifest, PrecomputedData } from 'vue-bundle-renderer'
-import { renderToString as _renderToString } from 'vue/server-renderer'
+import type { renderToString as _renderToString } from 'vue/server-renderer'
+import { renderToSimpleStream } from 'vue/server-renderer'
 import { propsToString } from '@unhead/vue/server'
 import type { App } from 'vue'
 
@@ -72,14 +73,21 @@ export function createBuildFiles (options: NuxtRendererOptions): BuildFiles {
     })
 
     type RenderToStringParams = Parameters<typeof _renderToString>
-    async function renderToString (input: RenderToStringParams[0], context: RenderToStringParams[1]) {
-      const html = await _renderToString(input, context)
+    async function renderToString (input: RenderToStringParams[0], context: RenderToStringParams[1] = {}) {
+      const chunks = await renderToChunks(input, context)
+      // `+=` keeps the markup as a rope, which is only flattened if something reads it
+      let html = APP_ROOT_OPEN_TAG
+      for (const chunk of chunks) { html += chunk }
+      html += APP_ROOT_CLOSE_TAG
+      chunks.unshift(APP_ROOT_OPEN_TAG)
+      chunks.push(APP_ROOT_CLOSE_TAG)
+      ;(context as NuxtSSRContext)['~htmlChunks'] = chunks
       // In development with vite-node, the manifest is on-demand and will be available after rendering
       // eslint-disable-next-line no-restricted-globals
       if (import.meta.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
         renderer.rendererContext.updateManifest(await getClientManifest())
       }
-      return APP_ROOT_OPEN_TAG + html + APP_ROOT_CLOSE_TAG
+      return html
     }
 
     return renderer
@@ -123,6 +131,23 @@ export function createBuildFiles (options: NuxtRendererOptions): BuildFiles {
     // Expose the server app factory for streaming (renderToWebStream needs it directly)
     getServerApp: lazyCachedFunction(getServerEntry),
   }
+}
+
+/** Render through Vue's simple stream so the markup is kept as the chunks Vue produced. */
+function renderToChunks (input: Parameters<typeof _renderToString>[0], context: NonNullable<Parameters<typeof _renderToString>[1]>): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    const chunks: string[] = []
+    renderToSimpleStream(input, context, {
+      push (chunk) {
+        if (chunk === null) {
+          resolve(chunks)
+        } else {
+          chunks.push(chunk)
+        }
+      },
+      destroy: reject,
+    })
+  })
 }
 
 function renderSPATemplate () {

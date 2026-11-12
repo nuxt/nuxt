@@ -8,6 +8,11 @@ export default defineNuxtModule(
         route: joinURL(prefix, 'dev-handler/**'),
         handler: { nuxt: event => `dev-handler:${event.url.pathname}` },
       })
+      addDevServerHandler({
+        route: joinURL(prefix, 'dev-middleware/**'),
+        middleware: true,
+        handler: { nuxt: event => `dev-handler:${event.url.pathname}` },
+      })
     }
   },
 )

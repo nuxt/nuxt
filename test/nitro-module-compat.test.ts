@@ -1,22 +1,12 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
+import { setupFixture } from './utils'
 
-const shouldRun = runsOncePerEnvInMatrix
+await setupFixture('nitro-module-compat', runsOncePerEnvInMatrix)
 
-if (shouldRun) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/nitro-module-compat', import.meta.url)),
-    dev: isDev,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
-
-describe.skipIf(!shouldRun)('nitro v2 module compatibility without `nitroLegacy`', () => {
+describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 module compatibility without `nitroLegacy`', () => {
   it('runs a v1-style module handler', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/untagged')).toEqual({
       flavour: 'earl-grey',

@@ -1,8 +1,72 @@
-import type { NitroInstance, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
+import type { NitroInstance, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
+import { relative } from 'pathe'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
+import { pageDiagnostics } from '@nuxt/kit/internal'
+import { createRouteRulesRouter, encodeRoutePattern } from '../core/utils/route-rules.ts'
 import { toArray } from '../utils.ts'
+
+/**
+ * Find the pages that `noScripts` or `ssr: false` route rules restrict to a single environment,
+ * and record their source files in `nuxt.options._noScriptsPageSources` and
+ * `nuxt.options._spaOnlyPageSources`.
+ */
+export function markPagesForRouteRules (nuxt: Nuxt, pages: NuxtPage[], nitro: NitroInstance | undefined) {
+  const restrictedPages = new Map<NuxtPage, 'noScripts' | 'spaOnly'>()
+  if (!nitro) { return restrictedPages }
+
+  markPagesCoveredByRouteRule(pages, nitro, {
+    isCovered: rules => !!rules.noScripts,
+    mark: (page, covered) => {
+      if (covered) { restrictedPages.set(page, 'noScripts') }
+    },
+  })
+
+  // server components render on the server by definition, whatever `ssr` says
+  const conflicting: string[] = []
+  markPagesCoveredByRouteRule(pages, nitro, {
+    isCovered: rules => rules.ssr === false,
+    filter: page => page.mode !== 'server',
+    mark: (page, covered, resolvedPath) => {
+      if (!covered) { return }
+      if (restrictedPages.get(page) === 'noScripts') {
+        conflicting.push(resolvedPath)
+        return
+      }
+      restrictedPages.set(page, 'spaOnly')
+    },
+  })
+
+  if (conflicting.length) {
+    pageDiagnostics.NUXT_B4021({ paths: conflicting.map(path => `\`${path}\``).join(', ') })
+  }
+
+  nuxt.options._noScriptsPageSources = [...restrictedPages]
+    .filter(([page, stub]) => stub === 'noScripts' && page.file)
+    .map(([page]) => relative(nuxt.options.srcDir, page.file!))
+  // several routes can share a page file (`pages:extend`), so a file is only
+  // client-only when none of the routes using it is server-rendered
+  const getPageFiles = (page: NuxtPage) => [page.file, ...Object.values(page.components || {})]
+    .filter((file): file is string => !!file)
+  const ssrPageFiles = new Set<string>()
+  const collectSSRPageFiles = (pages: NuxtPage[]) => {
+    for (const page of pages) {
+      if (restrictedPages.get(page) !== 'spaOnly') {
+        for (const file of getPageFiles(page)) { ssrPageFiles.add(file) }
+      }
+      if (page.children?.length) { collectSSRPageFiles(page.children) }
+    }
+  }
+  collectSSRPageFiles(pages)
+  nuxt.options._spaOnlyPageSources = [...new Set([...restrictedPages]
+    .filter(([, stub]) => stub === 'spaOnly')
+    .flatMap(([page]) => getPageFiles(page))
+    .filter(file => !ssrPageFiles.has(file))
+    .map(file => relative(nuxt.options.srcDir, file)))]
+
+  return restrictedPages
+}
 
 const UNESCAPE_RE = /\\(.)/g
 
@@ -24,7 +88,7 @@ function createProbeSegment (routes: readonly { route: string }[]): string {
   return probe
 }
 
-const ROU3_PARAM_RE = /^:[\w-]+/
+const ROU3_PARAM_RE = /^:[A-Z_]\w*/i
 const ROU3_MODIFIER_RE = /^[?+*]/
 
 /** Length of the `(...)` group starting at `index`, or `0` if there is none. */
@@ -43,9 +107,10 @@ function groupLength (segment: string, index: number): number {
  * dynamic token. Escapes are honoured in both directions: `\:` is a literal `:` rather than a
  * param, and the backslash is dropped because rou3 matches against the unescaped path.
  */
-function segmentToProbe (segment: string, probeSegment: string): { probe: string, dynamic: boolean } {
+function segmentToProbe (segment: string, probeSegment: string): { probe: string, dynamic: boolean, constrained: boolean } {
   let probe = ''
   let dynamic = false
+  let constrained = false
   let index = 0
   while (index < segment.length) {
     const char = segment[index]!
@@ -70,11 +135,13 @@ function segmentToProbe (segment: string, probeSegment: string): { probe: string
     }
     dynamic = true
     probe += probeSegment
+    const constraintLength = char === '(' ? 0 : groupLength(segment, index + length)
+    if (constraintLength > 2 || (char === '(' && length > 2)) { constrained = true }
     index += length
-    index += groupLength(segment, index)
+    index += constraintLength
     index += ROU3_MODIFIER_RE.exec(segment.slice(index))?.[0].length ?? 0
   }
-  return { probe, dynamic }
+  return { probe, dynamic, constrained }
 }
 
 function patternToProbePath (pattern: string, probeSegment: string): string {
@@ -102,7 +169,7 @@ export interface RouteRuleCoverageOptions {
 export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInstance, options: RouteRuleCoverageOptions): boolean {
   if (!nitro.routing) { return false }
 
-  const routeRules = nitro.routing.routeRules
+  const routeRules = createRouteRulesRouter(nitro.routing.routeRules.routes, '')
   const PROBE_SEGMENT = createProbeSegment(routeRules.routes)
   const isPathCovered = (path: string) =>
     options.isCovered(defu({} as RouteRuleConfig, ...routeRules.matchAll('', path).reverse()))
@@ -126,6 +193,7 @@ export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInst
     const within = rawPrefix === '/' ? '/' : rawPrefix + '/'
     for (const { route } of routeRules.routes) {
       if (route !== rawPrefix && !route.startsWith(within)) { continue }
+      if (route.split('/').some(segment => segmentToProbe(segment, PROBE_SEGMENT).constrained)) { return false }
       if (!isPathCovered(patternToProbePath(route, PROBE_SEGMENT))) { return false }
     }
     return true
@@ -135,7 +203,7 @@ export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInst
   // alternations, and all of them have to be covered.
   function pathIsCovered (path: string): boolean {
     const { patterns } = vueRouterToRou3(path, { collapse: true })
-    return patterns.length > 0 && patterns.every(patternIsCovered)
+    return patterns.length > 0 && patterns.every(pattern => patternIsCovered(encodeRoutePattern(pattern)))
   }
 
   function markPages (pages: NuxtPage[], prefix: string): boolean {

@@ -6,9 +6,8 @@ import { createConsoleReporter, defineDiagnostics } from 'nostics'
  * Codes continue the configuration (B5xxx) range defined in `@nuxt/kit`, which
  * schema cannot import without creating a dependency cycle.
  */
-// TODO: bump the `4.x` path segment to `5.x` when the v5 docs go live.
 const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+  `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
 export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
@@ -26,7 +25,7 @@ export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5014: {
       why: 'Directly configuring the `vite.publicDir` option is not supported.',
-      fix: 'Set `dir.public` instead. You can read more in `https://nuxt.com/docs/4.x/api/nuxt-config#public`.',
+      fix: 'Set `dir.public` instead. You can read more in `https://nuxt.com/docs/5.x/api/nuxt-config#public`.',
       docs: false,
     },
     NUXT_B5015: {
@@ -51,7 +50,7 @@ export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5029: {
       why: (p: { value: string }) => `\`future.compatibilityVersion\` was set to \`${p.value}\`, but this version of Nuxt only supports \`5\`.`,
-      fix: 'Remove `future.compatibilityVersion` from your `nuxt.config`. To keep Nuxt 4 behaviour, stay on Nuxt 4.',
+      fix: 'Remove `future.compatibilityVersion` from your `nuxt.config` (or the layer that sets it). To keep Nuxt 4 behaviour, stay on Nuxt 4.',
       docs: false,
     },
   },

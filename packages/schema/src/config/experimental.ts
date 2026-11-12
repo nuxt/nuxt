@@ -1,5 +1,5 @@
 import { schemaDiagnostics } from '../diagnostics.ts'
-import { defineResolvers } from '../utils/definition.ts'
+import { booleanOr, defineResolvers, oneOf } from '../utils/definition.ts'
 
 export default defineResolvers({
   future: {
@@ -72,9 +72,7 @@ export default defineResolvers({
     },
     runtimeBaseURL: false,
     decorators: false,
-    asyncEntry: {
-      $resolve: val => typeof val === 'boolean' ? val : false,
-    },
+    asyncEntry: booleanOr(false),
 
     serverAppConfig: true,
     emitRouteChunkError: {
@@ -128,9 +126,7 @@ export default defineResolvers({
      *
      * @default true
      */
-    inlineErrorRendering: {
-      $resolve: val => typeof val === 'boolean' ? val : true,
-    },
+    inlineErrorRendering: booleanOr(true),
 
     /**
      * Server-render static error pages (such as `404.html`) when prerendering, rather than emitting an empty SPA shell.
@@ -168,10 +164,30 @@ export default defineResolvers({
      * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
      * file may modify `routes`.
      */
+    staticRoutes: false,
+
     early404: false,
+
+    /**
+     * Warn at build time about template mistakes the Vue compiler cannot detect:
+     *
+     * - a `<NuxtLink>` whose static `to` matches no page route
+     * - `v-on` or `v-model` on a server component
+     * - a function or class instance passed as a prop to a server component, or in the `props`
+     *   of a `<NuxtIsland>`
+     *
+     * Warnings are printed to the terminal and, in development, sent to open error pages and
+     * overlays.
+     *
+     * The route check cannot see routes added at runtime with `router.addRoute()` or paths
+     * that route middleware redirects, and is skipped when a custom `app/router.options` file
+     * may modify `routes`.
+     */
+    templateDiagnostics: true,
 
     clientFallback: false,
     crossOriginPrefetch: false,
+    deferPrefetchHints: true,
 
     /**
      * Enable View Transition API integration with client-side router.
@@ -192,24 +208,11 @@ export default defineResolvers({
       },
     },
     localLayerAliases: true,
-    typedPages: {
-      $resolve: val => typeof val === 'boolean' ? val : true,
-    },
-    serverPathFallback: {
-      $resolve: val => typeof val === 'boolean' ? val : true,
-    },
+    typedPages: booleanOr(true),
+    serverPathFallback: booleanOr(true),
     appManifest: true,
     checkOutdatedBuildInterval: 1000 * 60 * 60,
-    watcher: {
-      $resolve: (val) => {
-        const validOptions = new Set(['chokidar', 'parcel', 'chokidar-granular', 'builder'] as const)
-        type WatcherOption = typeof validOptions extends Set<infer Option> ? Option : never
-        if (typeof val === 'string' && validOptions.has(val as WatcherOption)) {
-          return val as WatcherOption
-        }
-        return 'builder' as const
-      },
-    },
+    watcher: oneOf(['chokidar', 'parcel', 'chokidar-granular', 'builder'], 'builder'),
     asyncContext: false,
     headNext: true,
     inlineRouteRules: false,
@@ -219,16 +222,8 @@ export default defineResolvers({
       },
     },
     extraPageMetaExtractionKeys: [],
-    extractSerializablePageMeta: {
-      $resolve (val) {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
-    sharedPrerenderData: {
-      $resolve (val) {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    extractSerializablePageMeta: booleanOr(true),
+    sharedPrerenderData: booleanOr(true),
     cookieStore: true,
     defaults: {
       nuxtLink: {
@@ -242,39 +237,17 @@ export default defineResolvers({
         deep: false,
       },
       useState: {
-        resetOnClear: {
-          $resolve: (val) => {
-            return typeof val === 'boolean' ? val : true
-          },
-        },
+        resetOnClear: booleanOr(true),
       },
       useFetch: {},
     },
     clientNodeCompat: false,
     navigationRepaint: true,
-    navigateToEarlyReturn: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    navigateToEarlyReturn: booleanOr(true),
     buildCache: false,
-    normalizeComponentNames: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
-    normalizePageNames: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
-    spaLoadingTemplateLocation: {
-      $resolve: (val) => {
-        const validOptions = new Set(['body', 'within'] as const)
-        type SpaLoadingTemplateLocation = typeof validOptions extends Set<infer Option> ? Option : never
-        return typeof val === 'string' && validOptions.has(val as SpaLoadingTemplateLocation) ? val as SpaLoadingTemplateLocation : 'body'
-      },
-    },
+    normalizeComponentNames: booleanOr(true),
+    normalizePageNames: booleanOr(true),
+    spaLoadingTemplateLocation: oneOf(['body', 'within'], 'body'),
     browserDevtoolsTiming: {
       $resolve: (val, get) => typeof val === 'boolean' ? val : get('dev'),
     },
@@ -284,33 +257,13 @@ export default defineResolvers({
         return typeof val === 'boolean' ? val : Boolean(await get('debug'))
       },
     },
-    lazyHydration: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    lazyHydration: booleanOr(true),
     templateImportResolution: true,
-    purgeCachedData: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
-    prefetchPreloadTags: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
-    granularCachedData: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    purgeCachedData: booleanOr(true),
+    prefetchPreloadTags: booleanOr(false),
+    granularCachedData: booleanOr(true),
     stripNeverHydratedData: false,
-    alwaysRunFetchOnKeyChange: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
+    alwaysRunFetchOnKeyChange: booleanOr(false),
     // TODO: remove this option, including from the schema types, before Nuxt 5 is released
     parseErrorData: {
       $resolve: (val) => {
@@ -321,27 +274,13 @@ export default defineResolvers({
       },
     },
     enforceModuleCompatibility: false,
-    pendingWhenIdle: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
+    pendingWhenIdle: booleanOr(false),
     entryImportMap: true,
-    extractAsyncDataHandlers: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
-    nitroAutoImports: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
-    typescriptPlugin: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
+    compileHints: true,
+    layoutChunk: true,
+    extractAsyncDataHandlers: booleanOr(false),
+    nitroAutoImports: booleanOr(false),
+    typescriptPlugin: booleanOr(false),
     ssrStreaming: {
       $resolve (val) {
         // Indexing crawlers only; `chrome-lighthouse` is intentionally absent
@@ -377,16 +316,9 @@ export default defineResolvers({
         return true
       },
     },
-    asyncCallHook: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
-    clientNodePlaceholder: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : true
-      },
-    },
+    asyncCallHook: booleanOr(false),
+    clientNodePlaceholder: booleanOr(true),
     clearBuildHooks: true,
+    compilerComponentResolution: true,
   },
 })

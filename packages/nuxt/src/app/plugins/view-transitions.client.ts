@@ -102,6 +102,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
       }
     })
     currentTransition.ready.catch(() => {})
+    currentTransition.updateCallbackDone.catch(() => {})
 
     await nuxtApp.callHook('page:view-transition:start', transition)
 

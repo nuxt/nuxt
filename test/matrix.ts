@@ -1,9 +1,9 @@
 import { defu } from 'defu'
 import type { NuxtConfig } from 'nuxt/schema'
 
-export const builder = (process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' | 'nitro-vite') || 'vite'
+export const builder = (process.env.TEST_BUILDER as 'webpack' | 'rsbuild' | 'rspack' | 'vite' | 'nitro-vite') || 'vite'
 
-export const isWebpack = builder === 'webpack' || builder === 'rspack'
+export const isWebpack = builder === 'webpack' || builder === 'rspack' || builder === 'rsbuild'
 export const nitroViteEnvironment = builder === 'nitro-vite'
 
 export const isDev = process.env.TEST_ENV === 'dev'
@@ -21,6 +21,9 @@ export const islandsV2 = process.env.TEST_ISLANDS === 'v2'
 
 export const typescriptBundlerResolution = process.env.MODULE_RESOLUTION !== 'node'
 
+/** Whether to resolve template components with the build transform rather than in the template compiler. */
+export const legacyComponentResolution = process.env.TEST_COMPONENT_RESOLUTION === 'legacy'
+
 /**
  * Suffix identifying the current matrix combination.
  */
@@ -31,15 +34,20 @@ export const projectSuffix = [
   process.env.TEST_MANIFEST,
   process.env.TEST_ERROR_RENDERING,
   process.env.TEST_ISLANDS,
+  process.env.TEST_COMPONENT_RESOLUTION,
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER
-const isCanonicalCombo = builder === 'vite' && !asyncContext && isTestingAppManifest
+const isDefaultCombo = !asyncContext && isTestingAppManifest && !legacyErrorRendering && !legacyComponentResolution
+const isCanonicalCombo = builder === 'vite' && isDefaultCombo
 
 /**
  * True in exactly one fixture-matrix project (vite/built/default/manifest-on), and always true
  * outside the matrix. Guard suites that do not depend on any matrix axis with
  * `describe.skipIf(!runsOnceInMatrix)` so they run a single time instead of once per project.
+ *
+ * None of the `runsOnce*` guards hold in the projects re-running suites with a legacy option, so a
+ * suite asserting on one of those options opts in with `|| legacyErrorRendering`.
  */
 export const runsOnceInMatrix = !isMatrixRun || (isCanonicalCombo && isBuilt)
 
@@ -53,7 +61,19 @@ export const runsOncePerEnvInMatrix = !isMatrixRun || isCanonicalCombo
  * Like `runsOnceInMatrix` but keeps the builder axis: true in exactly one built project per
  * builder. Use for builder-sensitive suites that do not depend on other matrix axes.
  */
-export const runsOncePerBuilderInMatrix = !isMatrixRun || (isBuilt && !asyncContext && isTestingAppManifest)
+export const runsOncePerBuilderInMatrix = !isMatrixRun || (isBuilt && isDefaultCombo)
+
+/**
+ * Like `runsOncePerEnvInMatrix` but keeps `experimental.nitroViteEnvironment`: true in one dev
+ * and one built project for each of the `vite` and `nitro-vite` builders.
+ */
+export const runsOncePerViteBuilderInMatrix = !isMatrixRun || (!isWebpack && isDefaultCombo)
+
+/**
+ * True in one dev and one built project per builder, for behaviour that depends on the compiled
+ * app. The webpack-based builders only have a dev project with async context.
+ */
+export const runsOncePerBuildInMatrix = !isMatrixRun || (!legacyErrorRendering && !legacyComponentResolution && isTestingAppManifest && (!asyncContext || (isWebpack && isDev)))
 
 export const isNuxtPrepare = process.argv.slice(2).includes('prepare')
 
@@ -68,6 +88,7 @@ export function withMatrix (config: NuxtConfig) {
       asyncContext,
       appManifest: isTestingAppManifest,
       ...legacyErrorRendering ? { inlineErrorRendering: false } : {},
+      ...legacyComponentResolution ? { compilerComponentResolution: false } : {},
       nitroViteEnvironment,
     },
     compatibilityDate: 'latest',

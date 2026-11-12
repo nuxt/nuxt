@@ -14,7 +14,6 @@ import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
 import type { PrefetchScheduler } from './internal/prefetch'
 import type { LoadingIndicator } from './composables/loading-indicator'
-import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, NuxtHookCallback, NuxtHookRegistry, RuntimeConfig } from 'nuxt/schema'
 
@@ -75,6 +74,8 @@ interface _NuxtApp {
   /** @internal */
   '_appliedSetCookies'?: number
   '_cookiesChanged'?: Record<string, boolean>
+  /** @internal */
+  '_cookieWriters'?: Set<() => void>
   /**
    * The id of the Nuxt application.
    * @internal */
@@ -129,7 +130,7 @@ interface _NuxtApp {
   '_processingMiddleware'?: string | boolean
 
   /** @internal */
-  '_middlewareTo'?: Pick<RouteLocationNormalizedLoaded, 'meta'>
+  '_middlewareTo'?: Pick<RouteLocationNormalizedLoaded, 'meta' | 'redirectedFrom'>
 
   /** @internal */
   '_once': {
@@ -137,7 +138,7 @@ interface _NuxtApp {
   }
 
   /** @internal */
-  '_observer'?: { observe: (element: Element, callback: () => void) => () => void }
+  '_observer'?: { observe: (element: Element, callback: () => void, whenReady?: boolean) => () => void }
 
   /** @internal */
   '_appConfig': AppConfig
@@ -162,7 +163,7 @@ interface _NuxtApp {
   '_prefetch'?: PrefetchScheduler
 
   /** @internal */
-  '_routeAnnouncer'?: RouteAnnouncer
+  '_routeAnnouncer'?: NuxtAnnouncer
   /** @internal */
   '_routeAnnouncerDeps'?: number
 

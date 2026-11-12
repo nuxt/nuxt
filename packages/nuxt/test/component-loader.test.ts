@@ -25,7 +25,7 @@ describe('components:loader', () => {
     expect(normalizeCode(code)).toMatchInlineSnapshot(`
       "import __nuxt_component_0 from "/components/MyComponent.vue";
       import { Fragment, createElementBlock, createVNode, defineAsyncComponent, openBlock, resolveComponent, unref } from "vue";
-      //#region /pages/index.vue
+      // /pages/index.vue
       const __nuxt_component_0_lazy = defineAsyncComponent(() => import("/components/MyComponent.vue").then((c) => c.default || c));
       const _sfc_main = {
         __name: "index",
@@ -44,7 +44,6 @@ describe('components:loader', () => {
           };
         }
       };
-      //#endregion
       export { _sfc_main as default };"
     `)
   })
@@ -94,7 +93,7 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
     expect(normalizeCode(code)).toMatchInlineSnapshot(`
       "import __nuxt_component_0 from "/components/MyComponent.vue";
       import { createVNode, defineAsyncComponent, defineComponent, resolveComponent } from "vue";
-      //#region /pages/about.tsx
+      // /pages/about.tsx
       const __nuxt_component_0_lazy = defineAsyncComponent(() => import("/components/MyComponent.vue").then((c) => c.default || c));
       var about_default = /* @__PURE__ */ defineComponent({ setup() {
         const NamedComponent = __nuxt_component_0;
@@ -105,7 +104,6 @@ function _tracer(line, column, vnode) { return _tracerRecordPosition("app.vue", 
           createVNode(NamedComponent, null, null)
         ]);
       } });
-      //#endregion
       export { about_default as default };"
     `)
   })
@@ -135,86 +133,27 @@ export default {
     expect(code?.code).toContain('_createVNode2(__nuxt_component_0, null, null)')
   })
 
-  it('should auto-import JSX components with h() calls', async () => {
-    const component = `
-    import { h } from 'vue'
-    export default {
-      render() {
-        return h('div', [
-          h(MyComponent, { foo: 'bar' }),
-          h(MyComponent, null, 'Hello')
-        ])
-      }
-    }
-    `
-    const code = await transform(component, '/pages/jsx-h.tsx')
-    expect(code).toContain('import __nuxt_component_0 from')
-    expect(code).toContain('/components/MyComponent.vue')
-    expect(code).toContain('h(__nuxt_component_0,')
-  })
-
-  it('should auto-import JSX components in various contexts', async () => {
+  it('should auto-import known PascalCase components referenced by h() calls', async () => {
     const component = `
     import { h, defineComponent } from 'vue'
     export default defineComponent({
       setup() {
         return () => h('div', [
           h(MyComponent),
-          h(MyComponent, {}),
           h(MyComponent, { prop: true }),
           h(MyComponent, null, ['children']),
+          h(OtherComponent, { id: 2 }),
+          h(myComponent),
         ])
       }
     })
     `
-    const code = await transform(component, '/pages/contexts.tsx')
+    const code = await transform(component, '/pages/jsx-h.tsx')
     expect(code).toContain('import __nuxt_component_0 from')
     expect(code).toContain('/components/MyComponent.vue')
-    // Should replace all h(MyComponent) instances
-    const matches = code.match(/h\(__nuxt_component_0/g)
-    expect(matches).toHaveLength(4)
-  })
-
-  it('should handle multiple different JSX components', async () => {
-    const component = `
-    import { h } from 'vue'
-    export default {
-      render() {
-        return h('div', [
-          h(MyComponent, { id: 1 }),
-          h(OtherComponent, { id: 2 }),
-          h(MyComponent, { id: 3 })
-        ])
-      }
-    }
-    `
-    const code = await transform(component, '/pages/multiple.tsx')
-    expect(code).toContain('import __nuxt_component_0 from')
-    expect(code).toContain('/components/MyComponent.vue')
-    // MyComponent should appear twice
-    const myComponentMatches = code.match(/h\(__nuxt_component_0/g)
-    expect(myComponentMatches).toHaveLength(2)
-    // OtherComponent should not be replaced (not in components list)
+    expect(code.match(/h\(__nuxt_component_0/g)).toHaveLength(3)
     expect(code).toContain('h(OtherComponent,')
-  })
-
-  it('should not replace h() calls with lowercase component names', async () => {
-    const component = `
-    import { h } from 'vue'
-    export default {
-      render() {
-        return h('div', [
-          h(myComponent),
-          h(myOtherComponent)
-        ])
-      }
-    }
-    `
-    const code = await transform(component, '/pages/lowercase.tsx')
-    // Should not auto-import lowercase identifiers
-    expect(code).not.toContain('import __nuxt_component')
     expect(code).toContain('h(myComponent')
-    expect(code).toContain('h(myOtherComponent')
   })
 
   it('should handle JSX with lazy components in JSX syntax', async () => {
@@ -260,12 +199,27 @@ export default {
     expect(components.join('\n')).toMatchInlineSnapshot(`
       "const __nuxt_component_0_lazy_idle = createLazyIdleComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_visible = createLazyVisibleComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
-      const __nuxt_component_0_lazy_event = createLazyInteractionComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
-      const __nuxt_component_0_lazy_media = createLazyMediaQueryComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
+      const __nuxt_component_0_lazy_interaction = createLazyInteractionComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
+      const __nuxt_component_0_lazy_mediaquery = createLazyMediaQueryComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_time = createLazyTimeComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_if = createLazyIfComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));
       const __nuxt_component_0_lazy_never = createLazyNeverComponent("components/MyComponent.vue", () => import("/components/MyComponent.vue").then((c) => c.default || c));"
     `)
+  })
+
+  it('should respect local bindings when a component named like a script tag precedes the script block', async () => {
+    const sfc = `
+    <template>
+      <ScriptGoogleMaps />
+      <LazyMyComponent hydrate-on-idle />
+    </template>
+
+    <script setup>
+    const LazyMyComponent = defineAsyncComponent(() => import('./Local.vue'))
+    </script>
+    `
+    const code = await transform(sfc, '/pages/index.vue')
+    expect(code).toContain('createVNode(unref(LazyMyComponent), { "hydrate-on-idle": "" })')
   })
 
   it('should auto-import components resolved via vapor createAssetComponent', async () => {
@@ -286,6 +240,56 @@ function _sfc_render(_ctx) {
     expect(code?.code).toContain('import { createComponentWithFallback as __nuxt_createComponentWithFallback } from "vue"')
     expect(code?.code).toContain('__nuxt_createComponentWithFallback(__nuxt_component_0, { label: "nested" })')
     expect(code?.code).toContain('_createAssetComponent("UnknownComponent")')
+  })
+
+  it('should only treat hydration strategies after a lazy prefix as modifiers', async () => {
+    const content = `import { h } from 'vue'
+const a = _resolveComponent("TimeLine")
+const b = _resolveComponent("time-line")
+const c = h(TimeLine)
+const d = _createAssetComponent("TimeLine")
+const e = _resolveComponent("LazyTimeLine")
+const f = _resolveComponent("LazyTime_Line")
+const g = _resolveComponent("LazyIdleLine")
+`
+    const code = await ((plugin.raw({}, { framework: 'vite', versions: {} }) as { transform: { handler: (code: string, id: string) => { code: string } | null } }).transform.handler(
+      content,
+      '/pages/index.vue',
+    ))
+    expect(code?.code).toMatchInlineSnapshot(`
+      "import { default as __nuxt_component_0 } from "/components/TimeLine.vue";
+      import { createComponentWithFallback as __nuxt_createComponentWithFallback } from "vue";
+      import { defineAsyncComponent as __defineAsyncComponent } from "vue";
+      const __nuxt_component_0_lazy = __defineAsyncComponent(() => import("/components/TimeLine.vue").then(c => c.default || c))
+      import { createLazyTimeComponent } from "/client-runtime.mjs";
+      const __nuxt_component_1_lazy_time = createLazyTimeComponent("components/Line.vue", () => import("/components/Line.vue").then(c => c.default || c))
+      import { createLazyIdleComponent } from "/client-runtime.mjs";
+      const __nuxt_component_1_lazy_idle = createLazyIdleComponent("components/Line.vue", () => import("/components/Line.vue").then(c => c.default || c))
+      import { h } from 'vue'
+      const a = __nuxt_component_0
+      const b = __nuxt_component_0
+      const c = h(__nuxt_component_0)
+      const d = __nuxt_createComponentWithFallback(__nuxt_component_0)
+      const e = __nuxt_component_0_lazy
+      const f = __nuxt_component_1_lazy_time
+      const g = __nuxt_component_1_lazy_idle
+      "
+    `)
+  })
+
+  it('should distinguish lazy components prefixed with a hydration strategy from lazy hydrated components', async () => {
+    const sfc = `
+    <template>
+      <LazyTimeLine />
+      <LazyLine :hydrate-after="100" />
+    </template>
+    `
+    const lines = await transform(sfc, '/pages/index.vue').then(r => r.split('\n'))
+    const components = lines.filter(l => l.startsWith('const __nuxt_component'))
+    expect(components.join('\n')).toMatchInlineSnapshot(`
+      "const __nuxt_component_0_lazy = defineAsyncComponent(() => import("/components/TimeLine.vue").then((c) => c.default || c));
+      const __nuxt_component_1_lazy_time = createLazyTimeComponent("components/Line.vue", () => import("/components/Line.vue").then((c) => c.default || c));"
+    `)
   })
 
   it.each([
@@ -375,7 +379,11 @@ function _sfc_render(_ctx) {
     })
   })
 })
-const components = ([{ name: 'MyComponent', filePath: '/components/MyComponent.vue' }] as AddComponentOptions[]).map(opts => ({
+const components = ([
+  { name: 'MyComponent', filePath: '/components/MyComponent.vue' },
+  { name: 'Line', filePath: '/components/Line.vue' },
+  { name: 'TimeLine', filePath: '/components/TimeLine.vue' },
+] as AddComponentOptions[]).map(opts => ({
   export: opts.export || 'default',
   chunkName: 'components/' + kebabCase(opts.name),
   global: opts.global ?? false,
@@ -400,7 +408,7 @@ const plugin = LoaderPlugin({
 
 /** Normalize rolldown output to be stable across different working directories */
 function normalizeCode (code: string) {
-  return code.replace(/\t/g, '  ').replace(/\/\/#region (?:\.\.\/)+/g, '//#region /')
+  return code.replace(/\t/g, '  ').replace(/\/\/#region (?:\.\.\/)+/g, '//#region /').replace(/\/\/ (?:\.\.\/)+/g, '// /')
 }
 
 async function transform (code: string, filename: string) {

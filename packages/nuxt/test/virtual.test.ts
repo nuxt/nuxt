@@ -31,6 +31,20 @@ describe('virtual fs plugin', () => {
     `)
   })
 
+  it('should prefer virtual files with a suffix over unsuffixed ones', async () => {
+    const code = await generateCode('export { foo } from "#build/foo"', {
+      mode: 'client',
+      vfs: {
+        '/.nuxt/foo.ts': 'export const foo = "foo file"',
+        '/.nuxt/foo.client.ts': 'export const foo = "foo client file"',
+      },
+    })
+    expect(code).toMatchInlineSnapshot(`
+      "const foo = "foo client file";
+      export { foo };"
+    `)
+  })
+
   it('should support loading files referenced relatively', async () => {
     const code = await generateCode('export { foo } from "#build/foo"', {
       vfs: {

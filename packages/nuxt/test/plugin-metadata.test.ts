@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { RemovePluginMetadataPlugin, extractMetadata, setPluginDependenciesForMode } from '../src/core/plugins/plugin-metadata.ts'
-import { checkForCircularDependencies, filterPluginDependencies, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks } from '../src/core/app.ts'
+import { checkForCircularDependencies, filterPluginDependencies, hasPluginCapability } from '../src/core/app.ts'
 
 describe('plugin-metadata', () => {
   const properties = Object.entries({
@@ -233,7 +233,14 @@ describe('plugin sanity checking', () => {
 })
 
 describe('plugin capability probes', () => {
-  const probes = [hasPluginDependencies, hasParallelPlugins, hasPluginHooks, hasIslandOptOutPlugins]
+  const capabilities = ['dependsOn', 'parallel', 'hasHooks', 'hasEnv'] as const
+
+  it('detect a capability used by any plugin', () => {
+    expect(hasPluginCapability([{ dependsOn: [] }, { parallel: false }], 'dependsOn')).toBe(false)
+    expect(hasPluginCapability([{}, { dependsOn: ['a'] }], 'dependsOn')).toBe(true)
+    expect(hasPluginCapability([{ hasHooks: true }], 'parallel')).toBe(false)
+    expect(hasPluginCapability([{ hasHooks: true }], 'hasHooks')).toBe(true)
+  })
 
   it('flag unparseable plugin shapes so capability probes fall back to the full runtime resolver', () => {
     const shapes = {
@@ -245,8 +252,8 @@ describe('plugin capability probes', () => {
     for (const [label, code] of Object.entries(shapes)) {
       const meta = extractMetadata(code)
       expect(meta._metaUnknown, label).toBe(true)
-      for (const probe of probes) {
-        expect(probe([meta as never]), `${label} (${probe.name})`).toBe(true)
+      for (const capability of capabilities) {
+        expect(hasPluginCapability([meta as never], capability), `${label} (${capability})`).toBe(true)
       }
     }
   })
@@ -260,8 +267,8 @@ describe('plugin capability probes', () => {
     for (const [label, code] of Object.entries(shapes)) {
       const meta = extractMetadata(code)
       expect(meta._metaUnknown ?? false, label).toBe(false)
-      for (const probe of probes) {
-        expect(probe([meta as never]), `${label} (${probe.name})`).toBe(false)
+      for (const capability of capabilities) {
+        expect(hasPluginCapability([meta as never], capability), `${label} (${capability})`).toBe(false)
       }
     }
   })
@@ -270,8 +277,8 @@ describe('plugin capability probes', () => {
     expect(() => extractMetadata('export default defineNuxtPlugin({ dependsOn: [someName] })')).toThrow()
 
     const fallback = { _metaUnknown: true as const }
-    for (const probe of probes) {
-      expect(probe([fallback]), probe.name).toBe(true)
+    for (const capability of capabilities) {
+      expect(hasPluginCapability([fallback], capability), capability).toBe(true)
     }
   })
 })

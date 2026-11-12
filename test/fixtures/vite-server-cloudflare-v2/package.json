@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-vite-server-cloudflare-v2",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/config": "0.29.0",
+    "@cloudflare/vite-plugin": "2.0.0-beta.v.8"
+  },
+  "engines": {
+    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
+  }
+}

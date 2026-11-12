@@ -441,7 +441,7 @@ describe('middleware', () => {
     addRouteMiddleware('example', (to, from) => {
       expectTypeOf(to).toEqualTypeOf<RouteLocationNormalized>()
       expectTypeOf(from).toEqualTypeOf<RouteLocationNormalized>()
-      expectTypeOf(navigateTo).toEqualTypeOf<(to: RouteLocationRaw | null | undefined, options?: NavigateToOptions) => RouteLocationRaw | void | false | Promise<void | NavigationFailure | false>>()
+      expectTypeOf(navigateTo).toEqualTypeOf<(to: RouteLocationRaw | null | undefined, options?: NavigateToOptions) => void | false | Promise<void | NavigationFailure | false>>()
       navigateTo('/')
       abortNavigation()
       abortNavigation('error string')
@@ -729,6 +729,33 @@ describe('components', () => {
     })
   })
 
+  it('only accepts serializable props on island components', () => {
+    interface Item { id: number, tags?: readonly string[] }
+    const Comp = defineComponent({
+      __typeProps: {} as {
+        item: Item
+        date?: Date
+        dates?: Date[]
+        onboarding?: Date
+        nested?: { at: Date }
+        format?: (value: number) => string
+      },
+    })
+    const IslandComp = Comp as unknown as IslandComponent<typeof Comp>
+    const tags: readonly string[] = ['a']
+    h(IslandComp, { item: { id: 1, tags } })
+    // @ts-expect-error array items are serialized too
+    h(IslandComp, { item: { id: 1 }, dates: [new Date()] })
+    // @ts-expect-error only `on` followed by an uppercase letter is an event listener
+    h(IslandComp, { item: { id: 1 }, onboarding: new Date() })
+    // @ts-expect-error a Date is sent as a string
+    h(IslandComp, { item: { id: 1 }, date: new Date() })
+    // @ts-expect-error nested values are serialized too
+    h(IslandComp, { item: { id: 1 }, nested: { at: new Date() } })
+    // @ts-expect-error functions are dropped
+    h(IslandComp, { item: { id: 1 }, format: (value: number) => String(value) })
+  })
+
   it('correctly includes event types with lazy components', () => {
     const Comp = defineComponent({
       __typeProps: {} as {
@@ -893,6 +920,12 @@ describe('composables', () => {
     })
     const { test } = useRequestHeaders(['test'])
     expectTypeOf(test).toEqualTypeOf<string | undefined>()
+  })
+
+  it('returns the prehydrate id from onPrehydrate', () => {
+    expectTypeOf(onPrehydrate((el) => { console.log(el) })).toEqualTypeOf<string | undefined>()
+    // @ts-expect-error string callbacks are not part of the public API
+    onPrehydrate('(()=>{})', 'key')
   })
 
   it('allows passing reactive values in useFetch', () => {
@@ -1165,6 +1198,82 @@ describe('composables', () => {
     type Plain = AsyncData<string | DefaultAsyncDataValue, NuxtError | DefaultAsyncDataErrorValue>
     expectTypeOf(createUseFetch({ addons: [optionsOnlyFetch] })('/api/hello')).toEqualTypeOf<Plain>()
     expectTypeOf(createUseAsyncData({ addons: [optionsOnlyAsyncData] })(() => Promise.resolve('hello'))).toEqualTypeOf<Plain>()
+  })
+
+  it('keeps the options and extensions of each addon on composables created with `createUseAsyncData`', () => {
+    const withExtension = defineUseAsyncDataAddon({
+      setup: () => () => ({ extension: 'extension' }),
+    })
+    const withOption = defineUseAsyncDataAddon({
+      setup: (options: UseAsyncDataAddonOptions<{ custom?: string }>) => { options.middleware.push(next => next()) },
+    })
+    const withNeither = defineUseAsyncDataAddon({
+      setup: () => {},
+    })
+    const handler = () => Promise.resolve('hello')
+
+    const useExtensionAndNeither = createUseAsyncData({ addons: [withExtension, withNeither] })
+    expectTypeOf(useExtensionAndNeither('k', handler).extension).toEqualTypeOf<string>()
+    expectTypeOf(useExtensionAndNeither('k', handler).then(r => r.extension)).toEqualTypeOf<Promise<string>>()
+    // @ts-expect-error `custom` is not declared for this composable
+    useExtensionAndNeither('k', handler, { custom: 'a' })
+
+    const useOptionAndNeither = createUseAsyncData({ addons: [withOption, withNeither] })
+    useOptionAndNeither('k', handler, { custom: 'a' })
+    // @ts-expect-error `custom` is a string
+    useOptionAndNeither('k', handler, { custom: 1 })
+    // @ts-expect-error not an option any addon declares
+    useOptionAndNeither('k', handler, { unknownOption: true })
+    // @ts-expect-error nor is the extension present
+    void useOptionAndNeither('k', handler).extension
+
+    const useExtensionAndOption = createUseAsyncData({ addons: [withExtension, withOption] })
+    expectTypeOf(useExtensionAndOption).toEqualTypeOf<UseAsyncData<unknown, unknown, KeysOf<unknown>, undefined, { custom?: string }, MergedAddonsExtensions<[typeof withExtension]>>>()
+    expectTypeOf(useExtensionAndOption('k', handler, { custom: 'a' }).extension).toEqualTypeOf<string>()
+    expectTypeOf(useExtensionAndOption('k', handler, { custom: 'a' }).then(r => r.extension)).toEqualTypeOf<Promise<string>>()
+
+    const useNeitherFirst = createUseAsyncData({ addons: [withNeither, withOption, withExtension] })
+    expectTypeOf(useNeitherFirst).toEqualTypeOf<typeof useExtensionAndOption>()
+
+    type Plain = AsyncData<string | DefaultAsyncDataValue, NuxtError | DefaultAsyncDataErrorValue>
+    expectTypeOf(createUseAsyncData({ addons: [withOption, withNeither] })(handler)).toEqualTypeOf<Plain>()
+  })
+
+  it('keeps the options and extensions of each addon on composables created with `createUseFetch`', () => {
+    const withExtension = defineUseFetchAddon({
+      setup: () => () => ({ extension: 'extension' }),
+    })
+    const withOption = defineUseFetchAddon({
+      setup: (options: UseFetchAddonOptions<{ custom?: string }>) => { options.middleware.push(next => next()) },
+    })
+    const withNeither = defineUseFetchAddon({
+      setup: () => {},
+    })
+
+    const useExtensionAndNeither = createUseFetch({ addons: [withExtension, withNeither] })
+    expectTypeOf(useExtensionAndNeither('/api/hello').extension).toEqualTypeOf<string>()
+    expectTypeOf(useExtensionAndNeither('/api/hello').then(r => r.extension)).toEqualTypeOf<Promise<string>>()
+    // @ts-expect-error `custom` is not declared for this composable
+    useExtensionAndNeither('/api/hello', { custom: 'a' })
+
+    const useOptionAndNeither = createUseFetch({ addons: [withOption, withNeither] })
+    useOptionAndNeither('/api/hello', { custom: 'a' })
+    // @ts-expect-error `custom` is a string
+    useOptionAndNeither('/api/hello', { custom: 1 })
+    // @ts-expect-error not an option any addon declares
+    useOptionAndNeither('/api/hello', { unknownOption: true })
+    // @ts-expect-error nor is the extension present
+    void useOptionAndNeither('/api/hello').extension
+
+    const useExtensionAndOption = createUseFetch({ addons: [withExtension, withOption] })
+    expectTypeOf(useExtensionAndOption('/api/hello', { custom: 'a' }).extension).toEqualTypeOf<string>()
+    expectTypeOf(useExtensionAndOption('/api/hello', { custom: 'a' }).then(r => r.extension)).toEqualTypeOf<Promise<string>>()
+
+    const useNeitherFirst = createUseFetch({ addons: [withNeither, withOption, withExtension] })
+    expectTypeOf(useNeitherFirst).toEqualTypeOf<typeof useExtensionAndOption>()
+
+    type Plain = AsyncData<string | DefaultAsyncDataValue, NuxtError | DefaultAsyncDataErrorValue>
+    expectTypeOf(createUseFetch({ addons: [withOption, withNeither] })('/api/hello')).toEqualTypeOf<Plain>()
   })
 })
 

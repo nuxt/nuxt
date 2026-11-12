@@ -91,4 +91,19 @@ describe('dev error reporter', () => {
     const printed = [...vi.mocked(console.log).mock.calls, ...vi.mocked(console.error).mock.calls]
     expect(printed[0]?.[0]).toContain('[request error] [GET] http://localhost/failing?a=1')
   })
+
+  it('strips control characters from the raw error it prints when the report cannot be rendered', async () => {
+    setErrorChannelForwarding(() => false)
+    const unrenderable = { message: 'boom', causes: [], frames: null } as unknown as ErrorReport
+    const { reporter } = reporterFor({ createReport: () => Promise.resolve(unrenderable) })
+    const error = new Error('\u001B]52;c;ZXZpbA==\u0007boom\u001B[2J')
+
+    await reporter(error, request())
+
+    expect(console.log).not.toHaveBeenCalled()
+    const printed = vi.mocked(console.error).mock.calls.flat().join(' ')
+    expect(printed).toContain(']52;c;ZXZpbA==boom[2J')
+    expect(printed).not.toContain('\u001B')
+    expect(printed).not.toContain('\u0007')
+  })
 })

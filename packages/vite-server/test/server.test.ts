@@ -4,11 +4,12 @@ import { createServerHelpers } from '../src/runtime/server'
 
 const rules: Record<string, Record<string, unknown>> = {
   '/base/about': { headers: { 'x-about': '1' } },
+  'POST /base/about': { headers: { 'x-about': 'post' } },
 }
 
 function helpers () {
   const fetch = vi.fn((_request: Request) => Promise.resolve(new Response('ok')))
-  const match = (path: string) => rules[path] ?? {}
+  const match = (path: string, method?: string) => rules[method && method !== 'GET' ? `${method} ${path}` : path] ?? {}
   return { fetch, ...createServerHelpers(match, () => Promise.resolve(fetch), '/base/') }
 }
 
@@ -20,6 +21,12 @@ describe('`nuxt/server` on the vite server', () => {
 
   it('matches route rules for the request', () => {
     expect(helpers().getRouteRules({ url: new URL('https://nuxt.com/base/about') })).toEqual({ headers: { 'x-about': '1' } })
+  })
+
+  it('matches route rules for the request method', () => {
+    expect(helpers().matchRouteRules('/about', 'POST')).toEqual({ headers: { 'x-about': 'post' } })
+    const req = new Request('https://nuxt.com/base/about', { method: 'POST' })
+    expect(helpers().getRouteRules({ req, url: new URL(req.url) })).toEqual({ headers: { 'x-about': 'post' } })
   })
 
   it('fetches a route of the app through its handler', async () => {

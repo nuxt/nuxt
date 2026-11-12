@@ -44,6 +44,34 @@ export default defineNuxtConfig({
 
 :read-more{title="NuxtLink" to="/docs/api/components/nuxt-link"}
 
+### Resource Hints
+
+To speed up client-side navigation, Nuxt adds resource hints for the JavaScript and CSS chunks a request resolves. `<link rel="preload">` (or `modulepreload`) marks the chunks the page itself needs, while `<link rel="prefetch">` marks the chunks the entry point and the rendered components lazy-import, so they are warm if the user later navigates to them.
+
+Preload hints take effect as soon as the HTML is parsed. Prefetch hints are rendered with `data-href` in place of `href`, so the browser ignores them until Nuxt activates them once the app is ready (see [`onNuxtReady`](/docs/api/utils/on-nuxt-ready)). They are also left out of the `Link` response header and 103 Early Hints. That way they do not compete with the page's own resources while it loads. You can turn this off with [`experimental.deferPrefetchHints`](/docs/guide/going-further/experimental-features#deferprefetchhints). On a connection with data saver enabled, or a 2G connection, they are not activated at all. Routes served with [`noScripts`](/docs/guide/going-further/features#noscripts) have no client to activate them, so their non-script prefetch hints are rendered with `href`.
+
+On a large app the prefetched set can grow past what a page actually needs. A public page and the signed-in app often share an entry chunk, so a prerendered public page can prefetch chunks that only the signed-in app uses, spending bandwidth on chunks the visitor never loads.
+
+To stop a chunk from being prefetched, set `prefetch` to `false` on its manifest entry in the [`build:manifest`](/docs/api/advanced/hooks#nuxt-hooks-build-time) hook:
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+  hooks: {
+    'build:manifest': (manifest) => {
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.src?.startsWith('pages/app/')) {
+          chunk.prefetch = false
+        }
+      }
+    },
+  },
+})
+```
+
+This removes the `rel="prefetch"` hint for every chunk whose source lives under `pages/app/`, while leaving the chunks in the bundle and the `preload` and `modulepreload` hints intact. Adjust the `startsWith` prefix to the directory whose chunks your public pages should not prefetch.
+
+You can also preload specific components or routes from your own code with [`preloadComponents`](/docs/api/utils/preload-components), [`preloadRouteComponents`](/docs/api/utils/preload-route-components) and [`prefetchComponents`](/docs/api/utils/prefetch-components).
+
 ### Hybrid Rendering
 
 In more complex applications, we may need a full control over how our application is rendered to support cases where some pages could be generated at build time, while others should be client-side rendered
@@ -230,7 +258,7 @@ Large blocks containing multiple elements can often be reduced by importing only
 
 ### Nuxt DevTools
 
-The [Nuxt DevTools](https://devtools.nuxt.com/) gives you insights and transparency about your Nuxt App to identify performance gaps and seamlessly manage your app configurations.
+The [Nuxt DevTools](/modules/devtools) gives you insights and transparency about your Nuxt App to identify performance gaps and seamlessly manage your app configurations.
 
 ![Nuxt DevTools example](https://user-images.githubusercontent.com/11247099/217670806-fb39aeff-3881-44e5-b9c8-6c757f5925fc.png)
 

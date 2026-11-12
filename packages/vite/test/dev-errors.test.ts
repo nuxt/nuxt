@@ -1,5 +1,9 @@
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'pathe'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
+import { createServer } from 'vite'
 import type { ViteDevServer } from 'vite'
 import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from '../src/dev-errors.ts'
 
@@ -92,6 +96,44 @@ describe('createDevErrorReporter', () => {
     nuxt.close()
   })
 
+  it('only quotes compile errors from files the dev server may load', async () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'nuxt-dev-errors-')))
+    const app = join(root, 'app')
+    const shared = join(root, 'shared')
+    mkdirSync(app)
+    mkdirSync(shared)
+    const allowed = join(shared, 'allowed.js')
+    const denied = join(app, 'blocked.js')
+    const outside = join(root, 'outside.js')
+    writeFileSync(allowed, 'export const value = "ALLOWED_SOURCE"\n')
+    writeFileSync(denied, 'export const value = "DENIED_SOURCE"\n')
+    writeFileSync(outside, 'export const value = "OUTSIDE_SOURCE"\n')
+    const nuxt = createNuxt()
+    nuxt.options.rootDir = app
+    const server = await createServer({
+      configFile: false,
+      logLevel: 'silent',
+      root: app,
+      server: { middlewareMode: true, ws: false, watch: null, fs: { allow: [app, shared], deny: ['**/blocked.js'] } },
+    })
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    reporter.attach(server)
+    const failure = (file: string) => ({ message: 'Parse failed', plugin: 'test', id: file, loc: { file, line: 1, column: 1 } })
+
+    try {
+      expect(JSON.stringify(await reporter.report(failure(allowed)))).toContain('ALLOWED_SOURCE')
+      for (const file of [denied, outside]) {
+        const report = await reporter.report(failure(file))
+        expect(report?.frames.some(frame => frame.file === file)).toBe(true)
+        expect(JSON.stringify(report)).not.toMatch(/DENIED_SOURCE|OUTSIDE_SOURCE/)
+      }
+    } finally {
+      await server.close()
+      nuxt.close()
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
   it('leaves printing to a dev server that owns the channel', async () => {
     vi.stubEnv('NUXT_DEV_ERROR_CHANNEL', '/__nuxt_dev__/error')
     const nuxt = createNuxt()
@@ -104,15 +146,18 @@ describe('createDevErrorReporter', () => {
     nuxt.close()
   })
 
-  it('prints the raw error when a report cannot be built', async () => {
+  it.each([
+    [transformError.message, transformError.message],
+    ['Illegal \u001B\u001B[2J[2J\u001B]52;c;ZXZpbA==\u0007tag\r\nin template', 'Illegal [2J[2J]52;c;ZXZpbA==tag\nin template'],
+  ])('prints the raw error, without control characters, when a report cannot be built (%#)', async (message, printed) => {
     const nuxt = createNuxt()
     const print = vi.fn()
     const reporter = createDevErrorReporter(nuxt, { print })
     // `rootDir` is read while building the report, standing in for any failure in `my-bad`
     Object.defineProperty(nuxt.options, 'rootDir', { get: () => { throw new Error('nope') } })
 
-    expect(await reporter.report(transformError)).toBeUndefined()
-    expect(print).toHaveBeenCalledWith(transformError.message)
+    expect(await reporter.report({ ...transformError, message })).toBeUndefined()
+    expect(print).toHaveBeenCalledWith(printed)
 
     nuxt.close()
   })
@@ -284,6 +329,68 @@ describe('createDevErrorReporter (runtime errors from the browser)', () => {
     nuxt.close()
   })
 
+  it('does not read a file a client names in its message', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'nuxt-dev-errors-'))
+    const outside = join(dir, 'outside-of-the-project.txt')
+    writeFileSync(outside, 'should never reach a report\n')
+    const nuxt = createNuxt()
+    const print = vi.fn()
+    const { messages, channel } = listen()
+    const reporter = createDevErrorReporter(nuxt, { print })
+    const { server, listeners } = devServer({ graph: clientGraph() })
+    reporter.attach(server)
+
+    listeners['nuxt:dev:client-error']!({ name: 'Error', message: `boom\n${outside}:1:1`, stack: 'Error: boom' })
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+
+    expect(print).toHaveBeenCalledTimes(1)
+    expect(messages[0].report).toMatchObject({ kind: 'error', name: 'Error', message: `boom\n${outside}:1:1` })
+    expect(messages[0].report.frames).toEqual([])
+    expect(JSON.stringify(messages[0].report)).not.toContain('should never reach a report')
+
+    rmSync(dir, { recursive: true })
+    channel.close()
+    nuxt.close()
+  })
+
+  it('strips control characters from a runtime error it prints raw', async () => {
+    const nuxt = createNuxt()
+    const print = vi.fn()
+    const reporter = createDevErrorReporter(nuxt, { print })
+    const { server, listeners } = devServer({ graph: clientGraph() })
+    reporter.attach(server)
+    Object.defineProperty(nuxt.options, 'rootDir', { get: () => { throw new Error('nope') } })
+
+    listeners['nuxt:dev:client-error']!({ name: '\u001B[2J', message: 'boom', stack: 'Error: \u001B\u001B[31m[31mboom\u0007' }, { send: vi.fn() })
+    await vi.waitFor(() => expect(print).toHaveBeenCalledTimes(1))
+    expect(print).toHaveBeenCalledWith('Error: [31m[31mboom')
+
+    nuxt.close()
+  })
+
+  it('ignores hmr events whose fields do not have the expected types', async () => {
+    const nuxt = createNuxt()
+    const print = vi.fn()
+    const { messages, channel } = listen()
+    const reporter = createDevErrorReporter(nuxt, { print })
+    const { server, listeners } = devServer({ graph: clientGraph() })
+    reporter.attach(server)
+    const client = { send: vi.fn() }
+
+    for (const data of [null, 'boom', { message: 42 }]) {
+      listeners['nuxt:dev:client-error']!(data, client)
+      expect(() => listeners['nuxt:dev:error:shown']!(data, client)).not.toThrow()
+    }
+    listeners['nuxt:dev:client-error']!({ name: 42, message: 'boom', stack: {}, fatal: 'no' }, client)
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+
+    expect(messages[0].report).toMatchObject({ name: 'Error', message: 'boom' })
+    expect(print).toHaveBeenCalledTimes(1)
+
+    channel.close()
+    nuxt.close()
+  })
+
   it('replays a runtime error only to a page that raises it again', async () => {
     const nuxt = createNuxt()
     const print = vi.fn()
@@ -402,20 +509,14 @@ describe('DevErrorsPlugin', () => {
     hook.call({ environment: { name: 'client', transformRequest: transform } }, { file })
   }
 
-  it('transforms the file that failed once it changes, clearing the report when it compiles', async () => {
+  it('transforms the file that failed once it changes, reporting progress and clearing the report when it compiles', async () => {
     const reporter = { report: vi.fn(() => Promise.resolve(undefined)), clear: vi.fn(), progress: vi.fn(), file: '/src/app.vue' }
     const transform = vi.fn(() => Promise.resolve({}))
 
     hotUpdate(reporter, '/src/app.vue', transform)
-    await vi.waitFor(() => expect(reporter.clear).toHaveBeenCalledTimes(1))
-    expect(transform).toHaveBeenCalledWith('/src/app.vue')
-  })
-
-  it('reports progress while the file that failed is transformed, retiring it afterwards', async () => {
-    const reporter = { report: vi.fn(() => Promise.resolve(undefined)), clear: vi.fn(), progress: vi.fn(), file: '/src/app.vue' }
-
-    hotUpdate(reporter, '/src/app.vue', () => Promise.resolve({}))
     await vi.waitFor(() => expect(reporter.progress).toHaveBeenCalledTimes(2))
+    expect(reporter.clear).toHaveBeenCalledTimes(1)
+    expect(transform).toHaveBeenCalledWith('/src/app.vue')
     expect(reporter.progress.mock.calls).toEqual([
       [{ phase: 'transform', message: 'Rebuilding' }],
       [{ phase: 'transform', percent: 100 }],

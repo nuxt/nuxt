@@ -1,24 +1,15 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { $fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
+import { setupFixture } from './utils'
 
 // Stubbing a page out of the server bundle leaves its route record in place, so
 // every route it touches still has to resolve.
-const shouldRun = runsOncePerEnvInMatrix
 
-if (shouldRun) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/spa-only', import.meta.url)),
-    dev: isDev,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+await setupFixture('spa-only', runsOncePerEnvInMatrix)
 
-describe.skipIf(!shouldRun)('pages served with `ssr: false`', () => {
+describe.skipIf(!runsOncePerEnvInMatrix)('pages served with `ssr: false`', () => {
   it('serves an SPA shell rather than rendered markup', async () => {
     const html = await $fetch<string>('/admin')
     expect(html).not.toContain('admin-index-page')
@@ -40,6 +31,30 @@ describe.skipIf(!shouldRun)('pages served with `ssr: false`', () => {
   it('still renders a server-rendered alias of a client-only page', async () => {
     expect(await $fetch<string>('/aliased-alt')).toContain('aliased-page')
     expect(await $fetch<string>('/aliased')).not.toContain('aliased-page')
+  })
+
+  it.skipIf(isDev).each([
+    ['/admin', ['admin-shell', 'admin-index-page'], ['product-page', 'report-default']],
+    ['/products/123', ['product-page'], ['admin-shell', 'report-default']],
+    ['/report', ['report-default', 'report-aux'], ['admin-shell', 'product-page']],
+  ])('preloads only the page chunks of %s', async (path, markers, unrelatedMarkers) => {
+    const html = await $fetch<string>(path)
+    const preloaded = await Promise.all([...html.matchAll(/<link rel="modulepreload"[^>]*href="([^"]+)"/g)].map(m => $fetch<string>(m[1]!, { responseType: 'text' })))
+    for (const marker of markers) {
+      expect(preloaded.some(code => code.includes(marker)), marker).toBe(true)
+    }
+    for (const marker of unrelatedMarkers) {
+      expect(preloaded.some(code => code.includes(marker)), marker).toBe(false)
+    }
+  })
+
+  it.skipIf(isDev)('preloads the styles of a client-only page without applying them', async () => {
+    const html = await $fetch<string>('/products/123')
+    const preloads = [...html.matchAll(/<link rel="preload" as="style"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const styles = await Promise.all(preloads.map(href => $fetch<string>(href, { responseType: 'text' })))
+    const preload = preloads[styles.findIndex(css => css.includes('client-only-style'))]
+    expect(preload).toBeDefined()
+    expect([...html.matchAll(/<link rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1])).not.toContain(preload)
   })
 
   it('still renders a child that escapes its parent region via an absolute path', async () => {

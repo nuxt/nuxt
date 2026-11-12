@@ -121,5 +121,10 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'A `getContents` function returned a promise that never settles. Resolve it before the bundler starts (for example from `pages:resolved` or `nitro:init`), rather than waiting on something that happens during or after bundling.',
       docs: false,
     },
+    NUXT_B1023: {
+      why: (p: { name: string, version: string, range: string }) => `Nuxt requires \`${p.name}@${p.range}\`, but \`${p.name}@${p.version}\` is installed.`,
+      fix: (p: { name: string, installCommand: string, range: string }) => `Run \`${p.installCommand}\` to add a version of \`${p.name}\` matching \`${p.range}\` to your dependencies.`,
+      docs: false,
+    },
   },
 })

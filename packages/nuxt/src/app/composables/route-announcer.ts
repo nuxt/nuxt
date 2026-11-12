@@ -1,62 +1,27 @@
-import type { Ref } from 'vue'
-import { getCurrentScope, onScopeDispose, shallowRef } from 'vue'
-import { useNuxtApp } from '../nuxt'
 import { injectHead } from './head'
+import { createAnnouncer, useSharedAnnouncer } from './announcer'
+import type { AnnouncerPoliteness, NuxtAnnouncer, NuxtAnnouncerOpts } from './announcer'
 
-export type Politeness = 'assertive' | 'polite' | 'off'
+export type Politeness = AnnouncerPoliteness
+export type NuxtRouteAnnouncerOpts = NuxtAnnouncerOpts
+export type RouteAnnouncer = NuxtAnnouncer
 
-export type NuxtRouteAnnouncerOpts = {
-  /** @default 'polite' */
-  politeness?: Politeness
-}
-
-export type RouteAnnouncer = {
-  message: Ref<string>
-  politeness: Ref<Politeness>
-  set: (message: string, politeness?: Politeness) => void
-  polite: (message: string) => void
-  assertive: (message: string) => void
-  _cleanup: () => void
-}
-
-function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
-  const message = shallowRef('')
-  const politeness = shallowRef<Politeness>(opts.politeness || 'polite')
+function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts): RouteAnnouncer {
+  const announcer = createAnnouncer(opts)
   const activeHead = injectHead()
 
-  function set (messageValue: string = '', politenessSetting: Politeness = 'polite') {
-    message.value = messageValue
-    politeness.value = politenessSetting
-  }
-
-  function polite (msg: string) {
-    set(msg, 'polite')
-  }
-
-  function assertive (msg: string) {
-    set(msg, 'assertive')
-  }
-
   function _updateMessageWithPageHeading () {
-    set(document?.title?.trim(), politeness.value)
-  }
-
-  function _cleanup () {
-    activeHead?.hooks?.removeHook('dom:rendered', _updateMessageWithPageHeading)
+    announcer.set(document?.title?.trim(), announcer.politeness.value)
   }
 
   _updateMessageWithPageHeading()
-
   activeHead?.hooks?.hook('dom:rendered', _updateMessageWithPageHeading)
 
-  return {
-    _cleanup,
-    message,
-    politeness,
-    set,
-    polite,
-    assertive,
+  announcer._cleanup = () => {
+    activeHead?.hooks?.removeHook('dom:rendered', _updateMessageWithPageHeading)
   }
+
+  return announcer
 }
 
 /**
@@ -64,26 +29,5 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
  * @since 3.12.0
  */
 export function useRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}): Omit<RouteAnnouncer, '_cleanup'> {
-  const nuxtApp = useNuxtApp()
-
-  // Initialise global route announcer if it doesn't exist already
-  const announcer = nuxtApp._routeAnnouncer ||= createRouteAnnouncer(opts)
-
-  // Update politeness if different from current
-  if (opts.politeness && opts.politeness !== announcer.politeness.value) {
-    announcer.politeness.value = opts.politeness
-  }
-  if (import.meta.client && getCurrentScope()) {
-    nuxtApp._routeAnnouncerDeps ||= 0
-    nuxtApp._routeAnnouncerDeps++
-    onScopeDispose(() => {
-      nuxtApp._routeAnnouncerDeps!--
-      if (nuxtApp._routeAnnouncerDeps === 0) {
-        announcer._cleanup()
-        delete nuxtApp._routeAnnouncer
-      }
-    })
-  }
-
-  return announcer
+  return useSharedAnnouncer('_routeAnnouncer', opts, () => createRouteAnnouncer(opts))
 }

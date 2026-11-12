@@ -25,10 +25,15 @@ export { loadJiti } from './jiti.ts'
 
 export { findPackageMissingSubpath } from '../dependency.ts'
 
-export { parseNodeModulePath } from './node-module.ts'
+export { resolvePostcssPlugins } from './postcss.ts'
+
+export { lookupNodeModuleSubpath, parseNodeModulePath } from './node-module.ts'
 export type { ParsedNodeModulePath } from './node-module.ts'
 
 export { hasOwnSubpathImport } from './subpath-imports.ts'
+
+export { VUE_PACKAGE_NAMES, VUE_PACKAGE_SPECIFIER_RE, isInVuePackages, resolveVuePackageImporter, resolveVuePackages } from './vue-packages.ts'
+export type { VuePackageName, VuePackages } from './vue-packages.ts'
 
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'
@@ -41,5 +46,12 @@ export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../cons
 
 export { createServerBuild, setServerBuild, useServerBuild } from './server-build.ts'
 
+export { addClientBuildState, restoreClientBuildState, saveClientBuildState } from './client-build-state.ts'
+export type { ClientBuildState } from './client-build-state.ts'
+
 export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
+
+export { resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath } from './spa-loading-template.ts'
+
+export { findRuntimeConfigSchema, getRuntimeConfigSchema, resolveRuntimeConfig, runtimeConfigSchemaToType } from './runtime-config.ts'
 export type { NuxtServerRuntime, NuxtServerRuntimeModule, RendererConfigName, ServerRuntimeOptions } from './renderer.ts'

@@ -11,6 +11,8 @@ import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import { linkToAlias } from '../utils.ts'
 
+const defineNuxtSchema = (val: any) => val
+
 export default defineNuxtModule({
   meta: {
     name: 'nuxt:nuxt-config-schema',
@@ -129,7 +131,7 @@ export default defineNuxtModule({
     async function resolveSchema () {
       // Global import
       // @ts-expect-error adding to globalThis for 'auto-import' support within nuxt.config file
-      globalThis.defineNuxtSchema = (val: any) => val
+      globalThis.defineNuxtSchema = defineNuxtSchema
 
       // Load schema from layers
       const schemaDefs: SchemaDefinition[] = [nuxt.options.$schema]

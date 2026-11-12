@@ -6,7 +6,9 @@ import type { RawSourceMap } from 'my-bad'
 import { generatedPosition, originalPosition, resolveSource, traceMapFor as traceMap } from 'nuxt/internal/dev-error/sourcemap'
 import type { SourcePosition, TraceMap } from 'nuxt/internal/dev-error/sourcemap'
 import { viteNodeFetch, viteNodeOptions } from '#vite-node'
+import { findSourceMap } from 'node:module'
 import process from 'node:process'
+import { fileURLToPath } from 'node:url'
 
 const runner: ViteNodeRunner = createRunner()
 
@@ -96,8 +98,32 @@ export function getCompiledPosition (file: string, line: number, column?: number
 }
 
 /**
+ * Source position Node's own source map support gives a frame. Node does not apply it
+ * while `Error.prepareStackTrace` is replaced.
+ */
+function getNodeOriginalPosition (file: string, line: number, column: number): SourcePosition | undefined {
+  if (!process.sourceMapsEnabled) {
+    return undefined
+  }
+  try {
+    const origin = findSourceMap(file)?.findOrigin(line, column)
+    if (!origin || !('fileName' in origin)) {
+      return undefined
+    }
+    return {
+      file: origin.fileName.startsWith('file://') ? fileURLToPath(origin.fileName) : origin.fileName,
+      line: origin.lineNumber,
+      column: origin.columnNumber,
+    }
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * Formats a stack as V8 does, with the position of each frame in a transformed module
- * replaced by the source position its current map gives it.
+ * replaced by the source position its current map gives it, or else by the one Node's own
+ * source map support gives it.
  */
 export function prepareStackTrace (error: Error, callSites: NodeJS.CallSite[]): string {
   const frames = callSites.map((callSite) => {
@@ -108,7 +134,7 @@ export function prepareStackTrace (error: Error, callSites: NodeJS.CallSite[]): 
     if (!file || line === null || column === null) {
       return text
     }
-    const mapped = getOriginalPosition(file, line, column)
+    const mapped = getOriginalPosition(file, line, column) ?? getNodeOriginalPosition(file, line, column)
     return mapped ? withLocation(text, line, column, mapped) : text
   })
   return [headerOf(error), ...frames].join('\n')

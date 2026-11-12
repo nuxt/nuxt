@@ -31,7 +31,8 @@ function fetchManifest (): Promise<NuxtAppManifest> {
     _manifest = import(/* webpackIgnore: true */ /* @vite-ignore */ '#app-manifest') as unknown as Promise<NuxtAppManifest>
   } else {
     // Low priority so this background warm-up does not contend with LCP-critical resources.
-    _manifest = fetch(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), { priority: 'low' })
+    // `keepalive` stops WebKit cancelling (and rejecting) the request when the page is left.
+    _manifest = fetch(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), { priority: 'low', keepalive: true })
       .then((res) => {
         // native `fetch` resolves non-2xx responses; surface them with a `status` so callers
         // (e.g. the outdated-build check) can distinguish a missing manifest from a bad payload
