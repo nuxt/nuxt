@@ -1,7 +1,8 @@
+import { routeToRegExp } from 'rou3'
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns } from '../src/pages/route-patterns.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns, toRou3RoutePatterns } from '../src/pages/route-patterns.ts'
 import { getRouterOptionsKeys, routerOptionsMayModifyRoutes } from '../src/pages/router-options.ts'
 
 describe('toRou3Patterns', () => {
@@ -30,6 +31,49 @@ describe('toRou3Patterns', () => {
       { path: '/:slug(.*)*', children: [{ path: ':id()' }] },
     ]
     expect(toRou3Patterns(pages)).toStrictEqual(['/parent', '/parent/child', '/parent', '/**:slug', '/**:slug/:id'])
+  })
+})
+
+describe('toRou3RoutePatterns', () => {
+  it.each([
+    ['/', '/', ['/'], ['/a']],
+    ['/parent/:child()', '/parent/:child', ['/parent/a'], ['/parent', '/parent/a/b']],
+    ['/x/:id?', '/x/:id?', ['/x', '/x/a'], ['/x/a/b']],
+    ['/:sub?/route-:slug()', '/:sub?/route-:slug', ['/route-a', '/a/route-b'], ['/a/b/route-c']],
+    ['/optional/prefix-:opt?', '/optional/prefix-{:opt}?', ['/optional/prefix-', '/optional/prefix-a'], ['/optional/prefix-a/b']],
+    ['/:slug(.*)*', '/:slug(.*)', ['/', '/a', '/a/b/c'], []],
+    ['/docs/:slug(.*)*', '/docs/:slug(.*)', ['/docs', '/docs/a/b'], ['/other']],
+    ['/:id([^/]*)*/suffix', '/:id(.*)/suffix', ['/a/suffix', '/a/b/suffix'], ['/a']],
+    ['/:locale(de|fr)/account', '/:locale(de|fr)/account', ['/de/account'], ['/en/account']],
+    [
+      '/package-code/:org?/:name/v/:version/:filePath(.*)?',
+      '/package-code/:org?/:name/v/:version/:filePath(.*)',
+      ['/package-code/vue/v/3', '/package-code/vue/v/3/src/index.ts', '/package-code/nuxt/kit/v/4/dist/index.mjs'],
+      ['/package-code/vue', '/package-code/a/b/c/v/3'],
+    ],
+  ])('should convert %s to %s', (path, pattern, matches, mismatches) => {
+    expect(toRou3RoutePatterns([{ path }])).toStrictEqual([pattern])
+    const re = routeToRegExp(pattern)
+    for (const url of matches) { expect(url).toMatch(re) }
+    for (const url of mismatches) { expect(url).not.toMatch(re) }
+  })
+
+  it('should resolve nested routes against the parent path before converting', () => {
+    const pages: NuxtPage[] = [
+      { path: '/parent', children: [{ path: 'child' }, { path: '' }, { path: '/absolute' }] },
+      { path: '/:org?/:name()', children: [{ path: ':file(.*)?' }] },
+      { path: '/:slug(.*)*', children: [{ path: ':id()' }] },
+    ]
+    expect(toRou3RoutePatterns(pages)).toStrictEqual([
+      '/parent',
+      '/parent/child',
+      '/parent',
+      '/absolute',
+      '/:org?/:name',
+      '/:org?/:name/:file(.*)',
+      '/:slug(.*)',
+      '/:slug(.*)/:id',
+    ])
   })
 })
 

@@ -14,7 +14,7 @@ import { rou3PatternToURLPattern } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, resolveRoutePaths } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { resolvePageMetaExtractionKeys, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
-import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns } from './route-patterns.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns, toRou3RoutePatterns } from './route-patterns.ts'
 import { findRoutesModifyingRouterOptions, genRouterOptions, resolveRouterOptions } from './router-options.ts'
 import { createInlineRouteRulesUpdater, removePagesRules } from './route-rules.ts'
 import { markPagesForRouteRules } from './route-coverage.ts'
@@ -524,7 +524,7 @@ export default defineNuxtModule({
 
       nitro.options.ssrRoutes = [
         ...nitro.options.ssrRoutes || [],
-        ...toRou3Patterns(nuxt.apps.default?.pages || []),
+        ...toRou3RoutePatterns(nuxt.apps.default?.pages || []),
       ]
 
       nitro.options.prerender.routes ||= []
