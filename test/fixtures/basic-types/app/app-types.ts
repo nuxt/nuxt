@@ -827,6 +827,8 @@ describe('composables', () => {
     expectTypeOf(listCookie.getAll()).toEqualTypeOf<Record<string, string[] | undefined>>()
     expectTypeOf(listCookie.create({ maxAge: 60 }).get('test')).toEqualTypeOf<string[] | undefined>()
     expectTypeOf(listCookie.get<number>('test')).toEqualTypeOf<number | undefined>()
+    listCookie.onChange('test', value => expectTypeOf(value).toEqualTypeOf<string[] | undefined>())
+    expectTypeOf($cookie.onChange('test', () => {})).toEqualTypeOf<() => void>()
     listCookie.set('test', ['a'])
     listCookie.set('test', null)
     // @ts-expect-error not a string[]

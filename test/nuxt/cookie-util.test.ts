@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, describe, expect, it } from 'vitest'
-import { nextTick } from 'vue'
+import { effectScope, nextTick } from 'vue'
 import { $cookie } from '#app/composables/cookie'
 
 function clearCookies () {
@@ -71,6 +71,62 @@ describe('$cookie', () => {
 
     $cookie.set('util-custom', 'hello', { encode: v => `x-${v}` })
     expect($cookie.get('util-custom', { decode: v => v?.slice(2) })).toBe('hello')
+  })
+
+  it('should call onChange listeners until they are stopped', () => {
+    const values: unknown[] = []
+    const stop = $cookie.onChange('util-change', value => values.push(value))
+    const dispatch = (changed: { name: string, value: string }[], deleted: { name: string }[] = []) =>
+      cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed, deleted }))
+
+    dispatch([{ name: 'util-change', value: 'a%20b' }])
+    dispatch([{ name: 'util-other', value: 'x' }])
+    dispatch([], [{ name: 'util-change' }])
+    stop()
+    dispatch([{ name: 'util-change', value: 'after-stop' }])
+
+    expect(values).toEqual(['a b', null])
+  })
+
+  it('should stop onChange listeners with the current effect scope', () => {
+    const values: unknown[] = []
+    const scope = effectScope()
+    scope.run(() => $cookie.onChange('util-change-scope', value => values.push(value)))
+    const dispatch = (value: string) =>
+      cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name: 'util-change-scope', value }], deleted: [] }))
+
+    dispatch('before')
+    scope.stop()
+    dispatch('after')
+
+    expect(values).toEqual(['before'])
+  })
+
+  it('should stop onChange listeners when their signal is aborted', () => {
+    const values: unknown[] = []
+    const controller = new AbortController()
+    $cookie.onChange('util-change-signal', value => values.push(value), { signal: controller.signal })
+
+    const aborted = new AbortController()
+    aborted.abort()
+    $cookie.onChange('util-change-signal', () => values.push('never'), { signal: aborted.signal })
+
+    const dispatch = (value: string) =>
+      cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name: 'util-change-signal', value }], deleted: [] }))
+
+    dispatch('before')
+    controller.abort()
+    dispatch('after')
+
+    expect(values).toEqual(['before'])
+  })
+
+  it('should decode onChange values with the instance options', () => {
+    const values: unknown[] = []
+    const stop = $cookie.create(legacyCookieSerializer).onChange('util-change-json', value => values.push(value))
+    cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name: 'util-change-json', value: '%7B%22a%22%3A1%7D' }], deleted: [] }))
+    stop()
+    expect(values).toEqual([{ a: 1 }])
   })
 
   it('should create instances with merged defaults', () => {

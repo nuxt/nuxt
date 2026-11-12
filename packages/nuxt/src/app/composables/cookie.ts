@@ -179,15 +179,6 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   if (import.meta.client) {
     let skipRefresh = false
-    let channel: null | BroadcastChannel = null
-    try {
-      if (!store && typeof BroadcastChannel !== 'undefined') {
-        channel = new BroadcastChannel(`nuxt:cookies:${name}`)
-      }
-    } catch {
-      // BroadcastChannel will fail in certain situations when cookies are disabled
-      // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
-    }
     const callback = (force = false) => {
       if (!force) {
         if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
@@ -198,16 +189,15 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     let cookieWatcher: WatchHandle | undefined
 
-    const handleChange = (data: { value?: string | null, refresh?: boolean }) => {
-      if (data.refresh) { invalidateClientCookieJar() }
-      const raw = data.refresh ? (opts.filter!(name) ? readClientCookieJar()[name] : undefined) : data.value
-      const value = raw === undefined && data.refresh ? undefined : opts.decode(raw)
+    const handleChange = (value: T | undefined) => {
+      if (!opts.filter!(name)) { value = undefined }
       if (isEqual(value, cookie.value)) { return }
       cookie.value = value
       cookies[name] = klona(value)
       skipRefresh = true
     }
 
+    instance.onChange(name, handleChange, opts as CookieOptions)
     const hasScope = !!getCurrentScope()
 
     if (hasScope) {
@@ -219,30 +209,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         writers?.delete(write)
         cookieWatcher?.pause()
         callback()
-        channel?.close()
       })
-    }
-
-    if (store) {
-      /* event is of type CookieChangeEvent */
-      const changeHandler = (event: CookieChangeEvent) => {
-        const changedCookie = event.changed.find(c => c.name === name)
-        const removedCookie = event.deleted.find(c => c.name === name)
-
-        if (changedCookie) {
-          handleChange({ value: changedCookie.value })
-        }
-
-        if (removedCookie) {
-          handleChange({ value: null })
-        }
-      }
-      store.addEventListener('change', changeHandler)
-      if (hasScope) {
-        onScopeDispose(() => store.removeEventListener('change', changeHandler))
-      }
-    } else if (channel) {
-      channel.onmessage = ({ data }) => handleChange(data)
     }
 
     if (opts.watch && !opts.readonly) {
@@ -599,11 +566,57 @@ export interface $Cookie<D = string | null | undefined> {
   set<T = D> (name: string, value: NoInfer<T> | null | undefined, opts?: CookieOptions<T>): void
   /** Remove a cookie. Pass the same `path`/`domain` the cookie was set with. */
   remove (name: string, opts?: CookieOptions): void
+  /**
+   * Call `callback` with the decoded value whenever the cookie changes, including in other tabs.
+   * Returns a function that stops listening, which is also called when the current effect scope
+   * is disposed or `signal` is aborted. Does nothing on the server.
+   */
+  onChange<T = D> (name: string, callback: (value: T | undefined) => void, opts?: CookieOptions<T> & { signal?: AbortSignal }): () => void
   create<T = D> (defaults?: CookieOptions<T>): $Cookie<T>
 }
 
 function readCookieJar (): Record<string, string | undefined> {
   return import.meta.client ? readClientCookieJar() : readServerCookieJar(useNuxtApp())
+}
+
+function listen (name: string, callback: (value: any) => void, opts: CookieOptions) {
+  const { decode = baseCookieOptions.decode } = opts
+  const handleChange = (data: { value?: string | null, refresh?: boolean }) => {
+    if (data.refresh) { invalidateClientCookieJar() }
+    const raw = data.refresh ? readClientCookieJar()[name] : data.value
+    callback(raw === undefined && data.refresh ? undefined : decode(raw))
+  }
+
+  if (store) {
+    /* event is of type CookieChangeEvent */
+    const changeHandler = (event: CookieChangeEvent) => {
+      const changedCookie = event.changed.find(c => c.name === name)
+      const removedCookie = event.deleted.find(c => c.name === name)
+
+      if (changedCookie) {
+        handleChange({ value: changedCookie.value })
+      }
+
+      if (removedCookie) {
+        handleChange({ value: null })
+      }
+    }
+    store.addEventListener('change', changeHandler)
+    return () => store.removeEventListener('change', changeHandler)
+  }
+
+  let channel: BroadcastChannel | undefined
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      channel = new BroadcastChannel(`nuxt:cookies:${name}`)
+    }
+  } catch {
+    // BroadcastChannel will fail in certain situations when cookies are disabled
+    // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
+  }
+  if (!channel) { return () => {} }
+  channel.onmessage = ({ data }) => handleChange(data)
+  return () => channel.close()
 }
 
 function createCookieUtil (defaults: CookieOptions): $Cookie<any> {
@@ -643,6 +656,18 @@ function createCookieUtil (defaults: CookieOptions): $Cookie<any> {
     has: name => readCookieJar()[name] !== undefined,
     set: (name, value, opts) => write(name, value, opts),
     remove: (name, opts) => write(name, undefined, opts),
+    onChange (name, callback, opts) {
+      if (!import.meta.client || opts?.signal?.aborted) { return () => {} }
+      const { signal, ...options } = opts ?? {}
+      const unlisten = listen(name, callback, { ...defaults, ...options })
+      const stop = () => {
+        unlisten()
+        signal?.removeEventListener('abort', stop)
+      }
+      signal?.addEventListener('abort', stop, { once: true })
+      if (getCurrentScope()) { onScopeDispose(stop) }
+      return stop
+    },
     create: opts => createCookieUtil({ ...defaults, ...opts }),
   }
 }
