@@ -960,6 +960,19 @@ describe('pages', () => {
     await page.close()
   })
 
+  it.skipIf(!oncePerManifest)('refetches on watch rather than replaying extracted payload data', async () => {
+    const { page } = await renderPage('/prerender/test')
+
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/prerender/watch-cache'))
+    await page.waitForFunction(() => document.querySelector('#value')?.textContent?.trim() === 'n=0')
+
+    await page.click('#bump')
+    await page.waitForFunction(() => document.querySelector('#value')?.textContent?.trim() !== 'n=0', undefined, { timeout: 5000 })
+    expect((await page.innerText('#value')).trim()).toBe('n=1')
+
+    await page.close()
+  })
+
   it.skipIf(!oncePerManifest)('enables preview mode on prerendered pages', async () => {
     const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
 
