@@ -52,8 +52,10 @@ describe('toRou3RoutePatterns', () => {
     ['/:slug(.*)*/:id?', '/**:slug'],
     ['/:slug(.*)/edit', '/:slug(.*)/edit'],
     ['/users/:id(\\d+)', '/users/:id'],
-    ['/users/:id(\\d+)?', '/users/:id'],
+    ['/users/:id(\\d+)?', '/users/:id?'],
     ['/:locale(de|fr)/account', '/:locale/account'],
+    ['/:locale(en|fr)?/about', '/:locale?/about'],
+    ['/files/:id([^/]*)?/raw', '/files/:id?/raw'],
     ['/package-code/:org?/:name()/v/:version()/:filePath(.*)?', '/package-code/:org?/:name/v/:version/:filePath(.*)'],
   ])('should convert %s to %s', (path, pattern) => {
     expect(toRou3RoutePatterns([{ path }])).toStrictEqual([pattern])

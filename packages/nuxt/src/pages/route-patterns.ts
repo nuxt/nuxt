@@ -114,7 +114,7 @@ function toRou3Path (path: string): string {
     .replace(/:([^/*]*)/g, (_, name) => `:${name.replace(/\W/g, (r: string) => r === '?' ? '' : '_')}`)
 }
 
-const OPTIONAL_SEGMENT_RE = /(?<=^|\/):(\w+)(\?|\(\.\*\)\??)(?=\/|$)/g
+const OPTIONAL_SEGMENT_RE = /(?<=^|\/):(\w+)(?:(\(\.\*\))\??|(?:\([^)]*\))?\?)(?=\/|$)/g
 
 function toRou3RoutePath (path: string): string {
   let pattern = ''
@@ -122,7 +122,7 @@ function toRou3RoutePath (path: string): string {
   for (const match of path.matchAll(OPTIONAL_SEGMENT_RE)) {
     pattern += toRou3Path(path.slice(start, match.index))
     if (pattern.includes('**:')) { return pattern }
-    pattern += match[2] === '?' ? `:${match[1]}?` : `:${match[1]}(.*)`
+    pattern += match[2] ? `:${match[1]}(.*)` : `:${match[1]}?`
     start = match.index + match[0].length
   }
   return pattern + toRou3Path(path.slice(start))
