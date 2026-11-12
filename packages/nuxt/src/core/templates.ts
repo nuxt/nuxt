@@ -851,17 +851,20 @@ export const routeRulesTemplate: NuxtTemplate = {
     for (const { route } of allRoutes) { assertEncodingIndependentRouteRuleKey(route) }
     const routes = allRoutes
       .filter(({ route, data }) => route !== '/__nuxt_error' && VALID_MANIFEST_KEYS.some(key => data[key] !== undefined))
+    const hasRedirects = `export const hasRedirects = ${routes.some(({ data }) => !!data.redirect)}`
     if (!routes.length) {
-      return `export default () => ({})`
+      return [hasRedirects, `export default () => ({})`].join('\n')
     }
     const merged = mergeMethodRouteRulesRoutes(routes)
     const wildcardRedirects = routes.some(({ data }) => isWildcardRedirect(data.redirect))
     const resolverCode = wildcardRedirects ? `const resolveWildcardRedirect = ${resolveWildcardRedirect.toString()}` : ''
     if (merged.length === 1 && merged[0]!.route === '/**') {
       const rules = serializeAppRouteRules(merged[0]!.data)
-      return wildcardRedirects
-        ? [resolverCode, `export default path => resolveWildcardRedirect(${rules}, path)`].join('\n')
-        : `export default () => (${rules})`
+      return [
+        hasRedirects,
+        resolverCode,
+        wildcardRedirects ? `export default path => resolveWildcardRedirect(${rules}, path)` : `export default () => (${rules})`,
+      ].filter(Boolean).join('\n')
     }
     const fold = !nuxt.options.router.options.sensitive
     if (fold) {
@@ -874,6 +877,7 @@ export const routeRulesTemplate: NuxtTemplate = {
       bundlerDiagnostics.NUXT_B7022({ existing, route, canFold: fold })
     })
     return [
+      hasRedirects,
       `import { defu } from ${JSON.stringify(defuPath)}`,
       `const matcher = ${router.compileToString({ matchAll: true, serialize: serializeAppRouteRules })}`,
       genNormalizePathCode(fold),
