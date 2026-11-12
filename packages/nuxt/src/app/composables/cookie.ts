@@ -24,11 +24,13 @@ function parseCookieValue (value: string) {
 
 type _CookieOptions = Omit<CookieSerializeOptions, 'encode'>
 
-/** Options shared by `$cookie` and `useCookie`. */
-export interface CookieOptions<T = any> extends Omit<_CookieOptions, 'expires'> {
+export interface CookieOptions<T = any> extends _CookieOptions {
   decode?(value: string | null | undefined): T
   encode?(value: T): string
   default?: () => T | Ref<T>
+}
+
+export interface UseCookieOptions<T = any> extends Omit<CookieOptions<T>, 'expires'> {
   /**
    * Expiration date for the cookie, or a getter that returns one.
    *
@@ -37,10 +39,6 @@ export interface CookieOptions<T = any> extends Omit<_CookieOptions, 'expires'> 
    * The getter should be pure (no side effects).
    */
   expires?: Date | (() => Date | undefined)
-}
-
-/** Options accepted by `useCookie`. */
-export interface UseCookieOptions<T = any> extends CookieOptions<T> {
   watch?: boolean | 'shallow'
   readonly?: boolean
   /** Whether this ref reads the named cookie from the jar. Defaults to an exact name match. */
@@ -73,11 +71,33 @@ function resolveExpires (expires?: Date | (() => Date | undefined)): Date | unde
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CookieRef<T> extends Ref<T> {}
 
+function decodeURIComponentSafe (value: string) {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
 const CookieDefaults = {
   path: '/',
   watch: true,
-  decode: val => val ? parseCookieValue(decodeURIComponent(val)) : val,
-  encode: (val) => {
+  decode: val => val ? decodeURIComponentSafe(val) : val,
+  encode: val => encodeURIComponent(val),
+  refresh: false,
+} satisfies UseCookieOptions<any>
+
+/**
+ * The serializer `useCookie` used by default before Nuxt 5: values are stored as JSON, except
+ * strings that would not be read back as strings.
+ *
+ * @deprecated todo link to docs
+ *
+ * @since 5.0.0
+ */
+export const legacyCookieSerializer = {
+  decode: (val: string | null | undefined): any => val ? parseCookieValue(decodeURIComponent(val)) : val,
+  encode: (val: any): string => {
     // JSON-quote strings that would be coerced on decode (e.g. '42', 'true', 'null', 'undefined')
     if (typeof val !== 'string' || val === 'undefined') {
       return encodeURIComponent(JSON.stringify(val))
@@ -92,8 +112,7 @@ const CookieDefaults = {
     }
     return encodeURIComponent(val)
   },
-  refresh: false,
-} satisfies UseCookieOptions<any>
+} satisfies Pick<CookieOptions, 'encode' | 'decode'>
 
 // we use globalThis to avoid crashes in web workers
 const store = import.meta.client && cookieStore ? globalThis.cookieStore : undefined
@@ -274,6 +293,16 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   return cookie as CookieRef<T>
 }
+
+/**
+ * Create a `useCookie` composable with default options, e.g. `createUseCookie(legacyCookieSerializer)`.
+ *
+ * @since 5.0.0
+ */
+export function createUseCookie (defaults: UseCookieOptions = {}): typeof useCookie {
+  return ((name: string, opts?: UseCookieOptions) => useCookie(name, { ...defaults, ...opts } as UseCookieOptions & { readonly?: false })) as typeof useCookie
+}
+
 /** @since 3.10.0 */
 export function refreshCookie (name: string): void {
   if (import.meta.server || store || typeof BroadcastChannel === 'undefined') { return }
@@ -561,18 +590,15 @@ function cookieServerRef<T> (name: string, value: T | undefined, opts: UseCookie
 }
 
 export interface $Cookie {
-  /** Read and decode a cookie. */
   get<T = string | null | undefined> (name: string, opts: CookieOptions<T> & { default: () => T | Ref<T> }): T
   get<T = string | null | undefined> (name: string, opts?: CookieOptions<T>): T | undefined
   /** Read and decode all cookies visible to the current request (server) or document (client). */
   getAll (opts?: CookieOptions): Record<string, unknown>
-  /** Whether a cookie with this name exists. */
   has (name: string): boolean
   /** Encode and write a cookie. Setting `null` or `undefined` removes it. */
   set<T = string | null | undefined> (name: string, value: T, opts?: CookieOptions<T>): void
   /** Remove a cookie. Pass the same `path`/`domain` the cookie was set with. */
   remove (name: string, opts?: CookieOptions): void
-  /** Create a new `$cookie` instance with merged defaults. */
   create (defaults?: CookieOptions): $Cookie
 }
 

@@ -7,12 +7,13 @@ if (import.meta.server) {
   results.value = {
     incoming: $cookie.get('util-incoming'),
     incomingJson: $cookie.get('util-incoming-json'),
+    incomingLegacyJson: $cookie.get('util-incoming-json', legacyCookieSerializer),
     hasIncoming: $cookie.has('util-incoming'),
     hasMissing: $cookie.has('util-missing'),
     missingDefault: $cookie.get('util-missing', { default: () => 'fallback' }),
   }
 
-  $cookie.set('util-set', { n: 1 }, { maxAge: 60 })
+  $cookie.set('util-set', 'a b', { maxAge: 60 })
   results.value.readAfterSet = $cookie.get('util-set')
   results.value.useCookieAfterSet = useCookie('util-set').value
 

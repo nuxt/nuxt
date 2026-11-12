@@ -413,7 +413,7 @@ describe('pages', () => {
   it.skipIf(!errorProjects)('validates routes', async () => {
     const { status, headers } = await fetch('/catchall/forbidden')
     expect(status).toEqual(404)
-    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=%22true%22; Path=/')
+    expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
 
     const { page } = await renderPage('/navigate-to-forbidden')
 
@@ -913,7 +913,7 @@ describe.skipIf(!once)('nuxt composables', () => {
       },
     })
     const cookies = res.headers.get('set-cookie')
-    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=%22true%22; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
+    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
   it('reads cookies written earlier in the same request on the server', async () => {
     const res = await fetch('/cookies-read-after-write')
@@ -941,12 +941,13 @@ describe.skipIf(!once)('nuxt composables', () => {
 
     expect(results).toEqual({
       incoming: 'from-browser',
-      incomingJson: { a: 1 },
+      incomingJson: '{"a":1}',
+      incomingLegacyJson: { a: 1 },
       hasIncoming: true,
       hasMissing: false,
       missingDefault: 'fallback',
-      readAfterSet: { n: 1 },
-      useCookieAfterSet: { n: 1 },
+      readAfterSet: 'a b',
+      useCookieAfterSet: 'a b',
       hasAfterRemove: false,
       useCookieAfterRemove: 'empty',
       prefixedRaw: 'x-hi',
@@ -962,7 +963,7 @@ describe.skipIf(!once)('nuxt composables', () => {
       'util-prefixed=x-hi; Path=/scoped',
       'util-set-after-ref=from-util; Path=/',
       'util-set-twice=second; Path=/',
-      'util-set=%7B%22n%22%3A1%7D; Max-Age=60; Path=/',
+      'util-set=a%20b; Max-Age=60; Path=/',
     ])
   })
 
@@ -1464,7 +1465,7 @@ describe.skipIf(!errorProjects)('errors', () => {
 
   it('should render a HTML error page', async () => {
     const res = await fetch('/error')
-    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=%22true%22; Path=/, some-error=was%20set; Path=/')
+    expect(res.headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/, some-error=was%20set; Path=/')
     expect(await res.text()).toContain('This is a custom error')
   })
 

@@ -17,9 +17,9 @@ describe('$cookie', () => {
     expect($cookie.get('util-basic')).toBeUndefined()
     expect($cookie.has('util-basic')).toBe(false)
 
-    $cookie.set('util-basic', { a: 1 })
-    expect(document.cookie).toContain('util-basic=')
-    expect($cookie.get('util-basic')).toEqual({ a: 1 })
+    $cookie.set('util-basic', 'a b')
+    expect(document.cookie).toContain('util-basic=a%20b')
+    expect($cookie.get('util-basic')).toBe('a b')
     expect($cookie.has('util-basic')).toBe(true)
 
     $cookie.remove('util-basic')
@@ -36,11 +36,34 @@ describe('$cookie', () => {
   })
 
   it('should share encoding with useCookie', () => {
-    $cookie.set('util-shared', '42')
-    expect(useCookie('util-shared').value).toBe('42')
+    $cookie.set('util-shared', '"quoted"')
+    expect(useCookie('util-shared').value).toBe('"quoted"')
 
     $cookie.set('util-shared-number', 42)
-    expect(useCookie('util-shared-number').value).toBe(42)
+    expect(useCookie('util-shared-number').value).toBe('42')
+  })
+
+  it('should not serialize values as JSON by default', () => {
+    const writes = captureCookieWrites()
+    $cookie.set('util-plain', 'true')
+    $cookie.set('util-plain-object', { a: 1 })
+    expect([...writes]).toEqual(['util-plain=true; Path=/', 'util-plain-object=%5Bobject%20Object%5D; Path=/'])
+    expect($cookie.get('util-plain')).toBe('true')
+    writes.restore()
+  })
+
+  it('should support the legacy JSON serializer', () => {
+    const legacy = $cookie.create(legacyCookieSerializer)
+    legacy.set('util-legacy', { a: 1 })
+    legacy.set('util-legacy-string', '42')
+    expect($cookie.get('util-legacy')).toBe('{"a":1}')
+    expect($cookie.get('util-legacy-string')).toBe('"42"')
+    expect(legacy.get('util-legacy')).toEqual({ a: 1 })
+    expect(legacy.get('util-legacy-string')).toBe('42')
+
+    const useLegacyCookie = createUseCookie(legacyCookieSerializer)
+    expect(useLegacyCookie('util-legacy').value).toEqual({ a: 1 })
+    expect(useLegacyCookie('util-legacy', { decode: v => v }).value).toBe('%7B%22a%22%3A1%7D')
   })
 
   it('should support default and custom encode/decode', () => {
