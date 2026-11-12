@@ -106,10 +106,10 @@ export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] =
 const PARAM_REGEXP_RE = /(?<!\\)(:\w+)\(((?:\\.|[^\\)])*)\)(?![*+])/g
 
 /**
- * Convert every path a page can be reached by (its path, each alias and the subtree below it)
- * to a rou3 pattern matching those requests, keeping param names and emitting one pattern per path.
- * Custom regexps on params are dropped, other than `(.*)` and those on repeatable params.
- * Paths rou3 can only match with a broader `**` catch-all are left out with `skipCollapsed`.
+ * The rou3 pattern of every path a page can be reached by (its path, each alias and the
+ * subtree below it), keeping param names and dropping custom regexps on params other than
+ * `(.*)` and those on repeatable params. Paths that can only be matched with a broader `**`
+ * catch-all are left out with `skipCollapsed`.
  */
 export function toRou3RoutePatterns (pages: NuxtPage[], options: { skipCollapsed?: boolean } = {}, prefixes: string[] = ['/']): string[] {
   const patterns: string[] = []
