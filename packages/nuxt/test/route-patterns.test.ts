@@ -1,42 +1,19 @@
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns, toRou3RoutePatterns } from '../src/pages/route-patterns.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, toRou3RoutePatterns } from '../src/pages/route-patterns.ts'
 import { routerOptionsMayDefine } from '../src/pages/router-options.ts'
-
-describe('toRou3Patterns', () => {
-  it.each([
-    ['/', '/'],
-    ['/parent/:child()', '/parent/:child'],
-    ['/parent-:child()', '/parent-:child'],
-    ['/:stories(.*)*', '/**:stories'],
-    ['/:foo?', '/:foo'],
-    ['/:sub?/route-:slug()', '/:sub/route-:slug'],
-    ['/optional/prefix-:opt?', '/optional/prefix-:opt'],
-    ['/optional/:opt?-postfix', '/optional/:opt_postfix'],
-    ['/:id([^/]*)*/suffix', '/**:id'],
-    ['/:b2.2b()', '/:b2_2b'],
-    ['/:b2()_:2b()', '/:b2__2b'],
-    ['/test\\:name', '/test\\:name'],
-    ['/a%5Cb', '/a%5Cb'],
-    ['/%E6%B5%8B%E8%AF%95', '/%E6%B5%8B%E8%AF%95'],
-  ])('should convert %s to %s', (path, pattern) => {
-    expect(toRou3Patterns([{ path }])).toStrictEqual([pattern])
-  })
-
-  it('should join nested routes onto their parent pattern', () => {
-    const pages: NuxtPage[] = [
-      { path: '/parent', children: [{ path: 'child' }, { path: '' }] },
-      { path: '/:slug(.*)*', children: [{ path: ':id()' }] },
-    ]
-    expect(toRou3Patterns(pages)).toStrictEqual(['/parent', '/parent/child', '/parent', '/**:slug', '/**:slug/:id'])
-  })
-})
 
 describe('toRou3RoutePatterns', () => {
   it.each([
     ['/', '/'],
     ['/parent/:child()', '/parent/:child'],
+    ['/parent-:child()', '/parent-:child'],
+    ['/:b2.2b()', '/:b2_2b'],
+    ['/:b2()_:2b()', '/:b2__2b'],
+    ['/test\\:name', '/test\\:name'],
+    ['/a%5Cb', '/a%5Cb'],
+    ['/%E6%B5%8B%E8%AF%95', '/%E6%B5%8B%E8%AF%95'],
     ['/:foo?', '/:foo?'],
     ['/:org?/:name()', '/:org?/:name'],
     ['/x/:id?/edit', '/x/:id?/edit'],

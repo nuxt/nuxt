@@ -40,7 +40,7 @@ describe('prerendering pages covered by route rules', () => {
     }
   })
 
-  it('passes page patterns to Nitro `ssrRoutes`', async () => {
+  it('passes page patterns to Nitro `ssrRoutes` and `_noScriptsPagePatterns`', async () => {
     const nuxt = await loadNuxt({ cwd: pagesFixtureDir, ready: true })
 
     try {
@@ -59,6 +59,10 @@ describe('prerendering pages covered by route rules', () => {
         '/existing',
         '/package-code/:org?/:name/v/:version/:filePath(.*)',
         '/docs/**:slug',
+      ])
+      expect(nitro.options._noScriptsPagePatterns).toStrictEqual([
+        '/package-code/:org?/:name/v/:version/:filePath(.*)',
+        '/docs/*',
       ])
     } finally {
       await nuxt.close()
