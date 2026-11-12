@@ -375,9 +375,11 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
 
       await router.replace(initialURL)
       if (!isEqual(route.fullPath, initialURL)) {
-        await (import.meta.server
-          ? nuxtApp.runWithContext(() => navigateTo(route.fullPath))
-          : router.push(encodeRoutePath(route.fullPath)))
+        if (import.meta.server) {
+          await nuxtApp.runWithContext(() => navigateTo(route.fullPath))
+        } else if (!nuxtApp._processingMiddleware) {
+          await router.push(encodeRoutePath(route.fullPath))
+        }
       }
     })
 
