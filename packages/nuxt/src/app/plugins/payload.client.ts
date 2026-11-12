@@ -14,7 +14,7 @@ import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
 import { prefetchGroup } from '../internal/prefetch-util'
 import { documentURL } from '../internal/location'
 
-import { prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
+import { payloadExtraction, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
 interface ActiveHeadEntryLike { dispose: () => void }
 
@@ -69,6 +69,8 @@ function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): S
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:payload',
   setup (nuxtApp) {
+    if (!payloadExtraction) { return }
+
     // Load payload after middleware & once final route is resolved
     const staticKeysToRemove = new Set<string>()
     const router = useRouter()
