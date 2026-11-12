@@ -103,23 +103,28 @@ export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] =
   return failed ? undefined : patterns
 }
 
-export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {
-  const routes: string[] = []
+const PARAM_REGEXP_RE = /(?<!\\)(:\w+)\(((?:\\.|[^\\)])*)\)(?![*+])/g
+
+/**
+ * The rou3 pattern of every path a page can be reached by (its path, each alias and the
+ * subtree below it), keeping param names and dropping custom regexps on params other than
+ * `(.*)` and those on repeatable params. Paths that can only be matched with a broader `**`
+ * catch-all are left out with `skipCollapsed`.
+ */
+export function toRou3RoutePatterns (pages: NuxtPage[], options: { skipCollapsed?: boolean } = {}, prefixes: string[] = ['/']): string[] {
+  const patterns: string[] = []
   for (const page of pages) {
-    // convert to rou3-compatible path (https://github.com/h3js/rou3)
-    const path = page.path
-      // remove all regex patterns
-      .replace(/\([^)]*\)/g, '')
-      // catchalls: `:name([^/]*)*` or `:catchall(.*)*`
-      .replace(/:(\w+)\*.*/g, (_, name) => `**:${name}`)
-      // dynamic paths, including custom patterns, e.g. :id([^/]*)*/suffix
-      .replace(/:([^/*]*)/g, (_, name) => `:${name.replace(/\W/g, (r: string) => r === '?' ? '' : '_')}`)
-
-    routes.push(joinURL(prefix, path))
-
+    const routes = resolvePageRoutes(page, prefixes)
+    for (const route of routes) {
+      const path = route.replace(PARAM_REGEXP_RE, (match, param: string, regexp: string) => regexp === '.*' ? match : `${param}()`)
+      const converted = vueRouterToRou3(path, { expand: false })
+      if (!options.skipCollapsed || !converted.issues.some(issue => issue.type === 'collapsed')) {
+        patterns.push(...converted.patterns)
+      }
+    }
     if (page.children) {
-      routes.push(...toRou3Patterns(page.children, joinURL(prefix, path)))
+      patterns.push(...toRou3RoutePatterns(page.children, options, [...routes]))
     }
   }
-  return routes
+  return patterns
 }
