@@ -7,7 +7,7 @@ import { clearNuxtState, useState } from '../composables/state'
 import { _invokeAppErrorHandler, createError, createErrorFromThrown } from '../composables/error'
 import type { NuxtError } from '../composables/error'
 import { createIdScope, isVaporSlot, resetIdScope } from './utils'
-import { createBuffer, settleBuffer } from './ssr-buffer'
+import { captureTeleports, createBuffer, settleBuffer } from './ssr-buffer'
 import type { SSRBuffer, SSRBufferItem } from './ssr-buffer'
 import { renderDiagnostics } from '../diagnostics/render'
 import { ssrErrorBoundary, vapor } from '#build/nuxt.config.mjs'
@@ -66,7 +66,7 @@ const NuxtErrorBoundaryServer = defineComponent({
     }
 
     function handleError (err: unknown, target: ComponentPublicInstance | null, info: string) {
-      if (!error.value) {
+      if (!error.value && !committed) {
         error.value = toPublicError(err)
         if (import.meta.dev) {
           renderDiagnostics.NUXT_E4025({ cause: err })
@@ -77,6 +77,7 @@ const NuxtErrorBoundaryServer = defineComponent({
       _invokeAppErrorHandler(nuxtApp, err, target, info)
     }
 
+    let committed = false
     let renderingErrorSlot = false
     onErrorCaptured((err, target, info) => {
       if (renderingErrorSlot) {
@@ -98,23 +99,34 @@ const NuxtErrorBoundaryServer = defineComponent({
 
     function renderContent (push: Push) {
       const { getBuffer, push: pushDefault } = createBuffer()
-      try {
-        renderDefaultSlot(pushDefault)
-      } catch (err) {
-        handleError(err, vm.proxy, 'render')
-      }
+      const teleports = captureTeleports(vm, () => {
+        try {
+          renderDefaultSlot(pushDefault)
+        } catch (err) {
+          handleError(err, vm.proxy, 'render')
+        }
+      })
 
       const buffer = getBuffer()
-      if (!buffer.hasAsync) {
-        push(error.value ? renderErrorSlot() : buffer)
+      const selectSlot = () => {
+        if (error.value) {
+          teleports.discard()
+          return renderErrorSlot()
+        }
+        committed = true
+        return buffer
+      }
+
+      if (!buffer.hasAsync && !teleports.buffer.hasAsync) {
+        push(selectSlot())
         return
       }
 
-      push(settleBuffer(buffer).then(
-        () => error.value ? renderErrorSlot() : buffer,
+      push(settleBuffer([buffer, teleports.buffer]).then(
+        selectSlot,
         (err) => {
           handleError(err, vm.proxy, 'render')
-          return renderErrorSlot()
+          return selectSlot()
         },
       ))
     }

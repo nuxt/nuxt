@@ -1,3 +1,4 @@
+import { ssrContextKey } from 'vue'
 import type { ComponentInternalInstance, VNode } from 'vue'
 import { ssrRenderVNode } from 'vue/server-renderer'
 import { isArray, isPromise, isString } from '@vue/shared'
@@ -49,6 +50,37 @@ export async function settleBuffer (buffer: SSRBuffer): Promise<void> {
   const failure = results.find(result => result.status === 'rejected')
   if (failure) {
     throw failure.reason
+  }
+}
+
+/**
+ * Run a synchronous render and collect the teleported content it adds, so that the caller can wait
+ * for it to settle or remove it from the response.
+ * @private
+ */
+export function captureTeleports (vm: ComponentInternalInstance, render: () => void): { buffer: SSRBuffer, discard: () => void } {
+  const context = vm.appContext.provides[ssrContextKey as symbol] as { __teleportBuffers?: Record<string, SSRBuffer> } | undefined
+  const lengths = new Map(Object.entries(context?.__teleportBuffers ?? {}).map(([target, items]) => [target, items.length]))
+  render()
+
+  const added: Array<{ items: SSRBuffer, start: number, count: number }> = []
+  const buffer: SSRBuffer = []
+  for (const [target, items] of Object.entries(context?.__teleportBuffers ?? {})) {
+    const start = lengths.get(target) ?? 0
+    if (items.length > start) {
+      added.push({ items, start, count: items.length - start })
+      buffer.push(...items.slice(start))
+    }
+  }
+  buffer.hasAsync = buffer.some(item => isPromise(item) || (isArray(item) && item.hasAsync))
+
+  return {
+    buffer,
+    discard () {
+      for (const { items, start, count } of added) {
+        items.splice(start, count)
+      }
+    },
   }
 }
 

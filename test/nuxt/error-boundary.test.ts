@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { mount } from '@vue/test-utils'
 import type { ComponentSlots } from 'vue-component-type-helpers'
-import { Suspense, createSSRApp, defineComponent, h, onErrorCaptured, useId } from 'vue'
+import { Suspense, Teleport, createSSRApp, defineComponent, h, onErrorCaptured, useId } from 'vue'
 import type { VNode } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { NuxtErrorBoundary } from '#components'
@@ -125,7 +125,8 @@ describe('NuxtErrorBoundary (server)', () => {
         })
       },
     }))
-    return renderToString(app).then(html => ({ html, escaped }))
+    const ssrContext: { teleports?: Record<string, string> } = {}
+    return renderToString(app, ssrContext).then(html => ({ html, escaped, teleports: ssrContext.teleports }))
   }
 
   beforeEach(() => {
@@ -174,6 +175,44 @@ describe('NuxtErrorBoundary (server)', () => {
       expect(html).toBe('<!--[--><p class="caught">418 render boom undefined</p><!--]-->')
       expect(escaped).toEqual([])
     }
+  })
+
+  it('discards content teleported by a default slot that throws', async () => {
+    const { html, teleports } = await renderBoundary(() => [
+      h(Teleport, { to: 'body' }, h('div', 'discarded')),
+      h(Throws, { message: 'after teleport' }),
+    ])
+    expect(html).toBe('<!--[--><p class="caught">418 after teleport {&quot;flavour&quot;:&quot;earl grey&quot;}</p><!--]-->')
+    expect(teleports?.body ?? '').not.toContain('discarded')
+  })
+
+  it('waits for async components inside a teleport before choosing a slot', async () => {
+    const { html, escaped, teleports } = await renderBoundary(() => [
+      h('span', 'partial'),
+      h(Teleport, { to: 'body' }, h(Throws, { async: true, message: 'teleported boom' })),
+    ])
+    expect(html).toBe('<!--[--><p class="caught">418 teleported boom {&quot;flavour&quot;:&quot;earl grey&quot;}</p><!--]-->')
+    expect(escaped).toEqual([])
+    expect(teleports?.body ?? '').toBe('')
+  })
+
+  it('does not share an error caught after the default slot was rendered', async () => {
+    const LateThrows = defineComponent({
+      async setup () {
+        await new Promise(resolve => setTimeout(resolve, 10))
+        throw createError('late boom')
+      },
+    })
+    const AsyncTeleport = defineComponent({
+      async setup () {
+        await Promise.resolve()
+        return () => [h('span', 'rendered'), h(Teleport, { to: 'body' }, h(LateThrows))]
+      },
+    })
+    const { html, escaped } = await renderBoundary(() => h(AsyncTeleport))
+    expect(html).toContain('<span>rendered</span>')
+    expect(escaped).toEqual([])
+    expect(Object.values(useNuxtApp().payload.state)).toEqual([])
   })
 
   it('renders the error slot when a child pushes a rejected promise', async () => {
