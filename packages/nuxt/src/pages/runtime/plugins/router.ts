@@ -443,7 +443,26 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           if ('name' in payloadRoute) {
             ;(payloadRoute as { name: unknown }).name = undefined
           }
-          await router.replace({ ...payloadRoute, force: true })
+          // Keep the URL, so the browser's scroll to its hash isn't cancelled
+          const replaceHistory = history.replace
+          history.replace = (to, data) => {
+            if (to !== payloadRoute.fullPath) { replaceHistory(to, data) }
+          }
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          const scrollBehavior = router.options.scrollBehavior
+          const deferredScrollBehavior: RouterScrollBehavior = (to, from, savedPosition) => to.fullPath === payloadRoute.fullPath ? undefined : scrollBehavior?.(to, from, savedPosition)
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          router.options.scrollBehavior = deferredScrollBehavior
+          try {
+            await router.replace({ ...payloadRoute, force: true })
+          } finally {
+            history.replace = replaceHistory
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
+            if (router.options.scrollBehavior === deferredScrollBehavior) {
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
+              router.options.scrollBehavior = scrollBehavior
+            }
+          }
 
           const restoreDeferredRoute = () => {
             if (!nuxtApp['~restoreDeferredRoute']) { return }
@@ -471,8 +490,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           })
         }
         // reset scroll behavior to initial value
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
-        router.options.scrollBehavior = routerOptions.scrollBehavior
+        if (pluginNavigatedAway || !hasDeferredRoute) {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          router.options.scrollBehavior = routerOptions.scrollBehavior
+        }
       } catch (error: any) {
         // We'll catch middleware errors or deliberate exceptions here
         await _showErrorUnlessCrawler(nuxtApp, error)
