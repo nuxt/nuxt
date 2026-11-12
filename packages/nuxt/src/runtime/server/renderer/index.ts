@@ -147,7 +147,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     }
   }
 
-  const payloadURL = payloadExtraction ? buildPayloadURL(ssrContext) : undefined
+  const payloadURL = payloadExtraction ? buildPayloadURL(ssrContext, !import.meta.prerender && !!(routeOptions.isr || routeOptions.cache)) : undefined
 
   const renderer = await instance.getRenderer(ssrContext)
   const { rendererContext } = renderer
@@ -393,7 +393,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   return runtime.createResponse(renderHTMLDocument(htmlContext), event.res)
 }
 
-function buildPayloadURL (ssrContext: NuxtSSRContext): string {
+function buildPayloadURL (ssrContext: NuxtSSRContext, cached: boolean): string {
   const baseURL = ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL
-  return routeToPayloadURL(baseURL, ssrContext.url, ssrContext.runtimeConfig.app.buildId)
+  return routeToPayloadURL(baseURL, ssrContext.url, cached ? undefined : ssrContext.runtimeConfig.app.buildId)
 }
