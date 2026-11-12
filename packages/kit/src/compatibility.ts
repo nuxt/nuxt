@@ -12,14 +12,10 @@ export function normalizeSemanticVersion (version: string): string {
 }
 
 const builderMap = {
+  '@nuxt/rsbuild-builder': 'rsbuild',
   '@nuxt/rspack-builder': 'rspack',
   '@nuxt/vite-builder': 'vite',
   '@nuxt/webpack-builder': 'webpack',
-}
-
-function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
-  const nuxtVersion = getNuxtVersion(nuxt)
-  return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
 }
 
 /**
@@ -28,10 +24,9 @@ function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
 export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<NuxtCompatibilityIssues> {
   const issues: NuxtCompatibilityIssues = []
 
-  // Nuxt version check
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
-    if (!checkNuxtVersion(constraints.nuxt, nuxt)) {
+    if (!satisfies(normalizeSemanticVersion(nuxtVersion), constraints.nuxt, { includePrerelease: true })) {
       issues.push({
         name: 'nuxt',
         message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``,
@@ -39,7 +34,6 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     }
   }
 
-  // Builder compatibility check
   if (constraints.builder && typeof nuxt.options.builder === 'string') {
     const currentBuilder = builderMap[nuxt.options.builder] || nuxt.options.builder
     if (currentBuilder in constraints.builder) {
@@ -66,7 +60,6 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     }
   }
 
-  // Nitro version check
   if (constraints.nitro) {
     const nitroVersion = getNitroFullVersion(nuxt)
     if (nitroVersion && !satisfies(normalizeSemanticVersion(nitroVersion), constraints.nitro, { includePrerelease: true })) {
@@ -77,10 +70,8 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     }
   }
 
-  // Allow extending compatibility checks
   await nuxt.callHook('kit:compatibility', constraints, issues)
 
-  // Issues formatter
   issues.toString = () =>
     issues.map(issue => ` - [${issue.name}] ${issue.message}`).join('\n')
 
@@ -106,7 +97,7 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
   return !issues.length
 }
 
-export type NuxtMajorVersion = 2 | 3 | 4
+export type NuxtMajorVersion = 2 | 3 | 4 | 5
 
 /**
  * Check if current Nuxt instance is of specified major version

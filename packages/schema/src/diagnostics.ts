@@ -50,7 +50,7 @@ export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5029: {
       why: (p: { value: string }) => `\`future.compatibilityVersion\` was set to \`${p.value}\`, but this version of Nuxt only supports \`5\`.`,
-      fix: 'Remove `future.compatibilityVersion` from your `nuxt.config`. To keep Nuxt 4 behaviour, stay on Nuxt 4.',
+      fix: 'Remove `future.compatibilityVersion` from your `nuxt.config` (or the layer that sets it). To keep Nuxt 4 behaviour, stay on Nuxt 4.',
       docs: false,
     },
   },

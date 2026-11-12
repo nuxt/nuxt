@@ -7,8 +7,8 @@ import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import type { Plugin } from 'vite'
 import { registry as scriptRegistry } from '@nuxt/scripts/registry'
-import { TransformPlugin } from '../src/imports/transform.ts'
-import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets.ts'
+import { RemovedImportsPlugin, TransformPlugin } from '../src/imports/transform.ts'
+import { defaultPresets, removedImports, scriptsStubsPreset } from '../src/imports/presets.ts'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
@@ -103,31 +103,52 @@ describe('imports:transform', () => {
       expect(await transformWith(true, 'const $fetch = globalThis.fetch; export const load = () => $fetch(\'/api\')', '/project/node_modules/some-module/dist/runtime/context.js')).toBeUndefined()
     })
   })
+
+  describe('removed imports', () => {
+    const transformWith = async (source: string, id: string, autoImport = true) => {
+      const reported: Array<[string, string[]]> = []
+      const plugin = RemovedImportsPlugin({
+        ctx: createUnimport({ parser: 'oxc', imports: [...imports, { name: 'useServerHeadSafe', from: '/project/app/composables/head.ts' }] }),
+        options: { autoImport },
+        imports: removedImports,
+        onRemovedImports: (id, imports) => reported.push([id, imports.map(i => i.name)]),
+      }).raw({}, { framework: 'rollup', versions: {} }) as {
+        transformInclude: (id: string) => boolean
+        transform: { filter: { code: { include: RegExp } }, handler: (code: string, id: string) => Promise<unknown> }
+      }
+      if (plugin.transformInclude(id) && plugin.transform.filter.code.include.test(source)) {
+        await plugin.transform.handler(source, id)
+      }
+      return reported
+    }
+
+    it('should report former auto-imports used without an import', async () => {
+      expect(await transformWith('useServerHead({}); useServerSeoMeta({}); const a = ref(0)', '/project/app/app.vue'))
+        .toEqual([['/project/app/app.vue', ['useServerHead', 'useServerSeoMeta']]])
+    })
+
+    it('should not report former auto-imports that are imported, declared or in a dependency', async () => {
+      expect(await transformWith('import { useServerHead } from \'#app\'\nuseServerHead({})', '/project/app/app.vue')).toEqual([])
+      expect(await transformWith('const useServerHead = () => {}; useServerHead()', '/project/app/app.vue')).toEqual([])
+      expect(await transformWith('useServerHeadSafe({})', '/project/app/app.vue')).toEqual([])
+      expect(await transformWith('useServerHead({})', '/project/node_modules/some-module/dist/runtime/plugin.js')).toEqual([])
+      expect(await transformWith('useServerHead({})', '/project/app/app.vue', false)).toEqual([])
+    })
+  })
 })
 
-const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta', 'useId']
+const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerHead', 'useServerHeadSafe', 'useServerSeoMeta', 'useId']
 
 describe('imports:nuxt', () => {
-  try {
+  it('should register every composable globally', () => {
     const entrypointPath = fileURLToPath(new URL('../src/app/composables/index.ts', import.meta.url))
-    const entrypointContents = readFileSync(entrypointPath, 'utf8')
-
-    const { module } = parseSync(entrypointPath, entrypointContents)
+    const { module } = parseSync(entrypointPath, readFileSync(entrypointPath, 'utf8'))
     const names = module.staticExports.flatMap(statement => statement.entries.filter(entry => !entry.isType).map(entry => entry.exportName.name).filter((name): name is string => !!name))
-    for (const name of names) {
-      if (excludedNuxtHelpers.includes(name)) {
-        continue
-      }
-      it(`should register ${name} globally`, () => {
-        expect(defaultPresets.flatMap(a => a.from.startsWith('#app/') ? a.imports : [])).to.include(name)
-      })
-    }
-  } catch (e) {
-    it('should import composables', () => {
-      console.error(e)
-      expect(false).toBe(true)
-    })
-  }
+    const registered = new Set(defaultPresets.flatMap(a => a.from.startsWith('#app/') ? a.imports : []))
+
+    expect(names.length).toBeGreaterThan(0)
+    expect(names.filter(name => !excludedNuxtHelpers.includes(name) && !registered.has(name))).toEqual([])
+  })
 })
 
 const excludedVueHelpers = [
@@ -254,14 +275,10 @@ const excludedVueHelpers = [
 ]
 
 describe('imports:vue', () => {
-  for (const name of Object.keys(VueFunctions)) {
-    if (excludedVueHelpers.includes(name)) {
-      continue
-    }
-    it(`should register ${name} globally`, () => {
-      expect(defaultPresets.find(a => a.from === 'vue')!.imports).toContain(name)
-    })
-  }
+  it('should register every Vue helper globally', () => {
+    const registered = new Set(defaultPresets.find(a => a.from === 'vue')!.imports)
+    expect(Object.keys(VueFunctions).filter(name => !excludedVueHelpers.includes(name) && !registered.has(name))).toEqual([])
+  })
 })
 
 describe('imports:nuxt/scripts', async () => {
@@ -275,12 +292,8 @@ describe('imports:nuxt/scripts', async () => {
     'useScriptGoogleTagManager',
     'useScriptGoogleAnalytics',
   ])
-  it.each(scriptsStubsPreset.imports)(`stubbed %s should exist in the @nuxt/scripts registry`, (name) => {
-    if (globalScripts.has(name)) { return }
-
-    expect(scripts).toContain(name)
-  })
-  it.each(scripts)(`%s from the @nuxt/scripts registry should be stubbed`, (name) => {
-    expect(scriptsStubsPreset.imports).toContain(name)
+  it('should stub exactly the composables in the @nuxt/scripts registry', () => {
+    expect(scriptsStubsPreset.imports.filter(name => !globalScripts.has(name as string) && !scripts.includes(name as string))).toEqual([])
+    expect(scripts.filter(name => !scriptsStubsPreset.imports.includes(name!))).toEqual([])
   })
 })

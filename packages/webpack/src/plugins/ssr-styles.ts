@@ -12,7 +12,8 @@ import type { Compilation, Compiler, Module, NormalModule } from 'webpack'
 import type { CssModule } from 'mini-css-extract-plugin'
 import { compileStyle, parse } from '@vue/compiler-sfc'
 
-import { getVueLoaderHash } from '../builder.ts'
+import type { BuilderImpl } from '../builder-registry.ts'
+import { getBuilderImpl } from '../builder-registry.ts'
 
 const CSS_URL_RE = /url\((['"]?)(\/[^)]+?)\1\)/g
 
@@ -52,18 +53,18 @@ function normalizeCSSContent (css: string) {
 // Reproduces the active Vue loader's scope id so styles extracted here match
 // the ids emitted by the server build. The loaders use different hash functions,
 // selected through the injected builder implementation.
-function getVueLoaderScopeId (filePath: string, source: string, rootContext: string) {
+function getVueLoaderScopeId (filePath: string, source: string, rootContext: string, getVueLoaderHash: BuilderImpl['getVueLoaderHash']) {
   const rawShortFilePath = relative(rootContext || process.cwd(), filePath).replace(/^(?:\.\.[/\\])+/, '')
   const shortFilePath = normalize(rawShortFilePath).replace(/\\/g, '/')
   return getVueLoaderHash(`${shortFilePath}\n${source.replace(/\r\n/g, '\n')}`)
 }
 
-function extractVueStyles (filePath: string, rootContext: string): string[] {
+function extractVueStyles (filePath: string, rootContext: string, getVueLoaderHash: BuilderImpl['getVueLoaderHash']): string[] {
   try {
     const src = readFileSync(filePath, 'utf8')
     const { descriptor } = parse(src, { filename: filePath })
     const styles: string[] = []
-    const scopeId = getVueLoaderScopeId(filePath, src, rootContext)
+    const scopeId = getVueLoaderScopeId(filePath, src, rootContext, getVueLoaderHash)
 
     for (let i = 0; i < descriptor.styles.length; i++) {
       const style = descriptor.styles[i]!
@@ -85,14 +86,32 @@ function extractVueStyles (filePath: string, rootContext: string): string[] {
   }
 }
 
+export interface SSRStylesPluginOptions {
+  /**
+   * Hash used by the Vue loader to generate scope IDs, when extracting the styles of server-only components.
+   * Defaults to the hash of the active webpack or rspack builder implementation.
+   */
+  getVueLoaderHash?: BuilderImpl['getVueLoaderHash']
+  /**
+   * Name of the server compiler.
+   * @default 'server'
+   */
+  serverName?: string
+}
+
 export class SSRStylesPlugin {
   private nuxt: Nuxt
+  private getVueLoaderHash: BuilderImpl['getVueLoaderHash']
+  private serverName: string
   private clientCSSByIssuer = new Map<string, Set<string>>()
+  private clientVueModules = new Set<string>()
   private chunksWithInlinedCSS = new Set<string>()
   private globalCSSPaths = new Set<string>()
 
-  constructor (nuxt: Nuxt) {
+  constructor (nuxt: Nuxt, options: SSRStylesPluginOptions = {}) {
     this.nuxt = nuxt
+    this.getVueLoaderHash = options.getVueLoaderHash ?? (value => getBuilderImpl().getVueLoaderHash(value))
+    this.serverName = options.serverName ?? 'server'
     this.globalCSSPaths = this.resolveGlobalCSS()
 
     // Remove CSS entries from manifest for global CSS and files that will have inlined styles
@@ -247,7 +266,7 @@ export class SSRStylesPlugin {
   apply (compiler: Compiler) {
     if (this.nuxt.options.dev) { return }
     const isClient = compiler.options.name === 'client'
-    const isServer = compiler.options.name === 'server'
+    const isServer = compiler.options.name === this.serverName
     if (!isClient && !isServer) { return }
 
     compiler.hooks.thisCompilation.tap('SSRStylesPlugin', (compilation) => {
@@ -306,8 +325,10 @@ export class SSRStylesPlugin {
         const rel = normalizePath(this.nuxt, resource)
         if (!rel) { continue }
         if (collected.has(rel)) { continue }
+        // server-only components have no client chunk to load their styles from, so they are always inlined
+        if (this.clientVueModules.has(rel) && !this.shouldInline(module)) { continue }
 
-        const vueStyles = extractVueStyles(resolveFilePath(resource) || resource, compilation.compiler.context)
+        const vueStyles = extractVueStyles(resolveFilePath(resource) || resource, compilation.compiler.context, this.getVueLoaderHash)
         if (vueStyles.length) {
           collected.set(rel, new Set(vueStyles))
         }
@@ -347,7 +368,7 @@ export class SSRStylesPlugin {
       ].join('\n')
 
       compilation.emitAsset('styles.mjs', new rawSource(stylesSource))
-      const stylesPath = resolve(this.nuxt.options.buildDir, 'dist/server/styles.mjs')
+      const stylesPath = resolve(compilation.outputOptions.path || resolve(this.nuxt.options.buildDir, 'dist/server'), 'styles.mjs')
       setBuildOutput('ssrStyles', () => [
         `export { default } from ${JSON.stringify(pathToFileURL(stylesPath).href)}`,
         'export const inlinedCSS = {}',
@@ -358,15 +379,19 @@ export class SSRStylesPlugin {
     })
   }
 
-  private findIssuerPath (compilation: Compilation, mod: Module): string | null {
+  private findIssuer (compilation: Compilation, mod: Module): (Module & { resource: string }) | null {
     let issuer: Module | null | undefined = compilation.moduleGraph.getIssuer(mod)
     while (issuer) {
       if ('resource' in issuer && typeof issuer.resource === 'string') {
-        return issuer.resource
+        return issuer as Module & { resource: string }
       }
       issuer = compilation.moduleGraph.getIssuer(issuer)
     }
     return null
+  }
+
+  private findIssuerPath (compilation: Compilation, mod: Module): string | null {
+    return this.findIssuer(compilation, mod)?.resource ?? null
   }
 
   private removeGlobalCSSFromClient (compilation: Compilation) {
@@ -420,7 +445,7 @@ export class SSRStylesPlugin {
 
   private collectCSS (compilation: Compilation) {
     const { webpack } = compilation.compiler
-    const isServer = compilation.compiler.options.name === 'server'
+    const isServer = compilation.compiler.options.name === this.serverName
     const stage = isServer
       ? webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONS
       : webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_TRANSFER
@@ -428,6 +453,16 @@ export class SSRStylesPlugin {
     const chunkCSSMeta = new Map<any, { files: string[], modules: NormalModule[] }>()
 
     compilation.hooks.processAssets.tap({ name: 'SSRStylesPlugin', stage }, () => {
+      if (!isServer) {
+        for (const mod of compilation.modules) {
+          const resource = (mod as NormalModule).resource
+          const rel = resource && VUE_ID_RE.test(resource) ? normalizePath(this.nuxt, resource) : null
+          if (rel) {
+            this.clientVueModules.add(rel)
+          }
+        }
+      }
+
       // First, associate emitted CSS assets with the modules in their chunks
       const cssAssetsByChunk = new Map<any, string[]>()
       for (const chunk of compilation.chunks) {
@@ -454,13 +489,20 @@ export class SSRStylesPlugin {
       }
 
       for (const [chunk, cssAssets] of cssAssetsByChunk) {
-        for (const mod of compilation.chunkGraph.getChunkModulesIterable(chunk)) {
+        const chunkModules = Array.from(compilation.chunkGraph.getChunkModulesIterable(chunk))
+        const chunkPaths = new Set(chunkModules.map(mod => normalizePath(this.nuxt, mod.nameForCondition())))
+        for (const mod of chunkModules) {
           if (!this.shouldInline(mod)) {
             continue
           }
-          const issuerPath = this.findIssuerPath(compilation, mod) || ('resource' in mod && typeof mod.resource === 'string' ? mod.resource : null)
+          const issuer = this.findIssuer(compilation, mod)
+          if (issuer && !this.shouldInline(issuer)) {
+            continue
+          }
+          const issuerPath = issuer?.resource || ('resource' in mod && typeof mod.resource === 'string' ? mod.resource : null)
           const normalized = normalizePath(this.nuxt, issuerPath)
-          if (!normalized) { continue }
+          // the issuer of a module imported from several chunks may be a component in another chunk
+          if (!normalized || !chunkPaths.has(normalized)) { continue }
           const set = this.clientCSSByIssuer.get(normalized) || new Set<string>()
           for (const css of cssAssets) {
             set.add(normalizeCSSContent(css))

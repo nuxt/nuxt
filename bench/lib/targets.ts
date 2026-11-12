@@ -18,6 +18,8 @@ export interface Target {
   tarballs: Record<string, string>
   /** npm `overrides` pinning the packages `nuxt` depends on to the target's versions. */
   overrides: Record<string, string>
+  /** The dependencies of a project installing the target. */
+  dependencies: Record<string, string>
   bin: string
 }
 
@@ -46,7 +48,9 @@ export async function prepareTarget (id: Target['id'], spec: string, options: Pr
 
   let overrides = Object.fromEntries(Object.entries(tarballs).filter(([name]) => name !== 'nuxt').map(([name, file]) => [name, `file:${file}`]))
   options.log(`installing ${id}`)
-  await npmInstall(dir, { name: `nuxt-bench-${id}`, private: true, type: 'module', dependencies: { nuxt: tarballs.nuxt ? `file:${tarballs.nuxt}` : spec }, overrides })
+  const dependencies: Record<string, string> = { nuxt: tarballs.nuxt ? `file:${tarballs.nuxt}` : spec }
+  const manifest = { name: `nuxt-bench-${id}`, private: true, type: 'module' }
+  await npmInstall(dir, { ...manifest, dependencies, overrides })
 
   const nuxtManifest = JSON.parse(readFileSync(join(dir, 'node_modules/nuxt/package.json'), 'utf8'))
   if (!tarballs.nuxt) {
@@ -54,12 +58,26 @@ export async function prepareTarget (id: Target['id'], spec: string, options: Pr
     overrides = Object.fromEntries(['@nuxt/kit', '@nuxt/schema'].flatMap(name => nuxtManifest.dependencies?.[name] ? [[name, nuxtManifest.dependencies[name]]] : []))
   }
 
-  return { id, spec, version, dir, tarballs, overrides, bin: join(dir, 'node_modules/nuxt/bin/nuxt.mjs') }
+  // the fixtures use pages, and npm does not install an optional peer
+  const router = nuxtManifest.peerDependencies?.['vue-router']
+  if (router) {
+    dependencies['vue-router'] = router
+    await npmInstall(dir, { ...manifest, dependencies, overrides })
+  }
+
+  return { id, spec, version, dir, tarballs, overrides, dependencies, bin: join(dir, 'node_modules/nuxt/bin/nuxt.mjs') }
 }
 
 async function npmInstall (dir: string, manifest: Record<string, unknown>): Promise<void> {
   writeFileSync(join(dir, 'package.json'), JSON.stringify(manifest, null, 2))
-  await run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], { cwd: dir, timeout: 600_000 })
+  try {
+    await run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], { cwd: dir, timeout: 600_000 })
+  } catch (error) {
+    // an interrupted earlier run can leave `node_modules` in a state npm refuses to update
+    if (!String(error).includes('ENOTEMPTY')) { throw error }
+    rmSync(join(dir, 'node_modules'), { recursive: true, force: true })
+    await run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], { cwd: dir, timeout: 600_000 })
+  }
 }
 
 /**
@@ -71,8 +89,7 @@ export async function installFixtureDependencies (target: Target, dir: string): 
   if (!manifest.dependencies) {
     return false
   }
-  const nuxt = target.tarballs.nuxt ? `file:${target.tarballs.nuxt}` : target.spec
-  await npmInstall(dir, { ...manifest, dependencies: { nuxt, ...manifest.dependencies }, overrides: target.overrides })
+  await npmInstall(dir, { ...manifest, dependencies: { ...target.dependencies, ...manifest.dependencies }, overrides: target.overrides })
   return true
 }
 

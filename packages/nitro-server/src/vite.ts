@@ -1,11 +1,14 @@
-import { randomBytes } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
+import { existsSync } from 'node:fs'
+import { readFile, writeFile } from 'node:fs/promises'
 import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { EnvironmentModuleGraph, EnvironmentModuleNode, Plugin as VitePlugin } from 'vite'
+import type { BuildEnvironment, EnvironmentModuleGraph, EnvironmentModuleNode, ResolvedConfig, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
+import { hash } from 'ohash'
 import { nitro as nitroPlugin } from 'nitro/vite'
 import escapeRE from 'escape-string-regexp'
 import MagicString from 'magic-string'
@@ -460,7 +463,28 @@ function NitroDefinePlugin (nuxt: Nuxt): VitePlugin {
   }
 }
 
+/** Written next to the ssr output, so that a build cache hit can tell whether it is still valid. */
+const SSR_INPUTS_FILE = 'nuxt-ssr-inputs.json'
+
+interface SsrInputs {
+  /** The hash of every file the ssr build wrote, so that a partial or stale restore is not reused. */
+  files: Record<string, string>
+  /** The hash of the ssr environment options, which depend on Nitro options such as the preset. */
+  config: string
+  /** The hash of each Nitro virtual module the ssr build bundled, by specifier. */
+  virtuals: Record<string, string>
+}
+
+function hashFile (content: Buffer): string {
+  return createHash('sha256').update(content).digest('base64url')
+}
+
+function hashEnvironmentConfig (config: ResolvedConfig): string {
+  return hash({ define: config.define, resolve: config.resolve, build: config.build })
+}
+
 function NitroVirtualBridge (nitro: Nitro): VitePlugin {
+  const virtuals: Record<string, string> = {}
   return {
     name: 'nuxt:nitro-virtual-bridge',
     applyToEnvironment: env => env.name === 'ssr',
@@ -479,8 +503,56 @@ function NitroVirtualBridge (nitro: Nitro): VitePlugin {
         const specifier = id.slice(NITRO_VIRTUAL_PREFIX.length)
         const entry = nitro.options.virtual[specifier]
         const code = typeof entry === 'function' ? await entry() : entry
+        virtuals[specifier] = hash(code ?? '')
         return { code: code ?? '', map: null }
       },
     },
+    writeBundle: {
+      // after any plugin that edits the written files
+      order: 'post',
+      async handler (options, bundle) {
+        const files: Record<string, string> = {}
+        for (const fileName in bundle) {
+          files[fileName] = hashFile(await readFile(resolve(options.dir!, fileName)))
+        }
+        const inputs: SsrInputs = { files, config: hashEnvironmentConfig(this.environment.config), virtuals }
+        await writeFile(resolve(options.dir!, SSR_INPUTS_FILE), JSON.stringify(inputs))
+      },
+    },
   }
+}
+
+/**
+ * Whether the ssr output restored by a build cache hit can be used without building the ssr
+ * environment again. The cache key leaves out Nitro options and server code, but the ssr build
+ * depends on them through its environment options and the Nitro virtual modules it bundles.
+ */
+export function canReuseSsrBuild (nitro: Nitro, environment: BuildEnvironment): Promise<boolean> {
+  return matchesSsrInputs(nitro, environment).catch(() => false)
+}
+
+async function matchesSsrInputs (nitro: Nitro, environment: BuildEnvironment): Promise<boolean> {
+  // TODO: nitro only records a service entry while building it, so a skipped ssr build is imported
+  // as the `vite/services/ssr` directory, which resolves to its `index.mjs`
+  if (!existsSync(resolve(nitro.options.buildDir, 'vite/services/ssr/index.mjs'))) {
+    return false
+  }
+  const outDir = resolve(environment.config.root, environment.config.build.outDir)
+  const inputs = JSON.parse(await readFile(resolve(outDir, SSR_INPUTS_FILE), 'utf8')) as SsrInputs
+  if (inputs.config !== hashEnvironmentConfig(environment.config)) {
+    return false
+  }
+  for (const [fileName, expected] of Object.entries(inputs.files)) {
+    if (hashFile(await readFile(resolve(outDir, fileName))) !== expected) {
+      return false
+    }
+  }
+  for (const [specifier, expected] of Object.entries(inputs.virtuals)) {
+    const entry = nitro.options.virtual[specifier]
+    const code = typeof entry === 'function' ? await entry() : entry
+    if (hash(code ?? '') !== expected) {
+      return false
+    }
+  }
+  return true
 }

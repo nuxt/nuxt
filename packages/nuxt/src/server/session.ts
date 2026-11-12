@@ -86,9 +86,9 @@ interface SealedSession<T extends SessionData> extends Session<T> {
  * @example
  * ```ts
  * // server/api/visits.ts
- * import { defineEventHandler, useSession } from 'nuxt/server'
+ * import { defineHandler, useSession } from 'nuxt/server'
  *
- * export default defineEventHandler(async (event) => {
+ * export default defineHandler(async (event) => {
  *   const session = await useSession<{ visits: number }>(event)
  *   await session.update(data => ({ visits: (data.visits ?? 0) + 1 }))
  *   return { visits: session.data.visits }

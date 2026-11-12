@@ -1,3 +1,5 @@
+import { isAbsolute, join, parse } from 'pathe'
+import { resolveAlias } from '@nuxt/kit'
 import { parseAndWalk, walk } from 'oxc-walker'
 import { getStaticImports, parseStaticImports } from '../core/utils/static-imports.ts'
 import type { ParsedStaticImport } from '../core/utils/static-imports.ts'
@@ -36,6 +38,16 @@ export function createScanPluginContext (code: string, filePath: string) {
     },
   }
   return pluginScanThisContext
+}
+
+/**
+ * Resolve an import specifier against `alias`, or relative to the directory of `importer`.
+ */
+// TODO: use async walker or create sync version of `resolvePath` from kit
+export function resolveImportPath (path: string, alias: Record<string, string>, importer: string) {
+  if (isAbsolute(path)) { return path }
+  const resolved = resolveAlias(path, alias)
+  return isAbsolute(resolved) ? resolved : join(parse(importer).dir, resolved)
 }
 
 export function matchWithStringOrRegex (value: string, matcher: string | RegExp) {

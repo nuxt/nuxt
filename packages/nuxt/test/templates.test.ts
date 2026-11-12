@@ -1,15 +1,17 @@
 import { existsSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { resolve } from 'pathe'
+import ts from 'typescript'
 
 // `templates.ts` re-imports `./app.ts`, which reads `defaultTemplates.*` at
 // module init. Pulling `app.ts` in first lets that cycle resolve the same way
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, publicPathTemplate, schemaTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
 import type { Nuxt, NuxtApp } from 'nuxt/schema'
+import type { RuntimeConfigSchemaNode } from '@nuxt/schema/internal'
 
 // deliberately partial, as the objects that reach a template in a unit test, in
 // `@nuxt/test-utils` or in devtools are: `serverBuild` is only present when a caller
@@ -107,6 +109,32 @@ describe('publicPathTemplate', () => {
     expect(contents).not.toMatch(/import \{ useRuntimeConfig \}/)
     expect(contents).toMatch(/getAppConfig = \(\) => \(/)
   })
+
+  it('builds server asset urls from the current runtime config', async () => {
+    const { joinRelativeURL } = await import('ufo')
+    const contents = await publicPathTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+    const source = contents
+      .replace(/^import .*$/gm, '')
+      .replace(/\bexport /g, '')
+      .replace(/import\.meta\.(server|client)/g, (_, env) => String(env === 'server'))
+    vi.stubGlobal('__TEST_SERVER__', true)
+    onTestFinished(() => { vi.unstubAllGlobals() })
+    let app = { baseURL: '/', buildAssetsDir: '/_nuxt/', cdnURL: '' }
+    const join = vi.fn(joinRelativeURL)
+    const buildAssetsURL = new Function('joinRelativeURL', 'useRuntimeConfig', `${source}\nreturn buildAssetsURL`)(join, () => ({ app })) as (...path: string[]) => string
+
+    expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
+    expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
+    expect(join).toHaveBeenCalledTimes(1)
+    app = { ...app, baseURL: '/base/' }
+    expect(buildAssetsURL('entry.js')).toBe('/base/_nuxt/entry.js')
+    app = { ...app, cdnURL: 'https://cdn.example.com/' }
+    expect(buildAssetsURL('entry.js')).toBe('https://cdn.example.com/_nuxt/entry.js')
+    app = { ...app, buildAssetsDir: '/assets/' }
+    expect(buildAssetsURL('entry.js')).toBe('https://cdn.example.com/assets/entry.js')
+    expect(buildAssetsURL('chunks', 'entry.js')).toBe('https://cdn.example.com/assets/chunks/entry.js')
+    expect(buildAssetsURL()).toBe('https://cdn.example.com/assets/')
+  })
 })
 
 describe('dollarFetchTemplate', () => {
@@ -133,5 +161,19 @@ describe('dollarFetchTemplate', () => {
     expect(contents).not.toMatch(/createFetch/)
     expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from "\/[^"]*ofetch[^"]*"/)
     expect(contents).toMatch(/globalThis\.\$fetch = _\$fetch\.create\(\{\s*baseURL: baseURL\(\)/)
+  })
+})
+
+describe('schemaTemplate', () => {
+  it('emits valid declarations for a public runtime config schema that is a union', async () => {
+    const node: RuntimeConfigSchemaNode = { o: [{ p: { mode: { e: ['preview'] } } }, { p: { mode: { e: ['production'] } } }] }
+    const runtimeConfig = { apiKey: '', public: { mode: 'preview' } }
+    const contents = await schemaTemplate.getContents!({
+      nuxt: makeNuxt({ runtimeConfig, _runtimeConfigSchemas: [{ path: ['public'], node, required: false }] } as unknown as Partial<Nuxt['options']>),
+      app: makeApp(),
+      options: {},
+    })
+    expect(ts.transpileModule(contents, { reportDiagnostics: true }).diagnostics).toEqual([])
+    expect(contents).toContain('interface SharedRuntimeConfig {\n  apiKey: string,\n}')
   })
 })

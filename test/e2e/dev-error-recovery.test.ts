@@ -1,15 +1,12 @@
-import { isWindows } from 'std-env'
 import type { Page } from '@playwright/test'
 import { expect, test } from './test-utils'
-import { useDevErrorFixture } from './dev-error-fixture'
+import { useTempFixture } from './temp-fixture'
 
-const fixture = useDevErrorFixture('dev-error-recovery')
+const fixture = useTempFixture('dev-error-recovery')
 
 test.use({
   nuxt: {
     rootDir: fixture.fixtureDir,
-    dev: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
   },
 })
 
@@ -67,6 +64,10 @@ test('clears a click-handler overlay on the next update without reloading the pa
   await goto('/click-boom')
   await page.getByRole('button', { name: 'throw' }).click()
   await expect(overlayOf(page)).toHaveCount(1)
+  await expect(overlayOf(page).locator('.mb-overlay')).toHaveAttribute('data-minimized', '')
+  await expect(overlayOf(page).locator('.mb-message')).toContainText('boom from a click')
+  await expect(overlayOf(page).locator('.mb-loc').first()).toContainText('click-boom.vue')
+  await expect(page.locator('body')).toContainText('click boom healthy')
 
   await markPage(page)
   fixture.replace('app/pages/click-boom.vue', 'click boom healthy', 'click boom updated')

@@ -11,16 +11,16 @@
   },
   "ignoreDependencies": [
     "bing",
-    "uno.css",
     "somepath",
     "foo",
     "sherif",
     "nonexistent-package",
-    "pkg-pr-new",
     "ofetch",
     "verkit",
     "@nuxt/webpack-builder",
+    "@nuxt/rsbuild-builder",
     "@nuxt/rspack-builder",
+    "@rsbuild/core",
     "@rspack/core"
   ],
   "workspaces": {
@@ -37,6 +37,7 @@
         "test/runtime/app/**/*.ts",
         "test/nuxt/preload-initial-layout/fixture/**/*.vue",
         "test/mocks/app-config.ts",
+        "test/mocks/app-manifest.ts",
         "test/mocks/paths.ts"
       ]
     },
@@ -49,6 +50,12 @@
         "~/*": ["./*"],
         "#shared/*": ["./shared/*"]
       }
+    },
+    "test/fixtures/duplicate-vue": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "ignoreDependencies": ["duplicate-vue-ui", "@vue/runtime-core"]
     },
     "test/fixtures/nitro-legacy": {
       "entry": [
@@ -84,6 +91,7 @@
       "ignoreDependencies": [
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-jsx",
+        "@rsbuild/plugin-pug",
         "nested-dep"
       ]
     },
@@ -96,7 +104,7 @@
         "~/*": ["./*"],
         "#shared/*": ["./shared/*"]
       },
-      "ignoreDependencies": ["pug"]
+      "ignoreDependencies": ["@rsbuild/plugin-pug", "pug"]
     },
     "packages/nitro-server": {
       "entry": [
@@ -105,11 +113,11 @@
       "ignoreDependencies": [
         "mocked-exports",
         "vue-devtools-stub",
-        "ohash",
         "unenv",
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-typescript"
-      ]
+      ],
+      "ignoreUnresolved": ["#nitro/virtual/runtime-config"]
     },
     "packages/vite-server": {
       "ignoreDependencies": [
@@ -118,6 +126,9 @@
       ]
     },
     "packages/vite": {
+      "entry": [
+        "test/utils.ts"
+      ],
       "ignoreDependencies": [
         "mocked-exports",
         "nitropack",
@@ -129,6 +140,7 @@
     },
     "packages/kit": {
       "entry": [
+        "test/**/*.ts",
         "test/**/*-fixture/**/*.{js,ts,mjs,cjs,cts,mts,vue}"
       ],
       "ignoreDependencies": [
@@ -179,10 +191,20 @@
         "vue"
       ]
     },
+    "packages/rsbuild": {
+      "ignoreDependencies": [
+        "@vue/compiler-sfc",
+        "escape-string-regexp",
+        "exsolve",
+        "knitwork",
+        "ohash",
+        "seroval",
+        "vue",
+        "vue-bundle-renderer"
+      ]
+    },
     "packages/rspack": {
       "ignoreDependencies": [
-        "@nuxt/kit",
-        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",
@@ -199,7 +221,6 @@
         "memfs",
         "mini-css-extract-plugin",
         "ohash",
-        "pathe",
         "postcss",
         "postcss-import",
         "postcss-import-resolver",
@@ -211,7 +232,6 @@
         "seroval",
         "time-fix-plugin",
         "tinyglobby",
-        "ufo",
         "unenv",
         "unplugin",
         "url-loader",

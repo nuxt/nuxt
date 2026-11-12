@@ -2,6 +2,7 @@ import { resolveModulePath } from 'exsolve'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import { useNuxt } from '../context.ts'
+import { resolveAlias } from '../resolve.ts'
 import { directoryToURL } from './esm.ts'
 import { useServerBuild } from './server-build.ts'
 
@@ -25,6 +26,9 @@ const SERVER_APP_CONFIG_SPECIFIER = 'nuxt/internal/server-app-config'
 
 /** Dev-only error reporting, empty outside development. */
 const DEV_ERROR_SPECIFIER = 'nuxt/internal/dev-error'
+
+/** The renderer plugins registered through `addRendererPlugin()`, which each renderer calls. */
+const RENDERER_PLUGINS_SPECIFIER = 'nuxt/internal/renderer-plugins'
 
 /** The part of the app config template only the Vue app runs. */
 const APP_CONFIG_CLIENT_RE = /\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//
@@ -54,6 +58,7 @@ export type RendererConfigName =
   | 'NUXT_PAGE_PATTERNS'
   | 'NUXT_EARLY_404'
   | 'NUXT_PAGE_MATCHER'
+  | 'NUXT_SPA_PAGE_MATCHER'
   | 'NUXT_INLINE_ERROR_RENDERING'
   | 'PARSE_ERROR_DATA'
   | 'NUXT_PAYLOAD_EXTRACTION'
@@ -118,6 +123,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_PAGE_PATTERNS: '[]',
     NUXT_EARLY_404: 'false',
     NUXT_PAGE_MATCHER: 'undefined',
+    NUXT_SPA_PAGE_MATCHER: 'undefined',
     NUXT_INLINE_ERROR_RENDERING: String(!!nuxt.options.experimental.inlineErrorRendering),
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     PARSE_ERROR_DATA: String(!!nuxt.options.experimental.parseErrorData),
@@ -185,6 +191,14 @@ function getServerSurfaceModule (nuxt: Nuxt): string {
     return delegate
   }
   return resolveNuxtModule('nuxt/server', nuxt)
+}
+
+function getRendererPlugins (nuxt: Nuxt): string {
+  const plugins = (nuxt.options._rendererPlugins || []).map(entry => resolveAlias(entry.plugin, nuxt.options.alias))
+  return [
+    ...plugins.map((plugin, index) => `import plugin${index} from ${JSON.stringify(plugin)}`),
+    `export default [${plugins.map((_, index) => `plugin${index}`).join(', ')}]`,
+  ].join('\n')
 }
 
 function resolveNuxtModule (specifier: string, nuxt: Nuxt): string {
@@ -274,6 +288,7 @@ export function getServerRuntime (options: ServerRuntimeOptions = {}, nuxt: Nuxt
   modules[SERVER_APP_CONFIG_SPECIFIER] = { code: () => nuxt.vfs['#build/app.config.mjs']?.replace(APP_CONFIG_CLIENT_RE, '') || 'export default {}' }
   modules[DEV_ERROR_SPECIFIER] = { code: () => nuxt.options.dev ? `export * from ${JSON.stringify(resolveNuxtModule(DEV_ERROR_SPECIFIER, nuxt))}` : 'export {}' }
   modules[SERVER_RUNTIME_CONFIG_SPECIFIER] = { code: () => `export { useRuntimeConfig } from ${JSON.stringify(useServerBuild(nuxt).runtime.runtimeConfig)}` }
+  modules[RENDERER_PLUGINS_SPECIFIER] = { code: () => getRendererPlugins(nuxt) }
 
   return {
     version: SERVER_RUNTIME_VERSION,

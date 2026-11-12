@@ -1,15 +1,10 @@
-import { afterEach, assert, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
+import { afterEach, describe, expect, expectTypeOf, it, vi } from 'vitest'
 import { defineKeyedFunctionFactory } from '../src/compiler/runtime'
-import {
-  type ExportMetadata,
-  type FunctionCallMetadata,
-  parseStaticExportIdentifiers,
-  parseStaticFunctionCall,
-} from '../src/core/utils/parse-utils.ts'
+import { findSFCScriptBlocks, parseStaticExportIdentifiers, parseStaticFunctionCall } from '../src/core/utils/parse-utils.ts'
+import type { FunctionCallMetadata } from '../src/core/utils/parse-utils.ts'
 import { createScanPluginContext } from '../src/compiler/utils.ts'
 import * as oxcWalker from 'oxc-walker'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
-import type { ESTree } from 'rolldown/utils'
 
 vi.mock('oxc-walker', async importOriginal => ({ ...await importOriginal() }))
 
@@ -31,51 +26,22 @@ describe('defineKeyedFunctionFactory', () => {
     expect(() => factory('a', 1)).toThrowErrorMatchingInlineSnapshot(`[NUXT_E1007: https://nuxt.com/docs/5.x/errors/e1007]`)
   })
 
-  it('should have a non-enumerable `__nuxt_factory` property', () => {
-    const fn = (a: string): string => a
-
-    const factory = defineKeyedFunctionFactory({
-      name: 'testFactory',
-      factory: fn,
-    })
-
-    const descriptor = Object.getOwnPropertyDescriptor(factory, '__nuxt_factory')
-
-    // property descriptor checks
-    expect(descriptor).toBeDefined()
-    expect(descriptor?.enumerable).toBe(false)
-    expect(descriptor?.get?.()).toBe(fn)
-
-    // sanity check
-    expect(Object.keys(factory)).not.toContain('__nuxt_factory')
-  })
-
-  it('should return the factory function when transformed', () => {
+  it('should expose the factory function on a non-enumerable `__nuxt_factory` property', () => {
     const factory = defineKeyedFunctionFactory({
       name: 'createUseFetch',
       factory: fn,
     })
 
-    const transformedFactory = transformFactory(factory)
+    expect(Object.getOwnPropertyDescriptor(factory, '__nuxt_factory')?.enumerable).toBe(false)
+    expect(Object.keys(factory)).not.toContain('__nuxt_factory')
+    expect(transformFactory(factory)).toBe(fn)
+    expect(transformFactory(factory)('a', 1)).toBe('a-1-value')
 
-    expect(transformedFactory).toBeDefined()
-    expect(typeof transformedFactory).toBe('function')
-    expect(transformedFactory.length).toBe(fn.length)
-    expect(transformedFactory('a', 1)).toBe('a-1-value')
-  })
-
-  it('should not catch errors from the factory function', () => {
-    const errorFn = () => {
-      throw new Error('Factory error')
-    }
-    const factory = defineKeyedFunctionFactory({
+    const errorFactory = defineKeyedFunctionFactory({
       name: 'errorFactory',
-      factory: errorFn,
+      factory: () => { throw new Error('Factory error') },
     })
-
-    const transformedFactory = transformFactory(factory)
-
-    expect(() => transformedFactory()).toThrow('Factory error')
+    expect(() => transformFactory(errorFactory)()).toThrow('Factory error')
   })
 
   it('should preserve parameter and return types', () => {
@@ -91,7 +57,6 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    // callable type
     expectTypeOf(factory).not.toBeAny()
     expectTypeOf(factory).toEqualTypeOf<typeof fn>()
     expectTypeOf(factory).parameters.toEqualTypeOf<Args>()
@@ -108,110 +73,48 @@ describe('defineKeyedFunctionFactory', () => {
       factory: fn,
     })
 
-    // check that generics are preserved on call signature
     expectTypeOf(generic).toBeCallableWith({ id: 'x' }, true)
-
-    // parameter and return types stay generic
     expectTypeOf(generic).parameter(0).toEqualTypeOf<{ id: string }>()
 
-    // verify generics work through the transformed factory
     const transformed = transformFactory(generic)
     expectTypeOf(transformed<{ id: 'a' }>({ id: 'a' }, true)).toMatchObjectType<{ entity: { id: 'a' }, flag: boolean, kind: 'ok' }>()
   })
 })
 
 describe('createScanPluginContext', () => {
-  const code = `
-    const a: number = 1
-  `
-
-  describe('mocked `oxc-walker`', () => {
-    let parseAndWalkSpy: ReturnType<typeof vi.fn>
-    let walkSpy: ReturnType<typeof vi.fn>
-
-    beforeEach(() => {
-      parseAndWalkSpy = vi.spyOn(oxcWalker, 'parseAndWalk').mockReturnValue({ program: {} } as any) as any
-      walkSpy = vi.spyOn(oxcWalker, 'walk').mockImplementation((() => {}) as any) as any
-    })
-
-    afterEach(() => {
-      vi.restoreAllMocks()
-    })
-
-    it('should generate context', () => {
-      const context = createScanPluginContext(code, 'file.ts')
-
-      expect(context).toBeDefined()
-      expect(context).toHaveProperty('walkParsed')
-      expect(typeof context.walkParsed).toBe('function')
-    })
-
-    it('should call `parseAndWalk` on first `walkParsed` call', () => {
-      const enterCallback = { enter: vi.fn() }
-      const mockParseResult = { program: {} }
-
-      parseAndWalkSpy.mockReturnValue(mockParseResult)
-
-      const context = createScanPluginContext(code, 'file.ts')
-      const result = context.walkParsed(enterCallback)
-
-      expect(parseAndWalkSpy).toHaveBeenCalledWith(code, 'file.ts', enterCallback)
-      expect(result).toBe(mockParseResult)
-    })
-
-    it('should reuse parse result and call `walk` on subsequent `walkParsed` calls', () => {
-      const firstCallback = { enter: vi.fn() }
-      const secondCallback = { enter: vi.fn() }
-      const mockParseResult = { program: {} }
-
-      parseAndWalkSpy.mockReturnValue(mockParseResult)
-
-      const context = createScanPluginContext(code, 'file.ts')
-      context.walkParsed(firstCallback)
-
-      parseAndWalkSpy.mockClear()
-      const result = context.walkParsed(secondCallback)
-
-      expect(parseAndWalkSpy).not.toHaveBeenCalled() // not called again - reused
-      expect(walkSpy).toHaveBeenCalledWith(mockParseResult.program, secondCallback)
-      expect(result).toBe(mockParseResult)
-    })
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
-  it('should parse and walk the AST and track variables', () => {
-    const code = `const a: number = 1`
-    const nodes: ESTree.Node[] = []
-    const context = createScanPluginContext(code, 'file.ts')
+  it('should parse once and share the result between walks', () => {
+    const parseAndWalk = vi.spyOn(oxcWalker, 'parseAndWalk')
+    const walk = vi.spyOn(oxcWalker, 'walk')
+    const context = createScanPluginContext('const a: number = 1', 'file.ts')
 
     const scopeTracker = new ScopeTracker()
-    let foundDecl = false
-
-    context.walkParsed({
+    const declarations: string[] = []
+    const first = context.walkParsed({
       scopeTracker,
       enter (node) {
-        nodes.push(node)
-        if (node.type === 'Identifier' && node.name === 'a') {
-          const decl = scopeTracker.getDeclaration(node.name)
-          expect(decl?.type).toBe('Variable')
-          foundDecl = true
+        if (node.type === 'Identifier') {
+          declarations.push(`${node.name}:${scopeTracker.getDeclaration(node.name)?.type}`)
         }
       },
     })
+    expect(declarations).toEqual(['a:Variable'])
 
-    // ensure scope tracking worked
-    expect(foundDecl).toBe(true)
-
-    // ensure we walked the AST
-    expect(nodes.length).toBe(7)
-    expect(nodes.some(n => n.type === 'Program')).toBe(true)
-    expect(nodes.some(n => n.type === 'VariableDeclarator')).toBe(true)
-    expect(nodes.some(n => n.type === 'Identifier' && n.name === 'a')).toBe(true)
+    const types: string[] = []
+    const second = context.walkParsed({ enter: node => types.push(node.type) })
+    expect(second).toBe(first)
+    expect(types).toContain('VariableDeclarator')
+    expect(parseAndWalk).toHaveBeenCalledTimes(1)
+    expect(walk).toHaveBeenCalledTimes(1)
   })
 })
 
-describe('parseFunctionCall', () => {
-  function getFirstParsedFunctionCall (code: string, functions: RegExp): FunctionCallMetadata | null {
-    let result: FunctionCallMetadata | null = null
+describe('parseStaticFunctionCall', () => {
+  function getParsedFunctionCalls (code: string, functions: RegExp): FunctionCallMetadata[] {
+    const results: FunctionCallMetadata[] = []
 
     parseAndWalk(code, 'file.ts', {
       enter (node) {
@@ -220,320 +123,111 @@ describe('parseFunctionCall', () => {
         }
         const res = parseStaticFunctionCall(node, functions)
         if (res) {
-          result = res
+          results.push(res)
           this.skip()
         }
       },
     })
 
-    return result
+    return results
   }
 
-  function expectFunctionCallMeta (meta: FunctionCallMetadata | null, expected: {
-    name: string
-    namespace?: string | null
-  }) {
-    expect(meta).not.toBeNull()
-    expect(meta?.name).toBe(expected.name)
-    expect(meta?.namespace || null).toBe(expected.namespace || null)
-    if (meta?.node.type === 'Identifier' && !meta.namespace) {
-      expect(meta.node.name).toBe(expected.name)
-    } else if (meta?.node.type === 'MemberExpression') {
-      if (meta.node.property.type === 'Identifier') {
-        expect(meta.node.property.name).toBe(expected.name)
-      } else if (meta.node.property.type === 'Literal') {
-        expect(meta.node.property.value).toBe(expected.name)
-      } else {
-        assert.fail(`Unexpected node property type ${meta.node.property.type}`)
-      }
-    }
-    expect(meta?.callExpression.type).toBe('CallExpression')
+  function getFirstParsedFunctionCall (code: string, functions: RegExp): FunctionCallMetadata | null {
+    return getParsedFunctionCalls(code, functions)[0] ?? null
   }
 
-  it('should parse simple function call', () => {
-    const code = `const data = useFetch('key')`
-    const result = getFirstParsedFunctionCall(code, /useFetch/)
-    expectFunctionCallMeta(result, { name: 'useFetch' })
+  function describeNode (node: FunctionCallMetadata['node']) {
+    if (node.type === 'Identifier') { return node.name }
+    if (node.type === 'MemberExpression') { return `[${node.property.type === 'Literal' ? node.property.value : ''}]` }
+    return node.type
+  }
 
-    const code2 = `const data = useFetch()`
-    const result2 = getFirstParsedFunctionCall(code2, /useFetch/)
-    expectFunctionCallMeta(result2, { name: 'useFetch' })
+  it.each([
+    ['useFetch(\'key\')', 'useFetch', null, 'useFetch'],
+    ['useFetch()', 'useFetch', null, 'useFetch'],
+    ['factories.createUseFetch()', 'createUseFetch', 'factories', 'createUseFetch'],
+    ['factories[\'createUseFetch\']()', 'createUseFetch', 'factories', '[createUseFetch]'],
+    ['factories?.createUseFetch?.()', 'createUseFetch', 'factories', 'createUseFetch'],
+    ['factories?.[\'createUseFetch\']?.()', 'createUseFetch', 'factories', '[createUseFetch]'],
+    ['factories?.[\'createUseFetch\']()', 'createUseFetch', 'factories', '[createUseFetch]'],
+    ['async function f(){ return await createUseFetch() }', 'createUseFetch', null, 'createUseFetch'],
+    ['async function f(){ return await factories?.createUseFetch?.() }', 'createUseFetch', 'factories', 'createUseFetch'],
+    ['const s = `${factories.createUseFetch()}`', 'createUseFetch', 'factories', 'createUseFetch'],
+    ['const y = (factories.createUseFetch())(\'key\')', 'createUseFetch', 'factories', 'createUseFetch'],
+    ['(createUseFetch)()', 'createUseFetch', null, 'ParenthesizedExpression'],
+    ['(createUseFetch)?.()', 'createUseFetch', null, 'ParenthesizedExpression'],
+    ['(factories.createUseFetch)?.()', 'createUseFetch', 'factories', 'ParenthesizedExpression'],
+    ['(createUseFetch as any)()', 'createUseFetch', null, 'ParenthesizedExpression'],
+    ['(factories as any).createUseFetch()', 'createUseFetch', 'factories', 'createUseFetch'],
+    ['(factories.createUseFetch as any)()', 'createUseFetch', 'factories', 'ParenthesizedExpression'],
+    ['(createUseFetch!)()', 'createUseFetch', null, 'ParenthesizedExpression'],
+    ['(factories!).createUseFetch()', 'createUseFetch', 'factories', 'createUseFetch'],
+    ['(factories.createUseFetch!)()', 'createUseFetch', 'factories', 'ParenthesizedExpression'],
+    ['(<any>createUseFetch)()', 'createUseFetch', null, 'ParenthesizedExpression'],
+    ['(<any>factories).createUseFetch()', 'createUseFetch', 'factories', 'createUseFetch'],
+    ['(<any>factories.createUseFetch)()', 'createUseFetch', 'factories', 'ParenthesizedExpression'],
+    ['class C{ static createUseFetch(){} } C.createUseFetch()', 'createUseFetch', 'C', 'createUseFetch'],
+    ['createUseFetch?.()', 'createUseFetch', null, 'createUseFetch'],
+  ])('should parse `%s`', (code, name, namespace, node) => {
+    const result = getFirstParsedFunctionCall(code, /createUseFetch|useFetch/)
+    expect(result && { name: result.name, namespace: result.namespace, node: describeNode(result.node), call: result.callExpression.type })
+      .toEqual({ name, namespace, node, call: 'CallExpression' })
   })
 
-  it('should parse member call', () => {
-    const code = `const x = factories.createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
+  it.each([
+    [/^createUseFetch$/, 'factories.createUseFetch()', 1],
+    [/createUseFetch/g, 'createUseFetch(); factories.createUseFetch(); factories[\'createUseFetch\']()', 3],
+  ])('should match with filter %s', (filter, code, count) => {
+    expect(getParsedFunctionCalls(code, filter).map(r => r.name)).toEqual(Array.from({ length: count }, () => 'createUseFetch'))
   })
 
-  it('should parse bracket member call', () => {
-    const code = `const x = factories['createUseFetch']()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should parse optional-chained member call', () => {
-    const code = `const x = factories?.createUseFetch?.()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should parse optional-chained bracket call', () => {
-    const code = `const x = factories?.['createUseFetch']?.()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-
-    const code2 = `const x = factories?.['createUseFetch']()`
-    const result2 = getFirstParsedFunctionCall(code2, /createUseFetch/)
-    expectFunctionCallMeta(result2, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should parse call with await', () => {
-    const code = `async function f(){ return await createUseFetch() }`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch' })
-  })
-
-  it('should parse optional chain under await', () => {
-    const code = `async function f(){ return await factories?.createUseFetch?.() }`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should be robust to global regex (/g) by not relying on lastIndex', () => {
-    const code = `createUseFetch(); createUseFetch();`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/g)
-    expectFunctionCallMeta(result, { name: 'createUseFetch' })
-  })
-
-  it('should parse inside template expressions', () => {
-    const code = 'const s = `${factories.createUseFetch()}`'
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should parse chained call result usage', () => {
-    const code = `const y = (factories.createUseFetch())('key')`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should handle parenthesized callee', () => {
-    const code = `(createUseFetch)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    // callee is a ParenthesizedExpression, not Identifier
-    expectFunctionCallMeta(result, { name: 'createUseFetch' })
-  })
-
-  it('should handle parenthesized optional call', () => {
-    const code = `(createUseFetch)?.()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch' })
-
-    const code2 = `const x = (factories.createUseFetch)?.()`
-    const result2 = getFirstParsedFunctionCall(code2, /createUseFetch/)
-    expectFunctionCallMeta(result2, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should handle a TS as-cast callee', () => {
-    const code = `const x = (createUseFetch as any)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch' })
-  })
-
-  it('should handle a TS as-cast in member expression object', () => {
-    const code = `const x = (factories as any).createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should handle a TS as-cast wrapping a member expression callee', () => {
-    const code = `const x = (factories.createUseFetch as any)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should handle a TS non-null assertion callee', () => {
-    const code = `const x = (createUseFetch!)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch' })
-  })
-
-  it('should handle a TS non-null assertion in member expression object', () => {
-    const code = `const x = (factories!).createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should handle a TS non-null assertion wrapping a member expression callee', () => {
-    const code = `const x = (factories.createUseFetch!)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should handle a TS type-assertion in parenthesized expression callee', () => {
-    const code = `const x = (<any>createUseFetch)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch' })
-  })
-
-  it('should handle a TS type-assertion in member expression object', () => {
-    const code = `const x = (<any>factories).createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should handle a TS type-assertion wrapping a member expression callee', () => {
-    const code = `const x = (<any>factories.createUseFetch)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should ignore similar names that do not match the filter', () => {
-    const code = `createUseFetchX(); factories.createUseFetchX(); factories['createUseFetchX']()`
-    const result = getFirstParsedFunctionCall(code, /\bcreateUseFetch\b/)
-    expect(result).toBeNull()
-  })
-
-  it('should work with anchors in filter', () => {
-    const code = `factories.createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /^createUseFetch$/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'factories' })
-  })
-
-  it('should handle calling class static methods', () => {
-    const code = `class C{ static createUseFetch(){} } C.createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch', namespace: 'C' })
-  })
-
-  // non-statically analyzable cases:
-
-  it('should return null for member expression object that is a call', () => {
-    const code = `const x = getFactory().createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for multi-level member expression object', () => {
-    const code = `const x = pkg.factories.createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should ignore non-matching calls', () => {
-    const code = `fn(); other();`
-    const result = getFirstParsedFunctionCall(code, /doesNotExist/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for dynamic expression calls', () => {
-    const code = `const x = (ok ? factories.createUseFetch : noop)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for sequence callee', () => {
-    const code = `(0, createUseFetch)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for logical callee', () => {
-    const code = `(ok && createUseFetch)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for conditional callee', () => {
-    const code = `(ok ? createUseFetch : other)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for `this` member object', () => {
-    const code = `this.createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for `super` member object', () => {
-    const code = `class A extends B { m(){ super.createUseFetch() } }`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for private field call', () => {
-    const code = `class X{ #createUseFetch(){}; f(obj){ obj.#createUseFetch() } }`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for template literal access on namespace', () => {
-    const code = 'const x = factories[`createUseFetch`]()'
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for computed binary expression access on namespace', () => {
-    const code = 'const x = factories["create" + "UseFetch"]()'
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for identifier template tag', () => {
-    const code = 'const x = createUseFetch`tagged`'
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    // TaggedTemplateExpression, not CallExpression
-    expect(result).toBeNull()
-  })
-
-  it('should return null for constructor call', () => {
-    const code = `const x = new createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    // NewExpression, not CallExpression
-    expect(result).toBeNull()
-  })
-
-  it('should return null for dynamic import', () => {
-    const code = `async function f(){ return import('createUseFetch') }`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should handle identifier inside ChainExpression root', () => {
-    const code = `createUseFetch?.()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expectFunctionCallMeta(result, { name: 'createUseFetch' })
-  })
-
-  it('should return null for multi-level optional chain: pkg?.factories?.createUseFetch()', () => {
-    const code = `pkg?.factories?.createUseFetch()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it('should return null for call made via bind', () => {
-    const code = `createUseFetch.bind(null)()`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
-  })
-
-  it ('should return null for call made via call', () => {
-    const code = `createUseFetch.call(null)`
-    const result = getFirstParsedFunctionCall(code, /createUseFetch/)
-    expect(result).toBeNull()
+  it.each([
+    'createUseFetchX(); factories.createUseFetchX(); factories[\'createUseFetchX\']()',
+    'fn(); other();',
+    'const x = getFactory().createUseFetch()',
+    'const x = pkg.factories.createUseFetch()',
+    'const x = (ok ? factories.createUseFetch : noop)()',
+    '(0, createUseFetch)()',
+    '(ok && createUseFetch)()',
+    '(ok ? createUseFetch : other)()',
+    'this.createUseFetch()',
+    'class A extends B { m(){ super.createUseFetch() } }',
+    'class X{ #createUseFetch(){}; f(obj){ obj.#createUseFetch() } }',
+    'const x = factories[`createUseFetch`]()',
+    'const x = factories["create" + "UseFetch"]()',
+    'const x = createUseFetch`tagged`',
+    'const x = new createUseFetch()',
+    'async function f(){ return import(\'createUseFetch\') }',
+    'pkg?.factories?.createUseFetch()',
+    'createUseFetch.bind(null)()',
+    'createUseFetch.call(null)',
+  ])('should not parse `%s`', (code) => {
+    expect(getFirstParsedFunctionCall(code, /\bcreateUseFetch\b/)).toBeNull()
   })
 })
 
-describe('parseExport', () => {
+describe('findSFCScriptBlocks', () => {
+  it('should find each script block with its attributes and content offset', () => {
+    const sfc = `<template><scripts /></template>\n<script lang="ts">const a = 1</script>\n<script setup>\nconst b = 2\n</script >`
+    const blocks = findSFCScriptBlocks(sfc)
+    expect(blocks.map(({ attrs, content }) => ({ attrs, content }))).toEqual([
+      { attrs: ' lang="ts"', content: 'const a = 1' },
+      { attrs: ' setup', content: '\nconst b = 2\n' },
+    ])
+    for (const block of blocks) {
+      expect(sfc.slice(block.start, block.start + block.content.length)).toBe(block.content)
+    }
+  })
+})
+
+describe('parseStaticExportIdentifiers', () => {
   function getAllParsedExports (code: string, exportedNameFilter?: RegExp) {
-    const results: ExportMetadata[] = []
+    const results: string[] = []
 
     parseAndWalk(code, 'file.ts', {
       enter (node) {
         if (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration' || node.type === 'TSExportAssignment') {
-          results.push(...parseStaticExportIdentifiers(node, exportedNameFilter))
+          results.push(...parseStaticExportIdentifiers(node, exportedNameFilter).map(e => e.localName === e.exportedName ? e.localName : `${e.localName} as ${e.exportedName}`))
         }
       },
     })
@@ -556,57 +250,10 @@ describe('parseExport', () => {
       const h = 'h'
       export { g as renamed, h as default }
     `
-    expect(getAllParsedExports(code)).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "a",
-          "localName": "a",
-        },
-        {
-          "exportedName": "b",
-          "localName": "b",
-        },
-        {
-          "exportedName": "c",
-          "localName": "c",
-        },
-        {
-          "exportedName": "d",
-          "localName": "d",
-        },
-        {
-          "exportedName": "E",
-          "localName": "E",
-        },
-        {
-          "exportedName": "foo",
-          "localName": "foo",
-        },
-        {
-          "exportedName": "bar",
-          "localName": "bar",
-        },
-        {
-          "exportedName": "baz",
-          "localName": "baz",
-        },
-        {
-          "exportedName": "f",
-          "localName": "f",
-        },
-        {
-          "exportedName": "renamed",
-          "localName": "g",
-        },
-        {
-          "exportedName": "default",
-          "localName": "h",
-        },
-      ]
-    `)
+    expect(getAllParsedExports(code)).toEqual(['a', 'b', 'c', 'd', 'E', 'foo', 'bar', 'baz', 'f', 'g as renamed', 'h as default'])
   })
 
-  it('should filter out named export exported names', () => {
+  it('should filter named exports by exported name', () => {
     const code = `
       export const a = 1
       export const _a = 1
@@ -629,161 +276,48 @@ describe('parseExport', () => {
       export { _g as renamed }
       export { g as _renamed }
     `
-    expect(getAllParsedExports(code, /^(?!_).+/)).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "a",
-          "localName": "a",
-        },
-        {
-          "exportedName": "b",
-          "localName": "b",
-        },
-        {
-          "exportedName": "c",
-          "localName": "c",
-        },
-        {
-          "exportedName": "d",
-          "localName": "d",
-        },
-        {
-          "exportedName": "E",
-          "localName": "E",
-        },
-        {
-          "exportedName": "foo",
-          "localName": "foo",
-        },
-        {
-          "exportedName": "bar",
-          "localName": "bar",
-        },
-        {
-          "exportedName": "f",
-          "localName": "f",
-        },
-        {
-          "exportedName": "renamed",
-          "localName": "_g",
-        },
-      ]
-    `)
+    expect(getAllParsedExports(code, /^(?!_).+/)).toEqual(['a', 'b', 'c', 'd', 'E', 'foo', 'bar', 'f', '_g as renamed'])
   })
 
-  it('should handle default export', () => {
-    expect(getAllParsedExports('export default function foo() {}')).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "default",
-          "localName": "foo",
-        },
-      ]
-    `)
-    expect(getAllParsedExports('export default class Foo {}')).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "default",
-          "localName": "Foo",
-        },
-      ]
-    `)
-    expect(getAllParsedExports('export default () => {}')).toMatchInlineSnapshot(`[]`)
-    expect(getAllParsedExports('const foo = \'foo\'; export default foo')).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "default",
-          "localName": "foo",
-        },
-      ]
-    `)
-    expect(getAllParsedExports('const foo = \'foo\'; export = foo')).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "default",
-          "localName": "foo",
-        },
-      ]
-    `)
+  it('should filter with a global regex', () => {
+    expect(getAllParsedExports('export const foo = 1, bar = 2\nexport { foo as baz }', /^(?:foo|bar|baz)$/g)).toEqual(['foo', 'bar', 'foo as baz'])
   })
 
-  it('shouldn\'t filter default export local name', () => {
-    const code = `
-      const _default = 'default'
-      export { _default as default }
-    `
-    expect(getAllParsedExports(code, /^(?!_).+/)).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "default",
-          "localName": "_default",
-        },
-      ]
-    `)
-
-    const code2 = `
-      function _foo() {}
-      export default _foo
-    `
-    expect(getAllParsedExports(code2, /^(?!_).+/)).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "default",
-          "localName": "_foo",
-        },
-      ]
-    `)
-
-    const code3 = `
-      class _Bar {}
-      export default _Bar
-    `
-    expect(getAllParsedExports(code3, /^(?!_).+/)).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "default",
-          "localName": "_Bar",
-        },
-      ]
-    `)
-
-    const code4 = `
-      export default function _baz() {}
-    `
-    expect(getAllParsedExports(code4, /^(?!_).+/)).toMatchInlineSnapshot(`
-      [
-        {
-          "exportedName": "default",
-          "localName": "_baz",
-        },
-      ]
-    `)
+  it.each([
+    ['export default function foo() {}', ['foo as default']],
+    ['export default class Foo {}', ['Foo as default']],
+    ['export default () => {}', []],
+    ['const foo = \'foo\'; export default foo', ['foo as default']],
+    ['const foo = \'foo\'; export = foo', ['foo as default']],
+  ])('should handle default export `%s`', (code, expected) => {
+    expect(getAllParsedExports(code)).toEqual(expected)
   })
 
-  it('should ignore non-supported exports', () => {
-    const code = `
+  it.each([
+    ['const _default = \'default\'; export { _default as default }', '_default'],
+    ['function _foo() {}; export default _foo', '_foo'],
+    ['class _Bar {}; export default _Bar', '_Bar'],
+    ['export default function _baz() {}', '_baz'],
+  ])('should not filter default export `%s` by its local name', (code, local) => {
+    expect(getAllParsedExports(code, /^(?!_).+/)).toEqual([`${local} as default`])
+  })
+
+  it.each([
+    ['unsupported exports', `
       export const { a, b } = obj
       export const [x, y] = arr
       export default 42
       export { a + b as sum }
       export * from 'module'
       export { a } from 'module'
-    `
-    expect(getAllParsedExports(code)).toMatchInlineSnapshot(`[]`)
-  })
-
-  it('should ignore non-export nodes', () => {
-    const code = `
+    `],
+    ['non-export nodes', `
       import { x } from 'module'
       const a = 1
       function f() {}
       class C {}
-    `
-    expect(getAllParsedExports(code)).toMatchInlineSnapshot(`[]`)
-  })
-
-  it('ignores type-exports', () => {
-    const code = `
+    `],
+    ['type exports', `
       export type T = { a: number }
       export interface I { b: string }
       type U = number | string
@@ -791,7 +325,8 @@ describe('parseExport', () => {
       export type { U as V }
       export { type U }
       export { type U as V }
-    `
-    expect(getAllParsedExports(code)).toMatchInlineSnapshot(`[]`)
+    `],
+  ])('should ignore %s', (_, code) => {
+    expect(getAllParsedExports(code)).toEqual([])
   })
 })

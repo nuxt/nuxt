@@ -139,6 +139,11 @@ export interface NuxtPayload {
    * @internal
    */
   prefetchLinks?: Array<Record<string, string | boolean>>
+  /**
+   * The build that rendered an extracted `_payload.json`.
+   * @internal
+   */
+  buildId?: string
   [key: string]: unknown
 }
 

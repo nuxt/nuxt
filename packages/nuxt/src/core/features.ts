@@ -5,15 +5,17 @@ import { isCI, provider } from 'std-env'
 
 const installPrompts = new Set<string>()
 
-export async function installNuxtModule (name: string, options?: { rootDir?: string, searchPaths?: string[], prompt?: boolean }) {
+/**
+ * Offer to install a module that is used but missing, once per process.
+ */
+export async function installNuxtModule (name: string) {
   if (installPrompts.has(name)) { return }
   installPrompts.add(name)
 
   const nuxt = useNuxt()
-  const rootDir = options?.rootDir || nuxt.options.rootDir
-  const searchPaths = options?.searchPaths || nuxt.options.modulesDir
+  const rootDir = nuxt.options.rootDir
 
-  for (const parent of searchPaths) {
+  for (const parent of nuxt.options.modulesDir) {
     if (await resolvePackageJSON(name, { parent }).catch(() => null)) {
       return true
     }
@@ -27,7 +29,7 @@ export async function installNuxtModule (name: string, options?: { rootDir?: str
 
   const terminal = useTerminal()
 
-  if (options?.prompt === true || (options?.prompt !== false && provider !== 'stackblitz')) {
+  if (provider !== 'stackblitz') {
     const confirm = await terminal.prompt(`Do you want to install ${name} package?`, {
       type: 'confirm',
       name: 'confirm',

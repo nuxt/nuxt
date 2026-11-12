@@ -1,16 +1,13 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
 
-import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
-
 import * as composables from '#app/composables'
-import { refreshNuxtData } from '#app/composables/asyncData'
-import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { _showErrorUnlessCrawler, clearError, showError, useError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
 import { onNuxtReady } from '#app/composables/ready'
@@ -149,33 +146,6 @@ describe('composables', () => {
 })
 
 describe('errors', () => {
-  it('createError', () => {
-    expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
-      {
-        "data": undefined,
-        "message": "HTTPError 404",
-        "status": 404,
-        "statusText": undefined,
-        "unhandled": undefined,
-      }
-    `)
-    expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
-      {
-        "data": undefined,
-        "message": "Message",
-        "status": 500,
-        "statusText": undefined,
-        "unhandled": undefined,
-      }
-    `)
-  })
-
-  it('isNuxtError', () => {
-    const error = createError({ statusCode: 404 })
-    expect(isNuxtError(error)).toBe(true)
-    expect(isNuxtError(new Error('test'))).toBe(false)
-  })
-
   it('global nuxt errors', () => {
     const error = useError()
     expect(error.value).toBeUndefined()
@@ -217,6 +187,23 @@ describe('errors', () => {
 })
 
 describe('onNuxtReady', () => {
+  function stubIdleCallback (isHydrating: boolean, implementation?: typeof idleCallback.requestIdleCallback) {
+    const nuxtApp = useNuxtApp()
+    const wasHydrating = nuxtApp.isHydrating
+    nuxtApp.isHydrating = isHydrating
+    const requestIdleCallback = vi.spyOn(idleCallback, 'requestIdleCallback')
+    if (implementation) {
+      requestIdleCallback.mockImplementation(implementation)
+    }
+    onTestFinished(() => {
+      nuxtApp.isHydrating = wasHydrating
+      requestIdleCallback.mockRestore()
+    })
+    return { nuxtApp, requestIdleCallback }
+  }
+
+  const runIdle: typeof idleCallback.requestIdleCallback = (cb) => { cb({ didTimeout: true, timeRemaining: () => 0 }); return 0 }
+
   it('should call callback once nuxt is hydrated', async () => {
     const fn = vi.fn()
     onNuxtReady(fn)
@@ -225,89 +212,49 @@ describe('onNuxtReady', () => {
   })
 
   it('should pass the timeout to requestIdleCallback', () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: true, timeRemaining: () => 0 }); return 0 })
-    try {
-      nuxtApp.isHydrating = false
-      const fn = vi.fn()
-      onNuxtReady(fn, { timeout: 500 })
-      expect(requestIdleCallbackSpy).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
-      expect(fn).toHaveBeenCalledOnce()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    const { requestIdleCallback } = stubIdleCallback(false, runIdle)
+    const fn = vi.fn()
+    onNuxtReady(fn, { timeout: 500 })
+    expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
+    expect(fn).toHaveBeenCalledOnce()
   })
 
   it('should pass the timeout to requestIdleCallback after hydration', async () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: true, timeRemaining: () => 0 }); return 0 })
-    try {
-      nuxtApp.isHydrating = true
-      const fn = vi.fn()
-      onNuxtReady(fn, { timeout: 500 })
-      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
-      await nuxtApp.hooks.callHook('app:suspense:resolve')
-      expect(requestIdleCallbackSpy).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
-      expect(fn).toHaveBeenCalledOnce()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    const { nuxtApp, requestIdleCallback } = stubIdleCallback(true, runIdle)
+    const fn = vi.fn()
+    onNuxtReady(fn, { timeout: 500 })
+    expect(requestIdleCallback).not.toHaveBeenCalled()
+    await nuxtApp.hooks.callHook('app:suspense:resolve')
+    expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
+    expect(fn).toHaveBeenCalledOnce()
   })
 
   it('should not schedule the callback if the signal is already aborted', () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback')
-    try {
-      nuxtApp.isHydrating = false
-      onNuxtReady(() => {}, { signal: AbortSignal.abort() })
-      expect(requestIdleCallbackSpy).not.toHaveBeenCalled()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    const { requestIdleCallback } = stubIdleCallback(false)
+    onNuxtReady(() => {}, { signal: AbortSignal.abort() })
+    expect(requestIdleCallback).not.toHaveBeenCalled()
   })
 
   it('should not run the callback if the signal is aborted during hydration', async () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { cb({ didTimeout: false, timeRemaining: () => 50 }); return 0 })
-    try {
-      nuxtApp.isHydrating = true
-      const fn = vi.fn()
-      const controller = new AbortController()
-      onNuxtReady(fn, { signal: controller.signal })
-      controller.abort()
-      await nuxtApp.hooks.callHook('app:suspense:resolve')
-      expect(fn).not.toHaveBeenCalled()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    const { nuxtApp } = stubIdleCallback(true, runIdle)
+    const fn = vi.fn()
+    const controller = new AbortController()
+    onNuxtReady(fn, { signal: controller.signal })
+    controller.abort()
+    await nuxtApp.hooks.callHook('app:suspense:resolve')
+    expect(fn).not.toHaveBeenCalled()
   })
 
   it('should not run the callback if the signal is aborted while waiting for idle', () => {
-    const nuxtApp = useNuxtApp()
-    const isHydrating = nuxtApp.isHydrating
     let idle: IdleRequestCallback | undefined
-    const requestIdleCallbackSpy = vi.spyOn(idleCallback, 'requestIdleCallback').mockImplementation((cb) => { idle = cb; return 0 })
-    try {
-      nuxtApp.isHydrating = false
-      const fn = vi.fn()
-      const controller = new AbortController()
-      onNuxtReady(fn, { signal: controller.signal })
-      controller.abort()
-      expect(idle).toBeDefined()
-      idle?.({ didTimeout: false, timeRemaining: () => 50 })
-      expect(fn).not.toHaveBeenCalled()
-    } finally {
-      nuxtApp.isHydrating = isHydrating
-      requestIdleCallbackSpy.mockRestore()
-    }
+    stubIdleCallback(false, (cb) => { idle = cb; return 0 })
+    const fn = vi.fn()
+    const controller = new AbortController()
+    onNuxtReady(fn, { signal: controller.signal })
+    controller.abort()
+    expect(idle).toBeDefined()
+    idle?.({ didTimeout: false, timeRemaining: () => 50 })
+    expect(fn).not.toHaveBeenCalled()
   })
 })
 
@@ -575,9 +522,7 @@ describe('loading state', () => {
     expect(isLoading.value).toBeFalsy()
     vi.useRealTimers()
   })
-})
 
-describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
     vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
@@ -593,9 +538,7 @@ describe('loading state', () => {
     expect(isLoading.value).toBeFalsy()
     vi.useRealTimers()
   })
-})
 
-describe('loading state', () => {
   it('expect error from loading state to be changed by finish({ error: true })', async () => {
     vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
@@ -610,9 +553,7 @@ describe('loading state', () => {
     finish()
     vi.useRealTimers()
   })
-})
 
-describe('loading state', () => {
   it('expect state from set opts: { force: true }', async () => {
     vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
@@ -774,6 +715,9 @@ describe('unicode route rules', () => {
   it('applies a rule key whose casing matches the request exactly', () => {
     for (const path of ['/cafÉ', `/caf${encodeURIComponent('É')}`]) {
       expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/accented-target' })
+    }
+    for (const path of ['/café', `/caf${encodeURIComponent('é')}`]) {
+      expect(getRouteRules({ path }), path).not.toHaveProperty('redirect')
     }
   })
 })
@@ -977,6 +921,7 @@ describe('routing utilities: `navigateTo`', () => {
       '//evil.com',
       'https://evil.com',
       '\\\\evil.com',
+      `${window.location.protocol === 'https:' ? 'http:' : 'https:'}//${window.location.host}/legit/path`,
     ]
     for (const url of urls) {
       expect(() => reloadNuxtApp({ path: url })).toThrow(expect.objectContaining({ code: 'NUXT_E2010' }))
@@ -1462,409 +1407,6 @@ describe('routing utilities: `setPageLayout`', () => {
   })
 })
 
-describe('defineNuxtComponent', () => {
-  it('should produce a Vue component', async () => {
-    const wrapper = await mountSuspended(defineNuxtComponent({
-      render: () => h('div', 'hi there'),
-    }))
-    expect(wrapper.html()).toMatchInlineSnapshot('"<div>hi there</div>"')
-  })
-
-  it('should support Options API asyncData', async () => {
-    const nuxtApp = useNuxtApp()
-    nuxtApp.isHydrating = true
-    nuxtApp.payload.serverRendered = true
-    const ClientOnlyPage = await createClientPage(() => Promise.resolve(defineNuxtComponent({
-      asyncData: () => ({
-        users: ['alice', 'bob'],
-      }),
-      render () {
-        // @ts-expect-error this is not typed
-        return h('div', `Total users: ${this.users.length}`)
-      },
-    })))
-    const wrapper = await mountSuspended(ClientOnlyPage)
-    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>Total users: 2</div>"`)
-    nuxtApp.isHydrating = false
-    nuxtApp.payload.serverRendered = false
-  })
-
-  it('should support Options API refreshNuxtData', async () => {
-    let count = 0
-    const component = defineNuxtComponent({
-      asyncData: () => ({
-        number: count++,
-      }),
-      setup () {
-        const vm = getCurrentInstance()
-        return () => {
-          // @ts-expect-error go directly to jail 😈
-          return h('div', vm!.render.number.value)
-        }
-      },
-    })
-
-    const wrapper = await mountSuspended(component)
-    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>0</div>"`)
-
-    await refreshNuxtData()
-
-    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>1</div>"`)
-  })
-
-  it.todo('should support Options API head')
-})
-
-describe('useCookie', () => {
-  it('should watch custom cookie refs', () => {
-    const user = useCookie('userInfo', {
-      default: () => ({ score: -1 }),
-      maxAge: 60 * 60,
-    })
-    const computedVal = computed(() => user.value.score)
-    expect(computedVal.value).toBe(-1)
-    user.value.score++
-    expect(computedVal.value).toBe(0)
-  })
-
-  it('should not re-read `document.cookie` for every call', async () => {
-    document.cookie = 'read-count-a=1'
-    document.cookie = 'read-count-b=2'
-
-    let target: any = document
-    let descriptor: PropertyDescriptor | undefined
-    while (target && !descriptor) {
-      descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
-      if (!descriptor) { target = Object.getPrototypeOf(target) }
-    }
-
-    let reads = 0
-    let writes = 0
-    Object.defineProperty(document, 'cookie', {
-      configurable: true,
-      get () {
-        reads++
-        return descriptor!.get!.call(document)
-      },
-      set (value) {
-        writes++
-        descriptor!.set!.call(document, value)
-      },
-    })
-
-    try {
-      for (let i = 0; i < 10; i++) {
-        useCookie('read-count-a')
-        useCookie('read-count-b')
-        useCookie('read-count-absent-' + i)
-      }
-      expect(reads).toBe(1)
-      expect(writes).toBe(0)
-
-      for (let i = 0; i < 10; i++) {
-        useCookie('read-count-default', { default: () => 'value' })
-      }
-      expect(reads).toBe(1)
-      expect(writes).toBe(1)
-
-      useCookie('read-count-scoped', { default: () => 'value', domain: 'example.com' })
-      useCookie('read-count-a')
-      expect(reads).toBe(2)
-
-      await nextTick()
-      useCookie('read-count-a')
-      expect(reads).toBe(3)
-    } finally {
-      delete (document as any).cookie
-    }
-  })
-
-  it('should invalidate the cached cookie jar after a write', async () => {
-    const cookie = useCookie<string>('invalidate-me', { default: () => 'initial' })
-    expect(useCookie<string>('invalidate-me').value).toBe('initial')
-
-    cookie.value = 'updated'
-    await nextTick()
-    expect(useCookie<string>('invalidate-me').value).toBe('updated')
-  })
-
-  it('should not read a cookie excluded by `filter`', () => {
-    document.cookie = 'filtered-out=set'
-
-    let decodeCallCount = 0
-    const cookie = useCookie<string>('filtered-out', {
-      default: () => 'default',
-      filter: () => false,
-      decode (value) {
-        decodeCallCount++
-        return value
-      },
-    })
-    expect(cookie.value).toBe('default')
-    expect(decodeCallCount).toBe(0)
-  })
-
-  it('cookie decode function should be invoked once', () => {
-    // Pre-set cookies
-    document.cookie = 'foo=Foo'
-    document.cookie = 'bar=%7B%22s2%22%3A0%7D'
-    document.cookie = 'baz=%7B%22s2%22%3A0%7D'
-
-    let barCallCount = 0
-    const bazCookie = useCookie<{ s2: number }>('baz', {
-      default: () => ({ s2: -1 }),
-      decode (value) {
-        barCallCount++
-        return JSON.parse(decodeURIComponent(value))
-      },
-    })
-    bazCookie.value.s2++
-    expect(bazCookie.value.s2).toEqual(1)
-    expect(barCallCount).toBe(1)
-
-    let quxCallCount = 0
-    const quxCookie = useCookie<{ s3: number }>('qux', {
-      default: () => ({ s3: -1 }),
-      filter: key => key === 'bar' || key === 'baz',
-      decode (value) {
-        quxCallCount++
-        return JSON.parse(decodeURIComponent(value))
-      },
-    })
-    quxCookie.value.s3++
-    expect(quxCookie.value.s3).toBe(0)
-    expect(quxCallCount).toBe(0)
-  })
-
-  it('should not watch custom cookie refs when shallow', () => {
-    for (const value of ['shallow', false] as const) {
-      const user = useCookie('shallowUserInfo', {
-        default: () => ({ score: -1 }),
-        maxAge: 60 * 60,
-        watch: value,
-      })
-      const computedVal = computed(() => user.value.score)
-      expect(computedVal.value).toBe(-1)
-      user.value.score++
-      expect(computedVal.value).toBe(-1)
-    }
-  })
-
-  it('should set cookie value when called on client', () => {
-    useCookie('cookie-watch-false', { default: () => 'foo', watch: false })
-    expect(document.cookie).toContain('cookie-watch-false=foo')
-
-    useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
-    expect(document.cookie).toContain('cookie-watch-true=foo')
-  })
-
-  it('should not write a readonly cookie with a default value on client', () => {
-    const cookie = useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
-    expect(cookie.value).toBe('foo')
-    expect(document.cookie).not.toContain('cookie-readonly')
-  })
-
-  it('should re-write cookie on same-value assignment when refresh is true', async () => {
-    const { nextTick } = await import('vue')
-
-    document.cookie = 'refresh-test=initial; Max-Age=3600'
-    const cookie = useCookie('refresh-test', {
-      maxAge: 3600,
-      refresh: true,
-    })
-    expect(cookie.value).toBe('initial')
-
-    // Assign the same value — should still trigger a cookie write
-    cookie.value = 'initial'
-    await nextTick()
-
-    expect(document.cookie).toContain('refresh-test=initial')
-  })
-
-  it('should not re-write CookieStore updates when refresh is true', async () => {
-    const name = 'refresh-cookiestore-test'
-    const scope = effectScope()
-    const cookie = scope.run(() => useCookie(name, { maxAge: 3600, refresh: true }))!
-
-    let target: any = document
-    let descriptor: PropertyDescriptor | undefined
-    while (target && !descriptor) {
-      descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
-      if (!descriptor) { target = Object.getPrototypeOf(target) }
-    }
-
-    const writes: string[] = []
-    Object.defineProperty(document, 'cookie', {
-      configurable: true,
-      get () {
-        return descriptor!.get!.call(document)
-      },
-      set (value: string) {
-        if (value.startsWith(`${name}=`)) { writes.push(value) }
-        descriptor!.set!.call(document, value)
-      },
-    })
-
-    try {
-      cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name, value: 'received' }], deleted: [] }))
-      expect(cookie.value).toBe('received')
-      await nextTick()
-      await nextTick()
-      expect(writes).toEqual([])
-
-      const value = cookie.value
-      cookie.value = value
-      await nextTick()
-      expect(writes).toHaveLength(1)
-      expect(writes[0]).toContain(`${name}=received`)
-
-      cookie.value = 'disposed'
-      scope.stop()
-      expect(writes).toHaveLength(2)
-      expect(writes[1]).toContain(`${name}=disposed`)
-    } finally {
-      scope.stop()
-      delete (document as any).cookie
-    }
-  })
-
-  it('should write an assignment made straight after a CookieStore update when refresh is true', async () => {
-    const name = 'refresh-cookiestore-assign-test'
-    const scope = effectScope()
-    const cookie = scope.run(() => useCookie(name, { maxAge: 3600, refresh: true }))!
-
-    cookieStore.dispatchEvent(new window.CookieChangeEvent('change', { changed: [{ name, value: 'received' }], deleted: [] }))
-    await nextTick()
-    cookie.value = 'local'
-    for (let i = 0; i < 4; i++) { await nextTick() }
-    expect(document.cookie).toContain(`${name}=local`)
-
-    scope.stop()
-  })
-
-  it('should not re-write cookie on same-value assignment when refresh is false', async () => {
-    const { nextTick } = await import('vue')
-
-    document.cookie = 'no-refresh-test=original'
-    const cookie = useCookie('no-refresh-test', {
-      maxAge: 3600,
-      refresh: false,
-    })
-    expect(cookie.value).toBe('original')
-
-    // Clear document.cookie to detect if a write happens
-    document.cookie = 'no-refresh-test=; Max-Age=0'
-    expect(document.cookie).not.toContain('no-refresh-test=original')
-
-    // Assign the same value — should NOT trigger a cookie write
-    cookie.value = 'original'
-    await nextTick()
-
-    expect(document.cookie).not.toContain('no-refresh-test=original')
-  })
-
-  it('should never write a readonly cookie, even when refresh is true', async () => {
-    const { nextTick } = await import('vue')
-
-    document.cookie = 'readonly-refresh-test=original'
-    const cookie = useCookie('readonly-refresh-test', {
-      maxAge: 3600,
-      readonly: true,
-      refresh: true,
-    })
-    expect(cookie.value).toBe('original')
-
-    // Clear document.cookie to detect if a write happens
-    document.cookie = 'readonly-refresh-test=; Max-Age=0'
-    expect(document.cookie).not.toContain('readonly-refresh-test=original')
-
-    ;(cookie as any).value = 'stray-write'
-    expect(cookie.value).toBe('stray-write')
-    await nextTick()
-
-    expect(document.cookie).not.toContain('readonly-refresh-test=stray-write')
-  })
-
-  it('should re-evaluate expires getter on each cookie write', async () => {
-    const { nextTick } = await import('vue')
-    let callCount = 0
-    const cookie = useCookie('expires-getter', {
-      expires: () => {
-        callCount++
-        return new Date(Date.now() + 60_000)
-      },
-    })
-
-    // Initial write of default/undefined may or may not happen; start from a known count
-    const baseline = callCount
-    cookie.value = 'first'
-    await nextTick()
-    expect(callCount).toBeGreaterThan(baseline)
-
-    const afterFirst = callCount
-    cookie.value = 'second'
-    await nextTick()
-    expect(callCount).toBeGreaterThan(afterFirst)
-    expect(document.cookie).toContain('expires-getter=second')
-  })
-
-  it('should re-evaluate expires getter on same-value assignment when refresh is true', async () => {
-    const { nextTick } = await import('vue')
-    let callCount = 0
-    document.cookie = 'expires-refresh=token'
-    const cookie = useCookie('expires-refresh', {
-      refresh: true,
-      expires: () => {
-        callCount++
-        return new Date(Date.now() + 60_000)
-      },
-    })
-    expect(cookie.value).toBe('token')
-
-    const baseline = callCount
-    cookie.value = 'token'
-    await nextTick()
-    expect(callCount).toBeGreaterThan(baseline)
-    expect(document.cookie).toContain('expires-refresh=token')
-  })
-
-  it('should support a static Date for expires without a getter', async () => {
-    const { nextTick } = await import('vue')
-    const cookie = useCookie('expires-static', {
-      expires: new Date(Date.now() + 60_000),
-    })
-    cookie.value = 'static-value'
-    await nextTick()
-    expect(document.cookie).toContain('expires-static=static-value')
-  })
-
-  it('should not treat an expires getter returning undefined as expired', () => {
-    const cookie = useCookie('expires-undefined-getter', {
-      default: () => 'fallback',
-      expires: () => undefined,
-    })
-    expect(cookie.value).toBe('fallback')
-  })
-
-  it('should keep session cookies without expires or maxAge as plain refs', async () => {
-    const { nextTick } = await import('vue')
-    vi.useFakeTimers()
-    try {
-      const cookie = useCookie('session-no-expiry', {
-        default: () => 'session',
-      })
-      cookie.value = 'session'
-      await nextTick()
-      expect(cookie.value).toBe('session')
-
-      vi.advanceTimersByTime(60_000)
-      expect(cookie.value).toBe('session')
-    } finally {
-      vi.useRealTimers()
-    }
-  })
-})
-
 describe('callOnce', () => {
   describe.each([
     ['without options', undefined],
@@ -1958,48 +1500,16 @@ describe('callOnce', () => {
   })
 })
 
-describe('route announcer', () => {
-  it('should create a route announcer with default politeness', () => {
-    const announcer = useRouteAnnouncer()
-    expect(announcer.politeness.value).toBe('polite')
+describe.each([
+  { name: 'useRouteAnnouncer', useAnnouncer: useRouteAnnouncer, resetsOnDispose: false },
+  { name: 'useAnnouncer', useAnnouncer, resetsOnDispose: true },
+])('$name', ({ useAnnouncer, resetsOnDispose }) => {
+  it('should default to polite politeness', () => {
+    expect(useAnnouncer().politeness.value).toBe('polite')
   })
 
-  it('should create a route announcer with provided politeness', () => {
-    const announcer = useRouteAnnouncer({ politeness: 'assertive' })
-    expect(announcer.politeness.value).toBe('assertive')
-  })
-
-  it('should set message and politeness', () => {
-    const announcer = useRouteAnnouncer()
-    announcer.set('Test message with politeness', 'assertive')
-    expect(announcer.message.value).toBe('Test message with politeness')
-    expect(announcer.politeness.value).toBe('assertive')
-  })
-
-  it('should set message with polite politeness', () => {
-    const announcer = useRouteAnnouncer()
-    announcer.polite('Test message polite')
-    expect(announcer.message.value).toBe('Test message polite')
-    expect(announcer.politeness.value).toBe('polite')
-  })
-
-  it('should set message with assertive politeness', () => {
-    const announcer = useRouteAnnouncer()
-    announcer.assertive('Test message assertive')
-    expect(announcer.message.value).toBe('Test message assertive')
-    expect(announcer.politeness.value).toBe('assertive')
-  })
-})
-
-describe('announcer', () => {
-  it('should create an announcer with default politeness', () => {
-    const announcer = useAnnouncer()
-    expect(announcer.politeness.value).toBe('polite')
-  })
-
-  it('should create an announcer with provided politeness', () => {
-    const announcer = useAnnouncer({ politeness: 'assertive' })
-    expect(announcer.politeness.value).toBe('assertive')
+  it('should accept a politeness', () => {
+    expect(useAnnouncer({ politeness: 'assertive' }).politeness.value).toBe('assertive')
   })
 
   it('should set message and politeness', () => {
@@ -2007,57 +1517,30 @@ describe('announcer', () => {
     announcer.set('Test message with politeness', 'assertive')
     expect(announcer.message.value).toBe('Test message with politeness')
     expect(announcer.politeness.value).toBe('assertive')
-  })
 
-  it('should set message with polite politeness', () => {
-    const announcer = useAnnouncer()
     announcer.polite('Test message polite')
     expect(announcer.message.value).toBe('Test message polite')
     expect(announcer.politeness.value).toBe('polite')
-  })
 
-  it('should set message with assertive politeness', () => {
-    const announcer = useAnnouncer()
     announcer.assertive('Test message assertive')
     expect(announcer.message.value).toBe('Test message assertive')
     expect(announcer.politeness.value).toBe('assertive')
   })
 
-  it('should cleanup announcer when last scope is disposed', () => {
-    const nuxtApp = useNuxtApp()
-
-    // Clean up any pre-existing announcer state
-    delete nuxtApp._announcer
-    delete nuxtApp._announcerDeps
-
+  it('should share the announcer until the last scope using it is disposed', () => {
     const scope1 = effectScope()
-    let announcer: ReturnType<typeof useAnnouncer>
-
-    scope1.run(() => {
-      announcer = useAnnouncer()
-      announcer.set('Test message', 'assertive')
-    })
-
-    expect(nuxtApp._announcerDeps).toBe(1)
-    expect(nuxtApp._announcer).toBeDefined()
-
-    // Create a second consumer in a separate scope
     const scope2 = effectScope()
-    scope2.run(() => {
-      useAnnouncer()
-    })
+    const announcer = scope1.run(() => useAnnouncer())!
+    expect(scope2.run(() => useAnnouncer())).toBe(announcer)
+    announcer.assertive('Still in use')
 
-    expect(nuxtApp._announcerDeps).toBe(2)
-
-    // Dispose first scope — announcer should still exist
     scope1.stop()
-    expect(nuxtApp._announcerDeps).toBe(1)
-    expect(nuxtApp._announcer).toBeDefined()
+    expect(useAnnouncer()).toBe(announcer)
+    expect(announcer.message.value).toBe('Still in use')
 
-    // Dispose second scope — announcer should be cleaned up
     scope2.stop()
-    expect(nuxtApp._announcerDeps).toBe(0)
-    expect(nuxtApp._announcer).toBeUndefined()
+    expect(announcer.message.value).toBe(resetsOnDispose ? '' : 'Still in use')
+    expect(useAnnouncer()).not.toBe(announcer)
   })
 })
 

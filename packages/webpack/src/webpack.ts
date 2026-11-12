@@ -3,7 +3,7 @@ import type { H3Event as H3V1Event } from 'h3'
 import type { H3Event as H3V2Event } from 'h3-next'
 import type webpackDevMiddleware from 'webpack-dev-middleware'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
-import type { Compiler, Configuration, MultiCompiler, Stats, Watching } from 'webpack'
+import type { Compiler, Configuration, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { pathToFileURL } from 'node:url'
@@ -17,19 +17,18 @@ import { ChunkErrorPlugin } from './plugins/chunk.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { createMFS } from './utils/mfs.ts'
 import { isSameOriginRequest, resolveAllowedHosts } from './utils/same-origin.ts'
-import { client, server } from './configs/index.ts'
+import { client } from './configs/client.ts'
+import { server } from './configs/server.ts'
 import { applyPresets, createWebpackConfigContext } from './utils/config.ts'
 
-import { builder, createRsbuild, webpack } from './builder.ts'
+import { builder, webpack } from './builder.ts'
 
-// TODO: Support plugins
-// const plugins: string[] = []
-
-export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
+/** Generate the configuration of the client and server builds, calling the `config` and `configResolved` hooks. */
+export async function resolveConfigs (nuxt: Nuxt): Promise<Configuration[]> {
   const webpackConfigs = await Promise.all([client, ...(nuxt.options.ssr ? [server] : [])].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
-    await applyPresets(ctx, preset)
+    await applyPresets(ctx, [preset])
     return ctx.config
   }))
 
@@ -45,8 +44,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack())
-    // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
-    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
+    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && builder !== 'rspack') {
       config.plugins!.push(new ChunkErrorPlugin())
     }
     if (ssrStylesPlugin) {
@@ -56,29 +54,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   await nuxt.callHook(`${builder}:configResolved`, webpackConfigs)
 
-  // Rsbuild owns the dev server (middleware mode) and, in production, the
-  // compiler lifecycle. Everything else falls back to plain webpack.
-  if (builder === 'rspack' && createRsbuild) {
-    const rsbuild = await createRsbuildInstance(webpackConfigs, nuxt)
+  return webpackConfigs
+}
 
-    if (nuxt.options.dev) {
-      await startRsbuildDevServer(rsbuild, nuxt)
-      return
-    }
+export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
+  const webpackConfigs = await resolveConfigs(nuxt)
 
-    const compilers = await getRsbuildCompilers(rsbuild)
-    nuxt.hook('close', async () => {
-      for (const compiler of compilers) {
-        await new Promise(resolve => compiler.close(resolve))
-      }
-    })
-    for (const c of compilers) {
-      await compile(c)
-    }
-    return
-  }
-
-  // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
   const compilers = webpackConfigs.map(config => webpack(config))
 
@@ -106,151 +87,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 }
 
-function createRsbuildInstance (configs: Configuration[], nuxt: Nuxt) {
-  // One rsbuild environment per Nuxt bundle (client → web, server → node)
-  const environments: Record<string, unknown> = {}
-  for (const config of configs) {
-    const isServer = config.name === 'server'
-    // Rsbuild's dev server only injects its HMR client into `web` compilers.
-    if (nuxt.options.dev && !isServer) {
-      config.target ??= 'web'
-    }
-    const distPath = isServer && nuxt.options.dev
-      ? resolve(nuxt.options.buildDir, 'dist/.rsbuild-server')
-      : config.output!.path as string
-    environments[config.name!] = {
-      output: {
-        target: isServer ? 'node' : 'web',
-        distPath: { root: distPath },
-      },
-      tools: {
-        // Nuxt generates the full rspack configuration itself, so the
-        // rsbuild-generated config is replaced rather than merged into
-        rspack: () => config,
-      },
-    }
-  }
-
-  return createRsbuild!({
-    callerName: 'nuxt',
-    cwd: nuxt.options.rootDir,
-    config: {
-      root: nuxt.options.rootDir,
-      mode: nuxt.options.dev ? 'development' : 'production',
-      logLevel: 'silent',
-      environments,
-      ...nuxt.options.dev
-        ? {
-            server: { middlewareMode: true, allowedHosts: resolveAllowedHosts(nuxt.options) },
-            dev: {
-              // keep the HMR socket under the build-assets dir so
-              // the upgrade won't be forwarded to nitro
-              client: {
-                path: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'rsbuild-hmr'),
-              },
-            },
-          }
-        : {},
-    },
-  })
-}
-
-async function getRsbuildCompilers (rsbuild: Awaited<ReturnType<NonNullable<typeof createRsbuild>>>): Promise<Compiler[]> {
-  // Returns a MultiCompiler when more than one environment is configured
-  const compiler = await rsbuild.createCompiler()
-  return ('compilers' in compiler ? compiler.compilers : [compiler]) as Compiler[]
-}
-
-async function startRsbuildDevServer (rsbuild: Awaited<ReturnType<NonNullable<typeof createRsbuild>>>, nuxt: Nuxt) {
-  // Nitro reads the server bundle from the compiler's in-memory output, so the
-  // build must not be considered ready until every compiler has emitted once.
-  const firstCompiles: Array<Promise<void>> = []
-
-  rsbuild.onAfterCreateCompiler(({ compiler }: { compiler: Compiler | MultiCompiler }) => {
-    const compilers = ('compilers' in compiler ? compiler.compilers : [compiler]) as Compiler[]
-    for (const c of compilers) {
-      const name = c.options.name!
-      nuxt.callHook(`${builder}:compile`, { name, compiler: c })
-
-      let settled = false
-      firstCompiles.push(new Promise<void>((resolve, reject) => {
-        c.hooks.done.tap('load-resources', (stats) => {
-          nuxt.callHook(`${builder}:compiled`, { name, compiler: c, stats: stats as Stats })
-          if (!settled) {
-            settled = true
-            resolve()
-          }
-        })
-        c.hooks.failed.tap('nuxt-errorlog', (err) => {
-          if (!settled) {
-            settled = true
-            reject(err)
-          }
-        })
-      }))
-    }
-  })
-
-  const devServer = await rsbuild.createDevServer()
-
-  nuxt.hook('close', () => devServer.close())
-
-  // Attach the HMR websocket to the nuxt dev server, so it shares the
-  // app's port and TLS certificate rather than needing a second server.
-  const listener = nuxt._devServerListener
-  if (listener) {
-    devServer.connectWebSocket({ server: listener })
-    await devServer.afterListen()
-  } else {
-    bundlerDiagnostics.NUXT_B7017()
-  }
-
-  const buildAssetsPrefix = joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
-  // `builds/` under the assets dir is a Nitro-served virtual route (app manifest), not a bundler asset.
-  const nitroBuildsPrefix = joinURL(buildAssetsPrefix, 'builds')
-  await nuxt.callHook('server:devHandler', rsbuildToH3Handler(nuxt, devServer.middlewares, buildAssetsPrefix, nitroBuildsPrefix), { cors: () => true })
-
-  await Promise.all(firstCompiles)
-}
-
 // h3 sentinel signalling that the response has already been written to the
 // raw node `res`; returning `undefined` instead would make h3 treat the
 // request as unhandled and fall through to the SSR catch-all handler.
-const kHandled = /* @__PURE__ */ Symbol.for('h3.handled')
-
-function rsbuildToH3Handler (nuxt: Nuxt, middlewares: (req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) => void, buildAssetsPrefix: string, nitroBuildsPrefix: string) {
-  return defineEventHandler((event) => {
-    const { req, res } = 'runtime' in event ? event.runtime!.node! : event.node
-    if (!isSameOriginRequest(req, resolveAllowedHosts(nuxt.options))) {
-      res!.statusCode = 403
-      res!.end('Forbidden')
-      return kHandled
-    }
-    return new Promise<typeof kHandled | undefined>((resolve) => {
-      let settled = false
-      const done = (result: typeof kHandled | undefined) => {
-        if (!settled) {
-          settled = true
-          resolve(result)
-        }
-      }
-      // Middlewares that serve a response end it without calling `next`, so also
-      // settle when the response finishes; `next` means Nuxt should handle it.
-      res!.on('finish', () => done(kHandled))
-      res!.on('close', () => done(kHandled))
-      middlewares(req as IncomingMessage, res as ServerResponse, () => {
-        const url = req!.url
-        if (url && url.startsWith(buildAssetsPrefix) && !url.startsWith(nitroBuildsPrefix)) {
-          res!.statusCode = 404
-          res!.end()
-          done(kHandled)
-        } else {
-          done(undefined)
-        }
-      })
-    })
-  })
-}
+export const kHandled: unique symbol = /* @__PURE__ */ Symbol.for('h3.handled')
 
 async function createDevMiddleware (compiler: Compiler) {
   const nuxt = useNuxt()
@@ -326,7 +166,7 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
   })
 }
 
-async function compile (compiler: Compiler) {
+export async function compile (compiler: Compiler): Promise<unknown> {
   const nuxt = useNuxt()
 
   await nuxt.callHook(`${builder}:compile`, { name: compiler.options.name!, compiler })
@@ -387,7 +227,7 @@ async function compile (compiler: Compiler) {
 
 type GenericHandler = (event: H3V1Event | H3V2Event) => unknown | Promise<unknown>
 
-function defineEventHandler (handler: GenericHandler): GenericHandler {
+export function defineEventHandler (handler: GenericHandler): GenericHandler {
   return Object.assign(handler, { __is_handler__: true })
 }
 

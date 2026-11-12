@@ -23,11 +23,9 @@ export function vue (ctx: WebpackConfigContext) {
   })
 
   if (ctx.isClient) {
-    ctx.config.plugins!.push(new VueSSRClientPlugin({ nuxt: ctx.nuxt }))
+    ctx.config.plugins!.push(new VueSSRClientPlugin(ctx.nuxt))
   } else {
-    ctx.config.plugins!.push(new VueSSRServerPlugin({
-      filename: `${ctx.name}.manifest.json`,
-    }))
+    ctx.config.plugins!.push(new VueSSRServerPlugin())
 
     ctx.config.module!.rules!.push({
       test: /\.vue$/i,

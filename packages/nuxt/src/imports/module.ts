@@ -9,8 +9,8 @@ import { klona } from 'klona'
 import { resolveModulePath } from 'exsolve'
 
 import { isDirectory, linkToAlias, logger } from '../utils.ts'
-import { TransformPlugin } from './transform.ts'
-import { appCompatPresets, defaultPresets } from './presets.ts'
+import { RemovedImportsPlugin, TransformPlugin } from './transform.ts'
+import { appCompatPresets, defaultPresets, removedImports } from './presets.ts'
 import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import { pagesImportPresets, routeRulesPresets } from '../pages/module.ts'
@@ -136,6 +136,33 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       refreshImports: file => refreshImports(file),
     }))
 
+    // runs ahead of other build plugins, which may rewrite calls to former auto-imports
+    const reportedRemovedImports = new Set<string>()
+    addBuildPlugin(RemovedImportsPlugin({
+      ctx: {
+        injectImports: (code, id, options) => ctx.injectImports(code, id, options),
+      },
+      options,
+      imports: removedImports,
+      onRemovedImports (id, imports) {
+        const file = relative(nuxt.options.rootDir, id.split('?')[0]!)
+        const bySource = new Map<string, Set<string>>()
+        for (const i of imports) {
+          bySource.set(i.from, (bySource.get(i.from) || new Set()).add(i.name))
+        }
+        const names = [...new Set(imports.map(i => i.name))].sort()
+        const key = file + '\0' + names.join('\0')
+        if (reportedRemovedImports.has(key)) { return }
+        reportedRemovedImports.add(key)
+        headDiagnostics.NUXT_B6006({
+          file,
+          count: names.length,
+          names: names.map(n => `\`${n}\``).join(', '),
+          imports: [...bySource].map(([from, names]) => `\`import { ${[...names].sort().join(', ')} } from '${from}'\``).join(', '),
+        })
+      },
+    }), { prepend: true })
+
     const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)
 
     // matches `imports.mjs`, `imports.d.ts`, `types/imports.d.ts` and `types/shared-imports.d.ts`;
@@ -149,6 +176,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     const isIgnored = createIsIgnored(nuxt)
     const nuxtImportSources = new Set(allNuxtPresets.flatMap(i => i.from))
     const nuxtImports = new Set(presets.flatMap(p => nuxtImportSources.has(p.from) ? p.imports : []))
+    const reportedOverrides = new Set<string>()
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
@@ -172,7 +200,11 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             const value = i.as || i.name
             if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
               const relativePath = isAbsolute(i.from) ? linkToAlias(i.from, nuxt) : i.from
-              headDiagnostics.NUXT_B6002({ name: value, file: relativePath })
+              const key = value + '\0' + relativePath
+              if (!reportedOverrides.has(key)) {
+                reportedOverrides.add(key)
+                headDiagnostics.NUXT_B6002({ name: value, file: relativePath })
+              }
             }
           }
         }

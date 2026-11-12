@@ -4,10 +4,11 @@ import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { afterAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
 import { getRandomPort } from 'get-port-please'
 import type { Plugin } from 'vite'
 import { join } from 'pathe'
+
+import { buildFixture } from './utils.ts'
 
 const tmpDir = fileURLToPath(new URL('./.tmp/ssr-styles', import.meta.url))
 
@@ -19,11 +20,13 @@ async function writeApp () {
     '<style>.app{color:#123456}</style>',
   ].join('\n'))
   await writeFile(join(tmpDir, 'app/components/Styled.vue'), [
-    '<template><p :class="$style.moduleClass" class="plain scoped">styled</p></template>',
+    '<script setup>import \'./imported.css\'</script>',
+    '<template><p :class="$style.moduleClass" class="plain scoped imported">styled</p></template>',
     '<style>.plain{color:#654321}</style>',
     '<style scoped>.scoped{margin:3px}</style>',
     '<style module>.moduleClass{padding:5px}</style>',
   ].join('\n'))
+  await writeFile(join(tmpDir, 'app/components/imported.css'), '.imported{border-width:7px}')
 }
 
 async function build () {
@@ -37,25 +40,7 @@ async function build () {
     },
   }
 
-  const nuxt = await loadNuxt({
-    cwd: tmpDir,
-    ready: true,
-    dev: false,
-    overrides: {
-      compatibilityDate: 'latest',
-      devtools: { enabled: false },
-      ssr: true,
-      features: { inlineStyles: true },
-      vite: { plugins: [recorder] },
-    },
-  })
-
-  try {
-    await buildNuxt(nuxt)
-  } finally {
-    await nuxt.close()
-  }
-
+  await buildFixture(tmpDir, { ssr: true, features: { inlineStyles: true }, vite: { plugins: [recorder] } })
   return ssrTransforms
 }
 
@@ -92,7 +77,7 @@ describe('ssr styles', () => {
 
     const html = await render()
     const inlined = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('\n')
-    for (const css of ['.app{color:#123456}', '.plain{color:#654321}', 'margin:3px', 'padding:5px']) {
+    for (const css of ['.app{color:#123456}', '.plain{color:#654321}', 'margin:3px', 'padding:5px', 'border-width:7px']) {
       expect(inlined).toContain(css)
     }
     expect(html).not.toMatch(/<link[^>]+rel="stylesheet"/)

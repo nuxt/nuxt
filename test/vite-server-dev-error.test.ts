@@ -1,26 +1,17 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { fetch, setup } from '@nuxt/test-utils/e2e'
+import { fetch } from '@nuxt/test-utils/e2e'
 import type { ErrorReport } from 'my-bad'
 
-import { isDev, runsOncePerEnvInMatrix } from './matrix'
+import { isDev, legacyErrorRendering, runsOncePerEnvInMatrix } from './matrix'
 import { channelState, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
+import { setupFixture } from './utils'
 
-const fixtureURL = new URL('./fixtures/vite-server-dev-error/', import.meta.url)
+const fixtureURL = new URL('./fixtures/dev-error-sourcemap/', import.meta.url)
 const at = (file: string, needle: string) => sourcePosition(fixtureURL, file, needle)
 
-const runs = runsOncePerEnvInMatrix && isDev
+const runs = isDev && (runsOncePerEnvInMatrix || legacyErrorRendering)
 
-if (runs) {
-  await setup({
-    rootDir: fileURLToPath(fixtureURL),
-    dev: true,
-    server: true,
-    browser: false,
-    setupTimeout: 240 * 1000,
-    serverStartTimeout: 240 * 1000,
-  })
-}
+await setupFixture(fixtureURL, runs, { nuxtConfig: { server: { builder: 'vite' } } })
 
 describe.skipIf(!runs)('pure vite dev server error reporting', () => {
   it('overlays a report of the mapped stack on the app error page', async () => {
@@ -56,7 +47,8 @@ describe.skipIf(!runs)('pure vite dev server error reporting', () => {
     expect(body.match(/<nuxt-error-overlay>/g)).toHaveLength(1)
     expect([...reports(report)].find(entry => entry.kind === 'compile')?.frames[0]).toMatchObject({
       file: expect.stringMatching(/app\/components\/Broken\.vue$/),
-      snippet: expect.objectContaining({ lines: expect.arrayContaining([expect.stringContaining('this component does not compile')]) }),
+      ...at('app/components/Broken.vue', '/div>'),
+      snippet: expect.objectContaining({ lines: expect.arrayContaining([expect.stringContaining('</div>')]) }),
     })
   })
 

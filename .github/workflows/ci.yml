@@ -57,11 +57,15 @@ jobs:
               - 'packages/**'
               - 'test/**'
               - 'scripts/**'
+              - 'bench/**'
               - 'patches/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - 'package.json'
               - 'tsconfig.json'
+              - 'internal.d.ts'
+              - 'nuxt.config.ts'
+              - 'knip.json'
               - 'vitest.config.ts'
               - 'playwright.config.ts'
               - 'eslint.config.mjs'
@@ -194,7 +198,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   codeql:
-    if: github.event_name != 'merge_group' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/')) && !(github.event_name == 'push' && (contains(github.event.head_commit.message, 'v3.') || contains(github.event.head_commit.message, 'v4.') || contains(github.event.head_commit.message, 'v5.')))
+    needs: changes
+    if: github.event_name != 'merge_group' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
@@ -211,24 +216,21 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           config: |
             paths:
             - 'packages/*/src/**'
             - 'packages/nuxt/bin/**'
-            - 'packages/schema/schema/**'
             paths-ignore:
             - 'test/**'
             - '**/*.spec.ts'
             - '**/*.test.ts'
             - '**/__snapshots__/**'
-            # codeql bug: #L20C9:9: A parse error occurred: `Unexpected token`.
-            - 'packages/vite/src/runtime/vite-node.mjs'
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -245,8 +247,6 @@ jobs:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [ubuntu-24.04-arm, windows-latest]
-        module: ['bundler']
-        # module: ["bundler", "node"]
         exclude:
           # only run ubuntu in merge queue
           - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
@@ -263,8 +263,6 @@ jobs:
       - parallel:
           - name: Test (types)
             run: vp run test:types
-            env:
-              MODULE_RESOLUTION: ${{ matrix.module }}
 
           - name: Typecheck (docs)
             run: vp run typecheck:docs
@@ -294,9 +292,6 @@ jobs:
         with:
           node-version: lts
           cache: true
-
-      - name: Fetch 4.x for cross-branch diagnostics check
-        run: git fetch --no-tags --depth=1 origin 4.x:refs/remotes/origin/4.x
 
       - name: Prepare
         run: vp run dev:prepare && vp run test:prepare && vp run build:kit
@@ -328,6 +323,39 @@ jobs:
         run: gh run cancel ${{ github.run_id }} --repo ${{ github.repository }}
         env:
           GH_TOKEN: ${{ github.token }}
+
+  # Advisory, so not required by `ci-ok`: a conflict can be resolved on either branch.
+  # Pushes to main are covered by their pull request; pushes to 4.x are checked after the fact.
+  diagnostics-drift:
+    needs: changes
+    if: needs.changes.outputs.src == 'true' && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref_name != 'main'))
+    runs-on: ubuntu-26.04-arm
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    env:
+      OTHER_BRANCH: ${{ (github.base_ref || github.ref_name) == 'main' && '4.x' || 'main' }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
+        with:
+          node-version: lts
+          run-install: false
+
+      - name: Check diagnostic codes against the other release line
+        run: |
+          git fetch --no-tags --depth=1 origin "$OTHER_BRANCH:refs/remotes/origin/$OTHER_BRANCH"
+          BASE_REF='HEAD^1'
+          if [ -n "$BEFORE" ] && git fetch --no-tags --depth=1 origin "$BEFORE"; then
+            BASE_REF="$BEFORE"
+          fi
+          BASE_REF="$BASE_REF" OTHER_REF="origin/$OTHER_BRANCH" node ./scripts/check-diagnostics-drift.ts
+        env:
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
 
   # Runs on pull requests too (unlike the `lint` job) so knip regressions surface
   # before the merge queue.
@@ -384,8 +412,12 @@ jobs:
           node-version: lts
           cache: true
 
+      - uses: flakiness/authenticate-fork-prs@b84c39fb86796b063a9152bdec3020b71c870477 # v1.2.0
+        with:
+          flakiness-project: nuxt/nuxt
+
       - name: Check bundle size
-        run: vp exec vitest run bundle
+        run: vp run test:bundle
 
       - name: Cancel workflow on failure
         if: failure() && github.event_name == 'merge_group'
@@ -414,7 +446,7 @@ jobs:
         run: node test/bench/setup-renderer.ts
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@61efe07e57e55bedeab750c434504de272a56e8c # v5.6.1
+        uses: CodSpeedHQ/action@af75f77f17a054769abefaa42fe8dc2975469b5f # v5.6.3
         env:
           NUXT_BENCH_PREBUILT: 'true'
         with:
@@ -445,7 +477,7 @@ jobs:
           - os: ubuntu-24.04-arm
             projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*"'
           - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*"'
+            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*" --project "fixtures:rsbuild-*"'
         exclude:
           - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
@@ -475,6 +507,10 @@ jobs:
 
       - name: Prepare test fixtures
         run: vp run test:prepare
+
+      - uses: flakiness/authenticate-fork-prs@b84c39fb86796b063a9152bdec3020b71c870477 # v1.2.0
+        with:
+          flakiness-project: nuxt/nuxt
 
       - name: Test (fixtures)
         run: vp exec vitest run ${{ matrix.projects }}
@@ -537,6 +573,10 @@ jobs:
 
       - name: Prepare test fixtures
         run: vp run test:prepare
+
+      - uses: flakiness/authenticate-fork-prs@b84c39fb86796b063a9152bdec3020b71c870477 # v1.2.0
+        with:
+          flakiness-project: nuxt/nuxt
 
       - name: Test (e2e)
         run: vp run test:e2e ${{ matrix.shard }}
@@ -623,8 +663,6 @@ jobs:
             @nuxt/cli
           packages: |
             packages/*
-            !packages/nuxi
-            !packages/test-utils
             !packages/ui-templates
             docs
 
@@ -662,4 +700,4 @@ jobs:
           node-version: lts
           cache: true
 
-      - run: vp exec pkg-pr-new publish --compact --pnpm --packageManager=pnpm,npm,yarn './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/vite-server' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step
+      - run: vp exec pkg-pr-new publish --compact --pnpm --packageManager=pnpm,npm,yarn './packages/kit' './packages/nitro-server' './packages/nuxt' './packages/rsbuild' './packages/rspack' './packages/schema' './packages/vite' './packages/vite-server' './packages/webpack' # zizmor: ignore[use-trusted-publishing] pkg-pr-new uses GitHub OIDC trusted publishing internally; no npm token is required in this step

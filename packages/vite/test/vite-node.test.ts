@@ -27,15 +27,8 @@ afterEach(() => {
 const realTmpdir = fs.realpathSync(os.tmpdir())
 
 describe('pickSocketPath', () => {
-  it('uses a filesystem socket on Linux, not an abstract namespace socket', () => {
-    const { socketPath, parentDir } = trackedPick('linux')
-    expect(socketPath.startsWith('\0')).toBe(false)
-    expect(parentDir).toBeDefined()
-    expect(fs.realpathSync(parentDir!).startsWith(realTmpdir)).toBe(true)
-  })
-
-  it('uses a filesystem socket on macOS', () => {
-    const { socketPath, parentDir } = trackedPick('darwin')
+  it.each(['linux', 'darwin'] as const)('uses a filesystem socket on %s, not an abstract namespace socket', (platform) => {
+    const { socketPath, parentDir } = trackedPick(platform)
     expect(socketPath.startsWith('\0')).toBe(false)
     expect(parentDir).toBeDefined()
     expect(fs.realpathSync(parentDir!).startsWith(realTmpdir)).toBe(true)

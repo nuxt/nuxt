@@ -11,6 +11,11 @@ if (path.startsWith('/rich-data')) {
 if (path.startsWith('/unhandled')) {
   throw new Error('an unhandled failure')
 }
+if (path.startsWith('/prefetch-links')) {
+  useNuxtApp().hook('app:rendered', ({ ssrContext }) => {
+    ssrContext!.payload.prefetchLinks = [{ rel: 'preload', as: 'script', href: '/next-page.js' }]
+  })
+}
 if (path.startsWith('/rewritten')) {
   useNuxtApp().hook('app:rendered', ({ renderResult }) => {
     renderResult!.html = renderResult!.html.replace('rendered without nitro', 'rewritten after render')

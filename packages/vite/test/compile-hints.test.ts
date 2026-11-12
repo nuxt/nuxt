@@ -1,9 +1,10 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { readFile, rm } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
 import type { NuxtConfig } from '@nuxt/schema'
 import { join } from 'pathe'
+
+import { buildFixture, writeFiles } from './utils.ts'
 
 const tmpDir = fileURLToPath(new URL('./.tmp/compile-hints', import.meta.url))
 const COMPILE_HINT = '//# allFunctionsCalledOnLoad'
@@ -16,21 +17,7 @@ interface ManifestChunk {
 
 async function build (overrides: NuxtConfig) {
   await rm(join(tmpDir, '.output'), { recursive: true, force: true })
-  const nuxt = await loadNuxt({
-    cwd: tmpDir,
-    ready: true,
-    dev: false,
-    overrides: {
-      compatibilityDate: 'latest',
-      devtools: { enabled: false },
-      ...overrides,
-    },
-  })
-  try {
-    await buildNuxt(nuxt)
-  } finally {
-    await nuxt.close()
-  }
+  await buildFixture(tmpDir, overrides)
 
   const publicDir = join(tmpDir, '.output/public')
   const manifest: Record<string, ManifestChunk> = JSON.parse(await readFile(join(publicDir, 'manifest.json'), 'utf8'))
@@ -51,28 +38,24 @@ function firstCodeLine (code: string) {
 
 describe('compile hints', () => {
   beforeAll(async () => {
-    await rm(tmpDir, { recursive: true, force: true })
-    await mkdir(join(tmpDir, 'app/components'), { recursive: true })
-    await mkdir(join(tmpDir, 'app/layouts'), { recursive: true })
-    await mkdir(join(tmpDir, 'app/pages'), { recursive: true })
-    await mkdir(join(tmpDir, 'app/utils'), { recursive: true })
-    await mkdir(join(tmpDir, 'extra'), { recursive: true })
-    await writeFile(join(tmpDir, 'app/app.vue'), '<template><NuxtLayout><NuxtPage /></NuxtLayout></template>')
-    await writeFile(join(tmpDir, 'app/layouts/default.vue'), '<template><main><slot /></main></template>')
-    await writeFile(join(tmpDir, 'app/utils/shout.ts'), 'export const shout = (text: string) => text.toUpperCase()')
-    await writeFile(join(tmpDir, 'app/components/Shared.vue'), '<script setup>\nimport { shout } from \'~/utils/shout\'\n</script>\n\n<template><p>{{ shout(\'shared\') }}</p></template>')
-    await writeFile(join(tmpDir, 'app/components/Lazy.vue'), '<template><p>lazy</p></template>')
-    await writeFile(join(tmpDir, 'extra/page.vue'), '<template><p>extra</p></template>')
-    for (const page of ['index', 'about']) {
-      await writeFile(join(tmpDir, `app/pages/${page}.vue`), [
-        '<script setup>',
-        'import Shared from \'~/components/Shared.vue\'',
-        'const Lazy = defineAsyncComponent(() => import(\'~/components/Lazy.vue\'))',
-        '</script>',
-        '',
-        `<template><div>${page}<Shared /><Lazy /></div></template>`,
-      ].join('\n'))
-    }
+    const page = (name: string) => [
+      '<script setup>',
+      'import Shared from \'~/components/Shared.vue\'',
+      'const Lazy = defineAsyncComponent(() => import(\'~/components/Lazy.vue\'))',
+      '</script>',
+      '',
+      `<template><div>${name}<Shared /><Lazy /></div></template>`,
+    ].join('\n')
+    await writeFiles(tmpDir, {
+      'app/app.vue': '<template><NuxtLayout><NuxtPage /></NuxtLayout></template>',
+      'app/layouts/default.vue': '<template><main><slot /></main></template>',
+      'app/utils/shout.ts': 'export const shout = (text: string) => text.toUpperCase()',
+      'app/components/Shared.vue': '<script setup>\nimport { shout } from \'~/utils/shout\'\n</script>\n\n<template><p>{{ shout(\'shared\') }}</p></template>',
+      'app/components/Lazy.vue': '<template><p>lazy</p></template>',
+      'extra/page.vue': '<template><p>extra</p></template>',
+      'app/pages/index.vue': page('index'),
+      'app/pages/about.vue': page('about'),
+    })
   })
 
   afterAll(async () => {

@@ -1,7 +1,6 @@
 import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { configDiagnostics } from '@nuxt/kit/internal'
-import { toArray } from './index.ts'
 
 export interface WebpackConfigContext {
   nuxt: Nuxt
@@ -16,8 +15,7 @@ export interface WebpackConfigContext {
   transpile: RegExp[]
 }
 
-type WebpackConfigPreset = (ctx: WebpackConfigContext, options?: object) => void | Promise<void>
-type WebpackConfigPresetItem = WebpackConfigPreset | [WebpackConfigPreset, any]
+type WebpackConfigPreset = (ctx: WebpackConfigContext) => void | Promise<void>
 
 export function createWebpackConfigContext (nuxt: Nuxt): WebpackConfigContext {
   return {
@@ -36,13 +34,9 @@ export function createWebpackConfigContext (nuxt: Nuxt): WebpackConfigContext {
   }
 }
 
-export async function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigPresetItem | WebpackConfigPresetItem[]) {
-  for (const preset of toArray(presets)) {
-    if (Array.isArray(preset)) {
-      await preset[0](ctx, preset[1])
-    } else {
-      await preset(ctx)
-    }
+export async function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigPreset[]) {
+  for (const preset of presets) {
+    await preset(ctx)
   }
 }
 

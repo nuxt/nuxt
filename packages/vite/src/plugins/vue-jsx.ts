@@ -4,6 +4,13 @@ import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import type { Options } from '@vitejs/plugin-vue-jsx'
 
+type HookName = 'transform' | 'resolveId' | 'load'
+
+function handlerOf<K extends HookName> (plugin: Plugin | undefined, name: K) {
+  const hook = plugin?.[name] as Plugin[K]
+  return (typeof hook === 'function' ? hook : hook?.handler) as Extract<Plugin[K], (...args: any[]) => any> | undefined
+}
+
 const JSX_RE = /\.[jt]sx$/
 const VUE_JSX_VIRTUAL_RE = /^\/__vue-jsx/
 
@@ -70,17 +77,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
         },
       },
       async handler (code, id, transformOptions) {
-        const plugin = await loadPlugin()
-        if (!plugin) {
-          return
-        }
-
-        const transform = typeof plugin.transform === 'function'
-          ? plugin.transform
-          : plugin.transform?.handler
-        if (transform) {
-          return transform.call(this, code, id, transformOptions)
-        }
+        return handlerOf(await loadPlugin(), 'transform')?.call(this, code, id, transformOptions)
       },
     },
   }
@@ -94,16 +91,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
         },
       },
       async handler (id, importer, options) {
-        const plugin = await loadPlugin()
-        if (!plugin) {
-          return
-        }
-        const resolveId = typeof plugin.resolveId === 'function'
-          ? plugin.resolveId
-          : plugin.resolveId?.handler
-        if (resolveId) {
-          return resolveId.call(this, id, importer, options)
-        }
+        return handlerOf(await loadPlugin(), 'resolveId')?.call(this, id, importer, options)
       },
     },
     load: {
@@ -113,16 +101,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
         },
       },
       async handler (id) {
-        const plugin = await loadPlugin()
-        if (!plugin) {
-          return
-        }
-        const load = typeof plugin.load === 'function'
-          ? plugin.load
-          : plugin.load?.handler
-        if (load) {
-          return load.call(this, id)
-        }
+        return handlerOf(await loadPlugin(), 'load')?.call(this, id)
       },
     },
   }

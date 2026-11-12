@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
-import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import { joinURL } from 'ufo'
@@ -12,7 +12,10 @@ import { setupSSR } from './ssr.ts'
 import { setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { finishStaticOutput, writeStaticOutput } from './output.ts'
+import { RUNTIME_CONFIG_ID, RuntimeConfigPlugin } from './runtime-config.ts'
+import { SpaDocumentPlugins, rendersSpaDocument } from './spa-document.ts'
 import { isPrerendering, manifestTimestamp, prerenderRoutes, writeAppManifest } from './prerender.ts'
+import { DeployTargetPlugin } from './target.ts'
 
 /**
  * Experimental server builder implemented with Vite alone.
@@ -50,17 +53,20 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   const ssr = nuxt.options.ssr !== false
   const prerender = isPrerendering(nuxt)
   const handler = ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined
+  const deployTarget = ssr && !prerender ? DeployTargetPlugin(nuxt) : undefined
 
   setServerBuild({
     name: 'vite',
     label: ssr ? 'Vite server' : 'Vite SPA',
+    target: () => deployTarget?.target(),
+    targetLabel: 'deploy target',
     output: { dir: () => outputDir, publicDir: () => publicDir },
     capabilities: { server: ssr && !prerender, dev: true },
     buildsSeparately: false,
     // neither `nitro` nor `nitro/runtime-config` resolves in a build without nitro
     runtime: {
-      fetch: resolve(distDir, 'runtime/fetch'),
-      runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
+      fetch: ssr ? resolve(nuxt.options.buildDir, 'vite-server/fetch.mjs') : resolve(distDir, 'runtime/fetch'),
+      runtimeConfig: RUNTIME_CONFIG_ID,
       server: ssr ? resolve(nuxt.options.buildDir, 'vite-server/server.mjs') : undefined,
       // the emitted entry, which only exists once a build has run
       handler,
@@ -81,24 +87,19 @@ export function bundle (nuxt: Nuxt): Promise<void> {
 
   warnExperimental(nuxt, { ssr, unsupported: server?.unsupported ?? [] })
 
-  // There is no server to read runtime config from the environment, so the values known
-  // at build time are serialised instead. Only `app` and `public` are included: this
-  // module is reachable from the client, where anything else would be a leak.
-  addTemplate({
-    filename: 'vite-server/runtime-config.mjs',
-    write: true,
-    getContents: ({ nuxt }) => [
-      `const config = ${JSON.stringify({ app: nuxt.options.runtimeConfig.app, public: nuxt.options.runtimeConfig.public })}`,
-      `export const useRuntimeConfig = () => globalThis.__NUXT__?.config || config`,
-    ].join('\n'),
-  })
-
   setupAppManifest(nuxt, prerender)
 
   // Registered at the root rather than through `addVitePlugin`, which scopes plugins to
   // an environment, where an app-level `buildApp` hook is never called.
   nuxt.options.vite.plugins ||= []
-  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt))
+  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt), RuntimeConfigPlugin(nuxt))
+  if (deployTarget) {
+    nuxt.options.vite.plugins.push(deployTarget.plugin)
+  }
+
+  if (rendersSpaDocument(nuxt)) {
+    nuxt.options.vite.plugins.push(...SpaDocumentPlugins(nuxt))
+  }
 
   if (!nuxt.options.dev) {
     // the document is a real HTML build input, so vite links the entry chunk, injects its
@@ -133,19 +134,19 @@ export function bundle (nuxt: Nuxt): Promise<void> {
 
     nuxt.options.vite.$client = client
     // Deployment plugins can redirect client output during Vite config resolution.
-    // Finalize the resolved SPA assets instead of a stale default output directory.
-    if (!ssr) {
-      nuxt.options.vite.plugins.push({
-        name: 'nuxt:vite-server:client-output',
-        enforce: 'post',
-        configResolved (config) {
-          const outDir = config.environments?.client?.build?.outDir
-          if (outDir) {
-            publicDir = resolve(config.root, outDir)
-          }
-        },
-      })
-    }
+    // Finalize the resolved assets instead of a stale default output directory, unless
+    // Nuxt's own node server serves them from `../public/` next to itself.
+    nuxt.options.vite.plugins.push({
+      name: 'nuxt:vite-server:client-output',
+      enforce: 'post',
+      configResolved (config) {
+        if (useServerBuild(nuxt).runtime.handler !== undefined) { return }
+        const outDir = config.environments?.client?.build?.outDir
+        if (outDir) {
+          publicDir = resolve(config.root, outDir)
+        }
+      },
+    })
     addVitePlugin(() => [DocumentPlugin(nuxt), EntryImportMapPlugin()], { server: false })
   }
 

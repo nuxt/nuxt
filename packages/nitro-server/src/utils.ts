@@ -1,7 +1,7 @@
 import { lstat, symlink, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, isAbsolute, normalize, resolve } from 'pathe'
+import { dirname, isAbsolute, normalize, relative, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
@@ -31,6 +31,13 @@ export async function linkStaticDist (rootDir: string, publicDir: string): Promi
     await unlink(dist).catch(() => {})
   }
   await symlink(publicDir, dist, 'junction').catch(() => {})
+}
+
+const RELATIVE_RE = /^([^.])/
+
+/** A relative path that always starts with `.`, as tsconfig `paths` require. */
+export function relativeWithDot (from: string, to: string): string {
+  return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
 }
 
 /**
@@ -64,7 +71,7 @@ const NODE_MODULES_RE = /\/node_modules\//g
  *
  * Layer paths can contain multiple `/node_modules/` segments (nested npm
  * installs; pnpm's `.pnpm/<id>/node_modules/<name>` store). The exclude
- * pattern is `node_modules/(?!<alts>)` evaluated at every `node_modules/`
+ * pattern is `/node_modules/(?!<alts>)` evaluated at every `node_modules/`
  * boundary, so we push the suffix at each boundary to make the lookahead
  * fail wherever the layer's own files live.
  */
@@ -77,14 +84,14 @@ export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>)
     while ((match = NODE_MODULES_RE.exec(root))) {
       const suffix = root.slice(match.index + match[0].length)
       if (suffix) {
-        excludePaths.push(escapeRE(suffix))
+        excludePaths.push(`${escapeRE(suffix)}(?:\\/|$)`)
       }
       NODE_MODULES_RE.lastIndex = match.index + 1
     }
   }
   return excludePaths.length
-    ? new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)
-    : /node_modules/
+    ? new RegExp(`[\\\\/]node_modules[\\\\/](?!${excludePaths.join('|')})`)
+    : /[\\/]node_modules[\\/]/
 }
 
 /**

@@ -3,6 +3,8 @@ import type { Plugin as VitePluginType, ServerOptions as ViteServerOptions, User
 import type { Configuration as WebpackConfiguration, WebpackPluginInstance as WebpackPluginInstanceType } from 'webpack'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
+import type { RsbuildConfig as RsbuildConfigType, RsbuildPlugin as RsbuildPluginType } from '@rsbuild/core'
+import type { PluginVueOptions as RsbuildVuePluginOptions } from '@rsbuild/plugin-vue'
 import type { SchemaDefinition } from 'untyped'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
 import type { SnakeCase } from './case.ts'
@@ -10,19 +12,22 @@ import type { NuxtConfigLayer, NuxtConfigLayerMeta } from './layers.ts'
 import type { ConfigSchema } from './schema.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { AppHeadMetaObject } from './head.ts'
+import type { RuntimeConfigSchemaEntry } from './runtime-config.ts'
 
 export type { SchemaDefinition } from 'untyped'
 
 /**
  * Bundler types re-exported for the utilities that extend a bundler's own configuration.
  *
- * Authoring a Vite or webpack plugin is not possible without the bundler's types, so these are a
+ * Authoring a Vite, webpack or Rsbuild plugin is not possible without the bundler's types, so these are a
  * deliberate exception to Nuxt owning its public types: `@nuxt/kit` takes them from here rather
  * than importing the bundlers itself.
  */
 export type VitePlugin = VitePluginType
 export type WebpackConfig = WebpackConfiguration
 export type WebpackPluginInstance = WebpackPluginInstanceType
+export type RsbuildConfig = RsbuildConfigType
+export type RsbuildPlugin = RsbuildPluginType
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
@@ -36,11 +41,35 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
     ? unknown extends T[K]
       ? unknown
       : T[K] extends Record<string, unknown>
-        ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-        : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+        ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`> | RuntimeConfigSchema<T[K]>
+        : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`> | RuntimeConfigSchema<T[K]>
     : K extends number
       ? T[K]
       : never
+}
+
+type RuntimeConfigSchemaResult<Output> =
+  | { readonly value: Output, readonly issues?: undefined }
+  | { readonly issues: ReadonlyArray<{ readonly message: string, readonly path?: ReadonlyArray<PropertyKey | { readonly key: PropertyKey }> | undefined }> }
+
+/**
+ * A [Standard Schema](https://standardschema.dev) that can also be converted to JSON Schema
+ * ([Standard JSON Schema](https://standardschema.dev/json-schema)), for describing a runtime config value.
+ *
+ * Zod and ArkType schemas implement it directly; wrap a Valibot schema with `toStandardJsonSchema()`
+ * from `@valibot/to-json-schema`.
+ */
+export interface RuntimeConfigSchema<Output = unknown> {
+  readonly '~standard': {
+    readonly version: 1
+    readonly vendor: string
+    readonly validate: (value: unknown) => RuntimeConfigSchemaResult<Output> | Promise<RuntimeConfigSchemaResult<Output>>
+    readonly jsonSchema: {
+      readonly input: (options: { readonly target: 'draft-2020-12' }) => Record<string, unknown>
+      readonly output: (options: { readonly target: 'draft-2020-12' }) => Record<string, unknown>
+    }
+    readonly types?: { readonly input: unknown, readonly output: Output } | undefined
+  }
 }
 
 // Runtime Config
@@ -72,16 +101,18 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 // Avoid DeepPartial for some problematic config, including:
 // - the server builder's config interface (#31908)
 // - vite config interface (#4772)
+// - rsbuild config interface
 
 /**
  * User configuration in `nuxt.config` file
  */
-export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'rsbuild' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
   components?: ConfigSchema['components']
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   vite?: ConfigSchema['vite']
   nitro?: ConfigSchema['nitro']
-  runtimeConfig?: Overrideable<RuntimeConfig>
+  rsbuild?: ConfigSchema['rsbuild']
+  runtimeConfig?: Overrideable<RuntimeConfig> | RuntimeConfigSchema<Record<string, unknown>>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
     $server?: DeepPartial<ConfigSchema['webpack']>
@@ -129,13 +160,15 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'd
   vue: Omit<ConfigSchema['vue'], 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   debug: Required<Exclude<ConfigSchema['debug'], true>>
-  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rspack-builder' | NuxtBuilder
+  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rsbuild-builder' | '@nuxt/rspack-builder' | NuxtBuilder
   postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
   webpack: ConfigSchema['webpack'] & {
     $client: ConfigSchema['webpack']
     $server: ConfigSchema['webpack']
   }
   _layers: readonly NuxtConfigLayer[]
+  /** Schemas declared in `runtimeConfig` or with `updateRuntimeConfig()`. */
+  _runtimeConfigSchemas?: RuntimeConfigSchemaEntry[]
   $schema: SchemaDefinition
 }
 
@@ -179,6 +212,16 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ViteOptions extends ViteConfig {}
+
+export interface RsbuildOptions extends RsbuildConfig {
+  /**
+   * Options passed to @rsbuild/plugin-vue.
+   *
+   * `vueLoaderOptions` defaults to the `vue.compilerOptions`, `vue.transformAssetUrls` and `vue.propsDestructure` options.
+   * @see [@rsbuild/plugin-vue](https://rsbuild.rs/plugins/list/plugin-vue)
+   */
+  vue?: RsbuildVuePluginOptions
+}
 
 // App Config
 export interface CustomAppConfig {
