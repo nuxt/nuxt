@@ -3,7 +3,7 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 import { useRouter } from '../composables/router'
 import { onNuxtReady } from '../composables/ready'
 import { prefetchRouteComponents } from '../composables/preload'
-import { guardEvent, useObserver } from '../components/nuxt-link'
+import { guardEvent, useObserver } from '../internal/link'
 import { canPrefetch } from '../internal/prefetch-util'
 import { documentURL } from '../internal/location'
 

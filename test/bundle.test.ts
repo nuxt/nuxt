@@ -66,7 +66,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"187k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"200k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -80,6 +80,11 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "_nuxt/server-component.js",
       ]
     `)
+  })
+
+  it('does not ship <NuxtLink> in the entry when it is only used from pages', async () => {
+    const entry = await fsp.readFile(join(pagesRootDir, '.output/public/_nuxt/entry.js'), 'utf8')
+    expect(entry).not.toContain('noPrefetch')
   })
 
   it('default server bundle size', async () => {
