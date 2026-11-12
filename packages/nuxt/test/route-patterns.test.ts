@@ -75,6 +75,27 @@ describe('toRou3RoutePatterns', () => {
       '/:slug(.*)/:id',
     ])
   })
+
+  it('should include aliases and nest children under each of them', () => {
+    const pages: NuxtPage[] = [
+      { path: '/parent', alias: ['/p', '/:org?/p'], children: [{ path: 'kid', alias: ['k', '/abs-kid'] }] },
+      { path: '/x', alias: '/y' },
+    ]
+    expect(toRou3RoutePatterns(pages)).toStrictEqual([
+      '/parent',
+      '/p',
+      '/:org?/p',
+      '/parent/kid',
+      '/p/kid',
+      '/:org?/p/kid',
+      '/parent/k',
+      '/p/k',
+      '/:org?/p/k',
+      '/abs-kid',
+      '/x',
+      '/y',
+    ])
+  })
 })
 
 describe('collectRou3PagePatterns', () => {

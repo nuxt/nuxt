@@ -104,16 +104,18 @@ export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] =
 }
 
 /**
- * Convert the path of every page and its subtree to a rou3 pattern matching the same
- * requests, keeping param names and emitting one pattern per path.
+ * Convert every path a page can be reached by (its path, each alias and the subtree below it)
+ * to a rou3 pattern matching the same requests, keeping param names and emitting one pattern per path.
  */
-export function toRou3RoutePatterns (pages: NuxtPage[], prefix = '/'): string[] {
+export function toRou3RoutePatterns (pages: NuxtPage[], prefixes: string[] = ['/']): string[] {
   const patterns: string[] = []
   for (const page of pages) {
-    const path = page.path.startsWith('/') ? page.path : joinURL(prefix, page.path)
-    patterns.push(...vueRouterToRou3(path, { expand: false }).patterns)
+    const routes = resolvePageRoutes(page, prefixes)
+    for (const route of routes) {
+      patterns.push(...vueRouterToRou3(route, { expand: false }).patterns)
+    }
     if (page.children) {
-      patterns.push(...toRou3RoutePatterns(page.children, path))
+      patterns.push(...toRou3RoutePatterns(page.children, [...routes]))
     }
   }
   return patterns
