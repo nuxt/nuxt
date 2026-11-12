@@ -2322,6 +2322,15 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/duplicate-vue:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+      vue:
+        specifier: 3.5.45
+        version: 3.5.45(typescript@6.0.3)
+
   test/fixtures/dynamic-paths:
     dependencies:
       '@nuxt/rspack-builder':

@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { performance } from 'node:perf_hooks'
+import { pathToFileURL } from 'node:url'
 import { createBuilder, createServer, mergeConfig, resolveConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
@@ -12,7 +13,7 @@ import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
-import { useServerBuild } from '@nuxt/kit/internal'
+import { resolveVuePackages, useServerBuild } from '@nuxt/kit/internal'
 
 import { buildClient } from './client.ts'
 import { buildServer } from './server.ts'
@@ -91,6 +92,14 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+
+  const vueDir = resolveVuePackages(nuxt).dirs.vue
+  const compilerSfc = !viteConfig.vue?.compiler && vueDir
+    ? resolveModulePath('vue/compiler-sfc', { from: vueDir + '/', try: true })
+    : undefined
+  if (compilerSfc) {
+    viteConfig.vue = { ...viteConfig.vue, compiler: await import(pathToFileURL(compilerSfc).href) }
+  }
 
   const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
 

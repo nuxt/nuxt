@@ -15,7 +15,7 @@ import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
 import { FriendlyErrorsPlugin } from '../plugins/friendly-errors.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets, fileName } from '../utils/config.ts'
-import { getNuxtDefines, getTranspilePatterns, resolveVueAliases } from '../utils/options.ts'
+import { getNuxtDefines, getTranspilePatterns, resolveVueRouterAlias } from '../utils/options.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
 import { StripInvalidPureAnnotationsPlugin } from '../plugins/strip-invalid-pure-annotations.ts'
 
@@ -138,7 +138,7 @@ function baseAlias (ctx: WebpackConfigContext) {
   ctx.alias = {
     '#app': ctx.options.appDir,
     [basename(ctx.nuxt.options.dir.assets)]: resolve(ctx.nuxt.options.srcDir, ctx.nuxt.options.dir.assets),
-    ...resolveVueAliases(ctx.nuxt, ctx.isServer),
+    ...resolveVueRouterAlias(ctx.nuxt, ctx.isServer),
     ...ctx.options.alias,
     ...ctx.alias,
   }
