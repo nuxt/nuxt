@@ -695,7 +695,8 @@ describe('pages', () => {
   it.skipIf(!once)('/legacy-async-data-fail', async () => {
     const response = await fetch('/legacy-async-data-fail').then(r => r.text())
     expect(response).not.toContain('don\'t look at this')
-    expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
+    expect(response).toContain('This is the error page')
+    expect(response).not.toContain('OH NNNNNNOOOOOOOOOOO')
   })
 
   it.skipIf(!oncePerEnv)('client only page', async () => {
@@ -1504,6 +1505,24 @@ describe.skipIf(!errorProjects)('errors', () => {
 
     const json = await fetch('/error/upstream', { headers: { accept: 'application/json' } }).then(r => r.text())
     expect(json).not.toMatch(/upstream-failure|upstream-token|upstream-secret/)
+  })
+
+  it('should mask non-HTTP errors thrown in useAsyncData outside development', async () => {
+    const thrownError = isDev ? '500 connect ECONNREFUSED 10.0.0.3:5432 thrown-secret' : '500 Internal Server Error'
+    const html = await $fetch<string>('/error/upstream-async-data')
+    if (!isDev) {
+      expect(html).not.toMatch(/10\.0\.0\.3|thrown-secret/)
+    }
+    expect(html.match(/id="thrown-error"[^>]*>([^<]*)</)![1]!.trim()).toBe(thrownError)
+    expect(html.match(/id="http-error"[^>]*>([^<]*)</)![1]!.trim()).toBe('422 Invalid input invalid-input')
+    expect(html).toContain('upstream-secret')
+
+    const { page } = await renderPage('/error/upstream-async-data')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+    expect(await page.innerText('#thrown-error')).toBe(thrownError)
+    expect(await page.innerText('#http-error')).toBe('422 Invalid input invalid-input')
+    expect(await page.innerText('#fetch-error')).toMatch(/^502 .*upstream-secret/)
+    await page.close()
   })
 
   it.skipIf(!legacyErrorRendering)('should not allow accessing error route directly', async () => {
