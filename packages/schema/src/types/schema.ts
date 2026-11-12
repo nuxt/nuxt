@@ -1309,7 +1309,7 @@ export interface ConfigSchema {
      * escaping to the top-level `error.vue` page. When disabled, the boundary only catches
      * client-side errors, and a server-rendered page whose content throws still shows the error page.
      *
-     * @default true
+     * @default true (with `future.compatibilityVersion: 5`)
      */
     ssrErrorBoundary: boolean
 

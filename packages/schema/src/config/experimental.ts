@@ -195,7 +195,11 @@ export default defineResolvers({
      * escaping to the top-level `error.vue` page. When disabled, the boundary only catches
      * client-side errors, and a server-rendered page whose content throws still shows the error page.
      */
-    ssrErrorBoundary: true,
+    ssrErrorBoundary: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     crossOriginPrefetch: false,
     deferPrefetchHints: true,
 
