@@ -1081,7 +1081,7 @@ const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtA
     return nuxtApp.payload.data[key]
   }
 
-  if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook') {
+  if (ctx.cause === 'initial') {
     return nuxtApp.static.data[key]
   }
 }

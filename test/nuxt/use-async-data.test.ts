@@ -475,6 +475,26 @@ describe('useAsyncData', () => {
     expect(data.value).toBe('watch')
   })
 
+  it('should not serve extracted payload data to a watch-triggered refresh', async () => {
+    const nuxtApp = useNuxtApp()
+    const locale = ref('en')
+    const handler = vi.fn(() => Promise.resolve(`data-${locale.value}`))
+
+    const { data } = await useAsyncData(uniqueKey, handler, { watch: [locale] })
+    expect(data.value).toBe('data-en')
+
+    nuxtApp.static.data[uniqueKey] = 'stale-from-extracted-payload'
+
+    locale.value = 'fr'
+    await nextTick()
+    await flushPromises()
+
+    expect(handler).toHaveBeenCalledTimes(2)
+    expect(data.value).toBe('data-fr')
+
+    delete nuxtApp.static.data[uniqueKey]
+  })
+
   it('should use default while pending', async () => {
     const promise = useAsyncData(() => Promise.resolve('test'), { default: () => 'default' })
     const { data, pending } = promise
