@@ -481,7 +481,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     },
     configResolved (config) {
       clientEntry = resolveClientEntry(config)
-      ssrEntry = config.environments.ssr?.build.rolldownOptions.input
+      const ssrInput = config.environments.ssr?.build.rolldownOptions.input ?? config.build.rolldownOptions.input
+      ssrEntry = typeof ssrInput === 'string' || (!Array.isArray(ssrInput) && !!ssrInput?.server)
         ? resolveServerEntry(config)
         : clientEntry
     },
