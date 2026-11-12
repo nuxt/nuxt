@@ -1552,6 +1552,20 @@ describe('useAsyncData', () => {
     vi.useRealTimers()
   })
 
+  it('should settle execute() when the request is aborted by an external signal', async () => {
+    const controller = new AbortController()
+    const { execute, status } = useAsyncData(uniqueKey, () => new Promise(resolve => setTimeout(() => resolve('value'), 1000)), { immediate: false })
+
+    const promise = execute({ signal: controller.signal })
+    controller.abort(new DOMException('Aborted', 'AbortError'))
+
+    await Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('execute() never settled')), 500)),
+    ])
+    expect(status.value).toBe('idle')
+  })
+
   it('should be cancellable via abort', async () => {
     vi.useFakeTimers()
     let count = 0
