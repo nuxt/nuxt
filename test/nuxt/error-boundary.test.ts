@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { mount } from '@vue/test-utils'
 import type { ComponentSlots } from 'vue-component-type-helpers'
-import { createSSRApp, defineComponent, h, onErrorCaptured, useId } from 'vue'
+import { Suspense, createSSRApp, defineComponent, h, onErrorCaptured, useId } from 'vue'
 import type { VNode } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import { NuxtErrorBoundary } from '#components'
@@ -55,6 +55,42 @@ describe('NuxtErrorBoundary', () => {
     expect(el.html()).toMatchInlineSnapshot(`"<div><span>default</span></div>"`)
     el.unmount()
     vi.resetAllMocks()
+  })
+
+  it('shows errors from the retried default slot while the app is still hydrating', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const nuxtApp = useNuxtApp()
+    let key: string | undefined
+    mount(defineComponent({
+      setup: () => () => h(Suspense, null, h(defineComponent({
+        setup () {
+          key = useId()
+          return () => null
+        },
+      }))),
+    })).unmount()
+    nuxtApp.payload.state[`$s${key}`] = createError('ssr error')
+    nuxtApp.isHydrating = true
+
+    const AsyncThrows = defineComponent({
+      async setup () {
+        await new Promise(resolve => setTimeout(resolve, 10))
+        throw new Error('client error')
+      },
+    })
+    const el = mount(defineComponent({
+      setup: () => () => h(Suspense, null, h(NuxtErrorBoundary, { retryOnClient: true }, {
+        default: () => h(AsyncThrows),
+        error: ({ error }: { error: Error }) => h('p', error.message),
+      })),
+    }))
+    try {
+      await vi.waitFor(() => expect(el.html()).toContain('<p>client error</p>'))
+    } finally {
+      nuxtApp.isHydrating = false
+      el.unmount()
+      vi.restoreAllMocks()
+    }
   })
 })
 

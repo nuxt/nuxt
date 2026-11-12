@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance, nextTick, onErrorCaptured, onMounted, shallowRef, useId } from 'vue'
+import { getCurrentInstance, onErrorCaptured, onMounted, shallowRef, useId } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { onNuxtReady } from '../composables/ready'
 import { useState } from '../composables/state'
@@ -50,8 +50,8 @@ function clearError () {
 
 if (import.meta.client) {
   const nuxtApp = useNuxtApp()
-  // the re-render after an SSR error is a normal client patch, not hydration
-  let retrying = false
+  // after a retry, the default slot is rendered by a client patch rather than by hydration
+  let retried = false
 
   if (ssrErrorBoundary) {
     // written by the server component when its default slot threw
@@ -63,9 +63,8 @@ if (import.meta.client) {
 
       if (props.retryOnClient) {
         onMounted(() => {
-          retrying = true
+          retried = true
           clearError()
-          nextTick(() => { retrying = false })
         })
       }
     }
@@ -82,7 +81,7 @@ if (import.meta.client) {
   }
 
   onErrorCaptured((err, instance, info) => {
-    if (retrying || !nuxtApp.isHydrating) {
+    if (retried || !nuxtApp.isHydrating) {
       handleError(err, instance, info)
     } else {
       onNuxtReady(() => handleError(err, instance, info))
