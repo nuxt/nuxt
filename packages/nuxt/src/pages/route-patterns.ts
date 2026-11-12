@@ -114,6 +114,8 @@ function toRou3Path (path: string): string {
     .replace(/:([^/*]*)/g, (_, name) => `:${name.replace(/\W/g, (r: string) => r === '?' ? '' : '_')}`)
 }
 
+const COLLAPSED_CATCHALL_RE = /:\w+\*./
+
 const OPTIONAL_SEGMENT_RE = /(?<=^|\/):(\w+)(?:(\(\.\*\))\??|(?:\([^)]*\))?\?)(?=\/|$)/g
 
 function toRou3RoutePath (path: string): string {
@@ -131,17 +133,20 @@ function toRou3RoutePath (path: string): string {
 /**
  * The rou3 pattern of every path a page can be reached by (its path, each alias and the
  * subtree below it), keeping param names, whole-segment optional params and non-repeatable
- * `(.*)` catch-alls.
+ * `(.*)` catch-alls. Paths that can only be matched with a broader `**` catch-all are
+ * left out with `skipCollapsed`.
  */
-export function toRou3RoutePatterns (pages: NuxtPage[], prefixes: string[] = ['/']): string[] {
+export function toRou3RoutePatterns (pages: NuxtPage[], options: { skipCollapsed?: boolean } = {}, prefixes: string[] = ['/']): string[] {
   const patterns: string[] = []
   for (const page of pages) {
     const routes = resolvePageRoutes(page, prefixes)
     for (const route of routes) {
-      patterns.push(toRou3RoutePath(route))
+      if (!options.skipCollapsed || !COLLAPSED_CATCHALL_RE.test(route.replace(/\([^)]*\)/g, ''))) {
+        patterns.push(toRou3RoutePath(route))
+      }
     }
     if (page.children) {
-      patterns.push(...toRou3RoutePatterns(page.children, [...routes]))
+      patterns.push(...toRou3RoutePatterns(page.children, options, [...routes]))
     }
   }
   return patterns

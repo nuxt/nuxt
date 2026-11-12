@@ -48,6 +48,7 @@ describe('prerendering pages covered by route rules', () => {
         pages: [
           { path: '/package-code/:org?/:name()/v/:version()/:filePath(.*)?' },
           { path: '/docs/:slug(.*)*' },
+          { path: '/files/:id([^/]*)*/raw' },
         ],
       } as NuxtApp
 
@@ -59,6 +60,7 @@ describe('prerendering pages covered by route rules', () => {
         '/existing',
         '/package-code/:org?/:name/v/:version/:filePath(.*)',
         '/docs/**:slug',
+        '/files/**:id',
       ])
       expect(nitro.options._noScriptsPagePatterns).toStrictEqual([
         '/package-code/:org?/:name/v/:version/:filePath(.*)',

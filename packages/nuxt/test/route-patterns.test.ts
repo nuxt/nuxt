@@ -57,6 +57,16 @@ describe('toRou3RoutePatterns', () => {
     ])
   })
 
+  it('should leave out collapsed paths and their children with skipCollapsed', () => {
+    const pages: NuxtPage[] = [
+      { path: '/:id([^/]*)*/suffix', children: [{ path: 'child' }] },
+      { path: '/docs/:a(.*)*/x/:b(.*)*' },
+      { path: '/:slug(.*)*', children: [{ path: ':id?' }] },
+    ]
+    expect(toRou3RoutePatterns(pages)).toStrictEqual(['/**:id', '/**:id', '/docs/**:a', '/**:slug', '/**:slug'])
+    expect(toRou3RoutePatterns(pages, { skipCollapsed: true })).toStrictEqual(['/**:slug'])
+  })
+
   it('should include aliases and nest children under each of them', () => {
     const pages: NuxtPage[] = [
       { path: '/parent', alias: ['/p', '/:org?/p'], children: [{ path: 'kid', alias: ['k', '/abs-kid'] }] },
