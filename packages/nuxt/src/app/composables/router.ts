@@ -434,7 +434,8 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts | false>(layout: 
  */
 export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>): string {
   const parsed = parseURL(to.path || '')
-  parsed.search = stringifyQuery({ ...(parsed.search && parseQuery(parsed.search)), ...to.query })
+  const search = stringifyQuery({ ...(parsed.search && parseQuery(parsed.search)), ...to.query })
+  parsed.search = search && '?' + search
   return stringifyParsedURL(parsed) + (to.hash || '')
 }
 

@@ -1059,6 +1059,7 @@ describe('routing utilities: `resolveRouteObject`', () => {
     const query = { path: 'a/b', empty: '', flag: null, list: ['1', '2'] }
     expect(resolveRouteObject({ path: '/test', query })).toBe(useRouter().resolve({ path: '/test', query }).fullPath)
     expect(resolveRouteObject({ path: 'https://example.com/test?flag&empty=&foo=old', query: { foo: 'new' } })).toBe('https://example.com/test?flag&empty=&foo=new')
+    expect(resolveRouteObject({ path: '/test', query: { '?a': '1' } })).toBe(useRouter().resolve({ path: '/test', query: { '?a': '1' } }).fullPath)
   })
   it('resolveRouteObject should use `stringifyQuery` from the router options', () => {
     routerOptions.stringifyQuery = query => Object.keys(query).join(',')
