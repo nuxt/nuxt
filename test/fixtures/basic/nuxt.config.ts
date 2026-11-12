@@ -168,6 +168,7 @@ export default withMatrix({
     decorators: true,
     typedPages: true,
     clientFallback: true,
+    ssrErrorBoundary: true,
     prerenderErrorPages: true,
     restoreState: true,
     clientNodeCompat: true,

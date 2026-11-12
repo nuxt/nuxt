@@ -742,6 +742,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const payloadExtraction = ${payloadExtraction}`,
       `export const prefetchPreloadTags = ${!!ctx.nuxt.options.experimental.prefetchPreloadTags}`,
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,
+      `export const ssrErrorBoundary = ${!!ctx.nuxt.options.experimental.ssrErrorBoundary}`,
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
       `export const serverPathFallback = ${!!ctx.nuxt.options.experimental.serverPathFallback}`,
       `export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}`,

@@ -1342,9 +1342,23 @@ export interface ConfigSchema {
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
+     * @deprecated Use `<NuxtErrorBoundary retry-on-client>` instead, which catches server-side errors
+     * (see `experimental.ssrErrorBoundary`) and re-renders its default slot on the client.
      * @default false
      */
     clientFallback: boolean
+
+    /**
+     * Allow `<NuxtErrorBoundary>` to catch errors thrown while server-rendering its default slot.
+     *
+     * When enabled, the boundary renders its `#error` slot on the server (with the caught error
+     * serialised into the payload so the client hydrates in the same state) instead of the error
+     * escaping to the top-level `error.vue` page. When disabled, the boundary only catches
+     * client-side errors, and a server-rendered page whose content throws still shows the error page.
+     *
+     * @default true (with `future.compatibilityVersion: 5`)
+     */
+    ssrErrorBoundary: boolean
 
     /**
      * Enable cross-origin prefetch using the Speculation Rules API.
