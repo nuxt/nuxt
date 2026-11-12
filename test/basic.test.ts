@@ -932,6 +932,40 @@ describe.skipIf(!once)('nuxt composables', () => {
     ])
   })
 
+  it('reads and writes cookies with `$cookie` on the server', async () => {
+    const res = await fetch('/cookie-util', {
+      headers: { cookie: 'util-incoming=from-browser; util-incoming-json=%7B%22a%22%3A1%7D' },
+    })
+    const html = await res.text()
+    const results = JSON.parse(html.match(/<pre id="results">(.*?)<\/pre>/s)![1]!.replace(/&quot;/g, '"'))
+
+    expect(results).toEqual({
+      incoming: 'from-browser',
+      incomingJson: { a: 1 },
+      hasIncoming: true,
+      hasMissing: false,
+      missingDefault: 'fallback',
+      readAfterSet: { n: 1 },
+      useCookieAfterSet: { n: 1 },
+      hasAfterRemove: false,
+      useCookieAfterRemove: 'empty',
+      prefixedRaw: 'hi',
+      prefixedRead: 'hi!',
+      signedRead: { a: 1 },
+      allKeys: ['prefixed-value', 'util-incoming-json', 'util-set', 'util-set-after-ref', 'util-set-twice', 'util-signed'],
+    })
+
+    const setCookies = res.headers.getSetCookie().filter(c => /^(?:util-|prefixed-)/.test(c)).sort()
+    expect(setCookies).toEqual([
+      'prefixed-value=hi; Path=/scoped',
+      'util-incoming=; Max-Age=0; Path=/',
+      'util-set-after-ref=from-util; Path=/',
+      'util-set-twice=second; Path=/',
+      'util-set=%7B%22n%22%3A1%7D; Max-Age=60; Path=/',
+      'util-signed=%7B%22a%22%3A1%7D.sig; Path=/',
+    ])
+  })
+
   it('does not write a readonly cookie with a default value, on server or client', async () => {
     const res = await fetch('/cookies')
     expect(res.headers.get('set-cookie')).not.toContain('readonly-with-default')

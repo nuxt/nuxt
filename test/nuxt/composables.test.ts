@@ -100,6 +100,7 @@ describe('composables', () => {
       'useResponseHeader',
       'useLoadingIndicator',
       'useCookie',
+      '$cookie',
       'clearNuxtState',
       'useState',
       'useRequestURL',

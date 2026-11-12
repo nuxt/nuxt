@@ -62,7 +62,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#build/fetch',
   },
   {
-    imports: ['useCookie', 'refreshCookie'],
+    imports: ['useCookie', 'refreshCookie', '$cookie'],
     from: '#app/composables/cookie',
   },
   {
