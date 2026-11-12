@@ -9,7 +9,7 @@ import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey, memoizeRouteComponent } from '../src/pages/runtime/utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 import { useNuxt } from '@nuxt/kit'
-import { pageDiagnostics } from '@nuxt/kit/internal'
+import { getPreloadModuleKey, pageDiagnostics } from '@nuxt/kit/internal'
 import fc from 'fast-check'
 import { joinURL, withoutTrailingSlash } from 'ufo'
 
@@ -329,6 +329,48 @@ describe('pages:memoizeRouteComponent', () => {
     expect(await resolveWithNewRouter(routes, '/')).toEqual([Child])
     expect(await resolveWithNewRouter(routes, '/')).toEqual([Child])
     expect(load).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('pages:preloadModuleKeys', () => {
+  const pages: NuxtPage[] = [
+    { name: 'lazy', path: '/lazy', file: '/app/pages/lazy.vue' },
+    { name: 'sync', path: '/sync', file: '/app/pages/sync.vue', _sync: true },
+    { name: 'server', path: '/server', file: '/app/pages/server.vue', mode: 'server' },
+  ]
+
+  function normalizeWith (options: { dev: boolean, routeChunkHints: boolean }, routeComponentRuntime?: string) {
+    vi.mocked(useNuxt).mockReturnValueOnce({
+      // @ts-expect-error partial
+      options: { dev: options.dev, srcDir: '/app', experimental: { normalizePageNames: false, routeChunkHints: options.routeChunkHints } },
+    })
+    const { routes } = normalizeRoutes(pages, new Set(), {
+      clientComponentRuntime: '<client>',
+      serverComponentRuntime: '<server>',
+      routeComponentRuntime,
+    })
+    return (routes as unknown as Array<{ component: string }>).map(r => r.component)
+  }
+
+  const key = getPreloadModuleKey('/app', '/app/pages/lazy.vue')
+
+  it('marks a lazy client-side loader with the key its chunks are hinted under', () => {
+    const [lazy, sync, server] = normalizeWith({ dev: false, routeChunkHints: true })
+    expect(lazy).toBe(`import.meta.client ? Object.assign(() => import("/app/pages/lazy.vue"), { __nuxt_module: "${key}" }) : () => import("/app/pages/lazy.vue")`)
+    expect(sync).not.toContain('__nuxt_module')
+    expect(server).toMatch(/^import\.meta\.client \? Object\.assign\(\(\) => createIslandPage\(.+\), \{ __nuxt_module: false \}\) : \(\) => createIslandPage\(/)
+  })
+
+  it('keeps the server branch of a memoized loader unmarked', () => {
+    const [lazy] = normalizeWith({ dev: false, routeChunkHints: true }, '<route-component>')
+    expect(lazy).toBe(`import.meta.server ? _memoizeRouteComponent(() => import("/app/pages/lazy.vue")) : Object.assign(() => import("/app/pages/lazy.vue"), { __nuxt_module: "${key}" })`)
+  })
+
+  it.each([
+    ['in development', { dev: true, routeChunkHints: true }],
+    ['without `experimental.routeChunkHints`', { dev: false, routeChunkHints: false }],
+  ])('leaves loaders unmarked %s', (_, options) => {
+    expect(normalizeWith(options).join('\n')).not.toContain('__nuxt_module')
   })
 })
 

@@ -6,14 +6,31 @@ import layouts from '#build/layouts'
 import { namedMiddleware } from '#build/middleware'
 import { _loadAsyncComponent } from '#app/composables/preload'
 import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
-import { prefetchGroup } from '#app/internal/prefetch-util'
-import { componentIslands } from '#build/nuxt.config.mjs'
+import { canPrefetch, prefetchGroup } from '#app/internal/prefetch-util'
+import { componentIslands, routeChunkHints } from '#build/nuxt.config.mjs'
 import { toArray } from '#app/utils'
+import { preloadLayoutChunks, warmRouteChunkHints } from '#app/internal/preload-hints'
+import { PRELOAD_MODULE_KEY } from '#app/internal/preload-hints-shared'
+
+async function prefetchLayout (layout: string) {
+  const component = layouts[layout as keyof typeof layouts]
+  // a loaded layout may have its styles inlined, where no `<link>` shows that a hint would fetch them again
+  if ((component as { __asyncResolved?: boolean }).__asyncResolved) {
+    return
+  }
+  if (!await preloadLayoutChunks(layout)) {
+    await _loadAsyncComponent(component)
+  }
+}
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:prefetch',
   setup (nuxtApp) {
     const router = useRouter()
+
+    if (routeChunkHints && canPrefetch()) {
+      warmRouteChunkHints()
+    }
 
     // Force layout prefetch on route changes
     nuxtApp.hooks.hook('app:mounted', () => {
@@ -51,7 +68,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           }
 
           if (typeof layout === 'string' && layout in layouts) {
-            loading.push(_loadAsyncComponent(layouts[layout]))
+            loading.push(routeChunkHints ? prefetchLayout(layout) : _loadAsyncComponent(layouts[layout]))
           }
           return Promise.all(loading).catch(() => {})
         },
@@ -62,7 +79,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       if (componentIslands && !import.meta.dev) {
         await Promise.all(route.matched.map((record) => {
           const component = record.components?.default
-          if (typeof component !== 'function') { return }
+          // Only server pages define `__nuxt_prefetch`. With hints, the build marks their loaders,
+          // so that no other route component is run to look for it.
+          if (typeof component !== 'function' || (routeChunkHints && (component as unknown as Record<string, unknown>)[PRELOAD_MODULE_KEY] !== false)) { return }
           return Promise.resolve((component as () => unknown)())
             .then((c: any) => (c?.default || c)?.__nuxt_prefetch?.(nuxtApp, route))
             .catch(() => {})

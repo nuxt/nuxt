@@ -1,7 +1,10 @@
+import { createHash } from 'node:crypto'
 import { resolveModulePath } from 'exsolve'
+import { relative } from 'pathe'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import { useNuxt } from '../context.ts'
+import { configDiagnostics } from '../diagnostics/config.ts'
 import { resolveAlias } from '../resolve.ts'
 import { directoryToURL } from './esm.ts'
 import { useServerBuild } from './server-build.ts'
@@ -67,6 +70,7 @@ export type RendererConfigName =
   | 'NUXT_SSR_STREAMING'
   | 'NUXT_SSR_STREAMING_BOT_RE'
   | 'NUXT_DEFER_PREFETCH_HINTS'
+  | 'NUXT_PRELOAD_MODULES'
   | 'appHead'
   | 'appRootTag'
   | 'appRootAttrs'
@@ -133,6 +137,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_SSR_STREAMING: String(streamingEnabled),
     NUXT_SSR_STREAMING_BOT_RE: streamingEnabled && streaming.botRegex instanceof RegExp ? String(streaming.botRegex) : '/^$/',
     NUXT_DEFER_PREFETCH_HINTS: String(!!nuxt.options.experimental.deferPrefetchHints),
+    NUXT_PRELOAD_MODULES: getPreloadModules(nuxt),
     appHead: JSON.stringify(app.head),
     appRootTag: JSON.stringify(app.rootTag),
     appRootAttrs: JSON.stringify(app.rootAttrs),
@@ -160,6 +165,57 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
   }
 
   return lines.join('\n')
+}
+
+/**
+ * The key a route component loader is marked with on the client. A digest rather than the module
+ * id itself, which is a source path that can name a private layer or reach outside the project.
+ *
+ * @internal
+ */
+export function getPreloadModuleKey (srcDir: string, file: string): string {
+  return createHash('sha256').update(relative(srcDir, file)).digest('base64url').slice(0, 10)
+}
+
+const warned = new WeakSet<Nuxt>()
+
+// every builder keys the files that components are read from by their path relative to `srcDir`
+function getPreloadModules (nuxt: Nuxt): string {
+  if (nuxt.options.dev || !nuxt.options.experimental.routeChunkHints) {
+    return 'undefined'
+  }
+  const app = nuxt.apps?.default
+  if (!app?.pages) {
+    return 'undefined'
+  }
+  // A hint that requests a chunk differently from the client build is fetched again rather than
+  // reused, so there are none unless the app builder has said how it loads its chunks.
+  const chunks = useServerBuild(nuxt).input.clientChunks
+  if (!chunks) {
+    // the renderer config is read more than once
+    if (!warned.has(nuxt)) {
+      warned.add(nuxt)
+      configDiagnostics.NUXT_B5036()
+    }
+    return 'undefined'
+  }
+  const layouts: Record<string, string> = {}
+  for (const layout of Object.values(app.layouts)) {
+    layouts[layout.name] = relative(nuxt.options.srcDir, layout.file)
+  }
+  const pages: Record<string, string> = {}
+  const visit = (routes: NonNullable<typeof app.pages>) => {
+    for (const page of routes) {
+      if (page.file && !page._sync && page.mode !== 'server') {
+        pages[getPreloadModuleKey(nuxt.options.srcDir, page.file)] = relative(nuxt.options.srcDir, page.file)
+      }
+      if (page.children) {
+        visit(page.children)
+      }
+    }
+  }
+  visit(app.pages)
+  return JSON.stringify({ layouts, pages, moduleScripts: chunks.module, crossOrigin: chunks.crossOrigin })
 }
 
 /**

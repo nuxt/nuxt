@@ -6,6 +6,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 
 import type { Nuxt } from '@nuxt/schema'
+import type { NuxtClientChunkLoading } from '@nuxt/schema/internal'
+import { setServerBuild } from '@nuxt/kit/internal'
 import { hash } from 'ohash'
 import { join, resolve } from 'pathe'
 import { serialize } from 'seroval'
@@ -45,6 +47,27 @@ export const clientManifestStatsOptions = {
   entrypoints: true,
 }
 
+interface ClientChunkOutputOptions {
+  chunkLoading?: string | false
+  scriptType?: string | false
+  crossOriginLoading?: string | false
+}
+
+/**
+ * Returns `undefined` with `crossOriginLoading`: whether a chunk is requested with `crossorigin`
+ * then depends on the origin it is served from, and differs between scripts and stylesheets.
+ */
+export function getClientChunkLoading (output: ClientChunkOutputOptions): NuxtClientChunkLoading | undefined {
+  if (output.crossOriginLoading) {
+    return
+  }
+  const module = output.chunkLoading === 'import' || output.scriptType === 'module'
+  // any other way of loading chunks does not go through a `<script>` that a hint could match
+  if (module || output.chunkLoading === 'jsonp') {
+    return { module, crossOrigin: false }
+  }
+}
+
 /**
  * Generate the client manifest from the stats of the client build, expose it as a build output
  * and write it next to the server build when the build cache is enabled.
@@ -57,7 +80,8 @@ export function createClientManifestEmitter (nuxt: Nuxt) {
   nuxt.buildOutputs.clientManifest = () => manifestCode || 'export default {}'
   nuxt.buildOutputs.clientPrecomputed = () => precomputedCode
 
-  return async (stats: ClientManifestStats) => {
+  return async (stats: ClientManifestStats, output: ClientChunkOutputOptions) => {
+    setServerBuild({ input: { clientChunks: getClientChunkLoading(output) } }, nuxt)
     const manifest = normalizeWebpackManifest(createWebpackManifest(stats, nuxt.options.srcDir) as any)
     await nuxt.callHook('build:manifest', manifest)
     precomputedCode = 'export default ' + serialize(precomputeDependencies(manifest))

@@ -35,6 +35,7 @@
         "test/renderer/*.ts",
         "test/no-jiti/*.mjs",
         "test/runtime/app/**/*.ts",
+        "test/nuxt/route-chunk-hints/fixture/**/*.vue",
         "test/mocks/app-config.ts",
         "test/mocks/app-manifest.ts",
         "test/mocks/paths.ts"

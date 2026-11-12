@@ -54,6 +54,15 @@ export const NUXT_SSR_STREAMING: boolean = false
 export const NUXT_SSR_STREAMING_BOT_RE: RegExp = /^$/
 /** Whether prefetch hints are rendered inert and activated by the client once the app is ready. */
 export const NUXT_DEFER_PREFETCH_HINTS: boolean = true
+/** Client manifest ids of the layouts and route components the client may fetch without evaluating. */
+export const NUXT_PRELOAD_MODULES: {
+  layouts: Record<string, string>
+  /** Keyed by the opaque key their loaders are marked with, so no source path reaches the client. */
+  pages: Record<string, string>
+  /** Whether the client build loads its chunks as module scripts; the manifest marks every `.js` file as one. */
+  moduleScripts: boolean
+  crossOrigin: boolean
+} | undefined = undefined
 
 /** Head entries configured in `app.head`. */
 export const appHead: SerializableHead = {}

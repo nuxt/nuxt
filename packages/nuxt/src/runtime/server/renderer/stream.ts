@@ -5,7 +5,7 @@ import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link } from '@unhead/vue/types'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from '#app/types'
-import { NUXT_DEFER_PREFETCH_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS_PROD, iifeChunkFileName, renderSSRHeadOptions } from 'nuxt/internal/renderer-config'
+import { NUXT_DEFER_PREFETCH_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS_PROD, NUXT_PRELOAD_MODULES, iifeChunkFileName, renderSSRHeadOptions } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -16,6 +16,7 @@ import { returnRenderResponse } from './app'
 import { applyRenderOptions, joinTags, normalizeChunks, renderAppTeleports, renderDocumentOpen } from './document'
 import { inertPrefetchLink, inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript } from './head'
 import { renderInlineStyles } from './inline-styles'
+import { pushPreloadHints } from './preload-hints'
 import { renderPayloadJsonScript } from './payload'
 import { renderStreamedIslandTeleports } from './islands'
 import { rendererDiagnostics } from './diagnostics'
@@ -72,6 +73,9 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
 
   if (entryFileName && !NO_SCRIPTS) {
     pushEntryImportMap(instance, event, ssrContext)
+  }
+  if (NUXT_PRELOAD_MODULES && !NO_SCRIPTS) {
+    pushPreloadHints(event, ssrContext, rendererContext)
   }
 
   if (payloadExtraction && !payloadInline && !NO_SCRIPTS) {

@@ -136,5 +136,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Replace `<NuxtClientFallback>` with `<NuxtErrorBoundary retry-on-client>`, moving fallback content into the `#error` slot (and dropping `retry-on-client` where you used `keep-fallback`). Make sure `experimental.ssrErrorBoundary` is enabled, then remove `experimental.clientFallback` from your `nuxt.config`.',
       docs: false,
     },
+    NUXT_B5036: {
+      why: '`experimental.routeChunkHints` has no effect in this build: the builder has not said how the client build requests its chunks, so layouts and pages are prefetched as they are without the option.',
+      fix: 'With webpack, Rspack or Rsbuild, have the client config load chunks with `output.chunkLoading` set to `jsonp` or `import`, and leave `output.crossOriginLoading` unset. With a builder that does not support the option, disable `experimental.routeChunkHints`.',
+      docs: false,
+    },
   },
 })
