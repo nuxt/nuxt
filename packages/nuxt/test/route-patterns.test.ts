@@ -44,7 +44,9 @@ describe('toRou3RoutePatterns', () => {
     ['/:slug(.*)*', '/:slug(.*)', ['/', '/a', '/a/b/c'], []],
     ['/docs/:slug(.*)*', '/docs/:slug(.*)', ['/docs', '/docs/a/b'], ['/other']],
     ['/:id([^/]*)*/suffix', '/:id(.*)/suffix', ['/a/suffix', '/a/b/suffix'], ['/a']],
-    ['/:locale(de|fr)/account', '/:locale(de|fr)/account', ['/de/account'], ['/en/account']],
+    ['/:locale(de|fr)/account', '/:locale/account', ['/de/account', '/en/account'], ['/de/x/account']],
+    ['/a/:id(\\d+)', '/a/:id', ['/a/1', '/a/b'], ['/a', '/a/1/2']],
+    ['/a/:id(\\d+)?', '/a/:id?', ['/a', '/a/1'], ['/a/1/2']],
     [
       '/package-code/:org?/:name/v/:version/:filePath(.*)?',
       '/package-code/:org?/:name/v/:version/:filePath(.*)',
@@ -74,6 +76,11 @@ describe('toRou3RoutePatterns', () => {
       '/:slug(.*)',
       '/:slug(.*)/:id',
     ])
+  })
+
+  it('should emit the same pattern for params that differ only in their regexp', () => {
+    const pages: NuxtPage[] = [{ path: '/foo/:id(a|b)' }, { path: '/foo/:id(a-b)' }, { path: '/foo/:id(\\d+)' }]
+    expect(new Set(toRou3RoutePatterns(pages))).toStrictEqual(new Set(['/foo/:id']))
   })
 
   it('should include aliases and nest children under each of them', () => {

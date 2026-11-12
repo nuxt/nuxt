@@ -103,16 +103,20 @@ export function collectRou3PagePatterns (pages: NuxtPage[], prefixes: string[] =
   return failed ? undefined : patterns
 }
 
+const PARAM_REGEXP_RE = /(?<!\\)(:\w+)\(((?:\\.|[^\\)])*)\)(?![*+])/g
+
 /**
  * Convert every path a page can be reached by (its path, each alias and the subtree below it)
- * to a rou3 pattern matching the same requests, keeping param names and emitting one pattern per path.
+ * to a rou3 pattern matching those requests, keeping param names and emitting one pattern per path.
+ * Custom regexps on params are dropped, other than `(.*)` and those on repeatable params.
  */
 export function toRou3RoutePatterns (pages: NuxtPage[], prefixes: string[] = ['/']): string[] {
   const patterns: string[] = []
   for (const page of pages) {
     const routes = resolvePageRoutes(page, prefixes)
     for (const route of routes) {
-      patterns.push(...vueRouterToRou3(route, { expand: false }).patterns)
+      const path = route.replace(PARAM_REGEXP_RE, (match, param: string, regexp: string) => regexp === '.*' ? match : `${param}()`)
+      patterns.push(...vueRouterToRou3(path, { expand: false }).patterns)
     }
     if (page.children) {
       patterns.push(...toRou3RoutePatterns(page.children, [...routes]))
