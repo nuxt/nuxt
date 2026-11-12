@@ -74,6 +74,11 @@ export interface NuxtRendererOptions {
   getRouteRules: (event: RendererEvent) => RendererRouteRules
   /** Hooks the surrounding server runtime exposes to modules. */
   hooks: () => RendererHooks
+  /**
+   * The event renderer plugins receive in place of the one passed to the server runtime hooks,
+   * for a runtime whose own event is not a {@link RequestEvent}.
+   */
+  pluginEvent?: (event: NuxtRequestEvent) => RequestEvent
   /** Response constructor, so a runtime can provide a faster implementation than the platform's `Response`. */
   createResponse: (body: BodyInit | null, init?: ResponseInit) => Response
   /**

@@ -221,6 +221,28 @@ describe('renderer plugins', () => {
     }
   })
 
+  it('passes renderer plugins the event `pluginEvent` returns, and the runtime hooks the original', async () => {
+    let original: unknown
+    let runtimeEvent: unknown
+    const { html } = await render('/', {
+      pluginEvent: (event) => {
+        original = event
+        return { ...event, url: new URL('http://localhost/?render-document') } as never
+      },
+      hooks: () => ({
+        callHook: ((name: string, _context: unknown, extra: { event: unknown }) => {
+          if (name === 'render:document') {
+            runtimeEvent = extra.event
+          }
+        }) as never,
+      }),
+    })
+
+    expect(html).toContain('<!-- renderer-plugin --></html>')
+    expect(runtimeEvent).toBeDefined()
+    expect(runtimeEvent).toBe(original)
+  })
+
   it('runs the hooks of renderer plugins before those of the runtime', async () => {
     const { html } = await render('/', {
       hooks: () => ({

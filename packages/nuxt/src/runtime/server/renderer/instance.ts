@@ -1,3 +1,6 @@
+import type { RequestEvent } from '@nuxt/schema'
+
+import type { NuxtServerRendererHooks } from '../../../server/hooks'
 import { createBuildFiles } from './build-files'
 import type { BuildFiles } from './build-files'
 import { createRendererPluginHooks } from './plugins'
@@ -37,9 +40,12 @@ function createRendererHooks (options: NuxtRendererOptions): RendererHooks {
     return { callHook: (name, ...args) => options.hooks().callHook(name, ...args) }
   }
 
+  const pluginEvent = options.pluginEvent
   return {
     callHook (name, ...args) {
-      const result = own.callHook(name, ...args)
+      const [context, extra] = args
+      const pluginArgs = pluginEvent ? [context, { ...extra, event: pluginEvent(extra.event) }] : args
+      const result = own.callHook(name, ...pluginArgs as Parameters<NuxtServerRendererHooks<RequestEvent>[typeof name]>)
       if (result instanceof Promise) {
         return result.then(() => options.hooks().callHook(name, ...args))
       }

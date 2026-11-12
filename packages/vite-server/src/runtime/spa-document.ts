@@ -1,5 +1,4 @@
 import { createRendererPluginHooks } from 'nuxt/internal/renderer/plugins'
-import { appEvent } from 'nuxt/internal/renderer/runtime'
 import type { NuxtServerRendererHooks } from 'nuxt/server'
 
 import { createRequestEvent } from './event.ts'
@@ -27,7 +26,7 @@ export default async function renderDocument (html: string, url: string): Promis
     bodyAppend: [],
   }
 
-  const event = appEvent(createRequestEvent(new Request(url)))
+  const event = createRequestEvent(new Request(url))
   await hooks.callHook('render:html', htmlContext, { event })
 
   const documentContext: Parameters<NuxtServerRendererHooks['render:document']>[0] = {

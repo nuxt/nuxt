@@ -1,5 +1,5 @@
 import { HookableCore } from 'hookable'
-import type { NuxtRequestEvent, NuxtServerHooks } from 'nuxt/schema'
+import type { NuxtRequestEvent, NuxtServerHooks, RequestEvent } from 'nuxt/schema'
 
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '../app/types'
 
@@ -11,23 +11,25 @@ import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, Nux
 export type ServerHookResult = void | Promise<void>
 
 /**
- * The hooks the Nuxt renderer calls.
+ * The hooks the Nuxt renderer calls. `Event` is the request event the handlers receive: the
+ * server builder's own event on the server runtime hooks, and a {@link RequestEvent} in a
+ * renderer plugin.
  *
  * @since 4.6.0
  */
-export interface NuxtServerRendererHooks {
-  'render:route': (context: NuxtRenderRouteContext, extra: { event: NuxtRequestEvent }) => ServerHookResult
-  'render:html': (context: NuxtRenderHTMLContext, extra: { event: NuxtRequestEvent, streaming?: boolean }) => ServerHookResult
-  'render:html:chunk': (context: NuxtRenderChunkContext, extra: { event: NuxtRequestEvent }) => ServerHookResult
-  'render:html:close': (context: NuxtRenderCloseContext, extra: { event: NuxtRequestEvent }) => ServerHookResult
+export interface NuxtServerRendererHooks<Event = NuxtRequestEvent> {
+  'render:route': (context: NuxtRenderRouteContext, extra: { event: Event }) => ServerHookResult
+  'render:html': (context: NuxtRenderHTMLContext, extra: { event: Event, streaming?: boolean }) => ServerHookResult
+  'render:html:chunk': (context: NuxtRenderChunkContext, extra: { event: Event }) => ServerHookResult
+  'render:html:close': (context: NuxtRenderCloseContext, extra: { event: Event }) => ServerHookResult
   /**
    * Called with the serialised document of a response that is not streamed, once every
    * `render:html` handler has run.
    *
    * @since 4.7.0
    */
-  'render:document': (context: NuxtRenderDocumentContext, extra: { event: NuxtRequestEvent }) => ServerHookResult
-  'render:island': (response: NuxtIslandResponse, extra: { event: NuxtRequestEvent, islandContext: NuxtIslandContext }) => ServerHookResult
+  'render:document': (context: NuxtRenderDocumentContext, extra: { event: Event }) => ServerHookResult
+  'render:island': (response: NuxtIslandResponse, extra: { event: Event, islandContext: NuxtIslandContext }) => ServerHookResult
 }
 
 type HookMap<Hooks> = { [Name in keyof Hooks]: (...args: any[]) => ServerHookResult }
@@ -51,7 +53,7 @@ export interface ServerHookable<Hooks extends HookMap<Hooks>> {
  */
 export interface RendererPluginContext {
   /** The hooks of the renderer the plugin is called for. */
-  hooks: Pick<ServerHookable<NuxtServerRendererHooks>, 'hook'>
+  hooks: Pick<ServerHookable<NuxtServerRendererHooks<RequestEvent>>, 'hook'>
 }
 
 /**
