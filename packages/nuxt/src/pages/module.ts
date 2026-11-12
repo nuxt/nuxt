@@ -14,7 +14,7 @@ import { rou3PatternToURLPattern } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, resolveRoutePaths } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { resolvePageMetaExtractionKeys, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
-import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns, toRou3RoutePatterns } from './route-patterns.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, toRou3RoutePatterns } from './route-patterns.ts'
 import { findRoutesModifyingRouterOptions, genRouterOptions, resolveRouterOptions } from './router-options.ts'
 import { createInlineRouteRulesUpdater, removePagesRules } from './route-rules.ts'
 import { markPagesForRouteRules } from './route-coverage.ts'
@@ -439,11 +439,11 @@ export default defineNuxtModule({
     // can scope their speculation rules to same-origin *page* navigations, which
     // are safe to GET, instead of a blanket rule that could prefetch/prerender
     // non-idempotent server routes (`~/server/routes/*`). A catch-all page
-    // (`[...slug]`) widens this back to a blanket `*`. These stay named
+    // (`[...slug]`) widens this back to every path. These stay named
     // (`/products/:id`) rather than using the collapsed early-404 patterns.
     nuxt.hook('nitro:build:before', (nitro) => {
       const urlPatterns = new Set<string>()
-      for (const route of toRou3Patterns(nuxt.apps.default?.pages || [])) {
+      for (const route of toRou3RoutePatterns(nuxt.apps.default?.pages || [])) {
         urlPatterns.add(rou3PatternToURLPattern(route).pattern)
       }
       ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...urlPatterns]

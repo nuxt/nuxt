@@ -55,6 +55,7 @@ test.describe('noScripts route rules', () => {
     // that could reach non-idempotent server routes
     expect(html).toContain('"href_matches":"/report"')
     expect(html).toContain('"href_matches":"/products/:id"')
+    expect(html).toContain('"href_matches":"/aliased-alt"')
     expect(html).not.toContain('"href_matches":"/*"')
     expect(html).toContain('@view-transition{navigation:auto}')
   })

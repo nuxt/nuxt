@@ -2,45 +2,23 @@ import { routeToRegExp } from 'rou3'
 import { describe, expect, it } from 'vitest'
 
 import type { NuxtPage } from 'nuxt/schema'
-import { collectRou3PagePatterns, collectRou3PageSources, toRou3Patterns, toRou3RoutePatterns } from '../src/pages/route-patterns.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, toRou3RoutePatterns } from '../src/pages/route-patterns.ts'
 import { getRouterOptionsKeys, routerOptionsMayModifyRoutes } from '../src/pages/router-options.ts'
-
-describe('toRou3Patterns', () => {
-  it.each([
-    ['/', '/'],
-    ['/parent/:child()', '/parent/:child'],
-    ['/parent-:child()', '/parent-:child'],
-    ['/:stories(.*)*', '/**:stories'],
-    ['/:foo?', '/:foo'],
-    ['/:sub?/route-:slug()', '/:sub/route-:slug'],
-    ['/optional/prefix-:opt?', '/optional/prefix-:opt'],
-    ['/optional/:opt?-postfix', '/optional/:opt_postfix'],
-    ['/:id([^/]*)*/suffix', '/**:id'],
-    ['/:b2.2b()', '/:b2_2b'],
-    ['/:b2()_:2b()', '/:b2__2b'],
-    ['/test\\:name', '/test\\:name'],
-    ['/a%5Cb', '/a%5Cb'],
-    ['/%E6%B5%8B%E8%AF%95', '/%E6%B5%8B%E8%AF%95'],
-  ])('should convert %s to %s', (path, pattern) => {
-    expect(toRou3Patterns([{ path }])).toStrictEqual([pattern])
-  })
-
-  it('should join nested routes onto their parent pattern', () => {
-    const pages: NuxtPage[] = [
-      { path: '/parent', children: [{ path: 'child' }, { path: '' }] },
-      { path: '/:slug(.*)*', children: [{ path: ':id()' }] },
-    ]
-    expect(toRou3Patterns(pages)).toStrictEqual(['/parent', '/parent/child', '/parent', '/**:slug', '/**:slug/:id'])
-  })
-})
 
 describe('toRou3RoutePatterns', () => {
   it.each([
     ['/', '/', ['/'], ['/a']],
     ['/parent/:child()', '/parent/:child', ['/parent/a'], ['/parent', '/parent/a/b']],
+    ['/parent-:child()', '/parent-:child', ['/parent-a'], ['/parent-', '/parent-a/b']],
+    ['/:b2.2b()', '/:b2.2b\\(\\)', ['/a.2b()'], ['/a', '/a.2b']],
+    ['/:b2()_:2b()', '/:b2\\_:_2b', ['/a_b'], ['/ab']],
+    ['/test\\:name', '/test\\:name', ['/test:name'], ['/test']],
+    ['/a%5Cb', '/a%5Cb', ['/a%5Cb'], ['/a\\b']],
+    ['/%E6%B5%8B%E8%AF%95', '/%E6%B5%8B%E8%AF%95', ['/%E6%B5%8B%E8%AF%95'], ['/a']],
     ['/x/:id?', '/x/:id?', ['/x', '/x/a'], ['/x/a/b']],
     ['/:sub?/route-:slug()', '/:sub?/route-:slug', ['/route-a', '/a/route-b'], ['/a/b/route-c']],
     ['/optional/prefix-:opt?', '/optional/prefix-{:opt}?', ['/optional/prefix-', '/optional/prefix-a'], ['/optional/prefix-a/b']],
+    ['/optional/:opt?-postfix', '/optional/{:opt}?-postfix', ['/optional/-postfix', '/optional/a-postfix'], ['/optional/a']],
     ['/:slug(.*)*', '/:slug(.*)', ['/', '/a', '/a/b/c'], []],
     ['/docs/:slug(.*)*', '/docs/:slug(.*)', ['/docs', '/docs/a/b'], ['/other']],
     ['/:id([^/]*)*/suffix', '/:id(.*)/suffix', ['/a/suffix', '/a/b/suffix'], ['/a']],
