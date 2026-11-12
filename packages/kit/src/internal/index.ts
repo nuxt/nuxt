@@ -49,7 +49,7 @@ export { createServerBuild, setServerBuild, useServerBuild } from './server-buil
 export { addClientBuildState, restoreClientBuildState, saveClientBuildState } from './client-build-state.ts'
 export type { ClientBuildState } from './client-build-state.ts'
 
-export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
+export { SERVER_RUNTIME_VERSION, getPreloadModuleKey, getServerRuntime } from './renderer.ts'
 
 export { resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath } from './spa-loading-template.ts'
 

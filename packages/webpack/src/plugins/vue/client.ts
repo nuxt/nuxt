@@ -12,7 +12,7 @@ export default class VueSSRClientPlugin {
 
   apply (compiler: Compiler) {
     compiler.hooks.afterEmit.tap('VueSSRClientPlugin', async (compilation: Compilation) => {
-      await this.emitManifest(compilation.getStats().toJson(clientManifestStatsOptions))
+      await this.emitManifest(compilation.getStats().toJson(clientManifestStatsOptions), compilation.outputOptions)
     })
   }
 }

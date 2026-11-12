@@ -190,6 +190,24 @@ export interface NuxtServerBuildInput {
   clientDir: () => string
   /** Absolute path to the client manifest `vue-bundle-renderer` renders against. */
   clientManifest: () => string
+  /**
+   * How the client build requests the chunks it loads on demand. Left unset until the app
+   * builder knows, or when it cannot say.
+   */
+  clientChunks?: NuxtClientChunkLoading
+}
+
+/**
+ * How the client build requests the chunks it loads on demand. A `<link>` that hints one of them
+ * is only reused when it requests the chunk the same way; otherwise the chunk is fetched twice.
+ *
+ * @internal
+ */
+export interface NuxtClientChunkLoading {
+  /** Whether scripts are loaded as modules, which are always requested with CORS, rather than as classic scripts. */
+  module: boolean
+  /** Whether stylesheets and classic scripts are requested with `crossorigin`. */
+  crossOrigin: boolean
 }
 
 /**

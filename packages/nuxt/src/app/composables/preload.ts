@@ -4,8 +4,11 @@ import type { NuxtAppLiterals } from '../types'
 import { tryUseNuxtApp, useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
 import { prefetchGroup } from '../internal/prefetch-util'
+import { preloadRouteChunks } from '../internal/preload-hints'
 import { toArray } from '../utils'
 import { useRouter } from './router'
+
+import { routeChunkHints } from '#build/nuxt.config.mjs'
 
 /**
  * Preload a component or components that have been globally registered.
@@ -55,6 +58,12 @@ function loadRouteComponents (matched: RouteRecordNormalized[]): Promise<unknown
   }))
 }
 
+async function prefetchRouteComponentChunks (matched: RouteRecordNormalized[]): Promise<unknown> {
+  if (!await preloadRouteChunks(matched.map(route => route.components?.default))) {
+    return loadRouteComponents(matched)
+  }
+}
+
 /** @since 3.0.0 */
 export async function preloadRouteComponents (to: RouteLocationRaw, router: Router = useRouter()): Promise<void> {
   if (import.meta.server) { return }
@@ -77,7 +86,7 @@ export function prefetchRouteComponents (to: RouteLocationRaw, router: Router): 
 
   const scheduler = tryUseNuxtApp()?._prefetch
   if (!scheduler) {
-    void loadRouteComponents(matched)
+    void (routeChunkHints ? prefetchRouteComponentChunks(matched) : loadRouteComponents(matched))
     return
   }
 
@@ -88,6 +97,6 @@ export function prefetchRouteComponents (to: RouteLocationRaw, router: Router): 
     scope: 'navigation',
     group: prefetchGroup(fullPath),
     // a duplicate or dequeued task does not load again; the first one owns the work
-    run: signal => signal.aborted ? undefined : loadRouteComponents(matched),
+    run: signal => signal.aborted ? undefined : routeChunkHints ? prefetchRouteComponentChunks(matched) : loadRouteComponents(matched),
   })
 }

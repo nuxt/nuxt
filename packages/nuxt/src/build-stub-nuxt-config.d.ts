@@ -44,6 +44,7 @@ export {
   anyValue as purgeCachedData,
   anyValue as rawVaporSlotKey,
   anyValue as remoteComponentIslands,
+  anyValue as routeChunkHints,
   anyValue as selectiveClient,
   anyValue as spaLoadingTemplateOutside,
   anyValue as ssrErrorBoundary,

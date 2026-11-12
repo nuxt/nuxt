@@ -151,5 +151,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Set `NODE_USE_ENV_PROXY=1` to send `fetch`, `node:http` and `node:https` requests through the proxy, or upgrade to Node.js 24. Set `NODE_USE_ENV_PROXY=0` to keep requests direct and silence this warning.',
       docs: false,
     },
+    NUXT_B5039: {
+      why: '`experimental.routeChunkHints` has no effect in this build: the builder has not said how the client build requests its chunks, so layouts and pages are prefetched as they are without the option.',
+      fix: 'With webpack, Rspack or Rsbuild, have the client config load chunks with `output.chunkLoading` set to `jsonp` or `import`, and leave `output.crossOriginLoading` unset. With a builder that does not support the option, disable `experimental.routeChunkHints`.',
+      docs: false,
+    },
   },
 })

@@ -118,6 +118,8 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
           input: {
             clientDir: () => clientBuild.outDir,
             clientManifest: () => manifestFile,
+            // chunks are ES modules, and Vite's preload helper inserts their stylesheets with `crossorigin`
+            clientChunks: { module: true, crossOrigin: true },
           },
         }, nuxt)
       }

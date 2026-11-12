@@ -2,8 +2,9 @@ import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises
 import type { FileHandle } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { createIsIgnored, setBuildOutput } from '@nuxt/kit'
-import { buildDiagnostics, restoreClientBuildState, saveClientBuildState, useServerBuild } from '@nuxt/kit/internal'
+import { buildDiagnostics, restoreClientBuildState, saveClientBuildState, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
 import type { Nuxt, NuxtBuildOutputs, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
+import type { NuxtClientChunkLoading } from '@nuxt/schema/internal'
 import { hash, serialize } from 'ohash'
 import { glob } from 'tinyglobby'
 import { consola } from 'consola'
@@ -105,28 +106,37 @@ export async function getVueHash (nuxt: Nuxt) {
 }
 
 const BUILD_OUTPUTS_FILE = 'build-outputs.json'
-const CACHE_FORMAT_VERSION = 2
+const CACHE_FORMAT_VERSION = 3
+
+interface CachedBuildOutputs {
+  outputs: Partial<Record<keyof NuxtBuildOutputs, string>>
+  clientChunks?: NuxtClientChunkLoading
+}
 
 /**
- * The bundler is skipped entirely on a cache hit, so the `nuxt/*` build outputs
- * it would normally provide are snapshotted into the cached build directory and
- * replayed on restore.
+ * The bundler is skipped entirely on a cache hit, so what it would normally tell the server
+ * build is snapshotted into the cached build directory and replayed on restore: the `nuxt/*`
+ * build outputs, and how the client build requests its chunks.
  */
 async function persistBuildOutputs (nuxt: Nuxt) {
-  const outputs: Partial<Record<keyof NuxtBuildOutputs, string>> = {}
+  const outputs: CachedBuildOutputs['outputs'] = {}
   for (const key of Object.keys(nuxt.buildOutputs) as Array<keyof NuxtBuildOutputs>) {
     outputs[key] = String(await nuxt.buildOutputs[key]())
   }
-  await writeFile(resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE), JSON.stringify(outputs), 'utf8')
+  const cached: CachedBuildOutputs = { outputs, clientChunks: useServerBuild(nuxt).input.clientChunks }
+  await writeFile(resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE), JSON.stringify(cached), 'utf8')
 }
 
 async function restoreBuildOutputs (nuxt: Nuxt) {
   const file = resolve(nuxt.options.buildDir, BUILD_OUTPUTS_FILE)
   if (!existsSync(file)) { return }
-  const outputs = JSON.parse(await readFile(file, 'utf8')) as Record<keyof NuxtBuildOutputs, string>
+  const { outputs, clientChunks } = JSON.parse(await readFile(file, 'utf8')) as CachedBuildOutputs
   for (const key of Object.keys(outputs) as Array<keyof NuxtBuildOutputs>) {
-    const code = outputs[key]
+    const code = outputs[key]!
     setBuildOutput(key, () => code, nuxt)
+  }
+  if (clientChunks) {
+    setServerBuild({ input: { clientChunks } }, nuxt)
   }
 }
 
