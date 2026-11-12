@@ -1366,8 +1366,9 @@ describe.skipIf(!once)('navigate', () => {
     ['/navigate-to-error', 302, '/setup-should-not-run'],
     ['/redirect-with-encode', 302, encodeURI('/cœur') + '?redirected=' + encodeURIComponent('https://google.com')],
     ['/navigate-to-redirect', 307, '/'],
-    ['/navigate-to-encoded-query', 302, '/?callback=%2Fother'],
-    ['/navigate-to-encoded-space', 302, '/?q=a%20b'],
+    ['/navigate-to-encoded-query', 302, '/?callback=/other'],
+    ['/navigate-to-encoded-query-code', 307, '/?callback=/other'],
+    ['/navigate-to-encoded-space', 302, '/?q=a+b'],
     ['/navigate-to-external/', 302, 'https://example.com/?redirect=false#test'],
     ['/navigate-to-api', 302, '/api/test'],
   ])('redirects %s with %i to %s', async (path, status, location) => {
