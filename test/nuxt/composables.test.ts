@@ -23,6 +23,7 @@ import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
+import routerOptions from '#build/router.options.mjs'
 
 import { isTestingAppManifest } from '../matrix'
 
@@ -942,6 +943,24 @@ describe('routing utilities: `navigateTo`', () => {
     `)
     nuxtApp._processingMiddleware = false
   })
+  it('navigateTo should parse the query the same way the router does when replacing within middleware', () => {
+    const nuxtApp = useNuxtApp()
+    nuxtApp._processingMiddleware = true
+    const location = navigateTo('/?flag&empty=', { replace: true }) as { query: unknown }
+    nuxtApp._processingMiddleware = false
+    expect(location.query).toEqual(router.resolve('/?flag&empty=').query)
+  })
+  it('navigateTo should use `parseQuery` from the router options when replacing within middleware', () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    routerOptions.parseQuery = search => ({ search })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    onTestFinished(() => { delete routerOptions.parseQuery })
+    const nuxtApp = useNuxtApp()
+    nuxtApp._processingMiddleware = true
+    const location = navigateTo('/?a=1', { replace: true }) as { query: unknown }
+    nuxtApp._processingMiddleware = false
+    expect(location.query).toEqual({ search: 'a=1' })
+  })
 
   it('#28425', async () => {
     router.addRoute({
@@ -1035,6 +1054,26 @@ describe('routing utilities: `resolveRouteObject`', () => {
   it('resolveRouteObject should correctly resolve a route object', () => {
     expect(resolveRouteObject({ path: '/test' })).toMatchInlineSnapshot(`"/test"`)
     expect(resolveRouteObject({ path: '/test', hash: '#thing', query: { foo: 'bar' } })).toMatchInlineSnapshot(`"/test?foo=bar#thing"`)
+  })
+  it('resolveRouteObject should serialise the query the same way the router does', () => {
+    const query = { path: 'a/b', empty: '', flag: null, list: ['1', '2'] }
+    expect(resolveRouteObject({ path: '/test', query })).toBe(useRouter().resolve({ path: '/test', query }).fullPath)
+    expect(resolveRouteObject({ path: 'https://example.com/test?flag&empty=&foo=old', query: { foo: 'new' } })).toBe('https://example.com/test?flag&empty=&foo=new')
+    expect(resolveRouteObject({ path: '/test', query: { '?a': '1' } })).toBe(useRouter().resolve({ path: '/test', query: { '?a': '1' } }).fullPath)
+  })
+  it('resolveRouteObject should use `stringifyQuery` from the router options', () => {
+    routerOptions.stringifyQuery = query => Object.keys(query).join(',')
+    onTestFinished(() => { delete routerOptions.stringifyQuery })
+    expect(resolveRouteObject({ path: 'https://example.com/test', query: { a: '1', b: '2' } })).toBe('https://example.com/test?a,b')
+  })
+  it('resolveRouteObject should only call `parseQuery` from the router options when the path has a query', () => {
+    const parseQuery = vi.fn(() => ({}))
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    routerOptions.parseQuery = parseQuery
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    onTestFinished(() => { delete routerOptions.parseQuery })
+    expect(resolveRouteObject({ path: '/test', query: { a: '1' } })).toBe('/test?a=1')
+    expect(parseQuery).not.toHaveBeenCalled()
   })
 })
 
