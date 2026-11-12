@@ -7,7 +7,6 @@ import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import type { NuxtApp } from '../nuxt'
 import { tryUseNuxtApp, useNuxtApp } from '../nuxt'
-import { toArray } from '../utils'
 import { useRequestEvent } from './ssr'
 import { stateDiagnostics } from '../diagnostics/state'
 
@@ -25,10 +24,23 @@ function parseCookieValue (value: string) {
 
 type _CookieOptions = Omit<CookieSerializeOptions, 'encode'>
 
-export interface CookieOptions<T = any> extends _CookieOptions {
+/** Options shared by `$cookie` and `useCookie`. */
+export interface CookieOptions<T = any> extends Omit<_CookieOptions, 'expires'> {
   decode?(value: string | null | undefined): T
   encode?(value: T): string
   default?: () => T | Ref<T>
+  /**
+   * Expiration date for the cookie, or a getter that returns one.
+   *
+   * When a function is provided, it is evaluated on every cookie write
+   * so the expiration can be refreshed when the value is re-set.
+   * The getter should be pure (no side effects).
+   */
+  expires?: Date | (() => Date | undefined)
+}
+
+/** Options accepted by `useCookie`. */
+export interface UseCookieOptions<T = any> extends CookieOptions<T> {
   watch?: boolean | 'shallow'
   readonly?: boolean
   /** Whether this ref reads the named cookie from the jar. Defaults to an exact name match. */
@@ -50,18 +62,8 @@ export interface CookieOptions<T = any> extends _CookieOptions {
    * @default false
    */
   refresh?: boolean
-}
-
-/** Options accepted by `useCookie`. */
-export interface UseCookieOptions<T = any> extends Omit<CookieOptions<T>, 'expires'> {
-  /**
-   * Expiration date for the cookie, or a getter that returns one.
-   *
-   * When a function is provided, it is evaluated on every cookie write
-   * so the expiration can be refreshed when the value is re-set.
-   * The getter should be pure (no side effects).
-   */
-  expires?: Date | (() => Date | undefined)
+  /** A `$cookie` instance whose defaults this ref uses, e.g. from `$cookie.create()`. */
+  $cookie?: $Cookie
 }
 
 function resolveExpires (expires?: Date | (() => Date | undefined)): Date | undefined {
@@ -100,7 +102,7 @@ const store = import.meta.client && cookieStore ? globalThis.cookieStore : undef
 export function useCookie<T = string | null | undefined> (name: string, _opts?: UseCookieOptions<T> & { readonly?: false }): CookieRef<T>
 export function useCookie<T = string | null | undefined> (name: string, _opts: UseCookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
 export function useCookie<T = string | null | undefined> (name: string, _opts?: UseCookieOptions<T>): CookieRef<T> {
-  const opts = { ...CookieDefaults, ..._opts }
+  const opts = { ...CookieDefaults, ...(_opts?.$cookie && cookieUtilDefaults.get(_opts.$cookie)), ..._opts }
   opts.filter ??= key => key === name
 
   const nuxtApp = import.meta.server ? useNuxtApp() : undefined!
@@ -558,167 +560,69 @@ function cookieServerRef<T> (name: string, value: T | undefined, opts: UseCookie
   })
 }
 
-/**
- * Context passed to `onRead` interceptors.
- *
- * `raw` and `value` are linked: setting `raw` (for example to strip a signature) means `value`
- * is decoded from the new `raw`, while setting `value` replaces the decoded result directly.
- */
-export interface CookieReadContext<T = any> {
-  name: string
-  /** Raw, undecoded value read from the cookie jar. */
-  raw: string | undefined
-  /** Value decoded from `raw`, with `default` applied when it is `null` or `undefined`. */
-  value: T | undefined
-  options: CookieUtilOptions<T>
-}
-
-/**
- * Context passed to `onWrite` interceptors, for both `set` and `remove`.
- *
- * `value` and `raw` are linked: `raw` is `value` encoded with `options.encode` (or `undefined`
- * when `value` is `null` or `undefined`, which removes the cookie), unless `raw` is set
- * explicitly, for example to sign the encoded value. Setting `value` again discards that override.
- */
-export interface CookieWriteContext<T = any> {
-  name: string
-  value: T | null | undefined
-  raw: string | undefined
-  options: CookieUtilOptions<T>
-}
-
-/** Options accepted by `$cookie` methods and `$cookie.create()`. */
-export interface CookieUtilOptions<T = any> extends Omit<UseCookieOptions<T>, 'watch' | 'readonly' | 'filter' | 'refresh'> {
-  /** Interceptor(s) run when a cookie is read. */
-  onRead?: ((ctx: CookieReadContext<T>) => void) | Array<(ctx: CookieReadContext<T>) => void>
-  /** Interceptor(s) run before a cookie is written or removed. */
-  onWrite?: ((ctx: CookieWriteContext<T>) => void) | Array<(ctx: CookieWriteContext<T>) => void>
-}
-
 export interface $Cookie {
   /** Read and decode a cookie. */
-  get<T = string | null | undefined> (name: string, opts: CookieUtilOptions<T> & { default: () => T | Ref<T> }): T
-  get<T = string | null | undefined> (name: string, opts?: CookieUtilOptions<T>): T | undefined
+  get<T = string | null | undefined> (name: string, opts: CookieOptions<T> & { default: () => T | Ref<T> }): T
+  get<T = string | null | undefined> (name: string, opts?: CookieOptions<T>): T | undefined
   /** Read and decode all cookies visible to the current request (server) or document (client). */
-  getAll (opts?: CookieUtilOptions): Record<string, unknown>
+  getAll (opts?: CookieOptions): Record<string, unknown>
   /** Whether a cookie with this name exists. */
   has (name: string): boolean
   /** Encode and write a cookie. Setting `null` or `undefined` removes it. */
-  set<T = string | null | undefined> (name: string, value: T, opts?: CookieUtilOptions<T>): void
+  set<T = string | null | undefined> (name: string, value: T, opts?: CookieOptions<T>): void
   /** Remove a cookie. Pass the same `path`/`domain` the cookie was set with. */
-  remove (name: string, opts?: CookieUtilOptions): void
-  /** Create a new `$cookie` instance with merged defaults and interceptors. */
-  create (defaults?: CookieUtilOptions): $Cookie
-}
-
-function mergeCookieUtilOptions<T> (defaults: CookieUtilOptions<T>, opts: CookieUtilOptions<T> = {}): CookieUtilOptions<T> {
-  return {
-    ...defaults,
-    ...opts,
-    onRead: [...toArray(defaults.onRead ?? []), ...toArray(opts.onRead ?? [])],
-    onWrite: [...toArray(defaults.onWrite ?? []), ...toArray(opts.onWrite ?? [])],
-  }
-}
-
-function createReadContext (name: string, initialRaw: string | undefined, options: CookieUtilOptions): CookieReadContext {
-  let raw = initialRaw
-  let value: unknown
-  let hasValue = false
-  const ctx: CookieReadContext = {
-    name,
-    options,
-    get raw () { return raw },
-    set raw (next) {
-      raw = next
-      hasValue = false
-    },
-    get value () {
-      if (!hasValue) {
-        const { decode = CookieDefaults.decode, default: getDefault } = ctx.options
-        const decoded = raw === undefined ? undefined : decode(raw)
-        value = decoded ?? (getDefault ? unref(getDefault()) : decoded)
-        hasValue = true
-      }
-      return value
-    },
-    set value (next) {
-      value = next
-      hasValue = true
-    },
-  }
-  return ctx
-}
-
-function createWriteContext (name: string, initialValue: unknown, options: CookieUtilOptions): CookieWriteContext {
-  let value = initialValue
-  let raw: string | undefined
-  let hasRaw = false
-  const ctx: CookieWriteContext = {
-    name,
-    options,
-    get value () { return value },
-    set value (next) {
-      value = next
-      hasRaw = false
-    },
-    get raw () {
-      if (hasRaw) { return raw }
-      return value === null || value === undefined ? undefined : (ctx.options.encode ?? CookieDefaults.encode)(value)
-    },
-    set raw (next) {
-      raw = next
-      hasRaw = true
-    },
-  }
-  return ctx
+  remove (name: string, opts?: CookieOptions): void
+  /** Create a new `$cookie` instance with merged defaults. */
+  create (defaults?: CookieOptions): $Cookie
 }
 
 function readCookieJar (): Record<string, string | undefined> {
   return import.meta.client ? readClientCookieJar() : readServerCookieJar(useNuxtApp())
 }
 
-function createCookieUtil (defaults: CookieUtilOptions): $Cookie {
-  const read = (name: string, raw: string | undefined, opts?: CookieUtilOptions) => {
-    const ctx = createReadContext(name, raw, mergeCookieUtilOptions(defaults, opts))
-    for (const hook of toArray(ctx.options.onRead ?? [])) { hook(ctx) }
-    return ctx.value
+function createCookieUtil (defaults: CookieOptions): $Cookie {
+  const read = (raw: string | undefined, opts?: CookieOptions) => {
+    const { decode = CookieDefaults.decode, default: getDefault } = { ...defaults, ...opts }
+    const value = raw === undefined ? undefined : decode(raw)
+    return value ?? (getDefault ? unref(getDefault()) : value)
   }
 
-  const write = (name: string, value: unknown, opts?: CookieUtilOptions) => {
-    const ctx = createWriteContext(name, value, mergeCookieUtilOptions(defaults, opts))
-    for (const hook of toArray(ctx.options.onWrite ?? [])) { hook(ctx) }
-
-    const encoded = ctx.raw
-    const { onRead: _onRead, onWrite: _onWrite, default: _default, ...options } = ctx.options
+  const write = (name: string, value: unknown, opts?: CookieOptions) => {
+    const { encode = CookieDefaults.encode, default: _default, ...options } = { ...defaults, ...opts }
+    const encoded = value === null || value === undefined ? undefined : encode(value)
     const writeOpts = { path: CookieDefaults.path, ...options }
 
     if (import.meta.client) {
-      writeClientCookie(ctx.name, encoded, writeOpts)
+      writeClientCookie(name, encoded, writeOpts)
       // no-op with `cookieStore`, which dispatches a change event itself
-      refreshCookie(ctx.name)
+      refreshCookie(name)
     } else {
       const nuxtApp = useNuxtApp()
-      writeServerCookie(useRequestEvent(nuxtApp)!, ctx.name, encoded, writeOpts)
-      updateServerCookieJar(nuxtApp, ctx.name, encoded)
+      writeServerCookie(useRequestEvent(nuxtApp)!, name, encoded, writeOpts)
+      updateServerCookieJar(nuxtApp, name, encoded)
     }
   }
 
-  return {
-    get: ((name: string, opts?: CookieUtilOptions) => read(name, readCookieJar()[name], opts)) as $Cookie['get'],
+  const instance: $Cookie = {
+    get: ((name: string, opts?: CookieOptions) => read(readCookieJar()[name], opts)) as $Cookie['get'],
     getAll (opts) {
       const jar = readCookieJar()
       const result: Record<string, unknown> = {}
       for (const name in jar) {
-        result[name] = read(name, jar[name], opts)
+        result[name] = read(jar[name], opts)
       }
       return result
     },
     has: name => readCookieJar()[name] !== undefined,
     set: (name, value, opts) => write(name, value, opts),
     remove: (name, opts) => write(name, undefined, opts),
-    create: opts => createCookieUtil(mergeCookieUtilOptions(defaults, opts)),
+    create: opts => createCookieUtil({ ...defaults, ...opts }),
   }
+  cookieUtilDefaults.set(instance, defaults)
+  return instance
 }
+
+const cookieUtilDefaults = new WeakMap<$Cookie, CookieOptions>()
 
 /**
  * Read and write cookies imperatively, on both server and client.

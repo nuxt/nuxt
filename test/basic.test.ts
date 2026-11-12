@@ -949,20 +949,20 @@ describe.skipIf(!once)('nuxt composables', () => {
       useCookieAfterSet: { n: 1 },
       hasAfterRemove: false,
       useCookieAfterRemove: 'empty',
-      prefixedRaw: 'hi',
-      prefixedRead: 'hi!',
-      signedRead: { a: 1 },
-      allKeys: ['prefixed-value', 'util-incoming-json', 'util-set', 'util-set-after-ref', 'util-set-twice', 'util-signed'],
+      prefixedRaw: 'x-hi',
+      prefixedRead: 'hi',
+      prefixedRef: 'hi',
+      allKeys: ['util-incoming-json', 'util-prefixed', 'util-prefixed-ref', 'util-set', 'util-set-after-ref', 'util-set-twice'],
     })
 
-    const setCookies = res.headers.getSetCookie().filter(c => /^(?:util-|prefixed-)/.test(c)).sort()
+    const setCookies = res.headers.getSetCookie().filter(c => c.startsWith('util-')).sort()
     expect(setCookies).toEqual([
-      'prefixed-value=hi; Path=/scoped',
       'util-incoming=; Max-Age=0; Path=/',
+      'util-prefixed-ref=x-from-ref; Path=/scoped',
+      'util-prefixed=x-hi; Path=/scoped',
       'util-set-after-ref=from-util; Path=/',
       'util-set-twice=second; Path=/',
       'util-set=%7B%22n%22%3A1%7D; Max-Age=60; Path=/',
-      'util-signed=%7B%22a%22%3A1%7D.sig; Path=/',
     ])
   })
 

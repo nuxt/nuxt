@@ -1,6 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, describe, expect, it } from 'vitest'
+import { nextTick } from 'vue'
 import { $cookie } from '#app/composables/cookie'
 
 function clearCookies () {
@@ -49,69 +50,48 @@ describe('$cookie', () => {
     expect($cookie.get('util-custom', { decode: v => v?.slice(2) })).toBe('hello')
   })
 
-  it('should run onRead and onWrite interceptors', () => {
-    const calls: string[] = []
-    $cookie.set('util-intercept', 'secret', {
-      onWrite: (ctx) => {
-        calls.push(`write:${ctx.name}:${ctx.raw}`)
-        ctx.value = ctx.value!.toUpperCase()
-        calls.push(`encoded:${ctx.raw}`)
-      },
-    })
-    expect($cookie.get('util-intercept')).toBe('SECRET')
+  it('should create instances with merged defaults', () => {
+    const writes = captureCookieWrites()
+    const base = $cookie.create({ path: '/', maxAge: 60, encode: v => `x-${v}`, decode: v => v?.slice(2) })
+    const child = base.create({ default: () => 'fallback' })
 
-    const value = $cookie.get('util-intercept', {
-      onRead: (ctx) => {
-        calls.push(`read:${ctx.raw}`)
-        ctx.value = `${ctx.value}!`
-      },
-    })
-    expect(value).toBe('SECRET!')
-    expect(calls).toEqual(['write:util-intercept:secret', 'encoded:SECRET', 'read:SECRET'])
+    child.set('util-create', 'hi')
+    expect(writes.at(-1)).toBe('util-create=x-hi; Max-Age=60; Path=/')
+    expect(child.get('util-create')).toBe('hi')
+    expect(child.get('util-create-missing')).toBe('fallback')
+
+    child.set('util-create', 'hi', { maxAge: 10, encode: v => `y-${v}` })
+    expect(writes.at(-1)).toBe('util-create=y-hi; Max-Age=10; Path=/')
+    writes.restore()
   })
 
-  it('should allow interceptors to change the raw value', () => {
-    const signed = $cookie.create({
-      onWrite: (ctx) => {
-        if (ctx.raw !== undefined) { ctx.raw = `${ctx.raw}.sig` }
-      },
-      onRead: (ctx) => {
-        ctx.raw = ctx.raw?.endsWith('.sig') ? ctx.raw.slice(0, -4) : undefined
-      },
-    })
+  it('should use the defaults of a $cookie instance passed to useCookie', async () => {
+    const prefixed = $cookie.create({ encode: v => `x-${v}`, decode: v => v?.slice(2) })
 
-    signed.set('util-signed', { a: 1 })
-    expect($cookie.get('util-signed', { decode: v => v })).toBe('%7B%22a%22%3A1%7D.sig')
-    expect(signed.get('util-signed')).toEqual({ a: 1 })
+    useCookie('util-ref', { $cookie: prefixed }).value = 'hi'
+    await nextTick()
+    expect($cookie.get('util-ref', { decode: v => v })).toBe('x-hi')
+    expect(useCookie('util-ref', { $cookie: prefixed }).value).toBe('hi')
 
-    $cookie.set('util-signed', 'tampered')
-    expect(signed.get('util-signed', { default: () => 'fallback' })).toBe('fallback')
-
-    signed.remove('util-signed')
-    expect($cookie.get('util-signed')).toBeUndefined()
-  })
-
-  it('should discard a raw override when the value is changed afterwards', () => {
-    $cookie.set('util-override', 'a', {
-      onWrite: [
-        (ctx) => { ctx.raw = 'overridden' },
-        (ctx) => { ctx.value = 'b' },
-      ],
-    })
-    expect($cookie.get('util-override')).toBe('b')
-  })
-
-  it('should create instances with merged defaults and chained interceptors', () => {
-    const order: string[] = []
-    const base = $cookie.create({
-      maxAge: 60,
-      onWrite: (ctx) => { order.push('base'); ctx.name = `app-${ctx.name}` },
-    })
-    const child = base.create({ onWrite: () => { order.push('child') } })
-
-    child.set('token', 'abc', { onWrite: () => { order.push('call') } })
-    expect(order).toEqual(['base', 'child', 'call'])
-    expect($cookie.get('app-token')).toBe('abc')
-    expect($cookie.has('token')).toBe(false)
+    expect(useCookie('util-ref', { $cookie: prefixed, decode: v => v }).value).toBe('x-hi')
   })
 })
+
+function captureCookieWrites () {
+  let target: any = document
+  let descriptor: PropertyDescriptor | undefined
+  while (target && !descriptor) {
+    descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
+    if (!descriptor) { target = Object.getPrototypeOf(target) }
+  }
+  const writes: string[] = []
+  Object.defineProperty(document, 'cookie', {
+    configurable: true,
+    get: () => descriptor!.get!.call(document),
+    set (value) {
+      writes.push(value)
+      descriptor!.set!.call(document, value)
+    },
+  })
+  return Object.assign(writes, { restore: () => { delete (document as any).cookie } })
+}

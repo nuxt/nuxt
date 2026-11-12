@@ -27,23 +27,14 @@ if (import.meta.server) {
 
   $cookie.remove('util-missing')
 
-  const prefixed = $cookie.create({
-    path: '/scoped',
-    onWrite: (ctx) => { ctx.name = `prefixed-${ctx.name}` },
-    onRead: (ctx) => { ctx.value = `${ctx.value}!` },
-  })
-  prefixed.set('value', 'hi')
-  results.value.prefixedRaw = $cookie.get('prefixed-value')
-  results.value.prefixedRead = prefixed.get('prefixed-value')
+  const prefixed = $cookie.create({ path: '/scoped', encode: v => `x-${v}`, decode: v => v?.slice(2) })
+  prefixed.set('util-prefixed', 'hi')
+  results.value.prefixedRaw = $cookie.get('util-prefixed', { decode: v => v })
+  results.value.prefixedRead = prefixed.get('util-prefixed')
+  results.value.prefixedRef = useCookie('util-prefixed', { $cookie: prefixed }).value
+  useCookie('util-prefixed-ref', { $cookie: prefixed }).value = 'from-ref'
 
-  const signed = $cookie.create({
-    onWrite: (ctx) => { if (ctx.raw !== undefined) { ctx.raw = `${ctx.raw}.sig` } },
-    onRead: (ctx) => { ctx.raw = ctx.raw?.endsWith('.sig') ? ctx.raw.slice(0, -4) : undefined },
-  })
-  signed.set('util-signed', { a: 1 })
-  results.value.signedRead = signed.get('util-signed')
-
-  results.value.allKeys = Object.keys($cookie.getAll()).filter(key => /^(?:util-|prefixed-)/.test(key)).sort()
+  results.value.allKeys = Object.keys($cookie.getAll()).filter(key => key.startsWith('util-')).sort()
 }
 </script>
 
