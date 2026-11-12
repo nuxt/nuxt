@@ -64,6 +64,27 @@ describe('renderer without a server builder', () => {
     expect(html).toContain('<h1>rendered and replaced</h1>')
   })
 
+  it('sends the document as chunks when a `render:document` listener only reads it', async () => {
+    let document: string | undefined
+    let chunks: string[] | undefined
+    const { html } = await render('/', {
+      hooks: () => ({
+        callHook: ((name: string, context: { html: string }) => {
+          if (name === 'render:document') {
+            document = context.html
+          }
+        }) as never,
+      }),
+      createDocumentResponse: (received, init) => {
+        chunks = received
+        return new Response(received.join(''), init)
+      },
+    })
+
+    expect(chunks!.length).toBeGreaterThan(2)
+    expect(html).toBe(document)
+  })
+
   it('sends the app markup an `app:rendered` listener rewrote', async () => {
     const { html } = await render('/rewritten', {
       createDocumentResponse: (received, init) => new Response(received.join(''), init),
@@ -186,7 +207,7 @@ describe('renderer without a server builder', () => {
 })
 
 describe('renderer plugins', () => {
-  const state = globalThis as { __rendererPluginCalls?: number }
+  const state = globalThis as { __rendererPluginCalls?: number, __rendererPluginDocument?: string }
 
   it('calls each plugin once for every renderer, with hooks of its own', async () => {
     const calls = state.__rendererPluginCalls || 0
@@ -229,6 +250,35 @@ describe('renderer plugins', () => {
 
     expect(html).toContain('<div id="__nuxt"></div>')
     expect(html).toContain('<meta name="renderer-plugin">')
+  })
+
+  it('calls `render:document` with the document once every `render:html` hook has run', async () => {
+    let runtimeDocument: string | undefined
+    let chunks: string[] | undefined
+    const { html } = await render('/?render-document', {
+      createDocumentResponse: (received, init) => {
+        chunks = received
+        return new Response(received.join(''), init)
+      },
+      hooks: () => ({
+        callHook: ((name: string, context: any) => {
+          if (name === 'render:html') {
+            context.head.push('<meta name="runtime">')
+          }
+          if (name === 'render:document') {
+            runtimeDocument = context.html
+            context.html = context.html.replace('</html>', '<!-- runtime --></html>')
+          }
+        }) as never,
+      }),
+    })
+
+    expect(state.__rendererPluginDocument).toMatch(/^<!DOCTYPE html><html[^>]*>.*<\/html>$/s)
+    expect(state.__rendererPluginDocument).toContain('<meta name="renderer-plugin">')
+    expect(state.__rendererPluginDocument).toContain('<meta name="runtime">')
+    expect(runtimeDocument).toContain('<!-- renderer-plugin --></html>')
+    expect(html).toContain('<!-- renderer-plugin --><!-- runtime --></html>')
+    expect(chunks).toBeUndefined()
   })
 })
 

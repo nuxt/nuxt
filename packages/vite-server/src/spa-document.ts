@@ -15,10 +15,10 @@ export function rendersSpaDocument (nuxt: Nuxt): boolean {
 }
 
 /**
- * Renders the static SPA document through the `render:html` hooks of the renderer plugins,
- * as a prerendered route: once per build, for the base URL. The plugins are built in the
- * ssr environment, which a static SPA otherwise skips. In development the document is
- * rendered for each navigation.
+ * Renders the static SPA document through the `render:html` and `render:document` hooks of
+ * the renderer plugins, as a prerendered route: once per build, for the base URL. The
+ * plugins are built in the ssr environment, which a static SPA otherwise skips. In
+ * development the document is rendered for each navigation.
  */
 export function SpaDocumentPlugins (nuxt: Nuxt): Plugin[] {
   const entry = resolve(distDir, 'runtime/spa-document')

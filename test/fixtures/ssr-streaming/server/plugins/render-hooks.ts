@@ -30,4 +30,10 @@ export default defineNitroPlugin((nitro) => {
     if (getRequestURL(event).pathname !== '/hooks') { return }
     response.headers['x-render-response'] = `${response.body instanceof ReadableStream ? 'stream' : typeof response.body};${response.headers['content-type']}`
   })
+
+  // `render:document` only fires for documents that are not streamed.
+  nitro.hooks.hook('render:document', (ctx, { event }) => {
+    if (getRequestURL(event).pathname !== '/hooks') { return }
+    ctx.html += '<!--render:document-->'
+  })
 })

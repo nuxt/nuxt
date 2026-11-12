@@ -3,7 +3,7 @@ import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { renderSSRHead } from '@unhead/vue/server'
 import type { Link } from '@unhead/vue/types'
 import destr from 'destr'
-import type { NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
+import type { NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '../../../app/internal/tracing.ts'
 
 import { renderPayloadResponse } from './payload'
@@ -401,6 +401,18 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   await hooks.callHook('render:html', htmlContext, { event: hookEvent })
 
+  // the document is only serialised here if a listener reads it
+  let documentHtml: string | undefined
+  let replaced = false
+  const documentContext: NuxtRenderDocumentContext = {
+    get html () { return documentHtml ??= renderHTMLDocument(htmlContext) },
+    set html (value) {
+      documentHtml = value
+      replaced = true
+    },
+  }
+  await hooks.callHook('render:document', documentContext, { event: hookEvent })
+
   const response = {
     statusCode: event.res.status,
     statusMessage: event.res.statusText,
@@ -412,10 +424,10 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   // the app markup is sent as rendered chunks unless a listener changed it
   const chunks = ssrContext['~htmlChunks']
-  if (runtime.createDocumentResponse && chunks && htmlContext.body.length === 2 && htmlContext.body[0] === renderedHtml) {
+  if (!replaced && runtime.createDocumentResponse && chunks && htmlContext.body.length === 2 && htmlContext.body[0] === renderedHtml) {
     return { ...response, chunks: renderHTMLDocumentChunks(htmlContext, chunks) }
   }
-  return { ...response, body: renderHTMLDocument(htmlContext) }
+  return { ...response, body: documentContext.html }
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext, cached: boolean): string {

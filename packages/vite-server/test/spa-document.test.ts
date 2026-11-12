@@ -10,6 +10,12 @@ vi.mock('nuxt/internal/renderer/plugins', () => ({
       html.bodyAttrs.push('data-body')
       html.bodyAppend.push('<!-- appended -->')
     })
+    hooks.hook('render:document', (document: { html: string }) => {
+      document.html = document.html.replace(/<\/body>/i, '<!-- document -->$&')
+    })
+    hooks.hook('render:html', (html: { bodyAppend: string[] }) => {
+      html.bodyAppend.push('<!-- after -->')
+    })
     return hooks
   },
 }))
@@ -17,11 +23,11 @@ vi.mock('nuxt/internal/renderer/plugins', () => ({
 const { default: renderDocument } = await import('../src/runtime/spa-document.ts')
 
 describe('static SPA document', () => {
-  it('renders the document through the `render:html` hooks, keeping its attributes', async () => {
+  it('renders the document through the `render:html` and `render:document` hooks, keeping its attributes', async () => {
     const html = '<!DOCTYPE html><html lang="en"><head prefix="og: https://ogp.me/ns#"><title>app</title></head><body class="spa"><header></header><div id="__nuxt"></div></body></html>'
 
     expect(await renderDocument(html, 'http://localhost/')).toBe(
-      '<!DOCTYPE html><html lang="en" data-html><head prefix="og: https://ogp.me/ns#"><title>app</title><meta name="plugin"></head><body class="spa" data-body><header></header><div id="__nuxt"></div><!-- appended --></body></html>',
+      '<!DOCTYPE html><html lang="en" data-html><head prefix="og: https://ogp.me/ns#"><title>app</title><meta name="plugin"></head><body class="spa" data-body><header></header><div id="__nuxt"></div><!-- appended --><!-- after --><!-- document --></body></html>',
     )
   })
 
@@ -29,7 +35,7 @@ describe('static SPA document', () => {
     const html = '<!DOCTYPE html><HTML><HEAD><title>app</title></HEAD><BODY><div id="__nuxt"></div></BODY></HTML>'
 
     expect(await renderDocument(html, 'http://localhost/')).toBe(
-      '<!DOCTYPE html><html data-html><head><title>app</title><meta name="plugin"></head><body data-body><div id="__nuxt"></div><!-- appended --></body></HTML>',
+      '<!DOCTYPE html><html data-html><head><title>app</title><meta name="plugin"></head><body data-body><div id="__nuxt"></div><!-- appended --><!-- after --><!-- document --></body></HTML>',
     )
   })
 

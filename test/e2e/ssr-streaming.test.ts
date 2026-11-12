@@ -323,7 +323,7 @@ test.describe('SSR Streaming', () => {
     expect(pageErrors).toEqual([])
   })
 
-  // the `/hooks` fixture plugin uses `render:html` (with `streaming: true`), `render:html:chunk`, `render:html:close` and `render:response`
+  // the `/hooks` fixture plugin uses `render:html` (with `streaming: true`), `render:html:chunk`, `render:html:close`, `render:document` and `render:response`
   test('render:html streaming hooks mutate the shell and document', async ({ fetch }) => {
     const res = await fetch('/hooks')
     const html = await res.text()
@@ -334,6 +334,11 @@ test.describe('SSR Streaming', () => {
     expect(html).toMatch(/<!--render:html:close bodyAppend-->[\s\S]*<\/body>/)
     expect(res.headers.get('transfer-encoding')).toBe('chunked')
     expect(res.headers.get('x-render-response')).toBe('stream;text/html;charset=utf-8')
+    expect(html).not.toContain('<!--render:document-->')
+
+    const buffered = await fetch('/hooks?no-stream').then(r => r.text())
+    expect(buffered).toContain('<meta name="x-render-html" content="buffered">')
+    expect(buffered).toMatch(/<\/html><!--render:document-->$/)
   })
 
   // island teleports cannot be stitched into streamed body markup, so they are emitted as
