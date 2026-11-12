@@ -7,7 +7,7 @@ import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
 import { clientOnlySymbol } from '../components/client-only'
 import type { NuxtError } from './error'
-import { createError, createErrorFromThrown } from './error'
+import { createError, isUntrustedError } from './error'
 import { onNuxtReady } from './ready'
 import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
@@ -1078,13 +1078,6 @@ function buildAsyncData<
 
 // Used to get default values
 const getDefault = () => undefined
-function isUntrustedError (error: unknown): boolean {
-  if (error instanceof Error && error.name === 'FetchError' && typeof (error as { status?: unknown }).status === 'number') {
-    return false
-  }
-  return !!createErrorFromThrown(error).unhandled
-}
-
 const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtApp, ctx) => {
   if (nuxtApp.isHydrating) {
     return nuxtApp.payload.data[key]
