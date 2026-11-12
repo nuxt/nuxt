@@ -101,7 +101,7 @@ describe.skipIf(!oncePerBuild)('server components/islands', () => {
 
     const text = await page.innerText('pre')
     if (islandsV2) {
-      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><!----></section><section id="no-fallback"><!----></section><!---->"')
+      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"> Loading server component </section><section id="no-fallback"><!----></section><!---->"')
     } else {
       expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"> Loading server component </section><section id="no-fallback"><div></div></section><div></div>"')
       expect(text).toContain('Loading server component')
@@ -266,6 +266,40 @@ describe.skipIf(!oncePerBuild)('server components/islands', () => {
         await expect.poll(() => page.locator('#remount-island').textContent()).toContain('Route: /remount')
       }
       expect(requests.filter(request => request.includes('/__nuxt_island/'))).toEqual([])
+    } finally {
+      await page.close()
+    }
+  })
+
+  it('renders the fallback slot with the error when an island fails, until it recovers', async () => {
+    const html = await $fetch<string>('/island-error')
+    expect(html).toContain('Island failed with 404')
+
+    const { page, consoleLogs } = await renderPage('/island-error')
+    try {
+      await page.waitForLoadState('networkidle')
+      expect(await page.locator('#island-error-fallback').textContent()).toContain('Island failed with 404')
+      expect(await page.locator('#island-error-no-fallback').textContent()).not.toContain('never rendered')
+      if (islandsV2) {
+        expect(consoleLogs.filter(log => log.text.includes('Hydration'))).toEqual([])
+      }
+
+      await page.locator('#island-error-recover').click()
+      await expect.poll(() => page.locator('#island-error').textContent()).toContain('Route: /island-error')
+      expect(await page.locator('#island-error-fallback').count()).toBe(0)
+
+      // referesh the island after it fails again
+      await page.locator('#island-error-break').click()
+      await page.locator('#island-error-fallback').waitFor()
+      expect(await page.locator('#island-error').textContent()).not.toContain('Route: /island-error')
+      const refreshed = page.waitForResponse(response => response.url().includes('/__nuxt_island/ThrowingComponent'))
+      await page.locator('#island-error-refresh').click()
+      expect((await refreshed).status()).toBe(404)
+      expect(await page.locator('#island-error-fallback').textContent()).toContain('Island failed with 404')
+
+      await page.locator('#island-error-recover').click()
+      await expect.poll(() => page.locator('#island-error').textContent()).toContain('Route: /island-error')
+      expect(await page.locator('#island-error-fallback').count()).toBe(0)
     } finally {
       await page.close()
     }

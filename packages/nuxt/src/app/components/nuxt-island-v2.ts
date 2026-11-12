@@ -1,8 +1,8 @@
-import type { DefineSetupFnComponent, PropType, VNode } from 'vue'
-import { defineComponent, getCurrentInstance, shallowRef, toRaw, useId } from 'vue'
+import type { DefineSetupFnComponent, PropType, SlotsType, VNode } from 'vue'
+import { defineComponent, getCurrentInstance, shallowRef, toRaw, useId, watch } from 'vue'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp } from '../nuxt'
-import { createError } from '../composables/error'
+import { createError, isNuxtError } from '../composables/error'
 import { useIslandFetch } from './island-fetch'
 import { withIslandScopeId } from './utils'
 import { domToVNode, htmlToVNode, outerHTMLOf } from './islands-v2/dom-to-vnode'
@@ -21,10 +21,17 @@ type NuxtIslandEmits = {
   error: (error: unknown) => void
 }
 
+type NuxtIslandSlots = SlotsType<{
+  fallback?: (props: { error: unknown }) => VNode[]
+  [name: string]: ((props: any) => VNode[]) | undefined
+}>
+
 interface MarkerNonces {
   nonce: string
   nonces?: string[]
 }
+
+const ERROR_PAYLOAD_PREFIX = 'nuxt-island-error:'
 
 const NuxtIsland = defineComponent({
   name: 'NuxtIsland',
@@ -54,10 +61,12 @@ const NuxtIsland = defineComponent({
     const instance = getCurrentInstance()!
     const serverIsland = shallowRef<{ html: string, markers: MarkerSet } | undefined>()
     const tree = shallowRef<VNode | undefined>()
+    const id = useId()
+    const errorKey = `${ERROR_PAYLOAD_PREFIX}${id}`
 
-    const { islandKey, fetchComponent, load } = useIslandFetch({
+    const { error, islandKey, fetchComponent, load } = useIslandFetch({
       props,
-      uid: useId(),
+      uid: id,
       emit,
       toPayload: ({ html, ...data }) => {
         const revive: Partial<NuxtIslandResponse> = {}
@@ -85,11 +94,20 @@ const NuxtIsland = defineComponent({
       },
     })
 
+    if (import.meta.client) {
+      watch(error, (value) => { if (value) { tree.value = undefined } })
+    }
+
     expose({
       refresh: () => fetchComponent(true),
     })
 
     await load(() => {
+      const serverError = toRaw(nuxtApp.payload.data[errorKey])
+      if (serverError) {
+        error.value = serverError
+        return
+      }
       const entry = toRaw(nuxtApp.payload.data[islandKey.value])
       const markerNonces = readMarkerNonces(entry)
       if (!markerNonces) {
@@ -100,15 +118,23 @@ const NuxtIsland = defineComponent({
       tree.value = domToVNode(el, { ...markerNonces, slots })
     })
 
+    if (import.meta.server && error.value) {
+      error.value = isNuxtError(error.value) ? error.value : createError({ status: 500 })
+      nuxtApp.payload.data[errorKey] = error.value
+    }
+
     return () => {
-      if (import.meta.server) {
-        const island = serverIsland.value
-        return island?.html ? renderIslandSlots(island.html, island.markers, slots) : null
+      const island = serverIsland.value
+      if (import.meta.server && island?.html && !error.value) {
+        return renderIslandSlots(island.html, island.markers, slots)
       }
-      return tree.value ?? null
+      if (import.meta.client && tree.value && !error.value) {
+        return tree.value
+      }
+      return slots.fallback?.({ error: error.value }) ?? null
     }
   },
-}) as unknown as DefineSetupFnComponent<NuxtIslandProps, NuxtIslandEmits>
+}) as unknown as DefineSetupFnComponent<NuxtIslandProps, NuxtIslandEmits, NuxtIslandSlots>
 
 export default NuxtIsland
 
