@@ -122,8 +122,8 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B1023: {
-      why: (p: { version: string, range: string }) => `Nuxt requires \`vue@${p.range}\`, but \`vue@${p.version}\` is installed.`,
-      fix: (p: { installCommand: string, range: string }) => `Run \`${p.installCommand}\` to add a version of Vue matching \`${p.range}\` to your dependencies.`,
+      why: (p: { name: string, version: string, range: string }) => `Nuxt requires \`${p.name}@${p.range}\`, but \`${p.name}@${p.version}\` is installed.`,
+      fix: (p: { name: string, installCommand: string, range: string }) => `Run \`${p.installCommand}\` to add a version of \`${p.name}\` matching \`${p.range}\` to your dependencies.`,
       docs: false,
     },
   },

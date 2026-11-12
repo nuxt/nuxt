@@ -26,6 +26,7 @@ import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
 import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeRouteRuleLookupPath, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
+import { checkPeerVersion } from '../core/peer-version.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import type { NitroInstance, NitroInstanceOptions, NuxtConfig, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
@@ -153,6 +154,7 @@ export default defineNuxtModule({
     options.enabled = await isPagesEnabled()
     if (options.enabled) {
       await ensureDependencyInstalled('vue-router', { rootDir: nuxt.options.rootDir, searchPaths: [], dev: false })
+      await checkPeerVersion(nuxt, 'vue-router')
     }
     nuxt.options.pages = options
     // For backwards compatibility with `@nuxtjs/i18n` and other modules that serialize `nuxt.options.pages` directly

@@ -46,7 +46,7 @@ import schemaModule from './schema.ts'
 import { setupTemplateDiagnostics } from './template-diagnostics.ts'
 import { setupTypes } from './typescript.ts'
 import { addCoreBuildPlugins } from './build-plugins.ts'
-import { checkVueVersion } from './vue-version.ts'
+import { checkPeerVersion } from './peer-version.ts'
 import { addAppPlugin, addBuiltinsAfterModules, addBuiltinsAfterServer, addBuiltinsBeforeModules } from './builtins.ts'
 import { stripDebugProxies, trackModuleMutations } from './debug-module-mutation.ts'
 
@@ -265,7 +265,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (!nuxt.options._prepare) {
     checkRuntimeConfig(nuxt)
-    await checkVueVersion(nuxt)
+    await checkPeerVersion(nuxt, 'vue')
   }
 
   await addBuiltinsAfterModules(nuxt)
