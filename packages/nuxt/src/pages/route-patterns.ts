@@ -128,26 +128,33 @@ function toRou3RoutePath (path: string): string {
   return pattern + toRou3Path(path.slice(start))
 }
 
-function joinPagePatterns (pages: NuxtPage[], prefix: string, toPattern: (path: string) => string): string[] {
+export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {
   const routes: string[] = []
   for (const page of pages) {
-    const path = joinURL(prefix, toPattern(page.path))
+    const path = joinURL(prefix, toRou3Path(page.path))
     routes.push(path)
     if (page.children) {
-      routes.push(...joinPagePatterns(page.children, path, toPattern))
+      routes.push(...toRou3Patterns(page.children, path))
     }
   }
   return routes
 }
 
-export function toRou3Patterns (pages: NuxtPage[], prefix = '/'): string[] {
-  return joinPagePatterns(pages, prefix, toRou3Path)
-}
-
 /**
- * The rou3 pattern of every page and its subtree for `ssrRoutes`, keeping param names,
- * whole-segment optional params and non-repeatable `(.*)` catch-alls.
+ * The rou3 pattern of every path a page can be reached by (its path, each alias and the
+ * subtree below it) for `ssrRoutes`, keeping param names, whole-segment optional params
+ * and non-repeatable `(.*)` catch-alls.
  */
-export function toRou3RoutePatterns (pages: NuxtPage[], prefix = '/'): string[] {
-  return joinPagePatterns(pages, prefix, toRou3RoutePath)
+export function toRou3RoutePatterns (pages: NuxtPage[], prefixes: string[] = ['/']): string[] {
+  const patterns: string[] = []
+  for (const page of pages) {
+    const routes = resolvePageRoutes(page, prefixes)
+    for (const route of routes) {
+      patterns.push(toRou3RoutePath(route))
+    }
+    if (page.children) {
+      patterns.push(...toRou3RoutePatterns(page.children, [...routes]))
+    }
+  }
+  return patterns
 }

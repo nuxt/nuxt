@@ -59,9 +59,9 @@ describe('toRou3RoutePatterns', () => {
     expect(toRou3RoutePatterns([{ path }])).toStrictEqual([pattern])
   })
 
-  it('should join nested routes onto their parent pattern', () => {
+  it('should resolve nested routes against the parent path before converting', () => {
     const pages: NuxtPage[] = [
-      { path: '/parent', children: [{ path: 'child' }, { path: '' }] },
+      { path: '/parent', children: [{ path: 'child' }, { path: '' }, { path: '/absolute' }] },
       { path: '/:org?', children: [{ path: ':name()', children: [{ path: ':file(.*)?' }] }] },
       { path: '/:slug(.*)*', children: [{ path: ':id?' }] },
     ]
@@ -69,11 +69,33 @@ describe('toRou3RoutePatterns', () => {
       '/parent',
       '/parent/child',
       '/parent',
+      '/absolute',
       '/:org?',
       '/:org?/:name',
       '/:org?/:name/:file(.*)',
       '/**:slug',
-      '/**:slug/:id?',
+      '/**:slug',
+    ])
+  })
+
+  it('should include aliases and nest children under each of them', () => {
+    const pages: NuxtPage[] = [
+      { path: '/parent', alias: ['/p', '/:org?/p'], children: [{ path: 'kid', alias: ['k', '/abs-kid'] }] },
+      { path: '/x', alias: '/y' },
+    ]
+    expect(toRou3RoutePatterns(pages)).toStrictEqual([
+      '/parent',
+      '/p',
+      '/:org?/p',
+      '/parent/kid',
+      '/p/kid',
+      '/:org?/p/kid',
+      '/parent/k',
+      '/p/k',
+      '/:org?/p/k',
+      '/abs-kid',
+      '/x',
+      '/y',
     ])
   })
 })
