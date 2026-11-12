@@ -57,6 +57,11 @@ describe('toRou3RoutePatterns', () => {
     ])
   })
 
+  it('should emit the same pattern for params that differ only in their regexp', () => {
+    const pages: NuxtPage[] = [{ path: '/foo/:id(a|b)' }, { path: '/foo/:id(a-b)' }, { path: '/foo/:id(\\d+)' }]
+    expect(new Set(toRou3RoutePatterns(pages))).toStrictEqual(new Set(['/foo/:id']))
+  })
+
   it('should leave out collapsed paths and their children with skipCollapsed', () => {
     const pages: NuxtPage[] = [
       { path: '/:id([^/]*)*/suffix', children: [{ path: 'child' }] },
