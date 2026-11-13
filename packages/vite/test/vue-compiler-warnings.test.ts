@@ -158,6 +158,9 @@ function fakeVuePlugin (warningFor: (code: string) => string | undefined) {
   }
 }
 
+/** Wait for a publish, which a burst of compiles can hold back for up to a second. */
+const published = (assertion: () => void) => vi.waitFor(assertion, { timeout: 5000 })
+
 async function startServer () {
   const nuxt = createNuxt()
   const sink = createSink()
@@ -208,7 +211,7 @@ describe('VueCompilerWarningsPlugin', () => {
 
     await client.transformRequest('/Nested.vue')
     await client.transformRequest('/Nested.vue?vue&type=style&index=0&scoped=true&lang.css')
-    await vi.waitFor(() => expect(sets).toHaveLength(1))
+    await published(() => expect(sets).toHaveLength(1))
 
     expect(sets[0]).toMatchObject({ source: 'vue:compiler', meta: { label: 'Vue' } })
     expect(sets[0]!.reports.map(report => [report.kind, report.message.split('\n')[0], report.frames[0]?.line, !!report.frames[0]?.snippet])).toEqual([
@@ -229,7 +232,7 @@ describe('VueCompilerWarningsPlugin', () => {
     await client.transformRequest('/Nested.vue')
     await server.environments.ssr.transformRequest('/Nested.vue')
     await client.transformRequest('/Nested.vue?vue&type=style&index=0&scoped=true&lang.css')
-    await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ source: 'vue:compiler', reports: [] }))
+    await published(() => expect(sets.at(-1)).toMatchObject({ source: 'vue:compiler', reports: [] }))
     expect(printed()).toHaveLength(3)
   })
 
@@ -246,7 +249,7 @@ describe('VueCompilerWarningsPlugin', () => {
     client.moduleGraph.invalidateAll()
     await client.transformRequest('/Hot.vue')
 
-    await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ reports: [{ message: expect.stringContaining('withDefaults() is unnecessary') }] }))
+    await published(() => expect(sets.at(-1)).toMatchObject({ reports: [{ message: expect.stringContaining('withDefaults() is unnecessary') }] }))
     expect(printed()).toEqual([expect.stringContaining('withDefaults() is unnecessary')])
   })
 
@@ -258,12 +261,12 @@ describe('VueCompilerWarningsPlugin', () => {
 
     await client.transformRequest('/Styled.vue')
     await client.transformRequest('/Styled.vue?vue&type=style&index=0&scoped=true&lang.css')
-    await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ reports: [{ message: expect.stringContaining('>>>') }] }))
+    await published(() => expect(sets.at(-1)).toMatchObject({ reports: [{ message: expect.stringContaining('>>>') }] }))
 
     await writeFile(file, '<template>\n  <div class="a" />\n</template>\n')
     client.moduleGraph.invalidateAll()
     await client.transformRequest('/Styled.vue')
-    await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ reports: [] }))
+    await published(() => expect(sets.at(-1)).toMatchObject({ reports: [] }))
   })
 
   it('publishes a warning again when its snippet changes', async () => {
@@ -273,12 +276,12 @@ describe('VueCompilerWarningsPlugin', () => {
     const client = server.environments.client
 
     await client.transformRequest('/Snippet.vue')
-    await vi.waitFor(() => expect(sets).toHaveLength(1))
+    await published(() => expect(sets).toHaveLength(1))
 
     await writeFile(file, '<template>\n  <a href="/">\n    <a href="/a">two</a>\n  </a>\n</template>\n')
     client.moduleGraph.invalidateAll()
     await client.transformRequest('/Snippet.vue')
-    await vi.waitFor(() => expect(sets).toHaveLength(2))
+    await published(() => expect(sets).toHaveLength(2))
     expect(sets[1]!.reports[0]!.id).toBe(sets[0]!.reports[0]!.id)
     expect(sets[1]!.reports[0]!.frames[0]!.snippet!.lines).toContain('    <a href="/a">two</a>')
   })
@@ -373,10 +376,10 @@ describe('VueCompilerWarningsPlugin', () => {
     const { server, sets } = await startServer()
 
     await server.environments.client.transformRequest('/Deleted.vue')
-    await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ reports: [{ message: NESTING }] }))
+    await published(() => expect(sets.at(-1)).toMatchObject({ reports: [{ message: NESTING }] }))
 
     await rm(file)
     server.watcher.emit('unlink', file)
-    await vi.waitFor(() => expect(sets.at(-1)).toMatchObject({ reports: [] }))
+    await published(() => expect(sets.at(-1)).toMatchObject({ reports: [] }))
   })
 })
