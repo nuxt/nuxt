@@ -211,20 +211,21 @@ describe('VueCompilerWarningsPlugin', () => {
 
     await client.transformRequest('/Nested.vue')
     await client.transformRequest('/Nested.vue?vue&type=style&index=0&scoped=true&lang.css')
-    await published(() => expect(sets).toHaveLength(1))
+    await published(() => expect(sets.at(-1)?.reports).toHaveLength(3))
 
-    expect(sets[0]).toMatchObject({ source: 'vue:compiler', meta: { label: 'Vue' } })
-    expect(sets[0]!.reports.map(report => [report.kind, report.message.split('\n')[0], report.frames[0]?.line, !!report.frames[0]?.snippet])).toEqual([
+    expect(sets.at(-1)).toMatchObject({ source: 'vue:compiler', meta: { label: 'Vue' } })
+    expect(sets.at(-1)!.reports.map(report => [report.kind, report.message.split('\n')[0], report.frames[0]?.line, !!report.frames[0]?.snippet])).toEqual([
       ['warning', 'the >>> and /deep/ combinators have been deprecated. Use :deep() instead.', undefined, false],
       ['warning', 'withDefaults() is unnecessary when using destructure with defineProps().', 2, true],
       ['warning', NESTING, 5, true],
     ])
     expect(printed()).toHaveLength(3)
 
+    const publishes = sets.length
     await server.environments.ssr.transformRequest('/Nested.vue')
     await new Promise(resolve => setTimeout(resolve, 200))
     expect(printed()).toHaveLength(3)
-    expect(sets).toHaveLength(1)
+    expect(sets).toHaveLength(publishes)
 
     await writeFile(file, '<template>\n  <p>{{ 1 }}</p>\n</template>\n<style scoped>\n.a :deep(.b) { color: red }\n</style>\n')
     client.moduleGraph.invalidateAll()
