@@ -15,14 +15,19 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts): RouteAnnouncer {
   const activeHead = injectHead()
 
   function _updateMessageWithPageHeading () {
-    announcer.set(document.title?.trim(), announcer.politeness.value)
+    const title = document.title?.trim()
+    if (title !== announcer.message.value) {
+      announcer.set(title, announcer.politeness.value)
+    }
   }
 
   _updateMessageWithPageHeading()
   activeHead?.hooks?.hook('dom:rendered', _updateMessageWithPageHeading)
 
+  const cleanup = announcer._cleanup
   announcer._cleanup = () => {
     activeHead?.hooks?.removeHook('dom:rendered', _updateMessageWithPageHeading)
+    cleanup()
   }
 
   return announcer

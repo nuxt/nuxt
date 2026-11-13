@@ -22,10 +22,25 @@ export type NuxtAnnouncer = {
 export function createAnnouncer (opts: NuxtAnnouncerOpts = {}): NuxtAnnouncer {
   const message = shallowRef('')
   const politeness = shallowRef<AnnouncerPoliteness>(opts.politeness || 'polite')
+  let restore: ReturnType<typeof setTimeout> | undefined
+  let pendingMessage: string | undefined
 
   function set (messageValue: string = '', politenessSetting: AnnouncerPoliteness = 'polite') {
-    message.value = messageValue
+    clearTimeout(restore)
     politeness.value = politenessSetting
+    // a live region is only announced when its content changes
+    if (import.meta.client && messageValue && (message.value === messageValue || (message.value === '' && pendingMessage === messageValue))) {
+      pendingMessage = messageValue
+      message.value = ''
+      restore = setTimeout(() => {
+        restore = undefined
+        pendingMessage = undefined
+        message.value = messageValue
+      }, 100)
+      return
+    }
+    pendingMessage = undefined
+    message.value = messageValue
   }
 
   return {
@@ -35,6 +50,8 @@ export function createAnnouncer (opts: NuxtAnnouncerOpts = {}): NuxtAnnouncer {
     polite: msg => set(msg, 'polite'),
     assertive: msg => set(msg, 'assertive'),
     _cleanup () {
+      clearTimeout(restore)
+      pendingMessage = undefined
       message.value = ''
       politeness.value = opts.politeness || 'polite'
     },

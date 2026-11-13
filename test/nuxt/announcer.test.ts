@@ -19,6 +19,7 @@ describe('NuxtRouteAnnouncer', () => {
           useHead({ title: 'First Page' })
           return () => h('div', [
             h('button', { id: 'set-title', onClick: () => useHead({ title: 'Dynamically set title' }) }),
+            h('button', { id: 'set-meta', onClick: () => useHead({ meta: [{ name: 'description', content: 'Unrelated' }] }) }),
           ])
         },
       }),
@@ -81,6 +82,51 @@ describe('NuxtRouteAnnouncer', () => {
     el.unmount()
   })
 
+  it('`useRouteAnnouncer` should not re-announce an unchanged title when other head tags change', async () => {
+    const messages: string[] = []
+    const el = await mountSuspended({
+      setup () {
+        const { message } = useRouteAnnouncer()
+        watch(message, value => messages.push(value), { flush: 'sync' })
+        return () => h('div', [h(NuxtRouteAnnouncer), h(NuxtPage)])
+      },
+    })
+
+    await navigateTo('/announcer-first')
+    await waitForTitle('First Page')
+    messages.length = 0
+
+    await el.get('#set-meta').trigger('click')
+    await vi.waitFor(() => expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('Unrelated'))
+    await new Promise(resolve => setTimeout(resolve, 200))
+
+    expect(messages).toEqual([])
+
+    el.unmount()
+  })
+
+  it('`useRouteAnnouncer` should cancel a pending repeat on unmount', async () => {
+    let announcer!: ReturnType<typeof useRouteAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useRouteAnnouncer()
+        return () => h(NuxtRouteAnnouncer)
+      },
+    })
+
+    announcer.polite('Item saved')
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Item saved')
+
+    announcer.polite('Item saved')
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('')
+
+    el.unmount()
+    await new Promise(resolve => setTimeout(resolve, 200))
+    expect(announcer.message.value).toBe('')
+  })
+
   it('`useAnnouncer` should announce polite message', async () => {
     const el = await mountSuspended({
       setup () {
@@ -115,6 +161,108 @@ describe('NuxtRouteAnnouncer', () => {
     await flushPromises()
     expect(el.get('[role="alert"]').text()).toContain('Assertive announcement')
     expect(el.get('[role="alert"]').attributes('aria-live')).toBe('assertive')
+
+    el.unmount()
+  })
+
+  it('`useAnnouncer` should re-announce an identical consecutive message', async () => {
+    const messages: string[] = []
+    const el = await mountSuspended({
+      setup () {
+        const { polite, message } = useAnnouncer()
+        watch(message, value => messages.push(value), { flush: 'sync' })
+        return () => h('div', [
+          h(NuxtAnnouncer),
+          h('button', { 'data-testid': 'polite-button', 'onClick': () => polite('Item saved') }),
+        ])
+      },
+    })
+
+    await el.get('[data-testid="polite-button"]').trigger('click')
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Item saved')
+
+    await el.get('[data-testid="polite-button"]').trigger('click')
+    expect(el.get('[role="status"]').text()).toBe('')
+    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Item saved'))
+
+    expect(messages).toEqual(['Item saved', '', 'Item saved'])
+
+    el.unmount()
+  })
+
+  it('`useAnnouncer` should re-announce an identical message repeated before restoration', async () => {
+    const messages: string[] = []
+    const el = await mountSuspended({
+      setup () {
+        const { polite, message } = useAnnouncer()
+        watch(message, value => messages.push(value), { flush: 'sync' })
+        return () => h('div', [
+          h(NuxtAnnouncer),
+          h('button', { 'data-testid': 'repeat-button', 'onClick': () => polite('Item saved') }),
+        ])
+      },
+    })
+
+    const button = el.get('[data-testid="repeat-button"]')
+
+    await button.trigger('click')
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Item saved')
+
+    await button.trigger('click')
+    await button.trigger('click')
+    expect(el.get('[role="status"]').text()).toBe('')
+    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Item saved'))
+
+    expect(messages).toEqual(['Item saved', '', 'Item saved'])
+
+    el.unmount()
+  })
+
+  it('`useAnnouncer` should cancel a pending repeat on unmount', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+
+    announcer.polite('Item saved')
+    await flushPromises()
+    expect(announcer.message.value).toBe('Item saved')
+
+    announcer.polite('Item saved')
+    await flushPromises()
+    expect(announcer.message.value).toBe('')
+
+    el.unmount()
+    await new Promise(resolve => setTimeout(resolve, 200))
+    expect(announcer.message.value).toBe('')
+  })
+
+  it('`useAnnouncer` should not restore a superseded message', async () => {
+    const messages: string[] = []
+    const el = await mountSuspended({
+      setup () {
+        const { polite, message } = useAnnouncer()
+        watch(message, value => messages.push(value), { flush: 'sync' })
+        return () => h('div', [
+          h(NuxtAnnouncer),
+          h('button', { 'data-testid': 'repeat-button', 'onClick': () => polite('First') }),
+          h('button', { 'data-testid': 'other-button', 'onClick': () => polite('Second') }),
+        ])
+      },
+    })
+
+    await el.get('[data-testid="repeat-button"]').trigger('click')
+    await el.get('[data-testid="repeat-button"]').trigger('click')
+    await el.get('[data-testid="other-button"]').trigger('click')
+    await new Promise(resolve => setTimeout(resolve, 200))
+
+    expect(el.get('[role="status"]').text()).toBe('Second')
+    expect(messages).toEqual(['First', '', 'Second'])
 
     el.unmount()
   })
