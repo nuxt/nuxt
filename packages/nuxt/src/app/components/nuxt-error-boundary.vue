@@ -1,7 +1,7 @@
 <template>
   <slot
     v-if="error"
-    v-bind="{ error, clearError }"
+    v-bind="{ error, clearError, clearBoundaryError: clearError }"
     name="error"
   />
 
@@ -38,7 +38,13 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
-  error(props: { error: Error, clearError: () => void }): any
+  error(props: {
+    error: Error
+    /** Clears the boundary's error and re-renders the default slot. */
+    clearBoundaryError: () => void
+    /** @deprecated Use `clearBoundaryError` instead. */
+    clearError: () => void
+  }): any
   default(): any
 }>()
 
@@ -91,5 +97,10 @@ if (import.meta.client) {
   })
 }
 
-defineExpose({ error, clearError })
+defineExpose({
+  error,
+  /** @deprecated Use `clearBoundaryError` instead. */
+  clearError,
+  clearBoundaryError: clearError,
+})
 </script>
