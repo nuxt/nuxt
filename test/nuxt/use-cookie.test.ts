@@ -154,6 +154,48 @@ describe('useCookie', () => {
     expect(document.cookie).not.toContain('cookie-readonly')
   })
 
+  it('should only write an initial cookie when there is something to persist or clear', async () => {
+    document.cookie = 'present-expired=value; Path=/'
+    document.cookie = 'present-null=null; Path=/'
+    await nextTick()
+
+    let target: any = document
+    let descriptor: PropertyDescriptor | undefined
+    while (target && !descriptor) {
+      descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
+      if (!descriptor) { target = Object.getPrototypeOf(target) }
+    }
+
+    const writes: string[] = []
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get () {
+        return descriptor!.get!.call(document)
+      },
+      set (value: string) {
+        writes.push(value)
+        descriptor!.set!.call(document, value)
+      },
+    })
+
+    try {
+      useCookie('absent-null-default', { default: () => null })
+      useCookie('absent-undefined-default', { default: () => undefined })
+      expect(writes).toEqual([])
+
+      useCookie('present-expired', { maxAge: 0, default: () => 'value' })
+      useCookie('present-null')
+      useCookie('absent-expired-with-default', { maxAge: 0, default: () => 'value' })
+      expect(writes).toEqual([
+        'present-expired=; Max-Age=0; Path=/',
+        'present-null=; Max-Age=0; Path=/',
+        'absent-expired-with-default=; Max-Age=0; Path=/',
+      ])
+    } finally {
+      delete (document as any).cookie
+    }
+  })
+
   it('should re-write cookie on same-value assignment when refresh is true', async () => {
     const { nextTick } = await import('vue')
 
