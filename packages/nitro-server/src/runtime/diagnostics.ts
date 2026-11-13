@@ -41,8 +41,8 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_E8016: {
-      why: (p: { received: string }) => `\`defineHandler\` from \`nuxt/server\` accepts a handler function, but received ${p.received}. The object form (\`{ handler, onRequest, onBeforeResponse }\`) is specific to h3.`,
-      fix: 'Pass the handler function directly, or import `defineEventHandler` from `h3` in this file to use the object form.',
+      why: (p: { received: string }) => `\`defineHandler\` from \`nuxt/server\` accepts a handler function, but received ${p.received}. The object form is specific to h3.`,
+      fix: 'Pass the handler function directly, or import `defineEventHandler` from `h3` in this file to use the object form (`{ handler, onRequest, onBeforeResponse }`).',
       docs: false,
     },
   },
