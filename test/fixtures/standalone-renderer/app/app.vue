@@ -22,6 +22,9 @@ if (path.startsWith('/response-header')) {
   header.value = 'written'
   useResponseHeader('x-read-back').value = `${before} -> ${header.value}`
 }
+if (path.startsWith('/invalid-cookie')) {
+  useCookie('invalid name').value = 'value'
+}
 if (path.startsWith('/rewritten')) {
   useNuxtApp().hook('app:rendered', ({ renderResult }) => {
     renderResult!.html = renderResult!.html.replace('rendered without nitro', 'rewritten after render')

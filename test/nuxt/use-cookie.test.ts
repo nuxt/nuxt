@@ -339,6 +339,16 @@ describe('useCookie', () => {
     expect(cookie.value).toBe('fallback')
   })
 
+  it('should report a cookie that cannot be serialized', () => {
+    expect(() => useCookie('invalid name', { default: () => 'value' })).toThrow(expect.objectContaining({
+      code: 'NUXT_E7011',
+      cause: expect.any(TypeError),
+    }))
+    expect(() => useCookie('invalid-same-site', { default: () => 'value', sameSite: 'none' })).toThrow(expect.objectContaining({
+      code: 'NUXT_E7011',
+    }))
+  })
+
   it('should keep session cookies without expires or maxAge as plain refs', async () => {
     const { nextTick } = await import('vue')
     vi.useFakeTimers()
