@@ -7,7 +7,7 @@ import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
 import { clientOnlySymbol } from '../components/client-only'
 import type { NuxtError } from './error'
-import { createError } from './error'
+import { createError, createErrorFromThrown } from './error'
 import { onNuxtReady } from './ready'
 import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
@@ -1011,7 +1011,9 @@ function buildAsyncData<
             return
           }
 
-          asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
+          asyncData.error.value = (import.meta.server && !import.meta.dev && isUntrustedError(error)
+            ? createError({ status: 500, statusText: 'Internal Server Error' })
+            : createError<NuxtErrorDataT>(error)) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
         })
@@ -1076,6 +1078,13 @@ function buildAsyncData<
 
 // Used to get default values
 const getDefault = () => undefined
+function isUntrustedError (error: unknown): boolean {
+  if (error instanceof Error && error.name === 'FetchError' && typeof (error as { status?: unknown }).status === 'number') {
+    return false
+  }
+  return !!createErrorFromThrown(error).unhandled
+}
+
 const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtApp, ctx) => {
   if (nuxtApp.isHydrating) {
     return nuxtApp.payload.data[key]

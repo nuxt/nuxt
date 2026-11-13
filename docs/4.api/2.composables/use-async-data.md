@@ -306,6 +306,8 @@ If you have not fetched data on the server (for example, with `server: false`), 
 | `pending` | `Ref<boolean>`                                      | `true` while a request is in flight. With [`experimental.pendingWhenIdle`](/docs/guide/going-further/experimental-features#pendingwhenidle), it is also `true` when `status` is `idle` and no cached data is available. |
 | `clear`   | `() => void`                                        | Resets `data` to `undefined` (or the value of `options.default()` if provided), `error` to `undefined`, set `status` to `idle`, and cancels any pending calls.    |
 
+In production, an error thrown on the server that is neither an HTTP error (such as one created with [`createError`](/docs/api/utils/create-error)) nor a failed `$fetch` with a response status reaches `error` as a generic `500` error, so its message and data are not sent to the browser.
+
 ::tip
 Functions from the `Promise` (`then`, `catch`, and `finally`) can safely be destructured, if you did not await the return value.
 ::
