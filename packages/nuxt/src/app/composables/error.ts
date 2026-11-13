@@ -27,7 +27,7 @@ export const showError = <DataT = unknown>(
 
     if (import.meta.client) {
       const nuxtApp = useNuxtApp()
-      nuxtApp.hooks.callHook('app:error', nuxtError)
+      nuxtApp.hooks.callHook('app:error', nuxtError)?.catch(hookError => console.error('[nuxt] Error in `app:error` hook', hookError))
     }
 
     error.value ||= nuxtError
@@ -86,7 +86,7 @@ export const clearError = async (options: { redirect?: string } = {}): Promise<v
   const nuxtApp = useNuxtApp()
   const error = useError()
 
-  nuxtApp.callHook('app:error:cleared', options)
+  nuxtApp.callHook('app:error:cleared', options)?.catch(hookError => console.error('[nuxt] Error in `app:error:cleared` hook', hookError))
 
   if (options.redirect) {
     await useRouter().replace(options.redirect)

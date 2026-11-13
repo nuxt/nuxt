@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 
 import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
+import { flushPromises } from '@vue/test-utils'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
 
 import * as composables from '#app/composables'
@@ -154,6 +155,39 @@ describe('errors', () => {
     expect(error.value).toMatchInlineSnapshot('[HTTPError: new error]')
     clearError()
     expect(error.value).toBe(undefined)
+  })
+
+  describe('hook rejections', () => {
+    afterEach(async () => {
+      vi.restoreAllMocks()
+      await clearError()
+    })
+
+    it('should log rather than leave unhandled a rejection from `app:error`', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const hookError = new Error('hook failed')
+      onTestFinished(useNuxtApp().hook('app:error', () => { throw hookError }))
+
+      showError('boom')
+      await flushPromises()
+
+      expect(useError().value).toMatchObject({ message: 'boom' })
+      expect(consoleError).toHaveBeenCalledWith('[nuxt] Error in `app:error` hook', hookError)
+    })
+
+    it('should log rather than leave unhandled a rejection from `app:error:cleared`', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const hookError = new Error('hook failed')
+      const off = useNuxtApp().hook('app:error:cleared', () => { throw hookError })
+
+      showError('boom')
+      await clearError()
+      off()
+      await flushPromises()
+
+      expect(useError().value).toBeUndefined()
+      expect(consoleError).toHaveBeenCalledWith('[nuxt] Error in `app:error:cleared` hook', hookError)
+    })
   })
 
   describe('_showErrorUnlessCrawler', () => {
