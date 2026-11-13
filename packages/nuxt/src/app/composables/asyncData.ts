@@ -552,7 +552,7 @@ export function _createUseAsyncData<
 
         const isWithinClientOnly = inComponentSetup && (instance?._nuxtClientOnly || inject(clientOnlySymbol, false))
 
-        const hasServerData = key.value in nuxtApp.payload.data
+        const hasServerData = Object.hasOwn(nuxtApp.payload.data, key.value)
 
         if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || (asyncData.data.value !== undefined && (hasServerData || asyncData._initialCachedData !== undefined)))) {
           // 1. Hydration (server: true): no fetch
@@ -861,7 +861,9 @@ function buildAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (nuxtApp: NuxtApp, key: string, _handler: AsyncDataHandler<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
-  nuxtApp.payload._errors[key] ??= undefined
+  if (!Object.hasOwn(nuxtApp.payload._errors, key)) {
+    nuxtApp.payload._errors[key] = undefined
+  }
 
   const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData
 
@@ -1086,11 +1088,11 @@ function buildAsyncData<
 const getDefault = () => undefined
 const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtApp, ctx) => {
   if (nuxtApp.isHydrating) {
-    return nuxtApp.payload.data[key]
+    return Object.hasOwn(nuxtApp.payload.data, key) ? nuxtApp.payload.data[key] : undefined
   }
 
   if (ctx.cause === 'initial') {
-    return nuxtApp.static.data[key]
+    return Object.hasOwn(nuxtApp.static.data, key) ? nuxtApp.static.data[key] : undefined
   }
 }
 

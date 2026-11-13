@@ -1310,6 +1310,17 @@ describe('useAsyncData', () => {
       wrapper.unmount()
     })
 
+    it('should fetch before resolving when the key is an inherited object property', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData('toString', promiseFn)
+
+      expect(observed).toMatchObject({ status: 'success', data: 'client' })
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+      clearNuxtData('toString')
+    })
+
     it('should fetch before resolving when a default is set but there is no payload entry for the key', async () => {
       const promiseFn = vi.fn(() => Promise.resolve('client'))
 
@@ -2187,6 +2198,16 @@ describe('useAsyncData', () => {
     clear()
     expect(data.value).toBeUndefined()
     expect(status.value).toBe('idle')
+  })
+
+  it('should not treat inherited object properties as cached data', async () => {
+    const handler = vi.fn(() => Promise.resolve('value'))
+    const { data, error } = await useAsyncData('constructor', handler)
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('value')
+    expect(error.value).toBeUndefined()
+    clearNuxtData('constructor')
   })
 
   it('does not cross-pollute cache slots when the reactive key changes (#32836)', async () => {
