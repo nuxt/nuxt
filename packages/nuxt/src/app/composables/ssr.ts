@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, ref } from 'vue'
+import { computed, customRef, getCurrentInstance, ref } from 'vue'
 import type { TypedFetch } from '../types/fetch'
 import type { NuxtRequestEvent } from '@nuxt/schema'
 import type { $Fetch as OFetch } from 'ofetch'
@@ -144,18 +144,20 @@ export function useResponseHeader (header: string): import('vue').WritableComput
 
   const event = useRequestEvent()!
 
-  return computed({
+  return customRef((track, trigger) => ({
     get () {
+      track()
       return event.res.headers.get(header)
     },
     set (newValue) {
       if (!newValue) {
-        return event.res.headers.delete(header)
+        event.res.headers.delete(header)
+      } else {
+        event.res.headers.set(header, newValue)
       }
-
-      return event.res.headers.set(header, newValue)
+      trigger()
     },
-  })
+  }))
 }
 
 /** @since 3.8.0 */
