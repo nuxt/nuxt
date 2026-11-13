@@ -130,6 +130,7 @@ const { data, error } = await useAsyncData(
 The handler signal will be aborted when:
 
 - A new request is made with `dedupe: 'cancel'`
+- A new execution with `dedupe: 'cancel'` is served from `getCachedData`
 - The `clear` function is called
 - The `options.timeout` duration is exceeded
 
