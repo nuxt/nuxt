@@ -105,26 +105,48 @@ export interface AddRouteMiddlewareOptions {
 }
 
 interface AddRouteMiddleware {
-  (name: string, middleware: RouteMiddleware, options?: AddRouteMiddlewareOptions): void
-  (middleware: RouteMiddleware): void
+  (name: string, middleware: RouteMiddleware, options?: AddRouteMiddlewareOptions): () => void
+  (middleware: RouteMiddleware): () => void
 }
 
-/** @since 3.0.0 */
+const noop = () => {}
+
+/**
+ * Register a route middleware at runtime.
+ * @returns a function that unregisters the middleware again
+ * @since 3.0.0
+ */
 export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddleware, middleware?: RouteMiddleware, options: AddRouteMiddlewareOptions = {}) => {
   const nuxtApp = useNuxtApp()
   const global = options.global || typeof name !== 'string'
   const mw = typeof name !== 'string' ? name : middleware
   if (!mw) {
     navigationDiagnostics.NUXT_E2006({ cause: name })
-    return
+    return noop
   }
   if (global) {
     if (import.meta.server && tracingChannelNuxt && typeof name === 'string') {
       Object.defineProperty(mw, '_name', { value: name, configurable: true })
     }
-    nuxtApp._middleware.global.push(mw)
-  } else {
-    nuxtApp._middleware.named[name] = mw
+    const middlewares = nuxtApp._middleware.global
+    middlewares.push(mw)
+    let registered = true
+    return () => {
+      if (!registered) { return }
+      registered = false
+      const index = middlewares.indexOf(mw)
+      if (index !== -1) { middlewares.splice(index, 1) }
+    }
+  }
+  const named = nuxtApp._middleware.named
+  named[name as string] = mw
+  let registered = true
+  return () => {
+    if (!registered) { return }
+    registered = false
+    if (named[name as string] === mw) {
+      delete named[name as string]
+    }
   }
 }
 
