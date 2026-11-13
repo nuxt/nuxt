@@ -505,7 +505,7 @@ export function _createUseAsyncData<
       const initialFetch = createInitialFetch()
       const asyncData = nuxtApp._asyncData[key.value]!
 
-      asyncData._deps++
+      registerAsyncData(asyncData)
 
       const fetchOnServer = opts.server !== false && nuxtApp.payload.serverRendered
 
@@ -612,7 +612,7 @@ export function _createUseAsyncData<
                   nuxtApp._asyncData[newKey]!._initialCachedData = cachedData
                 }
 
-                nuxtApp._asyncData[newKey]._deps++
+                registerAsyncData(nuxtApp._asyncData[newKey])
                 lastEntry = nuxtApp._asyncData[newKey]
 
                 // Now it's safe to drop the old container.
@@ -769,7 +769,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
 
   if (nuxtApp._asyncData[key]) {
     const data = nuxtApp._asyncData[key]
-    data._deps++
+    registerAsyncData(data)
     if (getCurrentScope()) {
       onScopeDispose(() => {
         data._deps--
@@ -829,6 +829,12 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
   }
 }
 
+function registerAsyncData (data: NonNullable<NuxtApp['_asyncData'][string]>): void {
+  if (data._deps++ === 0 && data._init) {
+    data._on()
+  }
+}
+
 function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   delete nuxtApp.payload.data[key]
   delete nuxtApp.payload._errors[key]
@@ -854,7 +860,7 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _abortController?: AbortController }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _on: () => void, _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _abortController?: AbortController }
 
 function buildAsyncData<
   ResT,
@@ -893,11 +899,7 @@ function buildAsyncData<
 
   const _ref = options.deep ? ref : shallowRef
   const hasCachedData = initialCachedData !== undefined
-  const unsubRefreshAsyncData = nuxtApp.hook('app:data:refresh', async (keys) => {
-    if (!keys || keys.includes(key)) {
-      await asyncData.execute({ cause: 'refresh:hook' })
-    }
-  })
+  let unsubRefreshAsyncData: (() => void) | undefined
   const asyncData: CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> = {
     data: _ref(hasCachedData ? initialCachedData : options.default!()) as any,
     pending: pendingWhenIdle ? shallowRef(!hasCachedData) : computed(() => asyncData.status.value === 'pending'),
@@ -1058,8 +1060,16 @@ function buildAsyncData<
     _deps: 0,
     _init: true,
     _hash: import.meta.dev ? createHash(_handler, options) : undefined,
+    _on: () => {
+      unsubRefreshAsyncData ??= nuxtApp.hook('app:data:refresh', async (keys) => {
+        if (!keys || keys.includes(key)) {
+          await asyncData.execute({ cause: 'refresh:hook' })
+        }
+      })
+    },
     _off: () => {
-      unsubRefreshAsyncData()
+      unsubRefreshAsyncData?.()
+      unsubRefreshAsyncData = undefined
       // a newer entry may already own this key, for example when `useNuxtData` kept this one
       // alive until after the next page registered the key again - leave that entry alone
       if (nuxtApp._asyncData[key] !== asyncData) {

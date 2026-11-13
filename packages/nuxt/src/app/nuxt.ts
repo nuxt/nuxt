@@ -97,6 +97,8 @@ interface _NuxtApp {
     /** @internal */
     _deps: number
     /** @internal */
+    _on: () => void
+    /** @internal */
     _off: () => void
     /** @internal */
     _init: boolean
