@@ -312,13 +312,31 @@ export default defineConfig({
         test: {
           name: 'nuxt',
           dir: './test/nuxt',
-          exclude: [...defaultExclude, '**/universal/**', '**/dev/**'],
+          exclude: [...defaultExclude, '**/universal/**', '**/dev/**', '**/route-chunk-hints/**'],
           environment: 'nuxt',
           globalSetup: ['./test/setup-prepare.ts'],
           setupFiles: ['./test/setup-runtime.ts'],
           environmentOptions: {
             nuxt: {
               overrides: commonSettings,
+            },
+          },
+        },
+      }),
+      await defineVitestProject({
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
+        test: {
+          name: 'nuxt-route-chunk-hints',
+          dir: './test/nuxt/route-chunk-hints',
+          environment: 'nuxt',
+          globalSetup: ['./test/setup-prepare.ts'],
+          setupFiles: ['./test/setup-runtime.ts'],
+          environmentOptions: {
+            nuxt: {
+              overrides: defu({
+                experimental: { routeChunkHints: true },
+                dir: { layouts: resolve('./test/nuxt/route-chunk-hints/fixture/layouts') },
+              } satisfies NuxtConfig, commonSettings),
             },
           },
         },

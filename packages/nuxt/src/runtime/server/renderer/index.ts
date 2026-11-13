@@ -8,6 +8,7 @@ import type { SSRError } from './error'
 
 import type { NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '../../../app/internal/tracing'
+import { HINTS_PREFIX } from '../../../app/internal/preload-hints-shared'
 
 import { renderPayloadResponse } from './payload'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from './app'
@@ -27,7 +28,8 @@ import { normalizeChunks, renderAppTeleports, renderDevBadge, renderHTMLDocument
 import { extractCspNonce } from './csp-nonce'
 import { inertPrefetchLink, inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript } from './head'
 import { renderStreamedResponse } from './stream'
-import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appHead, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { pushPreloadHints, renderHintsResponse } from './preload-hints'
+import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRELOAD_MODULES, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appHead, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -58,6 +60,10 @@ function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<R
 
   if (componentIslands && runtime.renderIsland && event.url.pathname.startsWith('/__nuxt_island/')) {
     return Promise.resolve(runtime.renderIsland(event))
+  }
+
+  if (NUXT_PRELOAD_MODULES && event.url.pathname.startsWith(HINTS_PREFIX)) {
+    return renderHintsResponse(instance, event)
   }
 
   const isErrorRoute = event.url.pathname.startsWith('/__nuxt_error')
@@ -271,6 +277,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   if (entryFileName && !NO_SCRIPTS) {
     pushEntryImportMap(instance, event, ssrContext)
+  }
+  if (NUXT_PRELOAD_MODULES && !NO_SCRIPTS) {
+    pushPreloadHints(event, ssrContext)
   }
   // an inlined payload needs no separate fetch for the initial load
   if (payloadExtraction && !payloadInline && !NO_SCRIPTS) {

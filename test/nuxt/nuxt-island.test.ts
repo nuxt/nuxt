@@ -74,6 +74,7 @@ vi.mock('#build/nuxt.config.mjs', () => {
     hasParallelPlugins: true,
     hasPluginHooks: true,
     hasIslandOptOutPlugins: true,
+    routeChunkHints: false,
   }
 })
 

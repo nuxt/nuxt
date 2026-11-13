@@ -1,9 +1,10 @@
 import { readFileSync, readdirSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import type { NuxtServerBuildRuntime } from '@nuxt/schema/internal'
 
-import { SERVER_RUNTIME_VERSION, getRendererConfig, getRendererDefines, getServerRuntime } from '../src/internal/renderer.ts'
+import { configDiagnostics } from '../src/diagnostics/config.ts'
+import { SERVER_RUNTIME_VERSION, getPreloadModuleKey, getRendererConfig, getRendererDefines, getServerRuntime } from '../src/internal/renderer.ts'
 import { createServerBuild } from '../src/internal/server-build.ts'
 
 function withServerRuntime (instance: Nuxt, runtime: Partial<NuxtServerBuildRuntime>): Nuxt {
@@ -78,6 +79,48 @@ describe('getRendererConfig', () => {
     expect(code).toContain('export const NUXT_EARLY_404 = false')
     expect(code).toContain('export const componentIslands = true')
     expect(code).toContain('export const spaTemplate = "<span/>"')
+  })
+
+  it('lists the layouts and route components the client may preload by their manifest ids', () => {
+    const withApp = (options: Record<string, any>, clientChunks?: { module: boolean, crossOrigin: boolean }) => Object.assign(nuxt({ srcDir: '/root/app', ...options }), {
+      serverBuild: { input: { clientChunks } },
+      apps: {
+        default: {
+          layouts: { default: { name: 'default', file: '/root/app/layouts/default.vue' }, shared: { name: 'shared', file: '/root/layer/layouts/shared.vue' } },
+          pages: [
+            { path: '/', file: '/root/app/pages/index.vue', children: [{ path: 'child', file: '/root/app/pages/index/child.vue' }] },
+            { path: '/sync', file: '/root/app/pages/sync.vue', _sync: true },
+            { path: '/server', file: '/root/app/pages/server.vue', mode: 'server' },
+            { path: '/custom' },
+          ],
+        },
+      },
+    }) as Nuxt
+
+    const key = (file: string) => getPreloadModuleKey('/root/app', file)
+    const enabled = { experimental: { routeChunkHints: true } }
+    expect(getRendererConfig({}, withApp(enabled, { module: true, crossOrigin: true }))).toContain(
+      `export const NUXT_PRELOAD_MODULES = ${JSON.stringify({
+        layouts: { default: 'layouts/default.vue', shared: '../layer/layouts/shared.vue' },
+        pages: {
+          [key('/root/app/pages/index.vue')]: 'pages/index.vue',
+          [key('/root/app/pages/index/child.vue')]: 'pages/index/child.vue',
+        },
+        moduleScripts: true,
+        crossOrigin: true,
+      })}`,
+    )
+    expect(getRendererConfig({}, withApp(enabled, { module: false, crossOrigin: false }))).toContain('"moduleScripts":false,"crossOrigin":false')
+    const report = vi.spyOn(configDiagnostics, 'NUXT_B5036').mockImplementation(() => ({}) as any)
+    const undeclared = withApp(enabled)
+    expect(getRendererConfig({}, undeclared)).toContain('export const NUXT_PRELOAD_MODULES = undefined')
+    getRendererConfig({}, undeclared)
+    expect(getRendererConfig({}, withApp({ dev: true, ...enabled }, { module: true, crossOrigin: true }))).toContain('export const NUXT_PRELOAD_MODULES = undefined')
+    expect(getRendererConfig({}, withApp({}, { module: true, crossOrigin: true }))).toContain('export const NUXT_PRELOAD_MODULES = undefined')
+    getRendererConfig({}, withApp({ dev: true, ...enabled }))
+    getRendererConfig({}, withApp({}))
+    expect(report).toHaveBeenCalledTimes(1)
+    report.mockRestore()
   })
 
   it('re-exports the head module templates rather than inlining their values', () => {
@@ -184,6 +227,14 @@ describe('getServerRuntime', () => {
     expect(getServerRuntime({ phase: 'prerender' }, nuxt({ buildOutputs: buildOutputs() })).defines).toMatchObject({
       'import.meta.prerender': 'true',
     })
+  })
+})
+
+describe('getPreloadModuleKey', () => {
+  it('keys a route component by a digest, not its source path', () => {
+    const key = getPreloadModuleKey('/root/app', '/root/node_modules/private-layer/pages/admin.vue')
+    expect(key).toMatch(/^[\w-]{10}$/)
+    expect(getPreloadModuleKey('/ci/app', '/ci/node_modules/private-layer/pages/admin.vue')).toBe(key)
   })
 })
 

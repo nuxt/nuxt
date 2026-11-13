@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import { normalize, relative } from 'pathe'
 import { joinURL } from 'ufo'
 import { getLayerDirectories, resolveFiles, resolvePath, tryUseNuxt, useNuxt } from '@nuxt/kit'
-import { pageDiagnostics } from '@nuxt/kit/internal'
+import { getPreloadModuleKey, pageDiagnostics } from '@nuxt/kit/internal'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
@@ -12,6 +12,7 @@ import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from '
 import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
 
 import { linkToAlias, toArray } from '../utils.ts'
+import { PRELOAD_MODULE_KEY } from '../app/internal/preload-hints-shared.ts'
 import { defaultExtractionKeys, dynamicPageMetaCache, getDynamicMetaKeys, getDynamicPageMeta, getRouteMeta, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
@@ -442,9 +443,20 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         ? { name: metaRouteName, syncImport: isSyncImport ? pageImportName : undefined }
         : undefined
       let component = restrictToEnvironment(normalizeComponent(page, pageImport, route.name, islandKey, assignName))
+      // the loader of a server page is marked `false`: a prefetch has to run it to reach `__nuxt_prefetch`
+      const preloadModuleKey = !nuxt.options.experimental.routeChunkHints || nuxt.options.dev
+        ? undefined
+        : page.mode === 'server'
+          ? false
+          : page._sync ? undefined : getPreloadModuleKey(nuxt.options.srcDir, file)
+      const clientComponent = preloadModuleKey === undefined
+        ? component
+        : `Object.assign(${component}, { ${PRELOAD_MODULE_KEY}: ${JSON.stringify(preloadModuleKey)} })`
       if (options.routeComponentRuntime && !isSyncImport) {
         metaImports.add(genImport(options.routeComponentRuntime, [{ name: 'memoizeRouteComponent', as: '_memoizeRouteComponent' }]))
-        component = `import.meta.server ? _memoizeRouteComponent(${component}) : ${component}`
+        component = `import.meta.server ? _memoizeRouteComponent(${component}) : ${clientComponent}`
+      } else if (clientComponent !== component) {
+        component = `import.meta.client ? ${clientComponent} : ${component}`
       }
 
       // Named views from the `name@view.vue` filename convention. The scanner

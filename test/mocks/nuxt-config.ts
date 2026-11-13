@@ -10,6 +10,8 @@ export const hasPluginHooks = true
 
 export const hasIslandOptOutPlugins = true
 
+export const routeChunkHints = false
+
 export const componentIslands = true
 
 export const nuxtLinkDefaults = {

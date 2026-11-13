@@ -7,6 +7,7 @@
  */
 
 export type {
+  NuxtClientChunkLoading,
   NuxtServerBuild,
   NuxtServerBuildCapabilities,
   NuxtServerBuildInput,
