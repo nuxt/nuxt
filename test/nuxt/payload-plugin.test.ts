@@ -46,4 +46,19 @@ describe('static payload data', () => {
     await router.push('/pre/second')
     expect(Object.hasOwn(useNuxtApp().static.data, 'constructor')).toBe(false)
   })
+
+  it('should only purge keys added by the previous payload', async () => {
+    mockPayloads({ '/pre/a': { a: 'a' }, '/pre/b': { b: 'b' }, '/pre/c': { c: 'c' } })
+    const router = useRouter()
+
+    await router.push('/pre/a')
+    await router.push('/pre/b')
+    useNuxtApp().static.data.a = 'cached'
+
+    await router.push('/pre/c')
+
+    expect(useNuxtApp().static.data.a).toBe('cached')
+    expect(Object.hasOwn(useNuxtApp().static.data, 'b')).toBe(false)
+    expect(useNuxtApp().static.data.c).toBe('c')
+  })
 })
