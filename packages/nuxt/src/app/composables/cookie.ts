@@ -175,7 +175,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       writeClientCookie(name, encoded, opts)
 
       cookies[name] = klona(cookie.value)
-      channel?.postMessage({ value: opts.encode(cookie.value as T) })
+      channel?.postMessage({ value: encoded ?? cookie.value })
     }
 
     let cookieWatcher: WatchHandle | undefined
