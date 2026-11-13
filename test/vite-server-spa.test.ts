@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { readFile, rm } from 'node:fs/promises'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { $fetch } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { buildInProcess, fixturePath, setupFixture } from './utils'
@@ -41,6 +41,15 @@ describe.skipIf(!runsDev)('pure vite dev server', () => {
 
   it('serves client modules from the build assets directory', async () => {
     expect(await $fetch<string>('/_nuxt/@vite/client')).toContain('createHotContext')
+  })
+
+  it('adds the dev error badge to the shell, and serves the channel it connects to', async () => {
+    const html = await $fetch<string>('/', { headers: { accept: 'text/html' } })
+    expect(html).toMatch(/<script defer src="\/__nuxt_dev__\/error\/badge\.js[^"]*"><\/script>[\s\S]*<\/head>/)
+
+    const res = await fetch('/__nuxt_dev__/error/history/unknown-report')
+    expect(res.status).toBe(404)
+    expect(res.headers.get('content-type')).toContain('application/json')
   })
 })
 

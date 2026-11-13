@@ -32,7 +32,7 @@ const viteOnlyTests = ['server-page-css', 'no-scripts*', 'dev-error-*']
 /** Suites of client runtime behaviour, which depends on neither the builder nor the Nitro environment. */
 const runtimeTests = ['nested-suspense', 'navigation-repaint', 'nuxt-time', 'preview', 'server-path-fallback', 'spa-preloader-*', 'suspense', 'ui-templates']
 /** Suites that write their fixture mid-test, so cannot share a fixture directory. */
-const singleProjectTests = ['dev-error-recovery', 'dev-error-compile']
+const singleProjectTests = ['dev-error-recovery', 'dev-error-compile', 'dev-error-warnings']
 /**
  * The chunk error runtime module is only applied with webpack, and vue-loader compiles vapor
  * SFCs as vdom components, which the webpack project already covers.

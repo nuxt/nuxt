@@ -106,8 +106,9 @@ describe('addVitePlugin', () => {
   it('should preserve plugin hooks, metadata and apply', async () => {
     const configureServer = vi.fn()
     const transform = vi.fn()
+    const devtools = { setup: vi.fn() }
     const plugins = await addPlugins(createMockNuxt(true), [
-      { name: 'a', apply: 'serve', configureServer, transform, devtools: { dock: 'yes' }, api: { hello: 'world' } } as VitePlugin,
+      { name: 'a', apply: 'serve', configureServer, transform, devtools, api: { hello: 'world' } } as VitePlugin,
     ])
 
     const plugin = plugins[0] as VitePlugin & { devtools?: unknown }
@@ -115,7 +116,7 @@ describe('addVitePlugin', () => {
     expect(plugin.apply).toBe('serve')
     expect(plugin.configureServer).toBe(configureServer)
     expect(plugin.transform).toBe(transform)
-    expect(plugin.devtools).toEqual({ dock: 'yes' })
+    expect(plugin.devtools).toBe(devtools)
     expect(plugin.api).toEqual({ hello: 'world' })
   })
 
@@ -198,10 +199,11 @@ describe('addVitePlugin', () => {
   it('should run server-level hooks and expose metadata on a real vite server', async () => {
     const nuxt = createMockNuxt(true)
     let mounted = false
+    const devtools = { setup: vi.fn() }
     const plugins = await addPlugins(nuxt, [
       {
         name: 'hub',
-        devtools: { dock: 'yes' },
+        devtools,
         configureServer (server) {
           mounted = true
           server.middlewares.use('/__devtools/', (_req, res) => res.end('{"ok":true}'))
@@ -220,7 +222,7 @@ describe('addVitePlugin', () => {
 
     expect(mounted).toBe(true)
     expect(body).toBe('{"ok":true}')
-    expect((server.config.plugins.find(p => p.name === 'hub') as any)?.devtools).toEqual({ dock: 'yes' })
+    expect((server.config.plugins.find(p => p.name === 'hub') as any)?.devtools).toBe(devtools)
     expect(names).not.toContain('build-only')
   })
 })

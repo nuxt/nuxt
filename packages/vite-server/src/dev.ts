@@ -7,7 +7,8 @@ import { staticMiddleware as createStaticMiddleware } from 'srvx/static'
 import { joinURL } from 'ufo'
 import type { Connect, ViteDevServer } from 'vite'
 
-import { listenForRemoteDevErrors, reportFileAccess } from './dev-errors.ts'
+import { errorChannelAccess, listenForRemoteDevErrors, reportFileAccess, serveErrorChannel, withDevBadge } from './dev-errors.ts'
+import type { DevErrorContext } from './runtime/dev-error.ts'
 import { resolveDocument } from './document.ts'
 import { publicDirs } from './output.ts'
 
@@ -48,31 +49,38 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
 
   const staticMiddleware = publicDirs(nuxt).map(dir => createStaticMiddleware({ dir }))
 
+  const errorChannel = joinURL(nuxt.options.app.baseURL, nuxt.options.devServer.errorChannel)
+
   // the same document the client build takes as its HTML input, minus the build
-  const shell = async (url: string) => {
+  const shell = async (url: string, request: Request) => {
     const html = await resolveDocument(nuxt)
-    return new Response(viteServer ? await viteServer.transformIndexHtml(url, html) : html, {
+    const transformed = viteServer ? await viteServer.transformIndexHtml(url, html) : html
+    return new Response(await withDevBadge(nuxt, transformed, errorChannel, request, viteServer?.config.html?.cspNonce), {
       headers: { 'content-type': 'text/html;charset=utf-8' },
     })
   }
-
-  const errorChannel = joinURL(nuxt.options.app.baseURL, nuxt.options.devServer.errorChannel)
 
   // loaded from the dev module graph, so an edit is picked up by the next render
   const render = async (request: Request) => {
     const module = await viteServer!.ssrLoadModule(serverEntry!) as {
       fetch: (request: Request) => Promise<Response>
-      setDevErrorContext?: (context: { server: ViteDevServer, cwd: string, channel: string, canRead: (file: string) => boolean }) => void
+      setDevErrorContext?: (context: DevErrorContext) => void
     }
     // set per render, since the module holding it is re-evaluated with the graph
-    module.setDevErrorContext?.({ server: viteServer!, cwd: nuxt.options.rootDir, channel: errorChannel, canRead: reportFileAccess(viteServer!) })
+    module.setDevErrorContext?.({
+      server: viteServer!,
+      cwd: nuxt.options.rootDir,
+      channel: errorChannel,
+      canRead: reportFileAccess(viteServer!),
+      access: errorChannelAccess(nuxt, viteServer!),
+    })
     return module.fetch(request)
   }
 
   let reportedFallthrough = false
   const respond = (request: Request, url: string) => {
     if (!serverEntry || !viteServer) {
-      return shell(url)
+      return shell(url, request)
     }
     if (!('runner' in viteServer.environments.ssr)) {
       if (!reportedFallthrough) {
@@ -113,14 +121,19 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
         if (serverEntry) {
           listenForRemoteDevErrors(nuxt, server, errorChannel)
         }
+        // with no server entry, nothing else serves the channel
+        const serveChannel = serverEntry ? undefined : serveErrorChannel(nuxt, server, errorChannel)
         // ahead of other plugins' post middlewares, which may respond to every request
         return () => {
           server.middlewares.use(async function nuxtDevMiddleware (req: Connect.IncomingMessage, res, next) {
             const viteUrl = req.url
             const url = req.url = req.originalUrl || req.url || '/'
             try {
+              if (serveChannel && await serveChannel(req, res)) {
+                return
+              }
               const request = new NodeRequest({ req, res })
-              const response = await serveStatic(request) ?? (isDocumentRequest(req) ? await shell(url) : undefined)
+              const response = await serveStatic(request) ?? (isDocumentRequest(req) ? await shell(url, request) : undefined)
               if (response) {
                 return await sendNodeResponse(res, response)
               }

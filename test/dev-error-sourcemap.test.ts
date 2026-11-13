@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { clearServerLogs, fetch, getServerLogs } from '@nuxt/test-utils/e2e'
-import type { ErrorReport, Frame } from 'my-bad'
+import type { Frame } from 'my-bad'
 
 import { isDev, legacyErrorRendering, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
 import { channelState, copyFixture, frameAt, renderErrorPage, reports, sourcePosition } from './dev-error-utils'
@@ -72,14 +72,36 @@ describe.skipIf(!runs)('dev ssr error page', () => {
     expect(res.headers.get('content-type')).toContain('application/json')
   })
 
-  it('publishes the error to the channel, and clears it once a page renders', async () => {
+  it('publishes the error to the channel, and keeps it open while another page renders', async () => {
     const { report } = await renderErrorPage()
     expect((await channelState()).current?.id).toBe(report.id)
 
     const ok = await fetch('/ok', { headers: { accept: 'text/html' } })
     expect(ok.status).toBe(200)
     expect(await ok.text()).toContain('rendered without error')
-    await expect.poll(async () => (await channelState()).current as ErrorReport | undefined, { timeout: 5000 }).toBeUndefined()
+    await new Promise(resolve => setTimeout(resolve, 500))
+    expect((await channelState()).current?.id).toBe(report.id)
+  })
+
+  it('stamps the badge with the nonce the page head carries', async () => {
+    const res = await fetch('/nonce', { headers: { accept: 'text/html' } })
+    const html = await res.text()
+    const badge = html.match(/<script[^>]*>(?=window\.__NUXT_DEV_ERROR__)|<script[^>]*badge\.js[^>]*>/g)
+
+    expect(badge).toHaveLength(2)
+    for (const tag of badge!) {
+      expect(tag).toContain('nonce="abc123"')
+    }
+  })
+
+  it('retires the error once its page streams without one', async () => {
+    const { report } = await renderErrorPage('/streamed')
+    expect((await channelState('/streamed')).current?.id).toBe(report.id)
+
+    const fixed = await fetch('/streamed', { headers: { 'accept': 'text/html', 'x-boom': 'fixed' } })
+    expect(fixed.headers.get('transfer-encoding')).toBe('chunked')
+    expect(await fixed.text()).toContain('streamed without error')
+    await expect.poll(async () => (await channelState('/streamed')).current?.id, { timeout: 5000 }).not.toBe(report.id)
   })
 })
 

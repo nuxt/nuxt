@@ -8,6 +8,7 @@ export const tempFixtures = {
   'dev-error-overlay': 'dev-error-sourcemap',
   'dev-error-recovery': 'dev-error-sourcemap',
   'dev-error-compile': 'dev-error-sourcemap',
+  'dev-error-warnings': 'dev-error-sourcemap',
 } as const
 
 export type TempFixture = keyof typeof tempFixtures

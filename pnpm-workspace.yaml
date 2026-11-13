@@ -47,6 +47,7 @@ minimumReleaseAgeExclude:
   - unimport
   - oxc-walker@1.1.1
   - vue-router@5.5.0
+  - vite-plugin-checker@1.0.0
   - vue
   - '@vue/*'
   # nitro prereleases and the unjs/h3 packages they pin are released in lockstep
@@ -100,7 +101,7 @@ catalogs:
     '@jridgewell/trace-mapping': ^0.3.31
     destr: ^2.0.5
     flru: ^1.0.2
-    my-bad: ^0.2.12
+    my-bad: ^1.2.0
     nitro: ^3.0.261103-rc
     srvx: ^1.0.8
     unstorage: ^2.0.0-beta.0
@@ -126,7 +127,7 @@ catalogs:
     # resolution is pinned via the vite override above
     vite: ^8.3.7
     vite-node: ^6.0.0
-    vite-plugin-checker: ^0.14.5
+    vite-plugin-checker: ^1.0.0
 
   # webpack/rspack pipeline
   webpack:
@@ -154,7 +155,7 @@ catalogs:
   build:
     '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.11
-    '@nuxt/cli': npm:@nuxt/cli-nightly@^4.0.0-2610090719-f2e6cde
+    '@nuxt/cli': ^4.1.0-alpha.0
     '@nuxt/devtools-onboard': ^4.1.0
     '@nuxt/telemetry': ^2.9.1
     '@vue/shared': ^3.5.45
@@ -230,6 +231,7 @@ catalogs:
     '@eslint/markdown': 8.0.3
     '@flakiness/playwright': 2.0.3
     '@flakiness/vitest': 1.12.0
+    '@nuxt/devtools': 4.1.0
     '@nuxt/eslint-config': 1.17.0
     '@nuxt/scripts': 1.3.12
     '@nuxt/test-utils': 4.4.0

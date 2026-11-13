@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ErrorReport } from 'my-bad'
-import { publishDevLog, publishDevProgress, publishErrorReport, setErrorChannelForwarding, useErrorChannel } from '../src/runtime/server/dev-error/index'
+import { createProblemSetPublisher, publishDevLog, publishDevProgress, publishErrorReport, resolveDevAllowedHosts, setErrorChannelAccess, setErrorChannelForwarding, useErrorChannel } from '../src/runtime/server/dev-error/index'
 
 const report = { id: 'abc', kind: 'error', name: 'Error', message: 'boom', frames: [], causes: [], sections: [], timestamp: 0 } as unknown as ErrorReport
 
@@ -42,5 +42,168 @@ describe('dev error channel without a working `BroadcastChannel`', () => {
     expect(channel.current).toBe(report)
     channel.clearError()
     expect(channel.current).toBeUndefined()
+  })
+})
+
+describe('dev error channel problem sets', () => {
+  afterEach(async () => {
+    const store = globalThis as Record<symbol, Promise<{ close: () => void }> | undefined>
+    ;(await store[Symbol.for('nuxt:dev:error-channel')])?.close()
+    delete store[Symbol.for('nuxt:dev:error-channel')]
+    setErrorChannelForwarding(() => false)
+  })
+
+  it('keeps the request a report another thread posts came from', async () => {
+    setErrorChannelForwarding(() => false)
+    const channel = await useErrorChannel()
+    const sender = new BroadcastChannel('nuxt:dev:error')
+    const current = async (requestId: string) => {
+      const response = await channel.fetchHandler(new Request(`http://localhost/__nuxt_dev__/error/events?requestId=${requestId}`), { trusted: false })
+      const reader = response!.body!.getReader()
+      const { value } = await reader.read()
+      await reader.cancel()
+      return /"current":\{"id":"([^"]+)"/.exec(new TextDecoder().decode(value))?.[1]
+    }
+
+    sender.postMessage({ type: 'nuxt:dev:error:report', report, requestId: 'page-a' })
+    await vi.waitFor(async () => expect(await current('page-a')).toBe(report.id))
+    expect(await current('page-b')).toBeUndefined()
+    sender.close()
+  })
+
+  it('retires an error another thread clears for one page, leaving it open for the others', async () => {
+    setErrorChannelForwarding(() => false)
+    const channel = await useErrorChannel()
+    const sender = new BroadcastChannel('nuxt:dev:error')
+    const current = async (requestId: string) => {
+      const response = await channel.fetchHandler(new Request(`http://localhost/__nuxt_dev__/error/events?requestId=${requestId}`), { trusted: false })
+      const reader = response!.body!.getReader()
+      const { value } = await reader.read()
+      await reader.cancel()
+      return /"current":\{"id":"([^"]+)"/.exec(new TextDecoder().decode(value))?.[1]
+    }
+
+    sender.postMessage({ type: 'nuxt:dev:error:report', report, requestId: 'page-a' })
+    sender.postMessage({ type: 'nuxt:dev:error:report', report, requestId: 'page-b' })
+    await vi.waitFor(async () => expect(await current('page-b')).toBe(report.id))
+    sender.postMessage({ type: 'nuxt:dev:error:clear', id: report.id, requestId: 'page-a' })
+
+    await vi.waitFor(async () => expect(await current('page-a')).toBeUndefined())
+    expect(await current('page-b')).toBe(report.id)
+    sender.close()
+  })
+
+  it('applies problem sets another thread posts to an owned channel', async () => {
+    setErrorChannelForwarding(() => false)
+    const channel = await useErrorChannel()
+    const sender = new BroadcastChannel('nuxt:dev:error')
+
+    const meta = { label: 'vue-tsc', status: 'idle', url: '/_nuxt/__checker/?embed', devtoolsDock: 'vite-plugin-checker' } as const
+    sender.postMessage({ type: 'nuxt:dev:error:problems', source: 'checker:vue-tsc', reports: [report], meta })
+    await vi.waitFor(() => expect(channel.problems).toEqual([{ source: 'checker:vue-tsc', ...meta, reports: [report] }]))
+
+    sender.postMessage({ type: 'nuxt:dev:error:problems:clear', source: 'checker:vue-tsc' })
+    await vi.waitFor(() => expect(channel.problems).toEqual([]))
+    sender.close()
+  })
+
+  it('tells pages of an owned channel that another thread registered a DevTools dock', async () => {
+    setErrorChannelForwarding(() => false)
+    const channel = await useErrorChannel()
+    const sender = new BroadcastChannel('nuxt:dev:error')
+    const hello = async () => {
+      const response = await channel.fetchHandler(new Request('http://localhost/__nuxt_dev__/error/events'), { trusted: true })
+      const reader = response!.body!.getReader()
+      const { value } = await reader.read()
+      await reader.cancel()
+      return new TextDecoder().decode(value)
+    }
+
+    expect(await hello()).not.toContain('"devtools":true')
+    sender.postMessage({ type: 'nuxt:dev:error:devtools', registered: true })
+    await vi.waitFor(async () => expect(await hello()).toContain('"devtools":true'))
+    sender.close()
+  })
+
+  it('forwards problem sets and DevTools registration to the owning dev server', async () => {
+    setErrorChannelForwarding(() => true)
+    const channel = await useErrorChannel()
+    const messages: unknown[] = []
+    const listener = new BroadcastChannel('nuxt:dev:error')
+    listener.onmessage = event => messages.push(event.data)
+
+    channel.setProblems('checker:vue-tsc', [report], { label: 'vue-tsc' })
+    channel.clearProblems('checker:vue-tsc')
+    channel.setDevTools(true)
+    await vi.waitFor(() => expect(messages).toEqual([
+      { type: 'nuxt:dev:error:problems', source: 'checker:vue-tsc', reports: [report], meta: { label: 'vue-tsc' } },
+      { type: 'nuxt:dev:error:problems:clear', source: 'checker:vue-tsc' },
+      { type: 'nuxt:dev:error:devtools', registered: true },
+    ]))
+    listener.close()
+  })
+})
+
+describe('problem set publisher', () => {
+  it('repeats its latest sets when the channel asks, and clears them when it closes', async () => {
+    const messages: unknown[] = []
+    const channel = new BroadcastChannel('nuxt:dev:error')
+    channel.onmessage = event => messages.push(event.data)
+    const publisher = createProblemSetPublisher()
+    const problems = (source: string) => ({ type: 'nuxt:dev:error:problems', source, reports: [report], meta: { label: source } })
+
+    publisher.set('nuxt:pages', [report], { label: 'nuxt:pages' })
+    publisher.set('nuxt:imports', [report], { label: 'nuxt:imports' })
+    publisher.clear('nuxt:imports')
+    publisher.clear('nuxt:imports')
+    await vi.waitFor(() => expect(messages).toHaveLength(3))
+    channel.postMessage({ type: 'nuxt:dev:error:sync' })
+    await vi.waitFor(() => expect(messages).toHaveLength(4))
+    expect(messages[3]).toEqual(problems('nuxt:pages'))
+
+    publisher.close()
+    publisher.set('nuxt:pages', [report], { label: 'nuxt:pages' })
+    await vi.waitFor(() => expect(messages).toHaveLength(5))
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(messages.slice(4)).toEqual([{ type: 'nuxt:dev:error:problems:clear', source: 'nuxt:pages' }])
+    channel.close()
+  })
+})
+
+describe('dev error access', () => {
+  afterEach(async () => {
+    const store = globalThis as Record<symbol, Promise<{ close: () => void }> | undefined>
+    ;(await store[Symbol.for('nuxt:dev:error-channel')])?.close()
+    delete store[Symbol.for('nuxt:dev:error-channel')]
+    setErrorChannelAccess({})
+  })
+
+  const options = (devServer: unknown = ['myapp.test']) => ({
+    devServer: { allowedHosts: devServer },
+    vite: { server: { allowedHosts: ['.example.com', 'myapp.test'] } },
+  }) as unknown as Parameters<typeof resolveDevAllowedHosts>[0]
+
+  it('allows the hosts the dev server allows', () => {
+    expect(resolveDevAllowedHosts(options())).toEqual(['myapp.test', '.example.com'])
+    expect(resolveDevAllowedHosts(options(true))).toBe(true)
+  })
+
+  it('allows the hosts the vite plugins added once the server is configured', () => {
+    expect(resolveDevAllowedHosts(options(), ['.example.com', 'tunnel.test'])).toEqual(['myapp.test', '.example.com', 'tunnel.test'])
+    expect(resolveDevAllowedHosts(options(), true)).toBe(true)
+  })
+
+  it('only answers the hosts it was allowed', async () => {
+    setErrorChannelForwarding(() => false)
+    setErrorChannelAccess({ allowedHosts: resolveDevAllowedHosts(options()) })
+    const channel = await useErrorChannel()
+    const status = async (host: string) => {
+      const response = await channel.fetchHandler(new Request(`http://${host}/__nuxt_dev__/error/events`), { trusted: true })
+      await response?.body?.cancel()
+      return response?.status
+    }
+
+    expect(await status('myapp.test')).toBe(200)
+    expect(await status('other.test')).toBe(403)
   })
 })

@@ -47,6 +47,12 @@ describe.skipIf(!runsDev)('pure vite dev server with the cloudflare vite plugin 
     expect(page.status).toBe(200)
   })
 
+  it('reports an error the worker raises to the request that raised it', async () => {
+    await fetch('/api/throw')
+    await expect.poll(async () => (await channelState('/api/throw')).current, { timeout: 5000 }).toMatchObject({ kind: 'error', message: 'boom from the worker' })
+    expect((await channelState('/about')).current).toBeUndefined()
+  })
+
   it('reports errors raised by the app the worker renders', async () => {
     const { status, report } = await renderErrorPage('/boom')
 
@@ -55,12 +61,17 @@ describe.skipIf(!runsDev)('pure vite dev server with the cloudflare vite plugin 
     expect(frameAt(report, 'app/pages/boom.vue')).toMatchObject({ type: 'app', line: 2 })
   })
 
-  it('retires the report once the worker renders a page', async () => {
-    const { report } = await renderErrorPage('/boom')
-    expect((await channelState('/boom')).current?.id).toBe(report.id)
+  it('keeps the report open while another page renders, and retires it once the worker renders its page', async () => {
+    const { report } = await renderErrorPage('/flaky')
+    expect((await channelState('/flaky')).current?.id).toBe(report.id)
 
     await fetch('/about', { headers: { accept: 'text/html' } })
-    await expect.poll(async () => (await channelState('/boom')).current, { timeout: 5000 }).toBeUndefined()
+    await new Promise(resolve => setTimeout(resolve, 500))
+    expect((await channelState('/flaky')).current?.id).toBe(report.id)
+
+    const fixed = await fetch('/flaky', { headers: { 'accept': 'text/html', 'x-boom': 'fixed' } })
+    expect(fixed.status).toBe(200)
+    await expect.poll(async () => (await channelState('/flaky')).current?.id, { timeout: 5000 }).not.toBe(report.id)
   })
 })
 
