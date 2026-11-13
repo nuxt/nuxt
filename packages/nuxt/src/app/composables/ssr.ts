@@ -29,12 +29,12 @@ export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]): Readonly<Record<string, string>> {
   if (import.meta.client) { return {} }
   const event = useRequestEvent()
-  const _headers = event ? Object.fromEntries(event.req.headers.entries()) : {}
-  if (!include || !event) { return _headers }
+  if (!event) { return {} }
+  if (!include) { return Object.fromEntries(event.req.headers.entries()) }
   const headers = Object.create(null)
   for (const _key of include) {
     const key = _key.toLowerCase()
-    const header = _headers[key]
+    const header = event.req.headers.get(key)
     if (header) {
       headers[key] = header
     }
