@@ -185,7 +185,21 @@ export default defineResolvers({
      */
     templateDiagnostics: true,
 
+    /** @deprecated use `<NuxtErrorBoundary retry-on-client>` instead */
     clientFallback: false,
+    /**
+     * Allow `<NuxtErrorBoundary>` to catch errors thrown while server-rendering its default slot.
+     *
+     * When enabled, the boundary renders its `#error` slot on the server (with the caught error
+     * serialised into the payload so the client hydrates in the same state) instead of the error
+     * escaping to the top-level `error.vue` page. When disabled, the boundary only catches
+     * client-side errors, and a server-rendered page whose content throws still shows the error page.
+     */
+    ssrErrorBoundary: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
     crossOriginPrefetch: false,
     deferPrefetchHints: true,
 

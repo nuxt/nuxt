@@ -15,7 +15,8 @@ type BuiltinComponent = [name: string, file: string, options?: Partial<AddCompon
 
 const builtinComponents: BuiltinComponent[] = [
   ['NuxtLayout', 'nuxt-layout'],
-  ['NuxtErrorBoundary', 'nuxt-error-boundary'],
+  ['NuxtErrorBoundary', 'nuxt-error-boundary.vue', { _raw: true, mode: 'client' }],
+  ['NuxtErrorBoundary', 'nuxt-error-boundary.server', { _raw: true, mode: 'server', declarationPath: 'nuxt-error-boundary.vue' }],
   ['ClientOnly', 'client-only'],
   ['DevOnly', 'dev-only'],
   ['ServerPlaceholder', 'server-placeholder'],
@@ -34,6 +35,7 @@ function addBuiltinComponent (nuxt: Nuxt, [name, file, options]: BuiltinComponen
     filePath: resolve(nuxt.options.appDir, 'components', file),
     ...name in BUILTIN_COMPONENT_META && { meta: getBuiltinComponentMeta(name as BuiltinComponentName) },
     ...options,
+    ...options?.declarationPath && { declarationPath: resolve(nuxt.options.appDir, 'components', options.declarationPath) },
   })
 }
 
@@ -60,7 +62,9 @@ export function addBuiltinsBeforeModules (nuxt: Nuxt) {
     addBuiltinComponent(nuxt, component)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (nuxt.options.experimental.clientFallback) {
+    configDiagnostics.NUXT_B5035()
     for (const mode of ['client', 'server'] as const) {
       addBuiltinComponent(nuxt, ['NuxtClientFallback', `client-fallback.${mode}`, { _raw: true, mode }])
     }

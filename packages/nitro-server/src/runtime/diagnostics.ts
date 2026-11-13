@@ -60,8 +60,8 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_E8016: {
-      why: (p: { received: string }) => `\`defineHandler\` from \`nuxt/server\` accepts a handler function, but received ${p.received}. The object form (\`{ handler, middleware, meta }\`) is specific to h3.`,
-      fix: 'Pass the handler function directly, or import `defineHandler` from `nitro/h3` in this file to use the object form. h3 v2 does not run h3 v1 `onRequest` or `onBeforeResponse` hooks, so move them into `middleware` or the handler first.',
+      why: (p: { received: string }) => `\`defineHandler\` from \`nuxt/server\` accepts a handler function, but received ${p.received}. The object form is specific to h3.`,
+      fix: 'Pass the handler function directly, or import `defineHandler` from `nitro/h3` in this file to use the object form (`{ handler, middleware, meta }`). h3 v2 does not run h3 v1 `onRequest` or `onBeforeResponse` hooks, so move them into `middleware` or the handler first.',
       docs: false,
     },
   },

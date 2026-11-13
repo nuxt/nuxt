@@ -3,7 +3,6 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent } from 'vue'
 import { escapeHtml } from '@vue/shared'
 
 const props = defineProps({
@@ -40,9 +39,5 @@ const statusText = _error.statusText ?? (is404 ? 'Page Not Found' : 'Internal Se
 const description = _error.message || _error.toString()
 const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktrace}</pre>` : undefined
 
-// TODO: Investigate side-effect issue with imports
-const _Error404 = defineAsyncComponent(() => import('./error-404.vue'))
-const _Error = defineAsyncComponent(() => import('./error-500.vue'))
-
-const ErrorTemplate = is404 ? _Error404 : _Error
+const ErrorTemplate = (is404 ? await import('./error-404.vue') : await import('./error-500.vue')).default
 </script>

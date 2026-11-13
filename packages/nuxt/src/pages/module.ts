@@ -14,7 +14,7 @@ import { rou3PatternToURLPattern } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, resolveRoutePaths } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { dynamicPageMetaCache, getDynamicPageMeta, resolvePageMetaExtractionKeys, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
-import { collectRou3PagePatterns, collectRou3PageSources, createPageLayoutResolver, toRou3Patterns } from './route-patterns.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, createPageLayoutResolver, toRou3RoutePatterns } from './route-patterns.ts'
 import { findRoutesModifyingRouterOptions, genRouterOptions, resolveRouterOptions } from './router-options.ts'
 import { createInlineRouteRulesUpdater, removePagesRules } from './route-rules.ts'
 import { markPagesForRouteRules } from './route-coverage.ts'
@@ -30,6 +30,8 @@ import { checkPeerVersion } from '../core/peer-version.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import type { NitroInstance, NitroInstanceOptions, NuxtConfig, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
+
+const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 const ROOT_CATCHALL_PATTERN_RE = /^\/\*\*(?::[\w-]+)?$/
@@ -236,6 +238,7 @@ export default defineNuxtModule({
         dependsOn: [],
         getContents: () => [
           'export { useRoute } from \'#app/composables/router\'',
+          `export { parseQuery, stringifyQuery } from ${JSON.stringify(ufoPath)}`,
           'export const START_LOCATION = Symbol(\'router:start-location\')',
         ].join('\n'),
       })
@@ -439,11 +442,11 @@ export default defineNuxtModule({
     // can scope their speculation rules to same-origin *page* navigations, which
     // are safe to GET, instead of a blanket rule that could prefetch/prerender
     // non-idempotent server routes (`~/server/routes/*`). A catch-all page
-    // (`[...slug]`) widens this back to a blanket `*`. These stay named
+    // (`[...slug]`) widens this back to every path. These stay named
     // (`/products/:id`) rather than using the collapsed early-404 patterns.
     nuxt.hook('nitro:build:before', (nitro) => {
       const urlPatterns = new Set<string>()
-      for (const route of toRou3Patterns(nuxt.apps.default?.pages || [])) {
+      for (const route of toRou3RoutePatterns(nuxt.apps.default?.pages || [], { skipCollapsed: true })) {
         urlPatterns.add(rou3PatternToURLPattern(route).pattern)
       }
       ;(nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns = [...urlPatterns]
@@ -532,7 +535,7 @@ export default defineNuxtModule({
 
       nitro.options.ssrRoutes = [
         ...nitro.options.ssrRoutes || [],
-        ...toRou3Patterns(nuxt.apps.default?.pages || []),
+        ...toRou3RoutePatterns(nuxt.apps.default?.pages || []),
       ]
 
       nitro.options.prerender.routes ||= []
@@ -679,7 +682,13 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'pages.mjs',
       dependsOn: [],
-      getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\'',
+      getContents: () => [
+        'import routerOptions from \'#build/router.options.mjs\'',
+        'import { parseQuery as _parseQuery, stringifyQuery as _stringifyQuery } from \'vue-router\'',
+        'export { START_LOCATION, useRoute } from \'vue-router\'',
+        'export const parseQuery = search => (routerOptions.parseQuery || _parseQuery)(search[0] === \'?\' ? search.slice(1) : search)',
+        'export const stringifyQuery = query => (routerOptions.stringifyQuery || _stringifyQuery)(query)',
+      ].join('\n'),
     })
 
     nuxt.options.vite.resolve ||= {}

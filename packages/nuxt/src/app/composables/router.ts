@@ -1,7 +1,7 @@
 import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { decodePath, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { decodePath, joinURL, parseURL, stringifyParsedURL } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
@@ -14,6 +14,8 @@ import { createError, showError } from './error'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
+
+import { parseQuery, stringifyQuery } from '#build/pages'
 
 /**
  * Augmented by Nuxt with the router methods that `experimental.staticRoutes` or
@@ -268,7 +270,7 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
   if (import.meta.server) {
     if (nuxtApp.ssrContext) {
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
-      const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
+      let location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
       const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
@@ -294,6 +296,7 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
         if (typeof to === 'string' && toPath.includes('?')) {
           const target = router.resolve(to)
           expectedPath = router.resolve({ path: target.path, query: target.query, hash: target.hash }).fullPath || '/'
+          location = joinURL(useRuntimeConfig().app.baseURL, expectedPath)
         }
         router.afterEach(final => final.fullPath === expectedPath ? redirect(false) : undefined)
         return to
@@ -431,7 +434,10 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts | false>(layout: 
  * @internal
  */
 export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>): string {
-  return withQuery(to.path || '', to.query || {}) + (to.hash || '')
+  const parsed = parseURL(to.path || '')
+  const search = stringifyQuery({ ...(parsed.search && parseQuery(parsed.search)), ...to.query })
+  parsed.search = search && '?' + search
+  return stringifyParsedURL(parsed) + (to.hash || '')
 }
 
 /**

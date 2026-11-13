@@ -1,7 +1,7 @@
 import { HookableCore } from 'hookable'
 import type { NuxtServerHooks, RequestEvent } from 'nuxt/schema'
 
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '../app/types'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '../app/types'
 
 /**
  * The return type of a server hook handler.
@@ -20,6 +20,13 @@ export interface NuxtServerRendererHooks {
   'render:html': (context: NuxtRenderHTMLContext, extra: { event: RequestEvent, streaming?: boolean }) => ServerHookResult
   'render:html:chunk': (context: NuxtRenderChunkContext, extra: { event: RequestEvent }) => ServerHookResult
   'render:html:close': (context: NuxtRenderCloseContext, extra: { event: RequestEvent }) => ServerHookResult
+  /**
+   * Called with the serialised document of a response that is not streamed, once every
+   * `render:html` handler has run.
+   *
+   * @since 5.0.0
+   */
+  'render:document': (context: NuxtRenderDocumentContext, extra: { event: RequestEvent }) => ServerHookResult
   'render:island': (response: NuxtIslandResponse, extra: { event: RequestEvent, islandContext: NuxtIslandContext }) => ServerHookResult
 }
 

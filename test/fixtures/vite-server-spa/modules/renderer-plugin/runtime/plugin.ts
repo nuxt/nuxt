@@ -7,4 +7,8 @@ export default (({ hooks }) => {
     html.head.push(`<meta name="renderer-plugin-config" content="${useRuntimeConfig().public.greeting}">`)
     html.bodyAttrs.push('data-renderer-plugin')
   })
+
+  hooks.hook('render:document', (document) => {
+    document.html = document.html.replace(/<\/body>/i, '<!-- renderer-document --></body>')
+  })
 }) satisfies RendererPlugin

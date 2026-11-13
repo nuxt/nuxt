@@ -209,6 +209,18 @@ describe('renderer plugins', () => {
     expect(res.status).toBe(404)
     expect(await res.text()).toContain('<meta name="renderer-plugin">')
   })
+
+  it.skipIf(!oncePerServer)('should call `render:document` once every `render:html` handler has run', async () => {
+    const html = await $fetch<string>('/?render-document')
+    expect(html).toContain('<meta name="render-document" content="before after user"></head>')
+    expect(html).toContain('<p class="before-marker"></p><p class="after-marker"></p><p class="user-marker"></p>')
+  })
+
+  it.skipIf(!errorProjects || legacyErrorRendering)('should call `render:document` for the error page', async () => {
+    const res = await fetch('/error/not-found?render-document', { headers: { accept: 'text/html' } })
+    expect(res.status).toBe(404)
+    expect(await res.text()).toContain('<meta name="render-document" content="before after user"></head>')
+  })
 })
 
 describe('route rules', () => {
@@ -856,6 +868,19 @@ describe('pages', () => {
     await page.close()
   })
 
+  it.skipIf(!oncePerManifest)('refetches on watch rather than replaying extracted payload data', async () => {
+    const { page } = await renderPage('/prerender/test')
+
+    await page.evaluate(() => (window.useNuxtApp!() as unknown as { $router: { push: (to: string) => void } }).$router.push('/prerender/watch-cache'))
+    await page.waitForFunction(() => document.querySelector('#value')?.textContent?.trim() === 'n=0')
+
+    await page.click('#bump')
+    await page.waitForFunction(() => document.querySelector('#value')?.textContent?.trim() !== 'n=0', undefined, { timeout: 5000 })
+    expect((await page.innerText('#value')).trim()).toBe('n=1')
+
+    await page.close()
+  })
+
   it.skipIf(!oncePerManifest)('enables preview mode on prerendered pages', async () => {
     const { page } = await renderPage('/prerender/preview-mode?preview=true&token=hehe')
 
@@ -1247,8 +1272,9 @@ describe.skipIf(!once)('navigate', () => {
     ['/navigate-to-error', 302, '/setup-should-not-run'],
     ['/redirect-with-encode', 302, encodeURI('/cœur') + '?redirected=' + encodeURIComponent('https://google.com')],
     ['/navigate-to-redirect', 307, '/'],
-    ['/navigate-to-encoded-query', 302, '/?callback=%2Fother'],
-    ['/navigate-to-encoded-space', 302, '/?q=a%20b'],
+    ['/navigate-to-encoded-query', 302, '/?callback=/other'],
+    ['/navigate-to-encoded-query-code', 307, '/?callback=/other'],
+    ['/navigate-to-encoded-space', 302, '/?q=a+b'],
     ['/navigate-to-external/', 302, 'https://example.com/?redirect=false#test'],
     ['/navigate-to-api', 302, '/api/test'],
   ])('redirects %s with %i to %s', async (path, status, location) => {
@@ -1543,6 +1569,57 @@ describe.skipIf(!once)('error boundaries', () => {
     await page.getByText('This is the error rendering').first().waitFor()
     expect(pageErrors).toEqual([])
     expect(consoleLogs.filter(log => log.type === 'error' || log.type === 'warning')).toEqual([])
+    await page.close()
+  })
+
+  it('should catch server-side errors within error boundaries', async () => {
+    const res = await fetch('/error/error-boundary-ssr')
+    expect(res.status).toBe(200)
+    const html = await res.text()
+
+    expect(html).toContain('Content outside the boundary is still rendered')
+    expect(html).not.toContain('nuxt-error-page')
+
+    expect(html).toContain('sync boundary caught: ')
+    expect(html).not.toContain('ssr-boundary-sync-default')
+    expect(html).toContain('async boundary caught: ')
+    expect(html).not.toContain('ssr-boundary-async-default')
+    expect(html).toContain('nested async boundary caught an error')
+    expect(html).not.toContain('break-in-async-setup-wrapper')
+
+    expect(html).toContain('nuxt error caught: 418 I am a teapot {&quot;flavour&quot;:&quot;earl grey&quot;}')
+
+    expect(html).toContain('retry boundary caught an error')
+    expect(html).not.toContain('ssr-boundary-retry-default')
+    if (isDev) {
+      expect(html).toContain('retry-fails boundary caught: thrown on server')
+    } else {
+      expect(html).toContain('retry-fails boundary caught: Internal Server Error')
+      expect(html).not.toContain('thrown on server')
+    }
+
+    expect(html).toContain('Sugar Counter 12 x 2 = 24')
+    expect(html).not.toContain('this should never render')
+
+    const { page, pageErrors, consoleLogs } = await renderPage('/error/error-boundary-ssr')
+
+    expect(await page.locator('.ssr-boundary-sync-error').count()).toBe(1)
+    expect(await page.locator('.ssr-boundary-nuxt-error').innerText()).toContain('418 I am a teapot {"flavour":"earl grey"}')
+
+    await page.locator('.ssr-boundary-retry-default').waitFor()
+    expect(await page.locator('.ssr-boundary-retry-error').count()).toBe(0)
+    await page.getByText('retry-fails boundary caught: thrown on client').waitFor()
+
+    await page.locator('#clear-sync-error').click()
+    await page.locator('.ssr-boundary-sync-default').waitFor()
+    expect(await page.locator('.ssr-boundary-sync-error').count()).toBe(0)
+
+    await page.locator('#ssr-boundary-counter button').click()
+    expect(await page.locator('#ssr-boundary-counter').innerText()).toContain('Sugar Counter 13 x 2 = 26')
+
+    expect(pageErrors).toEqual([])
+    expect(consoleLogs.filter(l => l.type === 'error').map(l => l.text)).toEqual([])
+    expect(consoleLogs.filter(l => l.type === 'warning' && l.text.includes('Hydration')).map(l => l.text)).toEqual([])
     await page.close()
   })
 })

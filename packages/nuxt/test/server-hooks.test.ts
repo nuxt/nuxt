@@ -2,7 +2,7 @@ import { describe, expect, expectTypeOf, it, vi } from 'vitest'
 
 import { useServerHooks } from '../src/server/index'
 import { claimServerHooks } from '../src/server/hooks'
-import type { NuxtRenderHTMLContext } from '../src/app/types'
+import type { NuxtRenderDocumentContext, NuxtRenderHTMLContext } from '../src/app/types'
 import type { RequestEvent, ServerHookResult } from '../src/server/index'
 
 declare module 'nuxt/schema' {
@@ -26,6 +26,7 @@ describe('`useServerHooks` without a server builder', () => {
     const hooks = useServerHooks()
     expectTypeOf(hooks.hook<'test:hook'>).parameter(1).parameters.toEqualTypeOf<[{ value: number }, RequestEvent]>()
     expectTypeOf(hooks.hook<'render:html'>).parameter(1).parameter(0).toEqualTypeOf<NuxtRenderHTMLContext>()
+    expectTypeOf(hooks.hook<'render:document'>).parameter(1).parameters.toEqualTypeOf<[NuxtRenderDocumentContext, { event: RequestEvent }]>()
     // @ts-expect-error an undeclared hook
     hooks.hook('test:unknown', () => {})
   })

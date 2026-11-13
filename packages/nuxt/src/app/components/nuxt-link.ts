@@ -17,7 +17,7 @@ import { computed, createBlock, createElementBlock, createVNode, defineComponent
 import { camelize, escapeHtml } from '@vue/shared'
 import type { ComponentSlots } from 'vue-component-type-helpers'
 import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteLocationResolved, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
-import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { prefetchRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
@@ -32,6 +32,7 @@ import { navigationDiagnostics } from '../diagnostics/navigation'
 import { componentIslands, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
+import { parseQuery } from '#build/pages'
 import { isPlainAbsolutePath, mayMatchCurrentRoute } from './route-match'
 import { PageRouteSymbol } from './injections'
 import type { NuxtLinkOptions } from '../types'
@@ -645,7 +646,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             return {
               path: url.pathname,
               fullPath: url.pathname,
-              get query () { return parseQuery(url.search) },
+              get query () { return url.search ? parseQuery(url.search) : {} },
               hash: url.hash,
               params: {},
               name: undefined,

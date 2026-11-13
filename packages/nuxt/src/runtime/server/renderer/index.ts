@@ -6,7 +6,7 @@ import type { Link } from '@unhead/vue/types'
 import { SSR_ERROR_PARAM, decodeSSRError, stringifyErrorData } from './error'
 import type { SSRError } from './error'
 
-import type { NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
+import type { NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '../../../app/internal/tracing'
 
 import { renderPayloadResponse } from './payload'
@@ -325,7 +325,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     excludeHrefs.add(rendererContext.buildAssetsURL(resource.file))
   }
   for (const id of ssrContext['~neverHydratedModules'] ?? []) {
-    const file = rendererContext.manifest?.[id]?.file
+    const file = (rendererContext.manifest ?? rendererContext.precomputed?.modules)?.[id]?.file
     if (file) {
       excludeHrefs.add(rendererContext.buildAssetsURL(file))
     }
@@ -382,15 +382,28 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   const renderHtmlResult = hooks.callHook('render:html', htmlContext, { event: hookEvent })
   if (renderHtmlResult instanceof Promise) { await renderHtmlResult }
 
+  // the document is only serialised here if a listener reads it
+  let documentHtml: string | undefined
+  let replaced = false
+  const documentContext: NuxtRenderDocumentContext = {
+    get html () { return documentHtml ??= renderHTMLDocument(htmlContext) },
+    set html (value) {
+      documentHtml = value
+      replaced = true
+    },
+  }
+  const renderDocumentResult = hooks.callHook('render:document', documentContext, { event: hookEvent })
+  if (renderDocumentResult instanceof Promise) { await renderDocumentResult }
+
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
   event.res.headers.set('x-powered-by', 'Nuxt')
 
   // the app markup is sent as rendered chunks unless a listener changed it
   const chunks = ssrContext['~htmlChunks']
-  if (runtime.createDocumentResponse && chunks && htmlContext.body.length === 2 && htmlContext.body[0] === renderedHtml) {
+  if (!replaced && runtime.createDocumentResponse && chunks && htmlContext.body.length === 2 && htmlContext.body[0] === renderedHtml) {
     return runtime.createDocumentResponse(renderHTMLDocumentChunks(htmlContext, chunks), event.res)
   }
-  return runtime.createResponse(renderHTMLDocument(htmlContext), event.res)
+  return runtime.createResponse(documentContext.html, event.res)
 }
 
 function buildPayloadURL (ssrContext: NuxtSSRContext, cached: boolean): string {
