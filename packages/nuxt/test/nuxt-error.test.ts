@@ -77,6 +77,12 @@ describe('NuxtError / h3 interop', () => {
     expect(createError({ status: 500, unhandled: true, fatal: false }).fatal).toBe(false)
   })
 
+  it('should take `fatal` from the cause unless given explicitly', () => {
+    expect(createError({ cause: createError({ status: 500, fatal: true }) }).fatal).toBe(true)
+    expect(createError({ fatal: false, cause: createError({ status: 500, fatal: true }) }).fatal).toBe(false)
+    expect(createError({ cause: createError({ status: 500 }) }).fatal).toBe(false)
+  })
+
   it('should keep the original error as `cause`', () => {
     const cause = new Error('original')
     const error = createError(cause)
