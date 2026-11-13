@@ -58,5 +58,7 @@ declare module '#imports'
 declare module '#app-manifest'
 declare module '#islands-v2-manifest' {
   export const importFn: import('./app/components/islands-v2/import-fn').ImportFn
+  /** Server only: client path of each `v-load-client` chunk for remote hosts, by chunk ref. */
+  export const chunkPaths: Record<string, string>
 }
 declare module '#internal/*'

@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolveAlias } from '@nuxt/kit'
-import { componentDiagnostics } from '@nuxt/kit/internal'
+import { componentDiagnostics, isIslandsV2 } from '@nuxt/kit/internal'
 
 import { resolveModulePath } from 'exsolve'
 import picomatch from 'picomatch'
@@ -347,8 +347,8 @@ export default defineNuxtModule<ComponentsOptions>({
     }
 
     if (nuxt.options.experimental.componentIslands) {
-      const islandsV2 = nuxt.options.experimental.componentIslands === 'v2'
-      const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
+      const islandsV2 = isIslandsV2(nuxt.options.experimental.componentIslands)
+      const selectiveClient = !islandsV2 && typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
 
       addVitePlugin({
         name: 'nuxt-server-component-hmr',

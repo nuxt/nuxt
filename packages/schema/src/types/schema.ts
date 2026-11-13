@@ -1335,10 +1335,20 @@ export interface ConfigSchema {
      * By default it is set to 'auto', which means it will be enabled only when there are islands, server components or server pages in your app.
      *
      * Set it to 'v2' to use the experimental islands v2 implementation, which renders islands as HTML with nonce-bound markers around the `v-load-client` components it hydrates.
+     * Use `{ version: 'v2', remoteIsland: true }` to also enable remote islands with it.
      *
      * @default 'auto'
      */
-    componentIslands: true | 'auto' | 'local' | 'local+remote' | 'v2' | Partial<{ remoteIsland: boolean, selectiveClient: boolean | 'deep' }> | false
+    componentIslands: true | 'auto' | 'local' | 'local+remote' | 'v2' | Partial<{
+      remoteIsland: boolean
+      selectiveClient: boolean | 'deep'
+      /**
+       * Islands implementation to use; `selectiveClient` has no effect with v2.
+       *
+       * @remarks `'v2'` behaves as `componentIslands: 'v2'`
+       */
+      version: 'v2'
+    }> | false
 
     /**
      * Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories.

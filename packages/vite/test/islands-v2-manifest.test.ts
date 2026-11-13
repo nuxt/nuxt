@@ -41,5 +41,62 @@ describe('islandsV2ManifestPlugin', () => {
     const code = load('server', [`${root}/components/Foo.vue`])
     expect(code).not.toContain('import(')
     expect(code).toContain('export function importFn')
+    expect(code).toContain('export const chunkPaths = {}')
+  })
+})
+
+describe('islandsV2ManifestPlugin with remote islands', () => {
+  const inRoot = `${root}/components/Foo.vue`
+  const outside = resolve(root, '../layers/base/app/components/Bar.vue')
+
+  function setup (dev: boolean) {
+    const registry: IslandsV2Registry = {
+      targets: new Map([inRoot, outside].map(target => [target, toChunkRef(target, root)])),
+      components: new Map(),
+    }
+    return islandsV2ManifestPlugin(registry, { remote: { dev, buildAssetsDir: '/_nuxt/' } })
+  }
+
+  function call<T> (plugin: ReturnType<typeof setup>, hook: 'buildStart' | 'generateBundle' | 'load', ctx: object, ...args: unknown[]): T {
+    const value = plugin[hook] as ((...args: unknown[]) => T) | { handler: (...args: unknown[]) => T }
+    return (typeof value === 'function' ? value : value.handler).apply(ctx, args)
+  }
+
+  it('serves the dev server module paths, relative to the base URL', () => {
+    const code = call<string>(setup(true), 'load', { environment: { config: { consumer: 'server', root } } }, MANIFEST_ID)
+    expect(code).toContain('"/components/Foo.vue": "/_nuxt/components/Foo.vue"')
+    expect(code).toContain(`"../layers/base/app/components/Bar.vue": "/_nuxt/@fs/${outside.replace(/^\//, '')}"`)
+  })
+
+  it('emits each target as its own client chunk and exports its built path to the server', () => {
+    const plugin = setup(false)
+    const emitted: Array<{ id: string, preserveSignature: string }> = []
+    const client = {
+      environment: { config: { consumer: 'client', root } },
+      emitFile: (file: { id: string, preserveSignature: string }) => { emitted.push(file); return `ref-${emitted.length}` },
+      getFileName: (ref: string) => `_nuxt/${ref}.js`,
+    }
+    call(plugin, 'buildStart', client)
+    expect(emitted).toEqual([
+      expect.objectContaining({ id: inRoot, preserveSignature: 'strict' }),
+      expect.objectContaining({ id: outside, preserveSignature: 'strict' }),
+    ])
+
+    const bundle = {
+      'a': { type: 'chunk', fileName: '_nuxt/ref-1.js', isEntry: true },
+      'entry': { type: 'chunk', fileName: '_nuxt/entry.js', isEntry: true },
+    }
+    call(plugin, 'generateBundle', client, {}, bundle)
+    expect(bundle.a.isEntry).toBe(false)
+    expect(bundle.entry.isEntry).toBe(true)
+
+    const code = call<string>(plugin, 'load', { environment: { config: { consumer: 'server', root } } }, MANIFEST_ID)
+    expect(code).toContain('"/components/Foo.vue": "/_nuxt/ref-1.js"')
+    expect(code).toContain('"../layers/base/app/components/Bar.vue": "/_nuxt/ref-2.js"')
+  })
+
+  it('emits nothing for server environments', () => {
+    const emitFile = () => { throw new Error('unexpected emit') }
+    expect(() => call(setup(false), 'buildStart', { environment: { config: { consumer: 'server', root } }, emitFile })).not.toThrow()
   })
 })

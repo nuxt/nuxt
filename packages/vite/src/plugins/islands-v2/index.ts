@@ -3,6 +3,7 @@ import type { Plugin } from 'vite'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { getLayerDirectories, runWithNuxtContext } from '@nuxt/kit'
+import { isIslandsV2 } from '@nuxt/kit/internal'
 import { createSsrLoadClientTransform } from './compiler/ssr-load-client.ts'
 import { ssrSlotFallbackTransform } from './compiler/ssr-slot-fallback.ts'
 import { type IslandsV2Registry, islandsV2ManifestPlugin } from './manifest.ts'
@@ -13,7 +14,8 @@ const SSR_RUNTIME_MODULE = '#app/components/islands-v2/ssr-runtime'
 const REGISTRIES = new WeakMap<Nuxt, IslandsV2Registry>()
 
 export function IslandsV2Plugins (nuxt: Nuxt): Plugin[] {
-  if (nuxt.options.experimental.componentIslands !== 'v2') {
+  const islands = nuxt.options.experimental.componentIslands
+  if (!isIslandsV2(islands)) {
     return []
   }
 
@@ -36,12 +38,14 @@ export function IslandsV2Plugins (nuxt: Nuxt): Plugin[] {
       collectFiles: () => runWithNuxtContext(nuxt, () => collectSfcFiles(dirs)),
       additionalImports: () => componentImports,
     }),
-    islandsV2ManifestPlugin(registryOf(nuxt)),
+    islandsV2ManifestPlugin(registryOf(nuxt), {
+      remote: typeof islands === 'object' && islands.remoteIsland ? { dev: nuxt.options.dev, buildAssetsDir: nuxt.options.app.buildAssetsDir } : undefined,
+    }),
   ]
 }
 
 export function withIslandsV2NodeTransform (nuxt: Nuxt, options: VuePluginOptions = {}): VuePluginOptions {
-  if (nuxt.options.experimental.componentIslands !== 'v2') {
+  if (!isIslandsV2(nuxt.options.experimental.componentIslands)) {
     return options
   }
   const registry = registryOf(nuxt)

@@ -1,20 +1,24 @@
 import type { DefineSetupFnComponent, PropType, SlotsType, VNode } from 'vue'
 import { defineComponent, getCurrentInstance, shallowRef, toRaw, useId, watch } from 'vue'
-import type { NuxtIslandResponse } from '../types'
-import { useNuxtApp } from '../nuxt'
+import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
+import { type NuxtApp, useNuxtApp } from '../nuxt'
 import { createError, isNuxtError } from '../composables/error'
 import { useIslandFetch } from './island-fetch'
 import { withIslandScopeId } from './utils'
-import { domToVNode, htmlToVNode, outerHTMLOf } from './islands-v2/dom-to-vnode'
-import { type MarkerSet, createMarkerSet, isMarkerNonce } from './islands-v2/shared'
+import { type RemoteIsland, domToVNode, htmlToVNode, outerHTMLOf } from './islands-v2/dom-to-vnode'
+import { type MarkerSet, createMarkerSet, readChunkPaths, readMarkerNonces, rebindMarkerNonces, rebindMarkers } from './islands-v2/shared'
 import { renderIslandSlots } from './islands-v2/render-slots'
 
+import { remoteComponentIslands } from '#build/nuxt.config.mjs'
+
 interface NuxtIslandProps {
-  name: string
+  name: NuxtAppLiterals['islandName']
   lazy?: boolean
   props?: Record<string, any>
   context?: Record<string, any>
   scopeId?: string | undefined | null
+  source?: string
+  dangerouslyLoadClientComponents?: boolean
 }
 
 type NuxtIslandEmits = {
@@ -26,12 +30,12 @@ type NuxtIslandSlots = SlotsType<{
   [name: string]: ((props: any) => VNode[]) | undefined
 }>
 
-interface MarkerNonces {
-  nonce: string
-  nonces?: string[]
-}
-
 const ERROR_PAYLOAD_PREFIX = 'nuxt-island-error:'
+/**
+ * Fresh marker nonce of each response nonce, per server render and island key: keying by the island
+ * keeps a response that claims another island's public nonce from getting that island's fresh one.
+ */
+const REBOUND_NONCES = new WeakMap<NuxtApp, Map<string, Map<string, string>>>()
 
 const NuxtIsland = defineComponent({
   name: 'NuxtIsland',
@@ -54,6 +58,14 @@ const NuxtIsland = defineComponent({
       type: String as PropType<string | undefined | null>,
       default: () => undefined,
     },
+    source: {
+      type: String,
+      default: () => undefined,
+    },
+    dangerouslyLoadClientComponents: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['error'],
   async setup (props, { expose, emit, slots }) {
@@ -68,28 +80,41 @@ const NuxtIsland = defineComponent({
       props,
       uid: id,
       emit,
-      toPayload: ({ html, ...data }) => {
+      toPayload: ({ html, chunks, ...rest }) => {
+        // Only a remote island loading its client components reads the chunk paths.
+        const data: Partial<NuxtIslandResponse> = chunks && remoteOf(props, { chunks })?.chunks ? { ...rest, chunks } : rest
+        const markerNonces = import.meta.server ? readMarkerNonces(data, false) : undefined
+        // The page hydrates with the nonces `apply` rebinds the markers to.
+        if (markerNonces) { Object.assign(data, rebindMarkerNonces(markerNonces, reboundNoncesOf(nuxtApp, islandKey.value))) }
         const revive: Partial<NuxtIslandResponse> = {}
         if (data.head) { revive.head = data.head }
         if (data.nonce) { revive.nonce = data.nonce }
         if (data.nonces) { revive.nonces = data.nonces }
+        if (data.chunks) { revive.chunks = data.chunks }
         return { revive, data: import.meta.client ? { ...data, html } : data }
       },
       apply: (res) => {
-        const markerNonces = readMarkerNonces(res)
+        if (typeof res.html !== 'string') {
+          throw createError({ status: 500, statusText: `Island ${props.name} response has no HTML` })
+        }
+        const remote = remoteOf(props, res)
+        const markerNonces = readMarkerNonces(res, !!remote)
         if (!markerNonces) {
           throw createError({ status: 500, statusText: `Island ${props.name} response has no valid marker nonce` })
         }
         const html = withIslandScopeId(res.html, props.scopeId)
         if (import.meta.server) {
-          // Inside another island's render, the outer response carries these markers.
+          // Slots render into the HTML, so its markers move to nonces this render made (see `rebindMarkerNonces`).
+          const bound = rebindMarkers(html, markerNonces, reboundNoncesOf(nuxtApp, islandKey.value))
+          // Inside another island's render, the outer response carries these markers; a remote island's stay plain.
           const islands = nuxtApp.ssrContext?.islands
-          if (islands && islands.markers.nonce !== markerNonces.nonce) {
-            for (const nonce of [markerNonces.nonce, ...markerNonces.nonces ?? []]) { islands.nested.add(nonce) }
+          if (islands && !remote && islands.markers.nonce !== markerNonces.nonce) {
+            for (const nonce of [bound.nonce, ...bound.nonces ?? []]) { islands.nested.add(nonce) }
+            Object.assign(islands.chunks, res.chunks)
           }
-          serverIsland.value = { html, markers: createMarkerSet(markerNonces.nonce) }
+          serverIsland.value = { html: bound.html, markers: createMarkerSet(bound.nonce) }
         } else {
-          tree.value = htmlToVNode(html, { ...markerNonces, previous: tree.value, slots })
+          tree.value = htmlToVNode(html, { ...markerNonces, previous: tree.value, slots, remote })
         }
       },
     })
@@ -109,13 +134,14 @@ const NuxtIsland = defineComponent({
         return
       }
       const entry = toRaw(nuxtApp.payload.data[islandKey.value])
-      const markerNonces = readMarkerNonces(entry)
+      const remote = remoteOf(props, entry)
+      const markerNonces = readMarkerNonces(entry, !!remote)
       if (!markerNonces) {
         throw createError({ status: 500, statusText: `Island ${props.name} has no valid marker nonce in the payload` })
       }
       const el = instance.vnode.el as Node
-      entry.html = outerHTMLOf(el)
-      tree.value = domToVNode(el, { ...markerNonces, slots })
+      entry.html = outerHTMLOf(el, markerNonces.nonce)
+      tree.value = domToVNode(el, { ...markerNonces, slots, remote })
     })
 
     if (import.meta.server && error.value) {
@@ -138,14 +164,21 @@ const NuxtIsland = defineComponent({
 
 export default NuxtIsland
 
+function reboundNoncesOf (nuxtApp: NuxtApp, islandKey: string): Map<string, string> {
+  let islands = REBOUND_NONCES.get(nuxtApp)
+  if (!islands) { REBOUND_NONCES.set(nuxtApp, islands = new Map()) }
+  let rebound = islands.get(islandKey)
+  if (!rebound) { islands.set(islandKey, rebound = new Map()) }
+  return rebound
+}
+
 /**
- * Marker nonces of an island response or payload entry, or `undefined` when any is invalid.
+ * Remote rules for an island fetched from `source`, with the chunks it may load when opted in.
  */
-function readMarkerNonces (data: Partial<NuxtIslandResponse> | undefined): MarkerNonces | undefined {
-  const nonce = data?.nonce
-  const nonces = data?.nonces
-  if (!isMarkerNonce(nonce)) { return }
-  if (nonces === undefined) { return { nonce } }
-  if (!Array.isArray(nonces) || !nonces.every(isMarkerNonce)) { return }
-  return { nonce, nonces }
+function remoteOf (props: Pick<NuxtIslandProps, 'source' | 'dangerouslyLoadClientComponents'>, data: Partial<NuxtIslandResponse> | undefined): RemoteIsland | undefined {
+  if (!remoteComponentIslands || !props.source) { return }
+  return {
+    source: props.source,
+    chunks: props.dangerouslyLoadClientComponents ? readChunkPaths(data?.chunks) : undefined,
+  }
 }

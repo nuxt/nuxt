@@ -287,6 +287,7 @@ export default defineConfig({
             '#build/routes': resolve('./test/mocks/routes'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
+            '#islands-v2-manifest': resolve('./test/mocks/islands-v2-manifest'),
             '#internal/nuxt/error-channel': resolve('./packages/nitro-server/src/runtime/utils/error-channel'),
             '#nuxt-compat/import-meta': resolve('./test/mocks/nitro-compat-import-meta'),
             '#nuxt-compat/flags': resolve('./test/mocks/nitro-compat-flags'),

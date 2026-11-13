@@ -11,6 +11,7 @@ import type { IslandRenderState } from '../src/app/components/islands-v2/shared.
 
 // The real loader imports the build-generated `#islands-v2-manifest`.
 vi.mock('../src/app/components/islands-v2/loader.ts', () => ({ default: { name: 'NuxtIslandComponentLoader' } }))
+vi.mock('#islands-v2-manifest', () => ({ chunkPaths: { '/components/Child.vue': '/_nuxt/child.js' } }))
 
 type Push = (item: unknown) => void
 // The push the islands compiler hands a slot fallback.
@@ -61,7 +62,7 @@ describe('encodeMarker', () => {
 })
 
 function islandContext (): { islands: IslandRenderState } {
-  return { islands: { markers: createMarkerSet(createMarkerNonce()), nested: new Set() } }
+  return { islands: { markers: createMarkerSet(createMarkerNonce()), nested: new Set(), chunks: {} } }
 }
 
 describe('createMarkerNonce', () => {
@@ -91,6 +92,16 @@ describe('ssrRenderClientComponent', () => {
     expect(html).toContain(`<!--i:c:${nonce}[`)
     expect(html).toContain(`<span>hi</span><!--[--><b>slot</b><!--]--><!--/i:c:${nonce}--></div>`)
     expect(readMarker(html, nonce)).toEqual([{ msg: 'hi' }, CHUNK, 'default', { default: '<b>slot</b>' }])
+  })
+
+  it('records the client path of the chunk for remote hosts', async () => {
+    const context = islandContext()
+    await renderToString(createSSRApp(createParent(props)), context)
+    expect(context.islands.chunks).toEqual({ [CHUNK]: '/_nuxt/child.js' })
+
+    const unlisted = islandContext()
+    await renderToString(createSSRApp(createParent(props, undefined, '/components/Other.vue')), unlisted)
+    expect(unlisted.islands.chunks).toEqual({})
   })
 
   it('renders plain Vue output without a scanned chunk', async () => {

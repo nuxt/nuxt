@@ -1,4 +1,5 @@
 import { resolve } from 'pathe'
+import { isIslandsV2 } from '@nuxt/kit/internal'
 import type { Nuxt } from 'nuxt/schema'
 
 export { getNameFromPath, hasSuffix, resolveComponentNameSegments } from './names.ts'
@@ -22,7 +23,7 @@ export function uniqueBy<T, K extends keyof T> (arr: T[], key: K) {
  * Path of the `<NuxtIsland>` implementation selected by `experimental.componentIslands`.
  */
 export function resolveNuxtIslandPath (nuxt: Nuxt): string {
-  return resolve(nuxt.options.appDir, nuxt.options.experimental.componentIslands === 'v2' ? 'components/nuxt-island-v2' : 'components/nuxt-island')
+  return resolve(nuxt.options.appDir, isIslandsV2(nuxt.options.experimental.componentIslands) ? 'components/nuxt-island-v2' : 'components/nuxt-island')
 }
 
 export const QUOTE_RE = /["']/g

@@ -1210,6 +1210,75 @@ describe.skipIf(!oncePerBuild)('rendering matrix', () => {
   })
 })
 
+describe.skipIf(!oncePerBuild)('remote islands', () => {
+  it('server renders remote islands, and the fallback when the source fails', async () => {
+    const html = await $fetch<string>('/remote-island')
+    expect(html).toContain('block:remote-static-island x2')
+    expect(html).toContain('Sugar Counter 12 x 2 = 24')
+    expect(html).toContain('block:remote-interactive-island x3')
+    expect(html).toContain('Sugar Counter 12 x 3 = 36')
+    expect(html).toContain('Remote island failed: true')
+  })
+
+  it.skipIf(!islandsV2)('sends the client path of each chunk the island loads', async () => {
+    const result = await $fetch<NuxtIslandResponse>(islandURL('MultiServerCounter', { props: { blockId: 'chunks', multiplier: 1 } }))
+    const paths = Object.values(result.chunks ?? {})
+    expect(paths).toHaveLength(1)
+    expect(paths[0]).toMatch(/^\/_nuxt\//)
+    expect((await fetch(paths[0]!)).status).toBe(200)
+  })
+
+  it('hydrates remote islands, loading client components only when opted in', async () => {
+    const { page, consoleLogs } = await renderPage('/remote-island')
+    await expectInteractive(page, '#remote-interactive-island .sugar-counter', 'Sugar Counter 13 x 3 = 39')
+
+    const staticCounter = page.locator('#remote-static-island .sugar-counter')
+    await staticCounter.locator('button').click()
+    expect(await staticCounter.innerText()).toContain('Sugar Counter 12 x 2 = 24')
+    expect(await page.locator('#remote-failing-fallback').innerText()).toContain('Remote island failed: true')
+
+    // the legacy implementation reports a mismatch for remote islands
+    if (islandsV2) {
+      expect(consoleLogs.filter(l => l.text.includes('Hydration'))).toEqual([])
+    }
+    await page.close()
+  })
+
+  it.skipIf(!islandsV2)('hydrates a remote island rendered in a local island\'s page slot', async () => {
+    const html = await $fetch<string>('/remote-island')
+    expect(html).toContain('block:remote-in-slot-island x4')
+
+    const { page, consoleLogs } = await renderPage('/remote-island')
+    await expectInteractive(page, '#remote-in-local-slot .sugar-counter', 'Sugar Counter 13 x 4 = 52')
+    expect(await page.locator('#remote-in-local-slot .slot-box').innerText()).toContain('island box content')
+    expect(consoleLogs.filter(l => l.type === 'error' || l.text.includes('Hydration'))).toEqual([])
+    await page.close()
+  })
+
+  it('fetches remote islands during client-side navigation', async () => {
+    const { page } = await renderPage('/nav')
+    const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/MultiServerCounter') && response.status() === 200)
+    await page.click('#to-remote-island')
+    await islandRequest
+
+    await page.locator('#remote-static-island .multi-label').getByText('block:remote-static-island x2').waitFor()
+    await expectInteractive(page, '#remote-interactive-island .sugar-counter', 'Sugar Counter 13 x 3 = 39')
+    await page.locator('#remote-failing-fallback').getByText('Remote island failed: true').waitFor()
+    await page.close()
+  })
+})
+
+/**
+ * Click the counter's button until it reacts, as the remote chunk can load after the page hydrated.
+ */
+async function expectInteractive (page: Awaited<ReturnType<typeof renderPage>>['page'], selector: string, text: string) {
+  const counter = page.locator(selector)
+  await expect.poll(async () => {
+    if (!(await counter.innerText()).includes(text)) { await counter.locator('button').click() }
+    return counter.innerText()
+  }, { timeout: 15_000 }).toContain(text)
+}
+
 /**
  * Props and joined fallback HTML of a v2 island's own `i:s` outlets named `name`, in the legacy `slots` entry shape.
  */
@@ -1224,7 +1293,7 @@ function readSlotOutlets (result: NuxtIslandResponse, name: string): { props: un
  * Island response without its per-render fields, with normalised HTML and defaulted head arrays.
  */
 function normaliseIslandResponse (result: NuxtIslandResponse): NuxtIslandResponse {
-  const { id: _id, nonce: _nonce, nonces: _nonces, ...rest } = result
+  const { id: _id, nonce: _nonce, nonces: _nonces, chunks: _chunks, ...rest } = result
   return { ...rest, head: { link: [], style: [], ...rest.head }, html: normaliseIslandHTML(rest.html ?? '') }
 }
 

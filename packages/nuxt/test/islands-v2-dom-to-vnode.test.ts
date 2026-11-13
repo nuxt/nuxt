@@ -226,7 +226,60 @@ describe('outerHTMLOf', () => {
     const container = document.createElement('div')
     const island = `<!--[--><!--i:c:${NONCE}[null,"/c.vue"]-->a &amp; b<!--[--><p>x</p><!--]--><!--/i:c:${NONCE}--><!--]-->`
     container.innerHTML = `${island}<p>after</p>`
-    expect(outerHTMLOf(container.firstChild!)).toBe(island)
-    expect(outerHTMLOf(container.lastChild!)).toBe('<p>after</p>')
+    expect(outerHTMLOf(container.firstChild!, NONCE)).toBe(island)
+    expect(outerHTMLOf(container.lastChild!, NONCE)).toBe('<p>after</p>')
+  })
+})
+
+describe('remote islands', () => {
+  const remote = { source: 'https://remote.test' }
+  const teleport = (tuple: unknown[], nonce = NONCE) => `<!--i:t:${nonce}${encodeMarker(tuple)}-->`
+
+  it('keeps an enabled teleport marker as a plain comment, dropping the content it carries', () => {
+    const html = `${teleport(['body', false, '<b>moved</b>'])}<!--teleport start--><!--teleport end--><p>after</p>`
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE, remote }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Comment, Comment, Static])
+    const container = document.createElement('div')
+    render(htmlToVNode(html, { nonce: NONCE, remote })!, container)
+    expect(container.innerHTML).not.toContain('<b>moved</b>')
+    expect(document.body.innerHTML).not.toContain('<b>moved</b>')
+  })
+
+  it('keeps the inline content of a disabled teleport marker in place', () => {
+    const html = `${teleport(['#target', true])}<!--teleport start--><span>in</span><!--teleport end-->`
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE, remote }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Comment, Static, Comment])
+  })
+
+  it('applies the same rules to the markers of nested islands', () => {
+    const html = `${teleport(['body', false, '<b>x</b>'], NESTED_NONCE)}<!--teleport start--><!--teleport end-->${open([null, '/c.vue'], NESTED_NONCE)}<i>x</i>${close(NESTED_NONCE)}`
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE, nonces: [NESTED_NONCE], remote }))
+    expect(vnodes.some(vnode => vnode.type === Teleport || vnode.type === Suspense)).toBe(false)
+  })
+
+  it('renders a client component statically by default', () => {
+    const html = `${open([null, '/c.vue'])}<i>server html</i>${close()}`
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE, remote }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Static, Comment])
+  })
+
+  it('hydrates a client component whose chunk the host may load', () => {
+    const withChunks = { ...remote, chunks: { '/c.vue': '/_nuxt/c.js' } }
+    const html = `${open([null, '/c.vue'])}<i>x</i>${close()}${open([null, '/other.vue'])}<i>y</i>${close()}`
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE, remote: withChunks }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Suspense, Comment, Comment, Static, Comment])
+    expect(loaderProps(vnodes[1]!)).toMatchObject({ data: [null, '/c.vue'], remote: withChunks })
+  })
+
+  it('ignores a chunk listed only on the prototype', () => {
+    const html = `${open([null, 'constructor'])}<i>x</i>${close()}`
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE, remote: { ...remote, chunks: {} } }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, Static, Comment])
+  })
+
+  it('still renders host slots at the slot markers', () => {
+    const html = `<!--i:s:${NONCE}${encodeMarker(['default', null, null, '<i>fb</i>'])}--><!--/i:s:${NONCE}-->`
+    const vnodes = children(htmlToVNode(html, { nonce: NONCE, remote }))
+    expect(vnodes.map(vnode => vnode.type)).toEqual([Comment, slotOutlet, Comment])
   })
 })

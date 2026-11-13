@@ -88,7 +88,9 @@ export function useIslandFetch (options: IslandFetchOptions): IslandFetch {
       if (cached?.html) { return cached }
     }
 
-    const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
+    // The serving app checks the hash without `source`, which it cannot know; the payload key keeps it.
+    const requestKey = props.source ? `${props.name}_${getIslandHash({ name: props.name, props: serializedProps.value, context: props.context })}` : key
+    const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${requestKey}.json`) : `/__nuxt_island/${requestKey}.json`
     if (import.meta.server && import.meta.prerender) {
       nuxtApp.runWithContext(() => prerenderRoutes(url))
     }

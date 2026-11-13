@@ -9,7 +9,7 @@ import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveIgnorePatterns, runWithNuxtContext } from '@nuxt/kit'
-import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
+import { configDiagnostics, createServerBuild, installModules, isIslandsV2 } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -344,7 +344,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.appDir = options.alias['#app'] = withTrailingSlash(resolve(distDir, 'app'))
   options.alias['nuxt/app'] ||= options.appDir
   // islands v2 depends on Vite-only plugins (`#islands-v2-manifest`, `v-load-client`)
-  if (options.experimental.componentIslands === 'v2' && options.builder !== '@nuxt/vite-builder') {
+  if (isIslandsV2(options.experimental.componentIslands) && options.builder !== '@nuxt/vite-builder') {
     throw configDiagnostics.NUXT_B5035({ builder: typeof options.builder === 'string' ? options.builder : 'a custom builder' })
   }
   options._majorVersion = 4

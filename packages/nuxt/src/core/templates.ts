@@ -7,7 +7,7 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { tryUseNitro } from '@nuxt/kit'
-import { bundlerDiagnostics, getRuntimeConfigSchema, runtimeConfigSchemaToType, useServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, getRuntimeConfigSchema, isIslandsV2, runtimeConfigSchemaToType, useServerBuild } from '@nuxt/kit/internal'
 
 import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasPluginCapability, sortPluginsByDependsOn } from './app.ts'
 import type { PluginCapability } from './app.ts'
@@ -734,7 +734,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
       `export const serverPathFallback = ${!!ctx.nuxt.options.experimental.serverPathFallback}`,
       `export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}`,
-      `export const selectiveClient = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && Boolean(ctx.nuxt.options.experimental.componentIslands.selectiveClient)}`,
+      `export const selectiveClient = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && !isIslandsV2(ctx.nuxt.options.experimental.componentIslands) && Boolean(ctx.nuxt.options.experimental.componentIslands.selectiveClient)}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`,
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
@@ -765,7 +765,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const hasParallelPlugins = ${pluginsUse('parallel')}`,
       `export const hasPluginHooks = ${pluginsUse('hasHooks')}`,
       `export const hasIslandOptOutPlugins = ${pluginsUse('hasEnv')}`,
-      `export const islandsV2Enabled = ${ctx.nuxt.options.experimental.componentIslands === 'v2'}`,
+      `export const islandsV2Enabled = ${isIslandsV2(ctx.nuxt.options.experimental.componentIslands)}`,
     ].join('\n\n')
   },
 }

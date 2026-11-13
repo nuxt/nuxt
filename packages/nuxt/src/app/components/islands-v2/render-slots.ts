@@ -1,6 +1,6 @@
 import { Fragment, createElementVNode, createStaticVNode, renderSlot } from 'vue'
 import type { Slots, VNode } from 'vue'
-import type { MarkerSet } from './shared'
+import { type MarkerSet, ownSlots } from './shared'
 import { isSlotMarker, tryDecodeMarker } from './markers'
 
 // `slotScopeIds` is internal to Vue's VNode type.
@@ -30,7 +30,7 @@ function renderParts (html: string, markers: MarkerSet, slots: Slots): VNode[] {
     if (!isSlotMarker(tuple)) { continue }
     const [name, props, slotScopeId, fallback] = tuple
     vnodes.push(createStaticVNode(html.slice(from, contentStart), 1))
-    const slot = renderSlot(slots, name, props ?? {}, () => renderParts(fallback, markers, slots), true)
+    const slot = renderSlot(ownSlots(slots, name), name, props ?? {}, () => renderParts(fallback, markers, slots), true)
     if (slotScopeId) { (slot as SlottedVNode).slotScopeIds = [slotScopeId] }
     vnodes.push(slot)
     from = contentStart

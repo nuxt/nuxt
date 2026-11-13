@@ -18,6 +18,7 @@ import {
   ssrRenderTeleport as vueSsrRenderTeleport,
 } from 'vue/server-renderer'
 import { isOn, isPromise } from '@vue/shared'
+import { chunkPaths } from '#islands-v2-manifest'
 import {
   type IslandComponentMarker,
   type IslandSlotMarker,
@@ -104,9 +105,9 @@ export function ssrRenderClientComponent (
     return buffer
   }
 
-  const markers = enabled === false ? undefined : markersOf(parent)
-  if (markers && chunk === undefined && import.meta.dev) { warnUnscanned(is) }
-  if (!markers || chunk === undefined) {
+  const islands = enabled === false ? undefined : ssrContextOf(parent)?.islands
+  if (islands && chunk === undefined && import.meta.dev) { warnUnscanned(is) }
+  if (!islands || chunk === undefined) {
     return ssrRenderComponent(
       is,
       props,
@@ -115,6 +116,9 @@ export function ssrRenderClientComponent (
       slotScopeId,
     ) as SSRBuffer | Promise<SSRBuffer>
   }
+  // Only filled when the app serves remote islands.
+  if (Object.hasOwn(chunkPaths, chunk)) { islands.chunks[chunk] = chunkPaths[chunk]! }
+  const markers = islands.markers
 
   const captured: Record<string, SSRBuffer> = {}
   // Same as `ssrRenderComponent`, but holding the vnode tells its subtree apart.

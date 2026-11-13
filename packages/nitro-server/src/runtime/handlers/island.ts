@@ -137,7 +137,7 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   // Render app
   const renderer = await rendererInstance.getSSRRenderer()
 
-  const islands = islandsV2Enabled ? { markers: createMarkerSet(createMarkerNonce()), nested: new Set<string>() } : undefined
+  const islands = islandsV2Enabled ? { markers: createMarkerSet(createMarkerNonce()), nested: new Set<string>(), chunks: {} } : undefined
   ssrContext.islands = islands
 
   const renderResult = await (tracingChannelNuxt
@@ -195,7 +195,7 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     }
   }
 
-  // Undefined fields (empty `components`/`slots`, nonces without islands v2) are dropped from the JSON.
+  // Undefined fields (empty `components`/`slots`/`chunks`, nonces without islands v2) are dropped from the JSON.
   const islandResponse: NuxtIslandResponse = {
     id: islandContext.id,
     head: mergeIslandHead(ssrContext.head.entries.values()),
@@ -204,6 +204,7 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     slots: getSlotIslandResponse(ssrContext),
     nonce: islands?.markers.nonce,
     nonces: islands?.nested.size ? [...islands.nested] : undefined,
+    chunks: islands && Object.keys(islands.chunks).length ? islands.chunks : undefined,
   }
 
   await rendererInstance.hooks.callHook('render:island', islandResponse, { event, islandContext })

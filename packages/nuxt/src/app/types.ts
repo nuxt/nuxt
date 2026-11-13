@@ -218,6 +218,11 @@ export interface NuxtIslandResponse {
    * Nonces of nested islands whose markers `html` embeds, besides `nonce`.
    */
   nonces?: string[]
+  /**
+   * Client path of each chunk the islands v2 `v-load-client` components load, by chunk ref, relative
+   * to the app base URL. Only an app with `remoteIsland` enabled sends it.
+   */
+  chunks?: Record<string, string>
   head: SerializableHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>

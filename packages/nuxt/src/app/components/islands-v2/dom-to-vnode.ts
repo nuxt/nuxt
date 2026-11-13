@@ -61,6 +61,22 @@ export interface DomToVNodeOptions {
    * Slots the page passed to the island, rendered at the island's own `i:s` slot markers.
    */
   slots?: Slots
+  /**
+   * Set when the HTML comes from another app
+   * teleport markers stay plain comments and client components render statically unless their chunk is listed.
+   */
+  remote?: RemoteIsland
+}
+
+export interface RemoteIsland {
+  /**
+   * Origin and base URL the island was fetched from.
+   */
+  source: string
+  /**
+   * Checked client path of each chunk the host may import from `source`, by chunk ref.
+   */
+  chunks?: Record<string, string>
 }
 
 type DecodedMarker =
@@ -131,13 +147,20 @@ export function htmlToVNodes (html: string, options: DomToVNodeOptions): VNode[]
   return walkSiblings(content.firstChild, null, context)
 }
 
-export function outerHTMLOf (start: Node): string {
+/**
+ * HTML of a hydrated island for its payload entry, with its own slot regions emptied
+ * pagecontent rendered there is not the island's, and a later mount renders the slots at the outlets.
+ */
+export function outerHTMLOf (start: Node, nonce: string): string {
   const end = isFragmentStart(start) ? findFragmentEnd(start) : start
-  let html = ''
+  const copy = (start.ownerDocument ?? document).createDocumentFragment()
   for (let current: Node | null = start; current; current = current.nextSibling) {
-    html += serializeNode(current)
+    copy.append(current.cloneNode(true))
     if (current === end) { break }
   }
+  emptySlotRegions(copy, createMarkerSet(nonce))
+  let html = ''
+  for (const node of copy.childNodes) { html += serializeNode(node) }
   return html
 }
 
@@ -330,13 +353,17 @@ function handleSlotMarker (
 function readMarker (comment: Comment, context: WalkContext): DecodedMarker | null {
   let marker = context.decoded.get(comment)
   if (marker === undefined) {
-    marker = decodeMarkerComment(comment.data, context.markerSets)
+    marker = decodeMarkerComment(comment.data, context.markerSets, context.options.remote)
     context.decoded.set(comment, marker)
   }
   return marker
 }
 
-function decodeMarkerComment (data: string, markerSets: MarkerSet[]): DecodedMarker | null {
+/**
+ * A remote island cannot teleport into the host page, and its client components without a
+ * listed chunk keep their server HTML, so both markers stay plain comments for it.
+ */
+function decodeMarkerComment (data: string, markerSets: MarkerSet[], remote: RemoteIsland | undefined): DecodedMarker | null {
   // Only the island's own slots resolve; a nested island's slot markers stay plain comments.
   const own = markerSets[0]!
   if (hasMarkerPrefix(data, own.slot)) {
@@ -346,8 +373,11 @@ function decodeMarkerComment (data: string, markerSets: MarkerSet[]): DecodedMar
   for (const markers of markerSets) {
     if (hasMarkerPrefix(data, markers.component)) {
       const tuple = tryDecodeMarker(data.slice(markers.component.length))
-      return isComponentMarker(tuple) ? { kind: 'component', tuple, markers } : null
+      if (!isComponentMarker(tuple)) { return null }
+      if (remote && !(remote.chunks && Object.hasOwn(remote.chunks, tuple[1]))) { return null }
+      return { kind: 'component', tuple, markers }
     }
+    if (remote) { continue }
     if (hasMarkerPrefix(data, markers.teleport)) {
       const tuple = tryDecodeMarker(data.slice(markers.teleport.length))
       return isTeleportMarker(tuple) ? { kind: 'teleport', tuple, markers } : null
@@ -367,6 +397,28 @@ function findClosingMarker (start: Comment, open: DecodedMarker, context: WalkCo
     const marker = readMarker(node as Comment, context)
     return marker?.kind === open.kind && marker.markers === open.markers ? 'open' : undefined
   }) as Comment | undefined
+}
+
+/**
+ * Remove the page content of the own slot regions under `parent`
+ * `true` when a region had no close
+ */
+function emptySlotRegions (parent: Node, markers: MarkerSet): boolean {
+  const tokenOf = (node: Node): RegionToken => {
+    if (node.nodeType !== COMMENT_NODE) { return }
+    const data = (node as Comment).data
+    if (data === markers.slotEnd) { return 'close' }
+    return decodeMarkerComment(data, [markers], undefined)?.kind === 'slot' ? 'open' : undefined
+  }
+  for (let current = parent.firstChild; current; current = current.nextSibling) {
+    // Without a close, markup in the slot broke out of this parent, so nothing after the outlet is the island's.
+    const end = tokenOf(current) === 'open' ? findRegionEnd(siblingsAfter(current), tokenOf) ?? null : undefined
+    if (end === undefined && !emptySlotRegions(current, markers)) { continue }
+    while (current.nextSibling !== (end ?? null)) { current.nextSibling!.remove() }
+    if (!end) { return true }
+    current = end
+  }
+  return false
 }
 
 function findFragmentEnd (start: Node): Comment | undefined {
@@ -485,11 +537,8 @@ function wrapRoot (vnodes: VNode[]): VNode | undefined {
   return createElementVNode(Fragment, null, vnodes)
 }
 
-/**
- * Keep component loading inside the surrounding Vue render context.
- */
 function renderClientComponent (data: IslandComponentMarker, options: DomToVNodeOptions): VNode {
   return h(Suspense, null, {
-    default: () => h(loader, { data, nonce: options.nonce, nonces: options.nonces, islandSlots: options.slots }),
+    default: () => h(loader, { data, nonce: options.nonce, nonces: options.nonces, islandSlots: options.slots, remote: options.remote }),
   })
 }

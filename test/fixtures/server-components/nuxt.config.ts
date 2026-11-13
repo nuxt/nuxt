@@ -13,7 +13,7 @@ export default withMatrix({
     '/redirected-server-page': { redirect: '/server-page' },
   },
   experimental: {
-    componentIslands: islandsV2 ? 'v2' : { selectiveClient: 'deep' },
+    componentIslands: islandsV2 ? { version: 'v2', remoteIsland: true } : { selectiveClient: 'deep', remoteIsland: true },
     runtimeBaseURL: true,
   },
   nitro: {

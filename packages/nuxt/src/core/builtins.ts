@@ -1,6 +1,6 @@
 import { resolve } from 'pathe'
 import { addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, directoryToURL } from '@nuxt/kit'
-import { configDiagnostics } from '@nuxt/kit/internal'
+import { configDiagnostics, isIslandsV2 } from '@nuxt/kit/internal'
 import { readPackageJSON } from 'pkg-types'
 import type { PackageJson } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
@@ -53,7 +53,7 @@ function isPagesEnabled (nuxt: Nuxt) {
 export function addBuiltinsBeforeModules (nuxt: Nuxt) {
   // TODO: revert when deep server component config is properly bundle-split: https://github.com/nuxt/nuxt/pull/29956
   const islandsConfig = nuxt.options.experimental.componentIslands
-  if (nuxt.options.dev || !(typeof islandsConfig === 'object' && islandsConfig.selectiveClient === 'deep')) {
+  if (nuxt.options.dev || !(typeof islandsConfig === 'object' && !isIslandsV2(islandsConfig) && islandsConfig.selectiveClient === 'deep')) {
     addBuiltinComponent(nuxt, ['NuxtWelcome', 'welcome'])
   }
 

@@ -12,5 +12,11 @@
     >
       to other page
     </NuxtLink>
+    <NuxtLink
+      id="to-remote-island"
+      to="/remote-island"
+    >
+      to remote island page
+    </NuxtLink>
   </div>
 </template>
