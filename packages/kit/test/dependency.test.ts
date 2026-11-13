@@ -1,11 +1,11 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { rm } from 'node:fs/promises'
 import { join } from 'pathe'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { x } from 'tinyexec'
 
 import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand, toPackageName } from '../src/dependency.ts'
 import { logger } from '../src/logger.ts'
+import { createTempDir, fakePackage, writeFiles } from './utils.ts'
 
 vi.mock('std-env', async original => ({ ...await original<typeof import('std-env')>(), isCI: false, hasTTY: true, provider: '' }))
 vi.mock('tinyexec', () => ({ x: vi.fn(() => Promise.resolve({ exitCode: 0, stdout: '', stderr: '' })) }))
@@ -16,20 +16,15 @@ vi.mock('package-manager-detector', async original => ({
 
 let rootDir: string
 
-async function createPackage (name: string, exports: Record<string, string>) {
-  const dir = join(rootDir, 'node_modules', name)
-  await mkdir(dir, { recursive: true })
-  await writeFile(join(dir, 'package.json'), JSON.stringify({ name, type: 'module', exports }))
-  await writeFile(join(dir, 'index.js'), 'export default {}\n')
-}
+const createPackage = (name: string, exports: Record<string, string>) => writeFiles(rootDir, fakePackage(name, 'export default {}\n', { exports }))
 
 function installCreatesPackage (name: string, exports: Record<string, string>) {
   vi.mocked(x).mockImplementationOnce((() => createPackage(name, exports).then(() => ({ exitCode: 0, stdout: '', stderr: '' }))) as any)
 }
 
 beforeAll(async () => {
-  rootDir = await mkdtemp(join(tmpdir(), 'nuxt-dependency-'))
-  await writeFile(join(rootDir, 'package.json'), JSON.stringify({ name: 'app', private: true }))
+  rootDir = await createTempDir('nuxt-dependency-')
+  await writeFiles(rootDir, { 'package.json': { name: 'app', private: true } })
   await createPackage('tailwindcss', { '.': './index.js' })
   await createPackage('subpath-only', { './a': './index.js' })
 })

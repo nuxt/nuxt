@@ -8,10 +8,11 @@ import escapeStringRegexp from 'escape-string-regexp'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 import { MACRO_QUERY_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE } from '../../utils.ts'
+import { findSFCScriptBlocks } from '../utils/parse-utils.ts'
+import { isJS } from '../utils/plugins.ts'
 
 const functionsToExtract = new Set(['useAsyncData', 'useLazyAsyncData'])
 const FUNCTIONS_RE = /\buse(?:Lazy)?AsyncData\b/
-const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 const ASYNC_DATA_CHUNK_RE = /\/async-data-chunk-\d+\.js$/
 
 export interface ExtractAsyncDataHandlersOptions {
@@ -53,7 +54,9 @@ export const ExtractAsyncDataHandlersPlugin = (options: ExtractAsyncDataHandlers
         code: { include: FUNCTIONS_RE },
       },
       handler (code, id, meta?: unknown) {
-        const { 0: script = code, index: codeIndex = 0 } = code.match(SCRIPT_RE) || { index: 0, 0: code }
+        const [block] = isJS(id) ? [] : findSFCScriptBlocks(code)
+        const script = block?.content ?? code
+        const codeIndex = block?.start ?? 0
 
         let s: RolldownString | undefined
 

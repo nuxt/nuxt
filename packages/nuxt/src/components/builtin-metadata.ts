@@ -34,7 +34,7 @@ export const BUILTIN_COMPONENT_META = {
   NuxtLayout: defineBuiltinMeta('nuxt-layout', 'Renders the selected layout around pages or error content.'),
   NuxtLink: defineBuiltinMeta('nuxt-link', 'A drop-in replacement for Vue Router\'s `<RouterLink>` and the HTML `<a>` element.'),
   NuxtLoadingIndicator: defineBuiltinMeta('nuxt-loading-indicator', 'Displays a progress bar during page navigation.'),
-  NuxtErrorBoundary: defineBuiltinMeta('nuxt-error-boundary', 'Catches client-side errors from its default slot and renders an error slot.'),
+  NuxtErrorBoundary: defineBuiltinMeta('nuxt-error-boundary', 'Catches errors from its default slot, on the server and the client, and renders an error slot.'),
   NuxtWelcome: defineBuiltinMeta('nuxt-welcome', 'Displays the welcome screen used by new Nuxt projects.'),
   NuxtIsland: defineBuiltinMeta('nuxt-island', 'Renders a non-interactive server component without shipping client-side JavaScript.'),
   NuxtImg: defineBuiltinMeta('nuxt-img', 'Renders an optimized image through the Nuxt Image module.'),

@@ -4,7 +4,6 @@ jspm_packages
 
 package-lock.json
 packages/*/README.md
-!packages/nuxi/README.md
 packages/*/LICENSE
 !packages/nuxt/test/package-fixture/root/node_modules
 docs/LICENSE

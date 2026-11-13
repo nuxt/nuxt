@@ -2,27 +2,17 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { glob } from 'tinyglobby'
 import { readFile } from 'node:fs/promises'
-import { fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
+import { fetch, useTestContext } from '@nuxt/test-utils/e2e'
 
-import { asyncContext, isBuilt, isTestingAppManifest, isWebpack } from './matrix'
+import { inlineErrorRendering, isBuilt, runsOncePerViteBuilderInMatrix } from './matrix'
+import { fixturePath, setupFixture } from './utils'
 
-const fixtureURL = new URL('./fixtures/dev-error-client/', import.meta.url)
-const rootDir = fileURLToPath(fixtureURL)
+const rootDir = fixturePath('dev-error-client')
 const repoDir = fileURLToPath(new URL('../', import.meta.url))
 
-const runs = isBuilt && !isWebpack && !asyncContext && isTestingAppManifest
+const runs = isBuilt && (runsOncePerViteBuilderInMatrix || inlineErrorRendering)
 
-if (runs) {
-  await setup({
-    rootDir,
-    dev: false,
-    server: true,
-    build: true,
-    browser: false,
-    setupTimeout: 240 * 1000,
-    serverStartTimeout: 240 * 1000,
-  })
-}
+await setupFixture('dev-error-client', runs)
 
 const relativeRootDir = rootDir.slice(repoDir.length)
 

@@ -25,7 +25,9 @@
     "ofetch",
     "verkit",
     "@nuxt/webpack-builder",
+    "@nuxt/rsbuild-builder",
     "@nuxt/rspack-builder",
+    "@rsbuild/core",
     "@rspack/core"
   ],
   "workspaces": {
@@ -54,6 +56,12 @@
         "#shared/*": ["./shared/*"]
       }
     },
+    "test/fixtures/duplicate-vue": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "ignoreDependencies": ["duplicate-vue-ui", "@vue/runtime-core"]
+    },
     "test/fixtures/basic": {
       "entry": [
         "**/*.{js,ts,tsx,mjs,mts,vue}!"
@@ -66,6 +74,7 @@
       "ignoreDependencies": [
         "@babel/plugin-proposal-decorators",
         "@babel/plugin-syntax-jsx",
+        "@rsbuild/plugin-pug",
         "nested-dep"
       ]
     },
@@ -78,7 +87,7 @@
         "~/*": ["./*"],
         "#shared/*": ["./shared/*"]
       },
-      "ignoreDependencies": ["pug"]
+      "ignoreDependencies": ["@rsbuild/plugin-pug", "pug"]
     },
     "test/fixtures/unhead-duplicate": {
       "entry": [
@@ -113,6 +122,9 @@
       ]
     },
     "packages/vite": {
+      "entry": [
+        "test/utils.ts"
+      ],
       "ignoreDependencies": [
         "mocked-exports",
         "autoprefixer",
@@ -123,6 +135,7 @@
     },
     "packages/kit": {
       "entry": [
+        "test/**/*.ts",
         "test/**/*-fixture/**/*.{js,ts,mjs,cjs,cts,mts,vue}"
       ],
       "ignoreDependencies": [
@@ -173,10 +186,20 @@
         "vue"
       ]
     },
+    "packages/rsbuild": {
+      "ignoreDependencies": [
+        "@vue/compiler-sfc",
+        "escape-string-regexp",
+        "exsolve",
+        "knitwork",
+        "ohash",
+        "seroval",
+        "vue",
+        "vue-bundle-renderer"
+      ]
+    },
     "packages/rspack": {
       "ignoreDependencies": [
-        "@nuxt/kit",
-        "@nuxt/schema",
         "@types/webpack-bundle-analyzer",
         "@vue/compiler-sfc",
         "autoprefixer",
@@ -193,7 +216,6 @@
         "memfs",
         "mini-css-extract-plugin",
         "ohash",
-        "pathe",
         "postcss",
         "postcss-import",
         "postcss-import-resolver",
@@ -206,7 +228,6 @@
         "seroval",
         "time-fix-plugin",
         "tinyglobby",
-        "ufo",
         "unenv",
         "unplugin",
         "url-loader",

@@ -15,7 +15,6 @@ import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
 import type { PrefetchScheduler } from './internal/prefetch'
 import type { LoadingIndicator } from './composables/loading-indicator'
-import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
 import type { AppConfig, AppConfigInput, NuxtHookCallback, NuxtHookRegistry, RuntimeConfig } from 'nuxt/schema'
 
@@ -165,7 +164,7 @@ interface _NuxtApp {
   '_prefetch'?: PrefetchScheduler
 
   /** @internal */
-  '_routeAnnouncer'?: RouteAnnouncer
+  '_routeAnnouncer'?: NuxtAnnouncer
   /** @internal */
   '_routeAnnouncerDeps'?: number
 
@@ -530,7 +529,6 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
   return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
 }
 
-/* @__NO_SIDE_EFFECTS__ */
 export const definePayloadPlugin: typeof defineNuxtPlugin = defineNuxtPlugin
 
 /** @since 3.0.0 */
@@ -556,13 +554,13 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
   }
 }
 
-/* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  *
  * Returns `null` if Nuxt instance is unavailable.
  * @since 3.10.0
  */
+/* @__NO_SIDE_EFFECTS__ */
 export function tryUseNuxtApp (): NuxtApp | null
 export function tryUseNuxtApp (id?: string): NuxtApp | null {
   let nuxtAppInstance
@@ -575,13 +573,13 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
   return nuxtAppInstance || null
 }
 
-/* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  *
  * Throws an error if Nuxt instance is unavailable.
  * @since 3.0.0
  */
+/* @__NO_SIDE_EFFECTS__ */
 export function useNuxtApp (): NuxtApp
 export function useNuxtApp (id?: string): NuxtApp {
   // @ts-expect-error internal usage of id

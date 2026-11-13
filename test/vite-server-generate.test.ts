@@ -1,16 +1,15 @@
-import { fileURLToPath } from 'node:url'
 import { createServer } from 'node:http'
 import type { Server } from 'node:http'
 import { createReadStream, existsSync, statSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { extname, join } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
 import { glob } from 'tinyglobby'
 import { parse } from 'devalue'
 import { chromium } from 'playwright-core'
 
 import { runsOnceInMatrix } from './matrix'
+import { buildInProcess, fixturePath } from './utils'
 
 const CONTENT_TYPES: Record<string, string> = {
   '.html': 'text/html;charset=utf-8',
@@ -43,7 +42,7 @@ function serveStatically (dir: string): Promise<{ origin: string, close: () => P
   })
 }
 
-const rootDir = fileURLToPath(new URL('./fixtures/vite-server-generate', import.meta.url))
+const rootDir = fixturePath('vite-server-generate')
 const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build')
 const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-generate')
 const publicDir = join(outputDir, 'public')
@@ -54,25 +53,22 @@ function read (path: string) {
 
 describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
   let files: string[]
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: {
-        buildDir,
-        nitro: { static: true, output: { dir: outputDir } },
-      },
-    })
-    try {
-      await buildNuxt(nuxt)
-      expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
-    } finally {
-      await nuxt.close()
-    }
+    const nuxt = await buildInProcess(rootDir, {
+      buildDir,
+      nitro: { static: true, output: { dir: outputDir } },
+    }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
+    expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
 
     files = (await glob('**/*', { cwd: publicDir })).sort()
   }, 240 * 1000)
+
+  it('reports no deploy target', () => {
+    expect(targets).toEqual([undefined, undefined])
+  })
 
   it('writes an html file per prerendered route', () => {
     expect(files.filter(file => file.endsWith('.html'))).toEqual([
@@ -190,20 +186,11 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
 
   it('writes the same routes as the same fixture generated with nitro', async () => {
     const nitroOutputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-nitro-generate')
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: {
-        buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-nitro-build'),
-        server: { builder: 'nitro' },
-        nitro: { static: true, output: { dir: nitroOutputDir } },
-      },
+    await buildInProcess(rootDir, {
+      buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-nitro-build'),
+      server: { builder: 'nitro' },
+      nitro: { static: true, output: { dir: nitroOutputDir } },
     })
-    try {
-      await buildNuxt(nuxt)
-    } finally {
-      await nuxt.close()
-    }
 
     const toRoutes = (found: string[]) => new Set(found.map(file => '/' + file.replace(/(?:^|\/)(?:index\.html|_payload\.json)$/, '').replace(/\.html$/, '')))
     const prerendered = toRoutes(files)
@@ -211,6 +198,9 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
     for (const route of toRoutes(await glob(['**/*.html', '**/_payload.json'], { cwd: join(nitroOutputDir, 'public') }))) {
       expect(prerendered).toContain(route)
     }
+
+    const cachedRoute = await readFile(join(nitroOutputDir, 'public/rules/prerendered/index.html'), 'utf-8')
+    expect(cachedRoute).toMatch(/data-src="\/rules\/prerendered\/_payload\.json\?_b=[^"]+"/)
   }, 240 * 1000)
 })
 

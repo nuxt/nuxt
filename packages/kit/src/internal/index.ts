@@ -32,6 +32,9 @@ export type { ParsedNodeModulePath } from './node-module.ts'
 
 export { hasOwnSubpathImport } from './subpath-imports.ts'
 
+export { VUE_PACKAGE_NAMES, VUE_PACKAGE_SPECIFIER_RE, isInVuePackages, resolveVuePackageImporter, resolveVuePackages } from './vue-packages.ts'
+export type { VuePackageName, VuePackages } from './vue-packages.ts'
+
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'
 
@@ -47,6 +50,8 @@ export { addClientBuildState, restoreClientBuildState, saveClientBuildState } fr
 export type { ClientBuildState } from './client-build-state.ts'
 
 export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
+
+export { resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath } from './spa-loading-template.ts'
 
 export { findRuntimeConfigSchema, getRuntimeConfigSchema, resolveRuntimeConfig, runtimeConfigSchemaToType } from './runtime-config.ts'
 export type { NuxtServerRuntime, NuxtServerRuntimeModule, RendererConfigName, ServerRuntimeOptions } from './renderer.ts'

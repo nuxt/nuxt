@@ -67,7 +67,6 @@
     "packages/nuxt/app.d.ts",
     "packages/nuxt/meta.d.ts",
     "**/nuxt.d.ts",
-    "**/examples/**",
     "**/docs/**",
     "**/playground/**",
     "**/test/nuxt/**",

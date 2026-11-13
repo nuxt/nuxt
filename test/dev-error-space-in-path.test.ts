@@ -1,26 +1,16 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { setup } from '@nuxt/test-utils/e2e'
 
-import { asyncContext, isDev, isTestingAppManifest, isWebpack, projectSuffix } from './matrix'
+import { inlineErrorRendering, isDev, projectSuffix, runsOncePerViteBuilderInMatrix } from './matrix'
 import { copyFixture, frameAt, renderErrorPage, sourcePosition } from './dev-error-utils'
+import { setupFixture } from './utils'
 
-const runs = isDev && !isWebpack && !asyncContext && isTestingAppManifest
+const runs = isDev && (runsOncePerViteBuilderInMatrix || inlineErrorRendering)
 
 const fixtureURL = runs
   ? copyFixture('dev-error-sourcemap', `dev error space ${projectSuffix}`)
   : new URL('./fixtures/dev-error-sourcemap/', import.meta.url)
 
-if (runs) {
-  await setup({
-    rootDir: fileURLToPath(fixtureURL),
-    dev: true,
-    server: true,
-    browser: false,
-    setupTimeout: 240 * 1000,
-    serverStartTimeout: 240 * 1000,
-  })
-}
+await setupFixture(fixtureURL, runs)
 
 describe.skipIf(!runs)('a project directory containing a space', () => {
   it('maps the throwing frame to the app source', async () => {

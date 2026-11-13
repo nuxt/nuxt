@@ -14,6 +14,7 @@ import { buildAssetsURL, publicAssetsURL } from '../paths'
 import { getRouteRules } from '../route-rules'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
 import { NodeRenderResponse } from '../response'
+import { toPortableEvent } from '../event'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -27,6 +28,7 @@ export const rendererOptions: NuxtRendererOptions = {
   publicAssetsURL,
   getRouteRules: event => getRouteRules(appEvent(event)) satisfies RendererRouteRules,
   hooks: () => useNitroApp().hooks as unknown as RendererHooks,
+  pluginEvent: event => toPortableEvent(event as unknown as H3Event),
   // the response never leaves this bundle, so the fields the renderer sets are enough
   createResponse: (body, init) => new NodeRenderResponse(body, init) as unknown as Response,
   createDocumentResponse: (chunks, init) => Object.assign(new NodeRenderResponse(null, init), { chunks }) as unknown as Response,

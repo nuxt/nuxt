@@ -38,13 +38,18 @@ export async function _loadPayload (url: string, opts: LoadPayloadOptions = {}):
   if (import.meta.server || !payloadExtraction) { return null }
   if (await shouldLoadPayload(url)) {
     const payloadURL = await _getPayloadURL(url, opts)
-    // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
-    // cannot invalidate them - defer to normal HTTP cache semantics instead
+    // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so they defer to
+    // normal HTTP cache semantics and are not keyed on the build id
     const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
-    if (opts.fresh) {
-      return await _importPayload(payloadURL, cache, opts.signal, opts.promoted, true) || null
+    const payload = opts.fresh
+      ? await _importPayload(payloadURL, cache, opts.signal, opts.promoted, true)
+      : await _sharedImportPayload(payloadURL, cache, opts.signal, opts.promoted)
+    // an HTTP cache may still hold a payload from a previous build
+    if (payload && cache === 'default' && !opts.fresh && isOutdatedPayload(payload)) {
+      const revalidated = await _importPayload(payloadURL, 'no-cache', opts.signal, opts.promoted, true)
+      return revalidated || (opts.signal?.aborted ? null : payload)
     }
-    return await _sharedImportPayload(payloadURL, cache, opts.signal, opts.promoted) || null
+    return payload || null
   }
   return null
 }
@@ -139,12 +144,13 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
     throw stateDiagnostics.NUXT_E7001({ url })
   }
   const config = useRuntimeConfig()
-  const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
+  const cached = isCachedPayloadRoute(url)
+  const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : cached ? undefined : config.app.buildId)
   const cdnURL = config.app.cdnURL
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
   const payloadURL = joinURL(baseOrCdnURL, u.pathname, filename)
 
-  if (!isCachedPayloadRoute(url)) {
+  if (!cached) {
     u.search = ''
   }
   if (hash) {

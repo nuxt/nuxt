@@ -158,10 +158,20 @@ async function ensureGeneratedTsConfigs (nuxt: Nuxt) {
   await writeTypes(nuxt).catch(() => {})
 }
 
-const watchEvents: Record<EventType, 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'> = {
+const watchEvents: Record<EventType, WatchEvent> = {
   create: 'add',
   delete: 'unlink',
   update: 'change',
+}
+
+type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
+
+function onWatchEvent (watcher: FSWatcher, callback: (event: WatchEvent, path: string) => void) {
+  watcher.on('all', (event, path) => {
+    if (event !== 'all' && event !== 'ready' && event !== 'error' && event !== 'raw') {
+      callback(event, normalize(path))
+    }
+  })
 }
 
 async function watch (nuxt: Nuxt) {
@@ -211,12 +221,7 @@ function createWatcher () {
 
   watcher.add([...restartPaths])
 
-  watcher.on('all', (event, path) => {
-    if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
-      return
-    }
-    nuxt.callHook('builder:watch', event, normalize(path))
-  })
+  onWatchEvent(watcher, (event, path) => nuxt.callHook('builder:watch', event, path))
 
   const disposeRecovery = recoverThrottledChanges(watcher)
   nuxt.hook('close', () => {
@@ -244,11 +249,7 @@ function createGranularWatcher () {
     const watchers: Record<string, FSWatcher> = {}
     const disposers = new Map<string, () => void>()
 
-    watcher.on('all', (event, path) => {
-      if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
-        return
-      }
-      path = normalize(path)
+    onWatchEvent(watcher, (event, path) => {
       if (!pending) {
         nuxt.callHook('builder:watch', event, path)
       }
@@ -260,12 +261,7 @@ function createGranularWatcher () {
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.has(path) && !(path in watchers) && !isIgnored(path)) {
         const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
-        pathWatcher.on('all', (event, p) => {
-          if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
-            return
-          }
-          nuxt.callHook('builder:watch', event, normalize(p))
-        })
+        onWatchEvent(pathWatcher, (event, p) => nuxt.callHook('builder:watch', event, p))
         const disposePathRecovery = recoverThrottledChanges(pathWatcher)
         disposers.set(path, disposePathRecovery)
         nuxt.hook('close', () => {
@@ -386,6 +382,9 @@ const hooksToClear: Array<keyof NuxtHooks> = [
   'rspack:change',
   'rspack:error',
   'rspack:done',
+  'rsbuild:config',
+  'rsbuild:compile',
+  'rsbuild:compiled',
   // manifest hook - fires after build
   'build:manifest',
   // builder hooks

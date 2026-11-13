@@ -35,7 +35,6 @@
       ],
       "ignoreDeps": [
         "nuxt",
-        "nuxt3",
         "@nuxt/kit"
       ]
     },
@@ -63,7 +62,6 @@
         "vite",
         "rolldown",
         "rolldown-string",
-        "obuild",
         "tsdown",
         "oxc-parser",
         "oxc-walker",

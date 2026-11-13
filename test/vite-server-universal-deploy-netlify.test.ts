@@ -1,27 +1,21 @@
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 import { readFile } from 'node:fs/promises'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
-import { isWindows } from 'std-env'
-import { fetch, setup } from '@nuxt/test-utils/e2e'
+import { fetch } from '@nuxt/test-utils/e2e'
 import type { Nuxt } from 'nuxt/schema'
 
 import { isDev, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { buildInProcess, fixturePath, setupFixture } from './utils'
 
-const rootDir = fileURLToPath(new URL('./fixtures/vite-server-universal-deploy-netlify', import.meta.url))
+const rootDir = fixturePath('vite-server-universal-deploy-netlify')
 const publicDir = join(rootDir, '.output/public')
 
-if (runsOncePerEnvInMatrix && isDev) {
-  await setup({
-    rootDir,
-    dev: true,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+const runsDev = runsOncePerEnvInMatrix && isDev
 
-describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('universal-deploy dev server with netlify emulation', () => {
+await setupFixture('vite-server-universal-deploy-netlify', runsDev)
+
+describe.skipIf(!runsDev)('universal-deploy dev server with netlify emulation', () => {
   it('renders through the target', async () => {
     const html = await (await fetch('/about')).text()
 
@@ -32,21 +26,18 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('universal-deploy dev server 
 
 describe.skipIf(!runsOnceInMatrix)('pure vite build with a universal-deploy target on netlify', () => {
   let serverBuild: Nuxt['serverBuild']
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') },
-    })
-    try {
-      await buildNuxt(nuxt)
-      expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
-      serverBuild = nuxt.serverBuild
-    } finally {
-      await nuxt.close()
-    }
+    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
+    expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
+    serverBuild = nuxt.serverBuild
   }, 240 * 1000)
+
+  it('reports `netlify` as the deploy target before and after the build', () => {
+    expect(targets).toEqual(['netlify', 'netlify'])
+  })
 
   it('publishes the client build for the target to serve', async () => {
     expect(await readFile(join(publicDir, 'static.txt'), 'utf-8')).toContain('static-asset')

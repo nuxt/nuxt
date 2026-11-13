@@ -1,35 +1,16 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
 import type { Page } from '@playwright/test'
-import { expect, test } from './test-utils'
-
-const fixtureDir = fileURLToPath(new URL('../fixtures/nested-suspense', import.meta.url))
+import { consoleLogs, expect, fixtureDir, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('nested-suspense'),
   },
 })
 
-function consoleLogsFor (page: Page) {
-  // @ts-expect-error untyped
-  return page._consoleLogs as Array<{ type: string, text: string }>
-}
-
 function filteredLogs (page: Page) {
-  return consoleLogsFor(page).map(l => l.text).filter(i =>
-    !i.includes('[vite]')
-    && !i.includes('<Suspense> is an experimental feature')
-    // webpack dev client noise (HMR status logs and echoed build-warning groups)
-    && !i.includes('[HMR]')
-    && !i.startsWith('%c')
-    && i !== 'console.groupEnd',
-  )
+  return consoleLogs(page).map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature'))
 }
 
 // Bug #7337
@@ -42,7 +23,7 @@ test.describe('deferred app suspense resolve', () => {
       // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
-      const hydrationLogs = consoleLogsFor(page).filter(log => log.text.includes('isHydrating'))
+      const hydrationLogs = consoleLogs(page).filter(log => log.text.includes('isHydrating'))
       expect(hydrationLogs.length).toBe(3)
       expect(hydrationLogs.every(log => log.text === 'isHydrating: true')).toBe(true)
     })
@@ -187,6 +168,39 @@ test.describe('boot', () => {
       createdAfterModuleTask: true,
       beforeMountAfterPluginTask: true,
     })
+  })
+})
+
+// https://github.com/nuxt/nuxt/issues/34683, https://github.com/nuxt/nuxt/issues/28425
+test.describe('navigation with a layout change', () => {
+  test('completes when a redirect crosses the layout boundary', async ({ page, goto }) => {
+    await goto('/')
+    await expect(page.getByTestId('index-title')).toBeVisible()
+    await expect(page.getByTestId('alternate-layout')).toBeVisible()
+
+    await page.getByTestId('link-redirect').click()
+
+    await expect(page.getByTestId('target-content')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('default-layout')).toBeVisible()
+    await expect(page.getByTestId('index-title')).not.toBeVisible()
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
+  test('settles on the final route after rapid navigation across useAsyncData pages', async ({ page, goto }) => {
+    await goto('/asyncdata/p0')
+    await expect(page.getByTestId('asyncdata-p0')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('default-layout')).toBeVisible()
+
+    await page.getByTestId('link-async-p1').dispatchEvent('click')
+    await page.getByTestId('link-async-p2').dispatchEvent('click')
+    await page.getByTestId('link-async-p3').dispatchEvent('click')
+
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/asyncdata/p3')
+    await expect(page.getByTestId('asyncdata-p3')).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByTestId('default-layout')).toBeVisible()
+
+    expect(page).toHaveNoErrorsOrWarnings()
   })
 })
 

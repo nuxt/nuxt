@@ -1,6 +1,9 @@
-import { relative, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'
-import type { NuxtOptions } from 'nuxt/schema'
+import { ImpoundPlugin } from 'impound'
+import { withTrailingSlash } from 'ufo'
+import { addBuildPlugin, addVitePlugin } from '@nuxt/kit'
+import type { Nuxt, NuxtOptions } from 'nuxt/schema'
 
 type ImportPattern = [importPattern: string | RegExp | ((id: string, importer: string) => boolean | string), warning?: string, suggestions?: string[]]
 
@@ -92,6 +95,55 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
   }
 
   return patterns
+}
+
+/**
+ * Deny imports that cannot work in the Vue app (and, more strictly, in the `shared/` directory).
+ */
+export function addImportProtectionPlugins (nuxt: Nuxt) {
+  const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+  const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+  const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
+  const trace = nuxt.options.dev ? true : 'lazy' as const
+  const sharedMatcher = {
+    include: sharedPatterns,
+    patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
+  }
+  const nuxtAppMatcher = {
+    // Exclude top-level resolutions by plugins
+    exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
+    patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
+  }
+  addBuildPlugin({
+    webpack: () => ImpoundPlugin.webpack({ cwd: nuxt.options.rootDir, trace, ...sharedMatcher }),
+    rspack: () => ImpoundPlugin.rspack({ cwd: nuxt.options.rootDir, trace, ...sharedMatcher }),
+  }, { server: false, prepend: true })
+
+  addBuildPlugin({
+    webpack: () => ImpoundPlugin.webpack({ cwd: nuxt.options.rootDir, trace, ...nuxtAppMatcher }),
+    rspack: () => ImpoundPlugin.rspack({ cwd: nuxt.options.rootDir, trace, ...nuxtAppMatcher }),
+  })
+
+  // In Vite the main impound plugin (resolveId) is prepended to run before Vite's resolver, while
+  // the trace plugin (transform) runs after SFC compilation so es-module-lexer can parse the
+  // compiled JS. Both matchers share a single plugin instance so eager tracing parses each module once.
+  for (const envOptions of [{ client: false }, { server: false }] as const) {
+    const error = envOptions.client !== false
+    const matcherOptions = { error, ...(!error && { warn: 'once' as const }) }
+    const matchers = error
+      ? [{ ...sharedMatcher, ...matcherOptions }, { ...nuxtAppMatcher, ...matcherOptions }]
+      : [{ ...nuxtAppMatcher, ...matcherOptions }]
+    const vitePlugins = [ImpoundPlugin.vite({ cwd: nuxt.options.rootDir, trace, matchers })].flat()
+      .map(p => Object.assign(p, { name: `nuxt:import-protection:${p.name}` }))
+    const mainPlugins = vitePlugins.filter(p => !p.name.includes('trace'))
+    const tracePlugins = vitePlugins.filter(p => p.name.includes('trace'))
+    if (mainPlugins.length) {
+      addVitePlugin(() => mainPlugins, { ...envOptions, prepend: true })
+    }
+    if (tracePlugins.length) {
+      addVitePlugin(() => tracePlugins, envOptions)
+    }
+  }
 }
 
 const contextFlags = {

@@ -21,4 +21,9 @@ export default withMatrix({
       assetsInlineLimit: 100, // keep SVG as assets URL
     },
   },
+  rsbuild: {
+    output: {
+      dataUriLimit: 100, // keep SVG as assets URL
+    },
+  },
 })

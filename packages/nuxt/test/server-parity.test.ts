@@ -35,6 +35,7 @@ import type {
  * constructible with the same arguments.
  */
 interface MainSurface {
+  defineHandler: <Result>(handler: (event: RequestEvent) => Result) => (event: RequestEvent) => Result
   defineEventHandler: <Result>(handler: (event: RequestEvent) => Result) => (event: RequestEvent) => Result
   createError: (...args: never[]) => Error
   isNuxtError: (error: unknown) => boolean
@@ -72,6 +73,7 @@ interface MainSurface {
 
 /** Value exports `main` has. */
 const MAIN_VALUE_EXPORTS = [
+  'defineHandler',
   'defineEventHandler',
   'createError',
   'NuxtError',

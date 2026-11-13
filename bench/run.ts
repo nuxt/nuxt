@@ -43,6 +43,7 @@ const { values } = parseArgs({
     'reps': { type: 'string' },
     'workdir': { type: 'string', default: join(homedir(), '.cache/nuxt-bench') },
     'out': { type: 'string' },
+    'profile': { type: 'boolean', default: false },
     'help': { type: 'boolean', short: 'h' },
   },
 })
@@ -58,7 +59,8 @@ Compares the working tree (packed from source) with a baseline, alternating runs
   --fixture <name>    ${allFixtures.map(f => f.id).join(', ')} (repeatable, default: each suite's own)
   --reps <n>          override the number of repetitions for every suite
   --workdir <dir>     install and cache directory (default: ~/.cache/nuxt-bench)
-  --out <file>        markdown report path (default: <workdir>/report.md)\n`)
+  --out <file>        markdown report path (default: <workdir>/report.md)
+  --profile           also record a CPU profile of each production server in the render suite\n`)
   process.exit(0)
 }
 
@@ -97,7 +99,7 @@ for (const target of targets) {
 const results: Record<string, SuiteResult> = {}
 for (const name of selectedSuites) {
   const suite = suites[name]
-  results[name] = await suite.run({ targets, fixtures: suiteFixtures(name), reps: reps ?? suite.reps, log })
+  results[name] = await suite.run({ targets, fixtures: suiteFixtures(name), reps: reps ?? suite.reps, log, profile: values.profile })
 }
 
 const env = environment()

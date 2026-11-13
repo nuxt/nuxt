@@ -65,26 +65,15 @@ describe('imports:transform', () => {
 const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta', 'useId']
 
 describe('imports:nuxt', () => {
-  try {
+  it('should register every composable globally', () => {
     const entrypointPath = fileURLToPath(new URL('../src/app/composables/index.ts', import.meta.url))
-    const entrypointContents = readFileSync(entrypointPath, 'utf8')
-
-    const { module } = parseSync(entrypointPath, entrypointContents)
+    const { module } = parseSync(entrypointPath, readFileSync(entrypointPath, 'utf8'))
     const names = module.staticExports.flatMap(statement => statement.entries.filter(entry => !entry.isType).map(entry => entry.exportName.name).filter((name): name is string => !!name))
-    for (const name of names) {
-      if (excludedNuxtHelpers.includes(name)) {
-        continue
-      }
-      it(`should register ${name} globally`, () => {
-        expect(defaultPresets.flatMap(a => a.from.startsWith('#app/') ? a.imports : [])).to.include(name)
-      })
-    }
-  } catch (e) {
-    it('should import composables', () => {
-      console.error(e)
-      expect(false).toBe(true)
-    })
-  }
+    const registered = new Set(defaultPresets.flatMap(a => a.from.startsWith('#app/') ? a.imports : []))
+
+    expect(names.length).toBeGreaterThan(0)
+    expect(names.filter(name => !excludedNuxtHelpers.includes(name) && !registered.has(name))).toEqual([])
+  })
 })
 
 const excludedVueHelpers = [
@@ -211,14 +200,10 @@ const excludedVueHelpers = [
 ]
 
 describe('imports:vue', () => {
-  for (const name of Object.keys(VueFunctions)) {
-    if (excludedVueHelpers.includes(name)) {
-      continue
-    }
-    it(`should register ${name} globally`, () => {
-      expect(defaultPresets.find(a => a.from === 'vue')!.imports).toContain(name)
-    })
-  }
+  it('should register every Vue helper globally', () => {
+    const registered = new Set(defaultPresets.find(a => a.from === 'vue')!.imports)
+    expect(Object.keys(VueFunctions).filter(name => !excludedVueHelpers.includes(name) && !registered.has(name))).toEqual([])
+  })
 })
 
 describe('imports:nuxt/scripts', async () => {
@@ -232,12 +217,8 @@ describe('imports:nuxt/scripts', async () => {
     'useScriptGoogleTagManager',
     'useScriptGoogleAnalytics',
   ])
-  it.each(scriptsStubsPreset.imports)(`stubbed %s should exist in the @nuxt/scripts registry`, (name) => {
-    if (globalScripts.has(name)) { return }
-
-    expect(scripts).toContain(name)
-  })
-  it.each(scripts)(`%s from the @nuxt/scripts registry should be stubbed`, (name) => {
-    expect(scriptsStubsPreset.imports).toContain(name)
+  it('should stub exactly the composables in the @nuxt/scripts registry', () => {
+    expect(scriptsStubsPreset.imports.filter(name => !globalScripts.has(name as string) && !scripts.includes(name as string))).toEqual([])
+    expect(scripts.filter(name => !scriptsStubsPreset.imports.includes(name!))).toEqual([])
   })
 })

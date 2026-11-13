@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { performance } from 'node:perf_hooks'
+import { pathToFileURL } from 'node:url'
 import { createBuilder, createServer, mergeConfig, resolveConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
@@ -12,6 +13,7 @@ import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
+import { resolveVuePackages, useServerBuild } from '@nuxt/kit/internal'
 
 import { buildClient } from './client.ts'
 import { buildServer } from './server.ts'
@@ -32,8 +34,7 @@ import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
 import { DecoratorsPlugin } from './plugins/decorators.ts'
 import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
-import { TypeCheckPlugin } from './plugins/type-check.ts'
-import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
+import { ModulePreloadPolyfillPlugin } from './plugins/client-entry-import.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { CompileHintsPlugin } from './plugins/compile-hints.ts'
 import { ClientChunksPlugin } from './plugins/client-chunks.ts'
@@ -50,7 +51,6 @@ import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 import { InlinedVuePlugin } from './plugins/inlined-vue.ts'
 import { PerfPlugin } from './plugins/perf.ts'
 import { isNavigationRequest, warmupViteServer } from './utils/warmup.ts'
-import { useServerBuild } from '@nuxt/kit/internal'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -92,6 +92,14 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+
+  const vueDir = resolveVuePackages(nuxt).dirs.vue
+  const compilerSfc = !viteConfig.vue?.compiler && vueDir
+    ? resolveModulePath('vue/compiler-sfc', { from: vueDir + '/', try: true })
+    : undefined
+  if (compilerSfc) {
+    viteConfig.vue = { ...viteConfig.vue, compiler: await import(pathToFileURL(compilerSfc).href) }
+  }
 
   const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
 
@@ -263,8 +271,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
               }),
               RuntimePathsPlugin(),
-              // Type checking client panel
-              TypeCheckPlugin(nuxt),
               ModulePreloadPolyfillPlugin(),
               // ensure changes in chunks do not invalidate whole build
               StableEntryPlugin(nuxt),

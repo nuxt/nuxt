@@ -49,6 +49,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
           '#shared',
           new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))),
         ],
+        makeAbsoluteExternalsRelative: false,
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',

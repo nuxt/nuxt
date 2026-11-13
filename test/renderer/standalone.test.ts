@@ -1,49 +1,17 @@
 import { describe, expect, it, vi } from 'vitest'
 import { parse } from 'devalue'
-import { joinURL } from 'ufo'
 import { createNuxtRenderer } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
-import type { NuxtRendererOptions } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
 import { renderPayloadJsonScript } from '../../packages/nuxt/src/runtime/server/renderer/payload.ts'
 import type { NuxtSSRContext } from '../../packages/nuxt/src/app/types.ts'
+
+import { BUILD_ASSETS_DIR, createEvent, options, render } from './harness'
 
 vi.mock('nuxt/internal/renderer-config', async importOriginal => ({
   ...await importOriginal<Record<string, unknown>>(),
   NUXT_SSR_STREAMING: true,
+  NUXT_RUNTIME_PAYLOAD_EXTRACTION: true,
+  NUXT_PAYLOAD_INLINE: false,
 }))
-
-type RendererEvent = Parameters<ReturnType<typeof createNuxtRenderer>['fetch']>[0]
-
-const BUILD_ASSETS_DIR = '/_custom-assets/'
-
-const runtimeConfig = {
-  app: { baseURL: '/', buildAssetsDir: BUILD_ASSETS_DIR, cdnURL: '', buildId: 'standalone' },
-  public: { greeting: 'hello from runtime config' },
-} as unknown as ReturnType<NuxtRendererOptions['runtimeConfig']>
-
-const options: NuxtRendererOptions = {
-  runtimeConfig: () => runtimeConfig,
-  buildAssetsURL: (...path) => joinURL(BUILD_ASSETS_DIR, ...path),
-  publicAssetsURL: (...path) => joinURL('/', ...path),
-  getRouteRules: () => ({ ssr: true }),
-  hooks: () => ({ callHook: () => {} }),
-  createResponse: (body, init) => new Response(body, init),
-  createError: init => Object.assign(new Error(init.statusText), init),
-}
-
-function createEvent (path: string, init?: RequestInit): RendererEvent {
-  const url = new URL(path, 'http://localhost')
-  return {
-    req: new Request(url, init),
-    url,
-    res: { headers: new Headers() },
-    context: {},
-  } as unknown as RendererEvent
-}
-
-function render (path: string, overrides?: Partial<NuxtRendererOptions>, event = createEvent(path)) {
-  const renderer = createNuxtRenderer({ ...options, ...overrides })
-  return renderer.fetch(event).then(async response => ({ response, html: await response.text() }))
-}
 
 describe('renderer without a server builder', () => {
   it('renders a document from a web-standard request event', async () => {
@@ -96,12 +64,42 @@ describe('renderer without a server builder', () => {
     expect(html).toContain('<h1>rendered and replaced</h1>')
   })
 
+  it('sends the document as chunks when a `render:document` listener only reads it', async () => {
+    let document: string | undefined
+    let chunks: string[] | undefined
+    const { html } = await render('/', {
+      hooks: () => ({
+        callHook: ((name: string, context: { html: string }) => {
+          if (name === 'render:document') {
+            document = context.html
+          }
+        }) as never,
+      }),
+      createDocumentResponse: (received, init) => {
+        chunks = received
+        return new Response(received.join(''), init)
+      },
+    })
+
+    expect(chunks!.length).toBeGreaterThan(2)
+    expect(html).toBe(document)
+  })
+
   it('sends the app markup an `app:rendered` listener rewrote', async () => {
     const { html } = await render('/rewritten', {
       createDocumentResponse: (received, init) => new Response(received.join(''), init),
     })
 
     expect(html).toContain('<h1>rewritten after render</h1>')
+  })
+
+  it.each([false, true])('leaves `prefetchLinks` out of an inlined payload (streaming: %s)', async (streaming) => {
+    const event = createEvent('/prefetch-links', { headers: { 'user-agent': 'Mozilla/5.0' } })
+    const { html } = await render('/prefetch-links', { getRouteRules: () => ({ ssr: true, streaming }) }, event)
+
+    expect(html.includes('window.__unhead__')).toBe(streaming)
+    expect(html).toContain('rendered without nitro')
+    expect(html).not.toContain('next-page.js')
   })
 
   it('resolves asset URLs through the helpers it was given', async () => {
@@ -155,6 +153,13 @@ describe('renderer without a server builder', () => {
     expect(html).not.toMatch(new RegExp(`<link rel="modulepreload"[^>]*href="${entry}"`))
   })
 
+  it('does not key the payload url of a cached route on the build id', async () => {
+    const { html } = await render('/?page=2', { getRouteRules: () => ({ ssr: true, isr: 60 }) })
+
+    expect(html).toContain('data-src="/_payload.json?page=2"')
+    expect(html).toContain('rel="preload" as="fetch" crossorigin="anonymous" href="/_payload.json?page=2"')
+  })
+
   it('serves the client-only shell for a route the rules opt out of ssr', async () => {
     const { html } = await render('/', { getRouteRules: () => ({ ssr: false }) })
 
@@ -198,6 +203,104 @@ describe('renderer without a server builder', () => {
     const renderer = createNuxtRenderer(options)
 
     await expect(renderer.fetch(createEvent('/__nuxt_error'))).rejects.toMatchObject({ status: 404 })
+  })
+})
+
+describe('renderer plugins', () => {
+  const state = globalThis as { __rendererPluginCalls?: number, __rendererPluginDocument?: string }
+
+  it('calls each plugin once for every renderer, with hooks of its own', async () => {
+    const calls = state.__rendererPluginCalls || 0
+    const first = createNuxtRenderer(options)
+    const second = createNuxtRenderer(options)
+
+    expect(state.__rendererPluginCalls).toBe(calls + 2)
+    for (const renderer of [first, second]) {
+      const html = await renderer.fetch(createEvent('/')).then(r => r.text())
+      expect(html.match(/<meta name="renderer-plugin">/g)).toHaveLength(1)
+    }
+  })
+
+  it('passes renderer plugins the event `pluginEvent` returns, and the runtime hooks the original', async () => {
+    let original: unknown
+    let runtimeEvent: unknown
+    const { html } = await render('/', {
+      pluginEvent: (event) => {
+        original = event
+        return { ...event, url: new URL('http://localhost/?render-document') } as never
+      },
+      hooks: () => ({
+        callHook: ((name: string, _context: unknown, extra: { event: unknown }) => {
+          if (name === 'render:document') {
+            runtimeEvent = extra.event
+          }
+        }) as never,
+      }),
+    })
+
+    expect(html).toContain('<!-- renderer-plugin --></html>')
+    expect(runtimeEvent).toBeDefined()
+    expect(runtimeEvent).toBe(original)
+  })
+
+  it('runs the hooks of renderer plugins before those of the runtime', async () => {
+    const { html } = await render('/', {
+      hooks: () => ({
+        callHook: ((name: string, context: any) => {
+          if (name === 'render:html') {
+            context.head.push('<meta name="runtime">')
+          }
+        }) as never,
+      }),
+    })
+
+    expect(html.indexOf('<meta name="renderer-plugin">')).toBeGreaterThan(-1)
+    expect(html.indexOf('<meta name="renderer-plugin">')).toBeLessThan(html.indexOf('<meta name="runtime">'))
+  })
+
+  it('runs them for a streamed render', async () => {
+    const event = createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } })
+    const { html } = await render('/', { getRouteRules: () => ({ ssr: true, streaming: true }) }, event)
+
+    expect(html).toContain('window.__unhead__')
+    expect(html).toContain('<meta name="renderer-plugin">')
+    expect(html).toMatch(/<!--renderer-plugin-close-->[\s\S]*<\/body>/)
+  })
+
+  it('runs them for the client-only shell', async () => {
+    const { html } = await render('/', { getRouteRules: () => ({ ssr: false }) })
+
+    expect(html).toContain('<div id="__nuxt"></div>')
+    expect(html).toContain('<meta name="renderer-plugin">')
+  })
+
+  it('calls `render:document` with the document once every `render:html` hook has run', async () => {
+    let runtimeDocument: string | undefined
+    let chunks: string[] | undefined
+    const { html } = await render('/?render-document', {
+      createDocumentResponse: (received, init) => {
+        chunks = received
+        return new Response(received.join(''), init)
+      },
+      hooks: () => ({
+        callHook: ((name: string, context: any) => {
+          if (name === 'render:html') {
+            context.head.push('<meta name="runtime">')
+          }
+          if (name === 'render:document') {
+            runtimeDocument = context.html
+            context.html = context.html.replace('</html>', '<!-- runtime --></html>')
+          }
+        }) as never,
+      }),
+    })
+
+    expect(state.__rendererPluginDocument).toMatch(/^<!DOCTYPE html><html[^>]*>.*<\/html>$/s)
+    expect(state.__rendererPluginDocument).toContain('<meta name="renderer-plugin">')
+    expect(state.__rendererPluginDocument).toContain('<meta name="runtime">')
+    expect(runtimeDocument).toContain('<!-- renderer-plugin --></html>')
+    expect(html).toContain('<!-- renderer-plugin --><!-- runtime --></html>')
+    expect(chunks).toBeUndefined()
   })
 })
 

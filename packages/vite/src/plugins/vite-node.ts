@@ -3,7 +3,7 @@ import { rm } from 'node:fs/promises'
 import type { Socket } from 'node:net'
 import net from 'node:net'
 import os from 'node:os'
-import fs from 'node:fs' // For sync operations like unlinkSync if needed during setup
+import fs from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { Buffer } from 'node:buffer'
 import { randomUUID } from 'node:crypto'
@@ -18,14 +18,16 @@ import type { Nitro } from 'nitropack/types'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { Nuxt } from '@nuxt/schema'
+import type { H3Error } from 'h3'
+import type { HTTPError } from 'h3-next'
 import { resolveModulePath } from 'exsolve'
 
 import { toVirtualId } from '../utils/index.ts'
 import { collectDevCss } from '../utils/css.ts'
 import { isBundlerTracingEnabled, traceAsync } from '../utils/tracing.ts'
 import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
-import type { ErrorPartial } from '../types.ts'
 import type { ViteNodeErrorData } from '../vite-node-runner.ts'
+import { createMessageDecoder, encodeMessage } from '../utils/ipc.ts'
 
 /**
  * Serialise a Vite transform failure for transport over the vite-node socket, keeping the
@@ -48,6 +50,8 @@ export function serializeViteNodeError (error: any, moduleId: string, file?: str
   if (error.pluginCode) { errorData.pluginCode = error.pluginCode }
   return errorData
 }
+
+type ErrorPartial = Partial<HTTPError> | Partial<H3Error>
 
 type ResolveIdResponse = Awaited<ReturnType<PluginContainer['resolveId']>>
 
@@ -157,10 +161,6 @@ export function pickSocketPath (platform: NodeJS.Platform, tmpdir: string = os.t
   return { socketPath: join(parentDir, socketName), parentDir }
 }
 
-function generateSocketPath (): SocketPathInfo {
-  return pickSocketPath(process.platform)
-}
-
 function useInvalidates () {
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
@@ -200,7 +200,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
   const nitro = useNitro() as Nitro
 
   let socketServer: net.Server | undefined
-  const { socketPath, parentDir } = generateSocketPath()
+  const { socketPath, parentDir } = pickSocketPath(process.platform)
   const { invalidates, markInvalidate, markInvalidates } = useInvalidates()
 
   let cleanedUp = false
@@ -408,7 +408,7 @@ export function ViteNodePlugin (nuxt: Nuxt): VitePlugin | undefined {
 
         process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
 
-        socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, invalidates, () => collectInvalidatedSsrModules(ssrServer), viteNodeServerOptions)
+        socketServer = createViteNodeSocketServer(nuxt, ssrServer, clientServer, socketPath, invalidates, () => collectInvalidatedSsrModules(ssrServer))
       }
 
       if (nuxt.options.experimental.viteEnvironmentApi || !nuxt.options.ssr) {
@@ -476,16 +476,8 @@ function getNode (server: ViteDevServer) {
   return _node
 }
 
-function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, invalidates: Set<string>, collectInvalidatedSsrModules: () => void, config: ViteNodeServerOptions) {
+function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clientServer: ViteDevServer, socketPath: string, invalidates: Set<string>, collectInvalidatedSsrModules: () => void) {
   const server = net.createServer((socket) => {
-    const INITIAL_BUFFER_SIZE = 64 * 1024 // 64kB
-    const MAX_BUFFER_SIZE = 1024 * 1024 * 1024 // 1GB
-
-    let buffer = Buffer.alloc(INITIAL_BUFFER_SIZE)
-    let writeOffset = 0
-    let readOffset = 0
-
-    // Optimize socket settings for performance
     socket.setNoDelay(true)
     socket.setKeepAlive(true, 0)
 
@@ -565,104 +557,35 @@ function createViteNodeSocketServer (nuxt: Nuxt, ssrServer: ViteDevServer, clien
       }
     }
 
-    const resetBuffer = () => {
-      writeOffset = 0
-      readOffset = 0
-    }
-
-    const compactBuffer = () => {
-      if (readOffset > 0) {
-        const remainingData = writeOffset - readOffset
-        if (remainingData > 0) {
-          buffer.copy(buffer, 0, readOffset, writeOffset)
-        }
-        writeOffset = remainingData
-        readOffset = 0
+    const decoder = createMessageDecoder((json) => {
+      let request: any
+      try {
+        request = JSON.parse(json)
+      } catch (parseError) {
+        throw new Error(`Invalid JSON in message: ${parseError instanceof Error ? parseError.message : 'Unknown parse error'}`, { cause: parseError })
       }
-    }
-
-    const ensureBufferCapacity = (additionalBytes: number) => {
-      const requiredSize = writeOffset + additionalBytes
-
-      if (requiredSize > MAX_BUFFER_SIZE) {
-        throw bundlerDiagnostics.NUXT_B7012({ requiredSize, maxSize: MAX_BUFFER_SIZE })
-      }
-
-      if (requiredSize > buffer.length) {
-        // try compacting first
-        compactBuffer()
-
-        // ... then if we still need more space, grow the buffer
-        if (writeOffset + additionalBytes > buffer.length) {
-          const newSize = Math.min(
-            Math.max(buffer.length * 2, requiredSize),
-            MAX_BUFFER_SIZE,
-          )
-          const newBuffer = Buffer.alloc(newSize)
-          buffer.copy(newBuffer, 0, 0, writeOffset)
-          buffer = newBuffer
-        }
-      }
-    }
+      processMessage(request).catch((error) => {
+        sendError(socket, request?.id || 'unknown', error)
+      })
+    }, (requiredSize, maxSize) => bundlerDiagnostics.NUXT_B7012({ requiredSize, maxSize }))
 
     socket.on('data', (data) => {
       try {
-        ensureBufferCapacity(data.length)
-        data.copy(buffer, writeOffset)
-        writeOffset += data.length
-
-        // Process all complete messages in the buffer
-        while (writeOffset - readOffset >= 4) {
-          const messageLength = buffer.readUInt32BE(readOffset)
-          const totalLength = 4 + messageLength
-
-          if (writeOffset - readOffset < totalLength) {
-            break // Wait for more data
-          }
-
-          const messageJSON = buffer.subarray(readOffset + 4, readOffset + totalLength).toString('utf-8')
-          readOffset += totalLength
-
-          try {
-            const request = JSON.parse(messageJSON)
-            processMessage(request).catch((error) => {
-              sendError(socket, request?.id || 'unknown', error)
-            })
-          } catch (parseError) {
-            // invalid JSON
-            const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parse error'
-            socket.destroy(new Error(`Invalid JSON in message: ${errorMessage}`))
-            return
-          }
-        }
-
-        // compact buffer periodically to prevent memory waste
-        if (readOffset > buffer.length / 2) {
-          compactBuffer()
-        }
+        decoder.push(data)
       } catch (error) {
-        // buffer management error - close connection
         socket.destroy(error instanceof Error ? error : new Error('Buffer management error'))
       }
     })
-
-    socket.on('error', () => {
-      resetBuffer()
-    })
-
-    socket.on('close', () => {
-      resetBuffer()
-    })
+    socket.on('error', decoder.reset)
+    socket.on('close', decoder.reset)
   })
 
-  const currentSocketPath = config.socketPath
-  if (!currentSocketPath) {
+  if (!socketPath) {
     throw bundlerDiagnostics.NUXT_B7013()
   }
 
-  listenAndRestrict(server, currentSocketPath)
-
-  server.on('error', () => { })
+  listenAndRestrict(server, socketPath)
+  server.on('error', () => {})
 
   return server
 }
@@ -705,53 +628,15 @@ function sendResponse<T extends keyof ViteNodeRequestMap> (
   data: ViteNodeRequestMap[T]['response'],
 ): undefined {
   try {
-    const response = { id, type: 'response', data }
-    const responseJSON = JSON.stringify(response)
-    const messageBuffer = Buffer.from(responseJSON, 'utf-8')
-    const messageLength = messageBuffer.length
-
-    // pre-allocate single buffer for length + message to avoid Buffer.concat()
-    const fullMessage = Buffer.alloc(4 + messageLength)
-    fullMessage.writeUInt32BE(messageLength, 0)
-    messageBuffer.copy(fullMessage, 4)
-
-    socket.write(fullMessage, (err) => {
-      if (err) {
-        // Failed to send response - connection likely closed
-      }
-    })
+    socket.write(encodeMessage({ id, type: 'response', data }))
   } catch (error) {
-    // Send error response instead
     sendError(socket, id, error)
   }
 }
 
 function sendError (socket: net.Socket, id: number, error: any) {
-  const errorResponse = {
-    id,
-    type: 'error',
-    error: {
-      message: error.message,
-      stack: error.stack,
-      status: error.status,
-      statusText: error.statusText,
-      data: error.data,
-    },
-  }
-  const responseJSON = JSON.stringify(errorResponse)
-  const messageBuffer = Buffer.from(responseJSON, 'utf-8')
-  const messageLength = messageBuffer.length
-
-  // Pre-allocate single buffer for length + message to avoid Buffer.concat()
-  const fullMessage = Buffer.alloc(4 + messageLength)
-  fullMessage.writeUInt32BE(messageLength, 0)
-  messageBuffer.copy(fullMessage, 4)
-
-  socket.write(fullMessage, (err) => {
-    if (err) {
-      // Failed to send error response - connection likely closed
-    }
-  })
+  const { message, stack, status, statusText, data } = error
+  socket.write(encodeMessage({ id, type: 'error', error: { message, stack, status, statusText, data } }))
 }
 
 export type ViteNodeServerOptions = {

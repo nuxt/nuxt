@@ -12,7 +12,7 @@ import genericNames from 'generic-names'
 
 import { IS_CSS_RE, isCSS, isVue, parseModuleId } from '../utils/index.ts'
 import { withInlineQuery } from '../utils/inline-styles.ts'
-import { resolveClientEntry } from '../utils/config.ts'
+import { resolveClientEntry, resolveServerEntry } from '../utils/config.ts'
 import escapeStringRegexp from 'escape-string-regexp'
 
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
@@ -186,6 +186,12 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       }
     }
 
+    // The SSR entry is not an entry in the client manifest when a module rewires only the client input.
+    const ssrEntryId = relativeToSrcDir(ssrEntry)
+    if (chunksWithInlinedCSS.has(ssrEntryId)) {
+      entryIds.add(ssrEntryId)
+    }
+
     for (const id of chunksWithInlinedCSS) {
       const chunk = manifest[id]
       if (!chunk) {
@@ -287,7 +293,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   const serverPages = pages.filter(({ mode, file }) => mode === 'server' && file)
   const serverPagePaths = new Set(serverPages.map(({ file }) => file!))
 
-  let entry: string
+  let clientEntry: string
+  let ssrEntry: string
 
   // stubbed out of the client build, so like an island they have no chunk to link from
   const noScriptsPagePaths = new Set(nuxt.options._noScriptsPageSources.map(src => resolve(nuxt.options.srcDir, src)))
@@ -323,11 +330,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   async function extractInlineStyles (ctx: Rollup.PluginContext, id: string, code: string, mayDefer = false): Promise<void> {
     const { pathname, search } = parseModuleId(id)
 
-    if (!(id in clientCSSMap) && !isInlineOnlyModule(pathname) && !isVue(pathname)) { return }
+    const isEntryModule = pathname === ssrEntry
+
+    if (!isEntryModule && !(id in clientCSSMap) && !isInlineOnlyModule(pathname) && !isVue(pathname)) { return }
 
     if (MACRO_QUERY_RE.test(search) || NUXT_COMPONENT_QUERY_RE.test(search)) { return }
-
-    const isEntryModule = pathname === entry
 
     let inlineOnlyExtracted = false
     if (!isEntryModule && !isInlineOnlyModule(pathname)) {
@@ -374,7 +381,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
       return `${chunkNamePrefix}-styles-${styleCtr}.mjs`
     }
 
-    const ids = clientCSSMap[id] || []
+    const ids = (isEntryModule ? clientCSSMap[clientEntry] : clientCSSMap[id]) || []
     for (const file of ids) {
       if (isEntryModule && typeof options.shouldInline === 'function' && !options.shouldInline(file)) { continue }
       if (emittedIds.has(file)) { continue }
@@ -456,7 +463,13 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
     configResolved (config) {
       // TODO: remove when adopting vite environment api
       if (!config.build.ssr || nuxt.options.experimental.viteEnvironmentApi) {
-        entry = resolveClientEntry(config)
+        clientEntry = resolveClientEntry(config)
+      }
+      if (config.build.ssr || nuxt.options.experimental.viteEnvironmentApi) {
+        const ssrInput = config.environments.ssr?.build.rolldownOptions.input ?? config.build.rolldownOptions.input
+        ssrEntry = typeof ssrInput === 'string' || (!Array.isArray(ssrInput) && !!ssrInput?.server)
+          ? resolveServerEntry(config)
+          : clientEntry
       }
     },
     applyToEnvironment (environment) {
@@ -640,7 +653,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           }
         },
         renderChunk (_code, chunk) {
-          const isEntry = chunk.facadeModuleId === entry
+          const isEntry = chunk.facadeModuleId === (environment.name === 'client' ? clientEntry : ssrEntry)
           if (isEntry) {
             clientCSSMap[chunk.facadeModuleId!] ||= new Set()
           }
@@ -682,7 +695,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           filter: {
             id: {
               include: environment.name === 'client'
-                ? new RegExp('^' + escapeStringRegexp(entry) + '$')
+                ? new RegExp('^' + escapeStringRegexp(clientEntry) + '$')
                 : undefined,
               exclude: environment.name === 'client' ? [] : [/\?.*macro=/, /\?.*nuxt_component=/],
             },
@@ -691,7 +704,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
             if (environment.name === 'client') {
               // We will either teleport global CSS to the 'entry' chunk on the server side
               // or include it here in the client build so it is emitted in the CSS.
-              if (id === entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {
+              if (id === clientEntry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {
                 const idClientCSSMap = clientCSSMap[id] ||= new Set()
                 if (!options.globalCSS.length) { return }
 

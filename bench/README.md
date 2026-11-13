@@ -24,7 +24,7 @@ Runs alternate between baseline and head so that drift on a shared or busy machi
 | `dev` | cold and warm `nuxt dev`, from spawn to the first rendered page, then the first request to a second page |
 | `hmr` | time from editing a component until a dev server SSR response contains the change |
 | `build` | `nuxt build` wall time, client JS size (raw and gzip) and server output size |
-| `render` | requests per second and latency of the production server |
+| `render` | requests per second and latency of the production server, and whether each route's HTML changed (ignoring build hashes); `--profile` adds a CPU profile of each server |
 | `client` | gzipped JS, CSS and HTML each server-rendered route loads before hydration, and the total client JS |
 | `browser` | hydration time, blocking time and interaction latency in headless Chromium at 8x CPU slowdown (opt-in) |
 

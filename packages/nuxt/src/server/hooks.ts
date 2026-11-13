@@ -1,7 +1,7 @@
-import { createHooks } from 'hookable'
-import type { NuxtRequestEvent, NuxtServerHooks } from 'nuxt/schema'
+import { HookableCore } from 'hookable'
+import type { NuxtRequestEvent, NuxtServerHooks, RequestEvent } from 'nuxt/schema'
 
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '../app/types'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '../app/types'
 
 /**
  * The return type of a server hook handler.
@@ -11,16 +11,25 @@ import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, Nux
 export type ServerHookResult = void | Promise<void>
 
 /**
- * The hooks the Nuxt renderer calls.
+ * The hooks the Nuxt renderer calls. `Event` is the request event the handlers receive: the
+ * server builder's own event on the server runtime hooks, and a {@link RequestEvent} in a
+ * renderer plugin.
  *
  * @since 4.6.0
  */
-export interface NuxtServerRendererHooks {
-  'render:route': (context: NuxtRenderRouteContext, extra: { event: NuxtRequestEvent }) => ServerHookResult
-  'render:html': (context: NuxtRenderHTMLContext, extra: { event: NuxtRequestEvent, streaming?: boolean }) => ServerHookResult
-  'render:html:chunk': (context: NuxtRenderChunkContext, extra: { event: NuxtRequestEvent }) => ServerHookResult
-  'render:html:close': (context: NuxtRenderCloseContext, extra: { event: NuxtRequestEvent }) => ServerHookResult
-  'render:island': (response: NuxtIslandResponse, extra: { event: NuxtRequestEvent, islandContext: NuxtIslandContext }) => ServerHookResult
+export interface NuxtServerRendererHooks<Event = NuxtRequestEvent> {
+  'render:route': (context: NuxtRenderRouteContext, extra: { event: Event }) => ServerHookResult
+  'render:html': (context: NuxtRenderHTMLContext, extra: { event: Event, streaming?: boolean }) => ServerHookResult
+  'render:html:chunk': (context: NuxtRenderChunkContext, extra: { event: Event }) => ServerHookResult
+  'render:html:close': (context: NuxtRenderCloseContext, extra: { event: Event }) => ServerHookResult
+  /**
+   * Called with the serialised document of a response that is not streamed, once every
+   * `render:html` handler has run.
+   *
+   * @since 4.7.0
+   */
+  'render:document': (context: NuxtRenderDocumentContext, extra: { event: Event }) => ServerHookResult
+  'render:island': (response: NuxtIslandResponse, extra: { event: Event, islandContext: NuxtIslandContext }) => ServerHookResult
 }
 
 type HookMap<Hooks> = { [Name in keyof Hooks]: (...args: any[]) => ServerHookResult }
@@ -37,7 +46,38 @@ export interface ServerHookable<Hooks extends HookMap<Hooks>> {
   callHook<Name extends keyof Hooks & string>(name: Name, ...args: Parameters<Hooks[Name]>): Promise<void> | void
 }
 
-let hooks: ServerHookable<NuxtServerHooks & NuxtServerRendererHooks> | undefined
+/**
+ * What a renderer plugin is called with.
+ *
+ * @since 4.7.0
+ */
+export interface RendererPluginContext {
+  /** The hooks of the renderer the plugin is called for. */
+  hooks: Pick<ServerHookable<NuxtServerRendererHooks<RequestEvent>>, 'hook'>
+}
+
+/**
+ * A renderer plugin, as registered with `addRendererPlugin()`: called once for each
+ * renderer, before it renders.
+ *
+ * @example
+ * ```ts
+ * import type { RendererPlugin } from 'nuxt/server'
+ *
+ * export default (({ hooks }) => {
+ *   hooks.hook('render:html', (html) => {
+ *     html.head.push('<meta name="my-module">')
+ *   })
+ * }) satisfies RendererPlugin
+ * ```
+ *
+ * @since 4.7.0
+ */
+export type RendererPlugin = (context: RendererPluginContext) => void
+
+type ServerHooks = ServerHookable<NuxtServerHooks & NuxtServerRendererHooks>
+
+let current: { hooks: ServerHooks, claimed: boolean } | undefined
 
 /**
  * The server runtime hooks: renderer hooks and those declared on {@link NuxtServerHooks}.
@@ -52,6 +92,23 @@ let hooks: ServerHookable<NuxtServerHooks & NuxtServerRendererHooks> | undefined
  *
  * @since 4.6.0
  */
-export function useServerHooks (): ServerHookable<NuxtServerHooks & NuxtServerRendererHooks> {
-  return hooks ||= createHooks() as unknown as ServerHookable<NuxtServerHooks & NuxtServerRendererHooks>
+export function useServerHooks (): ServerHooks {
+  current ||= { hooks: new HookableCore() as ServerHooks, claimed: false }
+  return current.hooks
+}
+
+/**
+ * The server hooks for a renderer being created. The first renderer keeps those registered
+ * before it; a later one, as a dev server creates when it evaluates the server bundle
+ * again, starts with none, so nothing registered for the renderer it replaces runs twice.
+ *
+ * @internal
+ */
+export function claimServerHooks (): ServerHooks {
+  if (current?.claimed) {
+    current = undefined
+  }
+  const hooks = useServerHooks()
+  current!.claimed = true
+  return hooks
 }

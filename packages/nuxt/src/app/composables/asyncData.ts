@@ -1002,13 +1002,13 @@ function buildAsyncData<
 
           // If the asyncData was explicitly aborted internally (dedupe or clear), we do not update the asyncData
           if (asyncData._abortController?.signal.aborted) {
-            return nuxtApp._asyncDataPromises[key]
+            return
           }
 
           // if the asyncData was explicitly aborted by user, we set it back to idle state
           if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') {
             asyncData.status.value = 'idle'
-            return nuxtApp._asyncDataPromises[key]
+            return
           }
 
           asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
@@ -1081,7 +1081,7 @@ const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtA
     return nuxtApp.payload.data[key]
   }
 
-  if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook') {
+  if (ctx.cause === 'initial') {
     return nuxtApp.static.data[key]
   }
 }

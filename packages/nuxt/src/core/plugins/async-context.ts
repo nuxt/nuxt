@@ -1,11 +1,10 @@
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
-import type { Nuxt } from '@nuxt/schema'
 import { VUE_SCRIPT_TEMPLATE_ID_FILTER } from '../utils/index.ts'
 
 const WITH_ASYNC_CONTEXT_IMPORT_RE = /withAsyncContext as _withAsyncContext,?/
 
-export const AsyncContextInjectionPlugin = (_nuxt: Nuxt) => createUnplugin(() => {
+export const AsyncContextInjectionPlugin = () => createUnplugin(() => {
   return {
     name: 'nuxt:vue-async-context',
     transform: {

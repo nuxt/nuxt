@@ -1,62 +1,90 @@
-import { readFileSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
-import { join } from 'pathe'
 import { expect, test } from './test-utils'
-
-const fixtureDir = fileURLToPath(new URL('../fixtures-temp/dev-error-sourcemap', import.meta.url))
-const sourceDir = fileURLToPath(new URL('../fixtures/dev-error-sourcemap', import.meta.url))
+import { tempFixtureDir } from './temp-fixture'
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    dev: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: tempFixtureDir('dev-error-overlay'),
   },
 })
 
 test.describe.configure({ mode: 'serial' })
 
-// checkouts on Windows have CRLF line endings, which the patterns below do not
-const appVue = readFileSync(join(sourceDir, 'app/app.vue'), 'utf8').replaceAll('\r\n', '\n')
-const brokenAppVue = appVue.replace('    rendered without error\n', '    <span\n      rendered without error\n    </span>\n')
-if (brokenAppVue === appVue) {
-  throw new Error('the fixture no longer contains the line these tests break; update `brokenAppVue`')
-}
-
-test('shows the error overlay on an open page when a file stops compiling, and removes it when fixed', async ({ page, goto }) => {
-  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
+test('shows the error page with no overlay when a page throws an expected 404', async ({ page, goto }) => {
   await goto('/ok')
-  await expect(page.locator('body')).toContainText('rendered without error')
-  await expect(page.locator('nuxt-error-overlay')).toHaveCount(0)
+  await page.getByRole('link', { name: 'to expected 404' }).click()
 
-  writeFileSync(join(fixtureDir, 'app/app.vue'), brokenAppVue)
-  const overlay = page.locator('nuxt-error-overlay')
-  await expect(overlay).toHaveCount(1)
-  await expect(overlay.locator('.mb-overlay')).toHaveAttribute('data-minimized', '')
-  await expect(overlay.locator('.mb-name')).toContainText('SyntaxError')
-  await expect(overlay.locator('.mb-message')).toContainText('Illegal')
-  await expect(overlay.locator('.mb-loc')).toContainText('app.vue')
+  await expect(page.locator('body')).toContainText('custom error page: 404')
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(0)
   await expect(page.locator('vite-error-overlay')).toHaveCount(0)
-
-  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
-  await expect(page.locator('nuxt-error-overlay')).toHaveCount(0)
 })
 
-test('reloads the error page once the file compiles again', async ({ page }) => {
-  writeFileSync(join(fixtureDir, 'app/app.vue'), brokenAppVue)
-  // the error page has no app to hydrate, so no hydration wait
-  await page.goto('/ok')
-  await expect(page.locator('.mb-message').first()).toContainText('Illegal')
+test('overlays the error page when a page throws a fatal 500', async ({ page, goto }) => {
+  await goto('/ok')
+  await page.getByRole('link', { name: 'to expected 500' }).click()
 
-  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
-  // the frame quotes the fixed line too, so wait for the page it reloads into
-  await expect(page.locator('.mb-message')).toHaveCount(0, { timeout: 15_000 })
-  await expect(page.locator('body')).toContainText('rendered without error')
+  await expect(page.locator('body')).toContainText('custom error page: 500')
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(1)
+  await expect(page.locator('vite-error-overlay')).toHaveCount(0)
+})
+
+test('reports a thrown value that is not an error', async ({ page, goto }) => {
+  await goto('/ok')
+  await page.getByRole('link', { name: 'to teapot' }).click()
+
+  const overlay = page.locator('nuxt-error-overlay')
+  await expect(overlay).toHaveCount(1)
+  await expect(overlay.locator('.mb-message')).toContainText('Thrown value')
+  await expect(page.locator('vite-error-overlay')).toHaveCount(0)
+})
+
+test('does not overlay an error the browser raised on a page loaded afterwards', async ({ page, goto }) => {
+  await goto('/click-boom')
+  await page.getByRole('button', { name: 'throw' }).click()
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(1)
+
+  const ready = page.waitForEvent('websocket').then(ws => ws.waitForEvent('framesent', frame => String(frame.payload).includes('nuxt:dev:error:ready')))
+  await page.reload()
+  await ready
+  await page.waitForTimeout(1000)
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'throw' }).click()
+  await expect(page.locator('nuxt-error-overlay')).toHaveCount(1)
+})
+
+test('does not overlay a ResizeObserver loop notice', async ({ page, goto }) => {
+  await goto('/click-boom')
+
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    window.addEventListener('error', () => resolve(), { once: true })
+    const box = document.createElement('div')
+    document.body.append(box)
+    let resized = false
+    new ResizeObserver(() => {
+      if (resized) { return }
+      resized = true
+      box.style.height = '120px'
+    }).observe(box)
+  }))
+  await page.getByRole('button', { name: 'throw' }).click()
+
+  const overlay = page.locator('nuxt-error-overlay')
+  await expect(overlay).toHaveCount(1)
+  await expect(overlay.locator('.mb-message')).toContainText('boom from a click')
+  await expect(overlay).not.toContainText('Thrown value: null')
+})
+
+test('overlays a thrown null', async ({ page, goto }) => {
+  await goto('/ok')
+
+  await page.addScriptTag({ content: 'setTimeout(() => { throw null })' })
+
+  const overlay = page.locator('nuxt-error-overlay')
+  await expect(overlay).toHaveCount(1)
+  await expect(overlay.locator('.mb-message')).toContainText('Thrown value: null')
 })
 
 test('opens a frame through the channel, and through the editor URL when the channel refuses the page', async ({ page }) => {
-  writeFileSync(join(fixtureDir, 'app/app.vue'), appVue)
   const opens: string[] = []
   // answered here so a run never launches the editor of the machine it is on
   await page.route('**/__nuxt_dev__/error/open', (route) => {

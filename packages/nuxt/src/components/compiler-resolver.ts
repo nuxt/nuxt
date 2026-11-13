@@ -7,8 +7,9 @@ import type { AttributeNode, ConstantTypes, DirectiveNode, ElementNode, ElementT
 
 import { tryUseNuxt } from '@nuxt/kit'
 import { componentDiagnostics } from '@nuxt/kit/internal'
-import { installNuxtModule } from '../core/features.ts'
 import { linkToAlias } from '../utils.ts'
+import { HYDRATION_PROPS, HYDRATION_STRATEGIES, installComponentModule } from './utils.ts'
+import type { HydrationStrategy as Strategy } from './utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 type Mode = 'client' | 'server'
@@ -22,18 +23,6 @@ const NODE_IF_BRANCH = 10 as NodeTypes.IF_BRANCH
 const NODE_FOR = 11 as NodeTypes.FOR
 const ELEMENT_COMPONENT = 1 as ElementTypes.COMPONENT
 const ELEMENT_TEMPLATE = 3 as ElementTypes.TEMPLATE
-
-type Strategy = 'Idle' | 'Visible' | 'Interaction' | 'MediaQuery' | 'If' | 'Never' | 'Time'
-
-const HYDRATION_PROPS: Record<string, Strategy> = {
-  hydrateOnIdle: 'Idle',
-  hydrateOnVisible: 'Visible',
-  hydrateOnInteraction: 'Interaction',
-  hydrateOnMediaQuery: 'MediaQuery',
-  hydrateAfter: 'Time',
-  hydrateWhen: 'If',
-  hydrateNever: 'Never',
-}
 
 const LAZY_PREFIX_RE = /^(?:lazy-|Lazy(?=[A-Z]))/
 const STRATEGY_PREFIX_RE = /^(?:(Idle|Visible|Interaction|MediaQuery|If|Never|Time)(?=[A-Z])|(idle|visible|interaction|media-query|if|never|time)-)/
@@ -61,7 +50,7 @@ export interface ComponentResolverOptions {
 
 export type ComponentWrapperKind = 'server' | 'client' | 'lazy' | `lazy-${Strategy}`
 
-const WRAPPER_KINDS = new Set<string>(['server', 'client', 'lazy', 'lazy-Idle', 'lazy-Visible', 'lazy-Interaction', 'lazy-MediaQuery', 'lazy-If', 'lazy-Never', 'lazy-Time'])
+const WRAPPER_KINDS = new Set<string>(['server', 'client', 'lazy', ...HYDRATION_STRATEGIES.map(strategy => `lazy-${strategy}`)])
 const RELATIVE_PATH_RE = /^\.{1,2}\//
 
 export interface ComponentWrapper {
@@ -204,13 +193,7 @@ export function createComponentResolver (options: ComponentResolverOptions): Com
 
   function onResolved (resolution: ComponentImport, state: CompileState) {
     const { component } = resolution
-    const internalInstall = (component as { _internal_install?: string })._internal_install
-    if (internalInstall && nuxt?.options.test === false) {
-      if (!nuxt.options.dev) {
-        throw componentDiagnostics.NUXT_B3004({ file: linkToAlias(state.filename, nuxt), component: component.pascalName, requiredModule: internalInstall })
-      }
-      installNuxtModule(internalInstall)
-    }
+    installComponentModule(component, state.filename, nuxt)
     if (!options.experimentalComponentIslands && resolution.source.startsWith(COMPONENT_WRAPPER_PREFIX + 'server:')) {
       componentDiagnostics.NUXT_B3003({ component: component.pascalName })
     }

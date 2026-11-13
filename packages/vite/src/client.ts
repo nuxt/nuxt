@@ -9,8 +9,7 @@ import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite.ts'
 import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
 import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
-import { TypeCheckPlugin } from './plugins/type-check.ts'
-import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
+import { ModulePreloadPolyfillPlugin } from './plugins/client-entry-import.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
 import { createViteLogger } from './utils/logger.ts'
 import { DevErrorsPlugin, getDevErrorReporter, reportTransformError } from './dev-errors.ts'
@@ -52,8 +51,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       }),
       RuntimePathsPlugin(),
       ViteNodePlugin(nuxt),
-      // Type checking client panel
-      TypeCheckPlugin(nuxt),
       ModulePreloadPolyfillPlugin(),
       // ensure changes in chunks do not invalidate whole build
       StableEntryPlugin(nuxt),

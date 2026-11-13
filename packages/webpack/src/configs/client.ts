@@ -1,13 +1,13 @@
 import querystring from 'node:querystring'
-import { normalize, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
-import { logger, resolveAlias } from '@nuxt/kit'
-import type { Module } from 'webpack'
+import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import { defineEnv } from 'unenv'
 
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
+import { getDevtool, getGlobalCSSCacheGroup, shouldTypeCheck } from '../utils/options.ts'
 import { nuxt } from '../presets/nuxt.ts'
 import { TsCheckerPlugin, builder, webpack } from '../builder.ts'
 
@@ -27,20 +27,13 @@ export async function client (ctx: WebpackConfigContext) {
 }
 
 export function clientDevtool (ctx: WebpackConfigContext) {
-  if (!ctx.nuxt.options.sourcemap.client) {
-    ctx.config.devtool = false
-    return
-  }
-
-  const prefix = ctx.nuxt.options.sourcemap.client === 'hidden' ? 'hidden-' : ''
-  const nosources = ctx.nuxt.options.sourcemap.client === 'nosource' ? 'nosources-' : ''
-
+  const sourcemap = ctx.nuxt.options.sourcemap.client
   if (!ctx.isDev) {
-    ctx.config.devtool = prefix + nosources + 'source-map'
+    ctx.config.devtool = getDevtool(sourcemap, 'source-map')
     return
   }
-
-  ctx.config.devtool = (prefix || 'eval-') + nosources + 'cheap-module-source-map'
+  const devtool = getDevtool(sourcemap, 'cheap-module-source-map')
+  ctx.config.devtool = devtool && sourcemap !== 'hidden' ? `eval-${devtool}` : devtool
 }
 
 function clientPerformance (ctx: WebpackConfigContext) {
@@ -106,42 +99,12 @@ function clientHMR (ctx: WebpackConfigContext) {
 }
 
 function clientOptimization (ctx: WebpackConfigContext) {
-  const inlineStyles = ctx.nuxt.options.features.inlineStyles
-  if (!inlineStyles) {
-    return
-  }
-
-  // separate global CSS into a dedicated chunk
-  const globalCSSPaths = new Set<string>()
-
-  // Resolve global CSS paths from nuxt.options.css
-  for (const css of ctx.options.css) {
-    if (typeof css === 'string') {
-      const resolved = resolveAlias(css, ctx.options.alias)
-      globalCSSPaths.add(normalize(resolved))
-    }
-  }
-
-  if (globalCSSPaths.size > 0) {
+  const nuxtGlobalCSS = getGlobalCSSCacheGroup(ctx.nuxt)
+  if (nuxtGlobalCSS) {
     ctx.config.optimization ||= {}
     ctx.config.optimization.splitChunks ||= {}
     ctx.config.optimization.splitChunks.cacheGroups ||= {}
-
-    ctx.config.optimization.splitChunks.cacheGroups.nuxtGlobalCSS = {
-      name: 'nuxt-global-css',
-      chunks: 'all',
-      enforce: true,
-      test: (module: Module) => {
-        if (module.type !== 'css/mini-extract') { return false }
-        const identifier = normalize(module.identifier())
-        for (const globalPath of globalCSSPaths) {
-          if (identifier.includes(globalPath)) {
-            return typeof inlineStyles === 'boolean' ? inlineStyles : inlineStyles(module.identifier())
-          }
-        }
-        return false
-      },
-    }
+    ctx.config.optimization.splitChunks.cacheGroups.nuxtGlobalCSS = nuxtGlobalCSS
   }
 }
 
@@ -162,13 +125,8 @@ function clientPlugins (ctx: WebpackConfigContext) {
     }))
   }
 
-  // Normally type checking runs in server config, but in `ssr: false` there is
-  // no server build, so we inject here instead.
-  if (!ctx.nuxt.options.ssr) {
-    if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev) || (ctx.nuxt.options.typescript.typeCheck === 'dev' && ctx.nuxt.options.dev))) {
-      ctx.config.plugins!.push(new TsCheckerPlugin({
-        logger,
-      }))
-    }
+  // type checking runs once, in the server build when SSR is enabled
+  if (!ctx.nuxt.options.ssr && shouldTypeCheck(ctx.nuxt)) {
+    ctx.config.plugins!.push(new TsCheckerPlugin({ logger }))
   }
 }

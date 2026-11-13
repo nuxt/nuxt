@@ -1,20 +1,13 @@
-import { readFileSync, renameSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
-import { rm } from 'node:fs/promises'
-import { isWindows } from 'std-env'
-import { join } from 'pathe'
-import { expect, test } from './test-utils'
+import type { Router } from 'vue-router'
+import { collectConsoleLogs, expect, test } from './test-utils'
+import { useTempFixture } from './temp-fixture'
 
-const fixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url))
-const sourceDir = fileURLToPath(new URL('../fixtures/hmr', import.meta.url))
-const siblingLayerFixtureDir = fileURLToPath(new URL('../fixtures-temp/hmr-sibling-layer', import.meta.url))
-const siblingLayerSourceDir = fileURLToPath(new URL('../fixtures/hmr-sibling-layer', import.meta.url))
+const fixture = useTempFixture('hmr')
+const siblingLayer = useTempFixture('hmr-sibling-layer')
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    dev: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixture.fixtureDir,
     env: { TEST: '1' },
     nuxtConfig: {
       test: true,
@@ -24,476 +17,236 @@ test.use({
 
 test.describe.configure({ mode: 'serial' })
 
-// Load the fixture file
-const indexVue = readFileSync(join(sourceDir, 'app/pages/index.vue'), 'utf8')
-
-test.afterAll(() => {
-  writeFileSync(join(fixtureDir, 'app/pages/index.vue'), indexVue)
+test.afterEach(() => {
+  fixture.restore()
+  siblingLayer.restore()
 })
 
+function poll<T> (getter: () => T | Promise<T>, timeout = 10_000) {
+  return expect.poll(getter, { timeout })
+}
+
+async function ssrText (fetch: (path: string) => Promise<Response>, path: string, testId: string) {
+  const html = await fetch(path).then(r => r.text())
+  return html.match(new RegExp(`data-testid="${testId}"[^>]*>([^<]+)<`))?.[1]?.trim()
+}
+
 test('basic HMR functionality', async ({ page, goto }) => {
-  // Navigate to the page
-  writeFileSync(join(fixtureDir, 'app/pages/index.vue'), indexVue)
   await goto('/')
-
-  // Check initial state
   await expect(page).toHaveTitle('HMR fixture')
-  await expect(page.locator('[data-testid="count"]')).toHaveText('1')
-
-  // Test reactivity
+  await expect(page.getByTestId('count')).toHaveText('1')
   await page.locator('button').click()
-  await expect(page.locator('[data-testid="count"]')).toHaveText('2')
+  await expect(page.getByTestId('count')).toHaveText('2')
 
-  // Modify the file and check for HMR updates
-  let newContents = indexVue
+  const indexVue = fixture.read('app/pages/index.vue')
+  fixture.write('app/pages/index.vue', indexVue
     .replace('<Title>HMR fixture</Title>', '<Title>HMR fixture HMR</Title>')
     .replace('<h1>Home page</h1>', '<h1>Home page - but not as you knew it</h1>')
-  newContents += '<style scoped>\nh1 { color: red }\n</style>'
+    + '<style scoped>\nh1 { color: red }\n</style>')
 
-  writeFileSync(join(fixtureDir, 'app/pages/index.vue'), newContents)
-
-  // Wait for the title to be updated via HMR
   await expect(page).toHaveTitle('HMR fixture HMR')
-
-  // Check content HMR
   const h1 = page.locator('h1')
   await expect(h1).toHaveText('Home page - but not as you knew it')
-
-  // Check style HMR
-  const h1Color = await h1.evaluate(el => window.getComputedStyle(el).getPropertyValue('color'))
-  expect(h1Color).toBe('rgb(255, 0, 0)')
+  await expect(h1).toHaveCSS('color', 'rgb(255, 0, 0)')
 
   expect(page).toHaveNoErrorsOrWarnings()
 })
 
 test('detecting new routes', async ({ fetch }) => {
-  // Try accessing a non-existent route
-  await rm(join(fixtureDir, 'app/pages/some-404.vue'), { force: true })
-  const res = await fetch('/some-404')
-  expect(res.status).toBe(404)
+  expect((await fetch('/some-404')).status).toBe(404)
 
-  // Create a new page file
-  writeFileSync(join(fixtureDir, 'app/pages/some-404.vue'), indexVue)
+  fixture.write('app/pages/some-404.vue', fixture.read('app/pages/index.vue'))
 
-  // Wait for the new route to be available
-  await expect(() => fetch('/some-404').then(r => r.status).catch(() => false)).toBeWithPolling(200)
+  await poll(() => fetch('/some-404').then(r => r.status)).toBe(200)
 })
 
 test('hot reloading route rules', async ({ fetch }) => {
-  // Check the initial header
-  const file = readFileSync(join(sourceDir, 'app/pages/route-rules.vue'), 'utf8')
-  writeFileSync(join(fixtureDir, 'app/pages/route-rules.vue'), file)
+  const header = () => fetch('/route-rules').then(r => r.headers.get('x-extend'))
+  await poll(header).toBe('added in routeRules')
 
-  await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('added in routeRules')
+  fixture.replace('app/pages/route-rules.vue', 'added in routeRules', 'edited in dev')
 
-  await new Promise(resolve => setTimeout(resolve, 100))
+  await poll(header, 20_000).toBe('edited in dev')
+})
 
-  // Modify the route rules
-  writeFileSync(join(fixtureDir, 'app/pages/route-rules.vue'), file.replace('added in routeRules', 'edited in dev'))
+test.fail('removing and adding a server plugin', async ({ fetch }) => {
+  const response = () => fetch('/api/slow').then(r => `${r.status} ${r.headers.get('x-hmr-plugin')}`)
+  await poll(response).toBe('200 v1')
 
-  // Wait for the route rule to be hot reloaded
-  await expect(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null)).toBeWithPolling('edited in dev', { timeout: 20000 })
+  const plugin = fixture.read('server/plugins/hmr-header.ts')
+  fixture.remove('server/plugins/hmr-header.ts')
+  await poll(response, 20_000).toBe('200 null')
+
+  fixture.write('server/plugins/hmr-header.ts', plugin.replace(`'v1'`, `'v2'`))
+  await poll(response, 20_000).toBe('200 v2')
 })
 
 test('CSS styles persist after nuxt.config restart (#34381)', async ({ fetch }) => {
-  // Verify CSS <link> is present in initial SSR HTML
-  const configPath = join(fixtureDir, 'nuxt.config.ts')
-  const configContents = readFileSync(configPath, 'utf8')
+  const hasStylesheet = () => fetch('/').then(r => r.text()).then(html => /href="[^"]*test\.css[^"]*"/.test(html))
+  const afterRestart = { timeout: 30_000, intervals: [1000] }
+  await poll(hasStylesheet).toBe(true)
 
-  await expect(async () => {
-    const res = await fetch('/')
-    const html = await res.text()
-    return /href="[^"]*test\.css[^"]*"/.test(html)
-  }).toBeWithPolling(true)
-
-  // Trigger a config restart by modifying nuxt.config.ts
-  writeFileSync(configPath, configContents.replace(
-    'experimental: {',
-    '// trigger restart\n  experimental: {',
-  ))
-
-  // Wait for the restart to begin and complete
+  const config = fixture.read('nuxt.config.ts')
+  fixture.write('nuxt.config.ts', config.replace('experimental: {', '// trigger restart\n  experimental: {'))
   await new Promise(resolve => setTimeout(resolve, 1000))
+  await expect.poll(hasStylesheet, afterRestart).toBe(true)
 
-  // Verify CSS <link> is still present after restart
-  await expect(async () => {
-    const res = await fetch('/')
-    const html = await res.text()
-    return /href="[^"]*test\.css[^"]*"/.test(html)
-  }).toBeWithPolling(true, { timeout: 30000, interval: 1000 })
-
-  // Restore original config and wait for restart to complete
-  writeFileSync(configPath, configContents)
+  fixture.write('nuxt.config.ts', config)
   await new Promise(resolve => setTimeout(resolve, 1000))
-  await expect(async () => {
-    const res = await fetch('/')
-    return res.status
-  }).toBeWithPolling(200, { timeout: 30000, interval: 1000 })
+  await expect.poll(() => fetch('/').then(r => r.status), afterRestart).toBe(200)
 })
 
 test('HMR for island components', async ({ page, goto }) => {
-  const componentPath = join(fixtureDir, 'app/components/islands/HmrComponent.vue')
-  const componentContents = readFileSync(join(sourceDir, 'app/components/islands/HmrComponent.vue'), 'utf8')
-  writeFileSync(componentPath, componentContents)
-
-  // Navigate to the page with the island components
   await goto('/server-component')
-
-  // Test initial state of the component
   await expect(page.getByTestId('hmr-id')).toHaveText('0')
 
-  // Function to update the component and check for changes
-  const triggerHmr = (number: string) => writeFileSync(componentPath, componentContents.replace('ref(0)', `ref(${number})`))
-
-  // First edit
-  triggerHmr('1')
-  await expect(page.getByTestId('hmr-id')).toHaveText('1', { timeout: 10000 })
-
-  // Second edit to make sure HMR is working consistently
-  triggerHmr('2')
-  await expect(page.getByTestId('hmr-id')).toHaveText('2', { timeout: 10000 })
+  const component = fixture.read('app/components/islands/HmrComponent.vue')
+  for (const value of ['1', '2']) {
+    fixture.write('app/components/islands/HmrComponent.vue', component.replace('ref(0)', `ref(${value})`))
+    await expect(page.getByTestId('hmr-id')).toHaveText(value, { timeout: 10_000 })
+  }
 
   expect(page).toHaveNoErrorsOrWarnings()
 })
 
-test.describe('vite-only HMR tests', () => {
-  test.skip(({ isWebpack }) => isWebpack, 'These tests only work with Vite')
+test('HMR for page meta crossing the static extraction boundary', async ({ page, goto }) => {
+  const pageMeta = fixture.read('app/pages/page-meta.vue')
+  const writeMeta = (value: string) => fixture.write('app/pages/page-meta.vue', pageMeta.replace(`some: 'stuff'`, value))
+  const meta = page.getByTestId('meta')
 
-  test('HMR for page meta', async ({ page, goto }) => {
-    const pageContents = readFileSync(join(sourceDir, 'app/pages/page-meta.vue'), 'utf8')
-    writeFileSync(join(fixtureDir, 'app/pages/page-meta.vue'), pageContents)
+  await goto('/page-meta')
+  await expect(meta).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
 
-    await goto('/page-meta')
+  // a template literal cannot be serialised, so the route record hands `meta` back to the
+  // macro module and the generated route gains an import, which a serialisable value removes again
+  writeMeta('some: `other ${\'stuff\'}`')
+  await expect(meta).toHaveText(JSON.stringify({ some: 'other stuff' }, null, 2))
 
-    // Check initial meta state
-    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
+  writeMeta(`some: 'final stuff'`)
+  await expect(meta).toHaveText(JSON.stringify({ some: 'final stuff' }, null, 2))
 
-    // Update the meta
-    writeFileSync(join(fixtureDir, 'app/pages/page-meta.vue'), pageContents.replace(`some: 'stuff'`, `some: 'other stuff'`))
+  writeMeta(`some: 'stuff'`)
+  await expect(meta).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
 
-    // Check if meta updates
-    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'other stuff' }, null, 2))
+  expect(page).toHaveNoErrorsOrWarnings()
+})
 
-    // Verify no errors in console
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
-
-  test('HMR for page meta crossing the static extraction boundary', async ({ page, goto }) => {
-    const pageContents = readFileSync(join(sourceDir, 'app/pages/page-meta.vue'), 'utf8')
-    const write = (value: string) => writeFileSync(join(fixtureDir, 'app/pages/page-meta.vue'), pageContents.replace(`some: 'stuff'`, value))
-
-    write(`some: 'stuff'`)
-    await goto('/page-meta')
-    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
-
-    // A template literal cannot be serialized, so the route record hands `meta` back to the
-    // macro module and the generated route gains an import it did not previously have.
-    write('some: `other ${\'stuff\'}`')
-    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'other stuff' }, null, 2))
-
-    // ...and dropping back to a serializable value has to remove that import again.
-    write(`some: 'final stuff'`)
-    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'final stuff' }, null, 2))
-
-    write(`some: 'stuff'`)
-    await expect(page.getByTestId('meta')).toHaveText(JSON.stringify({ some: 'stuff' }, null, 2))
-
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
-
-  test('HMR on page should keep ref state when updating template', async ({ goto, page }) => {
+for (const block of ['template', 'script']) {
+  test(`HMR on page should keep ref state when updating ${block}`, async ({ goto, page }) => {
     await goto('/state-component')
-
-    const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
-    const pageContents = readFileSync(pagePath, 'utf8')
 
     const button = page.getByTestId('button')
     await expect(button).toHaveText('0')
     await button.click()
     await expect(button).toHaveText('1')
 
-    writeFileSync(
-      pagePath,
-      pageContents.replace('#hmr-template', '#hmr-template updated'),
-    )
-    const consoleLogs: Array<{ type: string, text: string }> = []
-    page.on('console', (msg) => {
-      consoleLogs.push({
-        type: msg.type(),
-        text: msg.text(),
-      })
-    })
-
-    // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
+    const logs = collectConsoleLogs(page)
+    fixture.replace('app/pages/state-component.vue', `#hmr-${block}`, `#hmr-${block} updated`)
+    await poll(() => logs.some(log => log.text.includes('[vite] hot updated'))).toBe(true)
 
     await expect.soft(button).toHaveText('1')
   })
+}
 
-  test('HMR on page should keep ref state when updating script', async ({ goto, page }) => {
-    await goto('/state-component')
+test('HMR for pages using JSX (#30709)', async ({ page, goto }) => {
+  await goto('/jsx')
+  await expect(page.getByTestId('jsx-content')).toHaveText('jsx: original')
 
-    const pagePath = join(fixtureDir, 'app/pages/state-component.vue')
-    const pageContents = readFileSync(pagePath, 'utf8')
+  fixture.replace('app/pages/jsx.vue', 'jsx: original', 'jsx: updated')
+  await expect(page.getByTestId('jsx-content')).toHaveText('jsx: updated', { timeout: 10_000 })
 
-    const button = page.getByTestId('button')
-    await expect(button).toHaveText('0')
-    await button.click()
-    await expect(button).toHaveText('1')
+  expect(page).toHaveNoErrorsOrWarnings()
+})
 
-    writeFileSync(
-      pagePath,
-      pageContents.replace('#hmr-script', '#hmr-script updated'),
-    )
-    const consoleLogs: Array<{ type: string, text: string }> = []
-    page.on('console', (msg) => {
-      consoleLogs.push({
-        type: msg.type(),
-        text: msg.text(),
-      })
-    })
+test('HMR for routes', async ({ page, goto }) => {
+  await goto('/routes')
 
-    // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true)
+  const logs = collectConsoleLogs(page)
+  fixture.write('app/pages/routes/non-existent.vue', `<template><div data-testid="contents">A new route!</div></template>`)
+  await poll(() => logs.some(log => log.text.includes('[vite] hot updated')), 20_000).toBe(true)
 
-    await expect.soft(button).toHaveText('1')
-  })
+  await page.locator('a[href="/routes/non-existent"]').click()
+  await expect(page.getByTestId('contents')).toHaveText('A new route!')
 
-  test('HMR for pages using JSX (#30709)', async ({ page, goto }) => {
-    const pagePath = join(fixtureDir, 'app/pages/jsx.vue')
-    const pageContents = readFileSync(join(sourceDir, 'app/pages/jsx.vue'), 'utf8')
-    writeFileSync(pagePath, pageContents)
+  expect(logs.filter(log => (log.type === 'warning' || log.type === 'error') && !log.text.includes('No match found for location with path "/routes/non-existent"'))).toStrictEqual([])
+})
 
-    await goto('/jsx')
-    await expect(page.getByTestId('jsx-content')).toHaveText('jsx: original')
+test('should support renaming files to same import name', async ({ page, goto, fetch }) => {
+  await goto('/rename-component')
+  await expect(page.getByTestId('example')).toHaveText('test.vue')
 
-    writeFileSync(pagePath, pageContents.replace('jsx: original', 'jsx: updated'))
-    await expect(page.getByTestId('jsx-content')).toHaveText('jsx: updated', { timeout: 10000 })
+  fixture.remove('app/components/example/test.vue')
+  fixture.write('app/components/example/example-test.vue', `<template><div data-testid="example">example-test.vue</div></template>`)
 
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
+  await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
+  await poll(() => ssrText(fetch, '/rename-component', 'example'), 20_000).toBe('example-test.vue')
+  await page.reload()
+  await expect(page.getByTestId('example')).toHaveText('example-test.vue')
+})
 
-  test('HMR for routes', async ({ page, goto }) => {
-    await goto('/routes')
+test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
+  await goto('/issues/32177')
 
-    // Create a new route that doesn't exist yet
-    writeFileSync(
-      join(fixtureDir, 'app/pages/routes/non-existent.vue'),
-      `<template><div data-testid="contents">A new route!</div></template>`,
-    )
+  const logs = collectConsoleLogs(page)
+  fixture.replace('app/pages/issues/32177.vue', '// #HMR_REPLACE', 'console.log("hmr")')
+  await poll(() => logs.some(log => log.text === 'hmr')).toBe(true)
+  await expect(page.getByTestId('contents')).toHaveText('Element 1, Element 2')
+})
 
-    // Track console logs
-    const consoleLogs: Array<{ type: string, text: string }> = []
-    page.on('console', (msg) => {
-      consoleLogs.push({
-        type: msg.type(),
-        text: msg.text(),
-      })
-    })
+test('HMR with top-level await', async ({ page, goto }) => {
+  await goto('/top-level-await')
+  await expect(page.getByTestId('content')).toHaveText('loaded')
 
-    // Wait for HMR to process the new route
-    await expect(() => consoleLogs.some(log => log.text.includes('[vite] hot updated'))).toBeWithPolling(true, { timeout: 20000 })
+  fixture.replace('app/pages/top-level-await.vue', `console.log('page loaded')`, `// console.log('page loaded')`)
 
-    // Navigate to the new route
-    await page.locator('a[href="/routes/non-existent"]').click()
+  await page.waitForTimeout(1000)
+  await expect(page.getByTestId('content')).toHaveText('loaded')
+  expect(page).toHaveNoErrorsOrWarnings()
+})
 
-    // Verify the new route content is rendered
-    await expect(page.getByTestId('contents')).toHaveText('A new route!')
+test('custom routes added via router.addRoute() should survive HMR (#32027)', async ({ page, goto }) => {
+  const hasRoute = (name: string) => page.evaluate(name => (window.useNuxtApp!().$router as Router).hasRoute(name), name)
 
-    // Filter expected warnings about route not existing before the update
-    const filteredLogs = consoleLogs.filter(log => (log.type === 'warning' || log.type === 'error') && !log.text.includes('No match found for location with path "/routes/non-existent"'))
+  await goto('/custom-route')
+  await expect(page.getByTestId('custom-route')).toHaveText('Custom route added via plugin')
+  expect(await hasRoute('custom-route')).toBe(true)
 
-    // Verify no unexpected errors
-    expect(filteredLogs).toStrictEqual([])
-  })
+  const logs = collectConsoleLogs(page)
+  fixture.write('app/pages/hmr-trigger.vue', `<template><div data-testid="hmr-trigger">HMR trigger page</div></template>`)
+  await poll(() => page.evaluate(() => (window.useNuxtApp!().$router as Router).getRoutes().some(r => r.path === '/hmr-trigger')), 20_000).toBe(true)
 
-  test('should support renaming files to same import name', async ({ page, goto, request }) => {
-    await goto('/rename-component')
+  expect(await hasRoute('custom-route')).toBe(true)
+  expect(logs.filter(log => (log.type === 'warning' || log.type === 'error') && !log.text.includes('No match found for location with path "/hmr-trigger"'))).toStrictEqual([])
+})
 
-    await expect(page.getByTestId('example')).toHaveText('test.vue')
+// https://github.com/nuxt/nuxt/issues/34763 / https://github.com/nuxt/nuxt/issues/30169
+test('SSR re-evaluates components in a sibling local layer', async ({ fetch }) => {
+  const marker = () => ssrText(fetch, '/sibling-layer', 'sibling-marker')
+  await poll(marker).toBe('v1')
 
-    const original = join(fixtureDir, 'app/components/example/test.vue')
-    const renamed = join(fixtureDir, 'app/components/example/example-test.vue')
-    const contents = readFileSync(original, 'utf8')
+  siblingLayer.replace('app/components/SiblingLayerMarker.vue', `'v1'`, `'v2'`)
 
-    renameSync(original, renamed)
-    try {
-      writeFileSync(renamed, `<template><div data-testid="example">example-test.vue</div></template>`)
+  await poll(marker, 30_000).toBe('v2')
+})
 
-      await expect.soft(page.getByTestId('example')).toHaveText('example-test.vue')
+// https://github.com/nuxt/nuxt/issues/33468
+test('SSR picks up a changed export style in an auto-imported file', async ({ fetch }) => {
+  const key = () => ssrText(fetch, '/auto-import-key', 'key')
+  await poll(key).toBe('default-export')
 
-      async function readServerRendered () {
-        const html = await request.get('/rename-component', { headers: { accept: 'text/html' } }).then(r => r.text())
-        return html.match(/data-testid="example"[^>]*>([^<]+)</)?.[1]
-      }
-      await expect(readServerRendered).toBeWithPolling('example-test.vue', { timeout: 20000 })
+  // the import injected into the page has to change from `default` to `useHmrKey`
+  fixture.write('app/composables/useHmrKey.ts', `export function useHmrKey () {\n  return 'named-export'\n}\n`)
 
-      await page.reload()
+  await poll(key, 30_000).toBe('named-export')
+})
 
-      await expect(page.getByTestId('example')).toHaveText('example-test.vue')
-    } finally {
-      await rm(renamed, { force: true })
-      writeFileSync(original, contents)
-    }
-  })
+// https://github.com/nuxt/nuxt/issues/30169
+test('SSR re-evaluates virtual modules invalidated via handleHotUpdate', async ({ fetch }) => {
+  const counter = () => ssrText(fetch, '/virtual-module', 'counter').then(Number)
+  await poll(counter).not.toBeNaN()
+  const before = await counter()
 
-  test('should allow hmr with useAsyncData (#32177)', async ({ page, goto }) => {
-    await goto('/issues/32177')
+  fixture.replace('app/pages/virtual-module.vue', '<!-- HMR_TRIGGER -->', '<!-- HMR_TRIGGER edited -->')
 
-    const pageContents = readFileSync(join(sourceDir, 'app/pages/issues/32177.vue'), 'utf8')
-    writeFileSync(join(fixtureDir, 'app/pages/issues/32177.vue'), pageContents.replace('// #HMR_REPLACE', 'console.log("hmr")'))
-    await expect(page.getByTestId('contents')).toHaveText('Element 1, Element 2')
-  })
-
-  test('HMR with top-level await', async ({ page, goto }) => {
-    const pageContents = readFileSync(join(sourceDir, 'app/pages/top-level-await.vue'), 'utf8')
-    writeFileSync(join(fixtureDir, 'app/pages/top-level-await.vue'), pageContents)
-
-    // Navigate and wait for full load
-    await goto('/top-level-await')
-    await expect(page.getByTestId('content')).toHaveText('loaded')
-
-    // Trigger HMR by editing script
-    writeFileSync(
-      join(fixtureDir, 'app/pages/top-level-await.vue'),
-      pageContents.replace('console.log(\'page loaded\')', '// console.log(\'page loaded\')'),
-    )
-
-    // Wait for HMR to process and check no errors
-    await page.waitForTimeout(1000)
-  })
-
-  test('custom routes added via router.addRoute() should survive HMR (#32027)', async ({ page, goto }) => {
-    // Navigate to the custom route (SSR will warn but client plugin will add route)
-    await goto('/custom-route')
-    await expect(page.getByTestId('custom-route')).toHaveText('Custom route added via plugin')
-
-    // Verify custom route is in the router before HMR
-    const routeExistsBefore = await page.evaluate(() => {
-      const router = window.useNuxtApp?.().$router
-      // @ts-expect-error - accessing nuxt internals
-      return router?.hasRoute('custom-route') ?? false
-    })
-    expect(routeExistsBefore).toBe(true)
-
-    // Start tracking console logs after initial navigation
-    // This way we only capture warnings that occur during/after HMR
-    const consoleLogs: Array<{ type: string, text: string }> = []
-    page.on('console', (msg) => {
-      consoleLogs.push({
-        type: msg.type(),
-        text: msg.text(),
-      })
-    })
-
-    // Trigger ROUTES HMR by adding a new page file (this regenerates routes.mjs)
-    writeFileSync(
-      join(fixtureDir, 'app/pages/hmr-trigger.vue'),
-      `<template><div data-testid="hmr-trigger">HMR trigger page</div></template>`,
-    )
-
-    // Wait for routes HMR to process
-    await expect(async () => {
-      const newRouteExists = await page.evaluate(() => {
-        const router = window.useNuxtApp?.().$router
-        // @ts-expect-error - accessing nuxt internals
-        return router?.getRoutes().some((r: { path: string }) => r.path === '/hmr-trigger') ?? false
-      })
-      return newRouteExists
-    }).toBeWithPolling(true, { timeout: 20000 })
-
-    // Verify custom route still exists after HMR
-    const routeExistsAfter = await page.evaluate(() => {
-      const router = window.useNuxtApp?.().$router
-      // @ts-expect-error - accessing nuxt internals
-      return router?.hasRoute('custom-route') ?? false
-    })
-    expect(routeExistsAfter).toBe(true)
-
-    // Verify no "No match found" warnings for custom-route after HMR
-    const customRouteWarnings = consoleLogs.filter(log =>
-      log.text.includes('No match found for location with path "/custom-route"'),
-    )
-    expect(customRouteWarnings).toStrictEqual([])
-
-    // Filter out other expected warnings/errors
-    const errors = consoleLogs.filter(log =>
-      (log.type === 'warning' || log.type === 'error') &&
-        !log.text.includes('No match found for location with path "/hmr-trigger"'),
-    )
-    expect(errors).toStrictEqual([])
-  })
-
-  // https://github.com/nuxt/nuxt/issues/34763 / https://github.com/nuxt/nuxt/issues/30169
-  test('SSR re-evaluates components in a sibling local layer', async ({ fetch }) => {
-    const componentPath = join(siblingLayerFixtureDir, 'app/components/SiblingLayerMarker.vue')
-    const original = readFileSync(join(siblingLayerSourceDir, 'app/components/SiblingLayerMarker.vue'), 'utf8')
-    writeFileSync(componentPath, original)
-
-    async function readMarker () {
-      const res = await fetch('/sibling-layer')
-      const html = await res.text()
-      const match = html.match(/data-testid="sibling-marker"[^>]*>([^<]+)</)
-      return match ? match[1] : null
-    }
-
-    // Wait for the route + component (provided by the sibling layer) to be
-    // wired up by the dev server.
-    await expect(readMarker).toBeWithPolling('v1')
-
-    writeFileSync(componentPath, original.replace(`'v1'`, `'v2'`))
-
-    // Without the SSR cache invalidation fix (c58bb749a), this poll would
-    // keep observing 'v1' because the sibling layer's module stayed cached on
-    // the SSR side even though the plugin re-ran load().
-    await expect(readMarker).toBeWithPolling('v2', { timeout: 30000 })
-  })
-
-  // https://github.com/nuxt/nuxt/issues/33468
-  test('SSR picks up a changed export style in an auto-imported file', async ({ fetch }) => {
-    const composablePath = join(fixtureDir, 'app/composables/useHmrKey.ts')
-    const original = readFileSync(join(sourceDir, 'app/composables/useHmrKey.ts'), 'utf8')
-    writeFileSync(composablePath, original)
-
-    async function readKey () {
-      const res = await fetch('/auto-import-key')
-      const html = await res.text()
-      const match = html.match(/data-testid="key"[^>]*>([^<]+)</)
-      return match?.[1]?.trim()
-    }
-
-    await expect(readKey).toBeWithPolling('default-export')
-
-    // The default export becomes a named one, so the import injected into the page has to change
-    // from `default` to `useHmrKey` - the page kept the stale injection and SSR rendered a 500.
-    writeFileSync(composablePath, `export function useHmrKey () {\n  return 'named-export'\n}\n`)
-
-    await expect(readKey).toBeWithPolling('named-export', { timeout: 30000 })
-  })
-
-  // https://github.com/nuxt/nuxt/issues/30169
-  test('SSR re-evaluates virtual modules invalidated via handleHotUpdate', async ({ fetch }) => {
-    const pagePath = join(fixtureDir, 'app/pages/virtual-module.vue')
-    const pageContents = readFileSync(join(sourceDir, 'app/pages/virtual-module.vue'), 'utf8')
-    writeFileSync(pagePath, pageContents)
-
-    async function readCounter () {
-      const res = await fetch('/virtual-module')
-      const html = await res.text()
-      const match = html.match(/data-testid="counter"[^>]*>(\d+)</)
-      return match ? Number(match[1]) : Number.NaN
-    }
-
-    // Wait for the page to be available SSR-side (file may need to be picked up
-    // by the router after the writeFileSync above).
-    await expect(readCounter).toBeWithPolling((c: unknown) => Number.isFinite(c))
-    const before = await readCounter()
-
-    // Edit the page to trigger handleHotUpdate, which invalidates the virtual
-    // module. The bug was that SSR continued to serve the cached evaluation,
-    // so `counter` never advanced even though the plugin re-ran load().
-    writeFileSync(pagePath, pageContents.replace('<!-- HMR_TRIGGER -->', '<!-- HMR_TRIGGER edited -->'))
-
-    await expect(readCounter).toBeWithPolling((c: unknown) => Number.isFinite(c) && (c as number) > before, { timeout: 20000 })
-  })
+  await poll(counter, 20_000).toBeGreaterThan(before)
 })

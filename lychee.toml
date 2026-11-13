@@ -32,9 +32,7 @@ host_concurrency = 5
 
 # Explicitly exclude some URLs
 exclude = [
-  "https://twitter.nuxt.dev/",
   "https://www.webpagetest.org/",
-  "https://stackoverflow.com/help/minimal-reproducible-example",
   "https://gsap.com/",
   # external docs sites that block or rate-limit CI bots
   'https://router.vuejs.org/(.*)',
@@ -60,16 +58,10 @@ exclude = [
   'https://res.cloudinary.com/nuxt/video/upload/(.*)',
   'https://www.npmjs.com/package/(.*)',
   '(https?:\/\/github\.com\/)(.*\/)(generate)',
-  "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
   # GitHub URLs that redirect to login in unauthenticated CI
   'https://github.com/(.*)/issues/new(.*)',
   'https://github.com/(.*)/edit/(.*)',
   # Discord invite redirects
   'https://go.nuxt.com/discord',
-  # excluded URLs from test suite
-  "http://auth.com",
-  "http://example1.com/",
-  "http://example2.com/",
-  "http://example3.com/",
   "~images/main-bg.jpg",
 ]
