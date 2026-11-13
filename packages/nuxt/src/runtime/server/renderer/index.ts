@@ -8,6 +8,7 @@ import type { SSRError } from './error'
 
 import type { NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtSSRContext, SerializedErrorCause } from '#app/types'
 import { traceAsync } from '../../../app/internal/tracing'
+import { callAppErrorHook } from '../../../app/internal/error-hook'
 
 import { renderPayloadResponse } from './payload'
 import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse, setSSRError } from './app'
@@ -212,7 +213,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
     // Use explicitly thrown error in preference to subsequent rendering errors
     const _err = (!ssrError && ssrContext.payload?.error) || error
-    await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    await callAppErrorHook(ssrContext.nuxt, _err)
     throw _err
   })
 

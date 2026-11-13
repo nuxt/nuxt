@@ -5,6 +5,7 @@ import type { NuxtApp, NuxtPayload } from '../nuxt'
 import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
 import { appDiagnostics } from '../diagnostics/core'
+import { callAppErrorHook } from '../internal/error-hook'
 import { NUXT_ERROR_SIGNATURE, NuxtError, THROWN_CONTEXT, THROWN_VALUE, createError, createErrorFromThrown, isNuxtError, isUntrustedError } from '../error'
 import type { NuxtErrorDetails } from '../error'
 
@@ -27,7 +28,7 @@ export const showError = <DataT = unknown>(
 
     if (import.meta.client) {
       const nuxtApp = useNuxtApp()
-      nuxtApp.hooks.callHook('app:error', nuxtError)?.catch(hookError => console.error('[nuxt] Error in `app:error` hook', hookError))
+      callAppErrorHook(nuxtApp, nuxtError)
     }
 
     error.value ||= nuxtError
@@ -45,7 +46,7 @@ export const showError = <DataT = unknown>(
  * @internal
  */
 export const _notifyCrawlerError = (nuxtApp: NuxtApp, error: Error): Promise<void> | void => {
-  const result = nuxtApp.callHook('app:error', createErrorFromThrown(error))
+  const result = callAppErrorHook(nuxtApp, createErrorFromThrown(error))
   appDiagnostics.NUXT_E1012({ userAgent: navigator.userAgent, cause: error })
   return result
 }
