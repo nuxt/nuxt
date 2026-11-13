@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, nextTick, shallowRef } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { injectHead } from '#unhead/composables'
 
 import { NuxtTime } from '#components'
+import { getFormatter } from '../../packages/nuxt/src/app/components/nuxt-time-formatter'
 
 describe('<NuxtTime>', () => {
   it('should not serialise data in the DOM in the client', async () => {
@@ -270,5 +271,70 @@ describe('<NuxtTime>', () => {
       expect(renderedDate.getTime()).toBeGreaterThanOrEqual(beforeMount)
       expect(renderedDate.getTime()).toBeLessThanOrEqual(afterMount)
     })
+  })
+})
+
+describe('<NuxtTime> formatter reuse', () => {
+  it('should not construct an `Intl` formatter when only the datetime changes', async () => {
+    const datetime = shallowRef('2023-02-11T18:26:41.058Z')
+    const wrapper = await mountSuspended(
+      defineComponent({
+        render: () => h(NuxtTime, { locale: 'en-GB', dateStyle: 'short', timeZone: 'UTC', datetime: datetime.value }),
+      }),
+    )
+
+    const spy = vi.spyOn(Intl, 'DateTimeFormat')
+    try {
+      datetime.value = '2024-03-12T18:26:41.058Z'
+      await nextTick()
+
+      expect(wrapper.html()).toContain('12/03/2024')
+      expect(spy).not.toHaveBeenCalled()
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  it('should share an `Intl` formatter between instances with the same options', async () => {
+    const expected = [1, 2, 3].map(days => new Intl.RelativeTimeFormat('de-DE', { style: 'narrow' }).format(-days, 'day'))
+    const spy = vi.spyOn(Intl, 'RelativeTimeFormat')
+    try {
+      const now = Date.now()
+      const wrapper = await mountSuspended(
+        defineComponent({
+          render: () => [1, 2, 3].map(days => h(NuxtTime, { locale: 'de-DE', relative: true, relativeStyle: 'narrow', datetime: now - days * 86_400_000 })),
+        }),
+      )
+
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(wrapper.findAll('time').map(time => time.text())).toEqual(expected)
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  it('should keep formatters for different locales separate', async () => {
+    const datetime = '2023-02-11T18:26:41.058Z'
+    const options = { month: 'long', timeZone: 'UTC' }
+    const locales = ['en-GB', 'de-DE', 'en-GB']
+    const wrapper = await mountSuspended(
+      defineComponent({
+        render: () => locales.map(locale => h(NuxtTime, { datetime, locale, ...options })),
+      }),
+    )
+
+    expect(wrapper.findAll('time').map(time => time.text())).toEqual(
+      locales.map(locale => new Intl.DateTimeFormat(locale, options).format(new Date(datetime))),
+    )
+  })
+
+  it('should evict older formatters once the cache exceeds its limit', () => {
+    const options = { timeZone: 'UTC' }
+    const first = getFormatter(false, 'en-US', options)
+    for (let index = 0; index < 100; index++) {
+      getFormatter(false, `en-US-x-fmt-${index}`, options)
+    }
+
+    expect(getFormatter(false, 'en-US', options)).not.toBe(first)
   })
 })
