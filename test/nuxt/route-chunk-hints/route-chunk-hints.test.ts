@@ -2,41 +2,36 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import layouts from '#build/layouts.mjs'
 
-const documentHints = {
-  files: [
-    { rel: 'modulepreload', file: 'layout.js' },
-    { rel: 'preload', as: 'style', file: 'layout.css' },
-  ],
-  layouts: { default: [0, 1] },
-  pages: '/__nuxt_preload/test.json',
-}
+const documentHints = { url: '/__nuxt_preload/test.json' }
 
-const pageHints = {
-  files: [
-    { rel: 'modulepreload', file: 'page.js' },
-    { rel: 'preload', as: 'style', file: 'layout.css' },
-  ],
-  chunks: { 'page-key': [0, 1] },
+const layoutFiles = [
+  { rel: 'modulepreload', file: 'layout.js' },
+  { rel: 'preload', as: 'style', file: 'layout.css' },
+]
+
+const buildHints = {
+  files: [...layoutFiles, { rel: 'modulepreload', file: 'page.js' }],
+  layouts: { default: [0, 1] },
+  pages: { 'page-key': [2, 1] },
 }
 
 const page = () => Object.assign(vi.fn(), { __nuxt_module: 'page-key' })
 
 // hints are read once per document, so each test loads the module afresh
-function load (pages: unknown = pageHints) {
-  const fetch = vi.fn(() => Promise.resolve(pages ? new Response(JSON.stringify(pages)) : new Response(null, { status: 404 })))
+function load (hints: unknown = buildHints) {
+  const fetch = vi.fn(() => Promise.resolve(hints ? new Response(JSON.stringify(hints)) : new Response(null, { status: 404 })))
   vi.stubGlobal('fetch', fetch)
   vi.resetModules()
   return import('#app/internal/preload-hints').then(module => ({ ...module, fetch }))
 }
 
-/** A document of a build with hints: the renderer writes them even when they list nothing. */
-function withHints (value: unknown = documentHints, pages?: unknown) {
+function withHints (hints?: unknown, value: unknown = documentHints) {
   const script = document.createElement('script')
   script.type = 'application/json'
   script.setAttribute('data-nuxt-preload', 'nuxt-app')
   script.textContent = JSON.stringify(value)
   document.head.appendChild(script)
-  return load(pages)
+  return load(hints)
 }
 
 function withoutRel (rel: string) {
@@ -66,12 +61,11 @@ describe('experimental.routeChunkHints', () => {
     const { preloadLayoutChunks, fetch } = await withHints()
 
     void preloadLayoutChunks('default')
-    expect(hintLinks()).toEqual([
+    await vi.waitFor(() => expect(hintLinks()).toEqual([
       { rel: 'modulepreload', as: undefined, href: '/_nuxt/layout.js', crossOrigin: '' },
       { rel: 'preload', as: 'style', href: '/_nuxt/layout.css', crossOrigin: '' },
-    ])
-    // the initial layout does not wait for route component hints
-    expect(fetch).not.toHaveBeenCalled()
+    ]))
+    expect(fetch).toHaveBeenCalledExactlyOnceWith('/__nuxt_preload/test.json', { priority: 'low' })
     expect((layouts.default as { __asyncResolved?: unknown }).__asyncResolved).toBeFalsy()
   })
 
@@ -85,23 +79,20 @@ describe('experimental.routeChunkHints', () => {
 
     await vi.waitFor(() => expect(hintLinks().map(link => link.href)).toContain('/_nuxt/page.js'))
     expect(hintLinks().map(link => link.rel)).toEqual(['modulepreload', 'preload', 'modulepreload'])
-    // fetched once, at low priority, as nothing waits on it
     expect(fetch).toHaveBeenCalledTimes(1)
-    expect(fetch).toHaveBeenCalledWith('/__nuxt_preload/test.json', { priority: 'low' })
-    // the stylesheet it shares with the layout is hinted once
     expect(hintLinks().filter(link => link.href === '/_nuxt/layout.css')).toHaveLength(1)
     expect(loader).not.toHaveBeenCalled()
   })
 
   it.each([
     ['loads with the entry', Object.assign(vi.fn(), { __nuxt_module: 'entry-key' })],
-    ['the hints do not list', Object.assign(vi.fn(), { __nuxt_module: 'other-key' })],
-    ['the build does not know', vi.fn()],
+    ['is not listed in the hints', Object.assign(vi.fn(), { __nuxt_module: 'other-key' })],
+    ['is unknown to the build', vi.fn()],
     ['is a server page', Object.assign(vi.fn(), { __nuxt_module: false })],
-  ])('hints a destination around a route component that %s', async (_, other) => {
-    const { preloadRouteChunks } = await withHints(documentHints, {
-      ...pageHints,
-      chunks: { ...pageHints.chunks, 'entry-key': [] },
+  ])('hints the rest of a destination when one of its route components %s', async (_, other) => {
+    const { preloadRouteChunks } = await withHints({
+      ...buildHints,
+      pages: { ...buildHints.pages, 'entry-key': [] },
     })
     const loader = page()
 
@@ -112,10 +103,10 @@ describe('experimental.routeChunkHints', () => {
   })
 
   it('fetches nothing for a destination whose hints cannot be fetched', async () => {
-    const { preloadRouteChunks, fetch } = await withHints(documentHints, null)
+    const { preloadLayoutChunks, preloadRouteChunks, fetch } = await withHints(null)
     const loader = page()
 
-    // the destination is not left to the caller, which would run the route components to load them
+    await expect(preloadLayoutChunks('default')).resolves.toBe(true)
     await expect(preloadRouteChunks([loader])).resolves.toBe(true)
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(hintLinks()).toEqual([])
@@ -139,10 +130,10 @@ describe('experimental.routeChunkHints', () => {
     const { preloadLayoutChunks } = await withHints()
 
     void preloadLayoutChunks('default')
-    expect(hintLinks().filter(link => link.rel !== 'prefetch')).toEqual([
+    await vi.waitFor(() => expect(hintLinks().filter(link => link.rel !== 'prefetch')).toEqual([
       { rel: 'modulepreload', as: undefined, href: '/_nuxt/layout.js', crossOrigin: '' },
       { rel: 'preload', as: 'style', href: '/_nuxt/layout.css', crossOrigin: '' },
-    ])
+    ]))
   })
 
   it('does not look through the document again for chunks it has hinted', async () => {
@@ -168,7 +159,7 @@ describe('experimental.routeChunkHints', () => {
   it('still finds a chunk another link has loaded since it last looked', async () => {
     const { preloadLayoutChunks, preloadRouteChunks } = await withHints()
     void preloadLayoutChunks('default')
-    // the client build inserts a stylesheet or a preload of its own for a chunk it loads
+    await vi.waitFor(() => expect(hintLinks()).toHaveLength(2))
     const loaded = document.createElement('link')
     loaded.rel = 'modulepreload'
     loaded.href = '/_nuxt/page.js'
@@ -186,20 +177,17 @@ describe('experimental.routeChunkHints', () => {
     const { preloadLayoutChunks } = await withHints()
 
     void preloadLayoutChunks('default')
-    expect(hintLinks().map(({ rel, href }) => ({ rel, href }))).toEqual([
+    await vi.waitFor(() => expect(hintLinks().map(({ rel, href }) => ({ rel, href }))).toEqual([
       { rel: 'stylesheet', href: '/_nuxt/layout.css' },
       { rel: 'modulepreload', href: '/_nuxt/layout.js' },
-    ])
+    ]))
   })
 
-  // The hints name files, which are resolved against the URL the app serves its build assets
-  // from. Hints injected into the document, ahead of the renderer's, cannot name another origin
-  // that way, and must not reach another path.
   it('only hints chunks of the build', async () => {
     const { preloadLayoutChunks } = await withHints({
-      ...documentHints,
+      ...buildHints,
       files: [
-        ...documentHints.files,
+        ...layoutFiles,
         { rel: 'modulepreload', file: 'https://evil.example/x.js' },
         { rel: 'modulepreload', file: '//evil.example/x.js' },
         { rel: 'preload', as: 'style', file: '../api/x.css' },
@@ -212,9 +200,10 @@ describe('experimental.routeChunkHints', () => {
 
     void preloadLayoutChunks('default')
     const assets = new URL('/_nuxt/', location.href).href
-    const links = [...document.head.querySelectorAll<HTMLLinkElement>('link[href]')].map(link => link.href)
+    const hinted = () => [...document.head.querySelectorAll<HTMLLinkElement>('link[href]')].map(link => link.href)
+    await vi.waitFor(() => expect(hinted()).toHaveLength(4))
+    const links = hinted()
     expect(links.slice(0, 2)).toEqual([assets + 'layout.js', assets + 'layout.css'])
-    expect(links).toHaveLength(4)
     expect(links.every(href => href.startsWith(assets))).toBe(true)
   })
 
@@ -228,10 +217,7 @@ describe('experimental.routeChunkHints', () => {
     ['a module preloaded as something else', { rel: 'modulepreload', as: 'style', file: 'x.js' }],
     ['nothing', null],
   ])('makes no link from an entry of the hints that is %s', async (_, entry) => {
-    const { preloadLayoutChunks, preloadRouteChunks } = await withHints(
-      { ...documentHints, files: [entry], layouts: { default: [0] } },
-      { files: [entry], chunks: { 'page-key': [0] } },
-    )
+    const { preloadLayoutChunks, preloadRouteChunks } = await withHints({ files: [entry], layouts: { default: [0] }, pages: { 'page-key': [0] } })
 
     await expect(preloadLayoutChunks('default')).resolves.toBe(true)
     await expect(preloadRouteChunks([page()])).resolves.toBe(true)
@@ -240,22 +226,23 @@ describe('experimental.routeChunkHints', () => {
 
   it('hints the files listed next to an entry that is not a hint', async () => {
     const { preloadLayoutChunks } = await withHints({
-      ...documentHints,
-      files: [{ rel: 'stylesheet', file: 'other.css' }, ...documentHints.files],
+      ...buildHints,
+      files: [{ rel: 'stylesheet', file: 'other.css' }, ...layoutFiles],
       layouts: { default: [0, 1, 2] },
     })
 
     void preloadLayoutChunks('default')
-    expect(hintLinks().map(link => link.href)).toEqual(['/_nuxt/layout.js', '/_nuxt/layout.css'])
+    await vi.waitFor(() => expect(hintLinks().map(link => link.href)).toEqual(['/_nuxt/layout.js', '/_nuxt/layout.css']))
   })
 
   it.each([
     ['another origin', 'https://evil.example/__nuxt_preload/test.json'],
     ['another path', '/api/test.json'],
-  ])('does not fetch route component hints from %s', async (_, pages) => {
-    const { preloadRouteChunks, warmRouteChunkHints, fetch } = await withHints({ ...documentHints, pages })
+  ])('does not fetch the hints from %s', async (_, url) => {
+    const { preloadLayoutChunks, preloadRouteChunks, warmRouteChunkHints, fetch } = await withHints(buildHints, { url })
 
     warmRouteChunkHints()
+    await expect(preloadLayoutChunks('default')).resolves.toBe(true)
     await expect(preloadRouteChunks([page()])).resolves.toBe(true)
     expect(fetch).not.toHaveBeenCalled()
     expect(hintLinks()).toEqual([])
@@ -263,12 +250,12 @@ describe('experimental.routeChunkHints', () => {
 
   it('requests a chunk without CORS where the client build does', async () => {
     const { preloadLayoutChunks } = await withHints({
-      ...documentHints,
-      files: [documentHints.files[0], { ...documentHints.files[1], noCors: true }],
+      ...buildHints,
+      files: [layoutFiles[0], { ...layoutFiles[1], noCors: true }],
     })
 
     void preloadLayoutChunks('default')
-    expect([...document.head.querySelectorAll('link[href*="/_nuxt/"]')].map(link => link.hasAttribute('crossorigin'))).toEqual([true, false])
+    await vi.waitFor(() => expect([...document.head.querySelectorAll('link[href*="/_nuxt/"]')].map(link => link.hasAttribute('crossorigin'))).toEqual([true, false]))
   })
 
   it('carries the CSP nonce of the document', async () => {
@@ -279,14 +266,14 @@ describe('experimental.routeChunkHints', () => {
     const { preloadLayoutChunks } = await withHints()
 
     void preloadLayoutChunks('default')
-    expect([...document.head.querySelectorAll('link[href*="/_nuxt/"]')].map(link => link.getAttribute('nonce'))).toEqual(['abc', 'abc'])
+    await vi.waitFor(() => expect([...document.head.querySelectorAll('link[href*="/_nuxt/"]')].map(link => link.getAttribute('nonce'))).toEqual(['abc', 'abc']))
   })
 
   it.each([
-    ['without `modulepreload`', 'modulepreload', documentHints],
+    ['without `modulepreload`', 'modulepreload', buildHints],
     // Firefox is such a browser with `network.preload` off. A build that loads chunks as classic
     // scripts hints nothing else.
-    ['in which `preload` is turned off', 'preload', { ...documentHints, files: [{ rel: 'preload', as: 'script', file: 'layout.js', noCors: true }, documentHints.files[1]] }],
+    ['in which `preload` is turned off', 'preload', { ...buildHints, files: [{ rel: 'preload', as: 'script', file: 'layout.js', noCors: true }, layoutFiles[1], { rel: 'preload', as: 'script', file: 'page.js', noCors: true }] }],
   ])('fetches nothing in a browser %s', async (_, rel, hints) => {
     const supports = withoutRel(rel)
     try {
@@ -295,7 +282,7 @@ describe('experimental.routeChunkHints', () => {
 
       await expect(preloadLayoutChunks('default')).resolves.toBe(true)
       await expect(preloadRouteChunks([loader])).resolves.toBe(true)
-      expect(fetch).not.toHaveBeenCalled()
+      expect(fetch).toHaveBeenCalledTimes(1)
       expect(hintLinks()).toEqual([])
       expect(loader).not.toHaveBeenCalled()
     } finally {
@@ -307,49 +294,47 @@ describe('experimental.routeChunkHints', () => {
     const supports = withoutRel('modulepreload')
     try {
       const { preloadLayoutChunks } = await withHints({
-        ...documentHints,
-        files: [{ rel: 'preload', as: 'script', file: 'layout.js', noCors: true }, documentHints.files[1]],
+        ...buildHints,
+        files: [{ rel: 'preload', as: 'script', file: 'layout.js', noCors: true }, layoutFiles[1]],
       })
 
       void preloadLayoutChunks('default')
-      expect(hintLinks().map(({ rel, as }) => ({ rel, as }))).toEqual([{ rel: 'preload', as: 'script' }, { rel: 'preload', as: 'style' }])
+      await vi.waitFor(() => expect(hintLinks().map(({ rel, as }) => ({ rel, as }))).toEqual([{ rel: 'preload', as: 'script' }, { rel: 'preload', as: 'style' }]))
     } finally {
       supports.mockRestore()
     }
   })
 
-  // markup injected ahead of the renderer's, or a host that answers any path, can put something
-  // else in the place of hints, which must not fail the prefetch that reads it
   it.each([
-    ['lack the table of layouts', { files: documentHints.files }],
-    ['list something other than files', { ...documentHints, files: {} }],
-    ['map a layout to something other than indices', { ...documentHints, layouts: { default: { 0: 0 } } }],
-    ['are not an object', 'hints'],
-  ])('fetches nothing when the hints of the document %s', async (_, value) => {
-    const { preloadLayoutChunks } = await withHints(value)
+    ['is not an object', 'hints'],
+    ['names no hints', {}],
+    ['names something other than a URL', { url: { href: '/__nuxt_preload/test.json' } }],
+  ])('fetches nothing when the pointer to the hints %s', async (_, value) => {
+    const { preloadLayoutChunks, preloadRouteChunks, fetch } = await withHints(buildHints, value)
 
     await expect(preloadLayoutChunks('default')).resolves.toBe(true)
+    await expect(preloadRouteChunks([page()])).resolves.toBe(true)
+    expect(fetch).not.toHaveBeenCalled()
     expect(hintLinks()).toEqual([])
   })
 
   it.each([
-    ['lack the table of chunks', { files: pageHints.files }],
-    ['list something other than files', { ...pageHints, files: 'files' }],
-    ['map a route component to something other than indices', { ...pageHints, chunks: { 'page-key': {} } }],
+    ['lack the table of layouts', { files: buildHints.files, pages: buildHints.pages }],
+    ['lack the table of route components', { files: buildHints.files, layouts: buildHints.layouts }],
+    ['list something other than files', { ...buildHints, files: 'files' }],
+    ['map to something other than indices', { ...buildHints, layouts: { default: { 0: 0 } }, pages: { 'page-key': {} } }],
     ['are another response', { error: 'not found' }],
-  ])('fetches nothing when the hints of route components %s', async (_, pages) => {
-    const { preloadRouteChunks, fetch } = await withHints(documentHints, pages)
+  ])('fetches nothing when the hints %s', async (_, hints) => {
+    const { preloadLayoutChunks, preloadRouteChunks, fetch } = await withHints(hints)
 
+    await expect(preloadLayoutChunks('default')).resolves.toBe(true)
     await expect(preloadRouteChunks([page()])).resolves.toBe(true)
     expect(hintLinks()).toEqual([])
     await expect(preloadRouteChunks([page()])).resolves.toBe(true)
     expect(fetch).toHaveBeenCalledTimes(1)
   })
 
-  // A request that failed is not an answer. Kept as one, route components would go unfetched
-  // until the page is reloaded. A dropped connection or a deployment under way does not justify
-  // that.
-  it('asks again for the hints of route components after a request for them failed, less and less often', async () => {
+  it('asks again for the hints after a request for them failed, less and less often', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     const { preloadRouteChunks, fetch } = await withHints()
     fetch
@@ -385,6 +370,7 @@ describe('experimental.routeChunkHints', () => {
     const { preloadLayoutChunks } = await withHints()
     const script = () => document.head.querySelector<HTMLLinkElement>('link[href$="/_nuxt/layout.js"]')
     const fail = async (prefetch: Promise<boolean>) => {
+      await vi.waitFor(() => expect(script()).not.toBeNull())
       for (const link of document.head.querySelectorAll('link[href*="/_nuxt/layout."]')) {
         link.dispatchEvent(new Event(link === script() ? 'error' : 'load'))
       }
@@ -398,25 +384,23 @@ describe('experimental.routeChunkHints', () => {
     expect(script()).toBeNull()
 
     vi.setSystemTime(Date.now() + 1000)
-    const second = preloadLayoutChunks('default')
-    expect(script()).not.toBeNull()
-    await fail(second)
+    await fail(preloadLayoutChunks('default'))
 
     vi.setSystemTime(Date.now() + 1000)
     await expect(preloadLayoutChunks('default')).resolves.toBe(true)
     expect(script()).toBeNull()
     vi.setSystemTime(Date.now() + 1000)
     void preloadLayoutChunks('default')
-    expect(hintLinks().map(link => link.href)).toEqual(['/_nuxt/layout.css', '/_nuxt/layout.js'])
+    await vi.waitFor(() => expect(hintLinks().map(link => link.href)).toEqual(['/_nuxt/layout.css', '/_nuxt/layout.js']))
   })
 
-  // the browser keeps the failed preload, and answers the request that needs the file with it
-  it('reports a `rel="preload"` hint that failed, and does not ask for the file again', async () => {
+  it('reports a `rel="preload"` hint that failed', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     const { preloadLayoutChunks, onFailedPreload } = await withHints()
     const listener = vi.fn()
     onFailedPreload(listener)
     const settle = async (prefetch: Promise<boolean>, failing: string) => {
+      await vi.waitFor(() => expect(document.head.querySelector('link[href$="/_nuxt/layout.js"]')).not.toBeNull())
       for (const link of document.head.querySelectorAll<HTMLLinkElement>('link[href*="/_nuxt/layout."]')) {
         link.dispatchEvent(new Event(link.href.endsWith(failing) ? 'error' : 'load'))
       }
@@ -432,18 +416,29 @@ describe('experimental.routeChunkHints', () => {
     const late = vi.fn()
     onFailedPreload(late)
     expect(late).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not ask again for a file whose `rel="preload"` hint failed', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    const { preloadLayoutChunks } = await withHints()
+
+    const prefetch = preloadLayoutChunks('default')
+    await vi.waitFor(() => expect(document.head.querySelector('link[href$="/_nuxt/layout.css"]')).not.toBeNull())
+    for (const link of document.head.querySelectorAll<HTMLLinkElement>('link[href*="/_nuxt/layout."]')) {
+      link.dispatchEvent(new Event(link.href.endsWith('layout.css') ? 'error' : 'load'))
+    }
+    await expect(prefetch).resolves.toBe(true)
 
     vi.setSystemTime(Date.now() + 60_000)
     await expect(preloadLayoutChunks('default')).resolves.toBe(true)
-    expect(hintLinks().map(link => link.href)).toEqual(['/_nuxt/layout.css', '/_nuxt/layout.js'])
+    expect(hintLinks().map(link => link.href)).toEqual(['/_nuxt/layout.js', '/_nuxt/layout.css'])
   })
 
-  it('fetches nothing for a layout or route component a build with hints lists none for', async () => {
-    const { preloadLayoutChunks, preloadRouteChunks, fetch } = await withHints({ files: [], layouts: {} })
+  it('fetches nothing for a layout or route component the hints do not list', async () => {
+    const { preloadLayoutChunks, preloadRouteChunks } = await withHints({ files: [], layouts: {}, pages: {} })
 
     await expect(preloadLayoutChunks('default')).resolves.toBe(true)
     await expect(preloadRouteChunks([page()])).resolves.toBe(true)
-    expect(fetch).not.toHaveBeenCalled()
     expect(hintLinks()).toEqual([])
   })
 

@@ -26,12 +26,10 @@ async function trackChunkRequests (page: Page) {
 }
 
 async function readHints (page: Page, layout: string) {
-  const { files, pages } = await page.evaluate((layout) => {
-    const hints = JSON.parse(document.querySelector('script[data-nuxt-preload]')!.textContent!)
-    return { files: (hints.layouts[layout] as number[]).map(index => hints.files[index] as PreloadHint), pages: hints.pages as string }
-  }, layout)
-  const pageHints = await page.request.get(pages).then(response => response.json()) as { files: PreloadHint[] }
-  return { layout: files, pages: pageHints.files }
+  const url = await page.evaluate(() => JSON.parse(document.querySelector('script[data-nuxt-preload]')!.textContent!).url as string)
+  const hints = await page.request.get(url).then(response => response.json()) as { files: PreloadHint[], layouts: Record<string, number[]>, pages: Record<string, number[]> }
+  const files = (indices: number[]) => indices.map(index => hints.files[index]!)
+  return { layout: files(hints.layouts[layout]!), pages: files([...new Set(Object.values(hints.pages).flat())]) }
 }
 
 function readEffects (page: Page) {
