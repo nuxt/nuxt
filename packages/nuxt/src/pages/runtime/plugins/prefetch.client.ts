@@ -1,7 +1,8 @@
-import { hasProtocol } from 'ufo'
+import { hasProtocol, joinURL } from 'ufo'
 import { defineNuxtPlugin } from '#app/nuxt'
 import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
+import { reloadNuxtApp } from '#app/composables/chunk'
 import layouts from '#build/layouts'
 import { namedMiddleware } from '#build/middleware'
 import { _loadAsyncComponent } from '#app/composables/preload'
@@ -9,7 +10,8 @@ import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
 import { canPrefetch, prefetchGroup } from '#app/internal/prefetch-util'
 import { componentIslands, routeChunkHints } from '#build/nuxt.config.mjs'
 import { toArray } from '#app/utils'
-import { preloadLayoutChunks, warmRouteChunkHints } from '#app/internal/preload-hints'
+import { onFailedPreload, preloadLayoutChunks, warmRouteChunkHints } from '#app/internal/preload-hints'
+import { baseURL } from '#internal/nuxt/paths'
 import { PRELOAD_MODULE_KEY } from '#app/internal/preload-hints-shared'
 
 async function prefetchLayout (layout: string) {
@@ -33,14 +35,34 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     }
 
     // Force layout prefetch on route changes
+    let stopLoadingLayouts: (() => void) | undefined
     nuxtApp.hooks.hook('app:mounted', () => {
-      router.beforeEach(async (to) => {
+      stopLoadingLayouts = router.beforeEach(async (to) => {
         const layout = to?.meta?.layout
         if (typeof layout === 'string' && layout in layouts) {
           await _loadAsyncComponent(layouts[layout])
         }
       })
     })
+
+    if (routeChunkHints) {
+      onFailedPreload(() => {
+        // the guard above may never settle for a layout whose hint failed, and the one added here
+        // would otherwise run after it
+        stopLoadingLayouts?.()
+        router.beforeEach((to, from) => {
+          // the browser would not load a new document for a hash alone
+          if (to.path === from.path) {
+            return
+          }
+          // every reload follows a navigation, so reloading the same path twice is not a loop
+          reloadNuxtApp({ path: joinURL(baseURL(), to.fullPath), persistState: true, force: true })
+          // the navigation is left pending rather than cancelled, which would have the router move
+          // the history back from an entry the browser has already moved to
+          return new Promise<void>(() => {})
+        })
+      })
+    }
     // Prefetch layouts & middleware
     const { schedule } = usePrefetchScheduler(nuxtApp)
     nuxtApp.hooks.hook('link:prefetch', async (url) => {
