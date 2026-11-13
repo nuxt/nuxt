@@ -79,6 +79,12 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
     ...clientEnvironment(nuxt, ctx.entry),
   } satisfies vite.InlineConfig, nuxt.options.vite.$client || {}))
 
+  // `ssr` options are meant for the server build only. If a user-provided
+  // `vite.ssr` block leaks into the client config, `nuxt:environments` can't
+  // tell this server apart from the SSR one (it keys on `config.ssr`) and
+  // would clear `optimizeDeps.include` for the client environment too.
+  delete clientConfig.ssr
+
   const callbacks = optimizerCallbacks.get(nuxt)
   const devErrors = getDevErrorReporter(nuxt)
   clientConfig.customLogger = createViteLogger(clientConfig, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep, onTransformError: reportTransformError(devErrors) })
