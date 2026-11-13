@@ -204,7 +204,7 @@ An object accepting the following properties:
 - `open`
 
   - **Type**: `OpenOptions`
-  - Allows navigating to the URL using the [open()](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) method of the window. This option is only applicable on the client side and will be ignored on the server side.
+  - Allows navigating to the URL using the [open()](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) method of the window. This is only supported on the client side; on the server, `navigateTo` with `open` is a no-op.
 
     An object accepting the following properties:
 
