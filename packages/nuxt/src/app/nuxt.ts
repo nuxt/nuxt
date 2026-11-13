@@ -1,7 +1,7 @@
 import './types/augments'
 
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
-import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
+import type { App, EffectScope, Ref, ShallowRef, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { createHooks } from 'hookable'
 
@@ -149,6 +149,11 @@ interface _NuxtApp {
    * @internal
    */
   '~restoreDeferredRoute'?: () => void
+  /**
+   * The error `<NuxtRoot>` keeps rendering while `clearError({ redirect })` navigates.
+   * @internal
+   */
+  '~heldError'?: ShallowRef<NuxtPayload['error']>
 
   /** @internal */
   '_islandPromises'?: Record<string, Promise<any>>

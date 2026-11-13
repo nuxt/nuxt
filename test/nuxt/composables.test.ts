@@ -160,7 +160,7 @@ describe('errors', () => {
   describe('clearError', () => {
     afterEach(async () => {
       vi.restoreAllMocks()
-      await clearError()
+      await clearError({ redirect: '/' })
     })
 
     it('should clear the error even when the redirect rejects', async () => {
@@ -170,6 +170,43 @@ describe('errors', () => {
       await expect(clearError({ redirect: '/' })).rejects.toThrow('guard threw')
 
       expect(useError().value).toBeUndefined()
+    })
+
+    it('should run middleware for the redirect target with the error already cleared', async () => {
+      const seen: unknown[] = []
+      const middleware = defineNuxtRouteMiddleware(() => {
+        seen.push(useError().value)
+      })
+      addRouteMiddleware(middleware, { global: true })
+      onTestFinished(() => {
+        const globalMiddleware = useNuxtApp()._middleware.global
+        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      })
+
+      showError('boom')
+      await clearError({ redirect: '/?cleared' })
+
+      expect(useRouter().currentRoute.value.fullPath).toBe('/?cleared')
+      expect(seen).toEqual([undefined])
+    })
+
+    it('should keep a fatal error raised while redirecting', async () => {
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.forbidden !== undefined) {
+          throw createError({ status: 403, message: 'forbidden', fatal: true })
+        }
+      })
+      addRouteMiddleware(middleware, { global: true })
+      onTestFinished(() => {
+        const globalMiddleware = useNuxtApp()._middleware.global
+        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      })
+
+      await useRouter().replace('/?from')
+      showError('boom')
+      await expect(clearError({ redirect: '/?forbidden' })).rejects.toThrow('forbidden')
+
+      expect(useError().value).toMatchObject({ status: 403, message: 'forbidden' })
     })
   })
 

@@ -2,8 +2,9 @@
   <Suspense @resolve="onResolve">
     <div v-if="abortRender" />
     <ErrorComponent
-      v-else-if="error"
-      :error="error"
+      v-else-if="error || heldError"
+      :key="error || heldError"
+      :error="error || heldError"
     />
     <IslandRenderer
       v-else-if="islandContext"
@@ -18,7 +19,7 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
+import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide, shallowRef } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { _invokeAppErrorHandler, _notifyCrawlerError, createErrorFromThrown, isNuxtError, showError, useError } from '../composables/error'
 import { isBotUserAgent } from '../utils'
@@ -54,6 +55,7 @@ if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
 
 // error handling
 const error = useError()
+const heldError = import.meta.client ? (nuxtApp['~heldError'] ||= shallowRef()) : undefined
 // render an empty <div> when plugins have thrown an error but we're not yet rendering the error page
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
 onErrorCaptured((err, target, info) => {

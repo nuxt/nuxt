@@ -1,4 +1,4 @@
-import { toRef } from 'vue'
+import { shallowRef, toRef } from 'vue'
 import type { AppConfig, ComponentPublicInstance, Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import type { NuxtApp, NuxtPayload } from '../nuxt'
@@ -89,12 +89,24 @@ export const clearError = async (options: { redirect?: string } = {}): Promise<v
 
   nuxtApp.callHook('app:error:cleared', options)?.catch(hookError => console.error('[nuxt] Error in `app:error:cleared` hook', hookError))
 
+  // `<NuxtRoot>` keeps rendering the held error until the redirect settles, so the
+  // route that failed is not re-mounted while middleware for the target runs.
+  const heldError = import.meta.client && options.redirect ? (nuxtApp['~heldError'] ||= shallowRef()) : undefined
+  if (heldError) {
+    heldError.value = error.value
+    error.value = undefined
+  }
+
   try {
     if (options.redirect) {
       await useRouter().replace(options.redirect)
     }
   } finally {
-    error.value = undefined
+    if (heldError) {
+      heldError.value = undefined
+    } else {
+      error.value = undefined
+    }
 
     if (import.meta.dev && import.meta.client) {
       for (const el of document.querySelectorAll('nuxt-error-overlay')) {
