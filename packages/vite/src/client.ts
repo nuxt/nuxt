@@ -90,10 +90,15 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
 
   await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
 
+  const vue = vuePlugin(clientConfig.vue)
   clientConfig.plugins!.unshift(
-    vuePlugin(clientConfig.vue),
+    vue,
     viteJsxPlugin(clientConfig.vueJsx),
   )
+  if (devErrors) {
+    const { VueCompilerWarningsPlugin } = await import('./vue-compiler-warnings.ts')
+    clientConfig.plugins!.push(VueCompilerWarningsPlugin(nuxt, vue, devErrors))
+  }
 
   await nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })
 
