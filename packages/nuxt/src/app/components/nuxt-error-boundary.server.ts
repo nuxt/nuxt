@@ -4,7 +4,7 @@ import { ssrRenderSlot } from 'vue/server-renderer'
 
 import { useNuxtApp } from '../nuxt'
 import { clearNuxtState, useState } from '../composables/state'
-import { _invokeAppErrorHandler, createError, createErrorFromThrown } from '../composables/error'
+import { _invokeAppErrorHandler, createError, isUntrustedError } from '../composables/error'
 import type { NuxtError } from '../composables/error'
 import { createIdScope, isVaporSlot, resetIdScope } from './utils'
 import { captureTeleports, createBuffer, settleBuffer } from './ssr-buffer'
@@ -32,7 +32,7 @@ type NuxtErrorBoundarySlots = SlotsType<{
 type Push = (item: SSRBufferItem) => void
 
 function toPublicError (err: unknown): NuxtError {
-  if (import.meta.dev || !createErrorFromThrown(err).unhandled) {
+  if (import.meta.dev || !isUntrustedError(err)) {
     return createError(err as Error)
   }
   return createError({ status: 500, statusText: 'Internal Server Error' })
