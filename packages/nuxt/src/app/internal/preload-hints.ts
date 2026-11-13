@@ -1,21 +1,16 @@
 import { joinURL } from 'ufo'
 import { appId } from '#build/nuxt.config.mjs'
 import { baseURL, buildAssetsURL } from '#internal/nuxt/paths'
-import { PAGE_HINTS_PREFIX, PRELOAD_MODULE_KEY } from './preload-hints-shared'
-import type { ChunkHints, PreloadHint } from './preload-hints-shared'
+import { HINTS_PREFIX, PRELOAD_MODULE_KEY } from './preload-hints-shared'
+import type { PreloadHint, RouteChunkHints } from './preload-hints-shared'
 
 interface DocumentHints {
-  files: PreloadHint[]
-  layouts: Record<string, number[]>
-  /** Where the hints of the route components of this build are served. */
-  pages?: string
+  url?: string
 }
 
-let documentHints: DocumentHints | null | false | undefined
-let pageHints: Promise<ChunkHints | null> | undefined
-/** When the hints of route components may be requested again after a failure, and how long the next failure defers that. */
-const pageHintsRetry = { after: 0, delay: 1000 }
-/** Whether the browser acts on a `<link>` of a given `rel`. */
+let documentHints: DocumentHints | false | undefined
+let buildHints: Promise<RouteChunkHints | null> | undefined
+const hintsRetry = { after: 0, delay: 1000 }
 const relSupport = new Map<string, boolean>()
 const requested = new Set<string>()
 const fileRetries = new Map<string, { after: number, delay: number }>()
@@ -24,12 +19,8 @@ const preloadFailureListeners: Array<() => void> = []
 let assetsURL: string | undefined
 let nonce: string | null | undefined
 
-/**
- * The hints of the document. `false` where the renderer wrote none, which tells a build that has
- * no hints (with a builder that has not said how it loads its chunks) from one that has: in the
- * latter, `null` stands for hints that cannot be used.
- */
-function readDocumentHints (): DocumentHints | null | false {
+// `false` in a build without hints, where the renderer writes nothing
+function readDocumentHints (): DocumentHints | false {
   if (documentHints !== undefined) {
     return documentHints
   }
@@ -37,52 +28,48 @@ function readDocumentHints (): DocumentHints | null | false {
   if (!script) {
     return documentHints = false
   }
-  let parsed: DocumentHints | null = null
+  const parsed: DocumentHints = {}
   try {
-    const hints = JSON.parse(script.textContent || '')
-    parsed = isHints(hints, 'layouts') ? supported(hints as DocumentHints) : null
+    const url = JSON.parse(script.textContent || '')?.url
+    // markup injected into the document can point the hints elsewhere
+    if (typeof url === 'string' && isHintsURL(url)) {
+      parsed.url = url
+    }
   } catch {
-    // hints that cannot be read are hints that cannot be used
+    // what cannot be read says nothing of where the hints are
   }
   return documentHints = parsed
 }
 
-function loadPageHints (url: string): Promise<ChunkHints | null> {
-  // markup injected into the document can point the hints elsewhere
-  if (!isPageHintsURL(url)) {
+function loadHints (): Promise<RouteChunkHints | null> {
+  const url = (readDocumentHints() as DocumentHints).url
+  if (!url) {
     return Promise.resolve(null)
   }
-  // a prefetch that comes too soon after a failed request does without the hints
-  if (!pageHints && Date.now() >= pageHintsRetry.after) {
-    pageHints = fetch(url, { priority: 'low' })
+  if (!buildHints && Date.now() >= hintsRetry.after) {
+    buildHints = fetch(url, { priority: 'low' })
       .then(response => response.ok
-        ? response.json().then(hints => isHints(hints, 'chunks') ? supported(hints as ChunkHints) : null)
-        : retryPageHints())
-      .catch(retryPageHints)
+        ? response.json().then(hints => isHints(hints) ? supported(hints as RouteChunkHints) : null)
+        : retryHints())
+      .catch(retryHints)
   }
-  return pageHints || Promise.resolve(null)
+  return buildHints || Promise.resolve(null)
 }
 
-/**
- * A request that failed says nothing about the hints: a connection drops, and a server that is
- * being deployed answers for another build. Kept as the answer, it would leave route components
- * unfetched until the page is reloaded. The hints are asked for again instead, by a later
- * prefetch and after twice as long each time, so that a server in trouble is left alone.
- */
-function retryPageHints (): null {
-  pageHints = undefined
-  pageHintsRetry.after = Date.now() + pageHintsRetry.delay
-  pageHintsRetry.delay *= 2
+// a failed request is not kept as the answer: a later prefetch asks again, with the delay doubled
+function retryHints (): null {
+  buildHints = undefined
+  hintsRetry.after = Date.now() + hintsRetry.delay
+  hintsRetry.delay *= 2
   return null
 }
 
-/**
- * Whether a value is shaped like hints: a list of files and a table of indices into it. Anything
- * else served or injected in their place is treated as unusable, rather than failing the
- * prefetch that reads it.
- */
-function isHints (value: any, table: 'layouts' | 'chunks'): boolean {
-  return Array.isArray(value?.files) && !!value[table] && typeof value[table] === 'object'
+function isHints (value: any): boolean {
+  return Array.isArray(value?.files) && isTable(value.layouts) && isTable(value.pages)
+}
+
+function isTable (value: unknown): boolean {
+  return !!value && typeof value === 'object'
 }
 
 // A browser that cannot act on a hint fires neither `load` nor `error` for its link, so the
@@ -112,9 +99,9 @@ function isHint (hint: any): hint is PreloadHint {
     : hint.rel === 'preload' && (hint.as === 'script' || hint.as === 'style'))
 }
 
-function isPageHintsURL (url: string): boolean {
+function isHintsURL (url: string): boolean {
   try {
-    return new URL(url, document.baseURI).href.startsWith(new URL(joinURL(baseURL(), PAGE_HINTS_PREFIX), document.baseURI).href)
+    return new URL(url, document.baseURI).href.startsWith(new URL(joinURL(baseURL(), HINTS_PREFIX), document.baseURI).href)
   } catch {
     return false
   }
@@ -230,10 +217,10 @@ export function onFailedPreload (listener: () => void): void {
  * @internal
  */
 export async function preloadLayoutChunks (name: string): Promise<boolean> {
-  const hints = readDocumentHints()
-  if (hints === false) {
+  if (readDocumentHints() === false) {
     return false
   }
+  const hints = await loadHints()
   const indices = hints?.layouts[name]
   if (hints && Array.isArray(indices)) {
     await preloadFiles(hints.files, indices)
@@ -241,16 +228,10 @@ export async function preloadLayoutChunks (name: string): Promise<boolean> {
   return true
 }
 
-/**
- * Start fetching the hints of route components, so the first `<NuxtLink>` prefetch does not wait
- * on a request for them. Once fetched they are cached permanently, as their path names the build.
- *
- * @internal
- */
+/** @internal */
 export function warmRouteChunkHints (): void {
-  const hints = readDocumentHints()
-  if (hints && hints.pages) {
-    void loadPageHints(hints.pages)
+  if (readDocumentHints() !== false) {
+    void loadHints()
   }
 }
 
@@ -260,8 +241,7 @@ export function warmRouteChunkHints (): void {
  * @internal
  */
 export async function preloadRouteChunks (components: unknown[]): Promise<boolean> {
-  const documentHints = readDocumentHints()
-  if (documentHints === false) {
+  if (readDocumentHints() === false) {
     return false
   }
   const keys: string[] = []
@@ -271,11 +251,11 @@ export async function preloadRouteChunks (components: unknown[]): Promise<boolea
       keys.push(key)
     }
   }
-  const hints = keys.length && documentHints?.pages ? await loadPageHints(documentHints.pages) : null
+  const hints = keys.length ? await loadHints() : null
   if (hints) {
     const indices = new Set<number>()
     for (const key of keys) {
-      const chunks = hints.chunks[key]
+      const chunks = hints.pages[key]
       if (Array.isArray(chunks)) {
         for (const index of chunks) {
           indices.add(index)

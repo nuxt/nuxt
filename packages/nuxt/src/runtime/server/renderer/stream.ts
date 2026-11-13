@@ -75,7 +75,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
     pushEntryImportMap(instance, event, ssrContext)
   }
   if (NUXT_PRELOAD_MODULES && !NO_SCRIPTS) {
-    pushPreloadHints(event, ssrContext, rendererContext)
+    pushPreloadHints(event, ssrContext)
   }
 
   if (payloadExtraction && !payloadInline && !NO_SCRIPTS) {

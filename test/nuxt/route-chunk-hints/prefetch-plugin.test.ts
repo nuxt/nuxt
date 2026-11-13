@@ -148,8 +148,8 @@ describe('navigating with `experimental.routeChunkHints`', () => {
   })
 })
 
-describe('the hints of route components', () => {
-  it('are fetched when the app starts, ahead of the first prefetch', async () => {
+describe('the prefetch plugin', () => {
+  it('fetches the hints when the app starts, ahead of the first prefetch', async () => {
     await installPlugin()
     expect(preloadHints.warmRouteChunkHints).toHaveBeenCalledTimes(1)
   })

@@ -3,8 +3,7 @@
 /** The key a loader's chunks are hinted under, or `false` on the loader of a server page, which a prefetch has to run. */
 export const PRELOAD_MODULE_KEY = '__nuxt_module'
 
-/** Where the renderer serves the hints of route components, under the app's base URL. */
-export const PAGE_HINTS_PREFIX = '/__nuxt_preload/'
+export const HINTS_PREFIX = '/__nuxt_preload/'
 
 export interface PreloadHint {
   rel: 'modulepreload' | 'preload'
@@ -15,8 +14,9 @@ export interface PreloadHint {
   noCors?: true
 }
 
-/** Indices into `files`, so a chunk shared by several modules is listed once. */
-export interface ChunkHints {
+export interface RouteChunkHints {
   files: PreloadHint[]
-  chunks: Record<string, number[]>
+  layouts: Record<string, number[]>
+  /** Keyed by the value of {@link PRELOAD_MODULE_KEY} on the loader of the route component. */
+  pages: Record<string, number[]>
 }
