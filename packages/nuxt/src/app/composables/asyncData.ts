@@ -762,11 +762,6 @@ export function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> } {
   const nuxtApp = useNuxtApp()
 
-  // Initialize value when key is not already set
-  if (!(key in nuxtApp.payload.data)) {
-    nuxtApp.payload.data[key] = undefined
-  }
-
   if (nuxtApp._asyncData[key]) {
     const data = nuxtApp._asyncData[key]
     registerAsyncData(data)

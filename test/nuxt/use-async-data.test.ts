@@ -1056,6 +1056,22 @@ describe('useAsyncData', () => {
     clearNuxtData(uniqueKey)
   })
 
+  it('should not add a key to the payload when reading data that has not been fetched', () => {
+    const nuxtApp = useNuxtApp()
+
+    const { data } = useNuxtData(uniqueKey)
+    expect(Object.keys(nuxtApp.payload.data)).not.toContain(uniqueKey)
+    expect(data.value).toBeUndefined()
+
+    const seen: unknown[] = []
+    const stop = watchSyncEffect(() => { seen.push(data.value) })
+    nuxtApp.payload.data[uniqueKey] = 'arrived'
+    expect(seen).toEqual([undefined, 'arrived'])
+
+    stop()
+    clearNuxtData(uniqueKey)
+  })
+
   it('should run middleware around the handler on every execution', async () => {
     const calls: string[] = []
     const { data, refresh } = await useAsyncData(uniqueKey, () => {
