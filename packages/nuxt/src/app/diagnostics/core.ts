@@ -63,5 +63,10 @@ export const appDiagnostics = !import.meta.dev
           fix: 'Call keyed `onPrehydrate` from a vdom component, or drop the `key` argument if the callback is safe to run unscoped.',
           docs: false,
         },
+        NUXT_E1014: {
+          why: (p: { key: string, trace: string }) => `\`${p.key}\` was mutated on the server during a request. Runtime config is a single process-wide object, so this change is visible to every later request (and, for \`public\` and \`app\` keys, to the browser through their payloads).${p.trace ? `\n${p.trace}` : ''}`,
+          fix: 'Derive a new value instead of writing to runtime config, and keep per-request data in `useState`, `nuxtApp.payload`, or `event.context`.',
+          docs: false,
+        },
       },
     })
