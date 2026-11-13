@@ -79,8 +79,8 @@ describe('createVueWarningStore', () => {
 
   it('ignores a compile of an older version of the file than one already recorded', () => {
     const store = createVueWarningStore()
-    store.update('client\0/app.vue', { file: '/app.vue', code: 'new', version: 2, warnings: [] })
-    expect(store.update('ssr\0/app.vue', { file: '/app.vue', code: 'old', version: 1, warnings: [warning('stale')] }).size).toBe(0)
+    store.update('client\0/app.vue', { file: '/app.vue', code: 'new', version: { module: '/app.vue', modified: 2 }, warnings: [] })
+    expect(store.update('ssr\0/app.vue', { file: '/app.vue', code: 'old', version: { module: '/app.vue', modified: 1 }, warnings: [warning('stale')] }).size).toBe(0)
     expect(store.warnings).toEqual([])
   })
 
@@ -368,6 +368,20 @@ describe('VueCompilerWarningsPlugin', () => {
 
     await new Promise(resolve => setTimeout(resolve, 200))
     expect(sink.sets.flatMap(set => set.reports)).toEqual([])
+  })
+
+  it('keeps the warnings of a module that a newer version of the file did not compile again', async () => {
+    const file = join(tmpDir, 'StyleOnly.vue')
+    await writeFile(file, '<template />\n')
+    const { sink, transform } = fakeVuePlugin(code => code === 'template' ? 'nesting' : undefined)
+
+    await transform('template', file, 'client')
+    await vi.waitFor(() => expect(sink.sets.at(-1)?.reports).toHaveLength(1))
+
+    await utimes(file, new Date(), new Date(Date.now() + 10_000))
+    await transform('.a { color: red }', `${file}?vue&type=style&index=0&lang.css`, 'client')
+    await new Promise(resolve => setTimeout(resolve, 200))
+    expect(sink.sets.at(-1)!.reports.map(report => report.message)).toEqual(['nesting'])
   })
 
   it('drops the warnings of a deleted SFC', async () => {

@@ -77,8 +77,8 @@ interface CompileRecord {
   file: string
   /** Code the module was compiled from, or `undefined` when it cannot be compared. */
   code: string | undefined
-  /** When the file was last modified as the compile started. */
-  version?: number
+  /** The module, whichever environment compiled it, and when its file was last modified as the compile started. */
+  version?: { module: string, modified: number }
   /** A block of an SFC, such as `?vue&type=style&index=0`, and the environment that compiled it. */
   block?: { id: string, environment: string }
   warnings: VueCompilerWarning[]
@@ -87,8 +87,8 @@ interface CompileRecord {
 /** The warnings of every module the Vue plugin compiled, kept per module and reconciled per file. */
 export function createVueWarningStore () {
   const records = new Map<string, CompileRecord>()
-  // the newest version of each file compiled
-  const versions = new Map<string, number>()
+  // the newest version of each module compiled
+  const versions = new Map<string, { file: string, modified: number }>()
 
   function keysOf (file: string): Set<string> {
     const keys = new Set<string>()
@@ -104,18 +104,19 @@ export function createVueWarningStore () {
     /**
      * Replace the warnings of the module `key` with those of a compile, returning the keys
      * of the warnings its file did not have before. A compile of the same code adds to them,
-     * as `@vue/compiler-sfc` raises some warnings once per process. Every module compiled from
-     * an older version of the file is forgotten, and a compile of one is ignored.
+     * as `@vue/compiler-sfc` raises some warnings once per process. The same module compiled
+     * from an older version of the file is forgotten, and a compile of one is ignored.
      */
     update (key: string, record: CompileRecord): Set<string> {
       const known = keysOf(record.file)
-      if (record.version !== undefined) {
-        if (record.version < (versions.get(record.file) ?? Number.NEGATIVE_INFINITY)) {
+      const { version } = record
+      if (version) {
+        if (version.modified < (versions.get(version.module)?.modified ?? Number.NEGATIVE_INFINITY)) {
           return new Set()
         }
-        versions.set(record.file, record.version)
+        versions.set(version.module, { file: record.file, modified: version.modified })
         for (const [other, candidate] of records) {
-          if (candidate.file === record.file && candidate.version !== undefined && candidate.version < record.version) {
+          if (candidate.version?.module === version.module && candidate.version.modified < version.modified) {
             records.delete(other)
           }
         }
@@ -140,7 +141,11 @@ export function createVueWarningStore () {
     },
     /** Forget the warnings of a deleted file. */
     remove (file: string): boolean {
-      versions.delete(file)
+      for (const [module, version] of versions) {
+        if (version.file === file) {
+          versions.delete(module)
+        }
+      }
       let removed = false
       for (const [key, record] of records) {
         if (record.file === file) {
@@ -214,10 +219,11 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
     capture.replays.push({ key: warningKey(warning), print })
   }
 
-  function track (handler: Handler, target: (context: unknown, ...args: any[]) => Omit<CompileRecord, 'warnings'> & { key: string }): Handler {
+  function track (handler: Handler, target: (context: unknown, ...args: any[]) => Omit<CompileRecord, 'warnings' | 'version'> & { key: string, module: string }): Handler {
     return function (this: unknown, ...args: any[]) {
-      const { key, ...source } = target(this, ...args)
-      const compiled = { ...source, version: versionOf(source.file) }
+      const { key, module, ...source } = target(this, ...args)
+      const modified = modifiedAt(source.file)
+      const compiled = { ...source, version: modified === undefined ? undefined : { module, modified } }
       const compile = ++compiles
       latest.set(key, { compile, code: compiled.code })
       const capture: Capture = { file: compiled.file, warnings: [], replays: [] }
@@ -282,12 +288,15 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
     const file = normalize(filename)
     const environment = (context as { environment?: { name?: string } } | undefined)?.environment?.name ?? ''
     if (!query.vue) {
-      return { key: `${environment}\0${file}`, file, code }
+      return { key: `${environment}\0${file}`, module: file, file, code }
     }
-    return { key: `${environment}\0${id}`, file, code: query.src ? undefined : code, block: { id, environment } }
+    return { key: `${environment}\0${id}`, module: id, file, code: query.src ? undefined : code, block: { id, environment } }
   }))
   // `@vitejs/plugin-vue` compiles the script of a changed SFC before it is transformed again
-  wrapHook(vue, 'handleHotUpdate', handler => track(handler, (_context, { file }: { file: string }) => ({ key: `${normalize(file)}\0hmr`, file: normalize(file), code: undefined })))
+  wrapHook(vue, 'handleHotUpdate', handler => track(handler, (_context, { file }: { file: string }) => {
+    const key = `${normalize(file)}\0hmr`
+    return { key, module: key, file: normalize(file), code: undefined }
+  }))
 
   return {
     name: 'nuxt:vue-compiler-warnings',
@@ -365,7 +374,7 @@ function wrapHook (plugin: VitePlugin, name: 'transform' | 'handleHotUpdate', wr
   }
 }
 
-function versionOf (file: string): number | undefined {
+function modifiedAt (file: string): number | undefined {
   try {
     return statSync(file).mtimeMs
   } catch {
