@@ -321,6 +321,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   if (devErrors) {
     const { CheckerBridgePlugin } = await import('./checker-bridge.ts')
     config.plugins!.push(DevErrorsPlugin(devErrors), DevRequestErrorsPlugin(devErrors), await DevErrorsDevToolsPlugin(nuxt, devErrors), CheckerBridgePlugin(devErrors))
+    const vue = (config.plugins as unknown[]).flat(Infinity).find((plugin): plugin is vite.Plugin => !!plugin && typeof plugin === 'object' && 'name' in plugin && plugin.name === 'vite:vue')
+    if (vue) {
+      const { VueCompilerWarningsPlugin } = await import('./vue-compiler-warnings.ts')
+      config.plugins!.push(VueCompilerWarningsPlugin(nuxt, vue, devErrors))
+    }
   }
 
   for (const environment of ['client', 'ssr']) {
