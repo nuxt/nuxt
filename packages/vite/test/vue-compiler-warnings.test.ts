@@ -384,6 +384,34 @@ describe('VueCompilerWarningsPlugin', () => {
     expect(sink.sets.at(-1)!.reports.map(report => report.message)).toEqual(['nesting'])
   })
 
+  it('keeps the warnings of a compile while a raw request for its file is skipped', async () => {
+    const file = join(tmpDir, 'Raw.vue')
+    await writeFile(file, '<template />\n')
+    const sink = createSink()
+    let finish!: () => void
+    const vue = {
+      name: 'vite:vue',
+      transform: {
+        handler (this: { warn: (log: unknown) => void }, code: string, id: string) {
+          if (id.endsWith('?raw')) {
+            return undefined
+          }
+          this.warn({ message: 'from the compile' })
+          return new Promise((resolve) => { finish = () => resolve({ code }) })
+        },
+      },
+    }
+    VueCompilerWarningsPlugin(createNuxt(), vue as any, sink)
+    const context = { warn: () => {}, environment: { name: 'client' } }
+
+    const compile = vue.transform.handler.call(context, '<template />', file)
+    await vue.transform.handler.call(context, 'export default "<template />"', `${file}?raw`)
+    finish()
+    await compile
+
+    await vi.waitFor(() => expect(sink.sets.at(-1)?.reports.map(report => report.message)).toEqual(['from the compile']))
+  })
+
   it('drops the warnings of a deleted SFC', async () => {
     const file = join(tmpDir, 'Deleted.vue')
     await writeFile(file, '<template>\n  <p><p>nested</p></p>\n</template>\n')

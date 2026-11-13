@@ -219,9 +219,13 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
     capture.replays.push({ key: warningKey(warning), print })
   }
 
-  function track (handler: Handler, target: (context: unknown, ...args: any[]) => Omit<CompileRecord, 'warnings' | 'version'> & { key: string, module: string }): Handler {
+  function track (handler: Handler, target: (context: unknown, ...args: any[]) => (Omit<CompileRecord, 'warnings' | 'version'> & { key: string, module: string }) | undefined): Handler {
     return function (this: unknown, ...args: any[]) {
-      const { key, module, ...source } = target(this, ...args)
+      const tracked = target(this, ...args)
+      if (!tracked) {
+        return handler.apply(this, args)
+      }
+      const { key, module, ...source } = tracked
       const modified = modifiedAt(source.file)
       const compiled = { ...source, version: modified === undefined ? undefined : { module, modified } }
       const compile = ++compiles
@@ -285,6 +289,10 @@ export function VueCompilerWarningsPlugin (nuxt: Nuxt, vue: VitePlugin, sink: Pr
 
   wrapHook(vue, 'transform', handler => track(handler, (context, code: string, id: string) => {
     const { filename, query } = parseVueRequest(id)
+    // `@vitejs/plugin-vue` leaves these to other plugins
+    if (query.raw || query.url) {
+      return undefined
+    }
     const file = normalize(filename)
     const environment = (context as { environment?: { name?: string } } | undefined)?.environment?.name ?? ''
     if (!query.vue) {
