@@ -1525,6 +1525,37 @@ describe.skipIf(!errorProjects)('errors', () => {
     await page.close()
   })
 
+  it('should keep the status and data of a fetch error caught by a server-side error boundary', async () => {
+    const thrownError = isDev ? '500 connect ECONNREFUSED 10.0.0.3:5432 thrown-secret' : '500 Internal Server Error'
+    const noStatusError = isDev ? '500 network failure no-status-secret' : '500 Internal Server Error'
+
+    const html = await $fetch<string>('/error/error-boundary-fetch')
+    expect(html).toContain('422 missing-fetch-error')
+    if (!isDev) {
+      expect(html).not.toMatch(/thrown-secret|no-status-secret/)
+    }
+    expect(html.match(/id="thrown-error"[^>]*>([^<]*)</)![1]!.trim()).toBe(thrownError)
+    expect(html.match(/id="fetch-no-status-error"[^>]*>([^<]*)</)![1]!.trim()).toBe(noStatusError)
+
+    const { script: payload } = parseData(html)
+    const fetchError = Object.values(payload.state).find((value: any) => value?.data?.reason === 'missing-fetch-error')
+    expect(fetchError).toMatchObject({
+      status: 422,
+      message: expect.stringContaining('/api/error-boundary-fetch'),
+      data: { reason: 'missing-fetch-error' },
+    })
+    if (!isDev) {
+      expect(JSON.stringify(payload)).not.toMatch(/thrown-secret|no-status-secret/)
+    }
+
+    const { page } = await renderPage('/error/error-boundary-fetch')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+    expect(await page.innerText('#fetch-error')).toContain('422 missing-fetch-error')
+    expect(await page.innerText('#thrown-error')).toBe(thrownError)
+    expect(await page.innerText('#fetch-no-status-error')).toBe(noStatusError)
+    await page.close()
+  })
+
   it.skipIf(!legacyErrorRendering)('should not allow accessing error route directly', async () => {
     const res = await fetch('/__nuxt_error', {
       headers: {
