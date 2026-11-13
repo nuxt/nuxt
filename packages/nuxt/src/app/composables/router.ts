@@ -12,7 +12,7 @@ import { getScriptProtocol, getUserTrace, isAbsoluteHref } from '../utils'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { navigationDiagnostics } from '../diagnostics/navigation'
-import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { navigateToDefaults, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 import { parseQuery, stringifyQuery } from '#build/pages'
@@ -230,6 +230,9 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
       if (value !== undefined) {
         features.push(`${feature.toLowerCase()}=${value}`)
       }
+    }
+    if (navigateToDefaults.noopener && windowFeatures.noopener === undefined) {
+      features.push('noopener=true')
     }
 
     open(openPath, target, features.join(', '))

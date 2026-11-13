@@ -253,6 +253,9 @@ export default defineResolvers({
       useState: {
         resetOnClear: booleanOr(true),
       },
+      navigateTo: {
+        noopener: booleanOr(true),
+      },
       useFetch: {},
     },
     clientNodeCompat: false,

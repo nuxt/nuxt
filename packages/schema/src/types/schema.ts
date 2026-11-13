@@ -1536,6 +1536,22 @@ export interface ConfigSchema {
         resetOnClear: boolean
       }
 
+      /**
+       * Options that apply to `navigateTo`.
+       * @default { noopener: true }
+       */
+      navigateTo: {
+        /**
+         * When `true`, `navigateTo(url, { open })` passes `noopener` to `window.open` unless
+         * `open.windowFeatures.noopener` is set explicitly.
+         *
+         * This prevents the opened document from accessing your app through `window.opener`.
+         *
+         * @default true
+         */
+        noopener: boolean
+      }
+
       useFetch: {
         /** Request timeout in milliseconds. */
         timeout?: number
