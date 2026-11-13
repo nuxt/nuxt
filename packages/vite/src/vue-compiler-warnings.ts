@@ -87,6 +87,8 @@ interface CompileRecord {
 /** The warnings of every module the Vue plugin compiled, kept per module and reconciled per file. */
 export function createVueWarningStore () {
   const records = new Map<string, CompileRecord>()
+  // the newest version of each file compiled
+  const versions = new Map<string, number>()
 
   function keysOf (file: string): Set<string> {
     const keys = new Set<string>()
@@ -103,11 +105,15 @@ export function createVueWarningStore () {
      * Replace the warnings of the module `key` with those of a compile, returning the keys
      * of the warnings its file did not have before. A compile of the same code adds to them,
      * as `@vue/compiler-sfc` raises some warnings once per process. Every module compiled from
-     * an older version of the file is forgotten.
+     * an older version of the file is forgotten, and a compile of one is ignored.
      */
     update (key: string, record: CompileRecord): Set<string> {
       const known = keysOf(record.file)
       if (record.version !== undefined) {
+        if (record.version < (versions.get(record.file) ?? Number.NEGATIVE_INFINITY)) {
+          return new Set()
+        }
+        versions.set(record.file, record.version)
         for (const [other, candidate] of records) {
           if (candidate.file === record.file && candidate.version !== undefined && candidate.version < record.version) {
             records.delete(other)
@@ -134,6 +140,7 @@ export function createVueWarningStore () {
     },
     /** Forget the warnings of a deleted file. */
     remove (file: string): boolean {
+      versions.delete(file)
       let removed = false
       for (const [key, record] of records) {
         if (record.file === file) {

@@ -77,6 +77,13 @@ describe('createVueWarningStore', () => {
     expect(store.warnings.map(w => w.message)).toEqual(['one', 'two'])
   })
 
+  it('ignores a compile of an older version of the file than one already recorded', () => {
+    const store = createVueWarningStore()
+    store.update('client\0/app.vue', { file: '/app.vue', code: 'new', version: 2, warnings: [] })
+    expect(store.update('ssr\0/app.vue', { file: '/app.vue', code: 'old', version: 1, warnings: [warning('stale')] }).size).toBe(0)
+    expect(store.warnings).toEqual([])
+  })
+
   it('forgets blocks that are no longer imported, and deleted files', () => {
     const store = createVueWarningStore()
     const style = '/app.vue?vue&type=style&index=0&lang.css'
