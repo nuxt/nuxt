@@ -6,7 +6,10 @@ const preloadHints = {
   preloadLayoutChunks: vi.fn((_layout: string) => Promise.resolve(true)),
   preloadRouteChunks: vi.fn(() => Promise.resolve(true)),
   warmRouteChunkHints: vi.fn(),
+  onFailedPreload: vi.fn((_listener: () => void) => {}),
 }
+
+const reloadNuxtApp = vi.fn()
 
 interface AsyncLayout { __asyncLoader: () => Promise<unknown>, __asyncResolved?: unknown }
 
@@ -18,6 +21,8 @@ interface AsyncLayout { __asyncLoader: () => Promise<unknown>, __asyncResolved?:
 async function installPlugin (routeComponents: unknown[] = []) {
   vi.resetModules()
   vi.doMock('#app/internal/preload-hints', () => preloadHints)
+  vi.doMock('#app/composables/chunk', () => ({ reloadNuxtApp }))
+  const guards: Array<(to: { path: string, fullPath: string }, from: { path: string }) => unknown> = []
   // islands are only enabled in an app that has server components or pages
   vi.doMock('#build/nuxt.config.mjs', async importOriginal => ({
     ...await importOriginal<Record<string, unknown>>(),
@@ -26,7 +31,10 @@ async function installPlugin (routeComponents: unknown[] = []) {
   vi.doMock('#app/composables/router', async importOriginal => ({
     ...await importOriginal<Record<string, unknown>>(),
     useRouter: () => ({
-      beforeEach: () => {},
+      beforeEach: (guard: (typeof guards)[number]) => {
+        guards.push(guard)
+        return () => { guards.splice(guards.indexOf(guard), 1) }
+      },
       resolve: () => ({
         meta: { layout: 'default' },
         matched: routeComponents.map(component => ({ components: { default: component } })),
@@ -46,6 +54,8 @@ async function installPlugin (routeComponents: unknown[] = []) {
   } as unknown as NuxtApp)
 
   return {
+    mount: () => hooks.get('app:mounted')!(),
+    navigate: (fullPath: string, from = '/') => guards.map(guard => guard({ path: fullPath.replace(/[?#].*$/, ''), fullPath }, { path: from })),
     layout: layouts.default as unknown as AsyncLayout,
     async prefetch (url: string) {
       await hooks.get('link:prefetch')!(url)
@@ -60,6 +70,7 @@ function withConnection (connection: { saveData?: boolean, effectiveType?: strin
 
 afterEach(() => {
   vi.doUnmock('#app/internal/preload-hints')
+  vi.doUnmock('#app/composables/chunk')
   vi.doUnmock('#build/nuxt.config.mjs')
   vi.doUnmock('#app/composables/router')
   vi.clearAllMocks()
@@ -106,6 +117,34 @@ describe('prefetching a link to a server page with `experimental.routeChunkHints
     expect(prefetchIsland).toHaveBeenCalledTimes(1)
     expect(hinted).not.toHaveBeenCalled()
     expect(unknown).not.toHaveBeenCalled()
+  })
+})
+
+describe('navigating with `experimental.routeChunkHints`', () => {
+  it('loads the destination in a new document once a preload has failed', async () => {
+    const { mount, navigate } = await installPlugin()
+    mount()
+
+    expect(navigate('/first')).toHaveLength(1)
+    expect(reloadNuxtApp).not.toHaveBeenCalled()
+
+    preloadHints.onFailedPreload.mock.calls[0]![0]()
+    const [pending, ...others] = navigate('/second?query=1')
+    expect(others).toEqual([])
+    const settled = vi.fn()
+    void (pending as Promise<void>).then(settled, settled)
+    await new Promise(resolve => setTimeout(resolve))
+    expect(settled).not.toHaveBeenCalled()
+    expect(reloadNuxtApp).toHaveBeenCalledExactlyOnceWith({ path: '/second?query=1', persistState: true, force: true })
+  })
+
+  it('still navigates within the page once a preload has failed', async () => {
+    const { navigate } = await installPlugin()
+    preloadHints.onFailedPreload.mock.calls[0]![0]()
+
+    expect(navigate('/page#section', '/page')).toEqual([undefined])
+    expect(navigate('/page?query=1', '/page')).toEqual([undefined])
+    expect(reloadNuxtApp).not.toHaveBeenCalled()
   })
 })
 

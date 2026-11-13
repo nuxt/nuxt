@@ -380,8 +380,7 @@ describe('experimental.routeChunkHints', () => {
     expect(fetch).toHaveBeenCalledTimes(4)
   })
 
-  // a connection that drops fails the hint of a chunk the deployment does have
-  it('asks again for a chunk whose hint failed, less and less often', async () => {
+  it('asks again for a module whose hint failed, less and less often', async () => {
     vi.useFakeTimers({ toFake: ['Date'] })
     const { preloadLayoutChunks } = await withHints()
     const script = () => document.head.querySelector<HTMLLinkElement>('link[href$="/_nuxt/layout.js"]')
@@ -408,6 +407,34 @@ describe('experimental.routeChunkHints', () => {
     expect(script()).toBeNull()
     vi.setSystemTime(Date.now() + 1000)
     void preloadLayoutChunks('default')
+    expect(hintLinks().map(link => link.href)).toEqual(['/_nuxt/layout.css', '/_nuxt/layout.js'])
+  })
+
+  // the browser keeps the failed preload, and answers the request that needs the file with it
+  it('reports a `rel="preload"` hint that failed, and does not ask for the file again', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    const { preloadLayoutChunks, onFailedPreload } = await withHints()
+    const listener = vi.fn()
+    onFailedPreload(listener)
+    const settle = async (prefetch: Promise<boolean>, failing: string) => {
+      for (const link of document.head.querySelectorAll<HTMLLinkElement>('link[href*="/_nuxt/layout."]')) {
+        link.dispatchEvent(new Event(link.href.endsWith(failing) ? 'error' : 'load'))
+      }
+      await expect(prefetch).resolves.toBe(true)
+    }
+
+    await settle(preloadLayoutChunks('default'), 'layout.js')
+    expect(listener).not.toHaveBeenCalled()
+
+    vi.setSystemTime(Date.now() + 1000)
+    await settle(preloadLayoutChunks('default'), 'layout.css')
+    expect(listener).toHaveBeenCalledTimes(1)
+    const late = vi.fn()
+    onFailedPreload(late)
+    expect(late).toHaveBeenCalledTimes(1)
+
+    vi.setSystemTime(Date.now() + 60_000)
+    await expect(preloadLayoutChunks('default')).resolves.toBe(true)
     expect(hintLinks().map(link => link.href)).toEqual(['/_nuxt/layout.css', '/_nuxt/layout.js'])
   })
 

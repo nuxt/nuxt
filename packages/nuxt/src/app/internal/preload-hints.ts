@@ -19,6 +19,8 @@ const pageHintsRetry = { after: 0, delay: 1000 }
 const relSupport = new Map<string, boolean>()
 const requested = new Set<string>()
 const fileRetries = new Map<string, { after: number, delay: number }>()
+let preloadFailed = false
+const preloadFailureListeners: Array<() => void> = []
 let assetsURL: string | undefined
 let nonce: string | null | undefined
 
@@ -172,7 +174,11 @@ function preloadFiles (files: PreloadHint[], indices: number[]): Promise<void> {
     pending.push(new Promise((resolve) => {
       link.addEventListener('load', () => resolve(), { once: true })
       link.addEventListener('error', () => {
-        retryFile(link, href)
+        if (hint.rel === 'modulepreload') {
+          retryFile(link, href)
+        } else {
+          failPreload()
+        }
         resolve()
       }, { once: true })
     }))
@@ -182,12 +188,7 @@ function preloadFiles (files: PreloadHint[], indices: number[]): Promise<void> {
   return Promise.all(pending).then(() => {})
 }
 
-/**
- * A hint may fail for a file the deployment does have, such as when a connection drops. Left in
- * the document, its link would keep a later prefetch from asking for the file, which the
- * navigation would then wait for. The link is removed instead, so that a later prefetch asks for
- * the file again, after a delay that doubles with every failure.
- */
+// left in the document, the link would keep a later prefetch from asking for the file again
 function retryFile (link: HTMLLinkElement, href: string): void {
   link.remove()
   requested.delete(href)
@@ -195,6 +196,30 @@ function retryFile (link: HTMLLinkElement, href: string): void {
   retry.after = Date.now() + retry.delay
   retry.delay *= 2
   fileRetries.set(href, retry)
+}
+
+function failPreload (): void {
+  if (preloadFailed) {
+    return
+  }
+  preloadFailed = true
+  for (const listener of preloadFailureListeners.splice(0)) {
+    listener()
+  }
+}
+
+/**
+ * Chromium keeps a failed `rel="preload"` for as long as the document lives, and answers every
+ * later request for the file with it.
+ *
+ * @internal
+ */
+export function onFailedPreload (listener: () => void): void {
+  if (preloadFailed) {
+    listener()
+  } else {
+    preloadFailureListeners.push(listener)
+  }
 }
 
 /**

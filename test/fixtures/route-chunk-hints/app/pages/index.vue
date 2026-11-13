@@ -8,5 +8,11 @@
     >
       Other
     </NuxtLink>
+    <a
+      id="anchor"
+      href="#anchor"
+    >
+      Anchor
+    </a>
   </div>
 </template>

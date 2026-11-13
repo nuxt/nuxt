@@ -56,6 +56,32 @@ function countRequests (requests: string[], files: string[]) {
   return Object.fromEntries(files.map(file => [file, requests.filter(request => request === file).length]))
 }
 
+/** Fail the hint of a stylesheet of `/other`, which every build fetches with `rel="preload"`. */
+async function failPreload (page: Page) {
+  const fetched = await fetchedFiles(page)
+  const hints = await readHints(page, 'alt')
+  const failing = [...hints.layout, ...hints.pages].find(hint => !fetched.includes(hint.file) && hint.file.endsWith('.css'))!.file
+  await page.route(`**${ASSETS_PATH}${failing}`, route => route.abort('connectionreset'), { times: 1 })
+  // the `error` event of a link does not bubble, but it can be captured
+  const failed = page.evaluate(() => new Promise<void>((resolve) => {
+    document.addEventListener('error', event => event.target instanceof HTMLLinkElement && resolve(), true)
+  }))
+  await page.hover('#other')
+  await failed
+}
+
+function markDocument (page: Page) {
+  return page.evaluate(() => { performance.mark('document') })
+}
+
+function isMarkedDocument (page: Page) {
+  return page.evaluate(() => performance.getEntriesByName('document').length > 0)
+}
+
+function settle (page: Page) {
+  return page.evaluate(() => new Promise(resolve => setTimeout(resolve, 250)))
+}
+
 test.describe('route chunk hints', () => {
   test('fetches the layout and page of a prefetched link once, without running them', async ({ page, goto }) => {
     const requests = await trackChunkRequests(page)
@@ -81,27 +107,70 @@ test.describe('route chunk hints', () => {
     expect(countRequests(requests, wanted)).toEqual(Object.fromEntries(wanted.map(file => [file, 1])))
   })
 
-  test('leave a chunk whose hint failed to the navigation', async ({ page, goto }) => {
-    const requests = await trackChunkRequests(page)
+  for (const extension of ['js', 'css']) {
+    test(`renders a destination after the hint of a .${extension} file failed`, async ({ page, goto }) => {
+      const requests = await trackChunkRequests(page)
+      await goto('/')
+
+      const hints = await readHints(page, 'alt')
+      const before = new Set(requests)
+      const hint = [...hints.layout, ...hints.pages].find(hint => !before.has(hint.file) && hint.file.endsWith(`.${extension}`))!
+      const failing = hint.file
+      await page.route(`**${ASSETS_PATH}${failing}`, route => route.abort('connectionreset'), { times: 1 })
+      await page.evaluate(() => performance.mark('document'))
+
+      const failed = page.waitForEvent('requestfailed', request => request.url().endsWith(failing))
+      await page.hover('#other')
+      await failed
+      if (hint.rel === 'modulepreload') {
+        await expect(page.locator(`link[href$="${failing}"]`)).toHaveCount(0)
+      }
+
+      await page.click('#other')
+      await expect(page.locator('#alt-layout #other-page')).toHaveText('Other page')
+      expect(await readEffects(page)).toMatchObject({ layoutStyles: true, pageStyles: true })
+
+      const sameDocument = await page.evaluate(() => performance.getEntriesByName('document').length > 0)
+      expect(sameDocument).toBe(hint.rel === 'modulepreload')
+      if (sameDocument) {
+        expect(countRequests(requests, [failing])).toEqual({ [failing]: 2 })
+      }
+    })
+  }
+
+  test('navigates within the page after a preload failed', async ({ page, goto }) => {
     await goto('/')
+    await markDocument(page)
+    await failPreload(page)
 
-    const hints = await readHints(page, 'alt')
-    const before = new Set(requests)
-    const hint = [...hints.layout, ...hints.pages].find(hint => !before.has(hint.file) && hint.file.endsWith('.js'))!
-    // Chromium keeps a `rel="preload"` that failed, and answers the request that needs the file
-    // with it rather than asking for the file again
-    test.fixme(hint.rel !== 'modulepreload', 'a failed `rel="preload"` fails the navigation that needs the file')
-    const failing = hint.file
-    await page.route(`**${ASSETS_PATH}${failing}`, route => route.abort('connectionreset'), { times: 1 })
-
-    const failed = page.waitForEvent('requestfailed', request => request.url().endsWith(failing))
-    await page.hover('#other')
-    await failed
-    // left in the document, the link would be taken to mean the chunk was fetched
-    await expect(page.locator(`link[href$="${failing}"]`)).toHaveCount(0)
+    await page.click('#anchor')
+    await expect(page).toHaveURL(/\/#anchor$/)
+    await settle(page)
+    await expect(page).toHaveURL(/\/#anchor$/)
+    expect(await isMarkedDocument(page)).toBe(true)
 
     await page.click('#other')
     await expect(page.locator('#alt-layout #other-page')).toHaveText('Other page')
-    expect(countRequests(requests, [failing])).toEqual({ [failing]: 2 })
+    expect(await readEffects(page)).toMatchObject({ layoutStyles: true, pageStyles: true })
+    expect(await isMarkedDocument(page)).toBe(false)
+  })
+
+  test('goes back in the history after a preload failed', async ({ page, goto }) => {
+    await goto('/')
+    await page.evaluate(() => (window as any).useNuxtApp().$router.push('/again'))
+    await expect(page).toHaveURL(/\/again$/)
+    await markDocument(page)
+    await failPreload(page)
+
+    await page.goBack()
+    await expect(page.locator('#other')).toBeVisible()
+    await settle(page)
+    expect(new URL(page.url()).pathname).toBe('/')
+    expect(await isMarkedDocument(page)).toBe(false)
+
+    await page.goForward()
+    await expect(page).toHaveURL(/\/again$/)
+    await page.goBack()
+    expect(new URL(page.url()).pathname).toBe('/')
   })
 })
