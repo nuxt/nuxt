@@ -20,7 +20,7 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
-import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
+import { encodeRoutePath, encodeURL, resolveRouteObject, useRouter } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
@@ -155,6 +155,22 @@ describe('errors', () => {
     expect(error.value).toMatchInlineSnapshot('[HTTPError: new error]')
     clearError()
     expect(error.value).toBe(undefined)
+  })
+
+  describe('clearError', () => {
+    afterEach(async () => {
+      vi.restoreAllMocks()
+      await clearError()
+    })
+
+    it('should clear the error even when the redirect rejects', async () => {
+      vi.spyOn(useRouter(), 'replace').mockRejectedValue(new Error('guard threw'))
+
+      showError('boom')
+      await expect(clearError({ redirect: '/' })).rejects.toThrow('guard threw')
+
+      expect(useError().value).toBeUndefined()
+    })
   })
 
   describe('hook rejections', () => {
