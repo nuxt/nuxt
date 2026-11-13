@@ -38,6 +38,18 @@ vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
   payloadExtraction: true,
 }))
 
+const routeRulesMatcher = vi.hoisted(() => ({ calls: 0 }))
+vi.mock('#build/route-rules.mjs', async (importOriginal) => {
+  const original = await importOriginal<{ default: (path: string) => Record<string, any> }>()
+  return {
+    ...original,
+    default: (path: string) => {
+      routeRulesMatcher.calls++
+      return original.default(path)
+    },
+  }
+})
+
 describe('app config', () => {
   it('can be updated', () => {
     const appConfig = useAppConfig()
@@ -837,6 +849,18 @@ describe('compiled route rules', () => {
 
       await loadPayload('/isr/thing?page=2')
       expect(fetchSpy.mock.calls[2]![1]).toMatchObject({ cache: 'default' })
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
+
+  it('should match route rules once per payload load', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('[{"data":1},{}]')))
+    try {
+      routeRulesMatcher.calls = 0
+      await loadPayload('/pre/matched', { fresh: true })
+      expect(fetchSpy).toHaveBeenCalledOnce()
+      expect(routeRulesMatcher.calls).toBe(1)
     } finally {
       fetchSpy.mockRestore()
     }

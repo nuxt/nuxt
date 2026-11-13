@@ -36,11 +36,12 @@ export function isOutdatedPayload (payload: Record<string, any>): boolean {
 /** @internal */
 export async function _loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
   if (import.meta.server || !payloadExtraction) { return null }
-  if (await shouldLoadPayload(url)) {
-    const payloadURL = await _getPayloadURL(url, opts)
+  const rules = getRouteRules({ path: _getRoutePath(url) })
+  if (await _shouldLoadPayload(url, rules)) {
+    const payloadURL = await _getPayloadURL(url, opts, rules)
     // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so they defer to
     // normal HTTP cache semantics and are not keyed on the build id
-    const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
+    const cache: RequestCache = rules.payload ? 'default' : 'force-cache'
     const payload = opts.fresh
       ? await _importPayload(payloadURL, cache, opts.signal, opts.promoted, true)
       : await _sharedImportPayload(payloadURL, cache, opts.signal, opts.promoted)
@@ -143,13 +144,13 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 const preloadedPayloads = new Map<string, Promise<void>>()
 const filename = '_payload.json'
 const payloadBuildIdParam = '_b'
-async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
+async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}, rules = getRouteRules({ path: _getRoutePath(url) })) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw stateDiagnostics.NUXT_E7001({ url })
   }
   const config = useRuntimeConfig()
-  const cached = isCachedPayloadRoute(url)
+  const cached = !!rules.payload
   const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : cached ? undefined : config.app.buildId)
   const cdnURL = config.app.cdnURL
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
@@ -234,7 +235,11 @@ async function _isPrerenderedInManifest (url: string) {
  * @internal
  */
 export async function shouldLoadPayload (url: string = useRoute().path): Promise<boolean> {
-  const rules = getRouteRules({ path: _getRoutePath(url) })
+  const shouldLoad = await _shouldLoadPayload(url, getRouteRules({ path: _getRoutePath(url) }))
+  return shouldLoad
+}
+
+async function _shouldLoadPayload (url: string, rules: Record<string, any>): Promise<boolean> {
   if (rules.ssr === false) {
     return false
   }
