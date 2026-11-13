@@ -101,27 +101,33 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
     }
     const payloadURL = await _getPayloadURL(url, opts)
     const rel = detectLinkRelType()
-    const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
 
     if (import.meta.server) {
+      const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
     } else {
+      const existing = preloadedPayloads.get(payloadURL)
+      if (existing) { return existing }
       const linkEl = document.createElement('link')
       linkEl.rel = rel
       linkEl.setAttribute('as', 'fetch')
       linkEl.crossOrigin = 'anonymous'
       linkEl.href = payloadURL
       document.head.appendChild(linkEl)
-      return new Promise<void>((resolve, reject) => {
+      const preloaded = new Promise<void>((resolve, reject) => {
         const cleanup = () => {
           linkEl.removeEventListener('load', onLoad)
           linkEl.removeEventListener('error', onError)
+          preloadedPayloads.delete(payloadURL)
+          linkEl.remove()
         }
         const onLoad = () => { cleanup(); resolve() }
         const onError = () => { cleanup(); reject() }
         linkEl.addEventListener('load', onLoad)
         linkEl.addEventListener('error', onError)
       })
+      preloadedPayloads.set(payloadURL, preloaded)
+      return preloaded
     }
   })
   if (import.meta.server) {
@@ -134,6 +140,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 
 // --- Internal ---
 
+const preloadedPayloads = new Map<string, Promise<void>>()
 const filename = '_payload.json'
 const payloadBuildIdParam = '_b'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {

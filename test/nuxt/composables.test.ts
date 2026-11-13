@@ -21,7 +21,7 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
+import { loadPayload, preloadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 import routerOptions from '#build/router.options.mjs'
 
@@ -840,6 +840,39 @@ describe('compiled route rules', () => {
     } finally {
       fetchSpy.mockRestore()
     }
+  })
+
+  it('should add a single preload link per payload', async () => {
+    const links = () => [...document.head.querySelectorAll<HTMLLinkElement>('link[href*="/pre/preloaded/_payload.json"]')]
+
+    const first = preloadPayload('/pre/preloaded')
+    const second = preloadPayload('/pre/preloaded')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await Promise.all([first, second])
+    expect(links()).toHaveLength(0)
+
+    const retried = preloadPayload('/pre/preloaded')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await retried
+    expect(links()).toHaveLength(0)
+  })
+
+  it('should retry a payload preload that failed', async () => {
+    const links = () => [...document.head.querySelectorAll<HTMLLinkElement>('link[href*="/pre/unreachable/_payload.json"]')]
+
+    const failed = preloadPayload('/pre/unreachable')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('error'))
+    await expect(failed).rejects.toBeUndefined()
+    expect(links()).toHaveLength(0)
+
+    const retried = preloadPayload('/pre/unreachable')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await retried
+    expect(links()).toHaveLength(0)
   })
 })
 
