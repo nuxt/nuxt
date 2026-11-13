@@ -26,6 +26,7 @@
     "pkg-pr-new",
     "ofetch",
     "verkit",
+    "@nuxt/devtools",
     "@nuxt/webpack-builder",
     "@nuxt/rsbuild-builder",
     "@nuxt/rspack-builder",

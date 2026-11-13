@@ -45,12 +45,17 @@ describe.skipIf(!runsDev)('pure vite dev server with a cloudflare deploy target'
     expect(frameAt(report, 'app/pages/boom.vue')).toMatchObject({ type: 'app', line: 2 })
   })
 
-  it('retires the report once the worker renders a page', async () => {
-    const { report } = await renderErrorPage('/boom')
-    expect((await channelState('/boom')).current?.id).toBe(report.id)
+  it('keeps the report open while another page renders, and retires it once the worker renders its page', async () => {
+    const { report } = await renderErrorPage('/flaky')
+    expect((await channelState('/flaky')).current?.id).toBe(report.id)
 
     await fetch('/about', { headers: { accept: 'text/html' } })
-    await expect.poll(async () => (await channelState('/boom')).current, { timeout: 5000 }).toBeUndefined()
+    await new Promise(resolve => setTimeout(resolve, 500))
+    expect((await channelState('/flaky')).current?.id).toBe(report.id)
+
+    const fixed = await fetch('/flaky', { headers: { 'accept': 'text/html', 'x-boom': 'fixed' } })
+    expect(fixed.status).toBe(200)
+    await expect.poll(async () => (await channelState('/flaky')).current?.id, { timeout: 5000 }).not.toBe(report.id)
   })
 })
 

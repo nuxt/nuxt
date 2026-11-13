@@ -12,7 +12,7 @@ import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/client-entry-import.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
 import { createViteLogger } from './utils/logger.ts'
-import { DevErrorsPlugin, getDevErrorReporter, reportTransformError } from './dev-errors.ts'
+import { DevErrorsDevToolsPlugin, DevErrorsPlugin, DevRequestErrorsPlugin, getDevErrorReporter, reportTransformError } from './dev-errors.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks } from './plugins/optimize-deps-hint.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
 import { CompileHintsPlugin } from './plugins/compile-hints.ts'
@@ -84,7 +84,8 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   clientConfig.customLogger = createViteLogger(clientConfig, { onNewDeps: callbacks?.onNewDeps, onStaleDep: callbacks?.onStaleDep, onTransformError: reportTransformError(devErrors) })
   // the overlay and the reports it shows are served from the server the browser talks to
   if (devErrors) {
-    clientConfig.plugins!.push(DevErrorsPlugin(devErrors))
+    const { CheckerBridgePlugin } = await import('./checker-bridge.ts')
+    clientConfig.plugins!.push(DevErrorsPlugin(devErrors), DevRequestErrorsPlugin(devErrors), await DevErrorsDevToolsPlugin(nuxt, devErrors), CheckerBridgePlugin(devErrors))
   }
 
   await nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })

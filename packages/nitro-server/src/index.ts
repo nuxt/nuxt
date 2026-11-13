@@ -12,6 +12,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type { Plugin } from 'rollup'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
+import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitropack'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitropack/types'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
@@ -163,12 +164,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   if (nuxt.options.dev) {
     let reportFs: { allow: string[], deny: string[], strict?: boolean } | undefined
+    let viteAllowedHosts: string[] | true | undefined
     nuxt.hook('vite:serverCreated', (server) => {
       const { allow, deny, strict } = server.config.server.fs
       // the dev server is denied nitro's dev output, which reports read to map server frames
       const serverDir = nuxt._nitro?.options.output.serverDir
       const outputPattern = serverDir && `${serverDir.replace(GLOB_SPECIAL_CHARS_RE, '\\$&')}/**`
       reportFs = { allow, deny: deny.filter(pattern => pattern !== outputPattern), strict }
+      viteAllowedHosts = server.config.server.allowedHosts
     })
     nuxt.options.nitro.virtual = defu(nuxt.options.nitro.virtual, {
       '#internal/dev-server-logs-options': () => [
@@ -178,6 +181,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
           deny: [],
         })};`,
+        `export const allowedHosts = ${JSON.stringify(resolveDevAllowedHosts(nuxt.options, viteAllowedHosts))};`,
       ].join('\n'),
     })
     nuxt.options.nitro.externals = defu(nuxt.options.nitro.externals, {

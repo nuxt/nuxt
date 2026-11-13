@@ -42,8 +42,8 @@ export const rendererOptions: NuxtRendererOptions = {
   }),
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints.link),
   onRenderSuccess: import.meta.dev
-    ? () => {
-        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+    ? (event) => {
+        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport(event.url)).catch(() => {})
       }
     : undefined,
   prerender: import.meta.prerender
@@ -81,6 +81,7 @@ if (NUXT_INLINE_ERROR_RENDERING) {
 
 if (import.meta.dev) {
   rendererOptions.onDevError = (error, event, options) => import('#internal/nuxt/error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
+  rendererOptions.renderDevBadge = (event, nonce) => import('#internal/nuxt/error-channel').then(({ renderDevBadge }) => renderDevBadge(appEvent(event) as H3Event, nonce))
 }
 
 /**

@@ -1,9 +1,12 @@
-import { normalize, relative } from 'pathe'
+import { normalize, relative, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
+import { hash } from 'ohash'
 import type { CompilerOptions } from '@vue/compiler-core'
 import type { Diagnostic } from 'nostics'
+import type { ErrorReport } from 'my-bad'
 import type { Component, Nuxt } from 'nuxt/schema'
-import { openErrorBroadcast } from '../runtime/server/dev-error/index.ts'
+import { getLayerDirectories } from '@nuxt/kit'
+import { createFsAccessCheck, createReportFsLoader, openErrorBroadcast } from '../runtime/server/dev-error/index.ts'
 import type { ErrorChannelMessage } from '../runtime/server/dev-error/index.ts'
 import { createTemplateDiagnostics } from './plugins/template-diagnostics.ts'
 
@@ -19,7 +22,7 @@ export function setTemplateDiagnosticsRouteMatcher (nuxt: Nuxt, matcher: RouteMa
 /** Register the template diagnostics on the Vue compiler used by the Vite, webpack and rspack builders. */
 export function setupTemplateDiagnostics (nuxt: Nuxt): void {
   const serverComponents = new WeakMap<Component[], Set<string>>()
-  const publishWarning = nuxt.options.dev ? createWarningPublisher(nuxt) : undefined
+  const publisher = nuxt.options.dev ? createWarningPublisher(nuxt) : undefined
   const layerDirs = nuxt.options._layers
     .map(layer => withTrailingSlash(normalize(layer.config.rootDir)))
     .filter(dir => dir === withTrailingSlash(normalize(nuxt.options.rootDir)) || !dir.includes('/node_modules/'))
@@ -43,8 +46,17 @@ export function setupTemplateDiagnostics (nuxt: Nuxt): void {
       const path = normalize(file)
       return layerDirs.some(dir => path.startsWith(dir) && !path.slice(dir.length).includes('node_modules/'))
     },
-    onWarning: publishWarning,
+    onWarning: publisher?.warn,
+    onWarningResolved: publisher?.clear,
   })
+
+  if (publisher) {
+    nuxt.hook('builder:watch', (event, relativePath) => {
+      if (event === 'unlink' || event === 'unlinkDir') {
+        diagnostics.forget(resolve(nuxt.options.srcDir, relativePath))
+      }
+    })
+  }
 
   const withDiagnostics = (compilerOptions?: CompilerOptions): CompilerOptions => ({
     ...compilerOptions,
@@ -77,18 +89,72 @@ function resolveServerComponentTags (components: Component[]): Set<string> {
   return tags
 }
 
-/** Sends warnings to the dev error channel, which shows them on open error pages and overlays. */
-function createWarningPublisher (nuxt: Nuxt): (diagnostic: Diagnostic<unknown>) => void {
+/** Sends warnings to the dev error channel, which shows them on every open page, and retires them once fixed. */
+function createWarningPublisher (nuxt: Nuxt) {
   let broadcast: ReturnType<typeof openErrorBroadcast> | undefined
-  nuxt.hook('close', () => broadcast?.close())
-  return (diagnostic) => {
-    broadcast ||= openErrorBroadcast()
-    const channel = broadcast
-    Promise.all([import('my-bad'), import('my-bad/presets')])
-      .then(async ([{ createReport }, { nuxtPreset }]) => {
-        const report = await createReport(diagnostic, { cwd: nuxt.options.rootDir, kind: 'warning', presets: [nuxtPreset()] })
-        channel.postMessage({ type: 'nuxt:dev:error:warning', report } satisfies ErrorChannelMessage)
-      })
-      .catch(() => {})
+  // the last report published under each id, for a channel that starts listening late
+  const published = new Map<string, ErrorReport>()
+  const post = (message: ErrorChannelMessage) => {
+    if (message.type === 'nuxt:dev:error:warning') {
+      published.set(message.report.id, message.report)
+    } else if (message.type === 'nuxt:dev:error:warning:clear' && message.id) {
+      published.delete(message.id)
+    }
+    if (!broadcast) {
+      broadcast = openErrorBroadcast()
+      broadcast.onmessage = (event) => {
+        if ((event.data as ErrorChannelMessage | undefined)?.type === 'nuxt:dev:error:sync') {
+          for (const report of published.values()) {
+            broadcast!.postMessage({ type: 'nuxt:dev:error:warning', report } satisfies ErrorChannelMessage)
+          }
+        }
+      }
+    }
+    broadcast.postMessage(message)
   }
+  // a moved finding is raised at its new position before the old one resolves
+  const raised = new Map<string, number>()
+  let queue: Promise<unknown> = Promise.resolve()
+  const enqueue = (task: () => unknown) => {
+    queue = queue.then(task).catch(() => {})
+  }
+  const retire = (id: string) => enqueue(() => post({ type: 'nuxt:dev:error:warning:clear', id }))
+  let canRead: Promise<(file: string) => boolean> | undefined
+  const warn = (diagnostic: Diagnostic<unknown>, finding: string) => {
+    const id = hash(finding)
+    raised.set(id, (raised.get(id) ?? 0) + 1)
+    enqueue(async () => {
+      canRead ||= createFsAccessCheck({
+        allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
+        deny: [],
+      })
+      const [{ createReport }, { nuxtPreset }, fs] = await Promise.all([
+        import('my-bad'),
+        import('my-bad/presets'),
+        createReportFsLoader({ cwd: nuxt.options.rootDir, canRead: await canRead }),
+      ])
+      const report = await createReport(diagnostic, { cwd: nuxt.options.rootDir, kind: 'warning', loaders: [fs], presets: [nuxtPreset()] })
+      post({ type: 'nuxt:dev:error:warning', report: { ...report, id } })
+    })
+  }
+  const clear = (_diagnostic: Diagnostic<unknown>, finding: string) => {
+    const id = hash(finding)
+    const count = (raised.get(id) ?? 1) - 1
+    if (count > 0) {
+      raised.set(id, count)
+      return
+    }
+    raised.delete(id)
+    retire(id)
+  }
+  // the channel can outlive this instance, and a restart raises the same warnings again
+  nuxt.hook('close', async () => {
+    for (const id of raised.keys()) {
+      retire(id)
+    }
+    raised.clear()
+    await queue
+    broadcast?.close()
+  })
+  return { warn, clear }
 }
