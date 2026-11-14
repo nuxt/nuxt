@@ -303,7 +303,8 @@ describe('plugin sanity checking', () => {
     expect(plugins.map(plugin => plugin.dependsOn)).toEqual([['B'], [], ['C'], ['A']])
     expect(sortPluginsByDependsOn(plugins).map(plugin => plugin.name)).toEqual(['A', 'C', 'B', 'D'])
     expect(warn).toHaveBeenCalledTimes(1)
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: B -> C -> A -> B. Production builds fail until this is fixed; in development, plugin `A` does not wait for `B`.'))
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: B -> C -> A -> B.'))
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Production builds fail until this is fixed; in development, plugin `A` does not wait for `B`.'))
     vi.restoreAllMocks()
   })
 
