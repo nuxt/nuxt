@@ -11,6 +11,11 @@ import * as payload from '#app/composables/payload'
 import * as idleCallback from '#app/compat/idle-callback'
 import payloadPlugin from '#app/plugins/payload.client'
 
+vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
+  ...await importOriginal<Record<string, unknown>>(),
+  payloadExtraction: true,
+}))
+
 describe('nuxt-link:prefetch', () => {
   it('should prefetch a link payload after hydration when interacted with during hydration', async () => {
     const component = defineNuxtLink(nuxtLinkDefaults)
@@ -19,7 +24,7 @@ describe('nuxt-link:prefetch', () => {
     const router = useRouter()
     const originalHooks = nuxtApp.hooks
     const isHydrating = nuxtApp.isHydrating
-    const loadPayload = vi.spyOn(payload, 'loadPayload').mockResolvedValue({ data: {} })
+    const loadPayload = vi.spyOn(payload, '_loadPayload').mockResolvedValue({ data: {} })
     const beforeResolve = vi.spyOn(router, 'beforeResolve').mockReturnValue(() => {})
     const afterEach = vi.spyOn(router, 'afterEach').mockReturnValue(() => {})
 

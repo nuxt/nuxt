@@ -36,6 +36,8 @@ export const NUXT_PAGE_PATTERNS: string[] = []
 export const NUXT_EARLY_404: boolean = false
 /** Matcher compiled from every page route, present when {@link NUXT_EARLY_404} is set. */
 export const NUXT_PAGE_MATCHER: ((method: string, path: string) => unknown) | undefined = undefined
+/** Matcher resolving a path to the page sources preloaded by client-only responses. */
+export const NUXT_SPA_PAGE_MATCHER: ((method: string, path: string) => { data: string[] } | undefined) | undefined = undefined
 /** Whether the renderer renders the error page itself, rather than the server runtime doing it. */
 export const NUXT_INLINE_ERROR_RENDERING: boolean = false
 /** Whether `error.data` reaches the error page stringified. */
@@ -50,6 +52,8 @@ export const NUXT_RUNTIME_PAYLOAD_EXTRACTION: boolean = false
 export const NUXT_SSR_STREAMING: boolean = false
 /** User agents that are served a buffered response even when streaming is enabled. */
 export const NUXT_SSR_STREAMING_BOT_RE: RegExp = /^$/
+/** Whether prefetch hints are rendered inert and activated by the client once the app is ready. */
+export const NUXT_DEFER_PREFETCH_HINTS: boolean = true
 
 /** Head entries configured in `app.head`. */
 export const appHead: SerializableHead = {}

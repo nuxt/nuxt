@@ -7,6 +7,7 @@ import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImp
 import { ServerAutoImportsPlugin } from '../src/auto-imports-plugin.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
+import { getLayerNodeModulesExcludePattern } from '../src/utils.ts'
 
 const TYPE_EXTENSIONS = ['.d.ts', '.d.mts', '.d.cts', '.ts', '.mts', '.js', '.mjs']
 
@@ -75,7 +76,7 @@ describe('createServerAutoImports', () => {
     const imports = await autoImports.getImports()
     const sourceOf = (name: string) => imports.filter(i => (i.as ?? i.name) === name).map(i => i.from)
 
-    for (const name of ['defineEventHandler', 'createError', 'getQuery', 'readBody', 'getCookie', 'useRuntimeConfig', 'getRouteRules', 'readValidatedBody', 'getRouterParam', 'handleCors']) {
+    for (const name of ['defineHandler', 'defineEventHandler', 'createError', 'getQuery', 'readBody', 'getCookie', 'useRuntimeConfig', 'getRouteRules', 'readValidatedBody', 'getRouterParam', 'handleCors']) {
       expect(sourceOf(name), name).toEqual(['nuxt/server'])
     }
 
@@ -245,6 +246,64 @@ describe('createServerAutoImports', () => {
     report.mockRestore()
   })
 
+  it('reports server utilities used without an import while their presets are disabled', async () => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9007').mockImplementation(() => ({}) as any)
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, imports: [{ name: 'useLocal', from: '/app/server/utils/local.ts' }] },
+      mkdtempSync(join(tmpdir(), 'server-auto-imports-')),
+      { disabledPresets: [nuxtServerImportsPreset, ...v2ImportsPreset] },
+    )
+
+    const cached = 'export const fetchPackage = defineCachedFunction(() => useLocal())'
+    await autoImports.injectImports(cached, '/app/server/utils/npm.ts')
+    await autoImports.injectImports(cached, '/app/server/utils/npm.ts')
+    await autoImports.injectImports('export default defineEventHandler(event => getQuery(event))', '/app/server/api/query.ts')
+    await autoImports.injectImports('import { defineEventHandler } from \'nuxt/server\'\nexport default defineEventHandler(() => 1)', '/app/server/api/imported.ts')
+    await autoImports.injectImports('export default defineNitroPlugin(() => {})', '/app/server/plugins/setup.ts')
+
+    await vi.waitFor(() => expect(report).toHaveBeenCalled())
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report).toHaveBeenCalledWith({
+      count: 3,
+      files: '`server/api/query.ts` (`defineEventHandler`, `getQuery`)\n  - `server/plugins/setup.ts` (`defineNitroPlugin`)\n  - `server/utils/npm.ts` (`defineCachedFunction`)',
+      imports: '`import { defineEventHandler, getQuery } from \'nuxt/server\'`, `import { definePlugin as defineNitroPlugin } from \'nitro\'`, `import { defineCachedFunction } from \'nitro/cache\'`',
+    })
+    report.mockRestore()
+  })
+
+  it.each([
+    ['without', []],
+    ['with', [nuxtServerImportsPreset, ...v2ImportsPreset]],
+  ])('reports server code relying on a global `$fetch` %s disabled presets', async (_, disabledPresets) => {
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9011').mockImplementation(() => ({}) as any)
+    const presetReport = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9007').mockImplementation(() => ({}) as any)
+    const autoImports = createServerAutoImports(mockNuxt(), { autoImport: true }, mkdtempSync(join(tmpdir(), 'server-auto-imports-')), { disabledPresets })
+
+    const handler = 'export default () => $fetch(\'/api/probe\')'
+    await autoImports.injectImports(handler, '/app/server/api/proxy.ts')
+    await autoImports.injectImports(handler, '/app/server/api/proxy.ts')
+    await autoImports.injectImports('export const load = () => $fetch(\'https://example.com\')', '/app/server/utils/load.ts')
+    await autoImports.injectImports('import { $fetch } from \'ofetch\'\nexport default () => $fetch(\'/\')', '/app/server/api/imported.ts')
+    await autoImports.injectImports('export default (app) => app.$fetch(\'/\')', '/app/server/api/property.ts')
+    await autoImports.injectImports('import { defineHandler } from \'nitro/h3\'\nexport default defineHandler(event => $fetch(\'/api/probe\', { query: getQuery(event) }))', '/app/server/api/query.ts')
+
+    await vi.waitFor(() => expect(report).toHaveBeenCalled())
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report).toHaveBeenCalledWith({
+      count: 3,
+      files: '`server/api/proxy.ts`\n  - `server/api/query.ts`\n  - `server/utils/load.ts`',
+    })
+    if (disabledPresets.length) {
+      await vi.waitFor(() => expect(presetReport).toHaveBeenCalled())
+      expect(presetReport).toHaveBeenCalledWith(expect.objectContaining({ count: 1, files: '`server/api/query.ts` (`getQuery`)' }))
+    } else {
+      expect(presetReport).not.toHaveBeenCalled()
+    }
+    report.mockRestore()
+    presetReport.mockRestore()
+  })
+
   it('resolves `#imports` to a path inside the types directory', () => {
     const typesDir = '/app/.nuxt'
     const autoImports = createServerAutoImports(mockNuxt(), { autoImport: true }, typesDir)
@@ -255,15 +314,28 @@ describe('createServerAutoImports', () => {
 })
 
 describe('ServerAutoImportsPlugin', () => {
+  const createPlugin = (layerRoots: string[]) => ServerAutoImportsPlugin.raw({
+    autoImports: createServerAutoImports(mockNuxt(), { autoImport: true }, '/app/.nuxt'),
+    buildDir: '/app/.nuxt',
+    exclude: [getLayerNodeModulesExcludePattern(layerRoots)],
+  }, {} as any) as { transformInclude: (id: string) => boolean }
+
   it('does not transform bundled environment outputs', () => {
-    const plugin = ServerAutoImportsPlugin.raw({
-      autoImports: createServerAutoImports(mockNuxt(), { autoImport: true }, '/app/.nuxt'),
-      buildDir: '/app/.nuxt',
-    }, {} as any) as { transformInclude: (id: string) => boolean }
+    const plugin = createPlugin(['/app/'])
 
     expect(plugin.transformInclude('/app/server/api/hello.ts')).toBe(true)
     expect(plugin.transformInclude('/app/.nuxt/vite/services-utils.ts')).toBe(true)
     expect(plugin.transformInclude('/app/.nuxt/vite/services/ssr/index.mjs')).toBe(false)
+    expect(plugin.transformInclude('/app/.nuxt/dist/server/server.mjs')).toBe(false)
+    expect(plugin.transformInclude('/app/.nuxt/dist/server/_nuxt/chunk.mjs')).toBe(false)
     expect(plugin.transformInclude('/app/node_modules/pkg/index.mjs')).toBe(false)
+  })
+
+  it('transforms the server code of a layer installed in node_modules', () => {
+    const plugin = createPlugin(['/app/', '/app/node_modules/.pnpm/layer@1.0.0/node_modules/layer/'])
+
+    expect(plugin.transformInclude('/app/node_modules/.pnpm/layer@1.0.0/node_modules/layer/server/api/hello.get.ts')).toBe(true)
+    expect(plugin.transformInclude('/app/node_modules/.pnpm/layer@1.0.0/node_modules/layer/server/utils/hello.ts')).toBe(true)
+    expect(plugin.transformInclude('/app/node_modules/.pnpm/pkg@1.0.0/node_modules/pkg/index.mjs')).toBe(false)
   })
 })

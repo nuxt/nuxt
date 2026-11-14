@@ -1,27 +1,20 @@
-import { fileURLToPath } from 'node:url'
 import { readFile } from 'node:fs/promises'
 import { glob } from 'tinyglobby'
 import { parse } from 'acorn'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
-import { isWindows } from 'std-env'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { buildInProcess, fixturePath, parseData, setupFixture } from './utils'
 
-const rootDir = fileURLToPath(new URL('./fixtures/vite-server-ssr', import.meta.url))
+const rootDir = fixturePath('vite-server-ssr')
 
-if (runsOncePerEnvInMatrix && isDev) {
-  await setup({
-    rootDir,
-    dev: true,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+const runsDev = runsOncePerEnvInMatrix && isDev
 
-describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with ssr', () => {
+await setupFixture('vite-server-ssr', runsDev)
+
+describe.skipIf(!runsDev)('pure vite dev server with ssr', () => {
   it('renders the app on the server', async () => {
     const html = await $fetch<string>('/')
 
@@ -43,11 +36,27 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with ss
     expect(await $fetch<string>('/static.txt')).toContain('static-asset')
   })
 
+  it('fetches a path of the app in-process while rendering', async () => {
+    expect(await $fetch<string>('/fetched')).toContain('<p id="fetched">fetched the about page</p>')
+  })
+
   it('renders the error page for a route no page matches', async () => {
     const response = await fetch('/not-a-page', { headers: { accept: 'text/html' } })
 
     expect(response.status).toBe(404)
     expect(await response.text()).toContain('id="__nuxt"')
+  })
+
+  it('runs renderer plugins for every document it renders', async () => {
+    expect((await $fetch<string>('/')).match(/<meta name="renderer-plugin">/g)).toHaveLength(1)
+    expect(await $fetch<string>('/spa')).toContain('<meta name="renderer-plugin">')
+
+    const error = await fetch('/not-a-page', { headers: { accept: 'text/html' } })
+    expect(await error.text()).toContain('<meta name="renderer-plugin">')
+  })
+
+  it('calls `render:document` once every `render:html` hook has run', async () => {
+    expect(await $fetch<string>('/')).toContain('<meta name="renderer-document" content="true"></head>')
   })
 
   it('renders the error page for a request that accepts JSON', async () => {
@@ -63,19 +72,12 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
   const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-build')
   let html: string
   let render: (path: string) => Promise<Response>
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: { buildDir, nitro: { output: { dir: outputDir } } },
-    })
-    try {
-      await buildNuxt(nuxt)
-      expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
-    } finally {
-      await nuxt.close()
-    }
+    const nuxt = await buildInProcess(rootDir, { buildDir, nitro: { output: { dir: outputDir } } }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
+    expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
 
     // the entry only listens when it is the main module
     const server = await import(join(outputDir, 'server/index.mjs')) as {
@@ -85,6 +87,10 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     html = await (await render('/')).text()
   }, 240 * 1000)
 
+  it('reports `node` as the deploy target once the build has resolved its config', () => {
+    expect(targets).toEqual([undefined, 'node'])
+  })
+
   it('renders the app', () => {
     expect(html).toContain('<h1>vite-server-ssr</h1>')
     expect(html).toContain('<title>Pure Vite SSR</title>')
@@ -93,7 +99,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
   it('resolves data on the server and serialises it into the payload', () => {
     expect(html).toContain('<p id="async-data">from useAsyncData</p>')
-    expect(html).toContain('"rendered":5},"from useAsyncData"')
+    expect(parseData(html).script.data.greeting.rendered).toBe('from useAsyncData')
     expect(html).toContain('data-ssr="true"')
   })
 
@@ -109,6 +115,14 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
   it('renders each route it serves', async () => {
     expect(await (await render('/about')).text()).toContain('<p id="about"> about page </p>')
+  })
+
+  it('fetches a path of the app in-process while rendering', async () => {
+    expect(await (await render('/fetched')).text()).toContain('<p id="fetched">fetched the about page</p>')
+  })
+
+  it('seeds an in-process fetch with the context of the request that made it', async () => {
+    expect(await (await render('/fetched-context')).text()).toContain('<p id="fetched-context">seeded with daniel and isolated</p>')
   })
 
   it('renders asset URLs without process-wide helpers', async () => {
@@ -141,6 +155,20 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     expect(shell).toContain('data-ssr="false"')
   })
 
+  it('runs renderer plugins for every document it renders', async () => {
+    expect(html.match(/<meta name="renderer-plugin">/g)).toHaveLength(1)
+    expect(await (await render('/spa')).text()).toContain('<meta name="renderer-plugin">')
+    expect(await (await render('/not-a-page')).text()).toContain('<meta name="renderer-plugin">')
+  })
+
+  it('sends the response headers renderer plugins set', async () => {
+    expect((await render('/')).headers.get('x-renderer-plugin')).toBe('true')
+  })
+
+  it('calls `render:document` once every `render:html` hook has run', () => {
+    expect(html).toContain('<meta name="renderer-document" content="true"></head>')
+  })
+
   it('renders a route ruled `noScripts` without scripts', async () => {
     const rendered = await (await render('/no-scripts')).text()
 
@@ -149,11 +177,13 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
   })
 
   it('answers a `redirect` rule without rendering', async () => {
-    const response = await render('/old/page')
+    for (const path of ['/old/page', '/old%2Fpage']) {
+      const response = await render(path)
 
-    expect(response.status).toBe(301)
-    expect(response.headers.get('location')).toBe('/about')
-    expect(await response.text()).toBe('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/about"></head></html>')
+      expect(response.status, path).toBe(301)
+      expect(response.headers.get('location'), path).toBe('/about')
+      expect(await response.text(), path).toBe('<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/about"></head></html>')
+    }
   })
 
   it('carries the request query onto a redirect target that names its own', async () => {

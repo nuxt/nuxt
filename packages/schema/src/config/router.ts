@@ -1,13 +1,11 @@
-import { defineResolvers } from '../utils/definition.ts'
+import { booleanOr, defineResolvers } from '../utils/definition.ts'
 
 export default defineResolvers({
   router: {
     options: {
       hashMode: false,
       scrollBehaviorType: 'auto',
-      sensitive: {
-        $resolve: val => typeof val === 'boolean' ? val : true,
-      },
+      sensitive: booleanOr(true),
     },
   },
 })

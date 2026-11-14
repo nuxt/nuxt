@@ -15,7 +15,6 @@ import { DEFAULT_JS_FILE_EXTENSIONS } from './constants.ts'
  */
 const pluginSymbol = Symbol.for('nuxt plugin')
 export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
-  // Normalize src
   if (typeof plugin === 'string') {
     plugin = { src: plugin }
   } else {
@@ -30,7 +29,6 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
     throw pluginDiagnostics.NUXT_B2011({ src: JSON.stringify(plugin) })
   }
 
-  // Normalize full path to plugin
   plugin.src = normalize(resolveAlias(plugin.src))
 
   if (!existsSync(plugin.src) && isAbsolute(plugin.src)) {
@@ -43,7 +41,6 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
     }
   }
 
-  // Normalize mode
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   if (plugin.ssr) {
     plugin.mode = 'server'
@@ -81,7 +78,6 @@ export interface AddPluginOptions { append?: boolean }
 export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions = {}): NuxtPlugin {
   const nuxt = useNuxt()
 
-  // Normalize plugin
   const plugin = normalizePlugin(_plugin)
 
   // Remove any existing plugin with the same src

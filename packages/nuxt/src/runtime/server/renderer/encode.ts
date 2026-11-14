@@ -3,8 +3,57 @@ const textEncoder = new TextEncoder()
 
 const MIN_SCRATCH_SIZE = 64 * 1024
 const MAX_SCRATCH_SIZE = 4 * 1024 * 1024
+const MIN_TRANSCODE_LENGTH = 2048
+const NON_LATIN1_RE = /[^\0-\xFF]/
 
 let scratch: Uint8Array | undefined
+let utf16Scratch: Buffer | undefined
+
+type NodeBuffer = Pick<typeof import('node:buffer'), 'transcode'>
+
+// before Node 26.8, strings with characters beyond Latin1 are written as UTF-8 much more slowly than ICU transcodes them (https://github.com/nodejs/node/pull/65324)
+const nodeBuffer = hasBuffer && hasSlowUtf8Write() ? resolveTranscoder() : undefined
+
+function hasSlowUtf8Write (): boolean {
+  const versions = (globalThis as any).process?.versions
+  if (!versions?.node || versions.bun || versions.deno) {
+    return false
+  }
+  const [major = 0, minor = 0] = String(versions.node).split('.').map(Number)
+  return major < 26 || (major === 26 && minor < 8)
+}
+
+function resolveTranscoder (): NodeBuffer | undefined {
+  try {
+    const mod = (globalThis as any).process?.getBuiltinModule?.('node:buffer') as NodeBuffer | undefined
+    if (mod?.transcode && mod.transcode(Buffer.from('→', 'utf16le'), 'utf16le', 'utf8').equals(Buffer.from('→'))) {
+      return mod
+    }
+  } catch {
+    // `transcode` throws in builds without ICU
+  }
+}
+
+function writeUtf8 (target: Buffer, chunk: string, offset: number): number {
+  if (nodeBuffer && chunk.length >= MIN_TRANSCODE_LENGTH && NON_LATIN1_RE.test(chunk)) {
+    const size = chunk.length * 2
+    if (!utf16Scratch || utf16Scratch.length < size) {
+      utf16Scratch = Buffer.allocUnsafeSlow(Math.max(size, (utf16Scratch?.length ?? 0) * 2))
+    }
+    try {
+      const bytes = nodeBuffer.transcode(utf16Scratch.subarray(0, utf16Scratch.write(chunk, 0, 'utf16le')), 'utf16le', 'utf8')
+      target.set(bytes, offset)
+      return bytes.length
+    } catch {
+      // lone surrogates are left to `write`, which replaces them with U+FFFD
+    } finally {
+      if (utf16Scratch.length > MAX_SCRATCH_SIZE) {
+        utf16Scratch = undefined
+      }
+    }
+  }
+  return target.write(chunk, offset)
+}
 
 /**
  * Encode a rendered document, given as chunks, into one UTF-8 buffer. Each chunk is written
@@ -53,7 +102,7 @@ function writeChunks (chunks: string[], write: (chunk: string, offset: number) =
 
 function encodeVia (chunks: string[], target: Uint8Array): Uint8Array<ArrayBuffer> {
   if (hasBuffer) {
-    const offset = writeChunks(chunks, (chunk, offset) => (target as Buffer).write(chunk, offset))
+    const offset = writeChunks(chunks, (chunk, offset) => writeUtf8(target as Buffer, chunk, offset))
     return Buffer.from(target.subarray(0, offset)) as Uint8Array<ArrayBuffer>
   }
   const offset = writeChunks(chunks, (chunk, offset) => textEncoder.encodeInto(chunk, target.subarray(offset)).written)
@@ -64,5 +113,5 @@ function encodeExact (chunks: string[]): Uint8Array<ArrayBuffer> {
   let size = 0
   for (const chunk of chunks) { size += Buffer.byteLength(chunk) }
   const bytes = Buffer.allocUnsafe(size)
-  return bytes.subarray(0, writeChunks(chunks, (chunk, offset) => bytes.write(chunk, offset))) as Uint8Array<ArrayBuffer>
+  return bytes.subarray(0, writeChunks(chunks, (chunk, offset) => writeUtf8(bytes, chunk, offset))) as Uint8Array<ArrayBuffer>
 }

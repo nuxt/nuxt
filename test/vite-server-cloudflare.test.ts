@@ -1,40 +1,40 @@
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { join } from 'pathe'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
-import { isWindows } from 'std-env'
-import { fetch, setup } from '@nuxt/test-utils/e2e'
+import { fetch } from '@nuxt/test-utils/e2e'
 
 import { glob } from 'tinyglobby'
 
 import { isDev, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { buildInProcess, fixturePath, setupFixture } from './utils'
 import { channelState, frameAt, renderErrorPage } from './dev-error-utils'
 
 // workerd provides `node:async_hooks` and `node:diagnostics_channel`, and nothing else the
 // render reaches for; these are what a node server would drag in
 const NODE_SERVER_BUILTINS = new Set(['node:fs', 'node:fs/promises', 'node:http', 'node:https', 'node:net', 'node:path', 'node:stream', 'node:stream/promises', 'node:zlib'])
 
-const rootDir = fileURLToPath(new URL('./fixtures/vite-server-cloudflare', import.meta.url))
+const rootDir = fixturePath('vite-server-cloudflare')
 const workerDir = join(rootDir, '.output/nuxt_vite_server_cloudflare')
 const publicDir = join(rootDir, '.output/public')
 
-if (runsOncePerEnvInMatrix && isDev) {
-  await setup({
-    rootDir,
-    dev: true,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+const runsDev = runsOncePerEnvInMatrix && isDev
 
-describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with a cloudflare deploy target', () => {
+await setupFixture('vite-server-cloudflare', runsDev)
+
+describe.skipIf(!runsDev)('pure vite dev server with a cloudflare deploy target', () => {
   it('renders the routes the worker passes to `#server-entry` in the worker runtime', async () => {
     const response = await fetch('/runtime', { headers: { accept: 'text/html' } })
 
     expect(response.status).toBe(200)
     expect(await response.text()).toMatch(/<p id="runtime">\s*Cloudflare-Workers\s*<\/p>/)
+  })
+
+  it('runs renderer plugins in the worker runtime', async () => {
+    const html = await (await fetch('/about', { headers: { accept: 'text/html' } })).text()
+
+    expect(html.match(/<meta name="renderer-runtime"[^>]*>/g)).toEqual(['<meta name="renderer-runtime" content="Cloudflare-Workers">'])
   })
 
   it('reports errors raised by the app the worker renders', async () => {
@@ -45,34 +45,36 @@ describe.skipIf(!runsOncePerEnvInMatrix || !isDev)('pure vite dev server with a 
     expect(frameAt(report, 'app/pages/boom.vue')).toMatchObject({ type: 'app', line: 2 })
   })
 
-  it('retires the report once the worker renders a page', async () => {
-    const { report } = await renderErrorPage('/boom')
-    expect((await channelState('/boom')).current?.id).toBe(report.id)
+  it('keeps the report open while another page renders, and retires it once the worker renders its page', async () => {
+    const { report } = await renderErrorPage('/flaky')
+    expect((await channelState('/flaky')).current?.id).toBe(report.id)
 
     await fetch('/about', { headers: { accept: 'text/html' } })
-    await expect.poll(async () => (await channelState('/boom')).current, { timeout: 5000 }).toBeUndefined()
+    await new Promise(resolve => setTimeout(resolve, 500))
+    expect((await channelState('/flaky')).current?.id).toBe(report.id)
+
+    const fixed = await fetch('/flaky', { headers: { 'accept': 'text/html', 'x-boom': 'fixed' } })
+    expect(fixed.status).toBe(200)
+    await expect.poll(async () => (await channelState('/flaky')).current?.id, { timeout: 5000 }).not.toBe(report.id)
   })
 })
 
 describe.skipIf(!runsOnceInMatrix)('pure vite build with a cloudflare deploy target', () => {
   let wrangler: { main: string, assets: { directory: string, not_found_handling: string } }
   let worker: { default: { fetch: (request: Request) => Promise<Response> } }
+  const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
-    const nuxt = await loadNuxt({
-      cwd: rootDir,
-      ready: true,
-      overrides: { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') },
-    })
-    try {
-      await buildNuxt(nuxt)
-      expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
-    } finally {
-      await nuxt.close()
-    }
+    const nuxt = await buildInProcess(rootDir, { buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build') }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    targets.push(nuxt.serverBuild.target?.())
+    expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
     wrangler = JSON.parse(await readFile(join(workerDir, 'wrangler.json'), 'utf-8'))
     worker = await import(pathToFileURL(join(workerDir, 'index.js')).href)
   }, 240 * 1000)
+
+  it('reports `cloudflare` as the deploy target before and after the build', () => {
+    expect(targets).toEqual(['cloudflare', 'cloudflare'])
+  })
 
   it('points the worker at the assets the builder wrote, and at itself for everything else', () => {
     expect(wrangler.assets).toMatchObject({
@@ -94,6 +96,12 @@ describe.skipIf(!runsOnceInMatrix)('pure vite build with a cloudflare deploy tar
     const page = await worker.default.fetch(new Request('https://example.com/about'))
     expect(page.status).toBe(200)
     expect(await page.text()).toContain('<p id="about-page">')
+  })
+
+  it('bundles renderer plugins into the worker', async () => {
+    const html = await (await worker.default.fetch(new Request('https://example.com/about'))).text()
+
+    expect(html.match(/<meta name="renderer-runtime"[^>]*>/g)).toHaveLength(1)
   })
 
   it('renders against the client build, which has to be built before the worker', async () => {

@@ -63,26 +63,22 @@ describe('resolveDevAppSecret', () => {
     expect(await readFile(join(options.buildDir, 'app-secret'), 'utf8')).toBe(options.runtimeConfig.appSecret)
   })
 
-  it('should leave a long enough configured secret alone', async () => {
-    const configured = 'x'.repeat(32)
-    const options = await createOptions(configured)
-
-    await resolveDevAppSecret(options, {})
-
-    expect(options.runtimeConfig.appSecret).toBe(configured)
-    expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
-  })
-
-  it('should leave a long enough environment secret alone', async () => {
-    const options = await createOptions()
-    const env: Record<string, string> = { NUXT_APP_SECRET: 'y'.repeat(40), NUXT_APP_SECRET_GENERATED: '1' }
+  it.each<[string, unknown, Record<string, string>]>([
+    ['a long enough configured secret', 'x'.repeat(32), {}],
+    ['a configured secret that is too short', 'too-short', {}],
+    ['a configured secret that is not a string', 12345, {}],
+    // a stale generated marker is dropped
+    ['a long enough environment secret', '', { NUXT_APP_SECRET: 'y'.repeat(40), NUXT_APP_SECRET_GENERATED: '1' }],
+    ['an environment secret that is too short', '', { NUXT_APP_SECRET: 'too-short' }],
+    ['a configured environment secret when another is empty', '', { NITRO_APP_SECRET: '', NUXT_APP_SECRET: 'z'.repeat(40) }],
+  ])('should preserve %s', async (_, appSecret, env) => {
+    const options = await createOptions(appSecret as string)
+    const { NUXT_APP_SECRET_GENERATED: _generated, ...expectedEnv } = env
 
     await resolveDevAppSecret(options, env)
 
-    expect(env.NUXT_APP_SECRET_GENERATED).toBeUndefined()
-
-    expect(options.runtimeConfig.appSecret).toBe('')
-    expect(env.NUXT_APP_SECRET).toBe('y'.repeat(40))
+    expect(options.runtimeConfig.appSecret).toBe(appSecret)
+    expect(env).toStrictEqual(expectedEnv)
     expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
   })
 
@@ -96,45 +92,6 @@ describe('resolveDevAppSecret', () => {
 
     expect(options.runtimeConfig.appSecret).toBe(secret)
     expect(env).toStrictEqual({ NUXT_APP_SECRET: secret, NUXT_APP_SECRET_GENERATED: '1' })
-  })
-
-  it('should preserve a configured secret that is too short', async () => {
-    const options = await createOptions('too-short')
-
-    await resolveDevAppSecret(options, {})
-
-    expect(options.runtimeConfig.appSecret).toBe('too-short')
-    expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
-  })
-
-  it('should preserve a configured secret that is not a string', async () => {
-    const options = await createOptions(12345 as unknown as string)
-
-    await resolveDevAppSecret(options, {})
-
-    expect(options.runtimeConfig.appSecret).toBe(12345)
-    expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
-  })
-
-  it('should preserve a configured environment secret when another is empty', async () => {
-    const options = await createOptions()
-    const env: Record<string, string> = { NITRO_APP_SECRET: '', NUXT_APP_SECRET: 'z'.repeat(40) }
-
-    await resolveDevAppSecret(options, env)
-
-    expect(env).toStrictEqual({ NITRO_APP_SECRET: '', NUXT_APP_SECRET: 'z'.repeat(40) })
-    expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
-  })
-
-  it('should preserve an environment secret that is too short', async () => {
-    const options = await createOptions()
-    const env: Record<string, string> = { NUXT_APP_SECRET: 'too-short' }
-
-    await resolveDevAppSecret(options, env)
-
-    expect(options.runtimeConfig.appSecret).toBe('')
-    expect(env.NUXT_APP_SECRET).toBe('too-short')
-    expect(existsSync(join(options.buildDir, 'app-secret'))).toBe(false)
   })
 
   it('should generate a secret and update the environment when it is empty', async () => {

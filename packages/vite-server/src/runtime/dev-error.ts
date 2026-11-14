@@ -1,8 +1,8 @@
 import type { ViteDevServer } from 'vite'
 import type { ViteHotContext } from 'vite/types/hot.d.ts'
 import type { ErrorReport } from 'my-bad'
-import { ERROR_CHANNEL_ENV, clearErrorReport as clearChannelReport, createDevErrorReporter, createErrorReport, serializeErrorCause, setErrorChannelForwarding, useErrorChannel } from 'nuxt/internal/dev-error'
-import type { DevErrorObserveOptions, DevErrorReport, SerializedErrorCause } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, clearErrorReport as clearChannelReport, createDevErrorReporter, createErrorReport, renderDevBadge as renderBadge, serializeErrorCause, setErrorChannelAccess, setErrorChannelForwarding, useErrorChannel } from 'nuxt/internal/dev-error'
+import type { DevErrorObserveOptions, DevErrorReport, ErrorChannelAccess, SerializedErrorCause } from 'nuxt/internal/dev-error'
 import { isLoopbackAddress } from 'nuxt/internal/dev/peer'
 
 import { REMOTE_DEV_ERROR_CLEAR_EVENT, REMOTE_DEV_ERROR_EVENT, REMOTE_DEV_ERROR_REPORT_EVENT } from './remote-dev-error.ts'
@@ -16,6 +16,10 @@ export interface DevErrorContext {
   cwd: string
   /** Base path the live channel is reachable at. */
   channel: string
+  /** Whether a report may quote a file from disk, given its real path. */
+  canRead?: (file: string) => boolean
+  /** What the channel may open, and which hosts may reach it. */
+  access?: ErrorChannelAccess
 }
 
 let context: DevErrorContext | undefined
@@ -32,6 +36,7 @@ setErrorChannelForwarding(forwarding)
 /** Install the dev server the app renders from. */
 export function setDevErrorContext (next: DevErrorContext): void {
   context = next
+  setErrorChannelAccess(next.access ?? {})
   // opened eagerly so it is listening for the bundler's compile errors
   useErrorChannel().catch(() => {})
 }
@@ -70,12 +75,18 @@ export function observeDevError (error: unknown, request?: Request, observe?: De
   return Promise.resolve(undefined)
 }
 
-/** Retire the current report, dismissing overlays showing it. */
-export function clearErrorReport (): Promise<void> {
+/** Render the badge for the head of a page rendered for `request`, when a channel is served for it. */
+export function renderDevBadge (request: Request, nonce?: string): Promise<string | undefined> {
+  const channel = env()[ERROR_CHANNEL_ENV] || context?.channel
+  return channel ? renderBadge({ cwd: context?.cwd, channel, request, nonce }) : Promise.resolve(undefined)
+}
+
+/** Retire the reports published for requests to `url`, which has since rendered. */
+export function clearErrorReport (url: URL): Promise<void> {
   if (context || !hot) {
-    return clearChannelReport()
+    return clearChannelReport(url)
   }
-  hot.send(REMOTE_DEV_ERROR_CLEAR_EVENT)
+  hot.send(REMOTE_DEV_ERROR_CLEAR_EVENT, { url: url.href })
   return Promise.resolve()
 }
 
@@ -127,6 +138,7 @@ async function buildReport (error: unknown, request?: Request): Promise<ErrorRep
     cwd: context!.cwd,
     // sources are read by the filesystem loader the report adds after this one
     loaders: [viteLoader(ssrOnly(context!.server), { fs: false })],
+    canRead: context!.canRead,
     context: { request },
   })
 }

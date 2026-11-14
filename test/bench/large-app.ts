@@ -31,6 +31,32 @@ ${used.map(name => `    <${name} :count="count" />`).join('\n')}
 `
 }
 
+/** A listing page: a 1000-row table from `useAsyncData`, with one link per row. */
+function tablePage (link: 'NuxtLink' | 'a') {
+  const anchor = link === 'NuxtLink'
+    ? '<NuxtLink :to="`/table/${row.id}`">view →</NuxtLink>'
+    : '<a :href="`/table/${row.id}`">view →</a>'
+  return `<script setup lang="ts">
+const { data } = await useAsyncData('table', () => fetchTableRows(), { deep: false })
+useHead({ title: 'table' })
+</script>
+
+<template>
+  <table>
+    <tbody>
+      <tr v-for="row in data" :key="row.id">
+        <td>{{ row.id }}</td>
+        <td>{{ row.name }}</td>
+        <td>{{ row.status }}</td>
+        <td>{{ row.note }}</td>
+        <td>${anchor}</td>
+      </tr>
+    </tbody>
+  </table>
+</template>
+`
+}
+
 function component (name: string, index: number) {
   return `<script setup lang="ts">
 const props = defineProps<{ count?: number, label?: string }>()
@@ -126,6 +152,10 @@ export async function createLargeApp (dir = largeAppDir): Promise<string> {
     }
   }
   files['app/pages/index.vue'] = page('home', 0, componentNames)
+  files['app/pages/table/index.vue'] = tablePage('NuxtLink')
+  files['app/pages/table/plain.vue'] = tablePage('a')
+  files['app/pages/table/[id].vue'] = `<template>\n  <p>{{ $route.params.id }}</p>\n</template>\n`
+  files['app/utils/table.ts'] = `export interface TableRow {\n  id: string\n  name: string\n  status: string\n  note: string\n}\n\nlet rows: TableRow[] | undefined\n\n/** 1000 rows of stable data, like a listing page fetched from an API. */\nexport function fetchTableRows (): Promise<TableRow[]> {\n  rows ??= Array.from({ length: 1000 }, (_, i) => ({ id: String(i).padStart(4, '0'), name: \`row \${i}\`, status: ['active', 'pending', 'archived'][i % 3]!, note: \`entry \${i} \u2192 details\` }))\n  return new Promise(resolve => setTimeout(() => resolve(rows!), 0))\n}\n`
 
   for (let i = 0; i < 60; i++) {
     files[`app/composables/counter-${i}.ts`] = composable(i)

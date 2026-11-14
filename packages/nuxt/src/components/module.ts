@@ -12,12 +12,13 @@ import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
 import { getAppStructureVersion } from '../core/app.ts'
+import { createScanProblems } from '../core/scan-problems.ts'
 
 import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
 import { TransformPlugin } from './plugins/transform.ts'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake.ts'
-import { NuxtLinkSsrPlugin } from './plugins/nuxt-link-ssr.ts'
+import { NuxtLinkClientPlugin, NuxtLinkSsrPlugin } from './plugins/nuxt-link-ssr.ts'
 import { RenderListPlugin } from './plugins/render-list.ts'
 import { ClientComponentStubPlugin } from './plugins/client-component-stub.ts'
 import { ComponentNamePlugin } from './plugins/component-names.ts'
@@ -30,17 +31,7 @@ import type { Component, ComponentsDir, ComponentsOptions, Nuxt, NuxtPage } from
 
 const isPureObjectOrString = (val: unknown): val is object | string => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const SLASH_SEPARATOR_RE = /[\\/]/
-/**
- * Compare two directory entries by the number of path segments.
- *
- * Returns a sort comparator value based on the count of path segments (split on slashes). Deeper (more segments) paths are ordered before shallower ones.
- *
- * @param dirA - First directory
- * @param dirA.path - Path string
- * @param dirB - Second directory
- * @param dirB.path - Path string
- * @returns A negative number if the first directory should come before the second, positive if after, or 0 if equal
- */
+/** Order deeper directories before shallower ones. */
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
   return pathB.split(SLASH_SEPARATOR_RE).filter(Boolean).length - pathA.split(SLASH_SEPARATOR_RE).filter(Boolean).length
 }
@@ -81,11 +72,8 @@ export default defineNuxtModule<ComponentsOptions>({
       const allDirs: ComponentsDir[] = []
       const layerCount = nuxt.options._layers.length
       for (const [i, layer] of nuxt.options._layers.entries()) {
-        // Assign priority based on layer position: lower index = higher priority
-        // This ensures correct override order: root > auto-scanned > extends layers
-        const priority = layerCount - i
-        const layerDirs = normalizeDirs(layer.config.components, layer.config.srcDir, { priority })
-        allDirs.push(...layerDirs)
+        // earlier layers take priority: root > auto-scanned > extends layers
+        allDirs.push(...normalizeDirs(layer.config.components, layer.config.srcDir, layerCount - i))
       }
 
       await nuxt.callHook('components:dirs', allDirs)
@@ -150,22 +138,18 @@ export default defineNuxtModule<ComponentsOptions>({
       ]
     })
 
-    // components.d.ts
     addTemplate(componentsDeclarationTemplate)
-    // types/components.d.ts
     addTypeTemplate(componentsTypeTemplate)
-    // components.plugin.mjs
     addPluginTemplate(componentsPluginTemplate)
-    // component-names.mjs
     addTemplate(componentNamesTemplate)
-    // components.islands.mjs
     addTemplate(componentsIslandsTemplate)
 
     if (moduleOptions.generateMetadata) {
       addTemplate(componentsMetadataTemplate)
     }
 
-    const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
+    const resolveRuntimePath = async (path: string) => await findPath(join(distDir, path)) ?? join(distDir, path)
+    const serverComponentRuntime = await resolveRuntimePath('components/runtime/server-component')
     addBuildPlugin(TransformPlugin(nuxt, { getComponents, serverComponentRuntime, mode: 'server' }), { server: true, client: false })
     addBuildPlugin(TransformPlugin(nuxt, { getComponents, serverComponentRuntime, mode: 'client' }), { server: false, client: true })
 
@@ -187,7 +171,6 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Restart dev server when component directories are added/removed
     const restartEvents = new Set(['addDir', 'unlinkDir'])
-    // const restartPaths
     nuxt.hook('builder:watch', (event, relativePath) => {
       if (!restartEvents.has(event)) {
         return
@@ -200,13 +183,15 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
-    const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
+    const serverPlaceholderPath = await resolveRuntimePath('app/components/server-placeholder')
 
     // Scan components and add to plugin
     const scannedStructureVersions = new WeakMap<Nuxt, number>()
+    const problems = createScanProblems(nuxt, 'nuxt:components', 'Components')
     async function resolveComponents () {
       const structureVersion = getAppStructureVersion(nuxt)
-      const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
+      const scan = problems.scan()
+      const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!, scan.report)
       await nuxt.callHook('components:extend', newComponents)
       const modesByName = new Map<string, Set<string | undefined>>()
       for (const component of newComponents) {
@@ -234,9 +219,10 @@ export default defineNuxtModule<ComponentsOptions>({
           modesByName.get(component.pascalName)!.add('server')
         }
         if (component.mode === 'server' && !nuxt.options.ssr && !modesByName.get(component.pascalName)?.has('client')) {
-          componentDiagnostics.NUXT_B3002({ component: component.pascalName })
+          scan.report(`NUXT_B3002\0${component.pascalName}\0${component.filePath}`, isAbsolute(component.filePath) ? [component.filePath] : [], () => componentDiagnostics.NUXT_B3002({ component: component.pascalName }))
         }
       }
+      scan.done()
       context.components = newComponents
       scannedStructureVersions.set(nuxt, structureVersion)
     }
@@ -262,6 +248,7 @@ export default defineNuxtModule<ComponentsOptions>({
     }
     if (!nuxt.options.dev) {
       addBuildPlugin(NuxtLinkSsrPlugin, { client: false })
+      addBuildPlugin(NuxtLinkClientPlugin, { server: false })
     }
 
     addBuildPlugin(ClientComponentStubPlugin({
@@ -271,7 +258,7 @@ export default defineNuxtModule<ComponentsOptions>({
       dev: nuxt.options.dev,
     }), { client: false })
 
-    const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/lazy-hydrated-component')) ?? join(distDir, 'components/runtime/lazy-hydrated-component')
+    const clientDelayedComponentRuntime = await resolveRuntimePath('components/runtime/lazy-hydrated-component')
 
     const sharedLoaderOptions = {
       getComponents,
@@ -413,38 +400,20 @@ export default defineNuxtModule<ComponentsOptions>({
   },
 })
 
-/**
- * Normalize the various user-provided `components.dirs` shapes into a flat array of ComponentsDir entries.
- *
- * Handles:
- * - Arrays (recursively flattened and sorted by path depth),
- * - `true`/`undefined` (returns default islands, global, and components dirs under `cwd`),
- * - Strings (resolved against `cwd` and alias resolution),
- * - Objects (either a single dir shape or an object with a `dirs` array).
- *
- * Each resulting entry has its `path` resolved via `resolveAlias` and `cwd`, receives a `priority` from `options.priority` (default 0), and entries without a `path` are skipped. The final list is sorted by path depth (shallowest first).
- *
- * @param dir - The raw `dirs` configuration value (single entry, array, true/undefined for defaults, or an options object).
- * @param cwd - Base directory used to resolve relative `path` values.
- * @param options - Optional settings; currently supports `priority` to assign a priority to all returned entries.
- * @param options.priority - Priority number to assign to all returned entries (default 0).
- * @returns A normalized, flat, and sorted array of ComponentsDir objects ready for component scanning.
- */
-function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, options?: { priority?: number }): ComponentsDir[] {
+/** Flatten the shapes `components` accepts in a layer config into directories resolved against `cwd`. */
+function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, priority = 0): ComponentsDir[] {
   if (Array.isArray(dir)) {
-    return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
+    return dir.flatMap(dir => normalizeDirs(dir, cwd, priority)).sort(compareDirByPathLength)
   }
   if (dir === true || dir === undefined) {
     return [
-      { priority: options?.priority || 0, path: resolve(cwd, 'components/islands'), island: true },
-      { priority: options?.priority || 0, path: resolve(cwd, 'components/global'), global: true },
-      { priority: options?.priority || 0, path: resolve(cwd, 'components') },
+      { priority, path: resolve(cwd, 'components/islands'), island: true },
+      { priority, path: resolve(cwd, 'components/global'), global: true },
+      { priority, path: resolve(cwd, 'components') },
     ]
   }
   if (typeof dir === 'string') {
-    return [
-      { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) },
-    ]
+    return [{ priority, path: resolve(cwd, resolveAlias(dir)) }]
   }
   if (!dir) {
     return []
@@ -457,7 +426,7 @@ function normalizeDirs (dir: undefined | boolean | ComponentsOptions | Component
       continue
     }
     normalizedDirs.push({
-      priority: options?.priority || 0,
+      priority,
       ...normalizedDir,
       path: resolve(cwd, resolveAlias(normalizedDir.path)),
     })
@@ -473,6 +442,9 @@ function addTemplateNodeTransform (nuxt: Nuxt, resolver: ComponentResolver) {
 
   const vueLoader = nuxt.options.webpack.loaders.vue
   vueLoader.compilerOptions = withNodeTransform(vueLoader.compilerOptions, resolver)
+
+  const rsbuildLoader = (nuxt.options.rsbuild.vue ||= {}).vueLoaderOptions ||= {}
+  rsbuildLoader.compilerOptions = withNodeTransform(rsbuildLoader.compilerOptions, resolver)
 }
 
 function withNodeTransform<T extends { nodeTransforms?: unknown[] }> (compilerOptions: T | undefined, resolver: ComponentResolver): T {

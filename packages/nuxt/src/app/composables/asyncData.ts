@@ -7,7 +7,7 @@ import { useNuxtApp } from '../nuxt'
 import { getUserCaller, toArray } from '../utils'
 import { clientOnlySymbol } from '../components/client-only'
 import type { NuxtError } from './error'
-import { createError } from './error'
+import { createError, isUntrustedError } from './error'
 import { onNuxtReady } from './ready'
 import { traceAsync } from '../internal/tracing'
 import { defineKeyedFunctionFactory } from '../../compiler/runtime'
@@ -296,7 +296,7 @@ export function _createUseAsyncData<
   {
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
-     * See {@link https://nuxt.com/docs/4.x/api/composables/use-async-data}
+     * See {@link https://nuxt.com/docs/5.x/api/composables/use-async-data}
      * @since 3.0.0
      * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
      * @param opts customize the behavior of useAsyncData
@@ -343,7 +343,7 @@ export function _createUseAsyncData<
     ): AsyncData<PickFrom<DataT, [Array<never>] extends [FPickKeys] ? PickKeys : FPickKeys & KeysOf<DataT>> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
     /**
      * Provides access to data that resolves asynchronously in an SSR-friendly composable.
-     * See {@link https://nuxt.com/docs/4.x/api/composables/use-async-data}
+     * See {@link https://nuxt.com/docs/5.x/api/composables/use-async-data}
      * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
      * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
      * @param opts customize the behavior of useAsyncData
@@ -1002,16 +1002,18 @@ function buildAsyncData<
 
           // If the asyncData was explicitly aborted internally (dedupe or clear), we do not update the asyncData
           if (asyncData._abortController?.signal.aborted) {
-            return nuxtApp._asyncDataPromises[key]
+            return
           }
 
           // if the asyncData was explicitly aborted by user, we set it back to idle state
           if (typeof DOMException !== 'undefined' && error instanceof DOMException && error.name === 'AbortError') {
             asyncData.status.value = 'idle'
-            return nuxtApp._asyncDataPromises[key]
+            return
           }
 
-          asyncData.error.value = createError<NuxtErrorDataT>(error) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
+          asyncData.error.value = (import.meta.server && !import.meta.dev && isUntrustedError(error)
+            ? createError({ status: 500, statusText: 'Internal Server Error' })
+            : createError<NuxtErrorDataT>(error)) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
           asyncData.status.value = 'error'
         })
@@ -1081,7 +1083,7 @@ const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtA
     return nuxtApp.payload.data[key]
   }
 
-  if (ctx.cause !== 'refresh:manual' && ctx.cause !== 'refresh:hook') {
+  if (ctx.cause === 'initial') {
     return nuxtApp.static.data[key]
   }
 }

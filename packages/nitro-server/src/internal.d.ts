@@ -9,6 +9,13 @@ declare module '#internal/nuxt/error-channel' {
 declare module '#internal/nuxt/island-renderer.mjs'
 declare module '#internal/nuxt/paths'
 declare module '#internal/dev-server-logs-options'
+declare module '#internal/nuxt/runtime-config-schema' {
+  const schema: import('@nuxt/schema/internal').RuntimeConfigSchemaObject
+  export default schema
+}
+declare module '#nitro/virtual/runtime-config' {
+  export const runtimeConfig: import('nitro/types').NitroRuntimeConfig
+}
 declare module '#nuxt-compat/import-meta' {
   export const entryURL: string
 }

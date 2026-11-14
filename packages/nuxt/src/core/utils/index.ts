@@ -38,6 +38,27 @@ export function decodeRoutePath (path: string) {
 }
 
 /**
+ * Collect the route rules `match` returns for a route path and, if its path portion contains
+ * an encoded slash (`%2F`), for the path with each encoded slash as a separator, since a page
+ * route param spanning several segments decodes to the same value either way. Rules keep the
+ * order `match` returns them in, and rules matched only through encoded slashes come last.
+ *
+ * Inlined by source into compiled matchers, so it must not reference anything outside itself.
+ *
+ * @internal
+ */
+export function matchAllRouteRules<T> (match: (path: string) => T[], path: string): T[] {
+  const matches = match(path)
+  if (typeof path !== 'string') { return matches }
+  const split = path.replace(/^[^?]*/, pathname => pathname.replace(/%2f/gi, '/'))
+  if (split === path) { return matches }
+  for (const rules of match(split)) {
+    if (!matches.includes(rules)) { matches.push(rules) }
+  }
+  return matches
+}
+
+/**
  * Case-fold a decoded route path so that two paths fold to the same text exactly when a
  * case-insensitive vue-router route (a regex with the `i` flag but not `u`) treats them as
  * equal: each UTF-16 code unit is folded to the lower-case form of its upper-case form.
@@ -72,4 +93,16 @@ export function foldRouteRulePath (path: string): string {
       return run
     }
   })
+}
+
+/**
+ * Percent-encode a decoded route path the way rou3 encodes the literal text of a pattern
+ * (the URL path percent-encode set, leaving `%` as is), so a lookup matches a pattern
+ * registered from the same decoded text. A query string, if present, is left untouched.
+ */
+export function encodeRoutePath (path: string) {
+  const queryIndex = path.indexOf('?')
+  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex)
+  const encoded = pathname.replace(/[\0-\x20"#<>^`{}\x7F-\uFFFC]+/g, run => encodeURIComponent(run.replace(/[\uD800-\uDFFF]/gu, '\uFFFD')))
+  return queryIndex === -1 ? encoded : encoded + path.slice(queryIndex)
 }

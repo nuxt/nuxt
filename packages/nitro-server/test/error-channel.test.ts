@@ -13,10 +13,12 @@ const { paths } = vi.hoisted(() => ({ paths: { rootDir: '/app', srcDir: '/app/ap
 vi.mock('#internal/dev-server-logs-options', () => ({
   get rootDir () { return paths.rootDir },
   get srcDir () { return paths.srcDir },
+  get reportFs () { return { allow: [tmpdir()], deny: [] } },
+  get allowedHosts () { return [] },
 }))
 vi.mock('node:worker_threads', () => ({ isMainThread: false }))
 
-const { ERROR_CHANNEL_BROADCAST, ERROR_CHANNEL_ENV, createErrorReport, getErrorChannelPath, publishDevLog, publishDevProgress, publishErrorReport, shouldForwardReports, useErrorChannel } = await import('../src/runtime/utils/error-channel.ts')
+const { ERROR_CHANNEL_BROADCAST, ERROR_CHANNEL_ENV, clearErrorReport, createErrorReport, getErrorChannelPath, publishDevLog, publishDevProgress, publishErrorReport, renderDevBadge, shouldForwardReports, useErrorChannel } = await import('../src/runtime/utils/error-channel.ts')
 
 const report = { id: 'abc', kind: 'error', name: 'Error', message: 'boom', frames: [], causes: [], sections: [], timestamp: 0 } as ErrorReport
 
@@ -100,33 +102,20 @@ describe('createErrorReport', () => {
 })
 
 describe('forwarding channel', () => {
-  it('posts log entries to the owning dev server', async () => {
+  it('posts log entries and build progress to the owning dev server', async () => {
     process.env[ERROR_CHANNEL_ENV] = '/__nuxt_dev__/error'
     const received: any[] = []
     const listener = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
     listener.onmessage = event => received.push(event.data)
 
     await publishDevLog({ level: 'warn', text: 'careful' })
-    await vi.waitFor(() => expect(received.some(message => message.type === 'nuxt:dev:error:log')).toBe(true))
-
-    const logged = received.find(message => message.type === 'nuxt:dev:error:log')
-    expect(logged.entry).toMatchObject({ level: 'warn', text: 'careful' })
-    expect(typeof logged.entry.timestamp).toBe('number')
-
-    listener.close()
-    ;(await useErrorChannel()).close()
-  })
-
-  it('posts build progress to the owning dev server', async () => {
-    process.env[ERROR_CHANNEL_ENV] = '/__nuxt_dev__/error'
-    const received: any[] = []
-    const listener = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
-    listener.onmessage = event => received.push(event.data)
-
     await publishDevProgress({ phase: 'transform', message: 'Rebuilding' })
-    await vi.waitFor(() => expect(received.some(message => message.type === 'nuxt:dev:error:progress')).toBe(true))
+    await vi.waitFor(() => expect(received).toHaveLength(2))
 
-    expect(received.find(message => message.type === 'nuxt:dev:error:progress').progress).toEqual({ phase: 'transform', message: 'Rebuilding' })
+    expect(received).toEqual([
+      { type: 'nuxt:dev:error:log', entry: { level: 'warn', text: 'careful', timestamp: expect.any(Number) } },
+      { type: 'nuxt:dev:error:progress', progress: { phase: 'transform', message: 'Rebuilding' } },
+    ])
 
     listener.close()
     ;(await useErrorChannel()).close()
@@ -155,5 +144,92 @@ describe('forwarding channel', () => {
 
     listener.close()
     channel.close()
+  })
+
+  it('retires only the reports published for a path once it renders', async () => {
+    process.env[ERROR_CHANNEL_ENV] = '/__nuxt_dev__/error'
+    const received: Array<{ type: string, id?: string }> = []
+    const listener = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
+    listener.onmessage = event => received.push(event.data)
+    const eventFor = (path: string, method = 'GET') => ({ req: { method, headers: new Headers() }, url: new URL(path, 'http://localhost') }) as any
+
+    await publishErrorReport({ ...report, id: 'tab-a' }, eventFor('/a'))
+    await publishErrorReport({ ...report, id: 'tab-a' }, eventFor('/a', 'POST'))
+    await publishErrorReport({ ...report, id: 'tab-b' }, eventFor('/b'))
+    await publishErrorReport({ ...report, id: 'unscoped' })
+    await clearErrorReport(new URL('http://localhost/a'))
+    await clearErrorReport(new URL('http://localhost/a'))
+    await vi.waitFor(() => expect(received).toHaveLength(6))
+
+    expect(received.filter(message => message.type === 'nuxt:dev:error:clear')).toEqual([
+      { type: 'nuxt:dev:error:clear', id: 'tab-a', request: 'GET /a' },
+      { type: 'nuxt:dev:error:clear', id: 'tab-a', request: 'POST /a' },
+    ])
+
+    listener.close()
+    ;(await useErrorChannel()).close()
+  })
+})
+
+describe('warnings', () => {
+  const warning = { ...report, id: 'warning', kind: 'warning' } as ErrorReport
+
+  it('posts warnings and their retirement to the owning dev server', async () => {
+    process.env[ERROR_CHANNEL_ENV] = '/__nuxt_dev__/error'
+    const received: unknown[] = []
+    const listener = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
+    listener.onmessage = event => received.push(event.data)
+
+    const channel = await useErrorChannel()
+    channel.warn(warning)
+    channel.clearWarning('warning')
+    await vi.waitFor(() => expect(received).toEqual([
+      { type: 'nuxt:dev:error:warning', report: warning },
+      { type: 'nuxt:dev:error:warning:clear', id: 'warning' },
+    ]))
+
+    listener.close()
+    channel.close()
+  })
+
+  it('retires a warning another thread published once it is fixed', async () => {
+    const channel = await useErrorChannel()
+    const thread = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
+
+    thread.postMessage({ type: 'nuxt:dev:error:warning', report: warning })
+    await vi.waitFor(() => expect(channel.history.map(entry => entry.id)).toEqual(['warning']))
+    thread.postMessage({ type: 'nuxt:dev:error:warning:clear', id: 'warning' })
+    await vi.waitFor(() => expect(channel.history).toEqual([]))
+
+    thread.close()
+    channel.close()
+  })
+})
+
+describe('renderDevBadge', () => {
+  const render = (headers: Record<string, string> = {}) => renderDevBadge({ req: { headers: new Headers(headers) } } as any)
+  const requestIdOf = (html: string) => /__NUXT_DEV_ERROR__=\{"requestId":"([^"]+)"\}/.exec(html)?.[1]
+
+  it('renders the badge for the request the page was rendered for', async () => {
+    const html = await render({ 'x-nuxt-dev-request-id': '42' })
+
+    expect(requestIdOf(html)).toBe('42')
+    expect(html).toContain('"requestId":"42"')
+    expect(html).toContain('"tag":"nuxt-error-overlay"')
+    expect(html).toContain('src="/__nuxt_dev__/error/badge.js?v=')
+  })
+
+  it('gives Vite DevTools a moment to take over the badge', async () => {
+    expect(await render()).toContain('"awaitHost":500')
+  })
+
+  it('identifies a page load the dev server in front did not name', async () => {
+    const [first, second] = await Promise.all([render(), render()])
+    expect(requestIdOf(first)).toBeTypeOf('string')
+    expect(requestIdOf(first)).not.toBe(requestIdOf(second))
+  })
+
+  it('escapes the request id it is given', async () => {
+    expect(await render({ 'x-nuxt-dev-request-id': '</script><script>alert(1)</script>' })).not.toContain('</script><script>alert(1)')
   })
 })

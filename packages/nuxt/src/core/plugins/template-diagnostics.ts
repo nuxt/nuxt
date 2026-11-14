@@ -17,13 +17,14 @@ export interface TemplateDiagnosticsOptions {
   displayPath?: (file: string) => string
   /** Whether a file is checked. Defaults to every file. */
   filter?: (file: string) => boolean
-  /** Called once for each new warning, until a compile of the file no longer raises it. */
-  onWarning?: (diagnostic: Diagnostic<unknown>) => void
-}
-
-interface FileState {
-  environments: Partial<Record<'client' | 'ssr', Set<string>>>
-  reported: Set<string>
+  /**
+   * Called once for each new warning, until a compile of the file no longer raises it. `id` names the
+   * finding by its file, code, params and place among identical findings, so it survives an edit that
+   * moves the finding, which is reported as a new warning and the resolution of the old one.
+   */
+  onWarning?: (diagnostic: Diagnostic<unknown>, id: string) => void
+  /** Called with the diagnostic and id `onWarning` received, once a compile of the file no longer raises it. */
+  onWarningResolved?: (diagnostic: Diagnostic<unknown>, id: string) => void
 }
 
 const NODE_ROOT = 0
@@ -44,12 +45,12 @@ const IDENTIFIER_RE = /^[$A-Z_][\w$]*$/i
  * A Vue compiler node transform that checks templates against what Nuxt knows about the app:
  * its page routes and its server components.
  *
- * Each file is checked once per compile and environment. A warning is printed when it first
- * appears in a file and forgotten once no environment raises it any more.
+ * Each file is checked once per compile. A warning is printed when it first appears in a file
+ * and forgotten once a compile of the file, for any environment, no longer raises it.
  */
-export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions = {}): { nodeTransform: NodeTransform } {
+export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions = {}): { nodeTransform: NodeTransform, forget: (path: string) => void } {
   const displayPath = options.displayPath ?? ((file: string) => file)
-  const files = new Map<string, FileState>()
+  const files = new Map<string, Map<string, [Diagnostic<unknown>, string]>>()
   const scripts = new WeakMap<RootNode, Map<string, string | undefined>>()
 
   const nodeTransform: NodeTransform = (node, context) => {
@@ -224,29 +225,40 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
     }
 
     visit(root.children)
-    return () => finalise(file, context.ssr ? 'ssr' : 'client', findings)
+    return () => finalise(file, findings)
   }
 
-  function finalise (file: string, environment: 'client' | 'ssr', findings: Finding[]) {
-    const state: FileState = files.get(file) ?? { environments: {}, reported: new Set() }
-    const keys = new Set<string>()
+  function finalise (file: string, findings: Finding[]) {
+    const reported = files.get(file) ?? new Map<string, [Diagnostic<unknown>, string]>()
+    const keyOf = ({ code, loc: { start }, params }: Finding) => `${code}:${start.offset}:${start.line}:${start.column}:${JSON.stringify(params)}`
+    const keys = new Set(findings.map(keyOf))
+    // ids of findings still raised, which a new finding must not take
+    const held = new Set([...reported].filter(([key]) => keys.has(key)).map(([, [, id]]) => id))
+    const occurrences = new Map<string, number>()
     for (const finding of findings) {
-      const key = `${finding.code}:${finding.loc.start.offset}:${JSON.stringify(finding.params)}`
-      keys.add(key)
-      if (!state.reported.has(key)) {
-        state.reported.add(key)
+      const key = keyOf(finding)
+      const identity = `${file}:${finding.code}:${JSON.stringify(finding.params)}`
+      let occurrence = occurrences.get(identity) ?? 0
+      occurrences.set(identity, occurrence + 1)
+      if (!reported.has(key)) {
+        while (held.has(`${identity}:${occurrence}`)) {
+          occurrence++
+        }
         const diagnostic = report(finding, file)
-        options.onWarning?.(diagnostic)
+        const id = `${identity}:${occurrence}`
+        held.add(id)
+        reported.set(key, [diagnostic, id])
+        options.onWarning?.(diagnostic, id)
       }
     }
-    state.environments[environment] = keys
-    for (const key of state.reported) {
-      if (!state.environments.client?.has(key) && !state.environments.ssr?.has(key)) {
-        state.reported.delete(key)
+    for (const [key, [diagnostic, id]] of reported) {
+      if (!keys.has(key)) {
+        reported.delete(key)
+        options.onWarningResolved?.(diagnostic, id)
       }
     }
-    if (state.reported.size) {
-      files.set(file, state)
+    if (reported.size) {
+      files.set(file, reported)
     } else {
       files.delete(file)
     }
@@ -265,7 +277,17 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
     return diagnostic
   }
 
-  return { nodeTransform }
+  /** Resolve the findings of `path`, and of every file under it, once it is deleted. */
+  const forget = (path: string) => {
+    const dir = path.endsWith('/') ? path : `${path}/`
+    for (const file of [...files.keys()]) {
+      if (file === path || file.startsWith(dir)) {
+        finalise(file, [])
+      }
+    }
+  }
+
+  return { nodeTransform, forget }
 }
 
 interface EstreeLike {

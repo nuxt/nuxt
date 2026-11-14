@@ -44,7 +44,7 @@ async function renderIndex (outputDir: string) {
 
 // the inline style extracted from the fixture's scoped `<style>` block
 const INLINE_STYLE_RE = /<style[^>]*>[^<]*color\s*:\s*red/
-const STYLESHEET_LINK_RE = /<link[^>]+rel="stylesheet"/
+const STYLESHEET_LINK_RE = /<link(?![^>]*\sdisabled[\s>])[^>]+rel="stylesheet"/
 
 describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
   const workspaceDir = await findWorkspaceDir()
@@ -146,6 +146,40 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     expect(buildDoneFired).toBe(true)
   })
 
+  it('should reuse the restored ssr build until its nitro inputs change', async () => {
+    const rootDir = join(tmpDir, 'project')
+    // as after `nuxt prepare`, so that every build uses the same `buildDir`
+    await mkdir(join(rootDir, '.nuxt'))
+    let buildDir = ''
+
+    async function buildEnvironments (preset: string) {
+      const built: string[] = []
+      const nuxt = await loadNuxt({
+        cwd: rootDir,
+        overrides: {
+          experimental: { buildCache: true },
+          dev: false,
+          workspaceDir: tmpDir,
+          nitro: { preset },
+          vite: { plugins: [{ name: 'record-builds', buildStart () { built.push(this.environment.name) } }] },
+        },
+      })
+      buildDir = nuxt.options.buildDir
+      await build(nuxt)
+      return built
+    }
+
+    expect(await buildEnvironments('node-server')).toContain('ssr')
+    await rm(buildDir, { recursive: true, force: true })
+    await rm(join(rootDir, '.output'), { recursive: true, force: true })
+
+    expect(await buildEnvironments('node-server')).not.toContain('ssr')
+    expect(await renderIndex(join(rootDir, '.output'))).toContain('hello')
+
+    // the preset changes the ssr resolve conditions, but not the cache key
+    expect(await buildEnvironments('cloudflare-module')).toContain('ssr')
+  })
+
   it('should restore build outputs on cache hit', async () => {
     const rootDir = join(tmpDir, 'project')
     await writeFile(join(rootDir, 'app.vue'), '<template><div class="box">hello</div></template><style scoped>.box { color: red }</style>')
@@ -242,6 +276,40 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     const html = await renderIndex(outputDir)
     expect(html).toMatch(INLINE_STYLE_RE)
     expect(html).toBe(expectedHtml)
+  })
+
+  it('should restore files with names longer than 100 bytes', { timeout: 300_000 }, async () => {
+    const rootDir = join(tmpDir, 'project')
+    const outputDir = join(rootDir, '.output')
+    await writeFile(join(rootDir, 'app.vue'), '<template><NuxtPage /></template>')
+    await mkdir(join(rootDir, 'pages'), { recursive: true })
+    await writeFile(join(rootDir, 'pages/index.vue'), '<template><div class="box">hello</div></template>')
+    const longPageName = 'very-long-name-'.repeat(9) + 'page'
+    await writeFile(join(rootDir, `pages/${longPageName}.vue`), '<template><div>long</div></template>')
+
+    const overrides = {
+      buildId: 'long-names-1',
+      experimental: { buildCache: true, nitroViteEnvironment: false },
+      dev: false,
+      workspaceDir: tmpDir,
+    }
+
+    const nuxt1 = await loadNuxt({ cwd: rootDir, overrides })
+    await build(nuxt1)
+    const expectedHtml = await renderIndex(outputDir)
+    expect(expectedHtml).toContain('hello')
+
+    await rm(outputDir, { recursive: true, force: true })
+    await rm(nuxt1.options.buildDir, { recursive: true, force: true })
+
+    const nuxt2 = await loadNuxt({
+      cwd: rootDir,
+      overrides: { ...overrides, buildId: 'long-names-2' },
+    })
+    expect(nuxt2.options.buildId).toBe('long-names-1')
+    await build(nuxt2)
+
+    expect(await renderIndex(outputDir)).toBe(expectedHtml)
   })
 
   it('should drop links to inlined page styles on cache hit', { timeout: 300_000 }, async () => {

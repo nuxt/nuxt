@@ -2,42 +2,22 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { logger, useLogger } from '../src/logger.ts'
 
-describe('logger', () => {
-  it('should expose consola', () => {
-    expect(logger).toBeDefined()
-    expect(logger.create).toBeDefined()
-    expect(logger.withTag).toBeDefined()
-  })
-})
-
 describe('useLogger', () => {
   it('should expose logger when not passing a tag', () => {
     expect(useLogger()).toBe(logger)
   })
 
-  it('should create a new instance when passing a tag', () => {
-    const mockWithTag = vi.fn().mockReturnValue({})
-    const mockInstance = { withTag: mockWithTag }
-    const createSpy = vi.spyOn(logger, 'create').mockReturnValue(mockInstance as any)
+  it.each([
+    [undefined, {}],
+    [{ level: 0 }, { level: 0 }],
+  ])('should create a tagged instance with options %j', (options, expected) => {
+    const withTag = vi.fn().mockReturnValue({})
+    const create = vi.spyOn(logger, 'create').mockReturnValue({ withTag } as any)
 
-    useLogger('tag')
+    useLogger('tag', options)
 
-    expect(createSpy).toHaveBeenCalledWith({})
-    expect(mockWithTag).toHaveBeenCalledWith('tag')
-
-    createSpy.mockRestore()
-  })
-
-  it('should create a new instance when passing a tag and options', () => {
-    const mockWithTag = vi.fn().mockReturnValue({})
-    const mockInstance = { withTag: mockWithTag }
-    const createSpy = vi.spyOn(logger, 'create').mockReturnValue(mockInstance as any)
-
-    useLogger('tag', { level: 0 })
-
-    expect(createSpy).toHaveBeenCalledWith({ level: 0 })
-    expect(mockWithTag).toHaveBeenCalledWith('tag')
-
-    createSpy.mockRestore()
+    expect(create).toHaveBeenCalledWith(expected)
+    expect(withTag).toHaveBeenCalledWith('tag')
+    create.mockRestore()
   })
 })

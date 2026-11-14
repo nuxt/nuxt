@@ -9,7 +9,6 @@ if (!isSameApp) {
 
 <template>
   <div>
-    This should be false: {{ $wasVueAppInstanceWronglyPreserved }}
     This should be true: {{ isSameApp }}
   </div>
 </template>

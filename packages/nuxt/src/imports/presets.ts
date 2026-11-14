@@ -1,4 +1,4 @@
-import type { InlinePreset } from 'unimport'
+import type { Import, InlinePreset } from 'unimport'
 import { defineUnimportPreset } from 'unimport'
 
 const commonPresets: InlinePreset[] = [
@@ -122,10 +122,14 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/runtime-hook',
   },
   {
-    imports: ['useHead', 'useHeadSafe', 'useServerHeadSafe', 'useServerHead', 'useSeoMeta', 'useServerSeoMeta', 'injectHead'],
+    imports: ['useHead', 'useHeadSafe', 'useSeoMeta', 'injectHead'],
     from: '#app/composables/head',
   },
 ]
+
+// TODO: remove in Nuxt 6, with `RemovedImportsPlugin` and `NUXT_B6006`
+/** Former auto-imports, reported when code still uses them without an import. */
+export const removedImports: Import[] = ['useServerHead', 'useServerHeadSafe', 'useServerSeoMeta'].map(name => ({ name, from: '#app' }))
 
 export const scriptsStubsPreset = {
   imports: [

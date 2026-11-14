@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { isSameOriginRequest } from '../src/utils/same-origin'
+import { isSameOriginRequest, resolveAllowedHosts } from '../src/utils/same-origin'
 
 function req (headers: Record<string, string | string[] | undefined>) {
   return { headers }
 }
+
+describe('resolveAllowedHosts', () => {
+  it('combines `devServer.allowedHosts` and `vite.server.allowedHosts`', () => {
+    expect(resolveAllowedHosts({ devServer: { allowedHosts: ['a.test'] }, vite: { server: { allowedHosts: ['b.test', 'a.test'] } } })).toEqual(['a.test', 'b.test'])
+  })
+
+  it('allows any host when either option is `true`', () => {
+    expect(resolveAllowedHosts({ devServer: { allowedHosts: ['a.test'] }, vite: { server: { allowedHosts: true } } })).toBe(true)
+    expect(resolveAllowedHosts({ devServer: { allowedHosts: true } })).toBe(true)
+  })
+})
 
 describe('isSameOriginRequest', () => {
   describe('with Sec-Fetch-Site present', () => {
@@ -47,6 +58,30 @@ describe('isSameOriginRequest', () => {
 
     it('rejects unparseable initiators', () => {
       expect(isSameOriginRequest(req({ origin: 'not a url', host: '192.168.0.31:3000' }))).toBe(false)
+    })
+  })
+
+  describe('Host allowlist', () => {
+    it('rejects a rebound hostname with Sec-Fetch-Site: same-origin', () => {
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', 'host': 'rebind.attacker.com:3000' }))).toBe(false)
+    })
+
+    it('rejects a rebound hostname whose Origin matches Host', () => {
+      expect(isSameOriginRequest(req({ origin: 'http://rebind.attacker.com:3000', host: 'rebind.attacker.com:3000' }))).toBe(false)
+    })
+
+    it('allows localhost subdomains and IP literals', () => {
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', 'host': 'app.localhost:3000' }))).toBe(true)
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', 'host': '192.168.0.31:3000' }))).toBe(true)
+      expect(isSameOriginRequest(req({ 'sec-fetch-site': 'same-origin', 'host': '[fe80::1]:3000' }))).toBe(true)
+    })
+
+    it('allows configured hosts', () => {
+      const headers = { 'sec-fetch-site': 'same-origin', 'host': 'my-machine.lan:3000' }
+      expect(isSameOriginRequest(req(headers), ['my-machine.lan'])).toBe(true)
+      expect(isSameOriginRequest(req(headers), ['.lan'])).toBe(true)
+      expect(isSameOriginRequest(req(headers), ['other.lan'])).toBe(false)
+      expect(isSameOriginRequest(req(headers), true)).toBe(true)
     })
   })
 

@@ -34,12 +34,12 @@ import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
-import type { NuxtAppConfig, NuxtOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
+import type { NuxtAppConfig, NuxtOptions, RsbuildOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
 import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
-import type { DevServerHandler, NitroConfig, PrerenderOptions, ResolveNuxtNitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
+import type { DevServerHandler, NitroConfig, PrerenderOptions, RendererPluginEntry, ResolveNuxtNitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
 
 export interface ConfigSchema {
   /**
@@ -47,14 +47,14 @@ export interface ConfigSchema {
    *
    * Any components in the directories configured here can be used throughout your pages, layouts (and other components) without needing to explicitly import them.
    *
-   * @see [`components/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/components)
+   * @see [`components/` directory documentation](https://nuxt.com/docs/5.x/directory-structure/app/components)
    */
   components: boolean | ComponentsOptions | ComponentsOptions['dirs']
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
    *
-   * @see [Nuxt documentation](https://nuxt.com/docs/4.x/directory-structure/app/composables)
+   * @see [Nuxt documentation](https://nuxt.com/docs/5.x/directory-structure/app/composables)
    */
   imports: ImportsOptions
 
@@ -89,7 +89,7 @@ export interface ConfigSchema {
    *
    * Breaking changes for devtools might not reflect on the version of Nuxt.
    *
-   * @see  [Nuxt DevTools](https://devtools.nuxt.com/) for more information.
+   * @see  [Nuxt DevTools](https://nuxt.com/modules/devtools) for more information.
    */
   devtools: boolean | { enabled: boolean, [key: string]: any }
 
@@ -259,10 +259,10 @@ export interface ConfigSchema {
     /**
      * Default values for view transitions.
      *
-     * This only has an effect when **experimental** support for View Transitions is [enabled in your nuxt.config file](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental).
+     * This only has an effect when **experimental** support for View Transitions is [enabled in your nuxt.config file](https://nuxt.com/docs/5.x/getting-started/transitions#view-transitions-api-experimental).
      * This can be overridden with `definePageMeta` on an individual page.
      *
-     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/4.x/getting-started/transitions#view-transitions-api-experimental)
+     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/5.x/getting-started/transitions#view-transitions-api-experimental)
      */
     viewTransition: NuxtAppConfig['viewTransition']
 
@@ -386,7 +386,7 @@ export interface ConfigSchema {
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
    *
-   * @see [`plugins/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/app/plugins)
+   * @see [`plugins/` directory documentation](https://nuxt.com/docs/5.x/directory-structure/app/plugins)
    *
    * @example
    * ```js
@@ -454,7 +454,7 @@ export interface ConfigSchema {
    * The builder to use for bundling the Vue part of your application.
    *
    */
-  builder: 'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: Nuxt) => Promise<void> }
+  builder: 'vite' | 'webpack' | 'rsbuild' | 'rspack' | { bundle: (nuxt: Nuxt) => Promise<void> }
 
   /**
    * Configures whether and how sourcemaps are generated for server and/or client bundles.
@@ -507,6 +507,8 @@ export interface ConfigSchema {
      * Nuxt allows visualizing your bundles and how to optimize them.
      *
      * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
+     *
+     * With the Rsbuild builder, Nuxt writes an [Rsdoctor](https://rsdoctor.rs) report to `filename` unless `enabled` is `false`, and ignores the other options.
      *
      * @example
      * ```js
@@ -1024,6 +1026,15 @@ export interface ConfigSchema {
     host: string | undefined
 
     /**
+     * Hostnames the dev server accepts in the `Host` header, in addition to `localhost`, `*.localhost` and IP addresses.
+     *
+     * An entry with a leading `.` also allows its subdomains. Set to `true` to allow any host.
+     *
+     * Includes `devServer.host` and `vite.server.allowedHosts`.
+     */
+    allowedHosts: string[] | true
+
+    /**
      * Listening dev server URL.
      *
      * This should not be set directly as it will always be overridden by the dev server with the full URL (for module and internal use).
@@ -1038,8 +1049,9 @@ export interface ConfigSchema {
     /**
      * Base path of the live error channel served in development.
      *
-     * Error pages and overlays subscribe to it to update in place, dismiss
-     * themselves when the problem is fixed, and open a frame in the editor.
+     * Every page subscribes to it to show errors and warnings as they arrive,
+     * dismiss them when the problem is fixed, and open a frame in the editor.
+     * It also serves the overlay's scripts.
      *
      * @experimental
      */
@@ -1243,9 +1255,24 @@ export interface ConfigSchema {
      * `hashMode`, with a root-level catch-all page, and when a custom `app/router.options`
      * file may modify `routes`.
      *
+     * Enabled by `experimental.staticRoutes` unless set explicitly.
+     *
      * @default false
      */
     early404: boolean
+
+    /**
+     * Treat the page routes as fixed once the app is built.
+     *
+     * With this option the route table cannot change at runtime: `router.addRoute()`,
+     * `router.removeRoute()` and `router.clearRoutes()` throw, and are removed from the type
+     * of the router returned by `useRouter()`. In exchange the server builds the route matcher
+     * once per distinct `routes` array instead of once per request, and `experimental.early404`
+     * is enabled.
+     *
+     * @default false
+     */
+    staticRoutes: boolean
 
     /**
      * Warn at build time about template mistakes the Vue compiler cannot detect:
@@ -1255,8 +1282,8 @@ export interface ConfigSchema {
      * - a function or class instance passed as a prop to a server component, or in the `props`
      *   of a `<NuxtIsland>`
      *
-     * Warnings are printed to the terminal and, in development, sent to open error pages and
-     * overlays.
+     * Warnings are printed to the terminal and, in development, shown on every open page until
+     * fixed.
      *
      * The route check cannot see routes added at runtime with `router.addRoute()` or paths
      * that route middleware redirects, and is skipped when a custom `app/router.options` file
@@ -1269,9 +1296,23 @@ export interface ConfigSchema {
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
+     * @deprecated Use `<NuxtErrorBoundary retry-on-client>` instead, which catches server-side errors
+     * (see `experimental.ssrErrorBoundary`) and re-renders its default slot on the client.
      * @default false
      */
     clientFallback: boolean
+
+    /**
+     * Allow `<NuxtErrorBoundary>` to catch errors thrown while server-rendering its default slot.
+     *
+     * When enabled, the boundary renders its `#error` slot on the server (with the caught error
+     * serialised into the payload so the client hydrates in the same state) instead of the error
+     * escaping to the top-level `error.vue` page. When disabled, the boundary only catches
+     * client-side errors, and a server-rendered page whose content throws still shows the error page.
+     *
+     * @default true (with `future.compatibilityVersion: 5`)
+     */
+    ssrErrorBoundary: boolean
 
     /**
      * Enable cross-origin prefetch using the Speculation Rules API.
@@ -1279,6 +1320,13 @@ export interface ConfigSchema {
      * @default false
      */
     crossOriginPrefetch: boolean
+
+    /**
+     * Whether to render `<link rel="prefetch">` hints inert and activate them once the app is ready, so they do not compete with the page's own resources while it loads.
+     *
+     * @default true
+     */
+    deferPrefetchHints: boolean
 
     /**
      * Enable View Transition API integration with client-side router.
@@ -1767,6 +1815,13 @@ export interface ConfigSchema {
     compileHints: boolean
 
     /**
+     * Whether to bundle the static dependencies of the layout into a single chunk in the Vite client build, when the app has exactly one layout.
+     *
+     * @default true
+     */
+    layoutChunk: boolean
+
+    /**
      * Extract async data handler functions into separate chunks for better performance and caching.
      *
      * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted
@@ -1972,6 +2027,13 @@ export interface ConfigSchema {
   _noScriptsPageSources: Array<string>
 
   /**
+   * Sources of the pages that are only rendered on the client (`ssr: false` route rules), relative to `srcDir`.
+   *
+   * @private
+   */
+  _spaOnlyPageSources: Array<string>
+
+  /**
    * Configuration for Nuxt's server builder.
    *
    * `'nitro'` and `'vite'` are shorthands for `'@nuxt/nitro-server'` (a full server
@@ -2012,7 +2074,7 @@ export interface ConfigSchema {
    * Each handler accepts the following options:
    * - handler: The path to the file defining the handler. - route: The route under which the handler is available. This follows the conventions of [rou3](https://github.com/h3js/rou3). - method: The HTTP method of requests that should be handled. - middleware: Specifies whether it is a middleware handler. - lazy: Specifies whether to use lazy loading to import the handler.
    *
-   * @see [`server/` directory documentation](https://nuxt.com/docs/4.x/directory-structure/server)
+   * @see [`server/` directory documentation](https://nuxt.com/docs/5.x/directory-structure/server)
    *
    * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
    *
@@ -2039,6 +2101,14 @@ export interface ConfigSchema {
    * @private
    */
   _serverPlugins: ServerPlugin[]
+
+  /**
+   * Plugins registered with the SSR renderer through `addRendererPlugin()`, which each
+   * renderer calls once, before it renders, with its hooks.
+   *
+   * @private
+   */
+  _rendererPlugins: RendererPluginEntry[]
 
   /**
    * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
@@ -2098,7 +2168,7 @@ export interface ConfigSchema {
      * By default Nuxt infers this based on your `builder` option (defaulting to 'vite') but you can either turn off builder environment types (with `false`) to handle this fully yourself, or opt for a 'shared' option.
      * The 'shared' option is advised for module authors, who will want to support multiple possible builders.
      */
-    builder: 'vite' | 'webpack' | 'rspack' | 'shared' | false | undefined | null
+    builder: 'vite' | 'webpack' | 'rsbuild' | 'rspack' | 'shared' | false | undefined | null
 
     /**
      * Modules to generate deep aliases for within `compilerOptions.paths`. This does not yet support subpaths. It may be necessary when using Nuxt within a pnpm monorepo with `shamefully-hoist=false`.
@@ -2111,13 +2181,15 @@ export interface ConfigSchema {
     includeWorkspace: boolean
 
     /**
-     * Enable build-time type checking.
+     * Enable type checking.
      *
-     * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`. Requires to install `typescript` and `vue-tsc` as dev dependencies.
+     * If set to true, this will type check in development and at build time.
+     * Set to `build` to type check only when building, or `dev` to type check only in the dev server.
+     * Requires installing `typescript` and `vue-tsc` as dev dependencies.
      *
-     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/4.x/guide/concepts/typescript)
+     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/5.x/guide/concepts/typescript)
      */
-    typeCheck: boolean | 'build'
+    typeCheck: boolean | 'build' | 'dev'
 
     /**
      * Extend the generated tsconfig files with shared options.
@@ -2179,6 +2251,16 @@ export interface ConfigSchema {
    * Please note that not all vite options are supported in Nuxt.
    */
   vite: ViteOptions
+
+  /**
+   * Configuration that will be merged into the Rsbuild configuration generated by Nuxt, when using the Rsbuild builder.
+   *
+   * The client and server builds can be configured separately with `environments.client` and `environments.ssr`.
+   *
+   * @see [Rsbuild configuration docs](https://rsbuild.rs/config/) for more information.
+   * Please note that not all Rsbuild options are supported in Nuxt.
+   */
+  rsbuild: RsbuildOptions
 
   webpack: {
   /**

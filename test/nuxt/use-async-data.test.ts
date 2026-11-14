@@ -114,7 +114,7 @@ describe('useAsyncData', () => {
   })
 
   it('should throw TypeError when key is empty', () => {
-    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot(`[NUXT_E3008: https://nuxt.com/docs/4.x/errors/e3008]`)
+    expect(() => useAsyncData('', () => Promise.resolve('test'))).toThrowErrorMatchingInlineSnapshot(`[NUXT_E3008: https://nuxt.com/docs/5.x/errors/e3008]`)
   })
 
   it('should keep promise methods after destructuring', async () => {
@@ -473,6 +473,26 @@ describe('useAsyncData', () => {
     number.value = 1
     await flushPromises()
     expect(data.value).toBe('watch')
+  })
+
+  it('should not serve extracted payload data to a watch-triggered refresh', async () => {
+    const nuxtApp = useNuxtApp()
+    const locale = ref('en')
+    const handler = vi.fn(() => Promise.resolve(`data-${locale.value}`))
+
+    const { data } = await useAsyncData(uniqueKey, handler, { watch: [locale] })
+    expect(data.value).toBe('data-en')
+
+    nuxtApp.static.data[uniqueKey] = 'stale-from-extracted-payload'
+
+    locale.value = 'fr'
+    await nextTick()
+    await flushPromises()
+
+    expect(handler).toHaveBeenCalledTimes(2)
+    expect(data.value).toBe('data-fr')
+
+    delete nuxtApp.static.data[uniqueKey]
   })
 
   it('should use default while pending', async () => {
@@ -1530,6 +1550,20 @@ describe('useAsyncData', () => {
     await flushPromises()
     expect(status.value).toBe('idle')
     vi.useRealTimers()
+  })
+
+  it('should settle execute() when the request is aborted by an external signal', async () => {
+    const controller = new AbortController()
+    const { execute, status } = useAsyncData(uniqueKey, () => new Promise(resolve => setTimeout(() => resolve('value'), 1000)), { immediate: false })
+
+    const promise = execute({ signal: controller.signal })
+    controller.abort(new DOMException('Aborted', 'AbortError'))
+
+    await Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('execute() never settled')), 500)),
+    ])
+    expect(status.value).toBe('idle')
   })
 
   it('should be cancellable via abort', async () => {

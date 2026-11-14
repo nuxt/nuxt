@@ -8,3 +8,4 @@
  */
 export * from '../../server/index'
 export { resolveServerFetchInit } from '../../server/fetch'
+export { claimServerHooks } from '../../server/hooks'

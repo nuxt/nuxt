@@ -3,7 +3,9 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { gzipSync } from 'node:zlib'
 import { quietEnv, run } from '../lib/proc.ts'
-import { compareHeaders, compareRow, formatBytes, formatDelta, formatMs, markdownTable, summarise } from '../lib/stats.ts'
+import type { Metric } from '../lib/report.ts'
+import { exact, timing } from '../lib/report.ts'
+import { compareHeaders, compareRow, formatBytes, formatDelta, formatMs, markdownTable } from '../lib/stats.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
 import { fixtureDir, interleave } from '../lib/suite.ts'
 import { clearBuildCache } from '../lib/targets.ts'
@@ -57,7 +59,7 @@ const sizeRows: [keyof OutputSizes, string][] = [
 export async function buildSuite ({ targets, fixtures, reps, log }: SuiteContext): Promise<SuiteResult> {
   const timeRows: string[][] = []
   const outputRows: string[][] = []
-  const headline: string[][] = []
+  const headline: Metric[] = []
   const data: Record<string, unknown> = {}
 
   for (const fixture of fixtures) {
@@ -70,16 +72,17 @@ export async function buildSuite ({ targets, fixtures, reps, log }: SuiteContext
     }, 0)
     const [baseline, head] = targets.map(target => samples.get(target)!) as [number[], number[]]
     timeRows.push(compareRow(fixture.id, baseline, head))
-    const a = summarise(baseline).median
-    const b = summarise(head).median
-    headline.push([`\`nuxt build\` (${fixture.id})`, formatMs(a), formatMs(b), formatDelta(a, b)])
+    headline.push(timing(`\`nuxt build\` (${fixture.id})`, baseline, head, formatMs))
 
     const [baselineSizes, headSizes] = targets.map(target => outputSizes(fixtureDir(target, fixture))) as [OutputSizes, OutputSizes]
     for (const [key, label] of sizeRows) {
       const format = key === 'clientJsFiles' ? String : formatBytes
       outputRows.push([`${fixture.id} / ${label}`, format(baselineSizes[key]), format(headSizes[key]), formatDelta(baselineSizes[key], headSizes[key])])
     }
-    headline.push([`client JS, gzip (${fixture.id})`, formatBytes(baselineSizes.clientJsGzip), formatBytes(headSizes.clientJsGzip), formatDelta(baselineSizes.clientJsGzip, headSizes.clientJsGzip)])
+    headline.push(
+      exact(`client JS, gzip (${fixture.id})`, baselineSizes.clientJsGzip, headSizes.clientJsGzip, formatBytes),
+      exact(`server output, excluding \`node_modules\` (${fixture.id})`, baselineSizes.server, headSizes.server, formatBytes, { threshold: 0.01 }),
+    )
     data[fixture.id] = { baseline: { wall: baseline, sizes: baselineSizes }, head: { wall: head, sizes: headSizes } }
   }
 

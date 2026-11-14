@@ -34,8 +34,8 @@ export default withMatrix({
     './modules/test',
     '~~/modules/example',
     function (_, nuxt) {
-      // Virtual CSS modules only work with Vite, not with webpack/rspack
-      if (typeof nuxt.options.builder === 'string' && (nuxt.options.builder.includes('webpack') || nuxt.options.builder.includes('rspack'))) { return }
+      // Virtual CSS modules only work with Vite, not with webpack/rspack/rsbuild
+      if (typeof nuxt.options.builder === 'string' && (nuxt.options.builder.includes('webpack') || nuxt.options.builder.includes('rspack') || nuxt.options.builder.includes('rsbuild'))) { return }
 
       nuxt.options.css.push('virtual.css')
       nuxt.options.build.transpile.push('virtual.css')
@@ -194,10 +194,11 @@ export default withMatrix({
       '/route-rules/spa': { ssr: false },
       '/route-rules/spa-async-data': { ssr: false },
       '/redirect/catchall': { ssr: false },
-      '/head-spa': { ssr: false },
+      '/catchall/route-rules/**': { appLayout: 'custom', headers: { 'x-catchall-route-rules': 'applied' } },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       // Decoded key must still apply to the percent-encoded path generated for the page.
       '/route-rules/测试': { appMiddleware: 'route-rules-middleware' },
+      '/route-rules/constrained/:slug(cafe|tea)': { appMiddleware: 'route-rules-middleware' },
       '/route-rules/layout': { appLayout: 'custom' },
       '/spa-plugin-redirect/**': { ssr: false },
       '/no-scripts': { noScripts: true },
@@ -205,7 +206,6 @@ export default withMatrix({
       '/route-rules/redirect': { redirect: '/' },
       '/route-rules/old/**': { redirect: '/new/**' },
       '/isr': { isr: 60 },
-      '/route-rules/isr-spa': { isr: 60, ssr: false },
       '/route-rules/swr-in-spa/**': { ssr: false },
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
       '/payload-query': { cache: { swr: true, maxAge: 60, allowQuery: true } },
@@ -248,6 +248,13 @@ export default withMatrix({
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
+    'rsbuild:config' (config) {
+      const output = config.environments?.ssr?.output
+      if (output?.distPath && typeof output.distPath === 'object') {
+        output.distPath.root += '-rsbuild'
+        output.filename = { ...output.filename, js: () => '[name].ssr.mjs' }
+      }
+    },
     'webpack:config' (configs) {
       // in order to test bigint serialization we need to set target to a more modern one
       for (const config of configs) {

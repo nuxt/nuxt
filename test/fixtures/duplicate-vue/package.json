@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-duplicate-vue",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*",
+    "vue": "catalog:app-runtime"
+  },
+  "engines": {
+    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
+  }
+}

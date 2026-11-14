@@ -1,9 +1,72 @@
-import type { NitroInstance, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
+import type { NitroInstance, Nuxt, NuxtPage, RouteRuleConfig } from 'nuxt/schema'
+import { relative } from 'pathe'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
-import { createRouteRulesRouter } from '../core/utils/route-rules.ts'
+import { pageDiagnostics } from '@nuxt/kit/internal'
+import { createRouteRulesRouter, encodeRoutePattern } from '../core/utils/route-rules.ts'
 import { toArray } from '../utils.ts'
+
+/**
+ * Find the pages that `noScripts` or `ssr: false` route rules restrict to a single environment,
+ * and record their source files in `nuxt.options._noScriptsPageSources` and
+ * `nuxt.options._spaOnlyPageSources`.
+ */
+export function markPagesForRouteRules (nuxt: Nuxt, pages: NuxtPage[], nitro: NitroInstance | undefined) {
+  const restrictedPages = new Map<NuxtPage, 'noScripts' | 'spaOnly'>()
+  if (!nitro) { return restrictedPages }
+
+  markPagesCoveredByRouteRule(pages, nitro, {
+    isCovered: rules => !!rules.noScripts,
+    mark: (page, covered) => {
+      if (covered) { restrictedPages.set(page, 'noScripts') }
+    },
+  })
+
+  // server components render on the server by definition, whatever `ssr` says
+  const conflicting: string[] = []
+  markPagesCoveredByRouteRule(pages, nitro, {
+    isCovered: rules => rules.ssr === false,
+    filter: page => page.mode !== 'server',
+    mark: (page, covered, resolvedPath) => {
+      if (!covered) { return }
+      if (restrictedPages.get(page) === 'noScripts') {
+        conflicting.push(resolvedPath)
+        return
+      }
+      restrictedPages.set(page, 'spaOnly')
+    },
+  })
+
+  if (conflicting.length) {
+    pageDiagnostics.NUXT_B4021({ paths: conflicting.map(path => `\`${path}\``).join(', ') })
+  }
+
+  nuxt.options._noScriptsPageSources = [...restrictedPages]
+    .filter(([page, stub]) => stub === 'noScripts' && page.file)
+    .map(([page]) => relative(nuxt.options.srcDir, page.file!))
+  // several routes can share a page file (`pages:extend`), so a file is only
+  // client-only when none of the routes using it is server-rendered
+  const getPageFiles = (page: NuxtPage) => [page.file, ...Object.values(page.components || {})]
+    .filter((file): file is string => !!file)
+  const ssrPageFiles = new Set<string>()
+  const collectSSRPageFiles = (pages: NuxtPage[]) => {
+    for (const page of pages) {
+      if (restrictedPages.get(page) !== 'spaOnly') {
+        for (const file of getPageFiles(page)) { ssrPageFiles.add(file) }
+      }
+      if (page.children?.length) { collectSSRPageFiles(page.children) }
+    }
+  }
+  collectSSRPageFiles(pages)
+  nuxt.options._spaOnlyPageSources = [...new Set([...restrictedPages]
+    .filter(([, stub]) => stub === 'spaOnly')
+    .flatMap(([page]) => getPageFiles(page))
+    .filter(file => !ssrPageFiles.has(file))
+    .map(file => relative(nuxt.options.srcDir, file)))]
+
+  return restrictedPages
+}
 
 const UNESCAPE_RE = /\\(.)/g
 
@@ -25,7 +88,7 @@ function createProbeSegment (routes: readonly { route: string }[]): string {
   return probe
 }
 
-const ROU3_PARAM_RE = /^:[\w-]+/
+const ROU3_PARAM_RE = /^:[A-Z_]\w*/i
 const ROU3_MODIFIER_RE = /^[?+*]/
 
 /** Length of the `(...)` group starting at `index`, or `0` if there is none. */
@@ -86,12 +149,6 @@ function patternToProbePath (pattern: string, probeSegment: string): string {
 }
 
 const TRAILING_SLASH_RE = /\/$/
-const ROUTE_ENCODE_RE = /[^\w!$%&'()*+,\-./:;=?@[\\\]^{|}~]/gu
-
-/** Percent-encode a route pattern the way h3 normalizes route rule keys, leaving existing escapes intact. */
-function encodeRoutePattern (pattern: string): string {
-  return pattern.replace(ROUTE_ENCODE_RE, encodeURIComponent)
-}
 
 export interface RouteRuleCoverageOptions {
   isCovered: (rules: RouteRuleConfig) => boolean

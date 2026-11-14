@@ -60,7 +60,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5017: {
       why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` could not be loaded: ${p.error}`,
-      fix: (p: { installCommand: string }) => `Relative imports need an explicit file extension (\`./foo.ts\`, not \`./foo\`), and TypeScript syntax that emits code (such as \`enum\`) cannot be stripped. Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
       docs: false,
     },
     NUXT_B5018: {
@@ -85,7 +85,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5023: {
       why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
-      fix: 'Loading it natively is faster, as jiti has to transform the file first. Relative imports need an explicit file extension, and `import.meta.dirname` replaces `__dirname`.',
+      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.`,
       docs: false,
     },
     NUXT_B5024: {
@@ -106,6 +106,34 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B5028: {
       why: 'A generated development secret is being used because `runtimeConfig.appSecret` is unset.',
       fix: 'Set `NUXT_APP_SECRET` in your `.env` to the output of `openssl rand -base64 32`. Builds do not generate a secret.',
+      docs: false,
+    },
+    NUXT_B5030: {
+      why: (p: { options: string }) => `These experimental options were removed in Nuxt 5 and are ignored: ${p.options}. The behaviour they controlled is no longer configurable.`,
+      fix: 'Remove them from `experimental` in your `nuxt.config`. See `https://nuxt.com/docs/5.x/getting-started/upgrade#removed-configuration-options`.',
+      docs: false,
+    },
+    NUXT_B5031: {
+      why: (p: { path: string, error?: string }) => `The schema for \`${p.path}\` cannot be converted to JSON Schema${p.error ? `: ${p.error}` : '.'}`,
+      fix: 'Use a schema that implements Standard JSON Schema (such as Zod or ArkType, or Valibot with `toStandardJsonSchema()`), without transforms.',
+    },
+    NUXT_B5032: {
+      why: (p: { issues: string }) => `The runtime config does not match its schema with the current environment:\n  - ${p.issues}`,
+      fix: 'Set the listed environment variables before starting the server, or update the schema or default value in `runtimeConfig`.',
+      docs: false,
+    },
+    NUXT_B5033: {
+      why: (p: { path: string }) => `\`${p.path}\` is a schema, but schemas can only be declared in \`nuxt.config\` or with \`updateRuntimeConfig()\`.`,
+      fix: 'In a module, pass the schema to `updateRuntimeConfig()` from `@nuxt/kit` instead of assigning it to `nuxt.options.runtimeConfig`. Report it to the module author if the module is not your own.',
+    },
+    NUXT_B5034: {
+      why: (p: { path: string }) => `The schema for \`${p.path}\` set by a module replaces one set by another module.`,
+      fix: 'Declare the schema in `nuxt.config` to choose one, or report the conflict to the module authors.',
+      docs: false,
+    },
+    NUXT_B5035: {
+      why: '`experimental.clientFallback` and `<NuxtClientFallback>` are deprecated: `<NuxtErrorBoundary>` now catches server-side errors and can retry on the client.',
+      fix: 'Replace `<NuxtClientFallback>` with `<NuxtErrorBoundary retry-on-client>`, moving fallback content into the `#error` slot (and dropping `retry-on-client` where you used `keep-fallback`). Make sure `experimental.ssrErrorBoundary` is enabled, then remove `experimental.clientFallback` from your `nuxt.config`.',
       docs: false,
     },
   },

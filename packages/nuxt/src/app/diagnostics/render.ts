@@ -97,6 +97,7 @@ export const renderDiagnostics = !import.meta.dev
         NUXT_E4018: {
           why: (p: { name: string, key: string }) => `Island \`${p.name}\` was sent a top-level \`${p.key}\` prop it does not declare. An undeclared prop falls through as an attribute onto the island's root, where a polymorphic component would use it to resolve which component to render, so the request was rejected.`,
           fix: (p: { key: string }) => `Declare \`${p.key}\` as a prop on the island, or set \`inheritAttrs: false\` so request input cannot reach the root element.`,
+          docs: false,
         },
         NUXT_E4019: {
           why: (p: { scopeId: string }) => `\`<NuxtIsland>\` was passed a \`scopeId\` prop that is not a Vue scope attribute (\`${p.scopeId}\`) and it was ignored. The value is inserted into the island's opening tag, so only \`data-v-\` attributes are accepted.`,
@@ -121,6 +122,16 @@ export const renderDiagnostics = !import.meta.dev
         NUXT_E4023: {
           why: (p: { name: string }) => `\`${p.name}\` is not a globally registered component, so preloading it did nothing. Only global components can be preloaded, as a local import is resolved by the component that imports it.`,
           fix: (p: { name: string }) => `Register \`${p.name}\` globally (\`components/global/\`, or \`global: true\` when adding it from a module), or remove the call.`,
+          docs: false,
+        },
+        NUXT_E4024: {
+          why: '`<NuxtErrorBoundary>` cannot catch server-side errors from a vapor slot child. Its content is not expressed as VNodes, so the boundary only catches client-side errors for this slot.',
+          fix: 'Wrap the content in a vdom component if you need server-side error handling.',
+          docs: false,
+        },
+        NUXT_E4025: {
+          why: '`<NuxtErrorBoundary>` caught an error during server-side rendering and rendered its `#error` slot instead of its default slot.',
+          fix: 'Fix the error thrown by the content of the boundary, or handle it with the `@error` event.',
           docs: false,
         },
       },

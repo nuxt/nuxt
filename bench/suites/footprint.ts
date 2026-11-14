@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { exact } from '../lib/report.ts'
 import { formatBytes, formatDelta, markdownTable } from '../lib/stats.ts'
 import type { SuiteContext, SuiteResult } from '../lib/suite.ts'
 import type { Target } from '../lib/targets.ts'
@@ -54,8 +55,9 @@ export function footprintSuite ({ targets, log }: SuiteContext): Promise<SuiteRe
   return Promise.resolve({
     markdown,
     headline: [
-      row('installed packages', baseline.packages, head.packages),
-      row('`node_modules` size', baseline.bytes, head.bytes, formatBytes),
+      exact('installed packages', baseline.packages, head.packages, String, { threshold: 0 }),
+      exact('`node_modules` size', baseline.bytes, head.bytes, formatBytes, { threshold: 0.01 }),
+      ...baseline.tarballs !== undefined && head.tarballs !== undefined ? [exact('packed tarballs', baseline.tarballs, head.tarballs, formatBytes, { threshold: 0.01 })] : [],
     ],
     data: { baseline, head },
   })

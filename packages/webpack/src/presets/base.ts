@@ -1,13 +1,12 @@
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { basename, dirname, normalize, resolve } from 'pathe'
+import { basename, dirname, resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
 import type { Configuration } from 'webpack'
 import { directoryToURL, logger } from '@nuxt/kit'
 import { DEFAULT_JS_FILE_EXTENSIONS, parseNodeModulePath } from '@nuxt/kit/internal'
-import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -16,6 +15,7 @@ import WarningIgnorePlugin from '../plugins/warning-ignore.ts'
 import { FriendlyErrorsPlugin } from '../plugins/friendly-errors.ts'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets, fileName } from '../utils/config.ts'
+import { getNuxtDefines, getTranspilePatterns, resolveVueRouterAlias } from '../utils/options.ts'
 import { RollupCompatDynamicImportPlugin } from '../plugins/rollup-compat-dynamic-import.ts'
 import { StripInvalidPureAnnotationsPlugin } from '../plugins/strip-invalid-pure-annotations.ts'
 
@@ -63,7 +63,7 @@ function baseConfig (ctx: WebpackConfigContext) {
       ...ctx.userConfig.experiments,
     },
     mode: ctx.isDev ? 'development' : 'production',
-    cache: getCache(ctx),
+    cache: ctx.isDev ? undefined : false,
     output: getOutput(ctx),
     stats: statsMap[ctx.nuxt.options.logLevel] ?? statsMap.info,
     ...ctx.config,
@@ -73,22 +73,16 @@ function baseConfig (ctx: WebpackConfigContext) {
 function basePlugins (ctx: WebpackConfigContext) {
   ctx.config.plugins ||= []
 
-  // Add timefix-plugin before other plugins
-  if (ctx.options.dev) {
-    if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
-      ctx.config.plugins.push(new TimeFixPlugin())
-    }
+  if (ctx.isDev && builder !== 'rspack') {
+    ctx.config.plugins.push(new TimeFixPlugin())
   }
 
-  // User plugins
   ctx.config.plugins.push(...(ctx.userConfig.plugins || []))
 
-  // Ignore empty warnings
-  if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
+  if (builder !== 'rspack') {
     ctx.config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
   }
 
-  // Provide env via DefinePlugin
   ctx.config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))
 
   if (ctx.isDev && (ctx.isServer || ctx.userConfig.friendlyErrors)) {
@@ -140,29 +134,11 @@ function basePlugins (ctx: WebpackConfigContext) {
   }
 }
 
-/**
- * Pin the packages that hold global vue state (`currentInstance`, reactivity
- * internals, injection keys) to a single resolved entry, mirroring vite's
- * `resolve.dedupe: ['vue']`.
- */
-function vueAliases (ctx: WebpackConfigContext): Record<string, string> {
-  const aliases: Record<string, string> = {}
-  const from = [directoryToURL(ctx.nuxt.options.rootDir), directoryToURL(ctx.nuxt.options.workspaceDir), import.meta.url]
-  const conditions = ctx.isServer ? ['node', 'import', 'default'] : ['browser', 'import', 'default']
-  for (const pkg of ['@vue/runtime-core', '@vue/runtime-dom', '@vue/reactivity', '@vue/shared', '@vue/runtime-vapor', 'vue-router']) {
-    const entry = resolveModulePath(pkg, { from, conditions, try: true })
-    if (entry) {
-      aliases[`${pkg}$`] = entry
-    }
-  }
-  return aliases
-}
-
 function baseAlias (ctx: WebpackConfigContext) {
   ctx.alias = {
     '#app': ctx.options.appDir,
     [basename(ctx.nuxt.options.dir.assets)]: resolve(ctx.nuxt.options.srcDir, ctx.nuxt.options.dir.assets),
-    ...vueAliases(ctx),
+    ...resolveVueRouterAlias(ctx.nuxt, ctx.isServer),
     ...ctx.options.alias,
     ...ctx.alias,
   }
@@ -248,48 +224,8 @@ function baseResolve (ctx: WebpackConfigContext) {
 }
 
 function baseTranspile (ctx: WebpackConfigContext) {
-  const transpile = [
-    /\.vue\.js/i, // include SFCs in node_modules
-    /consola\/src/,
-    /vue-demi/,
-    /(^|\/)nuxt\/(src\/|dist\/)?(app|[^/]+\/runtime)($|\/)/,
-  ]
-
-  for (let pattern of ctx.options.build.transpile) {
-    if (typeof pattern === 'function') {
-      const result = pattern(ctx)
-      if (result) { pattern = result }
-    }
-    if (typeof pattern === 'string') {
-      transpile.push(new RegExp(escapeRegExp(normalize(pattern))))
-    } else if (pattern instanceof RegExp) {
-      transpile.push(pattern)
-    }
-  }
-
-  // TODO: unique
-  ctx.transpile = [...transpile, ...ctx.transpile]
-}
-
-function getCache (ctx: WebpackConfigContext): Configuration['cache'] {
-  if (!ctx.options.dev) {
-    return false
-  }
-
-  // TODO: Disable for nuxt internal dev due to inconsistencies
-  // return {
-  //   name: ctx.name,
-  //   type: 'filesystem',
-  //   cacheDirectory: resolve(ctx.options.rootDir, 'node_modules/.cache/webpack'),
-  //   managedPaths: [
-  //     ...ctx.options.modulesDir
-  //   ],
-  //   buildDependencies: {
-  //     config: [
-  //       ...ctx.options._nuxtConfigFiles
-  //     ]
-  //   }
-  // }
+  // `.vue.js` includes SFCs in node_modules
+  ctx.transpile = [/\.vue\.js/i, ...getTranspilePatterns(ctx.nuxt, ctx), ...ctx.transpile]
 }
 
 function getOutput (ctx: WebpackConfigContext): Configuration['output'] {
@@ -316,33 +252,7 @@ function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
 function getEnv (ctx: WebpackConfigContext) {
   const _env: Record<string, string | boolean | InstanceType<typeof webpack.DefinePlugin>['definitions'][string]> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
-    '__NUXT_VERSION__': JSON.stringify(ctx.nuxt._version),
-    '__NUXT_ASYNC_CONTEXT__': ctx.options.experimental.asyncContext,
-    'process.env.VUE_ENV': JSON.stringify(ctx.name),
-    'process.dev': ctx.options.dev,
-    'process.test': ctx.nuxt.options.test,
-    'process.browser': ctx.isClient,
-    'process.client': ctx.isClient,
-    'process.server': ctx.isServer,
-    'import.meta.dev': ctx.options.dev,
-    'import.meta.test': ctx.nuxt.options.test,
-    'import.meta.browser': ctx.isClient,
-    'import.meta.client': ctx.isClient,
-    'import.meta.envName': JSON.stringify(ctx.options.envName),
-    'import.meta.server': ctx.isServer,
-  }
-
-  if (ctx.isClient) {
-    _env['process.prerender'] = false
-    _env['process.nitro'] = false
-    _env['import.meta.prerender'] = false
-    _env['import.meta.nitro'] = false
-  } else {
-    // wrap in an IIFE, forcing it to be evaluated at runtime
-    _env['process.prerender'] = '(()=>process.prerender)()'
-    _env['process.nitro'] = '(()=>process.nitro)()'
-    _env['import.meta.prerender'] = '(()=>import.meta.prerender)()'
-    _env['import.meta.nitro'] = '(()=>import.meta.nitro)()'
+    ...getNuxtDefines(ctx.nuxt, ctx.isServer ? 'server' : 'client'),
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {

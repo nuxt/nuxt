@@ -135,5 +135,20 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       why: (p: { tag: string, attribute: string, to: string, file: string }) => `\`<${p.tag} ${p.attribute}="${p.to}">\` in \`${p.file}\` does not match any page route.`,
       fix: 'Check the path for typos or add a page for it. To link to a server route, a file in `public/` or another site, set the `external` prop.',
     },
+    NUXT_B4026: {
+      why: (p: { route: string, part: string }) => `The route rule \`${p.route}\` has a regex constraint that depends on percent-encoding (\`${p.part}\`), so it cannot be matched the way it reads.`,
+      fix: 'Route rules are matched against the percent-encoded path, so a constraint can only match characters that are not encoded, such as `[a-z0-9-]+`, and cannot use a word boundary (`\\b` or `\\B`). To match any value, use a parameter without a constraint (such as `:slug`).',
+      docs: false,
+    },
+    NUXT_B4027: {
+      why: (p: { route: string }) => `The route rule \`${p.route}\` in \`routeRules\` has more than one \`*\`, \`**\`, \`:name+\` or \`:name*\`, and a route rule pattern can have only one.`,
+      fix: 'Keep one of them and replace the others with named parameters, for example `/:post/comments/**` instead of `/*/comments/**`. A single `*` now matches any number of segments.',
+      docs: false,
+    },
+    NUXT_B4028: {
+      why: (p: { name: string, path: string, file: string, existingPath: string, existingFile: string }) => `The route \`${p.path}\` (\`${p.file}\`) is named \`${p.name}\`, which is already used by \`${p.existingPath}\` (\`${p.existingFile}\`), so \`${p.existingPath}\` cannot be reached.`,
+      fix: 'Give each route a unique name, for example with `definePageMeta({ name })`.',
+      docs: false,
+    },
   },
 })

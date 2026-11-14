@@ -6,7 +6,7 @@ export function isPlainAbsolutePath (to: string): boolean {
 }
 
 const PARAM_SEGMENT_RE = /^:\w+\(\)$/
-const routePatternCache = new WeakMap<RouteLocationGeneric, string[][] | null>()
+const routePatternCache = new WeakMap<RouteLocationGeneric['matched'], string[][] | null>()
 
 /**
  * Whether `path` might resolve to a record in `currentRoute.matched`, the precondition for a
@@ -14,10 +14,11 @@ const routePatternCache = new WeakMap<RouteLocationGeneric, string[][] | null>()
  * and required param segments and none can match.
  */
 export function mayMatchCurrentRoute (currentRoute: RouteLocationGeneric, path: string): boolean {
-  let patterns = routePatternCache.get(currentRoute)
+  const matched = currentRoute.matched
+  let patterns = routePatternCache.get(matched)
   if (patterns === undefined) {
     patterns = []
-    for (const record of currentRoute.matched) {
+    for (const record of matched) {
       if (record.aliasOf || (record as { alias?: unknown }).alias) { patterns = null; break }
       const segments = splitSegments(record.path)
       for (const segment of segments) {
@@ -26,12 +27,14 @@ export function mayMatchCurrentRoute (currentRoute: RouteLocationGeneric, path: 
       if (!patterns) { break }
       patterns.push(segments)
     }
-    routePatternCache.set(currentRoute, patterns)
+    routePatternCache.set(matched, patterns)
   }
   if (!patterns) { return true }
-  const target = splitSegments(path)
+  const count = countSegments(path)
+  let target: string[] | undefined
   outer: for (const pattern of patterns) {
-    if (pattern.length !== target.length) { continue }
+    if (pattern.length !== count) { continue }
+    target ??= splitSegments(path)
     for (let i = 0; i < pattern.length; i++) {
       const p = pattern[i]!
       const t = target[i]!
@@ -44,6 +47,13 @@ export function mayMatchCurrentRoute (currentRoute: RouteLocationGeneric, path: 
     return true
   }
   return false
+}
+
+/** The number of segments `splitSegments` returns for `path`. */
+function countSegments (path: string): number {
+  let count = 1
+  for (let i = path.indexOf('/'); i !== -1; i = path.indexOf('/', i + 1)) { count++ }
+  return count > 1 && path.endsWith('/') ? count - 1 : count
 }
 
 function splitSegments (path: string): string[] {

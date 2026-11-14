@@ -8,6 +8,8 @@ import { withTrailingSlash } from 'ufo'
 
 import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils/index.ts'
 import { linkToAlias, resolveToAlias } from '../utils.ts'
+import { reportScanProblem } from '../core/scan-problems.ts'
+import type { ScanReporter } from '../core/scan-problems.ts'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
@@ -19,9 +21,10 @@ const MODE_REPLACEMENT_RE = /(?:\.(?:client|server))?(?:\.global|\.island)*$/
  * and return a unique list of components
  * @param dirs all folders where components are defined
  * @param srcDir src path of your app
+ * @param report records the problems found while scanning
  * @returns {Promise} Component found promise
  */
-export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Promise<Component[]> {
+export async function scanComponents (dirs: ComponentsDir[], srcDir: string, report: ScanReporter = reportScanProblem): Promise<Component[]> {
   // All scanned components
   const components: Component[] = []
 
@@ -51,7 +54,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
             const nuxt = useNuxt()
             const original = resolveToAlias(dir.path, nuxt)
             const corrected = resolveToAlias(join(dirname(dir.path), sibling), nuxt)
-            componentDiagnostics.NUXT_B3008({ scannedPath: corrected, expectedPath: original })
+            report(`NUXT_B3008\0${dir.path}\0${sibling}`, [], () => componentDiagnostics.NUXT_B3008({ scannedPath: corrected, expectedPath: original }))
             break
           }
         }
@@ -103,11 +106,11 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const pascalName = pascalCase(componentNameSegments)
 
       if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
-        componentDiagnostics.NUXT_B3009({ component: pascalName, filePath: linkToAlias(filePath) })
+        report(`NUXT_B3009\0${filePath}`, [filePath], () => componentDiagnostics.NUXT_B3009({ component: pascalName, filePath: linkToAlias(filePath) }))
       }
 
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
-        warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
+        warnAboutDuplicateComponent(report, pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
         continue
       }
       resolvedNames.set(pascalName + suffix, filePath)
@@ -143,7 +146,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
       if (!pascalName) {
-        componentDiagnostics.NUXT_B3010({ filePath: linkToAlias(filePath) })
+        report(`NUXT_B3010\0${filePath}`, [filePath], () => componentDiagnostics.NUXT_B3010({ filePath: linkToAlias(filePath) }))
         continue
       }
 
@@ -162,7 +165,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         }
         // Warn if a user-defined (or prioritized) component conflicts with a previously scanned component
         if (newPriority > 0 && newPriority === existingPriority) {
-          warnAboutDuplicateComponent(pascalName, filePath, existingComponent.filePath)
+          warnAboutDuplicateComponent(report, pascalName, filePath, existingComponent.filePath)
         }
 
         continue
@@ -182,8 +185,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   return components
 }
 
-function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
-  componentDiagnostics.NUXT_B3011({ component: componentName, filePath: linkToAlias(filePath), duplicatePath: linkToAlias(duplicatePath) })
+function warnAboutDuplicateComponent (report: ScanReporter, componentName: string, filePath: string, duplicatePath: string) {
+  report(`NUXT_B3011\0${componentName}\0${filePath}\0${duplicatePath}`, [filePath, duplicatePath], () => componentDiagnostics.NUXT_B3011({ component: componentName, filePath: linkToAlias(filePath), duplicatePath: linkToAlias(duplicatePath) }))
 }
 
 const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/

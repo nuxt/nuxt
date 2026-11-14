@@ -24,34 +24,36 @@ export const RenderListPlugin = () => createUnplugin(() => {
       },
       handler (code, id, meta?: unknown) {
         let s: RolldownString | undefined
+        // `module` needs no AST; `program` is only read for inline `type` specifiers below
+        const parsed = parseModule(code, id)
 
-        for (const node of parseModule(code, id).program.body) {
-          if (node.type !== 'ImportDeclaration' || node.importKind === 'type') {
-            continue
-          }
-          const helper = RENDER_LIST_HELPERS.get(node.source.value)
+        for (const declaration of parsed.module.staticImports) {
+          const helper = RENDER_LIST_HELPERS.get(declaration.moduleRequest.value)
           if (!helper) {
             continue
           }
 
-          const named = node.specifiers.filter((specifier): specifier is ESTree.ImportSpecifier => specifier.type === 'ImportSpecifier')
-          const specifier = named.find(specifier =>
-            specifier.importKind !== 'type' &&
-            (specifier.imported.type === 'Identifier' ? specifier.imported.name : specifier.imported.value) === helper,
-          )
-          if (!specifier) {
+          const named = declaration.entries.filter(entry => entry.importName.kind === 'Name')
+          const index = named.findIndex(entry => !entry.isType && entry.importName.name === helper)
+          if (index === -1) {
             continue
           }
 
           s ||= rolldownString(code, id, meta)
-          const replacement = genImport('#app/components/render-list', [{ name: helper, as: specifier.local.name }])
-          if (node.specifiers.length === 1) {
-            s.overwrite(node.start, node.end, replacement)
+          const replacement = genImport('#app/components/render-list', [{ name: helper, as: named[index]!.localName.value }])
+          if (declaration.entries.length === 1) {
+            s.overwrite(declaration.start, declaration.end, replacement)
             continue
           }
-          const kept = named.filter(other => other !== specifier).map(other => code.slice(other.start, other.end))
-          s.overwrite(named[0]!.start, named.at(-1)!.end, kept.join(', '))
-          s.appendLeft(node.end, `\n${replacement}`)
+          // an entry's span starts at its name, so an inline `type` keyword is only covered by the AST
+          const spans = named.some(entry => entry.isType)
+            ? findImportDeclaration(parsed.program, declaration.start).specifiers
+                .filter((specifier): specifier is ESTree.ImportSpecifier => specifier.type === 'ImportSpecifier')
+                .map(specifier => [specifier.start, specifier.end] as const)
+            : named.map(entry => [entry.importName.start!, entry.localName.end] as const)
+          const kept = spans.filter((_, i) => i !== index).map(([start, end]) => code.slice(start, end))
+          s.overwrite(spans[0]![0], spans.at(-1)![1], kept.join(', '))
+          s.appendLeft(declaration.end, `\n${replacement}`)
         }
 
         return generateTransform(s, id)
@@ -59,3 +61,7 @@ export const RenderListPlugin = () => createUnplugin(() => {
     },
   }
 })
+
+function findImportDeclaration (program: ESTree.Program, start: number) {
+  return program.body.find((node): node is ESTree.ImportDeclaration => node.type === 'ImportDeclaration' && node.start === start)!
+}

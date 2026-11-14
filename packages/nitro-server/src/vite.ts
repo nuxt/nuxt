@@ -1,17 +1,20 @@
-import { randomBytes } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
+import { existsSync } from 'node:fs'
+import { readFile, writeFile } from 'node:fs/promises'
 import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { EnvironmentModuleGraph, EnvironmentModuleNode, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import type { BuildEnvironment, EnvironmentModuleGraph, EnvironmentModuleNode, ResolvedConfig, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
+import { hash } from 'ohash'
 import { nitro as nitroPlugin } from 'nitro/vite'
 import escapeRE from 'escape-string-regexp'
 import MagicString from 'magic-string'
 import remapping from '@ampproject/remapping'
 
-import type { Nitro, NitroHooks } from 'nitro/types'
+import type { Nitro } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
@@ -145,54 +148,29 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   nuxt.options.vite.plugins.push(nitroPlugin({
     // reuse the Nitro instance we have created
     _nitro: nitro,
-    experimental: {
-      vite: {
-        services: {
-          ssr: {
-            entry: resolveModulePath(resolve(distDir, 'runtime/handlers/renderer'), {
-              extensions: ['.ts', '.mjs', '.js'],
-            }),
-          },
+    vite: {
+      services: {
+        ssr: {
+          entry: resolveModulePath(resolve(distDir, 'runtime/handlers/renderer'), {
+            extensions: ['.ts', '.mjs', '.js'],
+          }),
         },
       },
     },
   }))
 
   if (nuxt.options.dev) {
-    let devServer: ViteDevServer | undefined
-
-    // TODO: fix upstream in nitro
-    nitro.hooks.hook('rollup:reload', () => {
-      const env = devServer?.environments.nitro
-      if (!env) { return }
-      env.moduleGraph.invalidateAll()
-      env.hot.send({ type: 'full-reload' })
-    })
-
     nuxt.hook('vite:serverCreated', (viteServer, { isServer }) => {
       if (!isServer) { return }
 
-      devServer = viteServer
-
-      // Nitro's dev middleware claims any request it does not recognise as an
-      // asset, and without `sec-fetch-dest`, it recognises assets by file extension,
-      // but extension-less Vite URLs such as `/_nuxt/@id/__x00__plugin-vue:export-helper`
-      // need to be routed to Vite. Setting `_nitroHandled` here is a stopgap
-      // until Nitro's own exemption for Vite-internal prefixes is base-aware.
-      // TODO: drop `_nitroHandled` and narrow `VITE_INTERNAL_RE` back to the
-      // root-served handlers once we require a Nitro version including
-      // https://github.com/nitrojs/nitro/pull/4540
+      // `@vite/client`, `@vite/env` and `@react-refresh` are served from the
+      // root of the dev server rather than from under Vite's base, so they
+      // need the prefix dropped before Vite's own middlewares run.
       const buildAssetsDir = nuxt.options.app.buildAssetsDir
       const buildAssetsPrefix = escapeRE(buildAssetsDir.replace(/\/+$/, ''))
-      const VITE_INTERNAL_RE = new RegExp(`^${buildAssetsPrefix}\\/@[^/?#]`)
-      // `@vite/client`, `@vite/env` and `@react-refresh` are served from the
-      // root of the dev server rather than from under Vite's base, so they also
-      // need the prefix dropped before Vite's own middlewares run.
       const VITE_ROOT_ASSET_RE = new RegExp(`^${buildAssetsPrefix}\\/(@vite\\/(?:client|env)|@react-refresh)(?:\\?|$|\\/)`)
-      viteServer.middlewares.use((req: IncomingMessage & { _nitroHandled?: boolean }, _res, next) => {
-        if (!req.url || !VITE_INTERNAL_RE.test(req.url)) { return next() }
-        req._nitroHandled = true
-        if (VITE_ROOT_ASSET_RE.test(req.url)) {
+      viteServer.middlewares.use((req, _res, next) => {
+        if (req.url && VITE_ROOT_ASSET_RE.test(req.url)) {
           req.url = '/' + req.url.slice(buildAssetsDir.length).replace(/^\/+/, '')
         }
         next()
@@ -209,27 +187,11 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
   }
 
   if (!nuxt.options.dev) {
-    let publicAssetsHookCalled = false
-    const callPublicAssetsHook = async () => {
-      if (publicAssetsHookCalled) { return }
-      publicAssetsHookCalled = true
-      await nuxt.callHook('nitro:build:public-assets', nitro)
-    }
-
     // runs after public assets are copied and routes are prerendered, and
     // before the public asset manifest is generated
-    nitro.hooks.hook('vite:compile:before' as keyof NitroHooks, callPublicAssetsHook)
-
-    // TODO: on the next nitro bump, drop the guard and these `buildStart` and `compiled`
-    // fallbacks once we require a version including https://github.com/nitrojs/nitro/pull/4440
-    nuxt.options.vite.plugins.push({
-      name: 'nuxt:nitro-public-assets',
-      applyToEnvironment: env => env.name === 'nitro',
-      buildStart: callPublicAssetsHook,
-    })
+    nitro.hooks.hook('vite:compile:before', () => nuxt.callHook('nitro:build:public-assets', nitro))
     nitro.hooks.hook('compiled', async () => {
       if (nitro.options.static) {
-        await callPublicAssetsHook()
         await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
       }
     })
@@ -427,7 +389,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
 /**
  * Restores the `req.url` Vite's base middleware rewrote before `nitro/vite`'s dev middleware
  * runs, so it must be registered ahead of that plugin.
- * TODO: remove once nitro includes https://github.com/nitrojs/nitro/pull/4734
+ * TODO: remove once nitro's dev middleware sees the original URL for dev handler middleware
  */
 function DevRequestUrlPlugin (): VitePlugin {
   const originalUrls = new WeakMap<IncomingMessage, string>()
@@ -501,7 +463,28 @@ function NitroDefinePlugin (nuxt: Nuxt): VitePlugin {
   }
 }
 
+/** Written next to the ssr output, so that a build cache hit can tell whether it is still valid. */
+const SSR_INPUTS_FILE = 'nuxt-ssr-inputs.json'
+
+interface SsrInputs {
+  /** The hash of every file the ssr build wrote, so that a partial or stale restore is not reused. */
+  files: Record<string, string>
+  /** The hash of the ssr environment options, which depend on Nitro options such as the preset. */
+  config: string
+  /** The hash of each Nitro virtual module the ssr build bundled, by specifier. */
+  virtuals: Record<string, string>
+}
+
+function hashFile (content: Buffer): string {
+  return createHash('sha256').update(content).digest('base64url')
+}
+
+function hashEnvironmentConfig (config: ResolvedConfig): string {
+  return hash({ define: config.define, resolve: config.resolve, build: config.build })
+}
+
 function NitroVirtualBridge (nitro: Nitro): VitePlugin {
+  const virtuals: Record<string, string> = {}
   return {
     name: 'nuxt:nitro-virtual-bridge',
     applyToEnvironment: env => env.name === 'ssr',
@@ -520,8 +503,56 @@ function NitroVirtualBridge (nitro: Nitro): VitePlugin {
         const specifier = id.slice(NITRO_VIRTUAL_PREFIX.length)
         const entry = nitro.options.virtual[specifier]
         const code = typeof entry === 'function' ? await entry() : entry
+        virtuals[specifier] = hash(code ?? '')
         return { code: code ?? '', map: null }
       },
     },
+    writeBundle: {
+      // after any plugin that edits the written files
+      order: 'post',
+      async handler (options, bundle) {
+        const files: Record<string, string> = {}
+        for (const fileName in bundle) {
+          files[fileName] = hashFile(await readFile(resolve(options.dir!, fileName)))
+        }
+        const inputs: SsrInputs = { files, config: hashEnvironmentConfig(this.environment.config), virtuals }
+        await writeFile(resolve(options.dir!, SSR_INPUTS_FILE), JSON.stringify(inputs))
+      },
+    },
   }
+}
+
+/**
+ * Whether the ssr output restored by a build cache hit can be used without building the ssr
+ * environment again. The cache key leaves out Nitro options and server code, but the ssr build
+ * depends on them through its environment options and the Nitro virtual modules it bundles.
+ */
+export function canReuseSsrBuild (nitro: Nitro, environment: BuildEnvironment): Promise<boolean> {
+  return matchesSsrInputs(nitro, environment).catch(() => false)
+}
+
+async function matchesSsrInputs (nitro: Nitro, environment: BuildEnvironment): Promise<boolean> {
+  // TODO: nitro only records a service entry while building it, so a skipped ssr build is imported
+  // as the `vite/services/ssr` directory, which resolves to its `index.mjs`
+  if (!existsSync(resolve(nitro.options.buildDir, 'vite/services/ssr/index.mjs'))) {
+    return false
+  }
+  const outDir = resolve(environment.config.root, environment.config.build.outDir)
+  const inputs = JSON.parse(await readFile(resolve(outDir, SSR_INPUTS_FILE), 'utf8')) as SsrInputs
+  if (inputs.config !== hashEnvironmentConfig(environment.config)) {
+    return false
+  }
+  for (const [fileName, expected] of Object.entries(inputs.files)) {
+    if (hashFile(await readFile(resolve(outDir, fileName))) !== expected) {
+      return false
+    }
+  }
+  for (const [specifier, expected] of Object.entries(inputs.virtuals)) {
+    const entry = nitro.options.virtual[specifier]
+    const code = typeof entry === 'function' ? await entry() : entry
+    if (hash(code ?? '') !== expected) {
+      return false
+    }
+  }
+  return true
 }

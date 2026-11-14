@@ -1,7 +1,7 @@
 import { getCurrentInstance, getCurrentScope, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { ComponentInternalInstance, EffectScope } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
-import { decodePath, joinURL, parseQuery, parseURL, withQuery } from 'ufo'
+import { decodePath, joinURL, parseURL, stringifyParsedURL } from 'ufo'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 
@@ -15,18 +15,19 @@ import { navigationDiagnostics } from '../diagnostics/navigation'
 import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
+import { parseQuery, stringifyQuery } from '#build/pages'
+
 /**
- * Augmented by Nuxt when `experimental.early404` is enabled, to remove router methods
- * that are incompatible with it from the router returned by `useRouter`. Dynamically
- * added routes cannot be known at build time, so requests to them would incorrectly
- * receive an early 404 response.
+ * Augmented by Nuxt with the router methods that `experimental.staticRoutes` or
+ * `experimental.early404` remove from the router returned by `useRouter`, as the
+ * route table they change is fixed at build time.
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Early404IncompatibleRouterMethods {}
+export interface RemovedRouterMethods {}
 
-type NuxtUseRouter = keyof Early404IncompatibleRouterMethods extends never
+type NuxtUseRouter = keyof RemovedRouterMethods extends never
   ? typeof _useRouter
-  : () => Router & { [K in keyof Early404IncompatibleRouterMethods & keyof Router]: never }
+  : () => Router & { [K in keyof RemovedRouterMethods & keyof Router]: never }
 
 /** @since 3.0.0 */
 export const useRouter: NuxtUseRouter = (() => {
@@ -197,7 +198,7 @@ function encodeForHtmlAttr (value: string): string {
  * @param {RouteLocationRaw | undefined | null} [to] - The route to navigate to. Accepts a route object, string path, `undefined`, or `null`. Defaults to '/'.
  * @param {NavigateToOptions} [options] - Optional customization for controlling the behavior of the navigation.
  * @returns {Promise<void | NavigationFailure | false> | false | void} The navigation result, which varies depending on context and options.
- * @see https://nuxt.com/docs/4.x/api/utils/navigate-to
+ * @see https://nuxt.com/docs/5.x/api/utils/navigate-to
  * @since 3.0.0
  */
 export function navigateTo (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void
@@ -269,7 +270,7 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
   if (import.meta.server) {
     if (nuxtApp.ssrContext) {
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
-      const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
+      let location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
       const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
@@ -295,6 +296,7 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
         if (typeof to === 'string' && toPath.includes('?')) {
           const target = router.resolve(to)
           expectedPath = router.resolve({ path: target.path, query: target.query, hash: target.hash }).fullPath || '/'
+          location = joinURL(useRuntimeConfig().app.baseURL, expectedPath)
         }
         router.afterEach(final => final.fullPath === expectedPath ? redirect(false) : undefined)
         return to
@@ -432,7 +434,10 @@ export const setPageLayout = <Layout extends keyof NuxtLayouts | false>(layout: 
  * @internal
  */
 export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>): string {
-  return withQuery(to.path || '', to.query || {}) + (to.hash || '')
+  const parsed = parseURL(to.path || '')
+  const search = stringifyQuery({ ...(parsed.search && parseQuery(parsed.search)), ...to.query })
+  parsed.search = search && '?' + search
+  return stringifyParsedURL(parsed) + (to.hash || '')
 }
 
 /**

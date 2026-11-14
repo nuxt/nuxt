@@ -201,17 +201,36 @@ describe('parity between the shipped implementations and h3', () => {
   })
 })
 
+describe('defineHandler given an h3 handler object', () => {
+  it('throws NUXT_E8016 pointing to `nitro/h3`', async () => {
+    const delegate = await import('../src/runtime/server')
+    const input = { middleware: [], handler: () => 'ok' }
+    const diagnostic = {
+      code: 'NUXT_E8016',
+      message: expect.stringContaining('received `object`'),
+      fix: expect.stringMatching(/import `defineHandler` from `nitro\/h3`.*`onRequest` or `onBeforeResponse`/),
+    }
+    expect(() => delegate.defineHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
+    expect(() => delegate.defineEventHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
+  })
+})
+
 describe('session helpers given an h3 v1 event', () => {
   it('throws NUXT_E8012 naming the helper', async () => {
     const delegate = await import('../src/runtime/server')
     const e = { node: { req: {}, res: {} }, context: {} }
-    expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012.*useSession.*import `defineEventHandler` from `nuxt\/server`/is)
+    expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012.*useSession.*import `defineHandler` from `nuxt\/server`/is)
     expect(() => delegate.clearSession(e as never, { password: 'x'.repeat(32) })).toThrow(expect.objectContaining({ status: 500 }))
   })
 
-  it('passes a request event through', async () => {
+  it('round-trips a session over the event h3 hands a handler', async () => {
     const delegate = await import('../src/runtime/server')
-    const event = new H3Event(new Request('http://127.0.0.1/'))
-    await expect(delegate.getSession(event as never, { password: 'x'.repeat(32) })).resolves.toMatchObject({ data: {} })
+    const config = { password: 'x'.repeat(32) }
+    const first = new H3Event(new Request('http://127.0.0.1/'))
+    await delegate.updateSession(first, config, { visits: 1 })
+    const cookie = first.res.headers.getSetCookie()[0]!.split(';')[0]!
+
+    const second = new H3Event(new Request('http://127.0.0.1/', { headers: { cookie } }))
+    await expect(delegate.getSession(second, config)).resolves.toMatchObject({ data: { visits: 1 } })
   })
 })

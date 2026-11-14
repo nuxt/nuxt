@@ -16,9 +16,22 @@ const vueModuleIdentifierLoader: LoaderDefinitionFunction<LoaderOptions> = funct
   }
 
   const context = srcDir || this.rootContext || this.context || this._compiler?.options?.context
-  const relativePath = context ? relative(context, resourcePath) : resourcePath
-  const moduleId = normalize(relativePath).replace(/^\.\//, '').replace(/\\/g, '/')
+  return appendModuleIdentifier(source, context ? getModuleIdentifier(resourcePath, context) : normalizeModuleIdentifier(resourcePath))
+}
 
+/** Identifier of a module in the client manifest, relative to `context`. */
+export function getModuleIdentifier (resourcePath: string, context: string): string {
+  return normalizeModuleIdentifier(relative(context, resourcePath))
+}
+
+function normalizeModuleIdentifier (path: string) {
+  return normalize(path).replace(/^\.\//, '').replace(/\\/g, '/')
+}
+
+/**
+ * Append code to a compiled Vue SFC that adds `moduleId` to `ssrContext.modules` when the component is set up.
+ */
+export function appendModuleIdentifier (source: string, moduleId: string): string {
   return source + [
     '',
     'import { useSSRContext as __nuxt_useSSRContext } from \'vue\'',

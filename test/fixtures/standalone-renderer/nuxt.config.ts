@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 
 export default defineNuxtConfig({
-  modules: ['./modules/renderer-artifacts'],
+  modules: ['./modules/renderer-artifacts', './modules/renderer-plugin'],
   devtools: { enabled: false },
   app: {
     head: {

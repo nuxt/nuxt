@@ -5,6 +5,7 @@ import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { describe, expect, it } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import type { Nuxt } from '@nuxt/schema'
 import { loadNuxt } from '../src/index.ts'
 import { routeRulesTemplate } from '../src/core/templates.ts'
 import type { NuxtPage } from '../schema.ts'
@@ -31,21 +32,26 @@ async function getRouteRulesTemplate (sensitive: boolean, baseURL?: string, rout
 
 describe('route rules template', () => {
   it('matches with the build-time `sensitive` setting', async () => {
-    const { defu } = await import('defu')
     for (const sensitive of [true, false]) {
       const contents = await getRouteRulesTemplate(sensitive)
       expect(contents).not.toContain('router.options.mjs')
       expect(contents.includes('foldRouteCase')).toBe(!sensitive)
-      const matcher = new Function('defu', contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return'))(defu) as (path: string) => Record<string, any>
+      const matcher = await evaluateMatcher(contents)
       expect(matcher('/protected/secret')).toMatchObject({ redirect: '/login' })
       expect(matcher('/Protected/secret').redirect).toBe(sensitive ? undefined : '/login')
     }
   })
 
   it('emits a constant when only a catch-all rule applies', async () => {
-    expect(await getRouteRulesTemplate(false, undefined, {})).toBe('export default () => ({ssr: true})')
+    expect(await getRouteRulesTemplate(false, undefined, {})).toBe('export const hasRedirects = false\nexport default () => ({ssr: true})')
     expect(await getRouteRulesTemplate(false, undefined, { '/**': { appLayout: 'a' }, 'GET /**': { appLayout: 'b' }, 'POST /admin/**': { ssr: false } }))
-      .toBe('export default () => ({ssr: true,appLayout: "b"})')
+      .toBe('export const hasRedirects = false\nexport default () => ({ssr: true,appLayout: "b"})')
+  })
+
+  it('reports whether any rule redirects', async () => {
+    expect(await getRouteRulesTemplate(false, undefined, { '/admin/**': { prerender: true } })).toContain('export const hasRedirects = false')
+    expect(await getRouteRulesTemplate(false, undefined, { '/admin/**': { redirect: '/login' } })).toContain('export const hasRedirects = true')
+    expect(await getRouteRulesTemplate(false, undefined, { '/**': { redirect: '/login' } })).toContain('export const hasRedirects = true')
   })
 
   it('merges `appMiddleware` names from overlapping catch-all rules without a nitro server', async () => {
@@ -65,10 +71,7 @@ describe('route rules template', () => {
   })
 
   it('matches base-relative paths when app.baseURL is set', async () => {
-    const contents = await getRouteRulesTemplate(false, '/sub/')
-    const code = contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return')
-    const { defu } = await import('defu')
-    const matcher = new Function('defu', code)(defu) as (path: string) => Record<string, any>
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, '/sub/'))
     expect(matcher('/protected/secret')).toMatchObject({ redirect: '/login' })
     expect(matcher('/sub/protected/secret')).not.toHaveProperty('redirect')
   })
@@ -79,9 +82,7 @@ describe('route rules template', () => {
       '/array': { appMiddleware: ['auth', 'admin'] },
       '/object': { appMiddleware: { auth: false } },
     })
-    const code = contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return')
-    const { defu } = await import('defu')
-    const matcher = new Function('defu', code)(defu) as (path: string) => Record<string, any>
+    const matcher = await evaluateMatcher(contents)
     expect(matcher('/string').appMiddleware).toEqual({ auth: true })
     expect(matcher('/array').appMiddleware).toEqual({ auth: true, admin: true })
     expect(matcher('/object').appMiddleware).toEqual({ auth: false })
@@ -95,11 +96,7 @@ describe('route rules template', () => {
       'POST /admin/**': { ssr: true, appMiddleware: { auth: false } },
       'HEAD /admin/**': { noScripts: true },
     })
-    const code = contents
-      .replace(/^import \{ defu \} from .*$/m, '')
-      .replace('export default', 'return')
-    const { defu } = await import('defu')
-    const matcher = new Function('defu', code)(defu) as (path: string) => Record<string, any>
+    const matcher = await evaluateMatcher(contents)
     expect(matcher('/admin/users')).toEqual({ appMiddleware: { auth: true, admin: true }, ssr: false })
     expect(matcher('/lower/page')).toEqual({ ssr: false })
   })
@@ -116,15 +113,22 @@ describe('route rules template', () => {
     }
   })
 
+  it('folds a non-ASCII rule key against any request casing or encoding when case-insensitive', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, undefined, { '/cafÉ': { redirect: '/target' } }))
+    for (const path of ['/cafÉ', '/café', `/caf${encodeURIComponent('É')}`, `/caf${encodeURIComponent('é')}`]) {
+      expect(matcher(path).redirect, path).toBe('/target')
+    }
+  })
+
   it('applies `appMiddleware` from rules with regex constraints when case-insensitive', async () => {
     const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, undefined, {
-      '/y/:id(\\D+)': { appMiddleware: 'auth' },
+      '/blog/:slug(cafe|tea)': { appMiddleware: 'auth' },
       '/Z/:role(admin|[a-z]\\d)': { appMiddleware: 'admin' },
-      '/Range/:id([A-z]+)': { appMiddleware: 'range' },
+      '/Range/:id([A-Za-z_]+)': { appMiddleware: 'range' },
     }))
-    expect(matcher('/y/abc').appMiddleware).toEqual({ auth: true })
-    expect(matcher('/Y/ABC').appMiddleware).toEqual({ auth: true })
-    expect(matcher('/y/123').appMiddleware).toBeUndefined()
+    expect(matcher('/blog/cafe').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/Blog/TEA').appMiddleware).toEqual({ auth: true })
+    expect(matcher('/blog/caf%C3%A9').appMiddleware).toBeUndefined()
     expect(matcher('/z/Admin').appMiddleware).toEqual({ admin: true })
     expect(matcher('/z/A1').appMiddleware).toEqual({ admin: true })
     expect(matcher('/z/AB').appMiddleware).toBeUndefined()
@@ -135,19 +139,98 @@ describe('route rules template', () => {
 
   it('rejects regex constraints that depend on letter case when case-insensitive', async () => {
     await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([A-Z]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[A-Z]`)')
-    await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([%41-%5A]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[A-Z]`)')
     await expect(getRouteRulesTemplate(false, undefined, { '/upper/:id([A-Z]+)': { headers: { 'x-test': '1' } } })).resolves.toBeTypeOf('string')
-    await expect(getRouteRulesTemplate(false, undefined, { '/sigma/:id([a-zς]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on letter case (`[a-zς]`)')
     const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, { '/upper/:id([A-Z]+)': { appMiddleware: 'auth' } }))
     expect(matcher('/upper/ABC').appMiddleware).toEqual({ auth: true })
     expect(matcher('/upper/abc').appMiddleware).toBeUndefined()
+  })
+
+  it('rejects regex constraints that depend on percent-encoding', async () => {
+    for (const sensitive of [true, false]) {
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/accent/:id([é])': { appMiddleware: 'auth' } })).rejects.toThrow('depends on percent-encoding (`[é]`)')
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/sigma/:id([a-zς]+)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on percent-encoding (`[a-zς]`)')
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/any/:id(.)': { headers: { 'x-test': '1' } } })).rejects.toThrow('depends on percent-encoding (`.`)')
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/é:slug(\\bfoo)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on percent-encoding (`\\b`)')
+      await expect(getRouteRulesTemplate(sensitive, undefined, { '/é-:slug(foo\\B)': { appMiddleware: 'auth' } })).rejects.toThrow('depends on percent-encoding (`\\B`)')
+    }
+  })
+
+  it('applies `appMiddleware` from rules with regex constraints read from the config', async () => {
+    const nuxt = {
+      options: {
+        app: { baseURL: '/' },
+        router: { options: {} },
+        routeRules: { '/blog/:slug(cafe)': { appMiddleware: 'auth' } },
+      },
+    } as unknown as Nuxt
+    const matcher = await evaluateMatcher(await routeRulesTemplate.getContents!({ nuxt, app: undefined!, options: routeRulesTemplate.options! }))
+    expect(matcher('/blog/cafe').appMiddleware).toEqual({ auth: true })
   })
 })
 
 async function evaluateMatcher (contents: string) {
   const { defu } = await import('defu')
-  return new Function('defu', contents.replace(/^import \{ defu \} from .*$/m, '').replace('export default', 'return'))(defu) as (path: string) => Record<string, any>
+  return new Function('defu', contents.replace(/^import \{ defu \} from .*$/m, '').replace(/^export const hasRedirects = .*$/m, '').replace('export default', 'return'))(defu) as (path: string) => Record<string, any>
 }
+
+describe('wildcard route rule redirects', () => {
+  it('moves the tail of the path onto the target', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, {
+      '/old/**': { redirect: '/new/**' },
+      '/old/kept': { redirect: '/kept' },
+      '/old/sub/**': { redirect: { to: '/sub/**', status: 301 } },
+      '/query/**': { redirect: '/new?path=**' },
+      '/param/:id/**': { redirect: '/new/**' },
+      '/café/**': { redirect: '/new/**' },
+      '/exact': { redirect: '/new/**' },
+    }))
+    expect(matcher('/old/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/old').redirect).toBe('/new')
+    expect(matcher('/%6Fld/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/old/kept').redirect).toBe('/kept')
+    expect(matcher('/old/sub/A/b').redirect).toBe('/sub/A/b')
+    expect(matcher('/query/A/b').redirect).toBe('/new?path=A/b')
+    expect(matcher('/param/Some-ID/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/caf%C3%A9/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/exact').redirect).toBe('/new/exact')
+  })
+
+  it('moves the tail of the path onto the target from a lone catch-all rule', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, { '/**': { redirect: '/new/**' } }))
+    expect(matcher('/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/').redirect).toBe('/new')
+  })
+
+  it('keeps the target on its origin when the tail starts with separators', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, undefined, { '/old/**': { redirect: '/**' } }))
+    for (const tail of ['//evil.com', '///evil.com', '/\\evil.com', '/%2F%2Fevil.com', '/%5C%5Cevil.com', '/%252F%252Fevil.com']) {
+      expect(matcher(`/old${tail}`).redirect, tail).toBe('/evil.com')
+      expect(matcher(`/OLD${tail}`).redirect, tail).toBe('/evil.com')
+    }
+    const catchAll = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, { '/**': { redirect: '/**' } }))
+    expect(catchAll('//evil.com').redirect).toBe('/evil.com')
+  })
+
+  it('encodes a tail in the query of the target', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(true, undefined, {
+      '/query/**': { redirect: '/new?to=**' },
+      '/hash/**': { redirect: '/new#**' },
+      '/literal/**': { redirect: '/new/**/x' },
+    }))
+    expect(matcher('/query/a&admin=1').redirect).toBe('/new?to=a%26admin%3D1')
+    expect(matcher('/hash/a').redirect).toBe('/new#a')
+    expect(matcher('/literal/$&').redirect).toBe('/new/$&/x')
+  })
+
+  it('keeps the casing of the tail when the base matches in another casing', async () => {
+    for (const sensitive of [true, false]) {
+      const matcher = await evaluateMatcher(await getRouteRulesTemplate(sensitive, '/App/', { '/Old/**': { redirect: '/new/**' } }))
+      expect(matcher('/Old/A/b').redirect).toBe('/new/A/b')
+      expect(matcher('/OLD/A/b').redirect).toBe(sensitive ? undefined : '/new/A/b')
+      expect(matcher('/old/A/b').redirect).toBe(sensitive ? undefined : '/new/A/b')
+    }
+  })
+})
 
 describe('route rule redirects', () => {
   it('adds routes for redirects that apply to a page request', async () => {

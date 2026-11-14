@@ -54,15 +54,22 @@ export const rendererOptions: NuxtRendererOptions = {
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints),
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
   onRenderSuccess: import.meta.dev
-    ? () => {
-        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+    ? (event) => {
+        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport(event.url)).catch(() => {})
       }
     : undefined,
   captureError: (error, { event, tags }) => {
+    // in development the live error channel reports and prints the error itself
+    if (!import.meta.dev && ((error as { status?: number } | null)?.status || 500) >= 500) {
+      console.error(`[request error] [${event.req.method}] ${event.url.pathname}\n`, error)
+    }
     useNitroApp().captureError?.(error as Error, { event: appEvent(event) as H3Event, tags: ['ssr', ...tags ?? []] })
   },
   onDevError: import.meta.dev
     ? (error, event, options) => import('#internal/nuxt/error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
+    : undefined,
+  renderDevBadge: import.meta.dev
+    ? (event, nonce) => import('#internal/nuxt/error-channel').then(({ renderDevBadge }) => renderDevBadge(appEvent(event) as H3Event, nonce))
     : undefined,
   prerender: import.meta.prerender
     ? {
