@@ -49,7 +49,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: danielroe/uppt/pr@6c1a9b480b0f02a3f535dedaf1a113f590aa56f2 # v0.6.12
+      - uses: danielroe/uppt/pr@427b736befa839b403dd145f2a7c16dbf3fd4482 # v0.6.13
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base-branch: ${{ github.ref_name }}
@@ -74,7 +74,7 @@ jobs:
       contents: write
       actions: write
     steps:
-      - uses: danielroe/uppt/release@6c1a9b480b0f02a3f535dedaf1a113f590aa56f2 # v0.6.12
+      - uses: danielroe/uppt/release@427b736befa839b403dd145f2a7c16dbf3fd4482 # v0.6.13
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           packages: ${{ env.PACKAGES }}
@@ -93,7 +93,7 @@ jobs:
       files: ${{ steps.pack.outputs.files }}
     steps:
       - id: pack
-        uses: danielroe/uppt/pack@6c1a9b480b0f02a3f535dedaf1a113f590aa56f2 # v0.6.12
+        uses: danielroe/uppt/pack@427b736befa839b403dd145f2a7c16dbf3fd4482 # v0.6.13
         with:
           packages: ${{ env.PACKAGES }}
 
@@ -113,7 +113,7 @@ jobs:
       id-token: write
     environment: npm
     steps:
-      - uses: danielroe/uppt/publish@6c1a9b480b0f02a3f535dedaf1a113f590aa56f2 # v0.6.12
+      - uses: danielroe/uppt/publish@427b736befa839b403dd145f2a7c16dbf3fd4482 # v0.6.13
         with:
           files: ${{ needs.pack.outputs.files }}
           npm-tag: ${{ inputs.npm-tag }}
