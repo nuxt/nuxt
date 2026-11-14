@@ -225,19 +225,21 @@ describe('timePluginHooks', () => {
       },
     }
     const filter = { id: /\.ts$/ }
-    const transform = { filter, order: 'pre', handler (this: { suffix: string }, code: string) { return code + this.suffix } }
+    const transform = Object.freeze({ filter, order: 'pre', handler (this: { suffix: string }, code: string) { return code + this.suffix } })
     const plugin = { name: 'a', resolveId (this: { suffix: string }, id: string) { return id + this.suffix }, transform }
     const unnamed = { load: () => 'unnamed' }
-    const load = unnamed.load
+    const frozen = Object.freeze({ name: 'frozen', load: () => 'frozen' })
+    const { load: unnamedLoad } = unnamed
+    const { load: frozenLoad } = frozen
 
-    timePluginHooks(perf as any, [plugin, null, unnamed, { name: 'b', load: { filter } }])
+    timePluginHooks(perf as any, [plugin, null, unnamed, frozen, { name: 'b', load: { filter } }])
 
     const ctx = { suffix: '!' }
     expect(plugin.resolveId.call(ctx, 'id')).toBe('id!')
-    expect(transform.handler.call(ctx, 'code')).toBe('code!')
-    expect(plugin.transform).toBe(transform)
-    expect(transform).toMatchObject({ filter, order: 'pre' })
-    expect(unnamed.load).toBe(load)
+    expect(plugin.transform.handler.call(ctx, 'code')).toBe('code!')
+    expect(plugin.transform).toMatchObject({ filter, order: 'pre' })
+    expect(unnamed.load).toBe(unnamedLoad)
+    expect(frozen.load).toBe(frozenLoad)
     expect(recorded).toEqual([['nitro:a', 'resolveId', ctx], ['nitro:a', 'transform', ctx]])
   })
 })

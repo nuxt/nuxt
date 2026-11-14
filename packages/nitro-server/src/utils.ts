@@ -66,12 +66,13 @@ export function timePluginHooks (perf: Pick<NonNullable<Nuxt['_perf']>, 'timeBun
     const pluginName = `nitro:${plugin.name}`
     for (const hookName of ['transform', 'resolveId', 'load'] as const) {
       const hook = plugin[hookName]
-      const [owner, key] = typeof hook === 'function' ? [plugin, hookName] : [hook, 'handler']
-      const original = owner?.[key]
-      if (typeof original !== 'function') { continue }
-      owner[key] = function (this: unknown, ...args: unknown[]) {
-        return perf.timeBundlerHook(pluginName, hookName, this, ctx => original.apply(ctx, args))
+      const handler = typeof hook === 'function' ? hook : hook?.handler
+      if (typeof handler !== 'function') { continue }
+      const timed = function (this: unknown, ...args: unknown[]) {
+        return perf.timeBundlerHook(pluginName, hookName, this, ctx => handler.apply(ctx, args))
       }
+      // frozen plugins are left untimed rather than throwing
+      Reflect.set(plugin, hookName, typeof hook === 'function' ? timed : { ...hook, handler: timed })
     }
   }
 }
