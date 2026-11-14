@@ -1952,6 +1952,9 @@ importers:
       std-env:
         specifier: catalog:build
         version: 4.3.0
+      tinyglobby:
+        specifier: catalog:build
+        version: 0.2.17
       ufo:
         specifier: catalog:build
         version: 1.6.4

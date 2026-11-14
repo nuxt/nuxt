@@ -6,8 +6,8 @@ import { appScanEntries, resolveOptimizeDepsInclude } from '../utils/optimize-de
 import { userOptimizeDepsInclude } from './optimize-deps-hint.ts'
 
 /**
- * Pre-bundles dependencies of app code installed in `node_modules`, which Vite would
- * otherwise serve raw.
+ * Adds the files Nuxt reaches through generated modules to the client dependency scan, and
+ * rewrites `optimizeDeps.include` entries that only resolve from an installed layer.
  *
  * Runs on resolved environment config so `include` entries added by modules through
  * `vite:extendConfig`, or by other plugins, are rewritten too.
@@ -28,7 +28,7 @@ export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
         // `scan` is not part of Vite's public hook type
         if (!('scan' in options) || !options.scan) { return }
         if (id[0] !== '#') {
-          // the scan covers app files that may never load, and Vite drops the whole scan on a missing package
+          // Vite drops the whole scan when a package is missing
           try {
             return await this.resolve(id, importer, { ...options, skipSelf: true }) ?? { id, external: true }
           } catch {
@@ -49,13 +49,10 @@ export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
     async configEnvironment (name, config) {
       if (name !== 'client') { return }
 
-      const scanEntries = appScanEntries(nuxt)
-      if (!scanEntries.length) { return }
-
       config.optimizeDeps ||= {}
 
       const entries = config.optimizeDeps.entries
-      config.optimizeDeps.entries = [...typeof entries === 'string' ? [entries] : entries || [], ...scanEntries]
+      config.optimizeDeps.entries = [...typeof entries === 'string' ? [entries] : entries || [], ...await appScanEntries(nuxt)]
 
       const include = config.optimizeDeps.include
       if (include?.length) {
