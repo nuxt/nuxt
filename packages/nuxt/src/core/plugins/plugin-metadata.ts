@@ -84,7 +84,7 @@ function parseMetadata (code: string, loader: 'ts' | 'tsx') {
   const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
   walk(program, { scopeTracker })
   scopeTracker.freeze()
-  const lookup = (name: string) => scopeTracker.getDeclaration(name)?.scope ? undefined : constants.get(name)
+  const constantsInScope: Constants = { values: constants, isShadowed: name => !!scopeTracker.getDeclaration(name)?.scope }
   walk(program, { scopeTracker, enter: (node) => {
     if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && PLUGIN_WRAPPERS.has(node.imported.name)) {
       wrappers.set(node.local.name, node.imported.name)
@@ -103,12 +103,12 @@ function parseMetadata (code: string, loader: 'ts' | 'tsx') {
       if (metaArg.type !== 'ObjectExpression') {
         throw pluginDiagnostics.NUXT_B2001({ name, type: metaArg.type })
       }
-      meta = extractMetaFromObject(metaArg.properties, lookup)
+      meta = extractMetaFromObject(metaArg.properties, constantsInScope)
     }
 
     const plugin = node.arguments[0] && unwrapExpression(node.arguments[0])
     if (plugin?.type === 'ObjectExpression') {
-      meta = defu(extractMetaFromObject(plugin.properties, lookup), meta)
+      meta = defu(extractMetaFromObject(plugin.properties, constantsInScope), meta)
     } else if (plugin && plugin.type !== 'ArrowFunctionExpression' && plugin.type !== 'FunctionExpression') {
       pluginDiagnostics.NUXT_B2013({ name, type: plugin.type })
       meta._metaUnknown = true
@@ -143,9 +143,12 @@ function collectConstants (program: ESTree.Program) {
 
 const UNRESOLVED = Symbol('unresolved')
 
-type ConstantLookup = (name: string) => ESTree.Expression | undefined
+interface Constants {
+  values: Map<string, ESTree.Expression>
+  isShadowed: (name: string) => boolean
+}
 
-function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | null, lookup: ConstantLookup, seen = new Set<string>()): unknown {
+function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | null, constants: Constants, seen = new Set<string>()): unknown {
   if (!node) { return UNRESOLVED }
   node = unwrapExpression(node)
   switch (node.type) {
@@ -158,14 +161,14 @@ function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | nu
     case 'TemplateLiteral':
       return node.expressions.length ? UNRESOLVED : node.quasis[0]!.value.cooked
     case 'ArrayExpression': {
-      const values = node.elements.map(element => resolveStaticValue(element, lookup, seen))
+      const values = node.elements.map(element => resolveStaticValue(element, constants, seen))
       return values.includes(UNRESOLVED) ? UNRESOLVED : values
     }
     case 'Identifier': {
       if (node.name === 'undefined') { return undefined }
-      const init = lookup(node.name)
+      const init = constants.isShadowed(node.name) ? undefined : constants.values.get(node.name)
       if (!init || seen.has(node.name)) { return UNRESOLVED }
-      return resolveStaticValue(init, lookup, new Set(seen).add(node.name))
+      return resolveStaticValue(init, { values: constants.values, isShadowed: () => false }, new Set(seen).add(node.name))
     }
   }
   return UNRESOLVED
@@ -183,7 +186,7 @@ function isMetadataKey (key: string | ESTree.IdentifierName): key is ExtractedMe
   return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
-function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, lookup: ConstantLookup) {
+function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, constants: Constants) {
   const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
@@ -199,7 +202,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, lo
       continue
     }
     if (!isMetadataKey(propertyKey)) { continue }
-    const value = resolveStaticValue(property.value, lookup)
+    const value = resolveStaticValue(property.value, constants)
     if (propertyKey === 'dependsOn') {
       if (value === undefined) { continue }
       if (!Array.isArray(value) || value.some(name => typeof name !== 'string')) {
