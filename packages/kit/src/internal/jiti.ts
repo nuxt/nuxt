@@ -282,7 +282,8 @@ function resolveFromProject (options: LoadJitiOptions): string | undefined {
   const from = [options.rootDir, ...options.searchPaths ?? []]
     .map(dir => directoryToURL(dir.replace(/[/\\]node_modules[/\\]?$/, '')))
 
-  const direct = resolveModulePath('jiti', { from, try: true })
+  // exsolve otherwise remembers a failed lookup, hiding a `jiti` installed since the last call
+  const direct = resolveModulePath('jiti', { from, try: true, cache: false })
   if (direct) {
     return direct
   }
@@ -299,5 +300,5 @@ function resolveFromProject (options: LoadJitiOptions): string | undefined {
   } catch {
     return undefined
   }
-  return resolveModulePath('jiti', { from: pathToFileURL(realNuxt), try: true })
+  return resolveModulePath('jiti', { from: pathToFileURL(realNuxt), try: true, cache: false })
 }

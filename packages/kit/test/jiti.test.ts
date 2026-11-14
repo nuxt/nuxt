@@ -335,4 +335,22 @@ describe('jiti resolution', { concurrent: false, timeout: 60_000 }, () => {
     expect(result).toMatchObject({ ok: false, code: 'NUXT_B5017' })
     expect(result.message).toMatch(/could not be loaded/)
   })
+
+  it('finds a project-level jiti installed after a failed lookup', async () => {
+    const projectJiti = join(projectDir, 'node_modules/jiti')
+    const script = `const [hook, entry, target, projectJiti] = process.argv.slice(-4)
+const { register } = await import('node:module')
+register(hook)
+const { symlink } = await import('node:fs/promises')
+const { loadJiti } = await import(entry)
+const before = !!await loadJiti({ rootDir: process.cwd(), install: false })
+await symlink(target, projectJiti, 'dir')
+const after = !!await loadJiti({ rootDir: process.cwd(), install: false })
+console.log(JSON.stringify({ before, after }))`
+    try {
+      await expect(runNode(script, [blockBare(), jitiInternal, installedJiti, projectJiti], projectDir)).resolves.toMatchObject({ before: false, after: true })
+    } finally {
+      await rm(projectJiti, { recursive: true, force: true })
+    }
+  })
 })
