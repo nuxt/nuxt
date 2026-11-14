@@ -367,16 +367,34 @@ describe('NuxtPerfProfiler', () => {
     expect(end.ts).toBe(events.find(e => e.name === 'nuxt build' && e.ph === 'E')!.ts)
   })
 
-  it('does not subtract overlapping child phases twice', () => {
+  it('counts time shared by overlapping phases once', async () => {
     const perf = new NuxtPerfProfiler()
     const start = performance.now()
+    await sleep(60)
     perf.recordPhase('build:bundle', start, start + 50)
     perf.recordPhase('vite:client', start, start + 30)
     perf.recordPhase('vite:ssr', start + 10, start + 40)
 
-    const bundle = perf.getReport().phases.find(p => p.name === 'build:bundle')
+    const report = perf.getReport()
+    const own = Object.fromEntries(report.phases.map(p => [p.name, p.ownDuration]))
 
-    expect(bundle!.ownDuration).toBe(10)
+    expect(own).toEqual({ 'build:bundle': 10, 'vite:client': 10, 'vite:ssr': 30 })
+    expect(own['build:bundle']! + own['vite:client']! + own['vite:ssr']! + report.unattributedDuration).toBeCloseTo(report.totalDuration, 1)
+  })
+
+  it('counts phases that start and end together once', async () => {
+    const perf = new NuxtPerfProfiler()
+    const start = performance.now()
+    await sleep(30)
+    perf.recordPhase('build:bundle', start, start + 20)
+    perf.recordPhase('a', start, start + 20)
+    perf.recordPhase('b', start, start + 20)
+
+    const report = perf.getReport()
+    const rows = report.phases.reduce((sum, p) => sum + p.ownDuration, 0)
+
+    expect(rows).toBeCloseTo(20, 1)
+    expect(rows + report.unattributedDuration).toBeCloseTo(report.totalDuration, 1)
   })
 
   it('hands out the CLI start time once', () => {

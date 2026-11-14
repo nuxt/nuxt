@@ -181,6 +181,27 @@ function coveredDuration (phases: PerfPhase[]): number {
   return covered
 }
 
+/** How long each phase was the innermost one running: the latest to start, then the first to end. */
+function exclusiveDurations (phases: PerfPhase[]): Map<PerfPhase, number> {
+  const durations = new Map(phases.map(phase => [phase, 0]))
+  const times = [...new Set(phases.flatMap(phase => [phase.startTime, phase.endTime]))].sort((a, b) => a - b)
+  for (let i = 0; i < times.length - 1; i++) {
+    const start = times[i]!
+    const end = times[i + 1]!
+    let innermost: PerfPhase | undefined
+    for (const phase of phases) {
+      if (phase.startTime > start || phase.endTime < end) { continue }
+      if (!innermost || phase.startTime > innermost.startTime || (phase.startTime === innermost.startTime && phase.endTime <= innermost.endTime)) {
+        innermost = phase
+      }
+    }
+    if (innermost) {
+      durations.set(innermost, durations.get(innermost)! + end - start)
+    }
+  }
+  return durations
+}
+
 /** Sub-phases are listed under Details, and their time stays in the row of the phase they run in. */
 const isSubPhase = (name: string) => name.startsWith('module:')
 
@@ -441,13 +462,16 @@ export class NuxtPerfProfiler {
       ...this.#hookPhases.filter(hp => hp.duration >= HOOK_PHASE_THRESHOLD_MS && !manualPhases.some(p => p.name === hp.name && contains(p, hp))),
     ].sort((a, b) => a.startTime - b.startTime)
 
-    // own time and memory exclude direct children (phases nested in this one but in no other child);
-    // sub-phases are not subtracted
+    // sub-phases do not reduce the own time of top-level phases
+    const topPhases = allPhases.filter(p => !isSubPhase(p.name))
+    const ownTimes = exclusiveDurations(topPhases)
+    const subPhaseOwnTimes = exclusiveDurations(allPhases)
+
+    // own memory excludes direct children (phases nested in this one but in no other child)
     function computeOwn (phase: PerfPhase) {
       const children = allPhases.filter(other => other !== phase && !isSubPhase(other.name) && contains(phase, other))
       const directChildren = children.filter(child => !children.some(other => other !== child && contains(other, child)))
 
-      const childTime = coveredDuration(directChildren)
       let childRss = 0
       let childHeap = 0
       for (const child of directChildren) {
@@ -455,7 +479,7 @@ export class NuxtPerfProfiler {
         childHeap += child.memoryDelta.heapUsed
       }
       return {
-        ownDuration: round(Math.max(0, phase.duration - childTime)),
+        ownDuration: round((isSubPhase(phase.name) ? subPhaseOwnTimes : ownTimes).get(phase)!),
         ownMemoryDelta: {
           rss: phase.memoryDelta.rss - childRss,
           heapUsed: phase.memoryDelta.heapUsed - childHeap,
@@ -480,7 +504,7 @@ export class NuxtPerfProfiler {
         unfinished: p.unfinished,
         memoryUnmeasured: p.memoryUnmeasured,
       })),
-      unattributedDuration: round(Math.max(0, totalDuration - coveredDuration(allPhases.filter(p => !isSubPhase(p.name))))),
+      unattributedDuration: round(Math.max(0, totalDuration - coveredDuration(topPhases))),
       modules: this.#modules.toSorted((a, b) => b.setupTime - a.setupTime),
       bundlerPlugins: [...this.#bundlerPluginTimings.entries()]
         .map(([name, hookMap]) => {
