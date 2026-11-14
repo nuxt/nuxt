@@ -313,6 +313,26 @@ describe('<NuxtTime> formatter reuse', () => {
     }
   })
 
+  it('should share a formatter regardless of prop order', async () => {
+    const datetime = '2023-02-11T18:26:41.058Z'
+    const spy = vi.spyOn(Intl, 'DateTimeFormat')
+    try {
+      const wrapper = await mountSuspended(
+        defineComponent({
+          render: () => [
+            h(NuxtTime, { datetime, locale: 'fr-FR', timeZone: 'UTC', year: 'numeric', month: 'long' }),
+            h(NuxtTime, { month: 'long', locale: 'fr-FR', year: 'numeric', datetime, timeZone: 'UTC' }),
+          ],
+        }),
+      )
+
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(new Set(wrapper.findAll('time').map(time => time.text())).size).toBe(1)
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
   it('should keep formatters for different locales separate', async () => {
     const datetime = '2023-02-11T18:26:41.058Z'
     const options = { month: 'long', timeZone: 'UTC' }
