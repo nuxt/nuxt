@@ -332,6 +332,18 @@ describe('plugin sanity checking', () => {
     vi.restoreAllMocks()
   })
 
+  it('breaks a cycle through a name shared by several plugins when none of them can run', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const plugins = breakCircularDependencies([
+      { name: 'A', dependsOn: ['X'], src: '' },
+      { name: 'X', dependsOn: ['A'], src: '' },
+      { name: 'X', dependsOn: ['A'], src: '' },
+    ])
+    expect(plugins.map(plugin => plugin.dependsOn)).toEqual([['X'], [], ['A']])
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: A -> X -> A.'))
+    vi.restoreAllMocks()
+  })
+
   it('leaves plugins without circular dependencies untouched', () => {
     const source = [
       { name: 'A', src: '' },

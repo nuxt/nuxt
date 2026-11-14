@@ -470,15 +470,28 @@ interface CircularDependency { cycle: string, name: string, dependency: string }
  * dependencies can always be resolved.
  */
 export function breakCircularDependencies<T extends AnnotatedPlugin> (plugins: T[], onCycle: (cycle: CircularDependency) => void = cycle => pluginDiagnostics.NUXT_B2009(cycle)): T[] {
-  // a dependency on a name shared by several plugins is satisfied by whichever of them resolves first
-  const byName = new Map<string, number>()
-  const shared = new Set<string>()
-  for (const [index, plugin] of plugins.entries()) {
-    if (!plugin.name) { continue }
-    if (byName.has(plugin.name)) { shared.add(plugin.name) }
-    byName.set(plugin.name, index)
+  // a name is resolved once any plugin with that name has run
+  const names = new Set(plugins.flatMap(plugin => plugin.name ? [plugin.name] : []))
+  const resolved = new Set<string>()
+  const blocked = new Set(plugins.keys())
+  let progressed = true
+  while (progressed) {
+    progressed = false
+    for (const index of blocked) {
+      const plugin = plugins[index]!
+      if (plugin.dependsOn?.some(name => names.has(name) && !resolved.has(name))) { continue }
+      blocked.delete(index)
+      if (plugin.name) { resolved.add(plugin.name) }
+      progressed = true
+    }
   }
-  for (const name of shared) { byName.delete(name) }
+  if (!blocked.size) { return plugins }
+
+  const byName = new Map<string, number>()
+  for (const index of blocked) {
+    const name = plugins[index]!.name
+    if (name && !resolved.has(name) && !byName.has(name)) { byName.set(name, index) }
+  }
 
   const result = [...plugins]
   const done = new Set<number>()
@@ -501,7 +514,7 @@ export function breakCircularDependencies<T extends AnnotatedPlugin> (plugins: T
     stack.pop()
     done.add(index)
   }
-  for (const index of plugins.keys()) {
+  for (const index of blocked) {
     if (!done.has(index)) { visit(index) }
   }
   return result
