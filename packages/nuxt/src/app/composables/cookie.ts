@@ -1,5 +1,5 @@
 import type { Ref, WatchHandle } from 'vue'
-import { customRef, getCurrentScope, onScopeDispose, ref, watch } from 'vue'
+import { customRef, getCurrentScope, onScopeDispose, ref, unref, watch } from 'vue'
 import { parse, parseSetCookie, serialize } from 'cookie-es'
 import type { CookieSerializeOptions } from '../types/cookie'
 import type { NuxtRequestEvent } from '@nuxt/schema'
@@ -28,6 +28,18 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   decode?(value: string | null | undefined): T
   encode?(value: T): string
   default?: () => T | Ref<T>
+}
+
+/** Options accepted by `useCookie`. */
+export interface UseCookieOptions<T = any> extends Omit<CookieOptions<T>, 'expires'> {
+  /**
+   * Expiration date for the cookie, or a getter that returns one.
+   *
+   * When a function is provided, it is evaluated on every cookie write
+   * so the expiration can be refreshed when the value is re-set.
+   * The getter should be pure (no side effects).
+   */
+  expires?: Date | (() => Date | undefined)
   watch?: boolean | 'shallow'
   readonly?: boolean
   /** Whether this ref reads the named cookie from the jar. Defaults to an exact name match. */
@@ -49,18 +61,8 @@ export interface CookieOptions<T = any> extends _CookieOptions {
    * @default false
    */
   refresh?: boolean
-}
-
-/** Options accepted by `useCookie`. */
-export interface UseCookieOptions<T = any> extends Omit<CookieOptions<T>, 'expires'> {
-  /**
-   * Expiration date for the cookie, or a getter that returns one.
-   *
-   * When a function is provided, it is evaluated on every cookie write
-   * so the expiration can be refreshed when the value is re-set.
-   * The getter should be pure (no side effects).
-   */
-  expires?: Date | (() => Date | undefined)
+  /** A `$cookie` instance whose defaults this ref uses, e.g. from `$cookie.create()`. */
+  $cookie?: $Cookie<T>
 }
 
 function resolveExpires (expires?: Date | (() => Date | undefined)): Date | undefined {
@@ -70,11 +72,31 @@ function resolveExpires (expires?: Date | (() => Date | undefined)): Date | unde
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CookieRef<T> extends Ref<T> {}
 
-const CookieDefaults = {
+function decodeURIComponentSafe (value: string) {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+const baseCookieOptions = {
   path: '/',
-  watch: true,
-  decode: val => val ? parseCookieValue(decodeURIComponent(val)) : val,
-  encode: (val) => {
+  decode: val => val ? decodeURIComponentSafe(val) : val,
+  encode: val => encodeURIComponent(val),
+} satisfies CookieOptions<any>
+
+/**
+ * The serializer `useCookie` used by default before Nuxt 5: values are stored as JSON, except
+ * strings that would not be read back as strings.
+ *
+ * @deprecated todo link to docs
+ *
+ * @since 5.0.0
+ */
+export const legacyCookieSerializer = {
+  decode: (val: string | null | undefined): any => val ? parseCookieValue(decodeURIComponent(val)) : val,
+  encode: (val: any): string => {
     // JSON-quote strings that would be coerced on decode (e.g. '42', 'true', 'null', 'undefined')
     if (typeof val !== 'string' || val === 'undefined') {
       return encodeURIComponent(JSON.stringify(val))
@@ -89,24 +111,29 @@ const CookieDefaults = {
     }
     return encodeURIComponent(val)
   },
-  refresh: false,
-} satisfies UseCookieOptions<any>
+} satisfies Pick<CookieOptions, 'encode' | 'decode'>
 
 // we use globalThis to avoid crashes in web workers
 const store = import.meta.client && cookieStore ? globalThis.cookieStore : undefined
+
+/** A `useCookie` composable whose value type defaults to `D`, as returned by `createUseCookie`. */
+export interface UseCookie<D = string | null | undefined> {
+  <T = D> (name: string, opts?: UseCookieOptions<T> & { readonly?: false }): CookieRef<T>
+  <T = D> (name: string, opts: UseCookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
+}
 
 /** @since 3.0.0 */
 export function useCookie<T = string | null | undefined> (name: string, _opts?: UseCookieOptions<T> & { readonly?: false }): CookieRef<T>
 export function useCookie<T = string | null | undefined> (name: string, _opts: UseCookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
 export function useCookie<T = string | null | undefined> (name: string, _opts?: UseCookieOptions<T>): CookieRef<T> {
-  const opts = { ...CookieDefaults, ..._opts }
+  const instance: $Cookie<any> = _opts?.$cookie ?? $cookie
+  const opts = { watch: true, refresh: false, ...baseCookieOptions, ...instance.options, ..._opts }
   opts.filter ??= key => key === name
 
   const nuxtApp = import.meta.server ? useNuxtApp() : undefined!
 
-  const jar = import.meta.client ? readClientCookieJar() : readServerCookieJar(nuxtApp)
-  const rawValue = opts.filter(name) ? jar[name] : undefined
-  const cookies: Record<string, unknown> = { [name]: rawValue === undefined ? undefined : opts.decode(rawValue) }
+  const hasCookie = opts.filter(name) && instance.has(name)
+  const cookies: Record<string, unknown> = { [name]: hasCookie ? instance.get(name, { ...opts, default: undefined } as CookieOptions) : undefined }
 
   let delay: number | undefined
 
@@ -129,7 +156,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   const hasExpired = delay !== undefined && delay <= 0
   const cookieValueIsNullish = cookies[name] === undefined || cookies[name] === null
-  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (hasExpired || cookieValueIsNullish) && !(rawValue === undefined && cookieValueIsNullish && opts.default === undefined)
+  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (hasExpired || cookieValueIsNullish) && !(!hasCookie && cookieValueIsNullish && opts.default === undefined)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
@@ -139,7 +166,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       ? cookieServerRef<T | undefined>(name, cookieValue, opts, nuxtApp)
       : ref<T | undefined>(cookieValue)
 
-  if (import.meta.server && !opts.readonly && rawValue === undefined) {
+  if (import.meta.server && !opts.readonly && !hasCookie) {
     const initialValue = cookie.value
     if (initialValue !== undefined && initialValue !== null) {
       updateServerCookieJar(nuxtApp, name, opts.encode(initialValue as T))
@@ -147,44 +174,30 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   if (import.meta.dev && hasExpired) {
-    stateDiagnostics.NUXT_E7005({ name })
+    reportExpiredCookie(name)
   }
 
   if (import.meta.client) {
     let skipRefresh = false
-    let channel: null | BroadcastChannel = null
-    try {
-      if (!store && typeof BroadcastChannel !== 'undefined') {
-        channel = new BroadcastChannel(`nuxt:cookies:${name}`)
-      }
-    } catch {
-      // BroadcastChannel will fail in certain situations when cookies are disabled
-      // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
-    }
     const callback = (force = false) => {
       if (!force) {
         if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       }
-      const encoded = cookie.value === null || cookie.value === undefined
-        ? undefined
-        : opts.encode(cookie.value as T)
-      writeClientCookie(name, encoded, opts)
-
+      instance.set(name, cookie.value, opts as CookieOptions)
       cookies[name] = klona(cookie.value)
-      channel?.postMessage({ value: opts.encode(cookie.value as T) })
     }
 
     let cookieWatcher: WatchHandle | undefined
 
-    const handleChange = (data: { value?: string | null, refresh?: boolean }) => {
-      if (data.refresh) { invalidateClientCookieJar() }
-      const raw = data.refresh ? (opts.filter!(name) ? readClientCookieJar()[name] : undefined) : data.value
-      const value = raw === undefined && data.refresh ? undefined : opts.decode(raw)
+    const handleChange = (value: T | undefined) => {
+      if (!opts.filter!(name)) { value = undefined }
+      if (isEqual(value, cookie.value)) { return }
       cookie.value = value
       cookies[name] = klona(value)
       skipRefresh = true
     }
 
+    instance.onChange(name, handleChange, opts as CookieOptions)
     const hasScope = !!getCurrentScope()
 
     if (hasScope) {
@@ -196,30 +209,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         writers?.delete(write)
         cookieWatcher?.pause()
         callback()
-        channel?.close()
       })
-    }
-
-    if (store) {
-      /* event is of type CookieChangeEvent */
-      const changeHandler = (event: CookieChangeEvent) => {
-        const changedCookie = event.changed.find(c => c.name === name)
-        const removedCookie = event.deleted.find(c => c.name === name)
-
-        if (changedCookie) {
-          handleChange({ value: changedCookie.value })
-        }
-
-        if (removedCookie) {
-          handleChange({ value: null })
-        }
-      }
-      store.addEventListener('change', changeHandler)
-      if (hasScope) {
-        onScopeDispose(() => store.removeEventListener('change', changeHandler))
-      }
-    } else if (channel) {
-      channel.onmessage = ({ data }) => handleChange(data)
     }
 
     if (opts.watch && !opts.readonly) {
@@ -257,10 +247,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         }
       }
       nuxtApp._cookies[name] = cookie.value
-      const encoded = cookie.value === null || cookie.value === undefined
-        ? undefined
-        : opts.encode(cookie.value as T)
-      writeServerCookie(useRequestEvent(nuxtApp)!, name, encoded, opts)
+      nuxtApp.runWithContext(() => instance.set(name, cookie.value, opts as CookieOptions))
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
@@ -271,13 +258,28 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   return cookie as CookieRef<T>
 }
+
+/**
+ * Create a `useCookie` composable with default options, e.g. `createUseCookie(legacyCookieSerializer)`.
+ *
+ * @since 5.0.0
+ */
+export function createUseCookie<D = string | null | undefined> (defaults: UseCookieOptions<D> = {}): UseCookie<D> {
+  return ((name: string, opts?: UseCookieOptions) => useCookie(name, { ...defaults, ...opts } as UseCookieOptions & { readonly?: false })) as UseCookie<D>
+}
+
 /** @since 3.10.0 */
 export function refreshCookie (name: string): void {
-  if (import.meta.server || store || typeof BroadcastChannel === 'undefined') { return }
+  if (import.meta.server) { return }
+  broadcastCookie(name, { refresh: true })
+}
+
+function broadcastCookie (name: string, data: { value?: string, refresh?: boolean }) {
+  if (store || typeof BroadcastChannel === 'undefined') { return }
 
   try {
     const channel = new BroadcastChannel(`nuxt:cookies:${name}`)
-    channel.postMessage({ refresh: true })
+    channel.postMessage(data)
     channel.close()
   } catch {
     // BroadcastChannel will fail in certain situations when cookies are disabled
@@ -331,6 +333,13 @@ function isCurrentPath (path: string) {
  * A write with a non-positive `maxAge` or a past `expires` date deletes the
  * cookie in the browser regardless of the value passed alongside it.
  */
+const reportedExpiredCookies = /* @__PURE__ */ new Set<string>()
+function reportExpiredCookie (name: string) {
+  if (reportedExpiredCookies.has(name)) { return }
+  reportedExpiredCookies.add(name)
+  stateDiagnostics.NUXT_E7005({ name })
+}
+
 function isExpiredWrite (opts: UseCookieOptions) {
   if (opts.maxAge !== undefined) { return opts.maxAge <= 0 }
   const expires = resolveExpires(opts.expires)
@@ -556,3 +565,131 @@ function cookieServerRef<T> (name: string, value: T | undefined, opts: UseCookie
     }
   })
 }
+
+export interface $Cookie<D = string | null | undefined> {
+  /** The defaults this instance was created with. */
+  readonly options: CookieOptions<D>
+  get<T = D> (name: string, opts: CookieOptions<T> & { default: () => T | Ref<T> }): T
+  get<T = D> (name: string, opts?: CookieOptions<T>): T | undefined
+  /** Read and decode all cookies visible to the current request (server) or document (client). */
+  getAll<T = D> (opts?: CookieOptions<T>): Record<string, T | undefined>
+  has (name: string): boolean
+  /** Encode and write a cookie. Setting `null` or `undefined` removes it. */
+  set<T = D> (name: string, value: NoInfer<T> | null | undefined, opts?: CookieOptions<T>): void
+  /** Remove a cookie. Pass the same `path`/`domain` the cookie was set with. */
+  remove (name: string, opts?: CookieOptions): void
+  /**
+   * Call `callback` with the decoded value whenever the cookie changes, including in other tabs.
+   * Returns a function that stops listening, which is also called when the current effect scope
+   * is disposed or `signal` is aborted. Does nothing on the server.
+   */
+  onChange<T = D> (name: string, callback: (value: T | undefined) => void, opts?: CookieOptions<T> & { signal?: AbortSignal }): () => void
+  create<T = D> (defaults?: CookieOptions<T>): $Cookie<T>
+}
+
+function readCookieJar (): Record<string, string | undefined> {
+  return import.meta.client ? readClientCookieJar() : readServerCookieJar(useNuxtApp())
+}
+
+function listen (name: string, callback: (value: any) => void, opts: CookieOptions) {
+  const { decode = baseCookieOptions.decode } = opts
+  const handleChange = (data: { value?: string | null, refresh?: boolean }) => {
+    if (data.refresh) { invalidateClientCookieJar() }
+    const raw = data.refresh ? readClientCookieJar()[name] : data.value
+    callback(raw === undefined && data.refresh ? undefined : decode(raw))
+  }
+
+  if (store) {
+    /* event is of type CookieChangeEvent */
+    const changeHandler = (event: CookieChangeEvent) => {
+      const changedCookie = event.changed.find(c => c.name === name)
+      const removedCookie = event.deleted.find(c => c.name === name)
+
+      if (changedCookie) {
+        handleChange({ value: changedCookie.value })
+      }
+
+      if (removedCookie) {
+        handleChange({ value: null })
+      }
+    }
+    store.addEventListener('change', changeHandler)
+    return () => store.removeEventListener('change', changeHandler)
+  }
+
+  let channel: BroadcastChannel | undefined
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      channel = new BroadcastChannel(`nuxt:cookies:${name}`)
+    }
+  } catch {
+    // BroadcastChannel will fail in certain situations when cookies are disabled
+    // or running in an iframe: see https://github.com/nuxt/nuxt/issues/26338
+  }
+  if (!channel) { return () => {} }
+  channel.onmessage = ({ data }) => handleChange(data)
+  return () => channel.close()
+}
+
+function createCookieUtil (defaults: CookieOptions): $Cookie<any> {
+  const read = (raw: string | undefined, opts?: CookieOptions) => {
+    const { decode = baseCookieOptions.decode, default: getDefault } = { ...defaults, ...opts }
+    const value = raw === undefined ? undefined : decode(raw)
+    return value ?? (getDefault ? unref(getDefault()) : value)
+  }
+
+  const write = (name: string, value: unknown, opts?: CookieOptions) => {
+    const { encode = baseCookieOptions.encode, default: _default, ...options } = { ...defaults, ...opts }
+    const encoded = value === null || value === undefined ? undefined : encode(value)
+    const writeOpts = { path: baseCookieOptions.path, ...options }
+
+    if (import.meta.dev && encoded !== undefined && isExpiredWrite(writeOpts)) {
+      reportExpiredCookie(name)
+    }
+
+    if (import.meta.client) {
+      writeClientCookie(name, encoded, writeOpts)
+      broadcastCookie(name, { value: isExpiredWrite(writeOpts) ? undefined : encoded })
+    } else {
+      const nuxtApp = useNuxtApp()
+      writeServerCookie(useRequestEvent(nuxtApp)!, name, encoded, writeOpts)
+      updateServerCookieJar(nuxtApp, name, encoded)
+    }
+  }
+
+  return {
+    options: defaults,
+    get: (name: string, opts?: CookieOptions) => read(readCookieJar()[name], opts),
+    getAll (opts) {
+      const jar = readCookieJar()
+      const result: Record<string, any> = {}
+      for (const name in jar) {
+        result[name] = read(jar[name], opts)
+      }
+      return result
+    },
+    has: name => readCookieJar()[name] !== undefined,
+    set: (name, value, opts) => write(name, value, opts),
+    remove: (name, opts) => write(name, undefined, opts),
+    onChange (name, callback, opts) {
+      if (!import.meta.client || opts?.signal?.aborted) { return () => {} }
+      const { signal, ...options } = opts ?? {}
+      const unlisten = listen(name, callback, { ...defaults, ...options })
+      const stop = () => {
+        unlisten()
+        signal?.removeEventListener('abort', stop)
+      }
+      signal?.addEventListener('abort', stop, { once: true })
+      if (getCurrentScope()) { onScopeDispose(stop) }
+      return stop
+    },
+    create: opts => createCookieUtil({ ...defaults, ...opts }),
+  }
+}
+
+/**
+ * Read and write cookies imperatively, on both server and client.
+ *
+ * @since 5.0.0
+ */
+export const $cookie: $Cookie = /* @__PURE__ */ createCookieUtil(baseCookieOptions)
