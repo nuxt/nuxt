@@ -8,6 +8,8 @@ import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../util
 
 type ImportPath = string
 
+const VUE_RUNTIME_RE = /[\\/]node_modules[\\/](?:@vue[\\/](?:runtime-core|runtime-dom|reactivity|server-renderer|shared)|vue)[\\/]/
+
 interface TreeShakeComposablesPluginOptions {
   composables: Record<ImportPath, string[]>
   /** Composables to replace with a call to the same export from the given module, without the first argument. */
@@ -50,7 +52,9 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
       filter: {
         id: {
           include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
-          exclude: VUE_NON_SCRIPT_BLOCK_RE,
+          // Vue's own packages declare these composables rather than importing them, so nothing in
+          // them can be tree-shaken, and the runtime core alone is over 280 kB to parse per environment
+          exclude: [VUE_NON_SCRIPT_BLOCK_RE, VUE_RUNTIME_RE],
         },
         code: { include: new RegExp(`\\b(?:${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\b`) },
       },

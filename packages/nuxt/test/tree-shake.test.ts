@@ -14,6 +14,18 @@ describe('tree-shake', () => {
     composables: { 'vue': ['onMounted'] },
   }).raw({}, {} as any)
 
+  it('does not send vue\'s own packages to the transform', () => {
+    const [include, exclude] = [transformPlugin.transform.filter.id.include, transformPlugin.transform.filter.id.exclude]
+    const reaches = (id: string) => include.some((re: RegExp) => re.test(id)) && !exclude.some((re: RegExp) => re.test(id))
+    expect(reaches('/app/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js')).toBe(false)
+    expect(reaches('C:\\app\\node_modules\\@vue\\reactivity\\dist\\reactivity.esm-bundler.js')).toBe(false)
+    expect(reaches('/app/node_modules/vue/dist/vue.runtime.esm-bundler.js')).toBe(false)
+    expect(reaches('/app/node_modules/nuxt/dist/app/components/nuxt-layout.js')).toBe(true)
+    expect(reaches('/app/node_modules/vue-router/dist/vue-router.mjs')).toBe(true)
+    expect(reaches('/app/node_modules/@vueuse/core/index.mjs')).toBe(true)
+    expect(reaches('/app/pages/index.vue?vue&type=script&setup=true&lang.ts')).toBe(true)
+  })
+
   it('should tree shake composables from source code', async () => {
     const code = `
       onMounted(() => {})
