@@ -328,13 +328,15 @@ describe('<NuxtTime> formatter reuse', () => {
     )
   })
 
-  it('should evict older formatters once the cache exceeds its limit', () => {
+  it('should evict the oldest formatter once the cache exceeds its limit', () => {
     const options = { timeZone: 'UTC' }
     const first = getFormatter(false, 'en-US', options)
+    let last = first
     for (let index = 0; index < 100; index++) {
-      getFormatter(false, `en-US-x-fmt-${index}`, options)
+      last = getFormatter(false, `en-US-x-fmt-${index}`, options)
     }
 
     expect(getFormatter(false, 'en-US', options)).not.toBe(first)
+    expect(getFormatter(false, 'en-US-x-fmt-99', options)).toBe(last)
   })
 })

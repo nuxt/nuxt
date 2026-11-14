@@ -8,7 +8,7 @@ export function getFormatter (relative: boolean | undefined, locale: string | un
   if (!formatter) {
     formatter = relative ? new Intl.RelativeTimeFormat(locale, options) : new Intl.DateTimeFormat(locale, options)
     if (formatters.size >= MAX_CACHED_FORMATTERS) {
-      formatters.clear()
+      formatters.delete(formatters.keys().next().value!)
     }
     formatters.set(key, formatter)
   }
