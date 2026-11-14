@@ -155,7 +155,7 @@ export default defineNuxtModule({
         ...nuxt.options.watchers.chokidar,
         depth: 1,
         ignored: [
-          (path, stats) => (stats && !stats.isFile()) || !SCHEMA_RE.test(path),
+          (path, stats) => !rootDirs.includes(path) && ((stats && !stats.isFile()) || !SCHEMA_RE.test(path)),
           isIgnored,
           /[\\/]node_modules[\\/]/,
         ],
