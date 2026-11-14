@@ -1365,7 +1365,7 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
   it('skips an import of nitro v2 code that resolves through a file', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-file-alias-subpath-'))
     onTestFinished(() => rmSync(dir, { recursive: true, force: true }))
-    vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9003').mockImplementation(() => ({}) as any)
+    silence('NUXT_B9003')
     writeFileSync(join(dir, 'meta.mjs'), '')
     writeFileSync(join(dir, 'handler.ts'), `import { getQuery } from 'h3'\nimport '#meta/other'\nexport default getQuery`)
 
@@ -1373,7 +1373,6 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     await setupNitroCompat(createNuxt({ extensions: ['.ts'], alias: { '#meta': join(dir, 'meta.mjs') } }), nitroConfig, legacyOff, [])
 
     expect(nitroConfig.plugins!.map(String)).toEqual([expect.stringMatching(/compat[\\/]event-plugin/), expect.stringMatching(/compat[\\/]hooks-plugin/)])
-    vi.restoreAllMocks()
   })
 
   it('does not walk server code imports when the scan finds no nitro v2 code', async () => {
