@@ -30,6 +30,8 @@ interface PerfPhase {
   retainedMemory?: MemorySnapshot
   /** The phase had not ended when the report was taken, for example because the build failed. */
   unfinished?: boolean
+  /** The phase ran before the profiler was created, so its memory was not measured. */
+  memoryUnmeasured?: boolean
 }
 
 interface OpenPhase {
@@ -80,6 +82,7 @@ interface PerfReport {
     ownMemoryDelta: MemoryDelta
     retainedHeap?: number
     unfinished?: boolean
+    memoryUnmeasured?: boolean
   }>
   /** Time inside `totalDuration` that no phase covers. */
   unattributedDuration: number
@@ -232,6 +235,7 @@ export class NuxtPerfProfiler {
       memoryBefore: this.#globalMemoryBefore,
       memoryAfter: this.#globalMemoryBefore,
       memoryDelta: { rss: 0, heapUsed: 0 },
+      memoryUnmeasured: true,
     })
   }
 
@@ -474,6 +478,7 @@ export class NuxtPerfProfiler {
         memoryDelta: p.memoryDelta,
         retainedHeap: p.retainedMemory?.heapUsed,
         unfinished: p.unfinished,
+        memoryUnmeasured: p.memoryUnmeasured,
       })),
       unattributedDuration: round(Math.max(0, totalDuration - coveredDuration(allPhases.filter(p => !isSubPhase(p.name))))),
       modules: this.#modules.toSorted((a, b) => b.setupTime - a.setupTime),
@@ -531,8 +536,8 @@ export class NuxtPerfProfiler {
       const cells = [
         phase.name,
         durColor(formatDuration(dur)),
-        memColor(formatSignedBytes(rss)),
-        formatSignedBytes(phase.ownMemoryDelta.heapUsed),
+        phase.memoryUnmeasured ? colors.dim('-') : memColor(formatSignedBytes(rss)),
+        phase.memoryUnmeasured ? colors.dim('-') : formatSignedBytes(phase.ownMemoryDelta.heapUsed),
       ]
       if (showRetained) {
         cells.push(phase.retainedHeap != null
@@ -612,10 +617,12 @@ export class NuxtPerfProfiler {
     ]
 
     for (const phase of phases) {
-      events.push(...span(phase.name, 'phase', tidPhases, phase.startTime, phase.endTime, {
-        begin: { memoryBefore: { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed } },
-        end: { memoryDelta: phase.memoryDelta },
-      }))
+      events.push(...span(phase.name, 'phase', tidPhases, phase.startTime, phase.endTime, phase.memoryUnmeasured
+        ? undefined
+        : {
+            begin: { memoryBefore: { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed } },
+            end: { memoryDelta: phase.memoryDelta },
+          }))
     }
 
     for (const hp of this.#hookPhases) {
@@ -653,6 +660,7 @@ export class NuxtPerfProfiler {
 
     const counter = (name: string, ts: number, args: Record<string, number>): TraceEvent => ({ name, cat: 'memory', ph: 'C', ts, pid, tid: 0, args })
     for (const phase of phases) {
+      if (phase.memoryUnmeasured) { continue }
       events.push(
         counter('Memory', toUs(phase.startTime), { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed }),
         counter('Memory', toUs(phase.endTime), { rss: phase.memoryAfter.rss, heapUsed: phase.memoryAfter.heapUsed }),

@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { performance } from 'node:perf_hooks'
 import process from 'node:process'
+import { stripVTControlCharacters } from 'node:util'
 import { join } from 'pathe'
 import { createHooks } from 'hookable'
 import { consola } from 'consola'
@@ -299,6 +300,18 @@ describe('NuxtPerfProfiler', () => {
     expect(startup!.duration).toBeGreaterThanOrEqual(95)
     expect(report.unattributedDuration).toBeGreaterThanOrEqual(25)
     expect(report.unattributedDuration).toBeCloseTo(report.totalDuration - startup!.duration - config!.duration, 1)
+  })
+
+  it('does not report memory for phases that ran before the profiler was created', () => {
+    const log = vi.spyOn(consola, 'log').mockImplementation(() => {})
+    onTestFinished(() => log.mockRestore())
+    const perf = new NuxtPerfProfiler({ startTime: Date.now() - 100 })
+
+    perf.printReport()
+
+    const startup = log.mock.calls.map(([line]) => stripVTControlCharacters(String(line))).find(line => line.includes('startup'))
+    expect(startup).toMatch(/startup\s+\S+\s+-\s+-/)
+    expect(perf.getTraceEvents().filter(e => e.cat === 'memory')).toEqual([])
   })
 
   it('ends startup when the profiler is told it did', () => {
