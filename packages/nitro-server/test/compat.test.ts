@@ -1085,6 +1085,31 @@ export default defineEventHandler((event: H3Event) => event.req.headers)`)
     expect(report).not.toHaveBeenCalled()
   })
 
+  it('parses only user server files that name a legacy specifier when reporting Nitro v2 usage', async () => {
+    const report = silence('NUXT_B9005')
+    const rootDir = mkdtempSync(join(tmpdir(), 'nitro-compat-user-parse-'))
+    onTestFinished(() => rmSync(rootDir, { recursive: true, force: true }))
+    mkdirSync(join(rootDir, 'server/api'), { recursive: true })
+    mkdirSync(join(rootDir, 'server/utils'), { recursive: true })
+    writeFileSync(join(rootDir, 'server/api/storage.ts'), `import { useStorage } from 'nitropack/runtime'\nexport default () => useStorage()`)
+    writeFileSync(join(rootDir, 'server/api/headers.ts'), `export default (event: any) => event.node.req.headers`)
+    writeFileSync(join(rootDir, 'server/utils/plain.ts'), `export const plain = 1`)
+
+    const nuxt = createNuxt({ rootDir, srcDir: rootDir, serverDir: join(rootDir, 'server'), buildDir: join(rootDir, '.nuxt'), _layers: [{ config: { rootDir, srcDir: rootDir }, cwd: rootDir }] })
+    const registerLate = await setupNitroCompat(nuxt, { handlers: [] }, legacyOff, [])
+    const nitro = { options: { handlers: [], plugins: [] }, hooks: createHooks() } as any
+    registerLate(nitro)
+    const parses = vi.mocked(parseSync)
+    parses.mockClear()
+    await nitro.hooks.callHook('build:before', nitro)
+
+    expect(parses.mock.calls.map(([filename]) => filename).filter(filename => filename.startsWith(rootDir))).toEqual([join(rootDir, 'server/api/storage.ts')])
+    expect(report).toHaveBeenCalledTimes(1)
+    const { count, files } = report.mock.calls[0]![0] as { count: number, files: string }
+    expect(count).toBe(2)
+    expect(files.split('\n  - ').sort()).toEqual(['`server/api/headers.ts` (uses `event.node`)', '`server/api/storage.ts` (uses `nitropack/runtime`)'])
+  })
+
   it.each([
     ['1.15.11', 'off', legacyOff, 1],
     ['1.15.11', 'on for specifiers', resolveNitroLegacyOptions({ h3: false }), 1],
@@ -1473,6 +1498,19 @@ describe('scanLegacyScope', () => {
       'clean.ts': `export default 1`,
     })
     expect(scanLegacyScope(['#virtual-template'], [dir]).size).toBe(0)
+  })
+
+  it('parses only files that name a legacy specifier', () => {
+    const dir = scoped({
+      'portable.ts': `import { helper } from './util'\nexport default helper`,
+      'util.ts': `export const helper = () => 1`,
+      'legacy.ts': `import { getQuery } from 'h3'\nexport default getQuery`,
+    })
+    const parses = vi.mocked(parseSync)
+    parses.mockClear()
+
+    expect([...scanLegacyScope([], [dir])]).toEqual([[join(dir, 'legacy.ts'), ['h3']]])
+    expect(parses.mock.calls.map(([filename]) => filename)).toEqual([join(dir, 'legacy.ts')])
   })
 })
 
