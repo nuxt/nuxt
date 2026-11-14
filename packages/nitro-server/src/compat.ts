@@ -302,7 +302,7 @@ async function reportUserLegacyCode (dirs: string[], rootDir: string, legacy: Re
     } catch {
       continue
     }
-    const specifiers = findImportSpecifiers(code, path)
+    const specifiers = SPECIFIER_HINT_RE.test(code) ? findImportSpecifiers(code, path) : []
     if (!legacy.h3 && specifiers.some(specifier => !specifier.typeOnly && (specifier.value === 'h3' || specifier.value === 'h3/utils'))) {
       const version = resolveH3V1Version(dirname(path), h3V1Versions)
       if (version) {
