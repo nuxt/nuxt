@@ -111,7 +111,7 @@ function annotateProperty (s: MagicString, code: string, property: ESTree.Object
     return
   }
 
-  const schemaProperty = node.properties.find((prop): prop is ESTree.ObjectProperty => prop.type === 'Property' && prop.key.type === 'Identifier' && prop.key.name === '$schema')
+  const schemaProperty = node.properties.find((prop): prop is ESTree.ObjectProperty => prop.type === 'Property' && (prop.key.type === 'Identifier' ? prop.key.name : prop.key.type === 'Literal' ? prop.key.value : undefined) === '$schema')
   if (!schemaProperty || schemaProperty.kind !== 'init' || schemaProperty.method) {
     s.appendLeft(node.start + 1, `$schema: ${JSON.stringify(schema)}, `)
     return

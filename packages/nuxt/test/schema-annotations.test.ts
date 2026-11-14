@@ -243,6 +243,15 @@ describe('annotateSchemaSource', () => {
     expect(second).toMatchObject({ version: 2, options: { value: { $default: 2, $schema: { title: 'Version 2' } } } })
   })
 
+  it('merges annotations into a quoted `$schema` key', async () => {
+    const file = join(dir, 'quoted-schema.ts')
+    await writeFile(file, `export default {\n  /** Option */\n  option: { '$schema': { type: 'string' }, $default: 'x' },\n}`)
+
+    expect(await createSchemaJiti(jiti, import.meta.url).import(file, { default: true })).toEqual({
+      option: { $schema: { type: 'string', title: 'Option', description: '', tags: [] }, $default: 'x' },
+    })
+  })
+
   it('keeps every line in place', () => {
     for (const source of Object.values(cases)) {
       expect(annotateSchemaSource(source, 'nuxt.schema.ts').split('\n').length).toBe(source.split('\n').length)
