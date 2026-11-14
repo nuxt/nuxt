@@ -58,6 +58,19 @@ export function getMissingCjsGlobal (error: unknown): string | undefined {
   return CJS_GLOBAL_ERROR_RE.exec(message)?.[1]
 }
 
+const MISSING_EXPORT_RE = /does not provide an export named\b/
+
+/**
+ * Whether a failed `import()` failed to link because a module does not provide a named export.
+ * Under type stripping this is usually a type imported without `import type`, which jiti erases.
+ *
+ * @param error the error the failed `import()` rejected with
+ */
+export function isMissingExportError (error: unknown): boolean {
+  const { name, message } = (error ?? {}) as { name?: unknown, message?: unknown }
+  return name === 'SyntaxError' && typeof message === 'string' && MISSING_EXPORT_RE.test(message)
+}
+
 const CJS_GLOBALS_HINT = 'The file was loaded as native ESM, which does not provide the CommonJS globals `__dirname`, `__filename`, `require`, `module` or `exports`. Use `import.meta.url`, `import.meta.dirname` and `createRequire(import.meta.url)` from `node:module` instead.'
 
 /**
@@ -70,6 +83,9 @@ const CJS_GLOBALS_HINT = 'The file was loaded as native ESM, which does not prov
 export function describeNativeImportFailure (error: unknown): string {
   if (getMissingCjsGlobal(error)) {
     return CJS_GLOBALS_HINT
+  }
+  if (isMissingExportError(error)) {
+    return 'The runtime erases types without checking which imports refer to them, so types have to be imported with `import type`.'
   }
   switch ((error as { code?: string } | undefined)?.code) {
     case 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING': {

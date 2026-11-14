@@ -21,7 +21,7 @@ export { bundlerDiagnostics } from '../diagnostics/bundler.ts'
 
 export { reportPendingTemplates, trackPendingTemplate } from './pending-templates.ts'
 
-export { loadJiti } from './jiti.ts'
+export { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from './jiti.ts'
 
 export { findPackageMissingSubpath } from '../dependency.ts'
 

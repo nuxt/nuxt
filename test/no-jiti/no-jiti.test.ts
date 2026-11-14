@@ -16,7 +16,7 @@ const kitDist = join(repoRoot, 'packages/kit/dist/index.mjs')
 /** Packages allowed to declare `jiti`, and only as an optional peer dependency. */
 const OPTIONAL_JITI_PACKAGES = new Set(['@nuxt/kit', 'nuxt'])
 
-async function runWithoutJiti (kitEntry: string, task: 'config' | 'build', cwds: string[]) {
+async function runWithoutJiti (kitEntry: string, task: 'config' | 'schema' | 'build', cwds: string[]) {
   const { stdout, stderr, exitCode } = await exec(process.execPath, [runner, kitEntry, task, ...cwds], {
     nodeOptions: { cwd: repoRoot },
   })
@@ -27,6 +27,7 @@ async function runWithoutJiti (kitEntry: string, task: 'config' | 'build', cwds:
   return {
     exitCode,
     completed,
+    schemas: stdout.split('\n').filter(line => line.startsWith('schema ')).map(line => JSON.parse(line.slice(7))),
     /** Message describing where and why the child stopped, for use as an assertion message. */
     report: [
       failedOn && `failed on ${relative(repoRoot, failedOn)} (${completed.length}/${cwds.length} succeeded)`,
@@ -92,6 +93,17 @@ describe('jiti is not required', () => {
     const { exitCode, completed, report } = await runWithoutJiti(kitDist, 'config', dirs)
     expect(exitCode, report).toBe(0)
     expect(completed).toEqual(dirs)
+  }, 120_000)
+
+  it('reads the JSDoc annotations in a nuxt.schema file', async () => {
+    const cwd = join(repoRoot, 'test/fixtures/basic-types')
+    const { exitCode, schemas, report } = await runWithoutJiti(kitSource, 'schema', [cwd])
+    expect(exitCode, report).toBe(0)
+    expect(schemas[0].properties.appConfig.properties.userConfig).toMatchObject({
+      title: 'This is an example app config defined in custom schema',
+      tsType: '123 | 456',
+      default: 123,
+    })
   }, 120_000)
 
   it.skipIf(process.env.SKIP_NO_JITI_BUILD === 'true')('builds a minimal application', async () => {
