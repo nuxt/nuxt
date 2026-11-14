@@ -44,10 +44,10 @@ export type PluginBuildMode = 'client' | 'server'
 
 const pluginDependenciesByMode = new WeakMap<Nuxt, Partial<Record<PluginBuildMode, Map<string, string[]>>>>()
 
-export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode, plugins: Array<{ src: string, dependsOn?: string[], _metaUnknown?: boolean }>) {
+export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode, plugins: Array<{ src: string, dependsOn?: string[] }>) {
   const dependencies = new Map<string, string[]>()
   for (const plugin of plugins) {
-    if (!plugin._metaUnknown && plugin.dependsOn) {
+    if (plugin.dependsOn) {
       dependencies.set(normalize(plugin.src), plugin.dependsOn)
     }
   }

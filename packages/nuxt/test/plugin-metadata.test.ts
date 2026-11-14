@@ -198,7 +198,10 @@ describe('plugin-metadata', () => {
     expect((RemovePluginMetadataPlugin(filterNuxt, 'client').raw({}, {} as any) as any).transform(plugin, 'my-plugin.mjs').code).toContain('dependsOn: ["a"],')
   })
 
-  it('should emit plugins without the dependency that closes a cycle', async () => {
+  it.each([
+    ['', ''],
+    [' when it is declared by a plugin whose other metadata cannot be statically analysed', ', parallel: import.meta.client'],
+  ])('should emit plugins without the dependency that closes a cycle%s', async (_, options) => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     const app = { plugins: [{ src: '/app/a.ts' }, { src: '/app/b.ts' }] }
     const cycleNuxt = {
@@ -206,13 +209,13 @@ describe('plugin-metadata', () => {
       apps: { default: app },
       vfs: {
         '/app/a.ts': 'export default defineNuxtPlugin({ name: \'a\', dependsOn: [\'b\'] })',
-        '/app/b.ts': 'export default defineNuxtPlugin({ name: \'b\', dependsOn: [\'a\'] })',
+        '/app/b.ts': `export default defineNuxtPlugin({ name: 'b', dependsOn: ['a']${options} })`,
       },
     } as any
     const contents = await clientPluginTemplate.getContents!({ nuxt: cycleNuxt, app, options: {} } as any)
     expect(contents.indexOf('/app/b.ts')).toBeLessThan(contents.indexOf('/app/a.ts'))
     const transform = (RemovePluginMetadataPlugin(cycleNuxt, 'client').raw({}, {} as any) as any).transform
-    expect(transform(cycleNuxt.vfs['/app/b.ts'], '/app/b.ts').code).toContain('dependsOn: []')
+    expect(transform(cycleNuxt.vfs['/app/b.ts'], '/app/b.ts')?.code).toContain('dependsOn: []')
     vi.restoreAllMocks()
   })
 })
