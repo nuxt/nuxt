@@ -337,11 +337,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const options = await loadNuxtConfig(opts)
 
   if (!perf && typeof options.debug === 'object' && options.debug.perf) {
-    const startTime = claimCliStartTime()
-    perf = new NuxtPerfProfiler({ startTime, startupEndTime: configStartTime })
-    if (startTime) {
-      perf.recordPhase('config', configStartTime)
-    }
+    perf = new NuxtPerfProfiler({ startTime: claimCliStartTime(), startupEndTime: configStartTime })
+    perf.recordPhase('config', configStartTime)
   }
   perf?.endPhase('config')
 

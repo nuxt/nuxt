@@ -235,10 +235,13 @@ export class NuxtPerfProfiler {
   constructor (options?: {
     /** When the CLI started, from `Date.now()`. Reported as a `startup` phase. */
     startTime?: number
-    /** When `startup` ended, from `performance.now()`. Defaults to the time the profiler is created. */
+    /**
+     * When `startup` ended, from `performance.now()`. Without `startTime`, the report starts here.
+     * Defaults to the time the profiler is created.
+     */
     startupEndTime?: number
   }) {
-    this.#globalStart = options?.startTime ? performance.now() - (Date.now() - options.startTime) : performance.now()
+    this.#globalStart = options?.startTime ? performance.now() - (Date.now() - options.startTime) : options?.startupEndTime ?? performance.now()
     this.#globalMemoryBefore = getMemorySnapshot()
     this.#baseTs = Date.now() * 1000 - performance.now() * 1000
     if (options?.startTime) {

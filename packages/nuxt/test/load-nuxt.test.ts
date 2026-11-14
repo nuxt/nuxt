@@ -149,6 +149,23 @@ describe('loadNuxt', () => {
     expect(config!.duration).toBeGreaterThanOrEqual(45)
   })
 
+  it('profiles config loading without a CLI start time', async () => {
+    const rootDir = mkdtempSync(join(tmpdir(), 'nuxt-perf-config-'))
+    onTestFinished(() => rmSync(rootDir, { recursive: true, force: true }))
+    writeFileSync(join(rootDir, 'nuxt.config.ts'), 'await new Promise(resolve => setTimeout(resolve, 50))\nexport default {}\n')
+    vi.stubEnv('NUXT_DEBUG_PERF', 'quiet')
+    onTestFinished(() => { vi.unstubAllEnvs() })
+
+    const nuxt = await loadNuxt({ cwd: rootDir, ready: false })
+    onTestFinished(() => nuxt.close())
+
+    const report = (nuxt._perf as unknown as NuxtPerfProfiler).getReport()
+    const config = report.phases.find(p => p.name === 'config')
+    expect(report.phases.find(p => p.name === 'startup')).toBeUndefined()
+    expect(config!.duration).toBeGreaterThanOrEqual(45)
+    expect(report.totalDuration).toBeGreaterThanOrEqual(config!.duration)
+  })
+
   it('reports experimental options that were removed', async () => {
     const report = vi.spyOn(configDiagnostics, 'NUXT_B5030').mockImplementation(() => ({}) as any)
     await loadNuxt({
