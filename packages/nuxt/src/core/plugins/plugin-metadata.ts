@@ -1,4 +1,3 @@
-import type { Literal } from 'estree'
 import { defu } from 'defu'
 import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
@@ -6,7 +5,7 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { normalize } from 'pathe'
 import type { NuxtAppLiterals, PluginMeta } from '../../app/types.ts'
 
-import { parseAndWalk, walk } from 'oxc-walker'
+import { ScopeTracker, walk } from 'oxc-walker'
 import { parseModule } from '../utils/parse.ts'
 import type { ESTree } from 'rolldown/utils'
 import { pluginDiagnostics } from '@nuxt/kit/internal'
@@ -45,10 +44,10 @@ export type PluginBuildMode = 'client' | 'server'
 
 const pluginDependenciesByMode = new WeakMap<Nuxt, Partial<Record<PluginBuildMode, Map<string, string[]>>>>()
 
-export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode, plugins: Array<{ src: string, dependsOn?: string[], _metaUnknown?: boolean }>) {
+export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode, plugins: Array<{ src: string, dependsOn?: string[] }>) {
   const dependencies = new Map<string, string[]>()
   for (const plugin of plugins) {
-    if (!plugin._metaUnknown && plugin.dependsOn) {
+    if (plugin.dependsOn) {
       dependencies.set(normalize(plugin.src), plugin.dependsOn)
     }
   }
@@ -58,55 +57,121 @@ export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode,
   pluginDependenciesByMode.set(nuxt, metadata)
 }
 
+const PLUGIN_WRAPPERS = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
+
 const metaCache: Record<string, ExtractedPluginMeta> = {}
+const failureCache: Record<string, unknown> = {}
 export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
-  let meta: ExtractedPluginMeta = {}
   if (metaCache[code]) {
     return metaCache[code]
   }
-  parseAndWalk(code, `file.${loader}`, (node) => {
+  if (code in failureCache) {
+    throw failureCache[code]
+  }
+  try {
+    return metaCache[code] = parseMetadata(code, loader)
+  } catch (e) {
+    failureCache[code] = e
+    throw e
+  }
+}
+
+function parseMetadata (code: string, loader: 'ts' | 'tsx') {
+  let meta: ExtractedPluginMeta = {}
+  const { program } = parseModule(code, `file.${loader}`)
+  const constants = collectConstants(program)
+  const wrappers = new Map<string, string>()
+  const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
+  walk(program, { scopeTracker })
+  scopeTracker.freeze()
+  const constantsInScope: Constants = { values: constants, isShadowed: name => !!scopeTracker.getDeclaration(name)?.scope }
+  walk(program, { scopeTracker, enter: (node) => {
+    if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && PLUGIN_WRAPPERS.has(node.imported.name)) {
+      wrappers.set(node.local.name, node.imported.name)
+    }
     if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
 
-    const name = 'name' in node.callee && node.callee.name
-    if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin') { return }
+    const name = wrappers.get(node.callee.name) || (PLUGIN_WRAPPERS.has(node.callee.name) ? node.callee.name : undefined)
+    if (!name) { return }
 
     if (name === 'definePayloadPlugin') {
       meta.order = internalOrderMap['user-revivers']
     }
 
-    const metaArg = node.arguments[1]
+    const metaArg = node.arguments[1] && unwrapExpression(node.arguments[1])
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throw pluginDiagnostics.NUXT_B2001({ name: name as string, type: metaArg.type })
+        throw pluginDiagnostics.NUXT_B2001({ name, type: metaArg.type })
       }
-      meta = extractMetaFromObject(metaArg.properties)
+      meta = extractMetaFromObject(metaArg.properties, constantsInScope)
     }
 
-    const plugin = node.arguments[0]
+    const plugin = node.arguments[0] && unwrapExpression(node.arguments[0])
     if (plugin?.type === 'ObjectExpression') {
-      meta = defu(extractMetaFromObject(plugin.properties), meta)
-    } else if (plugin && !isFunctionPluginExpression(plugin)) {
-      // Plugin argument is something we can't statically read (an imported
-      // identifier, a factory call, a member access, ...). It may declare
-      // hooks / env / dependsOn / parallel that we can't see, so flag the
-      // metadata as unknown and let the capability probes fall back to the
-      // full runtime resolver.
+      meta = defu(extractMetaFromObject(plugin.properties, constantsInScope), meta)
+    } else if (plugin && plugin.type !== 'ArrowFunctionExpression' && plugin.type !== 'FunctionExpression') {
+      pluginDiagnostics.NUXT_B2013({ name, type: plugin.type })
       meta._metaUnknown = true
     }
 
     meta.order ||= orderMap[meta.enforce || 'default'] || orderMap.default
     delete meta.enforce
-  })
-  metaCache[code] = meta
+  } })
   return meta
 }
 
-function isFunctionPluginExpression (node: ESTree.Expression | ESTree.SpreadElement): boolean {
-  // Function-syntax plugins (`defineNuxtPlugin(() => {...})` /
-  // `defineNuxtPlugin(function (n) {...})`) carry no capability metadata by
-  // construction, so emitting empty extracted meta is safe and lets the
-  // runtime keep its DCE paths.
-  return node.type === 'ArrowFunctionExpression' || node.type === 'FunctionExpression'
+function unwrapExpression (node: ESTree.Expression | ESTree.SpreadElement): ESTree.Expression | ESTree.SpreadElement {
+  while (node.type === 'ParenthesizedExpression' || node.type === 'TSAsExpression' || node.type === 'TSSatisfiesExpression' || node.type === 'TSNonNullExpression' || node.type === 'TSTypeAssertion') {
+    node = node.expression
+  }
+  return node
+}
+
+function collectConstants (program: ESTree.Program) {
+  const constants = new Map<string, ESTree.Expression>()
+  for (const statement of program.body) {
+    const declaration = statement.type === 'ExportNamedDeclaration' ? statement.declaration : statement
+    if (declaration?.type !== 'VariableDeclaration' || declaration.kind !== 'const') { continue }
+    for (const declarator of declaration.declarations) {
+      if (declarator.id.type === 'Identifier' && declarator.init) {
+        constants.set(declarator.id.name, declarator.init)
+      }
+    }
+  }
+  return constants
+}
+
+const UNRESOLVED = Symbol('unresolved')
+
+interface Constants {
+  values: Map<string, ESTree.Expression>
+  isShadowed: (name: string) => boolean
+}
+
+function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | null, constants: Constants, seen = new Set<string>()): unknown {
+  if (!node) { return UNRESOLVED }
+  node = unwrapExpression(node)
+  switch (node.type) {
+    case 'Literal':
+      return node.value
+    case 'UnaryExpression':
+      return node.argument.type === 'Literal' && typeof node.argument.value === 'number' && (node.operator === '-' || node.operator === '+')
+        ? (node.operator === '-' ? -node.argument.value : node.argument.value)
+        : UNRESOLVED
+    case 'TemplateLiteral':
+      return node.expressions.length ? UNRESOLVED : node.quasis[0]!.value.cooked
+    case 'ArrayExpression': {
+      const values = node.elements.map(element => resolveStaticValue(element, constants, seen))
+      return values.includes(UNRESOLVED) ? UNRESOLVED : values
+    }
+    case 'Identifier': {
+      if (node.name === 'undefined') { return undefined }
+      const init = constants.isShadowed(node.name) ? undefined : constants.values.get(node.name)
+      if (!init || seen.has(node.name)) { return UNRESOLVED }
+      return resolveStaticValue(init, { values: constants.values, isShadowed: () => false }, new Set(seen).add(node.name))
+    }
+  }
+  return UNRESOLVED
 }
 
 type ExtractedMetaKey = keyof PluginMeta | 'parallel'
@@ -121,7 +186,7 @@ function isMetadataKey (key: string | ESTree.IdentifierName): key is ExtractedMe
   return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
-function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
+function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, constants: Constants) {
   const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
@@ -137,17 +202,24 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>) {
       continue
     }
     if (!isMetadataKey(propertyKey)) { continue }
-    if (property.value.type === 'Literal') {
-      meta[propertyKey] = property.value.value as any
-    }
-    if (property.value.type === 'UnaryExpression' && property.value.argument.type === 'Literal') {
-      meta[propertyKey] = JSON.parse(property.value.operator + property.value.argument.raw!)
-    }
-    if (propertyKey === 'dependsOn' && property.value.type === 'ArrayExpression') {
-      if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
-        throw pluginDiagnostics.NUXT_B2003()
+    const value = resolveStaticValue(property.value, constants)
+    if (propertyKey === 'dependsOn') {
+      if (value === undefined) { continue }
+      if (!Array.isArray(value) || value.some(name => typeof name !== 'string')) {
+        pluginDiagnostics.NUXT_B2003()
+        meta._metaUnknown = true
+        continue
       }
-      meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as NuxtAppLiterals['pluginName'])
+      meta.dependsOn = value as NuxtAppLiterals['pluginName'][]
+      continue
+    }
+    if (value === UNRESOLVED) {
+      pluginDiagnostics.NUXT_B2014({ key: propertyKey })
+      meta._metaUnknown = true
+      continue
+    }
+    if (value !== undefined) {
+      meta[propertyKey] = value as any
     }
   }
   return meta
@@ -191,11 +263,11 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
 
       const s = rolldownString(code, id, meta)
       let wrapped = false
-      const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
+      const wrapperNames = new Set(PLUGIN_WRAPPERS)
 
       try {
         walk(parsed.program, { enter: (node) => {
-          if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && (node.imported.name === 'defineNuxtPlugin' || node.imported.name === 'definePayloadPlugin')) {
+          if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && PLUGIN_WRAPPERS.has(node.imported.name)) {
             wrapperNames.add(node.local.name)
           }
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
@@ -207,17 +279,23 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
           // Remove metadata that already has been extracted
           const removeExtractedMetadata = 'order' in plugin || 'name' in plugin
           if (!filteredDependencies && !removeExtractedMetadata) { return }
-          for (const [argIndex, arg] of node.arguments.entries()) {
+          for (const [argIndex, wrappedArg] of node.arguments.entries()) {
+            const arg = unwrapExpression(wrappedArg)
             if (arg.type !== 'ObjectExpression') { continue }
 
             for (const [propertyIndex, property] of arg.properties.entries()) {
               if (property.type === 'SpreadElement' || !('name' in property.key)) { continue }
 
               const propertyKey = property.key.name
-              if (propertyKey === 'dependsOn' && filteredDependencies && property.value.type === 'ArrayExpression') {
-                const dependencies = property.value.elements.map(element => element?.type === 'Literal' && typeof element.value === 'string' ? element.value : null)
-                if (dependencies.length !== filteredDependencies.length || dependencies.some((dependency, index) => dependency !== filteredDependencies[index])) {
-                  s.overwrite(property.value.start, property.value.end, JSON.stringify(filteredDependencies))
+              if (propertyKey === 'dependsOn' && filteredDependencies) {
+                const value = unwrapExpression(property.value)
+                const dependencies = value.type === 'ArrayExpression' ? value.elements.map(element => element?.type === 'Literal' && typeof element.value === 'string' ? element.value : null) : []
+                if (value.type !== 'ArrayExpression' || dependencies.length !== filteredDependencies.length || dependencies.some((dependency, index) => dependency !== filteredDependencies[index])) {
+                  if (property.shorthand) {
+                    s.overwrite(property.start, property.end, `dependsOn: ${JSON.stringify(filteredDependencies)}`)
+                  } else {
+                    s.overwrite(property.value.start, property.value.end, JSON.stringify(filteredDependencies))
+                  }
                 }
               }
               if (removeExtractedMetadata && (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name')) {

@@ -53,12 +53,12 @@ export const pluginDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B2009: {
       why: (p: { cycle: string }) => `Circular dependency detected in plugins: ${p.cycle}.`,
-      fix: 'Restructure the plugin `dependsOn` declarations to break the cycle.',
+      fix: (p: { name: string, dependency: string }) => `Restructure the plugin \`dependsOn\` declarations to break the cycle. Production builds fail until this is fixed; in development, plugin \`${p.name}\` does not wait for \`${p.dependency}\`.`,
       docs: false,
     },
     NUXT_B2010: {
       why: (p: { src: string }) => `Failed to parse static properties from plugin \`${p.src}\`, falling back to non-optimized runtime meta.`,
-      fix: 'Use an object literal with static values as the second argument to `defineNuxtPlugin()`, and check the plugin file for syntax errors or unsupported constructs in the metadata.',
+      fix: 'Pass an object literal with static values to `defineNuxtPlugin()`, and check the plugin file for syntax errors or unsupported constructs in the metadata.',
       docs: false,
     },
     NUXT_B2011: {
@@ -75,6 +75,16 @@ export const pluginDiagnostics = /* #__PURE__ */ defineDiagnostics({
         return `Plugin \`${p.name}\` depends on ${dependencies}, but ${plural ? 'these dependencies are' : 'this dependency is'} unavailable in the ${p.mode} build and will be ignored.`
       },
       fix: 'Do not depend on plugins that are unavailable in the same build environment; remove them from the `dependsOn` array.',
+      docs: false,
+    },
+    NUXT_B2013: {
+      why: (p: { name: string, type: string }) => `The plugin passed to \`${p.name}\` is a \`${p.type}\`, not an object literal or a function.`,
+      fix: (p: { name: string }) => `Pass an object literal or a function directly to \`${p.name}()\` so its metadata can be statically analysed.`,
+      docs: false,
+    },
+    NUXT_B2014: {
+      why: (p: { key: string }) => `The \`${p.key}\` option of a plugin is not a static value.`,
+      fix: 'Use a literal, or a top-level `const` in the same file that is initialised with one.',
       docs: false,
     },
   },

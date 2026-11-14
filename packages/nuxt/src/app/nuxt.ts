@@ -460,8 +460,13 @@ async function applyPluginsWithDependencies (nuxtApp: NuxtApp, plugins: Array<Pl
   let error: Error | undefined
   let promiseDepth = 0
 
+  const checkIslandEnv = import.meta.server && componentIslands && hasIslandOptOutPlugins
+  const activePlugins = checkIslandEnv && nuxtApp.ssrContext?.islandContext
+    ? plugins.filter(plugin => plugin.env?.islands !== false)
+    : plugins
+
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.has(name)) ?? []
+    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => activePlugins.some(p => p._name === name) && !resolvedPlugins.has(name)) ?? []
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
@@ -494,17 +499,13 @@ async function applyPluginsWithDependencies (nuxtApp: NuxtApp, plugins: Array<Pl
     }
   }
 
-  const checkIslandEnv = import.meta.server && componentIslands && hasIslandOptOutPlugins
-
   if (hasPluginHooks) {
-    for (const plugin of plugins) {
-      if (checkIslandEnv && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    for (const plugin of activePlugins) {
       registerPluginHooks(nuxtApp, plugin)
     }
   }
 
-  for (const plugin of plugins) {
-    if (checkIslandEnv && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+  for (const plugin of activePlugins) {
     await executePlugin(plugin)
   }
 
