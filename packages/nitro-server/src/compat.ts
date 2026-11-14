@@ -111,10 +111,8 @@ interface ParsedImports {
 }
 
 /**
- * The last parse of each file. Every compat scan pass, and every dev restart, parses the
- * same files again, and the answer only changes with the code. Each Nuxt instance keeps
- * only what the previous one parsed, so a deleted file or a stale virtual id is dropped
- * after one restart.
+ * The last parse of each file, reused while its code is unchanged. Each Nuxt instance
+ * keeps only the previous instance's parses.
  */
 let parsedImports = new Map<string, ParsedImports>()
 let previousParsedImports = new Map<string, ParsedImports>()
@@ -665,10 +663,6 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * call it once the nitro instance exists.
  */
 export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, legacy: ResolvedNitroLegacyOptions, modulePresets: LegacyImportsPreset[], installedModules: InstalledModule[] = [], unusedVariants: string[] = []): Promise<(nitro: Pick<Nitro, 'options' | 'hooks'>) => void> {
-  // resolved as the server build resolves them: a module may add an alias for the server
-  // build only, or point an app alias at different code there
-  const aliases: Record<string, string> = { ...nuxt.options.alias, ...nitroConfig.alias as Record<string, string> }
-
   previousParsedImports = parsedImports
   parsedImports = new Map()
   // a build is not restarted, so nothing it parsed is read again
@@ -678,6 +672,10 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
       previousParsedImports.clear()
     })
   }
+
+  // resolved as the server build resolves them: a module may add an alias for the server
+  // build only, or point an app alias at different code there
+  const aliases: Record<string, string> = { ...nuxt.options.alias, ...nitroConfig.alias as Record<string, string> }
   const files = new Map<string, CompatScope>()
   const dirs: Array<[prefix: string, scope: CompatScope]> = []
   // every file in these is a server entry, unlike a module runtime directory, which also
