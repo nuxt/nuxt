@@ -112,6 +112,7 @@ describe('composables', () => {
       'useRuntimeHook',
       'defineUseFetchAddon',
       'defineUseAsyncDataAddon',
+      'usePrefetchScheduler',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',
@@ -141,6 +142,7 @@ describe('composables', () => {
       'useSeoMeta',
       'usePreviewMode',
       'useLayout',
+      'prefetchGroup',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
