@@ -90,6 +90,20 @@ describe('plugin-metadata', () => {
     vi.restoreAllMocks()
   })
 
+  it('should not resolve a constant shadowed by a local binding declared after the plugin call', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const code = [
+      'const DEPS = [\'a\']',
+      'export default (() => {',
+      '  const create = () => defineNuxtPlugin({ name: \'test\', dependsOn: DEPS })',
+      '  const DEPS = [\'b\']',
+      '  return create()',
+      '})()',
+    ].join('\n')
+    expect(extractMetadata(code)).toEqual({ name: 'test', order: 0, _metaUnknown: true })
+    vi.restoreAllMocks()
+  })
+
   it('should warn about a non-static `dependsOn` and keep the static metadata', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     expect(extractMetadata('import { deps } from \'./deps\'\nexport default defineNuxtPlugin({ name: \'test\', dependsOn: deps })')).toEqual({ name: 'test', order: 0, _metaUnknown: true })

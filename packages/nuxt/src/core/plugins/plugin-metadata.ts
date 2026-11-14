@@ -81,7 +81,9 @@ function parseMetadata (code: string, loader: 'ts' | 'tsx') {
   const { program } = parseModule(code, `file.${loader}`)
   const constants = collectConstants(program)
   const wrappers = new Map<string, string>()
-  const scopeTracker = new ScopeTracker()
+  const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
+  walk(program, { scopeTracker })
+  scopeTracker.freeze()
   const lookup = (name: string) => scopeTracker.getDeclaration(name)?.scope ? undefined : constants.get(name)
   walk(program, { scopeTracker, enter: (node) => {
     if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && PLUGIN_WRAPPERS.has(node.imported.name)) {
