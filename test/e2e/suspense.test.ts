@@ -67,3 +67,12 @@ test.describe('Suspense multiple navigation', () => {
     })
   }
 })
+
+test.describe('Client-only components during hydration', () => {
+  test('should render a client-only component whose props change before it mounts', async ({ page, goto }) => {
+    await goto('/client-rerender')
+    await expect(page.getByTestId('client-count')).toHaveText('count: 1')
+
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+})
