@@ -146,5 +146,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { hint: string, installCommand: string }) => `${p.hint} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.`,
       docs: false,
     },
+    NUXT_B5038: {
+      why: (p: { variable: string, version: string }) => `\`${p.variable}\` is set, but Node.js ${p.version} does not route build-time requests through it unless its built-in proxy support is turned on.`,
+      fix: 'Set `NODE_USE_ENV_PROXY=1` to send `fetch`, `node:http` and `node:https` requests through the proxy, or upgrade to Node.js 24. Set `NODE_USE_ENV_PROXY=0` to keep requests direct and silence this warning.',
+      docs: false,
+    },
   },
 })
