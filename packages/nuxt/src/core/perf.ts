@@ -48,6 +48,14 @@ interface PluginHookTiming {
   avgTime: number
 }
 
+interface HookTiming {
+  totalTime: number
+  count: number
+  maxTime: number
+  running: number
+  runningSince: number
+}
+
 interface PluginSpan {
   pluginName: string
   hookName: string
@@ -141,6 +149,14 @@ function isReadonlyProperty (target: object, key: PropertyKey) {
   return !!descriptor && !descriptor.configurable && !descriptor.writable
 }
 
+function startRunning (timing: HookTiming, now: number) {
+  if (timing.running++ === 0) { timing.runningSince = now }
+}
+
+function stopRunning (timing: HookTiming, now: number) {
+  if (--timing.running === 0) { timing.totalTime += now - timing.runningSince }
+}
+
 function contains (outer: { startTime: number, endTime: number }, inner: { startTime: number, endTime: number }) {
   return inner.startTime >= outer.startTime && inner.endTime <= outer.endTime
 }
@@ -154,7 +170,7 @@ export class NuxtPerfProfiler {
   #hookPhases: PerfPhase[] = []
   #hookStartStack: OpenPhase[] = []
   #modules: ModuleTiming[] = []
-  #bundlerPluginTimings = new Map<string, Map<string, { totalTime: number, count: number, maxTime: number }>>()
+  #bundlerPluginTimings = new Map<string, Map<string, HookTiming>>()
   #bundlerPluginSpans: PluginSpan[] = []
   #globalStart: number
   #globalMemoryBefore: MemorySnapshot
@@ -244,6 +260,20 @@ export class NuxtPerfProfiler {
     }
   }
 
+  #hookTiming (pluginName: string, hookName: string): HookTiming {
+    let plugin = this.#bundlerPluginTimings.get(pluginName)
+    if (!plugin) {
+      plugin = new Map()
+      this.#bundlerPluginTimings.set(pluginName, plugin)
+    }
+    let timing = plugin.get(hookName)
+    if (!timing) {
+      timing = { totalTime: 0, count: 0, maxTime: 0, running: 0, runningSince: 0 }
+      plugin.set(hookName, timing)
+    }
+    return timing
+  }
+
   #recordSpan (pluginName: string, hookName: string, durationMs: number, startTime: number, endTime: number) {
     if (endTime - startTime > 0.1) {
       this.#bundlerPluginSpans.push({ pluginName, hookName, startTime, endTime, durationMs })
@@ -251,19 +281,10 @@ export class NuxtPerfProfiler {
   }
 
   recordBundlerPluginHook (pluginName: string, hookName: string, durationMs: number, startTime?: number): void {
-    let plugin = this.#bundlerPluginTimings.get(pluginName)
-    if (!plugin) {
-      plugin = new Map()
-      this.#bundlerPluginTimings.set(pluginName, plugin)
-    }
-    const entry = plugin.get(hookName)
-    if (entry) {
-      entry.totalTime += durationMs
-      entry.count++
-      entry.maxTime = Math.max(entry.maxTime, durationMs)
-    } else {
-      plugin.set(hookName, { totalTime: durationMs, count: 1, maxTime: durationMs })
-    }
+    const timing = this.#hookTiming(pluginName, hookName)
+    timing.totalTime += durationMs
+    timing.count++
+    timing.maxTime = Math.max(timing.maxTime, durationMs)
     if (startTime != null) {
       this.#recordSpan(pluginName, hookName, durationMs, startTime, startTime + durationMs)
     }
@@ -273,22 +294,34 @@ export class NuxtPerfProfiler {
    * Runs a bundler plugin hook with a proxy of `ctx` as its plugin context and records how long it took.
    *
    * Time spent awaiting `this.resolve()` or `this.load()` is left out, as those calls run other
-   * plugins' hooks, which are recorded separately.
+   * plugins' hooks, which are recorded separately. Calls of the same hook that overlap are
+   * counted once, so its total time never exceeds the wall-clock time it was running.
    */
   timeBundlerHook<T> (pluginName: string, hookName: string, ctx: unknown, run: (ctx: any) => T): T {
+    const timing = this.#hookTiming(pluginName, hookName)
     const start = performance.now()
+    timing.count++
+    startRunning(timing, start)
+    let done = false
     // parallel calls overlap, so subtract how long at least one of them was pending
     let pending = 0
     let pendingSince = 0
     let nested = 0
     // other plugins' hooks cannot run until the hook first yields
     let sync = true
+    const pause = () => {
+      pendingSince = performance.now()
+      if (!done) { stopRunning(timing, pendingSince) }
+    }
     const leaveSync = () => {
       sync = false
-      if (pending > 0) { pendingSince = performance.now() }
+      if (pending > 0) { pause() }
     }
     const exit = () => {
-      if (--pending === 0 && !sync) { nested += performance.now() - pendingSince }
+      if (--pending > 0 || sync) { return }
+      const now = performance.now()
+      nested += now - pendingSince
+      if (!done) { startRunning(timing, now) }
     }
     const proxy = ctx && typeof ctx === 'object'
       ? new Proxy(ctx, {
@@ -298,7 +331,7 @@ export class NuxtPerfProfiler {
             // bound so that methods relying on private fields or native receivers still work
             if (key !== 'resolve' && key !== 'load') { return value.bind(target) }
             return (...args: unknown[]) => {
-              if (pending++ === 0) { pendingSince = performance.now() }
+              if (pending++ === 0 && !sync) { pause() }
               try {
                 return Promise.resolve(value.apply(target, args)).finally(exit)
               } catch (err) {
@@ -313,7 +346,9 @@ export class NuxtPerfProfiler {
     const record = () => {
       const end = performance.now()
       const duration = end - start - nested - (pending > 0 ? end - pendingSince : 0)
-      this.recordBundlerPluginHook(pluginName, hookName, duration)
+      done = true
+      if (pending === 0) { stopRunning(timing, end) }
+      timing.maxTime = Math.max(timing.maxTime, duration)
       this.#recordSpan(pluginName, hookName, duration, start, end)
     }
     try {
