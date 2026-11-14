@@ -136,5 +136,15 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Replace `<NuxtClientFallback>` with `<NuxtErrorBoundary retry-on-client>`, moving fallback content into the `#error` slot (and dropping `retry-on-client` where you used `keep-fallback`). Make sure `experimental.ssrErrorBoundary` is enabled, then remove `experimental.clientFallback` from your `nuxt.config`.',
       docs: false,
     },
+    NUXT_B5036: {
+      why: (p: { filePath: string, error: string }) => `The Nuxt schema in \`${p.filePath}\` was skipped because the runtime could not load it: ${p.error}`,
+      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      docs: false,
+    },
+    NUXT_B5037: {
+      why: (p: { filePath: string, error: string }) => `The Nuxt schema in \`${p.filePath}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
+      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.`,
+      docs: false,
+    },
   },
 })

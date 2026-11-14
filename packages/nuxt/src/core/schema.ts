@@ -5,11 +5,13 @@ import { join, relative, resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule } from '@nuxt/kit'
-import { configDiagnostics, loadJiti } from '@nuxt/kit/internal'
+import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, importModule } from '@nuxt/kit'
+import { configDiagnostics, describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from '@nuxt/kit/internal'
+import type { Jiti } from 'jiti'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import { linkToAlias } from '../utils.ts'
+import { canImportSchema, createSchemaJiti, importSchema } from './utils/schema-loader.ts'
 
 const defineNuxtSchema = (val: any) => val
 
@@ -20,36 +22,73 @@ export default defineNuxtModule({
   async setup (_, nuxt) {
     const resolver = createResolver(import.meta.url)
 
-    // A schema file's JSDoc annotations are extracted by `untyped/babel-plugin`, which has to run
-    // as an import-time transform, so this is the one place Nuxt cannot fall back to loading the
-    // file with the runtime's own importer. `jiti` is an optional peer dependency and
-    // `untyped/babel-plugin` pulls in the whole of `@babel/core`, so neither is loaded unless a
-    // layer actually ships a `nuxt.schema.*` file.
-    let _resolveSchema: ReturnType<typeof createSchemaLoader> | undefined
-    function getSchemaLoader () {
-      _resolveSchema ||= createSchemaLoader()
-      return _resolveSchema
+    // Schema files are imported natively, with their JSDoc annotations added by an import-time
+    // transform. `jiti` is only looked for when that fails or the runtime cannot run the transform,
+    // and installing it is offered at most once.
+    let installOffered = false
+    let schemaJiti: Jiti | undefined
+
+    async function getSchemaJiti (install: boolean) {
+      if (schemaJiti) {
+        return schemaJiti
+      }
+      const options = { rootDir: nuxt.options.rootDir, searchPaths: nuxt.options.modulesDir }
+      let jiti = await loadJiti({ ...options, install: false })
+      if (!jiti && install && !installOffered) {
+        installOffered = true
+        if (await ensureDependencyInstalled('jiti', options)) {
+          jiti = await loadJiti({ ...options, install: false })
+        }
+      }
+      return schemaJiti = jiti && createSchemaJiti(jiti, fileURLToPath(import.meta.url))
     }
 
-    async function createSchemaLoader () {
-      const jiti = await loadJiti({
-        rootDir: nuxt.options.rootDir,
-        searchPaths: nuxt.options.modulesDir,
-      })
+    async function loadSchemaFile (filePath: string): Promise<SchemaDefinition | undefined> {
+      const displayPath = linkToAlias(filePath, nuxt)
+      const installCommand = () => getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true })
 
-      if (!jiti) {
-        return undefined
+      let nativeError: unknown
+      if (canImportSchema) {
+        try {
+          return await importSchema(filePath) as SchemaDefinition
+        } catch (error) {
+          nativeError = error
+        }
       }
 
-      const { default: untypedPlugin } = await import('untyped/babel-plugin')
-      return jiti.createJiti(fileURLToPath(import.meta.url), {
-        fsCache: false,
-        transformOptions: {
-          babel: {
-            plugins: [untypedPlugin],
-          },
-        },
+      // Whether jiti is the answer, or the file simply has a bug that a second loader will repeat.
+      // Only the former is worth offering to install jiti for.
+      const jitiCanHelp = !canImportSchema || isLoaderError(nativeError) || !!getMissingCjsGlobal(nativeError) || isMissingExportError(nativeError)
+      const jiti = await getSchemaJiti(jitiCanHelp)
+      const failure = async () => ({
+        filePath: displayPath,
+        error: nativeError instanceof Error ? nativeError.message : String(nativeError),
+        hint: describeNativeImportFailure(nativeError),
+        installCommand: await installCommand(),
       })
+      if (!jiti) {
+        if (!canImportSchema) {
+          configDiagnostics.NUXT_B5019({ filePath: displayPath, installCommand: await installCommand() })
+        } else if (jitiCanHelp) {
+          configDiagnostics.NUXT_B5036(await failure())
+        } else {
+          configDiagnostics.NUXT_B5005({ filePath: displayPath, cause: nativeError })
+        }
+        return
+      }
+
+      let loaded: SchemaDefinition
+      try {
+        // TODO: fix type for second argument of `import`
+        loaded = await jiti.import(filePath, { default: true }) as SchemaDefinition
+      } catch (jitiError) {
+        configDiagnostics.NUXT_B5005({ filePath: displayPath, cause: jitiCanHelp ? jitiError : nativeError })
+        return
+      }
+      if (canImportSchema && shouldReportJitiFallbackOnce(filePath, nuxt.options.rootDir, nuxt.options.future.compatibilityVersion)) {
+        configDiagnostics.NUXT_B5037(await failure())
+      }
+      return loaded
     }
 
     // Register module types
@@ -138,23 +177,10 @@ export default defineNuxtModule({
       for (const dirs of layerDirs) {
         const filePath = await resolver.resolvePath(join(dirs.root, 'nuxt.schema'))
         if (filePath && existsSync(filePath)) {
-          const loader = await getSchemaLoader()
-          if (!loader) {
-            configDiagnostics.NUXT_B5019({
-              filePath: linkToAlias(filePath, nuxt),
-              installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
-            })
-            continue
+          const loaded = await loadSchemaFile(filePath)
+          if (loaded) {
+            schemaDefs.push(loaded)
           }
-          let loadedConfig: SchemaDefinition
-          try {
-            // TODO: fix type for second argument of `import`
-            loadedConfig = await loader.import(filePath, { default: true }) as SchemaDefinition
-          } catch (err) {
-            configDiagnostics.NUXT_B5005({ filePath: linkToAlias(filePath, nuxt), cause: err })
-            continue
-          }
-          schemaDefs.push(loadedConfig)
         }
       }
 

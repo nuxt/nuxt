@@ -3,9 +3,10 @@
  *
  * Usage: `node run-without-jiti.mjs <kitEntry> <task> <cwd...>`
  *
- * `task` is either `config` (load the config of every `cwd`) or `build` (load and build the first
- * `cwd`). Reports one `ok <cwd>` line per success and exits non-zero on the first failure, so the
- * test can attribute a failure to a specific fixture.
+ * `task` is `config` (load the config of every `cwd`), `schema` (load every `cwd` and print its
+ * resolved schema as a `schema <json>` line) or `build` (load and build the first `cwd`). Reports
+ * one `ok <cwd>` line per success and exits non-zero on the first failure, so the test can
+ * attribute a failure to a specific fixture.
  */
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
@@ -24,6 +25,14 @@ if (task === 'build') {
     await nuxt.close()
   }
   console.log(`ok ${cwds[0]}`)
+} else if (task === 'schema') {
+  for (const cwd of cwds) {
+    let schema
+    const nuxt = await kit.loadNuxt({ cwd, overrides: { hooks: { 'schema:resolved': (resolved) => { schema = resolved } } } })
+    await nuxt.close()
+    console.log(`schema ${JSON.stringify(schema)}`)
+    console.log(`ok ${cwd}`)
+  }
 } else {
   for (const cwd of cwds) {
     const options = await kit.loadNuxtConfig({ cwd })
