@@ -257,10 +257,10 @@ export class NuxtPerfProfiler {
   }
 
   /**
-   * Run a bundler plugin hook with `ctx` as its plugin context and record how long it took.
+   * Runs a bundler plugin hook with a proxy of `ctx` as its plugin context and records how long it took.
    *
-   * Time the hook spends awaiting `this.resolve()` or `this.load()` runs other plugins'
-   * hooks, which record their own time, so it is not charged to this one.
+   * Time spent awaiting `this.resolve()` or `this.load()` is left out, as those calls run other
+   * plugins' hooks, which are recorded separately.
    */
   timeBundlerHook<T> (pluginName: string, hookName: string, ctx: unknown, run: (ctx: any) => T): T {
     const start = performance.now()

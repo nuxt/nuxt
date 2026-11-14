@@ -3,7 +3,7 @@ import { lstat, mkdir, mkdtemp, readdir, readlink, rm, symlink, writeFile } from
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'pathe'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern, getSsrResolveConditions, linkStaticDist, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
+import { getLayerNodeModulesExcludePattern, getSsrResolveConditions, linkStaticDist, timePluginHooks, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
 
 describe('linkStaticDist', () => {
   let rootDir: string
@@ -212,5 +212,32 @@ describe('toTranspileNoExternal', () => {
 describe('getSsrResolveConditions', () => {
   it('merges conditions without duplicates', () => {
     expect(getSsrResolveConditions(['custom', 'node'], ['development', 'node', 'import'])).toEqual(['custom', 'node', 'development', 'import'])
+  })
+})
+
+describe('timePluginHooks', () => {
+  it('times function hooks and `{ filter, handler }` hooks with the plugin context', () => {
+    const recorded: unknown[] = []
+    const perf = {
+      timeBundlerHook: (name: string, hook: string, ctx: unknown, run: (ctx: unknown) => unknown) => {
+        recorded.push([name, hook, ctx])
+        return run(ctx)
+      },
+    }
+    const filter = { id: /\.ts$/ }
+    const transform = { filter, order: 'pre', handler (this: { suffix: string }, code: string) { return code + this.suffix } }
+    const plugin = { name: 'a', resolveId (this: { suffix: string }, id: string) { return id + this.suffix }, transform }
+    const unnamed = { load: () => 'unnamed' }
+    const load = unnamed.load
+
+    timePluginHooks(perf as any, [plugin, null, unnamed, { name: 'b', load: { filter } }])
+
+    const ctx = { suffix: '!' }
+    expect(plugin.resolveId.call(ctx, 'id')).toBe('id!')
+    expect(transform.handler.call(ctx, 'code')).toBe('code!')
+    expect(plugin.transform).toBe(transform)
+    expect(transform).toMatchObject({ filter, order: 'pre' })
+    expect(unnamed.load).toBe(load)
+    expect(recorded).toEqual([['nitro:a', 'resolveId', ctx], ['nitro:a', 'transform', ctx]])
   })
 })

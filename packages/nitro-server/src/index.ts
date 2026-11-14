@@ -23,7 +23,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
+import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, timePluginHooks, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
 import { setupAppManifest, setupPayloadRouteRules } from './app-manifest.ts'
 import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
@@ -778,21 +778,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   if (nuxt._perf) {
     const perf = nuxt._perf
     nitro.hooks.hook('build:config', (_nitro, { rollup, rolldown }) => {
-      const plugins = ((rollup ?? rolldown)?.plugins || []) as Array<{ name?: string, transform?: (...a: any[]) => any, resolveId?: (...a: any[]) => any, load?: (...a: any[]) => any } | null>
-      for (const plugin of plugins) {
-        if (!plugin || !plugin.name) { continue }
-        const pluginName = `nitro:${plugin.name}`
-        for (const hookName of ['transform', 'resolveId', 'load'] as const) {
-          const hook: any = plugin[hookName]
-          // Rolldown plugins usually declare hooks as `{ filter, handler }`
-          const [owner, key] = typeof hook === 'function' ? [plugin, hookName] : [hook, 'handler']
-          const original = owner?.[key]
-          if (typeof original !== 'function') { continue }
-          owner[key] = function (this: any, ...args: any[]) {
-            return perf.timeBundlerHook(pluginName, hookName, this, ctx => original.apply(ctx, args))
-          }
-        }
-      }
+      timePluginHooks(perf, ((rollup ?? rolldown)?.plugins || []) as unknown[])
     })
   }
 

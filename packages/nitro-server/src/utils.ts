@@ -60,6 +60,22 @@ export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
 
+export function timePluginHooks (perf: Pick<NonNullable<Nuxt['_perf']>, 'timeBundlerHook'>, plugins: unknown[]): void {
+  for (const plugin of plugins as Array<Record<string, any> | null | undefined>) {
+    if (!plugin?.name) { continue }
+    const pluginName = `nitro:${plugin.name}`
+    for (const hookName of ['transform', 'resolveId', 'load'] as const) {
+      const hook = plugin[hookName]
+      const [owner, key] = typeof hook === 'function' ? [plugin, hookName] : [hook, 'handler']
+      const original = owner?.[key]
+      if (typeof original !== 'function') { continue }
+      owner[key] = function (this: unknown, ...args: unknown[]) {
+        return perf.timeBundlerHook(pluginName, hookName, this, ctx => original.apply(ctx, args))
+      }
+    }
+  }
+}
+
 const NODE_MODULES_SEGMENT = '/node_modules/'
 
 const NODE_MODULES_RE = /\/node_modules\//g

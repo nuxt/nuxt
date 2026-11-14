@@ -6,7 +6,7 @@ import process from 'node:process'
 import { join } from 'pathe'
 import { createHooks } from 'hookable'
 import { consola } from 'consola'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import { NuxtPerfProfiler } from '../src/core/perf.ts'
 
@@ -15,7 +15,7 @@ function busyWait (ms: number) {
   while (performance.now() < end) { /* spin */ }
 }
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+const flush = () => new Promise(resolve => setImmediate(resolve))
 
 describe('NuxtPerfProfiler', () => {
   it('reports phases, own time, modules and bundler plugins', async () => {
@@ -124,32 +124,43 @@ describe('NuxtPerfProfiler', () => {
     }
   })
 
-  it.each(['resolve', 'load'] as const)('does not charge a bundler hook for the plugins it awaits through `this.%s`', async (method) => {
+  it.each(['resolve', 'load'] as const)('does not charge a bundler hook for time spent awaiting parallel `this.%s` calls', async (method) => {
+    const now = vi.spyOn(performance, 'now').mockReturnValue(0)
+    onTestFinished(() => now.mockRestore())
     const perf = new NuxtPerfProfiler()
-    // stands in for the plugins the call runs, which take 50ms
-    const ctx = { [method]: (id: string) => sleep(50).then(() => ({ id })) }
+    const settle: Array<() => void> = []
+    const ctx = { [method]: (id: string) => new Promise(resolve => settle.push(() => resolve({ id }))) }
 
-    const result = await perf.timeBundlerHook('delegating', 'resolveId', ctx, async (c) => {
-      // parallel calls are subtracted once
-      const resolved = await Promise.all([c[method]('a'), c[method]('b')])
-      await sleep(30)
+    const result = perf.timeBundlerHook('delegating', 'resolveId', ctx, async (c) => {
+      now.mockReturnValue(10)
+      const a = c[method]('a')
+      now.mockReturnValue(20)
+      const resolved = await Promise.all([a, c[method]('b')])
+      now.mockReturnValue(100)
       return resolved
     })
+    now.mockReturnValue(60)
+    settle[0]!()
+    await flush()
+    now.mockReturnValue(80)
+    settle[1]!()
 
-    expect(result).toEqual([{ id: 'a' }, { id: 'b' }])
-    const [plugin] = perf.getReport().bundlerPlugins
-    expect(plugin!.name).toBe('delegating')
-    expect(plugin!.hooks.resolveId!.totalTime).toBeGreaterThanOrEqual(25)
-    expect(plugin!.hooks.resolveId!.totalTime).toBeLessThan(50)
+    expect(await result).toEqual([{ id: 'a' }, { id: 'b' }])
+    expect(perf.getReport().bundlerPlugins).toMatchObject([{ name: 'delegating', hooks: { resolveId: { totalTime: 30, count: 1 } } }])
   })
 
-  it('keeps the rest of the plugin context working', async () => {
+  it('keeps the rest of the plugin context working', () => {
     const perf = new NuxtPerfProfiler()
     class Context {
-      #environment = 'ssr'
+      #environment = 'client'
+      get environment () { return this.#environment }
+      set environment (value) { this.#environment = value }
       getEnvironment () { return this.#environment }
     }
 
-    expect(await perf.timeBundlerHook('plugin', 'load', new Context(), c => c.getEnvironment())).toBe('ssr')
+    expect(perf.timeBundlerHook('plugin', 'load', new Context(), (c) => {
+      c.environment = 'ssr'
+      return [c.environment, c.getEnvironment()]
+    })).toEqual(['ssr', 'ssr'])
   })
 })
