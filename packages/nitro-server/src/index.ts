@@ -1,4 +1,3 @@
-import { performance } from 'node:perf_hooks'
 import process from 'node:process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp } from 'node:fs'
@@ -24,7 +23,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
+import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, timePluginHooks, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
 import { setupAppManifest, setupPayloadRouteRules } from './app-manifest.ts'
 import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
@@ -777,31 +776,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {
+    const perf = nuxt._perf
     nitro.hooks.hook('build:config', (_nitro, { rollup, rolldown }) => {
-      const plugins = ((rollup ?? rolldown)?.plugins || []) as Array<{ name?: string, transform?: (...a: any[]) => any, resolveId?: (...a: any[]) => any, load?: (...a: any[]) => any } | null>
-      for (const plugin of plugins) {
-        if (!plugin || !plugin.name) { continue }
-        const pluginName = `nitro:${plugin.name}`
-        for (const hookName of ['transform', 'resolveId', 'load'] as const) {
-          const original = plugin[hookName]
-          if (typeof original !== 'function') { continue }
-          plugin[hookName] = function (this: any, ...args: any[]) {
-            const start = performance.now()
-            const record = () => nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start, start)
-            try {
-              const result = original.apply(this, args)
-              if (result && typeof result === 'object' && 'then' in result) {
-                return (result as Promise<any>).finally(record)
-              }
-              record()
-              return result
-            } catch (err) {
-              record()
-              throw err
-            }
-          } as any
-        }
-      }
+      timePluginHooks(perf, ((rollup ?? rolldown)?.plugins || []) as unknown[])
     })
   }
 
