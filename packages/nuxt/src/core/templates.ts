@@ -10,7 +10,7 @@ import { bundlerDiagnostics, getRuntimeConfigSchema, pageDiagnostics, runtimeCon
 import type { Nitro } from 'nitropack/types'
 import { resolveModulePath } from 'exsolve'
 
-import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasPluginCapability, sortPluginsByDependsOn } from './app.ts'
+import { annotatePlugins, breakCircularDependencies, filterPluginDependencies, hasPluginCapability, sortPluginsByDependsOn } from './app.ts'
 import type { PluginCapability } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
@@ -121,9 +121,8 @@ function createPluginTemplate (mode: 'client' | 'server'): NuxtTemplate {
     async getContents ({ nuxt, app }) {
       // in dev, plugins for the other mode are annotated too, for the cross-mode dependency warning
       const allPlugins = await annotatePlugins(nuxt, app.plugins.filter(p => nuxt.options.dev || p.mode !== excludedMode))
-      const plugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => p.mode !== excludedMode), { warn: nuxt.options.dev, mode, allPlugins }))
+      const plugins = sortPluginsByDependsOn(breakCircularDependencies(filterPluginDependencies(allPlugins.filter(p => p.mode !== excludedMode), { warn: nuxt.options.dev, mode, allPlugins })))
       setPluginDependenciesForMode(nuxt, mode, plugins)
-      checkForCircularDependencies(plugins)
       const exports: string[] = []
       const imports: string[] = []
       for (const plugin of plugins) {
