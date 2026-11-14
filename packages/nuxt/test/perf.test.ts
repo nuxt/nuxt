@@ -6,7 +6,7 @@ import process from 'node:process'
 import { join } from 'pathe'
 import { createHooks } from 'hookable'
 import { consola } from 'consola'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import { NuxtPerfProfiler } from '../src/core/perf.ts'
 
@@ -14,6 +14,8 @@ function busyWait (ms: number) {
   const end = performance.now() + ms
   while (performance.now() < end) { /* spin */ }
 }
+
+const flush = () => new Promise(resolve => setImmediate(resolve))
 
 describe('NuxtPerfProfiler', () => {
   it('reports phases, own time, modules and bundler plugins', async () => {
@@ -120,5 +122,144 @@ describe('NuxtPerfProfiler', () => {
       log.mockRestore()
       await rm(buildDir, { recursive: true, force: true })
     }
+  })
+
+  it.each(['resolve', 'load'] as const)('does not charge a bundler hook for time spent awaiting parallel `this.%s` calls', async (method) => {
+    const now = vi.spyOn(performance, 'now').mockReturnValue(0)
+    onTestFinished(() => now.mockRestore())
+    const perf = new NuxtPerfProfiler()
+    const settle: Array<() => void> = []
+    const ctx = { [method]: (id: string) => new Promise(resolve => settle.push(() => resolve({ id }))) }
+
+    const result = perf.timeBundlerHook('delegating', 'resolveId', ctx, async (c) => {
+      now.mockReturnValue(10)
+      const a = c[method]('a')
+      now.mockReturnValue(20)
+      const resolved = await Promise.all([a, c[method]('b')])
+      now.mockReturnValue(100)
+      return resolved
+    })
+    now.mockReturnValue(60)
+    settle[0]!()
+    await flush()
+    now.mockReturnValue(80)
+    settle[1]!()
+
+    expect(await result).toEqual([{ id: 'a' }, { id: 'b' }])
+    expect(perf.getReport().bundlerPlugins).toMatchObject([{ name: 'delegating', hooks: { resolveId: { totalTime: 40, count: 1 } } }])
+    expect(perf.getTraceEvents().filter(e => e.ph === 'X')).toMatchObject([{ name: 'delegating:resolveId', dur: 100_000, args: { durationMs: 40 } }])
+  })
+
+  it('stops counting a bundler hook after `this.resolve` throws synchronously', () => {
+    const now = vi.spyOn(performance, 'now').mockReturnValue(0)
+    onTestFinished(() => now.mockRestore())
+    const perf = new NuxtPerfProfiler()
+    const ctx = { resolve: () => { throw new Error('unresolvable') } }
+
+    perf.timeBundlerHook('plugin', 'resolveId', ctx, (c) => {
+      expect(() => c.resolve()).toThrow('unresolvable')
+      now.mockReturnValue(10)
+    })
+    now.mockReturnValue(20)
+    perf.timeBundlerHook('plugin', 'resolveId', ctx, () => { now.mockReturnValue(25) })
+
+    expect(perf.getReport().bundlerPlugins[0]!.hooks.resolveId).toMatchObject({ totalTime: 15, count: 2 })
+  })
+
+  it('charges a bundler hook for synchronous work while `this.resolve` is pending', async () => {
+    const now = vi.spyOn(performance, 'now').mockReturnValue(0)
+    onTestFinished(() => now.mockRestore())
+    const perf = new NuxtPerfProfiler()
+    const settle: Array<() => void> = []
+    const ctx = { resolve: () => new Promise<void>(resolve => settle.push(resolve)) }
+
+    perf.timeBundlerHook('sync', 'resolveId', ctx, (c) => {
+      void c.resolve()
+      now.mockReturnValue(20)
+    })
+    now.mockReturnValue(30)
+    const result = perf.timeBundlerHook('async', 'resolveId', ctx, (c) => {
+      const resolved = c.resolve()
+      now.mockReturnValue(50)
+      return resolved.then(() => { now.mockReturnValue(90) })
+    })
+    now.mockReturnValue(80)
+    settle[1]!()
+    await result
+
+    expect(Object.fromEntries(perf.getReport().bundlerPlugins.map(p => [p.name, p.hooks.resolveId!.totalTime]))).toEqual({ sync: 20, async: 30 })
+  })
+
+  it('counts overlapping calls of a bundler hook once', async () => {
+    const now = vi.spyOn(performance, 'now').mockReturnValue(0)
+    onTestFinished(() => now.mockRestore())
+    const perf = new NuxtPerfProfiler()
+    const settle: Array<() => void> = []
+    const wait = () => new Promise<void>(resolve => settle.push(resolve))
+
+    const first = perf.timeBundlerHook('plugin', 'load', {}, wait)
+    now.mockReturnValue(20)
+    const second = perf.timeBundlerHook('plugin', 'load', {}, wait)
+    now.mockReturnValue(60)
+    settle[1]!()
+    await second
+    now.mockReturnValue(100)
+    settle[0]!()
+    await first
+
+    expect(perf.getReport().bundlerPlugins[0]!.hooks.load).toMatchObject({ totalTime: 100, count: 2, maxTime: 100 })
+  })
+
+  it('counts a bundler hook as running only while one of its calls is not awaiting `this.resolve`', async () => {
+    const now = vi.spyOn(performance, 'now').mockReturnValue(0)
+    onTestFinished(() => now.mockRestore())
+    const perf = new NuxtPerfProfiler()
+    const settle: Array<() => void> = []
+    const ctx = { resolve: () => new Promise<void>(resolve => settle.push(resolve)) }
+
+    const first = perf.timeBundlerHook('plugin', 'resolveId', ctx, async (c) => {
+      now.mockReturnValue(10)
+      await c.resolve()
+      now.mockReturnValue(60)
+    })
+    now.mockReturnValue(20)
+    perf.timeBundlerHook('plugin', 'resolveId', ctx, () => { now.mockReturnValue(30) })
+    now.mockReturnValue(50)
+    settle[0]!()
+    await first
+    now.mockReturnValue(70)
+    perf.timeBundlerHook('plugin', 'resolveId', ctx, (c) => {
+      now.mockReturnValue(75)
+      void c.resolve()
+    })
+    now.mockReturnValue(90)
+    settle[1]!()
+    await flush()
+    now.mockReturnValue(100)
+    perf.timeBundlerHook('plugin', 'resolveId', ctx, () => { now.mockReturnValue(105) })
+
+    expect(perf.getReport().bundlerPlugins[0]!.hooks.resolveId).toMatchObject({ totalTime: 40, count: 4, maxTime: 20 })
+  })
+
+  it('keeps the rest of the plugin context working', () => {
+    const perf = new NuxtPerfProfiler()
+    class Context {
+      #environment = 'client'
+      get environment () { return this.#environment }
+      set environment (value) { this.#environment = value }
+      getEnvironment () { return this.#environment }
+    }
+
+    expect(perf.timeBundlerHook('plugin', 'load', new Context(), (c) => {
+      c.environment = 'ssr'
+      return [c.environment, c.getEnvironment()]
+    })).toEqual(['ssr', 'ssr'])
+  })
+
+  it('leaves read-only plugin context methods unwrapped', () => {
+    const perf = new NuxtPerfProfiler()
+    const ctx = Object.freeze({ resolve: () => 'resolved', getModuleIds: () => ['entry.ts'] })
+
+    expect(perf.timeBundlerHook('plugin', 'load', ctx, c => [c.resolve(), c.getModuleIds === ctx.getModuleIds])).toEqual(['resolved', true])
   })
 })

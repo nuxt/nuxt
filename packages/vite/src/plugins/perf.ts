@@ -1,4 +1,3 @@
-import { performance } from 'node:perf_hooks'
 import type { Nuxt } from '@nuxt/schema'
 import type { DevEnvironment, Plugin } from 'vite'
 import { isBundlerTracingEnabled, traceAsync } from '../utils/tracing.ts'
@@ -63,28 +62,13 @@ function wrapPluginHook (plugin: Plugin, pluginName: string, hookName: typeof HO
 }
 
 function timedCall (fn: (...a: any[]) => any, ctx: any, args: any[], pluginName: string, hookName: typeof HOOKS_TO_TRACK[number], nuxt: Nuxt, tracing: boolean): any {
-  const call = tracing
-    ? () => traceAsync('nuxt.bundler.plugin', {
+  const call = (thisArg: any) => tracing
+    ? traceAsync('nuxt.bundler.plugin', {
         plugin: pluginName,
         hook: hookName,
         id: hookName === 'transform' ? args[1] : args[0],
         environment: ctx?.environment?.name,
-      }, () => fn.apply(ctx, args))
-    : () => fn.apply(ctx, args)
-  if (!nuxt._perf) {
-    return call()
-  }
-  const start = performance.now()
-  const record = () => nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start, start)
-  try {
-    const result = call()
-    if (result && typeof result === 'object' && 'then' in result) {
-      return (result as Promise<any>).finally(record)
-    }
-    record()
-    return result
-  } catch (err) {
-    record()
-    throw err
-  }
+      }, () => fn.apply(thisArg, args))
+    : fn.apply(thisArg, args)
+  return nuxt._perf ? nuxt._perf.timeBundlerHook(pluginName, hookName, ctx, call) : call(ctx)
 }

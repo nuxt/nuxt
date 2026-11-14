@@ -52,12 +52,19 @@ describe('PerfPlugin', () => {
     ])
   })
 
-  it('should keep recording perf timings', () => {
-    const recorded: string[] = []
-    const plugin: Plugin = { name: 'test-plugin', resolveId: id => id }
-    applyPerfPlugin(createNuxt({}, { recordBundlerPluginHook: (name: string, hook: string) => recorded.push(`${name}:${hook}`) } as any), [plugin])
-    expect((plugin.resolveId as any).call({}, 'x')).toBe('x')
-    expect(recorded).toEqual(['test-plugin:resolveId'])
+  it('should run timed hooks with the plugin context from `timeBundlerHook`', () => {
+    const recorded: unknown[] = []
+    const timedCtx = { id: 'timed' }
+    const timeBundlerHook = (name: string, hook: string, ctx: unknown, run: (ctx: unknown) => unknown) => {
+      recorded.push([name, hook, ctx])
+      return run(timedCtx)
+    }
+    const plugin = { name: 'test-plugin', resolveId (this: unknown) { return this } }
+    applyPerfPlugin(createNuxt({}, { timeBundlerHook } as any), [plugin as Plugin])
+
+    const ctx = { id: 'ctx' }
+    expect(plugin.resolveId.call(ctx)).toBe(timedCtx)
+    expect(recorded).toEqual([['test-plugin', 'resolveId', ctx]])
   })
 
   it('should publish server module fetches on `nuxt.bundler.module`', async () => {
