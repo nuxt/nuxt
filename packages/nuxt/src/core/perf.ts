@@ -685,7 +685,6 @@ export class NuxtPerfProfiler {
     return reportPath
   }
 
-  /** Ended phases, plus the ones still open, cut off at `now`. */
   #getPhases (now: number): PerfPhase[] {
     const memoryNow = getMemorySnapshot()
     const unfinished = this.#phaseStack.map(open => ({
