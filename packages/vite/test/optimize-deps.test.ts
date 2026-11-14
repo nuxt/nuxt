@@ -335,6 +335,14 @@ describe('OptimizeDepsPlugin', () => {
     return config
   }
 
+  it('should only apply to the client environment of the dev server', () => {
+    const plugin = OptimizeDepsPlugin(createNuxt())
+
+    expect(plugin.apply).toBe('serve')
+    expect((plugin.applyToEnvironment as any)({ name: 'client' })).toBe(true)
+    expect((plugin.applyToEnvironment as any)({ name: 'ssr' })).toBe(false)
+  })
+
   it('should rewrite include entries added after nuxt has built its config', async () => {
     const config = { optimizeDeps: { entries: [entry], include: ['layer-dep'] } }
 

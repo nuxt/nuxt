@@ -18,6 +18,8 @@ export function OptimizeDepsPlugin (nuxt: Nuxt): Plugin {
   return {
     name: 'nuxt:optimize-deps',
     enforce: 'post',
+    apply: 'serve',
+    applyToEnvironment: environment => environment.name === 'client',
 
     resolveId: {
       order: 'pre',
