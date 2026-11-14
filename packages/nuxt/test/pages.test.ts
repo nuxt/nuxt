@@ -1,9 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import fs from 'node:fs'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { augmentAndResolve, augmentPages, createPagesContext, getPageComponentNames, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
 import { dynamicPageMetaCache, getDynamicPageMeta } from '../src/pages/page-meta-extraction.ts'
+import type { ScanReporter } from '../src/core/scan-problems.ts'
 import { PageComponentNamePlugin } from '../src/pages/plugins/component-name.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey, memoizeRouteComponent } from '../src/pages/runtime/utils.ts'
@@ -332,6 +333,28 @@ describe('pages:memoizeRouteComponent', () => {
   })
 })
 
+describe('pages:createPagesContext', () => {
+  it('should report the route name collisions of every emit, and log them only when the tree changed', () => {
+    const log = vi.spyOn(pageDiagnostics, 'NUXT_B4004').mockReturnValue(undefined as never)
+    onTestFinished(() => log.mockRestore())
+    const ctx = createPagesContext({ roots: ['/app/pages'] })
+    const emitTo = () => {
+      const found: Array<[string, string[]]> = []
+      ctx.emit((key, files) => found.push([key, files]))
+      return found
+    }
+
+    ctx.rebuild([{ path: '/app/pages/foo-bar.vue' }, { path: '/app/pages/foo/bar.vue' }])
+    ctx.emit()
+    ctx.emit()
+    expect(log).toHaveBeenCalledOnce()
+    expect(emitTo()).toStrictEqual([[expect.stringContaining('NUXT_B4004'), ['/app/pages/foo-bar.vue', '/app/pages/foo/bar.vue']]])
+
+    ctx.removeFile('/app/pages/foo/bar.vue')
+    expect(emitTo()).toStrictEqual([])
+  })
+})
+
 describe('pages:relativizeToParent', () => {
   const tests: Array<[parentFullPath: string, childPath: string, expected: string | undefined]> = [
     ['/parent', '/parent/child', 'child'],
@@ -447,7 +470,7 @@ describe('pages:duplicateRouteNames', () => {
     vi.restoreAllMocks()
   })
 
-  function resolve (vfs: Record<string, string>, hooks: Record<string, Hook> = {}) {
+  function resolve (vfs: Record<string, string>, hooks: Record<string, Hook> = {}, report?: ScanReporter) {
     const ctx = createPagesContext({ roots: ['pages/'] })
     ctx.rebuild(Object.keys(vfs).filter(file => file.startsWith('pages/')).map(path => ({ path })))
     const nuxt = {
@@ -455,7 +478,7 @@ describe('pages:duplicateRouteNames', () => {
       vfs,
       callHook: (name: string, pages: NuxtPage[]) => hooks[name]?.(pages),
     } as unknown as Nuxt
-    return augmentAndResolve(ctx.emit(), ctx.trackedFiles, nuxt)
+    return augmentAndResolve(ctx.emit(report), ctx.trackedFiles, nuxt, undefined, report)
   }
 
   const named = (name: string) => `<script setup lang="ts">definePageMeta({ name: '${name}' })</script>`
@@ -538,6 +561,44 @@ describe('pages:duplicateRouteNames', () => {
     })
     expect(pages.map(page => page.name)).toEqual(['parent-child', 'parent-child'])
     expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('reports both files of a reused route name as a problem', async () => {
+    const report = vi.fn<ScanReporter>()
+    await resolve({
+      'pages/first.vue': named('report'),
+      'pages/second.vue': named('report'),
+    }, {}, report)
+    expect(report).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('NUXT_B4028'), ['pages/second.vue:1:42', 'pages/first.vue:1:42'], expect.any(Function))
+    expect(warn).not.toHaveBeenCalled()
+    report.mock.calls[0]![2]()
+    expect(warn).toHaveBeenCalledExactlyOnceWith({
+      name: 'report',
+      path: '/second',
+      file: 'pages/second.vue',
+      existingPath: '/first',
+      existingFile: 'pages/first.vue',
+    })
+  })
+
+  it('locates a reused route name only in the page that names it', async () => {
+    const report = vi.fn<ScanReporter>()
+    await resolve({
+      'pages/first.vue': `<script setup lang="ts">\ndefinePageMeta({\n  layout: 'default',\n  name: 'report',\n})\n</script>`,
+      'pages/report.vue': plain,
+    }, {}, report)
+    expect(report).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('NUXT_B4028'), ['pages/report.vue', 'pages/first.vue:4:3'], expect.any(Function))
+  })
+
+  it('does not locate a route name a hook replaced', async () => {
+    const report = vi.fn<ScanReporter>()
+    await resolve({
+      'pages/first.vue': named('report'),
+      'pages/second.vue': named('other'),
+    }, {
+      'pages:resolved': pages => void (pages.find(page => page.name === 'other')!.name = 'report'),
+    }, report)
+    expect(report).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('NUXT_B4028'), ['pages/second.vue', 'pages/first.vue:1:42'], expect.any(Function))
   })
 
   it('does not warn when the route name is dynamic', async () => {
