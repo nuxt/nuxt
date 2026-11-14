@@ -246,7 +246,7 @@ jobs:
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
-        os: [ubuntu-24.04-arm, windows-latest]
+        os: [ubuntu-26.04-arm, windows-latest]
         exclude:
           # only run ubuntu in merge queue
           - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
@@ -469,15 +469,12 @@ jobs:
       matrix:
         os: [windows-latest]
         projects:
-          - '--project "fixtures:vite-dev-*"'
-          - '--project "fixtures:vite-built-*"'
+          - '--project "fixtures:vite-dev-default-manifest-on" --project "fixtures:vite-built-default-manifest-on"'
         include:
-          - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:vite-dev-*" --project "fixtures:rspack-*"'
-          - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:vite-built-*" --project "fixtures:webpack-built-*"'
-          - os: ubuntu-24.04-arm
-            projects: '--project "fixtures:webpack-dev-*" --project "fixtures:nitro-vite-*" --project "fixtures:rsbuild-*"'
+          - os: ubuntu-26.04-arm
+            projects: '--project "fixtures:vite-*"'
+          - os: ubuntu-26.04-arm
+            projects: '--project "fixtures:nitro-vite-*" --project "fixtures:webpack-*" --project "fixtures:rspack-*" --project "fixtures:rsbuild-*"'
         exclude:
           - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 
@@ -516,7 +513,7 @@ jobs:
         run: vp exec vitest run ${{ matrix.projects }}
 
       - uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
-        if: github.event_name != 'push' && matrix.os == 'ubuntu-24.04-arm'
+        if: github.event_name != 'push' && runner.os == 'Linux'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -540,10 +537,12 @@ jobs:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
         os: [windows-latest]
-        shard: ['--shard=1/2', '--shard=2/2']
+        shard: ['--shard=1/3', '--shard=2/3', '--shard=3/3']
         include:
-          - os: ubuntu-24.04-arm
-            shard: ''
+          - os: ubuntu-26.04-arm
+            shard: '--shard=1/2'
+          - os: ubuntu-26.04-arm
+            shard: '--shard=2/2'
         exclude:
           - os: ${{ github.event_name == 'merge_group' && 'windows-latest' || '' }}
 

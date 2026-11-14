@@ -5,7 +5,7 @@ import type { MatrixOptions } from './test/e2e/test-utils'
 
 type E2eConfigOptions = ConfigOptions & MatrixOptions
 
-// dev-mode entries are interleaved to spread them across both Windows shards
+// dev-mode entries are interleaved to spread them across the CI shards
 const e2eMatrix = [
   { builder: 'webpack', isDev: false, nitroViteEnvironment: false },
   { builder: 'rsbuild', isDev: false, nitroViteEnvironment: false },
