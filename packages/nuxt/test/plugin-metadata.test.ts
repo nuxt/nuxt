@@ -129,12 +129,31 @@ describe('plugin-metadata', () => {
   } as any
   const transformPlugin: any = RemovePluginMetadataPlugin(nuxt, 'client').raw({}, {} as any)
 
+  it('only lets plugin files reach the transform in a build', () => {
+    const buildNuxt = {
+      options: { dev: false, sourcemap: { client: true } },
+      apps: { default: { plugins: [{ src: '/app/plugins/a.ts' }, { src: '/app/.nuxt/b (1).mjs' }] } },
+    } as any
+    const { filter } = (RemovePluginMetadataPlugin(buildNuxt, 'client').raw({}, {} as any) as any).transform
+    expect(filter.id.test('/app/plugins/a.ts')).toBe(true)
+    expect(filter.id.test('/app/.nuxt/b (1).mjs')).toBe(true)
+    expect(filter.id.test('/app/plugins/a.ts?macro=true')).toBe(false)
+    expect(filter.id.test('/app/plugins/a.tsx')).toBe(false)
+    expect(filter.id.test('/app/components/a.vue')).toBe(false)
+
+    const emptyNuxt = { options: { dev: false }, apps: { default: { plugins: [] } } } as any
+    expect((RemovePluginMetadataPlugin(emptyNuxt, 'client').raw({}, {} as any) as any).transform.filter.id.test('/app/a.ts')).toBe(false)
+
+    const devNuxt = { options: { dev: true }, apps: { default: { plugins: [] } } } as any
+    expect((RemovePluginMetadataPlugin(devNuxt, 'client').raw({}, {} as any) as any).transform.filter).toBeUndefined()
+  })
+
   it('should overwrite invalid plugins', () => {
     const invalidPlugins = [
       'export const plugin = {}',
     ]
     for (const plugin of invalidPlugins) {
-      expect(transformPlugin.transform(plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
+      expect(transformPlugin.transform.handler(plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
     }
   })
 
@@ -146,7 +165,7 @@ describe('plugin-metadata', () => {
         setup: () => {},
       }, { order: 10, name: test })
     `
-    expect(transformPlugin.transform(plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform.handler(plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
       "
             export default defineNuxtPlugin({
               setup: () => {},
@@ -169,7 +188,7 @@ describe('plugin-metadata', () => {
         setup: () => {},
       })
     `
-    const transform = (mode: 'client' | 'server') => (RemovePluginMetadataPlugin(filterNuxt, mode).raw({}, {} as any) as any).transform(plugin, 'my-plugin.mjs').code
+    const transform = (mode: 'client' | 'server') => (RemovePluginMetadataPlugin(filterNuxt, mode).raw({}, {} as any) as any).transform.handler(plugin, 'my-plugin.mjs').code
     expect({
       client: transform('client'),
       server: transform('server'),
@@ -210,7 +229,7 @@ describe('plugin-metadata', () => {
         ${property},
       } satisfies object)
     `
-    expect((RemovePluginMetadataPlugin(filterNuxt, 'client').raw({}, {} as any) as any).transform(plugin, 'my-plugin.mjs').code).toContain('dependsOn: ["a"],')
+    expect((RemovePluginMetadataPlugin(filterNuxt, 'client').raw({}, {} as any) as any).transform.handler(plugin, 'my-plugin.mjs').code).toContain('dependsOn: ["a"],')
   })
 
   it.each([
@@ -229,7 +248,7 @@ describe('plugin-metadata', () => {
     } as any
     const contents = await clientPluginTemplate.getContents!({ nuxt: cycleNuxt, app, options: {} } as any)
     expect(contents.indexOf('/app/b.ts')).toBeLessThan(contents.indexOf('/app/a.ts'))
-    const transform = (RemovePluginMetadataPlugin(cycleNuxt, 'client').raw({}, {} as any) as any).transform
+    const transform = (RemovePluginMetadataPlugin(cycleNuxt, 'client').raw({}, {} as any) as any).transform.handler
     expect(transform(cycleNuxt.vfs['/app/b.ts'], '/app/b.ts')?.code).toContain('dependsOn: []')
     vi.restoreAllMocks()
   })
