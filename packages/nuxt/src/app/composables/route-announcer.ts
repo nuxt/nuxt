@@ -8,10 +8,14 @@ export type RouteAnnouncer = NuxtAnnouncer
 
 function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts): RouteAnnouncer {
   const announcer = createAnnouncer(opts)
+  if (import.meta.server) {
+    return announcer
+  }
+
   const activeHead = injectHead()
 
   function _updateMessageWithPageHeading () {
-    announcer.set(document?.title?.trim(), announcer.politeness.value)
+    announcer.set(document.title?.trim(), announcer.politeness.value)
   }
 
   _updateMessageWithPageHeading()
