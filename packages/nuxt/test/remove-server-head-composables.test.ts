@@ -37,6 +37,18 @@ describe('RemoveServerHeadComposablesPlugin', () => {
     expect(result).not.toContain('useServerSeoMeta(')
   })
 
+  it('removes a call that wraps a nested server head call', async () => {
+    const result = await transform(`
+      import { useServerHead, useServerSeoMeta } from '#app'
+      useServerHead(() => {
+        useServerSeoMeta({ description: 'inner' })
+        return { title: 'outer' }
+      })
+    `)
+    expect(result).not.toContain('useServerHead(')
+    expect(result).not.toContain('useServerSeoMeta(')
+  })
+
   it('preserves syntax when removing unbraced control-flow bodies', async () => {
     const result = await transform(`
       import { useServerHead } from '#app'

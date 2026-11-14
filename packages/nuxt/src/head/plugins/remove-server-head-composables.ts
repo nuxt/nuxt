@@ -40,6 +40,7 @@ export const RemoveServerHeadComposablesPlugin = () => createUnplugin(() => ({
             && HEAD_IMPORT_SOURCES.has(declaration.importNode.source.value)
           ) {
             s.overwrite(parent.start, parent.end, ';')
+            this.skip()
           }
         },
       })
