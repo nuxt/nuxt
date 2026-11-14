@@ -12,7 +12,9 @@
     "**/.output/**": ["unlisted", "unresolved"],
     "**/.output-*/**": ["unlisted", "unresolved"],
     "**/.netlify/**": ["unlisted", "unresolved"],
-    "packages/*/dist/**": ["unlisted", "unresolved"]
+    "packages/*/dist/**": ["unlisted", "unresolved"],
+    "packages/{nuxt,rspack,vite,webpack}/package.json": ["subpaths"],
+    "test/fixtures/*/package.json": ["subpaths"]
   },
   "ignoreDependencies": [
     "bing",
@@ -123,6 +125,9 @@
     },
     "packages/vite": {
       "entry": [
+        "src/ssr-sourcemap.ts!",
+        "src/vite-node-entry.ts!",
+        "src/vite-node-warmup.ts!",
         "test/utils.ts"
       ],
       "ignoreDependencies": [
