@@ -15,7 +15,11 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts): RouteAnnouncer {
   const activeHead = injectHead()
 
   function _updateMessageWithPageHeading () {
-    announcer.set(document.title?.trim(), announcer.politeness.value)
+    const title = document.title?.trim()
+    // an empty title still cancels a pending message restoration
+    if (title !== announcer.message.value || title === '') {
+      announcer.set(title, announcer.politeness.value)
+    }
   }
 
   _updateMessageWithPageHeading()
