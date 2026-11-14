@@ -165,6 +165,9 @@ const LEGACY_SPECIFIER_RE = /^(?:h3(?:\/utils)?$|#imports$|nitropack(?:\/|$)|#in
 
 /** The specifiers that say a file is nitro v2 code. A migrated specifier wins over a legacy one. */
 function legacySpecifiers (code: string, filename: string, migratedVirtuals?: Set<string>): string[] {
+  if (!SPECIFIER_HINT_RE.test(code)) {
+    return []
+  }
   const legacy = new Set<string>()
   for (const specifier of findImportSpecifiers(code, filename)) {
     if (MIGRATED_SPECIFIER_RE.test(specifier.value) || migratedVirtuals?.has(specifier.value)) {

@@ -1474,6 +1474,19 @@ describe('scanLegacyScope', () => {
     })
     expect(scanLegacyScope(['#virtual-template'], [dir]).size).toBe(0)
   })
+
+  it('parses only files that name a legacy specifier', () => {
+    const dir = scoped({
+      'portable.ts': `import { helper } from './util'\nexport default helper`,
+      'util.ts': `export const helper = () => 1`,
+      'legacy.ts': `import { getQuery } from 'h3'\nexport default getQuery`,
+    })
+    const parses = vi.mocked(parseSync)
+    parses.mockClear()
+
+    expect([...scanLegacyScope([], [dir])]).toEqual([[join(dir, 'legacy.ts'), ['h3']]])
+    expect(parses.mock.calls.map(([filename]) => filename)).toEqual([join(dir, 'legacy.ts')])
+  })
 })
 
 describe('getServerImportsPresets', () => {
