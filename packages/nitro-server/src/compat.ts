@@ -1063,6 +1063,10 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
 
   /** The scanned files the server build can reach, so app-side module code is left out. */
   const attributable = (found: Map<string, string[]>): Map<string, string[]> => {
+    // the walk only filters what the scan found
+    if (found.size === 0) {
+      return found
+    }
     const roots = new Set<string>()
     for (const id of files.keys()) {
       // a registration names a specifier, while the scan keys the file it read
