@@ -20,6 +20,7 @@ describe('NuxtRouteAnnouncer', () => {
           return () => h('div', [
             h('button', { id: 'set-title', onClick: () => useHead({ title: 'Dynamically set title' }) }),
             h('button', { id: 'set-meta', onClick: () => useHead({ meta: [{ name: 'description', content: 'Unrelated' }] }) }),
+            h('button', { id: 'clear-title', onClick: () => useHead({ title: '' }) }),
           ])
         },
       }),
@@ -101,6 +102,31 @@ describe('NuxtRouteAnnouncer', () => {
     await new Promise(resolve => setTimeout(resolve, 200))
 
     expect(messages).toEqual([])
+
+    el.unmount()
+  })
+
+  it('`useRouteAnnouncer` should not restore the title after the page title becomes empty', async () => {
+    let announcer!: ReturnType<typeof useRouteAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useRouteAnnouncer()
+        return () => h('div', [h(NuxtRouteAnnouncer), h(NuxtPage)])
+      },
+    })
+
+    await navigateTo('/announcer-first')
+    await waitForTitle('First Page')
+    await vi.waitFor(() => expect(announcer.message.value).toBe('First Page'))
+
+    announcer.polite('First Page')
+    expect(announcer.message.value).toBe('')
+
+    await el.get('#clear-title').trigger('click')
+    await vi.waitFor(() => expect(document.title).toBe(''))
+    await new Promise(resolve => setTimeout(resolve, 200))
+
+    expect(announcer.message.value).toBe('')
 
     el.unmount()
   })

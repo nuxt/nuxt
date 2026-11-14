@@ -16,7 +16,8 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts): RouteAnnouncer {
 
   function _updateMessageWithPageHeading () {
     const title = document.title?.trim()
-    if (title !== announcer.message.value) {
+    // an empty title still cancels a pending message restoration
+    if (title !== announcer.message.value || title === '') {
       announcer.set(title, announcer.politeness.value)
     }
   }
