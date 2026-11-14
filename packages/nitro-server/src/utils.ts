@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
 import { dirname, isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'
+import type { Nuxt } from '@nuxt/schema'
 
 const TEMPLATE_PARAM_RE = /\{\{ ?([\w.]+) ?\}\}/g
 
@@ -43,6 +44,23 @@ export function resolveNitroCommand (command: string | undefined, options: Recor
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
+}
+
+export function timePluginHooks (perf: Pick<NonNullable<Nuxt['_perf']>, 'timeBundlerHook'>, plugins: unknown[]): void {
+  for (const plugin of plugins as Array<Record<string, any> | null | undefined>) {
+    if (!plugin?.name) { continue }
+    const pluginName = `nitro:${plugin.name}`
+    for (const hookName of ['transform', 'resolveId', 'load'] as const) {
+      const hook = plugin[hookName]
+      const handler = typeof hook === 'function' ? hook : hook?.handler
+      if (typeof handler !== 'function') { continue }
+      const timed = function (this: unknown, ...args: unknown[]) {
+        return perf.timeBundlerHook(pluginName, hookName, this, ctx => handler.apply(ctx, args))
+      }
+      // frozen plugins are left untimed rather than throwing
+      Reflect.set(plugin, hookName, typeof hook === 'function' ? timed : { ...hook, handler: timed })
+    }
+  }
 }
 
 const NUXT_DIST_RE = /\/node_modules\/nuxt(?:3|-nightly)?\/dist\//

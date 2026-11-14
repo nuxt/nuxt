@@ -1,4 +1,3 @@
-import { performance } from 'node:perf_hooks'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { cpus } from 'node:os'
@@ -27,7 +26,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitropack/runtime/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { distDir, getLayerNodeModulesExcludePattern, isNuxtDistId, linkStaticDist, relativeWithDot, resolveNitroCommand, toArray, toFsDriverIgnorePatterns, toTranspileNoExternal } from './utils.ts'
+import { distDir, getLayerNodeModulesExcludePattern, isNuxtDistId, linkStaticDist, relativeWithDot, resolveNitroCommand, timePluginHooks, toArray, toFsDriverIgnorePatterns, toTranspileNoExternal } from './utils.ts'
 import { setupAppManifest, setupPayloadRouteRules } from './app-manifest.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from './dev-request.ts'
 import { DEV_PEER_TOKEN_ENV } from 'nuxt/internal/dev/peer'
@@ -868,31 +867,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {
+    const perf = nuxt._perf
     nitro.hooks.hook('rollup:before', (_nitro, rollupConfig) => {
-      const plugins = (rollupConfig.plugins || []) as Array<{ name?: string, transform?: (...a: any[]) => any, resolveId?: (...a: any[]) => any, load?: (...a: any[]) => any } | null>
-      for (const plugin of plugins) {
-        if (!plugin || !plugin.name) { continue }
-        const pluginName = `nitro:${plugin.name}`
-        for (const hookName of ['transform', 'resolveId', 'load'] as const) {
-          const original = plugin[hookName]
-          if (typeof original !== 'function') { continue }
-          plugin[hookName] = function (this: any, ...args: any[]) {
-            const start = performance.now()
-            const record = () => nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start, start)
-            try {
-              const result = original.apply(this, args)
-              if (result && typeof result === 'object' && 'then' in result) {
-                return (result as Promise<any>).finally(record)
-              }
-              record()
-              return result
-            } catch (err) {
-              record()
-              throw err
-            }
-          } as any
-        }
-      }
+      timePluginHooks(perf, (rollupConfig.plugins || []) as unknown[])
     })
   }
 
