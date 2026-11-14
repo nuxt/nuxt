@@ -600,7 +600,7 @@ jobs:
   test-e2e-vapor:
     needs: changes
     if: needs.changes.outputs.src == 'true' && github.event_name == 'pull_request'
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 25
     permissions:
       contents: read
