@@ -1444,9 +1444,6 @@ importers:
       unrouting:
         specifier: catalog:build
         version: 0.3.2
-      untyped:
-        specifier: catalog:build
-        version: 2.0.0
       verkit:
         specifier: catalog:build
         version: 0.5.0
@@ -1496,6 +1493,9 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+      untyped:
+        specifier: catalog:build
+        version: 2.0.0
       vite:
         specifier: 8.3.7
         version: 8.3.7(@types/node@24.19.2)(@vitejs/devtools@0.8.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
@@ -11227,8 +11227,8 @@ packages:
     resolution: {integrity: sha512-i6W3epmp98tibZ2rycV6YP4FhSJvvui9JnJm7SicSC1fXzkPBGSS1g9BNZLGUqVGM6opWEq/Aw2uzD3Q0pnQOg==}
     peerDependencies:
       '@rspack/core': ^1.0.0 || ^2.0.0
-      '@vue/compiler-sfc': '*'
-      vue: '*'
+      '@vue/compiler-sfc': 3.5.45
+      vue: 3.5.45
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -12472,8 +12472,8 @@ packages:
   vue-loader@17.4.2:
     resolution: {integrity: sha512-yTKOA4R/VN4jqjw4y5HrynFL8AK0Z3/Jt7eOJXEitsm0GMRHDBjCfCiuTiLP7OESvsZYo2pATCWhDqxC5ZrM6w==}
     peerDependencies:
-      '@vue/compiler-sfc': '*'
-      vue: '*'
+      '@vue/compiler-sfc': 3.5.45
+      vue: 3.5.45
       webpack: ^4.1.0 || ^5.0.0-0
     peerDependenciesMeta:
       '@vue/compiler-sfc':

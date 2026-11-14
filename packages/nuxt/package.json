@@ -139,7 +139,6 @@
     "unimport": "catalog:build",
     "unplugin": "catalog:build",
     "unrouting": "catalog:build",
-    "untyped": "catalog:build",
     "verkit": "catalog:build",
     "vue-bundle-renderer": "catalog:app-runtime",
     "vue-component-type-helpers": "catalog:vue"
@@ -158,6 +157,7 @@
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
+    "untyped": "catalog:build",
     "vite": "catalog:vite",
     "vitest": "catalog:dev",
     "vue": "catalog:app-runtime",
@@ -219,5 +219,8 @@
       "#pages/composables": "./dist/pages/runtime/composables.js"
     },
     "types": "./types.d.ts"
+  },
+  "inlinedDependencies": {
+    "untyped": "2.0.0"
   }
 }
