@@ -80,11 +80,11 @@ describe('plugin-metadata', () => {
   })
 
   it.each([
-    ['name', 'import { NAME } from \'./constants\'\nexport default defineNuxtPlugin({ name: NAME, enforce: \'pre\' })', { order: -20 }],
-    ['parallel', 'export default defineNuxtPlugin({ name: \'test\', parallel: import.meta.client })', { name: 'test', order: 0 }],
-    ['enforce', 'let enforce = \'pre\'\nexport default defineNuxtPlugin({ name: \'test\', enforce })', { name: 'test', order: 0 }],
-    ['name', 'const NAME = \'outer\'\nexport default (() => {\n  const NAME = \'inner\'\n  return defineNuxtPlugin({ name: NAME })\n})()', { order: 0 }],
-  ])('should warn about a non-static `%s` and keep the static metadata', (key, code, meta) => {
+    ['name', 'from an import', 'import { NAME } from \'./constants\'\nexport default defineNuxtPlugin({ name: NAME, enforce: \'pre\' })', { order: -20 }],
+    ['parallel', 'from a build flag', 'export default defineNuxtPlugin({ name: \'test\', parallel: import.meta.client })', { name: 'test', order: 0 }],
+    ['enforce', 'from a `let` binding', 'let enforce = \'pre\'\nexport default defineNuxtPlugin({ name: \'test\', enforce })', { name: 'test', order: 0 }],
+    ['name', 'from a constant shadowed at the call site', 'const NAME = \'outer\'\nexport default (() => {\n  const NAME = \'inner\'\n  return defineNuxtPlugin({ name: NAME })\n})()', { order: 0 }],
+  ])('should warn about a non-static `%s` %s and keep the static metadata', (key, _, code, meta) => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     expect(extractMetadata(code)).toEqual({ ...meta, _metaUnknown: true })
     expect(warn).toHaveBeenCalledWith(expect.stringContaining(`The \`${key}\` option of a plugin is not a static value.`))
