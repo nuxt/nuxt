@@ -198,12 +198,44 @@ describe('nuxt-link ssr', () => {
   })
 
   describe('custom', () => {
+    it('renders a custom link without a component instance', async () => {
+      const setup = vi.fn()
+      const renderWithSpy = async (attrs: Record<string, unknown>) => {
+        vi.stubGlobal('__TEST_SERVER__', true)
+        const router = createRouter({ history: createMemoryHistory(), routes })
+        nuxtApp.$router = router
+        await router.push('/')
+        await router.isReady()
+        const Link = defineNuxtLink({ componentName: 'NuxtLink' }) as any
+        const originalSetup = Link.setup
+        Link.setup = (props: unknown, ctx: unknown) => {
+          setup()
+          return originalSetup(props, ctx)
+        }
+        const app = createApp(defineComponent({
+          ssrRender: (_ctx: unknown, push: (item: unknown) => void, parent: ComponentInternalInstance) => {
+            push(ssrRenderNuxtLink(Link, { to: '/parent', custom: '', ...attrs }, { default: serializeSlotProps } as any, parent))
+          },
+        }))
+        app.use(router)
+        return renderToString(app)
+      }
+
+      expect(await renderWithSpy({})).toContain('data-props')
+      expect(setup).not.toHaveBeenCalled()
+
+      // a fallthrough attribute belongs on the slot root, so the component renders it
+      expect(await renderWithSpy({ 'data-foo': '1' })).toContain('data-foo="1"')
+      expect(setup).toHaveBeenCalledOnce()
+    })
+
     for (const { props, slot, ...testCase } of customCases) {
       it(testCase.name, async () => {
         const customCase = { ...testCase, props: { ...props, custom: true }, slot: slot ?? serializeSlotProps }
         const viaRouterLink = await renderLink(customCase, false)
         const viaServerPath = await renderLink(customCase, true)
         expect(viaServerPath).toBe(viaRouterLink)
+        expect(await renderLink(customCase, true, true)).toBe(viaRouterLink)
       })
     }
   })
