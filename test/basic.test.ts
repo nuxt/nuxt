@@ -823,6 +823,49 @@ describe('pages', () => {
     await page.close()
   })
 
+  it.skipIf(!oncePerManifest).each([
+    ['/prerender/route-hash#section'],
+    ['/prerender/route-hash?active=true#section'],
+  ])('keeps the URL and the anchor when hydrating prerendered %s', async (path) => {
+    const page = await createPage()
+    const errors: string[] = []
+    page.on('console', (message) => {
+      if (message.type() === 'error') {
+        errors.push(message.text())
+      }
+    })
+    await page.addInitScript(() => {
+      const urls: string[] = []
+      Object.assign(window, { __historyUrls: urls })
+      const replaceState = history.replaceState.bind(history)
+      history.replaceState = (...args: Parameters<History['replaceState']>) => {
+        const result = replaceState(...args)
+        urls.push(window.location.pathname + window.location.search + window.location.hash)
+        return result
+      }
+    })
+
+    await page.goto(url(path))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+    await expect.poll(() => page.evaluate(() => window.useNuxtApp?.()._route.fullPath)).toBe(path)
+    expect(await page.evaluate(() => !!window.useNuxtApp!().payload.prerenderedAt)).toBe(true)
+
+    // the URL is never rewritten, so the browser's scroll to the hash is kept
+    const urls = await page.evaluate(() => (window as unknown as { __historyUrls: string[] }).__historyUrls)
+    expect(urls.filter(visited => visited !== path)).toEqual([])
+    await expect.poll(() => page.locator('#section').evaluate(el => Math.abs(el.getBoundingClientRect().top) < 1)).toBe(true)
+
+    // the page, the layout and app.vue hydrate without the hash, then update
+    expect(errors).toEqual([])
+    expect(await page.getAttribute('#section', 'class')).toBe('active')
+    expect(await page.getAttribute('#layout-hash', 'class')).toBe('with-hash')
+    expect(await page.innerText('#layout-hash')).toBe('#section')
+    expect(await page.getAttribute('#app-hash', 'class')).toBe('with-hash')
+    expect(await page.innerText('#app-hash')).toBe('#section')
+
+    await page.close()
+  })
+
   it.skipIf(!oncePerManifest)('awaited useAsyncData resolves with data when a catch-all remounts during the deferred route restore', async () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/prerender/catchall/a/b/?test=true')
 
