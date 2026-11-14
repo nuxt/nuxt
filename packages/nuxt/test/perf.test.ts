@@ -283,7 +283,9 @@ describe('NuxtPerfProfiler', () => {
     perf.startPhase('ready')
     await hooks.callHook('ready')
 
-    expect(perf.getReport().phases.filter(p => p.name === 'ready')).toHaveLength(1)
+    const ready = perf.getReport().phases.filter(p => p.name === 'ready')
+    expect(ready).toHaveLength(1)
+    expect(ready[0]).toMatchObject({ unfinished: true })
   })
 
   it('reports time before the profiler started and time outside any phase', async () => {
@@ -332,6 +334,37 @@ describe('NuxtPerfProfiler', () => {
     const report = perf.getReport()
 
     expect(report.unattributedDuration).toBe(report.totalDuration)
+  })
+
+  it('keeps the time of a module phase in the row of the phase it runs in', async () => {
+    const perf = new NuxtPerfProfiler()
+    const start = performance.now()
+    await sleep(60)
+    perf.recordPhase('modules', start, start + 50)
+    perf.recordPhase('module:foo', start + 10, start + 30)
+
+    const report = perf.getReport()
+
+    expect(report.phases.find(p => p.name === 'modules')!.ownDuration).toBeCloseTo(50, 1)
+    expect(report.unattributedDuration).toBeCloseTo(report.totalDuration - 50, 1)
+  })
+
+  it('shows phases that never ended in the table and the trace', async () => {
+    const log = vi.spyOn(consola, 'log').mockImplementation(() => {})
+    onTestFinished(() => log.mockRestore())
+    const perf = new NuxtPerfProfiler()
+    perf.startPhase('build:bundle')
+    await sleep(20)
+
+    perf.printReport()
+    const events = perf.getTraceEvents()
+
+    const row = log.mock.calls.map(([line]) => stripVTControlCharacters(String(line))).find(line => line.includes('build:bundle'))
+    expect(row).toMatch(/unfinished$/)
+    const begin = events.find(e => e.cat === 'phase' && e.name === 'build:bundle' && e.ph === 'B')!
+    const end = events.find(e => e.cat === 'phase' && e.name === 'build:bundle' && e.ph === 'E')!
+    expect(end.ts - begin.ts).toBeGreaterThanOrEqual(19_000)
+    expect(end.ts).toBe(events.find(e => e.name === 'nuxt build' && e.ph === 'E')!.ts)
   })
 
   it('does not subtract overlapping child phases twice', () => {
