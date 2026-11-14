@@ -6,6 +6,7 @@ import { augmentAndResolve, augmentPages, createPagesContext, getPageComponentNa
 import { dynamicPageMetaCache, getDynamicPageMeta } from '../src/pages/page-meta-extraction.ts'
 import type { ScanReporter } from '../src/core/scan-problems.ts'
 import { PageComponentNamePlugin } from '../src/pages/plugins/component-name.ts'
+import { invalidateAppStructure } from '../src/core/app.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey, memoizeRouteComponent } from '../src/pages/runtime/utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -200,9 +201,29 @@ describe('pages:pageComponentNames', () => {
   })
 
   it('excludes a symlinked page file', () => {
+    const nuxt = { options: { experimental: { scanPageMeta: true } } } as unknown as Nuxt
     const spy = vi.spyOn(fs, 'realpathSync').mockReturnValue('/real/foo.vue')
     try {
       expect(getPageComponentNames([{ file: '/pages/foo.vue', name: 'foo', path: '/foo' }], nuxt).get('/pages/foo.vue')).toBeUndefined()
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  it('resolves each page file once until the app structure changes', () => {
+    const nuxt = { options: { experimental: { scanPageMeta: true } } } as unknown as Nuxt
+    const pages: NuxtPage[] = [{ file: '/pages/foo.vue', name: 'foo', path: '/foo' }]
+    const spy = vi.spyOn(fs, 'realpathSync').mockReturnValue('/pages/foo.vue')
+    try {
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBe('foo')
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBe('foo')
+      expect(spy).toHaveBeenCalledTimes(1)
+
+      // the file is replaced by a symlink
+      spy.mockReturnValue('/real/foo.vue')
+      invalidateAppStructure(nuxt)
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBeUndefined()
+      expect(spy).toHaveBeenCalledTimes(2)
     } finally {
       spy.mockRestore()
     }
