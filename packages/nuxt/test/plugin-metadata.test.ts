@@ -66,6 +66,7 @@ describe('plugin-metadata', () => {
     ['template literals', 'export default defineNuxtPlugin({ name: `test`, dependsOn: [`a`], parallel: true })'],
     ['top-level constants', 'export const NAME = \'test\'\nconst DEPS = [\'a\']\nexport default defineNuxtPlugin({ name: NAME, dependsOn: DEPS, parallel: true })'],
     ['an aliased import', 'import { defineNuxtPlugin as define } from \'#app\'\nexport default define({ name: \'test\', dependsOn: [\'a\'], parallel: true })'],
+    ['top-level constants read from a nested call', 'const NAME = \'test\'\nexport default (() => {\n  const other = \'unrelated\'\n  return defineNuxtPlugin({ name: NAME, dependsOn: [\'a\'], parallel: true })\n})()'],
   ])('should extract static metadata written with %s', (_, code) => {
     expect(extractMetadata(code)).toEqual({ name: 'test', dependsOn: ['a'], parallel: true, order: 0 })
   })

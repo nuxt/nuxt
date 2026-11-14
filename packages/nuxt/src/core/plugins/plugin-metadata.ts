@@ -5,7 +5,7 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import { normalize } from 'pathe'
 import type { NuxtAppLiterals, PluginMeta } from '../../app/types.ts'
 
-import { walk } from 'oxc-walker'
+import { ScopeTracker, walk } from 'oxc-walker'
 import { parseModule } from '../utils/parse.ts'
 import type { ESTree } from 'rolldown/utils'
 import { pluginDiagnostics } from '@nuxt/kit/internal'
@@ -58,7 +58,6 @@ export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode,
 }
 
 const PLUGIN_WRAPPERS = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
-const SCOPE_NODES = new Set(['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression', 'BlockStatement', 'StaticBlock', 'CatchClause', 'ForStatement', 'ForInStatement', 'ForOfStatement', 'SwitchStatement'])
 
 const metaCache: Record<string, ExtractedPluginMeta> = {}
 const failureCache: Record<string, unknown> = {}
@@ -82,11 +81,9 @@ function parseMetadata (code: string, loader: 'ts' | 'tsx') {
   const { program } = parseModule(code, `file.${loader}`)
   const constants = collectConstants(program)
   const wrappers = new Map<string, string>()
-  let scopeDepth = 0
-  walk(program, { leave: (node) => {
-    if (SCOPE_NODES.has(node.type)) { scopeDepth-- }
-  }, enter: (node) => {
-    if (SCOPE_NODES.has(node.type)) { scopeDepth++ }
+  const scopeTracker = new ScopeTracker()
+  const lookup = (name: string) => scopeTracker.getDeclaration(name)?.scope ? undefined : constants.get(name)
+  walk(program, { scopeTracker, enter: (node) => {
     if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && PLUGIN_WRAPPERS.has(node.imported.name)) {
       wrappers.set(node.local.name, node.imported.name)
     }
@@ -99,19 +96,17 @@ function parseMetadata (code: string, loader: 'ts' | 'tsx') {
       meta.order = internalOrderMap['user-revivers']
     }
 
-    const scopeConstants = scopeDepth ? new Map<string, ESTree.Expression>() : constants
-
     const metaArg = node.arguments[1] && unwrapExpression(node.arguments[1])
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
         throw pluginDiagnostics.NUXT_B2001({ name, type: metaArg.type })
       }
-      meta = extractMetaFromObject(metaArg.properties, scopeConstants)
+      meta = extractMetaFromObject(metaArg.properties, lookup)
     }
 
     const plugin = node.arguments[0] && unwrapExpression(node.arguments[0])
     if (plugin?.type === 'ObjectExpression') {
-      meta = defu(extractMetaFromObject(plugin.properties, scopeConstants), meta)
+      meta = defu(extractMetaFromObject(plugin.properties, lookup), meta)
     } else if (plugin && plugin.type !== 'ArrowFunctionExpression' && plugin.type !== 'FunctionExpression') {
       pluginDiagnostics.NUXT_B2013({ name, type: plugin.type })
       meta._metaUnknown = true
@@ -146,7 +141,9 @@ function collectConstants (program: ESTree.Program) {
 
 const UNRESOLVED = Symbol('unresolved')
 
-function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | null, constants: Map<string, ESTree.Expression>, seen = new Set<string>()): unknown {
+type ConstantLookup = (name: string) => ESTree.Expression | undefined
+
+function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | null, lookup: ConstantLookup, seen = new Set<string>()): unknown {
   if (!node) { return UNRESOLVED }
   node = unwrapExpression(node)
   switch (node.type) {
@@ -159,14 +156,14 @@ function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | nu
     case 'TemplateLiteral':
       return node.expressions.length ? UNRESOLVED : node.quasis[0]!.value.cooked
     case 'ArrayExpression': {
-      const values = node.elements.map(element => resolveStaticValue(element, constants, seen))
+      const values = node.elements.map(element => resolveStaticValue(element, lookup, seen))
       return values.includes(UNRESOLVED) ? UNRESOLVED : values
     }
     case 'Identifier': {
       if (node.name === 'undefined') { return undefined }
-      const init = constants.get(node.name)
+      const init = lookup(node.name)
       if (!init || seen.has(node.name)) { return UNRESOLVED }
-      return resolveStaticValue(init, constants, new Set(seen).add(node.name))
+      return resolveStaticValue(init, lookup, new Set(seen).add(node.name))
     }
   }
   return UNRESOLVED
@@ -184,7 +181,7 @@ function isMetadataKey (key: string | ESTree.IdentifierName): key is ExtractedMe
   return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
-function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, constants: Map<string, ESTree.Expression>) {
+function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, lookup: ConstantLookup) {
   const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
@@ -200,7 +197,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, co
       continue
     }
     if (!isMetadataKey(propertyKey)) { continue }
-    const value = resolveStaticValue(property.value, constants)
+    const value = resolveStaticValue(property.value, lookup)
     if (propertyKey === 'dependsOn') {
       if (value === undefined) { continue }
       if (!Array.isArray(value) || value.some(name => typeof name !== 'string')) {
