@@ -13,6 +13,9 @@ const runner = fileURLToPath(new URL('./run-without-jiti.mjs', import.meta.url))
 const kitSource = join(repoRoot, 'packages/kit/src/index.ts')
 const kitDist = join(repoRoot, 'packages/kit/dist/index.mjs')
 
+/** Packages a default install of `nuxt` must not pull in. */
+const EXCLUDED_PACKAGES = new Set(['jiti', 'untyped'])
+
 /** Packages allowed to declare `jiti`, and only as an optional peer dependency. */
 const OPTIONAL_JITI_PACKAGES = new Set(['@nuxt/kit', 'nuxt'])
 
@@ -85,7 +88,7 @@ describe('jiti is not required', () => {
     expect(offenders).toEqual([])
   })
 
-  it('is not installed with nuxt by any of its dependencies', async () => {
+  it('does not install jiti or untyped with nuxt through any of its dependencies', async () => {
     // walks the installed tree through `dependencies`, `optionalDependencies` and required peers, as a consumer's package manager would
     const seen = new Set<string>()
     const paths: string[] = []
@@ -102,14 +105,18 @@ describe('jiti is not required', () => {
       }
       const requiredPeers = Object.keys(pkg.peerDependencies ?? {}).filter(name => !pkg.peerDependenciesMeta?.[name]?.optional)
       for (const name of new Set([...Object.keys({ ...pkg.dependencies, ...pkg.optionalDependencies }), ...requiredPeers])) {
-        if (name === 'jiti') {
+        if (EXCLUDED_PACKAGES.has(name)) {
           paths.push([...path, pkg.name, name].join(' > '))
           continue
         }
         const depDir = findInstalled(realDir, name)
-        if (depDir) {
-          await walk(depDir, [...path, pkg.name])
+        if (!depDir) {
+          if (Object.hasOwn(pkg.optionalDependencies ?? {}, name)) {
+            continue
+          }
+          throw new Error(`Cannot inspect required dependency: ${[...path, pkg.name, name].join(' > ')}`)
         }
+        await walk(depDir, [...path, pkg.name])
       }
     }
     await walk(join(repoRoot, 'packages/nuxt'), [])
