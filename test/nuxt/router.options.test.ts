@@ -382,6 +382,17 @@ describe('scrollBehavior between pages', () => {
         children: [{ path: ':bar', component: SyncComponent }, { path: 'user-:group', component: SyncComponent }],
       }),
       router.addRoute({
+        path: '/nested-scroll-params/:foo',
+        component: NestedPageParent,
+        children: [{ path: '', component: SyncComponent }, { path: ':bar', component: SyncComponent }],
+      }),
+      router.addRoute({
+        path: '/nested-scroll-params-explicit/:foo',
+        component: NestedPageParent,
+        meta: { scrollToTop: true },
+        children: [{ path: ':bar', component: SyncComponent }],
+      }),
+      router.addRoute({
         path: '/scroll-to-top-fn/:id',
         component: SyncComponent,
         meta: { scrollToTop: to => to.query.scrollToTop === 'true' },
@@ -426,6 +437,31 @@ describe('scrollBehavior between pages', () => {
     await navigateFrom('/scroll-to-top-fn/a', '/scroll-to-top-fn/b?scrollToTop=false')
     await sleep(50)
     expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  // https://github.com/nuxt/nuxt/issues/31638
+  it('should not scroll to top when only a nested route param changes', async () => {
+    await navigateFrom('/nested-scroll-params/foo/one', '/nested-scroll-params/foo/two')
+    await sleep(50)
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('should scroll to top when a parent route param changes', async () => {
+    await navigateFrom('/nested-scroll-params/foo/one', '/nested-scroll-params/bar/one')
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+
+  it('should scroll to top when leaving a nested route for its parent page', async () => {
+    await navigateFrom('/nested-scroll-params/foo/one', '/nested-scroll-params/foo')
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
+  })
+
+  it('should scroll to top when only a nested route param changes but `scrollToTop` is true', async () => {
+    await navigateFrom('/nested-scroll-params-explicit/foo/one', '/nested-scroll-params-explicit/foo/two')
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0 })
   })
 })
 

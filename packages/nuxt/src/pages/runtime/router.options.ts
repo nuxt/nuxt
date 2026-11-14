@@ -37,6 +37,11 @@ export default <RouterConfig>{
 
     if (routeAllowsScrollToTop === false) { return false }
 
+    // If only the params of the deepest nested page changed, its parent page is not
+    // re-rendered, so keep the current window scroll position, unless scrolling was
+    // explicitly requested (#31638).
+    if (!routeAllowsScrollToTop && !savedPosition && !to.hash && _isNestedPageParamChange(to, from)) { return false }
+
     if (from === START_LOCATION) {
       return _calculatePosition(to, from, savedPosition, hashScrollBehaviour)
     }
@@ -64,6 +69,29 @@ export default <RouterConfig>{
       })
     })
   },
+}
+
+const ROUTE_PARAM_RE = /:(\w+)(?:\([^)]+\))?[?+*]?/g
+
+function _resolveMatchedPath (path: string, params: RouteLocationNormalized['params']): string {
+  return path.replace(ROUTE_PARAM_RE, (_, name: string) => String(params[name] ?? ''))
+}
+
+/**
+ * Whether the navigation only changed the params of the deepest matched route,
+ * leaving every parent page (and therefore the layout) untouched.
+ */
+function _isNestedPageParamChange (to: RouteLocationNormalized, from: RouteLocationNormalized): boolean {
+  if (to.matched.length < 2 || to.matched.length !== from.matched.length) { return false }
+
+  // If every matched route record is the same, only params can have changed
+  if (!to.matched.every((record, index) => record === from.matched[index])) { return false }
+
+  // The parent's resolved path includes every ancestor param, so if it is unchanged
+  // only a param of the nested page itself can differ
+  const parent = to.matched[to.matched.length - 2]
+  if (!parent) { return false }
+  return _resolveMatchedPath(parent.path, to.params) === _resolveMatchedPath(parent.path, from.params)
 }
 
 function _getHashElementScrollMarginTop (hash: string): number {
