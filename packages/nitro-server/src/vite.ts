@@ -199,7 +199,16 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
 }
 
 const VIRTUAL_PREFIX = '\0nuxt-build-output:'
+const VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(VIRTUAL_PREFIX)}`)
 const NITRO_VIRTUAL_PREFIX = '\0nuxt-nitro-virtual:'
+const NITRO_VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(NITRO_VIRTUAL_PREFIX)}`)
+/** Relative and absolute file paths, and ids already resolved by another plugin. */
+const FILE_OR_INTERNAL_ID_RE = [/^\.{1,2}\//, /^\//, /^[A-Z]:[\\/]/i, /^\0/]
+
+/** Matches exactly one of `ids`, or nothing when there are none. */
+function exactIdRE (ids: string[]): RegExp {
+  return ids.length ? new RegExp(`^(?:${ids.map(id => escapeRE(id)).join('|')})$`) : /^$/
+}
 
 /**
  * Build outputs whose value is not final until the ssr environment's own
@@ -309,6 +318,7 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
+      filter: { id: exactIdRE(Object.keys(outputs)) },
       handler (id) {
         if (id in outputs) {
           return VIRTUAL_PREFIX + id
@@ -317,8 +327,8 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
     },
     load: {
       order: 'pre',
+      filter: { id: VIRTUAL_PREFIX_RE },
       async handler (id) {
-        if (!id.startsWith(VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(VIRTUAL_PREFIX.length)
 
         const key = outputs[specifier]
@@ -490,6 +500,8 @@ function NitroVirtualBridge (nitro: Nitro): VitePlugin {
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
+      // keys can be added until the build starts, so only rule out ids that cannot be one
+      filter: { id: { exclude: FILE_OR_INTERNAL_ID_RE } },
       handler (id) {
         if (nitro.options.virtual[id]) {
           return NITRO_VIRTUAL_PREFIX + id
@@ -498,8 +510,8 @@ function NitroVirtualBridge (nitro: Nitro): VitePlugin {
     },
     load: {
       order: 'pre',
+      filter: { id: NITRO_VIRTUAL_PREFIX_RE },
       async handler (id) {
-        if (!id.startsWith(NITRO_VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(NITRO_VIRTUAL_PREFIX.length)
         const entry = nitro.options.virtual[specifier]
         const code = typeof entry === 'function' ? await entry() : entry
