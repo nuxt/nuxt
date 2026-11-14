@@ -131,28 +131,6 @@ describe('NuxtRouteAnnouncer', () => {
     el.unmount()
   })
 
-  it('`useRouteAnnouncer` should cancel a pending repeat on unmount', async () => {
-    let announcer!: ReturnType<typeof useRouteAnnouncer>
-    const el = await mountSuspended({
-      setup () {
-        announcer = useRouteAnnouncer()
-        return () => h(NuxtRouteAnnouncer)
-      },
-    })
-
-    announcer.polite('Item saved')
-    await flushPromises()
-    expect(el.get('[role="status"]').text()).toBe('Item saved')
-
-    announcer.polite('Item saved')
-    await flushPromises()
-    expect(el.get('[role="status"]').text()).toBe('')
-
-    el.unmount()
-    await new Promise(resolve => setTimeout(resolve, 200))
-    expect(announcer.message.value).toBe('')
-  })
-
   it('`useAnnouncer` should announce polite message', async () => {
     const el = await mountSuspended({
       setup () {

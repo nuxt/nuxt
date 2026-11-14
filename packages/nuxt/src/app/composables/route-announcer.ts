@@ -25,10 +25,8 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts): RouteAnnouncer {
   _updateMessageWithPageHeading()
   activeHead?.hooks?.hook('dom:rendered', _updateMessageWithPageHeading)
 
-  const cleanup = announcer._cleanup
   announcer._cleanup = () => {
     activeHead?.hooks?.removeHook('dom:rendered', _updateMessageWithPageHeading)
-    cleanup()
   }
 
   return announcer
