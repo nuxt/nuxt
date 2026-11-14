@@ -163,4 +163,11 @@ describe('NuxtPerfProfiler', () => {
       return [c.environment, c.getEnvironment()]
     })).toEqual(['ssr', 'ssr'])
   })
+
+  it('leaves read-only plugin context methods unwrapped', () => {
+    const perf = new NuxtPerfProfiler()
+    const ctx = Object.freeze({ resolve: () => 'resolved', getModuleIds: () => ['entry.ts'] })
+
+    expect(perf.timeBundlerHook('plugin', 'load', ctx, c => [c.resolve(), c.getModuleIds === ctx.getModuleIds])).toEqual(['resolved', true])
+  })
 })

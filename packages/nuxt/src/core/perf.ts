@@ -134,6 +134,12 @@ function round (n: number): number {
   return Math.round(n * 100) / 100
 }
 
+/** A Proxy `get` trap must return these properties unchanged. */
+function isReadonlyProperty (target: object, key: PropertyKey) {
+  const descriptor = Reflect.getOwnPropertyDescriptor(target, key)
+  return !!descriptor && !descriptor.configurable && !descriptor.writable
+}
+
 function contains (outer: { startTime: number, endTime: number }, inner: { startTime: number, endTime: number }) {
   return inner.startTime >= outer.startTime && inner.endTime <= outer.endTime
 }
@@ -275,7 +281,7 @@ export class NuxtPerfProfiler {
       ? new Proxy(ctx, {
           get (target, key) {
             const value = Reflect.get(target, key, target)
-            if (typeof value !== 'function') { return value }
+            if (typeof value !== 'function' || isReadonlyProperty(target, key)) { return value }
             // bound so that methods relying on private fields or native receivers still work
             if (key !== 'resolve' && key !== 'load') { return value.bind(target) }
             return (...args: unknown[]) => {
