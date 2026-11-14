@@ -456,6 +456,63 @@ describe('clearNuxtState', () => {
     expect(state3.value).toBe('test')
   })
 
+  it('should release init functions when the registering scope is disposed', () => {
+    const nuxtApp = useNuxtApp()
+    const key = 'clearNuxtState-scoped'
+    const scope1 = effectScope()
+    const scope2 = effectScope()
+    const state = scope1.run(() => useState(key, () => 'first'))!
+    scope2.run(() => useState(key, () => 'second'))
+
+    scope1.stop()
+    state.value = 'changed'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('second')
+
+    scope2.stop()
+    expect(nuxtApp._state[`$s${key}`]).toBeUndefined()
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBeUndefined()
+  })
+
+  it('should retain a shared init function until its last registering scope is disposed', () => {
+    const key = 'clearNuxtState-shared'
+    const init = () => 'default'
+    const scope1 = effectScope()
+    const scope2 = effectScope()
+    const state = scope1.run(() => useState(key, init))!
+    scope2.run(() => useState(key, init))
+
+    scope1.stop()
+    state.value = 'changed'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('default')
+
+    scope2.stop()
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBeUndefined()
+  })
+
+  it('should register one init function per key for each scope', () => {
+    const nuxtApp = useNuxtApp()
+    const key = 'clearNuxtState-repeated'
+    const scope = effectScope()
+    const state = scope.run(() => useState(key, () => 'first'))!
+    for (let i = 0; i < 3; i++) {
+      scope.run(() => useState(key, () => `call-${i}`))
+    }
+    useState(key, () => 'unscoped')
+    useState(key, () => 'unscoped-2')
+
+    expect(nuxtApp._state[`$s${key}`]?.size).toBe(2)
+    state.value = 'changed'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('first')
+    scope.stop()
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('unscoped')
+  })
+
   it('should only enumerate useState keys, ignoring internal payload.state entries', () => {
     const nuxtApp = useNuxtApp()
     // Simulate internal state entries that don't use the useState prefix
