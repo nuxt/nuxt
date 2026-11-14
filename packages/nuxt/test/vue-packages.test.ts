@@ -102,4 +102,26 @@ describe('VuePackagesPlugin', async () => {
     })
     await expect(import(pathToFileURL(join(dir, 'entry.js')).href)).resolves.toMatchObject({ nuxt: '1.0.0', ui: '1.0.0', uiReactivity: '1.0.0' })
   })
+
+  it.each([false, true])('resolves `vue` from the pinned copy once per import or once per build (cache: %s)', async (cache) => {
+    const dir = join(rootDir, `dist-${cache}`)
+    const pinned: string[] = []
+    await build({
+      root: rootDir,
+      configFile: false,
+      logLevel: 'silent',
+      plugins: [
+        VuePackagesPlugin(packages, { cache }),
+        { name: 'count', enforce: 'pre', resolveId: (id, importer) => { if (importer?.endsWith('package.json')) { pinned.push(id) } } },
+      ],
+      build: {
+        outDir: dir,
+        minify: false,
+        lib: { entry: join(rootDir, 'entry.js'), formats: ['es'], fileName: () => 'entry.js' },
+      },
+    })
+    await expect(import(pathToFileURL(join(dir, 'entry.js')).href)).resolves.toMatchObject({ nuxt: '1.0.0', ui: '1.0.0', uiReactivity: '1.0.0' })
+    // `nuxt` and `ui` both import `vue`
+    expect(pinned.filter(id => id === 'vue')).toHaveLength(cache ? 1 : 2)
+  })
 })
