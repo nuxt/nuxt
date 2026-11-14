@@ -317,8 +317,9 @@ describe('ssr composables', () => {
     const seoEntry = useServerSeoMeta({ author: 'server' })
 
     for (const entry of [headEntry, headSafeEntry, seoEntry]) {
-      expect(entry.patch({})).toBeUndefined()
-      expect(entry.dispose()).toBeUndefined()
+      expect(entry._i).toBe(-1)
+      entry.patch({})
+      entry.dispose()
     }
   })
 })
