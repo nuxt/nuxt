@@ -13,8 +13,8 @@ import { addRoute, createRouter, findRoute } from 'rou3'
 import { rou3PatternToURLPattern } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, resolveRoutePaths } from './utils.ts'
 import type { PagesContext } from './utils.ts'
-import { resolvePageMetaExtractionKeys, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
-import { collectRou3PagePatterns, collectRou3PageSources, toRou3RoutePatterns } from './route-patterns.ts'
+import { dynamicPageMetaCache, getDynamicPageMeta, resolvePageMetaExtractionKeys, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
+import { collectRou3PagePatterns, collectRou3PageSources, createPageLayoutResolver, toRou3RoutePatterns } from './route-patterns.ts'
 import { findRoutesModifyingRouterOptions, genRouterOptions, resolveRouterOptions } from './router-options.ts'
 import { createInlineRouteRulesUpdater, removePagesRules } from './route-rules.ts'
 import { markPagesForRouteRules } from './route-coverage.ts'
@@ -498,7 +498,15 @@ export default defineNuxtModule({
       if (nuxt.options.dev || hashMode || strict || !nuxt.apps.default?.pages?.length) { return }
       if (await findRoutesModifyingRouterOptions(nuxt, builtInRouterOptions, ['hashMode', 'history', 'strict'])) { return }
 
-      const pageSources = collectRou3PageSources(nuxt.apps.default.pages, nuxt.options.srcDir)
+      // page meta that is not extracted is only known once the page has loaded
+      const dynamicPageMeta = dynamicPageMetaCache(nuxt)
+      const resolveLayout = shouldExtractSerializablePageMeta(nuxt)
+        ? createPageLayoutResolver(nuxt.apps.default.layouts, {
+            isMetaDynamic: page => getDynamicPageMeta(page, dynamicPageMeta).has('meta'),
+            hasLayoutRules: resolveRouteRulesRoutes(nuxt).routes.some(route => route.data.appLayout !== undefined),
+          })
+        : undefined
+      const pageSources = collectRou3PageSources(nuxt.apps.default.pages, nuxt.options.srcDir, resolveLayout)
       if (!pageSources) { return }
       // ambiguous patterns stay in the matcher, without sources, so no broader pattern matches their paths
       const sources: Record<string, string[]> = {}

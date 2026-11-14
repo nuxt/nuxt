@@ -34,10 +34,12 @@ describe.skipIf(!runsOncePerEnvInMatrix)('pages served with `ssr: false`', () =>
   })
 
   it.skipIf(isDev).each([
-    ['/admin', ['admin-shell', 'admin-index-page'], ['product-page', 'report-default']],
-    ['/products/123', ['product-page'], ['admin-shell', 'report-default']],
-    ['/report', ['report-default', 'report-aux'], ['admin-shell', 'product-page']],
-  ])('preloads only the page chunks of %s', async (path, markers, unrelatedMarkers) => {
+    // the layout of a parent route applies to the routes nested in it
+    ['/admin', ['admin-shell', 'admin-index-page', 'fixture-panel-layout'], ['product-page', 'report-default', 'fixture-default-layout']],
+    ['/products/123', ['product-page', 'fixture-default-layout'], ['admin-shell', 'report-default', 'fixture-panel-layout']],
+    // a page with `layout: false` renders in no layout
+    ['/report', ['report-default', 'report-aux'], ['admin-shell', 'product-page', 'fixture-default-layout', 'fixture-panel-layout']],
+  ])('preloads only the page and layout chunks of %s', async (path, markers, unrelatedMarkers) => {
     const html = await $fetch<string>(path)
     const preloaded = await Promise.all([...html.matchAll(/<link rel="modulepreload"[^>]*href="([^"]+)"/g)].map(m => $fetch<string>(m[1]!, { responseType: 'text' })))
     for (const marker of markers) {
