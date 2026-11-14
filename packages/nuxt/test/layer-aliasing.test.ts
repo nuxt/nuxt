@@ -4,7 +4,7 @@ import { dirname, join } from 'pathe'
 import { createServer } from 'vite'
 import type { NuxtConfigLayer } from 'nuxt/schema'
 import type { UnpluginContextMeta } from 'unplugin'
-import { afterAll, describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, onTestFinished } from 'vitest'
 
 import { LayerAliasingPlugin } from '../src/core/plugins/layer-aliasing'
 import { matchesIdFilter } from './utils.ts'
@@ -184,8 +184,8 @@ describe('LayerAliasingPlugin dependency scan', async () => {
 
   const layers = [layerRoot, localLayerRoot].map(cwd => ({ cwd, config: { rootDir: cwd, srcDir: join(cwd, 'app/') } }) as NuxtConfigLayer)
 
-  function createDevServer (entries: string[]) {
-    return createServer({
+  async function createDevServer (entries: string[]) {
+    const server = await createServer({
       root: rootDir,
       configFile: false,
       logLevel: 'silent',
@@ -198,15 +198,15 @@ describe('LayerAliasingPlugin dependency scan', async () => {
         },
       },
     })
+    onTestFinished(() => server.close())
+    return server
   }
 
   async function scan (entries: string[]) {
     const server = await createDevServer(entries)
     const optimizer = server.environments.client.depsOptimizer
     await optimizer?.scanProcessing
-    const deps = Object.keys({ ...optimizer?.metadata.optimized, ...optimizer?.metadata.discovered })
-    await server.close()
-    return deps.toSorted()
+    return Object.keys({ ...optimizer?.metadata.optimized, ...optimizer?.metadata.discovered }).toSorted()
   }
 
   it('does not pre-bundle aliased imports between files of an installed layer', async () => {
@@ -217,7 +217,6 @@ describe('LayerAliasingPlugin dependency scan', async () => {
     const server = await createDevServer([join(layerSrcDir, '**/*.{vue,ts}')])
     await server.environments.client.depsOptimizer?.scanProcessing
     const result = await server.environments.client.transformRequest(sharedCjs)
-    await server.close()
 
     expect(result?.code).toMatch(/from "\/node_modules\/\.vite\/deps\/cjs-only\.js\?v=\w+"/)
   })
@@ -230,7 +229,6 @@ describe('LayerAliasingPlugin dependency scan', async () => {
     const server = await createDevServer([join(layerSrcDir, '**/*.{vue,ts}')])
     await server.environments.client.depsOptimizer?.scanProcessing
     const result = await server.environments.client.transformRequest(composable)
-    await server.close()
 
     expect(result?.code).toMatch(/from "\/node_modules\/installed-layer\/app\/utils\/greeting\.ts\?v=\w+"/)
   })
