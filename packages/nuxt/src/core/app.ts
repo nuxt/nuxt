@@ -307,24 +307,30 @@ const IS_TSX = /\.[jt]sx$/
 
 export type AnnotatedPlugin = NuxtPlugin & ExtractedPluginMeta
 
+const SELF_REPORTING_METADATA_ERRORS = new Set(['NUXT_B2001', 'NUXT_B2002'])
+const reportedMetadataFallbacks = new WeakMap<Nuxt, Map<string, unknown>>()
+
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promise<AnnotatedPlugin[]> {
   const _plugins: AnnotatedPlugin[] = []
+  const reported = reportedMetadataFallbacks.get(nuxt) || new Map<string, unknown>()
+  reportedMetadataFallbacks.set(nuxt, reported)
+  const reportFallback = (plugin: NuxtPlugin, reason: unknown, cause?: unknown) => {
+    if (reported.get(plugin.src) === reason) { return }
+    reported.set(plugin.src, reason)
+    const src = linkToAlias(plugin.src, nuxt)
+    pluginDiagnostics.NUXT_B2010(cause === undefined ? { src } : { src, cause })
+  }
   for (const plugin of plugins) {
     try {
       const code = nuxt.vfs[plugin.src] ?? await fsp.readFile(plugin.src!, 'utf-8')
-      _plugins.push({
-        ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
-        ...plugin,
-      })
-    } catch (e) {
-      const relativePluginSrc = linkToAlias(plugin.src, nuxt)
-      const code = e instanceof Error ? e.name : ''
-      if (code === 'NUXT_B2001' || code === 'NUXT_B2002') {
-        pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc })
-      } else {
-        pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc, cause: e })
+      const meta = await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts')
+      _plugins.push({ ...meta, ...plugin })
+      if (meta._metaUnknown) {
+        reportFallback(plugin, meta)
       }
+    } catch (e) {
       _plugins.push({ ...plugin, _metaUnknown: true })
+      reportFallback(plugin, e, e instanceof Error && SELF_REPORTING_METADATA_ERRORS.has(e.name) ? undefined : e)
     }
   }
 
@@ -332,11 +338,23 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promi
 }
 
 /**
+ * Throw if plugins depend on each other in a cycle in the client or server build.
+ */
+export async function assertNoCircularPluginDependencies (nuxt: Nuxt, plugins: NuxtPlugin[]): Promise<void> {
+  const annotated = await annotatePlugins(nuxt, plugins)
+  for (const excludedMode of ['client', 'server'] as const) {
+    breakCircularDependencies(annotated.filter(plugin => plugin.mode !== excludedMode), (cycle) => {
+      throw pluginDiagnostics.NUXT_B2009(cycle)
+    })
+  }
+}
+
+/**
  * Reorder `order`-sorted plugins so each plugin's `dependsOn` entries appear earlier in the array.
  * The original (order-sorted) sequence is preserved as the stable tiebreaker. Unknown dependency
- * names are ignored to match the runtime resolver. Cycles are not resolved here; any plugin still
- * pending after the walk is emitted in its original position. `checkForCircularDependencies`
- * surfaces those graphs separately.
+ * names are ignored to match the runtime resolver. Cycles are removed beforehand by
+ * `breakCircularDependencies`; any plugin still pending after the walk is emitted in its original
+ * position.
  */
 export function sortPluginsByDependsOn<T extends AnnotatedPlugin> (plugins: T[]): T[] {
   const known = new Set<string>()
@@ -445,23 +463,46 @@ export function hasPluginCapability (plugins: Array<{ dependsOn?: string[], para
   })
 }
 
-export function checkForCircularDependencies (_plugins: AnnotatedPlugin[]) {
-  const deps: Record<string, string[]> = Object.create(null)
-  for (const plugin of _plugins) {
-    // Make graph to detect circular dependencies
-    if (plugin.name) {
-      deps[plugin.name] = plugin.dependsOn || []
+interface CircularDependency { cycle: string, name: string, dependency: string }
+
+/**
+ * Remove the `dependsOn` entries that close a cycle, walking plugins in order, so the remaining
+ * dependencies can always be resolved.
+ */
+export function breakCircularDependencies<T extends AnnotatedPlugin> (plugins: T[], onCycle: (cycle: CircularDependency) => void = cycle => pluginDiagnostics.NUXT_B2009(cycle)): T[] {
+  // a dependency on a name shared by several plugins is satisfied by whichever of them resolves first
+  const byName = new Map<string, number>()
+  const shared = new Set<string>()
+  for (const [index, plugin] of plugins.entries()) {
+    if (!plugin.name) { continue }
+    if (byName.has(plugin.name)) { shared.add(plugin.name) }
+    byName.set(plugin.name, index)
+  }
+  for (const name of shared) { byName.delete(name) }
+
+  const result = [...plugins]
+  const done = new Set<number>()
+  const stack: number[] = []
+  const visit = (index: number) => {
+    stack.push(index)
+    const plugin = result[index]!
+    for (const dependency of plugin.dependsOn || []) {
+      const target = byName.get(dependency)
+      if (target === undefined || done.has(target)) { continue }
+      const position = stack.indexOf(target)
+      if (position === -1) {
+        visit(target)
+        continue
+      }
+      const cycle = [...stack.slice(position), target].map(i => result[i]!.name)
+      onCycle({ cycle: cycle.join(' -> '), name: plugin.name!, dependency })
+      result[index] = { ...result[index]!, dependsOn: result[index]!.dependsOn!.filter(name => name !== dependency) }
     }
+    stack.pop()
+    done.add(index)
   }
-  const checkDeps = (name: string, visited: string[] = []): string[] => {
-    if (visited.includes(name)) {
-      pluginDiagnostics.NUXT_B2009({ cycle: `${visited.join(' -> ')} -> ${name}` })
-      return []
-    }
-    visited.push(name)
-    return deps[name]?.length ? deps[name].flatMap(dep => checkDeps(dep, [...visited])) : []
+  for (const index of plugins.keys()) {
+    if (!done.has(index)) { visit(index) }
   }
-  for (const name in deps) {
-    checkDeps(name)
-  }
+  return result
 }

@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import { RemovePluginMetadataPlugin, extractMetadata, setPluginDependenciesForMode } from '../src/core/plugins/plugin-metadata.ts'
-import { checkForCircularDependencies, filterPluginDependencies, hasPluginCapability } from '../src/core/app.ts'
+import { annotatePlugins, assertNoCircularPluginDependencies, breakCircularDependencies, filterPluginDependencies, hasPluginCapability, sortPluginsByDependsOn } from '../src/core/app.ts'
+import { clientPluginTemplate } from '../src/core/templates.ts'
 
 describe('plugin-metadata', () => {
   const properties = Object.entries({
@@ -57,6 +58,53 @@ describe('plugin-metadata', () => {
       'order': 0,
       'hasEnv': true,
     })
+  })
+
+  it.each([
+    ['`as const`', 'const name = \'test\'\nexport default defineNuxtPlugin({ name, dependsOn: [\'a\'] as const, parallel: true as boolean })'],
+    ['`satisfies`', 'export default defineNuxtPlugin(({ name: \'test\', dependsOn: [\'a\'], parallel: true }) satisfies object)'],
+    ['template literals', 'export default defineNuxtPlugin({ name: `test`, dependsOn: [`a`], parallel: true })'],
+    ['top-level constants', 'export const NAME = \'test\'\nconst DEPS = [\'a\']\nexport default defineNuxtPlugin({ name: NAME, dependsOn: DEPS, parallel: true })'],
+    ['an aliased import', 'import { defineNuxtPlugin as define } from \'#app\'\nexport default define({ name: \'test\', dependsOn: [\'a\'], parallel: true })'],
+  ])('should extract static metadata written with %s', (_, code) => {
+    expect(extractMetadata(code)).toEqual({ name: 'test', dependsOn: ['a'], parallel: true, order: 0 })
+  })
+
+  it.each([
+    ['-0x10', -16],
+    ['-1_000', -1000],
+  ])('should extract `order: %s`', (order, expected) => {
+    expect(extractMetadata(`export default defineNuxtPlugin({ order: ${order} })`)).toEqual({ order: expected })
+  })
+
+  it.each([
+    ['name', 'import { NAME } from \'./constants\'\nexport default defineNuxtPlugin({ name: NAME, enforce: \'pre\' })', { order: -20 }],
+    ['parallel', 'export default defineNuxtPlugin({ name: \'test\', parallel: import.meta.client })', { name: 'test', order: 0 }],
+    ['enforce', 'let enforce = \'pre\'\nexport default defineNuxtPlugin({ name: \'test\', enforce })', { name: 'test', order: 0 }],
+    ['name', 'const NAME = \'outer\'\nexport default (() => {\n  const NAME = \'inner\'\n  return defineNuxtPlugin({ name: NAME })\n})()', { order: 0 }],
+  ])('should warn about a non-static `%s` and keep the static metadata', (key, code, meta) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(extractMetadata(code)).toEqual({ ...meta, _metaUnknown: true })
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining(`The \`${key}\` option of a plugin is not a static value.`))
+    vi.restoreAllMocks()
+  })
+
+  it('should warn about a non-static `dependsOn` and keep the static metadata', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(extractMetadata('import { deps } from \'./deps\'\nexport default defineNuxtPlugin({ name: \'test\', dependsOn: deps })')).toEqual({ name: 'test', order: 0, _metaUnknown: true })
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('`dependsOn` is not an array of string literals.'))
+    vi.restoreAllMocks()
+  })
+
+  it.each([
+    ['an imported identifier', 'import myPlugin from \'./external\'\nexport default defineNuxtPlugin(myPlugin)', 'Identifier'],
+    ['a factory call', 'import { make } from \'./factory\'\nexport default defineNuxtPlugin(make(), { enforce: \'pre\' })', 'CallExpression'],
+    ['a member access', 'import * as ext from \'./external\'\nexport default defineNuxtPlugin(ext.plugin, { enforce: \'pre\' })', 'MemberExpression'],
+  ])('should warn about %s as the plugin and keep the static metadata', (_, code, type) => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(extractMetadata(code)).toEqual({ order: code.includes('enforce') ? -20 : 0, _metaUnknown: true })
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining(`The plugin passed to \`defineNuxtPlugin\` is a \`${type}\`, not an object literal or a function.`))
+    vi.restoreAllMocks()
   })
 
   const nuxt = {
@@ -127,6 +175,44 @@ describe('plugin-metadata', () => {
           ",
       }
     `)
+  })
+
+  it.each([
+    ['a constant', 'dependsOn: DEPS'],
+    ['a shorthand property', 'dependsOn'],
+  ])('should rewrite `dependsOn` written as %s inside a type assertion', (_, property) => {
+    const filterNuxt = {
+      options: { sourcemap: { client: true } },
+      apps: { default: { plugins: [{ src: 'my-plugin.mjs' }] } },
+    } as any
+    setPluginDependenciesForMode(filterNuxt, 'client', [{ src: 'my-plugin.mjs', dependsOn: ['a'] }])
+    const plugin = `
+      const DEPS = ['a', 'b']
+      const dependsOn = DEPS
+      export default defineNuxtPlugin({
+        name: 'test',
+        ${property},
+      } satisfies object)
+    `
+    expect((RemovePluginMetadataPlugin(filterNuxt, 'client').raw({}, {} as any) as any).transform(plugin, 'my-plugin.mjs').code).toContain('dependsOn: ["a"],')
+  })
+
+  it('should emit plugins without the dependency that closes a cycle', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const app = { plugins: [{ src: '/app/a.ts' }, { src: '/app/b.ts' }] }
+    const cycleNuxt = {
+      options: { dev: false, rootDir: '/app', alias: {}, sourcemap: { client: true } },
+      apps: { default: app },
+      vfs: {
+        '/app/a.ts': 'export default defineNuxtPlugin({ name: \'a\', dependsOn: [\'b\'] })',
+        '/app/b.ts': 'export default defineNuxtPlugin({ name: \'b\', dependsOn: [\'a\'] })',
+      },
+    } as any
+    const contents = await clientPluginTemplate.getContents!({ nuxt: cycleNuxt, app, options: {} } as any)
+    expect(contents.indexOf('/app/b.ts')).toBeLessThan(contents.indexOf('/app/a.ts'))
+    const transform = (RemovePluginMetadataPlugin(cycleNuxt, 'client').raw({}, {} as any) as any).transform
+    expect(transform(cycleNuxt.vfs['/app/b.ts'], '/app/b.ts').code).toContain('dependsOn: []')
+    vi.restoreAllMocks()
   })
 })
 
@@ -206,29 +292,100 @@ describe('plugin sanity checking', () => {
     vi.restoreAllMocks()
   })
 
-  it('circular dependencies are warned', () => {
-    vi.spyOn(console, 'warn')
-    checkForCircularDependencies([
-      {
-        name: 'A',
-        dependsOn: ['B'],
-        src: '',
-      },
-      {
-        name: 'B',
-        dependsOn: ['C'],
-        src: '',
-      },
-      {
-        name: 'C',
-        dependsOn: ['A'],
-        src: '',
-      },
+  it('breaks circular dependencies and warns about the dropped dependency', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const plugins = breakCircularDependencies([
+      { name: 'D', dependsOn: ['B'], src: '' },
+      { name: 'A', dependsOn: ['B'], src: '' },
+      { name: 'B', dependsOn: ['C'], src: '' },
+      { name: 'C', dependsOn: ['A'], src: '' },
     ])
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: A -> B -> C -> A'))
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: B -> C -> A -> B'))
-    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: C -> A -> B -> C'))
+    expect(plugins.map(plugin => plugin.dependsOn)).toEqual([['B'], [], ['C'], ['A']])
+    expect(sortPluginsByDependsOn(plugins).map(plugin => plugin.name)).toEqual(['A', 'C', 'B', 'D'])
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Circular dependency detected in plugins: B -> C -> A -> B. Production builds fail until this is fixed; in development, plugin `A` does not wait for `B`.'))
     vi.restoreAllMocks()
+  })
+
+  it('only drops dependencies that close a cycle', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const plugins = breakCircularDependencies([
+      { name: 'C', dependsOn: ['D', 'A'], src: '' },
+      { name: 'D', dependsOn: ['C'], src: '' },
+      { name: 'A', dependsOn: ['B'], src: '' },
+      { name: 'B', dependsOn: ['A'], src: '' },
+    ])
+    expect(plugins.map(plugin => plugin.dependsOn)).toEqual([['D', 'A'], [], ['B'], []])
+    vi.restoreAllMocks()
+  })
+
+  it('does not treat a dependency on a name shared by several plugins as circular', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const source = [
+      { name: 'X', src: '' },
+      { name: 'A', dependsOn: ['X'], src: '' },
+      { name: 'X', dependsOn: ['A'], src: '' },
+    ]
+    expect(breakCircularDependencies(source)).toEqual(source)
+    expect(warn).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it('leaves plugins without circular dependencies untouched', () => {
+    const source = [
+      { name: 'A', src: '' },
+      { name: 'B', dependsOn: ['A', 'missing'], src: '' },
+    ]
+    const plugins = breakCircularDependencies(source)
+    expect(plugins[0]).toBe(source[0])
+    expect(plugins[1]).toBe(source[1])
+  })
+
+  describe('build-time checks', () => {
+    const fakeNuxt = {
+      options: { rootDir: '/app', alias: {} },
+      vfs: {
+        '/app/plugins/static.ts': 'export default defineNuxtPlugin({ name: \'static\' })',
+        '/app/plugins/factory.ts': 'export default defineNuxtPlugin(createPlugin())',
+        '/app/plugins/a.ts': 'export default defineNuxtPlugin({ name: \'a\', dependsOn: [\'b\'] })',
+        '/app/plugins/b.server.ts': 'export default defineNuxtPlugin({ name: \'b\', dependsOn: [\'a\'] })',
+      },
+    } as any
+
+    it('pass when plugins do not depend on each other in a cycle', async () => {
+      await expect(assertNoCircularPluginDependencies(fakeNuxt, [{ src: '/app/plugins/static.ts' }, { src: '/app/plugins/a.ts' }])).resolves.toBeUndefined()
+    })
+
+    it('warn and fall back to runtime metadata when plugin metadata cannot be statically analysed', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const plugins = [{ src: '/app/plugins/static.ts' }, { src: '/app/plugins/factory.ts' }]
+      await expect(assertNoCircularPluginDependencies(fakeNuxt, plugins)).resolves.toBeUndefined()
+      expect(warn).toHaveBeenCalledWith(expect.stringMatching(/\[NUXT_B2010\] Failed to parse static properties from plugin `[^`]*\/plugins\/factory\.ts`, falling back to non-optimized runtime meta\./))
+      expect((await annotatePlugins(fakeNuxt, plugins)).map(plugin => plugin._metaUnknown ?? false)).toEqual([false, true])
+      vi.restoreAllMocks()
+    })
+
+    it('report each plugin falling back to runtime metadata once, even when plugins share their source', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const code = 'export default defineNuxtPlugin(makeSharedPlugin())'
+      const sharedNuxt = { options: { rootDir: '/app', alias: {} }, vfs: { '/app/one.ts': code, '/app/two.ts': code } } as any
+      const plugins = [{ src: '/app/one.ts' }, { src: '/app/two.ts' }]
+      await annotatePlugins(sharedNuxt, plugins)
+      await annotatePlugins(sharedNuxt, plugins)
+      const fallbacks = warn.mock.calls.map(args => String(args[0])).filter(message => message.includes('[NUXT_B2010]'))
+      expect(fallbacks).toEqual([expect.stringContaining('one.ts'), expect.stringContaining('two.ts')])
+      vi.restoreAllMocks()
+    })
+
+    it.each(['client', 'server'] as const)('fail when plugins depend on each other in a cycle in the %s build', async (mode) => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+      await expect(assertNoCircularPluginDependencies(fakeNuxt, [{ src: '/app/plugins/a.ts' }, { src: '/app/plugins/b.server.ts', mode }])).rejects.toThrow('Circular dependency detected in plugins: a -> b -> a.')
+      vi.restoreAllMocks()
+    })
+
+    it('pass when a cycle only exists across the client and server builds', async () => {
+      await expect(assertNoCircularPluginDependencies(fakeNuxt, [{ src: '/app/plugins/a.ts', mode: 'client' }, { src: '/app/plugins/b.server.ts', mode: 'server' }])).resolves.toBeUndefined()
+    })
   })
 })
 
@@ -240,22 +397,6 @@ describe('plugin capability probes', () => {
     expect(hasPluginCapability([{}, { dependsOn: ['a'] }], 'dependsOn')).toBe(true)
     expect(hasPluginCapability([{ hasHooks: true }], 'parallel')).toBe(false)
     expect(hasPluginCapability([{ hasHooks: true }], 'hasHooks')).toBe(true)
-  })
-
-  it('flag unparseable plugin shapes so capability probes fall back to the full runtime resolver', () => {
-    const shapes = {
-      'imported identifier as plugin arg': 'import myPlugin from \'./external\'\nexport default defineNuxtPlugin(myPlugin)',
-      'factory call as plugin arg': 'import { make } from \'./factory\'\nexport default defineNuxtPlugin(make())',
-      'member access as plugin arg': 'import * as ext from \'./external\'\nexport default defineNuxtPlugin(ext.plugin)',
-    }
-
-    for (const [label, code] of Object.entries(shapes)) {
-      const meta = extractMetadata(code)
-      expect(meta._metaUnknown, label).toBe(true)
-      for (const capability of capabilities) {
-        expect(hasPluginCapability([meta as never], capability), `${label} (${capability})`).toBe(true)
-      }
-    }
   })
 
   it('do not flag function-syntax plugins as unknown (they cannot carry capability metadata)', () => {
@@ -274,7 +415,7 @@ describe('plugin capability probes', () => {
   })
 
   it('treat plugins that throw during static parse as unknown so runtime keeps full paths', () => {
-    expect(() => extractMetadata('export default defineNuxtPlugin({ dependsOn: [someName] })')).toThrow()
+    expect(() => extractMetadata('export default defineNuxtPlugin({ ...options })')).toThrow()
 
     const fallback = { _metaUnknown: true as const }
     for (const capability of capabilities) {
