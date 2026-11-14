@@ -4,6 +4,7 @@ import { resolveAlias } from '@nuxt/kit'
 import { normalize } from 'pathe'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import type { NuxtConfigLayer } from 'nuxt/schema'
+import type { Rolldown } from 'vite'
 
 interface LayerAliasingOptions {
   root: string
@@ -14,6 +15,8 @@ interface LayerAliasingOptions {
 const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
 const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
 const ALIAS_ID_RE = /^[~@]{1,2}\//
+// the dependency scan imports `<script>` blocks of `.vue` files through this prefix
+const SCAN_VIRTUAL_MODULE_RE = /^virtual-module:/
 const CSS_LANG_PATTERN = '\\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:\\?|$)'
 
 export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnplugin((_options, meta) => {
@@ -61,27 +64,38 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
     },
   }
 
+  const resolveId = {
+    order: 'pre',
+    filter: {
+      id: ALIAS_ID_RE,
+    },
+    handler (id, importer) {
+      if (!importer) { return }
+
+      const _importer = normalize(importer.replace(SCAN_VIRTUAL_MODULE_RE, ''))
+      const layer = layers.find(l => _importer.startsWith(l))
+      if (!layer) { return }
+
+      const resolvedId = resolveAlias(id, aliases[layer])
+      if (resolvedId !== id) {
+        return this.resolve(resolvedId, importer, { skipSelf: true })
+      }
+    },
+  } satisfies Rolldown.Plugin['resolveId']
+
   return {
     name: 'nuxt:layer-aliasing',
     enforce: 'pre',
     vite: {
-      resolveId: {
-        order: 'pre',
-        filter: {
-          id: ALIAS_ID_RE,
+      resolveId,
+      // the dependency optimizer treats `@/` imports as packages unless resolved here
+      configEnvironment: () => ({
+        optimizeDeps: {
+          rolldownOptions: {
+            plugins: [{ name: 'nuxt:layer-aliasing', resolveId }],
+          },
         },
-        handler (id, importer) {
-          if (!importer) { return }
-
-          const layer = layers.find(l => importer.startsWith(l))
-          if (!layer) { return }
-
-          const resolvedId = resolveAlias(id, aliases[layer])
-          if (resolvedId !== id) {
-            return this.resolve(resolvedId, importer, { skipSelf: true })
-          }
-        },
-      },
+      }),
     },
 
     // https://github.com/nuxt/nuxt/issues/24427
