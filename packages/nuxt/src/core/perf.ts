@@ -52,6 +52,7 @@ interface PluginSpan {
   pluginName: string
   hookName: string
   startTime: number
+  endTime: number
   durationMs: number
 }
 
@@ -243,6 +244,12 @@ export class NuxtPerfProfiler {
     }
   }
 
+  #recordSpan (pluginName: string, hookName: string, durationMs: number, startTime: number, endTime: number) {
+    if (endTime - startTime > 0.1) {
+      this.#bundlerPluginSpans.push({ pluginName, hookName, startTime, endTime, durationMs })
+    }
+  }
+
   recordBundlerPluginHook (pluginName: string, hookName: string, durationMs: number, startTime?: number): void {
     let plugin = this.#bundlerPluginTimings.get(pluginName)
     if (!plugin) {
@@ -257,8 +264,8 @@ export class NuxtPerfProfiler {
     } else {
       plugin.set(hookName, { totalTime: durationMs, count: 1, maxTime: durationMs })
     }
-    if (startTime != null && durationMs > 0.1) {
-      this.#bundlerPluginSpans.push({ pluginName, hookName, startTime, durationMs })
+    if (startTime != null) {
+      this.#recordSpan(pluginName, hookName, durationMs, startTime, startTime + durationMs)
     }
   }
 
@@ -299,7 +306,9 @@ export class NuxtPerfProfiler {
       : ctx
     const record = () => {
       const end = performance.now()
-      this.recordBundlerPluginHook(pluginName, hookName, end - start - nested - (pending > 0 ? end - pendingSince : 0), start)
+      const duration = end - start - nested - (pending > 0 ? end - pendingSince : 0)
+      this.recordBundlerPluginHook(pluginName, hookName, duration)
+      this.#recordSpan(pluginName, hookName, duration, start, end)
     }
     try {
       const result = run(proxy)
@@ -521,15 +530,16 @@ export class NuxtPerfProfiler {
         if (lane === -1) {
           lane = laneEnds.push(0) - 1
         }
-        laneEnds[lane] = span.startTime + span.durationMs
+        laneEnds[lane] = span.endTime
         events.push({
           name: `${span.pluginName}:${span.hookName}`,
           cat: label,
           ph: 'X',
           ts: toUs(span.startTime),
-          dur: Math.round(span.durationMs * 1000),
+          dur: Math.round((span.endTime - span.startTime) * 1000),
           pid,
           tid: baseTid + lane,
+          args: { durationMs: round(span.durationMs) },
         })
       }
       for (let i = 0; i < laneEnds.length; i++) {

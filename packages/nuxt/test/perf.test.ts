@@ -147,6 +147,7 @@ describe('NuxtPerfProfiler', () => {
 
     expect(await result).toEqual([{ id: 'a' }, { id: 'b' }])
     expect(perf.getReport().bundlerPlugins).toMatchObject([{ name: 'delegating', hooks: { resolveId: { totalTime: 30, count: 1 } } }])
+    expect(perf.getTraceEvents().filter(e => e.ph === 'X')).toMatchObject([{ name: 'delegating:resolveId', dur: 100_000, args: { durationMs: 30 } }])
   })
 
   it('keeps the rest of the plugin context working', () => {
