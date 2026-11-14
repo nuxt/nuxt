@@ -12,6 +12,7 @@ import { lazyHydrationMacroPreset } from '../imports/presets.ts'
 import { componentNamesTemplate, componentsDeclarationTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates.ts'
 import { scanComponents } from './scan.ts'
 import { getAppStructureVersion } from '../core/app.ts'
+import { createScanProblems } from '../core/scan-problems.ts'
 
 import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
@@ -186,9 +187,11 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Scan components and add to plugin
     const scannedStructureVersions = new WeakMap<Nuxt, number>()
+    const problems = createScanProblems(nuxt, 'nuxt:components', 'Components')
     async function resolveComponents () {
       const structureVersion = getAppStructureVersion(nuxt)
-      const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
+      const scan = problems.scan()
+      const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!, scan.report)
       await nuxt.callHook('components:extend', newComponents)
       const modesByName = new Map<string, Set<string | undefined>>()
       for (const component of newComponents) {
@@ -216,9 +219,10 @@ export default defineNuxtModule<ComponentsOptions>({
           modesByName.get(component.pascalName)!.add('server')
         }
         if (component.mode === 'server' && !nuxt.options.ssr && !modesByName.get(component.pascalName)?.has('client')) {
-          componentDiagnostics.NUXT_B3002({ component: component.pascalName })
+          scan.report(`NUXT_B3002\0${component.pascalName}\0${component.filePath}`, isAbsolute(component.filePath) ? [component.filePath] : [], () => componentDiagnostics.NUXT_B3002({ component: component.pascalName }))
         }
       }
+      scan.done()
       context.components = newComponents
       scannedStructureVersions.set(nuxt, structureVersion)
     }
