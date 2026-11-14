@@ -10,6 +10,7 @@ import { streamingIifeCode } from 'unhead/stream/iife'
 
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
+import { RemoveServerHeadComposablesPlugin } from './plugins/remove-server-head-composables.ts'
 
 // the bootstrap code is a constant, so its content hash is known before the build runs
 const iifeChunkFileName = `streaming-iife.${createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)}.js`
@@ -48,6 +49,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     addBuildPlugin(UnheadImportsPlugin({
       rootDir: nuxt.options.rootDir,
     }))
+    if (!nuxt.options.dev && !nuxt.options.test) {
+      addBuildPlugin(RemoveServerHeadComposablesPlugin(), { server: false })
+    }
 
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
     const resolveNuxtUnhead = (id: string) => resolveModulePath(id, { from: import.meta.url })

@@ -48,10 +48,15 @@ export function useSeoMeta (input: UseSeoMetaInput, options: NuxtUseHeadOptions 
   return seoMeta(input, { head, ...options }) as ActiveHeadEntry<UseSeoMetaInput>
 }
 
+function noopHeadEntry<T> (): ActiveHeadEntry<T> {
+  return { patch: () => {}, dispose: () => {}, _i: -1 }
+}
+
 /**
  * @deprecated Use `useHead` instead and wrap with `if (import.meta.server)`
  */
 export function useServerHead (input: UseHeadInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadInput> {
+  if (import.meta.client) { return noopHeadEntry() }
   const head = options.head || injectHead(options.nuxt)
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   return serverHead(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput>
@@ -61,6 +66,7 @@ export function useServerHead (input: UseHeadInput, options: NuxtUseHeadOptions 
  * @deprecated Use `useHeadSafe` instead and wrap with `if (import.meta.server)`
  */
 export function useServerHeadSafe (input: UseHeadSafeInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadSafeInput> {
+  if (import.meta.client) { return noopHeadEntry() }
   const head = options.head || injectHead(options.nuxt)
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   return serverHeadSafe(input, { head, ...options }) as ActiveHeadEntry<UseHeadSafeInput>
@@ -70,6 +76,7 @@ export function useServerHeadSafe (input: UseHeadSafeInput, options: NuxtUseHead
  * @deprecated Use `useSeoMeta` instead and wrap with `if (import.meta.server)`
  */
 export function useServerSeoMeta (input: UseSeoMetaInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseSeoMetaInput> {
+  if (import.meta.client) { return noopHeadEntry() }
   const head = options.head || injectHead(options.nuxt)
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   return serverSeoMeta(input, { head, ...options }) as ActiveHeadEntry<UseSeoMetaInput>
