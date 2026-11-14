@@ -146,8 +146,32 @@ describe('NuxtPerfProfiler', () => {
     settle[1]!()
 
     expect(await result).toEqual([{ id: 'a' }, { id: 'b' }])
-    expect(perf.getReport().bundlerPlugins).toMatchObject([{ name: 'delegating', hooks: { resolveId: { totalTime: 30, count: 1 } } }])
-    expect(perf.getTraceEvents().filter(e => e.ph === 'X')).toMatchObject([{ name: 'delegating:resolveId', dur: 100_000, args: { durationMs: 30 } }])
+    expect(perf.getReport().bundlerPlugins).toMatchObject([{ name: 'delegating', hooks: { resolveId: { totalTime: 40, count: 1 } } }])
+    expect(perf.getTraceEvents().filter(e => e.ph === 'X')).toMatchObject([{ name: 'delegating:resolveId', dur: 100_000, args: { durationMs: 40 } }])
+  })
+
+  it('charges a bundler hook for synchronous work while `this.resolve` is pending', async () => {
+    const now = vi.spyOn(performance, 'now').mockReturnValue(0)
+    onTestFinished(() => now.mockRestore())
+    const perf = new NuxtPerfProfiler()
+    const settle: Array<() => void> = []
+    const ctx = { resolve: () => new Promise<void>(resolve => settle.push(resolve)) }
+
+    perf.timeBundlerHook('sync', 'resolveId', ctx, (c) => {
+      void c.resolve()
+      now.mockReturnValue(20)
+    })
+    now.mockReturnValue(30)
+    const result = perf.timeBundlerHook('async', 'resolveId', ctx, (c) => {
+      const resolved = c.resolve()
+      now.mockReturnValue(50)
+      return resolved.then(() => { now.mockReturnValue(90) })
+    })
+    now.mockReturnValue(80)
+    settle[1]!()
+    await result
+
+    expect(Object.fromEntries(perf.getReport().bundlerPlugins.map(p => [p.name, p.hooks.resolveId!.totalTime]))).toEqual({ sync: 20, async: 30 })
   })
 
   it('keeps the rest of the plugin context working', () => {

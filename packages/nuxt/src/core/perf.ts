@@ -281,8 +281,14 @@ export class NuxtPerfProfiler {
     let pending = 0
     let pendingSince = 0
     let nested = 0
+    // other plugins' hooks cannot run until the hook first yields
+    let sync = true
+    const leaveSync = () => {
+      sync = false
+      if (pending > 0) { pendingSince = performance.now() }
+    }
     const exit = () => {
-      if (--pending === 0) { nested += performance.now() - pendingSince }
+      if (--pending === 0 && !sync) { nested += performance.now() - pendingSince }
     }
     const proxy = ctx && typeof ctx === 'object'
       ? new Proxy(ctx, {
@@ -312,12 +318,14 @@ export class NuxtPerfProfiler {
     }
     try {
       const result = run(proxy)
+      leaveSync()
       if (result && typeof result === 'object' && 'then' in result) {
         return (result as unknown as Promise<unknown>).finally(record) as T
       }
       record()
       return result
     } catch (err) {
+      leaveSync()
       record()
       throw err
     }
