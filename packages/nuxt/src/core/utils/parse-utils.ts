@@ -51,10 +51,13 @@ export function getStaticPropertyKey (property: ESTree.ObjectPropertyKind): stri
   }
 }
 
+const COMPONENT_DEFINERS = new Set(['defineComponent', 'defineNuxtComponent'])
+
 /**
  * The body of the `setup()` option of an Options API default export, if the module has one.
- * With `exclusive`, nothing is returned when a spread, computed key or second `setup` in the
- * options could replace it.
+ * With `exclusive`, nothing is returned when the options are passed to a function other than
+ * `defineComponent` or `defineNuxtComponent`, or when a spread, computed key or second `setup`
+ * in the options could replace it.
  */
 export function findOptionsApiSetupBody (program: ESTree.Program, { exclusive = false } = {}): Array<ESTree.Node> | undefined {
   for (const statement of program.body) {
@@ -63,6 +66,7 @@ export function findOptionsApiSetupBody (program: ESTree.Program, { exclusive = 
     let declaration = unwrapStaticExpression(statement.declaration as ESTree.Node)
     // `export default defineComponent({ ... })`
     if (declaration?.type === 'CallExpression') {
+      if (exclusive && (declaration.callee.type !== 'Identifier' || !COMPONENT_DEFINERS.has(declaration.callee.name))) { return }
       declaration = unwrapStaticExpression(declaration.arguments[0])
     }
     if (declaration?.type !== 'ObjectExpression') { return }

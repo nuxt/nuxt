@@ -201,6 +201,8 @@ describe('app component head extraction', () => {
   it('does not hoist from a setup function that may be replaced', async () => {
     expect(await extract(`export default { setup () { useHead({ title: 'Site' }) }, ...mixin }`, { attrs: '' })).toEqual([])
     expect(await extract(`export default { setup () { useHead({ title: 'Site' }) }, setup () {} }`, { attrs: '' })).toEqual([])
+    expect(await extract(`export default wrap({ setup () { useHead({ title: 'Site' }) } })`, { attrs: '' })).toEqual([])
+    expect(await extract(`export default defineNuxtComponent({ setup () { useHead({ title: 'Site' }) } })`, { attrs: '' })).toEqual([{ title: 'Site' }])
   })
 
   it('renders useSeoMeta input the same as the composable', async () => {
