@@ -49,8 +49,8 @@ describe('NuxtPerfProfiler', () => {
     expect(modules.ownDuration).toBeLessThan(modules.duration)
     expect(report.modules).toEqual([{ name: '(anonymous)', setupTime: 8 }, { name: 'foo', setupTime: 3 }])
     expect(report.bundlerPlugins).toEqual([
-      { name: 'vite:a', hooks: { transform: { totalTime: 7, count: 3, maxTime: 4, avgTime: 2.33 } } },
-      { name: 'nitro:b', hooks: { load: { totalTime: 1, count: 1, maxTime: 1, avgTime: 1 } } },
+      { name: 'vite:a', hooks: { transform: { totalTime: 7, count: 3, maxTime: 4, avgTime: 2.33, waitingTime: 0 } } },
+      { name: 'nitro:b', hooks: { load: { totalTime: 1, count: 1, maxTime: 1, avgTime: 1, waitingTime: 0 } } },
     ])
 
     const events = profiler.getTraceEvents()
@@ -242,6 +242,201 @@ describe('NuxtPerfProfiler', () => {
     perf.timeBundlerHook('plugin', 'resolveId', ctx, () => { now.mockReturnValue(105) })
 
     expect(perf.getReport().bundlerPlugins[0]!.hooks.resolveId).toMatchObject({ totalTime: 40, count: 4, maxTime: 20 })
+  })
+
+  describe('waiting', () => {
+    function mockClock () {
+      const now = vi.spyOn(performance, 'now').mockReturnValue(0)
+      let idle = 0
+      const eventLoopUtilization = vi.spyOn(performance, 'eventLoopUtilization').mockImplementation(() => ({ idle, active: 0, utilization: 0 }))
+      onTestFinished(() => {
+        now.mockRestore()
+        eventLoopUtilization.mockRestore()
+      })
+      return {
+        set: (time: number) => now.mockReturnValue(time),
+        idle: (time: number) => { idle = time },
+      }
+    }
+
+    function deferred () {
+      let settle!: () => void
+      const promise = new Promise<void>((resolve) => { settle = resolve })
+      return { promise, settle }
+    }
+
+    const hooks = (perf: NuxtPerfProfiler) => Object.fromEntries(perf.getReport().bundlerPlugins.flatMap(p => Object.entries(p.hooks).map(([hook, t]) => [`${p.name}:${hook}`, { totalTime: t.totalTime, waitingTime: t.waitingTime }])))
+
+    it('counts time other hooks spend working as time a yielded hook was waiting', async () => {
+      const clock = mockClock()
+      const perf = new NuxtPerfProfiler()
+      const fs = deferred()
+
+      const waiting = perf.timeBundlerHook('virtual', 'load', {}, () => fs.promise)
+      await flush()
+      clock.set(10)
+      perf.timeBundlerHook('sync', 'transform', {}, () => { clock.set(30) })
+      clock.set(40)
+      await perf.timeBundlerHook('async', 'transform', {}, async () => {
+        await null
+        clock.set(60)
+      })
+      clock.set(70)
+      await flush()
+      fs.settle()
+      await waiting
+
+      expect(hooks(perf)).toEqual({
+        'virtual:load': { totalTime: 70, waitingTime: 40 },
+        'sync:transform': { totalTime: 20, waitingTime: 0 },
+        'async:transform': { totalTime: 20, waitingTime: 0 },
+      })
+      expect(perf.getTraceEvents().find(e => e.name === 'virtual:load')).toMatchObject({ dur: 70_000, args: { durationMs: 70, waitingMs: 40 } })
+    })
+
+    it('counts time the event loop was idle as waiting', async () => {
+      const clock = mockClock()
+      const perf = new NuxtPerfProfiler()
+      const fs = deferred()
+
+      const waiting = perf.timeBundlerHook('io', 'load', {}, () => fs.promise)
+      await flush()
+      clock.set(50)
+      clock.idle(35)
+      fs.settle()
+      await waiting
+
+      expect(hooks(perf)).toEqual({ 'io:load': { totalTime: 50, waitingTime: 35 } })
+    })
+
+    it('does not count other calls of the same hook as waiting', async () => {
+      const clock = mockClock()
+      const perf = new NuxtPerfProfiler()
+      const fs = deferred()
+
+      const first = perf.timeBundlerHook('plugin', 'transform', {}, () => fs.promise)
+      await flush()
+      clock.set(10)
+      perf.timeBundlerHook('plugin', 'transform', {}, () => { clock.set(40) })
+      clock.set(50)
+      fs.settle()
+      await first
+
+      expect(hooks(perf)).toEqual({ 'plugin:transform': { totalTime: 50, waitingTime: 0 } })
+    })
+
+    it('does not count work after another hook yields as waiting', async () => {
+      const clock = mockClock()
+      const perf = new NuxtPerfProfiler()
+      const fs = [deferred(), deferred()]
+
+      const waiting = perf.timeBundlerHook('virtual', 'load', {}, () => fs[0]!.promise)
+      await flush()
+      const working = perf.timeBundlerHook('mixed', 'transform', {}, async () => {
+        await fs[1]!.promise
+        clock.set(40)
+      })
+      await flush()
+      clock.set(10)
+      fs[1]!.settle()
+      await working
+      await flush()
+      clock.set(50)
+      fs[0]!.settle()
+      await waiting
+
+      expect(hooks(perf)['virtual:load']).toEqual({ totalTime: 50, waitingTime: 0 })
+    })
+
+    it('does not count calls that start before another call has yielded', async () => {
+      const clock = mockClock()
+      const perf = new NuxtPerfProfiler()
+      const fs = deferred()
+
+      const waiting = perf.timeBundlerHook('virtual', 'load', {}, () => fs.promise)
+      await flush()
+      clock.set(10)
+      perf.timeBundlerHook('outer', 'transform', {}, () => {
+        clock.set(20)
+        perf.timeBundlerHook('inner', 'transform', {}, () => { clock.set(30) })
+        clock.set(40)
+      })
+      clock.set(50)
+      fs.settle()
+      await waiting
+
+      expect(hooks(perf)['virtual:load']).toEqual({ totalTime: 50, waitingTime: 0 })
+    })
+
+    it('does not count time spent awaiting `this.resolve` as waiting', async () => {
+      const clock = mockClock()
+      const perf = new NuxtPerfProfiler()
+      const fs = deferred()
+      const nested = deferred()
+      const ctx = { resolve: () => nested.promise }
+
+      const delegating = perf.timeBundlerHook('delegating', 'resolveId', ctx, async (c) => {
+        await fs.promise
+        await c.resolve()
+      })
+      await flush()
+      clock.set(10)
+      perf.timeBundlerHook('busy', 'transform', {}, () => { clock.set(30) })
+      clock.set(40)
+      fs.settle()
+      await flush()
+      clock.set(50)
+      perf.timeBundlerHook('nested', 'resolveId', {}, () => { clock.set(80) })
+      clock.set(90)
+      nested.settle()
+      await delegating
+
+      expect(hooks(perf)['delegating:resolveId']).toEqual({ totalTime: 40, waitingTime: 20 })
+      expect(perf.getTraceEvents().find(e => e.name === 'delegating:resolveId')).toMatchObject({ args: { durationMs: 40, waitingMs: 20 } })
+    })
+
+    it('reports how busy the main thread was while hooks were waiting', async () => {
+      const clock = mockClock()
+      const log = vi.spyOn(consola, 'log').mockImplementation(() => {})
+      onTestFinished(() => log.mockRestore())
+      const perf = new NuxtPerfProfiler()
+      const fs = deferred()
+
+      perf.startPhase('vite:client')
+      const waiting = perf.timeBundlerHook('virtual', 'load', {}, () => fs.promise)
+      await flush()
+      clock.set(10)
+      perf.timeBundlerHook('busy', 'transform', {}, () => { clock.set(80) })
+      clock.set(100)
+      perf.startPhase('vite:ssr')
+      clock.set(200)
+      clock.idle(50)
+      fs.settle()
+      await waiting
+      clock.set(300)
+      clock.idle(150)
+      perf.endPhase('vite:ssr')
+      perf.endPhase('vite:client')
+      perf.startPhase('nitro:build')
+      await perf.timeBundlerHook('busy', 'transform', {}, async () => {
+        await null
+        clock.set(320)
+      })
+      await flush()
+      clock.set(330)
+      perf.endPhase('nitro:build')
+
+      expect(perf.getReport().phases.map(p => [p.name, p.eventLoopUtilization])).toEqual([['vite:client', 1], ['vite:ssr', 0.5], ['nitro:build', undefined]])
+      expect(perf.getTraceEvents().find(e => e.name === 'vite:client' && e.ph === 'E')!.args).toMatchObject({ eventLoopUtilization: 0.75 })
+
+      perf.printReport()
+      const lines = log.mock.calls.map(([line]) => stripVTControlCharacters(String(line)))
+      expect(lines.find(line => line.includes('Phase'))).toMatch(/Duration\s+Main Thread/)
+      expect(lines.find(line => line.includes('vite:client'))).toMatch(/vite:client\s+100ms\s+100%/)
+      expect(lines.find(line => line.includes('vite:ssr'))).toMatch(/vite:ssr\s+200ms\s+50%/)
+      expect(lines.find(line => line.includes('virtual load'))).toMatch(/- waiting$/)
+      expect(lines.find(line => line.includes('busy transform'))).not.toMatch(/waiting/)
+    })
   })
 
   it('keeps the rest of the plugin context working', () => {
