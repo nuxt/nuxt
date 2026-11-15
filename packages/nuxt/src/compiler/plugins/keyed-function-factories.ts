@@ -11,7 +11,7 @@ import type { ScanPlugin } from '../types.ts'
 import type { Import } from 'unimport'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 import { createScanPluginContext, resolveImportPath } from '../utils.ts'
-import { type ParsedStaticImport, parseStaticImports } from '../../core/utils/static-imports.ts'
+import { type ParsedStaticImport, getStaticImports } from '../../core/utils/static-imports.ts'
 
 interface ParsedKeyedFunctionFactory {
   factoryName: string
@@ -416,14 +416,6 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
         })
         const autoImports = await options.getAutoImports()
         const autoImportsToSources = new Map<string, string>(autoImports.map(i => [i.as || i.name, i.from]))
-        const { processFactory } = createFactoryProcessor(
-          id,
-          scopeTracker,
-          namesToFactoryMeta,
-          parseStaticImports(code, id),
-          autoImportsToSources,
-          options.alias,
-        )
 
         function rewriteFactoryMacro (node: ESTree.IdentifierReference | ESTree.MemberExpression | ESTree.ParenthesizedExpression) {
           // TODO: use sth more robust for rewriting optionals
@@ -452,11 +444,20 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
           }
         }
 
-        const { program } = parseAndWalk(code, id, {
+        const { program, module } = parseAndWalk(code, id, {
           scopeTracker,
         })
 
         scopeTracker.freeze()
+
+        const { processFactory } = createFactoryProcessor(
+          id,
+          scopeTracker,
+          namesToFactoryMeta,
+          getStaticImports(code, module.staticImports),
+          autoImportsToSources,
+          options.alias,
+        )
 
         walk(program, {
           // no need for a scope tracker pre-pass, since we only care about imports
