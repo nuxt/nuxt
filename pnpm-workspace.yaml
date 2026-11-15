@@ -153,8 +153,8 @@ catalogs:
 
   # build-time deps of published packages
   build:
-    '@ampproject/remapping': ^2.3.0
     '@dxup/nuxt': ^0.5.11
+    '@jridgewell/sourcemap-codec': ^1.6.0
     '@nuxt/cli': ^4.1.0-alpha.0
     '@nuxt/devtools-onboard': ^4.1.0
     '@nuxt/telemetry': ^2.9.1

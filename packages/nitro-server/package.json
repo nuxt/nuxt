@@ -40,7 +40,7 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "@ampproject/remapping": "catalog:build",
+    "@jridgewell/sourcemap-codec": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "catalog:app-runtime",
     "consola": "catalog:app-runtime",

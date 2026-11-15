@@ -11,8 +11,6 @@ import { getQuery } from 'ufo'
 import { hash } from 'ohash'
 import { nitro as nitroPlugin } from 'nitro/vite'
 import escapeRE from 'escape-string-regexp'
-import MagicString from 'magic-string'
-import remapping from '@ampproject/remapping'
 
 import type { Nitro } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
@@ -20,6 +18,8 @@ import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 
 import { distDir, getServerReplacements, linkStaticDist } from './utils.ts'
+import { applyEdits } from './sourcemap.ts'
+import type { CodeEdit } from './sourcemap.ts'
 
 const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
@@ -362,21 +362,22 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
         const sourcemap = !!this.environment.config.build.sourcemap
         for (const file of Object.values(bundle)) {
           if (file.type !== 'chunk') { continue }
-          let s: MagicString | undefined
+          const edits: CodeEdit[] = []
           for (const match of file.code.matchAll(literalRE)) {
             const expression = replacements.get(match[2]!)
             if (!expression) {
               throw new Error(`[nuxt] Unknown build output placeholder \`${match[2]}\` in \`${file.fileName}\`.`)
             }
-            s ??= new MagicString(file.code)
-            s.overwrite(match.index, match.index + match[0].length, expression)
+            edits.push({ start: match.index, end: match.index + match[0].length, content: expression })
           }
-          if (s) {
-            if (sourcemap && file.map) {
-              const editMap = s.generateMap({ hires: true, source: file.fileName })
-              file.map = remapping([editMap as any, file.map as any], () => null) as unknown as typeof file.map
+          if (edits.length) {
+            const map = sourcemap ? file.map : null
+            const result = applyEdits(file.code, map?.mappings, edits)
+            if (map) {
+              map.mappings = result.mappings!
+              file.map = map
             }
-            file.code = s.toString()
+            file.code = result.code
           }
           if (anyRE.test(file.code)) {
             throw new Error(`[nuxt] Failed to substitute build output placeholder in \`${file.fileName}\`. This is a bug in Nuxt; please report it.`)
