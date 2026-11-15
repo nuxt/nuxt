@@ -383,6 +383,19 @@ describe('scrollBehavior on first load', () => {
 
     expect(position).toMatchObject({ el: '#section' })
   })
+
+  it('should scroll to the hash of the initial route with hash history', async () => {
+    const router = useRouter()
+    const history = router.options.history as { base: string }
+    const base = history.base
+    history.base = `${base}#`
+    onTestFinished(() => { history.base = base })
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const position = await router.options.scrollBehavior!(router.resolve('/about#section'), START_LOCATION, null)
+
+    expect(position).toMatchObject({ el: '#section' })
+  })
 })
 
 describe('scrollBehavior between pages', () => {
