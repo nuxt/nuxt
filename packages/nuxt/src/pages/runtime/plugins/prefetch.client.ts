@@ -1,4 +1,4 @@
-import { hasProtocol, joinURL } from 'ufo'
+import { hasProtocol } from 'ufo'
 import { defineNuxtPlugin } from '#app/nuxt'
 import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
@@ -11,7 +11,6 @@ import { canPrefetch, prefetchGroup } from '#app/internal/prefetch-util'
 import { componentIslands, routeChunkHints } from '#build/nuxt.config.mjs'
 import { toArray } from '#app/utils'
 import { onFailedPreload, preloadLayoutChunks, warmRouteChunkHints } from '#app/internal/preload-hints'
-import { baseURL } from '#internal/nuxt/paths'
 import { PRELOAD_MODULE_KEY } from '#app/internal/preload-hints-shared'
 
 async function prefetchLayout (layout: string) {
@@ -56,7 +55,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
             return
           }
           // every reload follows a navigation, so reloading the same path twice is not a loop
-          reloadNuxtApp({ path: joinURL(baseURL(), to.fullPath), persistState: true, force: true })
+          reloadNuxtApp({ path: router.resolve(to.fullPath).href, persistState: true, force: true })
           // the navigation is left pending rather than cancelled, which would have the router move
           // the history back from an entry the browser has already moved to
           return new Promise<void>(() => {})

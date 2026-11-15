@@ -141,7 +141,7 @@ test.describe('route chunk hints', () => {
     await markDocument(page)
     await failPreload(page)
 
-    await page.click('#anchor')
+    await page.evaluate(() => (window as any).useNuxtApp().$router.push('/#anchor'))
     await expect(page).toHaveURL(/\/#anchor$/)
     await settle(page)
     await expect(page).toHaveURL(/\/#anchor$/)
@@ -151,6 +151,38 @@ test.describe('route chunk hints', () => {
     await expect(page.locator('#alt-layout #other-page')).toHaveText('Other page')
     expect(await readEffects(page)).toMatchObject({ layoutStyles: true, pageStyles: true })
     expect(await isMarkedDocument(page)).toBe(false)
+  })
+
+  test('navigates while the stylesheet preload of the destination is pending', async ({ page, goto }) => {
+    const requests = await trackChunkRequests(page)
+    await goto('/')
+
+    const hints = await readHints(page, 'alt')
+    const before = new Set(requests)
+    const css = [...hints.layout, ...hints.pages].find(hint => !before.has(hint.file) && hint.file.endsWith('.css'))!.file
+
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => { release = resolve })
+    await page.route(`**${ASSETS_PATH}${css}`, async (route) => {
+      await gate
+      await route.continue()
+    })
+    try {
+      const started = page.waitForRequest(request => new URL(request.url()).pathname === `${ASSETS_PATH}${css}`)
+      await page.hover('#other')
+      await started
+
+      await page.evaluate(() => { void (window as any).useNuxtApp().$router.push('/other') })
+      await settle(page)
+      await expect(page.locator('#alt-layout #other-page')).toHaveCount(0)
+
+      release()
+      await expect(page.locator('#alt-layout #other-page')).toHaveText('Other page')
+      expect(await readEffects(page)).toMatchObject({ layoutStyles: true, pageStyles: true })
+      expect(countRequests(requests, [css])).toEqual({ [css]: 1 })
+    } finally {
+      release()
+    }
   })
 
   test('goes back in the history after a preload failed', async ({ page, goto }) => {
