@@ -319,6 +319,21 @@ describe('nitro config', () => {
     })
   })
 
+  it('keys cached responses on their query for a Nuxt 4 app with the nitro v2 config layer', async () => {
+    await withNitro({ modules: [asNuxtMajor(4)], nitroLegacy: true }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.cache?.defaults?.allowQuery).toBe(true)
+    })
+    await withNitro({ modules: [asNuxtMajor(4)], nitroLegacy: { config: false } }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.cache?.defaults?.allowQuery).toBeUndefined()
+    })
+    await withNitro({ modules: [asNuxtMajor(4)], nitroLegacy: true, nitro: { cache: { defaults: { allowQuery: ['page'] } } } }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.cache?.defaults?.allowQuery).toEqual(['page'])
+    })
+    await withNitro({ modules: [asNuxtMajor(5)], nitroLegacy: true }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.cache?.defaults?.allowQuery).toBeUndefined()
+    })
+  }, 60_000)
+
   it.for([true, false])('registers server import protection once, ahead of other resolvers, when nitroViteEnvironment is %s', async (nitroViteEnvironment) => {
     await withNitro({ experimental: { nitroViteEnvironment } }, (_nitro, nitroConfig, nuxt) => {
       const isImpound = (plugin: unknown) => (plugin as { name?: string } | null)?.name === 'impound'

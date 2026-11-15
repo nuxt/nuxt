@@ -35,7 +35,7 @@ import { compileRouterToString } from 'rou3/compiler'
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
-import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
+import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { getLegacyH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
@@ -691,6 +691,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
   if (nuxt.options.experimental.componentIslands) {
     keepCachedIslandQuery(nitroConfig, !nuxt.options.router.options.sensitive)
+  }
+  if (nuxt4Host && legacy.config) {
+    keepCachedQuery(nitroConfig)
   }
   normalizeAppMiddlewareRules(nitroConfig.routeRules)
   const unusedVariants = collectServerRegistrations(nuxt, nitroConfig)

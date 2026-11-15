@@ -38,6 +38,16 @@ export function keepCachedIslandQuery (nitroConfig: Pick<NitroConfig, 'routeRule
 }
 
 /**
+ * Key cached handlers and cached routes on their whole query, and pass it to the handler,
+ * unless the app sets a default `allowQuery` of its own.
+ */
+export function keepCachedQuery (nitroConfig: Pick<NitroConfig, 'cache'>): void {
+  const cache = nitroConfig.cache ||= {}
+  const defaults = cache.defaults ||= {}
+  defaults.allowQuery ??= true
+}
+
+/**
  * Re-key route rules by their folded pattern. Rules whose keys fold together are merged, with
  * object options merged one level deep and later keys taking precedence.
  */
