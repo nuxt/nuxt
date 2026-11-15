@@ -14,6 +14,9 @@ import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {
+  const builderPromise = nuxt.options._prepare ? undefined : resolveBuilder(nuxt)
+  builderPromise?.catch(() => {})
+
   await ensureGeneratedTsConfigs(nuxt)
 
   nuxt._perf?.startPhase('app:generate')
@@ -36,7 +39,7 @@ export async function build (nuxt: Nuxt): Promise<void> {
     await assertNoCircularPluginDependencies(nuxt, app.plugins)
   }
 
-  const builder = nuxt.options._prepare ? undefined : await resolveBuilder(nuxt)
+  const builder = await builderPromise
 
   if (nuxt.options.dev) {
     if (nuxt.options.experimental.watcher === 'builder' && builder?.setupWatcher) {
