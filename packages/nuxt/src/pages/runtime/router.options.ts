@@ -16,8 +16,8 @@ export default <RouterConfig>{
     // @ts-expect-error untyped, nuxt-injected option
     const hashScrollBehaviour = router.options?.scrollBehaviorType ?? 'auto'
 
-    // keep the position the browser restored on load (see `scrollRestoration` in the router plugin)
-    if (from === START_LOCATION && !savedPosition && !to.hash) {
+    // keep the position the browser restored or scrolled to on load, unless the hash comes from a redirect (see `scrollRestoration` in the router plugin)
+    if (from === START_LOCATION && !savedPosition && !(to.hash && to.redirectedFrom)) {
       return false
     }
 
@@ -91,9 +91,7 @@ function _calculatePosition (
     return {
       el: to.hash,
       top: _getHashElementScrollMarginTop(to.hash),
-      // On first load the browser is already scrolling to the hash, smoothly when the page has
-      // `scroll-behavior: smooth`. An instant jump during that scroll overshoots in Chromium.
-      behavior: from === START_LOCATION || isChangingPage(to, from) ? defaultHashScrollBehaviour : 'instant',
+      behavior: isChangingPage(to, from) ? defaultHashScrollBehaviour : 'instant',
     }
   }
 
