@@ -1,4 +1,4 @@
-import { setResponseStatus as _setResponseStatus, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
+import { setResponseStatus as _setResponseStatus, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
 import type { TypedFetch } from '../types/fetch'
 import type { NuxtRequestEvent } from '@nuxt/schema'
@@ -29,7 +29,7 @@ export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]): Readonly<Record<string, string | undefined>> {
   if (import.meta.client) { return {} }
   const event = useRequestEvent()
-  const _headers = event ? getRequestHeaders(event) : {}
+  const _headers = event ? readRequestHeaders(event) : {}
   if (!include || !event) { return _headers }
   const headers = Object.create(null)
   for (const _key of include) {
@@ -46,7 +46,12 @@ export function useRequestHeaders (include?: any[]): Readonly<Record<string, str
 export function useRequestHeader (header: string): string | null | undefined {
   if (import.meta.client) { return undefined }
   const event = useRequestEvent()
-  return event ? getRequestHeader(event, header) : undefined
+  return event ? readRequestHeaders(event)[header.toLowerCase()] : undefined
+}
+
+function readRequestHeaders (event: NuxtRequestEvent): Record<string, string | undefined> {
+  // a web-standard request event (`@nuxt/vite-server`) has no node request for h3 to read
+  return 'node' in event ? getRequestHeaders(event) : Object.fromEntries((event as unknown as { req: Request }).req.headers)
 }
 
 // hop-by-hop headers, and headers describing the page request's body or the response it accepts
