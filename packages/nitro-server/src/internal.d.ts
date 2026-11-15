@@ -6,6 +6,10 @@ declare module '#internal/nuxt/error-channel' {
   const errorChannel: typeof import('./runtime/utils/error-channel')
   export = errorChannel
 }
+declare module '#internal/nuxt/host' {
+  const host: typeof import('./runtime/host/nuxt4')
+  export = host
+}
 declare module '#internal/nuxt/island-renderer.mjs'
 declare module '#internal/nuxt/paths'
 declare module '#internal/dev-server-logs-options'

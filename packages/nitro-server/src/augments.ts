@@ -26,6 +26,13 @@ export interface SSRSourceMaps {
   getCompiledPosition?: (file: string, line: number, column?: number) => { file: string, line: number, column: number } | undefined
 }
 
+declare global {
+  interface ImportMeta {
+    dev: boolean
+    test: boolean
+  }
+}
+
 declare module 'nitro/types' {
   interface NitroApp {
     /**

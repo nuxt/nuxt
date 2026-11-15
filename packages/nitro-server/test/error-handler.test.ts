@@ -11,7 +11,8 @@ vi.mock('../src/runtime/utils/error-channel', () => ({
   observeDevError,
   serializeErrorCause: () => undefined,
 }))
-vi.mock('nuxt/internal/renderer-config', () => ({
+vi.mock('nuxt/internal/renderer-config', async importOriginal => ({
+  ...await importOriginal<typeof import('nuxt/internal/renderer-config')>(),
   get NUXT_INLINE_ERROR_RENDERING () {
     return flags.inlineErrors
   },

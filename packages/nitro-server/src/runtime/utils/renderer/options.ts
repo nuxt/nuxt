@@ -13,6 +13,7 @@ import '../../context'
 
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import { withRouteRuleDefaults } from '#internal/nuxt/host'
 import { getRouteRules } from '../route-rules'
 import { markStreamedResponse, rememberRenderBody, toRenderBody } from '../../compat/render-response'
 import { legacyCompat } from '#nuxt-compat/flags'
@@ -37,7 +38,7 @@ export const rendererOptions: NuxtRendererOptions = {
   runtimeConfig: () => useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
   buildAssetsURL,
   publicAssetsURL,
-  getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
+  getRouteRules: event => withRouteRuleDefaults(getRouteRules(event)) satisfies RendererRouteRules,
   hooks: useNitroHooks as () => RendererHooks,
   createResponse: (body, init) => {
     if (typeof body === 'string') {

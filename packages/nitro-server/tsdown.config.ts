@@ -24,6 +24,7 @@ export default defineConfig([
         '#internal/nuxt/app-config',
         '#internal/nuxt/nitro-config.mjs',
         '#internal/nuxt/error-channel',
+        '#internal/nuxt/host',
         '#nuxt-compat/flags',
         '#nuxt-compat/import-meta',
       ],

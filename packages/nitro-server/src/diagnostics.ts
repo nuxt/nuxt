@@ -2,9 +2,7 @@ import process from 'node:process'
 import { createConsoleReporter, defineDiagnostics } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
 import { colors } from 'consola/utils'
-
-const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+import { docsBase } from '@nuxt/kit/internal'
 
 /**
  * B9xxx
