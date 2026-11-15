@@ -163,7 +163,6 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
         scopeTracker.freeze()
 
-        // reuse the imports of the parse above, unless they come from an SFC `<script>` block
         const staticImports = block ? parseStaticImports(script, _id) : getStaticImports(code, module.staticImports)
         const { directImports, namespaces } = processImports(staticImports, options.alias)
 
