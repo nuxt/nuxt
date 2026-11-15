@@ -100,19 +100,22 @@ describe('ssr styles', () => {
     await rm(tmpDir, { recursive: true, force: true })
     await writeApp()
 
+    let ssrTransformedStyled!: () => void
+    const ssrTransformedStyledPromise = new Promise<void>((resolve) => { ssrTransformedStyled = resolve })
     let clientBuilt = false
     let ssrTransformedBeforeClient = false
     await build({}, [{
-      name: 'test:slow-client-build',
+      name: 'test:client-waits-for-ssr-transform',
       async generateBundle () {
         if (this.environment.name === 'client') {
-          await sleep(1000)
+          await Promise.race([ssrTransformedStyledPromise, sleep(30_000)])
           clientBuilt = true
         }
       },
       transform (_code, id) {
-        if (this.environment.name === 'ssr' && id.endsWith('Styled.vue') && !clientBuilt) {
-          ssrTransformedBeforeClient = true
+        if (this.environment.name === 'ssr' && id.endsWith('Styled.vue')) {
+          ssrTransformedBeforeClient ||= !clientBuilt
+          ssrTransformedStyled()
         }
       },
     }])
