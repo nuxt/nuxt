@@ -7,6 +7,7 @@ import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
 import { resolveModulePath } from 'exsolve'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
+import { RUNTIME_CONFIG_SCHEMA_ID } from '../src/runtime-config.ts'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
 
@@ -17,6 +18,8 @@ const serverReplacements = {
   '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': 'false',
   'import.meta.test': 'false',
 }
+
+const getSchema = (nitro: Nitro) => JSON.parse((nitro.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] as () => string)().replace(/^export default /, ''))
 
 const hasBundledVuePlugin = (nitroConfig: NitroConfig) => (nitroConfig.rollupConfig!.plugins as Array<{ name?: string }>).some(plugin => plugin?.name === 'nuxt:bundled-vue')
 
@@ -47,6 +50,22 @@ async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConf
 }
 
 describe('nitro config', () => {
+  it('infers the prerenderer\'s runtime config schema from its own runtime config', async () => {
+    await withNitro({ runtimeConfig: { assets: { dir: 'public' } } }, async (nitro) => {
+      const prerenderer = {
+        options: {
+          ...nitro.options,
+          runtimeConfig: { ...nitro.options.runtimeConfig, assets: { dir: ['public', 'layers/shared/public'] } },
+          virtual: { ...nitro.options.virtual },
+        },
+      } as unknown as Nitro
+      await nitro.hooks.callHook('prerender:init', prerenderer)
+
+      expect(getSchema(nitro).p.assets).toEqual({ p: { dir: 's' } })
+      expect(getSchema(prerenderer).p.assets).toEqual({ p: { dir: { a: 's' } } })
+    })
+  }, 60_000)
+
   it('emits valid rest-of-path URLPatterns for noScripts wildcard rules', async () => {
     await withNitro({ routeRules: { '/foo/*': { noScripts: true }, '/scripted/*': { ssr: true } } }, async (_nitro, nitroConfig) => {
       const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>

@@ -733,6 +733,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   })
 
+  // the prerenderer copies `virtual` from the server, but its runtime config comes from `_config`
+  nitro.hooks.hook('prerender:init', (prerenderer) => {
+    prerenderer.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] = () => getRuntimeConfigSchemaModule(nuxt, prerenderer)
+  })
+
   if (nuxt.options.experimental.nitroViteEnvironment) {
     // the vite `define` does not reach the prerenderer, which nitro bundles separately
     nitro.hooks.hook('prerender:config', (config) => {
