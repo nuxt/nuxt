@@ -2,7 +2,6 @@ import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { join, relative, resolve } from 'pathe'
-import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
 import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, importModule } from '@nuxt/kit'
@@ -151,6 +150,7 @@ export default defineNuxtModule({
       const isIgnored = createIsIgnored(nuxt)
       const rootDirs = layerDirs.map(layer => layer.root)
       const SCHEMA_RE = /(?:^|\/)nuxt.schema.\w+$/
+      const { watch } = await import('chokidar')
       const watcher = watch(rootDirs, {
         ...nuxt.options.watchers.chokidar,
         depth: 1,

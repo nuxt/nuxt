@@ -2,7 +2,6 @@ import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Identifier, ImportSpecifier } from 'estree'
 import { normalize, relative } from 'pathe'
-import { unheadVueComposablesImports } from '@unhead/vue'
 import { genImport } from 'knitwork'
 import { parseAndWalk } from 'oxc-walker'
 import { headDiagnostics } from '@nuxt/kit/internal'
@@ -48,7 +47,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         },
         code: { include: UnheadVueRE },
       },
-      handler (code, id, meta?: unknown) {
+      async handler (code, id, meta?: unknown) {
         const s = rolldownString(code, id, meta)
         const importsToAdd: ImportSpecifier[] = []
         parseAndWalk(code, id, function (node) {
@@ -59,6 +58,11 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
           }
         })
 
+        if (!importsToAdd.length) {
+          return generateTransform(s, id)
+        }
+
+        const { unheadVueComposablesImports } = await import('@unhead/vue')
         const importsFromUnhead = importsToAdd.filter(specifier => unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
         const importsFromHead = importsToAdd.filter(specifier => !unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
         if (importsFromUnhead.length) {
