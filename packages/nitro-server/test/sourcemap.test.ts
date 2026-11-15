@@ -20,7 +20,7 @@ describe('applyEdits', () => {
     const result = applyEdits(code, encode(segments), [edit(code, '"X"', '{x:1}')])
     expect(result.code).toBe('const a = {x:1}, b = 1;\nfoo("X", bar);\nbaz();')
     expect(decode(result.mappings)).toEqual([
-      [[0, 0, 0, 0], [6, 0, 0, 6], [10, 0, 0, 10], [17, 0, 0, 18], [21, 0, 0, 22]],
+      [[0, 0, 0, 0], [6, 0, 0, 6], [10, 0, 0, 10], [15, 0, 0, 14], [17, 0, 0, 18], [21, 0, 0, 22]],
       segments[1],
       segments[2],
     ])
@@ -34,7 +34,7 @@ describe('applyEdits', () => {
       segments[0],
       [[0, 0, 1, 0], [4, 0, 1, 4]],
       [[0, 0, 1, 4]],
-      [[0, 0, 1, 4], [5, 0, 1, 9]],
+      [[0, 0, 1, 4], [3, 0, 1, 5], [5, 0, 1, 9]],
       segments[2],
     ])
   })
@@ -47,15 +47,26 @@ describe('applyEdits', () => {
     expect(decode(result.mappings)).toEqual([[[0, 0, 0, 0], [2, 0, 0, 2], [4, 0, 0, 6]], [[0, 0, 0, 6], [2, 0, 0, 10]]])
   })
 
-  it('keeps later lines intact when a replaced range drops the last segment of a line', () => {
-    const source = 'a("XYZ");\nb();\nc();'
+  it('maps the code after a replaced range to the last segment inside it', () => {
+    const source = 'a("XYZ");'
+    const map = encode([[[0, 0, 0, 0], [3, 1, 5, 7, 2]]])
+    const result = applyEdits(source, map, [edit(source, '"XYZ"', '1')])
+    expect(result.code).toBe('a(1);')
+    expect(decode(result.mappings)).toEqual([[[0, 0, 0, 0], [3, 1, 5, 7, 2]]])
+
+    const bounded = applyEdits(source, encode([[[0, 0, 0, 0], [3, 1, 5, 7, 2], [7, 0, 0, 7]]]), [edit(source, '"XYZ"', '1')])
+    expect(decode(bounded.mappings)).toEqual([[[0, 0, 0, 0], [3, 0, 0, 7]]])
+  })
+
+  it('keeps later lines intact when a replacement drops the last segment of a line', () => {
+    const source = 'x = "XYZ"\nb();\nc();'
     const map: SourceMapSegment[][] = [
-      [[0, 0, 0, 0], [3, 1, 5, 7, 2]],
+      [[0, 0, 0, 0], [6, 1, 5, 7, 2]],
       [[0], [1, 1, 6, 0]],
       [[0, 2, 1, 1, 3]],
     ]
     const result = applyEdits(source, encode(map), [edit(source, '"XYZ"', '1')])
-    expect(result.code).toBe('a(1);\nb();\nc();')
+    expect(result.code).toBe('x = 1\nb();\nc();')
     expect(decode(result.mappings)).toEqual([[[0, 0, 0, 0]], map[1], map[2]])
   })
 

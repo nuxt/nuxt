@@ -10,8 +10,8 @@ export interface CodeEdit {
 /**
  * Apply non-overlapping edits that each replace a range within a single line,
  * shifting the generated positions of an encoded source map `mappings` string
- * to match. Segments strictly inside a replaced range are dropped, and each
- * line a replacement adds maps to the position of the replaced range.
+ * to match. The code after a replaced range keeps the mapping active at its
+ * end, and each line a replacement adds maps to the start of the range.
  */
 export function applyEdits<T extends string | undefined> (code: string, mappings: T, edits: CodeEdit[]): { code: string, mappings: T } {
   const lineStarts = [0]
@@ -55,7 +55,7 @@ export function applyEdits<T extends string | undefined> (code: string, mappings
     } else {
       const segments = decode(mappings.slice(lineStart, lineEnd))[0] ?? []
       const before = lastFields(segments)
-      const lines = lineEdits ? editLine(segments, lineEdits, lineStarts[index]!) : [segments]
+      const lines = lineEdits ? editLine(segments, lineEdits, lineStarts[index]!, (lineStarts[index + 1] ?? code.length + 1) - 1) : [segments]
       for (const segments of lines) {
         for (const segment of segments) {
           for (let field = 1; field < segment.length; field++) {
@@ -86,7 +86,7 @@ function lastFields (segments: SourceMapSegment[]) {
   return last
 }
 
-function editLine (segments: SourceMapSegment[], edits: CodeEdit[], lineStart: number): SourceMapSegment[][] {
+function editLine (segments: SourceMapSegment[], edits: CodeEdit[], lineStart: number, lineEnd: number): SourceMapSegment[][] {
   const lines: SourceMapSegment[][] = []
   let current: SourceMapSegment[] = []
   let index = 0
@@ -97,7 +97,10 @@ function editLine (segments: SourceMapSegment[], edits: CodeEdit[], lineStart: n
     for (; index < segments.length && segments[index]![0] <= startCol; index++) {
       current.push(shiftSegment(segments[index]!, shift))
     }
-    while (index < segments.length && segments[index]![0] < endCol) { index++ }
+    let inner: SourceMapSegment | undefined
+    for (; index < segments.length && segments[index]![0] < endCol; index++) {
+      inner = segments[index]
+    }
 
     const contentLines = content.split('\n')
     if (contentLines.length === 1) {
@@ -108,6 +111,10 @@ function editLine (segments: SourceMapSegment[], edits: CodeEdit[], lineStart: n
       lines.push(current, ...Array.from({ length: contentLines.length - 2 }, mapped))
       current = mapped()
       shift = contentLines[contentLines.length - 1]!.length - endCol
+    }
+    if (inner && end < lineEnd && segments[index]?.[0] !== endCol) {
+      inner[0] = endCol
+      current.push(shiftSegment(inner, shift))
     }
   }
   for (; index < segments.length; index++) {
