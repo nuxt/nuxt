@@ -202,8 +202,6 @@ const VIRTUAL_PREFIX = '\0nuxt-build-output:'
 const VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(VIRTUAL_PREFIX)}`)
 const NITRO_VIRTUAL_PREFIX = '\0nuxt-nitro-virtual:'
 const NITRO_VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(NITRO_VIRTUAL_PREFIX)}`)
-/** Relative and absolute file paths, and ids already resolved by another plugin. */
-const FILE_OR_INTERNAL_ID_RE = [/^\.{1,2}\//, /^\//, /^[A-Z]:[\\/]/i, /^\0/]
 
 /**
  * Build outputs whose value is not final until the ssr environment's own
@@ -493,8 +491,6 @@ function NitroVirtualBridge (nitro: Nitro): VitePlugin {
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
-      // keys can be added until the build starts, so only rule out ids that cannot be one
-      filter: { id: { exclude: FILE_OR_INTERNAL_ID_RE } },
       handler (id) {
         if (nitro.options.virtual[id]) {
           return NITRO_VIRTUAL_PREFIX + id
