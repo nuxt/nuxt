@@ -23,8 +23,7 @@ function createPlaceholder (el?: RendererNode | null) {
   return clientNodePlaceholder ? createCommentVNode('placeholder') : h('div')
 }
 
-// A re-render before mount (e.g. new props while hydration is pending) keeps the placeholder it
-// already rendered: in production Vue does not patch a new static vnode, so it would lose its element.
+// Reuse the placeholder already rendered: a new static vnode would not carry the element in production.
 function renderPlaceholder (instance: ComponentInternalInstance) {
   return instance.isMounted ? instance.subTree : createPlaceholder(instance.vnode.el)
 }

@@ -10,7 +10,6 @@ export default withMatrix({
     },
   },
   experimental: {
-    // the element placeholder (the default before compatibility version 5) for client-only components
     clientNodePlaceholder: false,
   },
 })
