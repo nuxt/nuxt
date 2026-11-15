@@ -20,8 +20,11 @@ export const MAY_CONTAIN_DECORATOR_RE = new RegExp(String.raw`(?!${EXPRESSION_BE
 
 /** Whether `code` may contain decorator syntax, ignoring `@` in comments and closed string literals. */
 export function hasDecoratorSyntax (code: string, tokenize: JsTokenizer, jsx = false): boolean {
-  const tokens = jsx ? tokenize(code, { jsx: true }) : tokenize(code)
+  // TypeScript generics can be tokenised as JSX, so JSX input is also checked without JSX
+  return (jsx && hasUnquotedAt(tokenize(code, { jsx: true }))) || hasUnquotedAt(tokenize(code))
+}
 
+function hasUnquotedAt (tokens: ReturnType<JsTokenizer>): boolean {
   for (const token of tokens) {
     if (!token.value.includes('@')) {
       continue

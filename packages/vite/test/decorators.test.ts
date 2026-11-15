@@ -171,6 +171,7 @@ describe('hasDecoratorSyntax', () => {
 
   it('does not hide decorators after ambiguous TSX syntax', () => {
     expect(hasDecoratorSyntax('const identity = <T,>(value: T) => value\n@sealed class Example {}', jsTokens, true)).toBe(true)
+    expect(hasDecoratorSyntax('const identity = <T extends "\\"">(v: T) => v\n@sealed class Example { value = "ok" }', jsTokens, true)).toBe(true)
   })
 
   it('conservatively handles unclosed literals', () => {
