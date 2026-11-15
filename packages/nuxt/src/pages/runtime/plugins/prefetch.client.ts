@@ -49,13 +49,16 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
 
     // Force layout prefetch on route changes
     let stopLoadingLayouts: (() => void) | undefined
+    let latestNavigationId = 0
     nuxtApp.hooks.hook('app:mounted', () => {
       stopLoadingLayouts = router.beforeEach(async (to, from) => {
+        // a newer navigation cancels this one, so only the latest navigation may reload
+        const navigationId = ++latestNavigationId
         const layout = to?.meta?.layout
         if (typeof layout === 'string' && layout in layouts) {
           // a navigation already waiting on a layout whose hint failed would otherwise never settle
           const failed = await Promise.race([preloadFailure, Promise.resolve(_loadAsyncComponent(layouts[layout])).then(() => false)])
-          if (failed && to.path !== from.path) {
+          if (failed && navigationId === latestNavigationId && to.path !== from.path) {
             return reloadToNavigation(to.fullPath)
           }
         }

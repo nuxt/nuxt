@@ -22,7 +22,7 @@ async function installPlugin (routeComponents: unknown[] = []) {
   vi.resetModules()
   vi.doMock('#app/internal/preload-hints', () => preloadHints)
   vi.doMock('#app/composables/chunk', () => ({ reloadNuxtApp }))
-  const guards: Array<(to: { path: string, fullPath: string }, from: { path: string }) => unknown> = []
+  const guards: Array<(to: { path: string, fullPath: string, meta: Record<string, unknown> }, from: { path: string }) => unknown> = []
   // islands are only enabled in an app that has server components or pages
   vi.doMock('#build/nuxt.config.mjs', async importOriginal => ({
     ...await importOriginal<Record<string, unknown>>(),
@@ -56,7 +56,7 @@ async function installPlugin (routeComponents: unknown[] = []) {
 
   return {
     mount: () => hooks.get('app:mounted')!(),
-    navigate: (fullPath: string, from = '/') => guards.map(guard => guard({ path: fullPath.replace(/[?#].*$/, ''), fullPath }, { path: from })),
+    navigate: (fullPath: string, from = '/', meta: Record<string, unknown> = {}) => guards.map(guard => guard({ path: fullPath.replace(/[?#].*$/, ''), fullPath, meta }, { path: from })),
     layout: layouts.default as unknown as AsyncLayout,
     async prefetch (url: string) {
       await hooks.get('link:prefetch')!(url)
@@ -143,6 +143,19 @@ describe('navigating with `experimental.routeChunkHints`', () => {
     await new Promise(resolve => setTimeout(resolve))
     expect(settled).not.toHaveBeenCalled()
     expect(reloadNuxtApp).toHaveBeenCalledExactlyOnceWith({ path: '/second?query=1', persistState: true, force: true })
+  })
+
+  it('does not reload for a navigation that a newer navigation has replaced', async () => {
+    const { mount, navigate, layout } = await installPlugin()
+    mount()
+    layout.__asyncLoader = vi.fn().mockReturnValueOnce(new Promise(() => {})).mockResolvedValue(undefined)
+
+    navigate('/first', '/', { layout: 'default' })
+    navigate('/second', '/', { layout: 'default' })
+    await new Promise(resolve => setTimeout(resolve))
+    failPreload()
+    await new Promise(resolve => setTimeout(resolve))
+    expect(reloadNuxtApp).not.toHaveBeenCalled()
   })
 
   it('still navigates within the page once a preload has failed', async () => {
