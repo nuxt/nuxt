@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { performance } from 'node:perf_hooks'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
@@ -41,7 +42,7 @@ import { installProxyDispatcher } from './utils/proxy.ts'
 import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { addModuleTranspiles, resolveModules } from './modules.ts'
 import { bundleServer } from './server.ts'
-import { NuxtPerfProfiler } from './perf.ts'
+import { NuxtPerfProfiler, claimCliStartTime } from './perf.ts'
 import schemaModule from './schema.ts'
 import { setupTemplateDiagnostics } from './template-diagnostics.ts'
 import { setupTypes } from './typescript.ts'
@@ -326,17 +327,18 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Early-init profiler when CLI passes perf overrides (captures config loading).
   // Otherwise, create after config resolves from nuxt.config / env vars.
   let perf: NuxtPerfProfiler | undefined
-  const cliStartTime = (globalThis as any).__nuxt_cli__?.startTime as number | undefined
   const perfOverride = typeof opts.overrides?.debug === 'object' && opts.overrides.debug.perf
   if (perfOverride) {
-    perf = new NuxtPerfProfiler({ startTime: cliStartTime })
+    perf = new NuxtPerfProfiler({ startTime: claimCliStartTime() })
     perf.startPhase('config')
   }
 
+  const configStartTime = performance.now()
   const options = await loadNuxtConfig(opts)
 
   if (!perf && typeof options.debug === 'object' && options.debug.perf) {
-    perf = new NuxtPerfProfiler({ startTime: cliStartTime })
+    perf = new NuxtPerfProfiler({ startTime: claimCliStartTime(), startupEndTime: configStartTime })
+    perf.recordPhase('config', configStartTime)
   }
   perf?.endPhase('config')
 
