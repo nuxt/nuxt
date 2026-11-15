@@ -31,17 +31,20 @@ describe('navigateTo on the server', () => {
     expect(nuxtApp.ssrContext['~renderResponse']).toBeUndefined()
   })
 
-  it('rejects script protocols when the `open` option is passed', () => {
-    vi.stubGlobal('__TEST_SERVER__', true)
-    for (const url of ['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>']) {
-      for (const external of [undefined, true]) {
-        expect(() => navigateTo(url, { external, open: { target: '_blank' } })).toThrow(
-          expect.objectContaining({ code: 'NUXT_E2002' }),
-        )
-      }
-    }
-    expect(nuxtApp.ssrContext['~renderResponse']).toBeUndefined()
-  })
+  const urls = ['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>']
+  const externals = [undefined, true]
+
+  it.each(urls.flatMap(url => externals.map(external => [url, external] as const)))(
+    'rejects %s when the `open` option is passed (external: %s)',
+    (url, external) => {
+      vi.stubGlobal('__TEST_SERVER__', true)
+
+      expect(() => navigateTo(url, { external, open: { target: '_blank' } })).toThrow(
+        expect.objectContaining({ code: 'NUXT_E2002' }),
+      )
+      expect(nuxtApp.ssrContext['~renderResponse']).toBeUndefined()
+    },
+  )
 
   it('redirects without the `open` option', async () => {
     vi.stubGlobal('__TEST_SERVER__', true)
