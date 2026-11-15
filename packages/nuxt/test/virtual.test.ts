@@ -57,10 +57,42 @@ describe('virtual fs plugin', () => {
       export { foo };"
     `)
   })
+
+  it('should resolve relative imports between virtual files added after the plugin is created', async () => {
+    const code = await generateCode('export { foo } from "virtual:nuxt:generated/foo.ts"', {
+      vfs: {},
+      lateVfs: {
+        '/generated/foo.ts': 'export { foo } from "./bar"',
+        '/generated/bar.ts': 'export const foo = "late relative import"',
+      },
+    })
+    expect(code).toMatchInlineSnapshot(`
+      "const foo = "late relative import";
+      export { foo };"
+    `)
+  })
+
+  it('should only look up relative imports from real files when they resolve into vfs directories', () => {
+    const lookups: string[] = []
+    const vfs = new Proxy<Record<string, string>>({ '/.nuxt/foo.ts': 'export const foo = 1' }, {
+      has (target, key) {
+        lookups.push(String(key))
+        return Reflect.has(target, key)
+      },
+    })
+    const plugin = VirtualFSPlugin(createStubNuxt(vfs), { mode: 'client' }).raw({}, { framework: 'rollup', versions: {} }) as unknown as {
+      resolveId: { handler: (id: string, importer?: string) => string | undefined }
+    }
+
+    expect(plugin.resolveId.handler('../node_modules/pkg/index', '/src/main.ts')).toBeUndefined()
+    expect(lookups).toEqual([])
+
+    expect(plugin.resolveId.handler('../.nuxt/foo', '/src/main.ts')).toBe('virtual:nuxt:.nuxt%2Ffoo.ts')
+  })
 })
 
-async function generateCode (input: string, options: { mode?: 'client' | 'server', vfs: Record<string, string> }) {
-  const stubNuxt = {
+function createStubNuxt (vfs: Record<string, string>) {
+  return {
     options: {
       extensions: ['.ts', '.js'],
       rootDir: '/',
@@ -70,8 +102,15 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
         '#build': '/.nuxt',
       },
     },
-    vfs: options.vfs,
+    vfs,
   } as unknown as Nuxt
+}
+
+async function generateCode (input: string, options: { mode?: 'client' | 'server', vfs: Record<string, string>, lateVfs?: Record<string, string> }) {
+  const stubNuxt = createStubNuxt(options.vfs)
+
+  const virtualPlugin = VirtualFSPlugin(stubNuxt, { mode: options.mode || 'client', alias: stubNuxt.options.alias }).rolldown()
+  Object.assign(stubNuxt.vfs, options.lateVfs)
 
   const bundle = await rolldown({
     input: 'entry.ts',
@@ -92,7 +131,7 @@ async function generateCode (input: string, options: { mode?: 'client' | 'server
           }
         },
       },
-      VirtualFSPlugin(stubNuxt, { mode: options.mode || 'client', alias: stubNuxt.options.alias }).rolldown(),
+      virtualPlugin,
     ],
   })
   const { output: [chunk] } = await bundle.generate()
