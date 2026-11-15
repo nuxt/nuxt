@@ -80,7 +80,7 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
 
   serverConfig.plugins!.unshift(
     vuePlugin(serverConfig.vue),
-    VueJsxPlugin(serverConfig.vueJsx),
+    VueJsxPlugin(serverConfig.vueJsx, nuxt.options.experimental.decorators),
   )
 
   await nuxt.callHook('vite:configResolved', serverConfig, { isClient: false, isServer: true })

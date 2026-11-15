@@ -605,6 +605,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             babelHelpers: 'bundled',
             configFile: false,
             extensions: ['.tsx', '.jsx'],
+            // Babel 7 reads `isTSX` (and strips other `jsx` parser plugins); Babel 8 only reads `parserOpts`.
+            parserOpts: { plugins: ['jsx'] },
             plugins: [
               ['@babel/plugin-syntax-typescript', { isTSX: true }],
               ['@babel/plugin-proposal-decorators', { version: '2023-11' }],

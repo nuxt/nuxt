@@ -93,7 +93,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const vue = vuePlugin(clientConfig.vue)
   clientConfig.plugins!.unshift(
     vue,
-    VueJsxPlugin(clientConfig.vueJsx),
+    VueJsxPlugin(clientConfig.vueJsx, nuxt.options.experimental.decorators),
   )
   if (devErrors) {
     const { VueCompilerWarningsPlugin } = await import('./vue-compiler-warnings.ts')

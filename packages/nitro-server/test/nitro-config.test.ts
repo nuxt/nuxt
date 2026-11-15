@@ -187,4 +187,26 @@ describe('nitro config', () => {
       expect(nitroConfig.rollupConfig!.output).not.toHaveProperty('sourcemapExcludeSources')
     })
   })
+
+  it.for([
+    ['tsx', 'function dec<T> () { return (_method: () => unknown) => () => \'decorated\' as T }', '@dec<string>()'],
+    ['jsx', 'function dec () { return () => () => \'decorated\' }', '@dec()'],
+  ])('lowers decorators in `.%s` server files that contain JSX', async ([ext, declaration, decorator]) => {
+    await withNitro({ experimental: { decorators: true } }, async (_nitro, nitroConfig) => {
+      const id = join(fixtureDir, `server/api/decorated.${ext}`)
+      const babel = [nitroConfig.rollupConfig!.plugins].flat().find((plugin) => {
+        const { name, transform } = plugin as { name?: string, transform?: { filter: { id: RegExp } } }
+        return name === 'babel' && transform!.filter.id.test(id)
+      }) as { transform: { handler: (this: unknown, code: string, id: string) => Promise<{ code: string } | null> } }
+      const code = [
+        declaration,
+        `class Decorated { ${decorator} method () { return 'initial' } }`,
+        'export default () => <div>{new Decorated().method()}</div>',
+      ].join('\n')
+
+      const result = await babel.transform.handler.call({ error: (error: unknown) => { throw error } }, code, id)
+      expect(result!.code).not.toContain(decorator)
+      expect(result!.code).toContain('<div>{new Decorated().method()}</div>')
+    })
+  })
 })

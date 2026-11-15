@@ -4,6 +4,19 @@ import type { Options } from '@vitejs/plugin-vue-jsx'
 type HookName = 'transform' | 'resolveId' | 'load' | 'configResolved'
 
 const SSR_REGISTER_HELPER_RE = /^\/__vue-jsx-ssr-register-helper$/
+const DECORATOR_PARSER_PLUGINS = new Set(['decorators', 'decorators-legacy'])
+
+// Parses 2023-11 decorators so `DecoratorsPlugin` can lower them after this Babel pass.
+function decoratorsSyntaxPlugin () {
+  return {
+    name: 'nuxt:syntax-decorators',
+    manipulateOptions (_options: unknown, parserOpts: { plugins: Array<string | [string, unknown]> }) {
+      if (!parserOpts.plugins.some(plugin => DECORATOR_PARSER_PLUGINS.has(Array.isArray(plugin) ? plugin[0] : plugin))) {
+        parserOpts.plugins.push(['decorators', { allowCallParenthesized: false }], 'decoratorAutoAccessors')
+      }
+    },
+  }
+}
 
 function handlerOf<K extends HookName> (plugin: Plugin, name: K) {
   const hook = plugin[name] as Plugin[K]
@@ -30,14 +43,16 @@ function parseDefine (value: unknown) {
 }
 
 /** `@vitejs/plugin-vue-jsx`, imported on the first module it handles as it pulls in Babel. */
-export function VueJsxPlugin (options: Options = {}): Plugin {
+export function VueJsxPlugin (options: Options = {}, decorators = false): Plugin {
   const { include = /\.[jt]sx$/, exclude, tsTransform } = options
   let plugin: Promise<Plugin> | undefined
   let resolvedConfig: ResolvedConfig | undefined
 
   function loadPlugin () {
     plugin ||= import('@vitejs/plugin-vue-jsx').then(async ({ default: vueJsx }) => {
-      const resolved = vueJsx(options)
+      const resolved = vueJsx(decorators
+        ? { ...options, babelPlugins: [...options.babelPlugins ?? [], decoratorsSyntaxPlugin] }
+        : options)
       if (resolvedConfig) {
         await handlerOf(resolved, 'configResolved')?.call({} as any, resolvedConfig)
       }

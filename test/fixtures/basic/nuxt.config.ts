@@ -180,6 +180,9 @@ export default withMatrix({
     navigateToEarlyReturn: true,
   },
   nitro: {
+    typescript: {
+      tsConfig: { compilerOptions: { jsxImportSource: 'vue' } },
+    },
     publicAssets: [
       {
         dir: './custom-public',
@@ -194,6 +197,8 @@ export default withMatrix({
       options: {
         // in order to test bigint serialization
         target: 'es2022',
+        jsx: 'automatic',
+        jsxImportSource: 'vue',
       },
     },
     routeRules: {

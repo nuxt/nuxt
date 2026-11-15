@@ -235,7 +235,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           ? [
               InlinedVuePlugin(nuxt),
               vuePlugin(viteConfig.vue),
-              VueJsxPlugin(viteConfig.vueJsx),
+              VueJsxPlugin(viteConfig.vueJsx, nuxt.options.experimental.decorators),
               ClientManifestPlugin(nuxt),
               // After ClientManifestPlugin so its dev `clientManifest` override wins.
               ViteNodePlugin(nuxt),
