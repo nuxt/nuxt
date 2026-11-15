@@ -111,10 +111,7 @@ interface _NuxtApp {
   } | undefined>
 
   /** @internal */
-  '_state': Record<string, {
-    /** @internal */
-    _default: () => unknown
-  } | undefined>
+  '_state': Record<string, Map<EffectScope | undefined, () => unknown> | undefined>
 
   /** @internal */
   '_loadingIndicator'?: LoadingIndicator
