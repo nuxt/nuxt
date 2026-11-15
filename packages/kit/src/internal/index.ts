@@ -35,6 +35,8 @@ export { hasOwnSubpathImport } from './subpath-imports.ts'
 export { VUE_PACKAGE_NAMES, VUE_PACKAGE_SPECIFIER_RE, isInVuePackages, resolveVuePackageImporter, resolveVuePackages } from './vue-packages.ts'
 export type { VuePackageName, VuePackages } from './vue-packages.ts'
 
+export { MAY_CONTAIN_DECORATOR_RE, hasDecoratorSyntax } from './decorators.ts'
+
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'
 

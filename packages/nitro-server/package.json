@@ -52,6 +52,7 @@
     "exsolve": "catalog:build",
     "flru": "catalog:nitro-runtime",
     "impound": "catalog:build",
+    "js-tokens": "catalog:build",
     "klona": "catalog:app-runtime",
     "magic-string": "catalog:vite",
     "mocked-exports": "catalog:build",
