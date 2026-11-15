@@ -1429,9 +1429,6 @@ importers:
       unctx:
         specifier: catalog:app-runtime
         version: 3.0.1(magic-string@1.4.5)(oxc-parser@0.156.0)(rolldown@1.2.18)(unplugin@3.7.0(@rsbuild/core@2.3.1)(@rspack/core@2.3.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0)))
-      undici:
-        specifier: catalog:build
-        version: 8.12.4
       unhead:
         specifier: catalog:app-runtime
         version: 3.4.3(@rsbuild/core@2.3.1)(@rspack/core@2.3.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(rolldown@1.2.18)(rollup@4.68.2)(vite@8.3.7)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.32))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -1493,6 +1490,9 @@ importers:
       typescript:
         specifier: catalog:dev
         version: 6.0.3
+      undici:
+        specifier: catalog:build
+        version: 8.12.4
       untyped:
         specifier: catalog:build
         version: 2.0.0

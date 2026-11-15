@@ -38,7 +38,7 @@ import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { linkToAlias, logger } from '../utils.ts'
-import { installProxyDispatcher } from './utils/proxy.ts'
+import { setupProxyFromEnv } from './utils/proxy.ts'
 import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { addModuleTranspiles, resolveModules } from './modules.ts'
 import { bundleServer } from './server.ts'
@@ -322,7 +322,7 @@ async function initNuxt (nuxt: Nuxt) {
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
-  await installProxyDispatcher()
+  setupProxyFromEnv()
 
   // Early-init profiler when CLI passes perf overrides (captures config loading).
   // Otherwise, create after config resolves from nuxt.config / env vars.
