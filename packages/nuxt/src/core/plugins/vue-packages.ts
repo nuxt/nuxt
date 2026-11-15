@@ -39,7 +39,9 @@ export function VuePackagesPlugin (packages: VuePackages, { cache = false }: { c
         if (!byEnvironment) {
           resolutions.set(environment, byEnvironment = new Map())
         }
-        const key = `${id}\0${options.kind ?? ''}\0${options.isEntry ? 1 : 0}`
+        // rollup marks a `require` through node-resolve rather than `kind`
+        const isRequire = (options.custom?.['node-resolve'] as { isRequire?: boolean } | undefined)?.isRequire
+        const key = `${id}\0${options.kind ?? ''}\0${isRequire ? 1 : 0}\0${options.isEntry ? 1 : 0}`
         let resolution = byEnvironment.get(key)
         if (!resolution) {
           byEnvironment.set(key, resolution = resolvePinned.call(this, id, pinnedImporter, options))
