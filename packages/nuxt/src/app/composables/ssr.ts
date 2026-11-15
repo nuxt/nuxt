@@ -1,7 +1,7 @@
 import { setResponseStatus as _setResponseStatus, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
 import { computed, getCurrentInstance, ref } from 'vue'
 import type { TypedFetch } from '../types/fetch'
-import type { NuxtRequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent, RequestEvent } from '@nuxt/schema'
 import type { $Fetch as OFetch } from 'ofetch'
 import { $fetch as _$fetch } from '#build/fetch'
 
@@ -21,6 +21,14 @@ export function useRequestEvent (nuxtApp?: NuxtApp): NuxtRequestEvent | undefine
   if (import.meta.client) { return }
   nuxtApp ||= useNuxtApp()
   return nuxtApp.ssrContext?.event
+}
+
+/**
+ * `event` as a web-standard request event (as `@nuxt/vite-server` provides), or `undefined` for an h3 event.
+ * @internal
+ */
+export function asWebRequestEvent (event: NuxtRequestEvent): RequestEvent | undefined {
+  return 'node' in event ? undefined : event as unknown as RequestEvent
 }
 
 /** @since 3.0.0 */
@@ -50,8 +58,8 @@ export function useRequestHeader (header: string): string | null | undefined {
 }
 
 function readRequestHeaders (event: NuxtRequestEvent): Record<string, string | undefined> {
-  // a web-standard request event (`@nuxt/vite-server`) has no node request for h3 to read
-  return 'node' in event ? getRequestHeaders(event) : Object.fromEntries((event as unknown as { req: Request }).req.headers)
+  const webEvent = asWebRequestEvent(event)
+  return webEvent ? Object.fromEntries(webEvent.req.headers) : getRequestHeaders(event)
 }
 
 // hop-by-hop headers, and headers describing the page request's body or the response it accepts
@@ -140,12 +148,21 @@ export function setResponseStatus (code: number, message?: string): void
 export function setResponseStatus (arg1: NuxtRequestEvent | number | undefined, arg2?: number | string, arg3?: string): void {
   if (import.meta.client) { return }
   if (arg1 && typeof arg1 !== 'number') {
-    return _setResponseStatus(arg1, arg2 as number | undefined, arg3)
+    return writeResponseStatus(arg1, arg2 as number | undefined, arg3)
   }
   const event = useRequestEvent()
   if (event) {
-    return _setResponseStatus(event, arg1, arg2 as string | undefined)
+    return writeResponseStatus(event, arg1, arg2 as string | undefined)
   }
+}
+
+function writeResponseStatus (event: NuxtRequestEvent, code?: number, message?: string): void {
+  const webEvent = asWebRequestEvent(event)
+  if (!webEvent) {
+    return _setResponseStatus(event, code, message)
+  }
+  webEvent.res.status = code
+  webEvent.res.statusText = message
 }
 
 /** @since 3.14.0 */
@@ -161,6 +178,22 @@ export function useResponseHeader (header: string): import('vue').WritableComput
   }
 
   const event = useRequestEvent()!
+  const webEvent = asWebRequestEvent(event)
+
+  if (webEvent) {
+    const headers = webEvent.res.headers
+    return computed({
+      get: () => headers.get(header) ?? undefined,
+      set (newValue) {
+        headers.delete(header)
+        if (newValue) {
+          for (const value of toArray(newValue)) {
+            headers.append(header, String(value))
+          }
+        }
+      },
+    })
+  }
 
   return computed({
     get () {
