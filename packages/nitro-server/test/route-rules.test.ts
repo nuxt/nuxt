@@ -9,9 +9,9 @@ import { compileRouteRules } from 'h3/rules/compiler'
 import type { Nitro, NitroConfig } from 'nitro/types'
 import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
 
-vi.mock('@nuxt/kit/internal', () => ({
+vi.mock('@nuxt/kit/internal', async importOriginal => ({
+  ...await importOriginal<typeof import('@nuxt/kit/internal')>(),
   bundlerDiagnostics: { NUXT_B7026: vi.fn() },
-  pageDiagnostics: { NUXT_B4022: vi.fn((p: { route: string, part: string }) => new Error(`NUXT_B4022 ${p.route} ${p.part}`)) },
 }))
 
 const { bundlerDiagnostics } = await import('@nuxt/kit/internal')
@@ -218,8 +218,8 @@ describe('routeRulesCaseFoldPlugin', () => {
   })
 
   it('rejects constraints that depend on letter case', async () => {
-    await expect(loadMatcher({ '/x/:id((?:FOO|bar))': { headers: { 'x-id': '1' } } })).rejects.toThrow('NUXT_B4022 /x/:id((?:FOO|bar)) F')
-    await expect(loadMatcher({ '/x/:id([a-zς]+)': { headers: { 'x-id': '1' } } })).rejects.toThrow('NUXT_B4022 /x/:id([a-zς]+) [a-zς]')
+    await expect(loadMatcher({ '/x/:id((?:FOO|bar))': { headers: { 'x-id': '1' } } })).rejects.toThrow('The route rule `/x/:id((?:FOO|bar))` has a regex constraint that depends on letter case (`F`)')
+    await expect(loadMatcher({ '/x/:id([a-zς]+)': { headers: { 'x-id': '1' } } })).rejects.toThrow('The route rule `/x/:id([a-zς]+)` has a regex constraint that depends on letter case (`[a-zς]`)')
   })
 
   it('matches rules under a base URL regardless of casing', async () => {

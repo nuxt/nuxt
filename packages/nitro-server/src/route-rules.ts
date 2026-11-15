@@ -1,11 +1,9 @@
 import { pathToFileURL } from 'node:url'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { assertCaseIndependentRouteRuleKey, bundlerDiagnostics, createNormalizedRouteRulesRouter, foldRouteCase, foldRouteRulePath, foldRouteRulePattern, normalizeRouteRuleLookupPath, normalizeRouteRules } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nitro, NitroConfig } from 'nitro/types'
 import type { RouteRuleLayer } from 'h3/rules'
-import { foldRouteCase, foldRouteRulePath } from '../../nuxt/src/core/utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, createNormalizedRouteRulesRouter, foldRouteRulePattern, normalizeRouteRuleLookupPath, normalizeRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
  * Rewrites `redirect.statusCode` to `redirect.status`, warning once per route.

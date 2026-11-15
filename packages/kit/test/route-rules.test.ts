@@ -1,9 +1,9 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { decodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from '../src/core/utils/index.ts'
 import { addRoute, createRouter } from 'rou3'
-import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
+import { decodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from '../src/internal/route-path.ts'
+import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath } from '../src/internal/route-rules.ts'
 
 const RESERVED_RE = /[%;/?:@&=+$,#]/g
 

@@ -3,8 +3,7 @@ import { relative } from 'pathe'
 import { defu } from 'defu'
 import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
-import { pageDiagnostics } from '@nuxt/kit/internal'
-import { createRouteRulesRouter, encodeRoutePattern } from '../core/utils/route-rules.ts'
+import { createRouteRulesRouter, encodeRoutePattern, pageDiagnostics } from '@nuxt/kit/internal'
 import { toArray } from '../utils.ts'
 
 /**

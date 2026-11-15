@@ -4,7 +4,7 @@ import { normalizeRouteRules as normalizeWithH3 } from 'h3/rules'
 import { addRoute, createRouter, findAllRoutes } from 'rou3'
 import type { RouteRuleConfig } from 'nuxt/schema'
 
-import { createRouteRulesRouter, normalizeRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createRouteRulesRouter, normalizeRouteRules } from '@nuxt/kit/internal'
 
 /** Nitro's own matcher: h3-normalised rules in a rou3 router, merged most-specific-last. */
 function matchWithNitro (config: Record<string, RouteRuleConfig>, baseURL = '') {
