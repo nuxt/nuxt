@@ -11,10 +11,9 @@ import { buildDiagnostics } from '@nuxt/kit/internal'
 import type { KeyedFunction } from '@nuxt/schema'
 import type { ESTree } from 'rolldown/utils'
 
-import { getStaticImports, parseStaticImports } from '../../core/utils/static-imports.ts'
-import { isJS } from '../../core/utils/plugins.ts'
+import { getStaticImports } from '../../core/utils/static-imports.ts'
 import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE, isWhitespace, stripExtension } from '../../utils.ts'
-import { type FunctionCallMetadata, findSFCScriptBlocks, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
+import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 import { resolveImportPath } from '../utils.ts'
 
 interface KeyedFunctionsOptions {
@@ -138,9 +137,6 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           if (!codeIncludeRE.test(code)) { return }
         }
 
-        const [block] = isJS(_id) ? [] : findSFCScriptBlocks(code)
-        const script = block?.content ?? code
-        const codeIndex = block?.start ?? 0
         const id = stripExtension(_id)
 
         // consider exports when processing a file that exports a keyed function
@@ -163,8 +159,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
 
         scopeTracker.freeze()
 
-        const staticImports = block ? parseStaticImports(script, _id) : getStaticImports(code, module.staticImports)
-        const { directImports, namespaces } = processImports(staticImports, options.alias)
+        const { directImports, namespaces } = processImports(getStaticImports(code, module.staticImports), options.alias)
 
         // all local names that refer to a keyed function
         // mapped to their exported names
@@ -357,7 +352,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                 let wasKeyInjected = true
                 for (let i = 0; i < NUXT_INJECTED_MARKER.length; i++) {
                   // the magic comment does not match, we have not injected a key yet
-                  if (code[codeIndex + lastArgument.end + 1 + i] !== NUXT_INJECTED_MARKER[i]) {
+                  if (code[lastArgument.end + 1 + i] !== NUXT_INJECTED_MARKER[i]) {
                     wasKeyInjected = false
                     break
                   }
@@ -374,14 +369,14 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
               ) { return }
 
               // inject a key to the function call
-              let i = codeIndex + parsedCall.callExpression.end - 2 // char before the closing `)`
-              while (i >= codeIndex + parsedCall.callExpression.start && isWhitespace(code[i])) {
+              let i = parsedCall.callExpression.end - 2 // char before the closing `)`
+              while (i >= parsedCall.callExpression.start && isWhitespace(code[i])) {
                 i--
               }
               const endsWithComma = code[i] === ','
 
               s.appendLeft(
-                codeIndex + parsedCall.callExpression.end - 1,
+                parsedCall.callExpression.end - 1,
                 (parsedCall.callExpression.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`).slice(0, 10) + `' ${NUXT_INJECTED_MARKER}`,
               )
             })
