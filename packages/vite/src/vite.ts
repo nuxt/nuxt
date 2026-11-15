@@ -8,7 +8,6 @@ import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, tryUseNitro } from '@nuxt/kit'
 import type { PreRenderedAsset } from 'rolldown'
-import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
@@ -27,6 +26,7 @@ import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } f
 
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { buildConcurrently, needsBuild } from './parallel-build.ts'
+import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
 import { OptimizeDepsPlugin } from './plugins/optimize-deps.ts'
@@ -235,7 +235,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           ? [
               InlinedVuePlugin(nuxt),
               vuePlugin(viteConfig.vue),
-              viteJsxPlugin(viteConfig.vueJsx),
+              VueJsxPlugin(viteConfig.vueJsx),
               ClientManifestPlugin(nuxt),
               // After ClientManifestPlugin so its dev `clientManifest` override wins.
               ViteNodePlugin(nuxt),
