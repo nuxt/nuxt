@@ -3,12 +3,12 @@ import { customRef, getCurrentScope, onScopeDispose, ref, watch } from 'vue'
 import { parse, parseSetCookie, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, getResponseHeader, setCookie, splitCookiesString } from '@nuxt/nitro-server/h3'
 import type { CookieSerializeOptions } from '../types/cookie'
-import type { NuxtRequestEvent } from '@nuxt/schema'
+import type { NuxtRequestEvent, RequestEvent } from '@nuxt/schema'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import type { NuxtApp } from '../nuxt'
 import { tryUseNuxtApp, useNuxtApp } from '../nuxt'
-import { useRequestEvent } from './ssr'
+import { asWebRequestEvent, useRequestEvent } from './ssr'
 import { stateDiagnostics } from '../diagnostics/state'
 
 import { cookieStore } from '#build/nuxt.config.mjs'
@@ -359,7 +359,7 @@ function updateClientCookieJar (name: string, value: string | undefined, opts: U
  */
 function readServerCookieJar (nuxtApp: NuxtApp): Record<string, string | undefined> {
   const event = useRequestEvent(nuxtApp)!
-  const jar = nuxtApp._cookieJar ??= parse(getRequestHeader(event, 'cookie') || '', { decode: identity })
+  const jar = nuxtApp._cookieJar ??= parse(readRequestCookieHeader(event) || '', { decode: identity })
 
   // overlay cookies set on the event outside `useCookie`, e.g. with h3's `setCookie` in server middleware
   const setCookies = readResponseSetCookies(event)
@@ -386,8 +386,14 @@ function updateServerCookieJar (nuxtApp: NuxtApp, name: string, value: string | 
   }
 }
 
+function readRequestCookieHeader (event: NuxtRequestEvent): string | null | undefined {
+  const webEvent = asWebRequestEvent(event)
+  return webEvent ? webEvent.req.headers.get('cookie') : getRequestHeader(event, 'cookie')
+}
+
 function readResponseSetCookies (event: NuxtRequestEvent): string[] {
-  return splitCookiesString(getResponseHeader(event, 'set-cookie') as string | string[] | undefined ?? [])
+  const webEvent = asWebRequestEvent(event)
+  return webEvent ? webEvent.res.headers.getSetCookie() : splitCookiesString(getResponseHeader(event, 'set-cookie') as string | string[] | undefined ?? [])
 }
 
 // value is expected to be already encoded via `opts.encode`; pass through as-is
@@ -420,14 +426,16 @@ function writeClientCookie (name: string, value: string | undefined, opts: UseCo
 function writeServerCookie (event: NuxtRequestEvent, name: string, value: string | undefined, opts: UseCookieOptions = {}) {
   if (event) {
     const serializeOpts = toSerializeOptions(opts)
+    const webEvent = asWebRequestEvent(event)
     // update if value is set
     if (value !== undefined) {
-      return setCookie(event, name, value, serializeOpts)
+      return webEvent ? setResponseCookie(webEvent, name, value, serializeOpts) : setCookie(event, name, value, serializeOpts)
     }
 
     // delete if cookie exists in browser, or was set earlier in the response, and value is null/undefined
-    if (getCookie(event, name) !== undefined || responseSetsCookie(event, name)) {
-      return deleteCookie(event, name, serializeOpts)
+    const requestCookie = webEvent ? parse(webEvent.req.headers.get('cookie') || '')[name] : getCookie(event, name)
+    if (requestCookie !== undefined || responseSetsCookie(event, name)) {
+      return webEvent ? setResponseCookie(webEvent, name, '', { ...serializeOpts, maxAge: 0 }) : deleteCookie(event, name, serializeOpts)
     }
 
     // else ignore if cookie doesn't exist in browser and value is null/undefined
@@ -439,6 +447,37 @@ function responseSetsCookie (event: NuxtRequestEvent, name: string) {
     if (parseSetCookie(raw, { decode: false })?.name === name) { return true }
   }
   return false
+}
+
+// cookies are distinct per name, domain and path, so only a cookie matching all three is replaced
+function cookieKey (name: string, opts: { domain?: string, path?: string }) {
+  return [name, (opts.domain || '').replace(/^\./, '').toLowerCase(), opts.path || '/'].join(';')
+}
+
+function setResponseCookie (event: RequestEvent, name: string, value: string, opts: CookieSerializeOptions) {
+  const newCookie = serialize(name, value, { path: '/', ...opts })
+  const currentCookies = event.res.headers.getSetCookie()
+
+  if (currentCookies.length === 0) {
+    event.res.headers.set('set-cookie', newCookie)
+    return
+  }
+
+  const namePrefix = `${name}=`
+  if (!currentCookies.some(cookie => cookie.startsWith(namePrefix))) {
+    event.res.headers.append('set-cookie', newCookie)
+    return
+  }
+
+  const newCookieKey = cookieKey(name, opts)
+  event.res.headers.delete('set-cookie')
+  for (const cookie of currentCookies) {
+    const parsed = parseSetCookie(cookie)
+    const isReplaced = parsed ? cookieKey(parsed.name, parsed) === newCookieKey : cookie.startsWith(namePrefix)
+    if (isReplaced) { continue }
+    event.res.headers.append('set-cookie', cookie)
+  }
+  event.res.headers.append('set-cookie', newCookie)
 }
 
 /**

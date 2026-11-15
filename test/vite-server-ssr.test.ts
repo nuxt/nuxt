@@ -40,6 +40,22 @@ describe.skipIf(!runsDev)('pure vite dev server with ssr', () => {
     expect(await $fetch<string>('/fetched')).toContain('<p id="fetched">fetched the about page</p>')
   })
 
+  it('reads the request and writes the response from the app', async () => {
+    const response = await fetch('/request?q=1', { headers: { 'accept': 'text/html', 'x-forwarded-host': 'proxy.example', 'x-forwarded-proto': 'https', 'x-echo': 'echoed' } })
+
+    expect(response.status).toBe(203)
+    expect(response.statusText).toBe('Read the request')
+    expect(response.headers.get('x-echo')).toBe('echoed')
+    expect(await response.text()).toContain('<p id="request">http: /request https: proxy.example echoed</p>')
+  })
+
+  it('reads and writes cookies from the app', async () => {
+    const response = await fetch('/cookies', { headers: { accept: 'text/html', cookie: 'visits=1; session=abc; theme=dark' } })
+
+    expect(response.headers.getSetCookie()).toEqual(['visits=2; Path=/', 'session=; Max-Age=0; Path=/'])
+    expect(await response.text()).toContain('<p id="cookies">2 dark</p>')
+  })
+
   it('renders the error page for a route no page matches', async () => {
     const response = await fetch('/not-a-page', { headers: { accept: 'text/html' } })
 
@@ -72,7 +88,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
   const buildDir = join(rootDir, 'node_modules/.cache/nuxt/.nuxt-build')
   const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-build')
   let html: string
-  let render: (path: string) => Promise<Response>
+  let render: (path: string, init?: RequestInit) => Promise<Response>
   const targets: Array<string | undefined> = []
 
   beforeAll(async () => {
@@ -84,7 +100,7 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     const server = await import(join(outputDir, 'server/index.mjs')) as {
       default: { fetch: (request: Request) => Promise<Response> }
     }
-    render = path => server.default.fetch(new Request(new URL(path, 'http://localhost')))
+    render = (path, init) => server.default.fetch(new Request(new URL(path, 'http://localhost'), init))
     html = await (await render('/')).text()
   }, 240 * 1000)
 
@@ -120,6 +136,22 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
   it('fetches a path of the app in-process while rendering', async () => {
     expect(await (await render('/fetched')).text()).toContain('<p id="fetched">fetched the about page</p>')
+  })
+
+  it('reads the request and writes the response from the app', async () => {
+    const response = await render('/request?q=1', { headers: { 'x-forwarded-host': 'proxy.example', 'x-forwarded-proto': 'https', 'x-echo': 'echoed' } })
+
+    expect(response.status).toBe(203)
+    expect(response.statusText).toBe('Read the request')
+    expect(response.headers.get('x-echo')).toBe('echoed')
+    expect(await response.text()).toContain('<p id="request">http: /request https: proxy.example echoed</p>')
+  })
+
+  it('reads and writes cookies from the app', async () => {
+    const response = await render('/cookies', { headers: { cookie: 'visits=1; session=abc; theme=dark' } })
+
+    expect(response.headers.getSetCookie()).toEqual(['visits=2; Path=/', 'session=; Max-Age=0; Path=/'])
+    expect(await response.text()).toContain('<p id="cookies">2 dark</p>')
   })
 
   it('seeds an in-process fetch with the context of the request that made it', async () => {
