@@ -69,6 +69,15 @@ test('hot reloading route rules', async ({ fetch }) => {
   await poll(header, 20_000).toBe('edited in dev')
 })
 
+test('SSR picks up a noScripts route rule added in dev', async ({ fetch }) => {
+  const speculatesRouteRules = () => fetch('/').then(r => r.text()).then(html => html.includes('"href_matches":"/route-rules"'))
+  await poll(speculatesRouteRules).toBe(false)
+
+  fixture.replace('app/pages/route-rules.vue', 'headers: {', 'noScripts: true,\n  headers: {')
+
+  await poll(speculatesRouteRules, 20_000).toBe(true)
+})
+
 test('SSR fetches pick up an edited server route', async ({ fetch }) => {
   const value = () => ssrText(fetch, '/server-route', 'value')
   await poll(value).toBe('v1')
