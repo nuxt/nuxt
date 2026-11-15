@@ -18,6 +18,16 @@ describe('component names', () => {
 
   const transformPlugin = ComponentNamePlugin({ getComponents: () => components }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
+  it('only sends component modules to the transform', () => {
+    const { include } = (ComponentNamePlugin({ getComponents: () => components }).raw({}, {} as any) as any).transform.filter.id as { include: RegExp[] }
+    const reaches = (id: string) => include.some(re => re.test(id))
+    expect(reaches('/app/components/Foo.vue')).toBe(true)
+    expect(reaches('/app/components/Foo.tsx')).toBe(true)
+    expect(reaches('/app/components/Foo.vue?vue&type=script&setup=true&lang.ts')).toBe(false)
+    expect(reaches('/app/components/Foo.vue?vue&type=style&index=0&lang.css')).toBe(false)
+    expect(reaches('/app/pages/index.vue?macro=true')).toBe(false)
+  })
+
   it('should ignore files that are not components ', () => {
     const res = transformPlugin.transform.handler('export default {}', 'some-other-file.ts')
     expect(res?.code).toBeUndefined()

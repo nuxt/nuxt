@@ -1,7 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 
-import { VUE_ID_FILTER, parseModuleId } from '../../core/utils/index.ts'
+import { VUE_FILE_RE } from '../../core/utils/index.ts'
 import { assignDefaultExportName } from '../../components/utils.ts'
 import { getPageComponentNames } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -32,17 +32,12 @@ export const PageComponentNamePlugin = (options: PageComponentNamePluginOptions)
     enforce: 'post',
     transform: {
       filter: {
-        id: { include: VUE_ID_FILTER },
-      },
-      handler (code, id, meta?: unknown) {
-        const { pathname, search } = parseModuleId(id)
         // Only the component module itself carries the page name; the macro and SFC block requests
         // are handled by their own transforms.
-        if (search) {
-          return
-        }
-
-        const pageName = getPageNames().get(pathname)
+        id: { include: VUE_FILE_RE },
+      },
+      handler (code, id, meta?: unknown) {
+        const pageName = getPageNames().get(id)
         if (!pageName) {
           return
         }
