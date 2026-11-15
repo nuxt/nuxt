@@ -1,5 +1,13 @@
 // @vitest-environment node
-import { describe, expect, it } from 'vitest'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
+import { afterAll, describe, expect, it } from 'vitest'
+import { join, resolve } from 'pathe'
+import { findWorkspaceDir } from 'pkg-types'
+import { addTemplate } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
+import { createApp, generateApp } from '../src/core/app.ts'
+import { loadNuxt } from '../src/index.ts'
 import { createHead } from '@unhead/vue/server'
 import { TemplateParamsPlugin } from '@unhead/vue/plugins'
 import { useSeoMeta } from '@unhead/vue'
@@ -280,5 +288,47 @@ useHead({ title: () => 'Dynamic' })
 
   it('ignores blocks of the app component that are not scripts', async () => {
     expect(await plugin.transform.handler(`.useHead { color: red }`, '/app/app.vue?vue&type=style&index=0&lang.css')).toBeUndefined()
+  })
+})
+
+describe('app component head in a nuxt build', async () => {
+  const repoRoot = await findWorkspaceDir()
+  const sfc = `<script setup lang="ts">\nuseHead({ title: 'Site' })\n</script>\n\n<template><div /></template>\n`
+
+  afterAll(async () => {
+    await rm(resolve(repoRoot, 'node_modules/.fixture'), { recursive: true, force: true })
+  })
+
+  async function build (setup: (nuxt: Nuxt, rootDir: string) => void | Promise<void>) {
+    const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    await mkdir(rootDir, { recursive: true })
+    const nuxt = await loadNuxt({ cwd: rootDir, overrides: { pages: false } })
+    await setup(nuxt, rootDir)
+    const app = nuxt.apps.default = createApp(nuxt)
+    await generateApp(nuxt, app)
+
+    const config = { plugins: [] as any[] }
+    await nuxt.callHook('vite:extend', { config } as any)
+    const plugin = config.plugins.flat().find(p => p?.name === 'nuxt:head:app-component-head')
+    const component = app.mainComponent!
+    const transformed = await plugin.transform.handler(sfc, component)
+    const appComponentHead = Object.entries(nuxt.vfs).find(([path]) => path.endsWith('/unhead.config.mjs'))![1]
+      .match(/appComponentHead = (.*)/)![1]
+    await nuxt.close()
+    return { appComponentHead: JSON.parse(appComponentHead!), removed: !!transformed }
+  }
+
+  it('moves static head out of an app component on disk', async () => {
+    expect(await build((_, rootDir) => writeFile(join(rootDir, 'app.vue'), sfc))).toEqual({
+      appComponentHead: [{ title: 'Site' }],
+      removed: true,
+    })
+  })
+
+  it('leaves an app component that only exists in the virtual file system alone', async () => {
+    expect(await build((nuxt) => {
+      const template = addTemplate({ filename: 'virtual-app.vue', getContents: () => sfc })
+      nuxt.hook('app:resolve', (app) => { app.mainComponent = template.dst })
+    })).toEqual({ appComponentHead: [], removed: false })
   })
 })

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { normalize, resolve } from 'pathe'
@@ -76,14 +77,14 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     const defaultRootComponent = resolve(nuxt.options.appDir, 'components/nuxt-root.vue')
     const getAppComponent = (app: NuxtApp | undefined = nuxt.apps.default) => {
       if (!nuxt.options.ssr && !useServerBuild(nuxt).capabilities.server) { return }
-      if (app?.mainComponent && app.rootComponent && normalize(app.rootComponent) === defaultRootComponent) {
+      if (app?.mainComponent && app.rootComponent && normalize(app.rootComponent) === defaultRootComponent && existsSync(app.mainComponent)) {
         return normalize(app.mainComponent)
       }
     }
     const getAppComponentHead = async (app: NuxtApp): Promise<SerializableHead[]> => {
       const component = getAppComponent(app)
       if (!component) { return [] }
-      const code = await readFile(component, 'utf-8').catch(() => '')
+      const code = await readFile(component, 'utf-8')
       return (await extractAppComponentHead(code, component, await getHeadImports())).entries
     }
 
