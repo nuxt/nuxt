@@ -49,6 +49,13 @@ describe.skipIf(!runsDev)('pure vite dev server with ssr', () => {
     expect(await response.text()).toContain('<p id="request">http: /request https: proxy.example echoed</p>')
   })
 
+  it('reads and writes cookies from the app', async () => {
+    const response = await fetch('/cookies', { headers: { accept: 'text/html', cookie: 'visits=1; session=abc; theme=dark' } })
+
+    expect(response.headers.getSetCookie()).toEqual(['visits=2; Path=/', 'session=; Max-Age=0; Path=/'])
+    expect(await response.text()).toContain('<p id="cookies">2 dark</p>')
+  })
+
   it('renders the error page for a route no page matches', async () => {
     const response = await fetch('/not-a-page', { headers: { accept: 'text/html' } })
 
@@ -138,6 +145,13 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     expect(response.statusText).toBe('Read the request')
     expect(response.headers.get('x-echo')).toBe('echoed')
     expect(await response.text()).toContain('<p id="request">http: /request https: proxy.example echoed</p>')
+  })
+
+  it('reads and writes cookies from the app', async () => {
+    const response = await render('/cookies', { headers: { cookie: 'visits=1; session=abc; theme=dark' } })
+
+    expect(response.headers.getSetCookie()).toEqual(['visits=2; Path=/', 'session=; Max-Age=0; Path=/'])
+    expect(await response.text()).toContain('<p id="cookies">2 dark</p>')
   })
 
   it('seeds an in-process fetch with the context of the request that made it', async () => {
