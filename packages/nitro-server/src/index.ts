@@ -15,7 +15,7 @@ import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitropack'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitropack/types'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
-import { bundlerDiagnostics, getServerRuntime, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
+import { MAY_CONTAIN_DECORATOR_RE, bundlerDiagnostics, getServerRuntime, hasDecoratorSyntax, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors, setHeader, setResponseStatus } from 'h3'
@@ -587,13 +587,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       }
 
       if (result === true) {
-        const { babel } = await import('@rollup/plugin-babel')
+        const [{ babel }, { default: jsTokens }] = await Promise.all([import('@rollup/plugin-babel'), import('js-tokens')])
+        // `@rollup/plugin-babel` v6 passes `filter` the id alone
+        const mayContainDecorators = (jsx: boolean) => (_id: string, code?: string) => code === undefined || (MAY_CONTAIN_DECORATOR_RE.test(code) && hasDecoratorSyntax(code, jsTokens, jsx))
         nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
         nitroConfig.rollupConfig!.plugins!.unshift(
           babel({
             babelHelpers: 'bundled',
             configFile: false,
             extensions: ['.ts', '.js', '.mjs', '.mts'],
+            filter: mayContainDecorators(false),
             plugins: [
               // Syntax plugin allows Babel to parse TypeScript without transforming it,
               // since the actual TS stripping is handled later by the bundler's esbuild plugin.
@@ -605,6 +608,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
             babelHelpers: 'bundled',
             configFile: false,
             extensions: ['.tsx', '.jsx'],
+            filter: mayContainDecorators(true),
             // Babel 7 reads `isTSX` (and strips other `jsx` parser plugins); Babel 8 only reads `parserOpts`.
             parserOpts: { plugins: ['jsx'] },
             plugins: [

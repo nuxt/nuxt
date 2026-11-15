@@ -52,6 +52,7 @@
     "flru": "catalog:nitro-runtime",
     "h3": "^1.15.11",
     "impound": "catalog:build",
+    "js-tokens": "catalog:build",
     "klona": "catalog:app-runtime",
     "mocked-exports": "catalog:build",
     "my-bad": "catalog:nitro-runtime",
