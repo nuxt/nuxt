@@ -4,7 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { BuildEnvironment, EnvironmentModuleGraph, EnvironmentModuleNode, ResolvedConfig, Plugin as VitePlugin } from 'vite'
+import type { BuildEnvironment, EnvironmentModuleGraph, EnvironmentModuleNode, ResolvedConfig, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
@@ -100,7 +100,7 @@ function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string
  */
 export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro, serverRuntime: NuxtServerRuntime): void {
   addVitePlugin(NuxtBuildOutputsPlugin(nuxt, serverRuntime))
-  addVitePlugin(NitroVirtualBridge(nitro))
+  addVitePlugin(NitroVirtualBridge(nuxt, nitro))
   addVitePlugin(NitroDefinePlugin(nuxt))
 
   // `nitro/vite` calls `build:before` before it derives its bundler config,
@@ -483,11 +483,31 @@ function hashEnvironmentConfig (config: ResolvedConfig): string {
   return hash({ define: config.define, resolve: config.resolve, build: config.build })
 }
 
-function NitroVirtualBridge (nitro: Nitro): VitePlugin {
+function NitroVirtualBridge (nuxt: Nuxt, nitro: Nitro): VitePlugin {
   const virtuals: Record<string, string> = {}
+  let server: ViteDevServer | undefined
+
+  if (nuxt.options.dev) {
+    nuxt.hook('app:templatesGenerated', async () => {
+      const environment = server?.environments.ssr
+      if (!environment) { return }
+      for (const specifier in virtuals) {
+        const entry = nitro.options.virtual[specifier]
+        const code = typeof entry === 'function' ? await entry() : entry
+        const module = environment.moduleGraph.getModuleById(NITRO_VIRTUAL_PREFIX + specifier)
+        if (module && hash(code ?? '') !== virtuals[specifier]) {
+          await environment.reloadModule(module)
+        }
+      }
+    })
+  }
+
   return {
     name: 'nuxt:nitro-virtual-bridge',
     applyToEnvironment: env => env.name === 'ssr',
+    configureServer (devServer) {
+      server = devServer
+    },
     resolveId: {
       order: 'pre',
       handler (id) {
