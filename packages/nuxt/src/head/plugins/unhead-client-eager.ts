@@ -5,14 +5,19 @@ import { parseAndWalk } from 'oxc-walker'
 import { UNHEAD_TRANSFORM_ID_FILTER } from './unhead-imports.ts'
 
 const INJECTING_ENTRIES = new Set(['@unhead/vue', '@unhead/vue/scripts', '@unhead/vue/components', '@unhead/vue/legacy'])
-const NON_INJECTING_EXPORTS = new Set([
-  ...unheadVueComposablesImports['@unhead/vue'],
+const PURE_EXPORTS = new Set([
   'createUnhead',
   'defineLink',
   'defineScript',
   'resolveUnrefHeadInput',
   'unheadVueComposablesImports',
 ])
+// imports of these composables are rewritten to Nuxt's own by `UnheadImportsPlugin`; re-exports are not
+const NON_INJECTING_IMPORTS = new Set([...unheadVueComposablesImports['@unhead/vue'], ...PURE_EXPORTS])
+
+function specifierName (node: { type: string, name?: string, value?: unknown }) {
+  return node.type === 'Identifier' ? node.name! : String(node.value)
+}
 
 interface UnheadClientEagerPluginOptions {
   eagerEntry: string
@@ -38,9 +43,12 @@ export const UnheadClientEagerPlugin = (options: UnheadClientEagerPluginOptions)
             if (node.importKind === 'type' || !INJECTING_ENTRIES.has(String(node.source.value))) { return }
             injects = node.specifiers.some(specifier =>
               specifier.type !== 'ImportSpecifier'
-              || (specifier.importKind !== 'type' && !NON_INJECTING_EXPORTS.has(specifier.imported.type === 'Identifier' ? specifier.imported.name : String(specifier.imported.value))),
+              || (specifier.importKind !== 'type' && !NON_INJECTING_IMPORTS.has(specifierName(specifier.imported))),
             )
-          } else if ((node.type === 'ExportNamedDeclaration' || node.type === 'ExportAllDeclaration') && node.source && node.exportKind !== 'type') {
+          } else if (node.type === 'ExportNamedDeclaration' && node.source && node.exportKind !== 'type') {
+            injects = INJECTING_ENTRIES.has(String(node.source.value))
+              && node.specifiers.some(specifier => specifier.exportKind !== 'type' && !PURE_EXPORTS.has(specifierName(specifier.local)))
+          } else if (node.type === 'ExportAllDeclaration' && node.exportKind !== 'type') {
             injects = INJECTING_ENTRIES.has(String(node.source.value))
           } else if (node.type === 'ImportExpression' && node.source.type === 'Literal') {
             injects = INJECTING_ENTRIES.has(String(node.source.value))

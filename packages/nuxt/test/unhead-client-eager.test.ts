@@ -25,6 +25,8 @@ describe('UnheadClientEagerPlugin', () => {
     ['type-only imports', `import type { UseScriptInput } from '@unhead/vue/scripts'`],
     ['type-only specifiers', `import { type VueHeadClient } from '@unhead/vue'`],
     ['non-injecting entries', `import { createHead } from '@unhead/vue/client'`],
+    ['pure helper re-exports', `export { defineLink, defineScript as script } from '@unhead/vue'`],
+    ['type-only re-exports', `export type { VueHeadClient } from '@unhead/vue'`],
   ])('should not transform %s', async (_, code) => {
     expect(await transform(code)).toBeUndefined()
   })
@@ -36,6 +38,7 @@ describe('UnheadClientEagerPlugin', () => {
     ['headSymbol', `import { headSymbol } from '@unhead/vue'`],
     ['namespace imports', `import * as unhead from '@unhead/vue'`],
     ['re-exports', `export { useServerHead } from '@unhead/vue'`],
+    ['re-exported composables', `export { defineLink, useHead } from '@unhead/vue'`],
     ['star re-exports', `export * from '@unhead/vue'`],
     ['dynamic imports', `const { useScript } = await import('@unhead/vue/scripts')`],
   ])('should import the eager client head for %s', async (_, code) => {
