@@ -1,7 +1,6 @@
 import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
-import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, recoverThrottledChanges } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import type { Nuxt, ViteConfig } from '@nuxt/schema'
@@ -9,6 +8,7 @@ import type { Nuxt, ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite.ts'
 import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
 import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
+import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { ModulePreloadPolyfillPlugin } from './plugins/client-entry-import.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
 import { createViteLogger } from './utils/logger.ts'
@@ -93,7 +93,7 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
   const vue = vuePlugin(clientConfig.vue)
   clientConfig.plugins!.unshift(
     vue,
-    viteJsxPlugin(clientConfig.vueJsx),
+    VueJsxPlugin(clientConfig.vueJsx),
   )
   if (devErrors) {
     const { VueCompilerWarningsPlugin } = await import('./vue-compiler-warnings.ts')
