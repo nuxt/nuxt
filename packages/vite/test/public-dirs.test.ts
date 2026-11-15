@@ -91,10 +91,10 @@ describe('PublicDirsPlugin', () => {
     }
 
     it('only receives chunks with a root-relative css url', () => {
-      const { filter } = plugin.renderChunk as { filter: { code: RegExp } }
-      expect(filter.code.test('const a = "a{background:url(/logo.svg)}"')).toBe(true)
-      expect(filter.code.test('export default 1')).toBe(false)
-      expect(filter.code.test('const a = "a{background:url(./logo.svg)}"')).toBe(false)
+      const { filter } = plugin.renderChunk as { filter?: { code: RegExp } }
+      expect(filter?.code.test('const a = "a{background:url(/logo.svg)}"')).toBe(true)
+      expect(filter?.code.test('export default 1')).toBe(false)
+      expect(filter?.code.test('const a = "a{background:url(./logo.svg)}"')).toBe(false)
     })
 
     it('rewrites every public asset url in a chunk', () => {

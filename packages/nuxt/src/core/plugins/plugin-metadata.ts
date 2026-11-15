@@ -231,9 +231,8 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
   return {
     name: `nuxt:remove-plugin-metadata:${mode}`,
     transform: {
-      // The bundler plugins are created after the app is generated, so in a build the plugin list is final
-      // and only plugin files need to reach this hook. In dev, plugins can be added while the server runs.
-      ...(!nuxt.options.dev && { filter: { id: plugins.length ? new RegExp(`^(?:${plugins.map(p => escapePathRE(p.src)).join('|')})$`) : /^$/ } }),
+      // the plugin list is final once a build creates its bundler plugins, but dev can still add plugins
+      ...(!nuxt.options.dev && { filter: { id: new RegExp(`^(?:${plugins.map(p => escapeStringRegexp(p.src).replace(/\//g, '[\\\\/]')).join('|')})$`) } }),
       handler (code, id, meta?: unknown) {
         id = normalize(id)
         const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
@@ -327,7 +326,3 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
     },
   }
 })
-
-function escapePathRE (path: string) {
-  return escapeStringRegexp(path).replace(/\//g, '[\\\\/]')
-}

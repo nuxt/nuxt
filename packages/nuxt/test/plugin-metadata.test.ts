@@ -135,14 +135,14 @@ describe('plugin-metadata', () => {
       apps: { default: { plugins: [{ src: '/app/plugins/a.ts' }, { src: '/app/.nuxt/b (1).mjs' }] } },
     } as any
     const { filter } = (RemovePluginMetadataPlugin(buildNuxt, 'client').raw({}, {} as any) as any).transform
-    expect(filter.id.test('/app/plugins/a.ts')).toBe(true)
-    expect(filter.id.test('/app/.nuxt/b (1).mjs')).toBe(true)
-    expect(filter.id.test('/app/plugins/a.ts?macro=true')).toBe(false)
-    expect(filter.id.test('/app/plugins/a.tsx')).toBe(false)
-    expect(filter.id.test('/app/components/a.vue')).toBe(false)
+    expect(filter?.id.test('/app/plugins/a.ts')).toBe(true)
+    expect(filter?.id.test('/app/.nuxt/b (1).mjs')).toBe(true)
+    expect(filter?.id.test('/app/plugins/a.ts?macro=true')).toBe(false)
+    expect(filter?.id.test('/app/plugins/a.tsx')).toBe(false)
+    expect(filter?.id.test('/app/components/a.vue')).toBe(false)
 
     const emptyNuxt = { options: { dev: false }, apps: { default: { plugins: [] } } } as any
-    expect((RemovePluginMetadataPlugin(emptyNuxt, 'client').raw({}, {} as any) as any).transform.filter.id.test('/app/a.ts')).toBe(false)
+    expect((RemovePluginMetadataPlugin(emptyNuxt, 'client').raw({}, {} as any) as any).transform.filter?.id.test('/app/a.ts')).toBe(false)
 
     const devNuxt = { options: { dev: true }, apps: { default: { plugins: [] } } } as any
     expect((RemovePluginMetadataPlugin(devNuxt, 'client').raw({}, {} as any) as any).transform.filter).toBeUndefined()

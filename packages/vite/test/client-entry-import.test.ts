@@ -15,7 +15,7 @@ describe('ModulePreloadPolyfillPlugin', () => {
     // the bundler only calls the handler for ids matching the filter
     const transform = (code: string, id: string) => filter.id.test(id) ? handler(code, id) : undefined
 
-    expect(filter.id.test('/entry.js')).toBe(false)
+    expect(filter?.id.test('/entry.js')).toBe(false)
 
     configResolved({
       environments: { client: { build: { rolldownOptions: { input: '/entry.js' } } } },
