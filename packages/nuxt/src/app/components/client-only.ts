@@ -23,6 +23,11 @@ function createPlaceholder (el?: RendererNode | null) {
   return clientNodePlaceholder ? createCommentVNode('placeholder') : h('div')
 }
 
+// Reuse the placeholder already rendered: a new static vnode would not carry the element in production.
+function renderPlaceholder (instance: ComponentInternalInstance) {
+  return instance.isMounted ? instance.subTree : createPlaceholder(instance.vnode.el)
+}
+
 const SlotRenderer: FunctionalComponent<{ slot: Slot }> = props => props.slot({})
 SlotRenderer.props = ['slot']
 
@@ -107,7 +112,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T): Com
           ? cloneVNode(res)
           : h(res)
       }
-      return createPlaceholder(ctx._.vnode.el)
+      return renderPlaceholder(ctx._)
     }
   } else {
     // handle runtime-compiler template
@@ -157,7 +162,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T): Com
               ? cloneVNode(res)
               : h(res)
           }
-          return createPlaceholder(instance?.vnode.el)
+          return renderPlaceholder(instance)
         }
       })
     } else {
@@ -171,7 +176,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T): Com
               ? cloneVNode(res, attrs)
               : h(res, attrs)
           }
-          return createPlaceholder(instance?.vnode.el)
+          return renderPlaceholder(instance)
         }
       }
       return Object.assign(setupState, { mounted$ })
