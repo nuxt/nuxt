@@ -36,10 +36,10 @@ export function VueJsxPlugin (options: Options = {}): Plugin {
   let resolvedConfig: ResolvedConfig | undefined
 
   function loadPlugin () {
-    plugin ||= import('@vitejs/plugin-vue-jsx').then(({ default: vueJsx }) => {
+    plugin ||= import('@vitejs/plugin-vue-jsx').then(async ({ default: vueJsx }) => {
       const resolved = vueJsx(options)
       if (resolvedConfig) {
-        handlerOf(resolved, 'configResolved')?.call({} as any, resolvedConfig)
+        await handlerOf(resolved, 'configResolved')?.call({} as any, resolvedConfig)
       }
       return resolved
     })
