@@ -338,6 +338,7 @@ export default defineResolvers({
     entryImportMap: true,
     compileHints: true,
     layoutChunk: true,
+    parallelBuild: true,
     extractAsyncDataHandlers: booleanOr(false),
     viteEnvironmentApi: {
       $resolve: async (val, get) => {

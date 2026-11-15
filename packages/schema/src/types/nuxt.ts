@@ -340,6 +340,12 @@ export interface Nuxt {
    */
   '_moduleOptionsFunctions'?: Map<string | NuxtModule, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>
 
+  /**
+   * The client build, while it runs alongside the server build.
+   * @internal
+   */
+  '_clientBuild'?: Promise<void>
+
   /** The resolved Nuxt configuration. */
   'options': NuxtOptions
   'hooks': NuxtHookRegistry<NuxtHooks>

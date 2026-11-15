@@ -26,6 +26,7 @@ import { getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './ut
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
+import { buildConcurrently, needsBuild } from './parallel-build.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
 import { OptimizeDepsPlugin } from './plugins/optimize-deps.ts'
@@ -142,16 +143,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ? {
             builder: {
               async buildApp (builder) {
+                const { client, ssr } = builder.environments
+                if (!nuxt.options.dev && nuxt.options.experimental.parallelBuild && client && ssr && needsBuild(client) && needsBuild(ssr)) {
+                  await buildConcurrently(nuxt, builder, client, ssr)
+                }
+
                 // run serially to preserve the order of client, server builds
                 const environments = Object.values(builder.environments)
                 for (const environment of environments) {
-                  // a server builder may bring its own orchestration and build environments
-                  // from its own `buildApp` hook, which is ordered `pre` and so runs first
-                  if (environment.isBuilt) { continue }
-                  const { input, build } = environment.config
-                  if (!input && !build.rolldownOptions.input && !build.lib && typeof build.ssr !== 'string') {
-                    continue
-                  }
+                  if (!needsBuild(environment)) { continue }
                   logger.restoreAll()
                   try {
                     await builder.build(environment)

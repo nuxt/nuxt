@@ -4,7 +4,7 @@ import { basename, dirname, relative, resolve } from 'pathe'
 import { genArrayFromRaw, genImport, genObjectFromRawEntries } from 'knitwork'
 import { filename as _filename } from 'pathe/utils'
 import { setBuildOutput } from '@nuxt/kit'
-import { useServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, useServerBuild, waitForClientBuild } from '@nuxt/kit/internal'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { parseSync } from 'rolldown/utils'
@@ -23,6 +23,9 @@ const STYLE_QUERY_RE = /[?&]type=style/
 // style blocks the server bundle reads exports from: `?inline` (inlined styles, custom elements) and CSS modules
 const STYLE_WITH_EXPORTS_RE = /[?&]inline(?:&|$)|\.module\.\w+$/
 const EMPTY_STYLE_ID = '\0nuxt:ssr-styles:empty'
+const CLIENT_BUILD_ID = '\0nuxt:ssr-styles:client-build'
+const CLIENT_BUILD_ID_RE = new RegExp(`^${escapeStringRegexp(CLIENT_BUILD_ID)}$`)
+const EMPTY_STYLE_ID_RE = new RegExp(`^${escapeStringRegexp(EMPTY_STYLE_ID)}$`)
 
 /**
  * Wrap a string `generateScopedName` pattern into a function that strips any
@@ -285,6 +288,11 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
   // modules whose reachability was still unknown when they were transformed
   const deferredExtractions = new Map<string, Map<string, string>>()
 
+  // ssr modules transformed before the client build finished. They are extracted from the
+  // load hook of a module the ssr entry imports, as chunks can only be emitted while the
+  // module graph is loading.
+  let pendingExtractions: Array<[id: string, code: string]> | undefined
+
   // Server pages (.server.vue) are not in the components list but still need
   // their CSS extracted for inline delivery via the island handler.
   const flattenPages = (pages?: NuxtPage[]): NuxtPage[] =>
@@ -477,6 +485,9 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         name: `nuxt:ssr-styles:${environment.name}`,
         enforce: 'pre',
         buildStart () {
+          if (this.environment.name === 'ssr') {
+            pendingExtractions = nuxt._clientBuild ? [] : undefined
+          }
           // Where the server build is a pass of its own, it reads the map back off disk
           // from the directory this environment writes it to. Where it is not, the map is
           // an output of the very bundle that would import it, so it cannot be named as a
@@ -493,10 +504,13 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           order: 'pre',
           filter: {
             id: {
-              include: [/^#build\/css$/, /\.vue$/, IS_CSS_RE],
+              include: [/^#build\/css$/, /\.vue$/, IS_CSS_RE, CLIENT_BUILD_ID_RE],
             },
           },
           async handler (id, importer, _options) {
+            if (id === CLIENT_BUILD_ID) {
+              return { id, moduleSideEffects: false }
+            }
             if (environment.name === 'ssr' && STYLE_QUERY_RE.test(id) && !STYLE_WITH_EXPORTS_RE.test(id)) {
               return { id: EMPTY_STYLE_ID, moduleSideEffects: false }
             }
@@ -517,10 +531,23 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
           },
         },
         load: {
-          filter: { id: new RegExp(`^${escapeStringRegexp(EMPTY_STYLE_ID)}$`) },
-          handler () {
+          filter: { id: [EMPTY_STYLE_ID_RE, CLIENT_BUILD_ID_RE] },
+          async handler (id) {
+            if (id === CLIENT_BUILD_ID) {
+              await waitForClientBuild(nuxt, this.environment.name)
+              while (pendingExtractions?.length) {
+                const [id, code] = pendingExtractions.shift()!
+                await extractInlineStyles(this, id, code, true)
+              }
+              pendingExtractions = undefined
+            }
             return 'export {}'
           },
+        },
+        buildEnd (error) {
+          if (!error && this.environment.name === 'ssr' && pendingExtractions) {
+            throw bundlerDiagnostics.NUXT_B7039({ entry: ssrEntry })
+          }
         },
         generateBundle (outputOptions, bundle) {
           if (environment.name === 'client') {
@@ -559,7 +586,8 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
 
           const emitted: Record<string, string> = {}
           const usedNames = new Set<string>()
-          for (const [file, { files, inBundle }] of Object.entries(cssMap)) {
+          // sorted, as modules are transformed in no fixed order
+          for (const [file, { files, inBundle }] of Object.entries(cssMap).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) {
             // File has been tree-shaken out of build (or there are no styles to inline)
             if (!files.length || !inBundle) { continue }
             const baseName = filename(file)
@@ -724,6 +752,14 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
                   idClientCSSMap.add(resolved.id)
                 }
                 return generateTransform(s, id)
+              }
+              return
+            }
+
+            if (pendingExtractions) {
+              pendingExtractions.push([id, code])
+              if (stripQuery(id) === ssrEntry) {
+                return { code: `${code}\nimport ${JSON.stringify(CLIENT_BUILD_ID)}`, map: null }
               }
               return
             }

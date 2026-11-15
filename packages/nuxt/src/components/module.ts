@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addImportsSources, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, getLayerDirectories, isIgnored, resolveAlias } from '@nuxt/kit'
-import { componentDiagnostics } from '@nuxt/kit/internal'
+import { componentDiagnostics, waitForClientBuild } from '@nuxt/kit/internal'
 
 import { resolveModulePath } from 'exsolve'
 import picomatch from 'picomatch'
@@ -388,7 +388,7 @@ export default defineNuxtModule<ComponentsOptions>({
       addBuildPlugin(RenderListPlugin(), { client: false })
 
       if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
-        addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents }))
+        addVitePlugin(() => ComponentsChunkPlugin({ dev: nuxt.options.dev, getComponents, waitForClientBuild: () => waitForClientBuild(nuxt) }))
       } else {
         addTemplate({
           filename: 'component-chunk.mjs',
