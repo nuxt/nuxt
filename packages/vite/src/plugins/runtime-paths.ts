@@ -2,7 +2,7 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Plugin } from 'vite'
 
 const VITE_ASSET_RE = /__VITE_ASSET__|__VITE_PUBLIC_ASSET__/
-const CSS_PATH_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?|$)/
+const CSS_PATH_RE = /^[^?]*\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?|$)/
 const VUE_STYLE_RE = /\.vue\?(?:.*&)?type=style/
 
 export function RuntimePathsPlugin (): Plugin {

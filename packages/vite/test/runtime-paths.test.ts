@@ -13,6 +13,7 @@ describe('RuntimePathsPlugin', () => {
     expect(transform('export default "__VITE_ASSET__abc__"', '/app/a.ts')).toBe('import "#internal/nuxt/paths";export default "__VITE_ASSET__abc__"')
     expect(transform('export default "__VITE_PUBLIC_ASSET__abc__"', '/app/a.vue')).toBe('import "#internal/nuxt/paths";export default "__VITE_PUBLIC_ASSET__abc__"')
     expect(transform('export default "__VITE_ASSET__abc__"', '/app/a.vue?vue&type=script')).toBeDefined()
+    expect(transform('export default "__VITE_PUBLIC_ASSET__abc__"', '/app/logo.svg?ref=theme.css')).toBeDefined()
   })
 
   it('skips modules without vite assets', () => {
