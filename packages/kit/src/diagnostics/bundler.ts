@@ -141,6 +141,11 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { pluginName: string, packageName: string }) => `Remove \`${p.pluginName}\` from \`postcss.plugins\` in your \`nuxt.config\` (or report it to the author of the module that adds it), or install a version of \`${p.packageName}\` that provides it.`,
       docs: false,
     },
+    NUXT_B7028: {
+      why: (p: { imports: string }) => `Server dependencies import ${p.imports}, which the Vue package in the server output does not provide.`,
+      fix: 'Set `vue.runtimeCompiler` to `true` to ship the full Vue package with the server output.',
+      docs: false,
+    },
     NUXT_B7029: {
       why: '`@nuxt/rspack-builder` is deprecated and will be removed in a future major version of Nuxt.',
       fix: 'Install `@nuxt/rsbuild-builder` and set `builder: \'rsbuild\'` in your `nuxt.config`. See https://nuxt.com/docs/5.x/getting-started/upgrade#rspack-builder-is-replaced-by-the-rsbuild-builder for the options and hooks that change.',

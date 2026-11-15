@@ -4,6 +4,10 @@ import { createConsoleReporter } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
 import { colors } from 'consola/utils'
 
+import kit from '../../package.json' with { type: 'json' }
+
+const majorVersion = Number.parseInt(kit.version, 10)
+
 /**
  * Resolve the docs URL for a stable `NUXT_B<NNNN>` code.
  *
@@ -11,7 +15,7 @@ import { colors } from 'consola/utils'
  * inline why+fix is self-sufficient opt out with `docs: false`.
  */
 export const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+  `https://nuxt.com/docs/${majorVersion}.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
 // `as const` preserves the tuple shape `defineDiagnostics` reads to type each
 // reporter's call-site options; a plain array collapses them to `{}`.

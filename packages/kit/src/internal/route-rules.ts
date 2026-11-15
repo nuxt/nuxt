@@ -374,6 +374,12 @@ export function normalizeAppMiddlewareRules (routeRules: Record<string, Record<s
   }
 }
 
+/** A server builder's resolved route rules: a router in Nitro v3, a record keyed by pattern in Nitro v2. */
+interface ResolvedRouteRulesHost {
+  routing?: { routeRules: { routes: RouteRulesRoute[] } }
+  options: { baseURL?: string, routeRules?: Record<string, Record<string, any>> }
+}
+
 /**
  * The route rules the build has resolved, as router entries.
  *
@@ -383,9 +389,13 @@ export function normalizeAppMiddlewareRules (routeRules: Record<string, Record<s
  * @internal
  */
 export function resolveRouteRulesRoutes (nuxt: Nuxt): { routes: RouteRulesRoute[], baseURL: string } {
-  const nitro = tryUseNitro()
+  const nitro = tryUseNitro() as ResolvedRouteRulesHost | undefined
   if (nitro?.routing) {
     return { routes: nitro.routing.routeRules.routes, baseURL: nitro.options.baseURL || '' }
+  }
+  if (nitro?.options.routeRules) {
+    const routes = Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, method: '', data }))
+    return { routes, baseURL: nitro.options.baseURL || '' }
   }
   const routeRules = normalizeRouteRules(nuxt.options.routeRules)
   normalizeAppMiddlewareRules(routeRules)

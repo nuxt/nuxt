@@ -53,7 +53,7 @@ export const pluginDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B2009: {
       why: (p: { cycle: string }) => `Circular dependency detected in plugins: ${p.cycle}.`,
-      fix: (p: { name: string, dependency: string }) => `Restructure the plugin \`dependsOn\` declarations to break the cycle. Production builds fail until this is fixed; in development, plugin \`${p.name}\` does not wait for \`${p.dependency}\`.`,
+      fix: (p: { name: string, dependency: string }) => `Restructure the plugin \`dependsOn\` declarations to break the cycle. Plugin \`${p.name}\` cannot wait for \`${p.dependency}\` while the cycle remains.`,
       docs: false,
     },
     NUXT_B2010: {
