@@ -7,7 +7,7 @@ import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
 import { resolveModulePath } from 'exsolve'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
-import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule } from '../src/runtime-config.ts'
+import { RUNTIME_CONFIG_SCHEMA_ID } from '../src/runtime-config.ts'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
 
@@ -18,6 +18,8 @@ const serverReplacements = {
   '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': 'false',
   'import.meta.test': 'false',
 }
+
+const getSchema = (nitro: Nitro) => JSON.parse((nitro.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] as () => string)().replace(/^export default /, ''))
 
 const hasBundledVuePlugin = (nitroConfig: NitroConfig) => (nitroConfig.rollupConfig!.plugins as Array<{ name?: string }>).some(plugin => plugin?.name === 'nuxt:bundled-vue')
 
@@ -49,9 +51,7 @@ async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConf
 
 describe('nitro config', () => {
   it('infers the prerenderer\'s runtime config schema from its own runtime config', async () => {
-    await withNitro({ runtimeConfig: { assets: { dir: 'public' } } }, async (nitro, _nitroConfig, nuxt) => {
-      // nitro creates the prerenderer from `_config`, which a module can set differently,
-      // with a copy of the server's virtual modules
+    await withNitro({ runtimeConfig: { assets: { dir: 'public' } } }, async (nitro) => {
       const prerenderer = {
         options: {
           ...nitro.options,
@@ -61,9 +61,8 @@ describe('nitro config', () => {
       } as unknown as Nitro
       await nitro.hooks.callHook('prerender:init', prerenderer)
 
-      const schema = prerenderer.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] as () => string
-      expect(schema()).toBe(getRuntimeConfigSchemaModule(nuxt, prerenderer))
-      expect(schema()).not.toBe(getRuntimeConfigSchemaModule(nuxt, nitro))
+      expect(getSchema(nitro).p.assets).toEqual({ p: { dir: 's' } })
+      expect(getSchema(prerenderer).p.assets).toEqual({ p: { dir: { a: 's' } } })
     })
   }, 60_000)
 
