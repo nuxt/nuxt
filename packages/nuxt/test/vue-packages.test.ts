@@ -123,7 +123,6 @@ describe('VuePackagesPlugin', async () => {
       },
     })
     await expect(import(pathToFileURL(join(dir, 'entry.js')).href)).resolves.toMatchObject({ nuxt: '1.0.0', ui: '1.0.0', uiReactivity: '1.0.0' })
-    // `nuxt` and `ui` both import `vue`
     expect(pinned.filter(id => id === 'vue')).toHaveLength(cache ? 1 : 2)
   })
 

@@ -13,8 +13,6 @@ type ResolveIdHandler = Extract<NonNullable<Plugin['resolveId']>, { handler: unk
  * with, wherever the importing file is. Used as both a Vite and a Rolldown plugin.
  */
 export function VuePackagesPlugin (packages: VuePackages, { cache = false }: { cache?: boolean } = {}): Plugin {
-  // every import resolves from the pinned importer, so a build can reuse results per specifier. Dev
-  // cannot: an optimised dependency's id changes when Vite re-bundles it
   const resolutions = new WeakMap<object, Map<string, Promise<ResolvedId | null>>>()
   const noEnvironment = {}
   return {
@@ -42,14 +40,12 @@ export function VuePackagesPlugin (packages: VuePackages, { cache = false }: { c
         if (!byEnvironment) {
           resolutions.set(environment, byEnvironment = new Map())
         }
-        // rollup marks a `require` through node-resolve rather than `kind`
         const isRequire = (options.custom?.['node-resolve'] as { isRequire?: boolean } | undefined)?.isRequire
         const key = `${id}\0${options.kind ?? ''}\0${isRequire ? 1 : 0}\0${options.isEntry ? 1 : 0}`
         let resolution = byEnvironment.get(key)
         if (!resolution) {
           byEnvironment.set(key, resolution = resolvePinned.call(this, id, pinnedImporter, options))
         }
-        // a copy each time, so a bundler that updates the object it is given cannot affect other importers
         return resolution.then(resolved => resolved && { ...resolved })
       },
     },
