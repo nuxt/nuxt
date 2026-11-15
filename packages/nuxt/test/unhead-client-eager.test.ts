@@ -13,6 +13,7 @@ describe('UnheadClientEagerPlugin', () => {
   it.each([
     ['/project/node_modules/some-lib/index.js', true],
     ['/project/components/MyComponent.vue', true],
+    ['virtual:nuxt:/project/.nuxt/my-module-plugin.mjs', true],
     ['/project/node_modules/@unhead/vue/dist/scripts.mjs', false],
     ['/project/node_modules/nuxt/dist/head/runtime/composables.js', false],
   ])('should match %s: %s', (id, included) => {

@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { parseAndWalk } from 'oxc-walker'
-import { UNHEAD_TRANSFORM_ID_FILTER } from './unhead-imports.ts'
+import { UNHEAD_EAGER_TRANSFORM_ID_FILTER } from './unhead-imports.ts'
 
 const INJECTING_ENTRIES = new Set(['@unhead/vue', '@unhead/vue/scripts', '@unhead/vue/components', '@unhead/vue/legacy'])
 const PURE_EXPORTS = new Set([
@@ -32,7 +32,7 @@ export const UnheadClientEagerPlugin = (options: UnheadClientEagerPluginOptions)
     name: 'nuxt:head:client-eager',
     transform: {
       filter: {
-        id: UNHEAD_TRANSFORM_ID_FILTER,
+        id: UNHEAD_EAGER_TRANSFORM_ID_FILTER,
         code: { include: /@unhead\/vue/ },
       },
       handler (code, id, meta?: unknown) {
