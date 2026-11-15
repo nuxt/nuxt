@@ -325,9 +325,8 @@ export function getPageComponentNames (pages: NuxtPage[], nuxt = useNuxt()): Map
 const symlinkCache = new WeakMap<Nuxt, { version: number, files: Map<string, boolean> }>()
 
 /**
- * Whether `file` resolves through a symlink. Resolving the real path stats every segment of it,
- * and the route template and page component name transform ask for each page on every page edit,
- * so results are reused until a file is added to or removed from the app.
+ * Whether `file` resolves through a symlink. Every page is checked on each page edit and resolving
+ * stats each path segment, so results are kept until a file is added to or removed from the app.
  */
 function isSymlink (file: string, nuxt: Nuxt): boolean {
   const version = getAppStructureVersion(nuxt)
