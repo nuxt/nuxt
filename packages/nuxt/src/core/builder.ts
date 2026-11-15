@@ -1,7 +1,6 @@
 import { existsSync } from 'node:fs'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
-import { watch as chokidarWatch } from 'chokidar'
 import { createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt, writeTypes } from '@nuxt/kit'
 import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { debounce } from 'perfect-debounce'
@@ -15,6 +14,9 @@ import { cleanupCaches, getVueHash } from './cache.ts'
 import type { Nuxt, NuxtBuilder, NuxtHooks } from 'nuxt/schema'
 
 export async function build (nuxt: Nuxt): Promise<void> {
+  const builderPromise = nuxt.options._prepare ? undefined : resolveBuilder(nuxt)
+  builderPromise?.catch(() => {})
+
   await ensureGeneratedTsConfigs(nuxt)
 
   nuxt._perf?.startPhase('app:generate')
@@ -37,7 +39,7 @@ export async function build (nuxt: Nuxt): Promise<void> {
     await assertNoCircularPluginDependencies(nuxt, app.plugins)
   }
 
-  const builder = nuxt.options._prepare ? undefined : await resolveBuilder(nuxt)
+  const builder = await builderPromise
 
   if (nuxt.options.dev) {
     if (nuxt.options.experimental.watcher === 'builder' && builder?.setupWatcher) {
@@ -197,14 +199,17 @@ async function watch (nuxt: Nuxt) {
     if (success) { return }
   }
 
+  const { watch: chokidarWatch } = await import('chokidar')
   if (nuxt.options.experimental.watcher === 'chokidar') {
-    return createWatcher()
+    return createWatcher(chokidarWatch)
   }
 
-  return createGranularWatcher()
+  return createGranularWatcher(chokidarWatch)
 }
 
-function createWatcher () {
+type ChokidarWatch = typeof import('chokidar').watch
+
+function createWatcher (chokidarWatch: ChokidarWatch) {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
@@ -247,7 +252,7 @@ function createWatcher () {
   })
 }
 
-function createGranularWatcher () {
+function createGranularWatcher (chokidarWatch: ChokidarWatch) {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
