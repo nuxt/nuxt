@@ -5,6 +5,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, onTestFinished, 
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import type { VueWrapper } from '@vue/test-utils'
 import { flushPromises } from '@vue/test-utils'
+import { START_LOCATION } from 'vue-router'
 import { NuxtLayout, NuxtPage } from '#components'
 import layouts from '#build/layouts.mjs'
 
@@ -362,6 +363,25 @@ describe('scrollBehavior with hash on the same page', () => {
     const position = await router.options.scrollBehavior!(router.resolve(`/#${id}`), router.resolve('/'), null)
 
     expect(position).toMatchObject({ el: `#${id}`, top: 50 })
+  })
+})
+
+describe('scrollBehavior on first load', () => {
+  it.each(['/#section', '/about#section'])('should leave the scroll to the hash of the initial route %s to the browser', async (path) => {
+    const router = useRouter()
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const position = await router.options.scrollBehavior!(router.resolve(path), START_LOCATION, null)
+
+    expect(position).toBe(false)
+  })
+
+  it('should scroll to the hash of an initial route reached through a redirect', async () => {
+    const router = useRouter()
+    const to = { ...router.resolve('/about#section'), redirectedFrom: router.resolve('/old') }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const position = await router.options.scrollBehavior!(to, START_LOCATION, null)
+
+    expect(position).toMatchObject({ el: '#section' })
   })
 })
 

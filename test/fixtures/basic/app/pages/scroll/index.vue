@@ -8,5 +8,11 @@
     >
       to other
     </NuxtLink>
+    <h2
+      id="section"
+      style="margin-top: 2000px"
+    >
+      section
+    </h2>
   </div>
 </template>
