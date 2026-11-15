@@ -52,8 +52,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
       filter: {
         id: {
           include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
-          // Vue's own packages declare these composables rather than importing them, so nothing in
-          // them can be tree-shaken, and the runtime core alone is over 280 kB to parse per environment
+          // Vue's own packages declare these composables rather than import them, so there is nothing to tree-shake
           exclude: [VUE_NON_SCRIPT_BLOCK_RE, VUE_RUNTIME_RE],
         },
         code: { include: new RegExp(`\\b(?:${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\b`) },

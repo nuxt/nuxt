@@ -15,8 +15,8 @@ describe('tree-shake', () => {
   }).raw({}, {} as any)
 
   it('does not send vue\'s own packages to the transform', () => {
-    const [include, exclude] = [transformPlugin.transform.filter.id.include, transformPlugin.transform.filter.id.exclude]
-    const reaches = (id: string) => include.some((re: RegExp) => re.test(id)) && !exclude.some((re: RegExp) => re.test(id))
+    const { include, exclude } = transformPlugin.transform.filter.id
+    const reaches = (id: string) => [include].flat().some((re: RegExp) => re.test(id)) && ![exclude].flat().some((re: RegExp) => re.test(id))
     expect(reaches('/app/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js')).toBe(false)
     expect(reaches('C:\\app\\node_modules\\@vue\\reactivity\\dist\\reactivity.esm-bundler.js')).toBe(false)
     expect(reaches('/app/node_modules/vue/dist/vue.runtime.esm-bundler.js')).toBe(false)
