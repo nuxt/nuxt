@@ -22,7 +22,8 @@ export function combineRE (patterns: RegExp[]): RegExp {
   return new RegExp(patterns.map(re => `(?:${re.source})`).join('|'))
 }
 
-const VUE_FILE_RE = /\.vue$/
+/** Matches the module of a whole `.vue` file, not its SFC block or macro requests. */
+export const VUE_FILE_RE = /\.vue$/
 const MACRO_QUERY_RE = /[?&]macro=/
 const EXACT_MACRO_QUERY_RE = /\?macro=true$/
 const VUE_QUERY_RE = /[?&]vue(?:&|$)/

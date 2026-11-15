@@ -3,6 +3,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { normalize } from 'pathe'
+import escapeStringRegexp from 'escape-string-regexp'
 import type { NuxtAppLiterals, PluginMeta } from '../../app/types.ts'
 
 import { ScopeTracker, walk } from 'oxc-walker'
@@ -225,98 +226,111 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, co
   return meta
 }
 
+const DRIVE_LETTER_RE = /^([a-z]):/i
+
+function toPluginIdPattern (src: string) {
+  return escapeStringRegexp(src)
+    .replace(/\//g, '[\\\\/]')
+    .replace(DRIVE_LETTER_RE, (_, letter: string) => `[${letter.toUpperCase()}${letter.toLowerCase()}]:`)
+}
+
 export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) => createUnplugin(() => {
+  const plugins = nuxt.apps.default?.plugins ?? []
   return {
     name: `nuxt:remove-plugin-metadata:${mode}`,
-    transform (code, id, meta?: unknown) {
-      id = normalize(id)
-      const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
-      if (!plugin) { return }
+    transform: {
+      // the plugin list is final once a build creates its bundler plugins, but dev can still add plugins
+      ...(!nuxt.options.dev && { filter: { id: new RegExp(`^(?:${plugins.map(p => toPluginIdPattern(p.src)).join('|')})$`) } }),
+      handler (code, id, meta?: unknown) {
+        id = normalize(id)
+        const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
+        if (!plugin) { return }
 
-      const filteredDependencies = pluginDependenciesByMode.get(nuxt)?.[mode]?.get(id)
+        const filteredDependencies = pluginDependenciesByMode.get(nuxt)?.[mode]?.get(id)
 
-      if (!code.trim()) {
-        pluginDiagnostics.NUXT_B2004({ src: linkToAlias(plugin.src, nuxt) })
+        if (!code.trim()) {
+          pluginDiagnostics.NUXT_B2004({ src: linkToAlias(plugin.src, nuxt) })
 
-        return {
-          code: 'export default () => {}',
-          map: null,
-        }
-      }
-
-      let parsed: ReturnType<typeof parseModule>
-      try {
-        parsed = parseModule(code, id)
-      } catch (e) {
-        pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
-        return
-      }
-
-      const hasDefaultExport = parsed.module.staticExports.some(statement => statement.entries.some(entry => !entry.isType && (entry.exportName.kind === 'Default' || entry.exportName.name === 'default')))
-      if (!hasDefaultExport) {
-        pluginDiagnostics.NUXT_B2005({ src: linkToAlias(plugin.src, nuxt) })
-        return {
-          code: 'export default () => {}',
-          map: null,
-        }
-      }
-
-      const s = rolldownString(code, id, meta)
-      let wrapped = false
-      const wrapperNames = new Set(PLUGIN_WRAPPERS)
-
-      try {
-        walk(parsed.program, { enter: (node) => {
-          if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && PLUGIN_WRAPPERS.has(node.imported.name)) {
-            wrapperNames.add(node.local.name)
+          return {
+            code: 'export default () => {}',
+            map: null,
           }
-          if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
+        }
 
-          const name = 'name' in node.callee && node.callee.name
-          if (!name || !wrapperNames.has(name)) { return }
-          wrapped = true
+        let parsed: ReturnType<typeof parseModule>
+        try {
+          parsed = parseModule(code, id)
+        } catch (e) {
+          pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
+          return
+        }
 
-          // Remove metadata that already has been extracted
-          const removeExtractedMetadata = 'order' in plugin || 'name' in plugin
-          if (!filteredDependencies && !removeExtractedMetadata) { return }
-          for (const [argIndex, wrappedArg] of node.arguments.entries()) {
-            const arg = unwrapExpression(wrappedArg)
-            if (arg.type !== 'ObjectExpression') { continue }
+        const hasDefaultExport = parsed.module.staticExports.some(statement => statement.entries.some(entry => !entry.isType && (entry.exportName.kind === 'Default' || entry.exportName.name === 'default')))
+        if (!hasDefaultExport) {
+          pluginDiagnostics.NUXT_B2005({ src: linkToAlias(plugin.src, nuxt) })
+          return {
+            code: 'export default () => {}',
+            map: null,
+          }
+        }
 
-            for (const [propertyIndex, property] of arg.properties.entries()) {
-              if (property.type === 'SpreadElement' || !('name' in property.key)) { continue }
+        const s = rolldownString(code, id, meta)
+        let wrapped = false
+        const wrapperNames = new Set(PLUGIN_WRAPPERS)
 
-              const propertyKey = property.key.name
-              if (propertyKey === 'dependsOn' && filteredDependencies) {
-                const value = unwrapExpression(property.value)
-                const dependencies = value.type === 'ArrayExpression' ? value.elements.map(element => element?.type === 'Literal' && typeof element.value === 'string' ? element.value : null) : []
-                if (value.type !== 'ArrayExpression' || dependencies.length !== filteredDependencies.length || dependencies.some((dependency, index) => dependency !== filteredDependencies[index])) {
-                  if (property.shorthand) {
-                    s.overwrite(property.start, property.end, `dependsOn: ${JSON.stringify(filteredDependencies)}`)
-                  } else {
-                    s.overwrite(property.value.start, property.value.end, JSON.stringify(filteredDependencies))
+        try {
+          walk(parsed.program, { enter: (node) => {
+            if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && PLUGIN_WRAPPERS.has(node.imported.name)) {
+              wrapperNames.add(node.local.name)
+            }
+            if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
+
+            const name = 'name' in node.callee && node.callee.name
+            if (!name || !wrapperNames.has(name)) { return }
+            wrapped = true
+
+            // Remove metadata that already has been extracted
+            const removeExtractedMetadata = 'order' in plugin || 'name' in plugin
+            if (!filteredDependencies && !removeExtractedMetadata) { return }
+            for (const [argIndex, wrappedArg] of node.arguments.entries()) {
+              const arg = unwrapExpression(wrappedArg)
+              if (arg.type !== 'ObjectExpression') { continue }
+
+              for (const [propertyIndex, property] of arg.properties.entries()) {
+                if (property.type === 'SpreadElement' || !('name' in property.key)) { continue }
+
+                const propertyKey = property.key.name
+                if (propertyKey === 'dependsOn' && filteredDependencies) {
+                  const value = unwrapExpression(property.value)
+                  const dependencies = value.type === 'ArrayExpression' ? value.elements.map(element => element?.type === 'Literal' && typeof element.value === 'string' ? element.value : null) : []
+                  if (value.type !== 'ArrayExpression' || dependencies.length !== filteredDependencies.length || dependencies.some((dependency, index) => dependency !== filteredDependencies[index])) {
+                    if (property.shorthand) {
+                      s.overwrite(property.start, property.end, `dependsOn: ${JSON.stringify(filteredDependencies)}`)
+                    } else {
+                      s.overwrite(property.value.start, property.value.end, JSON.stringify(filteredDependencies))
+                    }
                   }
                 }
-              }
-              if (removeExtractedMetadata && (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name')) {
-                const nextNode = arg.properties[propertyIndex + 1] || node.arguments[argIndex + 1]
-                const nextIndex = nextNode?.start || (arg.end - 1)
+                if (removeExtractedMetadata && (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name')) {
+                  const nextNode = arg.properties[propertyIndex + 1] || node.arguments[argIndex + 1]
+                  const nextIndex = nextNode?.start || (arg.end - 1)
 
-                s.remove(property.start, nextIndex)
+                  s.remove(property.start, nextIndex)
+                }
               }
             }
-          }
-        } })
-      } catch (e) {
-        pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
-        return
-      }
+          } })
+        } catch (e) {
+          pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
+          return
+        }
 
-      if (!wrapped) {
-        pluginDiagnostics.NUXT_B2007({ src: linkToAlias(plugin.src, nuxt) })
-      }
+        if (!wrapped) {
+          pluginDiagnostics.NUXT_B2007({ src: linkToAlias(plugin.src, nuxt) })
+        }
 
-      return generateTransform(s, id)
+        return generateTransform(s, id)
+      },
     },
   }
 })
