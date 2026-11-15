@@ -3,7 +3,6 @@ import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Plugin, ResolvedConfig } from 'vite'
 import { resolveClientEntry } from '../utils/config.ts'
 
-/** Matches no module id, so the transform stays on the native side until the entry is known. */
 const NO_MATCH_RE = /^$/
 
 /** Import `specifier` at the top of the client entry, when `isEnabled` is true for the resolved config. */

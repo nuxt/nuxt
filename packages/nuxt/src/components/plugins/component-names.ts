@@ -19,7 +19,6 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
     enforce: 'post',
     transform: {
       filter: {
-        // only a component's own module, never its SFC block or macro requests, has a component file path
         id: { include: [VUE_FILE_RE, SX_RE] },
       },
       handler (code, id, meta?: unknown) {

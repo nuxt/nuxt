@@ -6,7 +6,6 @@ interface IdFilter { exclude: RegExp[] }
 
 describe('RuntimePathsPlugin', () => {
   const { filter, handler } = RuntimePathsPlugin().transform as { filter: { id: IdFilter, code: RegExp }, handler: (code: string, id: string) => { code: string } | undefined }
-  // the bundler only calls the handler for modules matching the filter
   const transform = (code: string, id: string) => !filter.id.exclude.some(re => re.test(id)) && filter.code.test(code) ? handler(code, id)?.code : undefined
 
   it('imports runtime paths into modules that reference vite assets', () => {
