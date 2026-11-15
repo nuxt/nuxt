@@ -7,6 +7,8 @@ import { link } from 'clickable-path'
 import { colors } from 'consola/utils'
 import type { NuxtHookRegistry } from '@nuxt/schema'
 import type { Nuxt, NuxtHooks } from 'nuxt/schema'
+import { HookCpuTracker } from './perf-cpu.ts'
+import type { CpuOwner } from './perf-cpu.ts'
 
 interface MemorySnapshot {
   rss: number
@@ -40,6 +42,14 @@ interface OpenPhase {
   memoryBefore: MemorySnapshot
 }
 
+/** A stretch of time in which at least one hook call had yielded and not yet settled. */
+interface WaitingWindow {
+  startTime: number
+  endTime: number
+  /** How long the event loop was idle in the window. */
+  idle: number
+}
+
 interface ModuleTiming {
   name: string
   setupTime: number
@@ -50,14 +60,37 @@ interface PluginHookTiming {
   count: number
   maxTime: number
   avgTime: number
+  /**
+   * Part of `totalTime` in which the main thread was idle or running other hooks' calls before
+   * they first yielded: a lower bound on the time the hook spent waiting rather than working.
+   * With `bundlerPluginWaiting: 'cpu'`, `totalTime` minus `cpuTime`.
+   */
+  waitingTime: number
+  /** Time the main thread spent running the hook's own code, with `bundlerPluginWaiting: 'cpu'`. */
+  cpuTime?: number
 }
 
 interface HookTiming {
   totalTime: number
+  waitingTime: number
   count: number
   maxTime: number
   running: number
   runningSince: number
+  waitingSince: number
+  /** Time spent in calls of this hook before they first yielded to the event loop. */
+  turnTime: number
+  /** Timings from start to settle, against the time the hook's own code ran. */
+  cpu?: { time: number, totalTime: number, maxTime: number, running: number, runningSince: number }
+}
+
+/** The task a hook call started in, until it first yields to the event loop. */
+interface Turn {
+  timing: HookTiming
+  startTime: number
+  endTime?: number
+  /** Another hook call ran in the same task, so the time cannot be told apart. */
+  shared: boolean
 }
 
 interface PluginSpan {
@@ -66,6 +99,7 @@ interface PluginSpan {
   startTime: number
   endTime: number
   durationMs: number
+  waitingMs: number
 }
 
 interface PerfReport {
@@ -83,11 +117,18 @@ interface PerfReport {
     retainedHeap?: number
     unfinished?: boolean
     memoryUnmeasured?: boolean
+    /** Share of the time the main thread was busy while bundler plugin hooks were waiting. */
+    eventLoopUtilization?: number
   }>
   /** Time inside `totalDuration` that no phase covers. */
   unattributedDuration: number
   modules: ModuleTiming[]
   bundlerPlugins: Array<{ name: string, hooks: Record<string, PluginHookTiming> }>
+  /**
+   * How `waitingTime` was measured: `lower-bound` from time other work was known to run, or `cpu`
+   * from each call's time between start and settle minus the time its own code ran.
+   */
+  bundlerPluginWaiting: 'lower-bound' | 'cpu'
   timestamp: string
 }
 
@@ -105,6 +146,9 @@ interface TraceEvent {
 }
 
 const hasGC = typeof globalThis.gc === 'function'
+
+/** Hooks waiting for at least this share of their time are marked as waiting. */
+const WAITING_SHARE = 0.5
 
 function getMemorySnapshot (): MemorySnapshot {
   const mem = process.memoryUsage()
@@ -157,12 +201,18 @@ function isReadonlyProperty (target: object, key: PropertyKey) {
   return !!descriptor && !descriptor.configurable && !descriptor.writable
 }
 
-function startRunning (timing: HookTiming, now: number) {
-  if (timing.running++ === 0) { timing.runningSince = now }
+function startRunning (timing: HookTiming, now: number, othersTime: number) {
+  if (timing.running++ === 0) {
+    timing.runningSince = now
+    timing.waitingSince = othersTime
+  }
 }
 
-function stopRunning (timing: HookTiming, now: number) {
-  if (--timing.running === 0) { timing.totalTime += now - timing.runningSince }
+function stopRunning (timing: HookTiming, now: number, othersTime: number) {
+  if (--timing.running === 0) {
+    timing.totalTime += now - timing.runningSince
+    timing.waitingTime += othersTime - timing.waitingSince
+  }
 }
 
 function contains (outer: { startTime: number, endTime: number }, inner: { startTime: number, endTime: number }) {
@@ -181,25 +231,41 @@ function coveredDuration (phases: PerfPhase[]): number {
   return covered
 }
 
-/** How long each phase was the innermost one running: the latest to start, then the first to end. */
+/** The innermost phase running throughout `start` to `end`: the latest to start, then the first to end. */
+function innermostPhase (phases: PerfPhase[], start: number, end: number): PerfPhase | undefined {
+  let innermost: PerfPhase | undefined
+  for (const phase of phases) {
+    if (phase.startTime > start || phase.endTime < end) { continue }
+    if (!innermost || phase.startTime > innermost.startTime || (phase.startTime === innermost.startTime && phase.endTime <= innermost.endTime)) {
+      innermost = phase
+    }
+  }
+  return innermost
+}
+
+/** How long each phase was the innermost one running. */
 function exclusiveDurations (phases: PerfPhase[]): Map<PerfPhase, number> {
   const durations = new Map(phases.map(phase => [phase, 0]))
   const times = [...new Set(phases.flatMap(phase => [phase.startTime, phase.endTime]))].sort((a, b) => a - b)
   for (let i = 0; i < times.length - 1; i++) {
     const start = times[i]!
     const end = times[i + 1]!
-    let innermost: PerfPhase | undefined
-    for (const phase of phases) {
-      if (phase.startTime > start || phase.endTime < end) { continue }
-      if (!innermost || phase.startTime > innermost.startTime || (phase.startTime === innermost.startTime && phase.endTime <= innermost.endTime)) {
-        innermost = phase
-      }
-    }
+    const innermost = innermostPhase(phases, start, end)
     if (innermost) {
       durations.set(innermost, durations.get(innermost)! + end - start)
     }
   }
   return durations
+}
+
+function eventLoopUtilization (windows: WaitingWindow[]): number | undefined {
+  let duration = 0
+  let idle = 0
+  for (const window of windows) {
+    duration += window.endTime - window.startTime
+    idle += window.idle
+  }
+  return duration > 0 ? round(Math.min(1, Math.max(0, 1 - idle / duration))) : undefined
 }
 
 /** Sub-phases are listed under Details, and their time stays in the row of the phase they run in. */
@@ -226,6 +292,16 @@ export class NuxtPerfProfiler {
   #modules: ModuleTiming[] = []
   #bundlerPluginTimings = new Map<string, Map<string, HookTiming>>()
   #bundlerPluginSpans: PluginSpan[] = []
+  #turn?: Turn
+  #turnTime = 0
+  // `async_hooks` is discouraged by Node and slows every `await` while enabled; work from resources
+  // created outside a hook call (shared emitters, bundler glue) or on other threads is not
+  // attributed, and times are wall-clock slices of the main thread. `NUXT_DEBUG_PERF_CPU=0` is an
+  // internal, unsupported opt-out to the lower bound.
+  #cpu = process.env.NUXT_DEBUG_PERF_CPU === '0' ? undefined : new HookCpuTracker()
+  #waitingCalls = 0
+  #waitingWindow?: { startTime: number, idleBefore: number }
+  #waitingWindows: WaitingWindow[] = []
   #globalStart: number
   #globalMemoryBefore: MemorySnapshot
   #unsubscribe?: () => void
@@ -289,7 +365,7 @@ export class NuxtPerfProfiler {
 
   installHookInterceptors (hooks: NuxtHookRegistry<NuxtHooks>): void {
     const unsubBefore = hooks.beforeEach((event) => {
-      this.#hookStartStack.push({ name: event.name, startTime: performance.now(), memoryBefore: getMemorySnapshot() })
+      this.#hookStartStack.push(this.#open(event.name))
     })
 
     const unsubAfter = hooks.afterEach((event) => {
@@ -305,7 +381,7 @@ export class NuxtPerfProfiler {
   }
 
   startPhase (name: string): void {
-    this.#phaseStack.push({ name, startTime: performance.now(), memoryBefore: getMemorySnapshot() })
+    this.#phaseStack.push(this.#open(name))
   }
 
   endPhase (name?: string): void {
@@ -324,8 +400,15 @@ export class NuxtPerfProfiler {
     this.#phases.push(phase)
   }
 
+  #open (name: string): OpenPhase {
+    const startTime = performance.now()
+    this.#splitWaitingWindow(startTime)
+    return { name, startTime, memoryBefore: getMemorySnapshot() }
+  }
+
   #close (open: OpenPhase): PerfPhase {
     const endTime = performance.now()
+    this.#splitWaitingWindow(endTime)
     const memoryAfter = getMemorySnapshot()
     return {
       name: open.name,
@@ -338,6 +421,50 @@ export class NuxtPerfProfiler {
     }
   }
 
+  #startWaiting () {
+    if (this.#waitingCalls++ === 0) {
+      this.#waitingWindow = { startTime: performance.now(), idleBefore: performance.eventLoopUtilization().idle }
+    }
+  }
+
+  #stopWaiting (now: number) {
+    if (--this.#waitingCalls === 0) {
+      this.#splitWaitingWindow(now)
+      this.#waitingWindow = undefined
+    }
+  }
+
+  /** Ends the current waiting window at `now` and starts the next, so no window spans a phase boundary. */
+  #splitWaitingWindow (now: number) {
+    const window = this.#waitingWindow
+    if (!window) { return }
+    const idle = performance.eventLoopUtilization().idle
+    this.#waitingWindows.push({ startTime: window.startTime, endTime: now, idle: idle - window.idleBefore })
+    this.#waitingWindow = { startTime: now, idleBefore: idle }
+  }
+
+  #getWaitingWindows (now: number): WaitingWindow[] {
+    const window = this.#waitingWindow
+    return window
+      ? [...this.#waitingWindows, { startTime: window.startTime, endTime: now, idle: performance.eventLoopUtilization().idle - window.idleBefore }]
+      : this.#waitingWindows
+  }
+
+  /** Time the main thread has spent idle or in the turns of other hooks' calls. */
+  #othersTime (timing: HookTiming): number {
+    return performance.eventLoopUtilization().idle + this.#turnTime - timing.turnTime
+  }
+
+  #closeTurn (turn: Turn) {
+    if (this.#turn !== turn) { return }
+    this.#turn = undefined
+    if (!turn.shared) {
+      const duration = (turn.endTime ?? performance.now()) - turn.startTime
+      turn.timing.turnTime += duration
+      this.#turnTime += duration
+    }
+  }
+
   #hookTiming (pluginName: string, hookName: string): HookTiming {
     let plugin = this.#bundlerPluginTimings.get(pluginName)
     if (!plugin) {
@@ -346,15 +473,15 @@ export class NuxtPerfProfiler {
     }
     let timing = plugin.get(hookName)
     if (!timing) {
-      timing = { totalTime: 0, count: 0, maxTime: 0, running: 0, runningSince: 0 }
+      timing = { totalTime: 0, waitingTime: 0, count: 0, maxTime: 0, running: 0, runningSince: 0, waitingSince: 0, turnTime: 0 }
       plugin.set(hookName, timing)
     }
     return timing
   }
 
-  #recordSpan (pluginName: string, hookName: string, durationMs: number, startTime: number, endTime: number) {
+  #recordSpan (pluginName: string, hookName: string, durationMs: number, startTime: number, endTime: number, waitingMs = 0) {
     if (endTime - startTime > 0.1) {
-      this.#bundlerPluginSpans.push({ pluginName, hookName, startTime, endTime, durationMs })
+      this.#bundlerPluginSpans.push({ pluginName, hookName, startTime, endTime, durationMs, waitingMs })
     }
   }
 
@@ -374,12 +501,34 @@ export class NuxtPerfProfiler {
    * Time spent awaiting `this.resolve()` or `this.load()` is left out, as those calls run other
    * plugins' hooks, which are recorded separately. Calls of the same hook that overlap are
    * counted once, so its total time never exceeds the wall-clock time it was running.
+   *
+   * While the hook is running, time in which the main thread was idle or running other hooks'
+   * calls before they first yielded is recorded as time it was waiting.
    */
   timeBundlerHook<T> (pluginName: string, hookName: string, ctx: unknown, run: (ctx: any) => T): T {
     const timing = this.#hookTiming(pluginName, hookName)
+    let owner: CpuOwner | undefined
+    if (this.#cpu?.enable()) {
+      owner = this.#cpu.createOwner()
+      timing.cpu ??= { time: 0, totalTime: 0, maxTime: 0, running: 0, runningSince: 0 }
+    }
     const start = performance.now()
+    if (owner && timing.cpu!.running++ === 0) { timing.cpu!.runningSince = start }
+    let othersSince = this.#othersTime(timing)
+    let waiting = 0
     timing.count++
-    startRunning(timing, start)
+    startRunning(timing, start, othersSince)
+    let turn: Turn | undefined
+    if (this.#turn) {
+      this.#turn.shared = true
+    } else {
+      turn = this.#turn = { timing, startTime: start, shared: false }
+    }
+    const stop = (now: number) => {
+      const othersTime = this.#othersTime(timing)
+      waiting += othersTime - othersSince
+      stopRunning(timing, now, othersTime)
+    }
     let done = false
     // parallel calls overlap, so subtract how long at least one of them was pending
     let pending = 0
@@ -389,7 +538,7 @@ export class NuxtPerfProfiler {
     let sync = true
     const pause = () => {
       pendingSince = performance.now()
-      if (!done) { stopRunning(timing, pendingSince) }
+      if (!done) { stop(pendingSince) }
     }
     const leaveSync = () => {
       sync = false
@@ -399,7 +548,10 @@ export class NuxtPerfProfiler {
       if (--pending > 0 || sync) { return }
       const now = performance.now()
       nested += now - pendingSince
-      if (!done) { startRunning(timing, now) }
+      if (!done) {
+        othersSince = this.#othersTime(timing)
+        startRunning(timing, now, othersSince)
+      }
     }
     const proxy = ctx && typeof ctx === 'object'
       ? new Proxy(ctx, {
@@ -425,21 +577,47 @@ export class NuxtPerfProfiler {
       const end = performance.now()
       const duration = end - start - nested - (pending > 0 ? end - pendingSince : 0)
       done = true
-      if (pending === 0) { stopRunning(timing, end) }
+      if (pending === 0) { stop(end) }
+      if (turn) { turn.endTime ??= end }
       timing.maxTime = Math.max(timing.maxTime, duration)
-      this.#recordSpan(pluginName, hookName, duration, start, end)
+      if (owner) {
+        owner.done = true
+        const cpu = timing.cpu!
+        cpu.time += owner.cpuTime
+        cpu.maxTime = Math.max(cpu.maxTime, end - start)
+        if (--cpu.running === 0) { cpu.totalTime += end - cpu.runningSince }
+        this.#recordSpan(pluginName, hookName, end - start, start, end, Math.max(0, end - start - owner.cpuTime))
+      } else {
+        this.#recordSpan(pluginName, hookName, duration, start, end, waiting)
+      }
+      return end
     }
     try {
-      const result = run(proxy)
+      const result = owner ? this.#cpu!.run(owner, () => run(proxy)) : run(proxy)
       leaveSync()
       if (result && typeof result === 'object' && 'then' in result) {
-        return (result as unknown as Promise<unknown>).finally(record) as T
+        let yielded = false
+        const leaveTurn = () => {
+          if (turn) { this.#closeTurn(turn) }
+          if (!done) {
+            yielded = true
+            this.#startWaiting()
+          }
+        }
+        // a tick queued from a microtask runs once the microtask queue is empty, when the hook has yielded
+        queueMicrotask(() => process.nextTick(leaveTurn))
+        return (result as unknown as Promise<unknown>).finally(() => {
+          const end = record()
+          if (yielded) { this.#stopWaiting(end) }
+        }) as T
       }
       record()
+      if (turn) { this.#closeTurn(turn) }
       return result
     } catch (err) {
       leaveSync()
       record()
+      if (turn) { this.#closeTurn(turn) }
       throw err
     }
   }
@@ -469,6 +647,16 @@ export class NuxtPerfProfiler {
     const topPhases = allPhases.filter(p => !isSubPhase(p.name))
     const ownTimes = exclusiveDurations(topPhases)
     const subPhaseOwnTimes = exclusiveDurations(allPhases)
+    const ownWaitingWindows = new Map<PerfPhase, WaitingWindow[]>()
+    for (const window of this.#getWaitingWindows(now)) {
+      const phase = innermostPhase(topPhases, window.startTime, window.endTime)
+      const windows = phase && ownWaitingWindows.get(phase)
+      if (windows) {
+        windows.push(window)
+      } else if (phase) {
+        ownWaitingWindows.set(phase, [window])
+      }
+    }
 
     // own memory excludes direct children (phases nested in this one but in no other child)
     function computeOwn (phase: PerfPhase) {
@@ -490,7 +678,7 @@ export class NuxtPerfProfiler {
       }
     }
 
-    const hookTotal = (hooks: Record<string, PluginHookTiming>) => Object.values(hooks).reduce((s, h) => s + h.totalTime, 0)
+    const hookTotal = (hooks: Record<string, PluginHookTiming>) => Object.values(hooks).reduce((s, h) => s + h.totalTime - h.waitingTime, 0)
 
     return {
       totalDuration,
@@ -506,6 +694,7 @@ export class NuxtPerfProfiler {
         retainedHeap: p.retainedMemory?.heapUsed,
         unfinished: p.unfinished,
         memoryUnmeasured: p.memoryUnmeasured,
+        eventLoopUtilization: eventLoopUtilization(ownWaitingWindows.get(p) ?? []),
       })),
       unattributedDuration: round(Math.max(0, totalDuration - coveredDuration(topPhases))),
       modules: this.#modules.toSorted((a, b) => b.setupTime - a.setupTime),
@@ -513,16 +702,27 @@ export class NuxtPerfProfiler {
         .map(([name, hookMap]) => {
           const hooks: Record<string, PluginHookTiming> = {}
           for (const [hookName, t] of hookMap) {
-            hooks[hookName] = {
-              totalTime: round(t.totalTime),
-              count: t.count,
-              maxTime: round(t.maxTime),
-              avgTime: round(t.totalTime / t.count),
-            }
+            hooks[hookName] = t.cpu
+              ? {
+                  totalTime: round(t.cpu.totalTime),
+                  count: t.count,
+                  maxTime: round(t.cpu.maxTime),
+                  avgTime: round(t.cpu.totalTime / t.count),
+                  waitingTime: round(Math.max(0, t.cpu.totalTime - t.cpu.time)),
+                  cpuTime: round(Math.min(t.cpu.time, t.cpu.totalTime)),
+                }
+              : {
+                  totalTime: round(t.totalTime),
+                  count: t.count,
+                  maxTime: round(t.maxTime),
+                  avgTime: round(t.totalTime / t.count),
+                  waitingTime: round(Math.min(t.waitingTime, t.totalTime)),
+                }
           }
           return { name, hooks }
         })
         .sort((a, b) => hookTotal(b.hooks) - hookTotal(a.hooks)),
+      bundlerPluginWaiting: this.#cpu?.used ? 'cpu' : 'lower-bound',
       timestamp: new Date().toISOString(),
     }
   }
@@ -538,10 +738,12 @@ export class NuxtPerfProfiler {
     consola.log('')
 
     const showRetained = report.hasGCSnapshots
-    const columns = [24, 10, 14, 14, ...showRetained ? [16] : []]
+    const showBusy = topPhases.some(p => p.eventLoopUtilization != null)
+    const headers = ['Phase', 'Duration', ...showBusy ? ['Main Thread'] : [], 'RSS Delta', 'Heap Delta', ...showRetained ? ['Retained Heap'] : []]
+    const columns = [24, 10, ...showBusy ? [11] : [], 14, 14, ...showRetained ? [16] : []]
     const row = (cells: string[]) => cells.map((cell, i) => pad(cell, columns[i]!, i ? 'right' : 'left')).join('  ')
 
-    consola.log(`  ${row(['Phase', 'Duration', 'RSS Delta', 'Heap Delta', 'Retained Heap'].slice(0, columns.length).map(h => colors.bold(h)))}`)
+    consola.log(`  ${row(headers.map(h => colors.bold(h)))}`)
     const separator = '  ' + colors.dim('─'.repeat(columns.reduce((sum, width) => sum + width + 2, -2)))
     consola.log(separator)
 
@@ -560,9 +762,11 @@ export class NuxtPerfProfiler {
       const durColor = thresholdColor(dur, 1000, 200, colors.green)
       const memColor = thresholdColor(Math.abs(rss), 50 * 1024 * 1024, 10 * 1024 * 1024, colors.green)
 
+      const busy = phase.eventLoopUtilization
       const cells = [
         phase.name,
         durColor(formatDuration(dur)),
+        ...showBusy ? [busy == null ? '' : thresholdColor(busy, 0.95, 0.8)(`${Math.round(busy * 100)}%`)] : [],
         phase.memoryUnmeasured ? colors.dim('-') : memColor(formatSignedBytes(rss)),
         phase.memoryUnmeasured ? colors.dim('-') : formatSignedBytes(phase.ownMemoryDelta.heapUsed),
       ]
@@ -581,9 +785,13 @@ export class NuxtPerfProfiler {
     consola.log(`  ${row([
       'Total',
       formatDuration(report.totalDuration),
+      ...showBusy ? [''] : [],
       formatSignedBytes(report.totalMemoryDelta.rss),
       formatSignedBytes(report.totalMemoryDelta.heapUsed),
     ].map(c => colors.bold(c)))}`)
+    if (showBusy) {
+      consola.log(colors.dim('  Main Thread: how busy the main thread was while bundler plugin hooks were waiting'))
+    }
     if (!showRetained) {
       consola.log(colors.dim('  Tip: run with NODE_OPTIONS=--expose-gc to see retained heap per phase'))
     }
@@ -603,15 +811,40 @@ export class NuxtPerfProfiler {
       .filter(m => m.setupTime > 5)
       .map(m => `${m.name} ${colors.dim('-')} ${thresholdColor(m.setupTime, 500, 100)(formatDuration(m.setupTime))}`))
 
-    printList('Bundler Plugins', report.bundlerPlugins
-      .flatMap(plugin => Object.entries(plugin.hooks).map(([hook, timing]) => ({ plugin: plugin.name, hook, timing })))
-      .filter(({ timing }) => timing.avgTime > 0.5)
-      .sort((a, b) => b.timing.avgTime - a.timing.avgTime)
+    const pluginHooks = report.bundlerPlugins
+      .flatMap(plugin => Object.entries(plugin.hooks).map(([hook, timing]) => ({
+        plugin: plugin.name,
+        hook,
+        timing,
+        ownTime: timing.totalTime - timing.waitingTime,
+        waiting: timing.waitingTime >= timing.totalTime * WAITING_SHARE,
+      })))
+      .filter(({ ownTime }) => ownTime > 5)
+      .sort((a, b) => b.ownTime - a.ownTime)
       .slice(0, 15)
-      .map(({ plugin, hook, timing }) => {
-        const maxLabel = timing.maxTime > timing.avgTime * 2 ? `, max ${formatDuration(timing.maxTime)}` : ''
-        return `${plugin} ${colors.dim(hook)} ${colors.dim('-')} ${thresholdColor(timing.avgTime, 10, 2)(formatDuration(timing.avgTime) + '/file')}${colors.dim(maxLabel)} ${colors.dim(`(${timing.count} calls)`)}`
-      }))
+    printList('Bundler Plugins', pluginHooks.map(({ plugin, hook, timing, ownTime, waiting }) => {
+      const own = formatDuration(ownTime)
+      const total = formatDuration(timing.totalTime)
+      const details = [
+        timing.count > 1 ? `${timing.count} calls, ${formatDuration(timing.avgTime)}/file` : '1 call',
+        ...timing.count > 1 && timing.maxTime > timing.avgTime * 2 ? [`max ${formatDuration(timing.maxTime)}`] : [],
+        ...total !== own ? [`${total} total`] : [],
+      ]
+      const ownColor = waiting ? colors.dim : thresholdColor(ownTime, 1000, 200)
+      return `${plugin} ${colors.dim(hook)} ${colors.dim('-')} ${ownColor(own)} ${colors.dim(`(${details.join(', ')})`)}${waiting ? ` ${colors.dim('- waiting')}` : ''}`
+    }))
+    if (pluginHooks.length) {
+      const cpu = report.bundlerPluginWaiting === 'cpu'
+      consola.log(colors.dim(cpu
+        ? '  Hooks are listed by the time the main thread spent running their own code.'
+        : '  Hooks are listed by total time, leaving out a lower bound of the time they were waiting.'))
+      if (pluginHooks.some(h => h.waiting)) {
+        consola.log(colors.dim(cpu
+          ? '  waiting: for at least half its time the hook was not running its own code'
+          : '  waiting: for at least half its time the main thread was idle or running other hooks; unmarked hooks may also have been waiting'))
+      }
+      consola.log('')
+    }
 
     printList('Details', subPhases
       .filter(p => p.duration > 5)
@@ -629,6 +862,7 @@ export class NuxtPerfProfiler {
 
     const globalEnd = performance.now()
     const phases = this.#getPhases(globalEnd)
+    const waitingWindows = this.#getWaitingWindows(globalEnd)
     const toUs = (ms: number) => Math.round(ms * 1000 + this.#baseTs)
     const threadName = (tid: number, name: string): TraceEvent => ({ name: 'thread_name', ph: 'M', ts: 0, pid, tid, cat: '', args: { name } })
     const span = (name: string, cat: string, tid: number, start: number, end: number, args?: { begin?: Record<string, unknown>, end?: Record<string, unknown> }): TraceEvent[] => [
@@ -648,7 +882,10 @@ export class NuxtPerfProfiler {
         ? undefined
         : {
             begin: { memoryBefore: { rss: phase.memoryBefore.rss, heapUsed: phase.memoryBefore.heapUsed } },
-            end: { memoryDelta: phase.memoryDelta },
+            end: {
+              memoryDelta: phase.memoryDelta,
+              eventLoopUtilization: eventLoopUtilization(waitingWindows.filter(window => contains(phase, window))),
+            },
           }))
     }
 
@@ -674,7 +911,7 @@ export class NuxtPerfProfiler {
           dur: Math.round((span.endTime - span.startTime) * 1000),
           pid,
           tid: baseTid + lane,
-          args: { durationMs: round(span.durationMs) },
+          args: { durationMs: round(span.durationMs), ...span.waitingMs > 0 && { waitingMs: round(Math.min(span.waitingMs, span.durationMs)) } },
         })
       }
       for (let i = 0; i < laneEnds.length; i++) {
@@ -736,6 +973,7 @@ export class NuxtPerfProfiler {
   }
 
   dispose (): void {
+    this.#cpu?.disable()
     this.#unsubscribe?.()
   }
 }
