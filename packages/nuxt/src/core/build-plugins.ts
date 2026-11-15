@@ -49,6 +49,7 @@ export function addCoreBuildPlugins (nuxt: Nuxt) {
     alias: {
       '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+      'nitro/runtime-config': join(nuxt.options.buildDir, 'nitro.client.mjs'),
       'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
     },
   }), { server: false })

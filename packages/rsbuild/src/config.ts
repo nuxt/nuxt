@@ -184,6 +184,7 @@ function clientEnvironment (nuxt: Nuxt, { entry, assetPrefix }: EnvironmentOptio
       alias: {
         ...resolveVueRouterAlias(nuxt, false),
         'nitro/runtime': nitroClientRuntime,
+        'nitro/runtime-config': nitroClientRuntime,
         // TODO: remove in v5
         '#internal/nitro': nitroClientRuntime,
         'nitropack/runtime': nitroClientRuntime,

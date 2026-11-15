@@ -14,6 +14,7 @@ export function EnvironmentsPlugin (nuxt: Nuxt): Plugin {
 
   const clientAliases: Record<string, string> = {
     'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
+    'nitro/runtime-config': join(nuxt.options.buildDir, 'nitro.client.mjs'),
     // TODO: remove in v5
     '#internal/nitro': join(nuxt.options.buildDir, 'nitro.client.mjs'),
     'nitropack/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs'),
