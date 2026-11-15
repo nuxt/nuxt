@@ -205,11 +205,6 @@ const NITRO_VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(NITRO_VIRTUAL_PREFIX)}`)
 /** Relative and absolute file paths, and ids already resolved by another plugin. */
 const FILE_OR_INTERNAL_ID_RE = [/^\.{1,2}\//, /^\//, /^[A-Z]:[\\/]/i, /^\0/]
 
-/** Matches exactly one of `ids`, or nothing when there are none. */
-function exactIdRE (ids: string[]): RegExp {
-  return ids.length ? new RegExp(`^(?:${ids.map(id => escapeRE(id)).join('|')})$`) : /^$/
-}
-
 /**
  * Build outputs whose value is not final until the ssr environment's own
  * `generateBundle` has run: `SSRStylesPlugin` emits the per-component style
@@ -318,11 +313,9 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
-      filter: { id: exactIdRE(Object.keys(outputs)) },
+      filter: { id: new RegExp(`^(?:${Object.keys(outputs).map(id => escapeRE(id)).join('|')})$`) },
       handler (id) {
-        if (id in outputs) {
-          return VIRTUAL_PREFIX + id
-        }
+        return VIRTUAL_PREFIX + id
       },
     },
     load: {
