@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-deprecated -- the v1 `event.node` bridge is what is under test */
+import { IncomingMessage, ServerResponse } from 'node:http'
+import { Socket } from 'node:net'
 import { describe, expect, it, vi } from 'vitest'
 import { mockEvent } from 'nitro/h3'
 
@@ -12,6 +14,14 @@ vi.mock('nitro/app', () => ({
   fetch: vi.fn(() => Promise.resolve(new Response())),
   getRouteRules: vi.fn((_method: string, pathname: string) => ({ routeRules: { matched: pathname }, routeRuleMiddleware: [] })),
 }))
+
+function nodeEvent () {
+  const req = new IncomingMessage(new Socket())
+  const res = new ServerResponse(req)
+  const event = mockEvent('http://nuxt/api/test')
+  Object.defineProperty(event.req, 'runtime', { value: { name: 'node', node: { req, res } } })
+  return { event: prepareLegacyEvent(event), req, res }
+}
 
 function decorate (event: any, app?: { fetch: (request: Request) => Promise<Response> }) {
   const handlers = new Map<string, (...args: any[]) => any>()
@@ -184,6 +194,63 @@ describe('v2 event bridge', () => {
 
     expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
     expect(event.res.headers.get('x-count')).toBe('3')
+  })
+
+  it('routes headers and status set on a node response to the web response', () => {
+    const { event, req, res } = nodeEvent()
+    const bridged = event.node!.res as ServerResponse
+
+    bridged.setHeader('set-cookie', ['a=1']).appendHeader('set-cookie', 'b=2')
+    bridged.setHeader('x-node', 'node')
+    bridged.statusCode = 404
+    event.res.headers.append('set-cookie', 'c=3')
+
+    expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2', 'c=3'])
+    expect(event.res.headers.get('x-node')).toBe('node')
+    expect(event.res.status).toBe(404)
+    expect(bridged.getHeader('set-cookie')).toEqual(['a=1', 'b=2', 'c=3'])
+    expect(bridged.statusCode).toBe(404)
+    expect(res.getHeaders()).toEqual({})
+    expect(event.node!.req).toBe(req)
+    expect(prepareLegacyEvent(event).node!.res).toBe(bridged)
+  })
+
+  it('reads headers from both the node and the web response', () => {
+    const { event, res } = nodeEvent()
+    const bridged = event.node!.res as ServerResponse
+    res.setHeader('x-early', 'early')
+    event.res.headers.set('x-web', 'web')
+
+    expect(bridged.getHeader('x-early')).toBe('early')
+    expect(bridged.hasHeader('x-early')).toBe(true)
+    expect(bridged.hasHeader('x-web')).toBe(true)
+    expect(bridged.getHeaders()).toEqual({ 'x-early': 'early', 'x-web': 'web' })
+    expect(bridged.getHeaderNames()).toEqual(['x-early', 'x-web'])
+
+    bridged.removeHeader('x-early')
+    bridged.removeHeader('x-web')
+    expect(res.hasHeader('x-early')).toBe(false)
+    expect(event.res.headers.has('x-web')).toBe(false)
+  })
+
+  it('writes the status and headers onto a node response a handler writes itself', () => {
+    const { event, res } = nodeEvent()
+    const bridged = event.node!.res as ServerResponse
+
+    bridged.setHeader('set-cookie', ['a=1'])
+    event.res.headers.set('x-web', 'web')
+    bridged.statusCode = 201
+    bridged.statusMessage = 'Created'
+    bridged.write('ok')
+    bridged.end()
+    event.res.status = 500
+
+    expect(res.headersSent).toBe(true)
+    expect(res.statusCode).toBe(201)
+    expect(res.statusMessage).toBe('Created')
+    expect(res.getHeader('set-cookie')).toEqual(['a=1'])
+    expect(res.getHeader('x-web')).toBe('web')
+    expect(bridged.statusCode).toBe(201)
   })
 
   it('does not clobber a `_nitro` slot the handler chain already set', () => {

@@ -1,3 +1,4 @@
+import type { ServerResponse } from 'node:http'
 import { H3Event } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
 import type { H3Event as H3EventType } from 'nitro/h3'
@@ -19,8 +20,8 @@ export function useEvent (): H3EventType {
 /**
  * Bring an h3 v2 event up to the shape v1 server code expects: a populated
  * `event.context.nitro`, the private `event.context._nitro.routeRules` slot nitro v2
- * populated from `getRouteRules(event)`, and, on runtimes where h3 has no real node
- * objects, an `event.node` bridge forwarding header and status writes onto the web response.
+ * populated from `getRouteRules(event)`, and an `event.node` whose response forwards header
+ * and status writes onto the web response.
  */
 export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRulesResolver): H3EventType {
   const context = event.context as Record<string | symbol, any>
@@ -49,7 +50,17 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
     })
   }
 
-  if (!event.req.runtime?.node) {
+  const node = event.req.runtime?.node
+  if (node?.res) {
+    if (!Object.hasOwn(event, 'node')) {
+      const res = node.res as ServerResponse
+      let bridge: { req: unknown, res: unknown } | undefined
+      Object.defineProperty(event, 'node', {
+        configurable: true,
+        get: () => (bridge ||= { ...node, res: bridgeNodeResponse(event, res) }),
+      })
+    }
+  } else if (!node) {
     const originalUrl = event.url.pathname + event.url.search
     let bridge: { req: unknown, res: unknown } | undefined
     Object.defineProperty(event, 'node', {
@@ -104,6 +115,77 @@ function replaceHeader (event: H3EventType, name: string, value: string | string
   for (const entry of Array.isArray(value) ? value : [value]) {
     event.res.headers.append(name, String(entry))
   }
+}
+
+const NODE_RESPONSE_WRITERS = new Set<string | symbol>(['writeHead', 'write', 'end', 'flushHeaders'])
+
+/**
+ * A node response whose status and headers are those of the web response, copied onto the
+ * node response when a handler writes to it directly.
+ */
+function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerResponse {
+  const web = createNodeResponseBridge(event)
+
+  function flush () {
+    if (res.headersSent) { return }
+    if (event.res.status) { res.statusCode = event.res.status }
+    if (event.res.statusText) { res.statusMessage = event.res.statusText }
+    for (const [name, value] of Object.entries(web.getHeaders())) {
+      res.setHeader(name, value)
+    }
+  }
+
+  const headers: Record<string | symbol, (...args: any[]) => unknown> = {
+    setHeader (name: string, value: string | string[]) {
+      web.setHeader(name, value)
+      return proxy
+    },
+    appendHeader (name: string, value: string | string[]) {
+      web.appendHeader(name, value)
+      return proxy
+    },
+    getHeader: (name: string) => web.getHeader(name) ?? res.getHeader(name),
+    getHeaders: () => ({ ...res.getHeaders(), ...web.getHeaders() }),
+    getHeaderNames: () => Object.keys({ ...res.getHeaders(), ...web.getHeaders() }),
+    hasHeader: (name: string) => web.hasHeader(name) || res.hasHeader(name),
+    removeHeader (name: string) {
+      web.removeHeader(name)
+      res.removeHeader(name)
+    },
+  }
+
+  const proxy: ServerResponse = new Proxy(res, {
+    get (target, prop) {
+      if (!target.headersSent) {
+        if (prop === 'statusCode') { return event.res.status ?? target.statusCode }
+        if (prop === 'statusMessage') { return event.res.statusText ?? target.statusMessage }
+        if (Object.hasOwn(headers, prop)) { return headers[prop] }
+      }
+      const value = Reflect.get(target, prop, target)
+      if (typeof value !== 'function') { return value }
+      if (NODE_RESPONSE_WRITERS.has(prop)) {
+        return (...args: unknown[]) => {
+          flush()
+          return value.apply(target, args)
+        }
+      }
+      return value.bind(target)
+    },
+    set (target, prop, value) {
+      if (!target.headersSent) {
+        if (prop === 'statusCode') {
+          event.res.status = value
+          return true
+        }
+        if (prop === 'statusMessage') {
+          event.res.statusText = value
+          return true
+        }
+      }
+      return Reflect.set(target, prop, value, target)
+    },
+  })
+  return proxy
 }
 
 function createNodeResponseBridge (event: H3EventType) {
