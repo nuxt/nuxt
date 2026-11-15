@@ -141,6 +141,13 @@ describe('plugin-metadata', () => {
     expect(filter?.id.test('/app/plugins/a.tsx')).toBe(false)
     expect(filter?.id.test('/app/components/a.vue')).toBe(false)
 
+    const windowsNuxt = { options: { dev: false }, apps: { default: { plugins: [{ src: 'C:/app/plugins/a.ts' }] } } } as any
+    const windowsFilter = (RemovePluginMetadataPlugin(windowsNuxt, 'client').raw({}, {} as any) as any).transform.filter
+    expect(windowsFilter.id.test('C:/app/plugins/a.ts')).toBe(true)
+    expect(windowsFilter.id.test('c:/app/plugins/a.ts')).toBe(true)
+    expect(windowsFilter.id.test('C:\\app\\plugins\\a.ts')).toBe(true)
+    expect(windowsFilter.id.test('D:/app/plugins/a.ts')).toBe(false)
+
     const emptyNuxt = { options: { dev: false }, apps: { default: { plugins: [] } } } as any
     expect((RemovePluginMetadataPlugin(emptyNuxt, 'client').raw({}, {} as any) as any).transform.filter?.id.test('/app/a.ts')).toBe(false)
 

@@ -5,7 +5,6 @@ import { dirname, relative } from 'pathe'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import jsTokens from 'js-tokens'
 import type { Token } from 'js-tokens'
-import { isCSSRequest } from 'vite'
 import type { Plugin } from 'vite'
 
 import { isInlineStyleId } from '../utils/inline-styles.ts'
@@ -14,6 +13,7 @@ const PREFIX = '\0virtual:public?'
 const PREFIX_RE = /^\0virtual:public\?/
 const CSS_URL_RE = /url\((\/[^)]+)\)/g
 const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
+const CSS_REQUEST_RE = /\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:$|\?)/
 
 function stringDelimiter (token: Token) {
   switch (token.type) {
@@ -42,10 +42,8 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
         return !!options.dev && !!options.baseURL && options.baseURL !== '/'
       },
       transform: {
-        filter: { code: CSS_URL_SINGLE_RE },
+        filter: { id: CSS_REQUEST_RE, code: CSS_URL_SINGLE_RE },
         handler (code, id, meta?: unknown) {
-          if (!isCSSRequest(id)) { return }
-
           const s = rolldownString(code, id, meta)
           for (const match of code.matchAll(CSS_URL_RE)) {
             const [full, url] = match

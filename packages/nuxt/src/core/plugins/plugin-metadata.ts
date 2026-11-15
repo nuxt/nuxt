@@ -226,13 +226,21 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, co
   return meta
 }
 
+const DRIVE_LETTER_RE = /^([a-z]):/i
+
+function toPluginIdPattern (src: string) {
+  return escapeStringRegexp(src)
+    .replace(/\//g, '[\\\\/]')
+    .replace(DRIVE_LETTER_RE, (_, letter: string) => `[${letter.toUpperCase()}${letter.toLowerCase()}]:`)
+}
+
 export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) => createUnplugin(() => {
   const plugins = nuxt.apps.default?.plugins ?? []
   return {
     name: `nuxt:remove-plugin-metadata:${mode}`,
     transform: {
       // the plugin list is final once a build creates its bundler plugins, but dev can still add plugins
-      ...(!nuxt.options.dev && { filter: { id: new RegExp(`^(?:${plugins.map(p => escapeStringRegexp(p.src).replace(/\//g, '[\\\\/]')).join('|')})$`) } }),
+      ...(!nuxt.options.dev && { filter: { id: new RegExp(`^(?:${plugins.map(p => toPluginIdPattern(p.src)).join('|')})$`) } }),
       handler (code, id, meta?: unknown) {
         id = normalize(id)
         const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
