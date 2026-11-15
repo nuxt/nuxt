@@ -156,6 +156,18 @@ describe('navigating with `experimental.routeChunkHints`', () => {
     expect(reloadNuxtApp).toHaveBeenCalledExactlyOnceWith({ path: '/first', persistState: true, force: true })
   })
 
+  it('reloads only for a navigation started after a failed layout hint, when it starts before the waiting one resumes', async () => {
+    const { mount, navigate, layout } = await installPlugin()
+    mount()
+    layout.__asyncLoader = vi.fn(() => new Promise(() => {}))
+
+    navigate('/first', '/', { layout: 'default' })
+    failPreload()
+    navigate('/second')
+    await new Promise(resolve => setTimeout(resolve))
+    expect(reloadNuxtApp).toHaveBeenCalledExactlyOnceWith({ path: '/second', persistState: true, force: true })
+  })
+
   it('does not reload for a navigation that a newer navigation has replaced', async () => {
     const { mount, navigate, layout } = await installPlugin()
     mount()

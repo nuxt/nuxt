@@ -69,6 +69,8 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       onFailedPreload(() => {
         stopLoadingLayouts?.()
         router.beforeEach((to, from) => {
+          // a newer navigation supersedes every navigation still waiting on a layout
+          latestNavigationId++
           // the browser would not load a new document for a hash alone
           if (to.path === from.path) {
             return
