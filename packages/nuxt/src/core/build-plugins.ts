@@ -26,13 +26,13 @@ import { VuePackagesBundlerPlugin, VuePackagesPlugin } from './plugins/vue-packa
 export function addCoreBuildPlugins (nuxt: Nuxt) {
   const vuePackages = resolveVuePackages(nuxt)
   addBuildPlugin({
-    vite: () => VuePackagesPlugin(vuePackages),
+    vite: () => VuePackagesPlugin(vuePackages, { cache: !nuxt.options.dev }),
     webpack: () => VuePackagesBundlerPlugin(vuePackages),
     rspack: () => VuePackagesBundlerPlugin(vuePackages),
   })
   nuxt.hook('nitro:config', (config) => {
     config.rollupConfig ||= {}
-    config.rollupConfig.plugins = [VuePackagesPlugin(vuePackages), ...toArray(config.rollupConfig.plugins || [])]
+    config.rollupConfig.plugins = [VuePackagesPlugin(vuePackages, { cache: !nuxt.options.dev }), ...toArray(config.rollupConfig.plugins || [])]
   })
 
   if (!nuxt.options.dev && !nuxt.options.vue.runtimeCompiler) {
