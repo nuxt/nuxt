@@ -14,16 +14,17 @@ describe('tree-shake', () => {
     composables: { 'vue': ['onMounted'] },
   }).raw({}, {} as any)
 
-  it('does not send vue\'s own packages to the transform', () => {
-    const { include, exclude } = transformPlugin.transform.filter.id
-    const reaches = (id: string) => [include].flat().some((re: RegExp) => re.test(id)) && ![exclude].flat().some((re: RegExp) => re.test(id))
-    expect(reaches('/app/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js')).toBe(false)
-    expect(reaches('C:\\app\\node_modules\\@vue\\reactivity\\dist\\reactivity.esm-bundler.js')).toBe(false)
-    expect(reaches('/app/node_modules/vue/dist/vue.runtime.esm-bundler.js')).toBe(false)
-    expect(reaches('/app/node_modules/nuxt/dist/app/components/nuxt-layout.js')).toBe(true)
-    expect(reaches('/app/node_modules/vue-router/dist/vue-router.mjs')).toBe(true)
-    expect(reaches('/app/node_modules/@vueuse/core/index.mjs')).toBe(true)
-    expect(reaches('/app/pages/index.vue?vue&type=script&setup=true&lang.ts')).toBe(true)
+  it('should not transform vue\'s runtime packages', () => {
+    const exclude: RegExp[] = transformPlugin.transform.filter.id.exclude
+    const isExcluded = (id: string) => exclude.some(re => re.test(id))
+    expect(isExcluded('/app/node_modules/.pnpm/@vue+runtime-core@3.5.0/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js')).toBe(true)
+    expect(isExcluded('/app/node_modules/@vue/runtime-vapor/dist/runtime-vapor.esm-bundler.js')).toBe(true)
+    expect(isExcluded('C:\\app\\node_modules\\@vue\\reactivity\\dist\\reactivity.esm-bundler.js')).toBe(true)
+    expect(isExcluded('/app/node_modules/vue/dist/vue.runtime.esm-bundler.js')).toBe(true)
+    expect(isExcluded('/app/node_modules/nuxt/dist/app/components/nuxt-layout.js')).toBe(false)
+    expect(isExcluded('/app/node_modules/vue-router/dist/vue-router.mjs')).toBe(false)
+    expect(isExcluded('/app/node_modules/@vueuse/core/index.mjs')).toBe(false)
+    expect(isExcluded('/app/pages/index.vue?vue&type=script&setup=true&lang.ts')).toBe(false)
   })
 
   it('should tree shake composables from source code', async () => {
