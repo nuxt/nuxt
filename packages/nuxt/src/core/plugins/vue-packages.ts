@@ -13,9 +13,8 @@ type ResolveIdHandler = Extract<NonNullable<Plugin['resolveId']>, { handler: unk
  * with, wherever the importing file is. Used as both a Vite and a Rolldown plugin.
  */
 export function VuePackagesPlugin (packages: VuePackages, { cache = false }: { cache?: boolean } = {}): Plugin {
-  // Every import of a Vue package is resolved from the same pinned importer, so in a build the result
-  // only depends on the specifier and the kind of import. Not in dev, where an optimised dependency's
-  // id changes when it is re-bundled.
+  // every import resolves from the pinned importer, so a build can reuse results per specifier. Dev
+  // cannot: an optimised dependency's id changes when Vite re-bundles it
   const resolutions = new WeakMap<object, Map<string, Promise<ResolvedId | null>>>()
   const noEnvironment = {}
   return {
