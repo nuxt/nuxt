@@ -17,7 +17,7 @@ const { data } = await useFetch('/api/experimental/decorators')
 
 <template>
   <div>
-    {{ value }}-{{ data }}
+    {{ value }}-{{ data }}-<DecoratedTsx />
   </div>
 </template>
 
