@@ -20,6 +20,9 @@ export function VuePackagesPlugin (packages: VuePackages, { cache = false }: { c
   return {
     name: 'nuxt:vue-packages',
     enforce: 'pre',
+    buildStart () {
+      resolutions.delete(this.environment ?? noEnvironment)
+    },
     resolveId: {
       order: 'pre',
       filter: { id: VUE_PACKAGE_SPECIFIER_RE },

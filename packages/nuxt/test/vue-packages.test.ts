@@ -4,6 +4,8 @@ import { pathToFileURL } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
 import { dirname, join } from 'pathe'
 import { build } from 'vite'
+import type { Rollup } from 'vite'
+import { rolldown } from 'rolldown'
 import { resolveVuePackages } from '@nuxt/kit/internal'
 
 import { VuePackagesPlugin } from '../src/core/plugins/vue-packages.ts'
@@ -123,5 +125,38 @@ describe('VuePackagesPlugin', async () => {
     await expect(import(pathToFileURL(join(dir, 'entry.js')).href)).resolves.toMatchObject({ nuxt: '1.0.0', ui: '1.0.0', uiReactivity: '1.0.0' })
     // `nuxt` and `ui` both import `vue`
     expect(pinned.filter(id => id === 'vue')).toHaveLength(cache ? 1 : 2)
+  })
+
+  it('does not reuse cached resolutions in a later build', async () => {
+    const plugin = VuePackagesPlugin(packages, { cache: true })
+    const externalVue = { name: 'external-vue', resolveId: (id: string, importer?: string) => id === 'vue' && importer?.endsWith('package.json') ? { id: 'vue', external: true } : undefined }
+    const imports: string[][] = []
+    for (const plugins of [[plugin, externalVue], [plugin]]) {
+      const bundle = await rolldown({ input: join(rootDir, 'entry.js'), platform: 'node', logLevel: 'silent', plugins })
+      const { output } = await bundle.generate({ format: 'es' })
+      await bundle.close()
+      imports.push(output[0].imports)
+    }
+    expect(imports).toStrictEqual([['vue'], []])
+  })
+
+  it('caches `import` and `require` resolutions separately', async () => {
+    const plugin = VuePackagesPlugin(packages, { cache: true })
+    const handler = (plugin.resolveId as { handler: (this: unknown, ...args: unknown[]) => Promise<Rollup.ResolvedId | null> }).handler
+    const requests: boolean[] = []
+    const context = {
+      resolve: (id: string, _importer: string, options: { custom?: { 'node-resolve'?: { isRequire?: boolean } } }) => {
+        const isRequire = !!options.custom?.['node-resolve']?.isRequire
+        requests.push(isRequire)
+        return Promise.resolve({ id: `${id}.${isRequire ? 'cjs' : 'mjs'}`, external: false })
+      },
+    }
+    const importer = join(rootDir, 'entry.js')
+    const resolve = (isRequire: boolean) => handler.call(context, 'vue', importer, { isEntry: false, custom: { 'node-resolve': { isRequire } } })
+    await expect(resolve(false)).resolves.toMatchObject({ id: 'vue.mjs' })
+    await expect(resolve(true)).resolves.toMatchObject({ id: 'vue.cjs' })
+    await expect(resolve(false)).resolves.toMatchObject({ id: 'vue.mjs' })
+    await expect(resolve(true)).resolves.toMatchObject({ id: 'vue.cjs' })
+    expect(requests).toStrictEqual([false, true])
   })
 })
