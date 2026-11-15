@@ -71,6 +71,16 @@ describe('h3 v1 shim', () => {
     })
   })
 
+  it('keeps the cause an error is created with', () => {
+    const cause = new Error('inner')
+
+    expect(createError({ statusCode: 500, message: 'outer', cause }).cause).toBe(cause)
+    expect(createError({ status: 500, message: 'outer', cause }).cause).toBe(cause)
+
+    const input = { statusCode: 500, message: 'outer' }
+    expect(createError(input).cause).toBe(input)
+  })
+
   it('leaves v3-shaped input untouched', () => {
     const v3 = createError({ status: 418, statusText: 'I am a teapot' })
     expect(v3.toJSON()).not.toHaveProperty('statusCode')

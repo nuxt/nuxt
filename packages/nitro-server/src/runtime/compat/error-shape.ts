@@ -29,6 +29,8 @@ function hasLegacyErrorKeys (input: unknown): boolean {
  * v1-shaped `createError`, returning an `HTTPError` whose serialised body keeps the v1 key
  * names alongside the v2 ones. Input that is already v3-shaped is passed through
  * untouched, since the extra body keys are an observable change migrated code did not ask for.
+ *
+ * `cause` is the `cause` of the input where it has one, as it was in h3 v1.
  */
 export function createError (input: string | (Error & H3ErrorInput) | H3ErrorInput): HTTPError {
   if (HTTPError.isError(input)) {
@@ -36,6 +38,9 @@ export function createError (input: string | (Error & H3ErrorInput) | H3ErrorInp
   }
 
   const error = new HTTPError(input as any)
+  if (typeof input === 'object' && input.cause) {
+    Object.defineProperty(error, 'cause', { value: input.cause, configurable: true, writable: true })
+  }
   if (!hasLegacyErrorKeys(input)) {
     return error
   }
