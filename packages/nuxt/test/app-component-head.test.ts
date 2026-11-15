@@ -297,12 +297,15 @@ describe('app component head in a nuxt build', async () => {
   const repoRoot = await findWorkspaceDir()
   const sfc = `<script setup lang="ts">\nuseHead({ title: 'Site' })\n</script>\n\n<template><div /></template>\n`
 
+  const rootDirs: string[] = []
+
   afterAll(async () => {
-    await rm(resolve(repoRoot, 'node_modules/.fixture'), { recursive: true, force: true })
+    await Promise.all(rootDirs.map(dir => rm(dir, { recursive: true, force: true })))
   })
 
   async function build (setup: (nuxt: Nuxt, rootDir: string) => void | Promise<void>) {
     const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    rootDirs.push(rootDir)
     await mkdir(rootDir, { recursive: true })
     const nuxt = await loadNuxt({ cwd: rootDir, overrides: { pages: false } })
     await setup(nuxt, rootDir)
