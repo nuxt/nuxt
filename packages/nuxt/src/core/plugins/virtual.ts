@@ -51,13 +51,16 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
       id = resolve(id)
     }
 
-    const resolvedId = resolveWithExt(id)
-    if (resolvedId) {
-      return toVirtualId(resolvedId, nuxt) + search
+    if (!RELATIVE_ID_RE.test(id)) {
+      const resolvedId = resolveWithExt(id)
+      return resolvedId ? toVirtualId(resolvedId, nuxt) + search : undefined
     }
 
-    if (importer && RELATIVE_ID_RE.test(id)) {
+    if (importer) {
       const path = resolve(dirname(withoutQuery(fromVirtualId(importer, nuxt))), id)
+      if (!PREFIX_RE.test(importer) && !vfsLocationRE.test(path)) {
+        return
+      }
       // resolve relative paths to virtual files
       const resolved = resolveWithExt(path)
       if (resolved) {
@@ -81,13 +84,18 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
     }
   }
 
+  const vfsLocations = [
+    /^#build\//,
+    new RegExp('^(\\w:)?' + escapeDirectory(nuxt.options.buildDir)),
+    ...Array.from(vfsEntries).map(id => new RegExp('^' + id)),
+  ]
+  const vfsLocationRE = combineRE(vfsLocations)
+
   const filter = {
     id: combineRE([
       PREFIX_RE,
       RELATIVE_ID_RE,
-      /^#build\//,
-      new RegExp('^(\\w:)?' + escapeDirectory(nuxt.options.buildDir)),
-      ...Array.from(vfsEntries).map(id => new RegExp('^' + id)),
+      ...vfsLocations,
       ...relevantAliases.size ? [new RegExp('^' + Array.from(relevantAliases).join('|') + '([\\\\/]|$)')] : [],
     ]),
   }
