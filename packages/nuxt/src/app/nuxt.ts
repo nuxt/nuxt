@@ -16,6 +16,7 @@ import { guardedServerConfig } from './internal/runtime-config'
 import type { PrefetchScheduler } from './internal/prefetch'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { NuxtAnnouncer } from './composables/announcer'
+import type { ClientHeadState } from '../head/runtime/client-head-state'
 import type { AppConfig, AppConfigInput, NuxtHookCallback, NuxtHookRegistry, RuntimeConfig } from 'nuxt/schema'
 
 import { appDiagnostics } from './diagnostics/core'
@@ -166,6 +167,9 @@ interface _NuxtApp {
   '_routeAnnouncer'?: NuxtAnnouncer
   /** @internal */
   '_routeAnnouncerDeps'?: number
+
+  /** @internal */
+  '~head'?: ClientHeadState
 
   /** @internal */
   '~transitionPromise'?: Promise<void>

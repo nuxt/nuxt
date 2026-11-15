@@ -5,10 +5,14 @@ import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
+import { createApp, inject } from 'vue'
+import { headSymbol } from '@unhead/vue'
 
 import * as composables from '#app/composables'
 import { _showErrorUnlessCrawler, clearError, showError, useError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
+import type { NuxtApp } from '#app/nuxt'
+import { injectHead } from '#app/composables/head'
 import * as idleCallback from '#app/compat/idle-callback'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
@@ -1888,5 +1892,17 @@ describe('namespace access to useNuxtApp', () => {
 
   it('should throw an error when used with wrong appId', () => {
     expect(() => useNuxtApp('nuxt-app-unknown')).toThrow()
+  })
+})
+
+describe('injectHead', () => {
+  it('creates and provides the client head on first use', () => {
+    const vueApp = createApp({ render: () => null })
+    const nuxtApp = { vueApp, runWithContext: (fn: () => unknown) => vueApp.runWithContext(fn) } as unknown as NuxtApp
+
+    expect(vueApp.runWithContext(() => inject(headSymbol, null))).toBeNull()
+    const head = injectHead(nuxtApp)
+    expect(injectHead(nuxtApp)).toBe(head)
+    expect(vueApp.runWithContext(() => inject(headSymbol))).toBe(head)
   })
 })
