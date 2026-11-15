@@ -180,6 +180,9 @@ export default withMatrix({
     prefetchPreloadTags: true,
   },
   nitro: {
+    typescript: {
+      tsConfig: { compilerOptions: { jsxImportSource: 'vue' } },
+    },
     publicAssets: [
       {
         dir: './custom-public',
