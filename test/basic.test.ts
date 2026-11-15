@@ -2599,7 +2599,7 @@ describe.skipIf(!once)('teleports', () => {
 describe.skipIf(!oncePerBuild)('experimental', () => {
   it('decorators support works', async () => {
     const html = await $fetch('/experimental/decorators')
-    expect(html).toContain('decorated-decorated')
+    expect(html).toContain('decorated-decorated-<span>decorated</span>-decorated')
     await expectNoClientErrors('/experimental/decorators')
   })
 
