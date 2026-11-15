@@ -69,6 +69,14 @@ describe('tsConfig generation', () => {
     expect(sharedTsConfig.include).toContain('../my-layer/shared/**/*')
     expect(serverTsConfig.include).toContain(declarations)
     expect(legacyTsConfig.include).toContain(declarations)
+    expect(tsConfig.include).toContain('../my-layer/app/**/*')
+    expect(legacyTsConfig.include).toContain('../my-layer/app/**/*')
+    for (const extension of ['mts', 'cts']) {
+      expect(tsConfig.include).toContain(`../my-layer/shared/**/*.d.${extension}`)
+      expect(serverTsConfig.include).toContain(`../my-layer/shared/**/*.d.${extension}`)
+    }
+    expect(tsConfig.exclude).toContain('../my-layer/app/server/**/*')
+    expect(legacyTsConfig.exclude).toContain('../my-layer/app/server/**/*')
   })
 
   it('should add correct relative paths for aliases', async () => {

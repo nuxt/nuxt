@@ -384,10 +384,13 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   for (const dirs of layerDirs) {
     const serverGlob = join(relativeWithDot(typesDir, dirs.server), '**/*')
     const sharedDir = relativeWithDot(typesDir, dirs.shared)
+    include.add(join(relativeWithDot(typesDir, dirs.app), '**/*'))
     serverInclude.add(serverGlob)
-    const sharedDeclarationsGlob = join(sharedDir, '**/*.d.ts')
-    include.add(sharedDeclarationsGlob)
-    serverInclude.add(sharedDeclarationsGlob)
+    for (const extension of ['ts', 'mts', 'cts']) {
+      const sharedDeclarationsGlob = join(sharedDir, `**/*.d.${extension}`)
+      include.add(sharedDeclarationsGlob)
+      serverInclude.add(sharedDeclarationsGlob)
+    }
     sharedInclude.add(join(sharedDir, '**/*'))
 
     // a layer whose source directory is its root would otherwise match these with its own `**/*`
