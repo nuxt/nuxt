@@ -156,7 +156,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
   const lines = [
     ...options.prelude ? [options.prelude] : [],
     `export { default as unheadOptions } from ${JSON.stringify(options.unheadOptions || '#build/unhead-options.mjs')}`,
-    `export { iifeChunkFileName, renderSSRHeadOptions } from ${JSON.stringify(options.headConfig || '#build/unhead.config.mjs')}`,
+    `export { appComponentHead, iifeChunkFileName, renderSSRHeadOptions } from ${JSON.stringify(options.headConfig || '#build/unhead.config.mjs')}`,
   ]
   for (const name in values) {
     const key = name as RendererConfigName

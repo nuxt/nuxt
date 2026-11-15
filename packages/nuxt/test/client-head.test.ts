@@ -10,6 +10,8 @@ import type { NuxtApp } from '#app/nuxt'
 import { installClientHead } from '../src/head/runtime/client-head'
 import headPlugin from '../src/head/runtime/plugins/unhead.client'
 
+import { appComponentHead } from '#build/unhead-client.mjs'
+
 function createApp (isHydrating = false) {
   const hooks = createHooks()
   const nuxtApp = { hooks, callHook: hooks.callHook, vueApp: { use: () => {}, _context: { provides: {} } }, isHydrating } as unknown as NuxtApp
@@ -21,6 +23,41 @@ describe('client head', () => {
   afterEach(() => {
     vi.useRealTimers()
     vi.restoreAllMocks()
+    appComponentHead.length = 0
+    document.head.replaceChildren()
+  })
+
+  it('applies the hoisted app component head when the root component sets up', async () => {
+    vi.useFakeTimers()
+    appComponentHead.push({ title: 'App', meta: [{ name: 'description', content: 'App' }] })
+    const nuxtApp = createApp()
+    const head = createHead({ document })
+
+    installClientHead(nuxtApp, head)
+    head.push({ title: 'Plugin', meta: [{ name: 'description', content: 'Plugin' }] })
+    await nuxtApp.hooks.callHook('vue:setup')
+    head.push({ title: 'Page' })
+
+    await nuxtApp.hooks.callHook('app:suspense:resolve')
+    await vi.runAllTimersAsync()
+    expect(document.title).toBe('Page')
+    expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('App')
+  })
+
+  it('applies the hoisted app component head to a head created after the root component sets up', async () => {
+    vi.useFakeTimers()
+    appComponentHead.push({ title: 'App', meta: [{ name: 'description', content: 'App' }] })
+    const nuxtApp = createApp()
+    const head = createHead({ document })
+
+    await nuxtApp.hooks.callHook('vue:setup')
+    installClientHead(nuxtApp, head)
+    head.push({ title: 'Page' })
+
+    await nuxtApp.hooks.callHook('app:suspense:resolve')
+    await vi.runAllTimersAsync()
+    expect(document.title).toBe('Page')
+    expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).toBe('App')
   })
 
   it('does not schedule DOM renders while updates are paused', async () => {

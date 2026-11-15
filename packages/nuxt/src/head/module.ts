@@ -1,9 +1,12 @@
 import { createHash } from 'node:crypto'
+import { readFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
-import { resolve } from 'pathe'
+import { normalize, resolve } from 'pathe'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, defineNuxtModule, directoryToURL } from '@nuxt/kit'
-import { headDiagnostics } from '@nuxt/kit/internal'
-import type { NuxtOptions } from '@nuxt/schema'
+import { headDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import type { NuxtApp, NuxtOptions } from '@nuxt/schema'
+import type { SerializableHead } from '@unhead/vue/types'
+import type { Unimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
 import { Unhead } from '@unhead/vue/vite'
 import { streamingIifeCode } from 'unhead/stream/iife'
@@ -12,6 +15,8 @@ import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 import { RemoveServerHeadComposablesPlugin } from './plugins/remove-server-head-composables.ts'
 import { UnheadClientEagerPlugin } from './plugins/unhead-client-eager.ts'
+import { AppComponentHeadPlugin, extractAppComponentHead } from './plugins/app-component-head.ts'
+import type { AppComponentHeadImports } from './plugins/app-component-head.ts'
 
 // the bootstrap code is a constant, so its content hash is known before the build runs
 const iifeChunkFileName = `streaming-iife.${createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)}.js`
@@ -53,6 +58,40 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     if (!nuxt.options.dev && !nuxt.options.test) {
       addBuildPlugin(RemoveServerHeadComposablesPlugin(), { server: false })
     }
+
+    let unimport: Unimport | undefined
+    nuxt.hook('imports:context', (context) => { unimport = context })
+    const getHeadImports = async (): Promise<AppComponentHeadImports> => {
+      const imports = new Map<string, string>()
+      for (const [name, entry] of await unimport?.getImportMap() ?? []) {
+        if (entry.from === '#app/composables/head' && !entry.type) {
+          imports.set(name, entry.name)
+        }
+      }
+      return { imports, autoImport: nuxt.options.imports.autoImport !== false }
+    }
+
+    // a custom root component may not render the app component at all, and a client-only
+    // app without a server runtime may serve a document that is not rendered by Nuxt
+    const defaultRootComponent = resolve(nuxt.options.appDir, 'components/nuxt-root.vue')
+    const getAppComponent = (app: NuxtApp | undefined = nuxt.apps.default) => {
+      if (!nuxt.options.ssr && !useServerBuild(nuxt).capabilities.server) { return }
+      if (app?.mainComponent && app.rootComponent && normalize(app.rootComponent) === defaultRootComponent) {
+        return normalize(app.mainComponent)
+      }
+    }
+    const getAppComponentHead = async (app: NuxtApp): Promise<SerializableHead[]> => {
+      const component = getAppComponent(app)
+      if (!component) { return [] }
+      const code = await readFile(component, 'utf-8').catch(() => '')
+      return (await extractAppComponentHead(code, component, await getHeadImports())).entries
+    }
+
+    addBuildPlugin(AppComponentHeadPlugin({
+      getAppComponent: () => getAppComponent(),
+      getImports: getHeadImports,
+    }))
+
     if (!nuxt.options.dev) {
       addBuildPlugin(UnheadClientEagerPlugin({
         eagerEntry: resolve(runtimeDir, 'client-head-eager'),
@@ -132,6 +171,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
           return [
             `import { createHead } from ${client};`,
             `import unheadOptions from '#build/unhead-options.mjs';`,
+            `export { appComponentHead } from '#build/unhead.config.mjs';`,
             `export const createClientHead = () => createHead(unheadOptions);`,
           ].join('\n')
         }
@@ -141,6 +181,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
           `import { createHead } from ${client};`,
           `import { createStreamableHead } from ${JSON.stringify(resolveNuxtUnhead('@unhead/vue/stream/client'))};`,
           `import unheadOptions from '#build/unhead-options.mjs';`,
+          `export { appComponentHead } from '#build/unhead.config.mjs';`,
           `export const createClientHead = () => createStreamableHead(unheadOptions) || createHead(unheadOptions);`,
         ].join('\n')
       },
@@ -148,12 +189,13 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     addTemplate({
       filename: 'unhead.config.mjs',
-      dependsOn: [],
-      getContents () {
+      dependsOn: (change, { app }) => !!app.mainComponent && normalize(change.path) === normalize(app.mainComponent),
+      async getContents ({ app }) {
         return [
           `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
           // in dev the bootstrap code is inlined into the document instead of emitted
           `export const iifeChunkFileName = ${JSON.stringify(ssrStreamingEnabled && !nuxt.options.dev ? iifeChunkFileName : undefined)}`,
+          `export const appComponentHead = ${JSON.stringify(await getAppComponentHead(app))}`,
         ].join('\n')
       },
     })

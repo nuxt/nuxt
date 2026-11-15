@@ -5,7 +5,7 @@ import type { NuxtApp } from '#app/nuxt'
 import { getClientHeadState } from './client-head-state'
 
 import { appHead } from '#build/nuxt.config.mjs'
-import { createClientHead } from '#build/unhead-client.mjs'
+import { appComponentHead, createClientHead } from '#build/unhead-client.mjs'
 
 export function useClientHead (nuxtApp: NuxtApp): VueHeadClient {
   const state = getClientHeadState(nuxtApp)
@@ -29,6 +29,14 @@ export function installClientHead (nuxtApp: NuxtApp, head: VueHeadClient): void 
 
   // re-push server-only `app.head` so `titleTemplate` survives hydration (#35468)
   head.push(appHead)
+  state.pushAppComponentHead = () => {
+    for (const input of appComponentHead) {
+      head.push(input)
+    }
+  }
+  if (state.rootSetup) {
+    state.pushAppComponentHead()
+  }
 
   delete nuxtApp.vueApp._context?.provides[headSymbol]
   nuxtApp.vueApp.use(head)

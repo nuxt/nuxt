@@ -6,7 +6,7 @@ import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 
 import { getLoader, parseModuleId } from '../core/utils/index.ts'
-import { findSFCScriptBlocks, getStaticPropertyKey, unwrapStaticExpression } from '../core/utils/parse-utils.ts'
+import { findOptionsApiSetupBody, findSFCScriptBlocks, getStaticPropertyKey, unwrapStaticExpression } from '../core/utils/parse-utils.ts'
 import { linkToAlias, logger, offsetToPosition } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
@@ -87,31 +87,6 @@ function collectStatementCalls (body: Array<ESTree.Node>, into: Set<ESTree.Node>
     if (expression?.type === 'CallExpression') {
       into.add(expression)
     }
-  }
-}
-
-/**
- * The body of the `setup()` option of an Options API default export, if the module has one.
- */
-function findOptionsApiSetupBody (program: ESTree.Program): Array<ESTree.Node> | undefined {
-  for (const statement of program.body) {
-    if (statement.type !== 'ExportDefaultDeclaration') { continue }
-
-    let declaration = unwrapStaticExpression(statement.declaration as ESTree.Node)
-    // `export default defineComponent({ ... })`
-    if (declaration?.type === 'CallExpression') {
-      declaration = unwrapStaticExpression(declaration.arguments[0])
-    }
-    if (declaration?.type !== 'ObjectExpression') { return }
-
-    for (const property of declaration.properties) {
-      if (property.type !== 'Property' || property.kind !== 'init' || getStaticPropertyKey(property) !== 'setup') { continue }
-      const value = property.value
-      if ((value.type === 'FunctionExpression' || value.type === 'ArrowFunctionExpression') && value.body?.type === 'BlockStatement') {
-        return value.body.body
-      }
-    }
-    return
   }
 }
 

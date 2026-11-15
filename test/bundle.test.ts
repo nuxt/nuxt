@@ -63,10 +63,25 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(client).toContain('Hello World!')
   })
 
+  it.each([
+    ['ssr', rootDir],
+    ['spa', spaRootDir],
+  ])('moves the static head of the app component to the server renderer (%s)', async (_, dir) => {
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(dir, '.output/server') }))
+        .map(file => fsp.readFile(join(dir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    const client = await readClientBundle(join(dir, '.output/public'))
+
+    expect(server).toContain('A static description')
+    expect(client).not.toContain('A static description')
+    expect(client).not.toContain('tags:afterResolve')
+  })
+
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"186k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"187k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
