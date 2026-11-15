@@ -7,6 +7,7 @@ import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
 import { resolveModulePath } from 'exsolve'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
+import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule } from '../src/runtime-config.ts'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
 
@@ -47,6 +48,25 @@ async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConf
 }
 
 describe('nitro config', () => {
+  it('infers the prerenderer\'s runtime config schema from its own runtime config', async () => {
+    await withNitro({ runtimeConfig: { assets: { dir: 'public' } } }, async (nitro, _nitroConfig, nuxt) => {
+      // nitro creates the prerenderer from `_config`, which a module can set differently,
+      // with a copy of the server's virtual modules
+      const prerenderer = {
+        options: {
+          ...nitro.options,
+          runtimeConfig: { ...nitro.options.runtimeConfig, assets: { dir: ['public', 'layers/shared/public'] } },
+          virtual: { ...nitro.options.virtual },
+        },
+      } as unknown as Nitro
+      await nitro.hooks.callHook('prerender:init', prerenderer)
+
+      const schema = prerenderer.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] as () => string
+      expect(schema()).toBe(getRuntimeConfigSchemaModule(nuxt, prerenderer))
+      expect(schema()).not.toBe(getRuntimeConfigSchemaModule(nuxt, nitro))
+    })
+  }, 60_000)
+
   it('emits valid rest-of-path URLPatterns for noScripts wildcard rules', async () => {
     await withNitro({ routeRules: { '/foo/*': { noScripts: true }, '/scripted/*': { ssr: true } } }, async (_nitro, nitroConfig) => {
       const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
