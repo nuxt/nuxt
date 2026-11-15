@@ -383,8 +383,12 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // necessarily cover its server directory
   for (const dirs of layerDirs) {
     const serverGlob = join(relativeWithDot(typesDir, dirs.server), '**/*')
+    const sharedDir = relativeWithDot(typesDir, dirs.shared)
     serverInclude.add(serverGlob)
-    serverInclude.add(join(relativeWithDot(typesDir, dirs.shared), '**/*.d.ts'))
+    const sharedDeclarationsGlob = join(sharedDir, '**/*.d.ts')
+    include.add(sharedDeclarationsGlob)
+    serverInclude.add(sharedDeclarationsGlob)
+    sharedInclude.add(join(sharedDir, '**/*'))
 
     // a layer whose source directory is its root would otherwise match these with its own `**/*`
     exclude.add(serverGlob)

@@ -56,6 +56,21 @@ const mockNuxt = {
 const mockNuxtWithOptions = (options: NuxtConfig) => defu({ options }, mockNuxt) as Nuxt
 
 describe('tsConfig generation', () => {
+  it('includes shared types from layers outside the default layers directory', async () => {
+    const nuxt = mockNuxtWithOptions({})
+    nuxt.options._layers = [
+      ...nuxt.options._layers,
+      { config: { rootDir: '/my-app/my-layer', srcDir: '/my-app/my-layer/app' }, cwd: '/my-app/my-layer', configFile: '/my-app/my-layer/nuxt.config.ts' },
+    ]
+
+    const { tsConfig, sharedTsConfig, serverTsConfig, legacyTsConfig } = await _generateTypes(nuxt)
+    const declarations = '../my-layer/shared/**/*.d.ts'
+    expect(tsConfig.include).toContain(declarations)
+    expect(sharedTsConfig.include).toContain('../my-layer/shared/**/*')
+    expect(serverTsConfig.include).toContain(declarations)
+    expect(legacyTsConfig.include).toContain(declarations)
+  })
+
   it('should add correct relative paths for aliases', async () => {
     const { tsConfig } = await _generateTypes(mockNuxt)
     expect(tsConfig.compilerOptions?.paths).toMatchInlineSnapshot(`
