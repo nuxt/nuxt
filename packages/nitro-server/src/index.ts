@@ -868,6 +868,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {
     const perf = nuxt._perf
+    nitro.hooks.hook('prerender:config', () => perf.startPhase('nitro:prerender'))
+    nitro.hooks.hook('prerender:done', () => perf.endPhase('nitro:prerender'))
     nitro.hooks.hook('rollup:before', (_nitro, rollupConfig) => {
       timePluginHooks(perf, (rollupConfig.plugins || []) as unknown[])
     })
