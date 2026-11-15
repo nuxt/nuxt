@@ -7,6 +7,8 @@ import { link } from 'clickable-path'
 import { colors } from 'consola/utils'
 import type { NuxtHookRegistry } from '@nuxt/schema'
 import type { Nuxt, NuxtHooks } from 'nuxt/schema'
+import { HookCpuTracker } from './perf-cpu.ts'
+import type { CpuOwner } from './perf-cpu.ts'
 
 interface MemorySnapshot {
   rss: number
@@ -61,8 +63,11 @@ interface PluginHookTiming {
   /**
    * Part of `totalTime` in which the main thread was idle or running other hooks' calls before
    * they first yielded: a lower bound on the time the hook spent waiting rather than working.
+   * With `bundlerPluginWaiting: 'cpu'`, `totalTime` minus `cpuTime`.
    */
   waitingTime: number
+  /** Time the main thread spent running the hook's own code, with `bundlerPluginWaiting: 'cpu'`. */
+  cpuTime?: number
 }
 
 interface HookTiming {
@@ -75,6 +80,8 @@ interface HookTiming {
   waitingSince: number
   /** Time spent in calls of this hook before they first yielded to the event loop. */
   turnTime: number
+  /** Timings from start to settle, against the time the hook's own code ran. */
+  cpu?: { time: number, totalTime: number, maxTime: number, running: number, runningSince: number }
 }
 
 /** The task a hook call started in, until it first yields to the event loop. */
@@ -117,6 +124,11 @@ interface PerfReport {
   unattributedDuration: number
   modules: ModuleTiming[]
   bundlerPlugins: Array<{ name: string, hooks: Record<string, PluginHookTiming> }>
+  /**
+   * How `waitingTime` was measured: `lower-bound` from time other work was known to run, or `cpu`
+   * from each call's time between start and settle minus the time its own code ran.
+   */
+  bundlerPluginWaiting: 'lower-bound' | 'cpu'
   timestamp: string
 }
 
@@ -282,6 +294,11 @@ export class NuxtPerfProfiler {
   #bundlerPluginSpans: PluginSpan[] = []
   #turn?: Turn
   #turnTime = 0
+  // `async_hooks` is discouraged by Node and slows every `await` while enabled; work from resources
+  // created outside a hook call (shared emitters, bundler glue) or on other threads is not
+  // attributed, and times are wall-clock slices of the main thread. `NUXT_DEBUG_PERF_CPU=0` is an
+  // internal, unsupported opt-out to the lower bound.
+  #cpu = process.env.NUXT_DEBUG_PERF_CPU === '0' ? undefined : new HookCpuTracker()
   #waitingCalls = 0
   #waitingWindow?: { startTime: number, idleBefore: number }
   #waitingWindows: WaitingWindow[] = []
@@ -490,7 +507,13 @@ export class NuxtPerfProfiler {
    */
   timeBundlerHook<T> (pluginName: string, hookName: string, ctx: unknown, run: (ctx: any) => T): T {
     const timing = this.#hookTiming(pluginName, hookName)
+    let owner: CpuOwner | undefined
+    if (this.#cpu?.enable()) {
+      owner = this.#cpu.createOwner()
+      timing.cpu ??= { time: 0, totalTime: 0, maxTime: 0, running: 0, runningSince: 0 }
+    }
     const start = performance.now()
+    if (owner && timing.cpu!.running++ === 0) { timing.cpu!.runningSince = start }
     let othersSince = this.#othersTime(timing)
     let waiting = 0
     timing.count++
@@ -557,11 +580,20 @@ export class NuxtPerfProfiler {
       if (pending === 0) { stop(end) }
       if (turn) { turn.endTime ??= end }
       timing.maxTime = Math.max(timing.maxTime, duration)
-      this.#recordSpan(pluginName, hookName, duration, start, end, waiting)
+      if (owner) {
+        owner.done = true
+        const cpu = timing.cpu!
+        cpu.time += owner.cpuTime
+        cpu.maxTime = Math.max(cpu.maxTime, end - start)
+        if (--cpu.running === 0) { cpu.totalTime += end - cpu.runningSince }
+        this.#recordSpan(pluginName, hookName, end - start, start, end, Math.max(0, end - start - owner.cpuTime))
+      } else {
+        this.#recordSpan(pluginName, hookName, duration, start, end, waiting)
+      }
       return end
     }
     try {
-      const result = run(proxy)
+      const result = owner ? this.#cpu!.run(owner, () => run(proxy)) : run(proxy)
       leaveSync()
       if (result && typeof result === 'object' && 'then' in result) {
         let yielded = false
@@ -670,17 +702,27 @@ export class NuxtPerfProfiler {
         .map(([name, hookMap]) => {
           const hooks: Record<string, PluginHookTiming> = {}
           for (const [hookName, t] of hookMap) {
-            hooks[hookName] = {
-              totalTime: round(t.totalTime),
-              count: t.count,
-              maxTime: round(t.maxTime),
-              avgTime: round(t.totalTime / t.count),
-              waitingTime: round(Math.min(t.waitingTime, t.totalTime)),
-            }
+            hooks[hookName] = t.cpu
+              ? {
+                  totalTime: round(t.cpu.totalTime),
+                  count: t.count,
+                  maxTime: round(t.cpu.maxTime),
+                  avgTime: round(t.cpu.totalTime / t.count),
+                  waitingTime: round(Math.max(0, t.cpu.totalTime - t.cpu.time)),
+                  cpuTime: round(Math.min(t.cpu.time, t.cpu.totalTime)),
+                }
+              : {
+                  totalTime: round(t.totalTime),
+                  count: t.count,
+                  maxTime: round(t.maxTime),
+                  avgTime: round(t.totalTime / t.count),
+                  waitingTime: round(Math.min(t.waitingTime, t.totalTime)),
+                }
           }
           return { name, hooks }
         })
         .sort((a, b) => hookTotal(b.hooks) - hookTotal(a.hooks)),
+      bundlerPluginWaiting: this.#cpu?.used ? 'cpu' : 'lower-bound',
       timestamp: new Date().toISOString(),
     }
   }
@@ -791,10 +833,15 @@ export class NuxtPerfProfiler {
       const ownColor = waiting ? colors.dim : thresholdColor(ownTime, 1000, 200)
       return `${plugin} ${colors.dim(hook)} ${colors.dim('-')} ${ownColor(own)} ${colors.dim(`(${details.join(', ')})`)}${waiting ? ` ${colors.dim('- waiting')}` : ''}`
     }))
-    if (pluginHooks.some(h => formatDuration(h.ownTime) !== formatDuration(h.timing.totalTime))) {
-      consola.log(colors.dim('  Hooks are listed by total time, leaving out time they were known to be waiting.'))
+    if (pluginHooks.length) {
+      const cpu = report.bundlerPluginWaiting === 'cpu'
+      consola.log(colors.dim(cpu
+        ? '  Hooks are listed by the time the main thread spent running their own code.'
+        : '  Hooks are listed by total time, leaving out a lower bound of the time they were waiting.'))
       if (pluginHooks.some(h => h.waiting)) {
-        consola.log(colors.dim('  waiting: for at least half its time the main thread was idle or running other hooks; unmarked hooks may also have been waiting'))
+        consola.log(colors.dim(cpu
+          ? '  waiting: for at least half its time the hook was not running its own code'
+          : '  waiting: for at least half its time the main thread was idle or running other hooks; unmarked hooks may also have been waiting'))
       }
       consola.log('')
     }
@@ -926,6 +973,7 @@ export class NuxtPerfProfiler {
   }
 
   dispose (): void {
+    this.#cpu?.disable()
     this.#unsubscribe?.()
   }
 }
