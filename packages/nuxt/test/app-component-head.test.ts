@@ -125,6 +125,8 @@ describe('app component head extraction', () => {
     ['a destructuring default', `const { entry = useHead({ title: 'Earlier' }) } = {}`],
     ['an array destructuring default', `const [entry = useHead({ title: 'Earlier' })] = []`],
     ['a compiler macro with side effects in its arguments', `defineExpose({ head: useHead({ title: 'Earlier' }) })`],
+    ['a compiler macro reading a property in its arguments', `defineExpose({ value: source.value })`],
+    ['a compiler macro spreading an object in its arguments', `defineExpose({ ...source })`],
   ])('does not hoist past %s', async (_, statement) => {
     expect(await extract(`${statement}\nuseHead({ title: 'Site' })`)).toEqual([])
   })
