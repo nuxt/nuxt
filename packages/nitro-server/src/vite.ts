@@ -224,7 +224,7 @@ const NITRO_VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(NITRO_VIRTUAL_PREFIX)}`)
  * resolves to `undefined` when the provider omits it.
  *
  * `entryChunkName` is excluded: `StableEntryPlugin` finalises it in the client
- * env's `writeBundle`, which completes before the ssr env loads it.
+ * env's `writeBundle`, and its provider waits for the client build.
  *
  * `ssrStyles` is deferred because the ssr environment cannot import its own
  * emitted `styles.mjs`; `SSRStylesPlugin` exposes the styles map as a code

@@ -1822,6 +1822,13 @@ export interface ConfigSchema {
     layoutChunk: boolean
 
     /**
+     * Whether to build the client and server environments concurrently in a Vite production build.
+     *
+     * @default true
+     */
+    parallelBuild: boolean
+
+    /**
      * Extract async data handler functions into separate chunks for better performance and caching.
      *
      * When enabled, handler functions passed to `useAsyncData` and `useLazyAsyncData` will be extracted

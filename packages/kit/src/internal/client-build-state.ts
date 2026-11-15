@@ -1,6 +1,7 @@
 import type { Nuxt } from '@nuxt/schema'
 
 import { useNuxt } from '../context.ts'
+import { bundlerDiagnostics } from '../diagnostics/bundler.ts'
 
 /**
  * State the client build leaves in memory for the server build to read, as opposed to
@@ -24,6 +25,21 @@ export interface ClientBuildState<T = unknown> {
 export function addClientBuildState<T> (key: string, state: ClientBuildState<T>, nuxt: Nuxt = useNuxt()): void {
   nuxt._clientBuildState ??= new Map()
   nuxt._clientBuildState.set(key, state)
+}
+
+/**
+ * Resolves once the client build has finished when it runs alongside the server build,
+ * and immediately otherwise. Server build hooks must wait for it before reading client
+ * build state or any build output derived from it. Rejects when `environment` is the
+ * client build, which would otherwise wait for itself.
+ *
+ * @internal
+ */
+export async function waitForClientBuild (nuxt: Nuxt = useNuxt(), environment?: string): Promise<void> {
+  if (environment === 'client') {
+    throw bundlerDiagnostics.NUXT_B7038()
+  }
+  await nuxt._clientBuild
 }
 
 /** @internal */

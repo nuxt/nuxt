@@ -353,6 +353,12 @@ export interface Nuxt {
    */
   '_clientBuildState'?: Map<string, { save: () => unknown, restore: (state: any) => void }>
 
+  /**
+   * The client build, while it runs alongside the server build.
+   * @internal
+   */
+  '_clientBuild'?: Promise<void>
+
   /** The resolved Nuxt configuration. */
   'options': NuxtOptions
   'hooks': NuxtHookRegistry<NuxtHooks>
