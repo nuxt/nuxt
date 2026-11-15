@@ -329,6 +329,23 @@ describe('wrapLegacyHandler', () => {
     expect(typeof wrapped.fetch).toBe('function')
   })
 
+  it('sends a string a handler returns as HTML unless the handler sets a content type', async () => {
+    const html = mockEvent('http://nuxt/page')
+    await (wrapLegacyHandler(() => '<h1>ok</h1>') as (event: any) => unknown)(html)
+    expect(html.res.headers.get('content-type')).toBe('text/html')
+
+    const text = mockEvent('http://nuxt/robots.txt')
+    await (wrapLegacyHandler((event: any) => {
+      event.res.headers.set('content-type', 'text/plain')
+      return 'ok'
+    }) as (event: any) => unknown)(text)
+    expect(text.res.headers.get('content-type')).toBe('text/plain')
+
+    const passed = mockEvent('http://nuxt/_mw')
+    await (wrapLegacyHandler(() => undefined) as (event: any) => unknown)(passed)
+    expect(passed.res.headers.has('content-type')).toBe(false)
+  })
+
   it.each([
     ['/_mw/deep?q=1', '/deep?q=1'],
     ['/_mw', '/'],

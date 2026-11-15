@@ -201,6 +201,20 @@ describe('h3 v1 shim', () => {
     expect(calls).toEqual(['onRequest', 'onBeforeResponse:ok'])
   })
 
+  it('sends a string a handler returns as HTML unless the handler sets a content type', async () => {
+    const html = await defineEventHandler(() => '<h1>ok</h1>').fetch(new Request('http://nuxt/page'))
+    expect(html.headers.get('content-type')).toBe('text/html')
+
+    const text = await defineEventHandler((event) => {
+      event.res.headers.set('content-type', 'text/plain')
+      return 'ok'
+    }).fetch(new Request('http://nuxt/robots.txt'))
+    expect(text.headers.get('content-type')).toBe('text/plain')
+
+    const json = await defineEventHandler(() => ({ ok: true })).fetch(new Request('http://nuxt/api/test'))
+    expect(json.headers.get('content-type')).toContain('application/json')
+  })
+
   it('normalises errors thrown from a handler', async () => {
     const handler = defineEventHandler(() => {
       throw createError({ statusCode: 422, statusMessage: 'Unprocessable', data: { field: 'name' } })

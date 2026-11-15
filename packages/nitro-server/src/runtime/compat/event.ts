@@ -75,6 +75,14 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
   return event
 }
 
+/** Send a string a handler returns as HTML unless the handler set a content type, as h3 v1 did. */
+export function withLegacyContentType<T> (event: H3EventType, body: T): T {
+  if (typeof body === 'string' && !event.res.headers.has('content-type')) {
+    event.res.headers.set('content-type', 'text/html')
+  }
+  return body
+}
+
 function createLegacyNitroSlot (event: H3EventType, getRouteRules?: RouteRulesResolver) {
   const slot: Record<string, any> = {}
   let rules: Record<string, any> | undefined
