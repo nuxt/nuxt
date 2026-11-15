@@ -9,7 +9,7 @@ import { serialize } from 'seroval'
 import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
 import type { Plugin, Manifest as ViteClientManifest } from 'vite'
 import { setBuildOutput } from '@nuxt/kit'
-import { addClientBuildState, bundlerDiagnostics, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
+import { addClientBuildState, bundlerDiagnostics, setServerBuild, useServerBuild, waitForClientBuild } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { resolveClientEntry, resolveClientManifestFile } from '../utils/config.ts'
 import { collectGlobalCss, toFsUrl } from '../utils/css.ts'
@@ -133,6 +133,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   }
 
   async function finalizeBuildManifest (): Promise<void> {
+    await waitForClientBuild(nuxt)
     if (!nuxt.options.dev && !clientBundleGenerated) {
       // The client build never produced a bundle (for example, a build aborted
       // before it ran), so there is no manifest to finalise.

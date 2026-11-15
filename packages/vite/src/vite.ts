@@ -24,6 +24,7 @@ import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } f
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
+import { ParallelBuildPlugin } from './plugins/parallel-build.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
 import { OptimizeDepsPlugin } from './plugins/optimize-deps.ts'
@@ -264,6 +265,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ClientChunksPlugin(nuxt),
         AnalyzePlugin(nuxt),
         OptimizeDepsHintPlugin(nuxt),
+        ParallelBuildPlugin(nuxt),
       ],
       appType: 'custom',
       server: {

@@ -186,5 +186,15 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'In development, Nuxt can only render through `#server-entry` inside the target. Fix the error the target logged, or have it pass the request to `#server-entry`.',
       docs: false,
     },
+    NUXT_B7038: {
+      why: 'The client build tried to wait for itself to finish, so it could never complete.',
+      fix: 'Only wait for the client build from the server build. Please report this at https://github.com/nuxt/nuxt/issues.',
+      docs: false,
+    },
+    NUXT_B7039: {
+      why: (p: { entry: string }) => `Styles could not be inlined, as the server entry \`${p.entry}\` was not transformed while the client and server were building concurrently.`,
+      fix: 'Set `experimental.parallelBuild: false` in your `nuxt.config`, and please report this at https://github.com/nuxt/nuxt/issues.',
+      docs: false,
+    },
   },
 })

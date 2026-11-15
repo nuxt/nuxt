@@ -292,6 +292,7 @@ export default defineResolvers({
     entryImportMap: true,
     compileHints: true,
     layoutChunk: true,
+    parallelBuild: true,
     extractAsyncDataHandlers: booleanOr(false),
     nitroAutoImports: booleanOr(false),
     typescriptPlugin: booleanOr(false),
