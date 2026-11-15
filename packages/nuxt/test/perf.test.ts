@@ -395,6 +395,33 @@ describe('NuxtPerfProfiler', () => {
       expect(perf.getTraceEvents().find(e => e.name === 'delegating:resolveId')).toMatchObject({ args: { durationMs: 40, waitingMs: 20 } })
     })
 
+    it('lists bundler hooks by the time they were not waiting', async () => {
+      const clock = mockClock()
+      const log = vi.spyOn(consola, 'log').mockImplementation(() => {})
+      onTestFinished(() => log.mockRestore())
+      const perf = new NuxtPerfProfiler()
+      const fs = deferred()
+
+      const waiting = perf.timeBundlerHook('virtual', 'load', {}, () => fs.promise)
+      await flush()
+      clock.set(10)
+      perf.timeBundlerHook('busy', 'transform', {}, () => { clock.set(70) })
+      perf.timeBundlerHook('busy', 'transform', {}, () => {})
+      perf.timeBundlerHook('busy', 'transform', {}, () => {})
+      clock.set(100)
+      fs.settle()
+      await waiting
+
+      expect(perf.getReport().bundlerPlugins.map(p => p.name)).toEqual(['busy', 'virtual'])
+      perf.printReport()
+      const lines = log.mock.calls.map(([line]) => stripVTControlCharacters(String(line)))
+      const hooks = lines.filter(line => line.includes(' • '))
+      expect(hooks).toEqual([
+        '  • busy transform - 60ms (3 calls, 20ms/file, max 60ms)',
+        '  • virtual load - 40ms (1 call, 100ms total) - waiting',
+      ])
+    })
+
     it('reports how busy the main thread was while hooks were waiting', async () => {
       const clock = mockClock()
       const log = vi.spyOn(consola, 'log').mockImplementation(() => {})

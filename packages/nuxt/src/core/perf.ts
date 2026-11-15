@@ -646,7 +646,7 @@ export class NuxtPerfProfiler {
       }
     }
 
-    const hookTotal = (hooks: Record<string, PluginHookTiming>) => Object.values(hooks).reduce((s, h) => s + h.totalTime, 0)
+    const hookTotal = (hooks: Record<string, PluginHookTiming>) => Object.values(hooks).reduce((s, h) => s + h.totalTime - h.waitingTime, 0)
 
     return {
       totalDuration,
@@ -770,18 +770,32 @@ export class NuxtPerfProfiler {
       .map(m => `${m.name} ${colors.dim('-')} ${thresholdColor(m.setupTime, 500, 100)(formatDuration(m.setupTime))}`))
 
     const pluginHooks = report.bundlerPlugins
-      .flatMap(plugin => Object.entries(plugin.hooks).map(([hook, timing]) => ({ plugin: plugin.name, hook, timing, waiting: timing.waitingTime >= timing.totalTime * WAITING_SHARE })))
-      .filter(({ timing }) => timing.avgTime > 0.5)
-      .sort((a, b) => b.timing.avgTime - a.timing.avgTime)
+      .flatMap(plugin => Object.entries(plugin.hooks).map(([hook, timing]) => ({
+        plugin: plugin.name,
+        hook,
+        timing,
+        ownTime: timing.totalTime - timing.waitingTime,
+        waiting: timing.waitingTime >= timing.totalTime * WAITING_SHARE,
+      })))
+      .filter(({ ownTime }) => ownTime > 5)
+      .sort((a, b) => b.ownTime - a.ownTime)
       .slice(0, 15)
-    printList('Bundler Plugins', pluginHooks.map(({ plugin, hook, timing, waiting }) => {
-      const maxLabel = timing.maxTime > timing.avgTime * 2 ? `, max ${formatDuration(timing.maxTime)}` : ''
-      const calls = timing.count > 1 ? `${timing.count} calls, ${formatDuration(timing.totalTime)} total` : '1 call'
-      const avgColor = waiting ? colors.dim : thresholdColor(timing.avgTime, 10, 2)
-      return `${plugin} ${colors.dim(hook)} ${colors.dim('-')} ${avgColor(formatDuration(timing.avgTime) + '/file')}${colors.dim(maxLabel)} ${colors.dim(`(${calls})`)}${waiting ? ` ${colors.dim('- waiting')}` : ''}`
+    printList('Bundler Plugins', pluginHooks.map(({ plugin, hook, timing, ownTime, waiting }) => {
+      const own = formatDuration(ownTime)
+      const total = formatDuration(timing.totalTime)
+      const details = [
+        timing.count > 1 ? `${timing.count} calls, ${formatDuration(timing.avgTime)}/file` : '1 call',
+        ...timing.count > 1 && timing.maxTime > timing.avgTime * 2 ? [`max ${formatDuration(timing.maxTime)}`] : [],
+        ...total !== own ? [`${total} total`] : [],
+      ]
+      const ownColor = waiting ? colors.dim : thresholdColor(ownTime, 1000, 200)
+      return `${plugin} ${colors.dim(hook)} ${colors.dim('-')} ${ownColor(own)} ${colors.dim(`(${details.join(', ')})`)}${waiting ? ` ${colors.dim('- waiting')}` : ''}`
     }))
-    if (pluginHooks.some(h => h.waiting)) {
-      consola.log(colors.dim('  waiting: for at least half its time the main thread was idle or running other hooks; unmarked hooks may also have been waiting'))
+    if (pluginHooks.some(h => formatDuration(h.ownTime) !== formatDuration(h.timing.totalTime))) {
+      consola.log(colors.dim('  Hooks are listed by total time, leaving out time they were known to be waiting.'))
+      if (pluginHooks.some(h => h.waiting)) {
+        consola.log(colors.dim('  waiting: for at least half its time the main thread was idle or running other hooks; unmarked hooks may also have been waiting'))
+      }
       consola.log('')
     }
 
