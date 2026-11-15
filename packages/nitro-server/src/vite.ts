@@ -199,7 +199,9 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
 }
 
 const VIRTUAL_PREFIX = '\0nuxt-build-output:'
+const VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(VIRTUAL_PREFIX)}`)
 const NITRO_VIRTUAL_PREFIX = '\0nuxt-nitro-virtual:'
+const NITRO_VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(NITRO_VIRTUAL_PREFIX)}`)
 
 /**
  * Build outputs whose value is not final until the ssr environment's own
@@ -309,16 +311,15 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
+      filter: { id: new RegExp(`^(?:${Object.keys(outputs).map(id => escapeRE(id)).join('|')})$`) },
       handler (id) {
-        if (id in outputs) {
-          return VIRTUAL_PREFIX + id
-        }
+        return VIRTUAL_PREFIX + id
       },
     },
     load: {
       order: 'pre',
+      filter: { id: VIRTUAL_PREFIX_RE },
       async handler (id) {
-        if (!id.startsWith(VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(VIRTUAL_PREFIX.length)
 
         const key = outputs[specifier]
@@ -518,8 +519,8 @@ function NitroVirtualBridge (nuxt: Nuxt, nitro: Nitro): VitePlugin {
     },
     load: {
       order: 'pre',
+      filter: { id: NITRO_VIRTUAL_PREFIX_RE },
       async handler (id) {
-        if (!id.startsWith(NITRO_VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(NITRO_VIRTUAL_PREFIX.length)
         const entry = nitro.options.virtual[specifier]
         const code = typeof entry === 'function' ? await entry() : entry
