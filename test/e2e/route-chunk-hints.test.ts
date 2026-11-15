@@ -185,6 +185,32 @@ test.describe('route chunk hints', () => {
     }
   })
 
+  test('reloads for a navigation already waiting on a layout whose hint failed', async ({ page, goto }) => {
+    await goto('/')
+    await markDocument(page)
+
+    const hints = await readHints(page, 'alt')
+    const layout = hints.layout.find(hint => hint.file.endsWith('.js'))!.file
+
+    let fail!: () => void
+    const failing = new Promise<void>((resolve) => { fail = resolve })
+    await page.route(`**${ASSETS_PATH}${layout}`, async (route) => {
+      await failing
+      await route.abort('connectionreset')
+    }, { times: 1 })
+
+    const requested = page.waitForRequest(request => new URL(request.url()).pathname === `${ASSETS_PATH}${layout}`)
+    await page.hover('#other')
+    await requested
+
+    await page.evaluate(() => { void (window as any).useNuxtApp().$router.push('/other') })
+    await settle(page)
+    fail()
+
+    await expect(page.locator('#alt-layout #other-page')).toHaveText('Other page')
+    expect(await isMarkedDocument(page)).toBe(false)
+  })
+
   test('goes back in the history after a preload failed', async ({ page, goto }) => {
     await goto('/')
     await page.evaluate(() => (window as any).useNuxtApp().$router.push('/again'))

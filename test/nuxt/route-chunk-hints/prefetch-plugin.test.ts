@@ -35,7 +35,8 @@ async function installPlugin (routeComponents: unknown[] = []) {
         guards.push(guard)
         return () => { guards.splice(guards.indexOf(guard), 1) }
       },
-      resolve: () => ({
+      resolve: (path: string) => ({
+        href: path,
         meta: { layout: 'default' },
         matched: routeComponents.map(component => ({ components: { default: component } })),
       }),
@@ -121,6 +122,12 @@ describe('prefetching a link to a server page with `experimental.routeChunkHints
 })
 
 describe('navigating with `experimental.routeChunkHints`', () => {
+  function failPreload () {
+    for (const [listener] of preloadHints.onFailedPreload.mock.calls) {
+      listener()
+    }
+  }
+
   it('loads the destination in a new document once a preload has failed', async () => {
     const { mount, navigate } = await installPlugin()
     mount()
@@ -128,7 +135,7 @@ describe('navigating with `experimental.routeChunkHints`', () => {
     expect(navigate('/first')).toHaveLength(1)
     expect(reloadNuxtApp).not.toHaveBeenCalled()
 
-    preloadHints.onFailedPreload.mock.calls[0]![0]()
+    failPreload()
     const [pending, ...others] = navigate('/second?query=1')
     expect(others).toEqual([])
     const settled = vi.fn()
@@ -140,7 +147,7 @@ describe('navigating with `experimental.routeChunkHints`', () => {
 
   it('still navigates within the page once a preload has failed', async () => {
     const { navigate } = await installPlugin()
-    preloadHints.onFailedPreload.mock.calls[0]![0]()
+    failPreload()
 
     expect(navigate('/page#section', '/page')).toEqual([undefined])
     expect(navigate('/page?query=1', '/page')).toEqual([undefined])

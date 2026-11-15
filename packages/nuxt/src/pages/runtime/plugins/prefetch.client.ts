@@ -33,32 +33,44 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       warmRouteChunkHints()
     }
 
+    function reloadToNavigation (fullPath: string) {
+      // every reload follows a navigation, so reloading the same path twice is not a loop
+      reloadNuxtApp({ path: router.resolve(fullPath).href, persistState: true, force: true })
+      // the navigation is left pending rather than cancelled, which would have the router move
+      // the history back from an entry the browser has already moved to
+      return new Promise<void>(() => {})
+    }
+
+    const preloadFailure = new Promise<true>((resolve) => {
+      if (routeChunkHints) {
+        onFailedPreload(() => resolve(true))
+      }
+    })
+
     // Force layout prefetch on route changes
     let stopLoadingLayouts: (() => void) | undefined
     nuxtApp.hooks.hook('app:mounted', () => {
-      stopLoadingLayouts = router.beforeEach(async (to) => {
+      stopLoadingLayouts = router.beforeEach(async (to, from) => {
         const layout = to?.meta?.layout
         if (typeof layout === 'string' && layout in layouts) {
-          await _loadAsyncComponent(layouts[layout])
+          // a navigation already waiting on a layout whose hint failed would otherwise never settle
+          const failed = await Promise.race([preloadFailure, Promise.resolve(_loadAsyncComponent(layouts[layout])).then(() => false)])
+          if (failed && to.path !== from.path) {
+            return reloadToNavigation(to.fullPath)
+          }
         }
       })
     })
 
     if (routeChunkHints) {
       onFailedPreload(() => {
-        // the guard above may never settle for a layout whose hint failed, and the one added here
-        // would otherwise run after it
         stopLoadingLayouts?.()
         router.beforeEach((to, from) => {
           // the browser would not load a new document for a hash alone
           if (to.path === from.path) {
             return
           }
-          // every reload follows a navigation, so reloading the same path twice is not a loop
-          reloadNuxtApp({ path: router.resolve(to.fullPath).href, persistState: true, force: true })
-          // the navigation is left pending rather than cancelled, which would have the router move
-          // the history back from an entry the browser has already moved to
-          return new Promise<void>(() => {})
+          return reloadToNavigation(to.fullPath)
         })
       })
     }
