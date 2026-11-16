@@ -172,6 +172,31 @@ describe('server runtime config mutation guard', () => {
     expect(reports()[0]).toContain('`public.pushedList` was mutated')
   })
 
+  it('stores the underlying value when a guarded value is written back', () => {
+    captureReports()
+    const item = { name: 'a' }
+    const target = { public: { item, other: null as unknown } }
+    const config = guardedServerConfig(target)
+
+    ;(config.public as any).other = (config.public as any).item
+
+    expect(target.public.other).toBe(item)
+  })
+
+  it('does not nest guards from earlier requests', () => {
+    const reports = captureReports()
+    const target = { public: { sourceList: [{ name: 'a' }], copiedList: [] as unknown[] } }
+    const firstRequest = guardedServerConfig(target)
+    ;(firstRequest.public as any).copiedList = [...(firstRequest.public as any).sourceList]
+
+    const secondRequest = guardedServerConfig(target)
+    ;(secondRequest.public as any).copiedList[0].name = 'b'
+
+    expect(target.public.sourceList[0]!.name).toBe('b')
+    expect(reports().filter(message => message.includes('.0.name'))).toHaveLength(1)
+    expect(reports().at(-1)).toContain('`public.copiedList.0.name`')
+  })
+
   it('reports each key path once across requests, but distinct paths separately', () => {
     const reports = captureReports()
     const config = guardedServerConfig({ public: { counterA: 0, counterB: 0 } })

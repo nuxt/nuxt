@@ -2,6 +2,7 @@ import { appDiagnostics } from '../diagnostics/core'
 import { getUserTrace } from '../utils'
 
 const loggedMutations = new Set<string>()
+const guardTargets = new WeakMap<object, object>()
 
 function isWrappable (val: unknown): val is object {
   if (!val || typeof val !== 'object') { return false }
@@ -35,11 +36,12 @@ export function guardedServerConfig (runtimeConfig: Record<string, unknown>): Re
         const value = Reflect.get(target, p, receiver)
         const descriptor = Reflect.getOwnPropertyDescriptor(target, p)
         if (descriptor && !descriptor.configurable && !descriptor.writable) { return value }
-        return isWrappable(value) ? wrap(value, keyPath(p)) : value
+        return isWrappable(value) ? wrap(guardTargets.get(value) ?? value, keyPath(p)) : value
       },
       defineProperty (target, p, descriptor) {
         report(mutationPath(p))
-        return Reflect.defineProperty(target, p, descriptor)
+        const value = guardTargets.get(descriptor.value)
+        return Reflect.defineProperty(target, p, value ? { ...descriptor, value } : descriptor)
       },
       deleteProperty (target, p) {
         report(mutationPath(p))
@@ -48,6 +50,7 @@ export function guardedServerConfig (runtimeConfig: Record<string, unknown>): Re
     })
 
     proxies.set(target, proxy)
+    guardTargets.set(proxy, target)
     return proxy
   }
 
