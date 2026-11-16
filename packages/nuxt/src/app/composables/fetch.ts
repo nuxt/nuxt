@@ -671,6 +671,8 @@ export function _createUseFetch<
       // - defaults mode (plain object): factory < user opts (factory provides defaults)
       // - override mode (function): user opts < factory (factory overrides user opts)
       const {
+        key: keyOption,
+        $fetch: customFetch,
         server,
         lazy,
         default: defaultFn,
@@ -705,7 +707,7 @@ export function _createUseFetch<
 
       const _request = computed(() => toValue(request))
 
-      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([
+      const key = computed(() => toValue(keyOption) || ('$f' + hashKey([
         autoKey,
         typeof _request.value === 'string' ? _request.value : '',
         ...generateOptionSegments(fetchOptions),
@@ -760,10 +762,10 @@ export function _createUseFetch<
 
       const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
         // Typed as a plain callable rather than `TypedFetch`: unioning/comparing two route-mapped fetch instantiations blows the recursion limit under nitropack v2's typed-route matcher.
-        let _$fetch: (request: unknown, options?: any) => Promise<unknown> = fetchOptions.$fetch || $fetch
+        let _$fetch: (request: unknown, options?: any) => Promise<unknown> = customFetch || $fetch
 
         // Use fetch with request context and headers for server direct API calls
-        if (import.meta.server && !fetchOptions.$fetch) {
+        if (import.meta.server && !customFetch) {
           const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(fetchOptions.baseURL) || toValue(fetchOptions.baseURL)![0] === '/')
           if (isLocalFetch) {
             _$fetch = useRequestFetch()

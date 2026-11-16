@@ -22,7 +22,7 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
+import { loadPayload, preloadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 import routerOptions from '#build/router.options.mjs'
 
@@ -38,6 +38,18 @@ vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
   ...await importOriginal<Record<string, unknown>>(),
   payloadExtraction: true,
 }))
+
+const routeRulesMatcher = vi.hoisted(() => ({ calls: 0 }))
+vi.mock('#build/route-rules.mjs', async (importOriginal) => {
+  const original = await importOriginal<{ default: (path: string) => Record<string, any> }>()
+  return {
+    ...original,
+    default: (path: string) => {
+      routeRulesMatcher.calls++
+      return original.default(path)
+    },
+  }
+})
 
 describe('app config', () => {
   it('can be updated', () => {
@@ -931,6 +943,51 @@ describe('compiled route rules', () => {
     } finally {
       fetchSpy.mockRestore()
     }
+  })
+
+  it('should match route rules once per payload load', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('[{"data":1},{}]')))
+    try {
+      routeRulesMatcher.calls = 0
+      await loadPayload('/pre/matched', { fresh: true })
+      expect(fetchSpy).toHaveBeenCalledOnce()
+      expect(routeRulesMatcher.calls).toBe(1)
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
+
+  it('should add a single preload link per payload', async () => {
+    const links = () => [...document.head.querySelectorAll<HTMLLinkElement>('link[href*="/pre/preloaded/_payload.json"]')]
+
+    const first = preloadPayload('/pre/preloaded')
+    const second = preloadPayload('/pre/preloaded')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await Promise.all([first, second])
+    expect(links()).toHaveLength(0)
+
+    const retried = preloadPayload('/pre/preloaded')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await retried
+    expect(links()).toHaveLength(0)
+  })
+
+  it('should retry a payload preload that failed', async () => {
+    const links = () => [...document.head.querySelectorAll<HTMLLinkElement>('link[href*="/pre/unreachable/_payload.json"]')]
+
+    const failed = preloadPayload('/pre/unreachable')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('error'))
+    await expect(failed).rejects.toBeUndefined()
+    expect(links()).toHaveLength(0)
+
+    const retried = preloadPayload('/pre/unreachable')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await retried
+    expect(links()).toHaveLength(0)
   })
 })
 

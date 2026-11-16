@@ -138,6 +138,7 @@ export function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, routeOp
 }
 
 const PAYLOAD_SIZE_WARNING_BYTES = 100 * 1024
+const PAYLOAD_WARNING_CACHE_SIZE = 100
 const warnedPayloadURLs = new Set<string>()
 
 function formatPayloadSize (bytes: number): string {
@@ -159,6 +160,9 @@ export function getPayloadKeySizes (data: NuxtPayload['data'] | undefined, reduc
 function warnOnLargePayload (ssrContext: NuxtSSRContext, data: Partial<NuxtPayload> | undefined, size: number) {
   if (size <= PAYLOAD_SIZE_WARNING_BYTES || warnedPayloadURLs.has(ssrContext.url)) {
     return
+  }
+  if (warnedPayloadURLs.size >= PAYLOAD_WARNING_CACHE_SIZE) {
+    warnedPayloadURLs.delete(warnedPayloadURLs.values().next().value!)
   }
   warnedPayloadURLs.add(ssrContext.url)
   const keys = getPayloadKeySizes(data?.data, ssrContext['~payloadReducers'])
