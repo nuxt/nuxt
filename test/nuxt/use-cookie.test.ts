@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const MAX_TIMEOUT_DELAY = 2_147_483_647
 
@@ -181,6 +181,8 @@ describe('useCookie', () => {
     try {
       useCookie('absent-null-default', { default: () => null })
       useCookie('absent-undefined-default', { default: () => undefined })
+      useCookie('absent-ref-null-default', { default: () => ref(null) })
+      useCookie('absent-ref-undefined-default', { default: () => ref(undefined) })
       expect(writes).toEqual([])
 
       useCookie('present-expired', { maxAge: 0, default: () => 'value' })

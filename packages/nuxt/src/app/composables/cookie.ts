@@ -1,5 +1,5 @@
 import type { Ref, WatchHandle } from 'vue'
-import { customRef, getCurrentScope, onScopeDispose, ref, watch } from 'vue'
+import { customRef, getCurrentScope, onScopeDispose, ref, unref, watch } from 'vue'
 import { parse, parseSetCookie, serialize } from 'cookie-es'
 import type { CookieSerializeOptions } from '../types/cookie'
 import type { NuxtRequestEvent } from '@nuxt/schema'
@@ -133,7 +133,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (
     rawValue !== undefined
       ? hasExpired || cookieValueIsNullish
-      : hasExpired ? opts.default !== undefined : cookieValue !== undefined && cookieValue !== null
+      : hasExpired ? opts.default !== undefined : unref(cookieValue) !== undefined && unref(cookieValue) !== null
   )
 
   // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
