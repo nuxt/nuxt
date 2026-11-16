@@ -531,6 +531,17 @@ describe('createUseFetch', () => {
     expect(data.value).toEqual({ variant: 'call' })
   })
 
+  it('should not pass `key` or `$fetch` on to the request', async () => {
+    const customFetch = vi.fn().mockResolvedValue({ ok: true })
+
+    await scope.run(() => useFetch('/api/test', { key: 'request-options', $fetch: customFetch as unknown as typeof $fetch }))
+
+    expect(customFetch).toHaveBeenCalledOnce()
+    const options = customFetch.mock.calls[0]![1]
+    expect(options).not.toHaveProperty('key')
+    expect(options).not.toHaveProperty('$fetch')
+  })
+
   it('should use baseURL from factory for URL validation', async () => {
     const customFetch = vi.fn().mockResolvedValue({ ok: true })
 
