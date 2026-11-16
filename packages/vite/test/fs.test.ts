@@ -1,15 +1,21 @@
 import { fileURLToPath } from 'node:url'
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { mkdir, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
-import { join } from 'pathe'
+import { dirname, join } from 'pathe'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { buildNuxt, loadNuxt } from '@nuxt/kit'
-import type { ViteConfig } from '@nuxt/schema'
+import type { NuxtConfig, ViteConfig } from '@nuxt/schema'
 
 const nuxtDir = fileURLToPath(new URL('../../nuxt', import.meta.url))
+
+const serverOutputFiles = [
+  '.output/server/index.mjs',
+  'node_modules/.cache/nuxt/.nuxt/prerender/index.mjs',
+  '.nuxt/prerender/index.mjs',
+]
 
 describe('vite dev server fs restrictions', () => {
   let parentDir: string
@@ -25,6 +31,10 @@ describe('vite dev server fs restrictions', () => {
     await writeFile(join(rootDir, '.env'), 'SECRET=value')
     await writeFile(join(rootDir, 'file.custom'), 'custom')
     await writeFile(join(rootDir, 'file.txt'), 'text')
+    for (const file of serverOutputFiles) {
+      await mkdir(dirname(join(rootDir, file)), { recursive: true })
+      await writeFile(join(rootDir, file), 'export const secret = 1')
+    }
     await writeFile(join(parentDir, 'secret.txt'), 'secret')
     await mkdir(join(parentDir, 'node_modules/hoisted'), { recursive: true })
     await writeFile(join(parentDir, 'node_modules/hoisted/index.js'), 'export default 1')
@@ -38,8 +48,8 @@ describe('vite dev server fs restrictions', () => {
     await rm(parentDir, { recursive: true, force: true, maxRetries: 3 })
   })
 
-  async function fetchStatuses (vite: ViteConfig, files: (buildDir: string) => string[]) {
-    const nuxt = await loadNuxt({ cwd: rootDir, dev: true, overrides: { vite } })
+  async function fetchStatuses (vite: ViteConfig, files: (buildDir: string) => string[], overrides: NuxtConfig = {}) {
+    const nuxt = await loadNuxt({ cwd: rootDir, dev: true, overrides: { ...overrides, vite } })
     const middlewares = new Promise<Parameters<typeof createServer>[1]>((resolve) => {
       nuxt.hook('vite:serverCreated', (server, { isClient }) => {
         if (isClient) {
@@ -76,6 +86,20 @@ describe('vite dev server fs restrictions', () => {
       join(parentDir, 'node_modules/hoisted/index.js'),
     ])
     expect(statuses).toEqual([403, 403, 403, 200, 200, 200])
+  }, 60000)
+
+  it('should not serve nitro server output', async () => {
+    const customOutputFile = join(rootDir, 'custom-output/server/index.mjs')
+    const statuses = await fetchStatuses({}, () => {
+      mkdirSync(dirname(customOutputFile), { recursive: true })
+      writeFileSync(customOutputFile, 'export const secret = 1')
+      return [
+        ...serverOutputFiles.map(file => join(rootDir, file)),
+        customOutputFile,
+        join(rootDir, 'file.txt'),
+      ]
+    }, { nitro: { output: { dir: 'custom-output' } } })
+    expect(statuses).toEqual([403, 403, 403, 403, 200])
   }, 60000)
 
   it('should not serve the app secret when `server.fs.deny` is configured', async () => {
