@@ -24,6 +24,7 @@ import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 import routerOptions from '#build/router.options.mjs'
+import { navigateToDefaults } from '#build/nuxt.config.mjs'
 
 import { isTestingAppManifest } from '../matrix'
 
@@ -928,7 +929,7 @@ describe('routing utilities: `navigateTo`', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null)
     try {
       expect(() => navigateTo('https://example.com', { open: { target: '_blank' } })).not.toThrow()
-      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener=true')
     } finally {
       open.mockRestore()
     }
@@ -938,10 +939,32 @@ describe('routing utilities: `navigateTo`', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null)
     try {
       navigateTo('https://example.com', { open: {} })
-      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener=true')
     } finally {
       open.mockRestore()
     }
+  })
+
+  it('navigateTo should let explicit `noopener` override `experimental.defaults.navigateTo`', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    const noopener = navigateToDefaults.noopener
+    onTestFinished(() => {
+      navigateToDefaults.noopener = noopener
+      open.mockRestore()
+    })
+
+    navigateTo('https://example.com', { open: { windowFeatures: { popup: true } } })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', 'popup=true, noopener=true')
+
+    navigateTo('https://example.com', { open: { windowFeatures: { noopener: false } } })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', 'noopener=false')
+
+    navigateToDefaults.noopener = false
+    navigateTo('https://example.com', { open: { windowFeatures: { popup: true } } })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', 'popup=true')
+
+    navigateTo('https://example.com', { open: {} })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', '')
   })
 
   it('navigateTo should respect app.baseURL when opening internal routes', () => {
@@ -951,13 +974,13 @@ describe('routing utilities: `navigateTo`', () => {
     config.app.baseURL = '/docs/'
     try {
       navigateTo('/guide', { open: { target: '_blank' } })
-      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', 'noopener=true')
 
       navigateTo({ path: '/guide' }, { open: { target: '_blank' } })
-      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', 'noopener=true')
 
       navigateTo('https://example.com', { open: { target: '_blank' } })
-      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener=true')
     } finally {
       config.app.baseURL = originalBaseURL
       open.mockRestore()
