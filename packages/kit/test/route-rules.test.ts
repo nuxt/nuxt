@@ -78,6 +78,16 @@ describe('matchAllRouteRules', () => {
     expect(matchAllRouteRules(match, '/docs/internal%252Fx')).toEqual(match('/docs/internal%252Fx'))
     expect(matchAllRouteRules(match, '/docs/a?next=%2Fdocs%2Finternal')).toEqual(match('/docs/a'))
   })
+
+  it('should match the path with each run of slashes collapsed', () => {
+    for (const path of ['//docs/internal/x', '///docs/internal/x', '/docs//internal/x', '/%2Fdocs/internal/x', '/%2fdocs%2F%2Finternal/x']) {
+      expect(matchAllRouteRules(match, path), path).toEqual([{ all: true }, { docs: true, layout: 'docs' }, { page: true }, { internal: true, layout: 'internal' }])
+    }
+    expect(matchAllRouteRules(match, '/docs/a?next=//docs/internal')).toEqual(match('/docs/a'))
+
+    const slug = createNormalizedRouteRulesRouter([{ route: '/docs/:slug', data: { slug: true } }], '', true)
+    expect(matchAllRouteRules(path => slug.matchAll('', normalizeRouteRuleLookupPath(path, true)), '//docs/a%2Fb')).toEqual([{ slug: true }])
+  })
 })
 
 describe('normalizeRouteRulePath', () => {

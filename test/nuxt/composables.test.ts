@@ -885,6 +885,13 @@ describe('encoded slash route rules', () => {
     }
   })
 
+  it('applies rules for the path with each run of slashes collapsed', () => {
+    for (const path of ['//pre/test', '///pre/test', '/%2Fpre/test', '/%2Fpre%2F%2Ftest']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ prerender: true, redirect: '/' })
+    }
+    expect(getRouteRules({ path: '/pre//spa/thing' })).toMatchObject({ ssr: false })
+  })
+
   it('does not treat a double-encoded slash as a separator', () => {
     expect(getRouteRules({ path: '/pre%252Ftest' })).not.toHaveProperty('redirect')
   })

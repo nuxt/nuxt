@@ -18,9 +18,10 @@ export function decodeRoutePath (path: string) {
 
 /**
  * Collect the route rules `match` returns for a route path and, if its path portion contains
- * an encoded slash (`%2F`), for the path with each encoded slash as a separator, since a page
- * route param spanning several segments decodes to the same value either way. Rules keep the
- * order `match` returns them in, and rules matched only through encoded slashes come last.
+ * an encoded slash (`%2F`) or a run of slashes, for the path with each encoded slash as a
+ * separator and for both paths with each run of slashes collapsed to one, since a page route
+ * param spanning several segments decodes to the same value either way. Rules keep the order
+ * `match` returns them in, and rules matched only through these readings come last.
  *
  * Inlined by source into compiled matchers, so it must not reference anything outside itself.
  *
@@ -29,10 +30,13 @@ export function decodeRoutePath (path: string) {
 export function matchAllRouteRules<T> (match: (path: string) => T[], path: string): T[] {
   const matches = match(path)
   if (typeof path !== 'string') { return matches }
+  const collapse = (reading: string) => reading.replace(/^[^?]*/, pathname => pathname.replace(/\/{2,}/g, '/'))
   const split = path.replace(/^[^?]*/, pathname => pathname.replace(/%2f/gi, '/'))
-  if (split === path) { return matches }
-  for (const rules of match(split)) {
-    if (!matches.includes(rules)) { matches.push(rules) }
+  for (const reading of new Set([collapse(path), split, collapse(split)])) {
+    if (reading === path) { continue }
+    for (const rules of match(reading)) {
+      if (!matches.includes(rules)) { matches.push(rules) }
+    }
   }
   return matches
 }

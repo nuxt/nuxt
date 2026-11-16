@@ -304,7 +304,7 @@ describe('route rules', () => {
   })
 
   it.skipIf(!once)('should apply route rules to a catch-all page when the path has encoded slashes', async () => {
-    for (const path of ['/catchall/route-rules/layout', '/catchall/route-rules%2Flayout', '/catchall/route-rules%2flayout']) {
+    for (const path of ['/catchall/route-rules/layout', '/catchall/route-rules%2Flayout', '/catchall/route-rules%2flayout', '/catchall//route-rules/layout', '/catchall/%2Froute-rules/layout']) {
       const res = await fetch(path)
       expect(res.headers.get('x-catchall-route-rules'), path).toEqual('applied')
       expect(await res.text(), path).toContain('Custom Layout')
