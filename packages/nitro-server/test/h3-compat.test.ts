@@ -230,6 +230,12 @@ describe('h3 v1 shim', () => {
 
     const json = await defineEventHandler(() => ({ ok: true })).fetch(new Request('http://nuxt/api/test'))
     expect(json.headers.get('content-type')).toContain('application/json')
+
+    const notModified = await defineEventHandler((event) => {
+      event.res.status = 304
+      return ''
+    }).fetch(new Request('http://nuxt/page'))
+    expect(notModified.headers.has('content-type')).toBe(false)
   })
 
   it('normalises errors thrown from a handler', async () => {
