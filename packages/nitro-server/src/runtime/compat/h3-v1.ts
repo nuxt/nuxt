@@ -18,10 +18,11 @@ import {
 } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { destr } from 'destr'
 
 import { getRouteRules } from '../utils/route-rules.ts'
 import { prepareLegacyEvent, withLegacyContentType } from './event.ts'
-import { toLegacyError } from './error-shape.ts'
+import { createError, toLegacyError } from './error-shape.ts'
 import type { H3ErrorInput } from './error-shape.ts'
 
 export { createError, toLegacyError, withLegacyErrorShape } from './error-shape.ts'
@@ -67,15 +68,46 @@ async function withReplayedBody (event: H3Event): Promise<H3Event> {
   return Object.create(event, { req: { value: request, enumerable: true } }) as H3Event
 }
 
-/** v1 `readBody`, reading a replayable copy of the body and caching the parsed result. */
-export function readBody<T = any> (event: H3Event, options?: { type?: 'json' | 'text' | 'formData' | 'urlencoded' }): Promise<T> {
+interface ReadBodyOptions {
+  /** Reject a body that is not valid JSON, rather than returning its text. */
+  strict?: boolean
+  type?: 'json' | 'text' | 'formData' | 'urlencoded'
+}
+
+/**
+ * v1 `readBody`, reading a replayable copy of the body and caching the parsed result.
+ *
+ * Without a `type`, a `text/*` body is returned as text, a urlencoded body as an object,
+ * and any other body is parsed as JSON. Parsing is strict for `application/json` and
+ * otherwise falls back to the text, unless `strict` says otherwise.
+ */
+export function readBody<T = any> (event: H3Event, options?: ReadBodyOptions): Promise<T> {
   const context = event.context as Record<symbol, any>
   const cache: Map<string, Promise<any>> = context[kParsedBody] ||= new Map()
-  const key = options?.type || 'auto'
+  const type = options?.type
+  const key = type || `auto:${options?.strict ?? ''}`
   if (!cache.has(key)) {
-    cache.set(key, withReplayedBody(event).then(replayed => _readBody(replayed, options as any)))
+    cache.set(key, type
+      ? withReplayedBody(event).then(replayed => _readBody(replayed, { type } as any))
+      : parseBody(event, options?.strict))
   }
   return cache.get(key)!
+}
+
+async function parseBody (event: H3Event, strict?: boolean): Promise<any> {
+  const contentType = event.req.headers.get('content-type') || ''
+  if (contentType.startsWith('application/x-www-form-urlencoded')) {
+    return _readBody(await withReplayedBody(event), { type: 'urlencoded' } as any)
+  }
+  const text: string | undefined = await readRawBody(event)
+  if (!text || contentType.startsWith('text/')) {
+    return text
+  }
+  try {
+    return destr(text, { strict: strict ?? contentType === 'application/json' })
+  } catch {
+    throw createError({ statusCode: 400, statusMessage: 'Bad Request', message: 'Invalid JSON body' })
+  }
 }
 
 /** v1 `readRawBody`, which returned `undefined` when there was no body. */

@@ -331,6 +331,39 @@ describe('v1 body readers', () => {
     expect(get.body).toBeNull()
   })
 
+  const bodyEvent = (body: string, contentType: string) => mockEvent('http://nuxt/body', {
+    method: 'POST',
+    body,
+    headers: { 'content-type': contentType },
+  })
+
+  it('returns a text body as text', async () => {
+    expect(await readBody(bodyEvent('hello', 'text/plain'))).toBe('hello')
+    expect(await readBody(bodyEvent('{"a":1}', 'text/plain; charset=utf-8'))).toBe('{"a":1}')
+  })
+
+  it('parses a body of another content type as JSON, falling back to the text', async () => {
+    expect(await readBody(bodyEvent('hello', 'application/octet-stream'))).toBe('hello')
+    expect(await readBody(bodyEvent('{"a":1}', 'application/octet-stream'))).toEqual({ a: 1 })
+    expect(await readBody(bodyEvent('{"a":1}', 'application/json; charset=utf-8'))).toEqual({ a: 1 })
+    expect(await readBody(bodyEvent('hello', 'application/json; charset=utf-8'))).toBe('hello')
+  })
+
+  it('parses an `application/json` body strictly unless told otherwise', async () => {
+    await expect(readBody(bodyEvent('hello', 'application/json'))).rejects.toMatchObject({ statusCode: 400, message: 'Invalid JSON body' })
+    expect(await readBody(bodyEvent('hello', 'application/json'), { strict: false })).toBe('hello')
+    await expect(readBody(bodyEvent('hello', 'application/octet-stream'), { strict: true })).rejects.toMatchObject({ statusCode: 400 })
+  })
+
+  it('returns the same text body for repeated reads', async () => {
+    const event = bodyEvent('hello', 'text/plain')
+
+    expect(await readBody(event)).toBe('hello')
+    expect(await readBody(event)).toBe('hello')
+    expect(await readRawBody(event)).toBe('hello')
+    expect(event.req.bodyUsed).toBe(false)
+  })
+
   it('returns `undefined` for a request with no body', async () => {
     const event = mockEvent('http://nuxt/api/test')
 
