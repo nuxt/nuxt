@@ -210,7 +210,7 @@ describe('v2 event bridge', () => {
     expect(event.res.status).toBe(404)
     expect(bridged.getHeader('set-cookie')).toEqual(['a=1', 'b=2', 'c=3'])
     expect(bridged.statusCode).toBe(404)
-    expect(res.getHeaders()).toEqual({})
+    expect(res.getHeaders()).toEqual({ 'set-cookie': ['a=1', 'b=2'], 'x-node': 'node' })
     expect(event.node!.req).toBe(req)
     expect(prepareLegacyEvent(event).node!.res).toBe(bridged)
   })
@@ -290,6 +290,21 @@ describe('v2 event bridge', () => {
 
     expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
     expect(bridged.getHeader('set-cookie')).toEqual(['a=1', 'b=2'])
+  })
+
+  it('keeps the status and headers on the node response for handlers that write to it directly', () => {
+    const { event, res } = nodeEvent()
+    const bridged = event.node!.res as ServerResponse
+
+    bridged.setHeader('set-cookie', ['a=1']).appendHeader('set-cookie', 'b=2')
+    bridged.statusCode = 201
+    bridged.statusMessage = 'Created'
+    res.end('ok')
+
+    expect(res.statusCode).toBe(201)
+    expect(res.statusMessage).toBe('Created')
+    expect(res.getHeader('set-cookie')).toEqual(['a=1', 'b=2'])
+    expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
   })
 
   it('does not clobber a `_nitro` slot the handler chain already set', () => {

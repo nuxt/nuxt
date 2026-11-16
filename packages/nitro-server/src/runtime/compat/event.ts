@@ -120,8 +120,8 @@ function replaceHeader (event: H3EventType, name: string, value: string | string
 const NODE_RESPONSE_WRITERS = new Set<string | symbol>(['writeHead', 'write', 'end', 'flushHeaders'])
 
 /**
- * A node response whose status and headers are those of the web response, copied onto the
- * node response when a handler writes to it directly.
+ * A node response whose header and status writes also apply to the web response, and which
+ * takes the status and headers of the web response when a handler writes to it directly.
  */
 function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerResponse {
   const web = createNodeResponseBridge(event)
@@ -137,6 +137,7 @@ function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerRes
 
   const headers: Record<string | symbol, (...args: any[]) => unknown> = {
     setHeader (name: string, value: string | string[]) {
+      res.setHeader(name, value)
       web.setHeader(name, value)
       return proxy
     },
@@ -145,10 +146,12 @@ function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerRes
       if (existing !== undefined && !web.hasHeader(name)) {
         web.setHeader(name, existing as string | string[])
       }
+      res.appendHeader(name, value)
       web.appendHeader(name, value)
       return proxy
     },
     setHeaders (entries: Headers | Map<string, string | string[] | number>) {
+      res.setHeaders(entries)
       const cookies: string[] = []
       for (const [name, value] of entries) {
         if (name.toLowerCase() === 'set-cookie') {
@@ -188,14 +191,8 @@ function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerRes
     },
     set (target, prop, value) {
       if (!target.headersSent) {
-        if (prop === 'statusCode') {
-          event.res.status = value
-          return true
-        }
-        if (prop === 'statusMessage') {
-          event.res.statusText = value
-          return true
-        }
+        if (prop === 'statusCode') { event.res.status = value }
+        if (prop === 'statusMessage') { event.res.statusText = value }
       }
       return Reflect.set(target, prop, value, target)
     },
