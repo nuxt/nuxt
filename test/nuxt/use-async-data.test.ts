@@ -2098,6 +2098,30 @@ describe('useAsyncData', () => {
     clearNuxtData(uniqueKey)
   })
 
+  it('should not let a subscriber switching key cancel a refresh with its initial cache lookup', async () => {
+    let resolveHandler!: (value: string) => void
+    const handler = vi.fn(() => new Promise<string>((resolve) => { resolveHandler = resolve }))
+    const getCachedData = (_key: string, _nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause }) => ctx.cause === 'initial' ? 'from-cache' : undefined
+
+    const scope = effectScope()
+    const first = scope.run(() => useAsyncData(uniqueKey, handler, { getCachedData }))!
+    const key = shallowRef(`${uniqueKey}-other`)
+    const second = scope.run(() => useAsyncData(key, handler, { getCachedData }))!
+
+    const refreshed = first.refresh()
+    expect(first.status.value).toBe('pending')
+
+    key.value = uniqueKey
+    resolveHandler('from-network')
+    await refreshed
+    await flushPromises()
+
+    expect(first.data.value).toBe('from-network')
+    expect(second.data.value).toBe('from-network')
+    scope.stop()
+    clearNuxtData([uniqueKey, `${uniqueKey}-other`])
+  })
+
   it('should not execute when enabled is false', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const { data, pending, status } = await useAsyncData(uniqueKey, promiseFn, { enabled: false })
