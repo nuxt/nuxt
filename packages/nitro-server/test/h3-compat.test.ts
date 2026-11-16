@@ -364,6 +364,27 @@ describe('v1 body readers', () => {
     expect(event.req.bodyUsed).toBe(false)
   })
 
+  it('rejects every read of a body whose source fails', async () => {
+    const request = new Request('http://nuxt/', {
+      method: 'POST',
+      duplex: 'half',
+      body: new ReadableStream({ start (controller) { controller.error(new Error('body source failed')) } }),
+    } as RequestInit)
+    const event = mockEvent(request)
+
+    await expect(readRawBody(event)).rejects.toThrow('body source failed')
+    await expect(readRawBody(event)).rejects.toThrow('body source failed')
+    await expect(readBody(event)).rejects.toThrow('body source failed')
+  })
+
+  it('rejects a read of a body already consumed elsewhere', async () => {
+    const event = bodyEvent('hello', 'text/plain')
+    await event.req.text()
+
+    await expect(readRawBody(event)).rejects.toThrow(TypeError)
+    await expect(readBody(event)).rejects.toThrow(TypeError)
+  })
+
   it('returns `undefined` for a request with no body', async () => {
     const event = mockEvent('http://nuxt/api/test')
 

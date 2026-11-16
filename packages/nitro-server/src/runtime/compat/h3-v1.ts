@@ -42,17 +42,12 @@ const kParsedBody = Symbol.for('nuxt.compat.parsedBody')
  * The whole body is buffered for the lifetime of the request, which for a large upload
  * costs its size in memory.
  */
-function readBufferedBody (event: H3Event): Promise<ArrayBuffer | undefined> {
+function readBufferedBody (event: H3Event): Promise<ArrayBuffer> {
   const context = event.context as Record<symbol, any>
   if (!context[kRawBody]) {
     const request = event.req
-    if (request.bodyUsed) {
-      return Promise.resolve(undefined)
-    }
     // cloned before any read: the clone drains, the original keeps its stream
-    context[kRawBody] = (typeof request.clone === 'function' ? request.clone() : request)
-      .arrayBuffer()
-      .catch(() => undefined)
+    context[kRawBody] = new Promise<ArrayBuffer>(resolve => resolve((typeof request.clone === 'function' ? request.clone() : request).arrayBuffer()))
   }
   return context[kRawBody]
 }
@@ -63,7 +58,7 @@ async function withReplayedBody (event: H3Event): Promise<H3Event> {
   const request = new Request(event.req.url, {
     method: event.req.method,
     headers: event.req.headers,
-    body: buffer && buffer.byteLength > 0 ? buffer : undefined,
+    body: buffer.byteLength > 0 ? buffer : undefined,
   })
   return Object.create(event, { req: { value: request, enumerable: true } }) as H3Event
 }
@@ -113,7 +108,7 @@ async function parseBody (event: H3Event, strict?: boolean): Promise<any> {
 /** v1 `readRawBody`, which returned `undefined` when there was no body. */
 export async function readRawBody (event: H3Event, encoding: 'utf8' | false = 'utf8'): Promise<any> {
   const buffer = await readBufferedBody(event)
-  if (!buffer || buffer.byteLength === 0) {
+  if (buffer.byteLength === 0) {
     return undefined
   }
   return encoding ? new TextDecoder().decode(buffer) : new Uint8Array(buffer)
@@ -141,7 +136,7 @@ export function getRequestWebStream (event: H3Event): ReadableStream | undefined
   return new ReadableStream<Uint8Array>({
     async start (controller) {
       const buffer = await readBufferedBody(event)
-      if (buffer && buffer.byteLength > 0) {
+      if (buffer.byteLength > 0) {
         controller.enqueue(new Uint8Array(buffer))
       }
       controller.close()
