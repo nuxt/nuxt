@@ -8,7 +8,7 @@ import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { flushPromises } from '@vue/test-utils'
-import { Transition, isShallow, triggerRef, watch } from 'vue'
+import { Transition, isShallow, triggerRef, watch, watchSyncEffect } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
@@ -179,6 +179,23 @@ describe('useAsyncData', () => {
     clearNuxtData(uniqueKey)
     expect(data.data.value).toBeUndefined()
     expect(useNuxtData(uniqueKey).data.value).toBeUndefined()
+  })
+
+  it('should not treat inherited object properties as shared data', async () => {
+    const nuxtApp = useNuxtApp()
+    const data = useNuxtData('valueOf')
+    const values: unknown[] = []
+    const stop = watchSyncEffect(() => { values.push(data.data.value) })
+    onTestFinished(stop)
+
+    expect(values).toEqual([undefined])
+
+    nuxtApp.payload.data.valueOf = 'value'
+    await nextTick()
+
+    expect(values).toEqual([undefined, 'value'])
+    expect(data.data.value).toBe('value')
+    clearNuxtData('valueOf')
   })
 
   it('should be usable _after_ a useNuxtData call', async () => {

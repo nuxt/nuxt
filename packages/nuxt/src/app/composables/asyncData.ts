@@ -784,7 +784,9 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
   return {
     data: computed({
       get () {
-        return nuxtApp._asyncData[key]?.data.value ?? nuxtApp.payload.data[key]
+        const data = nuxtApp._asyncData[key]?.data.value
+        const payloadData = nuxtApp.payload.data[key]
+        return data ?? (Object.hasOwn(nuxtApp.payload.data, key) ? payloadData : undefined)
       },
       set (value) {
         if (nuxtApp._asyncData[key]) {
