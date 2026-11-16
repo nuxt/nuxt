@@ -919,6 +919,15 @@ function buildAsyncData<
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
         const cachedData = 'cachedData' in opts ? opts.cachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (cachedData !== undefined) {
+          // a subscriber's initial lookup does not supersede a request already in flight
+          if (opts.cause !== 'initial' && nuxtApp._asyncDataPromises[key]) {
+            asyncData._abortController?.abort(new DOMException('AsyncData request cancelled by cache hit', 'AbortError'))
+            asyncData._abortController = undefined
+            delete nuxtApp._asyncDataPromises[key]
+            if (pendingWhenIdle) {
+              asyncData.pending.value = false
+            }
+          }
           if (options.serialize !== false) {
             nuxtApp.payload.data[key] = cachedData
           }
@@ -985,6 +994,9 @@ function buildAsyncData<
           let result = _result as unknown as DataT
           if (options.transform) {
             result = await options.transform(_result)
+            if (nuxtApp._asyncDataPromises[key] !== promise) {
+              return
+            }
           }
           if (options.pick) {
             result = pick(result as any, options.pick) as DataT
