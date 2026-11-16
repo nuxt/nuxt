@@ -214,10 +214,11 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         // Scan for `composables/` and `utils/` directories
         if (options.scan) {
           if (rescan || !lastScannedImports) {
-            lastScanStartedAt = Date.now()
+            const scanStartedAt = Date.now()
             lastScannedImports = await scanDirExports(composablesDirs, {
               fileFilter: file => !isIgnored(file),
             })
+            lastScanStartedAt = scanStartedAt
             lastScannedFiles = new Set(lastScannedImports.map(i => i.from))
             for (const i of lastScannedImports) {
               i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
@@ -271,7 +272,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       } catch {
         return false
       }
-      return modified === undefined ? !lastScannedFiles.has(path) : modified < lastScanStartedAt
+      return modified === undefined ? !lastScannedFiles.has(path) : lastScannedFiles.has(path) && modified < lastScanStartedAt
     }
 
     /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
