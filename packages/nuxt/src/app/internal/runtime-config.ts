@@ -35,7 +35,7 @@ export function guardedServerConfig (runtimeConfig: Record<string, unknown>): Re
       get (target, p, receiver) {
         const value = Reflect.get(target, p, receiver)
         const descriptor = Reflect.getOwnPropertyDescriptor(target, p)
-        if (descriptor && !descriptor.configurable && !descriptor.writable) { return value }
+        if (descriptor && !descriptor.configurable && descriptor.writable === false) { return value }
         return isWrappable(value) ? wrap(guardTargets.get(value) ?? value, keyPath(p)) : value
       },
       defineProperty (target, p, descriptor) {

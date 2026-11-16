@@ -92,6 +92,19 @@ describe('server runtime config mutation guard', () => {
     expect((config.public as any).locked).toBe(locked)
   })
 
+  it('reports mutations of values behind non-configurable getters', () => {
+    const reports = captureReports()
+    const value = { getterKey: 1 }
+    const publicConfig = Object.defineProperty({}, 'computed', { get: () => value, configurable: false })
+    const config = guardedServerConfig({ public: publicConfig })
+
+    ;(config.public as any).computed.getterKey = 2
+
+    expect(value.getterKey).toBe(2)
+    expect(reports()).toHaveLength(1)
+    expect(reports()[0]).toContain('`public.computed.getterKey`')
+  })
+
   it('does not report reads', () => {
     const reports = captureReports()
     const config = guardedServerConfig({ public: { readOnly: { deep: 1 } } })
