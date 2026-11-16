@@ -4,12 +4,12 @@ import { performance } from 'node:perf_hooks'
 import { pathToFileURL } from 'node:url'
 import { createBuilder, createServer, mergeConfig, resolveConfig } from 'vite'
 import type * as vite from 'vite'
-import { basename, dirname, join, resolve } from 'pathe'
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, tryUseNitro } from '@nuxt/kit'
 import type { PreRenderedAsset } from 'rolldown'
 import vuePlugin from '@vitejs/plugin-vue'
-import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
+import { joinURL, withTrailingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 import type { Plugin as PostcssPlugin } from 'postcss'
@@ -85,10 +85,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   if (nuxt.options.dev) {
     // a configured `server.fs.deny` replaces Vite's defaults
     const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envDir: false, logLevel: 'silent' }, 'serve')).server.fs.deny
-    fsDeny = [...defaultDeny, '**/app-secret']
-    if (nitro) {
-      fsDeny.push(`${escapeGlob(resolve(nitro.options.output.serverDir))}/**`)
-    }
+    fsDeny = [...defaultDeny, '**/app-secret', ...getServerOutputDeny(nuxt, nitro?.options.output)]
   }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
@@ -433,6 +430,39 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   } else {
     nuxt.hooks.hookOnce('build:done', () => { void run() })
   }
+}
+
+/**
+ * Globs matching server bundles written by Nitro, which can inline private runtime config.
+ */
+function getServerOutputDeny (nuxt: Nuxt, output?: { dir?: string, serverDir?: string }) {
+  const deny: string[] = []
+  const configured = nuxt.options.nitro.output
+  const dirs = [
+    '.output',
+    configured?.dir,
+    configured?.serverDir,
+    output?.dir,
+    output?.serverDir,
+    resolve(nuxt.options.buildDir, 'prerender'),
+    'node_modules/.cache/nuxt/.nuxt/prerender',
+  ]
+  const projectDirs = [nuxt.options.rootDir, nuxt.options.srcDir, nuxt.options.buildDir]
+  for (const dir of dirs) {
+    if (!dir || dir.includes('{{')) {
+      continue
+    }
+    const resolved = resolve(nuxt.options.rootDir, dir)
+    if (!projectDirs.some(d => isPathInside(d, resolved))) {
+      deny.push(`${escapeGlob(withoutTrailingSlash(resolved))}/**`)
+    }
+  }
+  return [...new Set(deny)]
+}
+
+function isPathInside (path: string, dir: string) {
+  const rel = relative(dir, path)
+  return !rel.startsWith('..') && !isAbsolute(rel)
 }
 
 const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
