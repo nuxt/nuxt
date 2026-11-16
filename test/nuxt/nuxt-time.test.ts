@@ -119,6 +119,10 @@ describe('<NuxtTime>', () => {
     { datetime: `${Date.now() - 25 * 60 * 60 * 1000}`, description: '1 day ago' },
     { datetime: `${Date.now() - 45 * 24 * 60 * 60 * 1000}`, description: '2 months ago' },
     { datetime: `${Date.now() - 15 * 30 * 24 * 60 * 60 * 1000}`, description: '1 year ago' },
+    // values that round up to the next unit's threshold should move to that unit
+    { datetime: `${Date.now() - (59 * 60 + 50) * 1000}`, description: '1 hour ago' },
+    { datetime: `${Date.now() + (23 * 60 + 50) * 60 * 1000}`, description: 'in 1 day' },
+    { datetime: `${Date.now() - (29 * 24 + 20) * 60 * 60 * 1000}`, description: '1 month ago' },
   ]
 
   it.each(tests)('should generate the correct hydrateable code ($description)', async ({ datetime: _datetime, description }) => {

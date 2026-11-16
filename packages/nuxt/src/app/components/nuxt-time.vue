@@ -98,7 +98,7 @@ const formattedDate = computed(() => {
     { unit: 'year', seconds: 31536000, threshold: Infinity },
   ]
 
-  const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
+  const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(Math.round(diffInSeconds / seconds)) < threshold) || units[units.length - 1]!
 
   const value = diffInSeconds / seconds
   return (formatter.value as Intl.RelativeTimeFormat).format(Math.round(value), unit)
@@ -165,7 +165,7 @@ if (import.meta.server) {
         { unit: 'month', seconds: 2592000, threshold: 12 }, // 12 months → year
         { unit: 'year', seconds: 31536000, threshold: Infinity },
       ]
-      const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(diffInSeconds / seconds) < threshold) || units[units.length - 1]!
+      const { unit, seconds } = units.find(({ seconds, threshold }) => Math.abs(Math.round(diffInSeconds / seconds)) < threshold) || units[units.length - 1]!
       const value = diffInSeconds / seconds
       const formatter = new Intl.RelativeTimeFormat(options.locale, options)
       el.textContent = formatter.format(Math.round(value), unit)
