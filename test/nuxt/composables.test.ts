@@ -1178,7 +1178,7 @@ describe('routing utilities: `navigateTo`', () => {
         return navigateTo({ path: '/', query: { race: 'redirected' } })
       }
     })
-    addRouteMiddleware(middleware, { global: true })
+    const unregister = addRouteMiddleware(middleware, { global: true })
 
     try {
       const first = router.push({ path: '/', query: { race: 'first' } })
@@ -1189,12 +1189,92 @@ describe('routing utilities: `navigateTo`', () => {
       releaseSecond()
       await second
     } finally {
-      const globalMiddleware = useNuxtApp()._middleware.global
-      globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      unregister()
     }
 
     expect(router.currentRoute.value.query.race).toBe('redirected')
     expect(router.currentRoute.value.redirectedFrom?.query.race).toBe('second')
+  })
+})
+
+describe('routing utilities: `addRouteMiddleware`', () => {
+  it('returns a function that unregisters global middleware', async () => {
+    const router = useRouter()
+    const visits: unknown[] = []
+    const unregister = addRouteMiddleware((to) => {
+      visits.push(to.query.unregister)
+    })
+    onTestFinished(unregister)
+    await router.push({ path: '/', query: { unregister: 'before' } })
+    unregister()
+    await router.push({ path: '/', query: { unregister: 'after' } })
+    expect(router.currentRoute.value.query.unregister).toBe('after')
+    expect(visits).toEqual(['before'])
+  })
+
+  it('removes a global middleware only once when unregister is called twice', () => {
+    const nuxtApp = useNuxtApp()
+    const middleware = () => {}
+    const unregister = addRouteMiddleware(middleware)
+    const unregisterAgain = addRouteMiddleware(middleware)
+    onTestFinished(unregisterAgain)
+    unregister()
+    unregister()
+    expect(nuxtApp._middleware.global.filter(mw => mw === middleware)).toHaveLength(1)
+  })
+
+  it('preserves registration order when unregistering a duplicate global middleware', () => {
+    const nuxtApp = useNuxtApp()
+    const first = () => {}
+    const second = () => {}
+    const unregisterFirst = addRouteMiddleware(first)
+    const unregisterSecond = addRouteMiddleware(second)
+    const unregisterDuplicate = addRouteMiddleware(first)
+    onTestFinished(() => {
+      unregisterFirst()
+      unregisterSecond()
+      unregisterDuplicate()
+    })
+    unregisterDuplicate()
+    expect(nuxtApp._middleware.global).toEqual([first, second])
+  })
+
+  it('returns a function that unregisters named middleware', () => {
+    const nuxtApp = useNuxtApp()
+    const middleware = () => {}
+    const unregister = addRouteMiddleware('test-named', middleware)
+    expect(nuxtApp._middleware.named['test-named']).toBe(middleware)
+    unregister()
+    expect(nuxtApp._middleware.named['test-named']).toBeUndefined()
+  })
+
+  it('does not remove named middleware that has since been replaced', () => {
+    const nuxtApp = useNuxtApp()
+    const first = () => {}
+    const second = () => {}
+    const unregister = addRouteMiddleware('test-named', first)
+    addRouteMiddleware('test-named', second)
+    onTestFinished(() => { delete nuxtApp._middleware.named['test-named'] })
+    unregister()
+    expect(nuxtApp._middleware.named['test-named']).toBe(second)
+  })
+
+  it('does not remove a named middleware that was re-registered when unregister is called again', () => {
+    const nuxtApp = useNuxtApp()
+    const middleware = () => {}
+    const unregister = addRouteMiddleware('test-named', middleware)
+    unregister()
+    addRouteMiddleware('test-named', middleware)
+    onTestFinished(() => { delete nuxtApp._middleware.named['test-named'] })
+    unregister()
+    expect(nuxtApp._middleware.named['test-named']).toBe(middleware)
+  })
+
+  it('removes a named middleware whose name collides with an Object prototype property', () => {
+    const nuxtApp = useNuxtApp()
+    const unregister = addRouteMiddleware('constructor', () => {})
+    unregister()
+    expect(nuxtApp._middleware.named.constructor).toBeUndefined()
   })
 })
 
@@ -1464,6 +1544,7 @@ describe('routing utilities: `abortNavigation`', () => {
   describe('aborted navigation', () => {
     const abortMiddleware = defineNuxtRouteMiddleware(to => to.query.abort ? abortNavigation() : undefined)
     let restoreRoutes = () => {}
+    let unregisterAbort = () => {}
 
     beforeEach(() => {
       const router = useRouter()
@@ -1478,12 +1559,11 @@ describe('routing utilities: `abortNavigation`', () => {
           router.addRoute(catchall)
         }
       }
-      addRouteMiddleware(abortMiddleware, { global: true })
+      unregisterAbort = addRouteMiddleware(abortMiddleware, { global: true })
     })
 
     afterEach(async () => {
-      const globalMiddleware = useNuxtApp()._middleware.global
-      globalMiddleware.splice(globalMiddleware.indexOf(abortMiddleware), 1)
+      unregisterAbort()
       await clearError()
       await navigateTo('/abort-matched')
       restoreRoutes()
@@ -1562,12 +1642,11 @@ describe('routing utilities: `setPageLayout`', () => {
         return navigateTo('/')
       }
     })
-    addRouteMiddleware(middleware, { global: true })
+    const unregister = addRouteMiddleware(middleware, { global: true })
     try {
       await router.push(targets[0]!)
     } finally {
-      const globalMiddleware = useNuxtApp()._middleware.global
-      globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      unregister()
     }
     expect(route.fullPath).toBe('/')
     setPageLayout('custom')

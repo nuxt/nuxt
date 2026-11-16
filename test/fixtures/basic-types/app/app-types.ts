@@ -321,6 +321,7 @@ describe('middleware', () => {
       // @ts-expect-error Must return error or string
       abortNavigation(true)
     }, { global: true })
+    expectTypeOf(addRouteMiddleware(() => {})).toEqualTypeOf<() => void>()
   })
   it('handles return types of validate', () => {
     definePageMeta({
