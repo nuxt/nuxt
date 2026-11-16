@@ -234,7 +234,7 @@ An object accepting the following properties:
       Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open#windowfeatures) for more detailed information on the **windowFeatures** properties.
 
       ::note
-      `noopener` is enabled unless you set it, so the opened page cannot access your application through `window.opener`. A named `target` other than `_self`, `_parent` and `_top` then always opens a new window instead of reusing an existing one. Set it to `false` for a page that needs `window.opener`, such as an OAuth popup that posts its result back, or to reuse a named window:
+      `noopener` is enabled by default, so the opened page cannot access your application through `window.opener` unless you disable it for that call or app-wide. A named `target` other than `_self`, `_parent` and `_top` then always opens a new window instead of reusing an existing one. Set it to `false` for a page that needs `window.opener`, such as an OAuth popup that posts its result back, or to reuse a named window:
 
       ```ts
       await navigateTo('https://auth.example.com/authorize', {
