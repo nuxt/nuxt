@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type { NitroInstance, NitroInstanceOptions } from '@nuxt/kit'
 import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, RouteRuleConfig as SchemaRouteRuleConfig, TSReference } from '@nuxt/schema'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { Nitro, NitroConfig, NitroOptions, RouteRuleConfig, TracingChannelOptions } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroOptions, NitroRuntimeHooks, RouteRuleConfig, TracingChannelOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { NuxtSSRContext } from '#app/types'
 
@@ -72,6 +72,11 @@ describe('contributed hook signatures', () => {
 })
 
 describe('nitro v2 compatibility types', () => {
+  it('types the `render:response` hook', () => {
+    expectTypeOf<Parameters<NitroRuntimeHooks['render:response']>[0]>().toEqualTypeOf<{ body?: string, statusCode?: number, statusMessage?: string, headers?: Record<string, string> }>()
+    expectTypeOf<Parameters<NitroRuntimeHooks['render:response']>[1]>().toEqualTypeOf<{ event: H3Event }>()
+  })
+
   it('hands a v1 handler an event that has `event.node`', () => {
     type LegacyEvent = Parameters<Extract<Parameters<typeof defineEventHandler>[0], (...args: any[]) => any>>[0]
     expectTypeOf<LegacyEvent>().toExtend<H3Event>()

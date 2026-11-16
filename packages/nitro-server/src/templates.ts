@@ -35,6 +35,8 @@ declare module 'nitro/types' {
     'render:document': (documentContext: NuxtRenderDocumentContext, context: { event: H3Event }) => void | Promise<void>
     'render:route': (renderRouteContext: NuxtRenderRouteContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+    /** @deprecated Called only while the \`nitroLegacy\` layer covers Nitro v2 code. Use the Nitro \`response\` hook instead. */
+    'render:response': (response: { body?: string, statusCode?: number, statusMessage?: string, headers?: Record<string, string> }, context: { event: H3Event }) => void | Promise<void>
   }
 }
 
