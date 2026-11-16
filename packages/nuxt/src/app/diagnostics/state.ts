@@ -56,5 +56,9 @@ export const stateDiagnostics = !import.meta.dev
           why: (p: { key: string }) => `\`callOnce\` key must be a string (received \`${p.key}\`).`,
           fix: 'Pass a string key as the first argument to `callOnce()`, e.g. `callOnce(\'myKey\', () => { ... })`.',
         },
+        NUXT_E7011: {
+          why: (p: { name: string, reason: string }) => `Cookie \`${p.name}\` could not be written: ${p.reason}.`,
+          fix: 'Check the cookie name, the value returned by `encode`, and the attributes passed to `useCookie()`.',
+        },
       },
     })

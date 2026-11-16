@@ -403,12 +403,20 @@ function toSerializeOptions (opts: UseCookieOptions): CookieSerializeOptions {
   }
 }
 
+function serializeOrThrow (name: string, value: string, opts: CookieSerializeOptions) {
+  try {
+    return serialize(name, value, opts)
+  } catch (cause) {
+    throw stateDiagnostics.NUXT_E7011({ name, reason: cause instanceof Error ? cause.message : String(cause), cause })
+  }
+}
+
 function serializeCookie (name: string, value: string | undefined, opts: UseCookieOptions = {}) {
   const serializeOpts = toSerializeOptions(opts)
   if (value === undefined) {
-    return serialize(name, '', { ...serializeOpts, maxAge: -1 })
+    return serializeOrThrow(name, '', { ...serializeOpts, maxAge: -1 })
   }
-  return serialize(name, value, serializeOpts)
+  return serializeOrThrow(name, value, serializeOpts)
 }
 
 function writeClientCookie (name: string, value: string | undefined, opts: UseCookieOptions = {}) {
@@ -448,7 +456,7 @@ function cookieKey (name: string, opts: { domain?: string, path?: string }) {
 }
 
 function setResponseCookie (event: NuxtRequestEvent, name: string, value: string, opts: CookieSerializeOptions) {
-  const newCookie = serialize(name, value, { path: '/', ...opts })
+  const newCookie = serializeOrThrow(name, value, { path: '/', ...opts })
   const currentCookies = event.res.headers.getSetCookie()
 
   if (currentCookies.length === 0) {
