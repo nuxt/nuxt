@@ -414,12 +414,24 @@ function toSerializeOptions (opts: UseCookieOptions): CookieSerializeOptions {
   }
 }
 
+function reportUnserializable<T> (name: string, write: () => T): T {
+  try {
+    return write()
+  } catch (cause) {
+    throw stateDiagnostics.NUXT_E7011({ name, reason: cause instanceof Error ? cause.message : String(cause), cause })
+  }
+}
+
+function serializeOrThrow (name: string, value: string, opts: CookieSerializeOptions) {
+  return reportUnserializable(name, () => serialize(name, value, opts))
+}
+
 function serializeCookie (name: string, value: string | undefined, opts: UseCookieOptions = {}) {
   const serializeOpts = toSerializeOptions(opts)
   if (value === undefined) {
-    return serialize(name, '', { ...serializeOpts, maxAge: -1 })
+    return serializeOrThrow(name, '', { ...serializeOpts, maxAge: -1 })
   }
-  return serialize(name, value, serializeOpts)
+  return serializeOrThrow(name, value, serializeOpts)
 }
 
 function writeClientCookie (name: string, value: string | undefined, opts: UseCookieOptions = {}) {
@@ -435,13 +447,13 @@ function writeServerCookie (event: NuxtRequestEvent, name: string, value: string
     const webEvent = asWebRequestEvent(event)
     // update if value is set
     if (value !== undefined) {
-      return webEvent ? setResponseCookie(webEvent, name, value, serializeOpts) : setCookie(event, name, value, serializeOpts)
+      return webEvent ? setResponseCookie(webEvent, name, value, serializeOpts) : reportUnserializable(name, () => setCookie(event, name, value, serializeOpts))
     }
 
     // delete if cookie exists in browser, or was set earlier in the response, and value is null/undefined
     const requestCookie = webEvent ? parse(webEvent.req.headers.get('cookie') || '')[name] : getCookie(event, name)
     if (requestCookie !== undefined || responseSetsCookie(event, name)) {
-      return webEvent ? setResponseCookie(webEvent, name, '', { ...serializeOpts, maxAge: 0 }) : deleteCookie(event, name, serializeOpts)
+      return webEvent ? setResponseCookie(webEvent, name, '', { ...serializeOpts, maxAge: 0 }) : reportUnserializable(name, () => deleteCookie(event, name, serializeOpts))
     }
 
     // else ignore if cookie doesn't exist in browser and value is null/undefined
@@ -461,7 +473,7 @@ function cookieKey (name: string, opts: { domain?: string, path?: string }) {
 }
 
 function setResponseCookie (event: RequestEvent, name: string, value: string, opts: CookieSerializeOptions) {
-  const newCookie = serialize(name, value, { path: '/', ...opts })
+  const newCookie = serializeOrThrow(name, value, { path: '/', ...opts })
   const currentCookies = event.res.headers.getSetCookie()
 
   if (currentCookies.length === 0) {
