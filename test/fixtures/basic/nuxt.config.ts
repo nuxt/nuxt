@@ -198,6 +198,7 @@ export default withMatrix({
       '/route-rules/spa-async-data': { ssr: false },
       '/redirect/catchall': { ssr: false },
       '/catchall/route-rules/**': { appLayout: 'custom', headers: { 'x-catchall-route-rules': 'applied' } },
+      '/catchall/client-only/**': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       // Decoded key must still apply to the percent-encoded path generated for the page.
       '/route-rules/测试': { appMiddleware: 'route-rules-middleware' },
