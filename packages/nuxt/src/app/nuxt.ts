@@ -12,6 +12,7 @@ import type { RouteMiddleware } from './composables/router'
 import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
+import { guardedServerConfig } from './internal/runtime-config'
 import type { PrefetchScheduler } from './internal/prefetch'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { NuxtAnnouncer } from './composables/announcer'
@@ -388,7 +389,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
 
   // Expose runtime config
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
-  nuxtApp.provide('config', import.meta.client && import.meta.dev ? wrappedConfig(runtimeConfig) : runtimeConfig)
+  nuxtApp.provide('config', import.meta.dev ? wrappedConfig(runtimeConfig) : runtimeConfig)
 
   return nuxtApp
 }
@@ -619,12 +620,10 @@ export function defineAppConfig<C extends AppConfigInput> (config: C): C {
   return config
 }
 
-/**
- * Configure error getter on runtime secret property access that doesn't exist on the client side
- */
 const loggedKeys = new Set<string>()
 function wrappedConfig (runtimeConfig: Record<string, unknown>) {
-  if (!import.meta.dev || import.meta.server) { return runtimeConfig }
+  if (!import.meta.dev) { return runtimeConfig }
+  if (import.meta.server) { return guardedServerConfig(runtimeConfig) }
   const keys: string[] = []
   for (const key in runtimeConfig) {
     keys.push(`\`${key}\``)
