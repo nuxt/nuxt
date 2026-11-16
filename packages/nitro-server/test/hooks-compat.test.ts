@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
+import { HookableCore, createHooks } from 'hookable'
 
 import { serverDiagnostics } from '../src/runtime/diagnostics.ts'
-import { observeLegacyHooks } from '../src/runtime/compat/hook-registry.ts'
+import { hasLegacyHookListener, observeLegacyHooks } from '../src/runtime/compat/hook-registry.ts'
 import { markStreamedResponse } from '../src/runtime/compat/render-response.ts'
 import plugin from '../src/runtime/compat/hooks-plugin.ts'
 
@@ -86,6 +87,34 @@ describe('nitro v2 runtime hook bridge', () => {
     expect(report).toHaveBeenCalledTimes(1)
     expect(report.mock.calls[0]![0]).toMatchObject({ hook: 'beforeResponse' })
     report.mockRestore()
+  })
+
+  it('stops tracking a hook once its last listener is removed', () => {
+    const hooks = new HookableCore<Record<string, () => void>>()
+    observeLegacyHooks(hooks)
+
+    const listener = () => {}
+    const off = hooks.hook('render:response', () => {})
+    hooks.hook('render:response', listener)
+    off()
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(true)
+
+    hooks.removeHook('render:response', () => {})
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(true)
+
+    hooks.removeHook('render:response', listener)
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(false)
+  })
+
+  it('stops tracking a `hookOnce` listener once it has run', async () => {
+    const hooks = createHooks<Record<string, () => void>>()
+    observeLegacyHooks(hooks)
+
+    hooks.hookOnce('render:response', () => {})
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(true)
+
+    await hooks.callHook('render:response')
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(false)
   })
 
   it('does not warn about a v2 response hook once the bridge is installed', () => {
