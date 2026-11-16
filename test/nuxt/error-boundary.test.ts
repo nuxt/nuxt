@@ -57,6 +57,51 @@ describe('NuxtErrorBoundary', () => {
     vi.resetAllMocks()
   })
 
+  it('should clear the error with `clearBoundaryError`', async () => {
+    let thrown = false
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const el = mount({
+      setup () {
+        return () => h('div', {}, h(NuxtErrorBoundary, {}, {
+          default: () => h(defineComponent({
+            setup () {
+              if (!thrown) {
+                thrown = true
+                throw new Error('test error')
+              }
+              return () => h('span', 'default')
+            },
+          })),
+          error: (
+            { error, clearBoundaryError }: Parameters<ComponentSlots<typeof NuxtErrorBoundary>['error']>[0],
+          ) => h('button', { onClick: () => clearBoundaryError() }, error.toString()),
+        }))
+      },
+    })
+    await nextTick()
+    expect(el.html()).toMatchInlineSnapshot(`"<div><button>Error: test error</button></div>"`)
+    await el.find('button').trigger('click')
+    expect(el.html()).toMatchInlineSnapshot(`"<div><span>default</span></div>"`)
+    el.unmount()
+    vi.resetAllMocks()
+  })
+
+  it('should expose `clearBoundaryError` on the component instance', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const el = mount(NuxtErrorBoundary, {
+      slots: {
+        default: () => h(defineComponent({ setup: () => { throw new Error('test error') } })),
+        error: () => h('span', 'error'),
+      },
+    })
+    await nextTick()
+    expect(el.vm.error).toBeTruthy()
+    el.vm.clearBoundaryError()
+    expect(el.vm.error).toBeNull()
+    el.unmount()
+    vi.resetAllMocks()
+  })
+
   it('shows errors from the retried default slot while the app is still hydrating', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     const nuxtApp = useNuxtApp()
@@ -154,6 +199,21 @@ describe('NuxtErrorBoundary (server)', () => {
     expect(escaped).toEqual([])
     expect(onError).toHaveBeenCalledTimes(1)
     expect(onError.mock.calls[0]![0]).toMatchObject({ status: 418 })
+  })
+
+  it('passes `clearBoundaryError` to the error slot', async () => {
+    let props: Record<string, unknown> = {}
+    await renderToString(createSSRApp(defineComponent({
+      setup: () => () => h(NuxtErrorBoundaryServer, null, {
+        default: () => h(Throws),
+        error: (slotProps: Record<string, unknown>) => {
+          props = slotProps
+          return h('p', 'caught')
+        },
+      }),
+    })))
+    expect(props.clearBoundaryError).toBeTypeOf('function')
+    expect(props.clearError).toBeTypeOf('function')
   })
 
   it('renders the error slot when a child throws in async setup', async () => {
