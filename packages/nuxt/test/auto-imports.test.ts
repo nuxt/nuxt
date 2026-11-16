@@ -1,13 +1,16 @@
 import { readFileSync } from 'node:fs'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { join } from 'pathe'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { parseSync } from 'rolldown/utils'
 import * as VueFunctions from 'vue'
 import type { Import } from 'unimport'
-import { createUnimport } from 'unimport'
+import { createUnimport, scanDirExports } from 'unimport'
 import type { Plugin } from 'vite'
 import { registry as scriptRegistry } from '@nuxt/scripts/registry'
-import { RemovedImportsPlugin, TransformPlugin } from '../src/imports/transform.ts'
+import { RemovedImportsPlugin, TransformPlugin, getImportsSignature } from '../src/imports/transform.ts'
 import { defaultPresets, removedImports, scriptsStubsPreset } from '../src/imports/presets.ts'
 
 describe('imports:transform', () => {
@@ -299,37 +302,76 @@ describe('imports:nuxt/scripts', async () => {
 })
 
 describe('imports:hot-update', () => {
-  function setup (signature: { current: string | undefined }) {
+  function setup () {
+    const version = { current: 0 }
     const plugin = TransformPlugin({
       ctx: createUnimport({ imports: [] }),
       options: {},
       refreshImports: file => file.startsWith('/app/composables/') ? Promise.resolve() : undefined,
-      getExportSignature: () => signature.current,
+      getImportsVersion: () => version.current,
     }).raw({}, { framework: 'vite', versions: {} }) as Plugin & { vite: { hotUpdate: { handler: (this: unknown, ctx: unknown) => Promise<void> } } }
     const invalidated: string[] = []
-    const environment = { moduleGraph: { invalidateModule: (mod: { id: string }) => invalidated.push(mod.id) } }
+    const environment = (name: string) => ({ moduleGraph: { invalidateModule: (mod: { id: string }) => invalidated.push(`${name}:${mod.id}`) } })
+    const environments = { client: environment('client'), ssr: environment('ssr') }
     const importer = { id: '/app/pages/index.vue' }
-    const hotUpdate = (file: string) => plugin.vite.hotUpdate.handler.call({ environment }, { file, modules: [{ importers: new Set([importer]) }] })
-    return { hotUpdate, invalidated }
+    const hotUpdate = (file: string, env: keyof typeof environments = 'client') => plugin.vite.hotUpdate.handler.call({ environment: environments[env] }, { file, modules: [{ importers: new Set([importer]) }] })
+    return { hotUpdate, invalidated, version }
   }
 
-  it('invalidates consumers only when the exports of a scanned file change', async () => {
-    const signature = { current: 'useCounter' as string | undefined }
-    const { hotUpdate, invalidated } = setup(signature)
+  it('keeps importers while the available imports are unchanged', async () => {
+    const { hotUpdate, invalidated } = setup()
 
     await hotUpdate('/app/composables/counter.ts')
-    expect(invalidated).toEqual(['/app/pages/index.vue'])
+    await hotUpdate('/app/composables/counter.ts', 'ssr')
+    expect(invalidated).toEqual([])
+  })
 
+  it('invalidates the importers of each edited file once the available imports change', async () => {
+    const { hotUpdate, invalidated, version } = setup()
+
+    version.current++
     await hotUpdate('/app/composables/counter.ts')
-    expect(invalidated).toHaveLength(1)
+    await hotUpdate('/app/composables/counter.ts', 'ssr')
+    expect(invalidated).toEqual(['client:/app/pages/index.vue', 'ssr:/app/pages/index.vue'])
 
-    signature.current = 'useCounter\nuseOther'
     await hotUpdate('/app/composables/counter.ts')
     expect(invalidated).toHaveLength(2)
 
-    signature.current = undefined
-    await hotUpdate('/app/composables/counter.ts')
-    await hotUpdate('/app/composables/counter.ts')
-    expect(invalidated).toHaveLength(4)
+    await hotUpdate('/app/composables/other.ts')
+    expect(invalidated).toHaveLength(3)
+
+    await hotUpdate('/app/pages/about.vue')
+    expect(invalidated).toHaveLength(3)
+  })
+})
+
+describe('imports:signature', () => {
+  let root: string
+  beforeEach(async () => {
+    root = await mkdtemp(join(tmpdir(), 'nuxt-imports-signature-'))
+    await mkdir(join(root, 'composables'))
+    await mkdir(join(root, 'lib'))
+    await writeFile(join(root, 'lib/shared.ts'), 'export const useShared = () => 1\n')
+  })
+  afterEach(() => rm(root, { recursive: true, force: true }))
+
+  async function signatureOf (code: string) {
+    await writeFile(join(root, 'composables/counter.ts'), code)
+    return getImportsSignature(await scanDirExports([join(root, 'composables')]))
+  }
+
+  it('is unchanged by edits that keep the exports', async () => {
+    const signature = await signatureOf('export const useCounter = () => 1\n')
+    expect(await signatureOf('/** Counts. */\nexport const useCounter = () => 2\n')).toBe(signature)
+  })
+
+  it.each([
+    ['a renamed export', 'export const useCount = () => 1\n'],
+    ['a default export', 'export default () => 1\n'],
+    ['a type export', 'export const useCounter = () => 1\nexport type Counter = number\n'],
+    ['a re-export from outside the scanned directory', 'export const useCounter = () => 1\nexport * from \'../lib/shared\'\n'],
+  ])('changes with %s', async (_, code) => {
+    const signature = await signatureOf('export const useCounter = () => 1\n')
+    expect(await signatureOf(code)).not.toBe(signature)
   })
 })

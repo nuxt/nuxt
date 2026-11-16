@@ -23,7 +23,18 @@ interface TransformPluginOptions {
    * one we scan for imports.
    */
   refreshImports?: (file: string) => void | Promise<void>
-  getExportSignature?: (file: string) => string | undefined
+  /**
+   * Returns a counter that increases whenever the imports available for injection change, as
+   * computed with `getImportsSignature`.
+   */
+  getImportsVersion?: () => number
+}
+
+/** Serialises the fields of `imports` that affect the code injected into consumers. */
+export function getImportsSignature (imports: Import[]) {
+  return imports
+    .map(i => JSON.stringify([i.from, i.name, i.as, i.type, i.typeFrom, i.priority, i.disabled, i.declarationType, i.with]))
+    .join('\n')
 }
 
 function isTransformed (options: Partial<ImportsOptions>, id: string) {
@@ -36,8 +47,8 @@ function isTransformed (options: Partial<ImportsOptions>, id: string) {
   return isVue(id, { type: ['script', 'template'] }) || isJS(id)
 }
 
-export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getExportSignature }: TransformPluginOptions) => createUnplugin(() => {
-  const invalidatedExports = new WeakMap<object, Map<string, string | undefined>>()
+export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getImportsVersion }: TransformPluginOptions) => createUnplugin(() => {
+  const invalidatedAt = new WeakMap<object, Map<string, number>>()
 
   // `$fetch` is not a global on the client, so code that relies on the global (including
   // module runtime code, which is not auto-imported) receives an import instead
@@ -92,15 +103,18 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getEx
           if (!pending) { return }
           await pending
 
-          // consumers embed only the imports a file provides, so an edit that keeps them changes nothing
-          let seen = invalidatedExports.get(this.environment)
-          if (!seen) {
-            seen = new Map()
-            invalidatedExports.set(this.environment, seen)
+          // Vite soft-invalidates importers, which reuses their transform output, so they only
+          // need a fresh transform once the available imports have changed.
+          const version = getImportsVersion?.()
+          if (version !== undefined) {
+            let seen = invalidatedAt.get(this.environment)
+            if (!seen) {
+              seen = new Map()
+              invalidatedAt.set(this.environment, seen)
+            }
+            if ((seen.get(path) ?? 0) === version) { return }
+            seen.set(path, version)
           }
-          const signature = getExportSignature?.(path)
-          if (signature !== undefined && seen.get(path) === signature) { return }
-          seen.set(path, signature)
 
           // The injected imports live in the consumers' transform output, which is only
           // regenerated if their modules are invalidated as well.

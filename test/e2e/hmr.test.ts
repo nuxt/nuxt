@@ -252,10 +252,18 @@ test('SSR picks up a changed export style in an auto-imported file', async ({ fe
   const key = () => ssrText(fetch, '/auto-import-key', 'key')
   await poll(key).toBe('default-export')
 
+  fixture.replace('app/composables/useHmrKey.ts', `'default-export'`, `'default-edited'`)
+
+  await poll(key, 30_000).toBe('default-edited')
+
   // the import injected into the page has to change from `default` to `useHmrKey`
   fixture.write('app/composables/useHmrKey.ts', `export function useHmrKey () {\n  return 'named-export'\n}\n`)
 
   await poll(key, 30_000).toBe('named-export')
+
+  fixture.replace('app/composables/useHmrKey.ts', `'named-export'`, `'edited-body'`)
+
+  await poll(key, 30_000).toBe('edited-body')
 })
 
 // https://github.com/nuxt/nuxt/issues/30169
