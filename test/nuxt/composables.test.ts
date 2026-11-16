@@ -199,6 +199,38 @@ describe('errors', () => {
       expect(useError().value).toBeUndefined()
     })
 
+    it('should keep the error until a superseding redirect settles', async () => {
+      const pending: Record<string, () => void> = {}
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        const key = to.query.pending as string | undefined
+        if (key) {
+          return new Promise<void>((resolve) => { pending[key] = resolve })
+        }
+      })
+      addRouteMiddleware(middleware, { global: true })
+      onTestFinished(() => {
+        const globalMiddleware = useNuxtApp()._middleware.global
+        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      })
+
+      showError('boom')
+      const first = clearError({ redirect: '/?pending=first' })
+      await vi.waitFor(() => expect(pending.first).toBeDefined())
+      const second = clearError({ redirect: '/?pending=second' })
+      await vi.waitFor(() => expect(pending.second).toBeDefined())
+
+      pending.first!()
+      await first
+      expect(useError().value).toMatchObject({ message: 'boom' })
+
+      showError('replacement')
+      expect(useError().value).toMatchObject({ message: 'replacement' })
+
+      pending.second!()
+      await second
+      expect(useError().value).toBeUndefined()
+    })
+
     it('should keep a fatal error raised while redirecting', async () => {
       const middleware = defineNuxtRouteMiddleware((to) => {
         if (to.query.forbidden !== undefined) {
