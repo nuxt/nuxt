@@ -141,6 +141,10 @@ function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerRes
       return proxy
     },
     appendHeader (name: string, value: string | string[]) {
+      const existing = res.getHeader(name)
+      if (existing !== undefined && !web.hasHeader(name)) {
+        web.setHeader(name, existing as string | string[])
+      }
       web.appendHeader(name, value)
       return proxy
     },

@@ -281,6 +281,17 @@ describe('v2 event bridge', () => {
     expect(res.getHeader('content-type')).toBe('application/json')
   })
 
+  it('appends to a header that is only on the node response', () => {
+    const { event, res } = nodeEvent()
+    const bridged = event.node!.res as ServerResponse
+
+    res.setHeader('set-cookie', ['a=1'])
+    bridged.appendHeader('set-cookie', 'b=2')
+
+    expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
+    expect(bridged.getHeader('set-cookie')).toEqual(['a=1', 'b=2'])
+  })
+
   it('does not clobber a `_nitro` slot the handler chain already set', () => {
     const event = mockEvent('http://nuxt/x')
     ;(event.context as any)._nitro = { routeRules: { own: true } }
