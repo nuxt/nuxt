@@ -5,6 +5,7 @@ import { dirname, isAbsolute, join, resolve } from 'pathe'
 import type { Nuxt } from '@nuxt/schema'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from '../src/auto-imports.ts'
 import { ServerAutoImportsPlugin } from '../src/auto-imports-plugin.ts'
+import { getServerImportsPresets, resolveNitroLegacyOptions } from '../src/compat.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
 import { getLayerNodeModulesExcludePattern } from '../src/utils.ts'
@@ -101,6 +102,21 @@ describe('createServerAutoImports', () => {
     expect(referenced[0]).toMatch(/^\.\.?\//)
     const target = resolve(dirname(declarationPath), referenced[0]!)
     expect(TYPE_EXTENSIONS.some(ext => existsSync(target + ext))).toBe(true)
+  })
+
+  it('declares an import from the module its types are read from', async () => {
+    const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
+    const autoImports = createServerAutoImports(
+      mockNuxt(),
+      { autoImport: true, presets: await getServerImportsPresets(resolveNitroLegacyOptions(true)) },
+      typesDir,
+    )
+
+    await autoImports.writeTypes()
+
+    const declarations = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    expect(declarations).toContain('const useAppConfig: typeof import(\'nuxt/server\').useAppConfig')
+    expect(declarations).toMatch(/^export \{[^}]*\buseAppConfig\b[^}]*\} from 'nuxt\/server';$/m)
   })
 
   it('emits a module even when there are no imports to declare', async () => {

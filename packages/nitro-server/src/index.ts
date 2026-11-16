@@ -444,6 +444,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitroConfig.imports.imports.push({
       name: 'useAppConfig',
       from: resolve(distDir, 'runtime/utils/app-config'),
+      typeFrom: 'nuxt/server',
       priority: -1,
     })
   }

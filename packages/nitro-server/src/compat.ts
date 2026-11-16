@@ -440,7 +440,7 @@ function isMigrated (compatibility: ServerApi | undefined): boolean {
 
 export interface LegacyImportsPreset {
   from: string
-  imports: Array<string | { name: string, as?: string }>
+  imports: Array<string | { name: string, as?: string, typeFrom?: string }>
 }
 
 /** Render a set of auto-import presets as explicit re-exports for a barrel module. */
@@ -603,11 +603,11 @@ export function getLegacyRuntimeConfigPath (): string {
 }
 
 /** The Nitro v2 auto-import names implemented by the compat runtime rather than by Nitro v3. */
-function getLegacyImportsPreset (): Array<{ from: string, imports: string[], priority?: number }> {
+function getLegacyImportsPreset (): Array<LegacyImportsPreset & { priority?: number }> {
   return [
     { from: compatRuntimePath('render'), imports: ['defineRenderHandler'] },
     { from: compatRuntimePath('event'), imports: ['useEvent'] },
-    { from: resolve(distDir, 'runtime/utils/app-config'), imports: ['useAppConfig'], priority: -1 },
+    { from: resolve(distDir, 'runtime/utils/app-config'), imports: [{ name: 'useAppConfig', typeFrom: 'nuxt/server' }], priority: -1 },
   ]
 }
 
@@ -633,7 +633,7 @@ async function getLegacyImportOverrides (legacy: Pick<ResolvedNitroLegacyOptions
  * The server auto-import presets, with the names the `nitroLegacy` toggles affect
  * redirected to their Nitro v2 implementations. With every toggle off, the default list.
  */
-export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOptions): Promise<Array<{ from: string, imports: Array<string | { name: string, as?: string }>, priority?: number }>> {
+export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOptions): Promise<Array<LegacyImportsPreset & { priority?: number }>> {
   return [
     ...getNuxtServerImportsPreset(await getLegacyImportOverrides(legacy)),
     ...v2ImportsPreset,

@@ -255,7 +255,7 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
 
       // the re-exports make this a module, so `import { x } from '#imports'` resolves as well as
       // the ambient `x` the declarations provide
-      const reExports = toExports(imports, importsModuleDir, true)
+      const reExports = toExports(imports, importsModuleDir, true, { declaration: true })
 
       await Promise.all([
         writeFile(importsModulePath + '.d.ts', [declarations.trim(), reExports.trim() || 'export {}'].filter(Boolean).join('\n') + '\n', 'utf8'),
