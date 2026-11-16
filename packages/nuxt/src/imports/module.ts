@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNuxt } from '@nuxt/kit'
 import { headDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
@@ -6,6 +6,8 @@ import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 import { klona } from 'klona'
+import { digest } from 'ohash'
+import picomatch from 'picomatch'
 import { resolveModulePath } from 'exsolve'
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
@@ -57,6 +59,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
+    // the directories each scanned entry (which may be a glob) covers
+    let composablesBases: string[] = []
     if (options.scan) {
       for (const layer of nuxt.options._layers) {
         // Layer disabled scanning for itself
@@ -82,6 +86,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       nuxt.hook('modules:done', async () => {
         await nuxt.callHook('imports:dirs', composablesDirs)
         composablesDirs = composablesDirs.map(dir => normalize(dir))
+        composablesBases = composablesDirs.flatMap((dir) => {
+          const { base, negated } = picomatch.scan(dir)
+          return negated ? [] : [base]
+        })
       })
 
       // Restart nuxt when composable directories are added/removed
@@ -201,9 +209,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     const isIgnored = createIsIgnored(nuxt)
     const nuxtImportSources = new Set(allNuxtPresets.flatMap(i => i.from))
     const nuxtImports = new Set(presets.flatMap(p => nuxtImportSources.has(p.from) ? p.imports : []))
-    let lastScanStartedAt = Number.NEGATIVE_INFINITY
-    let lastScannedFiles = new Set<string>()
-    let lastScannedImports: Import[] | undefined
+    let scannedImports: Import[] | undefined
     const regenerateImports = async ({ rescan = true } = {}) => {
       const scan = problems.scan()
       let registeredFiles = new Set<string>()
@@ -213,19 +219,16 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
         // Scan for `composables/` and `utils/` directories
         if (options.scan) {
-          if (rescan || !lastScannedImports) {
-            const scanStartedAt = Date.now()
-            lastScannedImports = await scanDirExports(composablesDirs, {
+          if (rescan || !scannedImports) {
+            scannedImports = await scanDirExports(composablesDirs, {
               fileFilter: file => !isIgnored(file),
             })
-            lastScanStartedAt = scanStartedAt
-            lastScannedFiles = new Set(lastScannedImports.map(i => i.from))
-            for (const i of lastScannedImports) {
+            for (const i of scannedImports) {
               i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
             }
           }
           // `imports:extend` hooks may change the entries they are given
-          imports.push(...lastScannedImports.map(i => ({ ...i })))
+          imports.push(...scannedImports.map(i => ({ ...i })))
         }
 
         // Modules extending
@@ -265,42 +268,59 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       })
     }
 
-    function isScanned (path: string) {
-      let modified: number | undefined
+    /** The contents of a file, hashed, `''` if it does not exist or `undefined` if it cannot be read. */
+    function fingerprint (path: string) {
       try {
-        modified = statSync(path, { throwIfNoEntry: false })?.mtimeMs
-      } catch {
-        return false
+        return digest(readFileSync(path, 'utf8'))
+      } catch (error) {
+        return (error as NodeJS.ErrnoException).code === 'ENOENT' ? '' : undefined
       }
-      return modified === undefined ? !lastScannedFiles.has(path) : lastScannedFiles.has(path) && modified < lastScanStartedAt
     }
+
+    // each changed file's fingerprint when it last scheduled a scan, which reads it after that point
+    const scheduledFingerprints = new Map<string, string>()
 
     /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
     let pendingRegeneration: Promise<void> | undefined
     let staleScan = false
-    const isComposablesPath = (path: string) => composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))
+    const isComposablesPath = (path: string) => composablesBases.some(dir => dir === path || path.startsWith(dir + '/'))
     function refreshImports (path: string) {
       if (!options.scan || !isComposablesPath(path)) {
         return
       }
+      const contents = fingerprint(path)
+      if (contents !== undefined && scheduledFingerprints.get(path) === contents) {
+        return pendingRegeneration ?? Promise.resolve()
+      }
+      if (contents === undefined) {
+        scheduledFingerprints.delete(path)
+      } else {
+        scheduledFingerprints.set(path, contents)
+      }
       if (pendingRegeneration) {
         // a change may land after the in-flight scan has already read the directory,
-        // so schedule a single extra pass rather than resolving with stale imports
+        // so schedule another pass rather than resolving with stale imports
         staleScan = true
         return pendingRegeneration
       }
-      if (isScanned(path)) {
-        return Promise.resolve()
-      }
       pendingRegeneration = (async () => {
-        staleScan = false
-        await regenerateImports()
-        if (staleScan) {
+        do {
+          staleScan = false
           await regenerateImports()
-        }
-      })().finally(() => { pendingRegeneration = undefined })
+        } while (staleScan)
+      })().catch((error) => {
+        scheduledFingerprints.clear()
+        throw error
+      }).finally(() => { pendingRegeneration = undefined })
       return pendingRegeneration
     }
+
+    // a request to regenerate every template includes the scanned imports
+    nuxt.hook('builder:generateApp', (generateOptions) => {
+      if (!generateOptions) {
+        scannedImports = undefined
+      }
+    })
 
     nuxt.hook('modules:done', () => regenerateImports())
 
@@ -319,7 +339,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.hook('app:templatesGenerated', async (_app, templates) => {
       // Only regenerate when non-imports templates are updated
       if (templates.some(t => !isImportsTemplate(t))) {
-        await regenerateImports({ rescan: templates.some(t => t.write && isComposablesPath(t.dst)) })
+        await regenerateImports({ rescan: templates.some(t => t.write && isComposablesPath(resolve(t.dst))) })
       }
     })
   },
