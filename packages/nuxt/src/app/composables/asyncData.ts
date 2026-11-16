@@ -990,6 +990,9 @@ function buildAsyncData<
           let result = _result as unknown as DataT
           if (options.transform) {
             result = await options.transform(_result)
+            if (nuxtApp._asyncDataPromises[key] !== promise) {
+              return
+            }
           }
           if (options.pick) {
             result = pick(result as any, options.pick) as DataT

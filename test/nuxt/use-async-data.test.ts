@@ -2048,6 +2048,33 @@ describe('useAsyncData', () => {
     clearNuxtData(uniqueKey)
   })
 
+  it('should not let a request superseded by a cache hit during its transform overwrite the cached value', async () => {
+    let resolveTransform!: (value: string) => void
+    let cached: string | undefined = undefined
+
+    const { data, execute, status } = useAsyncData(uniqueKey, () => Promise.resolve('from-network'), {
+      immediate: false,
+      getCachedData: () => cached,
+      transform: () => new Promise<string>((resolve) => { resolveTransform = resolve }),
+    })
+
+    execute()
+    await flushPromises()
+    expect(resolveTransform).toBeDefined()
+
+    cached = 'from-cache'
+    await execute()
+    expect(data.value).toBe('from-cache')
+
+    resolveTransform('transformed')
+    await flushPromises()
+
+    expect(data.value).toBe('from-cache')
+    expect(status.value).toBe('success')
+
+    clearNuxtData(uniqueKey)
+  })
+
   it('should not let a later subscriber cancel a refresh with the initial cache lookup', async () => {
     let resolveHandler!: (value: string) => void
     const handler = vi.fn(() => new Promise<string>((resolve) => { resolveHandler = resolve }))
