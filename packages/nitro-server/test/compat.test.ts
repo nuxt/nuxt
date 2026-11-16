@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync
 import { tmpdir } from 'node:os'
 import process from 'node:process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { dirname, join } from 'pathe'
+import { basename, dirname, extname, join, resolve } from 'pathe'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
 import type { NitroConfig } from 'nitro/types'
@@ -1537,5 +1537,21 @@ describe('getServerImportsPresets', () => {
     expect(source.get('defineEventHandler')).toMatch(/compat[\\/]h3-v1/)
     expect(source.get('getQuery')).toMatch(/compat[\\/]h3-v1/)
     expect(source.get('useRuntimeConfig')).toMatch(/compat[\\/]runtime-config/)
+  })
+
+  it('builds declarations for every compat file an auto-import is typed from', async () => {
+    const { default: configs } = await import('../tsdown.config.ts')
+    const declared = (configs as Array<{ dts?: unknown, entry?: unknown }>)
+      .flatMap(config => config.dts && typeof config.dts === 'object' && 'emitDtsOnly' in config.dts ? config.entry as string[] : [])
+
+    const compatDir = resolve(import.meta.dirname, '../src/runtime/compat')
+    const sources = new Set((await getServerImportsPresets(resolveNitroLegacyOptions(true)))
+      .map(preset => preset.from)
+      .filter(from => from.startsWith(compatDir)))
+
+    expect(sources.size).toBeGreaterThan(0)
+    for (const from of sources) {
+      expect(declared).toContain(`src/runtime/compat/${basename(from, extname(from))}.ts`)
+    }
   })
 })

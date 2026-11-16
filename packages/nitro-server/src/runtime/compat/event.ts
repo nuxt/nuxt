@@ -51,16 +51,17 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
   }
 
   const node = event.req.runtime?.node
-  if (node?.res) {
+  if (node) {
     if (!Object.hasOwn(event, 'node')) {
-      const res = node.res as ServerResponse
+      // a websocket upgrade carries a node request without a response
+      const res = node.res as ServerResponse | undefined
       let bridge: { req: unknown, res: unknown } | undefined
       Object.defineProperty(event, 'node', {
         configurable: true,
-        get: () => (bridge ||= { ...node, res: bridgeNodeResponse(event, res) }),
+        get: () => (bridge ||= { ...node, res: res ? bridgeNodeResponse(event, res) : createNodeResponseBridge(event) }),
       })
     }
-  } else if (!node) {
+  } else {
     const originalUrl = event.url.pathname + event.url.search
     let bridge: { req: unknown, res: unknown } | undefined
     Object.defineProperty(event, 'node', {
