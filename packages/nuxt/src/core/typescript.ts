@@ -9,6 +9,7 @@ import type { NitroConfig, Nuxt } from 'nuxt/schema'
 
 import { pkgDir } from '../dirs.ts'
 import { findVitePlusConfig } from './external-config-files.ts'
+import { resolveServerBuilderPackage } from './server.ts'
 import { buildServerRoutes, collectPageRoutes, collectServerRoutes, emitServerRoutesModule, resolveServerRoutes } from './utils/server-routes.ts'
 
 const builderEnvTypes: Record<string, string> = {
@@ -135,11 +136,12 @@ export function setupTypes (nuxt: Nuxt) {
    * that export are referenced by package name.
    */
   const getServerBuilderReference = () => {
-    const builder = nuxt.options.server.builder
+    const configured = nuxt.options.server.builder
     // only a package can have an `augments` subpath or be referenced by name
-    if (serverBuilderReference || typeof builder !== 'string' || isAbsolute(builder) || builder.startsWith('.')) {
+    if (serverBuilderReference || typeof configured !== 'string' || isAbsolute(configured) || configured.startsWith('.')) {
       return serverBuilderReference
     }
+    const builder = resolveServerBuilderPackage(nuxt, configured)
     const augments = resolveModulePath(`${builder}/augments`, {
       from: [import.meta.url, directoryToURL(nuxt.options.rootDir)],
       try: true,

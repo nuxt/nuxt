@@ -23,7 +23,16 @@ export async function bundleServer (nuxt: Nuxt) {
   }
 }
 
-async function loadServerBuilder (nuxt: Nuxt, builder = '@nuxt/nitro-server'): Promise<NuxtBuilder> {
+const NITRO_SERVER_BUILDER = '@nuxt/nitro-server'
+const NITRO_V3_SERVER_BUILDER = '@nuxt/nitro-v3-server'
+
+/** The package implementing the configured server builder for the nitro major the project runs. */
+export function resolveServerBuilderPackage (nuxt: Nuxt, builder: string = NITRO_SERVER_BUILDER): string {
+  return builder === NITRO_SERVER_BUILDER && nuxt.options._nitroMajor === 3 ? NITRO_V3_SERVER_BUILDER : builder
+}
+
+async function loadServerBuilder (nuxt: Nuxt, configured?: string): Promise<NuxtBuilder> {
+  const builder = resolveServerBuilderPackage(nuxt, configured)
   try {
     // prefer our own dependency tree before walking up from rootDir
     const resolved = resolveModulePath(builder, { from: import.meta.url, try: true })

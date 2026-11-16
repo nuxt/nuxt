@@ -27,6 +27,9 @@ export default createConfigForNuxt({
         '.goff/**',
         ...Object.keys(generatedTemplateCopies),
         'packages/kit/test/types-fixture/**',
+        // written against the Nuxt 5 renderer
+        'packages/nitro-v3-server/src/runtime/host/nuxt5.ts',
+        'packages/nitro-v3-server/test/host-parity.test.ts',
         // deliberately does not compile
         'test/fixtures/dev-error-sourcemap/app/components/Broken.vue',
       ],
@@ -110,6 +113,18 @@ export default createConfigForNuxt({
       '@typescript-eslint/no-deprecated': 'error',
       '@typescript-eslint/return-await': ['error', 'in-try-catch'],
       'no-return-await': 'off',
+    },
+  })
+
+  // typechecked as its own program, against the Nitro v3 types
+  .append({
+    files: ['packages/nitro-v3-server/**/*.{mjs,js,ts}'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.nitro-v3.json'],
+        projectService: false,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
   })
 

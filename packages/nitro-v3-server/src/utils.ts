@@ -1,0 +1,215 @@
+import { lstat, symlink, unlink } from 'node:fs/promises'
+import { fileURLToPath } from 'node:url'
+import { matchesGlob } from 'node:path'
+import { dirname, isAbsolute, normalize, relative, resolve } from 'pathe'
+import { withTrailingSlash } from 'ufo'
+import escapeRE from 'escape-string-regexp'
+import type { Nuxt } from '@nuxt/schema'
+
+/**
+ * Compile-time constants the server bundle needs which Nitro does not inject itself.
+ */
+export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
+  return {
+    'process.env.NODE_ENV': JSON.stringify(nuxt.options.dev ? 'development' : 'production'),
+    '__VUE_OPTIONS_API__': String(!!nuxt.options.vue.optionsApi),
+    '__VUE_PROD_DEVTOOLS__': String(false),
+    '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': String(!!nuxt.options.debug && !!nuxt.options.debug.hydration),
+    'import.meta.test': String(!!nuxt.options.test),
+  }
+}
+
+/**
+ * Link `<rootDir>/dist` to the public output of a static build, replacing an existing link.
+ * A real file or directory at that path is left untouched.
+ */
+export async function linkStaticDist (rootDir: string, publicDir: string): Promise<void> {
+  const dist = resolve(rootDir, 'dist')
+  const stats = await lstat(dist).catch(() => null)
+  if (stats) {
+    if (!stats.isSymbolicLink()) { return }
+    await unlink(dist).catch(() => {})
+  }
+  await symlink(publicDir, dist, 'junction').catch(() => {})
+}
+
+const RELATIVE_RE = /^([^.])/
+
+/** A relative path that always starts with `.`, as tsconfig `paths` require. */
+export function relativeWithDot (from: string, to: string): string {
+  return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
+}
+
+/**
+ * Specifier the app and the server runtime both import the asset URL helpers through,
+ * provided by the `paths.mjs` template Nuxt generates.
+ */
+export const PATHS_SPECIFIER = '#internal/nuxt/paths'
+
+/**
+ * Packages server code may import without the project depending on them, reaching them
+ * through `nitro` instead. A package manager that does not hoist leaves them out of the
+ * project's `node_modules`, so their types and their resolution are routed to the copy
+ * Nitro uses; a second copy would bypass its builder and duplicate state.
+ */
+export const nitroImplicitDependencies = ['nitro', 'h3', 'srvx', 'defu', 'consola', 'ofetch', 'crossws']
+
+export const GLOB_SUFFIX_RE = /\/[^/*]*\*[\s\S]*$/
+
+export function toArray<T> (value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value]
+}
+
+export function timePluginHooks (perf: Pick<NonNullable<Nuxt['_perf']>, 'timeBundlerHook'>, plugins: unknown[]): void {
+  for (const plugin of plugins as Array<Record<string, any> | null | undefined>) {
+    if (!plugin?.name) { continue }
+    const pluginName = `nitro:${plugin.name}`
+    for (const hookName of ['transform', 'resolveId', 'load'] as const) {
+      const hook = plugin[hookName]
+      const handler = typeof hook === 'function' ? hook : hook?.handler
+      if (typeof handler !== 'function') { continue }
+      const timed = function (this: unknown, ...args: unknown[]) {
+        return perf.timeBundlerHook(pluginName, hookName, this, ctx => handler.apply(ctx, args))
+      }
+      // frozen plugins are left untimed rather than throwing
+      Reflect.set(plugin, hookName, typeof hook === 'function' ? timed : { ...hook, handler: timed })
+    }
+  }
+}
+
+const NODE_MODULES_SEGMENT = '/node_modules/'
+
+const NODE_MODULES_RE = /\/node_modules\//g
+
+/**
+ * Build the regex Nitro uses to skip transforming files under `node_modules`,
+ * while still transforming files that belong to layers that happen to live
+ * inside a `node_modules` directory.
+ *
+ * Layer paths can contain multiple `/node_modules/` segments (nested npm
+ * installs; pnpm's `.pnpm/<id>/node_modules/<name>` store). The exclude
+ * pattern is `/node_modules/(?!<alts>)` evaluated at every `node_modules/`
+ * boundary, so we push the suffix at each boundary to make the lookahead
+ * fail wherever the layer's own files live.
+ */
+export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>): RegExp {
+  const excludePaths: string[] = []
+  for (const layerRoot of layerRoots) {
+    const root = layerRoot.replace(/\/$/, '')
+    NODE_MODULES_RE.lastIndex = 0
+    let match: RegExpExecArray | null
+    while ((match = NODE_MODULES_RE.exec(root))) {
+      const suffix = root.slice(match.index + match[0].length)
+      if (suffix) {
+        excludePaths.push(`${escapeRE(suffix)}(?:\\/|$)`)
+      }
+      NODE_MODULES_RE.lastIndex = match.index + 1
+    }
+  }
+  return excludePaths.length
+    ? new RegExp(`[\\\\/]node_modules[\\\\/](?!${excludePaths.join('|')})`)
+    : /[\\/]node_modules[\\/]/
+}
+
+/**
+ * Convert a `build.transpile` entry into a Nitro `noExternals` entry. An absolute
+ * directory matches its own files but not the dependencies installed beneath it.
+ */
+export function toTranspileNoExternal (entry: string): string | RegExp {
+  if (!isAbsolute(entry)) {
+    return entry
+  }
+  const dir = escapeRE(normalize(entry)).replace(/\//g, '[\\\\/]')
+  return new RegExp(`^${dir}(?!.*[\\\\/]node_modules[\\\\/])`)
+}
+
+/**
+ * Convert Nuxt's gitignore-style ignore patterns into globs for the unstorage `fs`
+ * driver, which matches them with `node:path` `matchesGlob` relative to the mount base.
+ *
+ * 1. A gitignore pattern without a slash matches at any depth, so it is prefixed with `**\/`
+ * 2. A trailing slash (directory-only) and a leading slash (anchored) have no meaning.
+ * 3. Re-inclusion cannot be expressed in a flat list of globs at all, we drop whatever
+ *    a negated pattern would 'undo'.
+ *
+ * Rules are order-sensitive (the last one to match a path wins), so a negated pattern
+ * only drops the patterns declared before it.
+ */
+export function toFsDriverIgnorePatterns (patterns: string[]): string[] {
+  const globs: string[] = []
+  for (const pattern of patterns) {
+    const negated = pattern[0] === '!'
+    const glob = toFsDriverGlob(negated ? pattern.slice(1) : pattern)
+    if (!glob) {
+      continue
+    }
+    if (!negated) {
+      if (!globs.includes(glob)) {
+        globs.push(glob)
+      }
+      continue
+    }
+    for (let i = globs.length - 1; i >= 0; i--) {
+      const ignored = globs[i]!
+      if (matchesGlob(glob, ignored) || matchesGlob(ignored, glob)) {
+        globs.splice(i, 1)
+      }
+    }
+  }
+  return globs
+}
+
+function toFsDriverGlob (pattern: string): string | undefined {
+  const trimmed = pattern.replace(/\/+$/, '')
+  const anchored = trimmed.includes('/')
+  const glob = trimmed.replace(/^\//, '')
+  // patterns resolved outside the mount base can never match a key within it
+  if (!glob || glob.startsWith('../')) {
+    return
+  }
+  return anchored ? glob : `**/${glob}`
+}
+
+/**
+ * Build the `resolve.conditions` array applied to the SSR vite environment.
+ *
+ * `'import'` is required so that packages whose top-level `exports` map is
+ * keyed only by `import`/`require` (notably `vue` and `vue-router`) resolve
+ * when the only available copy is nested under `nuxt`'s own `node_modules`.
+ */
+export function getSsrResolveConditions (...sources: Array<string[] | undefined>): string[] {
+  return [...new Set([...sources.flatMap(conditions => conditions || []), 'import'])]
+}
+
+/**
+ * Recover the package directory of an installed module.
+ *
+ * When `dir` is the containing `node_modules` directory, the package name is taken
+ * from the entry path; otherwise `dir` is already the package root.
+ */
+export function toModulePackageDir (dir: string, entryPath: string): string {
+  const resolved = normalize(dir)
+  if (!withTrailingSlash(resolved).endsWith(NODE_MODULES_SEGMENT)) {
+    return resolved
+  }
+  const entry = normalize(entryPath)
+  const index = entry.lastIndexOf(NODE_MODULES_SEGMENT)
+  // a module installed under another module (or reached through a pnpm symlink) is named
+  // by its own path; a module named by a bare specifier is named by that specifier
+  const base = index === -1 ? withTrailingSlash(resolved) : entry.slice(0, index + NODE_MODULES_SEGMENT.length)
+  const rest = index === -1 ? entry : entry.slice(base.length)
+  // an entry that names no package under `dir` leaves only the entry itself to go by:
+  // `dir` is a bare `node_modules`, and scoping or attributing by that prefix would take
+  // in every other package installed beside the module
+  if (!rest || rest[0] === '.' || rest[0] === '/') {
+    return entry
+  }
+  const segments = rest.split('/')
+  const name = segments[0]![0] === '@' ? segments.slice(0, 2).join('/') : segments[0]!
+  return base + name
+}
+
+let _distDir = dirname(fileURLToPath(import.meta.url))
+if (/(?:chunks|shared)$/.test(_distDir)) { _distDir = dirname(_distDir) }
+
+export const distDir = _distDir

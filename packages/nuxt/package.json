@@ -113,6 +113,7 @@
     "@nuxt/devtools-onboard": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
+    "@nuxt/nitro-v3-server": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "catalog:build",
     "@nuxt/vite-builder": "workspace:*",

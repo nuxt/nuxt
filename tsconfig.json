@@ -63,6 +63,7 @@
     "bench/fixtures/**",
     "**/.nuxt/**",
     "packages/nuxt/src/app/types/**",
+    "packages/nitro-v3-server/**",
     "packages/kit/test/types-fixture/**",
     "packages/nuxt/app.d.ts",
     "packages/nuxt/meta.d.ts",

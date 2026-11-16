@@ -1,0 +1,69 @@
+import { createConsoleReporter, defineDiagnostics } from 'nostics'
+import { ansiFormatter } from 'nostics/formatters/ansi'
+import { docsVersion } from '#internal/nuxt/host'
+
+const ansi = (open: number, close: number) => (s: string) => `\x1B[${open}m${s}\x1B[${close}m`
+const colors = {
+  red: ansi(31, 39),
+  yellow: ansi(33, 39),
+  cyan: ansi(36, 39),
+  gray: ansi(90, 39),
+  bold: ansi(1, 22),
+  dim: ansi(2, 22),
+}
+
+/**
+ * E8xxx
+ * Nitro server runtime (dev server) diagnostics, sharing the range with the
+ * SSR renderer.
+ */
+const docsBase = (code: string): string =>
+  `https://nuxt.com/docs/${docsVersion}/errors/${code.replace('NUXT_', '').toLowerCase()}`
+
+export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
+  docsBase,
+  // eslint-disable-next-line
+  reporters: [/* #__PURE__ */ (createConsoleReporter(import.meta.dev && process.env.NODE_ENV !== 'test' ? { formatter: ansiFormatter(colors) } : undefined))] as const,
+  codes: {
+    NUXT_E8003: {
+      why: (p: { error?: string }) => `Failed to stringify dev server logs.${p.error ? ` Received \`${p.error}\`.` : ''}`,
+      fix: `You can define your own reducer/reviver for rich types following the instructions in \`https://nuxt.com/docs/${docsVersion}/api/composables/use-nuxt-app#payload\`.`,
+      docs: false,
+    },
+    NUXT_E8005: {
+      why: 'Island props cannot contain a `template` key, which the Vue runtime compiler would compile and execute.',
+      fix: 'Rename the prop (e.g. `templateName`), or disable `vue.runtimeCompiler` if you do not need runtime template compilation.',
+      docs: false,
+    },
+    NUXT_E8008: {
+      why: (p: { hook: string }) => `A Nitro v2 \`${p.hook}\` hook replaced \`response.body\`, which the compatibility layer cannot apply: the response has already been built by the time the hook runs.`,
+      fix: 'Return the replacement body from the handler, or move the rewrite into a Nitro v3 `response` hook, which receives the `Response` and can return a new one.',
+      docs: false,
+    },
+    NUXT_E8010: {
+      why: (p: { hook: string }) => `A \`${p.hook}\` listener was registered, which is a Nitro v2 hook that Nitro v3 does not emit, and the compatibility layer is not bridging it for this app.`,
+      fix: 'Use the Nitro v3 `response` hook, which receives the built `Response` and can return a new one.',
+      docs: false,
+    },
+    NUXT_E8011: {
+      why: (p: { hook: string }) => `A Nitro v2 \`${p.hook}\` hook read \`response.body\` for a streamed response, which the compatibility layer cannot provide: the body is already on the wire, so \`undefined\` was returned.`,
+      fix: 'Read the body from the `Response` passed to the Nitro v3 `response` hook instead, or opt the route out of streaming with the `streaming: false` route rule if the hook has to see the whole body.',
+      docs: false,
+    },
+    NUXT_E8012: {
+      why: (p: { helper: string }) => `\`${p.helper}\` from \`nuxt/server\` was called with an h3 event. The handler was defined with h3's \`defineEventHandler\` (auto-imported), which passes a different event.`,
+      fix: 'Import `defineHandler` from `nuxt/server` alongside the helpers. See `https://nuxt.com/docs/5.x/getting-started/upgrade#moving-to-nuxtserver`.',
+      docs: false,
+    },
+    NUXT_E8013: {
+      why: (p: { hook: string, location?: string }) => `A \`${p.hook}\` listener was registered${p.location ? ` by \`${p.location}\`` : ''}, but this Nitro v2 hook is not emitted on Nitro v3, so the listener never runs.`,
+      fix: (p: { fix: string }) => p.fix,
+      docs: false,
+    },
+    NUXT_E8016: {
+      why: (p: { received: string }) => `\`defineHandler\` from \`nuxt/server\` accepts a handler function, but received ${p.received}. The object form is specific to h3.`,
+      fix: 'Pass the handler function directly, or import `defineHandler` from `nitro/h3` in this file to use the object form (`{ handler, middleware, meta }`). h3 v2 does not run h3 v1 `onRequest` or `onBeforeResponse` hooks, so move them into `middleware` or the handler first.',
+      docs: false,
+    },
+  },
+})
