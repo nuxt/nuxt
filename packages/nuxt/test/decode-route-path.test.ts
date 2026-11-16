@@ -145,6 +145,14 @@ describe('matchAllRouteRules', () => {
     expect(matchAllRouteRules(match, '/docs/a?next=%2Fdocs%2Finternal')).toEqual(match('/docs/a'))
   })
 
+  it('should match the path with each run of slashes collapsed', () => {
+    for (const path of ['//docs/internal/x', '///docs/internal/x', '/docs//internal/x', '/%2Fdocs/internal/x', '/%2fdocs%2F%2Finternal/x']) {
+      expect(matchAllRouteRules(match, path), path).toEqual([{ all: true }, { docs: true, layout: 'docs' }, { internal: true, layout: 'internal' }])
+    }
+    expect(matchAllRouteRules(match, '/docs/a?next=//docs/internal')).toEqual(match('/docs/a?next=//docs/internal'))
+    expect(matchAllRouteRules(match, '//docs/a%2Fb')).toEqual([{ all: true }, { docs: true, layout: 'docs' }, { page: true }])
+  })
+
   it('should give rules matched only through encoded slashes precedence', () => {
     expect(resolveRouteRules(router, '/Docs/Internal%2FX', true)).toEqual({ all: true, docs: true, page: true, internal: true, layout: 'internal' })
   })

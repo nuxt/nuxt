@@ -322,8 +322,9 @@ export function isWildcardRedirect (redirect: unknown): boolean {
 /**
  * Resolve a wildcard `redirect`, kept by the route-rules matcher as `{ to, base }`, into the
  * path it redirects to: the part of `path` past the segments `base` matched replaces the
- * trailing `/**` of `to`. A run of separators leading that part collapses to one, so the target
- * stays on the origin `to` names.
+ * trailing `/**` of `to`, where a run of slashes or encoded slashes (`%2F`) separates two
+ * segments. A run of separators leading that part collapses to one, so the target stays on the
+ * origin `to` names.
  *
  * Inlined by source into the route-rules matcher, so it must not reference anything outside itself.
  *
@@ -338,7 +339,7 @@ export function resolveWildcardRedirect<T extends { redirect?: unknown }> (rules
   if (base) {
     tail = /\*\*|:\w+[?*+]/.test(base)
       ? (pathname.startsWith(base) ? pathname.slice(base.length) : pathname)
-      : pathname.split('/').slice(base.split('/').length).map(segment => '/' + segment).join('')
+      : base.split('/').slice(1).reduce(rest => rest.replace(/^(?:\/|%2f)+(?:(?!%2f)[^/])*/i, ''), pathname)
   }
   tail = tail.replace(/^(?:[/\\]|%(?:25)*(?:2f|5c))+/i, '/')
   if (tail === '/') { tail = '' }

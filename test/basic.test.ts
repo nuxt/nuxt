@@ -346,7 +346,7 @@ describe('route rules', () => {
   })
 
   it.skipIf(!once)('should apply route rules to a catch-all page when the path has encoded slashes', async () => {
-    for (const path of ['/catchall/route-rules/spa', '/catchall/route-rules%2Fspa', '/catchall/Route-Rules%2fspa']) {
+    for (const path of ['/catchall/route-rules/spa', '/catchall/route-rules%2Fspa', '/catchall/Route-Rules%2fspa', '/catchall//route-rules/spa', '/catchall/%2Froute-rules/spa']) {
       const res = await fetch(path)
       expect(res.headers.get('x-catchall-route-rules'), path).toEqual('applied')
       expect(parseData(await res.text()).script.serverRendered, path).toEqual(false)
@@ -354,7 +354,7 @@ describe('route rules', () => {
   })
 
   it.skipIf(!once)('should preserve wildcard redirect tails and query strings regardless of request casing', async () => {
-    for (const base of ['/route-rules/old', '/Route-Rules/OLD', '/ROUTE-RULES/Old', '/route-rules/%4Fld']) {
+    for (const base of ['/route-rules/old', '/Route-Rules/OLD', '/ROUTE-RULES/Old', '/route-rules/%4Fld', ...isNitroV3 ? [] : ['/route-rules//old', '/route-rules%2Fold']]) {
       for (const tail of ['/x', '/A/b', '/A/b?q=Value&other=two']) {
         const res = await fetch(base + tail, { redirect: 'manual' })
         expect(res.status, base + tail).toBe(307)
@@ -364,10 +364,16 @@ describe('route rules', () => {
   })
 
   it.skipIf(!once)('should preserve wildcard proxy tails and query strings regardless of request casing', async () => {
-    for (const base of ['/route-rules/wildcard-proxy', '/Route-Rules/WILDCARD-PROXY', '/ROUTE-RULES/Wildcard-Proxy']) {
+    for (const base of ['/route-rules/wildcard-proxy', '/Route-Rules/WILDCARD-PROXY', '/ROUTE-RULES/Wildcard-Proxy', ...isNitroV3 ? [] : ['/route-rules//wildcard-proxy', '/route-rules%2Fwildcard-proxy']]) {
       for (const tail of ['/x', '/A/b', '/A/b?q=Value&other=two']) {
         expect(await $fetch<string>(base + tail), base + tail).toBe('/api/tail' + tail)
       }
+    }
+  })
+
+  it.runIf(once && isNitroV3)('should refuse wildcard redirects and proxies whose base is spelled with repeated or encoded slashes', async () => {
+    for (const path of ['/route-rules//old/x', '/route-rules%2Fold/x', '/route-rules//wildcard-proxy/x', '/route-rules%2Fwildcard-proxy/x']) {
+      expect((await fetch(path, { redirect: 'manual' })).status, path).toBe(400)
     }
   })
 

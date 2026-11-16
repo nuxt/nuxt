@@ -37,8 +37,9 @@ function withRequestStripBases (rules: NitroRouteRules, path: string, baseURL: s
     const stripBase = options?.[key]
     if (typeof stripBase !== 'string') { continue }
     const base = baseURL.replace(/\/$/, '') + stripBase
-    const prefix = path.split('/').slice(0, base.split('/').length).join('/')
-    if (prefix !== stripBase && normalizeRouteRulePath(prefix) === normalizeRouteRulePath(base)) {
+    const rest = base.split('/').slice(1).reduce(remaining => remaining.replace(/^(?:\/|%2f)+(?:(?!%2f)[^/])*/i, ''), path)
+    const prefix = path.slice(0, path.length - rest.length)
+    if (prefix !== stripBase && normalizeRouteRulePath(prefix.replace(/%2f/gi, '/').replace(/\/{2,}/g, '/')) === normalizeRouteRulePath(base)) {
       (rules as Record<string, unknown>)[name] = { ...options, [key]: prefix }
     }
   }

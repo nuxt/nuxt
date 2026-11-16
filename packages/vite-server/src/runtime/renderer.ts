@@ -173,13 +173,16 @@ function resolveRedirectTarget (to: string, tail: string): string {
   return to.slice(0, index) + (query !== -1 && index > query ? value.replace(QUERY_UNSAFE_RE, char => '%' + char.charCodeAt(0).toString(16).toUpperCase()) : value) + to.slice(index + 2)
 }
 
-/** The part of `path` past the segments `base` matched, which may differ in spelling from `base`. */
+/**
+ * The part of `path` past the segments `base` matched, which may differ in spelling from `base`.
+ * A run of slashes or encoded slashes (`%2F`) separates two segments.
+ */
 function redirectTail (path: string, base: string | undefined): string {
   if (!base) { return path }
   if (VARIABLE_WIDTH_RE.test(base)) {
     return path.startsWith(base) ? path.slice(base.length) : path
   }
-  return path.split('/').slice(base.split('/').length).map(segment => '/' + segment).join('')
+  return base.split('/').slice(1).reduce(rest => rest.replace(/^(?:\/|%2f)+(?:(?!%2f)[^/])*/i, ''), path)
 }
 
 /** A meta-refresh document, so a prerendered redirect is followed when served as a static file. */
