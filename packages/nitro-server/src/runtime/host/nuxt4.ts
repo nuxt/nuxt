@@ -42,8 +42,18 @@ export function errorPageQuery (error: SSRErrorInput, cause?: SerializedErrorCau
   return {
     ...error,
     url: withoutBase(url.pathname, withBaseURL('/')) + url.search + url.hash,
+    data: encodeErrorData(error.data),
     ...(cause !== undefined && { cause: JSON.stringify(cause) }),
   } as QueryObject
+}
+
+function encodeErrorData (data: unknown): string | undefined {
+  if (data === undefined || typeof data === 'string') { return data }
+  try {
+    return JSON.stringify(data)
+  } catch {
+    return undefined
+  }
 }
 
 /** The response the app queued on `ssrContext['~renderResponse']`. */

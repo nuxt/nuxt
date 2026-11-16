@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { NuxtRendererOptions, RendererEvent } from 'nuxt/internal/renderer/runtime'
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
+import { withQuery } from 'ufo'
 
 import * as nuxt4 from '../src/runtime/host/nuxt4.ts'
 
@@ -16,8 +17,15 @@ describe('nuxt 4 renderer host', () => {
       status: 404,
       statusText: 'Not Found',
       url: '/missing?a=1#top',
-      data: { id: 1 },
+      data: '{"id":1}',
     })
+  })
+
+  it('leaves out error data that cannot be serialised', () => {
+    const data: Record<string, unknown> = {}
+    data.self = data
+    const query = nuxt4.errorPageQuery({ status: 500, data })
+    expect(withQuery('/__nuxt_error', query)).toBe('/__nuxt_error?status=500&url=%2F')
   })
 
   it('sends the cause of a development error as JSON', () => {
