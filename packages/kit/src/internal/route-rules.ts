@@ -2,10 +2,10 @@ import { addRoute, createRouter, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import type { CompileRouterToStringOptions } from 'rou3/compiler'
 import { defu } from 'defu'
-import { tryUseNitro } from '@nuxt/kit'
-import { pageDiagnostics } from '@nuxt/kit/internal'
+import { tryUseNitro } from '../nitro.ts'
+import { pageDiagnostics } from '../diagnostics/pages.ts'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
-import { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './index.ts'
+import { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './route-path.ts'
 
 /** One entry of a route-rules router: the pattern it matches and the rules it resolves to. */
 export interface RouteRulesRoute {

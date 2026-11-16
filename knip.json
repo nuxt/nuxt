@@ -121,8 +121,7 @@
     },
     "packages/vite-server": {
       "ignoreDependencies": [
-        "mocked-exports",
-        "rou3"
+        "mocked-exports"
       ]
     },
     "packages/vite": {

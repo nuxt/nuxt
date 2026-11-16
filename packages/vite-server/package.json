@@ -31,7 +31,6 @@
     "mocked-exports": "catalog:build",
     "my-bad": "catalog:nitro-runtime",
     "pathe": "catalog:build",
-    "rou3": "catalog:build",
     "srvx": "catalog:nitro-runtime",
     "ufo": "catalog:build",
     "ultrahtml": "catalog:build"
