@@ -278,18 +278,19 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
     let pendingRegeneration: Promise<void> | undefined
     let staleScan = false
+    const isComposablesPath = (path: string) => composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))
     function refreshImports (path: string) {
-      if (!options.scan || !composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
+      if (!options.scan || !isComposablesPath(path)) {
         return
-      }
-      if (isScanned(path)) {
-        return pendingRegeneration ?? Promise.resolve()
       }
       if (pendingRegeneration) {
         // a change may land after the in-flight scan has already read the directory,
         // so schedule a single extra pass rather than resolving with stale imports
         staleScan = true
         return pendingRegeneration
+      }
+      if (isScanned(path)) {
+        return Promise.resolve()
       }
       pendingRegeneration = (async () => {
         staleScan = false
@@ -318,7 +319,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.hook('app:templatesGenerated', async (_app, templates) => {
       // Only regenerate when non-imports templates are updated
       if (templates.some(t => !isImportsTemplate(t))) {
-        await regenerateImports({ rescan: false })
+        await regenerateImports({ rescan: templates.some(t => t.write && isComposablesPath(t.dst)) })
       }
     })
   },
