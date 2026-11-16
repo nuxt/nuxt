@@ -17,6 +17,7 @@ import {
   redirect,
 } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import { getRouteRules } from '../utils/route-rules.ts'
 import { prepareLegacyEvent, withLegacyContentType } from './event.ts'
@@ -192,10 +193,13 @@ export function defineResponseMiddleware<T> (input: T): T {
   return input
 }
 
+/** The event a v1 handler receives, on which `event.node` is always present. */
+export type LegacyH3Event = H3Event & { node: { req: IncomingMessage, res: ServerResponse } }
+
 type LegacyHandlerObject = {
-  handler: (event: H3Event) => any
-  onRequest?: ((event: H3Event) => any) | Array<(event: H3Event) => any>
-  onBeforeResponse?: ((event: H3Event, response: { body?: any }) => any) | Array<(event: H3Event, response: { body?: any }) => any>
+  handler: (event: LegacyH3Event) => any
+  onRequest?: ((event: LegacyH3Event) => any) | Array<(event: LegacyH3Event) => any>
+  onBeforeResponse?: ((event: LegacyH3Event, response: { body?: any }) => any) | Array<(event: LegacyH3Event, response: { body?: any }) => any>
   [key: string]: any
 }
 
@@ -208,7 +212,7 @@ function toArray<T> (input: T | T[] | undefined): T[] {
  * `onBeforeResponse` hooks, which h3 v2 no longer accepts. The returned handler prepares
  * the v1 event shape and normalises thrown errors, so it needs no entry-level wrapper.
  */
-export function defineEventHandler (input: ((event: H3Event) => any) | LegacyHandlerObject): any {
+export function defineEventHandler (input: ((event: LegacyH3Event) => any) | LegacyHandlerObject): any {
   const handler = typeof input === 'function' ? input : input.handler
   const rest: Partial<LegacyHandlerObject> = typeof input === 'function' ? {} : { ...input }
   delete rest.handler
@@ -219,8 +223,8 @@ export function defineEventHandler (input: ((event: H3Event) => any) | LegacyHan
 
   return defineHandler({
     ...rest,
-    async handler (event: H3Event) {
-      prepareLegacyEvent(event, getRouteRules)
+    async handler (input: H3Event) {
+      const event = prepareLegacyEvent(input, getRouteRules) as LegacyH3Event
       try {
         for (const hook of onRequestHooks) {
           await hook(event)

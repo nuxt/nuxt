@@ -655,7 +655,8 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  *
  * Removal checklist: this module and `runtime/compat/*`; the `nitroLegacy` option
  * (`augments.ts`, `schema/config/nitro.ts`); the aliases `getLegacyNitroAliases` adds; the
- * `#nuxt-compat/*` virtuals and their `tsdown` externals; the `render:response` hook,
+ * `#nuxt-compat/*` virtuals and their `tsdown` externals; the declarations `tsdown` builds
+ * for `runtime/compat`; the `render:response` hook,
  * `rememberRenderBody` in `utils/renderer/options.ts` and the `hasLegacyHookListener`
  * check in `handlers/renderer.ts`; the `legacyCompat` branches in `handlers/error.ts`,
  * `handlers/renderer.ts` and `utils/renderer/options.ts`; the `NUXT_B9001`-`B9005` and

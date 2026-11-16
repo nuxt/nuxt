@@ -29,4 +29,22 @@ export default defineConfig([
       ],
     },
   },
+  {
+    // declarations for the files server auto-imports are typed from by path, named so
+    // that an extensionless path resolves them
+    dts: { emitDtsOnly: true },
+    outDir: 'dist/runtime/compat/',
+    entry: [
+      'src/runtime/compat/event.ts',
+      'src/runtime/compat/h3-v1.ts',
+      'src/runtime/compat/render.ts',
+      'src/runtime/compat/runtime-config.ts',
+    ],
+    unbundle: true,
+    outExtensions: () => ({ dts: '.d.ts' }),
+    deps: {
+      onlyBundle: [],
+      neverBundle: [/^nitro(?:\/|$)/],
+    },
+  },
 ])
