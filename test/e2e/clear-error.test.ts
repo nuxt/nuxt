@@ -1,4 +1,4 @@
-import { expect, fixtureDir, test } from './test-utils'
+import { collectConsoleLogs, expect, fixtureDir, test } from './test-utils'
 
 test.use({
   nuxt: {
@@ -17,10 +17,24 @@ test.describe('clearError', () => {
 
     expect(new URL(page.url()).pathname).toBe('/')
     expect(await page.evaluate(() => (window as any).__record)).toEqual([
-      'middleware:/:clear',
+      'middleware:/',
       'index:mount',
       'error:unmount',
     ])
+  })
+
+  test('keeps the error page rendering the error until the redirect settles', async ({ page, goto }) => {
+    await goto('/crash')
+    await expect(page.getByTestId('error')).toHaveText('crashed')
+    const logs = collectConsoleLogs(page)
+
+    await page.getByTestId('clear-pending').click()
+    await page.waitForFunction(() => (window as any).__release)
+    await expect(page.getByTestId('error')).toHaveText('crashed')
+
+    await page.evaluate(() => (window as any).__release())
+    await expect(page.getByTestId('home')).toBeVisible()
+    expect(logs.filter(log => log.type === 'error')).toEqual([])
   })
 
   test('shows a fatal error raised by the redirect', async ({ page, goto }) => {

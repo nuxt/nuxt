@@ -1,4 +1,4 @@
-import { shallowRef, toRef } from 'vue'
+import { toRef } from 'vue'
 import type { AppConfig, ComponentPublicInstance, Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import type { NuxtApp, NuxtPayload } from '../nuxt'
@@ -24,14 +24,16 @@ export const showError = <DataT = unknown>(
   const nuxtError = createError<DataT>(error)
 
   try {
+    const nuxtApp = useNuxtApp()
     const error = useError()
 
     if (import.meta.client) {
-      const nuxtApp = useNuxtApp()
       callAppErrorHook(nuxtApp, nuxtError)
     }
 
-    error.value ||= nuxtError
+    if (!error.value || error.value === nuxtApp['~clearingError']) {
+      error.value = nuxtError
+    }
   } catch {
     throw nuxtError
   }
@@ -86,31 +88,21 @@ export const _showErrorUnlessCrawler = async (nuxtApp: NuxtApp, error: Error): P
 export const clearError = async (options: { redirect?: string } = {}): Promise<void> => {
   const nuxtApp = useNuxtApp()
   const error = useError()
+  const cleared = error.value
 
   nuxtApp.callHook('app:error:cleared', options)?.catch(hookError => console.error('[nuxt] Error in `app:error:cleared` hook', hookError))
 
-  // `<NuxtRoot>` keeps rendering the held error until the redirect settles, so the
-  // route that failed is not re-mounted while middleware for the target runs.
-  const heldError = import.meta.client && options.redirect ? (nuxtApp['~heldError'] ||= shallowRef()) : undefined
-  const redirect = {}
-  if (heldError) {
-    heldError.value = error.value || heldError.value
-    error.value = undefined
-    nuxtApp['~heldErrorRedirect'] = redirect
-  }
-
   try {
     if (options.redirect) {
+      nuxtApp['~clearingError'] = cleared
       await useRouter().replace(options.redirect)
     }
   } finally {
-    if (!heldError) {
+    if (nuxtApp['~clearingError'] === cleared) {
+      delete nuxtApp['~clearingError']
+    }
+    if (error.value === cleared) {
       error.value = undefined
-      if (nuxtApp['~heldError']) {
-        nuxtApp['~heldError'].value = undefined
-      }
-    } else if (nuxtApp['~heldErrorRedirect'] === redirect) {
-      heldError.value = undefined
     }
 
     if (import.meta.dev && import.meta.client) {

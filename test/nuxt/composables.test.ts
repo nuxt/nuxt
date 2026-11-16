@@ -172,10 +172,12 @@ describe('errors', () => {
       expect(useError().value).toBeUndefined()
     })
 
-    it('should run middleware for the redirect target with the error already cleared', async () => {
-      const seen: unknown[] = []
-      const middleware = defineNuxtRouteMiddleware(() => {
-        seen.push(useError().value)
+    it('should keep the error until the redirect settles, replacing it only with the first error shown meanwhile', async () => {
+      let release: (() => void) | undefined
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.pending !== undefined) {
+          return new Promise<void>((resolve) => { release = resolve })
+        }
       })
       addRouteMiddleware(middleware, { global: true })
       onTestFinished(() => {
@@ -184,10 +186,17 @@ describe('errors', () => {
       })
 
       showError('boom')
-      await clearError({ redirect: '/?cleared' })
+      const settled = clearError({ redirect: '/?pending' })
+      await vi.waitFor(() => expect(release).toBeDefined())
+      expect(useError().value).toMatchObject({ message: 'boom' })
 
-      expect(useRouter().currentRoute.value.fullPath).toBe('/?cleared')
-      expect(seen).toEqual([undefined])
+      showError('replacement')
+      showError('later')
+      expect(useError().value).toMatchObject({ message: 'replacement' })
+
+      release!()
+      await settled
+      expect(useError().value).toBeUndefined()
     })
 
     it('should keep a fatal error raised while redirecting', async () => {
@@ -207,75 +216,6 @@ describe('errors', () => {
       await expect(clearError({ redirect: '/?forbidden' })).rejects.toThrow('forbidden')
 
       expect(useError().value).toMatchObject({ status: 403, message: 'forbidden' })
-    })
-
-    describe('with overlapping redirects', () => {
-      const pending: Record<string, () => void> = {}
-      const heldError = () => useNuxtApp()['~heldError']?.value
-
-      beforeEach(() => {
-        const middleware = defineNuxtRouteMiddleware((to) => {
-          const key = to.query.pending as string | undefined
-          if (key) {
-            return new Promise<void>((resolve) => { pending[key] = resolve })
-          }
-        })
-        addRouteMiddleware(middleware, { global: true })
-        onTestFinished(() => {
-          const globalMiddleware = useNuxtApp()._middleware.global
-          globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
-        })
-      })
-
-      async function redirect (key: string) {
-        const settled = clearError({ redirect: `/?pending=${key}` })
-        await vi.waitFor(() => expect(pending[key]).toBeDefined())
-        return { settled }
-      }
-
-      it('should keep the error until the last redirect settles', async () => {
-        showError('boom')
-        const first = await redirect('first')
-        const second = await redirect('second')
-        expect(heldError()).toMatchObject({ message: 'boom' })
-
-        pending.first!()
-        await first.settled
-        expect(heldError()).toMatchObject({ message: 'boom' })
-
-        pending.second!()
-        await second.settled
-        expect(heldError()).toBeUndefined()
-      })
-
-      it('should keep an error raised between redirects until its own redirect settles', async () => {
-        showError('boom')
-        const first = await redirect('third')
-        showError('later')
-        const second = await redirect('fourth')
-        expect(heldError()).toMatchObject({ message: 'later' })
-
-        pending.third!()
-        await first.settled
-        expect(heldError()).toMatchObject({ message: 'later' })
-
-        pending.fourth!()
-        await second.settled
-        expect(heldError()).toBeUndefined()
-      })
-
-      it('should release the error when cleared without a redirect', async () => {
-        showError('boom')
-        const first = await redirect('fifth')
-        showError('later')
-        await clearError()
-
-        expect(useError().value).toBeUndefined()
-        expect(heldError()).toBeUndefined()
-
-        pending.fifth!()
-        await first.settled
-      })
     })
   })
 
