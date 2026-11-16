@@ -7,8 +7,9 @@ import type { DevErrorReport } from 'nuxt/internal/dev-error'
 import type { SerializedErrorCause } from '#app/types'
 import { serverFetch } from 'nitro'
 
-import type { SSRErrorInput } from 'nuxt/internal/renderer/error'
-import { NUXT_ERROR_SIGNATURE, SSR_ERROR_PARAM, appendVary, encodeSSRError, isJsonRequest } from 'nuxt/internal/renderer/error'
+import { appendVary, isJsonRequest } from 'nuxt/internal/renderer/error'
+import { NUXT_ERROR_SIGNATURE, errorPageQuery } from '#internal/nuxt/host'
+import type { SSRErrorInput } from '../host/nuxt4'
 import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
@@ -109,7 +110,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
 
   // HTML response (via SSR)
   const res = !isRenderingError && await serverFetch(
-    withQuery(withBaseURL('/__nuxt_error'), { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
+    withQuery(withBaseURL('/__nuxt_error'), errorPageQuery(errorObject, errorCause)),
     {
       headers: event.req.headers,
       redirect: 'manual',

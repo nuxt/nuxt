@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { isAbsolute, join, resolve } from 'pathe'
-import { loadNuxt } from '@nuxt/kit'
+import { directoryToURL, isNuxtMajorVersion, loadNuxt } from '@nuxt/kit'
 import { createNitro } from 'nitro/builder'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
@@ -11,15 +11,29 @@ import { RUNTIME_CONFIG_SCHEMA_ID } from '../src/runtime-config.ts'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
 
-const serverReplacements = {
+const serverReplacements = (nuxt: Nuxt) => ({
   'process.env.NODE_ENV': '"production"',
-  '__VUE_OPTIONS_API__': 'false',
+  '__VUE_OPTIONS_API__': String(!!nuxt.options.vue.optionsApi),
   '__VUE_PROD_DEVTOOLS__': 'false',
   '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': 'false',
   'import.meta.test': 'false',
-}
+})
 
 const getSchema = (nitro: Nitro) => JSON.parse((nitro.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] as () => string)().replace(/^export default /, ''))
+
+const asNuxtMajor = (major: number) => (_options: unknown, nuxt: Nuxt) => {
+  nuxt._version = `${major}.0.0`
+}
+
+const findH3RuntimePlugin = (nitroConfig: NitroConfig) => ([nitroConfig.rollupConfig!.plugins].flat() as Array<{ name?: string, resolveId: { handler: (id: string) => string | undefined } }>)
+  .find(plugin => plugin?.name === 'nuxt:nitro:h3-v1-runtime')
+
+async function findViteH3RuntimePlugin (nuxt: Nuxt) {
+  const config = { environments: { ssr: {}, client: {} }, plugins: [] }
+  await nuxt.callHook('vite:extend', { nuxt, config } as any)
+  return (config.plugins.flat() as Array<{ name?: string, applyToEnvironment: (environment: { name: string }) => boolean, resolveId: (id: string) => string | undefined }>)
+    .find(plugin => plugin?.name === 'nuxt:nitro:h3-v1-runtime')
+}
 
 const hasBundledVuePlugin = (nitroConfig: NitroConfig) => (nitroConfig.rollupConfig!.plugins as Array<{ name?: string }>).some(plugin => plugin?.name === 'nuxt:bundled-vue')
 
@@ -32,6 +46,7 @@ async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConf
     ready: true,
     overrides: {
       ...overrides,
+      _nitroMajor: 3,
       hooks: {
         'nitro:config' (config) {
           nitroConfig = config
@@ -95,23 +110,28 @@ describe('nitro config', () => {
   }, 60_000)
 
   it('passes the server replacements to nitro as `replace` without nitroViteEnvironment', async () => {
-    await withNitro({ experimental: { nitroViteEnvironment: false } }, (_nitro, nitroConfig) => {
-      expect(nitroConfig.replace).toMatchObject(serverReplacements)
+    await withNitro({ experimental: { nitroViteEnvironment: false } }, (_nitro, nitroConfig, nuxt) => {
+      expect(nitroConfig.replace).toMatchObject(serverReplacements(nuxt))
     })
   })
 
   it('leaves the server replacements to the vite `define` with nitroViteEnvironment', async () => {
-    await withNitro({ experimental: { nitroViteEnvironment: true } }, (_nitro, nitroConfig) => {
+    await withNitro({ experimental: { nitroViteEnvironment: true } }, (_nitro, nitroConfig, nuxt) => {
+      if (!nuxt.options.experimental.nitroViteEnvironment) {
+        expect(isNuxtMajorVersion(4, nuxt)).toBe(true)
+        expect(nitroConfig.replace).toMatchObject(serverReplacements(nuxt))
+        return
+      }
       expect(nitroConfig.replace).not.toHaveProperty('__VUE_PROD_DEVTOOLS__')
     })
   })
 
   it.for([true, false])('passes the server replacements to the prerenderer when nitroViteEnvironment is %s', async (nitroViteEnvironment) => {
-    await withNitro({ experimental: { nitroViteEnvironment } }, async (nitro) => {
+    await withNitro({ experimental: { nitroViteEnvironment } }, async (nitro, _nitroConfig, nuxt) => {
       // nitro creates the prerenderer from a copy of this config
       const prerendererConfig: NitroConfig = { ...nitro.options._config }
       await nitro.hooks.callHook('prerender:config', prerendererConfig)
-      expect(prerendererConfig.replace).toMatchObject(serverReplacements)
+      expect(prerendererConfig.replace).toMatchObject(serverReplacements(nuxt))
     })
   })
 
@@ -258,11 +278,61 @@ describe('nitro config', () => {
   it('warns that `nitro.builder` is ignored with nitroViteEnvironment', async () => {
     const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9008').mockImplementation(() => ({}) as any)
     onTestFinished(() => report.mockRestore())
-    await withNitro({ experimental: { nitroViteEnvironment: true }, nitro: { builder: 'rspack' } }, (_nitro, nitroConfig) => {
+    await withNitro({ experimental: { nitroViteEnvironment: true }, nitro: { builder: 'rspack' } }, (_nitro, nitroConfig, nuxt) => {
+      if (!nuxt.options.experimental.nitroViteEnvironment) {
+        expect(isNuxtMajorVersion(4, nuxt)).toBe(true)
+        expect(report).not.toHaveBeenCalled()
+        return
+      }
       expect(report).toHaveBeenCalledWith({ builder: 'rspack' })
       expect(nitroConfig.rolldownConfig).toMatchObject({ tsconfig: false })
     })
   })
+
+  it.for([4, 5])('resolves `#internal/nuxt/host` to the renderer host of a Nuxt %i app', async (major) => {
+    await withNitro({ modules: [asNuxtMajor(major)] }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.alias!['#internal/nuxt/host']).toMatch(new RegExp(`runtime/host/nuxt${major}$`))
+    })
+  })
+
+  it('resolves the h3 v1 helpers of a Nuxt 4 app to the h3 v1 shim', async () => {
+    await withNitro({ modules: [asNuxtMajor(4)] }, async (_nitro, nitroConfig, nuxt) => {
+      const plugin = findH3RuntimePlugin(nitroConfig)
+      const entry = resolveModulePath('@nuxt/nitro-server/h3', { from: directoryToURL(nuxt.options.appDir) })
+      expect(nitroConfig.alias!['@nuxt/nitro-server/h3']).toMatch(/runtime\/compat\/h3-v1/)
+      expect(plugin!.resolveId.handler(entry)).toMatch(/runtime\/compat\/h3-v1/)
+      expect(plugin!.resolveId.handler('h3')).toBeUndefined()
+
+      const vitePlugin = await findViteH3RuntimePlugin(nuxt)
+      expect(vitePlugin!.applyToEnvironment({ name: 'ssr' })).toBe(true)
+      expect(vitePlugin!.applyToEnvironment({ name: 'client' })).toBe(false)
+      expect(vitePlugin!.resolveId('@nuxt/nitro-server/h3')).toMatch(/runtime\/compat\/h3-v1/)
+      expect(vitePlugin!.resolveId('h3')).toBeUndefined()
+    })
+  })
+
+  it('leaves the h3 helpers of a Nuxt 5 app unaliased', async () => {
+    await withNitro({ modules: [asNuxtMajor(5)] }, async (_nitro, nitroConfig, nuxt) => {
+      expect(nitroConfig.alias!['@nuxt/nitro-server/h3']).toBeUndefined()
+      expect(findH3RuntimePlugin(nitroConfig)).toBeUndefined()
+      expect(await findViteH3RuntimePlugin(nuxt)).toBeUndefined()
+    })
+  })
+
+  it('keys cached responses on their query for a Nuxt 4 app with the nitro v2 config layer', async () => {
+    await withNitro({ modules: [asNuxtMajor(4)], nitroLegacy: true }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.cache?.defaults?.allowQuery).toBe(true)
+    })
+    await withNitro({ modules: [asNuxtMajor(4)], nitroLegacy: { config: false } }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.cache?.defaults?.allowQuery).toBeUndefined()
+    })
+    await withNitro({ modules: [asNuxtMajor(4)], nitroLegacy: true, nitro: { cache: { defaults: { allowQuery: ['page'] } } } }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.cache?.defaults?.allowQuery).toEqual(['page'])
+    })
+    await withNitro({ modules: [asNuxtMajor(5)], nitroLegacy: true }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.cache?.defaults?.allowQuery).toBeUndefined()
+    })
+  }, 60_000)
 
   it.for([true, false])('registers server import protection once, ahead of other resolvers, when nitroViteEnvironment is %s', async (nitroViteEnvironment) => {
     await withNitro({ experimental: { nitroViteEnvironment } }, (_nitro, nitroConfig, nuxt) => {

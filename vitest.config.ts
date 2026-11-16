@@ -277,6 +277,7 @@ export default defineConfig({
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#internal/nuxt/error-channel': resolve('./packages/nitro-server/src/runtime/utils/error-channel'),
+            '#internal/nuxt/host': resolve('./packages/nitro-server/src/runtime/host/nuxt5'),
             '#nuxt-compat/import-meta': resolve('./test/mocks/nitro-compat-import-meta'),
             '#nuxt-compat/flags': resolve('./test/mocks/nitro-compat-flags'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),

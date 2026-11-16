@@ -13,10 +13,11 @@ import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
-import { createSSRContext, rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/internal/renderer/app'
+import { createSSRContext } from 'nuxt/internal/renderer/app'
+import { patchDevClientCss, rethrowWithResponseHeaders, returnRenderResponse, toRenderResponse } from '#internal/nuxt/host'
 import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
 import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse } from 'nuxt/internal/renderer/islands'
-import { isStyleOfModule, patchDevClientCss } from 'nuxt/internal/renderer/dev-css'
+import { isStyleOfModule } from 'nuxt/internal/renderer/dev-css'
 import { urlHash } from 'nuxt/internal/renderer/url'
 import { createEvent } from '../utils/base'
 import { applyIslandPrerenderHints } from '../utils/prerender'
@@ -152,7 +153,7 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
   await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult })
 
   if (ssrContext['~renderResponse']) {
-    return { raw: ssrContext['~renderResponse'] }
+    return { raw: toRenderResponse(rendererInstance.options, ssrContext['~renderResponse']) }
   }
 
   // Handle errors

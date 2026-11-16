@@ -7,7 +7,7 @@ import { resolveModulePath } from 'exsolve'
 import { createMatcherFromFind } from 'h3/rules'
 import { compileRouteRules } from 'h3/rules/compiler'
 import type { Nitro, NitroConfig } from 'nitro/types'
-import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
+import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
 
 vi.mock('@nuxt/kit/internal', async importOriginal => ({
   ...await importOriginal<typeof import('@nuxt/kit/internal')>(),
@@ -93,6 +93,24 @@ describe('keepCachedIslandQuery', () => {
 
   it('keeps an explicit `allowQuery`', () => {
     expect(islandRule({ '/**': { cache: { allowQuery: ['props'] } } })).toBeUndefined()
+  })
+})
+
+describe('keepCachedQuery', () => {
+  it('keys cached responses on their query by default', () => {
+    const config: Pick<NitroConfig, 'cache'> = {}
+    keepCachedQuery(config)
+    expect(config.cache?.defaults?.allowQuery).toBe(true)
+  })
+
+  it.each<[NonNullable<NonNullable<NitroConfig['cache']>['defaults']>['allowQuery']]>([
+    [false],
+    [[]],
+    [['page']],
+  ])('keeps a configured default (%j)', (allowQuery) => {
+    const config: Pick<NitroConfig, 'cache'> = { cache: { driver: 'memory', defaults: { allowQuery, maxAge: 60 } } }
+    keepCachedQuery(config)
+    expect(config.cache).toEqual({ driver: 'memory', defaults: { allowQuery, maxAge: 60 } })
   })
 })
 

@@ -5,13 +5,13 @@ import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomBytes, randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtBuildOutputs, NuxtOptions, ServerApi, ServerImportsOptions, ServerRouteSegment } from '@nuxt/schema'
-import { dirname, join, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { createNitro } from 'nitro/builder'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
+import { addPlugin, addTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -35,10 +35,10 @@ import { compileRouterToString } from 'rou3/compiler'
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { nitroSchemaTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
-import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
+import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
-import { getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
+import { getLegacyH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
@@ -46,7 +46,7 @@ import { nitroBuildDiagnostics } from './diagnostics.ts'
 export type { NuxtTracingChannelOptions } from './augments.ts'
 
 /** Subpath the request-shape extractors are imported from in generated declarations. */
-const REQUEST_TYPES_MODULE = '@nuxt/nitro-server/request-types'
+const REQUEST_TYPES_MODULE = `${nitroBuilder.name}/request-types`
 
 // App-only aliases Nitro carries in its own alias map, which must not resolve in the server program
 const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/, '~', '@', '~~', '@@']
@@ -59,6 +59,18 @@ const logLevelMapReverse = {
 
 export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const legacy = resolveNitroLegacyOptions(nuxt.options.nitroLegacy)
+  const nuxt4Host = isNuxtMajorVersion(4, nuxt)
+
+  if (nuxt4Host) {
+    addVitePlugin({
+      name: 'nuxt:nitro:h3-v1-runtime',
+      enforce: 'pre',
+      applyToEnvironment: environment => environment.name === 'ssr',
+      resolveId (id) {
+        if (id === '@nuxt/nitro-server/h3') { return getLegacyH3ShimPath() }
+      },
+    })
+  }
 
   // module runtime code is nitro v2 unless it says otherwise, so it always gets the v2
   // flavour of these; the global registry follows the `nitroLegacy` toggles
@@ -400,6 +412,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       // Nitro v2 runtime specifiers, wherever they are imported from
       ...getLegacyNitroAliases(),
 
+      '#internal/nuxt/host': resolve(distDir, nuxt4Host ? 'runtime/host/nuxt4' : 'runtime/host/nuxt5'),
+      // Nuxt 4 app code reaches the h3 v1 helpers through this specifier
+      ...nuxt4Host ? { '@nuxt/nitro-server/h3': getLegacyH3ShimPath() } : {},
+
       // Vue 3 mocks
       ...nuxt.options.vue.runtimeCompiler
         ? {}
@@ -588,6 +604,26 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitroConfig.rollupConfig!.plugins!.push(routeRulesCaseFoldPlugin(() => nitro))
   }
 
+  if (nuxt4Host) {
+    // an app bundle can reference the h3 v1 helpers by the path the specifier resolves to
+    const hostH3 = resolveModulePath('@nuxt/nitro-server/h3', {
+      from: [nuxt.options.appDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)),
+      try: true,
+    })
+    if (hostH3) {
+      const hostH3Path = normalize(hostH3)
+      nitroConfig.rollupConfig!.plugins!.push({
+        name: 'nuxt:nitro:h3-v1-runtime',
+        resolveId: {
+          order: 'pre',
+          handler (id: string) {
+            if (normalize(id) === hostH3Path) { return getLegacyH3ShimPath() }
+          },
+        },
+      })
+    }
+  }
+
   // Nitro serialises mount options with `JSON.stringify`, so the patterns have to go
   // through the fs driver's `ignore` option rather than a `watchOptions.ignored` matcher.
   const devStorageIgnore = (base?: string) => toFsDriverIgnorePatterns([
@@ -655,6 +691,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
   if (nuxt.options.experimental.componentIslands) {
     keepCachedIslandQuery(nitroConfig, !nuxt.options.router.options.sensitive)
+  }
+  if (nuxt4Host && legacy.config) {
+    keepCachedQuery(nitroConfig)
   }
   normalizeAppMiddlewareRules(nitroConfig.routeRules)
   const unusedVariants = collectServerRegistrations(nuxt, nitroConfig)

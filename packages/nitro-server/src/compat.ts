@@ -594,7 +594,7 @@ export function sortAliasesByPrecedence<T> (aliases: Record<string, T>): Record<
   return Object.fromEntries(keys.map(key => [key, aliases[key]!]))
 }
 
-function getLegacyH3ShimPath (): string {
+export function getLegacyH3ShimPath (): string {
   return compatRuntimePath('h3-v1')
 }
 
