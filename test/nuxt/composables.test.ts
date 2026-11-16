@@ -1132,6 +1132,22 @@ describe('routing utilities: `addRouteMiddleware`', () => {
     expect(nuxtApp._middleware.global.filter(mw => mw === middleware)).toHaveLength(1)
   })
 
+  it('preserves registration order when unregistering a duplicate global middleware', () => {
+    const nuxtApp = useNuxtApp()
+    const first = () => {}
+    const second = () => {}
+    const unregisterFirst = addRouteMiddleware(first)
+    const unregisterSecond = addRouteMiddleware(second)
+    const unregisterDuplicate = addRouteMiddleware(first)
+    onTestFinished(() => {
+      unregisterFirst()
+      unregisterSecond()
+      unregisterDuplicate()
+    })
+    unregisterDuplicate()
+    expect(nuxtApp._middleware.global).toEqual([first, second])
+  })
+
   it('returns a function that unregisters named middleware', () => {
     const nuxtApp = useNuxtApp()
     const middleware = () => {}

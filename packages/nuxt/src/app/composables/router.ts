@@ -134,7 +134,7 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
     return () => {
       if (!registered) { return }
       registered = false
-      const index = middlewares.indexOf(mw)
+      const index = middlewares.lastIndexOf(mw)
       if (index !== -1) { middlewares.splice(index, 1) }
     }
   }
