@@ -253,6 +253,18 @@ describe('v2 event bridge', () => {
     expect(bridged.statusCode).toBe(201)
   })
 
+  it('writes the status and headers before a chained write', () => {
+    const { event, res } = nodeEvent()
+    const bridged = event.node!.res as ServerResponse
+
+    event.res.status = 201
+    event.res.headers.set('x-web', 'web')
+    bridged.on('finish', () => {}).end('ok')
+
+    expect(res.statusCode).toBe(201)
+    expect(res.getHeader('x-web')).toBe('web')
+  })
+
   it('does not clobber a `_nitro` slot the handler chain already set', () => {
     const event = mockEvent('http://nuxt/x')
     ;(event.context as any)._nitro = { routeRules: { own: true } }

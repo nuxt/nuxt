@@ -162,14 +162,13 @@ function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerRes
         if (Object.hasOwn(headers, prop)) { return headers[prop] }
       }
       const value = Reflect.get(target, prop, target)
-      if (typeof value !== 'function') { return value }
-      if (NODE_RESPONSE_WRITERS.has(prop)) {
-        return (...args: unknown[]) => {
-          flush()
-          return value.apply(target, args)
-        }
+      if (typeof value !== 'function' || prop === 'constructor') { return value }
+      const writes = NODE_RESPONSE_WRITERS.has(prop)
+      return (...args: unknown[]) => {
+        if (writes) { flush() }
+        const result = value.apply(target, args)
+        return result === target ? proxy : result
       }
-      return value.bind(target)
     },
     set (target, prop, value) {
       if (!target.headersSent) {
