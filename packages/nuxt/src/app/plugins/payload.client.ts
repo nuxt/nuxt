@@ -104,10 +104,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         for (const key of staticKeysToRemove) {
           delete nuxtApp.static.data[key]
         }
+        staticKeysToRemove.clear()
       }
       for (const key in payload.data) {
         if (purgeCachedData) {
-          if (!(key in nuxtApp.static.data)) {
+          if (!Object.hasOwn(nuxtApp.static.data, key)) {
             staticKeysToRemove.add(key)
           }
         }

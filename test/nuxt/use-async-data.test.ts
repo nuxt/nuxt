@@ -8,7 +8,7 @@ import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { flushPromises } from '@vue/test-utils'
-import { Transition, isShallow, triggerRef, watch } from 'vue'
+import { Transition, isShallow, triggerRef, watch, watchSyncEffect } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
@@ -179,6 +179,23 @@ describe('useAsyncData', () => {
     clearNuxtData(uniqueKey)
     expect(data.data.value).toBeUndefined()
     expect(useNuxtData(uniqueKey).data.value).toBeUndefined()
+  })
+
+  it('should not treat inherited object properties as shared data', async () => {
+    const nuxtApp = useNuxtApp()
+    const data = useNuxtData('valueOf')
+    const values: unknown[] = []
+    const stop = watchSyncEffect(() => { values.push(data.data.value) })
+    onTestFinished(stop)
+
+    expect(values).toEqual([undefined])
+
+    nuxtApp.payload.data.valueOf = 'value'
+    await nextTick()
+
+    expect(values).toEqual([undefined, 'value'])
+    expect(data.data.value).toBe('value')
+    clearNuxtData('valueOf')
   })
 
   it('should be usable _after_ a useNuxtData call', async () => {
@@ -362,6 +379,10 @@ describe('useAsyncData', () => {
     expect(uniqueKey in nuxtApp._asyncDataPromises).toBe(false)
   })
 
+  it('should not throw when clearing a key named after an inherited object property', () => {
+    expect(() => clearNuxtData('constructor')).not.toThrow()
+  })
+
   it('should have correct status for previously fetched requests', async () => {
     vi.useFakeTimers()
 
@@ -520,6 +541,15 @@ describe('useAsyncData', () => {
     useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should execute the handler for an inherited object property when dedupe option is "defer"', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { data } = await useAsyncData('isPrototypeOf', promiseFn, { dedupe: 'defer' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('test')
+    clearNuxtData('isPrototypeOf')
   })
 
   it('should watch params deeply in a non synchronous way', async () => {
@@ -1308,6 +1338,17 @@ describe('useAsyncData', () => {
       expect(observed).toMatchObject({ status: 'success', data: 'client' })
       expect(promiseFn).toHaveBeenCalledTimes(1)
       wrapper.unmount()
+    })
+
+    it('should fetch before resolving when the key is an inherited object property', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData('toString', promiseFn)
+
+      expect(observed).toMatchObject({ status: 'success', data: 'client' })
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+      clearNuxtData('toString')
     })
 
     it('should fetch before resolving when a default is set but there is no payload entry for the key', async () => {
@@ -2187,6 +2228,16 @@ describe('useAsyncData', () => {
     clear()
     expect(data.value).toBeUndefined()
     expect(status.value).toBe('idle')
+  })
+
+  it('should not treat inherited object properties as cached data', async () => {
+    const handler = vi.fn(() => Promise.resolve('value'))
+    const { data, error } = await useAsyncData('constructor', handler)
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('value')
+    expect(error.value).toBeUndefined()
+    clearNuxtData('constructor')
   })
 
   it('does not cross-pollute cache slots when the reactive key changes (#32836)', async () => {

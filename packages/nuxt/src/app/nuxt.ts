@@ -288,8 +288,8 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
         }
       }
     },
-    _asyncDataPromises: {},
-    _asyncData: shallowReactive({}),
+    _asyncDataPromises: Object.create(null),
+    _asyncData: shallowReactive(Object.create(null)),
     _state: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
