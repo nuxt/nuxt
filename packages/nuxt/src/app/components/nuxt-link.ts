@@ -102,7 +102,7 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
 type RouterLinkSlot = NonNullable<ComponentSlots<typeof RouterLink>['default']>
 type RouterLinkSlotProps = Parameters<RouterLinkSlot>[0]
 
-type NuxtLinkSlotProps<CustomProp extends boolean = false> = CustomProp extends true
+export type NuxtLinkSlotProps<CustomProp extends boolean = false> = CustomProp extends true
   ? Omit<RouterLinkSlotProps, 'href' | 'route'> & {
     href: RouterLinkSlotProps['href'] | null
     route: RouterLinkSlotProps['route'] | undefined
