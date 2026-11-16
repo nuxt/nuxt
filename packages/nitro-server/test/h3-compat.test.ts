@@ -71,6 +71,33 @@ describe('h3 v1 shim', () => {
     })
   })
 
+  it('keeps the cause an error is created with', () => {
+    const cause = new Error('inner')
+
+    expect(createError({ statusCode: 500, message: 'outer', cause }).cause).toBe(cause)
+    expect(createError({ status: 500, message: 'outer', cause }).cause).toBe(cause)
+
+    const input = { statusCode: 500, message: 'outer' }
+    expect(createError(input).cause).toBe(input)
+
+    expect(createError(null as any).status).toBe(500)
+  })
+
+  it('keeps the status of an unhandled error created with an h3 v1 cause', () => {
+    class ForeignH3Error extends Error {
+      static __h3_error__ = true
+      statusCode = 404
+      unhandled = false
+      data = { secret: 'inner' }
+    }
+
+    const error = toLegacyError(createError({ statusCode: 503, unhandled: true, cause: new ForeignH3Error('inner') }))
+
+    expect(error.status).toBe(503)
+    expect(error.unhandled).toBe(true)
+    expect(JSON.stringify(error.toJSON())).not.toContain('inner')
+  })
+
   it('leaves v3-shaped input untouched', () => {
     const v3 = createError({ status: 418, statusText: 'I am a teapot' })
     expect(v3.toJSON()).not.toHaveProperty('statusCode')
@@ -189,6 +216,26 @@ describe('h3 v1 shim', () => {
 
     expect(await response.text()).toBe('ok')
     expect(calls).toEqual(['onRequest', 'onBeforeResponse:ok'])
+  })
+
+  it('sends a string a handler returns as HTML unless the handler sets a content type', async () => {
+    const html = await defineEventHandler(() => '<h1>ok</h1>').fetch(new Request('http://nuxt/page'))
+    expect(html.headers.get('content-type')).toBe('text/html')
+
+    const text = await defineEventHandler((event) => {
+      event.res.headers.set('content-type', 'text/plain')
+      return 'ok'
+    }).fetch(new Request('http://nuxt/robots.txt'))
+    expect(text.headers.get('content-type')).toBe('text/plain')
+
+    const json = await defineEventHandler(() => ({ ok: true })).fetch(new Request('http://nuxt/api/test'))
+    expect(json.headers.get('content-type')).toContain('application/json')
+
+    const notModified = await defineEventHandler((event) => {
+      event.res.status = 304
+      return ''
+    }).fetch(new Request('http://nuxt/page'))
+    expect(notModified.headers.has('content-type')).toBe(false)
   })
 
   it('normalises errors thrown from a handler', async () => {

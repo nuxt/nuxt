@@ -1,7 +1,7 @@
 import { defineHandler, toEventHandler } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
 
-import { prepareLegacyEvent } from './event.ts'
+import { prepareLegacyEvent, withLegacyContentType } from './event.ts'
 import type { RouteRulesResolver } from './event.ts'
 import { toLegacyError } from './error-shape.ts'
 
@@ -22,7 +22,7 @@ export function wrapLegacyHandler (input: unknown, base?: string, getRouteRules?
     prepareLegacyEvent(event, getRouteRules)
     const url = base ? withStrippedBase(event, base) : undefined
     try {
-      return await handler(event)
+      return withLegacyContentType(event, await handler(event))
     } catch (error) {
       throw toLegacyError(error)
     } finally {
