@@ -307,6 +307,20 @@ describe('v2 event bridge', () => {
     expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
   })
 
+  it('bridges the response of a node request that has none, keeping the node request', () => {
+    const req = new IncomingMessage(new Socket())
+    const event = mockEvent('http://nuxt/_ws')
+    Object.defineProperty(event.req, 'runtime', { value: { name: 'node', node: { req, upgrade: {} } } })
+    prepareLegacyEvent(event)
+
+    expect(event.node!.req).toBe(req)
+    event.node!.res!.setHeader('x-legacy', 'yes')
+    event.node!.res!.statusCode = 401
+
+    expect(event.res.headers.get('x-legacy')).toBe('yes')
+    expect(event.res.status).toBe(401)
+  })
+
   it('does not clobber a `_nitro` slot the handler chain already set', () => {
     const event = mockEvent('http://nuxt/x')
     ;(event.context as any)._nitro = { routeRules: { own: true } }
