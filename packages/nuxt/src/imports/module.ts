@@ -218,11 +218,16 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         if (options.scan) {
           if (rescan || !lastScannedImports) {
             const scanStartedAt = Date.now()
+            const scannedFiles = new Set<string>()
             lastScannedImports = await scanDirExports(composablesDirs, {
-              fileFilter: file => !isIgnored(file),
+              fileFilter: (file) => {
+                if (isIgnored(file)) { return false }
+                scannedFiles.add(file)
+                return true
+              },
             })
             lastScanStartedAt = scanStartedAt
-            lastScannedFiles = new Set(lastScannedImports.map(i => i.from))
+            lastScannedFiles = new Set([...scannedFiles, ...lastScannedImports.map(i => i.from)])
             for (const i of lastScannedImports) {
               i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
             }

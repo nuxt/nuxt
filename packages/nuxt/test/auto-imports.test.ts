@@ -3,15 +3,16 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { join } from 'pathe'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished } from 'vitest'
 import { parseSync } from 'rolldown/utils'
 import * as VueFunctions from 'vue'
-import type { Import } from 'unimport'
+import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
 import type { Plugin } from 'vite'
 import { registry as scriptRegistry } from '@nuxt/scripts/registry'
 import { RemovedImportsPlugin, TransformPlugin, getImportsSignature } from '../src/imports/transform.ts'
 import { defaultPresets, removedImports, scriptsStubsPreset } from '../src/imports/presets.ts'
+import { loadNuxt } from '../src/index.ts'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
@@ -342,6 +343,29 @@ describe('imports:hot-update', () => {
 
     await hotUpdate('/app/pages/about.vue')
     expect(invalidated).toHaveLength(3)
+  })
+})
+
+describe('imports:rescan', () => {
+  it('drops the exports of a deleted barrel file', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-imports-rescan-'))
+    onTestFinished(() => rm(rootDir, { recursive: true, force: true }))
+    await mkdir(join(rootDir, 'composables'))
+    await mkdir(join(rootDir, 'internal'))
+    await writeFile(join(rootDir, 'internal/foo.ts'), 'export const useFoo = () => 1\n')
+    await writeFile(join(rootDir, 'composables/index.ts'), 'export * from \'../internal/foo\'\n')
+
+    const nuxt = await loadNuxt({ cwd: rootDir, ready: false, overrides: { srcDir: rootDir, logLevel: 'silent' } })
+    onTestFinished(() => nuxt.close())
+    let ctx: Unimport | undefined
+    nuxt.hook('imports:context', (c) => { ctx = c })
+    await nuxt.ready()
+    const names = async () => (await ctx!.getImports()).map(i => i.as ?? i.name)
+    expect(await names()).toContain('useFoo')
+
+    await rm(join(rootDir, 'composables/index.ts'))
+    await nuxt.callHook('builder:watch', 'unlink', 'composables/index.ts')
+    expect(await names()).not.toContain('useFoo')
   })
 })
 
