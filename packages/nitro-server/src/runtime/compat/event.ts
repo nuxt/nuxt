@@ -144,6 +144,18 @@ function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerRes
       web.appendHeader(name, value)
       return proxy
     },
+    setHeaders (entries: Headers | Map<string, string | string[] | number>) {
+      const cookies: string[] = []
+      for (const [name, value] of entries) {
+        if (name.toLowerCase() === 'set-cookie') {
+          cookies.push(...(Array.isArray(value) ? value : [String(value)]))
+        } else {
+          web.setHeader(name, value as string | string[])
+        }
+      }
+      if (cookies.length > 0) { web.setHeader('set-cookie', cookies) }
+      return proxy
+    },
     getHeader: (name: string) => web.getHeader(name) ?? res.getHeader(name),
     getHeaders: () => ({ ...res.getHeaders(), ...web.getHeaders() }),
     getHeaderNames: () => Object.keys({ ...res.getHeaders(), ...web.getHeaders() }),

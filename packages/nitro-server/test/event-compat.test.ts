@@ -265,6 +265,22 @@ describe('v2 event bridge', () => {
     expect(res.getHeader('x-web')).toBe('web')
   })
 
+  it('replaces headers passed to `setHeaders` on the web response', () => {
+    const { event, res } = nodeEvent()
+    const bridged = event.node!.res as ServerResponse
+
+    bridged.setHeader('content-type', 'text/plain')
+    const headers = new Headers({ 'content-type': 'application/json' })
+    headers.append('set-cookie', 'a=1')
+    headers.append('set-cookie', 'b=2')
+    expect(bridged.setHeaders(headers)).toBe(bridged)
+
+    expect(event.res.headers.get('content-type')).toBe('application/json')
+    expect(event.res.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
+    bridged.end()
+    expect(res.getHeader('content-type')).toBe('application/json')
+  })
+
   it('does not clobber a `_nitro` slot the handler chain already set', () => {
     const event = mockEvent('http://nuxt/x')
     ;(event.context as any)._nitro = { routeRules: { own: true } }
