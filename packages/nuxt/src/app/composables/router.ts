@@ -209,10 +209,14 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
   const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
   // Early open handler
-  if (import.meta.client && options?.open) {
+  if (options?.open) {
     const protocol = getScriptProtocol(toPath)
     if (protocol !== null) {
       throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
+    }
+
+    if (import.meta.server) {
+      return Promise.resolve()
     }
 
     // route objects with a `name` are already resolved against the router base by `router.resolve`
