@@ -154,6 +154,11 @@ interface _NuxtApp {
    * @internal
    */
   '~heldError'?: ShallowRef<NuxtPayload['error']>
+  /**
+   * The latest `clearError({ redirect })` call, which releases `~heldError` once it settles.
+   * @internal
+   */
+  '~heldErrorRedirect'?: object
 
   /** @internal */
   '_islandPromises'?: Record<string, Promise<any>>

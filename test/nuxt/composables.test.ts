@@ -208,6 +208,62 @@ describe('errors', () => {
 
       expect(useError().value).toMatchObject({ status: 403, message: 'forbidden' })
     })
+
+    describe('with overlapping redirects', () => {
+      const pending: Record<string, () => void> = {}
+      const heldError = () => useNuxtApp()['~heldError']?.value
+
+      beforeEach(() => {
+        const middleware = defineNuxtRouteMiddleware((to) => {
+          const key = to.query.pending as string | undefined
+          if (key) {
+            return new Promise<void>((resolve) => { pending[key] = resolve })
+          }
+        })
+        addRouteMiddleware(middleware, { global: true })
+        onTestFinished(() => {
+          const globalMiddleware = useNuxtApp()._middleware.global
+          globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+        })
+      })
+
+      async function redirect (key: string) {
+        const settled = clearError({ redirect: `/?pending=${key}` })
+        await vi.waitFor(() => expect(pending[key]).toBeDefined())
+        return { settled }
+      }
+
+      it('should keep the error until the last redirect settles', async () => {
+        showError('boom')
+        const first = await redirect('first')
+        const second = await redirect('second')
+        expect(heldError()).toMatchObject({ message: 'boom' })
+
+        pending.first!()
+        await first.settled
+        expect(heldError()).toMatchObject({ message: 'boom' })
+
+        pending.second!()
+        await second.settled
+        expect(heldError()).toBeUndefined()
+      })
+
+      it('should keep an error raised between redirects until its own redirect settles', async () => {
+        showError('boom')
+        const first = await redirect('third')
+        showError('later')
+        const second = await redirect('fourth')
+        expect(heldError()).toMatchObject({ message: 'later' })
+
+        pending.third!()
+        await first.settled
+        expect(heldError()).toMatchObject({ message: 'later' })
+
+        pending.fourth!()
+        await second.settled
+        expect(heldError()).toBeUndefined()
+      })
+    })
   })
 
   describe('hook rejections', () => {

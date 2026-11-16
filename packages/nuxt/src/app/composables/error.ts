@@ -92,9 +92,11 @@ export const clearError = async (options: { redirect?: string } = {}): Promise<v
   // `<NuxtRoot>` keeps rendering the held error until the redirect settles, so the
   // route that failed is not re-mounted while middleware for the target runs.
   const heldError = import.meta.client && options.redirect ? (nuxtApp['~heldError'] ||= shallowRef()) : undefined
+  const redirect = {}
   if (heldError) {
-    heldError.value = error.value
+    heldError.value = error.value || heldError.value
     error.value = undefined
+    nuxtApp['~heldErrorRedirect'] = redirect
   }
 
   try {
@@ -102,10 +104,10 @@ export const clearError = async (options: { redirect?: string } = {}): Promise<v
       await useRouter().replace(options.redirect)
     }
   } finally {
-    if (heldError) {
-      heldError.value = undefined
-    } else {
+    if (!heldError) {
       error.value = undefined
+    } else if (nuxtApp['~heldErrorRedirect'] === redirect) {
+      heldError.value = undefined
     }
 
     if (import.meta.dev && import.meta.client) {
