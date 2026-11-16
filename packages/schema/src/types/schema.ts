@@ -2137,7 +2137,7 @@ export interface ConfigSchema {
    *
    * @experimental This is an experimental feature and API may change in the future.
    *
-   * @see [Nitro route rules documentation](https://nitro.build/config#routerules)
+   * @see [Nitro route rules documentation](https://v2.nitro.build/config#routerules)
    */
   routeRules: Record<string, RouteRuleConfig> | undefined
 
