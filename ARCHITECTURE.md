@@ -112,7 +112,7 @@ There are also `pnpm typecheck` (root `vue-tsc`), `pnpm test:attw` and `pnpm tes
 
 ### The fixture matrix
 
-Fixture suites run once per project of the `fixtures:<builder>-<env>-<context>-<manifest>` matrix in `vitest.config.ts`, plus an `-inline-errors` project that turns on `inlineErrorRendering` and a `-legacy-component-resolution` project that turns off `compilerComponentResolution`. `test/matrix.ts` exposes the current project's axes (`builder`, `isDev`, `asyncContext`, ...). A fixture opts into them by wrapping its config in `withMatrix()`.
+Fixture suites run once per project of the `fixtures:<builder>-<env>-<context>-<manifest>` matrix in `vitest.config.ts`, plus an `-inline-errors` project that turns on `inlineErrorRendering` and a `-legacy-component-resolution` project that turns off `compilerComponentResolution`. The `fixtures:nitro3-*` projects run `test/basic.test.ts` again on Nitro v3, where the `runsOnce*` guards hold as they do on the default `nitropack` v2, and `isNitroV3` marks an assertion that differs between the two. `test/matrix.ts` exposes the current project's axes (`builder`, `isDev`, `asyncContext`, ...). A fixture opts into them by wrapping its config in `withMatrix()`.
 
 Most behaviour does not depend on every axis. Guard each suite with the narrowest helper from `test/matrix.ts`, so that it builds and runs only where it adds coverage:
 
