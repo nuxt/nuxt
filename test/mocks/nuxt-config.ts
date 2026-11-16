@@ -25,3 +25,5 @@ export const navigateToDefaults = {
 }
 
 export const tracingChannelNuxt = false
+
+export const sharedServerRuntimeConfig = true

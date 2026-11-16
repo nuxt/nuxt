@@ -17,6 +17,7 @@ import { EXTENSION_RE } from './utils/index.ts'
 import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, findCaseDependentRouteRuleKeyPart, isWildcardRedirect, normalizePathCode, resolveRouteRulesRoutes, resolveWildcardRedirect } from './utils/route-rules.ts'
 import type { RouteRulesRouter } from './utils/route-rules.ts'
 import { findRouterOptionsFileDefining } from '../pages/router-options.ts'
+import { resolveServerBuilderPackage } from './server.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 
 const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
@@ -758,6 +759,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
+      `export const sharedServerRuntimeConfig = ${typeof ctx.nuxt.options.server.builder !== 'object' && resolveServerBuilderPackage(ctx.nuxt, ctx.nuxt.options.server.builder) === '@nuxt/nitro-v3-server'}`,
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!nitro?.options.prerender.crawlLinks}`,
       `export const staticRoutes = ${!!ctx.nuxt.options.experimental.staticRoutes}`,

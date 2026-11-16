@@ -48,6 +48,7 @@ export {
   anyValue as remoteComponentIslands,
   anyValue as renderJsonPayloads,
   anyValue as selectiveClient,
+  anyValue as sharedServerRuntimeConfig,
   anyValue as spaLoadingTemplateOutside,
   anyValue as ssrErrorBoundary,
   anyValue as stripNeverHydratedData,
