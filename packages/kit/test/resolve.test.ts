@@ -1,6 +1,6 @@
 import { stat } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
-import { resolve } from 'pathe'
+import { join, resolve } from 'pathe'
 import { loadNuxt } from '../src/loader/nuxt.ts'
 import { findPath, resolveAlias, resolveNuxtModule, resolvePath } from '../src/resolve.ts'
 import { defineNuxtModule } from '../src/module/define.ts'
@@ -79,7 +79,9 @@ describe('resolveNuxtModule', () => {
     expect(resolved.length).toBe(3)
 
     for (const path of resolved) {
-      expect(await stat(path).then(r => r.isDirectory() && path.endsWith('node_modules/')).catch(() => false)).toBe(true)
+      expect(await stat(path).then(r => r.isDirectory()).catch(() => false)).toBe(true)
+      expect(path).not.toMatch(/node_modules\/$/)
+      expect((await stat(join(path, 'package.json'))).isFile()).toBe(true)
     }
   })
 })

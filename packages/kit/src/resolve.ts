@@ -154,9 +154,9 @@ export async function resolveNuxtModule (base: string, paths: string[]): Promise
       continue
     }
     const resolvedPath = await resolver.resolvePath(path)
-    const dir = parseNodeModulePath(resolvedPath).dir
-    if (dir) {
-      resolved.push(dir)
+    const { dir, name } = parseNodeModulePath(resolvedPath)
+    if (dir && name) {
+      resolved.push(dir + name)
       continue
     }
     const index = resolvedPath.lastIndexOf(path)

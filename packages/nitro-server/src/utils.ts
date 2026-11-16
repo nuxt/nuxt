@@ -184,9 +184,8 @@ export function getSsrResolveConditions (...sources: Array<string[] | undefined>
 /**
  * Recover the package directory of an installed module.
  *
- * `resolveNuxtModule` answers with the `node_modules` directory a module resolved from
- * rather than the package root, so the package name has to be taken from the entry path
- * for the module's runtime directories to be findable.
+ * When `dir` is the containing `node_modules` directory, the package name is taken
+ * from the entry path; otherwise `dir` is already the package root.
  */
 export function toModulePackageDir (dir: string, entryPath: string): string {
   const resolved = normalize(dir)
