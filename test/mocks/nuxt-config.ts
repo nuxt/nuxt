@@ -20,4 +20,8 @@ export const useStateDefaults = {
   resetOnClear: false,
 }
 
+export const navigateToDefaults = {
+  noopener: false,
+}
+
 export const tracingChannelNuxt = false

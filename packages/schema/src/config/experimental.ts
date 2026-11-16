@@ -298,6 +298,13 @@ export default defineResolvers({
           },
         },
       },
+      navigateTo: {
+        noopener: {
+          $resolve: async (val, get) => {
+            return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+          },
+        },
+      },
       useFetch: {},
     },
     clientNodeCompat: false,

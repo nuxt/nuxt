@@ -37,6 +37,7 @@ export {
   anyValue as hasPluginDependencies,
   anyValue as hasPluginHooks,
   anyValue as multiApp,
+  anyValue as navigateToDefaults,
   anyValue as nuxtLinkDefaults,
   anyValue as outdatedBuildInterval,
   anyValue as payloadExtraction,
