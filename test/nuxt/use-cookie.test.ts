@@ -179,10 +179,15 @@ describe('useCookie', () => {
     })
 
     try {
-      useCookie('absent-null-default', { default: () => null })
-      useCookie('absent-undefined-default', { default: () => undefined })
-      useCookie('absent-ref-null-default', { default: () => ref(null) })
-      useCookie('absent-ref-undefined-default', { default: () => ref(undefined) })
+      const scope = effectScope()
+      scope.run(() => {
+        useCookie('absent-null-default', { default: () => null })
+        useCookie('absent-undefined-default', { default: () => undefined })
+        useCookie('absent-ref-null-default', { default: () => ref(null) })
+        useCookie('absent-ref-undefined-default', { default: () => ref(undefined) })
+      })
+      expect(writes).toEqual([])
+      scope.stop()
       expect(writes).toEqual([])
 
       useCookie('present-expired', { maxAge: 0, default: () => 'value' })

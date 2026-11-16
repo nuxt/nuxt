@@ -236,6 +236,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     if (shouldSetInitialClientCookie) {
       callback(shouldSetInitialClientCookie)
+    } else if (rawValue === undefined) {
+      cookies[name] = klona(cookie.value)
     }
   } else if (import.meta.server) {
     const writeFinalCookieValue = () => {
