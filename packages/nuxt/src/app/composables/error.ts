@@ -106,6 +106,9 @@ export const clearError = async (options: { redirect?: string } = {}): Promise<v
   } finally {
     if (!heldError) {
       error.value = undefined
+      if (nuxtApp['~heldError']) {
+        nuxtApp['~heldError'].value = undefined
+      }
     } else if (nuxtApp['~heldErrorRedirect'] === redirect) {
       heldError.value = undefined
     }

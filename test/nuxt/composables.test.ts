@@ -263,6 +263,19 @@ describe('errors', () => {
         await second.settled
         expect(heldError()).toBeUndefined()
       })
+
+      it('should release the error when cleared without a redirect', async () => {
+        showError('boom')
+        const first = await redirect('fifth')
+        showError('later')
+        await clearError()
+
+        expect(useError().value).toBeUndefined()
+        expect(heldError()).toBeUndefined()
+
+        pending.fifth!()
+        await first.settled
+      })
     })
   })
 
