@@ -17,6 +17,9 @@ beforeAll(async () => {
   await writeFiles(rootDir, {
     ...fakePackage('tailwindcss', 'export default {}\n', { exports: { '.': './index.js', './broken': './broken.js' } }),
     'node_modules/tailwindcss/broken.js': 'import "missing-dependency"\nexport default () => ({})\n',
+    'node_modules/tailwindcss-v3/package.json': { name: 'tailwindcss-v3', version: '3.4.19', main: 'lib/index.js' },
+    'node_modules/tailwindcss-v3/lib/index.js': 'module.exports = () => ({ postcssPlugin: "tailwindcss" })\n',
+    'node_modules/tailwindcss-v3/nesting/index.js': 'module.exports = () => ({ postcssPlugin: "tailwindcss/nesting" })\n',
   })
 })
 
@@ -30,6 +33,14 @@ afterEach(() => {
 })
 
 describe('resolvePostcssPlugins', () => {
+  it('loads a directory subpath of a CommonJS package without `exports`', async () => {
+    const missingSubpath = vi.spyOn(bundlerDiagnostics, 'NUXT_B7027').mockImplementation(() => ({}) as any)
+
+    const nuxt = { options: { rootDir, modulesDir: [join(rootDir, 'node_modules')], postcss: { plugins: { 'tailwindcss-v3/nesting': {}, 'tailwindcss-v3': {} } } } } as unknown as Nuxt
+    expect(await resolvePostcssPlugins(nuxt)).toEqual([{ postcssPlugin: 'tailwindcss/nesting' }, { postcssPlugin: 'tailwindcss' }])
+    expect(missingSubpath).not.toHaveBeenCalled()
+  })
+
   it('reports a subpath missing from an installed package without offering to install it', async () => {
     const missingSubpath = vi.spyOn(bundlerDiagnostics, 'NUXT_B7027').mockImplementation(() => ({}) as any)
     const missingPlugin = vi.spyOn(bundlerDiagnostics, 'NUXT_B7007').mockImplementation(() => ({}) as any)

@@ -1,6 +1,8 @@
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 
+import { resolveModulePath } from 'exsolve'
 import { bundlerDiagnostics } from '../diagnostics/bundler.ts'
+import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
 import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand } from '../dependency.ts'
 import { directoryToURL, tryImportModule } from './esm.ts'
 
@@ -33,7 +35,9 @@ export async function resolvePostcssPlugins<T = unknown> (nuxt: Nuxt): Promise<T
 async function resolvePostcssPlugin<T> (pluginName: string, nuxt: Nuxt): Promise<PostcssPluginFactory<T> | undefined> {
   const parentURLs = nuxt.options.modulesDir.map(dir => directoryToURL(dir.replace(/\/node_modules\/?$/, '')))
 
-  const importPlugin = () => tryImportModule<PostcssPluginFactory<T>>(pluginName, { url: parentURLs })
+  // ESM can't import a directory subpath of a package without `exports`, such as `tailwindcss/nesting`
+  const pluginPath = resolveModulePath(pluginName, { from: parentURLs, extensions: DEFAULT_JS_FILE_EXTENSIONS, suffixes: ['', '/index'], try: true })
+  const importPlugin = () => tryImportModule<PostcssPluginFactory<T>>(pluginPath ?? pluginName, { url: parentURLs })
 
   let pluginFn = await importPlugin()
   if (typeof pluginFn === 'function') {
