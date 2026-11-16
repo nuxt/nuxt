@@ -1,5 +1,5 @@
 import { setResponseStatus as _setResponseStatus, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from '@nuxt/nitro-server/h3'
-import { computed, getCurrentInstance, ref } from 'vue'
+import { computed, customRef, getCurrentInstance, ref } from 'vue'
 import type { TypedFetch } from '../types/fetch'
 import type { NuxtRequestEvent, RequestEvent } from '@nuxt/schema'
 import type { $Fetch as OFetch } from 'ofetch'
@@ -182,8 +182,11 @@ export function useResponseHeader (header: string): import('vue').WritableComput
 
   if (webEvent) {
     const headers = webEvent.res.headers
-    return computed({
-      get: () => headers.get(header) ?? undefined,
+    return customRef((track, trigger) => ({
+      get () {
+        track()
+        return headers.get(header) ?? undefined
+      },
       set (newValue) {
         headers.delete(header)
         if (newValue) {
@@ -191,22 +194,25 @@ export function useResponseHeader (header: string): import('vue').WritableComput
             headers.append(header, String(value))
           }
         }
+        trigger()
       },
-    })
+    }))
   }
 
-  return computed({
+  return customRef((track, trigger) => ({
     get () {
+      track()
       return getResponseHeader(event, header)
     },
     set (newValue) {
       if (!newValue) {
-        return removeResponseHeader(event, header)
+        removeResponseHeader(event, header)
+      } else {
+        setResponseHeader(event, header, newValue)
       }
-
-      return setResponseHeader(event, header, newValue)
+      trigger()
     },
-  })
+  }))
 }
 
 /** @since 3.8.0 */
