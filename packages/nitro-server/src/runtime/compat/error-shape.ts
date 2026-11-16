@@ -19,6 +19,7 @@ export interface H3ErrorInput {
 }
 
 const kLegacyShape = Symbol.for('nuxt.compat.h3v1.error')
+const kExplicitCause = Symbol.for('nuxt.compat.h3v1.cause')
 
 /** v1 input carries `statusCode`/`statusMessage`, where v3 carries `status`/`statusText`. */
 function hasLegacyErrorKeys (input: unknown): boolean {
@@ -39,7 +40,10 @@ export function createError (input: string | (Error & H3ErrorInput) | H3ErrorInp
 
   const error = new HTTPError(input as any)
   if (input && typeof input === 'object' && input.cause) {
-    Object.defineProperty(error, 'cause', { value: input.cause, configurable: true, writable: true })
+    Object.defineProperties(error, {
+      cause: { value: input.cause, configurable: true, writable: true },
+      [kExplicitCause]: { value: true },
+    })
   }
   if (!hasLegacyErrorKeys(input)) {
     return error
@@ -151,7 +155,7 @@ export function toLegacyError (input: unknown): HTTPError {
     const error = input as HTTPError
     // h3 wraps a foreign error as an unhandled 500, which loses the status a wrapped h3 v1
     // error carries
-    if (error.unhandled && isLegacyH3Error(error.cause)) {
+    if (error.unhandled && !(error as any)[kExplicitCause] && isLegacyH3Error(error.cause)) {
       return fromLegacyH3Error(error.cause as H3ErrorInput)
     }
     return error

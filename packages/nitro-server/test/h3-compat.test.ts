@@ -83,6 +83,21 @@ describe('h3 v1 shim', () => {
     expect(createError(null as any).status).toBe(500)
   })
 
+  it('keeps the status of an unhandled error created with an h3 v1 cause', () => {
+    class ForeignH3Error extends Error {
+      static __h3_error__ = true
+      statusCode = 404
+      unhandled = false
+      data = { secret: 'inner' }
+    }
+
+    const error = toLegacyError(createError({ statusCode: 503, unhandled: true, cause: new ForeignH3Error('inner') }))
+
+    expect(error.status).toBe(503)
+    expect(error.unhandled).toBe(true)
+    expect(JSON.stringify(error.toJSON())).not.toContain('inner')
+  })
+
   it('leaves v3-shaped input untouched', () => {
     const v3 = createError({ status: 418, statusText: 'I am a teapot' })
     expect(v3.toJSON()).not.toHaveProperty('statusCode')
