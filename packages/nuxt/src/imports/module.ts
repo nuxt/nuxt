@@ -339,7 +339,12 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.hook('app:templatesGenerated', async (_app, templates) => {
       // Only regenerate when non-imports templates are updated
       if (templates.some(t => !isImportsTemplate(t))) {
-        await regenerateImports({ rescan: templates.some(t => t.write && isComposablesPath(resolve(t.dst))) })
+        const rescan = !scannedImports || templates.some(t => t.write && isComposablesPath(resolve(t.dst)))
+        if (rescan) {
+          // this scan may read contents that no recorded fingerprint describes
+          scheduledFingerprints.clear()
+        }
+        await regenerateImports({ rescan })
       }
     })
   },

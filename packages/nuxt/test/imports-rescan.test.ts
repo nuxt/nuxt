@@ -162,6 +162,24 @@ describe('imports rescanning', { concurrent: false, timeout: 30_000 }, async () 
     await nuxt.close()
   })
 
+  it('should rescan a file restored after a template rewrote it', async () => {
+    const { nuxt, names } = await setup()
+
+    await writeFile(composable, 'export const useBeta = () => 1\n')
+    await nuxt.callHook('builder:watch', 'change', composable)
+    await writeFile(composable, 'export const useGamma = () => 1\n')
+    await regenerateTemplates(nuxt, [{ filename: 'use-alpha.ts', dst: composable, write: true }])
+    expect(await names()).toContain('useGamma')
+
+    await writeFile(composable, 'export const useBeta = () => 1\n')
+    await nuxt.callHook('builder:watch', 'change', composable)
+
+    expect(scans).toHaveBeenCalledTimes(3)
+    expect(await names()).toContain('useBeta')
+    expect(await names()).not.toContain('useGamma')
+    await nuxt.close()
+  })
+
   it('should rescan when every template is regenerated', async () => {
     const { nuxt, names } = await setup()
 
