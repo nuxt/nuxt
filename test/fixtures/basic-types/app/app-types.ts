@@ -9,7 +9,7 @@ import type { AppConfig, AppConfigInput, NuxtConfig as NuxtConfigFromAt, NuxtHoo
 import type { AppConfigInput as AppConfigInputFromNuxt, NuxtConfig as NuxtConfigFromNuxt, NuxtHooks as NuxtHooksFromNuxt } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
-import type { NuxtError, NuxtRequestEvent, NuxtSSRContext, PageMeta } from '#app'
+import type { CookieRef, NuxtError, NuxtRequestEvent, NuxtSSRContext, PageMeta } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { LazyWithTypes, NuxtIsland, NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import type { IslandComponent, LazyComponent } from '#components'
@@ -810,6 +810,40 @@ describe('composables', () => {
     expectTypeOf(useCookie('test', { default: () => ref(500) })).toEqualTypeOf<Ref<number>>()
     expectTypeOf(useCookie('test', { default: () => 500 })).toEqualTypeOf<Ref<number>>()
     useCookie<number | null>('test').value = null
+
+    expectTypeOf(createUseCookie()('test')).toEqualTypeOf<CookieRef<string | null | undefined>>()
+    expectTypeOf(createUseCookie(legacyCookieSerializer)('test')).toEqualTypeOf<CookieRef<any>>()
+    expectTypeOf(createUseCookie({ decode: v => v ? v.split(',') : [] })('test')).toEqualTypeOf<CookieRef<string[]>>()
+    expectTypeOf(createUseCookie<unknown>(legacyCookieSerializer)('test')).toEqualTypeOf<CookieRef<unknown>>()
+    expectTypeOf(createUseCookie<unknown>(legacyCookieSerializer)<number>('test')).toEqualTypeOf<CookieRef<number>>()
+    expectTypeOf(createUseCookie<unknown>(legacyCookieSerializer)('test', { default: () => 500 })).toEqualTypeOf<CookieRef<number>>()
+    expectTypeOf(createUseCookie<unknown>(legacyCookieSerializer)('test', { readonly: true })).toEqualTypeOf<Readonly<CookieRef<unknown>>>()
+
+    expectTypeOf($cookie.get('test')).toEqualTypeOf<string | null | undefined>()
+    expectTypeOf($cookie.get('test', { default: () => 500 })).toEqualTypeOf<number>()
+    expectTypeOf($cookie.create(legacyCookieSerializer).get('test')).toEqualTypeOf<any>()
+    const listCookie = $cookie.create({ decode: v => v ? v.split(',') : [], encode: (v: string[]) => v.join(',') })
+    expectTypeOf(listCookie.get('test')).toEqualTypeOf<string[] | undefined>()
+    expectTypeOf(listCookie.getAll()).toEqualTypeOf<Record<string, string[] | undefined>>()
+    expectTypeOf(listCookie.create({ maxAge: 60 }).get('test')).toEqualTypeOf<string[] | undefined>()
+    expectTypeOf(listCookie.get<number>('test')).toEqualTypeOf<number | undefined>()
+    listCookie.onChange('test', value => expectTypeOf(value).toEqualTypeOf<string[] | undefined>())
+    expectTypeOf($cookie.onChange('test', () => {})).toEqualTypeOf<() => void>()
+    listCookie.set('test', ['a'])
+    listCookie.set('test', null)
+    // @ts-expect-error not a string[]
+    listCookie.set('test', 1)
+    // @ts-expect-error not a string
+    $cookie.set('test', 1)
+    $cookie.set<number>('test', 1)
+    const typedCookie = $cookie.create<unknown>(legacyCookieSerializer)
+    expectTypeOf(typedCookie.get('test')).toEqualTypeOf<unknown>()
+
+    expectTypeOf(useCookie('test', { $cookie })).toEqualTypeOf<CookieRef<string | null | undefined>>()
+    expectTypeOf(useCookie('test', { $cookie: listCookie })).toEqualTypeOf<CookieRef<string[]>>()
+    expectTypeOf(useCookie('test', { $cookie: typedCookie })).toEqualTypeOf<CookieRef<unknown>>()
+    expectTypeOf(useCookie('test', { $cookie: listCookie, readonly: true })).toEqualTypeOf<Readonly<CookieRef<string[]>>>()
+    expectTypeOf(createUseCookie({ $cookie: listCookie })('test')).toEqualTypeOf<CookieRef<string[]>>()
 
     expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => ref(500) }).data).toEqualTypeOf<Ref<number>>()
     expectTypeOf(useAsyncData('test', () => Promise.resolve(500), { default: () => 500 }).data).toEqualTypeOf<Ref<number>>()

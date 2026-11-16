@@ -129,6 +129,7 @@ describe('useCookie', () => {
   it('should not watch custom cookie refs when shallow', () => {
     for (const value of ['shallow', false] as const) {
       const user = useCookie('shallowUserInfo', {
+        ...legacyCookieSerializer,
         default: () => ({ score: -1 }),
         maxAge: 60 * 60,
         watch: value,

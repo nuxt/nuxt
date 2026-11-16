@@ -18,8 +18,9 @@ useCookie('browser-set').value = 'set'
 useCookie('browser-set-to-null').value = null
 useCookie<string | null>('browser-set-to-null-with-default', { default: () => 'default' }).value = null
 
-const objectCookie = useCookie<{ foo: string } | undefined>('browser-object-default')
+const objectCookie = useCookie<{ foo: string } | undefined>('browser-object-default', legacyCookieSerializer)
 const objectCookieSecond = useCookie('browser-object-default', {
+  ...legacyCookieSerializer,
   default: () => ({ foo: 'bar' }),
 })
 function changeCookie () {

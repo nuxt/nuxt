@@ -10,8 +10,9 @@ export { clearError, createError, isNuxtError, showError, useError } from './err
 export type { NuxtError } from './error'
 export { useFetch, useLazyFetch } from './fetch'
 export type { AnyServerRouteMethod, AvailableServerRouteMethod, DeclaredUseFetch, FetchResult, UseFetch, ServerRouteMethod, ServerRouteMethods, UseFetchOptions, $Fetch, TypedFetch, TypedFetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from './fetch'
-export { useCookie, refreshCookie } from './cookie'
-export type { CookieOptions, CookieRef, UseCookieOptions } from './cookie'
+// eslint-disable-next-line @typescript-eslint/no-deprecated
+export { useCookie, createUseCookie, refreshCookie, $cookie, legacyCookieSerializer } from './cookie'
+export type { CookieOptions, CookieRef, UseCookie, UseCookieOptions, $Cookie } from './cookie'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export { onPrehydrate, prerenderRoutes, useRequestHeader, useRequestHeaders, useRequestEvent, useRequestFetch, setResponseStatus, useResponseHeader } from './ssr'
 export type { NuxtRequestEvent } from './ssr'
