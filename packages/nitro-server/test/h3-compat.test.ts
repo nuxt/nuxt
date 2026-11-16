@@ -79,6 +79,8 @@ describe('h3 v1 shim', () => {
 
     const input = { statusCode: 500, message: 'outer' }
     expect(createError(input).cause).toBe(input)
+
+    expect(createError(null as any).status).toBe(500)
   })
 
   it('leaves v3-shaped input untouched', () => {

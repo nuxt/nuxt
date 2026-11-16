@@ -38,7 +38,7 @@ export function createError (input: string | (Error & H3ErrorInput) | H3ErrorInp
   }
 
   const error = new HTTPError(input as any)
-  if (typeof input === 'object' && input.cause) {
+  if (input && typeof input === 'object' && input.cause) {
     Object.defineProperty(error, 'cause', { value: input.cause, configurable: true, writable: true })
   }
   if (!hasLegacyErrorKeys(input)) {
