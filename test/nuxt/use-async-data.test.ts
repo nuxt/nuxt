@@ -362,6 +362,10 @@ describe('useAsyncData', () => {
     expect(uniqueKey in nuxtApp._asyncDataPromises).toBe(false)
   })
 
+  it('should not throw when clearing a key named after an inherited object property', () => {
+    expect(() => clearNuxtData('constructor')).not.toThrow()
+  })
+
   it('should have correct status for previously fetched requests', async () => {
     vi.useFakeTimers()
 
@@ -520,6 +524,15 @@ describe('useAsyncData', () => {
     useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should execute the handler for an inherited object property when dedupe option is "defer"', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { data } = await useAsyncData('isPrototypeOf', promiseFn, { dedupe: 'defer' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('test')
+    clearNuxtData('isPrototypeOf')
   })
 
   it('should watch params deeply in a non synchronous way', async () => {
