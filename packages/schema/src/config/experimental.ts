@@ -351,7 +351,12 @@ export default defineResolvers({
       },
     },
     nitroViteEnvironment: {
-      $resolve: () => false,
+      $resolve: (val) => {
+        if (val === true) {
+          schemaDiagnostics.NUXT_B5039()
+        }
+        return false
+      },
     },
     typescriptPlugin: booleanOr(false),
     ssrStreaming: {

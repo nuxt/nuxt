@@ -70,6 +70,17 @@ export default defineResolvers({
     },
   },
   routeRules: {},
+  nitroLegacy: {
+    $resolve: async (val: unknown, get: ResolverGetter) => {
+      if (val === true || (val && typeof val === 'object')) {
+        return val
+      }
+      if (val === false) {
+        return false
+      }
+      return await get('_nitroMajor') === 3 && await get('future.compatibilityVersion') < 5
+    },
+  },
   prerender: {},
   serverHandlers: [],
   devServerHandlers: [],
