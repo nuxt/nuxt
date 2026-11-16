@@ -65,7 +65,7 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B9011: {
-      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? '' : 's'} call${p.count === 1 ? 's' : ''} \`$fetch\` without importing it, and Nuxt 5 does not provide a global \`$fetch\` to server code, so a request that renders no page can fail with \`$fetch is not defined\`:\n  - ${p.files}`,
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? '' : 's'} call${p.count === 1 ? 's' : ''} \`$fetch\` without importing it, and Nitro v3 does not provide a global \`$fetch\` to server code, so a request that renders no page can fail with \`$fetch is not defined\`:\n  - ${p.files}`,
       fix: 'Call routes of your app with `serverFetch(event, path)` from `nuxt/server`, and other URLs with `fetch`, or add `import { $fetch } from \'ofetch\'`.',
       docs: false,
     },

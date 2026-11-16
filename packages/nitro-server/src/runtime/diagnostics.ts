@@ -55,7 +55,7 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_E8013: {
-      why: (p: { hook: string, location?: string }) => `A \`${p.hook}\` listener was registered${p.location ? ` by \`${p.location}\`` : ''}, but Nuxt 5 does not emit this Nitro v2 hook, so the listener never runs.`,
+      why: (p: { hook: string, location?: string }) => `A \`${p.hook}\` listener was registered${p.location ? ` by \`${p.location}\`` : ''}, but this Nitro v2 hook is not emitted on Nitro v3, so the listener never runs.`,
       fix: (p: { fix: string }) => p.fix,
       docs: false,
     },
