@@ -1178,6 +1178,13 @@ describe('routing utilities: `addRouteMiddleware`', () => {
     unregister()
     expect(nuxtApp._middleware.named['test-named']).toBe(middleware)
   })
+
+  it('removes a named middleware whose name collides with an Object prototype property', () => {
+    const nuxtApp = useNuxtApp()
+    const unregister = addRouteMiddleware('constructor', () => {})
+    unregister()
+    expect(nuxtApp._middleware.named.constructor).toBeUndefined()
+  })
 })
 
 describe('routing utilities: `resolveRouteObject`', () => {
