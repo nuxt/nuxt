@@ -1013,6 +1013,65 @@ describe('useAsyncData', () => {
     expect(key in nuxtApp._asyncData).toBe(false)
   })
 
+  it('should not refresh a released entry kept alive by `useNuxtData`', async () => {
+    const handler = vi.fn(() => Promise.resolve('value'))
+
+    const page = effectScope()
+    await page.run(() => useAsyncData(uniqueKey, handler))
+    page.stop()
+    const reader = effectScope()
+    reader.run(() => useNuxtData(uniqueKey))
+    const nextPage = effectScope()
+    await nextPage.run(() => useAsyncData(uniqueKey, handler))
+
+    handler.mockClear()
+    await refreshNuxtData(uniqueKey)
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    reader.stop()
+    nextPage.stop()
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should only refresh an entry rebuilt by `refresh()` once it has a subscriber', async () => {
+    const handler = vi.fn(() => Promise.resolve('value'))
+
+    const page = effectScope()
+    const { refresh } = await page.run(() => useAsyncData(uniqueKey, handler))!
+    page.stop()
+    await flushPromises()
+    await refresh()
+
+    handler.mockClear()
+    await refreshNuxtData(uniqueKey)
+    expect(handler).not.toHaveBeenCalled()
+
+    const nextPage = effectScope()
+    await nextPage.run(() => useAsyncData(uniqueKey, handler))
+    handler.mockClear()
+    await refreshNuxtData(uniqueKey)
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    nextPage.stop()
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should not add a key to the payload when reading data that has not been fetched', () => {
+    const nuxtApp = useNuxtApp()
+
+    const { data } = useNuxtData(uniqueKey)
+    expect(Object.keys(nuxtApp.payload.data)).not.toContain(uniqueKey)
+    expect(data.value).toBeUndefined()
+
+    const seen: unknown[] = []
+    const stop = watchSyncEffect(() => { seen.push(data.value) })
+    nuxtApp.payload.data[uniqueKey] = 'arrived'
+    expect(seen).toEqual([undefined, 'arrived'])
+
+    stop()
+    clearNuxtData(uniqueKey)
+  })
+
   it('should run middleware around the handler on every execution', async () => {
     const calls: string[] = []
     const { data, refresh } = await useAsyncData(uniqueKey, () => {
