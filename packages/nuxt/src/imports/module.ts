@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNuxt } from '@nuxt/kit'
 import { headDiagnostics, useServerBuild } from '@nuxt/kit/internal'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
@@ -201,7 +201,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     const isIgnored = createIsIgnored(nuxt)
     const nuxtImportSources = new Set(allNuxtPresets.flatMap(i => i.from))
     const nuxtImports = new Set(presets.flatMap(p => nuxtImportSources.has(p.from) ? p.imports : []))
-    const regenerateImports = async () => {
+    let lastScanStartedAt = Number.NEGATIVE_INFINITY
+    let lastScannedFiles = new Set<string>()
+    let lastScannedImports: Import[] | undefined
+    const regenerateImports = async ({ rescan = true } = {}) => {
       const scan = problems.scan()
       let registeredFiles = new Set<string>()
       await ctx.modifyDynamicImports(async (imports) => {
@@ -210,13 +213,18 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
         // Scan for `composables/` and `utils/` directories
         if (options.scan) {
-          const scannedImports = await scanDirExports(composablesDirs, {
-            fileFilter: file => !isIgnored(file),
-          })
-          for (const i of scannedImports) {
-            i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+          if (rescan || !lastScannedImports) {
+            lastScanStartedAt = Date.now()
+            lastScannedImports = await scanDirExports(composablesDirs, {
+              fileFilter: file => !isIgnored(file),
+            })
+            lastScannedFiles = new Set(lastScannedImports.map(i => i.from))
+            for (const i of lastScannedImports) {
+              i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+            }
           }
-          imports.push(...scannedImports)
+          // `imports:extend` hooks may change the entries they are given
+          imports.push(...lastScannedImports.map(i => ({ ...i })))
         }
 
         // Modules extending
@@ -256,12 +264,25 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       })
     }
 
+    function isScanned (path: string) {
+      let modified: number | undefined
+      try {
+        modified = statSync(path, { throwIfNoEntry: false })?.mtimeMs
+      } catch {
+        return false
+      }
+      return modified === undefined ? !lastScannedFiles.has(path) : modified < lastScanStartedAt
+    }
+
     /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
     let pendingRegeneration: Promise<void> | undefined
     let staleScan = false
     function refreshImports (path: string) {
       if (!options.scan || !composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
         return
+      }
+      if (isScanned(path)) {
+        return pendingRegeneration ?? Promise.resolve()
       }
       if (pendingRegeneration) {
         // a change may land after the in-flight scan has already read the directory,
@@ -296,7 +317,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.hook('app:templatesGenerated', async (_app, templates) => {
       // Only regenerate when non-imports templates are updated
       if (templates.some(t => !isImportsTemplate(t))) {
-        await regenerateImports()
+        await regenerateImports({ rescan: false })
       }
     })
   },
