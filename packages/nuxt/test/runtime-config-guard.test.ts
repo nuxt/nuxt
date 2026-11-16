@@ -196,6 +196,15 @@ describe('server runtime config mutation guard', () => {
     expect(target.public.other).toBe(item)
   })
 
+  it('defines locked properties from guarded values', () => {
+    captureReports()
+    const config = guardedServerConfig({ public: { lockedSource: {} } })
+    const source = (config.public as any).lockedSource
+
+    expect(() => Object.defineProperty(config.public, 'lockedAlias', { value: source })).not.toThrow()
+    expect(() => Object.defineProperty(config.public, 'lockedExplicit', { value: source, writable: false, configurable: false })).not.toThrow()
+  })
+
   it('does not nest guards from earlier requests', () => {
     const reports = captureReports()
     const target = { public: { sourceList: [{ name: 'a' }], copiedList: [] as unknown[] } }

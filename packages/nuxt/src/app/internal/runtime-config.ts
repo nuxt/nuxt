@@ -41,7 +41,9 @@ export function guardedServerConfig (runtimeConfig: Record<string, unknown>): Re
       defineProperty (target, p, descriptor) {
         report(mutationPath(p))
         const value = guardTargets.get(descriptor.value)
-        return Reflect.defineProperty(target, p, value ? { ...descriptor, value } : descriptor)
+        const current = Reflect.getOwnPropertyDescriptor(target, p)
+        const locked = !(descriptor.configurable ?? current?.configurable) && !(descriptor.writable ?? current?.writable)
+        return Reflect.defineProperty(target, p, value && !locked ? { ...descriptor, value } : descriptor)
       },
       deleteProperty (target, p) {
         report(mutationPath(p))
