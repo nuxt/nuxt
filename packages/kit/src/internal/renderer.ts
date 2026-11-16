@@ -110,7 +110,10 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
   const streaming = nuxt.options.experimental.ssrStreaming
   const streamingEnabled = typeof streaming === 'object' && !!streaming.enabled
 
-  const values: Record<RendererConfigName, string> = {
+  // deprecated or absent depending on the Nuxt version
+  const { parseErrorData, renderJsonPayloads } = nuxt.options.experimental as { parseErrorData?: boolean, renderJsonPayloads?: boolean }
+
+  const values: Record<Exclude<RendererConfigName, 'NUXT_JSON_PAYLOADS'>, string> & { NUXT_JSON_PAYLOADS?: string } = {
     NUXT_NO_SSR: String(nuxt.options.ssr === false),
     NUXT_PRERENDER_ERROR_PAGES: '[]',
     NUXT_PRERENDER_NO_SSR_ROUTES: '[]',
@@ -126,8 +129,8 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_PAGE_MATCHER: 'undefined',
     NUXT_SPA_PAGE_MATCHER: 'undefined',
     NUXT_INLINE_ERROR_RENDERING: String(!!nuxt.options.experimental.inlineErrorRendering),
-    PARSE_ERROR_DATA: String(!!nuxt.options.experimental.parseErrorData),
-    NUXT_JSON_PAYLOADS: String(!!nuxt.options.experimental.renderJsonPayloads),
+    PARSE_ERROR_DATA: String(!!parseErrorData),
+    ...renderJsonPayloads === undefined ? {} : { NUXT_JSON_PAYLOADS: String(!!renderJsonPayloads) },
     NUXT_PAYLOAD_EXTRACTION: String(payloadExtraction !== false),
     NUXT_PAYLOAD_INLINE: String(payloadExtraction !== true),
     NUXT_RUNTIME_PAYLOAD_EXTRACTION: 'false',

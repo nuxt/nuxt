@@ -18,6 +18,7 @@ export { pageDiagnostics } from '../diagnostics/pages.ts'
 export { configDiagnostics } from '../diagnostics/config.ts'
 export { headDiagnostics } from '../diagnostics/head.ts'
 export { bundlerDiagnostics } from '../diagnostics/bundler.ts'
+export { docsBase } from '../diagnostics/_shared.ts'
 
 export { reportPendingTemplates, trackPendingTemplate } from './pending-templates.ts'
 
@@ -34,6 +35,12 @@ export { hasOwnSubpathImport } from './subpath-imports.ts'
 
 export { VUE_PACKAGE_NAMES, VUE_PACKAGE_SPECIFIER_RE, isInVuePackages, resolveVuePackageImporter, resolveVuePackages } from './vue-packages.ts'
 export type { VuePackageName, VuePackages } from './vue-packages.ts'
+
+export { MAY_CONTAIN_DECORATOR_RE, hasDecoratorSyntax } from './decorators.ts'
+
+export { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './route-path.ts'
+export { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, createRouteRulesRouter, encodeRoutePattern, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, genNormalizePathCode, isWildcardRedirect, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath, normalizeRouteRules, parseRouteRulesRoute, resolveRouteRulesRoutes, resolveWildcardRedirect } from './route-rules.ts'
+export type { RouteRulesRoute, RouteRulesRouter } from './route-rules.ts'
 
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'

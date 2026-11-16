@@ -60,7 +60,7 @@
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",
     "radix3": "^1.1.2",
-    "rou3": "^0.9.2",
+    "rou3": "catalog:nitropack",
     "scule": "catalog:build",
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",

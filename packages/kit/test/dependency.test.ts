@@ -117,6 +117,19 @@ describe('ensureDependencyInstalled', () => {
     expect(args).not.toContain('tailwindcss')
   })
 
+  it('installs a dev dependency unless asked for a regular one', async () => {
+    vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('dev-dependency', { '.': './index.js' })
+    installCreatesPackage('regular-dependency', { '.': './index.js' })
+
+    await expect(ensureDependencyInstalled('dev-dependency', { rootDir, searchPaths: [] })).resolves.toBe(true)
+    await expect(ensureDependencyInstalled('regular-dependency', { rootDir, searchPaths: [], dev: false })).resolves.toBe(true)
+
+    const calls = vi.mocked(x).mock.calls
+    expect(calls[0]![1]).toContain('-D')
+    expect(calls[1]![1]).not.toContain('-D')
+  })
+
   it('returns false when the installed package does not provide the subpath', async () => {
     vi.spyOn(logger, 'prompt').mockResolvedValue(true)
     installCreatesPackage('@scope/other', { '.': './index.js' })
