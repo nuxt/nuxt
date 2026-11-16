@@ -377,9 +377,11 @@ describe('scrollBehavior on first load', () => {
 
   it('should scroll to the hash of an initial route reached through a redirect', async () => {
     const router = useRouter()
-    const to = { ...router.resolve('/about#section'), redirectedFrom: router.resolve('/old') }
+    onTestFinished(router.beforeEach(to => to.path === '/old' ? '/about#section' : undefined))
+    await router.push('/old')
+
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const position = await router.options.scrollBehavior!(to, START_LOCATION, null)
+    const position = await router.options.scrollBehavior!(router.currentRoute.value, START_LOCATION, null)
 
     expect(position).toMatchObject({ el: '#section' })
   })
