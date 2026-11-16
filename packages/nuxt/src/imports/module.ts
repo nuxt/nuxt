@@ -159,6 +159,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       options,
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       refreshImports: file => refreshImports(file),
+      getExportSignature: file => exportSignatures.get(file),
     }))
 
     // runs ahead of other build plugins, which may rewrite calls to former auto-imports
@@ -204,6 +205,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     let lastScanStartedAt = Number.NEGATIVE_INFINITY
     let lastScannedFiles = new Set<string>()
     let lastScannedImports: Import[] | undefined
+    let exportSignatures = new Map<string, string>()
     const regenerateImports = async ({ rescan = true } = {}) => {
       const scan = problems.scan()
       let registeredFiles = new Set<string>()
@@ -220,6 +222,13 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             })
             lastScanStartedAt = scanStartedAt
             lastScannedFiles = new Set(lastScannedImports.map(i => i.from))
+            const exportsByFile = new Map<string, string[]>()
+            for (const i of lastScannedImports) {
+              const entries = exportsByFile.get(i.from) ?? []
+              entries.push(`${i.name}\0${i.as ?? ''}\0${i.type ? 'type' : ''}`)
+              exportsByFile.set(i.from, entries)
+            }
+            exportSignatures = new Map([...exportsByFile].map(([file, entries]) => [file, entries.sort().join('\n')]))
             for (const i of lastScannedImports) {
               i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
             }

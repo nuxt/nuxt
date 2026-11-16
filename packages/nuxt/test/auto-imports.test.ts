@@ -297,3 +297,39 @@ describe('imports:nuxt/scripts', async () => {
     expect(scripts.filter(name => !scriptsStubsPreset.imports.includes(name!))).toEqual([])
   })
 })
+
+describe('imports:hot-update', () => {
+  function setup (signature: { current: string | undefined }) {
+    const plugin = TransformPlugin({
+      ctx: createUnimport({ imports: [] }),
+      options: {},
+      refreshImports: file => file.startsWith('/app/composables/') ? Promise.resolve() : undefined,
+      getExportSignature: () => signature.current,
+    }).raw({}, { framework: 'vite', versions: {} }) as Plugin & { vite: { hotUpdate: { handler: (this: unknown, ctx: unknown) => Promise<void> } } }
+    const invalidated: string[] = []
+    const environment = { moduleGraph: { invalidateModule: (mod: { id: string }) => invalidated.push(mod.id) } }
+    const importer = { id: '/app/pages/index.vue' }
+    const hotUpdate = (file: string) => plugin.vite.hotUpdate.handler.call({ environment }, { file, modules: [{ importers: new Set([importer]) }] })
+    return { hotUpdate, invalidated }
+  }
+
+  it('invalidates consumers only when the exports of a scanned file change', async () => {
+    const signature = { current: 'useCounter' as string | undefined }
+    const { hotUpdate, invalidated } = setup(signature)
+
+    await hotUpdate('/app/composables/counter.ts')
+    expect(invalidated).toEqual(['/app/pages/index.vue'])
+
+    await hotUpdate('/app/composables/counter.ts')
+    expect(invalidated).toHaveLength(1)
+
+    signature.current = 'useCounter\nuseOther'
+    await hotUpdate('/app/composables/counter.ts')
+    expect(invalidated).toHaveLength(2)
+
+    signature.current = undefined
+    await hotUpdate('/app/composables/counter.ts')
+    await hotUpdate('/app/composables/counter.ts')
+    expect(invalidated).toHaveLength(4)
+  })
+})
