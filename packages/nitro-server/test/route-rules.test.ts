@@ -102,9 +102,9 @@ describe('routeRulesCaseFoldPlugin', () => {
   async function loadMatcher (routeRules: NonNullable<NitroConfig['routeRules']>, baseURL = '/', middleware = false) {
     const options = { runtimeRules: { cache: '#nitro/runtime/route-rule-handlers' }, baseURL, preMerge: true }
     const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules, baseURL } }) as Nitro)
-    const code = await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing')
+    const { code } = (await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing'))!
     const file = join(await mkdtemp(join(tmpdir(), 'nuxt-route-rules-')), 'routing.mjs')
-    await writeFile(file, code!.replace(/from "(h3[^"]*)"/g, (_, id) => `from ${JSON.stringify(pathToFileURL(resolveModulePath(id, { from: nitroPackage })).href)}`))
+    await writeFile(file, code.replace(/from "(h3[^"]*)"/g, (_, id) => `from ${JSON.stringify(pathToFileURL(resolveModulePath(id, { from: nitroPackage })).href)}`))
     const { findRouteRules } = await import(pathToFileURL(file).href)
     const match = createMatcherFromFind(findRouteRules)
     return (path: string, method = 'GET') => {
@@ -227,6 +227,14 @@ describe('routeRulesCaseFoldPlugin', () => {
 
     expect(match('/App/admin').headers).toEqual({ 'x-admin': '1' })
     expect(match('/app/Admin').headers).toEqual({ 'x-admin': '1' })
+  })
+
+  it('returns an empty sourcemap for the module it rewrites', async () => {
+    const routeRules: NonNullable<NitroConfig['routeRules']> = { '/admin': { headers: { 'x-a': 'admin' } } }
+    const options = { runtimeRules: { cache: '#nitro/runtime/route-rule-handlers' }, baseURL: '/', preMerge: true }
+    const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules, baseURL: '/' } }) as Nitro)
+    const result = await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing')
+    expect(result?.map).toEqual({ mappings: '' })
   })
 
   it('leaves other modules alone', async () => {

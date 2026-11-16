@@ -104,7 +104,7 @@ export function routeRulesCaseFoldPlugin (getNitro: () => Nitro) {
           preMerge: true,
         }
 
-        return [
+        const lines = [
           code.replace(FIND_ROUTE_RULES_EXPORT, 'const findSensitiveRouteRules = '),
           compileHandlersImport(rules, options),
           `const findFoldedRouteRules = ${compileFindRouteRules(rules, options)}`,
@@ -117,7 +117,9 @@ export function routeRulesCaseFoldPlugin (getNitro: () => Nitro) {
           `  const folded = findFoldedRouteRules(method, foldRouteRulePath(path))`,
           `  return folded.length > sensitive.length ? withRequestBases(folded, path) : sensitive`,
           `}`,
-        ].join('\n')
+        ]
+        // the module is generated, so there is no source for a sourcemap to point at
+        return { code: lines.join('\n'), map: { mappings: '' } }
       },
     },
   }
