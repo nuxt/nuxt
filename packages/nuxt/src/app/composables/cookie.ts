@@ -1,5 +1,5 @@
 import type { Ref, WatchHandle } from 'vue'
-import { customRef, getCurrentScope, onScopeDispose, ref, watch } from 'vue'
+import { customRef, getCurrentScope, onScopeDispose, ref, unref, watch } from 'vue'
 import { parse, parseSetCookie, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, getResponseHeader, setCookie, splitCookiesString } from '@nuxt/nitro-server/h3'
 import type { CookieSerializeOptions } from '../types/cookie'
@@ -130,8 +130,12 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   const hasExpired = delay !== undefined && delay <= 0
   const cookieValueIsNullish = cookies[name] === undefined || cookies[name] === null
-  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (hasExpired || cookieValueIsNullish) && !(rawValue === undefined && cookieValueIsNullish && opts.default === undefined)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
+  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (
+    rawValue !== undefined
+      ? hasExpired || cookieValueIsNullish
+      : hasExpired ? opts.default !== undefined : unref(cookieValue) !== undefined && unref(cookieValue) !== null
+  )
 
   // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
   const cookie = import.meta.client && (typeof opts.expires === 'function' || (delay && !hasExpired))
@@ -172,7 +176,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       writeClientCookie(name, encoded, opts)
 
       cookies[name] = klona(cookie.value)
-      channel?.postMessage({ value: opts.encode(cookie.value as T) })
+      channel?.postMessage({ value: encoded ?? cookie.value })
     }
 
     let cookieWatcher: WatchHandle | undefined
@@ -233,6 +237,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     if (shouldSetInitialClientCookie) {
       callback(shouldSetInitialClientCookie)
+    } else if (rawValue === undefined) {
+      cookies[name] = klona(cookie.value)
     }
   } else if (import.meta.server) {
     const writeFinalCookieValue = () => {
