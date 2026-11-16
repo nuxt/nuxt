@@ -2056,6 +2056,113 @@ describe('useAsyncData', () => {
     persistent.unmount()
   })
 
+  it('should cancel an in-flight request when a cache hit supersedes it', async () => {
+    let resolveHandler!: (value: string) => void
+    let signal!: AbortSignal
+    const handler = vi.fn((_nuxtApp: NuxtApp, ctx: { signal: AbortSignal }) => {
+      signal = ctx.signal
+      return new Promise<string>((resolve) => { resolveHandler = resolve })
+    })
+    let cached: string | undefined = undefined
+
+    const { data, execute, status } = useAsyncData(uniqueKey, handler, {
+      immediate: false,
+      getCachedData: () => cached,
+    })
+
+    execute()
+    await nextTick()
+    expect(status.value).toBe('pending')
+
+    cached = 'from-cache'
+    await execute()
+    expect(signal.aborted).toBe(true)
+    expect(data.value).toBe('from-cache')
+    expect(status.value).toBe('success')
+
+    resolveHandler('from-network')
+    await flushPromises()
+
+    expect(data.value).toBe('from-cache')
+    expect(status.value).toBe('success')
+
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should not let a request superseded by a cache hit during its transform overwrite the cached value', async () => {
+    let resolveTransform!: (value: string) => void
+    let cached: string | undefined = undefined
+
+    const { data, execute, status } = useAsyncData(uniqueKey, () => Promise.resolve('from-network'), {
+      immediate: false,
+      getCachedData: () => cached,
+      transform: () => new Promise<string>((resolve) => { resolveTransform = resolve }),
+    })
+
+    execute()
+    await flushPromises()
+    expect(resolveTransform).toBeDefined()
+
+    cached = 'from-cache'
+    await execute()
+    expect(data.value).toBe('from-cache')
+
+    resolveTransform('transformed')
+    await flushPromises()
+
+    expect(data.value).toBe('from-cache')
+    expect(status.value).toBe('success')
+
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should not let a later subscriber cancel a refresh with the initial cache lookup', async () => {
+    let resolveHandler!: (value: string) => void
+    const handler = vi.fn(() => new Promise<string>((resolve) => { resolveHandler = resolve }))
+    const getCachedData = (_key: string, _nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause }) => ctx.cause === 'initial' ? 'from-cache' : undefined
+
+    const scope = effectScope()
+    const first = scope.run(() => useAsyncData(uniqueKey, handler, { getCachedData }))!
+    expect(first.data.value).toBe('from-cache')
+
+    const refreshed = first.refresh()
+    expect(first.status.value).toBe('pending')
+
+    const second = scope.run(() => useAsyncData(uniqueKey, handler, { getCachedData }))!
+    resolveHandler('from-network')
+    await refreshed
+    await flushPromises()
+
+    expect(first.data.value).toBe('from-network')
+    expect(second.data.value).toBe('from-network')
+    scope.stop()
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should not let a subscriber switching key cancel a refresh with its initial cache lookup', async () => {
+    let resolveHandler!: (value: string) => void
+    const handler = vi.fn(() => new Promise<string>((resolve) => { resolveHandler = resolve }))
+    const getCachedData = (_key: string, _nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause }) => ctx.cause === 'initial' ? 'from-cache' : undefined
+
+    const scope = effectScope()
+    const first = scope.run(() => useAsyncData(uniqueKey, handler, { getCachedData }))!
+    const key = shallowRef(`${uniqueKey}-other`)
+    const second = scope.run(() => useAsyncData(key, handler, { getCachedData }))!
+
+    const refreshed = first.refresh()
+    expect(first.status.value).toBe('pending')
+
+    key.value = uniqueKey
+    resolveHandler('from-network')
+    await refreshed
+    await flushPromises()
+
+    expect(first.data.value).toBe('from-network')
+    expect(second.data.value).toBe('from-network')
+    scope.stop()
+    clearNuxtData([uniqueKey, `${uniqueKey}-other`])
+  })
+
   it('should not execute when enabled is false', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const { data, pending, status } = await useAsyncData(uniqueKey, promiseFn, { enabled: false })
