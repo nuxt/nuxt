@@ -44,5 +44,10 @@ export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Set `builder: "vite"` in your `nuxt.config`, or remove the option.',
       docs: false,
     },
+    NUXT_B5039: {
+      why: '`experimental.nitroViteEnvironment` is not supported in Nuxt 4, so it has been disabled. The server is built with Nitro\'s own bundler.',
+      fix: 'Remove `experimental.nitroViteEnvironment` from your `nuxt.config`.',
+      docs: false,
+    },
   },
 })

@@ -24,6 +24,12 @@ export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
 /** Whether to resolve template components with the build transform rather than in the template compiler. */
 export const legacyComponentResolution = process.env.TEST_COMPONENT_RESOLUTION === 'legacy'
 
+/** The nitro major to build the fixtures with, where a run pins one. */
+export const nitroMajor = process.env.TEST_NITRO_MAJOR ? Number(process.env.TEST_NITRO_MAJOR) : undefined
+
+/** Whether the fixtures are built with nitro v3 rather than the default nitropack v2. */
+export const isNitroV3 = nitroMajor === 3
+
 /**
  * Suffix identifying the current matrix combination.
  */
@@ -35,6 +41,7 @@ export const projectSuffix = [
   process.env.TEST_PAYLOAD,
   process.env.TEST_ERROR_RENDERING,
   process.env.TEST_COMPONENT_RESOLUTION,
+  process.env.TEST_NITRO_MAJOR && `nitro${process.env.TEST_NITRO_MAJOR}`,
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER
@@ -79,6 +86,7 @@ export const isNuxtPrepare = process.argv.slice(2).includes('prepare')
 
 export function withMatrix (config: NuxtConfig) {
   return defu(config, {
+    ...nitroMajor ? { _nitroMajor: nitroMajor } : {},
     builder,
     devtools: { enabled: false },
     future: {

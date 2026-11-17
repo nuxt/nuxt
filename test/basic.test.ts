@@ -7,7 +7,7 @@ import { join } from 'pathe'
 import { $fetch, createPage, fetch, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
-import { asyncContext, builder, inlineErrorRendering, isBuilt, isDev, isRenderingJson, isTestingAppManifest, isWebpack, legacyComponentResolution, runsOnceInMatrix as once, runsOncePerBuildInMatrix as oncePerBuild, runsOncePerEnvInMatrix as oncePerEnv, runsOncePerViteBuilderInMatrix as oncePerServer, viteEnvironmentApi } from './matrix'
+import { asyncContext, builder, inlineErrorRendering, isBuilt, isDev, isNitroV3, isRenderingJson, isTestingAppManifest, isWebpack, legacyComponentResolution, runsOnceInMatrix as once, runsOncePerBuildInMatrix as oncePerBuild, runsOncePerEnvInMatrix as oncePerEnv, runsOncePerViteBuilderInMatrix as oncePerServer, viteEnvironmentApi } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage, setupFixture } from './utils'
 
 const optionVariant = inlineErrorRendering || legacyComponentResolution || !isRenderingJson
@@ -63,7 +63,7 @@ describe('application secret', () => {
 
   // Nitro 2 parses every environment override with `destr`, so a secret that looks like
   // JSON does not survive as a string. `deriveSecret()` rejects a non-string secret
-  // rather than deriving from a mangled one.
+  // rather than deriving from a mangled one. Nitro 3 keeps the string.
   it.skipIf(!oncePerServer || isDev).each([
     [undefined, ''],
     ['', ''],
@@ -73,10 +73,10 @@ describe('application secret', () => {
     ['4848e0', 4848],
     ['"quoted-secret"', 'quoted-secret'],
     ['{"key":"secret"}', { key: 'secret' }],
-  ])('preserves the runtime environment secret %j', async (value, expected) => {
+  ])('preserves the runtime environment secret %j', async (value, parsed) => {
     try {
       await startServer({ env: { NUXT_APP_SECRET: value, NITRO_APP_SECRET: undefined } })
-      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret: expected })
+      expect(await $fetch('/api/runtime-config/app-secret')).toEqual({ appSecret: isNitroV3 ? value ?? '' : parsed })
     } finally {
       await startServer()
     }
@@ -161,8 +161,11 @@ describe.skipIf(!once)('server api', () => {
       forwardedIP: '203.0.113.1',
     })
 
-    const truncated = await fetch('/api/portable-extras/a%3Fpage=2/c')
-    expect(await truncated.json()).toMatchObject({ params: { id: 'a' }, decoded: 'a' })
+    // h3 v1 routes the path up to a decoded `%3F`
+    if (!isNitroV3) {
+      const truncated = await fetch('/api/portable-extras/a%3Fpage=2/c')
+      expect(await truncated.json()).toMatchObject({ params: { id: 'a' }, decoded: 'a' })
+    }
   })
 
   it('should answer a CORS preflight with `nuxt/server`', async () => {
@@ -179,7 +182,9 @@ describe.skipIf(!once)('server api', () => {
     const response = await fetch('/api/portable?fail=yes', { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } })
 
     expect(response.status).toBe(418)
-    expect(await response.json()).toMatchObject({ statusCode: 418, statusMessage: 'Teapot', data: { fail: 'yes' } })
+    expect(await response.json()).toMatchObject(isNitroV3
+      ? { status: 418, statusText: 'Teapot', data: { fail: 'yes' } }
+      : { statusCode: 418, statusMessage: 'Teapot', data: { fail: 'yes' } })
   })
 
   it('should redirect from a handler written against `nuxt/server`', async () => {
@@ -190,11 +195,18 @@ describe.skipIf(!once)('server api', () => {
     expect(await response.text()).toContain('url=/login')
   })
 
-  it('should explain when an h3 handler calls a `nuxt/server` helper', async () => {
+  it.skipIf(isNitroV3)('should explain when an h3 handler calls a `nuxt/server` helper', async () => {
     const response = await fetch('/api/portable-mixed')
 
     expect(response.status).toBe(500)
     expect(await response.json()).toMatchObject({ message: expect.stringContaining('NUXT_E8012') })
+  })
+
+  it.runIf(isNitroV3)('should run a `nuxt/server` helper called by an h3 handler', async () => {
+    const response = await fetch('/api/portable-mixed?page=2')
+
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ page: '2' })
   })
 
   it('should auto-import', async () => {
@@ -1495,6 +1507,15 @@ describe.skipIf(!errorProjects)('errors', () => {
     expect(res.statusText).toBe('This is a custom error')
     const error = await res.json()
     delete error.stack
+    if (isNitroV3) {
+      expect(error).toMatchObject({
+        message: 'This is a custom error',
+        status: 422,
+        statusText: 'This is a custom error',
+      })
+      expect(error).not.toHaveProperty('url')
+      return
+    }
     const url = new URL(error.url)
     url.host = 'localhost:3000'
     error.url = url.toString()
@@ -1608,6 +1629,15 @@ describe.skipIf(!errorProjects)('errors', () => {
     expect(res.status).toBe(404)
     const error = await res.json()
     delete error.stack
+    if (isNitroV3) {
+      expect(error).toEqual({
+        error: true,
+        message: 'Page Not Found: /__nuxt_error',
+        status: 404,
+        statusText: 'Page Not Found: /__nuxt_error',
+      })
+      return
+    }
     const url = new URL(error.url)
     url.host = 'localhost:3000'
     error.url = url.toString()

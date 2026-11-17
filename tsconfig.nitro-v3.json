@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "packages/nitro-v3-server/*.ts",
+    "packages/nitro-v3-server/src",
+    "packages/nitro-v3-server/test"
+  ],
+  "exclude": [
+    "packages/nitro-v3-server/dist",
+    // written against the Nuxt 5 renderer
+    "packages/nitro-v3-server/src/runtime/host/nuxt5.ts",
+    "packages/nitro-v3-server/test/host-parity.test.ts"
+  ]
+}

@@ -6,6 +6,8 @@ import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, WatchEvent } from
 import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
+import type { Import } from 'unimport'
+import type { BuildEnvironment } from 'vite'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -281,11 +283,15 @@ export interface NuxtServerBuild {
    * builder's own build.
    */
   buildsSeparately: boolean
+  /** The auto-imports available in the server program, when the builder provides any. */
+  imports?: () => Promise<Import[]>
   input: NuxtServerBuildInput
   output: NuxtServerBuildOutput
   capabilities: NuxtServerBuildCapabilities
   runtime: NuxtServerBuildRuntime
   preview?: NuxtServerBuildPreview
+  /** Whether the `ssr` environment output restored by a build cache hit can be used as is. */
+  canReuseSsrBuild?: (environment: BuildEnvironment) => Promise<boolean>
 }
 
 export interface Nuxt {

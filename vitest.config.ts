@@ -66,6 +66,7 @@ interface FixtureMatrixEntry {
   payload: 'json' | 'js'
   inlineErrors?: boolean
   legacyComponentResolution?: boolean
+  nitro?: 3
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
@@ -102,14 +103,21 @@ const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', legacyComponentResolution: true },
 ]
 
+// re-runs the basic fixture on nitro v3 rather than the default nitropack v2
+const nitroV3Matrix: FixtureMatrixEntry[] = [
+  { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', nitro: 3 },
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', nitro: 3 },
+  { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on', payload: 'json', nitro: 3 },
+]
+
 function fixtureProjectInclude (entry: FixtureMatrixEntry) {
   if (entry.inlineErrors) { return inlineErrorInclude }
-  if (entry.legacyComponentResolution) { return ['test/basic.test.ts'] }
+  if (entry.legacyComponentResolution || entry.nitro) { return ['test/basic.test.ts'] }
   return ['test/*.test.ts']
 }
 
 function fixtureProjectName (entry: FixtureMatrixEntry) {
-  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}-${entry.payload}${entry.inlineErrors ? '-inline-errors' : ''}${entry.legacyComponentResolution ? '-legacy-component-resolution' : ''}`
+  return `fixtures:${entry.nitro ? `nitro${entry.nitro}-` : ''}${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}-${entry.payload}${entry.inlineErrors ? '-inline-errors' : ''}${entry.legacyComponentResolution ? '-legacy-component-resolution' : ''}`
 }
 
 function fixtureProjectEnv (entry: FixtureMatrixEntry) {
@@ -121,6 +129,7 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_PAYLOAD: entry.payload,
     ...entry.inlineErrors ? { TEST_ERROR_RENDERING: 'inline-errors' } : {},
     ...entry.legacyComponentResolution ? { TEST_COMPONENT_RESOLUTION: 'legacy' } : {},
+    ...entry.nitro ? { TEST_NITRO_MAJOR: String(entry.nitro) } : {},
   }
 }
 
@@ -207,7 +216,7 @@ export default defineConfig({
           benchmark: { include: ['test/bench/renderer.bench.ts'] },
         },
       },
-      ...[...fixtureMatrix, ...inlineErrorMatrix, ...legacyComponentResolutionMatrix].map(entry => ({
+      ...[...fixtureMatrix, ...inlineErrorMatrix, ...legacyComponentResolutionMatrix, ...nitroV3Matrix].map(entry => ({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
@@ -279,7 +288,38 @@ export default defineConfig({
           include: ['packages/**/*.{test,spec}.ts', 'scripts/*.test.ts'],
           testTimeout: isWindows ? 60000 : 10000,
           // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
-          exclude: [...fixtureExclude, 'packages/nuxt/test/typed-fetch-budget.test.ts'],
+          exclude: [...fixtureExclude, 'packages/nuxt/test/typed-fetch-budget.test.ts', 'packages/nitro-v3-server/**'],
+        },
+      },
+      {
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)', test: '(globalThis.__TEST_TEST__ ?? false)', prerender: '(globalThis.__TEST_PRERENDER__ ?? false)' })],
+        resolve: {
+          alias: {
+            '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
+            '#build/router.options.mjs': resolve('./test/mocks/router-options'),
+            '#build/route-rules.mjs': resolve('./test/mocks/route-rules'),
+            '#app-manifest': resolve('./test/mocks/app-manifest'),
+            '#build/pages': resolve('./test/mocks/pages'),
+            '#build/routes': resolve('./test/mocks/routes'),
+            '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
+            '#internal/nuxt/paths': resolve('./test/mocks/paths'),
+            '#internal/nuxt/error-channel': resolve('./packages/nitro-v3-server/src/runtime/utils/error-channel'),
+            '#internal/nuxt/host': resolve('./packages/nitro-v3-server/src/runtime/host/nuxt4'),
+            '#nuxt-compat/import-meta': resolve('./test/mocks/nitro-compat-import-meta'),
+            '@nuxt/nitro-server/h3': resolve('./packages/nitro-v3-server/src/runtime/compat/h3-v1.ts'),
+            '#nuxt-compat/flags': resolve('./test/mocks/nitro-compat-flags'),
+            '#build/app.config.mjs': resolve('./test/mocks/app-config'),
+            '#app': resolve('./packages/nuxt/src/app'),
+          },
+        },
+        test: {
+          name: 'unit-nitro-v3',
+          benchmark: { include: [] },
+          globalSetup: ['./test/setup-prepare.ts'],
+          setupFiles: ['./test/setup-env.ts'],
+          include: ['packages/nitro-v3-server/**/*.{test,spec}.ts'],
+          testTimeout: isWindows ? 60000 : 10000,
+          exclude: fixtureExclude,
         },
       },
       await defineVitestProject({

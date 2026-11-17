@@ -1,0 +1,1233 @@
+import process from 'node:process'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { existsSync, promises as fsp } from 'node:fs'
+import { cpus } from 'node:os'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { randomBytes, randomUUID } from 'node:crypto'
+import type { Nuxt, NuxtBuildOutputs, NuxtOptions, ServerApi, ServerImportsOptions, ServerRouteSegment } from '@nuxt/schema'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
+import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
+import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
+import { createNitro } from 'nitro/builder'
+import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
+import { addPlugin, addTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
+import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
+import escapeRE from 'escape-string-regexp'
+import { defu } from 'defu'
+import { defineEventHandler } from 'nitro/h3'
+import { isWindows } from 'std-env'
+import { rou3PatternToURLPattern } from 'unrouting'
+import { ImpoundPlugin } from 'impound'
+import { resolveModulePath } from 'exsolve'
+import { runtimeDependencies } from 'nitro/meta'
+
+import nitroBuilder from '../package.json' with { type: 'json' }
+import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, timePluginHooks, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from './utils.ts'
+import { setupAppManifest, setupPayloadRouteRules } from './app-manifest.ts'
+import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
+import { setupLegacyDevAndBuild } from './legacy.ts'
+import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from './dev-request.ts'
+import { DEV_PEER_TOKEN_ENV } from 'nuxt/internal/dev/peer'
+import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
+import { compileRouterToString } from 'rou3/compiler'
+// TODO: figure out a good way to share this
+import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { nitroSchemaTemplate } from './templates.ts'
+import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
+import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
+import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
+import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
+import { getLegacyH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
+import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
+import { nitroBuildDiagnostics } from './diagnostics.ts'
+// Re-export a type from the augment module rather than a bare `import './augments.ts'`
+// side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
+export type { NuxtTracingChannelOptions } from './augments.ts'
+
+/** Subpath the request-shape extractors are imported from in generated declarations. */
+const REQUEST_TYPES_MODULE = `${nitroBuilder.name}/request-types`
+
+// App-only aliases Nitro carries in its own alias map, which must not resolve in the server program
+const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+
+const logLevelMapReverse = {
+  silent: 0,
+  info: 3,
+  verbose: 3,
+} satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
+
+export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
+  const legacy = resolveNitroLegacyOptions(nuxt.options.nitroLegacy)
+  const nuxt4Host = isNuxtMajorVersion(4, nuxt)
+
+  if (nuxt4Host) {
+    addVitePlugin({
+      name: 'nuxt:nitro:h3-v1-runtime',
+      enforce: 'pre',
+      applyToEnvironment: environment => environment.name === 'ssr',
+      resolveId (id) {
+        if (id === '@nuxt/nitro-server/h3') { return getLegacyH3ShimPath() }
+      },
+    })
+  }
+
+  // module runtime code is nitro v2 unless it says otherwise, so it always gets the v2
+  // flavour of these; the global registry follows the `nitroLegacy` toggles
+  const legacyModulePresets = await getServerImportsPresets(resolveNitroLegacyOptions(true))
+
+  // Resolve config
+  // status codes whose error page is server-rendered at build time
+  const errorPageOption = nuxt.options.experimental.prerenderErrorPages
+  const errorPages = errorPageOption === true ? [404] : errorPageOption || []
+  const layerDirs = getLayerDirectories(nuxt)
+  const excludePattern = [getLayerNodeModulesExcludePattern(layerDirs.map(dirs => dirs.root))]
+
+  const layerPublicAssetsDirs: Array<{ dir: string, maxAge: number }> = []
+  for (const dirs of layerDirs) {
+    if (existsSync(dirs.public)) {
+      layerPublicAssetsDirs.push({ dir: dirs.public, maxAge: 0 })
+    }
+  }
+
+  const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
+
+  const moduleEntryPaths: string[] = []
+  // the resolved entry file, which `rawPath` is not: a module named by a bare specifier
+  // resolves to a directory whose package the compat scope has to be able to name
+  const moduleFileDirs: string[] = []
+  const moduleMeta: Array<{ name?: string, server?: ServerApi }> = []
+  for (const m of nuxt.options._installedModules) {
+    const path = m.meta?.rawPath || m.entryPath
+    if (path) {
+      moduleEntryPaths.push(getDirectory(path))
+      moduleFileDirs.push(getDirectory(m.entryPath || path))
+      moduleMeta.push({ name: m.meta?.name, server: m.meta?.compatibility?.server })
+    }
+  }
+
+  const modules = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
+  const installedModules = modules.map((dir, index) => ({ dir: toModulePackageDir(dir, moduleFileDirs[index]!), ...moduleMeta[index] }))
+
+  addTemplate(nitroSchemaTemplate)
+
+  const importDirs = new Set<string>()
+  if (nuxt.options.nitro.imports !== false) {
+    for (const dir of resolveServerImportDirs(nuxt, { nestedUtils: legacy.imports })) {
+      importDirs.add(dir)
+    }
+  }
+
+  // Resolve aliases in user-provided input - so `~~/server/test` will work
+  nuxt.options.nitro.plugins ||= []
+  nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
+  nuxt.options.nitro.plugins.unshift(resolve(distDir, 'runtime/plugins/runtime-config'))
+
+  for (const asset of [...nuxt.options.nitro.publicAssets || [], ...nuxt.options.nitro.serverAssets || []]) {
+    if (asset?.dir) {
+      asset.dir = resolveAlias(asset.dir, nuxt.options.alias)
+    }
+  }
+
+  // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
+  for (const asset of nuxt.options.nitro.publicAssets || []) {
+    if (!asset?.dir) { continue }
+    const dir = resolve(nuxt.options.rootDir, asset.dir)
+    // dirs within the build dir are generated later in the build
+    const isGenerated = !relative(nuxt.options.buildDir, dir).startsWith('..')
+    if (!existsSync(dir) && !isGenerated) {
+      bundlerDiagnostics.NUXT_B7023({
+        dir,
+        baseURL: joinURL('/', asset.baseURL || '/', '**'),
+        resolvedFrom: 'your project root',
+      })
+    }
+  }
+
+  if (nuxt.options.dev) {
+    let reportFs: { allow: string[], deny: string[], strict?: boolean } | undefined
+    let viteAllowedHosts: string[] | true | undefined
+    nuxt.hook('vite:serverCreated', (server) => {
+      const { allow, deny, strict } = server.config.server.fs
+      reportFs = { allow, deny, strict }
+      viteAllowedHosts = server.config.server.allowedHosts
+    })
+    nuxt.options.nitro.virtual = defu(nuxt.options.nitro.virtual, {
+      '#internal/dev-server-logs-options': () => [
+        `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`,
+        `export const srcDir = ${JSON.stringify(nuxt.options.srcDir)};`,
+        `export const reportFs = ${JSON.stringify(reportFs ?? {
+          allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
+          deny: [],
+        })};`,
+        `export const allowedHosts = ${JSON.stringify(resolveDevAllowedHosts(nuxt.options, viteAllowedHosts))};`,
+      ].join('\n'),
+    })
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'))
+  }
+  if (nuxt.options.dev && nuxt.options.features.devLogs) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
+    nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
+  }
+
+  // When the base URL is only known at runtime, the `base-url` middleware strips it from incoming
+  // requests, so nitro's routes must stay unprefixed for the internally re-dispatched request to
+  // match them.
+  const nitroBaseURL = nuxt.options.experimental.runtimeBaseURL ? '/' : nuxt.options.app.baseURL
+  if (nuxt.options.experimental.runtimeBaseURL) {
+    nuxt.options.serverHandlers.unshift({
+      route: '',
+      middleware: true,
+      handler: resolve(distDir, 'runtime/middleware/base-url'),
+    })
+  }
+
+  // In dev, record per-request CSS (from the builder's module graph) into the
+  // request context so the SSR renderer can emit the right stylesheet links.
+  if (nuxt.options.dev) {
+    nuxt.options.serverHandlers.unshift({
+      route: '',
+      middleware: true,
+      handler: resolve(distDir, 'runtime/middleware/dev-client-css'),
+    })
+  }
+
+  const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
+
+  // the page renderer resolves this specifier whether or not islands are enabled
+  nuxt.options.nitro.virtual ||= {}
+  nuxt.options.nitro.virtual['#internal/nuxt/island-renderer.mjs'] = () => {
+    // sync conditions with /packages/nuxt/src/core/templates.ts#L539
+    if (nuxt.options.experimental.componentIslands && (nuxt.options.dev || nuxt.options.experimental.componentIslands !== 'auto' || nuxt.apps.default?.pages?.some(p => p.mode === 'server') || nuxt.apps.default?.components?.some(c => c.mode === 'server' && !nuxt.apps.default?.components.some(other => other.pascalName === c.pascalName && other.mode === 'client')))) {
+      return `export { default } from ${islandHandlerPath}`
+    }
+    return `export default { fetch: () => undefined }`
+  }
+
+  // islands need a server renderer, so a client-only app is switched to `ssr: true` with a
+  // blanket `ssr: false` route rule; remember the original setting for static output decisions
+  const clientOnlyApp = !nuxt.options.ssr
+  if (nuxt.options.experimental.componentIslands && clientOnlyApp && nuxt.options.experimental.componentIslands !== 'auto') {
+    nuxt.options.ssr = true
+    nuxt.options.routeRules ||= {}
+    nuxt.options.routeRules['/**'] = defu(nuxt.options.routeRules['/**'], { ssr: false })
+  }
+
+  const mockProxy = resolveModulePath('mocked-exports/proxy', { from: import.meta.url })
+  const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
+
+  const autoImportPresets = nuxt.options.experimental.nitroAutoImports || legacy.imports
+    ? await getServerImportsPresets(legacy)
+    : []
+
+  const serverRuntime = getServerRuntime({
+    unheadOptions: '#internal/unhead-options.mjs',
+    headConfig: '#internal/unhead.config.mjs',
+    // islands depend on the resolved app, which only the app build knows
+    prelude: `import { componentIslands as _componentIslands, componentIslandsActive as _componentIslandsActive } from '#internal/nuxt.config.mjs'`,
+    overrides: async () => {
+      // `href_matches` patterns (URLPattern syntax) for routes served under a
+      // `noScripts` route rule, so scripted documents can speculatively
+      // prefetch/prerender the full-page navigation the client router forces
+      // to them.
+      const noScriptsPatterns = [...new Set(mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)
+        .filter(r => r.data.noScripts)
+        .map(r => rou3PatternToURLPattern(r.route).pattern))]
+      // `href_matches` patterns for every page route, provided by the pages
+      // module; pages served without scripts scope their blanket speculation
+      // rules to these (safe-to-GET) same-origin navigations
+      const pagePatterns = (nitro.options as { _noScriptsPagePatterns?: string[] })._noScriptsPagePatterns ?? []
+      // rou3 patterns for every page route, provided by the pages module when
+      // `experimental.early404` is active; the renderer 404s early on paths that
+      // cannot match any of them
+      const early404Patterns = (nitro.options as { _early404PagePatterns?: string[] })._early404PagePatterns ?? []
+      // SPA fallbacks written out as an empty shell, minus any error page that
+      // is server-rendered at build time
+      const noSSRRoutes = ['/index.html', '/200.html', '/404.html'].filter(route => !errorPages.includes(Number(route.slice(1, -'.html'.length))))
+      // page sources for client-only responses, provided by the pages module
+      const spaPageSources = !nuxt.options.ssr || nitro.routing.routeRules.routes.some(r => r.data.ssr === false)
+        ? (nitro.options as { _spaPageSources?: Record<string, string[]> })._spaPageSources ?? {}
+        : {}
+      return {
+        NUXT_PRERENDER_ERROR_PAGES: JSON.stringify(errorPages),
+        NUXT_PRERENDER_NO_SSR_ROUTES: JSON.stringify(noSSRRoutes),
+        NUXT_NO_SCRIPTS_PATTERNS: JSON.stringify(noScriptsPatterns),
+        NUXT_HAS_NO_SCRIPTS_ROUTES: String(noScriptsPatterns.length > 0),
+        NUXT_PAGE_PATTERNS: JSON.stringify(pagePatterns),
+        NUXT_EARLY_404: String(early404Patterns.length > 0),
+        NUXT_PAGE_MATCHER: compilePageMatcher(early404Patterns),
+        NUXT_SPA_PAGE_MATCHER: compilePageMatcher(spaPageSources, !nuxt.options.router.options.sensitive),
+        NUXT_RUNTIME_PAYLOAD_EXTRACTION: String(nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)),
+        spaTemplate: JSON.stringify(await resolveSpaLoadingTemplate(nuxt)),
+        componentIslands: '_componentIslands',
+        componentIslandsActive: '_componentIslandsActive',
+      }
+    },
+  }, nuxt)
+
+  const requestedBuilder = nuxt.options.nitro.builder ?? process.env.NITRO_BUILDER
+  if (nuxt.options.experimental.nitroViteEnvironment && requestedBuilder !== undefined && requestedBuilder !== 'vite') {
+    nitroBuildDiagnostics.NUXT_B9008({ builder: String(requestedBuilder) })
+  }
+  const serverBundler = nuxt.options.experimental.nitroViteEnvironment ? 'vite' : requestedBuilder
+  const rspackPath = serverBundler === 'rspack' ? resolveAppBuilderDependency(nuxt, '@rspack/core') : undefined
+
+  const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
+    debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
+    rootDir: nuxt.options.rootDir,
+    workspaceDir: nuxt.options.workspaceDir,
+    serverDir: nuxt.options.serverDir,
+    dev: nuxt.options.dev,
+    buildDir: nuxt.options.buildDir,
+    experimental: {
+      asyncContext: nuxt.options.experimental.asyncContext,
+      typescriptBundlerResolution: nuxt.options.future.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || nuxt.options.typescript.serverTsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
+    },
+    framework: {
+      name: 'nuxt',
+      version: nuxtPkg.version || nitroBuilder.version,
+      previewCommand: 'npx nuxt preview',
+    },
+    imports: {
+      autoImport: nuxt.options.imports.autoImport as boolean,
+      dirs: [...importDirs],
+      presets: autoImportPresets,
+      imports: [
+        {
+          as: '__buildAssetsURL',
+          name: 'buildAssetsURL',
+          from: PATHS_SPECIFIER,
+        },
+        {
+          as: '__publicAssetsURL',
+          name: 'publicAssetsURL',
+          from: PATHS_SPECIFIER,
+        },
+        {
+          as: 'defineAppConfig',
+          name: 'defineAppConfig',
+          from: resolve(distDir, 'runtime/utils/config'),
+          priority: -1,
+        },
+      ],
+      exclude: [...excludePattern, /[\\/]\.git[\\/]/],
+    },
+    // TODO: support for bundle analyser: https://github.com/nitrojs/nitro/pull/3628
+    scanDirs: layerDirs.map(dirs => dirs.server),
+    renderer: {
+      handler: resolve(distDir, 'runtime/handlers/renderer'),
+    },
+    baseURL: nitroBaseURL,
+    virtual: {
+      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'] || '',
+      // the asset URL helpers the app also uses on the client
+      [PATHS_SPECIFIER]: () => nuxt.vfs['#build/paths.mjs'] || '',
+      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, '') || '',
+      // the head module's templates, which the renderer config re-exports
+      '#internal/unhead-options.mjs': () => nuxt.vfs['#build/unhead-options.mjs'] || '',
+      '#internal/unhead.config.mjs': () => nuxt.vfs['#build/unhead.config.mjs'] || '',
+      // Dev-only per-request CSS source; overridden by the builder in dev to
+      // read its module graph (see `dev-client-css` middleware).
+      '#internal/nuxt/dev-client-css': () => `export const getDevClientCss = () => []`,
+      '#internal/nuxt/error-channel': () => nuxt.options.dev
+        ? `export * from ${JSON.stringify(resolve(distDir, 'runtime/utils/error-channel'))}`
+        : 'export {}',
+      '#internal/nuxt/nitro-config.mjs': () => [
+        `export const NUXT_ERROR_CHANNEL = ${JSON.stringify(nuxt.options.devServer.errorChannel)}`,
+        `export const NUXT_DEV_LOGS = ${!!nuxt.options.features.devLogs}`,
+        `export const NUXT_ASYNC_CONTEXT = ${!!nuxt.options.experimental.asyncContext}`,
+        `export const NUXT_SHARED_DATA = ${!!nuxt.options.experimental.sharedPrerenderData}`,
+      ].join('\n'),
+    },
+    routeRules: {
+      '/**': typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
+        ? { ssr: true, streaming: true }
+        : { ssr: true },
+      '/__nuxt_error': { cache: false },
+    },
+    // nitro otherwise resolves these from the project, installing them if they are missing
+    deps: {
+      paths: {
+        ...rspackPath ? { '@rspack/core': rspackPath } : {},
+        rolldown: resolveModulePath('rolldown', { from: import.meta.url }),
+        unenv: resolveModulePath('unenv', { from: import.meta.url }),
+        unstorage: resolveModulePath('unstorage', { from: import.meta.url }),
+      },
+    },
+    publicAssets: [
+      nuxt.options.dev
+        ? {
+            dir: resolve(nuxt.options.buildDir, 'dist/client'),
+            maxAge: 0,
+          }
+        : {
+            dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
+            maxAge: 31536000 /* 1 year */,
+            baseURL: nuxt.options.app.buildAssetsDir,
+            ignore: false,
+          },
+      ...layerPublicAssetsDirs,
+    ],
+    prerender: {
+      ignoreUnprefixedPublicAssets: true,
+      failOnError: true,
+      concurrency: cpus().length * 4 || 4,
+      routes: ([] as string[])
+        // @ts-expect-error TODO: remove in nuxt v5
+        .concat(nuxt.options.generate.routes),
+    },
+    sourcemap: !!nuxt.options.sourcemap.server,
+    traceDeps: [
+      // force include files used in generated code from the runtime-compiler
+      ...(nuxt.options.vue.runtimeCompiler)
+        ? [
+            ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
+              const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
+              if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
+              return targets
+            }, []),
+          ]
+        : [],
+    ],
+    noExternals: [
+      ...(nuxt.options.dev
+        ? []
+        : [
+            '@nuxt/',
+            nuxt.options.buildDir,
+          ]),
+      ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string').map(toTranspileNoExternal),
+      // path entries apply when nitro bundles with rollup; in the vite dev
+      // environment `noExternal` is matched against the bare package name
+      'nuxt/dist',
+      'nuxt3/dist',
+      'nuxt-nightly/dist',
+      /^nuxt(?:3|-nightly)?$/,
+      distDir,
+      // Ensure app config files have auto-imports injected even if they are pure .js files
+      ...layerDirs.map(dirs => join(dirs.app, 'app.config')),
+
+    ],
+    alias: {
+      // Nitro v2 runtime specifiers, wherever they are imported from
+      ...getLegacyNitroAliases(),
+
+      '#internal/nuxt/host': resolve(distDir, nuxt4Host ? 'runtime/host/nuxt4' : 'runtime/host/nuxt5'),
+      // Nuxt 4 app code reaches the h3 v1 helpers through this specifier
+      ...nuxt4Host ? { '@nuxt/nitro-server/h3': getLegacyH3ShimPath() } : {},
+
+      // Vue 3 mocks
+      ...nuxt.options.vue.runtimeCompiler
+        ? {}
+        : {
+            'estree-walker': mockProxy,
+            '@babel/parser': mockProxy,
+            '@vue/compiler-core': mockProxy,
+            '@vue/compiler-dom': mockProxy,
+            '@vue/compiler-ssr': mockProxy,
+          },
+      '@vue/devtools-api': resolveModulePath('vue-devtools-stub', { from: import.meta.url }),
+
+      // Nuxt aliases
+      ...nuxt.options.alias,
+    },
+    replace: nuxt.options.experimental.nitroViteEnvironment ? {} : getServerReplacements(nuxt),
+    rollupConfig: {
+      output: {
+        generatedCode: {
+          symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351
+        },
+      },
+      plugins: [],
+    },
+    logLevel: logLevelMapReverse[nuxt.options.logLevel],
+  } satisfies NitroConfig)
+
+  if (serverBundler === undefined || serverBundler === 'rolldown' || serverBundler === 'vite') {
+    // don't try to resolve rolldown options from the tsconfig we generate
+    nitroConfig.rolldownConfig = defu(nitroConfig.rolldownConfig, { tsconfig: false as const })
+  }
+
+  if (nuxt.options.sourcemap.server === 'nosource') {
+    nitroConfig.rollupConfig!.output!.sourcemapExcludeSources ??= true
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  if (nuxt.options.experimental.serverAppConfig === true && nitroConfig.imports) {
+    nitroConfig.imports.imports ||= []
+    nitroConfig.imports.imports.push({
+      name: 'useAppConfig',
+      from: resolve(distDir, 'runtime/utils/app-config'),
+      typeFrom: 'nuxt/server',
+      priority: -1,
+    })
+  }
+
+  // add error handler
+  if (!nitroConfig.errorHandler && (nuxt.options.dev || !nuxt.options.experimental.noVueServer)) {
+    nitroConfig.errorHandler = resolve(distDir, 'runtime/handlers/error')
+  }
+
+  // Resolve user-provided paths
+  nitroConfig.serverDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.serverDir as string)
+  nitroConfig.ignore ||= []
+  nitroConfig.ignore.push(...resolveIgnorePatterns(nitroConfig.serverDir))
+
+  if (nuxt.options.experimental.payloadExtraction) {
+    setupPayloadRouteRules(nuxt)
+  }
+
+  if (nuxt.options.experimental.appManifest) {
+    setupAppManifest(nuxt, nitroConfig, { baseURL: nitroBaseURL, typesDir })
+  } else {
+    // stub alias to allow vite to resolve import
+    nuxt.options.alias['#app-manifest'] = mockProxy
+  }
+
+  // With `nitroViteEnvironment`, modules backed by a build output are resolved by
+  // `NuxtBuildOutputsPlugin` in the ssr environment, which can defer the ones whose value
+  // is only final once that environment has bundled. The nitro environment resolves
+  // `entryChunkName` and `entryIds` too, so those are registered either way.
+  const NITRO_ENV_OUTPUTS = new Set<keyof NuxtBuildOutputs>(['entryChunkName', 'entryIds'])
+  for (const [specifier, module] of Object.entries(serverRuntime.modules)) {
+    if (specifier in nitroConfig.virtual!) {
+      continue
+    }
+    if (nuxt.options.experimental.nitroViteEnvironment && module.output && !NITRO_ENV_OUTPUTS.has(module.output)) {
+      continue
+    }
+    nitroConfig.virtual![specifier] = () => module.code()
+  }
+
+  const nitroDecoratorSetup = new WeakMap<NitroConfig, Promise<void>>()
+  const setupNitroDecorators = (nitroConfig: NitroConfig) => {
+    const existingSetup = nitroDecoratorSetup.get(nitroConfig)
+    if (existingSetup) {
+      return existingSetup
+    }
+
+    const setup = (async () => {
+      const nitroDecoratorDeps = ['@rollup/plugin-babel', '@babel/plugin-proposal-decorators', '@babel/plugin-syntax-typescript']
+      const result = await ensureDependencyInstalled(nitroDecoratorDeps, {
+        rootDir: nuxt.options.rootDir,
+        searchPaths: nuxt.options.modulesDir,
+        from: import.meta.url,
+      })
+
+      if (result !== true) {
+        bundlerDiagnostics.NUXT_B7009({ deps: result.map(d => `\`${d}\``).join(' and '), installCommand: await getAddDependencyCommand(result, nuxt.options.rootDir, { dev: true }) })
+      }
+
+      if (result === true) {
+        const [{ babel }, { default: jsTokens }] = await Promise.all([import('@rollup/plugin-babel'), import('js-tokens')])
+        // `@rollup/plugin-babel` v6 passes `filter` the id alone
+        const mayContainDecorators = (jsx: boolean) => (_id: string, code?: string) => code === undefined || (MAY_CONTAIN_DECORATOR_RE.test(code) && hasDecoratorSyntax(code, jsTokens, jsx))
+        nitroConfig.rollupConfig!.plugins = toArray(await nitroConfig.rollupConfig!.plugins || [])
+        nitroConfig.rollupConfig!.plugins!.unshift(
+          babel({
+            babelHelpers: 'bundled',
+            configFile: false,
+            extensions: ['.ts', '.js', '.mjs', '.mts'],
+            filter: mayContainDecorators(false),
+            plugins: [
+              // Syntax plugin allows Babel to parse TypeScript without transforming it,
+              // since the actual TS stripping is handled later by the bundler's esbuild plugin.
+              ['@babel/plugin-syntax-typescript', { isTSX: false }],
+              ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+            ],
+          }),
+          babel({
+            babelHelpers: 'bundled',
+            configFile: false,
+            extensions: ['.tsx', '.jsx'],
+            filter: mayContainDecorators(true),
+            // Babel 7 reads `isTSX` (and strips other `jsx` parser plugins); Babel 8 only reads `parserOpts`.
+            parserOpts: { plugins: ['jsx'] },
+            plugins: [
+              ['@babel/plugin-syntax-typescript', { isTSX: true }],
+              ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
+            ],
+          }),
+        )
+      }
+    })()
+
+    nitroDecoratorSetup.set(nitroConfig, setup)
+    setup.catch(() => nitroDecoratorSetup.delete(nitroConfig))
+    return setup
+  }
+
+  // Add decorator support via Babel when experimental.decorators is enabled.
+  if (nuxt.options.experimental.decorators) {
+    if (nuxt.options.dev) {
+      nuxt.hook('nitro:build:before', nitro => setupNitroDecorators(nitro.options))
+    } else {
+      await setupNitroDecorators(nitroConfig)
+    }
+  }
+
+  // Register nuxt protection patterns
+  nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
+  nitroConfig.rollupConfig!.plugins = toArray(nitroConfig.rollupConfig!.plugins)
+
+  const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+  const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+  const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
+  const trace = nuxt.options.dev ? true : 'lazy' as const
+  // Both matchers share a single plugin instance so eager tracing parses each module once.
+  const serverProtectionConfig = {
+    cwd: nuxt.options.rootDir,
+    trace,
+    matchers: [
+      {
+        include: sharedPatterns,
+        patterns: createImportProtectionPatterns(nuxt, { context: 'shared' as const }),
+      },
+      {
+        patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' as const }),
+        exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
+      },
+    ],
+  }
+  for (const plugin of toArray(ImpoundPlugin.rollup(serverProtectionConfig))) {
+    // the specifier is checked before any alias or resolver on every server build
+    if (typeof plugin.resolveId === 'function') {
+      plugin.resolveId = { order: 'pre', handler: plugin.resolveId }
+    }
+    nitroConfig.rollupConfig!.plugins!.push(plugin)
+  }
+
+  nitroConfig.rollupConfig!.plugins!.push(runtimeConfigPlugin(resolve(distDir, 'runtime/runtime-config'), { strict: !nuxt.options.dev }))
+  nitroConfig.virtual![RUNTIME_CONFIG_SCHEMA_ID] = () => getRuntimeConfigSchemaModule(nuxt, nitro)
+
+  if (!nuxt.options.router.options.sensitive) {
+    nitroConfig.rollupConfig!.plugins!.push(routeRulesCaseFoldPlugin(() => nitro))
+  }
+
+  if (nuxt4Host) {
+    // an app bundle can reference the h3 v1 helpers by the path the specifier resolves to
+    const hostH3 = resolveModulePath('@nuxt/nitro-server/h3', {
+      from: [nuxt.options.appDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)),
+      try: true,
+    })
+    if (hostH3) {
+      const hostH3Path = normalize(hostH3)
+      nitroConfig.rollupConfig!.plugins!.push({
+        name: 'nuxt:nitro:h3-v1-runtime',
+        resolveId: {
+          order: 'pre',
+          handler (id: string) {
+            if (normalize(id) === hostH3Path) { return getLegacyH3ShimPath() }
+          },
+        },
+      })
+    }
+  }
+
+  // Nitro serialises mount options with `JSON.stringify`, so the patterns have to go
+  // through the fs driver's `ignore` option rather than a `watchOptions.ignored` matcher.
+  const devStorageIgnore = (base?: string) => toFsDriverIgnorePatterns([
+    '**/node_modules',
+    ...resolveIgnorePatterns(base),
+  ])
+  // read-only mounts of the project sources, available in development and while prerendering
+  const sourceKV = {
+    root: {
+      driver: 'fs',
+      readOnly: true,
+      base: nitroConfig.rootDir,
+      ignore: devStorageIgnore(),
+    },
+    src: {
+      driver: 'fs',
+      readOnly: true,
+      base: nitroConfig.serverDir,
+      ignore: devStorageIgnore(nuxt.options.serverDir),
+    },
+  } satisfies NitroConfig['kv']
+  for (const env of ['$development', '$prerender'] as const) {
+    nitroConfig[env] = { ...nitroConfig[env], kv: { ...sourceKV, ...nitroConfig[env]?.kv } }
+  }
+
+  const cacheDriverPath = join(distDir, 'runtime/utils/cache-driver.mjs')
+  const cacheDriverOption = isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath
+
+  // TODO: remove in v5
+  nuxt.options.typescript.hoist.push('nitropack/types', 'nitropack/runtime', 'nitropack')
+
+  // Types for Nitro's auto-imported/augmented dependencies are resolved from the copies Nitro
+  // uses at runtime, unless the project depends on them directly.
+  const nitroTypePackages = [
+    ...nitroImplicitDependencies,
+    'nitro/app',
+    'nitro/builder',
+    'nitro/cache',
+    'nitro/config',
+    'nitro/context',
+    'nitro/database',
+    'nitro/h3',
+    'nitro/meta',
+    'nitro/runtime-config',
+    'nitro/kv',
+    'nitro/storage',
+    'nitro/task',
+    'nitro/types',
+  ].filter(pkg => !nuxt._dependencies?.has(packageName(pkg)))
+  // route rule augmentations are declared on `h3/rules`, so a project has to resolve it to the
+  // same copy of h3 for them to apply, even when it depends on another copy of `h3`
+  nitroTypePackages.push('h3/rules')
+  const [nitroTypePaths, nitroNodeTypePaths] = await Promise.all([
+    resolveNitroTypePaths(nitroTypePackages),
+    resolveNitroTypePaths(nitroTypePackages, { entry: true }),
+  ])
+
+  // Extend nitro config with hook
+  await nuxt.callHook('nitro:config', nitroConfig)
+
+  // after the hook, so rules and registrations contributed by modules are covered too
+  normalizeLegacyRouteRules(nitroConfig.routeRules)
+  for (const key in nitroConfig.routeRules) {
+    assertSingleCatchAllRouteRuleKey(key)
+  }
+  if (nuxt.options.experimental.componentIslands) {
+    keepCachedIslandQuery(nitroConfig, !nuxt.options.router.options.sensitive)
+  }
+  if (nuxt4Host && legacy.config) {
+    keepCachedQuery(nitroConfig)
+  }
+  normalizeAppMiddlewareRules(nitroConfig.routeRules)
+  const unusedVariants = collectServerRegistrations(nuxt, nitroConfig)
+
+  const registerLateNitroCompatScope = await setupNitroCompat(nuxt, nitroConfig, legacy, legacyModulePresets, installedModules, unusedVariants)
+  nitroConfig.alias = sortAliasesByPrecedence(nitroConfig.alias!)
+
+  const autoImports = createServerAutoImports(nuxt, nitroConfig.imports || { autoImport: false }, typesDir, {
+    nestedUtilsDirs: nuxt.options.nitro.imports !== false && !legacy.imports ? resolveNestedServerUtilsDirs(nuxt) : [],
+    disabledPresets: nuxt.options.nitro.imports !== false && autoImportPresets.length === 0 ? await getServerImportsPresets(legacy) : [],
+  })
+  // only for the server bundle: `nuxt.options.alias['#imports']` belongs to the app context
+  nitroConfig.alias ||= {}
+  nitroConfig.alias['#imports/server'] = autoImports.importsModulePath
+  // deprecated, and deliberately left out of the server tsconfig: typing it would give a handler
+  // an `any` return type, silently costing the route its response type
+  nitroConfig.alias['#imports'] = autoImports.importsModulePath
+
+  if (autoImports.enabled) {
+    nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
+      autoImports,
+      buildDir: resolve(nitroConfig.rootDir!, nitroConfig.buildDir!),
+      exclude: (nitroConfig.imports as ServerImportsOptions).exclude ?? [],
+      sourcemap: !!nuxt.options.sourcemap.server,
+    }))
+  }
+
+  // a file added to or removed from a scanned directory changes the set of imports available
+  // through `#imports/server`, whether or not they are injected
+  const scannedDirs = ((nitroConfig.imports as ServerImportsOptions).dirs ?? []).map(dir => dir.replace(GLOB_SUFFIX_RE, ''))
+  nuxt.hook('builder:watch', async (event, relativePath) => {
+    if (event !== 'add' && event !== 'unlink') { return }
+    const path = resolve(nuxt.options.srcDir, relativePath)
+    if (!scannedDirs.some(dir => path === dir || path.startsWith(dir + '/'))) { return }
+    await autoImports.refresh()
+    await autoImports.writeTypes()
+  })
+
+  if (nitroConfig.static && nuxt.options.dev) {
+    nitroConfig.routeRules ||= {}
+    nitroConfig.routeRules['/**'] = defu(nitroConfig.routeRules['/**'], { prerender: true })
+  }
+
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    nitroConfig.renderer = undefined
+  }
+
+  // Init nitro
+  nuxt._perf?.startPhase('nitro:createNitro')
+  const nitro = await createNitro(nitroConfig, {
+    compatibilityDate: nuxt.options.compatibilityDate,
+    dotenv: nuxt.options._loadOptions?.dotenv,
+  })
+  nuxt._perf?.endPhase('nitro:createNitro')
+
+  // TODO: remove when devtools gains support for nitro v3
+  // @ts-expect-error devtools calls storage.watch() and storage.getMount()
+  nitro.storage ||= { watch: () => {}, getMount: () => ({}) }
+
+  // For full-static output, ensure payload extraction is not disabled
+  if (!clientOnlyApp && nitro.options.static && nuxt.options.experimental.payloadExtraction === false) {
+    bundlerDiagnostics.NUXT_B7015()
+  }
+
+  // Trigger Nitro reload when SPA loading template changes
+  const spaLoadingTemplateFilePath = await resolveSpaLoadingTemplatePath(nuxt)
+  nuxt.hook('builder:watch', async (_event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
+    if (path === spaLoadingTemplateFilePath) {
+      await nitro.hooks.callHook('build:reload')
+    }
+  })
+
+  const cacheDir = resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
+  await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => {})
+  nitro.options._config.kv = defu(nitro.options._config.kv, {
+    'internal:nuxt:prerender': {
+      // TODO: resolve upstream where file URLs are not being resolved/inlined correctly
+      driver: cacheDriverOption,
+      base: cacheDir,
+    },
+  })
+
+  // the prerenderer copies `virtual` from the server, but its runtime config comes from `_config`
+  nitro.hooks.hook('prerender:init', (prerenderer) => {
+    prerenderer.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] = () => getRuntimeConfigSchemaModule(nuxt, prerenderer)
+  })
+
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    // the vite `define` does not reach the prerenderer, which nitro bundles separately
+    nitro.hooks.hook('prerender:config', (config) => {
+      config.replace = { ...getServerReplacements(nuxt), ...config.replace }
+    })
+  }
+
+  // Expose nitro to modules and kit
+  nuxt._nitro = nitro
+  setServerBuild({
+    name: 'nitro',
+    label: 'Nitro',
+    target: () => nitro.options.preset,
+    targetLabel: 'preset',
+    output: {
+      dir: () => withoutTrailingSlash(nitro.options.output.dir),
+      publicDir: () => withoutTrailingSlash(nitro.options.output.publicDir),
+    },
+    capabilities: { server: true, dev: true },
+    buildsSeparately: !nuxt.options.experimental.nitroViteEnvironment,
+    imports: () => autoImports.getImports(),
+    // bare specifiers, so that the app and SSR bundles import them rather than inlining
+    // them: the copy that answers is the one this build bundles, not nitro's stub
+    runtime: {
+      fetch: 'nitro',
+      runtimeConfig: 'nitro/runtime-config',
+      server: resolve(distDir, 'runtime/server'),
+    },
+    preview: { command: () => nitro.options.commands.preview },
+    canReuseSsrBuild: environment => canReuseSsrBuild(nitro, environment),
+  }, nuxt)
+  await nuxt.callHook('nitro:init', nitro)
+
+  // Modules add aliases from `nitro:init`, and Nitro v3 resolves them in
+  // insertion order, so a short prefix registered first shadows a longer key.
+  nitro.options.alias = sortAliasesByPrecedence(nitro.options.alias)
+
+  // Modules that bypass kit and push handlers or plugins into `nitro.options`
+  // are nitro v2 code too, and are only visible now.
+  registerLateNitroCompatScope(nitro)
+
+  // Instrument Nitro rollup plugins for perf tracking
+  if (nuxt._perf) {
+    const perf = nuxt._perf
+    nitro.hooks.hook('prerender:config', () => perf.startPhase('nitro:prerender'))
+    nitro.hooks.hook('prerender:done', () => perf.endPhase('nitro:prerender'))
+    nitro.hooks.hook('build:config', (_nitro, { rollup, rolldown }) => {
+      timePluginHooks(perf, ((rollup ?? rolldown)?.plugins || []) as unknown[])
+    })
+  }
+
+  nuxt['~runtimeDependencies'] ||= []
+  nuxt['~runtimeDependencies']!.push(
+    ...runtimeDependencies,
+    'unhead', '@unhead/vue', 'unstorage',
+    // ensure we only have one version of vue if nitro is going to inline anyway
+    ...nitro.options.inlineDynamicImports ? ['vue', '@vue/server-renderer'] : [],
+  )
+
+  addVitePlugin({
+    name: 'nuxt:nitro:ssr-conditions',
+    configEnvironment (name, config) {
+      if (name === 'ssr') {
+        config.resolve ||= {}
+        // nitro's vite environment sets conditions for its dev runner (`workerd` excludes `node`)
+        config.resolve.conditions = nuxt.options.experimental.nitroViteEnvironment && config.resolve.conditions
+          ? getSsrResolveConditions(config.resolve.conditions)
+          : getSsrResolveConditions(config.resolve.conditions, nitro.options.exportConditions)
+      }
+    },
+  })
+
+  addVitePlugin({
+    name: 'nuxt:nitro:config',
+    configEnvironment (name) {
+      if (name === 'client') {
+        return {
+          optimizeDeps: {
+            exclude: [
+              'nitro/h3',
+            ],
+          },
+        }
+      }
+    },
+  })
+
+  // Tree-shake Vue feature flags for non-node Nitro targets
+  addVitePlugin({
+    name: 'nuxt:nitro:vue-feature-flags',
+    applyToEnvironment: environment => environment.name === 'ssr' && environment.config.isProduction,
+    configResolved (config) {
+      for (const key in config.define) {
+        if (key.startsWith('__VUE')) {
+          nitro.options.replace[key] = config.define[key]
+        }
+      }
+    },
+  })
+
+  // Connect vfs storages
+  const nitroVfs = nitro.vfs
+  nitro.vfs = new Proxy(nitroVfs, {
+    get (target, prop: string) {
+      return Reflect.get(target, prop) || { render: () => nuxt.vfs[prop] }
+    },
+    set (target, prop: string, value) {
+      return Reflect.set(target, prop, value)
+    },
+  })
+
+  // Connect hooks
+  nuxt.hook('close', () => nitro.hooks.callHook('close'))
+  nitro.hooks.hook('prerender:routes', (routes) => {
+    return nuxt.callHook('prerender:routes', { routes })
+  })
+
+  // Enable runtime compiler client side
+  if (nuxt.options.vue.runtimeCompiler) {
+    addVitePlugin({
+      name: 'nuxt:vue:runtime-compiler',
+      applyToEnvironment: environment => environment.name === 'client',
+      enforce: 'pre',
+      resolveId (id, importer) {
+        if (id === 'vue') {
+          return this.resolve('vue/dist/vue.esm-bundler', importer, { skipSelf: true })
+        }
+      },
+    })
+    for (const hook of ['webpack:config', 'rspack:config'] as const) {
+      nuxt.hook(hook, (configuration) => {
+        const clientConfig = configuration.find(config => config.name === 'client')
+        if (!clientConfig!.resolve) { clientConfig!.resolve!.alias = {} }
+        if (Array.isArray(clientConfig!.resolve!.alias)) {
+          clientConfig!.resolve!.alias.push({
+            name: 'vue',
+            alias: 'vue/dist/vue.esm-bundler',
+          })
+        } else {
+          clientConfig!.resolve!.alias!.vue = 'vue/dist/vue.esm-bundler'
+        }
+      })
+    }
+  }
+
+  addDevServerHandlers(nitro.options.devHandlers, nuxt.options.devServerHandlers as NitroBuilderOptions['devHandlers'])
+  if (nuxt.options.dev) {
+    nitro.options.plugins.push(resolve(distDir, 'runtime/plugins/dev-errors'))
+    nitro.options.plugins.unshift(resolve(distDir, 'runtime/plugins/dev-hooks'))
+    nitro.options.handlers.unshift({
+      route: joinURL(nuxt.options.devServer.errorChannel, '**'),
+      lazy: true,
+      handler: resolve(distDir, 'runtime/handlers/error-channel'),
+    })
+    const peerToken = process.env[DEV_PEER_TOKEN_ENV] ||= randomBytes(32).toString('base64url')
+    const errorChannel = nuxt.options.devServer.errorChannel
+    const channelPaths = [...new Set([errorChannel, joinURL(nuxt.options.app.baseURL, errorChannel)].map(path => withTrailingSlash(path)))]
+    nitro.options.devHandlers.unshift({
+      route: '/**',
+      middleware: true,
+      handler: defineEventHandler(event => vouchForLoopbackPeer(event, channelPaths, peerToken)),
+    })
+  }
+  if (!nuxt.options.experimental.nitroViteEnvironment) {
+    nitro.options.handlers.unshift({
+      route: '/__nuxt_error',
+      lazy: true,
+      handler: resolve(distDir, 'runtime/handlers/renderer'),
+    })
+  }
+
+  // TODO: refactor into a module when this is more full-featured
+  // add Chrome devtools integration
+  if (nuxt.options.experimental.chromeDevtoolsProjectSettings) {
+    const cacheDir = resolve(nuxt.options.rootDir, 'node_modules/.cache/nuxt')
+    let projectConfiguration = await readFile(join(cacheDir, 'chrome-workspace.json'), 'utf-8')
+      .then(r => JSON.parse(r))
+      .catch(() => null)
+
+    if (!projectConfiguration) {
+      projectConfiguration = { uuid: randomUUID() }
+      await mkdir(cacheDir, { recursive: true })
+      await writeFile(join(cacheDir, 'chrome-workspace.json'), JSON.stringify(projectConfiguration), 'utf-8')
+    }
+
+    nitro.options.devHandlers.push({
+      route: '/.well-known/appspecific/com.chrome.devtools.json',
+      handler: defineEventHandler((event) => {
+        // The response discloses the absolute project root and a stable workspace UUID, so
+        // require a genuine loopback peer: `isLocalDevRequest` alone is forgeable by a
+        // non-browser LAN client sending `Host: localhost`.
+        if (!isLoopbackPeer(event) || !isLocalDevRequest(event, getDevHandlerAllowedHosts(nuxt))) {
+          event.res.status = 403
+          return 'Forbidden'
+        }
+        return {
+          workspace: {
+            ...projectConfiguration,
+            root: nuxt.options.rootDir,
+          },
+        }
+      }),
+    })
+  }
+
+  if (!nuxt.options.dev && nuxt.options.experimental.noVueServer) {
+    nitro.hooks.hook('build:config', (nitro) => {
+      if (nitro.options.preset === 'nitro-prerender') {
+        nitro.options.errorHandler = resolve(distDir, 'runtime/handlers/error')
+        return
+      }
+      const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === '/__nuxt_error')
+      if (nuxtErrorHandler >= 0) {
+        nitro.options.handlers.splice(nuxtErrorHandler, 1)
+      }
+
+      nitro.options.renderer = undefined
+    })
+  }
+
+  // Nitro discovers file-based handlers by scanning, so they are only visible to Nuxt's typed
+  // `$fetch` if reported here. Patterns are resolved through rou3, the router that will serve the
+  // request, so the generated types and the routing cannot disagree about what a route matches.
+  nuxt.hook('server:routes', (routes, context) => {
+    context.requestTypes = {
+      module: REQUEST_TYPES_MODULE,
+      body: 'RequestBodyOf',
+      query: 'RequestQueryOf',
+      headers: 'RequestHeadersOf',
+    }
+
+    for (const handler of [...nitro.scannedHandlers, ...nitro.options.handlers]) {
+      if (!handler.route) { continue }
+      // an optional parameter matches with and without the segment, so it resolves to two routes
+      for (const nodeKey of routeNodeKeys(handler.route)) {
+        routes.push({
+          segments: toRouteSegments(nodeKey),
+          route: handler.route,
+          method: handler.method,
+          handler: handler.handler,
+          middleware: handler.middleware,
+        })
+      }
+    }
+  })
+
+  // Add typed route responses
+  nuxt.hook('prepare:types', async (opts) => {
+    // `tsconfig.server.json` maps `#imports` here, so it has to exist before anything resolves it
+    await autoImports.writeTypes()
+    opts.serverTsConfig.compilerOptions ||= {}
+    opts.serverTsConfig.compilerOptions.paths ||= {}
+    opts.serverTsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsModulePath)]
+
+    // `#imports/server` resolves in the app program too, so a handler importing from it still
+    // yields a return type for the generated route types
+    opts.tsConfig.compilerOptions ||= {}
+    opts.tsConfig.compilerOptions.paths ||= {}
+    opts.tsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsModulePath)]
+    // also referenced from the app program, which loads handler files regardless of its
+    // `include`, because the generated route types name them with `typeof import(...)`
+    opts.serverReferences.push({ path: autoImports.importsModulePath + '.d.ts' })
+    opts.references.push({ path: autoImports.importsModulePath + '.d.ts' })
+
+    Object.assign(opts.tsConfig.compilerOptions.paths, nitroTypePaths)
+    Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths)
+    opts.sharedTsConfig.compilerOptions ||= {}
+    opts.sharedTsConfig.compilerOptions.paths ||= {}
+    Object.assign(opts.sharedTsConfig.compilerOptions.paths, nitroTypePaths)
+    opts.nodeTsConfig.compilerOptions ||= {}
+    opts.nodeTsConfig.compilerOptions.paths ||= {}
+    Object.assign(opts.nodeTsConfig.compilerOptions.paths, nitroNodeTypePaths)
+
+    // Exclude nitro output dir from typescript
+    opts.tsConfig.exclude ||= []
+    opts.tsConfig.exclude.push(relative(typesDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
+
+    opts.serverTsConfig.exclude ||= []
+    opts.serverTsConfig.exclude.push(relative(typesDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
+
+    opts.serverReferences.push({ path: resolve(typesDir, 'types/nitro-nuxt.d.ts') })
+
+    // only the aliases Nitro adds on top of `nuxt.options.alias`, which Nuxt maps itself
+    opts.serverTsConfig.compilerOptions ||= {}
+    opts.serverTsConfig.compilerOptions.paths ||= {}
+    const serverPaths = opts.serverTsConfig.compilerOptions.paths
+    for (const alias in nitro.options.alias) {
+      if (alias in nuxt.options.alias || alias in serverPaths) { continue }
+      if (excludedServerAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))) { continue }
+
+      const target = nitro.options.alias[alias]!
+      let absolutePath = resolve(typesDir, target)
+      let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
+      if (!stats) {
+        const resolvedModule = resolveModulePath(target, {
+          try: true,
+          from: nuxt.options.modulesDir.map(d => pathToFileURL(withTrailingSlash(d))),
+          extensions: [...nuxt.options.extensions, '.d.ts', '.d.mts', '.d.cts'],
+        })
+        if (resolvedModule) {
+          absolutePath = resolvedModule
+          stats = await fsp.stat(resolvedModule).catch(() => null)
+        }
+      }
+
+      // left absolute: Nuxt relativises and strips the extension when it writes the config
+      serverPaths[alias] = [absolutePath]
+      if (target.endsWith('/') || stats?.isDirectory()) {
+        serverPaths[`${alias}/*`] = [`${absolutePath}/*`]
+      }
+    }
+
+    // the renderers import these app modules directly, so they resolve in the server program even
+    // though `#app` as a whole does not
+    const appDir = nuxt.options.alias['#app']
+    if (appDir) {
+      serverPaths['#app/island-hash'] ||= [resolve(appDir, 'island-hash')]
+      serverPaths['#app/island-props'] ||= [resolve(appDir, 'island-props')]
+      serverPaths['#app/internal/*'] ||= [resolve(appDir, 'internal/*')]
+    }
+
+    // the generated route types import the request-shape extractors by package name, which neither
+    // program can resolve on its own: this package is a dependency of `nuxt`, not of the project
+    opts.tsConfig.compilerOptions ||= {}
+    opts.tsConfig.compilerOptions.paths ||= {}
+    opts.tsConfig.compilerOptions.paths[REQUEST_TYPES_MODULE] = [resolve(distDir, 'request-types')]
+    serverPaths[REQUEST_TYPES_MODULE] = [resolve(distDir, 'request-types')]
+
+    // ensure aliases shared between nuxt + nitro are included in shared tsconfig
+    opts.sharedTsConfig.compilerOptions ||= {}
+    opts.sharedTsConfig.compilerOptions.paths ||= {}
+    for (const key in nuxt.options.alias) {
+      if (nitro.options.alias[key] && nitro.options.alias[key] === nuxt.options.alias[key]) {
+        const dirKey = join(key, '*')
+        if (opts.tsConfig.compilerOptions?.paths[key]) {
+          opts.sharedTsConfig.compilerOptions.paths[key] = opts.tsConfig.compilerOptions.paths[key]
+        }
+        if (opts.tsConfig.compilerOptions?.paths[dirKey]) {
+          opts.sharedTsConfig.compilerOptions.paths[dirKey] = opts.tsConfig.compilerOptions.paths[dirKey]
+        }
+      }
+    }
+  })
+
+  if (nitro.options.static) {
+    nitro.hooks.hook('prerender:routes', (routes) => {
+      for (const route of ['/200.html', '/404.html']) {
+        routes.add(route)
+      }
+      for (const status of errorPages) {
+        routes.add(`/${status}.html`)
+      }
+      if (clientOnlyApp) {
+        routes.add('/index.html')
+      }
+    })
+  }
+
+  if (nuxt.options.experimental.nitroViteEnvironment) {
+    setupNitroViteEnvironment(nuxt, nitro, serverRuntime)
+  } else {
+    setupLegacyDevAndBuild(nuxt, nitro)
+  }
+}
+
+/** Resolves a dependency of the app builder, so Nitro shares its copy rather than installing another. */
+function resolveAppBuilderDependency (nuxt: Nuxt, id: string): string | undefined {
+  if (typeof nuxt.options.builder !== 'string') {
+    return
+  }
+  const builderPath = resolveModulePath(nuxt.options.builder, {
+    from: [...nuxt.options.modulesDir.map(dir => pathToFileURL(withTrailingSlash(dir))), import.meta.url],
+    try: true,
+  })
+  return builderPath && resolveModulePath(id, { from: builderPath, try: true })
+}
+
+function getDevHandlerAllowedHosts (nuxt: Nuxt): ReadonlySet<string> | true {
+  const sources = [nuxt.options.devServer.allowedHosts, nuxt.options.vite?.server?.allowedHosts]
+  if (sources.includes(true)) {
+    return true
+  }
+  const hosts = new Set(LOOPBACK_HOSTS)
+  for (const host of sources.flatMap(allowedHosts => Array.isArray(allowedHosts) ? allowedHosts : [])) {
+    if (typeof host === 'string' && host) {
+      hosts.add(host)
+    }
+  }
+  return hosts
+}
+
+/**
+ * Compile page route patterns (or patterns mapped to the data a match returns) into a
+ * static matcher expression, so the renderer needs no runtime router construction.
+ * Lookups are case-folded unless `fold` is `false`.
+ */
+function compilePageMatcher (patterns: string[] | Record<string, unknown>, fold = true): string {
+  const entries = Array.isArray(patterns) ? patterns.map(pattern => [pattern, 1] as const) : Object.entries(patterns)
+  if (!entries.length) {
+    return 'undefined'
+  }
+  const router = createRou3Router()
+  for (const [pattern, data] of entries) {
+    addRou3Route(router, '', pattern, data)
+  }
+  // lookups are decoded, while rou3 matches the encoded form of the patterns
+  const lookup = fold ? `const foldRouteCase = ${foldRouteCase.toString()};return (method, path) => match(method, encodeRoutePath(foldRouteCase(path)))` : 'return (method, path) => match(method, encodeRoutePath(path))'
+  return `/* @__PURE__ */ (() => {const encodeRoutePath = ${encodeRoutePath.toString()};const match = ${compileRouterToString(router)};${lookup}})()`
+}
+
+const ROU3_PARAM_KEY_RE = /^:_\d+$/
+
+/**
+ * Splits a rou3 node key, in which `:_<n>` marks a single matched segment and `**` the remaining
+ * ones, into the segments Nuxt emits types from. Consecutive static parts are kept together so
+ * the generated tree stays shallow.
+ */
+function toRouteSegments (nodeKey: string): ServerRouteSegment[] {
+  const segments: ServerRouteSegment[] = []
+  let staticValue = ''
+
+  for (const part of nodeKey.split('/')) {
+    if (!part) { continue }
+    const dynamic = ROU3_PARAM_KEY_RE.test(part)
+    if (!dynamic && part !== '**') {
+      staticValue += `/${part}`
+      continue
+    }
+    if (staticValue) {
+      segments.push({ type: 'static', value: staticValue })
+      staticValue = ''
+    }
+    segments.push(dynamic ? { type: 'dynamic' } : { type: 'wildcard' })
+  }
+
+  if (staticValue) {
+    segments.push({ type: 'static', value: staticValue })
+  }
+
+  return segments.length ? segments : [{ type: 'static', value: '/' }]
+}
+
+async function resolveNitroTypePaths (packages: string[], options?: { entry?: boolean }): Promise<Record<string, [string]>> {
+  const ownDir = fileURLToPath(new URL('.', import.meta.url))
+  const nitroPackageJson = resolveModulePath('nitro/package.json', { from: import.meta.url, try: true })
+  const searchPaths = nitroPackageJson ? [dirname(nitroPackageJson), ownDir] : [ownDir]
+  const resolved = await resolveTypePaths(packages, searchPaths, options)
+  return Object.fromEntries(resolved.map(([pkg, path]) => [pkg, [path]]))
+}

@@ -61,4 +61,6 @@ export default defineNuxtConfig({
     shim: process.env.DOCS_TYPECHECK === 'true',
     hoist: ['@vitejs/plugin-vue', 'vue-router'],
   },
+  // this workspace depends on both nitro majors
+  _nitroMajor: 2,
 })

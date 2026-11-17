@@ -12,6 +12,7 @@ This is a map of the `nuxt/nuxt` monorepo for contributors: what each package do
 | `packages/vite` | `@nuxt/vite-builder` | Default bundler for the app (client and SSR bundles) |
 | `packages/webpack`, `packages/rsbuild`, `packages/rspack` | `@nuxt/webpack-builder`, `@nuxt/rsbuild-builder`, `@nuxt/rspack-builder` | Alternative bundlers (`builder: 'webpack' \| 'rsbuild' \| 'rspack'`); rspack is deprecated in favour of rsbuild |
 | `packages/nitro-server` | `@nuxt/nitro-server` | Default server builder: builds the server with Nitro and adapts Nitro to the renderer |
+| `packages/nitro-v3-server` | `@nuxt/nitro-v3-server` | The same server builder for a project on Nitro v3 (`_nitroMajor: 3`), loaded in place of `@nuxt/nitro-server`. Mirrored from `packages/nitro-server` on `main` by `scripts/sync-nitro-v3-server.ts`, so only its `package.json` is edited here. `scripts/backport.ts` cherry-picks a commit from `main` and moves the mirror forward with it |
 | `packages/vite-server` | `@nuxt/vite-server` | Experimental server builder that builds the server with Vite alone (`server.builder: 'vite'`) |
 | `packages/ui-templates` | private | Source of the HTML templates (error pages, loading screen, welcome page); the build writes them into `nuxt`, `kit` and `schema`, where they are committed |
 
@@ -111,7 +112,7 @@ There are also `pnpm typecheck` (root `vue-tsc`), `pnpm test:attw` and `pnpm tes
 
 ### The fixture matrix
 
-Fixture suites run once per project of the `fixtures:<builder>-<env>-<context>-<manifest>` matrix in `vitest.config.ts`, plus an `-inline-errors` project that turns on `inlineErrorRendering` and a `-legacy-component-resolution` project that turns off `compilerComponentResolution`. `test/matrix.ts` exposes the current project's axes (`builder`, `isDev`, `asyncContext`, ...). A fixture opts into them by wrapping its config in `withMatrix()`.
+Fixture suites run once per project of the `fixtures:<builder>-<env>-<context>-<manifest>` matrix in `vitest.config.ts`, plus an `-inline-errors` project that turns on `inlineErrorRendering` and a `-legacy-component-resolution` project that turns off `compilerComponentResolution`. The `fixtures:nitro3-*` projects run `test/basic.test.ts` again on Nitro v3, where the `runsOnce*` guards hold as they do on the default `nitropack` v2, and `isNitroV3` marks an assertion that differs between the two. `test/matrix.ts` exposes the current project's axes (`builder`, `isDev`, `asyncContext`, ...). A fixture opts into them by wrapping its config in `withMatrix()`.
 
 Most behaviour does not depend on every axis. Guard each suite with the narrowest helper from `test/matrix.ts`, so that it builds and runs only where it adds coverage:
 
