@@ -56,6 +56,20 @@ export const nitroImplicitDependencies = ['nitro', 'h3', 'srvx', 'defu', 'consol
 
 export const GLOB_SUFFIX_RE = /\/[^/*]*\*[\s\S]*$/
 
+const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
+
+/**
+ * Drop the `server.fs.deny` pattern for Nitro's dev output, which dev error reports
+ * read to map frames through the server bundle's source map.
+ */
+export function withoutServerDirDeny (deny: string[], serverDir: string | undefined): string[] {
+  if (!serverDir) {
+    return deny
+  }
+  const pattern = `${resolve(serverDir).replace(GLOB_SPECIAL_CHARS_RE, '\\$&')}/**`
+  return deny.filter(entry => entry !== pattern)
+}
+
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
