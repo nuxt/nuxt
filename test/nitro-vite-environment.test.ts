@@ -107,6 +107,17 @@ describe.skipIf(builder !== 'nitro-vite' || isBuilt)('nitro/vite environment dev
     await expect(res.text()).resolves.toBe(`dev-handler:${base}${path.replace(/\?.*$/, '')}`)
   }, 120 * 1000)
 
+  it.each([
+    ['/public-script.js', undefined, 'console.log("public-script")\n'],
+    ['/public-script.js', 'script', 'console.log("public-script")\n'],
+    ['/public-style.css', undefined, 'body { color: rebeccapurple }\n'],
+    ['/public-style.css', 'style', 'body { color: rebeccapurple }\n'],
+  ])('serves public file %s as written (sec-fetch-dest=%s)', async (path, secFetchDest, contents) => {
+    const res = await fetch(`http://127.0.0.1:${port}${path}`, secFetchDest ? { headers: { 'sec-fetch-dest': secFetchDest } } : undefined)
+    expect(res.status, path).toBe(200)
+    await expect(res.text()).resolves.toBe(contents)
+  }, 120 * 1000)
+
   it('handles websocket upgrades for nitro routes', async () => {
     // TODO: remove after upgrading past nitro 3.0.260903-beta (https://github.com/nitrojs/nitro/pull/4711)
     await fetch(`http://127.0.0.1:${port}/api/string-literals`).then(res => res.arrayBuffer())
