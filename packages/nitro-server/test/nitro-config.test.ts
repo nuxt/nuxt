@@ -337,18 +337,18 @@ describe('nitro config', () => {
     })
   })
 
-  it('resolves the h3 v1 helpers of a Nuxt 4 app to the h3 v1 shim', async () => {
+  it('resolves the h3 v1 helpers of a Nuxt 4 app to the app h3 v1 shim', async () => {
     await withNitro({ modules: [asNuxtMajor(4)] }, async (_nitro, nitroConfig, nuxt) => {
       const plugin = findH3RuntimePlugin(nitroConfig)
       const entry = resolveModulePath('@nuxt/nitro-server/h3', { from: directoryToURL(nuxt.options.appDir) })
-      expect(nitroConfig.alias!['@nuxt/nitro-server/h3']).toMatch(/runtime\/compat\/h3-v1/)
-      expect(plugin!.resolveId.handler(entry)).toMatch(/runtime\/compat\/h3-v1/)
+      expect(nitroConfig.alias!['@nuxt/nitro-server/h3']).toMatch(/runtime\/compat\/h3-v1-app\.[mt]s$/)
+      expect(plugin!.resolveId.handler(entry)).toMatch(/runtime\/compat\/h3-v1-app\.[mt]s$/)
       expect(plugin!.resolveId.handler('h3')).toBeUndefined()
 
       const vitePlugin = await findViteH3RuntimePlugin(nuxt)
       expect(vitePlugin!.applyToEnvironment({ name: 'ssr' })).toBe(true)
       expect(vitePlugin!.applyToEnvironment({ name: 'client' })).toBe(false)
-      expect(vitePlugin!.resolveId('@nuxt/nitro-server/h3')).toMatch(/runtime\/compat\/h3-v1/)
+      expect(vitePlugin!.resolveId('@nuxt/nitro-server/h3')).toMatch(/runtime\/compat\/h3-v1-app\.[mt]s$/)
       expect(vitePlugin!.resolveId('h3')).toBeUndefined()
     })
   })

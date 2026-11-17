@@ -39,7 +39,7 @@ import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, rout
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { unheadDedupePlugin } from './unhead.ts'
-import { getLegacyH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
+import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
@@ -70,7 +70,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       enforce: 'pre',
       applyToEnvironment: environment => environment.name === 'ssr',
       resolveId (id) {
-        if (id === '@nuxt/nitro-server/h3') { return getLegacyH3ShimPath() }
+        if (id === '@nuxt/nitro-server/h3') { return getLegacyAppH3ShimPath() }
       },
     })
   }
@@ -417,7 +417,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
       '#internal/nuxt/host': resolve(distDir, nuxt4Host ? 'runtime/host/nuxt4' : 'runtime/host/nuxt5'),
       // Nuxt 4 app code reaches the h3 v1 helpers through this specifier
-      ...nuxt4Host ? { '@nuxt/nitro-server/h3': getLegacyH3ShimPath() } : {},
+      ...nuxt4Host ? { '@nuxt/nitro-server/h3': getLegacyAppH3ShimPath() } : {},
 
       // Vue 3 mocks
       ...nuxt.options.vue.runtimeCompiler
@@ -621,7 +621,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         resolveId: {
           order: 'pre',
           handler (id: string) {
-            if (normalize(id) === hostH3Path) { return getLegacyH3ShimPath() }
+            if (normalize(id) === hostH3Path) { return getLegacyAppH3ShimPath() }
           },
         },
       })
