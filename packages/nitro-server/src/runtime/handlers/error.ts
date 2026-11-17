@@ -8,7 +8,7 @@ import type { SerializedErrorCause } from '#app/types'
 import { serverFetch } from 'nitro'
 
 import { appendVary, isJsonRequest } from 'nuxt/internal/renderer/error'
-import { NUXT_ERROR_SIGNATURE, errorPageQuery } from '#internal/nuxt/host'
+import { NUXT_ERROR_SIGNATURE, errorPageQuery, toJSONErrorBody } from '#internal/nuxt/host'
 import type { SSRErrorInput } from '../host/nuxt4'
 import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
@@ -77,7 +77,8 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
       mergeHeaders(headers, entries, setCookies)
     }
 
-    return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
+    const body = legacyCompat ? toJSONErrorBody(defaultRes.body) : defaultRes.body
+    return new Response(typeof body === 'string' ? body : JSON.stringify(body, null, 2), {
       headers,
       status: defaultRes.status,
       statusText: defaultRes.statusText,

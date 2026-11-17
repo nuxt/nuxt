@@ -24,6 +24,11 @@ export function toRenderResponse (_options: unknown, response: Response): Respon
   return response
 }
 
+/** The JSON error body sent with the legacy layer enabled. */
+export function toJSONErrorBody<T> (body: T): T {
+  return body
+}
+
 /** The route rules the renderer is given for a request. */
 export function withRouteRuleDefaults<T extends object> (rules: T): T {
   return rules

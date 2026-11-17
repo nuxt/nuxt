@@ -4,7 +4,7 @@ import type { H3Event } from 'nitro/h3'
 
 const serverFetch = vi.hoisted(() => vi.fn())
 const observeDevError = vi.hoisted(() => vi.fn())
-const flags = vi.hoisted(() => ({ inlineErrors: false }))
+const flags = vi.hoisted(() => ({ inlineErrors: false, legacyCompat: false, nuxt4Host: false }))
 
 vi.mock('nitro', () => ({ serverFetch }))
 vi.mock('../src/runtime/utils/error-channel', () => ({
@@ -17,6 +17,21 @@ vi.mock('nuxt/internal/renderer-config', async importOriginal => ({
     return flags.inlineErrors
   },
 }))
+vi.mock('#nuxt-compat/flags', () => ({
+  get legacyCompat () {
+    return flags.legacyCompat
+  },
+}))
+vi.mock('#internal/nuxt/host', async (importOriginal) => {
+  const host = await importOriginal<typeof import('#internal/nuxt/host')>()
+  const nuxt4 = await import('../src/runtime/host/nuxt4.ts')
+  return {
+    ...host,
+    toJSONErrorBody: <T>(body: T) => (flags.nuxt4Host ? nuxt4 : host).toJSONErrorBody(body),
+  }
+})
+
+const { docsVersion } = await import('#internal/nuxt/host')
 
 const { default: errorHandler } = await import('../src/runtime/handlers/error.ts')
 
@@ -42,6 +57,8 @@ function handle (error: Error, accept: string, defaults: { status?: number, stat
 
 beforeEach(() => {
   flags.inlineErrors = false
+  flags.legacyCompat = false
+  flags.nuxt4Host = false
   serverFetch.mockReset()
   serverFetch.mockResolvedValue(new Response('<html></html>', { headers: new Headers() }))
   observeDevError.mockReset()
@@ -118,6 +135,34 @@ describe('error handler with inline error rendering', () => {
     expect(await res.json()).toEqual({ status: 401 })
     expect(res.headers.has('vary')).toBe(false)
     expect(serverFetch).not.toHaveBeenCalled()
+  })
+})
+
+describe('JSON error body', () => {
+  const body = { error: true, status: 404, statusText: 'Not Found', message: 'Not Found' }
+
+  it('carries the h3 v1 status keys with the legacy layer on a Nuxt 4 host', async () => {
+    flags.legacyCompat = true
+    flags.nuxt4Host = true
+    const res = await handle(new HTTPError({ status: 404, statusText: 'Not Found' }), 'application/json', { body })
+
+    expect(await res.json()).toEqual({ ...body, statusCode: 404, statusMessage: 'Not Found' })
+  })
+
+  it('carries the h3 v1 status keys with the legacy layer only on a Nuxt 4 host', async () => {
+    flags.legacyCompat = true
+    const res = await handle(new HTTPError({ status: 404, statusText: 'Not Found' }), 'application/json', { body })
+
+    expect(await res.json()).toEqual(docsVersion === '4.x'
+      ? { ...body, statusCode: 404, statusMessage: 'Not Found' }
+      : body)
+  })
+
+  it('is the Nitro body without the legacy layer', async () => {
+    flags.nuxt4Host = true
+    const res = await handle(new HTTPError({ status: 404, statusText: 'Not Found' }), 'application/json', { body })
+
+    expect(await res.json()).toEqual(body)
   })
 })
 
