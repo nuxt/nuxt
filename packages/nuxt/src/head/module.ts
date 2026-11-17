@@ -8,6 +8,7 @@ import { resolveModulePath } from 'exsolve'
 import { streamingIifeCode } from 'unhead/stream/iife'
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
+import { RemoveServerHeadComposablesPlugin } from './plugins/remove-server-head-composables.ts'
 
 // the bootstrap code is a constant, so its content hash is known before the build runs
 const iifeChunkFileName = `streaming-iife.${createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)}.js`
@@ -49,6 +50,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     addBuildPlugin(UnheadImportsPlugin({
       rootDir: nuxt.options.rootDir,
     }))
+    if (!nuxt.options.dev && !nuxt.options.test) {
+      addBuildPlugin(RemoveServerHeadComposablesPlugin(), { server: false })
+    }
 
     // v5 users get tree-shaking via the @unhead/vue/vite plugin registered below.
     // On v4 we fall back to Nuxt's composable tree-shaker so server composables
