@@ -35,6 +35,11 @@ export function withRouteRuleDefaults<T extends object> (rules: T): T {
   return rules
 }
 
+/** The request state of a request the base URL middleware dispatches again without the base URL. */
+export function baseURLDispatchState (_event: RendererEvent): { '~internal': true } {
+  return { '~internal': true }
+}
+
 export function renderPage (renderer: PageRenderer, event: RendererEvent): Promise<Response> {
   return renderer.fetch(event)
 }

@@ -3,6 +3,8 @@
  * implemented for Nuxt 4. Resolved as `#internal/nuxt/host`.
  */
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
+import { H3Event } from 'nitro/h3'
+import type { ServerRequest } from 'srvx'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import { withoutBase } from 'ufo'
 import type { QueryObject } from 'ufo'
@@ -122,7 +124,49 @@ export function withRouteRuleDefaults<T extends object> (rules: T): T & { ssr: b
  */
 export const createRuntimeConfig: <T extends Record<string, any>>(config: T, schema: RuntimeConfigSchemaObject, strictPaths?: string[]) => () => T = createCoreRuntimeConfig
 
-/** Render a page, keeping the headers of a render that fails for the error response. */
+/**
+ * The request state of a request the base URL middleware dispatches again without the base URL.
+ * It keeps the URL the request arrived with, which the app reads as its request URL.
+ */
+export function baseURLDispatchState (event: RendererEvent): RequestURLState {
+  return { '~internal': true, '~requestURL': event.url.href }
+}
+
+interface RequestURLState {
+  '~internal'?: boolean
+  '~requestURL'?: string
+}
+
+/**
+ * Render a page, keeping the headers of a render that fails for the error response.
+ *
+ * The app reads the request URL with the base URL included, while the renderer reads it
+ * relative to the base.
+ */
 export function renderPage (renderer: PageRenderer, event: RendererEvent): Promise<Response> {
+  const url = requestURL(event)
+  if (url !== event.url.href) {
+    event['~app'] = withRequestURL(event, new URL(url))
+  }
   return renderer.fetch(event).catch(error => rethrowWithResponseHeaders(event, error))
+}
+
+/** The URL the request arrived with, in the canonical form h3 gives `event.url`. */
+function requestURL (event: RendererEvent): string {
+  const dispatched = (event.context as { nuxt?: RequestURLState }).nuxt?.['~requestURL']
+  if (dispatched) {
+    return dispatched
+  }
+  const url = event.req.url
+  return url === event.url.href ? url : new H3Event({ url } as ServerRequest).url.href
+}
+
+function withRequestURL (event: RendererEvent, url: URL): NonNullable<RendererEvent['~app']> {
+  const path = event.url.pathname + event.url.search
+  return Object.create(event, {
+    url: { value: url, writable: true, enumerable: true, configurable: true },
+    path: { value: path, writable: true, configurable: true },
+    // h3 creates the response on first read, on the object it is read from
+    res: { value: event.res, enumerable: true, configurable: true },
+  })
 }
