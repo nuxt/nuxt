@@ -124,8 +124,23 @@ export async function readMultipartFormData (event: H3Event): ReturnType<typeof 
   return _readMultipartFormData(await withReplayedBody(event))
 }
 
+/** v1 `readValidatedBody`, validating the body as a strict `readBody` reads it unless a `type` is given. */
 export async function readValidatedBody<T> (event: H3Event, validate: (data: unknown) => T | Promise<T>, options?: { type?: 'json' | 'text' | 'formData' | 'urlencoded' }): Promise<T> {
-  return _readValidatedBody(await withReplayedBody(event), validate as any, options as any) as Promise<T>
+  if (options?.type) {
+    return _readValidatedBody(await withReplayedBody(event), validate as any, options as any) as Promise<T>
+  }
+  const body = await readBody(event, { strict: true })
+  return _readValidatedBody(withJSONBody(event, body), validate as any) as Promise<T>
+}
+
+/** The event with a request carrying `value` as its JSON body, for an h3 helper that parses the body itself. */
+function withJSONBody (event: H3Event, value: unknown): H3Event {
+  const request = new Request(event.req.url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: value === undefined ? undefined : JSON.stringify(value),
+  })
+  return Object.create(event, { req: { value: request, enumerable: true } }) as H3Event
 }
 
 /** v1 `getRequestWebStream`, streaming the buffered body rather than the live request. */

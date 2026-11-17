@@ -361,6 +361,19 @@ describe('v1 body readers', () => {
     await expect(readBody(bodyEvent('hello', 'Application/JSON'))).rejects.toMatchObject({ statusCode: 400 })
   })
 
+  it('validates the body as `readBody` reads it, parsing strictly', async () => {
+    const identity = (data: unknown) => data
+
+    expect(await readValidatedBody(bodyEvent('hello', 'text/plain'), identity)).toBe('hello')
+    expect(await readValidatedBody(bodyEvent('{"a":1}', 'text/plain'), identity)).toBe('{"a":1}')
+    expect(await readValidatedBody(bodyEvent('{"a":1}', 'text/plain'), identity, { type: 'json' })).toEqual({ a: 1 })
+    expect(await readValidatedBody(bodyEvent('name=nuxt', 'application/x-www-form-urlencoded'), identity)).toEqual({ name: 'nuxt' })
+    expect(await readValidatedBody(bodyEvent('{"a":1}', 'application/octet-stream'), identity)).toEqual({ a: 1 })
+    expect(await readValidatedBody(mockEvent('http://nuxt/body', { method: 'POST' }), identity)).toBeUndefined()
+    await expect(readValidatedBody(bodyEvent('hello', 'application/octet-stream'), identity)).rejects.toMatchObject({ status: 400, message: 'Invalid JSON body' })
+    await expect(readValidatedBody(bodyEvent('hello', 'text/plain'), () => false)).rejects.toMatchObject({ status: 400 })
+  })
+
   it('returns the same text body for repeated reads', async () => {
     const event = bodyEvent('hello', 'text/plain')
 
