@@ -101,7 +101,8 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         if (failure) { return removeStale() }
         const unhook = nuxtApp.hooks.hookOnce('page:finish', () => {
           clearTimeout(timeout)
-          removeStale()
+          // after the head's debounced DOM update, so that the page's own links are inserted first
+          setTimeout(removeStale)
         })
         const timeout = setTimeout(() => {
           unhook()
