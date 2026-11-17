@@ -51,6 +51,41 @@ export function getStaticPropertyKey (property: ESTree.ObjectPropertyKind): stri
   }
 }
 
+const COMPONENT_DEFINERS = new Set(['defineComponent', 'defineNuxtComponent'])
+
+/**
+ * The body of the `setup()` option of an Options API default export, if the module has one.
+ * With `exclusive`, nothing is returned when the options are passed to a function other than
+ * `defineComponent` or `defineNuxtComponent`, or when a spread, computed key or second `setup`
+ * in the options could replace it.
+ */
+export function findOptionsApiSetupBody (program: ESTree.Program, { exclusive = false } = {}): Array<ESTree.Node> | undefined {
+  for (const statement of program.body) {
+    if (statement.type !== 'ExportDefaultDeclaration') { continue }
+
+    let declaration = unwrapStaticExpression(statement.declaration as ESTree.Node)
+    // `export default defineComponent({ ... })`
+    if (declaration?.type === 'CallExpression') {
+      if (exclusive && (declaration.callee.type !== 'Identifier' || !COMPONENT_DEFINERS.has(declaration.callee.name))) { return }
+      declaration = unwrapStaticExpression(declaration.arguments[0])
+    }
+    if (declaration?.type !== 'ObjectExpression') { return }
+    if (exclusive && (
+      declaration.properties.some(property => property.type !== 'Property' || property.computed)
+      || declaration.properties.filter(property => getStaticPropertyKey(property) === 'setup').length !== 1
+    )) { return }
+
+    for (const property of declaration.properties) {
+      if (property.type !== 'Property' || property.kind !== 'init' || getStaticPropertyKey(property) !== 'setup') { continue }
+      const value = property.value
+      if ((value.type === 'FunctionExpression' || value.type === 'ArrowFunctionExpression') && value.body?.type === 'BlockStatement') {
+        return value.body.body
+      }
+    }
+    return
+  }
+}
+
 /**
  * Map the bindings introduced by `imports` to their origin. Sources have aliases resolved and
  * extensions stripped.

@@ -5,6 +5,9 @@ export interface ClientHeadState {
   paused: boolean
   head?: VueHeadClient
   render?: () => unknown
+  /** Whether the root component has set up, which is where the hoisted app component head applies. */
+  rootSetup?: boolean
+  pushAppComponentHead?: () => void
 }
 
 /**

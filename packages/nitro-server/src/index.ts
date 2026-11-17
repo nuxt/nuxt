@@ -1167,6 +1167,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       })
     }
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
+    // the renderer config re-exports the head entries hoisted from the app component
+    nuxt.hook('app:templatesGenerated', async (_app, templates) => {
+      if (nitroBuilt && templates.some(template => template.filename === 'unhead.config.mjs')) {
+        await nitro.hooks.callHook('rollup:reload')
+      }
+    })
 
     nuxt.hook('server:devHandler', (h, options) => {
       devMiddlewareHandler.set(defineEventHandler((event) => {
