@@ -74,17 +74,24 @@ interface ReadBodyOptions {
  *
  * Without a `type`, a `text/*` body is returned as text, a urlencoded body as an object,
  * and any other body is parsed as JSON. Parsing is strict for `application/json` and
- * otherwise falls back to the text, unless `strict` says otherwise.
+ * otherwise falls back to the text, unless `strict` says otherwise. The first successful
+ * parse is returned to every later read without a `type`, whatever its `strict`.
  */
 export function readBody<T = any> (event: H3Event, options?: ReadBodyOptions): Promise<T> {
   const context = event.context as Record<symbol, any>
   const cache: Map<string, Promise<any>> = context[kParsedBody] ||= new Map()
   const type = options?.type
-  const key = type || `auto:${options?.strict ?? ''}`
+  const key = type || 'auto'
   if (!cache.has(key)) {
-    cache.set(key, type
+    const parsed = type
       ? withReplayedBody(event).then(replayed => _readBody(replayed, { type } as any))
-      : parseBody(event, options?.strict))
+      : parseBody(event, options?.strict)
+    cache.set(key, parsed)
+    parsed.catch(() => {
+      if (cache.get(key) === parsed) {
+        cache.delete(key)
+      }
+    })
   }
   return cache.get(key)!
 }
@@ -124,8 +131,23 @@ export async function readMultipartFormData (event: H3Event): ReturnType<typeof 
   return _readMultipartFormData(await withReplayedBody(event))
 }
 
+/** v1 `readValidatedBody`, validating the body as a strict `readBody` reads it unless a `type` is given. */
 export async function readValidatedBody<T> (event: H3Event, validate: (data: unknown) => T | Promise<T>, options?: { type?: 'json' | 'text' | 'formData' | 'urlencoded' }): Promise<T> {
-  return _readValidatedBody(await withReplayedBody(event), validate as any, options as any) as Promise<T>
+  if (options?.type) {
+    return _readValidatedBody(await withReplayedBody(event), validate as any, options as any) as Promise<T>
+  }
+  const body = await readBody(event, { strict: true })
+  return _readValidatedBody(withJSONBody(event, body), validate as any) as Promise<T>
+}
+
+/** The event with a request carrying `value` as its JSON body, for an h3 helper that parses the body itself. */
+function withJSONBody (event: H3Event, value: unknown): H3Event {
+  const request = new Request(event.req.url, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: value === undefined ? undefined : JSON.stringify(value),
+  })
+  return Object.create(event, { req: { value: request, enumerable: true } }) as H3Event
 }
 
 /** v1 `getRequestWebStream`, streaming the buffered body rather than the live request. */

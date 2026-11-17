@@ -77,6 +77,19 @@ describe('nuxt 4 renderer host', () => {
     expect((failed.context as { nuxt?: Record<string, unknown> }).nuxt?.['~response-headers']).toBe(failed.res.headers)
   })
 
+  it('adds the h3 v1 status keys to a JSON error body', () => {
+    expect(nuxt4.toJSONErrorBody({ error: true, status: 404, statusText: 'Not Found', message: 'Not Found' })).toEqual({
+      error: true,
+      status: 404,
+      statusText: 'Not Found',
+      statusCode: 404,
+      statusMessage: 'Not Found',
+      message: 'Not Found',
+    })
+    expect(nuxt4.toJSONErrorBody({ error: true, status: 500, unhandled: true })).toEqual({ error: true, status: 500, statusCode: 500, unhandled: true })
+    expect(nuxt4.toJSONErrorBody('Redirecting...')).toBe('Redirecting...')
+  })
+
   it('reports a route without an `ssr` rule as opted out of rendering', () => {
     expect(nuxt4.withRouteRuleDefaults({})).toEqual({ ssr: false })
     expect(nuxt4.withRouteRuleDefaults({ ssr: true, noScripts: true })).toEqual({ ssr: true, noScripts: true })

@@ -1634,6 +1634,8 @@ describe.skipIf(!errorProjects)('errors', () => {
         error: true,
         message: 'Page Not Found: /__nuxt_error',
         status: 404,
+        statusCode: 404,
+        statusMessage: 'Page Not Found: /__nuxt_error',
         statusText: 'Page Not Found: /__nuxt_error',
       })
       return

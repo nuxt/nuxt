@@ -88,12 +88,14 @@ const READ_BUDGET_MS = 50
 
 /**
  * The text of a response body, read from a clone if the whole body arrives within the
- * current turn and the read budget. A body still being produced is left to stream: the
+ * current turn and the read budget. A body of declared length, such as a blob or a file, has
+ * the whole read budget to arrive. A body still being produced is left to stream: the
  * clone is cancelled, which leaves the response itself untouched.
  */
 async function readBodyInHand (response: Response): Promise<string | undefined | typeof LIVE> {
   let timer: ReturnType<typeof setTimeout> | undefined
-  const turn = new Promise<typeof LIVE>((resolve) => { timer = setTimeout(resolve, 0, LIVE) })
+  const wait = response.headers.has('content-length') ? READ_BUDGET_MS : 0
+  const turn = new Promise<typeof LIVE>((resolve) => { timer = setTimeout(resolve, wait, LIVE) })
   try {
     const reader = response.clone().body?.getReader()
     if (!reader) {
