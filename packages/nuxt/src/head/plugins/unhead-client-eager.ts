@@ -27,8 +27,14 @@ function staticString (node: ESTree.Node): string | undefined {
   if (node.type === 'TemplateLiteral' && !node.expressions.length) { return node.quasis[0]?.value.cooked ?? undefined }
 }
 
-function isTypeOnlyPosition (parent: ESTree.Node | null) {
-  return !!parent?.type.startsWith('TS') && parent.type !== 'TSExternalModuleReference'
+/** Whether `node` is the specifier of a dynamic import, `require()`-like call or `import x = require()`. */
+function isModuleReference (node: ESTree.Node, parent: ESTree.Node | null) {
+  switch (parent?.type) {
+    case 'ImportExpression': return parent.source === node
+    case 'CallExpression': return parent.arguments.includes(node as ESTree.Argument)
+    case 'TSExternalModuleReference': return true
+  }
+  return false
 }
 
 interface UnheadClientEagerPluginOptions {
@@ -50,25 +56,20 @@ export const UnheadClientEagerPlugin = (options: UnheadClientEagerPluginOptions)
       handler (code, id, meta?: unknown) {
         let injects = false
         const nonInjectingImports = id.startsWith('virtual:') ? PURE_EXPORTS : NON_INJECTING_IMPORTS
-        const classifiedSources = new Set<ESTree.Node>()
         parseAndWalk(code, id, function (node, parent) {
           if (injects) { return }
           if (node.type === 'ImportDeclaration') {
-            classifiedSources.add(node.source)
             if (node.importKind === 'type' || !INJECTING_ENTRIES.has(String(node.source.value))) { return }
             injects = node.specifiers.some(specifier =>
               specifier.type !== 'ImportSpecifier'
               || (specifier.importKind !== 'type' && !nonInjectingImports.has(specifierName(specifier.imported))),
             )
           } else if (node.type === 'ExportNamedDeclaration' && node.source) {
-            classifiedSources.add(node.source)
             injects = node.exportKind !== 'type' && INJECTING_ENTRIES.has(String(node.source.value))
               && node.specifiers.some(specifier => specifier.exportKind !== 'type' && !PURE_EXPORTS.has(specifierName(specifier.local)))
           } else if (node.type === 'ExportAllDeclaration') {
-            classifiedSources.add(node.source)
             injects = node.exportKind !== 'type' && INJECTING_ENTRIES.has(String(node.source.value))
-          } else if (!classifiedSources.has(node) && !isTypeOnlyPosition(parent)) {
-            // any other reference to an entry, such as a dynamic import or `require()`
+          } else if (isModuleReference(node, parent)) {
             const value = staticString(node)
             injects = value !== undefined && INJECTING_ENTRIES.has(value)
           }

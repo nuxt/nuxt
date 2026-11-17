@@ -28,6 +28,7 @@ describe('UnheadClientEagerPlugin', () => {
     ['non-injecting entries', `import { createHead } from '@unhead/vue/server'`],
     ['client constructors', `import { createHead, renderDOMHead } from '@unhead/vue/client'`],
     ['other strings', `const message = 'import from @unhead/vue'`],
+    ['entry names used as values', `export const packageName = '@unhead/vue'`],
     ['pure helper re-exports', `export { defineLink, defineScript as script } from '@unhead/vue'`],
     ['type-only re-exports', `export type { VueHeadClient } from '@unhead/vue'`],
   ])('should not transform %s', async (_, code) => {
@@ -51,9 +52,14 @@ describe('UnheadClientEagerPlugin', () => {
     ['dynamic imports', `const { useScript } = await import('@unhead/vue/scripts')`],
     ['template literal dynamic imports', 'const { useHead } = await import(`@unhead/vue`)'],
     ['require calls', `const { useHead } = require('@unhead/vue')`],
+    ['bundler require calls', `const { useHead } = __require("@unhead/vue")`],
     ['the client mixin', `import { VueHeadMixin } from '@unhead/vue/client'`],
   ])('should import the eager client head for %s', async (_, code) => {
     expect(await transform(code)).toMatch(/^import "\/nuxt\/head\/runtime\/client-head-eager";\n/)
+  })
+
+  it('should import the eager client head for TypeScript import-equals declarations', async () => {
+    expect(await transform(`import unhead = require('@unhead/vue')`, '/project/plugins/head.ts')).toMatch(/^import "\/nuxt\/head\/runtime\/client-head-eager";\n/)
   })
 
   it('should import the eager client head for composables imported in virtual modules', async () => {
