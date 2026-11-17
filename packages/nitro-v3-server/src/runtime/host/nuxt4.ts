@@ -1,6 +1,6 @@
 /**
- * What the handlers of this builder need from the renderer of the Nuxt version they are
- * built for, implemented for the Nuxt 4 renderer. Resolved as `#internal/nuxt/host`.
+ * What the server runtime of this builder needs from the Nuxt version it is built for,
+ * implemented for Nuxt 4. Resolved as `#internal/nuxt/host`.
  */
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
@@ -9,6 +9,8 @@ import type { QueryObject } from 'ufo'
 import { mergeHeaders } from 'nuxt/internal/renderer/headers'
 import { getRequestState } from 'nuxt/internal/renderer/runtime'
 import type { NuxtRendererOptions, RendererEvent } from 'nuxt/internal/renderer/runtime'
+import { createRuntimeConfig as createCoreRuntimeConfig } from 'nuxt/internal/runtime-config'
+import type { RuntimeConfigSchemaObject } from '@nuxt/schema/internal'
 import type { NuxtPayload, SerializedErrorCause } from '#app/types'
 
 import { withBaseURL } from '../utils/base'
@@ -113,6 +115,12 @@ export function toJSONErrorBody<T> (body: T): T {
 export function withRouteRuleDefaults<T extends object> (rules: T): T & { ssr: boolean } {
   return { ssr: false, ...rules }
 }
+
+/**
+ * Create `useRuntimeConfig` from the serialised runtime config. With `strictPaths`, only issues
+ * with values at or below one of those paths stop the server, and the rest only warn.
+ */
+export const createRuntimeConfig: <T extends Record<string, any>>(config: T, schema: RuntimeConfigSchemaObject, strictPaths?: string[]) => () => T = createCoreRuntimeConfig
 
 /** Render a page, keeping the headers of a render that fails for the error response. */
 export function renderPage (renderer: PageRenderer, event: RendererEvent): Promise<Response> {

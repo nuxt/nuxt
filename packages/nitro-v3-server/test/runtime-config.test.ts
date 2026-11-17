@@ -1,9 +1,13 @@
 import { dirname, join } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { rolldown } from 'rolldown'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { runtimeConfigPlugin } from '../src/runtime-config.ts'
+
+vi.mock('#nitro/virtual/runtime-config', () => ({ runtimeConfig: { apiSecret: '' } }))
+vi.mock('#internal/nuxt/runtime-config-schema', () => ({ default: { p: { apiSecret: 's' } }, strictPaths: ['apiSecret'] }))
+vi.mock('#internal/nuxt/host', () => ({ createRuntimeConfig: vi.fn(() => () => ({})) }))
 
 const RUNTIME_CONFIG = '/nuxt/nitro-server/dist/runtime/runtime-config'
 
@@ -90,5 +94,14 @@ describe('runtimeConfigPlugin', () => {
 
   it('should throw in strict mode when no implementation was replaced', async () => {
     await expect(bundle(`export const useRuntimeConfig = () => ({})`, true)).rejects.toThrow('NUXT_B9012')
+  })
+})
+
+describe('useRuntimeConfig', () => {
+  it('should create the runtime config of the host with the strict paths of the schema', async () => {
+    const { createRuntimeConfig } = await import('#internal/nuxt/host')
+    await import('../src/runtime/runtime-config.ts')
+
+    expect(createRuntimeConfig).toHaveBeenCalledWith({ apiSecret: '' }, { p: { apiSecret: 's' } }, ['apiSecret'])
   })
 })

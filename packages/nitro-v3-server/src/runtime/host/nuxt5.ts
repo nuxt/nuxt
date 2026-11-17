@@ -1,6 +1,6 @@
 /**
- * What the handlers of this builder need from the renderer of the Nuxt version they are
- * built for. Resolved as `#internal/nuxt/host`.
+ * What the server runtime of this builder needs from the Nuxt version it is built for.
+ * Resolved as `#internal/nuxt/host`.
  */
 import { SSR_ERROR_PARAM, encodeSSRError } from 'nuxt/internal/renderer/error'
 import type { RendererEvent } from 'nuxt/internal/renderer/runtime'
@@ -11,6 +11,7 @@ import type { PageRenderer, SSRErrorInput } from './nuxt4'
 export { NUXT_ERROR_SIGNATURE } from 'nuxt/internal/renderer/error'
 export { rethrowWithResponseHeaders, returnRenderResponse } from 'nuxt/internal/renderer/app'
 export { patchDevClientCss } from 'nuxt/internal/renderer/dev-css'
+export { createRuntimeConfig } from 'nuxt/internal/runtime-config'
 
 export const docsVersion = '5.x'
 
