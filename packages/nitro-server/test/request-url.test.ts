@@ -67,6 +67,13 @@ describe.each([
     expect((app as { path?: string }).path).toBe('/url?a=1')
   })
 
+  it('gives the app the URL the request arrived with in canonical form', async () => {
+    const { rendererURL, app } = await renderPage('http://example.com/foo/%61dmin?a=%61')
+
+    expect(new URL(rendererURL).pathname).toBe('/admin')
+    expect(getRequestURL(app).href).toBe('http://example.com/foo/admin?a=%61')
+  })
+
   it('applies forwarded headers to the URL the request arrived with', async () => {
     const { app } = await renderPage('http://example.com/foo/url', { 'x-forwarded-host': 'proxy.example', 'x-forwarded-proto': 'https' })
 
@@ -79,6 +86,14 @@ describe('nuxt 4 request event', () => {
   it('is the render event for a request without a base URL', async () => {
     rendered = undefined
     const event = new H3Event(request('http://example.com/url'))
+    await nuxt4.renderPage(renderer, event as unknown as RendererEvent)
+
+    expect(rendered!.app).toBe(event)
+  })
+
+  it('is the render event for a non-canonical request without a base URL', async () => {
+    rendered = undefined
+    const event = new H3Event(request('http://example.com/%61dmin'))
     await nuxt4.renderPage(renderer, event as unknown as RendererEvent)
 
     expect(rendered!.app).toBe(event)
