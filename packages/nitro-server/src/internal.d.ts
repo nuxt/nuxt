@@ -16,6 +16,7 @@ declare module '#internal/dev-server-logs-options'
 declare module '#internal/nuxt/runtime-config-schema' {
   const schema: import('@nuxt/schema/internal').RuntimeConfigSchemaObject
   export default schema
+  export const strictPaths: string[] | undefined
 }
 declare module '#nitro/virtual/runtime-config' {
   export const runtimeConfig: import('nitro/types').NitroRuntimeConfig

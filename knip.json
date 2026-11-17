@@ -106,6 +106,12 @@
       },
       "ignoreDependencies": ["@rsbuild/plugin-pug", "pug"]
     },
+    "test/fixtures/unhead-duplicate": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "ignoreDependencies": ["unhead"]
+    },
     "packages/nitro-server": {
       "entry": [
         "src/runtime/**/*.{js,ts,mjs}!"
