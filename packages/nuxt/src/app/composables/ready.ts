@@ -17,10 +17,10 @@ export interface OnNuxtReadyOptions {
 export const onNuxtReady = (callback: () => any, options?: OnNuxtReadyOptions): void => {
   if (import.meta.server || options?.signal?.aborted) { return }
 
+  const nuxtApp = useNuxtApp()
   const run = () => {
     if (!options?.signal?.aborted) { nuxtApp.runWithContext(callback) }
   }
-  const nuxtApp = useNuxtApp()
   if (nuxtApp.isHydrating) {
     nuxtApp.hooks.hookOnce('app:suspense:resolve', () => { requestIdleCallback(run, options) })
   } else {
