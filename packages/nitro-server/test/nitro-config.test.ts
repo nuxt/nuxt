@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { isAbsolute, join, resolve } from 'pathe'
-import { directoryToURL, isNuxtMajorVersion, loadNuxt } from '@nuxt/kit'
+import { directoryToURL, isNuxtMajorVersion, loadNuxt, updateRuntimeConfig } from '@nuxt/kit'
+import { z } from 'zod'
 import { createNitro } from 'nitro/builder'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import type { Nitro, NitroConfig } from 'nitro/types'
@@ -19,7 +20,8 @@ const serverReplacements = (nuxt: Nuxt) => ({
   'import.meta.test': 'false',
 })
 
-const getSchema = (nitro: Nitro) => JSON.parse((nitro.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] as () => string)().replace(/^export default /, ''))
+const loadSchemaModule = (nitro: Nitro): Promise<{ default: Record<string, any>, strictPaths?: string[] }> =>
+  import(`data:text/javascript,${encodeURIComponent((nitro.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] as () => string)())}`)
 
 const asNuxtMajor = (major: number) => (_options: unknown, nuxt: Nuxt) => {
   nuxt._version = `${major}.0.0`
@@ -76,10 +78,27 @@ describe('nitro config', () => {
       } as unknown as Nitro
       await nitro.hooks.callHook('prerender:init', prerenderer)
 
-      expect(getSchema(nitro).p.assets).toEqual({ p: { dir: 's' } })
-      expect(getSchema(prerenderer).p.assets).toEqual({ p: { dir: { a: 's' } } })
+      expect((await loadSchemaModule(nitro)).default.p.assets).toEqual({ p: { dir: 's' } })
+      expect((await loadSchemaModule(prerenderer)).default.p.assets).toEqual({ p: { dir: { a: 's' } } })
     })
   }, 60_000)
+
+  it.for([
+    [4, 4, ['apiSecret']],
+    [4, 5, undefined],
+    [5, 5, undefined],
+  ] as const)('emits the strict runtime config paths of a Nuxt %i app with `compatibilityVersion: %i`', async ([major, compatibilityVersion, strictPaths]) => {
+    const schemaModule = (_options: unknown, nuxt: Nuxt) => {
+      nuxt._version = `${major}.0.0`
+      ;(nuxt.options.future as { compatibilityVersion: number }).compatibilityVersion = compatibilityVersion
+      updateRuntimeConfig({ moduleToken: z.string().default('token') })
+    }
+    await withNitro({ modules: [schemaModule], runtimeConfig: { apiSecret: z.string().default('secret') } as NuxtConfig['runtimeConfig'] }, async (nitro) => {
+      const { default: schema, strictPaths: emitted } = await loadSchemaModule(nitro)
+      expect(Object.keys(schema.p)).toEqual(expect.arrayContaining(['apiSecret', 'moduleToken']))
+      expect(emitted).toEqual(strictPaths)
+    })
+  })
 
   it.for([true, false])('registers routes at the root for a relative `app.baseURL` when static is %s', async (isStatic) => {
     await withNitro({ app: { baseURL: './' }, nitro: { static: isStatic } }, (nitro, _nitroConfig, nuxt) => {
