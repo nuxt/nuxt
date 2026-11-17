@@ -90,7 +90,7 @@ export function readBody<T = any> (event: H3Event, options?: ReadBodyOptions): P
 }
 
 async function parseBody (event: H3Event, strict?: boolean): Promise<any> {
-  const contentType = event.req.headers.get('content-type') || ''
+  const contentType = (event.req.headers.get('content-type') || '').toLowerCase()
   if (contentType.startsWith('application/x-www-form-urlencoded')) {
     return _readBody(await withReplayedBody(event), { type: 'urlencoded' } as any)
   }

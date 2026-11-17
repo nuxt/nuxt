@@ -355,6 +355,12 @@ describe('v1 body readers', () => {
     await expect(readBody(bodyEvent('hello', 'application/octet-stream'), { strict: true })).rejects.toMatchObject({ statusCode: 400 })
   })
 
+  it('matches the content type case-insensitively', async () => {
+    expect(await readBody(bodyEvent('name=nuxt', 'Application/X-WWW-Form-Urlencoded'))).toEqual({ name: 'nuxt' })
+    expect(await readBody(bodyEvent('{"a":1}', 'Text/Plain'))).toBe('{"a":1}')
+    await expect(readBody(bodyEvent('hello', 'Application/JSON'))).rejects.toMatchObject({ statusCode: 400 })
+  })
+
   it('returns the same text body for repeated reads', async () => {
     const event = bodyEvent('hello', 'text/plain')
 
