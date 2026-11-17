@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
@@ -29,14 +29,25 @@ const asNuxtMajor = (major: number) => (_options: unknown, nuxt: Nuxt) => {
   nuxt._version = `${major}.0.0`
 }
 
-const findH3RuntimePlugin = (nitroConfig: NitroConfig) => ([nitroConfig.rollupConfig!.plugins].flat() as Array<{ name?: string, resolveId: { handler: (id: string) => string | undefined } }>)
+const findH3RuntimePlugin = (nitroConfig: NitroConfig) => ([nitroConfig.rollupConfig!.plugins].flat() as Array<{ name?: string, resolveId: { handler: (id: string) => string | undefined | Promise<string | undefined> } }>)
   .find(plugin => plugin?.name === 'nuxt:nitro:h3-v1-runtime')
 
 async function findViteH3RuntimePlugin (nuxt: Nuxt) {
   const config = { environments: { ssr: {}, client: {} }, plugins: [] }
   await nuxt.callHook('vite:extend', { nuxt, config } as any)
-  return (config.plugins.flat() as Array<{ name?: string, applyToEnvironment: (environment: { name: string }) => boolean, resolveId: (id: string) => string | undefined }>)
+  return (config.plugins.flat() as Array<{ name?: string, applyToEnvironment: (environment: { name: string }) => boolean, resolveId: (id: string, importer?: string) => string | undefined }>)
     .find(plugin => plugin?.name === 'nuxt:nitro:h3-v1-runtime')
+}
+
+function h3Entry (major: '1' | '2') {
+  if (major === '2') {
+    return resolveModulePath('h3', { from: import.meta.url })
+  }
+  const dir = join(mkdtempSync(join(tmpdir(), 'nitro-h3-v1-')), 'node_modules/h3')
+  mkdirSync(join(dir, 'dist'), { recursive: true })
+  writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'h3', version: '1.15.11', exports: { '.': { types: './dist/index.d.ts', import: './dist/index.mjs', require: './dist/index.cjs' } } }))
+  writeFileSync(join(dir, 'dist/index.mjs'), '')
+  return join(dir, 'dist/index.mjs')
 }
 
 const hasBundledVuePlugin = (nitroConfig: NitroConfig) => (nitroConfig.rollupConfig!.plugins as Array<{ name?: string }>).some(plugin => plugin?.name === 'nuxt:bundled-vue')
@@ -338,23 +349,44 @@ describe('nitro config', () => {
   })
 
   it('resolves the h3 v1 helpers of a Nuxt 4 app to the app h3 v1 shim', async () => {
-    await withNitro({ modules: [asNuxtMajor(4)] }, async (_nitro, nitroConfig, nuxt) => {
+    await withNitro({ modules: [asNuxtMajor(4)], nitroLegacy: { h3: false } }, async (_nitro, nitroConfig, nuxt) => {
       const plugin = findH3RuntimePlugin(nitroConfig)
       const entry = resolveModulePath('@nuxt/nitro-server/h3', { from: directoryToURL(nuxt.options.appDir) })
       expect(nitroConfig.alias!['@nuxt/nitro-server/h3']).toMatch(/runtime\/compat\/h3-v1-app\.[mt]s$/)
-      expect(plugin!.resolveId.handler(entry)).toMatch(/runtime\/compat\/h3-v1-app\.[mt]s$/)
-      expect(plugin!.resolveId.handler('h3')).toBeUndefined()
+      expect(await plugin!.resolveId.handler(entry)).toMatch(/runtime\/compat\/h3-v1-app\.[mt]s$/)
+      expect(await plugin!.resolveId.handler('h3')).toBeUndefined()
+      expect(await plugin!.resolveId.handler(h3Entry('1'))).toBeUndefined()
 
       const vitePlugin = await findViteH3RuntimePlugin(nuxt)
       expect(vitePlugin!.applyToEnvironment({ name: 'ssr' })).toBe(true)
       expect(vitePlugin!.applyToEnvironment({ name: 'client' })).toBe(false)
       expect(vitePlugin!.resolveId('@nuxt/nitro-server/h3')).toMatch(/runtime\/compat\/h3-v1-app\.[mt]s$/)
-      expect(vitePlugin!.resolveId('h3')).toBeUndefined()
+      expect(vitePlugin!.resolveId('h3', join(nuxt.options.srcDir, 'components/Test.vue'))).toBeUndefined()
+    })
+  })
+
+  it('resolves `h3` in the server build of a Nuxt 4 app to the app h3 v1 shim with `nitroLegacy.h3`', async () => {
+    await withNitro({ modules: [asNuxtMajor(4)], nitroLegacy: { h3: true } }, async (_nitro, nitroConfig, nuxt) => {
+      const appShim = /runtime\/compat\/h3-v1-app\.[mt]s$/
+      const vitePlugin = await findViteH3RuntimePlugin(nuxt)
+      expect(vitePlugin!.applyToEnvironment({ name: 'client' })).toBe(false)
+      expect(vitePlugin!.resolveId('h3', join(nuxt.options.srcDir, 'components/Test.vue'))).toMatch(appShim)
+      expect(vitePlugin!.resolveId('h3', '/project/node_modules/some-module/dist/runtime/components/Test.vue')).toMatch(appShim)
+      expect(vitePlugin!.resolveId('h3', '/project/node_modules/nitro/lib/h3.mjs')).toBeUndefined()
+      expect(vitePlugin!.resolveId('h3', '/project/node_modules/.pnpm/h3@2.0.0/node_modules/h3/dist/index.mjs')).toBeUndefined()
+      expect(vitePlugin!.resolveId('h3/rules', join(nuxt.options.srcDir, 'components/Test.vue'))).toBeUndefined()
+
+      const plugin = findH3RuntimePlugin(nitroConfig)
+      expect(nitroConfig.alias!.h3).toBeUndefined()
+      expect(await plugin!.resolveId.handler('h3')).toBeUndefined()
+      expect(await plugin!.resolveId.handler(h3Entry('1'))).toMatch(appShim)
+      expect(await plugin!.resolveId.handler(h3Entry('2'))).toMatch(appShim)
+      expect(await plugin!.resolveId.handler(resolveModulePath('h3/rules', { from: import.meta.url }))).toBeUndefined()
     })
   })
 
   it('leaves the h3 helpers of a Nuxt 5 app unaliased', async () => {
-    await withNitro({ modules: [asNuxtMajor(5)] }, async (_nitro, nitroConfig, nuxt) => {
+    await withNitro({ modules: [asNuxtMajor(5)], nitroLegacy: true }, async (_nitro, nitroConfig, nuxt) => {
       expect(nitroConfig.alias!['@nuxt/nitro-server/h3']).toBeUndefined()
       expect(findH3RuntimePlugin(nitroConfig)).toBeUndefined()
       expect(await findViteH3RuntimePlugin(nuxt)).toBeUndefined()

@@ -31,7 +31,7 @@ export interface NitroLegacyOptions {
    * and auto-import from subdirectories of `server/utils/`.
    */
   imports?: boolean
-  /** Resolve `h3` to the bundled h3 v1 helper shim. */
+  /** Resolve `h3` to the bundled h3 v1 helpers in server code and, on Nuxt 4, in the server build of the app. */
   h3?: boolean
   /** Resolve `nitropack`, `nitropack/runtime` and `#internal/nitro` to their Nitro v3 equivalents. */
   specifiers?: boolean
