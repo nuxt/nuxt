@@ -45,4 +45,9 @@ describe('UnheadClientEagerPlugin', () => {
   ])('should import the eager client head for %s', async (_, code) => {
     expect(await transform(code)).toMatch(/^import "\/nuxt\/head\/runtime\/client-head-eager";\n/)
   })
+
+  it('should import the eager client head for composables imported in virtual modules', async () => {
+    expect(await transform(`import { useHead } from '@unhead/vue'`, 'virtual:nuxt:/project/.nuxt/my-module-plugin.mjs')).toMatch(/^import "\/nuxt\/head\/runtime\/client-head-eager";\n/)
+    expect(await transform(`import { defineLink } from '@unhead/vue'`, 'virtual:nuxt:/project/.nuxt/my-module-plugin.mjs')).toBeUndefined()
+  })
 })

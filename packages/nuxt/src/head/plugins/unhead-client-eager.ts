@@ -12,7 +12,7 @@ const PURE_EXPORTS = new Set([
   'resolveUnrefHeadInput',
   'unheadVueComposablesImports',
 ])
-// imports of these composables are rewritten to Nuxt's own by `UnheadImportsPlugin`; re-exports are not
+// imports of these composables outside virtual modules are rewritten to Nuxt's own by `UnheadImportsPlugin`; re-exports are not
 const NON_INJECTING_IMPORTS = new Set([...unheadVueComposablesImports['@unhead/vue'], ...PURE_EXPORTS])
 
 function specifierName (node: { type: string, name?: string, value?: unknown }) {
@@ -37,13 +37,14 @@ export const UnheadClientEagerPlugin = (options: UnheadClientEagerPluginOptions)
       },
       handler (code, id, meta?: unknown) {
         let injects = false
+        const nonInjectingImports = id.startsWith('virtual:') ? PURE_EXPORTS : NON_INJECTING_IMPORTS
         parseAndWalk(code, id, function (node) {
           if (injects) { return }
           if (node.type === 'ImportDeclaration') {
             if (node.importKind === 'type' || !INJECTING_ENTRIES.has(String(node.source.value))) { return }
             injects = node.specifiers.some(specifier =>
               specifier.type !== 'ImportSpecifier'
-              || (specifier.importKind !== 'type' && !NON_INJECTING_IMPORTS.has(specifierName(specifier.imported))),
+              || (specifier.importKind !== 'type' && !nonInjectingImports.has(specifierName(specifier.imported))),
             )
           } else if (node.type === 'ExportNamedDeclaration' && node.source && node.exportKind !== 'type') {
             injects = INJECTING_ENTRIES.has(String(node.source.value))
