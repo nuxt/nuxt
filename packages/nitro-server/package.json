@@ -66,6 +66,7 @@
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
+    "unimport": "catalog:build",
     "unrouting": "catalog:build",
     "unstorage": "catalog:nitro-runtime",
     "vue": "catalog:app-runtime",
