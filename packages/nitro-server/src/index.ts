@@ -39,6 +39,7 @@ import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPl
 import { addDevServerHandlers, collectServerRegistrations, toPortableDevHandlers } from './registrations.ts'
 import { nitroInternalApiTemplate, nitroSchemaTemplate } from './templates.ts'
 import { setupVuePackage } from './vue-package.ts'
+import { createModuleRuntimeFilter, setupModuleRuntimeImports } from './module-imports.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
 export type { NuxtTracingChannelOptions } from './augments.ts'
@@ -50,6 +51,27 @@ const REQUEST_TYPES_MODULE = '@nuxt/nitro-server/request-types'
 
 const UNHEAD_IMPORT_RE = /^unhead(?:\/|$)/
 const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
+
+const h3Presets = [
+  {
+    from: 'h3',
+    imports: [
+      'H3Event',
+      'H3Error',
+    ],
+  },
+  {
+    from: 'h3',
+    type: true,
+    imports: [
+      'EventHandler',
+      'EventHandlerRequest',
+      'EventHandlerResponse',
+      'EventHandlerObject',
+      'H3EventContext',
+    ],
+  },
+]
 
 const logLevelMapReverse = {
   silent: 0,
@@ -333,28 +355,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           priority: -1,
         },
       ],
-      presets: nuxt.options.experimental.nitroAutoImports
-        ? [
-            {
-              from: 'h3',
-              imports: [
-                'H3Event',
-                'H3Error',
-              ],
-            },
-            {
-              from: 'h3',
-              type: true,
-              imports: [
-                'EventHandler',
-                'EventHandlerRequest',
-                'EventHandlerResponse',
-                'EventHandlerObject',
-                'H3EventContext',
-              ],
-            },
-          ]
-        : [],
+      presets: nuxt.options.experimental.nitroAutoImports ? [...h3Presets] : [],
       exclude: [...excludePattern, /[\\/]\.git[\\/]/],
     },
     esbuild: {
@@ -730,16 +731,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   collectServerRegistrations(nuxt, nitroConfig)
 
   if (!nuxt.options.experimental.nitroAutoImports && nitroConfig.imports) {
-    // nitropack appends its h3 and runtime presets while resolving options, before modules run
-    const presetCount = nitroConfig.imports.presets?.length ?? 0
-    nitroConfig.modules = [
-      (nitro) => {
-        if (nitro.options.imports) {
-          nitro.options.imports.presets.splice(presetCount)
-        }
-      },
-      ...nitroConfig.modules || [],
-    ]
+    await setupModuleRuntimeImports(nitroConfig, h3Presets, createModuleRuntimeFilter(modules))
   }
 
   if (nitroConfig.static && nuxt.options.dev) {

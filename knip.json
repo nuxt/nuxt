@@ -66,6 +66,12 @@
       ],
       "ignoreDependencies": ["duplicate-vue-ui", "@vue/runtime-core"]
     },
+    "test/fixtures/nitro-module-imports": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "ignoreDependencies": ["installed-module"]
+    },
     "test/fixtures/basic": {
       "entry": [
         "**/*.{js,ts,tsx,mjs,mts,vue}!"

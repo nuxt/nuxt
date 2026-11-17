@@ -57,6 +57,46 @@ describe('loadNuxt', () => {
     }
     expect(names).toEqual(expect.arrayContaining(['useLayerPrecedence', 'autoimportedFunction', 'someUtils', '__buildAssetsURL', 'defineAppConfig']))
   })
+
+  it('keeps h3 and nitro helpers for module runtime code when nitro compat auto-imports are opted out', async () => {
+    const transform = await getModuleImportsTransform({ experimental: { nitroAutoImports: false } })
+    const code = [
+      `import { useRuntimeConfig } from '#imports'`,
+      `export default defineEventHandler(event => [getQuery(event), useRuntimeConfig(event), someUtils])`,
+    ].join('\n')
+
+    const result = await transform!(code, join(fixtureDir, 'modules/auto-registered/runtime/server/handler.ts'))
+    expect(result?.code.replaceAll(fixtureDir, '<rootDir>')).toMatchInlineSnapshot(`
+      "import { defineEventHandler, getQuery } from 'h3';
+      import { someUtils } from '<rootDir>/modules/auto-registered/runtime/some-server-import';
+      import { useRuntimeConfig } from 'nitropack/runtime/internal/config';
+      export default defineEventHandler(event => [getQuery(event), useRuntimeConfig(event), someUtils])"
+    `)
+
+    expect(await transform!(code, join(fixtureDir, 'server/api/handler.ts'))).toBeUndefined()
+    expect(await transform!(code, join(fixtureDir, 'modules/auto-registered/runtime/node_modules/dep/index.js'))).toBeUndefined()
+  })
+
+  it('does not auto-import into module runtime code matched by a glob in `nitro.imports.exclude`', async () => {
+    const transform = await getModuleImportsTransform({
+      experimental: { nitroAutoImports: false },
+      nitro: { imports: { exclude: [join(fixtureDir, 'modules/auto-registered/runtime/server/**')] } },
+    })
+    const code = [
+      `import { useRuntimeConfig } from '#imports'`,
+      `export default defineEventHandler(event => useRuntimeConfig(event))`,
+    ].join('\n')
+
+    const result = await transform!(code, join(fixtureDir, 'modules/auto-registered/runtime/server/handler.ts'))
+    expect(result?.code).toMatchInlineSnapshot(`
+      "import { useRuntimeConfig } from 'nitropack/runtime/internal/config';
+      export default defineEventHandler(event => useRuntimeConfig(event))"
+    `)
+  })
+
+  it('leaves module runtime code to nitro auto-imports by default', async () => {
+    expect(await getModuleImportsTransform()).toBeUndefined()
+  })
 })
 
 function normalizePaths (arr: unknown[]) {
@@ -104,6 +144,25 @@ async function getNitroImportNames (overrides?: NuxtConfig) {
   })
   await nuxt.close()
   return names
+}
+
+async function getModuleImportsTransform (overrides?: NuxtConfig) {
+  let transform: ((code: string, id: string) => Promise<{ code: string } | undefined>) | undefined
+  const nuxt = await loadNuxt({
+    cwd: fixtureDir,
+    ready: true,
+    overrides: {
+      ...overrides,
+      hooks: {
+        'nitro:init' (nitro) {
+          const plugins = [nitro.options.rollupConfig?.plugins].flat() as Array<{ name?: string, transform?: typeof transform }>
+          transform = plugins.find(plugin => plugin?.name === 'nuxt:nitro-module-imports')?.transform
+        },
+      },
+    },
+  })
+  await nuxt.close()
+  return transform
 }
 
 async function getAppImportDirs (overrides?: NuxtConfig) {
