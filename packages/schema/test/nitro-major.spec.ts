@@ -92,14 +92,39 @@ describe('nitroLegacy', () => {
     expect((await resolve({ rootDir, workspaceDir: rootDir, future: { compatibilityVersion: 5 } })).nitroLegacy).toBe(false)
   })
 
+  it('leaves the imports off by default for nitro v3 with `experimental.nitroAutoImports: false`', async () => {
+    const rootDir = await project({ dependencies: { nitro: '^3.0.0' } })
+    expect((await resolve({ rootDir, workspaceDir: rootDir, experimental: { nitroAutoImports: false } })).nitroLegacy).toEqual({ imports: false })
+  })
+
+  it('is on by default for nitro v3 with `experimental.nitroAutoImports: true`', async () => {
+    const rootDir = await project({ dependencies: { nitro: '^3.0.0' } })
+    expect((await resolve({ rootDir, workspaceDir: rootDir, experimental: { nitroAutoImports: true } })).nitroLegacy).toBe(true)
+  })
+
+  it('is off by default for nitro v3 with `compatibilityVersion: 5` and `experimental.nitroAutoImports: true`', async () => {
+    const rootDir = await project({ dependencies: { nitro: '^3.0.0' } })
+    expect((await resolve({ rootDir, workspaceDir: rootDir, future: { compatibilityVersion: 5 }, experimental: { nitroAutoImports: true } })).nitroLegacy).toBe(false)
+  })
+
   it('is off for nitropack', async () => {
     const rootDir = await project({ dependencies: { nitropack: '^2.13.0' } })
     expect((await resolve({ rootDir, workspaceDir: rootDir })).nitroLegacy).toBe(false)
+    expect((await resolve({ rootDir, workspaceDir: rootDir, experimental: { nitroAutoImports: false } })).nitroLegacy).toBe(false)
   })
 
   it('keeps an explicit value', async () => {
     const rootDir = await project({ dependencies: { nitro: '^3.0.0' } })
     expect((await resolve({ rootDir, workspaceDir: rootDir, nitroLegacy: false })).nitroLegacy).toBe(false)
     expect((await resolve({ rootDir, workspaceDir: rootDir, nitroLegacy: { h3: false } })).nitroLegacy).toEqual({ h3: false })
+  })
+
+  it('keeps an explicit value with `experimental.nitroAutoImports: false`', async () => {
+    const rootDir = await project({ dependencies: { nitro: '^3.0.0' } })
+    const experimental = { nitroAutoImports: false }
+    expect((await resolve({ rootDir, workspaceDir: rootDir, experimental, nitroLegacy: true })).nitroLegacy).toBe(true)
+    expect((await resolve({ rootDir, workspaceDir: rootDir, experimental, nitroLegacy: false })).nitroLegacy).toBe(false)
+    expect((await resolve({ rootDir, workspaceDir: rootDir, experimental, nitroLegacy: { h3: false } })).nitroLegacy).toEqual({ h3: false })
+    expect((await resolve({ rootDir, workspaceDir: rootDir, experimental, nitroLegacy: { imports: true } })).nitroLegacy).toEqual({ imports: true })
   })
 })

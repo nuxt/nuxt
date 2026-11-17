@@ -78,7 +78,10 @@ export default defineResolvers({
       if (val === false) {
         return false
       }
-      return await get('_nitroMajor') === 3 && await get('future.compatibilityVersion') < 5
+      if (await get('_nitroMajor') !== 3 || await get('future.compatibilityVersion') >= 5) {
+        return false
+      }
+      return await get('experimental.nitroAutoImports') === false ? { imports: false } : true
     },
   },
   prerender: {},
