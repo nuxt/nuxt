@@ -5,6 +5,7 @@ import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
+import { withTrailingSlash } from 'ufo'
 import { klona } from 'klona'
 import { resolveModulePath } from 'exsolve'
 import { parseAndWalk } from 'oxc-walker'
@@ -40,7 +41,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     dirs: [],
     transform: {
       include: [
-        new RegExp('^' + escapeRE(nuxt.options.buildDir)),
+        new RegExp('^' + escapeRE(withTrailingSlash(nuxt.options.buildDir))),
       ],
       exclude: undefined,
     },

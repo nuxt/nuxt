@@ -10,7 +10,7 @@ import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveIgnorePatterns, runWithNuxtContext } from '@nuxt/kit'
-import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
+import { configDiagnostics, createServerBuild, installModules, isWithinDir } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -551,7 +551,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     // build-dir entries are generated later in startup, and bare specifiers may
     // be resolved by builder-specific aliases, so neither can be checked here
     const resolved = resolveAlias(entry, nuxt.options.alias)
-    if (isAbsolute(resolved) && !resolved.startsWith(nuxt.options.buildDir) && !existsSync(resolved)) {
+    if (isAbsolute(resolved) && !isWithinDir(resolved, nuxt.options.buildDir) && !existsSync(resolved)) {
       configDiagnostics.NUXT_B5026({ entry, resolved: resolved === entry ? undefined : linkToAlias(resolved, nuxt) })
     }
   }

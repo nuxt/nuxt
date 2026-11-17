@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt, writeTypes } from '@nuxt/kit'
-import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { buildDiagnostics, isWithinDir, useServerBuild } from '@nuxt/kit/internal'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -423,7 +423,7 @@ function clearBuildHooks (nuxt: Nuxt): void {
   }
 }
 
-function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
+export function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
   for (const dirs of getLayerDirectories(nuxt)) {
     if (!isIgnored(dirs.app)) {
@@ -443,11 +443,10 @@ function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } 
       : resolve(nuxt.options.srcDir, pattern)
     let shouldAdd = true
     for (const w of [...pathsToWatch]) {
-      if (w.startsWith(path)) {
-        pathsToWatch.delete(w)
-      }
-      if (path.startsWith(w)) {
+      if (isWithinDir(path, w)) {
         shouldAdd = false
+      } else if (isWithinDir(w, path)) {
+        pathsToWatch.delete(w)
       }
     }
     if (shouldAdd) {

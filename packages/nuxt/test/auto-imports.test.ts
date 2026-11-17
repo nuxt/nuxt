@@ -9,10 +9,12 @@ import * as VueFunctions from 'vue'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
 import type { Plugin } from 'vite'
+import type { Nuxt } from '@nuxt/schema'
 import { registry as scriptRegistry } from '@nuxt/scripts/registry'
 import { RemovedImportsPlugin, TransformPlugin, getImportsSignature } from '../src/imports/transform.ts'
 import { defaultPresets, removedImports, scriptsStubsPreset } from '../src/imports/presets.ts'
 import { loadNuxt } from '../src/index.ts'
+import importsModule from '../src/imports/module.ts'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
@@ -138,6 +140,16 @@ describe('imports:transform', () => {
       expect(await transformWith('useServerHead({})', '/project/node_modules/some-module/dist/runtime/plugin.js')).toEqual([])
       expect(await transformWith('useServerHead({})', '/project/app/app.vue', false)).toEqual([])
     })
+  })
+})
+
+describe('imports:options', () => {
+  it('should force transforms only for files inside the build directory', async () => {
+    const options = await importsModule.getOptions!({}, { options: { buildDir: '/project/.nuxt' } } as unknown as Nuxt)
+    const include = options.transform!.include!
+
+    expect(include.some(pattern => pattern.test('/project/.nuxt/components.plugin.mjs'))).toBe(true)
+    expect(include.some(pattern => pattern.test('/project/.nuxt-foo/components.plugin.mjs'))).toBe(false)
   })
 })
 
