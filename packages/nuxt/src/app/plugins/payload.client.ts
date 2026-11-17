@@ -31,10 +31,12 @@ function disposeHint (el: HTMLLinkElement) {
 function createHintElement (link: HintLink): HTMLLinkElement {
   const el = document.createElement('link')
   for (const [key, value] of Object.entries(link)) {
-    if (value !== false) {
+    if (value !== false && key !== 'id') {
       el.setAttribute(key, value === true ? '' : value)
     }
   }
+  // a unique hydration key stops unhead adopting the element for one of its own tags
+  el.setAttribute('data-hid', `nuxt-hint:${el.href}`)
   return el
 }
 

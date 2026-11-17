@@ -6,6 +6,7 @@ import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 import payloadPlugin from '#app/plugins/payload.client'
 import { createClientHead } from '#build/unhead-client.mjs'
+import { createHead } from '@unhead/vue/client'
 
 vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
   ...await importOriginal<Record<string, unknown>>(),
@@ -22,15 +23,16 @@ describe('forwarded payload prefetch hints', () => {
   let nuxtApp: ReturnType<typeof useNuxtApp>
   let router: ReturnType<typeof useRouter>
   let navigations = 0
+  const hintLinks: Record<string, Record<string, string>> = {}
 
   beforeAll(() => {
     nuxtApp = useNuxtApp()
     router = useRouter()
     vi.spyOn(globalThis, 'fetch').mockImplementation((input) => {
-      const href = `/${new URL(String(input), 'http://localhost').pathname.split('/')[2]}.txt`
+      const name = new URL(String(input), 'http://localhost').pathname.split('/')[2]!
       return Promise.resolve(new Response(stringify({
         data: {},
-        prefetchLinks: [{ rel: 'preload', as: 'fetch', href }],
+        prefetchLinks: [hintLinks[name] ?? { rel: 'preload', as: 'fetch', href: `/${name}.txt` }],
       })))
     })
     nuxtApp.runWithContext(() => payloadPlugin.setup!(nuxtApp))
@@ -40,11 +42,11 @@ describe('forwarded payload prefetch hints', () => {
     vi.useRealTimers()
   })
 
-  async function forwardHint (name: string) {
+  async function forwardHint (name: string, selector = `link[rel="prefetch"][href="/${name}.txt"]`) {
     await nuxtApp.callHook('link:prefetch', `/pre/${name}`)
     let hint: Element | null = null
     await vi.waitFor(() => {
-      hint = document.head.querySelector(`link[rel="prefetch"][href="/${name}.txt"]`)
+      hint = document.head.querySelector(selector)
       expect(hint).not.toBeNull()
     })
     return hint!
@@ -67,6 +69,26 @@ describe('forwarded payload prefetch hints', () => {
     await nuxtApp.callHook('page:finish')
     expect(hint.isConnected).toBe(true)
     await vi.waitFor(() => expect(hint.isConnected).toBe(false))
+  })
+
+  it('should not copy the id of forwarded hints', async () => {
+    hintLinks.id = { rel: 'preload', as: 'style', href: '/theme.css', id: 'theme' }
+    const hint = await forwardHint('id', 'link[href="/theme.css"]')
+    expect(hint.hasAttribute('id')).toBe(false)
+  })
+
+  it('should keep the head\'s own links that match a forwarded hint', async () => {
+    hintLinks.adopt = { rel: 'preload', as: 'image', href: '/hero.png' }
+    const hint = await forwardHint('adopt', 'link[rel="preload"][href="/hero.png"]')
+    await navigate()
+
+    const head = createHead()
+    head.push({ link: [{ rel: 'preload', as: 'image', href: '/hero.png' }] })
+    head.render()
+    await nuxtApp.callHook('page:finish')
+    await vi.waitFor(() => expect(hint.isConnected).toBe(false))
+
+    expect(document.head.querySelectorAll('link[rel="preload"][href="/hero.png"]')).toHaveLength(1)
   })
 
   it('should remove forwarded hints straight away when navigation fails', async () => {
