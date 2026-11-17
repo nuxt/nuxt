@@ -55,16 +55,19 @@ export const createError = <DataT = unknown>(error: string | Error | Partial<Nux
   })
 
   // #34165 - TODO: remove in Nuxt 5 when statusCode/statusMessage are removed
-  Object.defineProperty(nuxtError, 'status', {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    get: () => nuxtError.statusCode,
-    configurable: true,
-  })
-  Object.defineProperty(nuxtError, 'statusText', {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    get: () => nuxtError.statusMessage,
-    configurable: true,
-  })
+  // h3 v2 errors carry `status` themselves, and derive `statusCode` from it
+  if (typeof (nuxtError as { status?: unknown }).status !== 'number') {
+    Object.defineProperty(nuxtError, 'status', {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      get: () => nuxtError.statusCode,
+      configurable: true,
+    })
+    Object.defineProperty(nuxtError, 'statusText', {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      get: () => nuxtError.statusMessage,
+      configurable: true,
+    })
+  }
 
   return nuxtError
 }
