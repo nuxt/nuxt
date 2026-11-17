@@ -112,7 +112,8 @@ const nitroV3Matrix: FixtureMatrixEntry[] = [
 
 function fixtureProjectInclude (entry: FixtureMatrixEntry) {
   if (entry.inlineErrors) { return inlineErrorInclude }
-  if (entry.legacyComponentResolution || entry.nitro) { return ['test/basic.test.ts'] }
+  if (entry.legacyComponentResolution) { return ['test/basic.test.ts'] }
+  if (entry.nitro) { return ['test/basic.test.ts', 'test/dev-server-fs.test.ts'] }
   return ['test/*.test.ts']
 }
 

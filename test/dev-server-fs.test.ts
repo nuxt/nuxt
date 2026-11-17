@@ -7,9 +7,10 @@ import { getRandomPort } from 'get-port-please'
 import { join } from 'pathe'
 import { joinURL } from 'ufo'
 
-import { isWebpack, runsOnceInMatrix } from './matrix'
+import { isWebpack, nitroMajor, runsOnceInMatrix } from './matrix'
 
 const rootDir = fileURLToPath(new URL('./fixtures/dev-server-fs/', import.meta.url))
+const buildDirSuffix = nitroMajor ? `-nitro${nitroMajor}` : ''
 
 async function startDevServer (builder: string) {
   const port = await getRandomPort('127.0.0.1')
@@ -37,8 +38,8 @@ async function startDevServer (builder: string) {
 
 describe.skipIf(!runsOnceInMatrix || isWebpack)('the vite dev server', () => {
   it.each([
-    ['vite', '.nuxt'],
-    ['vite-env-api', '.nuxt-vite-env-api'],
+    ['vite', `.nuxt${buildDirSuffix}`],
+    ['vite-env-api', `.nuxt-vite-env-api${buildDirSuffix}`],
   ])('does not serve the nitro dev bundle (%s)', async (builder, buildDir) => {
     const { url, output } = await startDevServer(builder)
     const bundle = join(rootDir, buildDir, 'dev/index.mjs')

@@ -88,7 +88,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const defaultDeny = viteConfig.server?.fs?.deny ? [] : await resolveDefaultFsDeny(nuxt.options.rootDir)
     fsDeny = [...defaultDeny, '**/app-secret']
     if (nitro) {
-      fsDeny.push(`${escapeGlob(nitro.options.output.serverDir)}/**`)
+      fsDeny.push(`${escapeGlob(resolve(nitro.options.output.serverDir))}/**`)
     }
   }
 
