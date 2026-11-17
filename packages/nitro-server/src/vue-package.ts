@@ -8,16 +8,17 @@ import type { ModuleInfo, Plugin } from 'rollup'
 
 import { toArray } from './utils.ts'
 
-const VUE_SPECIFIERS = [
-  'vue',
-  'vue/server-renderer',
-  'vue/jsx-runtime',
-  'vue/jsx-dev-runtime',
-  '@vue/shared',
-  '@vue/reactivity',
-  '@vue/runtime-core',
-  '@vue/runtime-dom',
-  '@vue/server-renderer',
+// resolved from their dependent so that a hoisted copy of another version is not bundled
+const VUE_SPECIFIERS: Array<[specifier: string, dependent?: string]> = [
+  ['vue'],
+  ['vue/server-renderer'],
+  ['vue/jsx-runtime'],
+  ['vue/jsx-dev-runtime'],
+  ['@vue/shared', 'vue'],
+  ['@vue/runtime-dom', 'vue'],
+  ['@vue/runtime-core', '@vue/runtime-dom'],
+  ['@vue/reactivity', '@vue/runtime-core'],
+  ['@vue/server-renderer', 'vue'],
 ]
 
 const VUE_PACKAGE_RE = String.raw`(?:vue|@vue[\\/](?:shared|reactivity|runtime-core|runtime-dom|server-renderer))`
@@ -103,9 +104,13 @@ function VuePackagePlugin (nuxt: Nuxt, ignoredImports: Set<string>): Plugin {
       }
       const exports = new Map<string, Record<string, string>>()
       const versions = new Map<string, string>()
-      for (const specifier of VUE_SPECIFIERS) {
-        const resolved = await this.resolve(specifier, specifier.startsWith('@vue/') ? vue.id : importer, { skipSelf: false })
+      const resolvedIds = new Map([['vue', vue.id]])
+      for (const [specifier, dependent] of VUE_SPECIFIERS) {
+        const from = dependent ? resolvedIds.get(dependent) : importer
+        if (!from) { continue }
+        const resolved = await this.resolve(specifier, from, { skipSelf: false })
         if (!resolved || resolved.external) { continue }
+        resolvedIds.set(specifier, resolved.id)
         const pkg = specifier.startsWith('@vue/') ? specifier : 'vue'
         const subpath = specifier.slice(pkg.length)
         const file = subpath ? `.${subpath}.mjs` : './index.mjs'

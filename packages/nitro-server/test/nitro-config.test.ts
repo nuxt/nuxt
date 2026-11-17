@@ -1,16 +1,17 @@
 import { existsSync } from 'node:fs'
-import { mkdir, mkdtemp, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { describe, expect, it } from 'vitest'
-import { isAbsolute, join, resolve } from 'pathe'
+import { basename, dirname, isAbsolute, join, resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { rollup } from 'rollup'
-import type { InputPluginOption } from 'rollup'
+import type { InputPluginOption, OutputAsset, Plugin } from 'rollup'
 import { loadNuxt } from '@nuxt/kit'
-import type { NuxtConfig } from '@nuxt/schema'
+import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { getRollupConfig } from 'nitropack/rollup'
 import type { Nitro, NitroConfig } from 'nitropack/types'
 import { RUNTIME_CONFIG_SCHEMA_ID } from '../src/runtime-config.ts'
+import { setupVuePackage } from '../src/vue-package.ts'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
 
@@ -149,6 +150,63 @@ describe('nitro config', () => {
       expect(modules).not.toContain(shared)
     }).finally(() => rm(outputDir, { recursive: true, force: true }))
   }, 60_000)
+
+  it('bundles the `@vue/*` packages that vue depends on rather than hoisted copies', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-vue-package-'))
+    const writePackage = async (dir: string, name: string, version: string, code: string) => {
+      const entry = `dist/${name === 'vue' ? 'vue.runtime' : name.slice('@vue/'.length)}.esm-bundler.js`
+      await mkdir(join(dir, dirname(entry)), { recursive: true })
+      await writeFile(join(dir, 'package.json'), JSON.stringify({ name, version, type: 'module', main: entry }))
+      await writeFile(join(dir, entry), code)
+      return join(dir, entry)
+    }
+    try {
+      const vueDir = join(rootDir, 'node_modules/vue')
+      const runtimeDomDir = join(vueDir, 'node_modules/@vue/runtime-dom')
+      const runtimeCoreDir = join(runtimeDomDir, 'node_modules/@vue/runtime-core')
+      await writePackage(vueDir, 'vue', '3.5.2', `export * from '@vue/runtime-dom'`)
+      await writePackage(runtimeDomDir, '@vue/runtime-dom', '3.5.2', `export * from '@vue/runtime-core'`)
+      const expected = {
+        '@vue/runtime-core': await writePackage(runtimeCoreDir, '@vue/runtime-core', '3.5.2', `export * from '@vue/reactivity'`),
+        '@vue/reactivity': await writePackage(join(runtimeCoreDir, 'node_modules/@vue/reactivity'), '@vue/reactivity', '3.5.2', `export const version = '3.5.2'`),
+      }
+      for (const name of Object.keys(expected)) {
+        await writePackage(join(rootDir, 'node_modules', name), name, '3.5.1', `export const version = '3.5.1'`)
+      }
+
+      const nuxt = { options: { dev: false, appDir: join(rootDir, 'app'), vue: {}, experimental: { externalVue: true } } } as unknown as Nuxt
+      const nitro = { options: { node: true, externals: {}, rollupConfig: {} } } as unknown as Nitro
+      setupVuePackage(nuxt, nitro)
+
+      const bundle = await rollup({
+        input: 'entry',
+        plugins: [
+          ...nitro.options.rollupConfig!.plugins as Plugin[],
+          {
+            name: 'entry',
+            resolveId (id, importer) {
+              if (id === 'entry') { return id }
+              if (!importer || id.startsWith('.') || id.startsWith('/')) { return }
+              const resolved = resolveModulePath(id, { from: importer, try: true })
+              return resolved?.startsWith(rootDir) ? resolved : null
+            },
+            load: id => id === 'entry' ? `export { version } from 'vue'` : undefined,
+          },
+        ],
+      })
+      const { output } = await bundle.generate({ format: 'esm' })
+      await bundle.close()
+
+      const modules = output.flatMap(chunk => chunk.type === 'chunk' ? Object.keys(chunk.modules) : [])
+      for (const [name, entry] of Object.entries(expected)) {
+        expect(modules.filter(id => basename(id) === basename(entry))).toEqual([entry])
+        const pkg = output.find((file): file is OutputAsset => file.fileName === `node_modules/${name}/package.json`)
+        expect(JSON.parse(pkg!.source as string)).toMatchObject({ version: '3.5.2' })
+      }
+    } finally {
+      await rm(rootDir, { recursive: true, force: true })
+    }
+  })
 
   it('does not inline the dependencies of an absolute `build.transpile` directory', async () => {
     const moduleDir = resolve(fixtureDir, '../workspace-module')
