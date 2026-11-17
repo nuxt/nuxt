@@ -18,7 +18,7 @@ export const onNuxtReady = (callback: () => any, options?: OnNuxtReadyOptions): 
   if (import.meta.server || options?.signal?.aborted) { return }
 
   const run = () => {
-    if (!options?.signal?.aborted) { callback() }
+    if (!options?.signal?.aborted) { nuxtApp.runWithContext(callback) }
   }
   const nuxtApp = useNuxtApp()
   if (nuxtApp.isHydrating) {
