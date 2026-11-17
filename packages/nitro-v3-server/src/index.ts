@@ -12,7 +12,7 @@ import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { createNitro } from 'nitro/builder'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
-import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
+import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
@@ -39,7 +39,7 @@ import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, rout
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { unheadDedupePlugin } from './unhead.ts'
-import { getLegacyH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
+import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
@@ -53,6 +53,9 @@ const RELATIVE_BASE_URL_RE = /^\.(?:$|\/)/
 
 // App-only aliases Nitro carries in its own alias map, which must not resolve in the server program
 const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+
+/** Packages whose own imports of `h3` mean h3 v2. */
+const H3_PROVIDER_RE = /^(?:h3|nitro)(?:-nightly)?$/
 
 const logLevelMapReverse = {
   silent: 0,
@@ -69,8 +72,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       name: 'nuxt:nitro:h3-v1-runtime',
       enforce: 'pre',
       applyToEnvironment: environment => environment.name === 'ssr',
-      resolveId (id) {
-        if (id === '@nuxt/nitro-server/h3') { return getLegacyH3ShimPath() }
+      resolveId (id, importer) {
+        if (id === '@nuxt/nitro-server/h3' || (legacy.h3 && id === 'h3' && !H3_PROVIDER_RE.test(parseNodeModulePath(importer || '').name || ''))) {
+          return getLegacyAppH3ShimPath()
+        }
       },
     })
   }
@@ -417,7 +422,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
       '#internal/nuxt/host': resolve(distDir, nuxt4Host ? 'runtime/host/nuxt4' : 'runtime/host/nuxt5'),
       // Nuxt 4 app code reaches the h3 v1 helpers through this specifier
-      ...nuxt4Host ? { '@nuxt/nitro-server/h3': getLegacyH3ShimPath() } : {},
+      ...nuxt4Host ? { '@nuxt/nitro-server/h3': getLegacyAppH3ShimPath() } : {},
 
       // Vue 3 mocks
       ...nuxt.options.vue.runtimeCompiler
@@ -609,19 +614,24 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   if (nuxt4Host) {
-    // an app bundle can reference the h3 v1 helpers by the path the specifier resolves to
+    // an app bundle can reference the h3 v1 helpers, and `h3` itself, by the path the specifier resolves to
     const hostH3 = resolveModulePath('@nuxt/nitro-server/h3', {
       from: [nuxt.options.appDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)),
       try: true,
     })
-    if (hostH3) {
-      const hostH3Path = normalize(hostH3)
+    const hostH3Path = hostH3 && normalize(hostH3)
+    if (hostH3Path || legacy.h3) {
       nitroConfig.rollupConfig!.plugins!.push({
         name: 'nuxt:nitro:h3-v1-runtime',
         resolveId: {
           order: 'pre',
           handler (id: string) {
-            if (normalize(id) === hostH3Path) { return getLegacyH3ShimPath() }
+            if (normalize(id) === hostH3Path) {
+              return getLegacyAppH3ShimPath()
+            }
+            if (legacy.h3 && parseNodeModulePath(id).name === 'h3') {
+              return lookupNodeModuleSubpath(id).then(subpath => subpath === './' ? getLegacyAppH3ShimPath() : undefined)
+            }
           },
         },
       })
