@@ -4,11 +4,15 @@ import { describe, expect, it, onTestFinished } from 'vitest'
 import { x } from 'tinyexec'
 import { getRandomPort } from 'get-port-please'
 
-import { isWebpack, runsOnceInMatrix } from './matrix'
+import { isNitroV3, isWebpack, runsOnceInMatrix } from './matrix'
 
 const rootDir = fileURLToPath(new URL('./fixtures/dev-warmup/', import.meta.url))
 
 interface WarmupState { module?: boolean, plugin?: boolean }
+
+// TODO: rolldown cannot bundle the nitro v3 dev server once a server plugin has a top-level await
+// https://github.com/rolldown/rolldown/issues/9548 and https://github.com/rolldown/rolldown/pull/11724
+const test = isNitroV3 ? it.fails : it
 
 /**
  * Start a dev server on `rootDir`, bound to a known address so the test never has to parse
@@ -41,7 +45,7 @@ async function startDevServer () {
 }
 
 describe.skipIf(!runsOnceInMatrix || isWebpack)('the dev ssr entry', () => {
-  it('is evaluated before the first render, without running plugins', async () => {
+  test('is evaluated before the first render, without running plugins', async () => {
     const { url, output } = await startDevServer()
 
     // a connection error means the server is still starting, so it is polled rather than
@@ -59,7 +63,7 @@ describe.skipIf(!runsOnceInMatrix || isWebpack)('the dev ssr entry', () => {
     expect(await state()).toStrictEqual({ module: true, plugin: true })
   }, 120 * 1000)
 
-  it('renders with the server runtime\'s `$fetch` when a server plugin defers its creation', async () => {
+  test('renders with the server runtime\'s `$fetch` when a server plugin defers its creation', async () => {
     const { url, output } = await startDevServer()
 
     await expect.poll(() => fetch(`${url}/api/warmup`).then(r => r.ok).catch(() => output()), { timeout: 60 * 1000 }).toBe(true)

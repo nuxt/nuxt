@@ -5,7 +5,7 @@ import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import { $fetch, setup, useTestContext } from '@nuxt/test-utils/e2e'
 
-import { runsOnceInMatrix } from './matrix'
+import { isNitroV3, runsOnceInMatrix } from './matrix'
 
 if (runsOnceInMatrix) {
   await setup({
@@ -18,10 +18,13 @@ if (runsOnceInMatrix) {
 }
 
 describe.skipIf(!runsOnceInMatrix)('server bundle with a second copy of unhead', () => {
-  it('traces nuxt\'s copy of unhead and resolves server imports to it', async () => {
+  it('resolves server imports of unhead to nuxt\'s copy', async () => {
+    expect(await $fetch<string>('/api/head-props')).toBe(' data-source="unhead"')
+  })
+
+  it.skipIf(isNitroV3)('traces nuxt\'s copy of unhead into the server output', async () => {
     const unheadDir = join(useTestContext().nuxt!.options.nitro.output!.dir!, 'server/node_modules/unhead')
     expect(await readdir(join(unheadDir, 'dist'))).toContain('legacy.mjs')
     expect(JSON.parse(await readFile(join(unheadDir, 'package.json'), 'utf-8')).version).not.toBe('0.0.0-duplicate')
-    expect(await $fetch<string>('/api/head-props')).toBe(' data-source="unhead"')
   })
 })

@@ -5,7 +5,7 @@ import type { NuxtConfig } from 'nuxt/schema'
 import { join } from 'pathe'
 import { describe, expect, it, vi } from 'vitest'
 
-import { runsOnceInMatrix } from './matrix'
+import { nitroMajor, runsOnceInMatrix } from './matrix'
 
 const rootDir = fileURLToPath(new URL('./fixtures/spa', import.meta.url))
 
@@ -25,6 +25,7 @@ describe.skipIf(!runsOnceInMatrix)('static output base URLs', () => {
         ready: true,
         overrides: {
           ...overrides,
+          ...nitroMajor ? { _nitroMajor: nitroMajor } : {},
           buildDir: join(cacheDir, 'build'),
           nitro: { ...overrides.nitro, output: { dir: outputDir } },
         },

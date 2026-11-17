@@ -103,7 +103,7 @@ const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', legacyComponentResolution: true },
 ]
 
-// re-runs the basic fixture on nitro v3 rather than the default nitropack v2
+// re-runs the suites built with nitro on nitro v3 rather than the default nitropack v2
 const nitroV3Matrix: FixtureMatrixEntry[] = [
   { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', nitro: 3 },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', nitro: 3 },
@@ -113,7 +113,7 @@ const nitroV3Matrix: FixtureMatrixEntry[] = [
 function fixtureProjectInclude (entry: FixtureMatrixEntry) {
   if (entry.inlineErrors) { return inlineErrorInclude }
   if (entry.legacyComponentResolution) { return ['test/basic.test.ts'] }
-  if (entry.nitro) { return ['test/basic.test.ts', 'test/dev-server-fs.test.ts'] }
+  if (entry.nitro) { return ['test/*.test.ts', '!test/vite-server-*.test.ts'] }
   return ['test/*.test.ts']
 }
 

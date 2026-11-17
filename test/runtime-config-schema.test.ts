@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { $fetch, setup, startServer, useTestContext } from '@nuxt/test-utils/e2e'
 
-import { isBuilt, runsOncePerEnvInMatrix } from './matrix'
+import { isBuilt, isNitroV3, runsOncePerEnvInMatrix } from './matrix'
 
 const shouldRun = runsOncePerEnvInMatrix && isBuilt
 
@@ -26,7 +26,7 @@ function runServer (env: Record<string, string>) {
   const outputDir = useTestContext().nuxt!.options.nitro.output!.dir!
   return new Promise<{ code: number | null, output: string }>((resolve) => {
     const server = spawn(process.execPath, [join(outputDir, 'server/index.mjs')], {
-      env: { ...process.env, PORT: '0', HOST: '127.0.0.1', ...env },
+      env: { ...process.env, TEST: '', PORT: '0', HOST: '127.0.0.1', ...env },
     })
     let output = ''
     const onData = (chunk: Buffer) => {
@@ -57,7 +57,7 @@ describe.skipIf(!shouldRun)('runtime config schemas', () => {
       },
     })
 
-    const expected = { apiSecret: '4848e0', port: 4000, plain: 4848e0, mode: 'production', flag: true }
+    const expected = { apiSecret: '4848e0', port: 4000, plain: isNitroV3 ? '4848e0' : 4848e0, mode: 'production', flag: true }
     expect(await $fetch('/api/config')).toEqual({ event: expected, shared: expected })
     expect(await $fetch<string>('/')).toContain('production')
   })
@@ -75,10 +75,10 @@ describe.skipIf(!shouldRun)('runtime config schemas', () => {
 
     expect(await $fetch('/api/isolation')).toEqual({
       sharedIsStable: true,
-      sharedIsFrozen: true,
+      sharedIsFrozen: !isNitroV3,
       eventIsCached: true,
       eventIsCopy: true,
-      secondPort: 5001,
+      secondPort: isNitroV3 ? 4000 : 5001,
       secondMode: 'preview',
       sharedPort: 4000,
       sharedMode: 'preview',

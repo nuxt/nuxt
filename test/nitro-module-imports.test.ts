@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { $fetch } from '@nuxt/test-utils/e2e'
 
-import { runsOnceInMatrix } from './matrix'
+import { isNitroV3, runsOnceInMatrix } from './matrix'
 import { setupFixture } from './utils'
 
-await setupFixture('nitro-module-imports', runsOnceInMatrix)
+// asserts how the nitropack builder scopes auto-imports
+const runs = runsOnceInMatrix && !isNitroV3
 
-describe.skipIf(!runsOnceInMatrix)('nitro auto-imports opted out', () => {
+await setupFixture('nitro-module-imports', runs)
+
+describe.skipIf(!runs)('nitro auto-imports opted out', () => {
   it('resolves h3 and nitro helpers imported from `#imports` in an installed module', async () => {
     expect(await $fetch('/api/installed/explicit?id=1')).toEqual({ query: { id: '1' }, baseURL: '/' })
   })
