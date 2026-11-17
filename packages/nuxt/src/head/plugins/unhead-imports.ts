@@ -19,6 +19,16 @@ interface UnheadImportsPluginOptions {
 const UNHEAD_LIB_RE = /node_modules[/\\](?:@unhead[/\\][^/\\]+|unhead)[/\\]/
 const NUXT_HEAD_RE = /node_modules[/\\]nuxt[/\\]dist[/\\]head[/\\]runtime[/\\]/
 
+export const UNHEAD_EAGER_TRANSFORM_ID_FILTER = {
+  include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
+  exclude: [VUE_NON_SCRIPT_BLOCK_RE, DIST_DIR_RE, UNHEAD_LIB_RE, NUXT_HEAD_RE],
+}
+
+const UNHEAD_TRANSFORM_ID_FILTER = {
+  include: UNHEAD_EAGER_TRANSFORM_ID_FILTER.include,
+  exclude: [...UNHEAD_EAGER_TRANSFORM_ID_FILTER.exclude, /^virtual:/],
+}
+
 function toImports (specifiers: ImportSpecifier[]) {
   return specifiers.map((specifier) => {
     const imported = specifier.imported as Identifier | null
@@ -41,10 +51,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
     enforce: 'post',
     transform: {
       filter: {
-        id: {
-          include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
-          exclude: [VUE_NON_SCRIPT_BLOCK_RE, /^virtual:/, DIST_DIR_RE, UNHEAD_LIB_RE, NUXT_HEAD_RE],
-        },
+        id: UNHEAD_TRANSFORM_ID_FILTER,
         code: { include: UnheadVueRE },
       },
       async handler (code, id, meta?: unknown) {

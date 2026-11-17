@@ -11,6 +11,7 @@ import { streamingIifeCode } from 'unhead/stream/iife'
 import { distDir } from '../dirs.ts'
 import { UnheadImportsPlugin } from './plugins/unhead-imports.ts'
 import { RemoveServerHeadComposablesPlugin } from './plugins/remove-server-head-composables.ts'
+import { UnheadClientEagerPlugin } from './plugins/unhead-client-eager.ts'
 
 // the bootstrap code is a constant, so its content hash is known before the build runs
 const iifeChunkFileName = `streaming-iife.${createHash('sha256').update(streamingIifeCode).digest('hex').slice(0, 8)}.js`
@@ -51,6 +52,11 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     }))
     if (!nuxt.options.dev && !nuxt.options.test) {
       addBuildPlugin(RemoveServerHeadComposablesPlugin(), { server: false })
+    }
+    if (!nuxt.options.dev) {
+      addBuildPlugin(UnheadClientEagerPlugin({
+        eagerEntry: resolve(runtimeDir, 'client-head-eager'),
+      }), { server: false })
     }
 
     const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
@@ -113,6 +119,29 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
           `  disableDefaults: true,`,
           `  plugins: [TemplateParamsPlugin],`,
           `}`,
+        ].join('\n')
+      },
+    })
+
+    addTemplate({
+      filename: 'unhead-client.mjs',
+      dependsOn: [],
+      getContents () {
+        const client = JSON.stringify(resolveNuxtUnhead('@unhead/vue/client'))
+        if (!ssrStreamingEnabled) {
+          return [
+            `import { createHead } from ${client};`,
+            `import unheadOptions from '#build/unhead-options.mjs';`,
+            `export const createClientHead = () => createHead(unheadOptions);`,
+          ].join('\n')
+        }
+        // `createStreamableHead` consumes the `window.__unhead__` queue populated during SSR
+        // streaming and returns nothing when no queue is found (e.g. bot requests served buffered).
+        return [
+          `import { createHead } from ${client};`,
+          `import { createStreamableHead } from ${JSON.stringify(resolveNuxtUnhead('@unhead/vue/stream/client'))};`,
+          `import unheadOptions from '#build/unhead-options.mjs';`,
+          `export const createClientHead = () => createStreamableHead(unheadOptions) || createHead(unheadOptions);`,
         ].join('\n')
       },
     })
@@ -184,7 +213,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     }
 
     // Add library-specific plugins
-    addPlugin({ src: resolve(runtimeDir, ssrStreamingEnabled ? 'plugins/unhead-stream.client' : 'plugins/unhead.client') })
+    addPlugin({ src: resolve(runtimeDir, 'plugins/unhead.client') })
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead.server') })
   },
 })
