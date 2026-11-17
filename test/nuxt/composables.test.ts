@@ -16,6 +16,7 @@ import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { callOnce } from '#app/composables/once'
+import { useHead, useServerHead, useServerHeadSafe, useServerSeoMeta } from '#app/composables/head'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
@@ -281,6 +282,45 @@ describe('ssr composables', () => {
     expect(useRequestHeaders()).toEqual({})
     expect(prerenderRoutes('/')).toBeUndefined()
     expect(useResponseHeader('x-test').value).toBeUndefined()
+  })
+
+  it('do not add server-only head entries on client', async () => {
+    await mountSuspended(defineComponent({
+      setup () {
+        useHead({ meta: [{ name: 'client-head', content: 'client' }] })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        useServerHead({ meta: [{ name: 'server-head', content: 'server' }] })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        useServerHeadSafe({ meta: [{ name: 'server-head-safe', content: 'server' }] })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        useServerSeoMeta({ author: 'server' })
+        return () => h('div')
+      },
+    }))
+    onTestFinished(() => document.querySelector('meta[name="client-head"]')?.remove())
+
+    await vi.waitFor(() => {
+      expect(document.querySelector('meta[name="client-head"]')?.getAttribute('content')).toBe('client')
+    })
+
+    expect(document.querySelector('meta[name="server-head"]')).toBeNull()
+    expect(document.querySelector('meta[name="server-head-safe"]')).toBeNull()
+    expect(document.querySelector('meta[name="author"]')).toBeNull()
+  })
+
+  it('returns an inert head entry on client', () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const headEntry = useServerHead({ meta: [{ name: 'server-head', content: 'server' }] })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const headSafeEntry = useServerHeadSafe({ meta: [{ name: 'server-head-safe', content: 'server' }] })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const seoEntry = useServerSeoMeta({ author: 'server' })
+
+    for (const entry of [headEntry, headSafeEntry, seoEntry]) {
+      expect(entry._i).toBe(-1)
+      entry.patch({})
+      entry.dispose()
+    }
   })
 })
 
