@@ -144,6 +144,19 @@ describe('nitro config', () => {
     })
   })
 
+  it.for(['webpack:config', 'rspack:config'] as const)('aliases vue to the esm-bundler build in a client config without `resolve.alias` on `%s`', async (hook) => {
+    await withNitro({ vue: { runtimeCompiler: true } }, async (_nitro, _nitroConfig, nuxt) => {
+      const configs = [{ name: 'client' }, { name: 'client', resolve: {} }]
+      for (const config of configs) {
+        await nuxt.callHook(hook, [config] as any)
+      }
+      expect(configs.map(config => config.resolve)).toEqual([
+        { alias: { vue: 'vue/dist/vue.esm-bundler' } },
+        { alias: { vue: 'vue/dist/vue.esm-bundler' } },
+      ])
+    })
+  })
+
   const sourceMounts = {
     root: { driver: 'fs', readOnly: true, base: fixtureDir },
     src: { driver: 'fs', readOnly: true, base: resolve(fixtureDir, 'server') },
