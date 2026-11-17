@@ -74,17 +74,24 @@ interface ReadBodyOptions {
  *
  * Without a `type`, a `text/*` body is returned as text, a urlencoded body as an object,
  * and any other body is parsed as JSON. Parsing is strict for `application/json` and
- * otherwise falls back to the text, unless `strict` says otherwise.
+ * otherwise falls back to the text, unless `strict` says otherwise. The first successful
+ * parse is returned to every later read without a `type`, whatever its `strict`.
  */
 export function readBody<T = any> (event: H3Event, options?: ReadBodyOptions): Promise<T> {
   const context = event.context as Record<symbol, any>
   const cache: Map<string, Promise<any>> = context[kParsedBody] ||= new Map()
   const type = options?.type
-  const key = type || `auto:${options?.strict ?? ''}`
+  const key = type || 'auto'
   if (!cache.has(key)) {
-    cache.set(key, type
+    const parsed = type
       ? withReplayedBody(event).then(replayed => _readBody(replayed, { type } as any))
-      : parseBody(event, options?.strict))
+      : parseBody(event, options?.strict)
+    cache.set(key, parsed)
+    parsed.catch(() => {
+      if (cache.get(key) === parsed) {
+        cache.delete(key)
+      }
+    })
   }
   return cache.get(key)!
 }

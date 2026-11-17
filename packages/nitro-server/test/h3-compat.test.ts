@@ -410,6 +410,28 @@ describe('v1 body readers', () => {
     expect(await readRawBody(event)).toBeUndefined()
     expect(getRequestWebStream(event)).toBeUndefined()
   })
+
+  it('returns the first parsed body to every later read, whatever its strictness', async () => {
+    const event = bodyEvent('hello', 'application/octet-stream')
+
+    expect(await readBody(event)).toBe('hello')
+    expect(await readBody(event, { strict: true })).toBe('hello')
+  })
+
+  it('hands a later reader the body an earlier reader changed', async () => {
+    const event = jsonEvent()
+    const body = await readBody(event)
+    body.touched = true
+
+    expect(await readBody(event, { strict: true })).toBe(body)
+  })
+
+  it('parses the body again after a strict read fails', async () => {
+    const event = bodyEvent('hello', 'application/octet-stream')
+
+    await expect(readBody(event, { strict: true })).rejects.toMatchObject({ status: 400 })
+    expect(await readBody(event)).toBe('hello')
+  })
 })
 
 describe('v1 event bridge', () => {
