@@ -1,4 +1,6 @@
 import { existsSync } from 'node:fs'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { isAbsolute, join, resolve } from 'pathe'
 import { directoryToURL, isNuxtMajorVersion, loadNuxt, updateRuntimeConfig } from '@nuxt/kit'
@@ -383,4 +385,18 @@ describe('nitro config', () => {
       expect(nuxt.options.vite.plugins?.flat().filter(isImpound) ?? []).toHaveLength(0)
     })
   })
+
+  it('lets dev error reports read the server bundle the vite dev server denies', async () => {
+    const buildDir = await mkdtemp(join(tmpdir(), 'nuxt-[dev]-'))
+    onTestFinished(() => rm(buildDir, { recursive: true, force: true }))
+    await withNitro({ dev: true, buildDir }, async (nitro, _nitroConfig, nuxt) => {
+      const outputPattern = `${resolve(nitro.options.output.serverDir).replace(/[[\]]/g, '\\$&')}/**`
+      const fs = { allow: [nuxt.options.rootDir], deny: ['.env', '**/app-secret', outputPattern], strict: true }
+      await nuxt.callHook('vite:serverCreated', { config: { server: { fs, allowedHosts: [] } } } as any, { isClient: true, isServer: false })
+
+      const options = await (nitro.options.virtual['#internal/dev-server-logs-options'] as () => string)()
+      const reportFs = JSON.parse(/^export const reportFs = (.+);$/m.exec(options)![1]!)
+      expect(reportFs).toEqual({ ...fs, deny: ['.env', '**/app-secret'] })
+    })
+  }, 60_000)
 })
