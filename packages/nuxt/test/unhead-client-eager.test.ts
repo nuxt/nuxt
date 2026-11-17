@@ -25,11 +25,18 @@ describe('UnheadClientEagerPlugin', () => {
     ['pure helpers', `import { defineLink, defineScript } from '@unhead/vue'`],
     ['type-only imports', `import type { UseScriptInput } from '@unhead/vue/scripts'`],
     ['type-only specifiers', `import { type VueHeadClient } from '@unhead/vue'`],
-    ['non-injecting entries', `import { createHead } from '@unhead/vue/client'`],
+    ['non-injecting entries', `import { createHead } from '@unhead/vue/server'`],
+    ['client constructors', `import { createHead, renderDOMHead } from '@unhead/vue/client'`],
+    ['other strings', `const message = 'import from @unhead/vue'`],
     ['pure helper re-exports', `export { defineLink, defineScript as script } from '@unhead/vue'`],
     ['type-only re-exports', `export type { VueHeadClient } from '@unhead/vue'`],
   ])('should not transform %s', async (_, code) => {
     expect(await transform(code)).toBeUndefined()
+  })
+
+  it('should not transform type-only module references', async () => {
+    const code = `declare module '@unhead/vue' { interface Extra {} }\ntype Unhead = typeof import('@unhead/vue')`
+    expect(await transform(code, '/project/plugins/head.ts')).toBeUndefined()
   })
 
   it.each([
@@ -42,6 +49,9 @@ describe('UnheadClientEagerPlugin', () => {
     ['re-exported composables', `export { defineLink, useHead } from '@unhead/vue'`],
     ['star re-exports', `export * from '@unhead/vue'`],
     ['dynamic imports', `const { useScript } = await import('@unhead/vue/scripts')`],
+    ['template literal dynamic imports', 'const { useHead } = await import(`@unhead/vue`)'],
+    ['require calls', `const { useHead } = require('@unhead/vue')`],
+    ['the client mixin', `import { VueHeadMixin } from '@unhead/vue/client'`],
   ])('should import the eager client head for %s', async (_, code) => {
     expect(await transform(code)).toMatch(/^import "\/nuxt\/head\/runtime\/client-head-eager";\n/)
   })

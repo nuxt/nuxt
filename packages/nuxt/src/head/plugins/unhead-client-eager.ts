@@ -2,13 +2,16 @@ import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { parseAndWalk } from 'oxc-walker'
+import type { ESTree } from 'rolldown/utils'
 import { UNHEAD_EAGER_TRANSFORM_ID_FILTER } from './unhead-imports.ts'
 
-const INJECTING_ENTRIES = new Set(['@unhead/vue', '@unhead/vue/scripts', '@unhead/vue/components', '@unhead/vue/legacy'])
+const INJECTING_ENTRIES = new Set(['@unhead/vue', '@unhead/vue/client', '@unhead/vue/scripts', '@unhead/vue/components', '@unhead/vue/legacy'])
 const PURE_EXPORTS = new Set([
+  'createHead',
   'createUnhead',
   'defineLink',
   'defineScript',
+  'renderDOMHead',
   'resolveUnrefHeadInput',
   'unheadVueComposablesImports',
 ])
@@ -17,6 +20,15 @@ const NON_INJECTING_IMPORTS = new Set([...unheadVueComposablesImports['@unhead/v
 
 function specifierName (node: { type: string, name?: string, value?: unknown }) {
   return node.type === 'Identifier' ? node.name! : String(node.value)
+}
+
+function staticString (node: ESTree.Node): string | undefined {
+  if (node.type === 'Literal') { return typeof node.value === 'string' ? node.value : undefined }
+  if (node.type === 'TemplateLiteral' && !node.expressions.length) { return node.quasis[0]?.value.cooked ?? undefined }
+}
+
+function isTypeOnlyPosition (parent: ESTree.Node | null) {
+  return !!parent?.type.startsWith('TS') && parent.type !== 'TSExternalModuleReference'
 }
 
 interface UnheadClientEagerPluginOptions {
@@ -38,21 +50,27 @@ export const UnheadClientEagerPlugin = (options: UnheadClientEagerPluginOptions)
       handler (code, id, meta?: unknown) {
         let injects = false
         const nonInjectingImports = id.startsWith('virtual:') ? PURE_EXPORTS : NON_INJECTING_IMPORTS
-        parseAndWalk(code, id, function (node) {
+        const classifiedSources = new Set<ESTree.Node>()
+        parseAndWalk(code, id, function (node, parent) {
           if (injects) { return }
           if (node.type === 'ImportDeclaration') {
+            classifiedSources.add(node.source)
             if (node.importKind === 'type' || !INJECTING_ENTRIES.has(String(node.source.value))) { return }
             injects = node.specifiers.some(specifier =>
               specifier.type !== 'ImportSpecifier'
               || (specifier.importKind !== 'type' && !nonInjectingImports.has(specifierName(specifier.imported))),
             )
-          } else if (node.type === 'ExportNamedDeclaration' && node.source && node.exportKind !== 'type') {
-            injects = INJECTING_ENTRIES.has(String(node.source.value))
+          } else if (node.type === 'ExportNamedDeclaration' && node.source) {
+            classifiedSources.add(node.source)
+            injects = node.exportKind !== 'type' && INJECTING_ENTRIES.has(String(node.source.value))
               && node.specifiers.some(specifier => specifier.exportKind !== 'type' && !PURE_EXPORTS.has(specifierName(specifier.local)))
-          } else if (node.type === 'ExportAllDeclaration' && node.exportKind !== 'type') {
-            injects = INJECTING_ENTRIES.has(String(node.source.value))
-          } else if (node.type === 'ImportExpression' && node.source.type === 'Literal') {
-            injects = INJECTING_ENTRIES.has(String(node.source.value))
+          } else if (node.type === 'ExportAllDeclaration') {
+            classifiedSources.add(node.source)
+            injects = node.exportKind !== 'type' && INJECTING_ENTRIES.has(String(node.source.value))
+          } else if (!classifiedSources.has(node) && !isTypeOnlyPosition(parent)) {
+            // any other reference to an entry, such as a dynamic import or `require()`
+            const value = staticString(node)
+            injects = value !== undefined && INJECTING_ENTRIES.has(value)
           }
         })
         if (!injects) { return }
