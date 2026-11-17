@@ -50,6 +50,9 @@ declare module '#build/root-component.mjs'
 declare module '#build/route-rules.mjs'
 declare module '#build/test-component-wrapper.mjs'
 declare module '#build/unhead-options.mjs'
+declare module '#build/unhead-client.mjs' {
+  export const createClientHead: () => import('@unhead/vue/types').VueHeadClient
+}
 declare module '#build/unhead.config.mjs'
 
 declare module '#components'

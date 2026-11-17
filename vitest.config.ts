@@ -270,6 +270,7 @@ export default defineConfig({
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#build/route-rules.mjs': resolve('./test/mocks/route-rules'),
             '#build/fetch': resolve('./test/mocks/fetch'),
+            '#build/unhead-client.mjs': resolve('./test/mocks/unhead-client'),
             '#app-manifest': resolve('./test/mocks/app-manifest'),
             '#build/pages': resolve('./test/mocks/pages'),
             '#build/routes': resolve('./test/mocks/routes'),

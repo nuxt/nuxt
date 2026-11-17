@@ -10,6 +10,7 @@ import {
 import { useNuxtApp } from '#app/nuxt'
 import type { NuxtApp } from '#app/nuxt'
 import { unheadDiagnostics } from '../../app/diagnostics/head'
+import { useClientHead } from './client-head'
 
 /**
  * Injects the head client from the Nuxt context or Vue inject.
@@ -17,6 +18,10 @@ import { unheadDiagnostics } from '../../app/diagnostics/head'
 export function injectHead (nuxtApp?: NuxtApp): VueHeadClient {
   // Nuxt 4 will throw an error if the context is missing
   const nuxt = nuxtApp || useNuxtApp()
+  if (import.meta.client) {
+    const injected = nuxt.runWithContext(() => hasInjectionContext() ? inject<VueHeadClient | null>(headSymbol, null) : null) as VueHeadClient | null
+    return injected || useClientHead(nuxt)
+  }
   return nuxt.ssrContext?.head || nuxt.runWithContext(() => {
     if (hasInjectionContext()) {
       const head = inject<VueHeadClient>(headSymbol)

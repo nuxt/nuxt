@@ -5,11 +5,15 @@ import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
+import { createApp, inject } from 'vue'
+import { headSymbol } from '@unhead/vue'
 
 import * as composables from '#app/composables'
 import { _showErrorUnlessCrawler, clearError, createError, createErrorFromThrown, isNuxtError, showError, useError } from '#app/composables/error'
 import { describeError } from '../../packages/nuxt/src/runtime/server/renderer/error'
 import { useNuxtApp } from '#app/nuxt'
+import type { NuxtApp } from '#app/nuxt'
+import { injectHead, useHead, useServerHead, useServerHeadSafe, useServerSeoMeta } from '#app/composables/head'
 import * as idleCallback from '#app/compat/idle-callback'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
@@ -17,7 +21,6 @@ import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { callOnce } from '#app/composables/once'
-import { useHead, useServerHead, useServerHeadSafe, useServerSeoMeta } from '#app/composables/head'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
@@ -1980,5 +1983,17 @@ describe('namespace access to useNuxtApp', () => {
 
   it('should throw an error when used with wrong appId', () => {
     expect(() => useNuxtApp('nuxt-app-unknown')).toThrow()
+  })
+})
+
+describe('injectHead', () => {
+  it('creates and provides the client head on first use', () => {
+    const vueApp = createApp({ render: () => null })
+    const nuxtApp = { vueApp, runWithContext: (fn: () => unknown) => vueApp.runWithContext(fn) } as unknown as NuxtApp
+
+    expect(vueApp.runWithContext(() => inject(headSymbol, null))).toBeNull()
+    const head = injectHead(nuxtApp)
+    expect(injectHead(nuxtApp)).toBe(head)
+    expect(vueApp.runWithContext(() => inject(headSymbol))).toBe(head)
   })
 })
