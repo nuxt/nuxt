@@ -111,6 +111,30 @@ describe('nitro v2 runtime hook bridge', () => {
     report.mockRestore()
   })
 
+  it('stops reading an unmarked stream that keeps producing without yielding', async () => {
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8011').mockImplementation(() => ({}) as any)
+    const { hooks, handlers } = createNitroApp()
+
+    const seen: unknown[] = []
+    hooks.hook('beforeResponse', (_event, response) => seen.push(response.body))
+
+    let pulls = 0
+    const chunk = new Uint8Array([120])
+    const response = new Response(new ReadableStream({
+      pull (controller) {
+        controller.enqueue(chunk)
+        if (++pulls >= 300_000) {
+          controller.close()
+        }
+      },
+    }))
+    await handlers.get('response')!(response, {})
+
+    expect(seen).toEqual([undefined])
+    expect(pulls).toBeLessThan(300_000)
+    report.mockRestore()
+  })
+
   it('reports an attempted body replacement once per hook', async () => {
     const report = vi.spyOn(serverDiagnostics, 'NUXT_E8008').mockImplementation(() => ({}) as any)
     const { hooks, handlers } = createNitroApp()

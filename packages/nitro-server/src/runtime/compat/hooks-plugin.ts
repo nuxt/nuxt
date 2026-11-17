@@ -84,11 +84,12 @@ export default definePlugin((nitroApp) => {
 })
 
 const LIVE = Symbol('live')
+const READ_BUDGET_MS = 50
 
 /**
  * The text of a response body, read from a clone if the whole body arrives within the
- * current turn. A body still being produced is left to stream: the clone is cancelled,
- * which leaves the response itself untouched.
+ * current turn and the read budget. A body still being produced is left to stream: the
+ * clone is cancelled, which leaves the response itself untouched.
  */
 async function readBodyInHand (response: Response): Promise<string | undefined | typeof LIVE> {
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -99,15 +100,17 @@ async function readBodyInHand (response: Response): Promise<string | undefined |
       return ''
     }
     const decoder = new TextDecoder()
+    const deadline = Date.now() + READ_BUDGET_MS
     let text = ''
     while (true) {
       const result = await Promise.race([reader.read(), turn])
-      if (result === LIVE) {
+      if (result !== LIVE && result.done) {
+        return text + decoder.decode()
+      }
+      // chunks that are always ready resolve as microtasks, which the timer cannot interrupt
+      if (result === LIVE || Date.now() > deadline) {
         reader.cancel().catch(() => {})
         return LIVE
-      }
-      if (result.done) {
-        return text + decoder.decode()
       }
       text += decoder.decode(result.value, { stream: true })
     }
