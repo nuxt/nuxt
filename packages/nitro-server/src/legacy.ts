@@ -34,7 +34,9 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
         if (nitroBuilt) { nitro.hooks.callHook('build:reload') }
       })
     }
-    nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
+    nuxt.hook('vite:compiled', () => {
+      if (nitroBuilt) { nuxt.server.reload() }
+    })
     // the renderer config re-exports the head entries hoisted from the app component
     nuxt.hook('app:templatesGenerated', async (_app, templates) => {
       if (nitroBuilt && templates.some(template => template.filename === 'unhead.config.mjs')) {
