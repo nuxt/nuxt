@@ -52,6 +52,23 @@ test('basic HMR functionality', async ({ page, goto }) => {
   expect(page).toHaveNoErrorsOrWarnings()
 })
 
+test('HMR for static head of the app component', async ({ page, goto, fetch }) => {
+  const content = (path: string) => () => fetch(path).then(r => r.text()).then(html => html.match(/name="hmr-static-head" content="([^"]+)"/)?.[1])
+  const meta = page.locator('meta[name="hmr-static-head"]')
+
+  await goto('/')
+  await expect(meta).toHaveAttribute('content', 'v1')
+  await poll(content('/spa-shell')).toBe('v1')
+
+  fixture.replace('app/app.vue', `content: 'v1'`, `content: 'v2'`)
+  await poll(content('/'), 20_000).toBe('v2')
+  await poll(content('/spa-shell'), 20_000).toBe('v2')
+  await expect(meta).toHaveAttribute('content', 'v2')
+  await expect(meta).toHaveCount(1)
+
+  expect(page).toHaveNoErrorsOrWarnings()
+})
+
 test('detecting new routes', async ({ fetch }) => {
   expect((await fetch('/some-404')).status).toBe(404)
 

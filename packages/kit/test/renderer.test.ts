@@ -92,7 +92,7 @@ describe('getRendererConfig', () => {
     const code = getRendererConfig({}, nuxt())
 
     expect(code).toContain(`export { default as unheadOptions } from "#build/unhead-options.mjs"`)
-    expect(code).toContain(`export { iifeChunkFileName, renderSSRHeadOptions } from "#build/unhead.config.mjs"`)
+    expect(code).toContain(`export { appComponentHead, iifeChunkFileName, renderSSRHeadOptions } from "#build/unhead.config.mjs"`)
 
     expect(getRendererConfig({ unheadOptions: '#custom', headConfig: '#custom-config' }, nuxt())).toContain(`from "#custom-config"`)
   })

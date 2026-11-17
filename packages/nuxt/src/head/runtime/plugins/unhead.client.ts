@@ -22,6 +22,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     nuxtApp.hooks.hook('app:error', resume)
     nuxtApp.hooks.hook('app:suspense:resolve', resume)
 
+    // head input hoisted from the app component applies where the app component sets up
+    nuxtApp.hooks.hookOnce('vue:setup', () => {
+      state.rootSetup = true
+      state.pushAppComponentHead?.()
+    })
+
     // the head is created on first use, including through `inject(headSymbol)`
     if (!state.head) {
       Object.defineProperty(nuxtApp.vueApp._context.provides, headSymbol, {
