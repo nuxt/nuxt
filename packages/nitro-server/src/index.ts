@@ -48,6 +48,8 @@ export type { NuxtTracingChannelOptions } from './augments.ts'
 /** Subpath the request-shape extractors are imported from in generated declarations. */
 const REQUEST_TYPES_MODULE = `${nitroBuilder.name}/request-types`
 
+const RELATIVE_BASE_URL_RE = /^\.(?:$|\/)/
+
 // App-only aliases Nitro carries in its own alias map, which must not resolve in the server program
 const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/, '~', '@', '~~', '@@']
 
@@ -172,8 +174,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // When the base URL is only known at runtime, the `base-url` middleware strips it from incoming
   // requests, so nitro's routes must stay unprefixed for the internally re-dispatched request to
-  // match them.
-  const nitroBaseURL = nuxt.options.experimental.runtimeBaseURL ? '/' : nuxt.options.app.baseURL
+  // match them. A relative base URL is resolved in the browser and never reaches a request path.
+  const nitroBaseURL = nuxt.options.experimental.runtimeBaseURL || RELATIVE_BASE_URL_RE.test(nuxt.options.app.baseURL) ? '/' : nuxt.options.app.baseURL
   if (nuxt.options.experimental.runtimeBaseURL) {
     nuxt.options.serverHandlers.unshift({
       route: '',

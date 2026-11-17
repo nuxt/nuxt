@@ -81,6 +81,14 @@ describe('nitro config', () => {
     })
   }, 60_000)
 
+  it.for([true, false])('registers routes at the root for a relative `app.baseURL` when static is %s', async (isStatic) => {
+    await withNitro({ app: { baseURL: './' }, nitro: { static: isStatic } }, (nitro, _nitroConfig, nuxt) => {
+      expect(nuxt.options.app.baseURL).toBe('./')
+      expect(nitro.options.baseURL).toBe('/')
+      expect(nitro.routing.routeRules.routes.map(route => route.route)).toContain('/**')
+    })
+  })
+
   it('emits valid rest-of-path URLPatterns for noScripts wildcard rules', async () => {
     await withNitro({ routeRules: { '/foo/*': { noScripts: true }, '/scripted/*': { ssr: true } } }, async (_nitro, nitroConfig) => {
       const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
