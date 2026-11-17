@@ -1,6 +1,10 @@
 // the v1 helpers under test are deprecated in h3 v2 by definition
 /* eslint-disable @typescript-eslint/no-deprecated */
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { dirname, resolve } from 'pathe'
+import { parseSync } from 'rolldown/utils'
 import { HTTPError, mockEvent } from 'nitro/h3'
 
 import {
@@ -24,6 +28,8 @@ import {
   toLegacyError,
   toWebRequest,
 } from '../src/runtime/compat/h3-v1.ts'
+import * as serverShim from '../src/runtime/compat/h3-v1.ts'
+import * as appShim from '../src/runtime/compat/h3-v1-app.ts'
 import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
 
 describe('h3 v1 shim', () => {
@@ -471,3 +477,55 @@ describe('v1 event bridge', () => {
     expect(event.res.headers.get('link')).toBe('</c>; rel=preload')
   })
 })
+
+describe('h3 v1 app shim', () => {
+  it('provides the helpers of the server shim, without its handler wrapper', () => {
+    const wrapper = ['defineEventHandler', 'eventHandler']
+    expect(Object.keys(appShim).sort()).toEqual(Object.keys(serverShim).sort())
+    for (const name of Object.keys(serverShim)) {
+      if (wrapper.includes(name)) {
+        expect(appShim[name as keyof typeof appShim]).not.toBe(serverShim[name as keyof typeof serverShim])
+      } else {
+        expect(appShim[name as keyof typeof appShim]).toBe(serverShim[name as keyof typeof serverShim])
+      }
+    }
+  })
+
+  it('imports nothing that loads the Nitro runtime', () => {
+    const appShimPath = fileURLToPath(new URL('../src/runtime/compat/h3-v1-app.ts', import.meta.url))
+    const serverShimPath = fileURLToPath(new URL('../src/runtime/compat/h3-v1.ts', import.meta.url))
+    expect([...collectBareImports(serverShimPath)]).toEqual(expect.arrayContaining(['nitro/app', 'nitro/context']))
+
+    const imports = [...collectBareImports(appShimPath)]
+    expect(imports.filter(specifier => /^(?:#|nitro(?:\/|$))/.test(specifier) && specifier !== 'nitro/h3')).toEqual([])
+  })
+})
+
+/** The non-relative specifiers a module and the relative modules it imports load at runtime. */
+function collectBareImports (entry: string): Set<string> {
+  const found = new Set<string>()
+  const seen = new Set<string>()
+  const pending = [entry]
+  while (pending.length > 0) {
+    const file = pending.pop()!
+    if (seen.has(file)) {
+      continue
+    }
+    seen.add(file)
+    const code = readFileSync(file, 'utf8')
+    const { module } = parseSync(file, code, { lang: 'ts', sourceType: 'module' })
+    const requests = [
+      ...module.staticImports.filter(entry => entry.entries.length === 0 || entry.entries.some(e => !e.isType)).map(entry => entry.moduleRequest.value),
+      ...module.staticExports.flatMap(entry => entry.entries.filter(e => e.moduleRequest && !e.isType).map(e => e.moduleRequest!.value)),
+      ...module.dynamicImports.map(entry => code.slice(entry.moduleRequest.start, entry.moduleRequest.end).replace(/^(['"`])(.*)\1$/s, '$2')),
+    ]
+    for (const request of requests) {
+      if (request.startsWith('.')) {
+        pending.push(resolve(dirname(file), request))
+      } else {
+        found.add(request)
+      }
+    }
+  }
+  return found
+}
