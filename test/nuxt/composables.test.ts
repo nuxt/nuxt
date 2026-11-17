@@ -347,16 +347,55 @@ describe('ssr composables', () => {
 })
 
 describe('useHydration', () => {
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let initialState: { appCreated: boolean | undefined, isHydrating: boolean | undefined }
+
+  beforeEach(() => {
+    nuxtApp = useNuxtApp()
+    initialState = {
+      appCreated: nuxtApp._appCreated,
+      isHydrating: nuxtApp.isHydrating,
+    }
+  })
+
+  afterEach(() => {
+    nuxtApp._appCreated = initialState.appCreated
+    nuxtApp.isHydrating = initialState.isHydrating
+    delete nuxtApp.payload.key
+  })
+
   it('should hydrate value from payload', async () => {
+    nuxtApp._appCreated = false
     let val: any
-    const nuxtApp = useNuxtApp()
     useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
-    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
-    expect(val).toMatchInlineSnapshot('undefined')
+    expect(val).toBeUndefined()
 
     nuxtApp.payload.key = 'from payload'
     await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
-    expect(val).toMatchInlineSnapshot('"from payload"')
+    expect(val).toBe('from payload')
+  })
+
+  it('should hydrate immediately when registered during hydration after the app has been created', async () => {
+    nuxtApp._appCreated = false
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    nuxtApp.isHydrating = true
+    nuxtApp.payload.key = 'late registration'
+
+    let val: any
+    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
+    expect(val).toBe('late registration')
+  })
+
+  it('should not apply the initial payload when registered after hydration', async () => {
+    nuxtApp._appCreated = false
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    nuxtApp.isHydrating = false
+    nuxtApp.payload.key = 'stale'
+
+    const set = vi.fn()
+    useHydration('key', () => {}, set)
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    expect(set).not.toHaveBeenCalled()
   })
 })
 

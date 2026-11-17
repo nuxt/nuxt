@@ -181,6 +181,8 @@ interface _NuxtApp {
   '$config': RuntimeConfig
 
   'isHydrating'?: boolean
+  /** @internal */
+  '_appCreated'?: boolean
   'deferHydration': () => () => void | Promise<void>
 
   'ssrContext'?: NuxtSSRContext
@@ -380,6 +382,8 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
       })
     }
     window.useNuxtApp ||= useNuxtApp
+
+    nuxtApp.hooks.hook('app:created', () => { nuxtApp._appCreated = true })
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.

@@ -67,7 +67,7 @@ export function useHydration<T> (key: string, get: () => T, set: (value: T) => v
 | --- | --- | --- |
 | `key` | `string` | A unique key that identifies the data in your Nuxt application. |
 | `get` | `() => T` | A function executed **only on the server** (called when SSR rendering is done) to set the initial value. |
-| `set` | `(value: T) => void` | A function executed **only on the client** (called when initial Vue instance is created) to receive the data. |
+| `set` | `(value: T) => void` | A function executed **only on the client** (called when the app is created, or immediately when registered later during hydration) to receive the data. |
 
 ## Return Values
 
