@@ -1,5 +1,6 @@
 import { realpathSync } from 'node:fs'
-import { join, normalize } from 'pathe'
+import { matchesGlob } from 'node:path'
+import { isAbsolute, join, normalize, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import { createUnimport } from 'unimport'
 import type { Import, Preset, Unimport } from 'unimport'
@@ -10,6 +11,14 @@ import { toArray } from './utils.ts'
 
 const QUERY_RE = /\?.*$/
 const SCRIPT_RE = /\.[cm]?[jt]sx?$/
+
+/** Whether `id` matches an `imports.exclude` pattern, with globs resolved as unimport resolves them. */
+function isExcluded (id: string, pattern: string | RegExp | null | undefined): boolean {
+  if (typeof pattern === 'string') {
+    return matchesGlob(id, isAbsolute(pattern) || pattern.startsWith('**') ? pattern : resolve(pattern))
+  }
+  return !!pattern?.test(id)
+}
 
 function toRealPath (path: string): string {
   try {
@@ -78,7 +87,7 @@ export async function setupModuleRuntimeImports (nitroConfig: NitroConfig, prese
       if (!unimport || !options || !nitro?.unimport || !SCRIPT_RE.test(id.replace(QUERY_RE, '')) || !isModuleRuntime(id)) {
         return
       }
-      const autoImport = options.autoImport !== false && ![options.exclude].flat().some(pattern => pattern instanceof RegExp && pattern.test(id))
+      const autoImport = options.autoImport !== false && ![options.exclude].flat().some(pattern => isExcluded(id, pattern))
       if (!autoImport && !code.includes('#imports')) {
         return
       }

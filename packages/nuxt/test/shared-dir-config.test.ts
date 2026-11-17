@@ -77,6 +77,23 @@ describe('loadNuxt', () => {
     expect(await transform!(code, join(fixtureDir, 'modules/auto-registered/runtime/node_modules/dep/index.js'))).toBeUndefined()
   })
 
+  it('does not auto-import into module runtime code matched by a glob in `nitro.imports.exclude`', async () => {
+    const transform = await getModuleImportsTransform({
+      experimental: { nitroAutoImports: false },
+      nitro: { imports: { exclude: [join(fixtureDir, 'modules/auto-registered/runtime/server/**')] } },
+    })
+    const code = [
+      `import { useRuntimeConfig } from '#imports'`,
+      `export default defineEventHandler(event => useRuntimeConfig(event))`,
+    ].join('\n')
+
+    const result = await transform!(code, join(fixtureDir, 'modules/auto-registered/runtime/server/handler.ts'))
+    expect(result?.code).toMatchInlineSnapshot(`
+      "import { useRuntimeConfig } from 'nitropack/runtime/internal/config';
+      export default defineEventHandler(event => useRuntimeConfig(event))"
+    `)
+  })
+
   it('leaves module runtime code to nitro auto-imports by default', async () => {
     expect(await getModuleImportsTransform()).toBeUndefined()
   })
