@@ -3,6 +3,7 @@ import ignore from 'ignore'
 import { join, relative, resolve } from 'pathe'
 import { tryUseNuxt } from './context.ts'
 import { getLayerDirectories } from './layers.ts'
+import { isWithinDir } from './internal/paths.ts'
 import type { Nuxt } from '@nuxt/schema'
 
 export function createIsIgnored (nuxt: Nuxt | null | undefined = tryUseNuxt()): (pathname: string, stats?: unknown) => boolean {
@@ -37,7 +38,7 @@ export function isIgnored (pathname: string, _stats?: unknown, nuxt: Nuxt | null
   // is below a layer root the relative path is exactly the suffix after
   // that prefix
   for (const cwd of cwds) {
-    if (pathname.startsWith(cwd)) {
+    if (isWithinDir(pathname, cwd)) {
       const relativePath = pathname.slice(cwd.length)
       return !!(relativePath && nuxt._ignore.ignores(relativePath))
     }

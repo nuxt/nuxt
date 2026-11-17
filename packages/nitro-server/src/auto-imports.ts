@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import { createIsIgnored } from '@nuxt/kit'
+import { isWithinDir } from '@nuxt/kit/internal'
 import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { Import, InjectImportsOptions, InlinePreset, Unimport } from 'unimport'
@@ -96,7 +97,7 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
         fileFilter: file => !isIgnored(file),
       })
       for (const i of scanned) {
-        i.priority ??= layerPriorities.find(([dir]) => i.from === dir || i.from.startsWith(dir + '/'))?.[1]
+        i.priority ??= layerPriorities.find(([dir]) => isWithinDir(i.from, dir))?.[1]
       }
       imports.push(...scanned)
       return imports

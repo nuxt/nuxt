@@ -149,7 +149,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Restart Nuxt when layer directories are added or removed
   const layersDir = withTrailingSlash(resolve(nuxt.options.rootDir, 'layers'))
   nuxt.hook('builder:watch', (event, relativePath) => {
-    if ((event === 'addDir' || event === 'unlinkDir') && resolve(nuxt.options.srcDir, relativePath).startsWith(layersDir)) {
+    if ((event === 'addDir' || event === 'unlinkDir') && isWithinDir(resolve(nuxt.options.srcDir, relativePath), layersDir)) {
       return nuxt.callHook('restart', { hard: true })
     }
   })
@@ -219,7 +219,7 @@ async function initNuxt (nuxt: Nuxt) {
   const locallyScannedLayersDirs = layerDirs.map(l => join(l.root, 'layers/'))
   const rootWithTrailingSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const dirs of layerDirs) {
-    if (dirs.root !== rootWithTrailingSlash && locallyScannedLayersDirs.every(dir => !dirs.root.startsWith(dir))) {
+    if (dirs.root !== rootWithTrailingSlash && locallyScannedLayersDirs.every(dir => !isWithinDir(dirs.root, dir))) {
       nuxt.options.modulesDir.push(join(dirs.root, 'node_modules'))
     }
   }

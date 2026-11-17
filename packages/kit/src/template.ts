@@ -13,6 +13,7 @@ import { captureStackTrace } from 'errx'
 import { DEFAULT_JS_FILE_EXTENSIONS } from './constants.ts'
 import { distDirURL, filterInPlace } from './utils.ts'
 import { directoryToURL } from './internal/esm.ts'
+import { isWithinDir } from './internal/paths.ts'
 import { resolveDeclarationPath } from './types.ts'
 import { getDirectory } from './module/install.ts'
 import { tryUseNuxt, useNuxt } from './context.ts'
@@ -34,7 +35,7 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNu
 
   try {
     const distDir = distDirURL.toString()
-    const { source } = captureStackTrace().find(e => e.source && !e.source.startsWith(distDir)) ?? {}
+    const { source } = captureStackTrace().find(e => e.source && !isWithinDir(e.source, distDir)) ?? {}
     if (source) {
       const path = normalize(fileURLToPath(source))
       if (existsSync(path)) {
@@ -321,7 +322,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   for (const dir of nuxt.options.modulesDir) {
     // we only need to exclude node_modules directories if they are
     // being included automatically by being inside the source directory
-    if (!sourceDirs.some(srcDir => dir.startsWith(srcDir))) {
+    if (!sourceDirs.some(srcDir => isWithinDir(dir, srcDir))) {
       exclude.add(relativeWithDot(typesDir, dir))
     }
     nodeExclude.add(relativeWithDot(typesDir, dir))
@@ -697,7 +698,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // layer directories containing the project root would match every alias, so we ignore them
   const nonRootLayerDirs = layerDirs
     .map(dirs => dirs.root)
-    .filter(root => !rootDirWithSlash.startsWith(root))
+    .filter(root => !isWithinDir(rootDirWithSlash, root))
 
   async function resolveConfig (tsConfig: TSConfig, declarationEntry: string) {
     if (isV5OrHigher) {
@@ -870,7 +871,7 @@ function isHoistPathKey (pathKey: string, hoistKeys: Set<string>) {
 
 function isPathUnderLayerDirs (target: string, buildDir: string, layerDirs: string[]) {
   const absolute = withTrailingSlash(resolve(buildDir, target.replace(PATH_WILDCARD_RE, '')))
-  return layerDirs.some(dir => absolute.startsWith(dir))
+  return layerDirs.some(dir => isWithinDir(absolute, dir))
 }
 
 function renderReference (ref: TSReference, baseDir: string) {

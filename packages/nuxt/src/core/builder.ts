@@ -219,7 +219,7 @@ function createWatcher (chokidarWatch: ChokidarWatch) {
     paths.push(layer.app)
     // Only add server and shared if they're not inside app (avoid double-watching)
     for (const dir of [layer.server, layer.shared]) {
-      if (!dir.startsWith(layer.app.replace(/\/?$/, '/'))) {
+      if (!isWithinDir(dir, layer.app)) {
         paths.push(dir)
       }
     }
@@ -232,11 +232,10 @@ function createWatcher (chokidarWatch: ChokidarWatch) {
   })
 
   const restartPaths = new Set<string>()
-  const srcDir = nuxt.options.srcDir.replace(/\/?$/, '/')
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
-    if (!path.startsWith(srcDir)) {
+    if (!isWithinDir(path, nuxt.options.srcDir)) {
       restartPaths.add(path)
     }
   }
@@ -431,7 +430,7 @@ export function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boo
     }
     // Only add server and shared if they're not inside app (avoid double-watching)
     for (const dir of [dirs.server, dirs.shared]) {
-      if (!isIgnored(dir) && !dir.startsWith(dirs.app.replace(/\/?$/, '/'))) {
+      if (!isIgnored(dir) && !isWithinDir(dir, dirs.app)) {
         pathsToWatch.add(dir)
       }
     }

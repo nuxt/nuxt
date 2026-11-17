@@ -11,7 +11,7 @@ import { resolveModulePath } from 'exsolve'
 import type { ResolverOptions } from 'exsolve'
 import escapeRE from 'escape-string-regexp'
 import { getLayerDirectories, resolveAlias } from '@nuxt/kit'
-import { trackPendingTemplate } from '@nuxt/kit/internal'
+import { isWithinDir, trackPendingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt, ServerApi } from '@nuxt/schema'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 
@@ -726,9 +726,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // declaration rather than by the accident of how core modules are installed. Nitro's
   // own runtime is v3 by definition, and the bare `h3` its internal routes import is h3 v2.
   const protectedDirs = [ownRuntime, withTrailingSlash(normalize(nuxt.options.buildDir)), ...getPackageDirs('nuxt/package.json', nuxt.options.rootDir), ...getPackageDirs('nitro/package.json', nuxt.options.rootDir)]
-  const isProtected = (path: string) => protectedDirs.some(dir => path.startsWith(dir))
+  const isProtected = (path: string) => protectedDirs.some(dir => isWithinDir(path, dir))
   const userDirs = [...layerServerDirs, ...getLayerDirectories(nuxt).map(layer => withTrailingSlash(normalize(layer.shared)))]
-  const isUserCode = (path: string) => userDirs.some(dir => path.startsWith(dir))
+  const isUserCode = (path: string) => userDirs.some(dir => isWithinDir(path, dir))
 
   /** The most specific module holding the real path, else one of the given paths. */
   const ownerOf = (real: string, paths: string[]) => {
