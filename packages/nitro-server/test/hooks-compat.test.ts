@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { HookableCore, createHooks } from 'hookable'
+import { mockEvent } from 'nitro/h3'
 
 import { serverDiagnostics } from '../src/runtime/diagnostics.ts'
 import { hasLegacyHookListener, observeLegacyHooks } from '../src/runtime/compat/hook-registry.ts'
@@ -59,6 +60,54 @@ describe('nitro v2 runtime hook bridge', () => {
     expect(seen).toEqual([undefined, undefined, undefined, undefined])
     expect(report).toHaveBeenCalledTimes(1)
     expect(report.mock.calls[0]![0]).toMatchObject({ hook: 'beforeResponse' })
+    report.mockRestore()
+  })
+
+  it('hands over the body of an unmarked stream that is already complete', async () => {
+    const { hooks, handlers } = createNitroApp()
+
+    const seen: unknown[] = []
+    hooks.hook('beforeResponse', (_event, response) => seen.push(response.body))
+
+    const encoder = new TextEncoder()
+    const response = new Response(new ReadableStream({
+      start (controller) {
+        controller.enqueue(encoder.encode('in '))
+        controller.enqueue(encoder.encode('hand'))
+        controller.close()
+      },
+    }))
+    await handlers.get('response')!(response, {})
+
+    expect(seen).toEqual(['in hand'])
+    expect(await response.text()).toBe('in hand')
+  })
+
+  it('does not hold an unmarked live stream until it ends', async () => {
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8011').mockImplementation(() => ({}) as any)
+    const hooks = createHooks()
+    plugin({ hooks } as any)
+
+    let close!: () => void
+    const response = new Response(new ReadableStream({
+      start (controller) {
+        controller.enqueue(new TextEncoder().encode('first'))
+        close = () => controller.close()
+      },
+    }))
+    const seen: unknown[] = []
+    hooks.hook('beforeResponse', (_event: unknown, legacy: { body: unknown }) => { seen.push(legacy.body) })
+
+    let settled = false
+    const pending = Promise.resolve(hooks.callHook('response', response, mockEvent('http://nuxt/stream'))).then(() => { settled = true })
+    await vi.waitFor(() => expect(settled).toBe(true))
+
+    expect(seen).toEqual([undefined])
+    expect(report).toHaveBeenCalledTimes(1)
+
+    close()
+    await pending
+    expect(await response.text()).toBe('first')
     report.mockRestore()
   })
 
