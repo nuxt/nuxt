@@ -914,7 +914,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     for (const hook of ['webpack:config', 'rspack:config'] as const) {
       nuxt.hook(hook, (configuration) => {
         const clientConfig = configuration.find(config => config.name === 'client')
-        if (!clientConfig!.resolve) { clientConfig!.resolve!.alias = {} }
+        clientConfig!.resolve ??= {}
+        clientConfig!.resolve.alias ??= {}
         if (Array.isArray(clientConfig!.resolve!.alias)) {
           clientConfig!.resolve!.alias.push({
             name: 'vue',
