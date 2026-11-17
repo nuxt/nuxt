@@ -89,6 +89,16 @@ describe('virtual fs plugin', () => {
 
     expect(plugin.resolveId.handler('../.nuxt/foo', '/src/main.ts')).toBe('virtual:nuxt:.nuxt%2Ffoo.ts')
   })
+
+  it('should not treat directories sharing a name prefix with the build directory as vfs directories', () => {
+    const plugin = VirtualFSPlugin(createStubNuxt({ '/.nuxt-foo/foo.ts': 'export const foo = 1' }), { mode: 'client' }).raw({}, { framework: 'rollup', versions: {} }) as unknown as {
+      resolveId: { filter: { id: RegExp } }
+    }
+
+    expect(plugin.resolveId.filter.id.test('/.nuxt/foo.ts')).toBe(true)
+    expect(plugin.resolveId.filter.id.test('/.nuxt-other/foo.ts')).toBe(false)
+    expect(plugin.resolveId.filter.id.test('/.nuxt-foo/foo.ts')).toBe(true)
+  })
 })
 
 function createStubNuxt (vfs: Record<string, string>) {

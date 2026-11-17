@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, ensureDependencyInstalled, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
-import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeRouteRuleLookupPath, normalizeRouteRulePath, pageDiagnostics, parseRouteRulesRoute, resolveRouteRulesRoutes } from '@nuxt/kit/internal'
+import { createNormalizedRouteRulesRouter, isWithinDir, mergeMethodRouteRulesRoutes, normalizeRouteRuleLookupPath, normalizeRouteRulePath, pageDiagnostics, parseRouteRulesRoute, resolveRouteRulesRoutes } from '@nuxt/kit/internal'
 import { join, relative, resolve } from 'pathe'
 import { genInlineTypeImport, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -197,7 +197,7 @@ export default defineNuxtModule({
 
     nuxt.hooks.hook('builder:watch', async (event, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
-      if (restartPaths.some(p => p === path || path.startsWith(p + '/'))) {
+      if (restartPaths.some(p => isWithinDir(path, p))) {
         const newSetting = await isPagesEnabled()
         if (options.enabled !== newSetting) {
           logger.info('Pages', newSetting ? 'enabled' : 'disabled')
@@ -334,7 +334,7 @@ export default defineNuxtModule({
       if (event === 'change' && !shouldAlwaysRegenerate) { return }
 
       // Attempt incremental tree update for page file add/unlink in dev mode
-      const layerIndex = pagesDirs.findIndex(dir => path.startsWith(dir))
+      const layerIndex = pagesDirs.findIndex(dir => isWithinDir(path, dir))
 
       if (pagesCtx && layerIndex !== -1 && !shouldAlwaysRegenerate) {
         try {
@@ -351,7 +351,7 @@ export default defineNuxtModule({
           pageDiagnostics.NUXT_B4012({ event, path, cause: err })
           nuxt.apps.default!.pages = await resolvePagesRoutes()
         }
-      } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
+      } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => isWithinDir(path, dir))) {
         // Full rebuild: scanPageMeta content change, layout/middleware change, or no pagesCtx
         nuxt.apps.default!.pages = await resolvePagesRoutes()
       }
@@ -417,7 +417,7 @@ export default defineNuxtModule({
       const clientBuildDir = resolve(nuxt.options.buildDir, 'dist/client')
       publicAssets = nitro.options.publicAssets.filter((asset) => {
         const dir = resolve(asset.dir)
-        return dir !== clientBuildDir && !dir.startsWith(clientBuildDir + '/')
+        return !isWithinDir(dir, clientBuildDir)
       })
     })
 

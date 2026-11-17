@@ -1,5 +1,5 @@
 import { isIgnored } from '@nuxt/kit'
-import { buildDiagnostics, hasOwnSubpathImport } from '@nuxt/kit/internal'
+import { buildDiagnostics, hasOwnSubpathImport, isWithinDir } from '@nuxt/kit/internal'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
@@ -57,7 +57,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
 
   function transformInclude (id: string) {
     id = normalize(id)
-    return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
+    return id.startsWith('virtual:') || id.startsWith('\0virtual:') || isWithinDir(id, nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
   }
 
   return createUnplugin(() => [

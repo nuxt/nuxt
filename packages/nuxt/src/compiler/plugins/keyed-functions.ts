@@ -7,7 +7,7 @@ import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { resolveAlias } from '@nuxt/kit'
-import { buildDiagnostics } from '@nuxt/kit/internal'
+import { buildDiagnostics, isWithinDir } from '@nuxt/kit/internal'
 import type { KeyedFunction } from '@nuxt/schema'
 import type { ESTree } from 'rolldown/utils'
 
@@ -194,9 +194,9 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
             if (fnMeta) { return fnMeta }
 
             // TODO: remove in Nuxt 5
-            if (source.startsWith(options.appDir)) {
+            if (isWithinDir(source, options.appDir)) {
               for (const [fnSource, meta] of sourcesToMetas) {
-                if (meta.name !== functionName || !fnSource.startsWith(options.appDir)) { continue }
+                if (meta.name !== functionName || !isWithinDir(fnSource, options.appDir)) { continue }
                 return meta
               }
             }
@@ -304,7 +304,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                   stripExtension(fnMeta.source) === importSourceResolved
                   // TODO: remove in Nuxt 5
                   // or the function is from the Nuxt source (`#app` barrel export, for example)
-                  || fnMeta.source.startsWith(options.appDir)
+                  || isWithinDir(fnMeta.source, options.appDir)
                 )
               )
               // or the function is defined in the current file, and we're considering the root level scope declaration

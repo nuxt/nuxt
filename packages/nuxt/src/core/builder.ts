@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt, writeTypes } from '@nuxt/kit'
-import { buildDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { buildDiagnostics, isWithinDir, useServerBuild } from '@nuxt/kit/internal'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 
@@ -219,7 +219,7 @@ function createWatcher (chokidarWatch: ChokidarWatch) {
     paths.push(layer.app)
     // Only add server and shared if they're not inside app (avoid double-watching)
     for (const dir of [layer.server, layer.shared]) {
-      if (!dir.startsWith(layer.app.replace(/\/?$/, '/'))) {
+      if (!isWithinDir(dir, layer.app)) {
         paths.push(dir)
       }
     }
@@ -232,11 +232,10 @@ function createWatcher (chokidarWatch: ChokidarWatch) {
   })
 
   const restartPaths = new Set<string>()
-  const srcDir = nuxt.options.srcDir.replace(/\/?$/, '/')
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
-    if (!path.startsWith(srcDir)) {
+    if (!isWithinDir(path, nuxt.options.srcDir)) {
       restartPaths.add(path)
     }
   }
@@ -423,7 +422,7 @@ function clearBuildHooks (nuxt: Nuxt): void {
   }
 }
 
-function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
+export function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } = {}): Set<string> {
   const pathsToWatch = new Set<string>()
   for (const dirs of getLayerDirectories(nuxt)) {
     if (!isIgnored(dirs.app)) {
@@ -431,7 +430,7 @@ function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } 
     }
     // Only add server and shared if they're not inside app (avoid double-watching)
     for (const dir of [dirs.server, dirs.shared]) {
-      if (!isIgnored(dir) && !dir.startsWith(dirs.app.replace(/\/?$/, '/'))) {
+      if (!isIgnored(dir) && !isWithinDir(dir, dirs.app)) {
         pathsToWatch.add(dir)
       }
     }
@@ -443,11 +442,10 @@ function resolvePathsToWatch (nuxt: Nuxt, opts: { parentDirectories?: boolean } 
       : resolve(nuxt.options.srcDir, pattern)
     let shouldAdd = true
     for (const w of [...pathsToWatch]) {
-      if (w.startsWith(path)) {
-        pathsToWatch.delete(w)
-      }
-      if (path.startsWith(w)) {
+      if (isWithinDir(path, w)) {
         shouldAdd = false
+      } else if (isWithinDir(w, path)) {
+        pathsToWatch.delete(w)
       }
     }
     if (shouldAdd) {

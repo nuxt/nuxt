@@ -11,6 +11,7 @@ import { isGreaterThan, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
 import { interopDefault } from '../internal/interop.ts'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from '../internal/node-module.ts'
+import { isWithinDir } from '../internal/paths.ts'
 import { useNuxt } from '../context.ts'
 import { logger } from '../logger.ts'
 import { resolveAlias } from '../resolve.ts'
@@ -525,8 +526,7 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
         ? parsed.dir + parsed.name
         : resolvePackageDir(modulePath, { try: true }) || modulePath
       nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
-      const directory = moduleRoot.replace(/\/?$/, '/')
-      if (moduleRoot !== nameOrPath && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
+      if (moduleRoot !== nameOrPath && !localLayerModuleDirs.some(dir => isWithinDir(moduleRoot, dir))) {
         nuxt.options.modulesDir.push(join(moduleRoot, 'node_modules'))
       }
     }

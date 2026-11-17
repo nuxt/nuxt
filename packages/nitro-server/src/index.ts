@@ -12,7 +12,7 @@ import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { createNitro } from 'nitro/builder'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
-import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
+import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, isWithinDir, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
@@ -741,7 +741,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nuxt.hook('builder:watch', async (event, relativePath) => {
     if (event !== 'add' && event !== 'unlink') { return }
     const path = resolve(nuxt.options.srcDir, relativePath)
-    if (!scannedDirs.some(dir => path === dir || path.startsWith(dir + '/'))) { return }
+    if (!scannedDirs.some(dir => isWithinDir(path, dir))) { return }
     await autoImports.refresh()
     await autoImports.writeTypes()
   })
