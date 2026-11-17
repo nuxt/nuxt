@@ -92,6 +92,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
       const staticBases: string[] = []
       for (const folder of nitro?.options.publicAssets || []) {
+        // eslint-disable-next-line local/no-unbounded-dir-prefix -- slashed URL prefix
         if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(nuxt.options.app.buildAssetsDir)) {
           staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
         }
@@ -99,6 +100,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
 
       const devHandlerRegexes: RegExp[] = []
       for (const handler of nuxt.options.devServerHandlers) {
+        // eslint-disable-next-line local/no-unbounded-dir-prefix -- slashed URL prefix
         if (handler.route && handler.route !== '/' && handler.route.startsWith(nuxt.options.app.buildAssetsDir)) {
           devHandlerRegexes.push(new RegExp(
             `^${handler.route
@@ -146,6 +148,7 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         })
 
         // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
+        // eslint-disable-next-line local/no-unbounded-dir-prefix -- slashed URL prefix
         if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
           res!.statusCode = 404
           res!.end('Not Found')

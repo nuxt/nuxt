@@ -10,6 +10,40 @@ import markdown from '@eslint/markdown'
 import { runtimeDependencies } from 'nuxt/meta'
 import { generatedTemplateCopies } from './packages/ui-templates/lib/paths.mjs'
 
+const DIR_NAME_RE = /dir|root|cwd/i
+const SLASHED_NAME_RE = /slash/i
+
+/**
+ * Flags `.startsWith(x)` where `x` is named like a directory: without a trailing slash, `/foo`
+ * also matches `/foo-bar`.
+ * @type {import('eslint').Rule.RuleModule}
+ */
+const noUnboundedDirPrefix = {
+  create (context) {
+    return {
+      CallExpression (node) {
+        if (node.callee.type !== 'MemberExpression' || node.callee.property.type !== 'Identifier' || node.callee.property.name !== 'startsWith') {
+          return
+        }
+        const [arg] = node.arguments
+        const name = arg?.type === 'Identifier'
+          ? arg.name
+          : arg?.type === 'MemberExpression' && !arg.computed && arg.property.type === 'Identifier' ? arg.property.name : undefined
+        if (arg && name && DIR_NAME_RE.test(name) && !SLASHED_NAME_RE.test(name)) {
+          context.report({ messageId: 'unbounded', node: arg })
+        }
+      },
+    }
+  },
+  meta: {
+    messages: {
+      unbounded: 'Use `isWithinDir` from `@nuxt/kit/internal`: a directory prefix without a trailing slash also matches its siblings.',
+    },
+    schema: [],
+    type: 'problem',
+  },
+}
+
 export default createConfigForNuxt({
   features: {
     stylistic: {
@@ -215,6 +249,17 @@ export default createConfigForNuxt({
           message: 'Use a nostics diagnostic (see packages/kit/src/diagnostics/) instead of logger/console for build-time warnings and errors.',
           selector: 'CallExpression[callee.object.name=/^(logger|console)$/][callee.property.name=/^(warn|error)$/]',
         }],
+      },
+    },
+    {
+      files: ['packages/*/src/**/*.{ts,mts,js,mjs}'],
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**', 'packages/kit/src/internal/paths.ts'],
+      name: 'local/requires/dir-prefix-boundary',
+      plugins: {
+        local: { rules: { 'no-unbounded-dir-prefix': noUnboundedDirPrefix } },
+      },
+      rules: {
+        'local/no-unbounded-dir-prefix': 'error',
       },
     },
     {
