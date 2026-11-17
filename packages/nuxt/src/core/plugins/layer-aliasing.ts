@@ -2,7 +2,6 @@ import { type UnpluginOptions, createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
 import { resolveAlias } from '@nuxt/kit'
 import { normalize } from 'pathe'
-import { withTrailingSlash } from 'ufo'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import type { NuxtConfigLayer } from 'nuxt/schema'
 import type { Rolldown } from 'vite'
@@ -26,7 +25,7 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
     const srcDir = layer.config.srcDir || layer.cwd
     const rootDir = layer.config.rootDir || layer.cwd
 
-    aliases[withTrailingSlash(normalize(srcDir))] = {
+    aliases[normalize(srcDir).replace(/\/?$/, '/')] = {
       '~': layer.config?.alias?.['~'] || srcDir,
       '@': layer.config?.alias?.['@'] || srcDir,
       '~~': layer.config?.alias?.['~~'] || rootDir,
