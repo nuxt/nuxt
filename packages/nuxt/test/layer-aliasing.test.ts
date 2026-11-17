@@ -1,10 +1,11 @@
 import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'pathe'
-import { createServer } from 'vite'
+import { build, createServer } from 'vite'
+import type { Rolldown } from 'vite'
 import type { NuxtConfigLayer } from 'nuxt/schema'
 import type { UnpluginContextMeta } from 'unplugin'
-import { afterAll, describe, expect, it, onTestFinished } from 'vitest'
+import { afterAll, describe, expect, it, onTestFinished, vi } from 'vitest'
 
 import { LayerAliasingPlugin } from '../src/core/plugins/layer-aliasing'
 import { matchesIdFilter } from './utils.ts'
@@ -15,6 +16,7 @@ interface TransformHandler {
 
 interface RawPlugin {
   transform?: { filter: { id: RegExp | RegExp[] | { include?: RegExp | RegExp[], exclude?: RegExp | RegExp[] } }, handler: TransformHandler }
+  vite?: { resolveId: { handler: (id: string, importer?: string) => unknown } }
 }
 
 function makeLayer (cwd: string): NuxtConfigLayer {
@@ -25,9 +27,12 @@ function createPlugin (layers: NuxtConfigLayer[], framework: 'vite' | 'webpack' 
   const meta = { framework, webpack: { compiler: {} } } as unknown as UnpluginContextMeta
   const raw = LayerAliasingPlugin({ root: '/', dev: false, layers }).raw({}, meta)
   const entry = (Array.isArray(raw) ? raw[0] : raw) as RawPlugin
+  const resolve = vi.fn((id: string) => ({ id }))
   return {
     transformInclude: (id: string) => matchesIdFilter(entry.transform!.filter.id, id),
     transform: (code: string, id: string) => entry.transform!.handler.call({}, code, id),
+    resolve,
+    resolveId: (id: string, importer?: string) => entry.vite!.resolveId.handler.call({ resolve }, id, importer),
   }
 }
 
@@ -91,6 +96,32 @@ describe('LayerAliasingPlugin transform', () => {
     expect(transform(`@use '@/styles/global';`, `/other/path/file.scss`)).toBeUndefined()
   })
 
+  it.each(['vite', 'webpack'] as const)('on %s, excludes paths that only share a layer directory prefix', (framework) => {
+    const { transformInclude, transform } = createPlugin([makeLayer(layerDir)], framework)
+
+    for (const id of [`${layerDir}-app/styles/global.scss`, `${layerDir}.scss`, '\\abs\\layer-app\\styles\\global.scss']) {
+      expect(transformInclude(id)).toBe(false)
+      expect(transform(`@use '@/styles/global';`, id)).toBeUndefined()
+    }
+  })
+
+  it('uses the parent layer for files next to a nested layer', () => {
+    const { transform } = createPlugin([makeLayer('/abs'), makeLayer(layerDir)])
+
+    expect(transform(`@use '@/styles/global';`, `${layerDir}-app/styles/global.scss`)?.code)
+      .toBe(`@use '/abs/styles/global';`)
+  })
+
+  it.each(['/', '/abs/layer/', 'C:/abs/layer/', 'C:\\abs\\layer\\'])('matches layer directories with a trailing separator: %s', (srcDir) => {
+    const layer = makeLayer(srcDir)
+    layer.config.alias = { '@': '/custom' }
+    const { transformInclude, transform } = createPlugin([layer])
+
+    const id = `${srcDir}styles/global.scss`
+    expect(transformInclude(id)).toBe(true)
+    expect(transform(`@use '@/styles/global';`, id)?.code).toBe(`@use '/custom/styles/global';`)
+  })
+
   it('does not touch unquoted occurrences (e.g. comments, identifiers)', () => {
     const { transform } = createPlugin([makeLayer(layerDir)])
 
@@ -138,6 +169,74 @@ describe('LayerAliasingPlugin transform', () => {
     expect(transformInclude(`${layerDir}/styles/global.scss`)).toBe(true)
     expect(transformInclude(`/somewhere/else/file.ts`)).toBe(false)
   })
+})
+
+describe('LayerAliasingPlugin resolveId', () => {
+  it.each(['~', '@', '~~', '@@'])('leaves %s imports from a sibling app to the app resolver', (alias) => {
+    const { resolveId, resolve } = createPlugin([makeLayer('/abs/foo')])
+
+    for (const importer of ['/abs/foo-bar/plugins/example.ts', 'virtual-module:/abs/foo-bar/App.vue', '\\abs\\foo-bar\\plugins\\example.ts']) {
+      expect(resolveId(`${alias}/utils`, importer)).toBeUndefined()
+    }
+    expect(resolve).not.toHaveBeenCalled()
+  })
+
+  it.each(['', 'virtual-module:'])('resolves aliases in the most specific containing layer (%s)', (prefix) => {
+    const { resolveId, resolve } = createPlugin([makeLayer('/abs'), makeLayer('/abs/foo')])
+
+    expect(resolveId('~/utils', `${prefix}/abs/foo/plugins/example.ts`)).toEqual({ id: '/abs/foo/utils' })
+    expect(resolveId('~/utils', `${prefix}/abs/foo-bar/plugins/example.ts`)).toEqual({ id: '/abs/utils' })
+    expect(resolve).toHaveBeenLastCalledWith('/abs/utils', `${prefix}/abs/foo-bar/plugins/example.ts`, { skipSelf: true })
+  })
+
+  it.each(['/abs/foo/', 'C:/abs/foo/', 'C:\\abs\\foo\\'])('preserves custom source and root aliases for %s', (srcDir) => {
+    const layer = makeLayer(srcDir)
+    layer.config.alias = { '~': '/custom/src', '@': '/custom/src', '~~': '/custom', '@@': '/custom' }
+    const { resolveId } = createPlugin([layer])
+
+    for (const alias of ['~', '@', '~~', '@@']) {
+      const expected = alias.length === 1 ? '/custom/src/utils' : '/custom/utils'
+      expect(resolveId(`${alias}/utils`, `${srcDir}plugins/example.ts`)).toEqual({ id: expected })
+    }
+  })
+})
+
+it('builds sibling app and layer imports against their own utils', async () => {
+  const fixtureDir = await realpath(await mkdtemp(join(tmpdir(), 'nuxt-layer-aliasing-build-')))
+  onTestFinished(() => rm(fixtureDir, { recursive: true, force: true, maxRetries: 5 }))
+  const layerDir = join(fixtureDir, 'foo')
+  const appDir = join(fixtureDir, 'foo-bar')
+  const files = {
+    [join(layerDir, 'utils.ts')]: 'export const x = "layer-utils"',
+    [join(layerDir, 'plugins/example.ts')]: 'export { x } from "~/utils"',
+    [join(appDir, 'utils.ts')]: 'export const x = "app-utils"',
+    [join(appDir, 'plugins/example.ts')]: 'export { x } from "~/utils"',
+    [join(appDir, 'entry.ts')]: 'export { x as app } from "./plugins/example"; export { x as layer } from "../foo/plugins/example"',
+  }
+  for (const [file, contents] of Object.entries(files)) {
+    await mkdir(dirname(file), { recursive: true })
+    await writeFile(file, contents)
+  }
+
+  const result = await build({
+    root: appDir,
+    configFile: false,
+    logLevel: 'silent',
+    resolve: { alias: { '~': appDir } },
+    plugins: [LayerAliasingPlugin({ root: appDir, dev: false, layers: [makeLayer(layerDir)] }).vite()],
+    build: {
+      write: false,
+      minify: false,
+      lib: { entry: join(appDir, 'entry.ts'), formats: ['es'], fileName: 'entry' },
+    },
+  }) as Rolldown.RolldownOutput[]
+  const entry = result[0]!.output.find(chunk => chunk.type === 'chunk' && chunk.isEntry)
+  expect(entry?.type).toBe('chunk')
+  if (entry?.type !== 'chunk') { return }
+
+  const exports = await import(`data:text/javascript,${encodeURIComponent(entry.code)}`)
+  expect(exports.app).toBe('app-utils')
+  expect(exports.layer).toBe('layer-utils')
 })
 
 describe('LayerAliasingPlugin dependency scan', async () => {
