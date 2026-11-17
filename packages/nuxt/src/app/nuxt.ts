@@ -568,8 +568,8 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  * Returns `null` if Nuxt instance is unavailable.
  * @since 3.10.0
  */
-/* @__NO_SIDE_EFFECTS__ */
 export function tryUseNuxtApp (): NuxtApp | null
+/* @__NO_SIDE_EFFECTS__ */
 export function tryUseNuxtApp (id?: string): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
@@ -587,8 +587,8 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
  * Throws an error if Nuxt instance is unavailable.
  * @since 3.0.0
  */
-/* @__NO_SIDE_EFFECTS__ */
 export function useNuxtApp (): NuxtApp
+/* @__NO_SIDE_EFFECTS__ */
 export function useNuxtApp (id?: string): NuxtApp {
   // @ts-expect-error internal usage of id
   const nuxtAppInstance = tryUseNuxtApp(id)

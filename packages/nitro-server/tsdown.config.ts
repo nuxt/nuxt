@@ -1,10 +1,12 @@
 import { defineConfig } from 'tsdown'
+import { failOnInvalidAnnotation } from '../../scripts/tsdown-plugins.ts'
 
 export default defineConfig([
   {
     dts: { generator: 'oxc' },
     exports: { devExports: true },
     entry: ['src/index.ts', 'src/h3.ts', 'src/augments.ts', 'src/request-types.ts'],
+    plugins: [failOnInvalidAnnotation()],
     deps: {
       onlyBundle: [],
       neverBundle: ['@nuxt/schema', '#app/types'],
@@ -15,6 +17,7 @@ export default defineConfig([
     outDir: 'dist/runtime/',
     entry: 'src/runtime/**/*',
     unbundle: true,
+    plugins: [failOnInvalidAnnotation()],
     deps: {
       onlyBundle: [],
       neverBundle: [
