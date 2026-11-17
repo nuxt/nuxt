@@ -95,6 +95,18 @@ export function patchDevClientCss (event: RendererEvent, rendererContext: Render
 }
 
 /**
+ * The JSON error body sent with the legacy layer enabled, carrying the h3 v1 status keys a
+ * Nuxt 4 app reads alongside the ones Nitro sets.
+ */
+export function toJSONErrorBody<T> (body: T): T {
+  if (!body || typeof body !== 'object') {
+    return body
+  }
+  const { status, statusText } = body as { status?: number, statusText?: string }
+  return { ...body, statusCode: status, statusMessage: statusText }
+}
+
+/**
  * The route rules the renderer is given for a request. h3 removes a rule set to `false`,
  * and the Nuxt 4 renderer only opts out of rendering on an explicit `ssr: false`.
  */
