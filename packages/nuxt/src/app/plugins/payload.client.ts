@@ -16,15 +16,24 @@ import { payloadExtraction, prefetchPreloadTags, purgeCachedData } from '#build/
 
 type HintLink = Record<string, string | boolean>
 
-const forwardedHints = new Set<HTMLLinkElement>()
+/** Forwarded hint elements, mapped to the function that settles their prefetch task. */
+const forwardedHints = new Map<HTMLLinkElement, () => void>()
 const forwardedHintHrefs = new Set<string>()
 
 const MAX_HINTS_PER_ROUTE = 2
 const FORWARDED_HINT_TIMEOUT_MS = 30_000
 
+function removeHint (el: HTMLLinkElement, complete: () => void) {
+  complete()
+  el.onload = el.onerror = null
+  el.remove()
+}
+
 function disposeHint (el: HTMLLinkElement) {
-  if (forwardedHints.delete(el)) {
-    el.remove()
+  const complete = forwardedHints.get(el)
+  if (complete) {
+    forwardedHints.delete(el)
+    removeHint(el, complete)
   }
 }
 
@@ -98,7 +107,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         forwardedHintHrefs.clear()
         if (!stale.length) { return }
         const removeStale = () => {
-          for (const el of stale) { el.remove() }
+          for (const [el, complete] of stale) { removeHint(el, complete) }
         }
         if (failure) { return removeStale() }
         const unhook = nuxtApp.hooks.hookOnce('page:finish', () => {
@@ -158,7 +167,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       el.onload = complete
       const timeout = setTimeout(fail, FORWARDED_HINT_TIMEOUT_MS)
 
-      forwardedHints.add(el)
+      forwardedHints.set(el, complete)
       document.head.appendChild(el)
     })
 

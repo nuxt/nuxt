@@ -71,6 +71,17 @@ describe('forwarded payload prefetch hints', () => {
     await vi.waitFor(() => expect(hint.isConnected).toBe(false))
   })
 
+  it('should release the handlers of removed forwarded hints', async () => {
+    const hint = await forwardHint('release') as HTMLLinkElement
+    expect(hint.onload).toBeTypeOf('function')
+    await navigate()
+    await nuxtApp.callHook('page:finish')
+    await vi.waitFor(() => expect(hint.isConnected).toBe(false))
+
+    expect(hint.onload).toBeNull()
+    expect(hint.onerror).toBeNull()
+  })
+
   it('should not copy the id of forwarded hints', async () => {
     hintLinks.id = { rel: 'preload', as: 'style', href: '/theme.css', id: 'theme' }
     const hint = await forwardHint('id', 'link[href="/theme.css"]')
