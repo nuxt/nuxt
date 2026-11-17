@@ -56,7 +56,7 @@ export const rendererOptions: NuxtRendererOptions = {
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
   onRenderSuccess: import.meta.dev
     ? (event) => {
-        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport(event.url)).catch(() => {})
+        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport(appEvent(event).url)).catch(() => {})
       }
     : undefined,
   captureError: (error, { event, tags }) => {
