@@ -44,9 +44,17 @@
       ]
     },
     {
-      "description": "CI tests against the minimum supported Node.js version, so Node.js majors are bumped by hand.",
+      "description": "CI pins Node.js to the minimum version in `engines`, so it is bumped by hand.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchDepNames": [
+        "node"
+      ],
+      "enabled": false
+    },
+    {
       "matchPackageNames": [
-        "node",
         "@types/node"
       ],
       "matchUpdateTypes": [
