@@ -15,10 +15,11 @@ vi.mock('nitro/app', () => ({
   getRouteRules: vi.fn((_method: string, pathname: string) => ({ routeRules: { matched: pathname }, routeRuleMiddleware: [] })),
 }))
 
-function nodeEvent () {
+function nodeEvent (path = '/api/test') {
   const req = new IncomingMessage(new Socket())
+  req.url = path
   const res = new ServerResponse(req)
-  const event = mockEvent('http://nuxt/api/test')
+  const event = mockEvent(`http://nuxt${path}`)
   Object.defineProperty(event.req, 'runtime', { value: { name: 'node', node: { req, res } } })
   return { event: prepareLegacyEvent(event), req, res }
 }
@@ -375,6 +376,36 @@ describe('wrapLegacyHandler', () => {
 
     expect(paths).toEqual([expected])
     expect(event.path).toBe(target)
+  })
+
+  it('strips the base from a real node request for the handler, and restores it', async () => {
+    const { event, req } = nodeEvent('/_mw/deep?q=1')
+    const seen: Array<Record<string, unknown>> = []
+    const wrapped = wrapLegacyHandler((event: any) => {
+      seen.push({ path: event.path, url: event.node.req.url, originalUrl: event.node.req.originalUrl })
+      return undefined
+    }, '/_mw') as (event: any) => unknown
+
+    await wrapped(event)
+
+    expect(seen).toEqual([{ path: '/deep?q=1', url: '/deep?q=1', originalUrl: '/_mw/deep?q=1' }])
+    expect(req.url).toBe('/_mw/deep?q=1')
+    expect(event.path).toBe('/_mw/deep?q=1')
+  })
+
+  it('restores the url of a real node request when the handler throws', async () => {
+    const { event, req } = nodeEvent('/_mw//deep')
+    const seen: string[] = []
+    const wrapped = wrapLegacyHandler((event: any) => {
+      seen.push(event.node.req.url)
+      throw new Error('boom')
+    }, '/_mw') as (event: any) => unknown
+
+    await expect(wrapped(event)).rejects.toThrow()
+
+    expect(seen).toEqual(['//deep'])
+    expect(req.url).toBe('/_mw//deep')
+    expect(event.path).toBe('/_mw//deep')
   })
 
   it('leaves the path alone for a request outside the base', async () => {
