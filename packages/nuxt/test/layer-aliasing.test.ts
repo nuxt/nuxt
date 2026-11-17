@@ -15,6 +15,7 @@ interface TransformHandler {
 
 interface RawPlugin {
   transform?: { filter: { id: RegExp | RegExp[] | { include?: RegExp | RegExp[], exclude?: RegExp | RegExp[] } }, handler: TransformHandler }
+  vite?: { resolveId: { handler: (id: string, importer?: string) => unknown } }
 }
 
 function makeLayer (cwd: string): NuxtConfigLayer {
@@ -25,9 +26,11 @@ function createPlugin (layers: NuxtConfigLayer[], framework: 'vite' | 'webpack' 
   const meta = { framework, webpack: { compiler: {} } } as unknown as UnpluginContextMeta
   const raw = LayerAliasingPlugin({ root: '/', dev: false, layers }).raw({}, meta)
   const entry = (Array.isArray(raw) ? raw[0] : raw) as RawPlugin
+  const resolve = (id: string) => ({ id })
   return {
     transformInclude: (id: string) => matchesIdFilter(entry.transform!.filter.id, id),
     transform: (code: string, id: string) => entry.transform!.handler.call({}, code, id),
+    resolveId: (id: string, importer?: string) => entry.vite!.resolveId.handler.call({ resolve }, id, importer),
   }
 }
 
@@ -91,6 +94,22 @@ describe('LayerAliasingPlugin transform', () => {
     expect(transform(`@use '@/styles/global';`, `/other/path/file.scss`)).toBeUndefined()
   })
 
+  it.each(['vite', 'webpack'] as const)('on %s, excludes paths that only share a layer directory prefix', (framework) => {
+    const { transformInclude, transform } = createPlugin([makeLayer(layerDir)], framework)
+
+    const id = `${layerDir}-app/styles/global.scss`
+    expect(transformInclude(id)).toBe(false)
+    expect(transform(`@use '@/styles/global';`, id)).toBeUndefined()
+  })
+
+  it('matches Windows layer directories with a trailing separator', () => {
+    const { transformInclude, transform } = createPlugin([makeLayer('C:\\abs\\layer\\')])
+
+    const id = 'C:\\abs\\layer\\styles\\global.scss'
+    expect(transformInclude(id)).toBe(true)
+    expect(transform(`@use '@/styles/global';`, id)).toBeDefined()
+  })
+
   it('does not touch unquoted occurrences (e.g. comments, identifiers)', () => {
     const { transform } = createPlugin([makeLayer(layerDir)])
 
@@ -137,6 +156,21 @@ describe('LayerAliasingPlugin transform', () => {
     expect(transformInclude(`${layerDir}/utils.ts`)).toBe(true)
     expect(transformInclude(`${layerDir}/styles/global.scss`)).toBe(true)
     expect(transformInclude(`/somewhere/else/file.ts`)).toBe(false)
+  })
+})
+
+describe('LayerAliasingPlugin resolveId', () => {
+  it('does not resolve aliases for importers in a sibling directory', () => {
+    const { resolveId } = createPlugin([makeLayer('/abs/foo')])
+
+    expect(resolveId('~/utils', '/abs/foo-bar/plugins/example.ts')).toBeUndefined()
+  })
+
+  it('resolves aliases in the most specific containing layer', () => {
+    const { resolveId } = createPlugin([makeLayer('/abs'), makeLayer('/abs/foo')])
+
+    expect(resolveId('~/utils', '/abs/foo/plugins/example.ts')).toEqual({ id: '/abs/foo/utils' })
+    expect(resolveId('~/utils', '/abs/foo-bar/plugins/example.ts')).toEqual({ id: '/abs/utils' })
   })
 })
 
