@@ -387,10 +387,10 @@ describe('nitro config', () => {
   })
 
   it('lets dev error reports read the server bundle the vite dev server denies', async () => {
-    const buildDir = await mkdtemp(join(tmpdir(), 'nuxt-[dev]-'))
+    const buildDir = await mkdtemp(join(tmpdir(), 'nuxt-[dev](x)@-'))
     onTestFinished(() => rm(buildDir, { recursive: true, force: true }))
     await withNitro({ dev: true, buildDir }, async (nitro, _nitroConfig, nuxt) => {
-      const outputPattern = `${resolve(nitro.options.output.serverDir).replace(/[[\]]/g, '\\$&')}/**`
+      const outputPattern = `${resolve(nitro.options.output.serverDir).replace(/[\\*?[\]{}()!+@|]/g, '\\$&')}/**`
       const fs = { allow: [nuxt.options.rootDir], deny: ['.env', '**/app-secret', outputPattern], strict: true }
       await nuxt.callHook('vite:serverCreated', { config: { server: { fs, allowedHosts: [] } } } as any, { isClient: true, isServer: false })
 
