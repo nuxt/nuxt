@@ -17,17 +17,18 @@ jobs:
       contents: read
       pull-requests: read  # for amannn/action-semantic-pull-request to analyze PRs
       statuses: write  # for amannn/action-semantic-pull-request to mark status of analyzed PR
-    if: github.repository == 'nuxt/nuxt' && !startsWith(github.head_ref, 'v')
+    if: github.repository == 'nuxt/nuxt' && !startsWith(github.head_ref, 'v') && !startsWith(github.head_ref, 'release/')
     runs-on: ubuntu-slim
     name: semantic-pr
     steps:
       - name: Validate PR title
-        uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        uses: amannn/action-semantic-pull-request@2252a14e810aa9b85c2d560bd7070c802206ecf6 # v6.1.2
         with:
           scopes: |
             docs
             kit
             nuxt
+            rsbuild
             rspack
             schema
             ui-templates

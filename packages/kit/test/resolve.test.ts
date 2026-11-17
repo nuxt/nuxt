@@ -1,10 +1,11 @@
 import { stat } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
-import { resolve } from 'pathe'
+import { join, resolve } from 'pathe'
 import { loadNuxt } from '../src/loader/nuxt.ts'
-import { findPath, resolveNuxtModule, resolvePath } from '../src/resolve.ts'
+import { findPath, resolveAlias, resolveNuxtModule, resolvePath } from '../src/resolve.ts'
 import { defineNuxtModule } from '../src/module/define.ts'
 import { addTemplate } from '../src/template.ts'
+import { fakePackage, withTempDir } from './utils.ts'
 
 const nuxt = await loadNuxt({
   overrides: {
@@ -19,6 +20,42 @@ const nuxt = await loadNuxt({
   },
 })
 
+describe('resolveAlias', () => {
+  it('reflects aliases added after the alias map is first resolved', () => {
+    const aliases: Record<string, string> = { '~': '/src' }
+    expect(resolveAlias('~/App.vue', aliases)).toBe('/src/App.vue')
+
+    aliases['#imports'] = '/tmp/imports'
+    expect(resolveAlias('#imports/foo', aliases)).toBe('/tmp/imports/foo')
+  })
+
+  it('reflects aliases changed after the alias map is first resolved', () => {
+    const aliases: Record<string, string> = { '~': '/src' }
+    expect(resolveAlias('~/App.vue', aliases)).toBe('/src/App.vue')
+
+    aliases['~'] = '/other'
+    expect(resolveAlias('~/App.vue', aliases)).toBe('/other/App.vue')
+  })
+
+  it('reflects aliases removed after the alias map is first resolved', () => {
+    const aliases: Record<string, string | undefined> = { '~': '/src', 'gone': undefined }
+    expect(resolveAlias('new/x', aliases as Record<string, string>)).toBe('new/x')
+
+    delete aliases.gone
+    aliases.new = '/new'
+    expect(resolveAlias('new/x', aliases as Record<string, string>)).toBe('/new/x')
+  })
+
+  it('reflects aliases reordered after the alias map is first resolved', () => {
+    const aliases: Record<string, string> = { c: '/root', b: 'c/y', a: 'b/x' }
+    resolveAlias('a/z', aliases)
+
+    delete aliases.b
+    aliases.b = 'c/y'
+    expect(resolveAlias('a/z', aliases)).toBe(resolveAlias('a/z', { ...aliases }))
+  })
+})
+
 describe('resolvePath', () => {
   it('should resolve paths correctly', async () => {
     expect(await resolvePath('.nuxt/app.config')).toBe(resolve('.nuxt/app.config.mjs'))
@@ -26,6 +63,13 @@ describe('resolvePath', () => {
 })
 
 describe('resolveNuxtModule', () => {
+  it('should resolve an installed module configured with an absolute path', async () => {
+    await withTempDir(fakePackage('example', 'export default {}', { exports: './dist/index.js' }), async (rootDir) => {
+      const resolved = await resolveNuxtModule(`${rootDir}/`, [join(rootDir, 'node_modules/example/dist')])
+      expect(resolved).toEqual([join(rootDir, 'node_modules/example')])
+    })
+  })
+
   it('should resolve Nuxt module paths correctly', async () => {
     const installedModulePaths = nuxt.options._installedModules.map(m => m.meta?.rawPath || m.entryPath!).filter(Boolean)
     expect(installedModulePaths).toMatchInlineSnapshot(`
@@ -43,7 +87,9 @@ describe('resolveNuxtModule', () => {
     expect(resolved.length).toBe(3)
 
     for (const path of resolved) {
-      expect(await stat(path).then(r => r.isDirectory() && path.endsWith('node_modules/')).catch(() => false)).toBe(true)
+      expect(await stat(path).then(r => r.isDirectory()).catch(() => false)).toBe(true)
+      expect(path).not.toMatch(/node_modules\/$/)
+      expect((await stat(join(path, 'package.json'))).isFile()).toBe(true)
     }
   })
 })

@@ -23,6 +23,10 @@ export default defineNuxtModule({
             throw new Error(`SSR vite resolve conditions ${JSON.stringify(conditions)} cannot resolve '${id}' from ${importer}. See https://github.com/nuxt/nuxt/issues/34888.`)
           }
         }
+        const missing = config.environments?.nitro?.resolve?.conditions?.filter(c => !conditions.includes(c))
+        if (missing?.length) {
+          throw new Error(`SSR vite resolve conditions ${JSON.stringify(conditions)} are missing ${JSON.stringify(missing)} set by nitro.`)
+        }
       },
     })
   },

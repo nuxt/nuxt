@@ -4,7 +4,7 @@ function renderStubMessage (name: string): never {
   throw createError({
     fatal: true,
     status: 500,
-    statusText: `${name} is provided by @nuxt/image. Check your console to install it or run 'npx nuxt module add @nuxt/image'`,
+    statusText: `${name} is provided by @nuxt/image. Check your console to install it or run 'npx nuxt add @nuxt/image'`,
   })
 }
 

@@ -22,7 +22,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   opts.cwd = resolve(opts.cwd || (opts as any).rootDir /* backwards compat */ || '.')
   opts.overrides ||= (opts as any).config as NuxtConfig /* backwards compat */ || {}
 
-  // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
   const resolvedPath = ['nuxt-nightly', 'nuxt'].reduce((resolvedPath, pkg) => {

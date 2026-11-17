@@ -35,6 +35,11 @@ export function collectServerRegistrations (nuxt: Nuxt, nitroConfig: NitroConfig
   for (const entry of nuxt.options.devServerHandlers) {
     collectUnused(entry)
   }
+  for (const entry of nuxt.options._rendererPlugins || []) {
+    for (const variant of entry.unused || []) {
+      unused.add(variant)
+    }
+  }
 
   nitroConfig.plugins ||= []
   for (const entry of (nuxt.options._serverPlugins || []) as ServerPlugin[]) {

@@ -116,7 +116,8 @@ describe('view transitions plugin', () => {
       const transition = createMockViewTransition(update)
       transitions.push(transition)
       if (autoRunUpdate) {
-        update()
+        // like the browser, `updateCallbackDone` follows the promise returned by the update callback
+        transition.updateCallbackDone = update()
       }
       return transition
     })
@@ -474,6 +475,31 @@ describe('view transitions plugin', () => {
 
       const transition = transitions[0]!
       transition.rejectReady(new DOMException('Transition was skipped', 'AbortError'))
+      transition.settleFinished()
+      await flushPromises()
+      await new Promise(resolve => setTimeout(resolve, 20))
+
+      process.off('unhandledRejection', unhandled)
+      expect(unhandled).not.toHaveBeenCalled()
+    })
+
+    it('should not produce an unhandled rejection when the navigation fails', async () => {
+      appViewTransition.enabled = true
+
+      const unhandled = vi.fn()
+      process.on('unhandledRejection', unhandled)
+
+      const removeHook = nuxtApp.hook('page:view-transition:start', async () => {
+        removeHook()
+        await nuxtApp.callHook('app:error', new Error('page setup failed'))
+      })
+      testCleanups.push(removeHook)
+
+      await navigateTo('/vt-a')
+      await flushPromises()
+
+      const transition = transitions[0]!
+      await expect(transition.updateCallbackDone).rejects.toBeUndefined()
       transition.settleFinished()
       await flushPromises()
       await new Promise(resolve => setTimeout(resolve, 20))

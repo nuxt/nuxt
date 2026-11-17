@@ -13,4 +13,13 @@ declare module '@nuxt/schema' {
   }
 }
 
+declare module 'nuxt/schema' {
+  interface NuxtHooks {
+    'hook-augmenting-module:nuxt-ping': (payload: { value: string }) => void
+  }
+  interface CustomAppConfig {
+    hookAugmentingModule?: { enabled: boolean }
+  }
+}
+
 export {}

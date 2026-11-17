@@ -2,7 +2,7 @@ import { isAbsolute, join, relative, resolve } from 'pathe'
 import { genDynamicImport, genDynamicTypeImport, genObjectKey, genString } from 'knitwork'
 import { hash } from 'ohash'
 import { distDir } from '../dirs.ts'
-import type { ComponentMeta, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import type { Component, ComponentMeta, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 type ResolvedComponentType = {
   pascalName: string
@@ -23,6 +23,10 @@ const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
     prefetch === true || typeof prefetch === 'number' ? `webpackPrefetch: ${prefetch}` : false,
     preload === true || typeof preload === 'number' ? `webpackPreload: ${preload}` : false,
   ].filter(Boolean).join(', ')
+}
+
+function isIslandComponent (component: Component, components: Component[]) {
+  return component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
 }
 
 const emptyComponentsPlugin = `
@@ -94,11 +98,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
 
     const components = app.components
     const pages = app.pages
-    const islands = components.filter(component =>
-      component.island ||
-      // .server components without a corresponding .client component will need to be rendered as an island
-      (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
-    )
+    const islands = components.filter(component => isIslandComponent(component, components))
 
     const serverPages = pages?.filter(p => (p.mode === 'server' && p.file && p.name)) || []
     const pageExports = serverPages.map((p) => {
@@ -191,21 +191,33 @@ function resolveComponentTypes (app: NuxtApp, baseDir: string, dynamic: boolean)
   return componentTypes
 }
 
+function toTypeImportPath (baseDir: string, filePath: string) {
+  return (isAbsolute(filePath) ? relative(baseDir, filePath) : filePath).replace(NON_VUE_RE, '')
+}
+
 function renderDynamicTypeImport (baseDir: string, filePath: string, exportName: string) {
-  return genDynamicTypeImport(isAbsolute(filePath)
-    ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
-    : filePath.replace(NON_VUE_RE, ''), exportName)
+  return genDynamicTypeImport(toTypeImportPath(baseDir, filePath), exportName)
 }
 
 // TODO: remove when https://youtrack.jetbrains.com/issue/WEB-76306/ is fixed
 function renderLegacyTypeImport (baseDir: string, filePath: string, exportName: string) {
-  return `typeof ${genDynamicImport(isAbsolute(filePath)
-    ? relative(baseDir, filePath).replace(NON_VUE_RE, '')
-    : filePath.replace(NON_VUE_RE, ''), { wrapper: false })
-  }['${exportName}']`
+  return `typeof ${genDynamicImport(toTypeImportPath(baseDir, filePath), { wrapper: false })}['${exportName}']`
 }
 
-const islandType = 'type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T'
+// island props are sent through `JSON.stringify`, so values it drops or rewrites are rejected
+const islandType = `
+type IslandSerialized<T> = T extends string | number | boolean | null | undefined
+  ? T
+  : T extends ((...args: any[]) => any) | Date | Map<any, any> | Set<any> | RegExp | bigint | symbol
+    ? never
+    : T extends object
+      ? { [K in keyof T]: IslandSerialized<T[K]> }
+      : T
+type IslandProps<T> = T extends new (...args: any) => { $props: infer P }
+  ? new () => { $props: { [K in keyof P]: K extends \`on\${Capitalize<string>}\` | keyof VNodeProps ? P[K] : P[K] & IslandSerialized<P[K]> } }
+  : unknown
+type IslandComponent<T> = DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>> & T & IslandProps<T>
+`
 const hydrationTypes = `
 type HydrationStrategies = {
   hydrateOnVisible?: IntersectionObserverInit | true
@@ -225,7 +237,7 @@ export const componentsDeclarationTemplate = {
   getContents: ({ app, nuxt }) => {
     const componentTypes = resolveComponentTypes(app, nuxt.options.buildDir, nuxt.options.experimental.typescriptPlugin)
     return `
-import type { DefineComponent, SlotsType } from 'vue'
+import type { DefineComponent, SlotsType, VNodeProps } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 
@@ -249,7 +261,7 @@ export const componentsTypeTemplate = {
         globalComponentNames.add(component.pascalName)
         globalComponentNames.add(`Lazy${component.pascalName}`)
       }
-      if (nuxt.options.experimental.componentIslands && (component.island || (component.mode === 'server' && !app.components.some(c => c.pascalName === component.pascalName && c.mode === 'client')))) {
+      if (nuxt.options.experimental.componentIslands && isIslandComponent(component, app.components)) {
         islandComponentNames.add(component.pascalName)
       }
     }
@@ -258,7 +270,7 @@ export const componentsTypeTemplate = {
       islandComponentNames.size ? `    islandName: ${[...islandComponentNames].map(name => genString(name)).join(' | ')}` : '',
     ].filter(Boolean)
     return `
-import type { DefineComponent, SlotsType } from 'vue'
+import type { DefineComponent, SlotsType, VNodeProps } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 ${hydrationTypes}
 interface _GlobalComponents {

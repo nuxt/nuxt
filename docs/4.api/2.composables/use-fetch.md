@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) and [`$fetch`](/docs/api/utils/dollarfetch).
+This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) and [`$fetch`](/docs/api/utils/$fetch).
 It automatically generates a key for the request, provides type hints for request url based on server routes, and infers API response type.
 
 ::note

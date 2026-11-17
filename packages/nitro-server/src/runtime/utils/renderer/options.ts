@@ -13,8 +13,9 @@ import '../../context'
 
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import { withRouteRuleDefaults } from '#internal/nuxt/host'
 import { getRouteRules } from '../route-rules'
-import { markStreamedResponse, rememberRenderBody } from '../../compat/render-response'
+import { markStreamedResponse, rememberRenderBody, toRenderBody } from '../../compat/render-response'
 import { legacyCompat } from '#nuxt-compat/flags'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
 
@@ -23,36 +24,53 @@ globalThis.__buildAssetsURL = buildAssetsURL
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__publicAssetsURL = publicAssetsURL
 
+function createDocumentResponse (document: string | string[], init?: ResponseInit): Response {
+  const rendered = toRenderBody(document)
+  const response = new FastResponse(rendered.bytes, init)
+  if (legacyCompat) {
+    rememberRenderBody(response, rendered)
+  }
+  return response
+}
+
 /** The capabilities Nitro provides to the Nuxt renderer. */
 export const rendererOptions: NuxtRendererOptions = {
   runtimeConfig: () => useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
   buildAssetsURL,
   publicAssetsURL,
-  getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
+  getRouteRules: event => withRouteRuleDefaults(getRouteRules(event)) satisfies RendererRouteRules,
   hooks: useNitroHooks as () => RendererHooks,
   createResponse: (body, init) => {
+    if (typeof body === 'string') {
+      return createDocumentResponse(body, init)
+    }
     const response = new FastResponse(body, init)
-    if (legacyCompat) {
-      rememberRenderBody(init, body)
-      if (body instanceof ReadableStream) {
-        markStreamedResponse(response)
-      }
+    if (legacyCompat && body instanceof ReadableStream) {
+      markStreamedResponse(response)
     }
     return response
   },
+  createDocumentResponse,
   createError: init => new HTTPError(init),
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints),
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
   onRenderSuccess: import.meta.dev
-    ? () => {
-        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+    ? (event) => {
+        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport(appEvent(event).url)).catch(() => {})
       }
     : undefined,
   captureError: (error, { event, tags }) => {
+    // in development the live error channel reports and prints the error itself
+    if (!import.meta.dev && ((error as { status?: number } | null)?.status || 500) >= 500) {
+      console.error(`[request error] [${event.req.method}] ${event.url.pathname}\n`, error)
+    }
     useNitroApp().captureError?.(error as Error, { event: appEvent(event) as H3Event, tags: ['ssr', ...tags ?? []] })
   },
   onDevError: import.meta.dev
     ? (error, event, options) => import('#internal/nuxt/error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
+    : undefined,
+  renderDevBadge: import.meta.dev
+    ? (event, nonce) => import('#internal/nuxt/error-channel').then(({ renderDevBadge }) => renderDevBadge(appEvent(event) as H3Event, nonce))
     : undefined,
   prerender: import.meta.prerender
     ? {

@@ -86,6 +86,13 @@ describe('ResolveDeepImportsPlugin', () => {
     expect(context.resolve).not.toHaveBeenCalled()
   })
 
+  it('resolves bare imports from component wrappers', async () => {
+    const context = createContext({ id: '/project/node_modules/vue/index.mjs' })
+
+    await expect(resolveId(context, 'vue', '\0/virtual:nuxt-component:lazy:Foo:abc:xyz')).resolves.toStrictEqual({ id: '/project/node_modules/vue/index.mjs' })
+    expect(context.resolve).toHaveBeenCalledWith('vue', '/project/app', { skipSelf: true })
+  })
+
   it('logs unresolved bare imports', async () => {
     const context = createContext()
 

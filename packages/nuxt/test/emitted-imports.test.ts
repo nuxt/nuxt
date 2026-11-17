@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest'
  * The module Nuxt emits for server routes imports its type vocabulary from `#app/types`, because
  * `fetchdts` is not a dependency of user projects.
  */
-describe('the emitted route module', () => {
+describe.each(['table', 'table+union', 'tree', 'tree+union'] as const)('the emitted route module (%s)', (strategy) => {
   const appTypes = readFileSync(join(import.meta.dirname, '../src/app/types.ts'), 'utf-8')
 
   /** A route set that makes the compiler emit every accessor it has. */
@@ -23,7 +23,7 @@ describe('the emitted route module', () => {
       { segments: [{ type: 'static', value: '/api' }, { type: 'dynamic' }], metadata: { GET: { responseType: 'number' } } },
       { segments: [{ type: 'static', value: '/files' }, { type: 'wildcard' }], metadata: { ALL: { responseType: 'string' } } },
     ],
-  }], { name: 'GeneratedServerRoutes', moduleSpecifier: '#app/types', resolveAgainst: 'ServerRoutes' })
+  }], { name: 'GeneratedServerRoutes', moduleSpecifier: '#app/types', resolveAgainst: 'ServerRoutes', strategy })
 
   /** The names the emitted module imports from `#app/types`. */
   const imported = [...compiled.code.matchAll(/^import type \{([^}]*)\} from '#app\/types'$/gm)]

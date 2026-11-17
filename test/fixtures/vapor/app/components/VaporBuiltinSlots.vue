@@ -1,7 +1,6 @@
 <script setup lang="ts" vapor>
 // authoring the slot content inside a vapor component makes the slot function a
-// vapor slot (marked `__vapor`), which is the case that VNode-shape inspection
-// cannot safely handle
+// vapor slot, which is the case that VNode-shape inspection cannot safely handle
 const show = ref(true)
 </script>
 

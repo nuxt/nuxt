@@ -20,4 +20,25 @@ describe('modules', () => {
 
     await nuxt.close()
   })
+
+  const fixtureModules = { layerModuleA: 'layer-module-a', layerModuleB: 'layer-module-b', layerModuleC: 'layer-module-c', projectModule: 'project-module' }
+
+  it.each<[Record<string, unknown>, string[]]>([
+    [{}, []],
+    [{ 'layer-module-a': false }, ['layerModuleA']],
+    [{ 'layer-module-a': false, 'layerModuleC': false }, ['layerModuleA', 'layerModuleC']],
+    [{ projectModule: false }, ['projectModule']],
+    [{ 'layer-module-a': false, 'layerModuleB': false, 'layerModuleC': false }, ['layerModuleA', 'layerModuleB', 'layerModuleC']],
+  ])('registers but does not set up modules disabled with %o', async (overrides, disabled) => {
+    const nuxt = await loadNuxt({ cwd: modulesFixtureDir, overrides })
+    await nuxt.close()
+
+    // disabled modules are still registered, for type generation
+    const moduleNames = nuxt.options._installedModules.map(m => m.meta.name ?? m.module.name)
+    expect(moduleNames).toEqual(expect.arrayContaining(Object.values(fixtureModules)))
+
+    for (const key of Object.keys(fixtureModules)) {
+      expect(nuxt.options.appConfig[key], key).toBe(disabled.includes(key) ? undefined : true)
+    }
+  })
 })

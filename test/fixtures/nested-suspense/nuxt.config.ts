@@ -37,6 +37,7 @@ export default withMatrix({
     },
   },
   routeRules: {
+    '/': { appLayout: 'alternate' },
     '/hydration/spa-redirection/**': { ssr: false },
   },
 })

@@ -1,5 +1,5 @@
 import { cloneVNode, createCommentVNode, createElementBlock, defineComponent, getCurrentInstance, h, onMounted, provide, shallowRef } from 'vue'
-import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetupFnComponent, InjectionKey, RendererNode, SlotsType, VNode } from 'vue'
+import type { Component, ComponentInternalInstance, ComponentOptions, DefineSetupFnComponent, FunctionalComponent, InjectionKey, RendererNode, Slot, SlotsType, VNode } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
@@ -22,6 +22,14 @@ function createPlaceholder (el?: RendererNode | null) {
   }
   return clientNodePlaceholder ? createCommentVNode('placeholder') : h('div')
 }
+
+// Reuse the placeholder already rendered: a new static vnode would not carry the element in production.
+function renderPlaceholder (instance: ComponentInternalInstance) {
+  return instance.isMounted ? instance.subTree : createPlaceholder(instance.vnode.el)
+}
+
+const SlotRenderer: FunctionalComponent<{ slot: Slot }> = props => props.slot({})
+SlotRenderer.props = ['slot']
 
 interface ClientOnlyProps {
   fallback?: string
@@ -72,7 +80,7 @@ const ClientOnly = defineComponent({
         return vnodes
       }
       const slot = slots.fallback || slots.placeholder
-      if (slot) { return h(slot) }
+      if (slot) { return h(SlotRenderer, { slot }) }
       const fallbackStr = props.fallback || props.placeholder || ''
       const fallbackTag = sanitizeTag(props.fallbackTag || props.placeholderTag, 'span')
       return createElementBlock(fallbackTag, attrs, fallbackStr)
@@ -104,7 +112,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T): Com
           ? cloneVNode(res)
           : h(res)
       }
-      return createPlaceholder(ctx._.vnode.el)
+      return renderPlaceholder(ctx._)
     }
   } else {
     // handle runtime-compiler template
@@ -154,7 +162,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T): Com
               ? cloneVNode(res)
               : h(res)
           }
-          return createPlaceholder(instance?.vnode.el)
+          return renderPlaceholder(instance)
         }
       })
     } else {
@@ -168,7 +176,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T): Com
               ? cloneVNode(res, attrs)
               : h(res, attrs)
           }
-          return createPlaceholder(instance?.vnode.el)
+          return renderPlaceholder(instance)
         }
       }
       return Object.assign(setupState, { mounted$ })

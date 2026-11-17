@@ -1,8 +1,10 @@
 import { defineConfig } from 'tsdown'
+import { failOnInvalidAnnotation } from '../../scripts/tsdown-plugins.ts'
 
 export default defineConfig({
   dts: { generator: 'oxc' },
   entry: ['src/index', 'src/vite-node', 'src/vite-node-entry', 'src/vite-node-runner', 'src/ssr-sourcemap'],
+  plugins: [failOnInvalidAnnotation()],
   deps: {
     onlyBundle: [],
     neverBundle: true,

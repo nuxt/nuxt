@@ -20,7 +20,7 @@
 <script setup>
 import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { _notifyCrawlerError, createErrorFromThrown, isNuxtError, showError, useError } from '../composables/error'
+import { _invokeAppErrorHandler, _notifyCrawlerError, createErrorFromThrown, isNuxtError, showError, useError } from '../composables/error'
 import { isBotUserAgent } from '../utils'
 import { appDiagnostics } from '../diagnostics/core'
 import { useRoute, useRouter } from '../composables/router'
@@ -56,18 +56,6 @@ if (import.meta.dev && results && results.some(i => i && 'then' in i)) {
 const error = useError()
 // render an empty <div> when plugins have thrown an error but we're not yet rendering the error page
 const abortRender = import.meta.server && error.value && !nuxtApp.ssrContext.error
-// returning `false` from onErrorCaptured below stops Vue from invoking
-// `app.config.errorHandler`, so call it explicitly (#22691)
-function invokeAppErrorHandler (err, target, info) {
-  const errorHandler = nuxtApp.vueApp.config.errorHandler
-  if (errorHandler && !errorHandler.__nuxt_default) {
-    try {
-      errorHandler(err, target, info)
-    } catch (handlerError) {
-      console.error('[nuxt] Error in `app.config.errorHandler`', handlerError)
-    }
-  }
-}
 onErrorCaptured((err, target, info) => {
   nuxtApp.hooks.callHook('vue:error', err, target, info)?.catch(hookError => console.error('[nuxt] Error in `vue:error` hook', hookError))
   if (import.meta.client && isBotUserAgent(navigator.userAgent)) {
@@ -75,9 +63,9 @@ onErrorCaptured((err, target, info) => {
     return false
   }
   if (import.meta.server || (isNuxtError(err) && (err.fatal || err.unhandled))) {
-    const p = nuxtApp.runWithContext(() => showError(import.meta.dev ? createErrorFromThrown(err, { instance: target, route: nuxtApp._route }) : err))
+    const p = nuxtApp.runWithContext(() => showError(createErrorFromThrown(err, { instance: target, route: nuxtApp._route })))
     onServerPrefetch(() => p)
-    invokeAppErrorHandler(err, target, info)
+    _invokeAppErrorHandler(nuxtApp, err, target, info)
     return false // suppress error from breaking render
   }
 })

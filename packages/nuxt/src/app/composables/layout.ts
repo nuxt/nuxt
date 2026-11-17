@@ -1,23 +1,16 @@
 import type { ComputedRef } from 'vue'
 import { computed, inject, unref } from 'vue'
-import type { AppRouteRules } from '@nuxt/schema'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { NuxtLayouts } from '../../pages/runtime/composables'
 import { LayoutSymbol } from '../components/injections'
 import { useRoute } from './router'
-
-import _routeRulesMatcher from '#build/route-rules.mjs'
-
-// hoisted so a circular import cannot hit the TDZ of the `#build/route-rules.mjs` default export
-function routeRulesMatcher (path: string): AppRouteRules {
-  return (_routeRulesMatcher as (path: string) => AppRouteRules)(path)
-}
+import { getRouteRules } from './manifest'
 
 export type LayoutName = keyof NuxtLayouts | 'default' | false
 
 export function resolveLayoutName (route: Pick<RouteLocationNormalizedLoaded, 'meta' | 'path'> | undefined, name?: unknown): LayoutName {
-  return (unref(name) as LayoutName | null | undefined) ?? route?.meta.layout as LayoutName ?? routeRulesMatcher(route?.path ?? '/').appLayout as LayoutName ?? 'default'
+  return (unref(name) as LayoutName | null | undefined) ?? route?.meta.layout as LayoutName ?? getRouteRules({ path: route?.path ?? '/' }).appLayout as LayoutName ?? 'default'
 }
 
 /**

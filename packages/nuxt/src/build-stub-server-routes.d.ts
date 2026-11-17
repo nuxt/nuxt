@@ -1,7 +1,8 @@
 /**
- * Stub for `#build/server-routes`, used only via `paths` in `tsconfig.build.json` while emitting
- * this package's declarations. Matches the accessors `compileRoutes` emits, over an empty route
- * set, so the app layer compiles before any project has generated its routes.
+ * Stub for `#build/server-routes`, used via `paths` in `tsconfig.build.json` while emitting
+ * this package's declarations and in the root `tsconfig.json` for the workspace typecheck.
+ * Matches the accessors `compileRoutes` emits, over an empty route set, so the app layer
+ * compiles before any project has generated its routes.
  */
 import type { AnyHTTPMethod, TypedFetchErrorBody, TypedFetchMethods, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, TypedFetchResponseHeaders, ValidFetchInput } from 'fetchdts'
 

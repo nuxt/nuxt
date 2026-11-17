@@ -1,6 +1,7 @@
 import { isScriptProtocol } from 'ufo'
 import { useNuxtApp } from '../nuxt'
 import { navigationDiagnostics } from '../diagnostics/navigation'
+import { documentURL } from '../internal/location'
 
 export interface ReloadNuxtAppOptions {
   /**
@@ -33,8 +34,9 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}): void {
   if (import.meta.server) { return }
   const path = options.path || window.location.pathname
 
-  const url = new URL(path, window.location.href)
-  if (url.host !== window.location.host) {
+  const documentLocation = documentURL()
+  const url = new URL(path, documentLocation)
+  if (url.origin !== documentLocation.origin) {
     throw navigationDiagnostics.NUXT_E2010({ path })
   }
   if (url.protocol && isScriptProtocol(url.protocol)) {

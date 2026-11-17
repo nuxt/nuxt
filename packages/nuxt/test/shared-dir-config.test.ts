@@ -44,6 +44,13 @@ describe('loadNuxt', () => {
     expect(normalized).not.toContain('<rootDir>/server/types')
   })
 
+  it('scans subdirectories of server utils with `nitroLegacy.imports`', async () => {
+    const dirs = normalizePaths(await getNitroImportDirs({ nitroLegacy: { imports: true } }))
+    expect(dirs).toContain('<rootDir>/server/utils/**/*')
+    expect(dirs).toContain('<rootDir>/layers/bar/server/utils/**/*')
+    expect(dirs).not.toContain('<rootDir>/server/utils')
+  })
+
   it('still registers server type directories when nitro compat auto-imports are opted out', async () => {
     const { dirs, presets } = await getNitroImports({ experimental: { nitroAutoImports: false } })
     expect(normalizePaths(dirs)).toContain('<rootDir>/server/types')

@@ -25,13 +25,10 @@ export default createConfigForNuxt({
       // Don't add other attributes to this object
       ignores: [
         '.goff/**',
-        'packages/schema/schema/**',
-        'packages/nuxt/stubs/**',
         ...Object.keys(generatedTemplateCopies),
         'packages/kit/test/types-fixture/**',
         // deliberately does not compile
         'test/fixtures/dev-error-sourcemap/app/components/Broken.vue',
-        'test/fixtures/vite-server-dev-error/app/components/Broken.vue',
       ],
     },
     {
@@ -79,6 +76,8 @@ export default createConfigForNuxt({
         },
       ],
       '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-invalid-void-type': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -90,14 +89,6 @@ export default createConfigForNuxt({
       ],
       '@typescript-eslint/triple-slash-reference': 'off',
       '@typescript-eslint/unified-signatures': 'off',
-      ...{
-        // TODO: Discuss if we want to enable this
-        '@typescript-eslint/ban-types': 'off',
-        // TODO: Discuss if we want to enable this
-        '@typescript-eslint/no-explicit-any': 'off',
-        // TODO: Discuss if we want to enable this
-        '@typescript-eslint/no-invalid-void-type': 'off',
-      },
     },
   })
 
@@ -125,12 +116,6 @@ export default createConfigForNuxt({
     rules: {
       'unicorn/no-new-array': 'off',
       'unicorn/prefer-dom-node-text-content': 'off',
-    },
-  })
-
-  .override('nuxt/vue/rules', {
-    rules: {
-
     },
   })
 
@@ -193,11 +178,6 @@ export default createConfigForNuxt({
                 message: 'should not import from barrel/index files',
                 target: 'packages/nuxt/src',
               },
-              {
-                from: 'packages/nitro',
-                message: 'nitro should not directly import other packages.',
-                target: 'packages/!(nitro)/**/*',
-              },
             ],
           },
         ],
@@ -221,16 +201,11 @@ export default createConfigForNuxt({
         'import-x': importX,
       },
       rules: {
-        'import/extensions': ['error', 'always', {
-          ignorePackages: true,
-          js: 'always',
-          ts: 'always',
-          vue: 'always',
-        }],
+        'import/extensions': ['error', 'always', { ignorePackages: true }],
       },
     },
     {
-      files: ['packages/{nuxt,kit,nitro-server,schema,vite,webpack,rspack}/src/**'],
+      files: ['packages/{nuxt,kit,nitro-server,schema,vite,webpack,rsbuild,rspack}/src/**'],
       // vite-node* files execute inside the nitro dev process rather than the
       // Nuxt build process, so nostics catalogs do not apply there.
       ignores: ['packages/nuxt/src/app/**', '**/runtime/**', '**/*.{spec,test}.{js,mjs,ts,mts}', 'packages/vite/src/vite-node*.ts'],
@@ -272,7 +247,7 @@ export default createConfigForNuxt({
     },
     // manually specify dependencies for nuxt browser app
     {
-      files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/(components,head,imports,pages)/runtime/**'],
+      files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/{components,head,imports,pages}/runtime/**'],
       name: 'local/client-packages',
       rules: {
         '@typescript-eslint/no-restricted-imports': ['error', {
@@ -305,7 +280,6 @@ export default createConfigForNuxt({
       name: 'local/disables/fixtures',
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
-        '@typescript-eslint/triple-slash-reference': 'off',
         'nuxt/no-nuxt-config-test-key': 'off',
         'vue/multi-word-component-names': 'off',
         'vue/valid-v-for': 'off',
@@ -318,8 +292,6 @@ export default createConfigForNuxt({
         'no-only-tests': noOnlyTests,
       },
       rules: {
-        '@typescript-eslint/no-explicit-any': 'off',
-        'no-console': 'off',
         'no-only-tests/no-only-tests': 'error',
       },
     },

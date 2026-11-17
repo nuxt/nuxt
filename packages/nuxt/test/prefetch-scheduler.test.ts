@@ -441,4 +441,15 @@ describe('prefetch scheduler', () => {
     expect(started).toEqual(['b', 'a'])
     expect(dropped).toEqual([])
   })
+
+  it('should not check affordability with nothing queued', () => {
+    const canPrefetch = vi.fn(() => true)
+    const scheduler = createPrefetchScheduler({ canPrefetch })
+
+    scheduler.reset()
+    scheduler.resume()
+    scheduler.promote('/')
+
+    expect(canPrefetch).not.toHaveBeenCalled()
+  })
 })

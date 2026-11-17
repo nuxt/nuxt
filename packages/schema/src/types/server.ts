@@ -132,6 +132,8 @@ export interface NuxtRequestContext {
   '~devClientCss'?: string[]
   /** @internal */
   '~error-cause'?: unknown
+  /** @internal */
+  '~response-headers'?: Headers
 }
 
 /** The context of a {@link RequestEvent}, which carries Nuxt's own per-request state. */

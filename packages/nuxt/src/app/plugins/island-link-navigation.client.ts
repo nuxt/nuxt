@@ -3,8 +3,9 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 import { useRouter } from '../composables/router'
 import { onNuxtReady } from '../composables/ready'
 import { prefetchRouteComponents } from '../composables/preload'
-import { useObserver } from '../components/nuxt-link'
+import { guardEvent, useObserver } from '../components/nuxt-link'
 import { canPrefetch } from '../internal/prefetch-util'
+import { documentURL } from '../internal/location'
 
 import { componentIslands } from '#build/nuxt.config.mjs'
 
@@ -19,8 +20,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       const href = anchor.getAttribute('href')
       if (!href || href.startsWith('#')) { return }
 
-      const url = new URL(anchor.href, window.location.href)
-      if (url.origin !== window.location.origin) { return }
+      const documentLocation = documentURL()
+      const url = new URL(anchor.href, documentLocation)
+      if (url.origin !== documentLocation.origin) { return }
 
       let path = url.pathname
       const base = (router.options.history.base || '').replace(/\/$/, '')
@@ -39,10 +41,10 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     }
 
     function onClick (e: MouseEvent) {
-      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.altKey || e.ctrlKey || e.shiftKey) { return }
-
       const anchor = (e.target as Element | null)?.closest('a')
       if (!anchor || !anchor.hasAttribute('data-internal') || anchor.hasAttribute('download')) { return }
+
+      if (!guardEvent(e, anchor)) { return }
 
       const route = resolveInternalLink(anchor)
       if (!route) { return }

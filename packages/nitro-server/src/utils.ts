@@ -1,6 +1,7 @@
+import { lstat, symlink, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
-import { dirname, isAbsolute, normalize } from 'pathe'
+import { dirname, isAbsolute, normalize, relative, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
@@ -10,9 +11,33 @@ import type { Nuxt } from '@nuxt/schema'
  */
 export function getServerReplacements (nuxt: Nuxt): Record<string, string> {
   return {
+    'process.env.NODE_ENV': JSON.stringify(nuxt.options.dev ? 'development' : 'production'),
+    '__VUE_OPTIONS_API__': String(!!nuxt.options.vue.optionsApi),
     '__VUE_PROD_DEVTOOLS__': String(false),
+    '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': String(!!nuxt.options.debug && !!nuxt.options.debug.hydration),
     'import.meta.test': String(!!nuxt.options.test),
   }
+}
+
+/**
+ * Link `<rootDir>/dist` to the public output of a static build, replacing an existing link.
+ * A real file or directory at that path is left untouched.
+ */
+export async function linkStaticDist (rootDir: string, publicDir: string): Promise<void> {
+  const dist = resolve(rootDir, 'dist')
+  const stats = await lstat(dist).catch(() => null)
+  if (stats) {
+    if (!stats.isSymbolicLink()) { return }
+    await unlink(dist).catch(() => {})
+  }
+  await symlink(publicDir, dist, 'junction').catch(() => {})
+}
+
+const RELATIVE_RE = /^([^.])/
+
+/** A relative path that always starts with `.`, as tsconfig `paths` require. */
+export function relativeWithDot (from: string, to: string): string {
+  return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
 }
 
 /**
@@ -29,8 +54,41 @@ export const PATHS_SPECIFIER = '#internal/nuxt/paths'
  */
 export const nitroImplicitDependencies = ['nitro', 'h3', 'srvx', 'defu', 'consola', 'ofetch', 'crossws']
 
+export const GLOB_SUFFIX_RE = /\/[^/*]*\*[\s\S]*$/
+
+const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
+
+/**
+ * Drop the `server.fs.deny` pattern for Nitro's dev output, which dev error reports
+ * read to map frames through the server bundle's source map.
+ */
+export function withoutServerDirDeny (deny: string[], serverDir: string | undefined): string[] {
+  if (!serverDir) {
+    return deny
+  }
+  const pattern = `${resolve(serverDir).replace(GLOB_SPECIAL_CHARS_RE, '\\$&')}/**`
+  return deny.filter(entry => entry !== pattern)
+}
+
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
+}
+
+export function timePluginHooks (perf: Pick<NonNullable<Nuxt['_perf']>, 'timeBundlerHook'>, plugins: unknown[]): void {
+  for (const plugin of plugins as Array<Record<string, any> | null | undefined>) {
+    if (!plugin?.name) { continue }
+    const pluginName = `nitro:${plugin.name}`
+    for (const hookName of ['transform', 'resolveId', 'load'] as const) {
+      const hook = plugin[hookName]
+      const handler = typeof hook === 'function' ? hook : hook?.handler
+      if (typeof handler !== 'function') { continue }
+      const timed = function (this: unknown, ...args: unknown[]) {
+        return perf.timeBundlerHook(pluginName, hookName, this, ctx => handler.apply(ctx, args))
+      }
+      // frozen plugins are left untimed rather than throwing
+      Reflect.set(plugin, hookName, typeof hook === 'function' ? timed : { ...hook, handler: timed })
+    }
+  }
 }
 
 const NODE_MODULES_SEGMENT = '/node_modules/'
@@ -44,7 +102,7 @@ const NODE_MODULES_RE = /\/node_modules\//g
  *
  * Layer paths can contain multiple `/node_modules/` segments (nested npm
  * installs; pnpm's `.pnpm/<id>/node_modules/<name>` store). The exclude
- * pattern is `node_modules/(?!<alts>)` evaluated at every `node_modules/`
+ * pattern is `/node_modules/(?!<alts>)` evaluated at every `node_modules/`
  * boundary, so we push the suffix at each boundary to make the lookahead
  * fail wherever the layer's own files live.
  */
@@ -57,14 +115,14 @@ export function getLayerNodeModulesExcludePattern (layerRoots: Iterable<string>)
     while ((match = NODE_MODULES_RE.exec(root))) {
       const suffix = root.slice(match.index + match[0].length)
       if (suffix) {
-        excludePaths.push(escapeRE(suffix))
+        excludePaths.push(`${escapeRE(suffix)}(?:\\/|$)`)
       }
       NODE_MODULES_RE.lastIndex = match.index + 1
     }
   }
   return excludePaths.length
-    ? new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)
-    : /node_modules/
+    ? new RegExp(`[\\\\/]node_modules[\\\\/](?!${excludePaths.join('|')})`)
+    : /[\\/]node_modules[\\/]/
 }
 
 /**
@@ -133,20 +191,15 @@ function toFsDriverGlob (pattern: string): string | undefined {
  * keyed only by `import`/`require` (notably `vue` and `vue-router`) resolve
  * when the only available copy is nested under `nuxt`'s own `node_modules`.
  */
-export function getSsrResolveConditions (exportConditions?: string[]): string[] {
-  const conditions = [...exportConditions || []]
-  if (!conditions.includes('import')) {
-    conditions.push('import')
-  }
-  return conditions
+export function getSsrResolveConditions (...sources: Array<string[] | undefined>): string[] {
+  return [...new Set([...sources.flatMap(conditions => conditions || []), 'import'])]
 }
 
 /**
  * Recover the package directory of an installed module.
  *
- * `resolveNuxtModule` answers with the `node_modules` directory a module resolved from
- * rather than the package root, so the package name has to be taken from the entry path
- * for the module's runtime directories to be findable.
+ * When `dir` is the containing `node_modules` directory, the package name is taken
+ * from the entry path; otherwise `dir` is already the package root.
  */
 export function toModulePackageDir (dir: string, entryPath: string): string {
   const resolved = normalize(dir)

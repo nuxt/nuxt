@@ -7,11 +7,15 @@ import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 export async function bundleServer (nuxt: Nuxt) {
   try {
+    nuxt._perf?.startPhase('server:import')
     const { bundle } = !nuxt.options.server.builder || typeof nuxt.options.server.builder === 'string'
       ? await loadServerBuilder(nuxt, nuxt.options.server.builder)
       : nuxt.options.server.builder
+    nuxt._perf?.endPhase('server:import')
 
+    nuxt._perf?.startPhase('server:setup')
     await bundle(nuxt)
+    nuxt._perf?.endPhase('server:setup')
   } catch (error: any) {
     await nuxt.callHook('build:error', error)
 

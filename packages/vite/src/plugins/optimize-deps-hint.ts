@@ -52,7 +52,7 @@ export function formatDepLines (deps: string[], importers?: Map<string, string>,
   return lines.join('\n')
 }
 
-export function formatStaleDepsHint (userStale: string[], moduleStale: string[]): string {
+function formatStaleDepsHint (userStale: string[], moduleStale: string[]): string {
   const lines: string[] = []
   for (const d of userStale) { lines.push(`  ${colorize('cyan', d)}`) }
   for (const d of moduleStale) { lines.push(`  ${colorize('cyan', d)} ${colorize('gray', '(from a Nuxt module)')}`) }

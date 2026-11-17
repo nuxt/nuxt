@@ -10,7 +10,7 @@ import type { NuxtHookRegistry, NuxtRequestEvent, RuntimeConfig } from '@nuxt/sc
 
 export type { NuxtLinkOptions } from '@nuxt/schema'
 export type { Serialize } from './types/serialize.js'
-export type { AnyHTTPMethod, DynamicParam, Endpoint, HTTPMethod, TypedFetchErrorBody, TypedFetchMethods, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, TypedFetchResponseHeaders, ValidFetchInput, WildcardParam } from 'fetchdts'
+export type { AnyFetchPath, AnyHTTPMethod, DynamicParam, Endpoint, HTTPMethod, TypedFetchErrorBody, TypedFetchMethods, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, TypedFetchResponseHeaders, ValidFetchInput, WildcardParam } from 'fetchdts'
 
 type HookResult = Promise<void> | void
 
@@ -139,6 +139,11 @@ export interface NuxtPayload {
    * @internal
    */
   prefetchLinks?: Array<Record<string, string | boolean>>
+  /**
+   * The build that rendered an extracted `_payload.json`.
+   * @internal
+   */
+  buildId?: string
   [key: string]: unknown
 }
 
@@ -158,6 +163,8 @@ export interface NuxtSSRContext extends SSRContext {
   islandContext?: NuxtIslandContext
   /** @internal */
   ['~renderResponse']?: Response
+  /** The app markup as rendered chunks, wrapped in the app root tags. @internal */
+  ['~htmlChunks']?: string[]
   /** @internal */
   ['~payloadReducers']: Record<string, (data: any) => any>
   /** @internal */
@@ -212,6 +219,14 @@ export interface NuxtRenderHTMLContext {
   bodyPrepend: string[]
   body: string[]
   bodyAppend: string[]
+}
+
+/**
+ * Context passed to the `render:document` hook, fired once the `render:html` hooks have run
+ * for a document that is not streamed. Replace `html` to change the document.
+ */
+export interface NuxtRenderDocumentContext {
+  html: string
 }
 
 /**

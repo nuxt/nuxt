@@ -83,7 +83,25 @@ function eventFetch (event: H3Event, request: any, init?: any) {
 
   // `fetchWithEvent` builds the sub-request with `new Request(url, { ...init })`, which a
   // `Request` passed as init would not survive either
-  return fetchWithEvent(event, internal, merged ? toRequestInit(merged) : init)
+  return fetchWithEvent(withRenderingErrorFlag(event), internal, merged ? toRequestInit(merged) : init)
+}
+
+/** Marks a sub-request made while rendering an error page, so its own failure does not render another one. */
+function withRenderingErrorFlag (event: H3Event): H3Event {
+  const app = event.app
+  if (!app || !(event.context as { nuxt?: Record<string, unknown> }).nuxt?.['~rendering-error']) {
+    return event
+  }
+  return Object.create(event, {
+    app: {
+      value: {
+        fetch: (request: Request & { context?: Record<string, unknown> }) => {
+          request.context = { ...request.context, nuxt: { '~rendering-error': true } }
+          return app.fetch(request)
+        },
+      },
+    },
+  })
 }
 
 /** A `Request`'s own fields as a plain init, for a consumer that spreads it. */

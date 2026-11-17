@@ -2,6 +2,8 @@ import { defineNuxtPlugin } from '#app/nuxt'
 import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { freezeHead } from '../island-head'
 
+import { appComponentHead } from '#build/unhead.config.mjs'
+
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:head',
   enforce: 'pre',
@@ -14,6 +16,13 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     if (nuxtApp.ssrContext!.islandContext) {
       const unfreeze = freezeHead(head)
       nuxtApp.hooks.hookOnce('app:created', unfreeze)
+    } else if (appComponentHead.length) {
+      // head input hoisted from the app component applies where the app component sets up
+      nuxtApp.hooks.hookOnce('vue:setup', () => {
+        for (const input of appComponentHead) {
+          head.push(input)
+        }
+      })
     }
 
     // nuxt.config appHead is set server-side within the renderer

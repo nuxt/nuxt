@@ -32,8 +32,8 @@ export function defineRenderHandler (render: (event: H3Event) => LegacyRenderRes
       event.res.headers.set(name, value)
     }
 
-    const body = await applyLegacyRenderResponse(event, (useNitroApp().hooks || { callHook: () => {} }) as any, typeof response.body === 'string' ? response.body : undefined)
+    const replaced = await applyLegacyRenderResponse(event, (useNitroApp().hooks || { callHook: () => {} }) as any, typeof response.body === 'string' ? { html: response.body } : undefined)
 
-    return typeof response.body === 'string' ? body : response.body
+    return typeof response.body === 'string' ? (replaced ?? response.body) : response.body
   })
 }

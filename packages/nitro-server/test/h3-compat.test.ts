@@ -1,6 +1,10 @@
 // the v1 helpers under test are deprecated in h3 v2 by definition
 /* eslint-disable @typescript-eslint/no-deprecated */
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import { dirname, resolve } from 'pathe'
+import { parseSync } from 'rolldown/utils'
 import { HTTPError, mockEvent } from 'nitro/h3'
 
 import {
@@ -22,7 +26,10 @@ import {
   setResponseStatus,
   splitCookiesString,
   toLegacyError,
+  toWebRequest,
 } from '../src/runtime/compat/h3-v1.ts'
+import * as serverShim from '../src/runtime/compat/h3-v1.ts'
+import * as appShim from '../src/runtime/compat/h3-v1-app.ts'
 import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
 
 describe('h3 v1 shim', () => {
@@ -68,6 +75,33 @@ describe('h3 v1 shim', () => {
       statusMessage: 'I am a teapot',
       data: { cup: true },
     })
+  })
+
+  it('keeps the cause an error is created with', () => {
+    const cause = new Error('inner')
+
+    expect(createError({ statusCode: 500, message: 'outer', cause }).cause).toBe(cause)
+    expect(createError({ status: 500, message: 'outer', cause }).cause).toBe(cause)
+
+    const input = { statusCode: 500, message: 'outer' }
+    expect(createError(input).cause).toBe(input)
+
+    expect(createError(null as any).status).toBe(500)
+  })
+
+  it('keeps the status of an unhandled error created with an h3 v1 cause', () => {
+    class ForeignH3Error extends Error {
+      static __h3_error__ = true
+      statusCode = 404
+      unhandled = false
+      data = { secret: 'inner' }
+    }
+
+    const error = toLegacyError(createError({ statusCode: 503, unhandled: true, cause: new ForeignH3Error('inner') }))
+
+    expect(error.status).toBe(503)
+    expect(error.unhandled).toBe(true)
+    expect(JSON.stringify(error.toJSON())).not.toContain('inner')
   })
 
   it('leaves v3-shaped input untouched', () => {
@@ -190,6 +224,26 @@ describe('h3 v1 shim', () => {
     expect(calls).toEqual(['onRequest', 'onBeforeResponse:ok'])
   })
 
+  it('sends a string a handler returns as HTML unless the handler sets a content type', async () => {
+    const html = await defineEventHandler(() => '<h1>ok</h1>').fetch(new Request('http://nuxt/page'))
+    expect(html.headers.get('content-type')).toBe('text/html')
+
+    const text = await defineEventHandler((event) => {
+      event.res.headers.set('content-type', 'text/plain')
+      return 'ok'
+    }).fetch(new Request('http://nuxt/robots.txt'))
+    expect(text.headers.get('content-type')).toBe('text/plain')
+
+    const json = await defineEventHandler(() => ({ ok: true })).fetch(new Request('http://nuxt/api/test'))
+    expect(json.headers.get('content-type')).toContain('application/json')
+
+    const notModified = await defineEventHandler((event) => {
+      event.res.status = 304
+      return ''
+    }).fetch(new Request('http://nuxt/page'))
+    expect(notModified.headers.has('content-type')).toBe(false)
+  })
+
   it('normalises errors thrown from a handler', async () => {
     const handler = defineEventHandler(() => {
       throw createError({ statusCode: 422, statusMessage: 'Unprocessable', data: { field: 'name' } })
@@ -264,11 +318,125 @@ describe('v1 body readers', () => {
     expect(event.req.bodyUsed).toBe(false)
   })
 
+  it('copies the request with `toWebRequest`, leaving the body readable', async () => {
+    const event = mockEvent('http://nuxt/api/test?foo=bar', {
+      method: 'POST',
+      body: JSON.stringify({ a: 1 }),
+      headers: { 'content-type': 'application/json' },
+    })
+
+    const request = toWebRequest(event)
+    expect(request.url).toBe('http://nuxt/api/test?foo=bar')
+    expect(request.method).toBe('POST')
+    expect(request.headers.get('content-type')).toBe('application/json')
+    expect(await request.json()).toEqual({ a: 1 })
+    expect(await readBody(event)).toEqual({ a: 1 })
+
+    const get = toWebRequest(mockEvent('http://nuxt/api/test'))
+    expect(get.method).toBe('GET')
+    expect(get.body).toBeNull()
+  })
+
+  const bodyEvent = (body: string, contentType: string) => mockEvent('http://nuxt/body', {
+    method: 'POST',
+    body,
+    headers: { 'content-type': contentType },
+  })
+
+  it('returns a text body as text', async () => {
+    expect(await readBody(bodyEvent('hello', 'text/plain'))).toBe('hello')
+    expect(await readBody(bodyEvent('{"a":1}', 'text/plain; charset=utf-8'))).toBe('{"a":1}')
+  })
+
+  it('parses a body of another content type as JSON, falling back to the text', async () => {
+    expect(await readBody(bodyEvent('hello', 'application/octet-stream'))).toBe('hello')
+    expect(await readBody(bodyEvent('{"a":1}', 'application/octet-stream'))).toEqual({ a: 1 })
+    expect(await readBody(bodyEvent('{"a":1}', 'application/json; charset=utf-8'))).toEqual({ a: 1 })
+    expect(await readBody(bodyEvent('hello', 'application/json; charset=utf-8'))).toBe('hello')
+  })
+
+  it('parses an `application/json` body strictly unless told otherwise', async () => {
+    await expect(readBody(bodyEvent('hello', 'application/json'))).rejects.toMatchObject({ statusCode: 400, message: 'Invalid JSON body' })
+    expect(await readBody(bodyEvent('hello', 'application/json'), { strict: false })).toBe('hello')
+    await expect(readBody(bodyEvent('hello', 'application/octet-stream'), { strict: true })).rejects.toMatchObject({ statusCode: 400 })
+  })
+
+  it('matches the content type case-insensitively', async () => {
+    expect(await readBody(bodyEvent('name=nuxt', 'Application/X-WWW-Form-Urlencoded'))).toEqual({ name: 'nuxt' })
+    expect(await readBody(bodyEvent('{"a":1}', 'Text/Plain'))).toBe('{"a":1}')
+    await expect(readBody(bodyEvent('hello', 'Application/JSON'))).rejects.toMatchObject({ statusCode: 400 })
+  })
+
+  it('validates the body as `readBody` reads it, parsing strictly', async () => {
+    const identity = (data: unknown) => data
+
+    expect(await readValidatedBody(bodyEvent('hello', 'text/plain'), identity)).toBe('hello')
+    expect(await readValidatedBody(bodyEvent('{"a":1}', 'text/plain'), identity)).toBe('{"a":1}')
+    expect(await readValidatedBody(bodyEvent('{"a":1}', 'text/plain'), identity, { type: 'json' })).toEqual({ a: 1 })
+    expect(await readValidatedBody(bodyEvent('name=nuxt', 'application/x-www-form-urlencoded'), identity)).toEqual({ name: 'nuxt' })
+    expect(await readValidatedBody(bodyEvent('{"a":1}', 'application/octet-stream'), identity)).toEqual({ a: 1 })
+    expect(await readValidatedBody(mockEvent('http://nuxt/body', { method: 'POST' }), identity)).toBeUndefined()
+    await expect(readValidatedBody(bodyEvent('hello', 'application/octet-stream'), identity)).rejects.toMatchObject({ status: 400, message: 'Invalid JSON body' })
+    await expect(readValidatedBody(bodyEvent('hello', 'text/plain'), () => false)).rejects.toMatchObject({ status: 400 })
+  })
+
+  it('returns the same text body for repeated reads', async () => {
+    const event = bodyEvent('hello', 'text/plain')
+
+    expect(await readBody(event)).toBe('hello')
+    expect(await readBody(event)).toBe('hello')
+    expect(await readRawBody(event)).toBe('hello')
+    expect(event.req.bodyUsed).toBe(false)
+  })
+
+  it('rejects every read of a body whose source fails', async () => {
+    const request = new Request('http://nuxt/', {
+      method: 'POST',
+      duplex: 'half',
+      body: new ReadableStream({ start (controller) { controller.error(new Error('body source failed')) } }),
+    } as RequestInit)
+    const event = mockEvent(request)
+
+    await expect(readRawBody(event)).rejects.toThrow('body source failed')
+    await expect(readRawBody(event)).rejects.toThrow('body source failed')
+    await expect(readBody(event)).rejects.toThrow('body source failed')
+  })
+
+  it('rejects a read of a body already consumed elsewhere', async () => {
+    const event = bodyEvent('hello', 'text/plain')
+    await event.req.text()
+
+    await expect(readRawBody(event)).rejects.toThrow(TypeError)
+    await expect(readBody(event)).rejects.toThrow(TypeError)
+  })
+
   it('returns `undefined` for a request with no body', async () => {
     const event = mockEvent('http://nuxt/api/test')
 
     expect(await readRawBody(event)).toBeUndefined()
     expect(getRequestWebStream(event)).toBeUndefined()
+  })
+
+  it('returns the first parsed body to every later read, whatever its strictness', async () => {
+    const event = bodyEvent('hello', 'application/octet-stream')
+
+    expect(await readBody(event)).toBe('hello')
+    expect(await readBody(event, { strict: true })).toBe('hello')
+  })
+
+  it('hands a later reader the body an earlier reader changed', async () => {
+    const event = jsonEvent()
+    const body = await readBody(event)
+    body.touched = true
+
+    expect(await readBody(event, { strict: true })).toBe(body)
+  })
+
+  it('parses the body again after a strict read fails', async () => {
+    const event = bodyEvent('hello', 'application/octet-stream')
+
+    await expect(readBody(event, { strict: true })).rejects.toMatchObject({ status: 400 })
+    expect(await readBody(event)).toBe('hello')
   })
 })
 
@@ -309,3 +477,55 @@ describe('v1 event bridge', () => {
     expect(event.res.headers.get('link')).toBe('</c>; rel=preload')
   })
 })
+
+describe('h3 v1 app shim', () => {
+  it('provides the helpers of the server shim, without its handler wrapper', () => {
+    const wrapper = ['defineEventHandler', 'eventHandler']
+    expect(Object.keys(appShim).sort()).toEqual(Object.keys(serverShim).sort())
+    for (const name of Object.keys(serverShim)) {
+      if (wrapper.includes(name)) {
+        expect(appShim[name as keyof typeof appShim]).not.toBe(serverShim[name as keyof typeof serverShim])
+      } else {
+        expect(appShim[name as keyof typeof appShim]).toBe(serverShim[name as keyof typeof serverShim])
+      }
+    }
+  })
+
+  it('imports nothing that loads the Nitro runtime', () => {
+    const appShimPath = fileURLToPath(new URL('../src/runtime/compat/h3-v1-app.ts', import.meta.url))
+    const serverShimPath = fileURLToPath(new URL('../src/runtime/compat/h3-v1.ts', import.meta.url))
+    expect([...collectBareImports(serverShimPath)]).toEqual(expect.arrayContaining(['nitro/app', 'nitro/context']))
+
+    const imports = [...collectBareImports(appShimPath)]
+    expect(imports.filter(specifier => /^(?:#|nitro(?:\/|$))/.test(specifier) && specifier !== 'nitro/h3')).toEqual([])
+  })
+})
+
+/** The non-relative specifiers a module and the relative modules it imports load at runtime. */
+function collectBareImports (entry: string): Set<string> {
+  const found = new Set<string>()
+  const seen = new Set<string>()
+  const pending = [entry]
+  while (pending.length > 0) {
+    const file = pending.pop()!
+    if (seen.has(file)) {
+      continue
+    }
+    seen.add(file)
+    const code = readFileSync(file, 'utf8')
+    const { module } = parseSync(file, code, { lang: 'ts', sourceType: 'module' })
+    const requests = [
+      ...module.staticImports.filter(entry => entry.entries.length === 0 || entry.entries.some(e => !e.isType)).map(entry => entry.moduleRequest.value),
+      ...module.staticExports.flatMap(entry => entry.entries.filter(e => e.moduleRequest && !e.isType).map(e => e.moduleRequest!.value)),
+      ...module.dynamicImports.map(entry => code.slice(entry.moduleRequest.start, entry.moduleRequest.end).replace(/^(['"`])(.*)\1$/s, '$2')),
+    ]
+    for (const request of requests) {
+      if (request.startsWith('.')) {
+        pending.push(resolve(dirname(file), request))
+      } else {
+        found.add(request)
+      }
+    }
+  }
+  return found
+}

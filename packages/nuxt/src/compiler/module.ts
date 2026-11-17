@@ -59,6 +59,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         keyedFunctions: normalizedKeyedFunctions,
         getKeyedFunctions: () => normalizedKeyedFunctions,
         alias: nuxt.options.alias,
+        rootDir: nuxt.options.rootDir,
         appDir: nuxt.options.appDir,
         dev: nuxt.options.dev,
       }))

@@ -16,6 +16,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path === '/navigate-to-encoded-query') {
     return navigateTo('/?callback=%2Fother')
   }
+  if (to.path === '/navigate-to-encoded-query-code') {
+    return navigateTo('/?callback=%2Fother', { redirectCode: 307 })
+  }
   if (to.path === '/navigate-to-encoded-space') {
     return navigateTo('/?q=a%20b')
   }

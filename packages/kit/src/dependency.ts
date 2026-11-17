@@ -30,6 +30,12 @@ export interface EnsureDependencyInstalledOptions {
    * - `undefined`: prompt unless on StackBlitz
    */
   prompt?: boolean
+  /**
+   * Whether to install the dependency as a dev dependency.
+   *
+   * @default true
+   */
+  dev?: boolean
 }
 
 /**
@@ -64,7 +70,8 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   }
 
   const formattedNames = installable.map(n => `\`${n}\``).join(', ')
-  configDiagnostics.NUXT_B5010({ names: formattedNames, installCommand: await getAddDependencyCommand(installable, rootDir, { dev: true }) })
+  const dev = options.dev ?? true
+  configDiagnostics.NUXT_B5010({ names: formattedNames, installCommand: await getAddDependencyCommand(installable, rootDir, { dev }) })
 
   if (isCI) {
     return Array.isArray(names) ? missing : false
@@ -92,11 +99,11 @@ export async function ensureDependencyInstalled (names: string | string[], optio
 
   const task = terminal.startTask(`Installing ${formattedNames}...`)
   try {
-    await runCommand(await resolveAddCommand(installable, rootDir, { dev: true }), rootDir)
+    await runCommand(await resolveAddCommand(installable, rootDir, { dev }), rootDir)
     task.stop(`Installed ${formattedNames}`)
   } catch (err) {
     task.stop(undefined, 'failure')
-    buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(installable, rootDir, { dev: true }), cause: err })
+    buildDiagnostics.NUXT_B1004({ installCommand: await getAddDependencyCommand(installable, rootDir, { dev }), cause: err })
     return Array.isArray(names) ? missing : false
   }
 

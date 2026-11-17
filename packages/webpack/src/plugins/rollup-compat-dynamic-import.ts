@@ -8,126 +8,74 @@ const HELPER_FILENAME = '_dynamic-import-helper.mjs'
 const HELPER_IMPORT = `import { _rollupDynamicImport } from "./${HELPER_FILENAME}";\n`
 
 /**
- * Webpack plugin that generates rollup-compatible dynamic imports.
- * This plugin uses webpack's native compilation hooks to override dynamic import generation
- * and create rollup-compatible code directly during webpack's compilation process.
+ * Replace the computed dynamic imports of the webpack runtime with imports of statically
+ * known chunks, which Rollup can follow when Nitro bundles the server build.
  */
 export class RollupCompatDynamicImportPlugin implements WebpackPluginInstance {
   apply (compiler: Compiler) {
     compiler.hooks.compilation.tap('RollupCompatDynamicImportPlugin', (compilation) => {
-      compilation.hooks.processAssets.tapAsync({
+      compilation.hooks.processAssets.tap({
         name: 'RollupCompatDynamicImportPlugin',
         stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_INLINE,
-      }, (assets, callback) => {
-        try {
-          const targetFiles = new Set<string>()
-
-          for (const chunk of compilation.chunks) {
-            // Include entry chunks and runtime chunks as they contain webpack runtime
-            if (chunk.canBeInitial() || chunk.hasRuntime()) {
-              for (const file of chunk.files || []) {
-                targetFiles.add(file)
-              }
+      }, (assets) => {
+        // the webpack runtime lives in entry and runtime chunks
+        const targetFiles = new Set<string>()
+        for (const chunk of compilation.chunks) {
+          if (chunk.canBeInitial() || chunk.hasRuntime()) {
+            for (const file of chunk.files || []) {
+              targetFiles.add(file)
             }
           }
+        }
 
-          // Transform JavaScript files that contain dynamic imports
-          for (const [filename, asset] of Object.entries(assets)) {
-            if (!isJS(filename)) {
-              continue
-            }
-
-            // Skip non-target chunks to improve performance
-            if (!targetFiles.has(filename)) {
-              continue
-            }
-
-            const source = asset.source()
-            const originalCode = typeof source === 'string' ? source : source.toString()
-
-            if (!DYNAMIC_IMPORT_RE.test(originalCode)) {
-              continue
-            }
-
-            // Transform dynamic imports in this file
-            const transformedCode = this.transformDynamicImports(originalCode)
-
-            if (transformedCode !== originalCode) {
-              assets[filename] = new compiler.webpack.sources.RawSource(transformedCode)
-            }
+        for (const [filename, asset] of Object.entries(assets)) {
+          if (!isJS(filename) || !targetFiles.has(filename)) {
+            continue
           }
 
-          // Generate helper file
-          this.generateDynamicImportHelper(compilation)
-          callback()
-        } catch (error) {
-          callback(error as Error)
+          const source = asset.source()
+          const code = typeof source === 'string' ? source : source.toString()
+          if (!DYNAMIC_IMPORT_RE.test(code)) {
+            continue
+          }
+
+          const transformed = code.replace(DYNAMIC_IMPORT_REPLACE_RE, '_rollupDynamicImport($1).then')
+          assets[filename] = new compiler.webpack.sources.RawSource(transformed.includes(HELPER_IMPORT) ? transformed : HELPER_IMPORT + transformed)
         }
-      },
-      )
+
+        emitDynamicImportHelper(compilation)
+      })
     })
   }
+}
 
-  private transformDynamicImports (source: string): string {
-    let transformed = source
-    let needsHelperImport = false
-
-    // Transform webpack-style dynamic imports to rollup-compatible ones
-    transformed = transformed.replace(DYNAMIC_IMPORT_REPLACE_RE, (match, filename) => {
-      needsHelperImport = true
-      // Generate a rollup-compatible dynamic import using the module ID
-      return `_rollupDynamicImport(${filename}).then`
-    })
-
-    // Add import statement at the top if we made any transformations
-    if (needsHelperImport && !transformed.includes(HELPER_IMPORT)) {
-      transformed = HELPER_IMPORT + transformed
+function emitDynamicImportHelper (compilation: Compilation) {
+  const chunkFiles: string[] = []
+  for (const chunk of compilation.chunks) {
+    if (chunk.hasRuntime()) {
+      continue
     }
-
-    return transformed
-  }
-
-  private generateDynamicImportHelper (compilation: Compilation) {
-    const chunkFiles: string[] = []
-    for (const chunk of compilation.chunks) {
-      // Skip runtime chunks as they don't contain loadable modules
-      if (chunk.hasRuntime()) {
-        continue
-      }
-
-      for (const filename of chunk.files) {
-        if (filename && isJS(filename)) {
-          chunkFiles.push(filename)
-        }
+    for (const filename of chunk.files) {
+      if (filename && isJS(filename)) {
+        chunkFiles.push(filename)
       }
     }
-
-    if (chunkFiles.length === 0) {
-      return
-    }
-
-    // Generate the helper that provides rollup-compatible dynamic imports
-    const helperContent = this.generateHelperContent(chunkFiles)
-    compilation.emitAsset(HELPER_FILENAME, new compilation.compiler.webpack.sources.RawSource(helperContent))
   }
 
-  private generateHelperContent (chunkFiles: string[]): string {
-    return `
-// Rollup-compatible dynamic import helper generated by webpack
-// This helper enables rollup to consume webpack chunks directly
+  if (!chunkFiles.length) {
+    return
+  }
 
+  const helper = `
 const chunkMap = ${genObjectFromRawEntries(chunkFiles.map(filename => [filename, `() => import(${genString('./' + filename)})`]))}
 
-// Dynamic import function that rollup can understand
 export function _rollupDynamicImport(chunkId) {
   const chunk = chunkMap[chunkId]
   if (!chunk) {
     return Promise.reject(new Error(\`Chunk \${chunkId} not found in chunkMap. Available chunks: \${Object.keys(chunkMap).join(', ')}\`))
   }
-  
-  // Use actual dynamic import for the chunk
   return chunk()
 }
 `
-  }
+  compilation.emitAsset(HELPER_FILENAME, new compilation.compiler.webpack.sources.RawSource(helper))
 }

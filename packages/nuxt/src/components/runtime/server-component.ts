@@ -3,7 +3,7 @@ import type { DefineSetupFnComponent } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
 import { useRoute } from '#app/composables/router'
 import { isPrerendered, shouldLoadPayload } from '#app/composables/payload'
-import { createError, showError } from '#app/composables/error'
+import { createError, createErrorFromThrown, showError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
 import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
 import type { NuxtApp } from '#app/nuxt'
@@ -83,7 +83,7 @@ export const createIslandPage = (name: string, islandKey?: string): IslandPageTy
                   statusText: e.cause.statusText,
                 })
               }
-              nuxtApp.runWithContext(() => showError(e as Error))
+              nuxtApp.runWithContext(() => showError(createErrorFromThrown(e)))
             },
           }, slots),
         ])

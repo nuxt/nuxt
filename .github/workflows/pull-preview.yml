@@ -1,0 +1,32 @@
+name: pull-preview
+
+on:
+  # zizmor: ignore[dangerous-triggers] - DO NOT add actions/checkout: the called workflow only reads PR metadata
+  pull_request_target:
+    branches:
+      - main
+      - 4.x
+      - 3.x
+    paths:
+      - 'docs/**'
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+      - unlabeled
+      - closed
+
+permissions: {}
+
+concurrency:
+  group: pull-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  comment:
+    if: github.repository == 'nuxt/nuxt'
+    permissions:
+      pull-requests: write
+    uses: nuxt/nuxt.com/.github/workflows/pull-preview-comment.yml@main # zizmor: ignore[unpinned-uses] - nuxt.com owns the preview comment

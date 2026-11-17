@@ -98,6 +98,35 @@ describe('prefetch scheduler navigation state', () => {
   })
 })
 
+describe('prefetch scheduler connection state', () => {
+  it('should only read the connection once work is scheduled, and resume when it changes', async () => {
+    const connection = Object.assign(new EventTarget(), { saveData: true })
+    const read = vi.fn(() => connection)
+    Object.defineProperty(navigator, 'connection', { configurable: true, get: read })
+    try {
+      const nuxtApp = useNuxtApp()
+      delete nuxtApp._prefetch
+      const scheduler = usePrefetchScheduler(nuxtApp)
+      await useRouter().push('/index')
+      document.dispatchEvent(new Event('visibilitychange'))
+      expect(read).not.toHaveBeenCalled()
+
+      const started: string[] = []
+      scheduleProbe(scheduler, 'payload:/held-on-save-data', started)
+      await tick()
+      expect(started).toEqual([])
+
+      connection.saveData = false
+      connection.dispatchEvent(new Event('change'))
+      await tick()
+      expect(started).toEqual(['payload:/held-on-save-data'])
+    } finally {
+      delete (navigator as { connection?: unknown }).connection
+      await useRouter().push('/')
+    }
+  })
+})
+
 describe('payload prefetch deduplication', () => {
   const payloadResponse = () => new Response('[{"data":1},{}]')
 

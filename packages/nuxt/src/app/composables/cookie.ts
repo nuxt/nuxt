@@ -1,12 +1,12 @@
 import type { Ref, WatchHandle } from 'vue'
-import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
+import { customRef, getCurrentScope, onScopeDispose, ref, unref, watch } from 'vue'
 import { parse, parseSetCookie, serialize } from 'cookie-es'
 import type { CookieSerializeOptions } from '../types/cookie'
 import type { NuxtRequestEvent } from '@nuxt/schema'
 import { isEqual } from 'ohash'
 import { klona } from 'klona'
 import type { NuxtApp } from '../nuxt'
-import { useNuxtApp } from '../nuxt'
+import { tryUseNuxtApp, useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 import { stateDiagnostics } from '../diagnostics/state'
 
@@ -129,8 +129,12 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   const hasExpired = delay !== undefined && delay <= 0
   const cookieValueIsNullish = cookies[name] === undefined || cookies[name] === null
-  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (hasExpired || cookieValueIsNullish) && !(rawValue === undefined && cookieValueIsNullish && opts.default === undefined)
   const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
+  const shouldSetInitialClientCookie = import.meta.client && !opts.readonly && (
+    rawValue !== undefined
+      ? hasExpired || cookieValueIsNullish
+      : hasExpired ? opts.default !== undefined : unref(cookieValue) !== undefined && unref(cookieValue) !== null
+  )
 
   // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
   const cookie = import.meta.client && (typeof opts.expires === 'function' || (delay && !hasExpired))
@@ -151,6 +155,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   if (import.meta.client) {
+    let skipRefresh = false
     let channel: null | BroadcastChannel = null
     try {
       if (!store && typeof BroadcastChannel !== 'undefined') {
@@ -170,7 +175,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       writeClientCookie(name, encoded, opts)
 
       cookies[name] = klona(cookie.value)
-      channel?.postMessage({ value: opts.encode(cookie.value as T) })
+      channel?.postMessage({ value: encoded ?? cookie.value })
     }
 
     let cookieWatcher: WatchHandle | undefined
@@ -179,16 +184,20 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       if (data.refresh) { invalidateClientCookieJar() }
       const raw = data.refresh ? (opts.filter!(name) ? readClientCookieJar()[name] : undefined) : data.value
       const value = raw === undefined && data.refresh ? undefined : opts.decode(raw)
-      cookieWatcher?.pause()
       cookie.value = value
       cookies[name] = klona(value)
-      nextTick(() => cookieWatcher?.resume())
+      skipRefresh = true
     }
 
     const hasScope = !!getCurrentScope()
 
     if (hasScope) {
+      const app = tryUseNuxtApp()
+      const writers = app && (app._cookieWriters ||= new Set())
+      const write = () => callback()
+      writers?.add(write)
       onScopeDispose(() => {
+        writers?.delete(write)
         cookieWatcher?.pause()
         callback()
         channel?.close()
@@ -218,11 +227,17 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
 
     if (opts.watch && !opts.readonly) {
-      cookieWatcher = watch(cookie, () => callback(opts.refresh), { deep: opts.watch !== 'shallow' })
+      cookieWatcher = watch(cookie, () => {
+        const force = opts.refresh && !skipRefresh
+        skipRefresh = false
+        callback(force)
+      }, { deep: opts.watch !== 'shallow' })
     }
 
     if (shouldSetInitialClientCookie) {
       callback(shouldSetInitialClientCookie)
+    } else if (rawValue === undefined) {
+      cookies[name] = klona(cookie.value)
     }
   } else if (import.meta.server) {
     const writeFinalCookieValue = () => {
@@ -388,12 +403,20 @@ function toSerializeOptions (opts: UseCookieOptions): CookieSerializeOptions {
   }
 }
 
+function serializeOrThrow (name: string, value: string, opts: CookieSerializeOptions) {
+  try {
+    return serialize(name, value, opts)
+  } catch (cause) {
+    throw stateDiagnostics.NUXT_E7011({ name, reason: cause instanceof Error ? cause.message : String(cause), cause })
+  }
+}
+
 function serializeCookie (name: string, value: string | undefined, opts: UseCookieOptions = {}) {
   const serializeOpts = toSerializeOptions(opts)
   if (value === undefined) {
-    return serialize(name, '', { ...serializeOpts, maxAge: -1 })
+    return serializeOrThrow(name, '', { ...serializeOpts, maxAge: -1 })
   }
-  return serialize(name, value, serializeOpts)
+  return serializeOrThrow(name, value, serializeOpts)
 }
 
 function writeClientCookie (name: string, value: string | undefined, opts: UseCookieOptions = {}) {
@@ -433,7 +456,7 @@ function cookieKey (name: string, opts: { domain?: string, path?: string }) {
 }
 
 function setResponseCookie (event: NuxtRequestEvent, name: string, value: string, opts: CookieSerializeOptions) {
-  const newCookie = serialize(name, value, { path: '/', ...opts })
+  const newCookie = serializeOrThrow(name, value, { path: '/', ...opts })
   const currentCookies = event.res.headers.getSetCookie()
 
   if (currentCookies.length === 0) {

@@ -1,101 +1,81 @@
-import process from 'node:process'
-import destr from 'destr'
-import { snakeCase } from 'scule'
-import { klona } from 'klona'
 import type { NitroConfig } from '@nuxt/schema'
+import type { RuntimeConfigSchemaEntry } from '@nuxt/schema/internal'
 
 import { defu } from 'defu'
 import { useNuxt } from './context.ts'
+import { extractModuleRuntimeConfigSchemas, findRuntimeConfigSchema, resolveRuntimeConfig, restoreRuntimeConfigSchemaNulls, stripRuntimeConfigSchemas, supportsRuntimeConfigSchemas } from './internal/runtime-config.ts'
 import { tryUseNitro } from './nitro.ts'
 
 /**
  * Access 'resolved' Nuxt runtime configuration, with values updated from environment.
  *
- * This mirrors the runtime behavior of Nitro.
+ * Environment variables are coerced to the type of the value they override, or of the schema
+ * declared for it. A value that does not match keeps its default. Before
+ * `compatibilityVersion: 5`, values without a schema are cast with `destr`, as at runtime.
  */
 export function useRuntimeConfig (): Record<string, any> {
-  const nuxt = useNuxt()
-  return applyEnv(klona((nuxt.options.nitro as NitroConfig).runtimeConfig!), {
-    prefix: 'NITRO_',
-    altPrefix: 'NUXT_',
-    envExpansion: nuxt.options.nitro.experimental?.envExpansion ?? !!process.env.NITRO_ENV_EXPANSION,
-  })
+  return resolveRuntimeConfig(useNuxt()).config
 }
 
 /**
  * Update Nuxt runtime configuration.
+ *
+ * A value can be a [Standard Schema](https://standardschema.dev) that implements Standard JSON
+ * Schema, which sets the type of the value and its default. A value already in the runtime
+ * config, such as one set in `nuxt.config`, becomes the default of the schema, and a schema
+ * declared in `nuxt.config` at the same path takes precedence. On versions of Nuxt without
+ * support for runtime config schemas, a schema is replaced by its default value and is not
+ * validated.
+ *
+ * @example
+ * ```ts
+ * updateRuntimeConfig({
+ *   myModule: z.object({ apiKey: z.string(), retries: z.number().default(3) }),
+ * })
+ * ```
  */
 export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>): void | Promise<void> {
   const nuxt = useNuxt()
   const nitroConfig: NitroConfig = nuxt.options.nitro
-  Object.assign(nitroConfig.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nitroConfig.runtimeConfig))
-
-  return tryUseNitro()?.updateConfig({ runtimeConfig: runtimeConfig as any })
-}
-
-/**
- * https://github.com/nitrojs/nitro/blob/v2/src/runtime/internal/utils.env.ts.
-*
- * These utils will be replaced by util exposed from nitropack. See https://github.com/nitrojs/nitro/pull/2404
- * for more context and future plans.)
- *
- * @internal
- */
-
-type EnvOptions = {
-  prefix?: string
-  altPrefix?: string
-  envExpansion?: boolean
-}
-
-function getEnv (key: string, opts: EnvOptions, env = process.env) {
-  const envKey = snakeCase(key).toUpperCase()
-  return destr(
-    env[opts.prefix + envKey] ?? env[opts.altPrefix + envKey],
-  )
-}
-
-function _isObject (input: unknown) {
-  return typeof input === 'object' && !Array.isArray(input)
-}
-
-function applyEnv (
-  obj: Record<string, any>,
-  opts: EnvOptions,
-  parentKey = '',
-) {
-  for (const key in obj) {
-    const subKey = parentKey ? `${parentKey}_${key}` : key
-    const envValue = getEnv(subKey, opts)
-    if (_isObject(obj[key])) {
-      // Same as before
-      if (_isObject(envValue)) {
-        obj[key] = { ...(obj[key] as any), ...(envValue as any) }
-        applyEnv(obj[key], opts, subKey)
-      } else if (envValue === undefined) {
-        // If envValue is undefined
-        // Then proceed to nested properties
-        applyEnv(obj[key], opts, subKey)
-      } else {
-        // If envValue is a primitive other than undefined
-        // Then set objValue and ignore the nested properties
-        obj[key] = envValue ?? obj[key]
-      }
+  let entries: RuntimeConfigSchemaEntry[] = []
+  if (findRuntimeConfigSchema(runtimeConfig)) {
+    const current = nitroConfig.runtimeConfig as Record<string, unknown>
+    if (supportsRuntimeConfigSchemas(nuxt)) {
+      const previous = new Set(nuxt.options._runtimeConfigSchemas)
+      runtimeConfig = extractModuleRuntimeConfigSchemas(runtimeConfig, current, nuxt.options._runtimeConfigSchemas)
+      entries = nuxt.options._runtimeConfigSchemas.filter(entry => !previous.has(entry))
     } else {
-      obj[key] = envValue ?? obj[key]
-    }
-    // Experimental env expansion
-    if (opts.envExpansion && typeof obj[key] === 'string') {
-      obj[key] = _expandFromEnv(obj[key])
+      runtimeConfig = stripRuntimeConfigSchemas(runtimeConfig, current)
     }
   }
-  return obj
+  const merge = (target: Record<string, unknown>) => {
+    const merged = defu(runtimeConfig, target)
+    restoreRuntimeConfigSchemaNulls(merged, runtimeConfig, entries)
+    return merged
+  }
+  Object.assign(nitroConfig.runtimeConfig as Record<string, unknown>, merge(nitroConfig.runtimeConfig as Record<string, unknown>))
+
+  const nitro = tryUseNitro()
+  if (!nitro) {
+    return
+  }
+  return nitro.updateConfig({
+    // nitro coerces `undefined` to `''`, which would shadow derived keys such as `nitro.envExpansion`
+    runtimeConfig: withoutUndefined(merge(nitro.options.runtimeConfig as Record<string, unknown>)) as any,
+    // TODO: drop once `nitro.updateConfig({ runtimeConfig })` stops resetting `runtimeConfig.nitro.routeRules` from `config.routeRules`
+    routeRules: (nitro.options as Record<string, any>).routeRules,
+  })
 }
 
-const envExpandRx = /\{\{([^{}]*)\}\}/g
-
-function _expandFromEnv (value: string, env: Record<string, any> = process.env) {
-  return value.replace(envExpandRx, (match, key) => {
-    return env[key] || match
-  })
+function withoutUndefined<T> (value: T): T {
+  if (!value || typeof value !== 'object' || Object.getPrototypeOf(value) !== Object.prototype) {
+    return value
+  }
+  const result: Record<string, unknown> = {}
+  for (const [key, child] of Object.entries(value)) {
+    if (child !== undefined) {
+      result[key] = withoutUndefined(child)
+    }
+  }
+  return result as T
 }

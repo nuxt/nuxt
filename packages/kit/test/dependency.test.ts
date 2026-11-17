@@ -1,11 +1,11 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { rm } from 'node:fs/promises'
 import { join } from 'pathe'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { x } from 'tinyexec'
 
 import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand, toPackageName } from '../src/dependency.ts'
 import { logger } from '../src/logger.ts'
+import { createTempDir, fakePackage, writeFiles } from './utils.ts'
 
 vi.mock('std-env', async original => ({ ...await original<typeof import('std-env')>(), isCI: false, hasTTY: true, provider: '' }))
 vi.mock('tinyexec', () => ({ x: vi.fn(() => Promise.resolve({ exitCode: 0, stdout: '', stderr: '' })) }))
@@ -16,20 +16,15 @@ vi.mock('package-manager-detector', async original => ({
 
 let rootDir: string
 
-async function createPackage (name: string, exports: Record<string, string>) {
-  const dir = join(rootDir, 'node_modules', name)
-  await mkdir(dir, { recursive: true })
-  await writeFile(join(dir, 'package.json'), JSON.stringify({ name, type: 'module', exports }))
-  await writeFile(join(dir, 'index.js'), 'export default {}\n')
-}
+const createPackage = (name: string, exports: Record<string, string>) => writeFiles(rootDir, fakePackage(name, 'export default {}\n', { exports }))
 
 function installCreatesPackage (name: string, exports: Record<string, string>) {
   vi.mocked(x).mockImplementationOnce((() => createPackage(name, exports).then(() => ({ exitCode: 0, stdout: '', stderr: '' }))) as any)
 }
 
 beforeAll(async () => {
-  rootDir = await mkdtemp(join(tmpdir(), 'nuxt-dependency-'))
-  await writeFile(join(rootDir, 'package.json'), JSON.stringify({ name: 'app', private: true }))
+  rootDir = await createTempDir('nuxt-dependency-')
+  await writeFiles(rootDir, { 'package.json': { name: 'app', private: true } })
   await createPackage('tailwindcss', { '.': './index.js' })
   await createPackage('subpath-only', { './a': './index.js' })
 })
@@ -120,6 +115,19 @@ describe('ensureDependencyInstalled', () => {
     const [, args] = vi.mocked(x).mock.calls[0]!
     expect(args).toContain('other')
     expect(args).not.toContain('tailwindcss')
+  })
+
+  it('installs a dev dependency unless asked for a regular one', async () => {
+    vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('dev-dependency', { '.': './index.js' })
+    installCreatesPackage('regular-dependency', { '.': './index.js' })
+
+    await expect(ensureDependencyInstalled('dev-dependency', { rootDir, searchPaths: [] })).resolves.toBe(true)
+    await expect(ensureDependencyInstalled('regular-dependency', { rootDir, searchPaths: [], dev: false })).resolves.toBe(true)
+
+    const calls = vi.mocked(x).mock.calls
+    expect(calls[0]![1]).toContain('-D')
+    expect(calls[1]![1]).not.toContain('-D')
   })
 
   it('returns false when the installed package does not provide the subpath', async () => {

@@ -1,29 +1,18 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
-import { expect, test } from './test-utils'
-
-const fixtureDir = fileURLToPath(new URL('../fixtures/chunk-error', import.meta.url))
+import { collectConsoleLogs, expect, fixtureDir, test } from './test-utils'
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('chunk-error'),
   },
 })
 
 test.describe('chunk loading errors', () => {
-  test('recovers state after a failed chunk load', async ({ page, baseURL }) => {
-    const consoleLogs: string[] = []
-    page.on('console', msg => consoleLogs.push(msg.text()))
-
-    // verify CSS link preload failure doesn't break the page
+  test('recovers state after a failed chunk load', async ({ page, goto }) => {
+    // a failed CSS link preload must not break the page
     await page.route(/\.css/, route => route.abort('timedout'))
-    await page.goto(baseURL!)
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/' && !window.useNuxtApp?.().isHydrating)
+    await goto('/')
     expect(await page.innerText('div')).toContain('Some value: 1')
-    consoleLogs.length = 0
+    const consoleLogs = collectConsoleLogs(page)
 
     await page.getByText('Increment state').click()
     await page.getByText('Increment state').click()
@@ -34,7 +23,7 @@ test.describe('chunk loading errors', () => {
 
     await page.waitForURL(u => u.pathname === '/chunk-error')
 
-    const logs = consoleLogs.join('')
+    const logs = consoleLogs.map(log => log.text).join('')
     expect(logs).toContain('caught chunk load error')
     expect(logs).toContain('Failed to load resource')
 

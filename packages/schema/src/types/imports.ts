@@ -145,7 +145,7 @@ export interface ImportsOptions {
 
   /**
    * Directories to scan for auto imports.
-   * @see https://nuxt.com/docs/4.x/directory-structure/app/composables#how-files-are-scanned
+   * @see https://nuxt.com/docs/5.x/directory-structure/app/composables#how-files-are-scanned
    */
   dirs?: string[]
 

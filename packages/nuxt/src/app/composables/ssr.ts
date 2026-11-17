@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, ref } from 'vue'
+import { computed, customRef, getCurrentInstance, ref } from 'vue'
 import type { TypedFetch } from '../types/fetch'
 import type { NuxtRequestEvent } from '@nuxt/schema'
 import type { $Fetch as OFetch } from 'ofetch'
@@ -29,12 +29,12 @@ export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]): Readonly<Record<string, string>> {
   if (import.meta.client) { return {} }
   const event = useRequestEvent()
-  const _headers = event ? Object.fromEntries(event.req.headers.entries()) : {}
-  if (!include || !event) { return _headers }
+  if (!event) { return {} }
+  if (!include) { return Object.fromEntries(event.req.headers.entries()) }
   const headers = Object.create(null)
   for (const _key of include) {
     const key = _key.toLowerCase()
-    const header = _headers[key]
+    const header = event.req.headers.get(key)
     if (header) {
       headers[key] = header
     }
@@ -49,7 +49,7 @@ export function useRequestHeader (header: string): string | null | undefined {
   return event ? event.req.headers.get(header) : undefined
 }
 
-// hop-by-hop headers, and headers describing a request body the subrequest does not have
+// hop-by-hop headers, and headers describing the page request's body or the response it accepts
 const UNFORWARDED_HEADERS = new Set([
   'accept',
   'accept-encoding',
@@ -67,11 +67,15 @@ const UNFORWARDED_HEADERS = new Set([
   'keep-alive',
   'proxy-authenticate',
   'proxy-authorization',
+  'range',
   'te',
   'trailer',
   'transfer-encoding',
   'upgrade',
 ])
+
+// the builder's `fetch` takes the request context as an internal third argument
+type InProcessFetch = (request: unknown, options: unknown, context: Record<string, unknown>) => Promise<Response>
 
 const requestFetchers = new WeakMap<NuxtRequestEvent, TypedFetch>()
 
@@ -90,7 +94,7 @@ function createRequestFetch (event: NuxtRequestEvent): TypedFetch {
         }
         options = { ...options, headers }
       }
-      return base.native(request, options)
+      return (base.native as unknown as InProcessFetch)(request, options, { ...event.context, nuxt: undefined })
     },
   }) as unknown as TypedFetch
 }
@@ -140,18 +144,20 @@ export function useResponseHeader (header: string): import('vue').WritableComput
 
   const event = useRequestEvent()!
 
-  return computed({
+  return customRef((track, trigger) => ({
     get () {
+      track()
       return event.res.headers.get(header)
     },
     set (newValue) {
       if (!newValue) {
-        return event.res.headers.delete(header)
+        event.res.headers.delete(header)
+      } else {
+        event.res.headers.set(header, newValue)
       }
-
-      return event.res.headers.set(header, newValue)
+      trigger()
     },
-  })
+  }))
 }
 
 /** @since 3.8.0 */
@@ -178,7 +184,7 @@ const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'
  * The callback will run before Nuxt runtime initializes so it should not rely on the Nuxt or Vue context.
  * @since 3.12.0
  */
-export function onPrehydrate (callback: (el: HTMLElement) => void): void
+export function onPrehydrate (callback: (el: HTMLElement) => void): string | undefined
 export function onPrehydrate (callback: string | ((el: HTMLElement) => void), key?: string): undefined | string {
   if (import.meta.client) { return }
 

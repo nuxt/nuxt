@@ -2,6 +2,7 @@
 import { computed, getCurrentInstance, onBeforeUnmount, ref } from 'vue'
 import { onPrehydrate } from '../composables/ssr'
 import { useNuxtApp } from '../nuxt'
+import { getFormatter } from './nuxt-time-formatter'
 
 export interface NuxtTimeProps {
   locale?: string
@@ -69,11 +70,8 @@ if (import.meta.client && props.relative) {
 }
 
 const formatter = computed(() => {
-  const { locale: _propLocale, relative, relativeStyle, ...rest } = props
-  if (relative) {
-    return new Intl.RelativeTimeFormat(locale.value, { ...rest, style: relativeStyle })
-  }
-  return new Intl.DateTimeFormat(locale.value, rest)
+  const { locale: _propLocale, datetime: _datetime, title: _title, relative, relativeStyle, ...rest } = props
+  return getFormatter(relative, locale.value, relative ? { ...rest, style: relativeStyle } : rest)
 })
 
 const formattedDate = computed(() => {

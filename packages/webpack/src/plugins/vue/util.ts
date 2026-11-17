@@ -16,11 +16,9 @@ export const validate = (compiler: Compiler) => {
   }
 }
 
-const isJSRegExp = /\.[cm]?js(\?[^.]+)?$/
+const isJSRegExp = /\.[cm]?js(?:\?[^.]+)?$/
 
 export const isJS = (file: string) => isJSRegExp.test(file)
-
-export const extractQueryPartJS = (file: string) => isJSRegExp.exec(file)?.[1]
 
 const isCSSRegExp = /\.css(?:\?[^.]+)?$/
 

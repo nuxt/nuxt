@@ -7,14 +7,12 @@ import { VueLoaderPlugin, builder, vueLoader, vueModuleIdentifierLoader, webpack
 export function vue (ctx: WebpackConfigContext) {
   // ensure the Vue loader is always the first plugin, regardless of plugin ordering.
   ctx.nuxt.hooks.hookOnce(`${builder}:config`, () => {
-    ctx.nuxt.hook(`${builder}:configResolved`, (configs) => {
-      for (const config of configs) {
-        config.plugins!.unshift(
-          // @ts-expect-error de-default vue-loader
-          new (VueLoaderPlugin.default
-            || VueLoaderPlugin)(),
-        )
-      }
+    ctx.nuxt.hook(`${builder}:configResolved`, () => {
+      ctx.config.plugins!.unshift(
+        // @ts-expect-error de-default vue-loader
+        new (VueLoaderPlugin.default
+          || VueLoaderPlugin)(),
+      )
     })
   })
 
@@ -25,11 +23,9 @@ export function vue (ctx: WebpackConfigContext) {
   })
 
   if (ctx.isClient) {
-    ctx.config.plugins!.push(new VueSSRClientPlugin({ nuxt: ctx.nuxt }))
+    ctx.config.plugins!.push(new VueSSRClientPlugin(ctx.nuxt))
   } else {
-    ctx.config.plugins!.push(new VueSSRServerPlugin({
-      filename: `${ctx.name}.manifest.json`,
-    }))
+    ctx.config.plugins!.push(new VueSSRServerPlugin())
 
     ctx.config.module!.rules!.push({
       test: /\.vue$/i,

@@ -3,7 +3,11 @@ import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { join } from 'pathe'
-import { isBuilt, projectSuffix, runsOnceInMatrix } from './matrix'
+import { projectSuffix, runsOnceInMatrix } from './matrix'
+
+const stylesheetLinks = (html: string) => [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*>/g)]
+  .filter(m => !/\sdisabled[\s>]/.test(m[0]))
+  .map(m => m[0].match(/href="([^"]+)"/)![1]!)
 
 describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/inline-styles', import.meta.url))
@@ -27,21 +31,30 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
       expect(html, page).toContain(token)
     }
 
-    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const cssLinks = stylesheetLinks(html)
     expect(cssLinks, page).toEqual([])
   })
 
+  it('renders inlined stylesheets as disabled links so the client does not fetch them again', async () => {
+    const html = await readFile(join(outputDir, 'public', 'about', 'index.html'), 'utf-8')
+    const disabled = [...html.matchAll(/<link rel="stylesheet" href="([^"]+)" disabled>/g)].map(m => m[1]!)
+    expect(disabled.length).toBeGreaterThan(0)
+
+    const linked = await Promise.all(disabled.map(href => readFile(join(outputDir, 'public', href.replace(/^\//, '')), 'utf-8')))
+    expect(linked.join('\n')).toContain('--inline-page-about-token:about')
+  })
+
   // https://github.com/nuxt/nuxt/issues/35715
-  it.runIf(isBuilt)('inline entry component CSS including not rendered in SSR', async () => {
+  it('inline entry component CSS including not rendered in SSR', async () => {
     const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
     expect(html).toContain('--inline-some-component-token:some-component')
 
-    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const cssLinks = stylesheetLinks(html)
     expect(cssLinks).toEqual([])
   })
 
   // https://github.com/nuxt/nuxt/issues/33041
-  it.runIf(isBuilt)('inlines child component styles before parent styles', async () => {
+  it('inlines child component styles before parent styles', async () => {
     const html = await readFile(join(outputDir, 'public', 'index.html'), 'utf-8')
     const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
     const childIndex = inlinedStyles.indexOf('--inline-some-component-token:some-component')
@@ -56,7 +69,7 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
       const html = await readFile(join(outputDir, 'public', page, 'index.html'), 'utf-8')
       expect(html, page).toContain('--inline-shared-box-token:shared-box')
 
-      const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+      const cssLinks = stylesheetLinks(html)
       expect(cssLinks, page).toEqual([])
     }
   })
@@ -65,7 +78,7 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     const html = await readFile(join(outputDir, 'public', 'shared-css-via-js', 'index.html'), 'utf-8')
     expect(html).toContain('--inline-shared-css-via-js-token:shared-css-via-js')
 
-    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const cssLinks = stylesheetLinks(html)
     expect(cssLinks.length).toBeGreaterThan(0)
 
     const linked = await Promise.all(cssLinks.map(href => readFile(join(outputDir, 'public', href.replace(/^\//, '')), 'utf-8')))
@@ -78,9 +91,18 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
     expect(inlinedStyles).not.toContain('--inline-shared-box-token:shared-box')
 
-    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const cssLinks = stylesheetLinks(html)
     const linked = await Promise.all(cssLinks.map(href => readFile(join(outputDir, 'public', href.replace(/^\//, '')), 'utf-8')))
     expect(linked.join('\n')).toContain('--inline-shared-box-token:shared-box')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/36741
+  it('drops the stylesheet link for inlined CSS that an `ssr: false` page also imports', async () => {
+    const html = await readFile(join(outputDir, 'public', 'spa-shared', 'index.html'), 'utf-8')
+    expect(html).toContain('--inline-spa-shared-token:spa-shared')
+
+    const cssLinks = stylesheetLinks(html)
+    expect(cssLinks).toEqual([])
   })
 
   // https://github.com/nuxt/nuxt/issues/31558
@@ -95,7 +117,7 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     const html = await readFile(join(outputDir, 'public', 'lazy-import/index.html'), 'utf-8')
     expect(html).toContain('--inline-lazy-import-token:lazy-import')
     // Ensure there are no linked stylesheets
-    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const cssLinks = stylesheetLinks(html)
     expect(cssLinks).toEqual([])
   })
 
@@ -107,7 +129,7 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     const html = await readFile(join(outputDir, 'public', dir, 'shared-name', 'index.html'), 'utf-8')
     expect(html).toContain(expectedToken)
     expect(html).not.toContain(otherToken)
-    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const cssLinks = stylesheetLinks(html)
     expect(cssLinks).toEqual([])
   })
 
@@ -120,7 +142,7 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
   ])('inlines CSS for %s', async (_, token) => {
     const html = await readFile(join(outputDir, 'public', 'js-imported-css/index.html'), 'utf-8')
     expect(html).toContain(token)
-    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const cssLinks = stylesheetLinks(html)
     expect(cssLinks).toEqual([])
   })
   // https://github.com/nuxt/nuxt/issues/35591
@@ -156,8 +178,17 @@ describe.skipIf(!runsOnceInMatrix)('inline styles', () => {
     const inlinedStyles = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]!).join('\n')
     expect(inlinedStyles).not.toContain('--inline-predicate-shared-token:predicate-shared')
 
-    const cssLinks = [...html.matchAll(/<link [^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]!)
+    const cssLinks = stylesheetLinks(html)
     const linked = await Promise.all(cssLinks.map(href => readFile(join(outputDir, 'public', href.replace(/^\//, '')), 'utf-8')))
     expect(linked.join('\n')).toContain('--inline-predicate-shared-token:predicate-shared')
+  })
+
+  it('renders component styles after stylesheet links and entry styles before them', async () => {
+    const html = await readFile(join(outputDir, 'public', 'predicate-not-inlined', 'index.html'), 'utf-8')
+    const linkIndex = html.search(/<link (?![^>]*\bdisabled\b)[^>]*rel="stylesheet"/)
+    expect(linkIndex).toBeGreaterThan(-1)
+    expect(html.indexOf('--inline-app-token:app')).toBeGreaterThan(-1)
+    expect(html.indexOf('--inline-app-token:app')).toBeLessThan(linkIndex)
+    expect(html.indexOf('--inline-shared-box-token:shared-box')).toBeGreaterThan(linkIndex)
   })
 })

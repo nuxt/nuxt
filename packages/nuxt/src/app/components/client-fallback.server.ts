@@ -1,10 +1,10 @@
 import { defineComponent, getCurrentInstance, onErrorCaptured, shallowRef, useId } from 'vue'
 import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
-import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
+import { ssrInterpolate, ssrRenderAttrs, ssrRenderSlot } from 'vue/server-renderer'
 
-import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
-import { createBuffer, isVaporSlot, sanitizeTag } from './utils'
+import { isVaporSlot, sanitizeTag } from './utils'
+import { ssrRenderSlotToBuffer } from './ssr-buffer'
 import { renderDiagnostics } from '../diagnostics/render'
 import { vapor } from '#build/nuxt.config.mjs'
 
@@ -74,19 +74,7 @@ const NuxtClientFallbackServer = defineComponent({
         error.value = true
         return { ssrFailed: true, ssrVNodes: [] }
       }
-      const defaultSlot = ctx.slots.default?.()
-      const ssrVNodes = createBuffer()
-
-      if (defaultSlot) {
-        for (let i = 0; i < defaultSlot.length; i++) {
-          ssrRenderVNode(ssrVNodes.push, defaultSlot[i]!, vm!)
-        }
-      }
-
-      const buffer = ssrVNodes.getBuffer()
-      if (buffer.hasAsync) {
-        await Promise.all((buffer as unknown[]).flat(Infinity).filter(isPromise))
-      }
+      const ssrVNodes = await ssrRenderSlotToBuffer(vm!, ctx.slots.default?.())
 
       return { ssrFailed, ssrVNodes }
     } catch (ssrError) {
@@ -111,7 +99,7 @@ const NuxtClientFallbackServer = defineComponent({
     } else {
       // push Fragment markup
       push('<!--[-->')
-      push(ctx.ssrVNodes.getBuffer())
+      push(ctx.ssrVNodes)
       push('<!--]-->')
     }
   },

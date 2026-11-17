@@ -81,7 +81,6 @@ function normalizeComponent (opts: AddComponentOptions) {
     opts.mode = mode as 'all' | 'client' | 'server'
   }
 
-  // Apply defaults
   const component: Component = {
     export: opts.export || 'default',
     chunkName: 'components/' + kebabCase(opts.name),

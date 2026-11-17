@@ -1,7 +1,13 @@
+import { mkdtemp, writeFile } from 'node:fs/promises'
+import { openAsBlob } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
+import { HookableCore, createHooks } from 'hookable'
+import { H3, mockEvent } from 'nitro/h3'
 
 import { serverDiagnostics } from '../src/runtime/diagnostics.ts'
-import { observeLegacyHooks } from '../src/runtime/compat/hook-registry.ts'
+import { hasLegacyHookListener, observeLegacyHooks } from '../src/runtime/compat/hook-registry.ts'
 import { markStreamedResponse } from '../src/runtime/compat/render-response.ts'
 import plugin from '../src/runtime/compat/hooks-plugin.ts'
 
@@ -61,6 +67,140 @@ describe('nitro v2 runtime hook bridge', () => {
     report.mockRestore()
   })
 
+  it('hands over the body of an unmarked stream that is already complete', async () => {
+    const { hooks, handlers } = createNitroApp()
+
+    const seen: unknown[] = []
+    hooks.hook('beforeResponse', (_event, response) => seen.push(response.body))
+
+    const encoder = new TextEncoder()
+    const response = new Response(new ReadableStream({
+      start (controller) {
+        controller.enqueue(encoder.encode('in '))
+        controller.enqueue(encoder.encode('hand'))
+        controller.close()
+      },
+    }))
+    await handlers.get('response')!(response, {})
+
+    expect(seen).toEqual(['in hand'])
+    expect(await response.text()).toBe('in hand')
+  })
+
+  it('does not hold an unmarked live stream until it ends', async () => {
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8011').mockImplementation(() => ({}) as any)
+    const hooks = createHooks()
+    plugin({ hooks } as any)
+
+    let close!: () => void
+    const response = new Response(new ReadableStream({
+      start (controller) {
+        controller.enqueue(new TextEncoder().encode('first'))
+        close = () => controller.close()
+      },
+    }))
+    const seen: unknown[] = []
+    hooks.hook('beforeResponse', (_event: unknown, legacy: { body: unknown }) => { seen.push(legacy.body) })
+
+    let settled = false
+    const pending = Promise.resolve(hooks.callHook('response', response, mockEvent('http://nuxt/stream'))).then(() => { settled = true })
+    await vi.waitFor(() => expect(settled).toBe(true))
+
+    expect(seen).toEqual([undefined])
+    expect(report).toHaveBeenCalledTimes(1)
+
+    close()
+    await pending
+    expect(await response.text()).toBe('first')
+    report.mockRestore()
+  })
+
+  it('stops reading an unmarked stream that keeps producing without yielding', async () => {
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8011').mockImplementation(() => ({}) as any)
+    const { hooks, handlers } = createNitroApp()
+
+    const seen: unknown[] = []
+    hooks.hook('beforeResponse', (_event, response) => seen.push(response.body))
+
+    let pulls = 0
+    const chunk = new Uint8Array([120])
+    const response = new Response(new ReadableStream({
+      pull (controller) {
+        controller.enqueue(chunk)
+        if (++pulls >= 300_000) {
+          controller.close()
+        }
+      },
+    }))
+    await handlers.get('response')!(response, {})
+
+    expect(seen).toEqual([undefined])
+    expect(pulls).toBeLessThan(300_000)
+    report.mockRestore()
+  })
+
+  it('hands over the body of a response of declared length that arrives after the first turn', async () => {
+    const { hooks, handlers } = createNitroApp()
+
+    const seen: unknown[] = []
+    hooks.hook('beforeResponse', (_event, response) => seen.push(response.body))
+
+    const response = new Response(new ReadableStream({
+      start (controller) {
+        setTimeout(() => {
+          controller.enqueue(new TextEncoder().encode('late'))
+          controller.close()
+        }, 5)
+      },
+    }), { headers: { 'content-length': '4' } })
+    await handlers.get('response')!(response, {})
+
+    expect(seen).toEqual(['late'])
+    expect(await response.text()).toBe('late')
+  })
+
+  it('hands over the body of a blob, a file and a file on disk returned by a handler', async () => {
+    const { hooks, handlers } = createNitroApp()
+
+    const seen = new Set<unknown>()
+    hooks.hook('beforeResponse', (_event, response) => { seen.add(response.body) })
+
+    const text = 'x'.repeat(300_000)
+    const path = join(await mkdtemp(join(tmpdir(), 'nuxt-hooks-')), 'body.txt')
+    await writeFile(path, text)
+    const app = new H3()
+      .get('/blob', () => new Blob([text]))
+      .get('/file', () => new File([text], 'body.txt'))
+      .get('/disk', () => openAsBlob(path))
+
+    for (const route of ['/blob', '/file', '/disk']) {
+      for (let i = 0; i < 20; i++) {
+        await handlers.get('response')!(await app.fetch(new Request(`http://nuxt${route}`)), {})
+      }
+    }
+
+    expect([...seen]).toEqual([text])
+  })
+
+  it('does not hold a response of declared length that does not end', async () => {
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8011').mockImplementation(() => ({}) as any)
+    const { hooks, handlers } = createNitroApp()
+
+    const seen: unknown[] = []
+    hooks.hook('beforeResponse', (_event, response) => seen.push(response.body))
+
+    const response = new Response(new ReadableStream({
+      start (controller) {
+        controller.enqueue(new TextEncoder().encode('first'))
+      },
+    }), { headers: { 'content-length': '100' } })
+    await handlers.get('response')!(response, {})
+
+    expect(seen).toEqual([undefined])
+    expect(report).toHaveBeenCalledTimes(1)
+    report.mockRestore()
+  })
+
   it('reports an attempted body replacement once per hook', async () => {
     const report = vi.spyOn(serverDiagnostics, 'NUXT_E8008').mockImplementation(() => ({}) as any)
     const { hooks, handlers } = createNitroApp()
@@ -86,6 +226,34 @@ describe('nitro v2 runtime hook bridge', () => {
     expect(report).toHaveBeenCalledTimes(1)
     expect(report.mock.calls[0]![0]).toMatchObject({ hook: 'beforeResponse' })
     report.mockRestore()
+  })
+
+  it('stops tracking a hook once its last listener is removed', () => {
+    const hooks = new HookableCore<Record<string, () => void>>()
+    observeLegacyHooks(hooks)
+
+    const listener = () => {}
+    const off = hooks.hook('render:response', () => {})
+    hooks.hook('render:response', listener)
+    off()
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(true)
+
+    hooks.removeHook('render:response', () => {})
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(true)
+
+    hooks.removeHook('render:response', listener)
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(false)
+  })
+
+  it('stops tracking a `hookOnce` listener once it has run', async () => {
+    const hooks = createHooks<Record<string, () => void>>()
+    observeLegacyHooks(hooks)
+
+    hooks.hookOnce('render:response', () => {})
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(true)
+
+    await hooks.callHook('render:response')
+    expect(hasLegacyHookListener(hooks, 'render:response')).toBe(false)
   })
 
   it('does not warn about a v2 response hook once the bridge is installed', () => {

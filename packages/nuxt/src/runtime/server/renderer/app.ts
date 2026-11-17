@@ -3,7 +3,7 @@ import { createStreamableHead } from '@unhead/vue/stream/server'
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
 import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SSR_STREAMING, unheadOptions } from 'nuxt/internal/renderer-config'
 import { appEvent, getRequestState } from './runtime'
-import type { NuxtRendererOptions, RendererEvent } from './runtime'
+import type { NuxtRendererOptions, NuxtRequestState, RendererEvent } from './runtime'
 import { urlHash } from './url'
 import { mergeHeaders } from './headers'
 
@@ -63,6 +63,7 @@ export function returnRenderResponse (options: NuxtRendererOptions, event: Rende
 
 // TODO: rethink this before nuxt v5
 export function rethrowWithResponseHeaders (event: RendererEvent, error: any): never {
-  error.headers = mergeHeaders(error.headers instanceof Headers ? error.headers : new Headers(error.headers), event.res.headers)
+  const state = (event.context as { nuxt?: NuxtRequestState }).nuxt ||= {}
+  state['~response-headers'] = event.res.headers
   throw error
 }

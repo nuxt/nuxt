@@ -35,6 +35,9 @@
       "#app/*": [
         "./packages/nuxt/src/app/*"
       ],
+      "#build/server-routes": [
+        "./packages/nuxt/src/build-stub-server-routes.d.ts"
+      ],
       "#unhead/composables": [
         "./packages/nuxt/src/head/runtime/composables"
       ],
@@ -57,12 +60,12 @@
   },
   "exclude": [
     "**/dist/**",
+    "bench/fixtures/**",
     "**/.nuxt/**",
     "packages/nuxt/src/app/types/**",
     "packages/kit/test/types-fixture/**",
     "packages/nuxt/meta.d.ts",
     "**/nuxt.d.ts",
-    "**/examples/**",
     "**/docs/**",
     "**/playground/**",
     "**/test/nuxt/**",

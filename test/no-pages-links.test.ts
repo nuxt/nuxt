@@ -1,20 +1,10 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { $fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch } from '@nuxt/test-utils/e2e'
 
-import { isDev, runsOnceInMatrix } from './matrix'
+import { runsOnceInMatrix } from './matrix'
+import { setupFixture } from './utils'
 
-const shouldRun = runsOnceInMatrix
-
-if (shouldRun) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/no-pages-links', import.meta.url)),
-    dev: isDev,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+await setupFixture('no-pages-links', runsOnceInMatrix)
 
 const LINKS = ['custom', 'default', 'blank'] as const
 
@@ -31,7 +21,7 @@ async function hrefs (to: string) {
   return rendered
 }
 
-describe.skipIf(!shouldRun)('links rendered without pages', () => {
+describe.skipIf(!runsOnceInMatrix)('links rendered without pages', () => {
   it.each([
     'javascript:alert(1)',
     'JaVaScRiPt:alert(1)',

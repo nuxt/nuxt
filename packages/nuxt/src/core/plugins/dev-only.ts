@@ -4,8 +4,8 @@ import { parse } from 'ultrahtml'
 import type { Node } from 'ultrahtml'
 import { VUE_TEMPLATE_ID_FILTER } from '../utils/index.ts'
 
-const DEVONLY_COMP_SINGLE_RE = /<(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)(?:\s(?:[^>"']|"[^"]*"|'[^']*')*)?>[\s\S]*?<\/(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)>/
 const DEVONLY_COMP_RE = /<(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)(?:\s(?:[^>"']|"[^"]*"|'[^']*')*)?>[\s\S]*?<\/(?:dev-only|DevOnly|lazy-dev-only|LazyDevOnly)>/g
+const DEVONLY_COMP_SINGLE_RE = new RegExp(DEVONLY_COMP_RE.source)
 
 export const DevOnlyPlugin = () => createUnplugin(() => {
   return {

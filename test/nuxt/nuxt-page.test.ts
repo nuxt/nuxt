@@ -1,10 +1,12 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { flushPromises } from '@vue/test-utils'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { NuxtLayout, NuxtPage } from '#components'
+import { createPageMetaError } from '../../packages/nuxt/src/pages/runtime/page-meta'
+import { clearError, useError } from '#app/composables/error'
 
 describe('NuxtPage with nested routes of different depths (#33766)', () => {
   let router: ReturnType<typeof useRouter>
@@ -1191,5 +1193,30 @@ describe('NuxtPage transitions on nested child routes (#12361)', () => {
     expect(hooks).toEqual(['enter', 'leave'])
 
     el.unmount()
+  })
+})
+
+describe('createPageMetaError', () => {
+  afterEach(async () => {
+    vi.restoreAllMocks()
+    await clearError()
+    await navigateTo('/')
+  })
+
+  it('should fail navigation to the page with a fatal error', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const router = useRouter()
+    router.addRoute({
+      name: 'page-meta-error',
+      path: '/page-meta-error',
+      component: defineComponent({ template: '<div />' }),
+      meta: createPageMetaError(new Error('setup value')),
+    })
+
+    await expect(navigateTo('/page-meta-error')).rejects.toMatchObject({ status: 500, fatal: true })
+
+    expect(useRoute().path).not.toBe('/page-meta-error')
+    expect(useError().value).toMatchObject({ status: 500, statusText: 'NUXT_E2013', fatal: true })
+    router.removeRoute('page-meta-error')
   })
 })

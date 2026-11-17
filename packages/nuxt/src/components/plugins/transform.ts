@@ -55,14 +55,16 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     })
   }
 
+  function transformInclude (id: string) {
+    id = normalize(id)
+    return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
+  }
+
   return createUnplugin(() => [
     {
       name: 'nuxt:components:imports-wrapper',
       enforce: 'post',
-      transformInclude (id) {
-        id = normalize(id)
-        return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
-      },
+      transformInclude,
       transform: {
         filter: {
           id: COMPONENT_QUERY_RE,
@@ -122,10 +124,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     {
       name: 'nuxt:components:imports-alias',
       enforce: 'post',
-      transformInclude (id) {
-        id = normalize(id)
-        return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
-      },
+      transformInclude,
       transform: {
         filter: {
           code: /#components/,

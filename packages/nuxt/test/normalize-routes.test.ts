@@ -34,11 +34,12 @@ function allPages (pages: NuxtPage[]): NuxtPage[] {
 
 describe('normalizeRoutes', () => {
   it('should emit parseable route definitions for any page tree', () => {
-    fc.assert(fc.property(fc.array(page, { minLength: 1, maxLength: 3 }), fc.boolean(), (pages, overrideMeta) => {
+    fc.assert(fc.property(fc.array(page, { minLength: 1, maxLength: 3 }), fc.boolean(), fc.boolean(), (pages, overrideMeta, memoize) => {
       const metaImports = new Set<string>()
       const { routes, imports } = normalizeRoutes(pages, metaImports, {
         clientComponentRuntime: '<client>',
         serverComponentRuntime: '<server>',
+        routeComponentRuntime: memoize ? '<route-component>' : undefined,
         overrideMeta,
       })
 

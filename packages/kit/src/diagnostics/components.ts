@@ -76,5 +76,13 @@ export const componentDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Switch to the Vite builder with `builder: \'vite\'` in your `nuxt.config`.',
       docs: false,
     },
+    NUXT_B3014: {
+      why: (p: { component: string, directive: string, file: string }) => `\`${p.directive}\` is used on the server component \`<${p.component}>\` in \`${p.file}\`, but server components render without client-side JavaScript, so they never emit events or update a \`v-model\`.`,
+      fix: (p: { component: string }) => `Move the interactive part into a client component (such as a \`${p.component}.client.vue\` pair, or a child with the \`nuxt-client\` attribute), or remove the binding.`,
+    },
+    NUXT_B3015: {
+      why: (p: { component: string, prop: string, value: string, file: string }) => `The \`${p.prop}\` prop passed to the server component \`<${p.component}>\` in \`${p.file}\` is ${p.value}, which cannot be serialized to send to the server.`,
+      fix: 'Pass only JSON-serializable values (strings, numbers, booleans, `null`, arrays and plain objects) as props to server components, or render this component on the client.',
+    },
   },
 })

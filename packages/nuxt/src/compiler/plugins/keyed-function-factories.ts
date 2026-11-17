@@ -3,7 +3,6 @@ import { buildDiagnostics } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { JS_EXT_RE, MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, linkToAlias, logger, stripExtension } from '../../utils.ts'
 import type { ESTree } from 'rolldown/utils'
-import { isAbsolute, join, parse } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
@@ -11,8 +10,8 @@ import type { KeyedFunction, KeyedFunctionFactory } from '@nuxt/schema'
 import type { ScanPlugin } from '../types.ts'
 import type { Import } from 'unimport'
 import { type FunctionCallMetadata, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
-import { createScanPluginContext } from '../utils.ts'
-import { type ParsedStaticImport, parseStaticImports } from '../../core/utils/static-imports.ts'
+import { createScanPluginContext, resolveImportPath } from '../utils.ts'
+import { type ParsedStaticImport, getStaticImports } from '../../core/utils/static-imports.ts'
 
 interface ParsedKeyedFunctionFactory {
   factoryName: string
@@ -105,14 +104,7 @@ function createFactoryProcessor (
   }
   const LOCAL_FACTORY_NAMES_RE = new RegExp(`\\b(${[...localFactoryNames].map(f => escapeRE(f)).join('|')})\\b`)
 
-  // TODO: use async walker or create sync version of `resolvePath` from kit
-  function _resolvePath (path: string) {
-    let p = path
-    if (isAbsolute(p)) { return p }
-    p = resolveAlias(p, alias)
-    if (isAbsolute(p)) { return p }
-    return join(parse(filePath).dir, p)
-  }
+  const _resolvePath = (path: string) => resolveImportPath(path, alias, filePath)
 
   function getFactoryByLocalName (localName: string | undefined) {
     if (!localName) { return undefined }
@@ -424,14 +416,6 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
         })
         const autoImports = await options.getAutoImports()
         const autoImportsToSources = new Map<string, string>(autoImports.map(i => [i.as || i.name, i.from]))
-        const { processFactory } = createFactoryProcessor(
-          id,
-          scopeTracker,
-          namesToFactoryMeta,
-          parseStaticImports(code, id),
-          autoImportsToSources,
-          options.alias,
-        )
 
         function rewriteFactoryMacro (node: ESTree.IdentifierReference | ESTree.MemberExpression | ESTree.ParenthesizedExpression) {
           // TODO: use sth more robust for rewriting optionals
@@ -460,11 +444,20 @@ export const KeyedFunctionFactoriesPlugin = (options: KeyedFunctionFactoriesPlug
           }
         }
 
-        const { program } = parseAndWalk(code, id, {
+        const { program, module } = parseAndWalk(code, id, {
           scopeTracker,
         })
 
         scopeTracker.freeze()
+
+        const { processFactory } = createFactoryProcessor(
+          id,
+          scopeTracker,
+          namesToFactoryMeta,
+          getStaticImports(code, module.staticImports),
+          autoImportsToSources,
+          options.alias,
+        )
 
         walk(program, {
           // no need for a scope tracker pre-pass, since we only care about imports

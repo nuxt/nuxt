@@ -1,0 +1,23 @@
+name: translations
+
+on:
+  push:
+    branches:
+      - main
+      - 4.x
+      - 3.x
+    paths:
+      - 'docs/**'
+
+permissions: {}
+
+jobs:
+  dispatch:
+    if: github.repository == 'nuxt/nuxt'
+    runs-on: ubuntu-slim
+    environment: translations
+    steps:
+      # notify nuxt/translations to refresh this branch's source
+      - run: gh api repos/nuxt/translations/dispatches -f event_type=source-push -f "client_payload[sources]=nuxt-${GITHUB_REF_NAME}"
+        env:
+          GH_TOKEN: ${{ secrets.TRANSLATIONS_DISPATCH_TOKEN }}

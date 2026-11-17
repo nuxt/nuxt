@@ -58,6 +58,10 @@ describe('resolveApp', () => {
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
           },
           {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/deferred-prefetch.client.ts",
+          },
+          {
             "dependsOn": [],
             "filename": "components.plugin.mjs",
             "getContents": [Function],
@@ -83,22 +87,27 @@ describe('resolveApp', () => {
     `)
   })
 
-  it('registers the streaming client head plugin when ssrStreaming is enabled', async () => {
+  it.each([
+    [false, false],
+    [true, true],
+  ])('creates the client head from the streaming queue when ssrStreaming is %s', async (ssrStreaming, streamable) => {
+    const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    await mkdir(rootDir, { recursive: true })
+    const nuxt = await loadNuxt({ cwd: rootDir, overrides: { experimental: { ssrStreaming } } })
+    const template = nuxt.options.build.templates.find(t => t.filename === 'unhead-client.mjs')!
+    const contents = await template.getContents!({ nuxt, app: createApp(nuxt), options: {} } as any)
+    await nuxt.close()
+    expect(contents.includes('createStreamableHead')).toBe(streamable)
+  })
+
+  it('does not register the deferred prefetch plugin when deferPrefetchHints is disabled', async () => {
     const app = await getResolvedApp([
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ experimental: { ssrStreaming: true } })',
+        contents: 'export default defineNuxtConfig({ experimental: { deferPrefetchHints: false } })',
       },
     ])
-    const headPlugins = app.plugins
-      .filter(p => !('getContents' in p) && p.src.includes('head/runtime/plugins'))
-      .map(p => p.src)
-    expect(headPlugins).toMatchInlineSnapshot(`
-      [
-        "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead.server.ts",
-        "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead-stream.client.ts",
-      ]
-    `)
+    expect(app.plugins.some(p => !('getContents' in p) && p.src.includes('deferred-prefetch'))).toBe(false)
   })
 
   it('resolves layouts and middleware correctly', async () => {

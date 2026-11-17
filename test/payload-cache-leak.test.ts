@@ -1,9 +1,8 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { fetch, setup } from '@nuxt/test-utils/e2e'
+import { fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
+import { setupFixture } from './utils'
 
 // Regression coverage: a runtime payload cache keyed by path only would replay one
 // principal's `/_payload.json` to other users before middleware/guards ran. Two rule
@@ -18,25 +17,17 @@ const MARKER_B = `MARKER-${USER_B}`
 const payloadFile = '_payload.json'
 
 // Only exercise this once per environment (dev + built); the leak is builder-independent.
-const shouldRun = runsOncePerEnvInMatrix
-
-if (shouldRun) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/payload-cache-leak', import.meta.url)),
-    dev: isDev,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-    nuxtConfig: {
-      hooks: {
-        'modules:done' () {
-          if (!isDev) {
-            process.env.NODE_ENV = 'production'
-          }
-        },
+await setupFixture('payload-cache-leak', runsOncePerEnvInMatrix, {
+  nuxtConfig: {
+    hooks: {
+      'modules:done' () {
+        if (!isDev) {
+          process.env.NODE_ENV = 'production'
+        }
       },
     },
-  })
-}
+  },
+})
 
 async function get (path: string, headers?: Record<string, string>) {
   const res = await fetch(path, headers ? { headers } : undefined)
@@ -45,7 +36,7 @@ async function get (path: string, headers?: Record<string, string>) {
 
 const cookie = (user: string) => ({ cookie: `session=${user}` })
 
-describe.skipIf(!shouldRun)('payload cache cross-user / unauthenticated disclosure (GHSA-wm8w-6qjm-cv43)', () => {
+describe.skipIf(!runsOncePerEnvInMatrix)('payload cache cross-user / unauthenticated disclosure (GHSA-wm8w-6qjm-cv43)', () => {
   it('does not serve a protected payload to an unauthenticated request before any warm', async () => {
     const res = await get(`/protected/cache-cookie/${payloadFile}`)
     expect(res.text).not.toContain(MARKER_A)

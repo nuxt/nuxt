@@ -2,8 +2,9 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { createIsIgnored } from '@nuxt/kit'
 import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
-import type { Import, InjectImportsOptions, Unimport } from 'unimport'
+import type { Import, InjectImportsOptions, InlinePreset, Unimport } from 'unimport'
 import type { Nuxt, ServerImportsOptions } from '@nuxt/schema'
+import { nitroBuildDiagnostics } from './diagnostics.ts'
 
 export interface ServerAutoImports {
   /** Inject auto-imports into a server module, or `undefined` when auto-imports are disabled. */
@@ -20,8 +21,19 @@ export interface ServerAutoImports {
   enabled: boolean
 }
 
+export interface ServerAutoImportsContext {
+  /** Directories whose exports are not auto-imported, but are reported when used without an import. */
+  nestedUtilsDirs?: string[]
+  /** Presets that are not auto-imported, but are reported when used without an import. */
+  disabledPresets?: InlinePreset[]
+}
+
+const MAX_REPORTED_FILES = 10
+const DOLLAR_FETCH_RE = /(?<![\w$.])\$fetch\b/
+const GLOBAL_FETCH_IMPORT: Import = { name: '$fetch', from: 'ofetch' }
+
 /** Creates and applies the auto-imports available to the modules the server builder bundles. */
-export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptions, typesDir: string): ServerAutoImports {
+export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptions, typesDir: string, context: ServerAutoImportsContext = {}): ServerAutoImports {
   const enabled = options.autoImport !== false
   const importsModulePath = join(typesDir, 'types/server-imports')
   // substitutions are resolved relative to the generated file itself, not to `typesDir`
@@ -37,6 +49,24 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
 
   const isIgnored = createIsIgnored(nuxt)
   const scanDirs = options.dirs ?? []
+  const nestedUtilsDirs = enabled ? context.nestedUtilsDirs ?? [] : []
+  const nestedUtilsCtx = nestedUtilsDirs.length > 0
+    ? createUnimport({ parser: 'oxc', presets: [], imports: [], addons: { addons: [] } })
+    : undefined
+  const reportedNestedUtils = new Set<string>()
+  const disabledPresets = enabled ? context.disabledPresets ?? [] : []
+  const disabledPresetsCtx = disabledPresets.length > 0
+    ? createUnimport({ parser: 'oxc', presets: disabledPresets, imports: [GLOBAL_FETCH_IMPORT], addons: { addons: [] } })
+    : undefined
+  const reportedPresetFiles = new Set<string>()
+  const pendingPresetReports = new Map<string, Import[]>()
+  let presetReportTimer: ReturnType<typeof setTimeout> | undefined
+  const globalFetchCtx = disabledPresetsCtx
+    ? undefined
+    : createUnimport({ parser: 'oxc', presets: [], imports: [GLOBAL_FETCH_IMPORT], addons: { addons: [] } })
+  const reportedGlobalFetch = new Set<string>()
+  const pendingGlobalFetch = new Set<string>()
+  let globalFetchTimer: ReturnType<typeof setTimeout> | undefined
 
   // the project comes first in `_layers`, so it gets the highest priority; the floor of 1 is
   // unimport's default, so a scanned util still takes precedence over a preset of the same name
@@ -54,6 +84,12 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   }
 
   async function scan () {
+    if (nestedUtilsCtx) {
+      await nestedUtilsCtx.modifyDynamicImports(async () => {
+        const scanned = await scanDirExports(nestedUtilsDirs, { fileFilter: file => !isIgnored(file) })
+        return scanned.filter(i => !i.type)
+      })
+    }
     if (scanDirs.length === 0) { return }
     await ctx.modifyDynamicImports(async (imports) => {
       const scanned = await scanDirExports(scanDirs, {
@@ -65,6 +101,83 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       imports.push(...scanned)
       return imports
     })
+  }
+
+  async function reportNestedUtils (code: string, id: string) {
+    if (!nestedUtilsCtx || (await nestedUtilsCtx.getImports()).length === 0) { return }
+    const { imports } = await nestedUtilsCtx.injectImports(code, id, { autoImport: true, id } as InjectImportsOptions)
+    if (imports.length === 0) { return }
+    const names = imports.map(i => `\`${i.as ?? i.name}\` (from \`${relative(nuxt.options.rootDir, i.from)}\`)`).sort()
+    const key = id + '\0' + names.join('\0')
+    if (reportedNestedUtils.has(key)) { return }
+    reportedNestedUtils.add(key)
+    nitroBuildDiagnostics.NUXT_B9006({ file: relative(nuxt.options.rootDir, id), count: names.length, names: names.join(', ') })
+  }
+
+  async function reportDisabledPresets (code: string, id: string) {
+    if (!disabledPresetsCtx) { return }
+    const { imports: detected } = await disabledPresetsCtx.injectImports(code, id, { autoImport: true, id } as InjectImportsOptions)
+    const imports = detected.filter(i => i.name !== GLOBAL_FETCH_IMPORT.name || i.from !== GLOBAL_FETCH_IMPORT.from)
+    if (imports.length < detected.length) {
+      queueGlobalFetchReport(id)
+    }
+    if (imports.length === 0) { return }
+    const key = id + '\0' + imports.map(i => i.as ?? i.name).sort().join('\0')
+    if (reportedPresetFiles.has(key)) { return }
+    reportedPresetFiles.add(key)
+    pendingPresetReports.set(id, imports)
+    // files are transformed one at a time, so the report waits for the rest of the batch
+    clearTimeout(presetReportTimer)
+    presetReportTimer = setTimeout(flushDisabledPresetReports, 100)
+  }
+
+  function flushDisabledPresetReports () {
+    const reports = [...pendingPresetReports].sort(([a], [b]) => a.localeCompare(b))
+    pendingPresetReports.clear()
+    const bySource = new Map<string, Set<string>>()
+    for (const [, imports] of reports) {
+      for (const i of imports) {
+        const names = bySource.get(i.from) || new Set()
+        bySource.set(i.from, names)
+        names.add(i.as && i.as !== i.name ? `${i.name} as ${i.as}` : i.name)
+      }
+    }
+    const files = reports.slice(0, MAX_REPORTED_FILES).map(([id, imports]) => `\`${relative(nuxt.options.rootDir, id)}\` (${imports.map(i => `\`${i.as ?? i.name}\``).sort().join(', ')})`)
+    if (reports.length > MAX_REPORTED_FILES) {
+      files.push(`and ${reports.length - MAX_REPORTED_FILES} more`)
+    }
+    nitroBuildDiagnostics.NUXT_B9007({
+      count: reports.length,
+      files: files.join('\n  - '),
+      imports: [...bySource].map(([from, names]) => `\`import { ${[...names].sort().join(', ')} } from '${from}'\``).join(', '),
+    })
+  }
+
+  // TODO: remove in Nuxt 6, with `NUXT_B9011`
+  async function reportGlobalFetch (code: string, id: string) {
+    if (!globalFetchCtx || reportedGlobalFetch.has(id) || !DOLLAR_FETCH_RE.test(code)) { return }
+    const { imports } = await globalFetchCtx.injectImports(code, id, { autoImport: true, id } as InjectImportsOptions)
+    if (imports.length > 0) {
+      queueGlobalFetchReport(id)
+    }
+  }
+
+  function queueGlobalFetchReport (id: string) {
+    if (reportedGlobalFetch.has(id)) { return }
+    reportedGlobalFetch.add(id)
+    pendingGlobalFetch.add(id)
+    clearTimeout(globalFetchTimer)
+    globalFetchTimer = setTimeout(flushGlobalFetchReports, 100)
+  }
+
+  function flushGlobalFetchReports () {
+    const ids = [...pendingGlobalFetch].sort()
+    pendingGlobalFetch.clear()
+    const files = ids.slice(0, MAX_REPORTED_FILES).map(id => `\`${relative(nuxt.options.rootDir, id)}\``)
+    if (ids.length > MAX_REPORTED_FILES) {
+      files.push(`and ${ids.length - MAX_REPORTED_FILES} more`)
+    }
+    nitroBuildDiagnostics.NUXT_B9011({ count: ids.length, files: files.join('\n  - ') })
   }
 
   /**
@@ -100,7 +213,12 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       // `patches/unimport@6.4.0.patch` reads `id` off the options so oxc parses each module in its
       // own language, which it infers from the filename. Server modules arrive untranspiled.
       // TODO: drop the patch, this `id`, and the version pin once unimport threads the id itself.
-      return ctx.injectImports(code, id, { autoImport: true, id, ...injectOptions } as InjectImportsOptions)
+      const result = await ctx.injectImports(code, id, { autoImport: true, id, ...injectOptions } as InjectImportsOptions)
+      const transformed = result.s.toString()
+      await reportNestedUtils(transformed, id)
+      await reportDisabledPresets(transformed, id)
+      await reportGlobalFetch(transformed, id)
+      return result
     },
 
     async getImports () {
@@ -137,7 +255,7 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
 
       // the re-exports make this a module, so `import { x } from '#imports'` resolves as well as
       // the ambient `x` the declarations provide
-      const reExports = toExports(imports, importsModuleDir, true)
+      const reExports = toExports(imports, importsModuleDir, true, { declaration: true })
 
       await Promise.all([
         writeFile(importsModulePath + '.d.ts', [declarations.trim(), reExports.trim() || 'export {}'].filter(Boolean).join('\n') + '\n', 'utf8'),
@@ -147,23 +265,40 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   }
 }
 
-/** Resolve the directories scanned for server auto-imports across all layers. */
-export function resolveServerImportDirs (nuxt: Nuxt): string[] {
+/**
+ * Resolve the directories scanned for server auto-imports across all layers.
+ *
+ * `nestedUtils` also scans the subdirectories of each `server/utils`.
+ */
+export function resolveServerImportDirs (nuxt: Nuxt, options: { nestedUtils?: boolean } = {}): string[] {
   const dirs = new Set<string>()
-  if (nuxt.options.imports.scan === false) { return [] }
 
-  for (const layer of nuxt.options._layers) {
-    // Layer disabled scanning for itself
-    if (layer.config?.imports?.scan === false) { continue }
-
+  for (const layer of getScannedLayers(nuxt)) {
     const shared = layer.config.dir?.shared ?? 'shared'
     dirs.add(join(layer.config.rootDir, shared, 'utils'))
     dirs.add(join(layer.config.rootDir, shared, 'types'))
-    dirs.add(join(layer.config.serverDir ?? join(layer.config.rootDir, 'server'), 'utils'))
-    dirs.add(join(layer.config.serverDir ?? join(layer.config.rootDir, 'server'), 'types'))
+    dirs.add(join(getServerDir(layer), options.nestedUtils ? 'utils/**/*' : 'utils'))
+    dirs.add(join(getServerDir(layer), 'types'))
   }
 
   return [...dirs]
+}
+
+/** Resolve the subdirectories of each layer's `server/utils`. */
+export function resolveNestedServerUtilsDirs (nuxt: Nuxt): string[] {
+  return getScannedLayers(nuxt).map(layer => join(getServerDir(layer), 'utils/*/**/*'))
+}
+
+type NuxtLayer = Nuxt['options']['_layers'][number]
+
+function getScannedLayers (nuxt: Nuxt): NuxtLayer[] {
+  if (nuxt.options.imports.scan === false) { return [] }
+  // Layer disabled scanning for itself
+  return nuxt.options._layers.filter(layer => layer.config?.imports?.scan !== false)
+}
+
+function getServerDir (layer: NuxtLayer): string {
+  return layer.config.serverDir ?? join(layer.config.rootDir, 'server')
 }
 
 const RELATIVE_RE = /^\.{1,2}\//

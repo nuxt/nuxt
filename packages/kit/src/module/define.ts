@@ -44,7 +44,6 @@ function _defineNuxtModule<
     return _defineNuxtModule<TOptions, TOptionsDefaults, TWith>({ setup: definition })
   }
 
-  // Normalize definition and meta
   const module: ModuleDefinition<TOptions, TOptionsDefaults, TWith> & Required<Pick<ModuleDefinition<TOptions, TOptionsDefaults, TWith>, 'meta'>> = defu(definition, { meta: {} })
 
   module.meta.configKey ||= module.meta.name
@@ -87,7 +86,6 @@ function _defineNuxtModule<
       throw kitDiagnostics.NUXT_B8012({ name: module.meta.name || 'module' })
     }
 
-    // Avoid duplicate installs
     const uniqueKey = module.meta.name || module.meta.configKey
     if (uniqueKey) {
       nuxt.options._requiredModules ||= {}
@@ -97,7 +95,6 @@ function _defineNuxtModule<
       nuxt.options._requiredModules[uniqueKey] = true
     }
 
-    // Check compatibility constraints
     if (module.meta.compatibility) {
       const issues = await checkNuxtCompatibility(module.meta.compatibility, nuxt)
       if (issues.length) {
@@ -112,15 +109,12 @@ function _defineNuxtModule<
       }
     }
 
-    // Resolve module and options
     const _options = await getOptions(inlineOptions, nuxt)
 
-    // Register hooks
     if (module.hooks) {
       nuxt.hooks.addHooks(module.hooks)
     }
 
-    // Call setup
     const moduleName = uniqueKey || module.meta.name || '<no name>'
     nuxt._perf?.startPhase(`module:${moduleName}`)
     let res: ModuleSetupReturn
@@ -130,7 +124,6 @@ function _defineNuxtModule<
       nuxt._perf?.endPhase(`module:${moduleName}`)
     }
 
-    // Check if module is ignored
     if (res === false) { return false }
 
     return res

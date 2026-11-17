@@ -11,21 +11,18 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "vite",
-    "optimize-assets": "npx svgo public/assets/**/*.svg",
-    "prerender": "pnpm build && node ./lib/prerender.ts"
+    "dev": "vite"
   },
   "devDependencies": {
     "@unocss/reset": "catalog:dev",
     "@vue/shared": "catalog:build",
     "beasties": "catalog:dev",
+    "cssnano": "catalog:build",
     "html-validate": "catalog:dev",
     "htmlnano": "catalog:dev",
     "knitwork": "catalog:build",
     "pathe": "catalog:build",
     "prettier": "catalog:dev",
-    "scule": "catalog:build",
-    "svgo": "catalog:dev",
     "tinyexec": "catalog:dev",
     "tinyglobby": "catalog:build",
     "unocss": "catalog:dev",

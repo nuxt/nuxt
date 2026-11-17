@@ -1,7 +1,8 @@
 import { existsSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { performance } from 'node:perf_hooks'
-import { createBuilder, createServer, mergeConfig } from 'vite'
+import { pathToFileURL } from 'node:url'
+import { createBuilder, createServer, mergeConfig, resolveConfig } from 'vite'
 import type * as vite from 'vite'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
@@ -11,17 +12,19 @@ import vuePlugin from '@vitejs/plugin-vue'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
+import type { Plugin as PostcssPlugin } from 'postcss'
+import { resolvePostcssPlugins, resolveVuePackages, useServerBuild } from '@nuxt/kit/internal'
 
 import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
-import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
-import { DevErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
-import { sanitizeFilePath } from './utils/index.ts'
+import { DevErrorsDevToolsPlugin, DevErrorsPlugin, DevRequestErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
+import { getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
+import { ParallelBuildPlugin } from './plugins/parallel-build.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
 import { OptimizeDepsPlugin } from './plugins/optimize-deps.ts'
@@ -30,12 +33,13 @@ import { SourcemapPreserverPlugin } from './plugins/sourcemap-preserver.ts'
 import { DevStyleSSRPlugin } from './plugins/dev-style-ssr.ts'
 import { DecoratorsPlugin } from './plugins/decorators.ts'
 import { RuntimePathsPlugin } from './plugins/runtime-paths.ts'
-import { TypeCheckPlugin } from './plugins/type-check.ts'
-import { ModulePreloadPolyfillPlugin } from './plugins/module-preload-polyfill.ts'
+import { ModulePreloadPolyfillPlugin } from './plugins/client-entry-import.ts'
 import { StableEntryPlugin } from './plugins/stable-entry.ts'
+import { CompileHintsPlugin } from './plugins/compile-hints.ts'
+import { ClientChunksPlugin } from './plugins/client-chunks.ts'
 import { VitePluginCheckerPlugin } from './plugins/vite-plugin-checker.ts'
 import { AnalyzePlugin } from './plugins/analyze.ts'
-import { DevServerPlugin } from './plugins/dev-server.ts'
+import { DevListenerPlugin, DevServerPlugin } from './plugins/dev-server.ts'
 import { TemplateHMRPlugin } from './plugins/template-hmr.ts'
 import { EnvironmentsPlugin } from './plugins/environments.ts'
 import { ViteNodePlugin } from './plugins/vite-node.ts'
@@ -43,9 +47,9 @@ import { ServerEntryPlugin } from './plugins/server-entry.ts'
 import { ClientManifestPlugin } from './plugins/client-manifest.ts'
 import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
+import { InlinedVuePlugin } from './plugins/inlined-vue.ts'
 import { PerfPlugin } from './plugins/perf.ts'
 import { isNavigationRequest, warmupViteServer } from './utils/warmup.ts'
-import { useServerBuild } from '@nuxt/kit/internal'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
@@ -58,10 +62,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     nitro.options.alias['#vite-node'] = resolve(distDir, 'vite-node')
   }
 
-  let allowDirs = [
+  const allowDirs = removeNestedDirs([
     nuxt.options.appDir,
     nuxt.options.workspaceDir,
     ...nuxt.options.modulesDir,
+    ...getAncestorModulesDirs(nuxt.options.rootDir),
     ...getLayerDirectories(nuxt).map(d => d.root),
     ...Object.values(nuxt.apps).flatMap(app => [
       ...app.components.map(c => dirname(c.filePath)),
@@ -71,15 +76,27 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       dirname(nuxt.apps.default!.rootComponent!),
       dirname(nuxt.apps.default!.errorComponent!),
     ]),
-  ].filter(d => d && existsSync(d))
-
-  allowDirs = allowDirs.filter(d =>
-    !allowDirs.some(other => other !== d && d.startsWith(other + '/')),
-  )
+  ]).filter(d => existsSync(d))
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  let fsDeny: string[] | undefined
+  if (nuxt.options.dev) {
+    // a configured `server.fs.deny` replaces Vite's defaults
+    const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envFile: false, logLevel: 'silent' }, 'serve')).server.fs.deny
+    fsDeny = [...defaultDeny, '**/app-secret']
+    if (nitro) {
+      fsDeny.push(`${escapeGlob(resolve(nitro.options.output.serverDir))}/**`)
+    }
+  }
+
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
+
+  const vueDir = resolveVuePackages(nuxt).dirs.vue
+  const compilerSfc = !viteConfig.vue?.compiler && vueDir
+    ? resolveModulePath('vue/compiler-sfc', { from: vueDir + '/', try: true })
+    : undefined
+  const vueOptions = compilerSfc ? { ...viteConfig.vue, compiler: await import(pathToFileURL(compilerSfc).href) } : viteConfig.vue
 
   const helper = nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
 
@@ -127,14 +144,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
                 // run serially to preserve the order of client, server builds
                 const environments = Object.values(builder.environments)
                 for (const environment of environments) {
+                  const { input, build } = environment.config
+                  if (!input && !build.rolldownOptions.input && !build.lib && typeof build.ssr !== 'string') {
+                    continue
+                  }
                   logger.restoreAll()
-                  nuxt._perf?.startPhase(`vite:${environment.name}`)
                   try {
                     await builder.build(environment)
                   } finally {
                     logger.wrapAll()
                   }
-                  nuxt._perf?.endPhase(`vite:${environment.name}`)
                   await nuxt.callHook('vite:compiled')
                 }
               },
@@ -172,7 +191,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ],
       },
       // TODO: devSourcemap
-      css: await resolveCSSOptions(nuxt),
+      css: {
+        postcss: {
+          plugins: await resolvePostcssPlugins<PostcssPlugin>(nuxt),
+        },
+      },
       define: {
         __NUXT_VERSION__: JSON.stringify(nuxt._version),
         __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext,
@@ -207,12 +230,14 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
-        vuePlugin(viteConfig.vue),
+        InlinedVuePlugin(nuxt),
+        vuePlugin(vueOptions),
         ...VueJsxPlugin(nuxt, viteConfig.vueJsx),
         ClientManifestPlugin(nuxt),
         // After ClientManifestPlugin so its dev `clientManifest` override wins.
         ViteNodePlugin(nuxt),
-        ServerEntryPlugin(nuxt, entry),
+        ServerEntryPlugin(nuxt, serverEntry),
+        DevListenerPlugin(nuxt),
         DevServerPlugin(nuxt),
         TemplateHMRPlugin(nuxt),
         // lower decorators after Vue SFC compilation and TypeScript stripping
@@ -236,31 +261,37 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           buildAssetsURL: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
         }),
         RuntimePathsPlugin(),
-        // Type checking client panel
-        TypeCheckPlugin(nuxt),
         ModulePreloadPolyfillPlugin(),
         // ensure changes in chunks do not invalidate whole build
         StableEntryPlugin(nuxt),
+        CompileHintsPlugin(nuxt),
+        ClientChunksPlugin(nuxt),
         AnalyzePlugin(nuxt),
         OptimizeDepsHintPlugin(nuxt),
+        ParallelBuildPlugin(nuxt),
       ],
       appType: 'custom',
       server: {
         middlewareMode: true,
+        allowedHosts: nuxt.options.devServer.allowedHosts,
         watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
         fs: {
-          allow: [...new Set(allowDirs)],
+          allow: allowDirs,
+          deny: fsDeny,
         },
       },
     } satisfies ViteConfig,
-    {
-      ...viteConfig,
+    mergeConfig(viteConfig, {
       environments: {
         ssr: $server,
         client: $client,
       },
-    },
+    }),
   )
+
+  if (Array.isArray(config.server?.allowedHosts)) {
+    config.server.allowedHosts = [...new Set(config.server.allowedHosts)]
+  }
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
@@ -291,7 +322,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   })
   config.configFile = false
   if (devErrors) {
-    config.plugins!.push(DevErrorsPlugin(devErrors))
+    const { CheckerBridgePlugin } = await import('./checker-bridge.ts')
+    config.plugins!.push(DevErrorsPlugin(devErrors), DevRequestErrorsPlugin(devErrors), await DevErrorsDevToolsPlugin(nuxt, devErrors), CheckerBridgePlugin(devErrors))
+    const vue = (config.plugins as unknown[]).flat(Infinity).find((plugin): plugin is vite.Plugin => !!plugin && typeof plugin === 'object' && 'name' in plugin && plugin.name === 'vite:vue')
+    if (vue) {
+      const { VueCompilerWarningsPlugin } = await import('./vue-compiler-warnings.ts')
+      config.plugins!.push(VueCompilerWarningsPlugin(nuxt, vue, devErrors))
+    }
   }
 
   for (const environment of ['client', 'ssr']) {
@@ -393,9 +430,13 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   }
 }
 
-async function withLogs (fn: () => Promise<unknown>, message: string, enabled = true) {
-  if (!enabled) { return fn() }
+const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
 
+function escapeGlob (path: string) {
+  return path.replace(GLOB_SPECIAL_CHARS_RE, '\\$&')
+}
+
+async function withLogs (fn: () => Promise<unknown>, message: string) {
   const start = performance.now()
   await fn()
   const duration = performance.now() - start

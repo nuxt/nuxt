@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest'
 
-import type { NuxtOptions, RuntimeValue, SharedAppConfig, UpperSnakeCase } from 'nuxt/schema'
+import type { NuxtOptions, RuntimeConfigSchema, RuntimeValue, SharedAppConfig, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
 import { defineNuxtConfig } from 'nuxt/config'
 
@@ -73,12 +73,15 @@ describe('runtimeConfig', () => {
         },
       },
     })
-    expectTypeOf(val.runtimeConfig!.public!.testConfig).toEqualTypeOf<undefined | RuntimeValue<number, 'You can override this value at runtime with NUXT_PUBLIC_TEST_CONFIG'>>()
-    expectTypeOf(val.runtimeConfig!.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'>>()
-    expectTypeOf(val.runtimeConfig!.baseURL).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_URL'>>()
-    expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
-    expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<(1 | 2 | 3)[], 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
-    expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<unknown>()
+    type Plain<T> = Exclude<NonNullable<T>, RuntimeConfigSchema<any>>
+    const runtimeConfig = val.runtimeConfig as Plain<typeof val.runtimeConfig>
+    const publicConfig = runtimeConfig.public as Plain<typeof runtimeConfig.public>
+    expectTypeOf(publicConfig.testConfig).toEqualTypeOf<undefined | RuntimeValue<number, 'You can override this value at runtime with NUXT_PUBLIC_TEST_CONFIG'> | RuntimeConfigSchema<number>>()
+    expectTypeOf(runtimeConfig.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'> | RuntimeConfigSchema<string>>()
+    expectTypeOf(runtimeConfig.baseURL).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_URL'> | RuntimeConfigSchema<string>>()
+    expectTypeOf(runtimeConfig.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'> | RuntimeConfigSchema<string>>()
+    expectTypeOf(publicConfig.ids).toEqualTypeOf<undefined | RuntimeValue<(1 | 2 | 3)[], 'You can override this value at runtime with NUXT_PUBLIC_IDS'> | RuntimeConfigSchema<(1 | 2 | 3)[]>>()
+    expectTypeOf(runtimeConfig.unknown).toEqualTypeOf<unknown>()
   })
 
   it('correctly converts different kinds of names to snake case', () => {

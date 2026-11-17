@@ -1,22 +1,12 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
 import { isDev, runsOncePerEnvInMatrix } from './matrix'
+import { setupFixture } from './utils'
 
-const shouldRun = runsOncePerEnvInMatrix
+await setupFixture('nitro-module-compat', runsOncePerEnvInMatrix)
 
-if (shouldRun) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/nitro-module-compat', import.meta.url)),
-    dev: isDev,
-    server: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
-
-describe.skipIf(!shouldRun)('nitro v2 module compatibility without `nitroLegacy`', () => {
+describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 module compatibility without `nitroLegacy`', () => {
   it('runs a v1-style module handler', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/untagged')).toEqual({
       flavour: 'earl-grey',
@@ -108,6 +98,16 @@ describe.skipIf(!shouldRun)('nitro v2 module compatibility without `nitroLegacy`
 
     expect(response.headers.get('x-legacy-header')).toBe('applied')
     expect(response.headers.get('x-route-header')).toBe(null)
+  })
+
+  it('starts an API stream while a v2 `beforeResponse` hook is registered', async () => {
+    const response = await fetch('/api/stream', { signal: AbortSignal.timeout(10_000) })
+    const reader = response.body!.getReader()
+
+    const { value } = await reader.read()
+    expect(new TextDecoder().decode(value)).toBe('first')
+    expect(response.headers.get('x-before-response')).toBe('applied')
+    await reader.cancel()
   })
 
   it('decorates events reaching module utilities from an unwrapped user route', async () => {

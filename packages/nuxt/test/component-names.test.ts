@@ -18,6 +18,16 @@ describe('component names', () => {
 
   const transformPlugin = ComponentNamePlugin({ getComponents: () => components }).raw({}, {} as any) as { transform: { handler: (code: string, id: string) => { code: string } | null } }
 
+  it('only sends component modules to the transform', () => {
+    const { include } = (ComponentNamePlugin({ getComponents: () => components }).raw({}, {} as any) as any).transform.filter.id as { include: RegExp[] }
+    const reaches = (id: string) => include.some(re => re.test(id))
+    expect(reaches('/app/components/Foo.vue')).toBe(true)
+    expect(reaches('/app/components/Foo.tsx')).toBe(true)
+    expect(reaches('/app/components/Foo.vue?vue&type=script&setup=true&lang.ts')).toBe(false)
+    expect(reaches('/app/components/Foo.vue?vue&type=style&index=0&lang.css')).toBe(false)
+    expect(reaches('/app/pages/index.vue?macro=true')).toBe(false)
+  })
+
   it('should ignore files that are not components ', () => {
     const res = transformPlugin.transform.handler('export default {}', 'some-other-file.ts')
     expect(res?.code).toBeUndefined()
@@ -54,5 +64,21 @@ onMounted(() => {
 
       }, { __name: "TestMe" })"
     `)
+  })
+
+  it('should use first matches and refresh after scans or length changes', () => {
+    let current: Component[] = components
+    const plugin = ComponentNamePlugin({ getComponents: () => current }).raw({}, {} as any) as typeof transformPlugin
+    expect(plugin.transform.handler('export default {}', 'test.vue')?.code).toContain('"TestMe"')
+
+    current = [
+      { ...components[1], pascalName: 'First' },
+      { ...components[1], pascalName: 'Second' },
+    ]
+    expect(plugin.transform.handler('export default {}', 'test.vue')?.code).toContain('"First"')
+    expect(plugin.transform.handler('export default {}', 'test.ts')?.code).toBeUndefined()
+
+    current.push(components[0])
+    expect(plugin.transform.handler('export default {}', 'test.ts')?.code).toContain('"TestMe"')
   })
 })

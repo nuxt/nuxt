@@ -16,6 +16,11 @@ export default <RouterConfig>{
     // @ts-expect-error untyped, nuxt-injected option
     const hashScrollBehaviour = router.options?.scrollBehaviorType ?? 'auto'
 
+    // keep the position the browser restored on load (see `scrollRestoration` in the router plugin)
+    if (from === START_LOCATION && !savedPosition && !to.hash) {
+      return false
+    }
+
     // Hash routes on the same page, no page hook is fired so resolve here
     if (to.path.replace(/\/$/, '') === from.path.replace(/\/$/, '')) {
       if (from.hash && !to.hash) {
@@ -61,16 +66,12 @@ export default <RouterConfig>{
   },
 }
 
-function _getHashElementScrollMarginTop (selector: string): number {
-  try {
-    const elem = document.querySelector(selector)
-    if (elem) {
-      return (Number.parseFloat(getComputedStyle(elem).scrollMarginTop) || 0) + (Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0)
-    }
-  } catch {
-    // ignore any errors parsing scrollMarginTop
+function _getHashElementScrollMarginTop (hash: string): number {
+  const elem = document.getElementById(hash.slice(1))
+  if (!elem) {
+    return 0
   }
-  return 0
+  return (Number.parseFloat(getComputedStyle(elem).scrollMarginTop) || 0) + (Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0)
 }
 
 function _calculatePosition (

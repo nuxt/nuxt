@@ -1,12 +1,12 @@
 /// <reference path="./internal.d.ts" />
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, NormalizedRouteRules, RouteRuleConfig, TracingOptions } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, TracingChannelOptions as NitroTracingChannelOptions, NormalizedRouteRules, RouteRuleConfig } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { NitroLegacyOptions } from './compat.ts'
-import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
+import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
 import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
 
 /**
- * Per-channel toggles for `tracingChannel`: Nitro's own {@link TracingOptions}, plus the
+ * Per-channel toggles for `tracingChannel`: Nitro's own {@link NitroTracingChannelOptions}, plus the
  * Nuxt-owned channels.
  *
  * @experimental Channel names, payload shapes, and option keys may change.
@@ -24,6 +24,13 @@ export interface SSRSourceMaps {
   getCode: (file: string) => string | undefined
   /** Position in generated code a source position was mapped from. */
   getCompiledPosition?: (file: string, line: number, column?: number) => { file: string, line: number, column: number } | undefined
+}
+
+declare global {
+  interface ImportMeta {
+    dev: boolean
+    test: boolean
+  }
 }
 
 declare module 'nitro/types' {
@@ -73,8 +80,11 @@ declare module 'nitro/types' {
     'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event, streaming?: boolean }) => void | Promise<void>
     'render:html:chunk': (chunkContext: NuxtRenderChunkContext, context: { event: H3Event }) => void | Promise<void>
     'render:html:close': (closeContext: NuxtRenderCloseContext, context: { event: H3Event }) => void | Promise<void>
+    'render:document': (documentContext: NuxtRenderDocumentContext, context: { event: H3Event }) => void | Promise<void>
     'render:route': (renderRouteContext: NuxtRenderRouteContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+    /** @deprecated Called only while the `nitroLegacy` layer covers Nitro v2 code. Use the Nitro `response` hook instead. */
+    'render:response': (response: { body?: string, statusCode?: number, statusMessage?: string, headers?: Record<string, string> }, context: { event: H3Event }) => void | Promise<void>
   }
 }
 
@@ -87,7 +97,7 @@ interface NitroSchemaTypes {
   handler: NitroEventHandler
   devHandler: NitroDevEventHandler
   routeRuleConfig: RouteRuleConfig
-  tracingChannels: TracingOptions
+  tracingChannels: NitroTracingChannelOptions
 }
 
 /** The types this package's runtime contributes to the app layer. */

@@ -5,7 +5,7 @@
  *
  * The types come from `nuxt/server`, so every name it exports must be exported here too.
  */
-import { defineEventHandler as defineH3EventHandler } from 'nitro/h3'
+import { defineHandler as defineH3Handler } from 'nitro/h3'
 import { serverFetch as nitroServerFetch } from 'nitro'
 import type { EventHandler, RequestEvent, ServerFetchInit } from 'nuxt/server'
 
@@ -43,18 +43,8 @@ export { getRouteRules, matchRouteRules } from './utils/route-rules'
 export { useRuntimeConfig } from 'nitro/runtime-config'
 export { useNitroHooks as useServerHooks } from 'nitro/app'
 
-export {
-  createError,
-  deriveSecret,
-  getRequestHeader,
-  getRequestHeaders,
-  isNuxtError,
-  NuxtError,
-  parseCookies,
-  sendRedirect,
-  setResponseStatus,
-  useAppConfig,
-} from 'nuxt/internal/server-default'
+// the names defined in this module take precedence over the ones re-exported here
+export * from 'nuxt/internal/server-default'
 
 export const clearSession = /* #__PURE__ */ requireRequestEvent('clearSession', clearNuxtSession)
 export const getSession = /* #__PURE__ */ requireRequestEvent('getSession', getNuxtSession)
@@ -72,12 +62,17 @@ function requireRequestEvent<F extends (event: any, ...args: any[]) => any> (hel
 }
 
 /** A handler h3's router can serve directly, whose body can be read more than once. */
-export function defineEventHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
-  return defineH3EventHandler((event) => {
+export function defineHandler<Result> (handler: EventHandler<Result>): EventHandler<Result> {
+  if (typeof handler !== 'function') {
+    throw serverDiagnostics.NUXT_E8016({ received: handler === null ? '`null`' : `\`${typeof handler}\`` })
+  }
+  return defineH3Handler((event) => {
     bufferRequestBody(event)
     return handler(event as RequestEvent) as Result
   }) as unknown as EventHandler<Result>
 }
+
+export const defineEventHandler: typeof defineHandler = defineHandler
 
 export function serverFetch (event: Pick<RequestEvent, 'req' | 'context'>, path: string, init?: ServerFetchInit): Promise<Response> {
   return nitroServerFetch(withBaseURL(path), resolveServerFetchInit(event, init), { nuxt: { '~internal': true } })

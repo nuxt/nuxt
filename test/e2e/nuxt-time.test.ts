@@ -1,7 +1,5 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
 import type { Page } from '@playwright/test'
-import { expect, test } from './test-utils'
+import { consoleLogs, expect, fixtureDir, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
 
@@ -9,15 +7,12 @@ test.use({
   locale: 'en-GB',
   timezoneId: 'UTC',
   nuxt: {
-    rootDir: fileURLToPath(new URL('../fixtures/nuxt-time', import.meta.url)),
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('nuxt-time'),
   },
 })
 
 function hydrationLogs (page: Page) {
-  // @ts-expect-error untyped
-  const logs = (page._consoleLogs ?? []) as Array<{ type: string, text: string }>
-  return logs.filter(log => !log.text.includes('<Suspense>') && !log.text.includes('[vite]'))
+  return consoleLogs(page).filter(log => !log.text.includes('<Suspense>') && !log.text.includes('[vite]'))
 }
 
 test.describe('nuxt-time', () => {

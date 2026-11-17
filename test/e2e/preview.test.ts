@@ -1,13 +1,10 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
-import { expect, test } from './test-utils'
+import { consoleLogs, expect, fixtureDir, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
-    rootDir: fileURLToPath(new URL('../fixtures/preview', import.meta.url)),
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('preview'),
   },
 })
 
@@ -16,9 +13,7 @@ test.describe('preview mode', () => {
     const token = 'hehe'
     await goto(`/?preview=true&token=${token}`)
 
-    // @ts-expect-error untyped
-    const consoleLogs: Array<{ type: string, text: string }> = page._consoleLogs
-    await expect.poll(() => consoleLogs.some(log => log.text === 'true'), { timeout: 8000 }).toBe(true)
+    await expect.poll(() => consoleLogs(page).some(log => log.text === 'true'), { timeout: 8000 }).toBe(true)
 
     await expect(page.locator('#fetched-on-client')).toContainText('fetched on client')
     await expect(page.locator('#preview-mode')).toContainText('preview mode enabled')

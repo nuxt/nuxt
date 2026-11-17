@@ -1,18 +1,11 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
-import { expect, test } from './test-utils'
-
-const fixtureDir = fileURLToPath(new URL('../fixtures/server-path-fallback', import.meta.url))
+import { expect, fixtureDir, test } from './test-utils'
 
 // parallel dev servers race on the fixture's `.nuxt` directory
 test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('server-path-fallback'),
   },
 })
 

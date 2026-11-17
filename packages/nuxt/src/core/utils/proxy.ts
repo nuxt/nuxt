@@ -1,26 +1,38 @@
 import process from 'node:process'
+import type { AgentOptions } from 'node:http'
+import { configDiagnostics } from '@nuxt/kit/internal'
 
-// Node's built-in `fetch` (undici) ignores `HTTPS_PROXY` / `HTTP_PROXY` / `NO_PROXY` unless
-// the process was started with `node --use-env-proxy` (Node 24+, experimental).
-// At build time this silently breaks any module that does outbound HTTP behind a corporate
-// proxy. We install undici's `EnvHttpProxyAgent` as the process-global dispatcher so every
-// build-time `fetch` (modules, Nitro prerender, user config) honours the standard env vars.
-// Refs:
-//   https://nodejs.org/api/cli.html#--use-env-proxy
-//   https://undici.nodejs.org/#/docs/api/EnvHttpProxyAgent
-export async function installProxyDispatcher (): Promise<void> {
-  const proxyUrl
-    = process.env.https_proxy
-      || process.env.HTTPS_PROXY
-      || process.env.http_proxy
-      || process.env.HTTP_PROXY
-  if (!proxyUrl) { return }
+const PROXY_ENV_VARS = ['https_proxy', 'HTTPS_PROXY', 'http_proxy', 'HTTP_PROXY']
+const DEFAULT_DISPATCHER_RE = /^(?:Agent|Dispatcher\d+Wrapper)$/
 
-  const { Agent, EnvHttpProxyAgent, getGlobalDispatcher, setGlobalDispatcher } = await import('undici')
+export function setupProxyFromEnv (): void {
+  const env = process.env
+  const proxyVar = PROXY_ENV_VARS.find(key => env[key])
+  if (env.NODE_USE_ENV_PROXY === '0' || !proxyVar) { return }
 
-  const current = getGlobalDispatcher()
-  if (current instanceof EnvHttpProxyAgent) { return }
-  if (current.constructor !== Agent) { return }
+  const http = process.getBuiltinModule('node:http')
+  const https = process.getBuiltinModule('node:https')
+  // Node sets `proxyEnv` on the global agents when its built-in proxy support is already on.
+  if (hasProxyEnv(http.globalAgent) || hasProxyEnv(https.globalAgent) || hasCustomDispatcher()) { return }
 
-  setGlobalDispatcher(new EnvHttpProxyAgent())
+  if ('setGlobalProxyFromEnv' in http) {
+    http.setGlobalProxyFromEnv()
+  } else {
+    configDiagnostics.NUXT_B5038({ variable: proxyVar, version: process.version })
+  }
+}
+
+function hasProxyEnv (agent: object): boolean {
+  return !!(agent as { options?: AgentOptions }).options?.proxyEnv
+}
+
+// Node has no public getter for the global dispatcher, so this reads the keys undici stores it under.
+function hasCustomDispatcher (): boolean {
+  const globals = globalThis as Record<symbol, { constructor?: { name?: string } } | null | undefined>
+  for (const symbol of Object.getOwnPropertySymbols(globalThis)) {
+    if (!Symbol.keyFor(symbol)?.startsWith('undici.globalDispatcher.')) { continue }
+    const dispatcher = globals[symbol]
+    if (dispatcher && !DEFAULT_DISPATCHER_RE.test(dispatcher.constructor?.name ?? '')) { return true }
+  }
+  return false
 }

@@ -16,9 +16,8 @@ const colors = {
  * SSR rendering diagnostics, sharing the range with the server runtime that
  * hosts the renderer.
  */
-// TODO: bump the `4.x` path segment to `5.x` when the v5 docs go live.
 const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+  `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
 export const rendererDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,

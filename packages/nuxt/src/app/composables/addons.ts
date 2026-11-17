@@ -67,12 +67,16 @@ export function defineUseAsyncDataAddon<Opts extends Record<string, any> = {}, E
   return addon
 }
 
+type AddonOptions<A> = A extends { [AddonMarker]?: { options: infer O, extension: any } } ? O : never
+
 export type MergedAddonsOptions<Addons extends ReadonlyArray<any>> =
   [Addons[number]] extends [never]
     ? {}
-    : UnionToIntersection<Addons[number] extends { [AddonMarker]?: { options: infer O, extension: any } } ? O : never>
+    : UnionToIntersection<AddonOptions<Addons[number]>>
 
-type AddonsExtensions<Addons extends ReadonlyArray<any>> = UnionToIntersection<Addons[number] extends { [AddonMarker]?: { options: any, extension: infer E } } ? E : never>
+type AddonExtension<A> = A extends { [AddonMarker]?: { options: any, extension: infer E } } ? E : never
+
+type AddonsExtensions<Addons extends ReadonlyArray<any>> = UnionToIntersection<AddonExtension<Addons[number]>>
 
 export type MergedAddonsExtensions<Addons extends ReadonlyArray<any>> =
   [keyof AddonsExtensions<Addons>] extends [never] ? {} : Omit<AddonsExtensions<Addons>, PromiseMethod>

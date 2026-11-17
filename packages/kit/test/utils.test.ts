@@ -1,17 +1,7 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
 
-import { filterInPlace, toArray } from '../src/utils.ts'
-
-describe('toArray', () => {
-  it('should wrap a single value and pass an array through unchanged', () => {
-    fc.assert(fc.property(fc.oneof(fc.integer(), fc.string(), fc.constant(null), fc.array(fc.integer())), (value) => {
-      const result = toArray(value)
-      expect(Array.isArray(result)).toBe(true)
-      expect(result).toEqual(Array.isArray(value) ? value : [value])
-    }), { numRuns: 1000 })
-  })
-})
+import { filterInPlace } from '../src/utils.ts'
 
 describe('filterInPlace', () => {
   it('should match Array#filter and mutate the array in place', () => {
