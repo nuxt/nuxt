@@ -7,7 +7,7 @@ import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { resolveAlias } from '@nuxt/kit'
-import { buildDiagnostics } from '@nuxt/kit/internal'
+import { buildDiagnostics, isWithinDir } from '@nuxt/kit/internal'
 import type { KeyedFunction } from '@nuxt/schema'
 import type { ESTree } from 'rolldown/utils'
 import type { Import } from 'unimport'
@@ -217,9 +217,9 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
             if (fnMeta) { return fnMeta }
 
             // TODO: remove in Nuxt 5
-            if (source.startsWith(options.appDir)) {
+            if (isWithinDir(source, options.appDir)) {
               for (const [fnSource, meta] of sourcesToMetas) {
-                if (meta.name !== functionName || !fnSource.startsWith(options.appDir)) { continue }
+                if (meta.name !== functionName || !isWithinDir(fnSource, options.appDir)) { continue }
                 return meta
               }
             }
@@ -338,7 +338,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                   // the function is imported from the correct source when `source` is specified
                   (typeof fnMeta.source === 'string' && (stripExtension(fnMeta.source) === importSourceResolved))
                   // or the function is from the Nuxt source (`#app` barrel export, for example)
-                  || (typeof fnMeta.source === 'string' && fnMeta.source.startsWith(options.appDir))
+                  || (typeof fnMeta.source === 'string' && isWithinDir(fnMeta.source, options.appDir))
                   // TODO: remove the checks below in Nuxt 5
                   // or the function is auto-imported when there is no source specified
                   || (!options.requireSource && !fnMeta.source && stripExtension(_resolvePath(autoImportsToSources.get(parsedCall.name) ?? '')) === importSourceResolved)

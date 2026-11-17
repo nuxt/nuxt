@@ -2,7 +2,7 @@ import { lstat, symlink, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
 import { dirname, isAbsolute, normalize, relative, resolve } from 'pathe'
-import { withTrailingSlash } from 'ufo'
+import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
 
@@ -133,8 +133,8 @@ export function toTranspileNoExternal (entry: string): string | RegExp {
   if (!isAbsolute(entry)) {
     return entry
   }
-  const dir = escapeRE(normalize(entry)).replace(/\//g, '[\\\\/]')
-  return new RegExp(`^${dir}(?!.*[\\\\/]node_modules[\\\\/])`)
+  const dir = escapeRE(withoutTrailingSlash(normalize(entry))).replace(/\//g, '[\\\\/]')
+  return new RegExp(`^${dir}(?=[\\\\/]|$)(?!.*[\\\\/]node_modules[\\\\/])`)
 }
 
 /**

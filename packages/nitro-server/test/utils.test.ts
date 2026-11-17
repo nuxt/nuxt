@@ -191,6 +191,20 @@ describe('toTranspileNoExternal', () => {
     expect(re.test('/code/nuxt/image/playground/node_modules/ipx/dist/index.mjs')).toBe(false)
   })
 
+  it('does not match siblings that share a name prefix with an absolute directory', () => {
+    for (const entry of ['/x/node_modules/my-layer', '/x/node_modules/my-layer/']) {
+      const re = toTranspileNoExternal(entry) as RegExp
+      expect(re.test('/x/node_modules/my-layer/server/api/hello.ts')).toBe(true)
+      expect(re.test('/x/node_modules/my-layer-utils/dist/index.mjs')).toBe(false)
+    }
+  })
+
+  it('matches an absolute file entry', () => {
+    const re = toTranspileNoExternal('/code/nuxt/image/src/module.ts') as RegExp
+    expect(re.test('/code/nuxt/image/src/module.ts')).toBe(true)
+    expect(re.test('/code/nuxt/image/src/module.tsx')).toBe(false)
+  })
+
   it('matches windows paths with either separator', () => {
     const re = toTranspileNoExternal('C:\\code\\nuxt\\image') as RegExp
     expect(re.test('C:\\code\\nuxt\\image\\src\\runtime\\server\\routes\\_ipx.ts')).toBe(true)

@@ -1,11 +1,12 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, tryUseNitro, updateTemplates, useNuxt } from '@nuxt/kit'
-import { headDiagnostics } from '@nuxt/kit/internal'
+import { headDiagnostics, isWithinDir } from '@nuxt/kit/internal'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
 import type { Nitro } from 'nitropack/types'
+import { withTrailingSlash } from 'ufo'
 import { klona } from 'klona'
 import { resolveModulePath } from 'exsolve'
 import { parseAndWalk } from 'oxc-walker'
@@ -41,7 +42,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     dirs: [],
     transform: {
       include: [
-        new RegExp('^' + escapeRE(nuxt.options.buildDir)),
+        new RegExp('^' + escapeRE(withTrailingSlash(nuxt.options.buildDir))),
       ],
       exclude: undefined,
     },
@@ -203,7 +204,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             lastScanStartedAt = scanStartedAt
             lastScannedFiles = new Set([...scannedFiles, ...lastScannedImports.map(i => i.from)])
             for (const i of lastScannedImports) {
-              i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+              i.priority ||= priorities.find(([dir]) => isWithinDir(i.from, dir))?.[1]
             }
           }
           // `imports:extend` hooks may change the entries they are given
@@ -266,7 +267,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
     let pendingRegeneration: Promise<void> | undefined
     let staleScan = false
-    const isComposablesPath = (path: string) => composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))
+    const isComposablesPath = (path: string) => composablesDirs.some(dir => isWithinDir(path, dir))
     function refreshImports (path: string) {
       if (!options.scan || !isComposablesPath(path)) {
         return

@@ -36,9 +36,9 @@ export function isIgnored (pathname: string, _stats?: unknown, nuxt: Nuxt | null
   // layer roots are stored with a trailing slash, so when `pathname`
   // is below a layer root the relative path is exactly the suffix after
   // that prefix
-  for (const cwd of cwds) {
-    if (pathname.startsWith(cwd)) {
-      const relativePath = pathname.slice(cwd.length)
+  for (const cwdWithSlash of cwds) {
+    if (pathname.startsWith(cwdWithSlash)) {
+      const relativePath = pathname.slice(cwdWithSlash.length)
       return !!(relativePath && nuxt._ignore.ignores(relativePath))
     }
   }

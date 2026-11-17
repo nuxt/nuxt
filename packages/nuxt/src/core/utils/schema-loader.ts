@@ -2,6 +2,7 @@ import nodeModule from 'node:module'
 import { readFileSync, realpathSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Jiti } from 'jiti'
+import { isWithinDir } from '@nuxt/kit/internal'
 import { annotateSchemaSource } from './schema-annotations.ts'
 
 const SCHEMA_IMPORT_PARAM = 'nuxt-schema'
@@ -42,7 +43,7 @@ export async function importSchema (filePath: string): Promise<unknown> {
   const hooks = nodeModule.registerHooks({
     resolve (specifier, context, nextResolve) {
       const resolved = nextResolve(specifier, context)
-      if (!isSchemaImport(context.parentURL) || !resolved.url.startsWith(packageRoot) || NODE_MODULES_RE.test(resolved.url.slice(packageRoot.length))) {
+      if (!isSchemaImport(context.parentURL) || !isWithinDir(resolved.url, packageRoot) || NODE_MODULES_RE.test(resolved.url.slice(packageRoot.length))) {
         return resolved
       }
       if (context.conditions?.includes('require')) {

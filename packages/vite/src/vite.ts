@@ -21,7 +21,7 @@ import { clientEnvironment } from './shared/client.ts'
 import { resolveCSSOptions } from './css.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { DevErrorsDevToolsPlugin, DevErrorsPlugin, DevRequestErrorsPlugin, createDevErrorReporter, getDevErrorReporter, reportTransformError, setDevErrorReporter } from './dev-errors.ts'
-import { getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
+import { createSourcemapIgnoreList, getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
@@ -205,9 +205,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         copyPublicDir: false,
         rolldownOptions: {
           output: {
-            sourcemapIgnoreList: (relativeSourcePath) => {
-              return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(nuxt.options.buildDir)
-            },
+            sourcemapIgnoreList: createSourcemapIgnoreList(nuxt.options.buildDir),
             sanitizeFileName: sanitizeFilePath,
             assetFileNames,
           },

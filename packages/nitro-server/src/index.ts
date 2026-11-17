@@ -137,7 +137,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       .sort(([a], [b]) => b.length - a.length)
     const layerOf = (dir: string | { glob: string }) => {
       const path = withTrailingSlash(typeof dir === 'string' ? dir : dir.glob)
-      return layerRoots.find(([root]) => path.startsWith(root))?.[1] ?? layers.length
+      return layerRoots.find(([rootWithSlash]) => path.startsWith(rootWithSlash))?.[1] ?? layers.length
     }
     dirs.sort((a, b) => layerOf(b) - layerOf(a))
   })

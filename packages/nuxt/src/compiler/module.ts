@@ -1,5 +1,5 @@
 import { addBuildPlugin, defineNuxtModule, resolveFiles, resolvePath } from '@nuxt/kit'
-import { buildDiagnostics } from '@nuxt/kit/internal'
+import { buildDiagnostics, isWithinDir } from '@nuxt/kit/internal'
 import type { CompilerScanDir, KeyedFunction, NuxtCompilerOptions } from '@nuxt/schema'
 import type { ScanPlugin, ScanPluginFilter } from './types.ts'
 import { resolve } from 'pathe'
@@ -152,7 +152,7 @@ export default defineNuxtModule<Partial<NuxtCompilerOptions>>({
         if (!scanResult || !['add', 'change', 'unlink'].includes(event)) { return }
 
         const absolutePath = resolve(nuxt.options.srcDir, relativePath)
-        const isInScanDir = scanDirPaths.some(dir => absolutePath === dir || absolutePath.startsWith(dir + '/'))
+        const isInScanDir = scanDirPaths.some(dir => isWithinDir(absolutePath, dir))
         if (!isInScanDir) { return }
 
         const { fileResults, factoryNamesRegex, namesToFactoryMeta } = scanResult
