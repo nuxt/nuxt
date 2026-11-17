@@ -28,8 +28,9 @@ import { migratedPlugins, serverApiOf } from './registrations.ts'
  */
 export interface NitroLegacyOptions {
   /**
-   * Register the Nitro v2 auto-import names (`defineNitroPlugin`, `cachedEventHandler`, `useEvent`, …)
-   * and auto-import from subdirectories of `server/utils/`.
+   * Turn on the server auto-imports (as `experimental.nitroAutoImports` does), register the Nitro v2
+   * auto-import names (`defineNitroPlugin`, `cachedEventHandler`, `useEvent`, …) and auto-import from
+   * subdirectories of `server/utils/`.
    */
   imports?: boolean
   /** Resolve `h3` to the bundled h3 v1 helpers in server code and, on Nuxt 4, in the server build of the app. */
