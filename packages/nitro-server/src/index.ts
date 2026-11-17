@@ -38,6 +38,7 @@ import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImp
 import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
 import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
+import { unheadDedupePlugin } from './unhead.ts'
 import { getLegacyH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
@@ -601,6 +602,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   nitroConfig.rollupConfig!.plugins!.push(runtimeConfigPlugin(resolve(distDir, 'runtime/runtime-config'), { strict: !nuxt.options.dev }))
   nitroConfig.virtual![RUNTIME_CONFIG_SCHEMA_ID] = () => getRuntimeConfigSchemaModule(nuxt, nitro)
+  nitroConfig.rollupConfig!.plugins!.push(unheadDedupePlugin(nuxt.options.appDir))
 
   if (!nuxt.options.router.options.sensitive) {
     nitroConfig.rollupConfig!.plugins!.push(routeRulesCaseFoldPlugin(() => nitro))
