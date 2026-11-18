@@ -33,10 +33,11 @@ const UNCACHEABLE_RE = /(?:^|[\s,])(?:private|no-store|no-cache)(?:$|[\s,=])/i
 
 /**
  * Send the `cache-control` of Nitro v2 in place of the one h3 writes for every cached
- * response. A handler's own value is kept only where it forbids shared caching.
+ * response. A handler's own value is kept only where it forbids shared caching. Options
+ * Nitro v2 did not have (`headersOnly`, `stream`) keep the header of Nitro v3.
  */
 function withLegacyCacheControl (options: CachedHandlerOptions | undefined): CachedHandlerOptions | undefined {
-  if (options?.sendCacheControl !== undefined || options?.headersOnly) {
+  if (options?.sendCacheControl !== undefined || options?.headersOnly || options?.stream) {
     return options
   }
   // a handler defined without options was cached with `swr` for a second in Nitro v2

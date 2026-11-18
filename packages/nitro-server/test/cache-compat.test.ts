@@ -73,7 +73,7 @@ describe('nitro v2 cached handlers', () => {
 
   it('leave options that control the header alone', () => {
     flags.legacyResponseHeaders = true
-    for (const options of [{ maxAge: 60, sendCacheControl: true }, { maxAge: 60, sendCacheControl: false }, { maxAge: 60, headersOnly: true }]) {
+    for (const options of [{ maxAge: 60, sendCacheControl: true }, { maxAge: 60, sendCacheControl: false }, { maxAge: 60, headersOnly: true }, { maxAge: 60, stream: true }]) {
       expect(optionsOf(options)).toBe(options)
     }
   })
