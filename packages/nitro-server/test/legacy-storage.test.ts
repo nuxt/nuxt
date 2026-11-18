@@ -89,6 +89,17 @@ describe('nitro v2 build-time storage', () => {
     expect(await storage.getKeys('build')).toEqual(['build:module:key'])
   })
 
+  it('loads a custom driver the project depends on', async () => {
+    const { rootDir, mounts } = createProject()
+    const driverDir = join(rootDir, 'node_modules/project-driver')
+    mkdirSync(driverDir, { recursive: true })
+    writeFileSync(join(driverDir, 'package.json'), JSON.stringify({ name: 'project-driver', type: 'module', exports: './index.mjs' }))
+    writeFileSync(join(driverDir, 'index.mjs'), `export default () => ({ name: 'project-driver', hasItem: () => true, getItem: key => 'project:' + key, getKeys: () => [] })`)
+    const storage = await createLegacyBuildStorage(createNitro({ rootDir, kv: { remote: { driver: 'project-driver' } } }), mounts)
+
+    expect(await storage.getItem('remote:key')).toBe('project:key')
+  })
+
   it('disposes the storage when Nitro closes', async () => {
     const { mounts } = createProject()
     const nitro = createNitro()

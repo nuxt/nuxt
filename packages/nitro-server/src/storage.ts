@@ -1,6 +1,8 @@
 import { pathToFileURL } from 'node:url'
 import { isAbsolute, resolve } from 'pathe'
 import { builtinDrivers, createStorage } from 'unstorage'
+import { resolveModulePath } from 'exsolve'
+import { directoryToURL } from '@nuxt/kit'
 import type { Driver, Storage } from 'unstorage'
 import type { Nitro, NitroConfig } from 'nitro/types'
 
@@ -51,16 +53,17 @@ export async function createLegacyBuildStorage (nitro: Pick<Nitro, 'options' | '
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const mounts = { ...toMounts(defaults), ...toMounts(nitro.options.kv), ...toMounts(nitro.options.devStorage) }
   for (const [base, { driver, ...options }] of Object.entries(mounts)) {
-    storage.mount(base, await loadDriver(base, driver, options))
+    storage.mount(base, await loadDriver(nitro.options.rootDir, base, driver, options))
   }
   nitro.hooks.hook('close', () => storage.dispose())
   return storage
 }
 
-async function loadDriver (base: string, name: string, options: Record<string, unknown>): Promise<Driver> {
-  const id = builtinDrivers[name as keyof typeof builtinDrivers] || name
+async function loadDriver (rootDir: string, base: string, name: string, options: Record<string, unknown>): Promise<Driver> {
+  const builtin = builtinDrivers[name as keyof typeof builtinDrivers]
+  const path = builtin ? undefined : isAbsolute(name) ? name : resolveModulePath(name, { from: directoryToURL(rootDir), try: true })
   try {
-    const { default: factory } = await import(isAbsolute(id) ? pathToFileURL(id).href : id) as { default: (options: Record<string, unknown>) => Driver }
+    const { default: factory } = await import(path ? pathToFileURL(path).href : builtin || name) as { default: (options: Record<string, unknown>) => Driver }
     return factory(options)
   } catch (error) {
     const fail = () => {
