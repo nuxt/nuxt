@@ -12,6 +12,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import { getRouteRules } from '../utils/route-rules.ts'
 import { fromLegacyBody, prepareLegacyEvent } from './event.ts'
+import { getEndedResponse } from './ended-response.ts'
 import { toLegacyError } from './error-shape.ts'
 
 export * from './h3-v1-app.ts'
@@ -49,8 +50,14 @@ export function defineEventHandler (input: ((event: LegacyH3Event) => any) | Leg
     async handler (input: H3Event) {
       const event = prepareLegacyEvent(input, getRouteRules) as LegacyH3Event
       try {
+        if (getEndedResponse(event) !== undefined) {
+          return fromLegacyBody(event, undefined)
+        }
         for (const hook of onRequestHooks) {
           await hook(event)
+          if (getEndedResponse(event) !== undefined) {
+            return fromLegacyBody(event, undefined)
+          }
         }
         const response = { body: await handler(event) }
         for (const hook of onBeforeResponseHooks) {

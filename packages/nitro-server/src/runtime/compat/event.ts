@@ -3,6 +3,8 @@ import { H3Event, HTTPResponse } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
 import type { H3Event as H3EventType } from 'nitro/h3'
 
+import { getEndedResponse } from './ended-response.ts'
+
 export type RouteRulesResolver = (event: H3EventType) => Record<string, any>
 
 const kEvent = Symbol.for('nuxt.compat.event')
@@ -79,8 +81,11 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
 /**
  * Send what a v1 handler returns as h3 v1 did: a string as HTML unless the handler set a content
  * type, and `null` as an empty response, with `204 No Content` unless the handler set a status.
+ * A response a v1 helper ended the request with takes the place of the returned value.
  */
-export function fromLegacyBody<T> (event: H3EventType, body: T): T | HTTPResponse {
+export function fromLegacyBody<T> (event: H3EventType, returned: T): T | HTTPResponse {
+  const ended = getEndedResponse(event)
+  const body = (ended === undefined ? returned : ended) as T
   if (body === null) {
     const status = event.res.status
     return new HTTPResponse(null, { status: status && status !== 200 ? status : 204 })

@@ -6,17 +6,24 @@
 // the v1 helpers this module implements are deprecated in h3 v2 by definition
 /* eslint-disable @typescript-eslint/no-deprecated */
 import {
+  handleCacheHeaders as _handleCacheHeaders,
+  handleCors as _handleCors,
+  proxyRequest as _proxyRequest,
   readBody as _readBody,
   readFormData as _readFormData,
   readMultipartFormData as _readMultipartFormData,
   readValidatedBody as _readValidatedBody,
+  iterable,
+  noContent,
+  proxy,
   redirect,
 } from 'nitro/h3'
-import type { H3Event } from 'nitro/h3'
+import type { H3Event, HTTPResponse } from 'nitro/h3'
 import { destr } from 'destr'
 
 import { createError, toLegacyError } from './error-shape.ts'
 import type { H3ErrorInput } from './error-shape.ts'
+import { endResponse } from './ended-response.ts'
 
 export { createError, toLegacyError, withLegacyErrorShape } from './error-shape.ts'
 export type { H3ErrorInput } from './error-shape.ts'
@@ -177,34 +184,75 @@ export const MIMES = {
   json: 'application/json',
 }
 
-/**
- * v1 `sendError`. h3 v2 has no imperative response writer, so this sets the status and
- * returns the serialised body; `return sendError(event, err)` is the supported usage.
- */
+/** v1 `sendError`, which sets the status and responds with the serialised error. */
 export function sendError (event: H3Event, error: Error | H3ErrorInput, debug?: boolean): string {
   const httpError = toLegacyError(error)
   event.res.status = httpError.status
   event.res.statusText = httpError.statusText
   event.res.headers.set('content-type', MIMES.json)
-  return JSON.stringify({
+  return endResponse(event, JSON.stringify({
     ...httpError.toJSON(),
     stack: debug && httpError.stack ? httpError.stack.split('\n').map(line => line.trim()) : undefined,
-  })
+  }))
 }
 
 /** v1 `sendRedirect`, which set the status and `location` header on the event as well as returning a response. */
 export function sendRedirect (event: H3Event, location: string, code = 302): any {
   event.res.status = code
   event.res.headers.set('location', location)
-  return redirect(location, code)
+  return endResponse(event, redirect(location, code))
 }
 
-/** v1 `send`. Sets an optional content type and returns the body. */
+/** v1 `send`. Sets an optional content type and responds with the body. */
 export function send (event: H3Event, data?: any, type?: string): any {
   if (type) {
     event.res.headers.set('content-type', type)
   }
-  return data ?? ''
+  return endResponse(event, data ?? '')
+}
+
+/** v1 `sendNoContent`, which keeps a status the handler set unless given one. */
+export function sendNoContent (event: H3Event, code?: number): HTTPResponse {
+  const status = event.res.status && event.res.status !== 200 ? event.res.status : 204
+  return endResponse(event, noContent(code || status))
+}
+
+export function sendStream<T> (event: H3Event, stream: T): T {
+  return endResponse(event, stream)
+}
+
+export function sendWebResponse (event: H3Event, response: Response): Response {
+  return endResponse(event, response)
+}
+
+export async function sendIterable (event: H3Event, value: Parameters<typeof iterable>[0], options?: Parameters<typeof iterable>[1]): Promise<HTTPResponse> {
+  return endResponse(event, await iterable(value, options))
+}
+
+export async function sendProxy (event: H3Event, target: string, options?: Parameters<typeof proxy>[2]): Promise<HTTPResponse> {
+  return endResponse(event, await proxy(event, target, options))
+}
+
+export async function proxyRequest (event: H3Event, target: string, options?: Parameters<typeof _proxyRequest>[2]): Promise<HTTPResponse> {
+  return endResponse(event, await _proxyRequest(event, target, options))
+}
+
+/** v1 `handleCacheHeaders`, which responds with `304 Not Modified` when the request matches. */
+export function handleCacheHeaders (event: H3Event, options: Parameters<typeof _handleCacheHeaders>[1]): boolean {
+  if (!_handleCacheHeaders(event, options)) {
+    return false
+  }
+  endResponse(event, noContent(304))
+  return true
+}
+
+/**
+ * v1 `handleCors`, which responds to a preflight request with the preflight response. Returns
+ * that response, which is truthy, for a preflight request and `false` for any other.
+ */
+export function handleCors (event: H3Event, options: Parameters<typeof _handleCors>[1]): HTTPResponse | false {
+  const preflight = _handleCors(event, options)
+  return preflight && endResponse(event, preflight)
 }
 
 export function isStream (input: any): boolean {
