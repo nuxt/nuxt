@@ -6,7 +6,8 @@ import { H3Event, mockEvent } from 'nitro/h3'
 
 import plugin from '../src/runtime/compat/event-plugin.ts'
 import { decorateLegacyEvent } from '../src/runtime/compat/decorate.ts'
-import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
+import { fromLegacyBody, prepareLegacyEvent } from '../src/runtime/compat/event.ts'
+import { sendStream } from '../src/runtime/compat/h3-v1-app.ts'
 import { wrapLegacyHandler } from '../src/runtime/compat/wrapper.ts'
 import { getRouteRules } from '../src/runtime/utils/route-rules.ts'
 
@@ -395,6 +396,17 @@ describe('wrapLegacyHandler', () => {
     const passed = mockEvent('http://nuxt/_mw')
     await (wrapLegacyHandler(() => undefined) as (event: any) => unknown)(passed)
     expect(passed.res.headers.has('content-type')).toBe(false)
+  })
+
+  it('sends what a handler returns once an inner handler has turned its ended response into another', async () => {
+    const wrapped = wrapLegacyHandler(async (event: any) => {
+      const ended = fromLegacyBody(event, sendStream(event, new Response('streamed').body))
+      return new Response(await new Response(ended as BodyInit).text())
+    }) as { fetch: (request: Request) => Promise<Response> }
+
+    const response = await wrapped.fetch(new Request('http://nuxt/api/cached'))
+
+    expect(await response.text()).toBe('streamed')
   })
 
   it('answers a handler that returns `null` with no content, keeping a status it set', async () => {

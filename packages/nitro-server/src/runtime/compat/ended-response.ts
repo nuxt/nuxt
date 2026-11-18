@@ -16,3 +16,10 @@ export function endResponse<T> (event: H3Event, response: T): T {
 export function getEndedResponse (event: H3Event): unknown {
   return (event as unknown as Record<symbol, unknown>)[kEndedResponse]
 }
+
+/** The response an h3 v1 helper ended the request with, removed so that it is sent once. */
+export function takeEndedResponse (event: H3Event): unknown {
+  const response = getEndedResponse(event)
+  Reflect.deleteProperty(event, kEndedResponse)
+  return response
+}

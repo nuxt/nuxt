@@ -3,7 +3,7 @@ import { H3Event, HTTPResponse } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
 import type { H3Event as H3EventType } from 'nitro/h3'
 
-import { getEndedResponse } from './ended-response.ts'
+import { takeEndedResponse } from './ended-response.ts'
 
 export type RouteRulesResolver = (event: H3EventType) => Record<string, any>
 
@@ -84,7 +84,7 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
  * A response a v1 helper ended the request with takes the place of the returned value.
  */
 export function fromLegacyBody<T> (event: H3EventType, returned: T): T | HTTPResponse {
-  const ended = getEndedResponse(event)
+  const ended = takeEndedResponse(event)
   const body = (ended === undefined ? returned : ended) as T
   if (body === null) {
     const status = event.res.status
