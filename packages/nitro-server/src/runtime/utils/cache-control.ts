@@ -14,9 +14,10 @@ export function ruleCacheControl (event: H3Event): string | undefined {
 }
 
 /**
- * The `cache-control` of an error response under a route rule that sets `rule`.
+ * The `cache-control` of an error response that would otherwise be sent with `rule`, such as the
+ * `cache-control` of the route rule it falls under.
  *
- * The rule's value is kept when it does not let a shared cache reuse the response without
+ * The value is kept when it does not let a shared cache reuse the response without
  * validating it with the origin (RFC 9111): when it has `no-store` without `must-understand`, which
  * lets a cache that understands the status code ignore `no-store`, or an unqualified `private`,
  * or, without `stale-while-revalidate` or `stale-if-error`, when it has an unqualified `no-cache`,

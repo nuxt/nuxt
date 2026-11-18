@@ -165,6 +165,19 @@ describe('error handler cache-control', () => {
     expect(res.headers.get('cache-control')).toBe('no-store')
   })
 
+  it.each(['application/json', 'text/html'])('keeps a cache-control set before a %s error that rules out shared caching', async (accept) => {
+    const res = await handle(new HTTPError({ status: 401 }), accept, {}, '/api/me', { 'cache-control': 'no-store' })
+
+    expect(res.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('keeps a cache-control the error page sets that rules out shared caching', async () => {
+    serverFetch.mockResolvedValue(new Response('<html></html>', { headers: { 'cache-control': 'private, no-store' } }))
+    const res = await handle(new HTTPError({ status: 404 }), 'text/html')
+
+    expect(res.headers.get('cache-control')).toBe('private, no-store')
+  })
+
   async function underRule (cacheControl: string, accept: string, error = new HTTPError({ status: 401 })) {
     const rule = { 'Cache-Control': cacheControl }
     serverFetch.mockResolvedValue(new Response('<html></html>', { headers: rule }))

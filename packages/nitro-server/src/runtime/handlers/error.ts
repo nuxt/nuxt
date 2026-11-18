@@ -19,8 +19,8 @@ import { legacyCompat, legacyResponseHeaders } from '#nuxt-compat/flags'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, options) {
   const response = await renderError(error, event, options)
-  // a cacheable `cache-control` of a route rule or a public asset directory is for what it serves
-  response.headers.set('cache-control', new Headers(error.headers).get('cache-control') || errorCacheControl(ruleCacheControl(event as H3Event)))
+  // a cacheable `cache-control`, such as that of a route rule or a public asset directory, is for what it serves
+  response.headers.set('cache-control', new Headers(error.headers).get('cache-control') || errorCacheControl(response.headers.get('cache-control') ?? ruleCacheControl(event as H3Event)))
   return response
 }
 
