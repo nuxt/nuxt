@@ -6,7 +6,7 @@ import { $fetch } from '@nuxt/test-utils/e2e'
 import { buildNuxt, loadNuxt, writeTypes } from '@nuxt/kit'
 
 import { copyFixture } from './fixture-copy'
-import { runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
+import { projectSuffix, runsOnceInMatrix, runsOncePerEnvInMatrix } from './matrix'
 import { setupFixture } from './utils'
 
 await setupFixture('server-module-imports', runsOncePerEnvInMatrix)
@@ -26,7 +26,7 @@ describe.skipIf(!runsOnceInMatrix)('server auto-imports in a build that clears t
   let server: { default: { fetch: (request: Request) => Promise<Response> } }
 
   beforeAll(async () => {
-    const rootDir = fileURLToPath(copyFixture('server-module-imports', 'server-module-imports-cleared'))
+    const rootDir = fileURLToPath(copyFixture('server-module-imports', `server-module-imports-cleared-${projectSuffix}`))
     const nuxt = await loadNuxt({ cwd: rootDir, ready: true, overrides: { nitro: { preset: 'standard' } } })
     try {
       const kept = new Set(['cache', 'analyze', 'nuxt.json', 'nuxt.lock'])
