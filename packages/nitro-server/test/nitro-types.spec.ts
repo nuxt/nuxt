@@ -129,6 +129,7 @@ describe('nitro v2 compatibility types', () => {
     const cached = cache(() => Promise.resolve({ cached: true as const }))
     expectTypeOf(cached).returns.toEqualTypeOf<Promise<Response>>()
     expectTypeOf(cached).toExtend<EventHandler>()
+    expectTypeOf<ReturnType<Awaited<ReturnType<typeof cached.fetch>>['json']>>().toEqualTypeOf<Promise<{ cached: true }>>()
     expectTypeOf<ResponseBodyOf<typeof cached>>().toEqualTypeOf<{ cached: true }>()
     expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, null>>>>().toEqualTypeOf<null>()
     expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, Response>>>>().toEqualTypeOf<Response>()

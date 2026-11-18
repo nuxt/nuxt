@@ -72,7 +72,7 @@ function withLegacyCacheControl (options: CachedHandlerOptions | undefined): Cac
  * body of that response as what the handler it caches returns.
  */
 export type CachedEventHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> =
-  EventHandler<RequestT, Promise<Response>> & Pick<EventHandlerWithFetch<RequestT, ResponseT>, 'fetch'>
+  EventHandler<RequestT, Promise<Response>> & Pick<EventHandlerWithFetch<RequestT, Awaited<ResponseT>>, 'fetch'>
 
 /** v2 `defineCachedEventHandler`, which sends what the handler returns as h3 v1 did. */
 export function defineCachedEventHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> (handler: EventHandler<RequestT, ResponseT>, options?: CachedHandlerOptions): CachedEventHandler<RequestT, ResponseT> {
