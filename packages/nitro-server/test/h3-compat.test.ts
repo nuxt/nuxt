@@ -77,6 +77,23 @@ describe('h3 v1 shim', () => {
     })
   })
 
+  it('creates errors whose v1 fields can be assigned', () => {
+    const error: any = createError({ statusCode: 404, statusMessage: 'Not Found', data: { page: 1 }, fatal: true })
+    const cause = new Error('inner')
+
+    error.fatal = false
+    error.unhandled = true
+    error.statusCode = 410
+    error.statusMessage = 'Gone'
+    error.data = { page: 2 }
+    error.cause = cause
+
+    expect(error).toMatchObject({ fatal: false, unhandled: true, status: 410, statusText: 'Gone', statusCode: 410, statusMessage: 'Gone', data: { page: 2 }, cause })
+    expect(error.toJSON()).toMatchObject({ status: 410, statusCode: 410, statusMessage: 'Gone' })
+    expect(Object.keys(error)).not.toContain('fatal')
+    expect(Object.keys(error)).not.toContain('statusCode')
+  })
+
   it('keeps the cause an error is created with', () => {
     const cause = new Error('inner')
 
