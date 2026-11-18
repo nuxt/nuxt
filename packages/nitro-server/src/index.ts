@@ -280,7 +280,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const serverBundler = nuxt.options.experimental.nitroViteEnvironment ? 'vite' : requestedBuilder
   const rspackPath = serverBundler === 'rspack' ? resolveAppBuilderDependency(nuxt, '@rspack/core') : undefined
 
-  const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
+  // `noExternals: false` adds nothing to the entries below, which the server build needs
+  const nitroConfig: NitroConfig = defu({ ...nuxt.options.nitro, noExternals: nuxt.options.nitro.noExternals || undefined }, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
