@@ -389,10 +389,12 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const modulePaths = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
 
-  // Explicit includes or layers inside node_modules can opt those files back into the app project.
-  const canSkipDependencyExcludes = !nuxt.options.typescript?.tsConfig?.include?.length
-    && !nuxt.options.typescript?.appTsConfig?.include?.length
-    && !layerDirs.some(dirs => Object.values(dirs).some(dir => /(?:^|\/)node_modules(?:\/|$)/.test(dir)))
+  const isDependencyPath = (path: string) => /(?:^|\/)node_modules(?:\/|$)/.test(path)
+  const globalIncludes = nuxt.options.typescript?.tsConfig?.include
+  const appIncludes = nuxt.options.typescript?.appTsConfig?.include
+  const hasCustomIncludes = Boolean(globalIncludes?.length || appIncludes?.length)
+  const hasDependencyLayer = layerDirs.some(dirs => Object.values(dirs).some(isDependencyPath))
+  const dependencyExcludes = new Set<string>()
 
   for (const path of modulePaths) {
     const relative = relativeWithDot(typesDir, path)
@@ -415,16 +417,15 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     serverInclude.add(join(relative, 'runtime/server'))
     serverInclude.add(join(relative, 'dist/runtime/server'))
 
-    const skipAppExclude = canSkipDependencyExcludes && /(?:^|\/)node_modules(?:\/|$)/.test(path)
-    if (!skipAppExclude) {
-      exclude.add(join(relative, 'runtime/server'))
-      exclude.add(join(relative, 'dist/runtime/server'))
+    const appModuleExcludes = [join(relative, 'runtime/server'), join(relative, 'dist/runtime/server'), ...entryGlobs]
+    for (const entry of appModuleExcludes) {
+      if (isDependencyPath(path) && !exclude.has(entry)) {
+        dependencyExcludes.add(entry)
+      }
+      exclude.add(entry)
     }
     for (const glob of entryGlobs) {
       serverExclude.add(glob)
-      if (!skipAppExclude) {
-        exclude.add(glob)
-      }
     }
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
@@ -679,7 +680,15 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const declarations: string[] = []
 
+  const includesBeforeHook = [...tsConfig.include]
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig, nodeTsConfig, nodeReferences, sharedTsConfig, sharedReferences, serverTsConfig, serverReferences })
+
+  const includesChanged = tsConfig.include.length !== includesBeforeHook.length
+    || tsConfig.include.some((entry, index) => entry !== includesBeforeHook[index])
+  if (!hasCustomIncludes && !hasDependencyLayer && !includesChanged) {
+    // Wildcard includes do not scan node_modules, so these excludes cannot match.
+    tsConfig.exclude = tsConfig.exclude.filter(entry => !dependencyExcludes.has(entry) || userExclude.includes(entry))
+  }
 
   // Legacy tsConfig for backward compatibility
   const legacyTsConfig: TSConfig = defu({}, {

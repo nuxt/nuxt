@@ -213,6 +213,66 @@ describe('tsConfig generation', () => {
     expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
   })
 
+  it('keeps dependency excludes when prepare:types adds a dependency include', async () => {
+    const nuxt = mockNuxtWithOptions({
+      _installedModules: [{ meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }],
+    })
+    nuxt.callHook = ((name: string, ctx: { tsConfig: { include: string[], exclude: string[] } }) => {
+      if (name === 'prepare:types') {
+        ctx.tsConfig.include.push('../node_modules/installed/runtime/**/*')
+        ctx.tsConfig.exclude.push('../custom-exclude')
+      }
+      return Promise.resolve()
+    }) as Nuxt['callHook']
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).toContain('../custom-exclude')
+  })
+
+  it('keeps an explicitly configured dependency exclude', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { appTsConfig: { exclude: ['../node_modules/installed/runtime/server'] } },
+      _installedModules: [{ meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/*.ts')
+  })
+
+  it('keeps custom hook excludes while removing redundant dependency excludes', async () => {
+    const nuxt = mockNuxtWithOptions({
+      _installedModules: [{ meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }],
+    })
+    nuxt.callHook = ((name: string, ctx: { tsConfig: { exclude: string[] } }) => {
+      if (name === 'prepare:types') {
+        expect(ctx.tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+        ctx.tsConfig.exclude.push('../custom-exclude')
+      }
+      return Promise.resolve()
+    }) as Nuxt['callHook']
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/*.ts')
+    expect(tsConfig.exclude).toContain('../custom-exclude')
+  })
+
+  it('respects excludes removed by prepare:types', async () => {
+    const nuxt = mockNuxtWithOptions({
+      _installedModules: [{ meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }],
+    })
+    nuxt.callHook = ((name: string, ctx: { tsConfig: { include: string[], exclude: string[] } }) => {
+      if (name === 'prepare:types') {
+        ctx.tsConfig.include.push('../node_modules/installed/runtime/**/*')
+        ctx.tsConfig.exclude = []
+      }
+      return Promise.resolve()
+    }) as Nuxt['callHook']
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).toEqual([])
+  })
+
   it('keeps dependency excludes when a layer is installed in node_modules', async () => {
     const nuxt = mockNuxtWithOptions({
       _installedModules: [{ meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }],
