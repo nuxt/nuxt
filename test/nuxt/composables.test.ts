@@ -186,7 +186,7 @@ describe('errors', () => {
           throw createError({ status: 401, message: 'unauthorized' })
         }
       })
-      onTestFinished(addRouteMiddleware(middleware, { global: true }))
+      onTestFinished(addRouteMiddleware(middleware))
 
       const original = showError('boom')
       await expect(clearError({ redirect: '/?unauthorized' })).rejects.toThrow('unauthorized')
@@ -202,7 +202,7 @@ describe('errors', () => {
           return abortNavigation()
         }
       })
-      onTestFinished(addRouteMiddleware(middleware, { global: true }))
+      onTestFinished(addRouteMiddleware(middleware))
 
       const original = showError('boom')
       await clearError({ redirect: '/?abort' })
@@ -223,7 +223,7 @@ describe('errors', () => {
           throw createError({ status: 403, message: 'forbidden', fatal: true })
         }
       })
-      onTestFinished(addRouteMiddleware(middleware, { global: true }))
+      onTestFinished(addRouteMiddleware(middleware))
       const overlay = document.body.appendChild(document.createElement('nuxt-error-overlay'))
       onTestFinished(() => overlay.remove())
 
@@ -257,7 +257,7 @@ describe('errors', () => {
           return new Promise<void>((resolve) => { release = resolve })
         }
       })
-      onTestFinished(addRouteMiddleware(middleware, { global: true }))
+      onTestFinished(addRouteMiddleware(middleware))
 
       const calls: unknown[] = []
       onTestFinished(useNuxtApp().hook('app:error:cleared', (options) => { calls.push(options) }))
@@ -285,7 +285,7 @@ describe('errors', () => {
           return false
         }
       })
-      onTestFinished(addRouteMiddleware(middleware, { global: true }))
+      onTestFinished(addRouteMiddleware(middleware))
 
       const original = showError('boom')
       const settled = clearError({ redirect: '/?pending' })
@@ -308,7 +308,7 @@ describe('errors', () => {
           return new Promise<void>((resolve) => { release = resolve })
         }
       })
-      onTestFinished(addRouteMiddleware(middleware, { global: true }))
+      onTestFinished(addRouteMiddleware(middleware))
 
       showError('boom')
       const settled = clearError({ redirect: '/?pending' })
@@ -332,7 +332,7 @@ describe('errors', () => {
           return new Promise<void>((resolve) => { pending[key] = resolve })
         }
       })
-      onTestFinished(addRouteMiddleware(middleware, { global: true }))
+      onTestFinished(addRouteMiddleware(middleware))
 
       showError('boom')
       const first = clearError({ redirect: '/?pending=first' })
@@ -358,7 +358,7 @@ describe('errors', () => {
           throw createError({ status: 403, message: 'forbidden', fatal: true })
         }
       })
-      onTestFinished(addRouteMiddleware(middleware, { global: true }))
+      onTestFinished(addRouteMiddleware(middleware))
 
       await useRouter().replace('/?from')
       showError('boom')
