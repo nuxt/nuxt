@@ -4,6 +4,7 @@ import type { H3Event } from 'nitro/h3'
 import type { NitroApp } from 'nitro/types'
 
 import { prepareLegacyEvent } from './event.ts'
+import { cloudflareCompat } from '#nuxt-compat/flags'
 
 /**
  * Decorate an event with the Nitro v2 properties module code reads off it.
@@ -13,6 +14,17 @@ import { prepareLegacyEvent } from './event.ts'
  */
 export function decorateLegacyEvent (event: H3Event, nitroApp?: Partial<NitroApp>): H3Event {
   prepareLegacyEvent(event)
+
+  const context = event.context as Record<string, any>
+  if (cloudflareCompat && context.cloudflare === undefined) {
+    let cloudflare: Record<string, unknown> | undefined
+    Object.defineProperty(context, 'cloudflare', {
+      configurable: true,
+      enumerable: true,
+      get: () => (cloudflare ||= createLegacyCloudflareContext(event)),
+      set: (value: Record<string, unknown>) => { cloudflare = value },
+    })
+  }
 
   // a sub-request is dispatched through `event.app`, which an event built outside h3's
   // own routing (the render event) does not have
@@ -33,6 +45,19 @@ export function decorateLegacyEvent (event: H3Event, nitroApp?: Partial<NitroApp
   })
 
   return event
+}
+
+/**
+ * The v2 `{ request, env, context }` shape. A sub-request dispatched through `$fetch` carries
+ * no runtime, so its bindings come from the env nitro's worker entry keeps on `globalThis`.
+ */
+function createLegacyCloudflareContext (event: H3Event): Record<string, unknown> | undefined {
+  const runtime = event.req.runtime?.cloudflare
+  const env = runtime?.env ?? (globalThis as { __env__?: unknown }).__env__
+  if (!env) {
+    return
+  }
+  return { request: event.req, env, context: runtime?.context }
 }
 
 /**
