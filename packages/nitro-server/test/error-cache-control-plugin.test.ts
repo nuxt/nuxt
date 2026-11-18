@@ -30,6 +30,18 @@ describe('error cache-control plugin', () => {
     expect(await respond(404, 'public, max-age=60', { 'cache-control': ' public, max-age=60 ' }, true)).toBe('no-cache')
   })
 
+  it('recognises an error page marked through another copy of the module', async () => {
+    vi.resetModules()
+    const copy = await import('../src/runtime/utils/error-page.ts')
+    const response = new Response(null, { status: 404, headers: { 'cache-control': 'public, max-age=60' } })
+    const context = { routeRules: { headers: { 'cache-control': 'public, max-age=60' } } }
+    copy.markRenderedErrorPage(context)
+    await hooks.callHook('response', response, { context })
+
+    expect(copy.markRenderedErrorPage).not.toBe(markRenderedErrorPage)
+    expect(response.headers.get('cache-control')).toBe('no-cache')
+  })
+
   it('keeps the cache-control of a route rule on an error response a handler returns', async () => {
     expect(await respond(404, 'public, max-age=60', { 'cache-control': 'public, max-age=60' }, false)).toBe('public, max-age=60')
   })
