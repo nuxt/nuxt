@@ -66,7 +66,8 @@ export function bufferRequestBody (event: H3Event): void {
         return false
       }
       if (property === 'body') {
-        return source || target.body ? stream() : null
+        // keep `null` for a request without a body; reading `body` here is a read, so it may create the stream
+        return target.body ? stream() : null
       }
       if (property === 'clone') {
         return () => event.req

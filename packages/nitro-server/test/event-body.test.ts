@@ -3,6 +3,7 @@ import { connect } from 'node:net'
 import { H3, HTTPError, readBody, serve } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
 import { defineEventHandler, defineHandler } from '../src/runtime/server.ts'
+import { bufferRequestBody } from '../src/runtime/utils/body.ts'
 import { readBody as readLegacyBody } from '../src/runtime/compat/h3-v1.ts'
 
 function withTimeout<T> (promise: Promise<T>, label: string): Promise<T> {
@@ -225,7 +226,13 @@ describe('a handler that answers without reading the body', () => {
     socket.setEncoding('latin1')
     socket.on('data', (chunk: string) => { received += chunk })
     const waitFor = (pattern: RegExp, label: string) => withTimeout(new Promise<void>((resolve) => {
-      const check = () => pattern.test(received) ? resolve() : setTimeout(check, 5)
+      const check = () => {
+        if (pattern.test(received)) {
+          socket.off('data', check)
+          resolve()
+        }
+      }
+      socket.on('data', check)
       check()
     }), label)
 
@@ -236,5 +243,15 @@ describe('a handler that answers without reading the body', () => {
 
     socket.write('GET /ping HTTP/1.1\r\nHost: localhost\r\n\r\n')
     await waitFor(/pong/, 'the next request on the same connection')
+  })
+})
+
+describe('buffering a request without a body', () => {
+  it('keeps `body` null after the body was read', async () => {
+    const event = { req: new Request('http://localhost/', { method: 'POST' }) } as H3Event
+    bufferRequestBody(event)
+
+    await expect(event.req.text()).resolves.toBe('')
+    expect(event.req.body).toBeNull()
   })
 })
