@@ -241,6 +241,14 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
   } else if (import.meta.server) {
     const writeFinalCookieValue = () => {
+      if (nuxtApp.ssrContext?.['~headersSent']) {
+        const valueAlreadySent = nuxtApp._cookies && name in nuxtApp._cookies ? nuxtApp._cookies[name] : cookies[name]
+        if (import.meta.dev && !opts.readonly && !isEqual(cookie.value, valueAlreadySent)) {
+          stateDiagnostics.NUXT_E7012({ name })
+        }
+        return
+      }
+
       const valueIsSame = isEqual(cookie.value, cookies[name])
 
       if (
@@ -268,6 +276,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         : opts.encode(cookie.value as T)
       writeServerCookie(useRequestEvent(nuxtApp)!, name, encoded, opts)
     }
+    const writers = nuxtApp._cookieWriters ||= new Set()
+    writers.add(writeFinalCookieValue)
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
       unhook() // don't write cookie subsequently when app:rendered is called

@@ -203,6 +203,17 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
 
   const shellHtml = renderDocumentOpen(shellContext)
 
+  try {
+    ssrContext.nuxt?._cookieWriters?.forEach(write => write())
+  } catch (error) {
+    reader.cancel().catch(() => {})
+    // drop the entry preload hints that `linkHeader` appended in step 1
+    event.res.headers.delete('link')
+    throw error
+  }
+
+  ssrContext['~headersSent'] = true
+
   // Snapshot status + headers before shell commit so we can warn in dev when
   // composables like `useCookie`, `setResponseStatus`, or `useResponseHeader`
   // mutate the response after the wire is closed. These mutations are
