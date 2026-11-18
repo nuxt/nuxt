@@ -17,7 +17,8 @@ export function ruleCacheControl (event: H3Event): string | undefined {
  * The `cache-control` of an error response under a route rule that sets `rule`.
  *
  * The rule's value is kept when it does not let a shared cache reuse the response without
- * validating it with the origin (RFC 9111): when it has `no-store` or an unqualified `private`,
+ * validating it with the origin (RFC 9111): when it has `no-store` without `must-understand`, which
+ * lets a cache that understands the status code ignore `no-store`, or an unqualified `private`,
  * or, without `stale-while-revalidate` or `stale-if-error`, when it has an unqualified `no-cache`,
  * `s-maxage=0`, or `max-age=0` with an unqualified `must-revalidate` or `proxy-revalidate` and no
  * `s-maxage`. Any other value, including one that does not parse, is replaced with `no-cache`.
@@ -28,7 +29,7 @@ export function errorCacheControl (rule: string | undefined): string {
     return 'no-cache'
   }
   const unqualified = (name: string) => directives.get(name) === true
-  if (directives.has('no-store') || unqualified('private')) {
+  if ((directives.has('no-store') && !directives.has('must-understand')) || unqualified('private')) {
     return rule!
   }
   if (directives.has('stale-while-revalidate') || directives.has('stale-if-error')) {
