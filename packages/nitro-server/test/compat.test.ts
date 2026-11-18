@@ -554,6 +554,28 @@ describe('setupNitroCompat', () => {
     await expect(resolveId('/elsewhere/plugin.ts')).resolves.toBeUndefined()
   })
 
+  it('wraps a module virtual plugin by what its source imports', async () => {
+    silence('NUXT_B9003')
+    const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-virtual-plugins-'))
+    onTestFinished(() => rmSync(dir, { recursive: true, force: true }))
+    writeFileSync(join(dir, 'handler.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => 'legacy')`)
+
+    const nitroConfig: NitroConfig = {
+      handlers: [{ route: '/legacy', handler: join(dir, 'handler.ts') } as any],
+      virtual: {
+        '#module/legacy-plugin': `export default (nitroApp) => {}`,
+        '#module/migrated-plugin': `import { useNitroApp } from 'nitro/app'\nexport default () => { useNitroApp() }`,
+      },
+    }
+    await setupNitroCompat(createNuxt({ nitro: { plugins: ['#module/legacy-plugin', '#module/migrated-plugin'] } }), nitroConfig, legacyOff, [])
+
+    const plugin = compatPlugin(nitroConfig)
+    const resolveId = (id: string) => plugin.resolveId.handler.call({ resolve: () => Promise.resolve({ id }) }, id, '#nitro/virtual/plugins')
+
+    await expect(resolveId('#module/legacy-plugin')).resolves.toBe('\0nuxt-compat/plugin:#module/legacy-plugin')
+    await expect(resolveId('#module/migrated-plugin')).resolves.toBeUndefined()
+  })
+
   it('does not count a variant the builder did not pick as v2 code', async () => {
     const report = silence('NUXT_B9003')
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-variants-'))

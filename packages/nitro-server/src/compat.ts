@@ -1364,6 +1364,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     unimport,
     nuxt.options.rootDir,
     id => [...v3Plugins].some(plugin => registrationPaths(plugin).includes(normalize(id.replace(/\?.*$/, '')))),
+    id => virtualSources.get(id),
   )
 
   const withNitro = nuxt as Nuxt & { _nitro?: { options: NitroOptions } }
@@ -1459,6 +1460,7 @@ function createLegacyResolvePlugin (
   unimport: Unimport,
   rootDir: string,
   isV3PluginFile: (id: string) => boolean,
+  virtualSource: (id: string) => string | undefined,
 ) {
   const h3Shim = compatRuntimePath('h3-v1')
   const nitroShim = compatRuntimePath('nitro-v2')
@@ -1480,12 +1482,12 @@ function createLegacyResolvePlugin (
     return migrated
   }
 
-  /** A plugin in scope that keeps v2 semantics. A module virtual has no file to read and counts as v2. */
+  /** A plugin in scope that keeps v2 semantics. A module virtual whose source is not known counts as v2. */
   const isLegacyPlugin = async (id: string) => {
     if (!scopeFor(id) || isV3PluginFile(id)) {
       return false
     }
-    const code = await readFile(id.replace(/\?.*$/, ''), 'utf8').catch(() => undefined)
+    const code = virtualSource(id) ?? await readFile(id.replace(/\?.*$/, ''), 'utf8').catch(() => undefined)
     return code === undefined || !isMigrated(id, findImportSpecifiers(code, id))
   }
 
