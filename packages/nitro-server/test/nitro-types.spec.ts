@@ -6,7 +6,7 @@ import type { Nitro, NitroConfig, NitroOptions, NitroRuntimeHooks, RouteRuleConf
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { NuxtSSRContext } from '#app/types'
 
-import type {} from '../src/augments.ts'
+import type { NuxtRouteRuleConfig } from '../src/augments.ts'
 import type { defineEventHandler } from '../src/runtime/compat/h3-v1.ts'
 
 describe('contributed nitro instance types', () => {
@@ -41,6 +41,17 @@ describe('contributed configuration types', () => {
 
   it('resolves the route rules a page may declare', () => {
     expectTypeOf<NuxtPage['rules']>().toEqualTypeOf<RouteRuleConfig | undefined>()
+  })
+
+  it('accepts the Nitro v2 redirect status only on a Nuxt 4 host', () => {
+    const rule = <Host>(config: NuxtRouteRuleConfig<Host>) => config
+
+    expectTypeOf(rule<{ nuxt4: true }>({ redirect: { to: '/new', statusCode: 302 } })).toExtend<RouteRuleConfig>()
+    // @ts-expect-error Nitro v3 reads `redirect.status`
+    rule<Record<never, never>>({ redirect: { to: '/new', statusCode: 302 } })
+    expectTypeOf<Omit<NuxtRouteRuleConfig<{ nuxt4: true }>, 'redirect'>>().toEqualTypeOf<Omit<RouteRuleConfig, 'redirect'>>()
+    expectTypeOf<NuxtRouteRuleConfig<Record<never, never>>>().toEqualTypeOf<RouteRuleConfig>()
+    expectTypeOf<SchemaRouteRuleConfig>().toEqualTypeOf<NuxtRouteRuleConfig>()
   })
 })
 

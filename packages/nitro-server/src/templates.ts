@@ -1,4 +1,4 @@
-import type { NuxtTemplate, TSReference } from 'nuxt/schema'
+import type { NuxtTemplate, NuxtTypeTemplate, TSReference } from 'nuxt/schema'
 import { isAbsolute, join, relative } from 'pathe'
 
 export const nitroSchemaTemplate: NuxtTemplate = {
@@ -63,6 +63,19 @@ declare module 'h3/rules' {
 }
 `
   },
+}
+
+/** Declares the Nuxt 4 host to the types this package contributes. */
+export const nuxt4HostTypeTemplate: NuxtTypeTemplate = {
+  filename: 'types/nitro-server-host.d.ts',
+  getContents: () => `declare module '@nuxt/schema' {
+  interface NitroServerHost {
+    nuxt4: true
+  }
+}
+
+export {}
+`,
 }
 
 function renderReference (ref: TSReference, baseDir: string) {

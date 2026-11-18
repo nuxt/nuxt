@@ -11,7 +11,7 @@ import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { createNitro } from 'nitro/builder'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, isWithinDir, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -33,7 +33,7 @@ import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKe
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { nitroSchemaTemplate } from './templates.ts'
+import { nitroSchemaTemplate, nuxt4HostTypeTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
 import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
@@ -68,6 +68,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const nuxt4Host = isNuxtMajorVersion(4, nuxt)
 
   if (nuxt4Host) {
+    addTypeTemplate(nuxt4HostTypeTemplate, { nuxt: true, node: true, shared: true, nitro: true })
     addVitePlugin({
       name: 'nuxt:nitro:h3-v1-runtime',
       enforce: 'pre',
