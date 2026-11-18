@@ -402,6 +402,12 @@ describe('aliases', () => {
   })
 })
 
+describe('layers', () => {
+  it('exposes shared declarations from local layers', () => {
+    expectTypeOf<BarLayerSharedType>().toEqualTypeOf<{ layer: 'bar' }>()
+  })
+})
+
 describe('import meta', () => {
   it('types envName', () => {
     expectTypeOf(import.meta.envName).toEqualTypeOf<string>()
