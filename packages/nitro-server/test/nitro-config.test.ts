@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { basename, dirname, isAbsolute, join, resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { rollup } from 'rollup'
-import type { InputPluginOption, OutputAsset, Plugin } from 'rollup'
+import type { InputPluginOption, OutputAsset, OutputChunk, Plugin } from 'rollup'
 import { loadNuxt } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { getRollupConfig } from 'nitropack/rollup'
@@ -148,6 +148,77 @@ describe('nitro config', () => {
       const modules = output.flatMap(chunk => chunk.type === 'chunk' ? Object.keys(chunk.modules) : [])
       expect(modules).toContain(shared.replace(/shared\.cjs\.prod\.js$/, 'shared.esm-bundler.js'))
       expect(modules).not.toContain(shared)
+    }).finally(() => rm(outputDir, { recursive: true, force: true }))
+  }, 60_000)
+
+  it('keeps route rule keys as written and unifies sibling dynamic segments for the server runtime', async () => {
+    const outputDir = await mkdtemp(join(tmpdir(), 'nuxt-route-rules-'))
+    const overrides: NuxtConfig = {
+      dev: false,
+      nitro: { output: { dir: outputDir } },
+      routeRules: {
+        '/package/:name/_payload.json': { isr: 300 },
+        '/package/:org/:name/_payload.json': { isr: 300 },
+        '/:slug/about': { swr: 60 },
+        '/:locale/:slug/about': { swr: 60 },
+        '/:locale/moved': { redirect: { to: '/new/:locale', statusCode: 301 } },
+      },
+      modules: [
+        (_options, nuxt) => {
+          nuxt.options.routeRules!['/team/:slug/view'] = { swr: 60 }
+          nuxt.hook('nitro:config', (config) => {
+            config.routeRules!['/team/:id/edit'] = { swr: 60 }
+          })
+        },
+      ],
+    }
+    await withNitro(overrides, async (nitro) => {
+      await nitro.hooks.callHook('build:before', nitro)
+      await mkdir(nitro.options.output.serverDir, { recursive: true })
+      const config = getRollupConfig(nitro)
+      await nitro.hooks.callHook('rollup:before', nitro, config)
+      const bundle = await rollup({
+        ...config,
+        input: 'entry',
+        plugins: [
+          {
+            name: 'entry',
+            resolveId: id => id === 'entry' ? id : undefined,
+            load: id => id === 'entry' ? 'export default process.env.RUNTIME_CONFIG' : undefined,
+          },
+          ...config.plugins as InputPluginOption[],
+        ],
+      })
+      const { output } = await bundle.generate({ format: 'esm' })
+      await bundle.close()
+
+      expect(Object.keys(nitro.options.routeRules)).toEqual(expect.arrayContaining([
+        '/package/:name/_payload.json',
+        '/package/:org/:name/_payload.json',
+        '/:slug/about',
+        '/:slug/about/_payload.json',
+        '/:locale/:slug/about',
+        '/:locale/:slug/about/_payload.json',
+        '/:locale/moved',
+        '/team/:slug/view',
+        '/team/:id/edit',
+      ]))
+      expect(nitro.options.routeRules['/:locale/moved']!.redirect).toMatchObject({ to: '/new/:locale' })
+
+      const entry = output.find(chunk => chunk.type === 'chunk' && chunk.facadeModuleId === 'entry') as OutputChunk
+      const { default: runtimeConfig } = await import(`data:text/javascript,${encodeURIComponent(entry.code)}`)
+      expect(Object.keys(runtimeConfig.nitro.routeRules)).toEqual(expect.arrayContaining([
+        '/package/:name/_payload.json',
+        '/package/:name/:name_/_payload.json',
+        '/:slug/about',
+        '/:slug/about/_payload.json',
+        '/:slug/:slug_/about',
+        '/:slug/:slug_/about/_payload.json',
+        '/:slug/moved',
+        '/team/:slug/view',
+        '/team/:slug/edit',
+      ]))
+      expect(runtimeConfig.nitro.routeRules['/:slug/moved'].redirect).toMatchObject({ to: '/new/:slug' })
     }).finally(() => rm(outputDir, { recursive: true, force: true }))
   }, 60_000)
 

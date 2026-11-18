@@ -46,7 +46,7 @@ describe('payload route rules', () => {
       ssr: true,
       cache: false,
     })
-    expect(nitro.options.routeRules['/swr-dynamic/:slug/:slug_/about/_payload.json']).toMatchObject({
+    expect(nitro.options.routeRules['/swr-dynamic/:locale/:slug/about/_payload.json']).toMatchObject({
       ssr: true,
       cache: { swr: true },
     })

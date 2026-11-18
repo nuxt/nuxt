@@ -530,10 +530,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
 
-  // runs before payload rules are derived so generated `/_payload.json` keys inherit unified names
+  // only the runtime matchers need unified names; presets and modules read the keys as written
   nuxt.hook('nitro:init', (nitro) => {
-    nitro.hooks.hook('build:before', (nitro) => {
-      unifyDynamicRouteRuleSegments(nitro.options.routeRules)
+    nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
+      (rollupConfig.plugins as Plugin[]).push({
+        name: 'nuxt:unify-route-rules',
+        buildStart () {
+          const routeRules = { ...nitro.options.routeRules }
+          unifyDynamicRouteRuleSegments(routeRules)
+          nitro.options.runtimeConfig.nitro.routeRules = routeRules
+        },
+      })
     })
   })
 
