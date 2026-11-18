@@ -51,6 +51,8 @@ const REQUEST_TYPES_MODULE = '@nuxt/nitro-server/request-types'
 
 const UNHEAD_IMPORT_RE = /^unhead(?:\/|$)/
 const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
+const SERVER_HANDLERS_ID_RE = /^\0virtual:#nitro-internal-virtual\/server-handlers$/
+const HANDLER_ROUTE_RE = /\broute: '([^']*)'/g
 
 const h3Presets = [
   {
@@ -533,12 +535,26 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // only the runtime matchers need unified names; presets and modules read the keys as written
   nuxt.hook('nitro:init', (nitro) => {
     nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
-      (rollupConfig.plugins as Plugin[]).push({
+      const plugins = rollupConfig.plugins as Plugin[]
+      let renamedKeys = new Map<string, string>()
+      plugins.push({
         name: 'nuxt:unify-route-rules',
         buildStart () {
           const routeRules = { ...nitro.options.routeRules }
-          unifyDynamicRouteRuleSegments(routeRules)
+          renamedKeys = unifyDynamicRouteRuleSegments(routeRules)
           nitro.options.runtimeConfig.nitro.routeRules = routeRules
+        },
+        // nitropack registers each cached rule key as a handler route, which h3 matches with radix3
+        transform: {
+          filter: { id: SERVER_HANDLERS_ID_RE },
+          handler (code) {
+            if (!renamedKeys.size) { return }
+            const declaredRoutes = new Set([...nitro.scannedHandlers, ...nitro.options.handlers].map(handler => handler.route))
+            return {
+              code: code.replace(HANDLER_ROUTE_RE, (match, route: string) => renamedKeys.has(route) && !declaredRoutes.has(route) ? `route: '${renamedKeys.get(route)}'` : match),
+              map: null,
+            }
+          },
         },
       })
     })
