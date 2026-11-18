@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs'
+import { readdirSync, statSync } from 'node:fs'
 import type { Dirent } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { basename, dirname, join, relative, resolve } from 'pathe'
@@ -102,6 +102,14 @@ function rejectedSuffix (parse: ParseScanPath, scanSuffixes: string[], file: Sca
 /** A name with a suffix between its stem and its extension. */
 const hasSuffix = (path: string) => basename(path).split('.').length > 2
 
+function isLinkToFile (path: string): boolean {
+  try {
+    return statSync(path).isFile()
+  } catch {
+    return false
+  }
+}
+
 /** Every file in the scanned server directories with a suffix in its name that Nitro rejects. */
 export function findRejectedScanSuffixes (nuxt: Nuxt, options: ScanOptions, parse: ParseScanPath): RejectedScanPath[] {
   const found: RejectedScanPath[] = []
@@ -117,7 +125,7 @@ export function findRejectedScanSuffixes (nuxt: Nuxt, options: ScanOptions, pars
       }
       for (const entry of entries) {
         const path = join(entry.parentPath, entry.name)
-        if (!entry.isFile() || seen.has(path) || !hasSuffix(path)) {
+        if (seen.has(path) || !hasSuffix(path) || !(entry.isFile() || (entry.isSymbolicLink() && isLinkToFile(path)))) {
           continue
         }
         seen.add(path)

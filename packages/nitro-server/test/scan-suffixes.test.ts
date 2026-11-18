@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'pathe'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
@@ -101,6 +101,16 @@ describe('findRejectedScanSuffixes', () => {
     ])
 
     expect(findRejectedScanSuffixes(createNuxt(rootDir), { scanDirs: [join(rootDir, 'server')] }, (await loadParseScanPath())!)).toEqual([])
+  })
+
+  it('follows symbolic links to files, as nitro does', async () => {
+    const rootDir = createProject(['shared/stamp.ts'])
+    mkdirSync(join(rootDir, 'server/middleware'), { recursive: true })
+    symlinkSync(join(rootDir, 'shared/stamp.ts'), join(rootDir, 'server/middleware/stamp.global.ts'))
+    symlinkSync(join(rootDir, 'shared/missing.ts'), join(rootDir, 'server/middleware/broken.global.ts'))
+
+    const found = findRejectedScanSuffixes(createNuxt(rootDir), { scanDirs: [join(rootDir, 'server')] }, (await loadParseScanPath())!)
+    expect(found).toEqual([{ path: join(rootDir, 'server/middleware/stamp.global.ts'), suffix: 'global' }])
   })
 
   it('reads the directory names nitro is configured with', async () => {
