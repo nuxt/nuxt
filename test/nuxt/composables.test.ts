@@ -172,6 +172,76 @@ describe('errors', () => {
       expect(useError().value).toBeUndefined()
     })
 
+    it('should call `app:error:cleared` once for a successful redirect', async () => {
+      const calls: unknown[] = []
+      onTestFinished(useNuxtApp().hook('app:error:cleared', (options) => { calls.push(options) }))
+
+      showError('boom')
+      await clearError({ redirect: '/?cleared' })
+
+      expect(useError().value).toBeUndefined()
+      expect(calls).toEqual([{ redirect: '/?cleared' }])
+    })
+
+    it('should clear the error when another navigation supersedes a pending redirect', async () => {
+      let release: (() => void) | undefined
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.pending !== undefined) {
+          return new Promise<void>((resolve) => { release = resolve })
+        }
+      })
+      addRouteMiddleware(middleware, { global: true })
+      onTestFinished(() => {
+        const globalMiddleware = useNuxtApp()._middleware.global
+        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      })
+
+      const calls: unknown[] = []
+      onTestFinished(useNuxtApp().hook('app:error:cleared', (options) => { calls.push(options) }))
+
+      showError('boom')
+      const settled = clearError({ redirect: '/?pending' })
+      await vi.waitFor(() => expect(release).toBeDefined())
+
+      await useRouter().push('/?other')
+      expect(useError().value).toBeUndefined()
+
+      release!()
+      await settled
+      expect(useError().value).toBeUndefined()
+      expect(calls).toEqual([{ redirect: '/?pending' }])
+    })
+
+    it('should stop letting `showError` replace the error once a cancelled redirect settles', async () => {
+      let release: (() => void) | undefined
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.pending !== undefined) {
+          return new Promise<void>((resolve) => { release = resolve })
+        }
+        if (to.query.abort !== undefined) {
+          return false
+        }
+      })
+      addRouteMiddleware(middleware, { global: true })
+      onTestFinished(() => {
+        const globalMiddleware = useNuxtApp()._middleware.global
+        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      })
+
+      const original = showError('boom')
+      const settled = clearError({ redirect: '/?pending' })
+      await vi.waitFor(() => expect(release).toBeDefined())
+
+      const failure = await useRouter().push('/?abort')
+      expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(true)
+      release!()
+      await settled
+
+      expect(useError().value).toBe(original)
+      showError('later')
+      expect(useError().value).toBe(original)
+    })
+
     it('should keep the error until the redirect settles, replacing it only with the first error shown meanwhile', async () => {
       let release: (() => void) | undefined
       const middleware = defineNuxtRouteMiddleware((to) => {

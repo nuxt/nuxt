@@ -150,10 +150,10 @@ interface _NuxtApp {
    */
   '~restoreDeferredRoute'?: () => void
   /**
-   * The error a pending `clearError({ redirect })` call will clear, which `showError` may replace.
+   * The latest pending `clearError({ redirect })` call and the error it will clear, which `showError` may replace.
    * @internal
    */
-  '~clearingError'?: NuxtPayload['error']
+  '~clearingError'?: { error: NuxtPayload['error'] }
 
   /** @internal */
   '_islandPromises'?: Record<string, Promise<any>>

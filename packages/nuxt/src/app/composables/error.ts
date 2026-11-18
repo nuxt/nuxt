@@ -31,7 +31,7 @@ export const showError = <DataT = unknown>(
       callAppErrorHook(nuxtApp, nuxtError)
     }
 
-    if (!error.value || error.value === nuxtApp['~clearingError']) {
+    if (!error.value || error.value === nuxtApp['~clearingError']?.error) {
       error.value = nuxtError
     }
   } catch {
@@ -89,23 +89,24 @@ export const clearError = async (options: { redirect?: string } = {}): Promise<v
   const nuxtApp = useNuxtApp()
   const error = useError()
   const cleared = error.value
+  const clearing = { error: cleared }
 
-  nuxtApp.callHook('app:error:cleared', options)?.catch(hookError => console.error('[nuxt] Error in `app:error:cleared` hook', hookError))
+  if (!cleared || cleared !== nuxtApp['~clearingError']?.error) {
+    nuxtApp.callHook('app:error:cleared', options)?.catch(hookError => console.error('[nuxt] Error in `app:error:cleared` hook', hookError))
+  }
 
   let cancelled = false
   try {
     if (options.redirect) {
-      nuxtApp['~clearingError'] = cleared
+      nuxtApp['~clearingError'] = clearing
       cancelled = (await useRouter().replace(options.redirect))?.type === 8 /* NavigationFailureType.cancelled */
     }
   } finally {
-    if (!cancelled) {
-      if (nuxtApp['~clearingError'] === cleared) {
-        delete nuxtApp['~clearingError']
-      }
-      if (error.value === cleared) {
-        error.value = undefined
-      }
+    if (nuxtApp['~clearingError'] === clearing) {
+      delete nuxtApp['~clearingError']
+    }
+    if (!cancelled && error.value === cleared) {
+      error.value = undefined
     }
 
     if (import.meta.dev && import.meta.client) {
