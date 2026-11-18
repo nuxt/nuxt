@@ -27,6 +27,7 @@ describe('error cache-control plugin', () => {
   it('replaces the cache-control of a route rule on an error page the renderer rendered', async () => {
     expect(await respond(404, 'public, max-age=60', { 'cache-control': 'public, max-age=60' }, true)).toBe('no-cache')
     expect(await respond(500, 'public, max-age=60', { 'Cache-Control': 'public, max-age=60' }, true)).toBe('no-cache')
+    expect(await respond(404, 'public, max-age=60', { 'cache-control': ' public, max-age=60 ' }, true)).toBe('no-cache')
   })
 
   it('keeps the cache-control of a route rule on an error response a handler returns', async () => {

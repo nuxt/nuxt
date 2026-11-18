@@ -8,7 +8,7 @@ export function ruleCacheControl (event: H3Event): string | undefined {
   const headers = event.context?.routeRules?.headers as Record<string, string> | undefined
   for (const name in headers) {
     if (name.toLowerCase() === 'cache-control') {
-      return headers[name]
+      return headers[name]?.trim()
     }
   }
 }
