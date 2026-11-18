@@ -20,13 +20,62 @@ const run = (command: string, args: string[], cwd: string) => execFileSync(comma
 const readPackage = (dir: string) => JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'))
 const installedVersion = (name: string, from: string) => createRequire(join(repoRoot, from, 'package.json'))(`${name}/package.json`).version as string
 
+const fetchPatterns = [
+  `interface SearchResponse { data?: { organization?: { team?: { members: { nodes: { login: string }[] } } } } }`,
+  ``,
+  `function api<T> (url: string, options: Parameters<typeof $fetch>[1] = {}) {`,
+  `  return $fetch<T>(url, { ...options })`,
+  `}`,
+  ``,
+  `function rawApi<T> (url: string, options: Parameters<typeof $fetch.raw>[1] = {}) {`,
+  `  return $fetch.raw<T>(url, { ...options })`,
+  `}`,
+  ``,
+  `function post<T> (url: string, body: Record<string, unknown>) {`,
+  `  return $fetch<T>(url, { method: 'POST', body })`,
+  `}`,
+  ``,
+  `function forward (...args: Parameters<typeof $fetch>) {`,
+  `  return $fetch(...args)`,
+  `}`,
+  ``,
+  `const request: Parameters<typeof $fetch>[0] = new Request('https://example.com')`,
+  `const rawRequest: Parameters<typeof $fetch.raw>[0] = new Request('https://example.com')`,
+  `const plain: (url: string, options?: { method?: 'POST' }) => Promise<unknown> = $fetch`,
+  `const created: Parameters<ReturnType<typeof $fetch.create>>[1] = { method: 'PATCH' }`,
+  ``,
+  `async function external () {`,
+  `  const response = await $fetch<SearchResponse>('https://api.github.com/graphql', { method: 'POST', headers: { Authorization: 'x' }, body: { query: 'q' } })`,
+  `  const login: string | undefined = response.data?.organization?.team?.members.nodes[0]?.login`,
+  `  const untyped = await $fetch<unknown>('https://example.com', { method: 'PUT' })`,
+  `  return { login, untyped }`,
+  `}`,
+  ``,
+].join('\n')
+
 const files: Record<string, string> = {
   'nuxt.config.ts': `export default defineNuxtConfig({ compatibilityDate: 'latest' })\n`,
   'tsconfig.json': JSON.stringify({
     files: [],
     references: ['app', 'server', 'shared', 'node'].map(name => ({ path: `./.nuxt/tsconfig.${name}.json` })),
   }),
-  'app/app.vue': `<template>\n  <div>{{ useRequestURL().pathname }}</div>\n</template>\n`,
+  'app/app.vue': [
+    `<script setup lang="ts">`,
+    `const { data: plain } = await useFetch('/api/typed')`,
+    `const { data: withParams } = await useFetch('/api/typed', { params: { q: 'x' } })`,
+    `const fromFetch = await $fetch('/api/typed')`,
+    `const fromParams = await $fetch('/api/typed', { params: { q: 'x' } })`,
+    `const plainHello: string = plain.value!.hello`,
+    `const withParamsHello: string = withParams.value!.hello`,
+    `const fetchedHello: string = fromFetch.hello`,
+    `const fromParamsHello: string = fromParams.hello`,
+    `</script>`,
+    ``,
+    `<template>`,
+    `  <div>{{ useRequestURL().pathname }} {{ plainHello }} {{ withParamsHello }} {{ fetchedHello }} {{ fromParamsHello }}</div>`,
+    `</template>`,
+    ``,
+  ].join('\n'),
   'server/api/legacy.ts': [
     `export default defineEventHandler((event) => {`,
     `  // @ts-expect-error the method is a string`,
@@ -39,6 +88,10 @@ const files: Record<string, string> = {
     `})`,
     ``,
   ].join('\n'),
+  'server/api/typed.ts': [
+    `export default defineEventHandler(() => ({ hello: 'world' }))`,
+    ``,
+  ].join('\n'),
   'server/plugins/response.ts': [
     `export default defineNitroPlugin((nitroApp) => {`,
     `  nitroApp.hooks.hook('render:response', (response) => {`,
@@ -47,6 +100,27 @@ const files: Record<string, string> = {
     `    return void body`,
     `  })`,
     `})`,
+    ``,
+  ].join('\n'),
+  'app/utils/fetch-patterns.ts': [
+    fetchPatterns,
+    `const fetchOptions: Parameters<typeof useFetch>[1] = { method: 'POST', body: { a: 1 }, query: { a: 1 } }`,
+    `const lazyFetchOptions: Parameters<typeof useLazyFetch>[1] = { method: 'POST', body: { a: 1 }, query: { a: 1 } }`,
+    ``,
+  ].join('\n'),
+  'shared/utils/fetch-patterns.ts': [
+    `import { $fetch } from '#build/fetch'`,
+    ``,
+    fetchPatterns,
+  ].join('\n'),
+  'server/utils/fetch-patterns.ts': [
+    `import { $fetch } from '#build/fetch'`,
+    ``,
+    fetchPatterns,
+    `async function typed () {`,
+    `  const hello: string = (await $fetch('/api/typed')).hello`,
+    `  return hello`,
+    `}`,
     ``,
   ].join('\n'),
 }
@@ -100,6 +174,12 @@ try {
   run('pnpm', ['install', '--no-frozen-lockfile'], project)
   run('pnpm', ['exec', 'nuxt', 'prepare'], project)
   run('pnpm', ['exec', 'vue-tsc', '-b', '--noEmit'], project)
+
+  // without `strict`, `unknown` is assignable to a type whose properties are all optional
+  for (const name of ['app', 'server']) {
+    writeFileSync(join(project, `tsconfig.loose.${name}.json`), JSON.stringify({ extends: `./.nuxt/tsconfig.${name}.json`, compilerOptions: { strict: false } }))
+    run('pnpm', ['exec', 'vue-tsc', '--noEmit', '-p', `tsconfig.loose.${name}.json`], project)
+  }
 } catch (error) {
   console.error(error instanceof Error ? error.message : error)
   process.exitCode = 1

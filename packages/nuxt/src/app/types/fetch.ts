@@ -1,6 +1,6 @@
 import type { FetchOptions, FetchRequest, FetchResponse } from 'ofetch'
 import type { AnyHTTPMethod, LooseTypedHeaders, TypedFetchErrorBody, TypedFetchPath, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, ValidFetchInput } from 'fetchdts'
-import type { ErrorBody, Methods, Path, RequestBody, RequestHeaders, RequestQuery, Requires, Response, RouteTypesEngine, StrictFetchPaths, ValidInput } from '#build/server-routes'
+import type { ErrorBody, Methods, ParamsAlias, Path, RequestBody, RequestHeaders, RequestQuery, Requires, Response, RouteTypesEngine, StrictFetchPaths, ValidInput } from '#build/server-routes'
 import type { InternalApiMethods, InternalApiRequest, InternalApiRequestShape, InternalApiResponse } from './fetch-internal-api'
 
 /**
@@ -139,7 +139,7 @@ export type AvailableServerRouteMethod<Request> = LegacyEngine extends true
  */
 export type TypedRequestShape<Request, Method extends AnyServerRouteMethod> = LegacyEngine extends true
   ? InternalApiRequestShape
-  : GeneratedRequestShape<Request, Method>
+  : GeneratedRequestShape<Request, Method> & (ParamsAlias extends true ? { params?: FetchOptions['params'] } : {})
 
 /**
  * {@link TypedRequestShape} as the generated route set answers it.

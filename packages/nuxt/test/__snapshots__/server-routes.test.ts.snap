@@ -92,5 +92,6 @@ export type RequestHeaders<Path_, Method extends AnyHTTPMethod = 'GET', Fallback
 
 export type Requires<Path_, Method extends AnyHTTPMethod, Field extends 'body' | 'query' | 'headers'> = TypedFetchRequires<AugmentedServerRoutes, Path_, Method, Field>
 export type StrictFetchPaths = true
-export type RouteTypesEngine = 'generated'"
+export type RouteTypesEngine = 'generated'
+export type ParamsAlias = false"
 `;

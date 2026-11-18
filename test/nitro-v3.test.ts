@@ -50,6 +50,11 @@ describe.skipIf(!shouldRun)('nitro v3 server builder', () => {
     expect(html).not.toContain('spa page')
   })
 
+  it('passes `useFetch` `params` through to the query string', async () => {
+    const html = await $fetch<string>('/params')
+    expect(html).toContain('query-value')
+  })
+
   it('keeps the status of an error thrown while rendering a page', async () => {
     const page = await fetch('/missing', { headers: { accept: 'text/html' } })
     expect(page.status).toBe(404)

@@ -32,6 +32,10 @@ const nightlies = new Map(['nitropack', 'nitro', 'h3', 'nuxt', '@nuxt/schema', '
 const JS_EXTENSION_RE = /\.(m|c)?js$/
 
 export function setupTypes (nuxt: Nuxt) {
+  // nitro v3 contributes no `InternalApi` interface, so the generated route set is the only
+  // source of response types there and is used even before the option is adopted
+  const typeFromRoutes = nuxt.options.experimental.routeTypedFetch || nuxt.options._nitroMajor === 3
+
   // The compiler emits the route tree, an exact-match table for the fully static paths, the path
   // union as source and accessors specialised to this route set. It is a module rather than an
   // ambient declaration because the accessors are type aliases, which cannot be reached through
@@ -44,11 +48,6 @@ export function setupTypes (nuxt: Nuxt) {
     getContents: async ({ app, nuxt }) => {
       // handler specifiers are relative to the emitted file, at the root of the build directory
       const emittedFrom = nuxt.options.buildDir
-      // typing requests from the generated route set changes what a resolving call returns - a
-      // serialized response, a narrowed request, a rejected method - so it is opt-in until the next
-      // compatibility version. The route set is generated either way, so the two agree about what
-      // the server serves before anything is typed from it.
-      const typeFromRoutes = nuxt.options.experimental.routeTypedFetch
       const { routes, requestTypes } = await resolveServerRoutes(nuxt)
 
       // under `'isomorphic'` the pages the Vue router serves are part of the route set: nitro does
@@ -64,6 +63,7 @@ export function setupTypes (nuxt: Nuxt) {
         requestTypes,
         strict: nuxt.options.experimental.strictRouteTypes !== false,
         typeFromRoutes,
+        paramsAlias: !nuxt.options.experimental.routeTypedFetch,
       })
     },
   })
@@ -72,7 +72,7 @@ export function setupTypes (nuxt: Nuxt) {
   addTemplate({
     filename: 'types/shared-server-routes.d.ts',
     dependsOn: [],
-    getContents: () => emitServerRoutesModule({ routes: [], strict: false }),
+    getContents: () => emitServerRoutesModule({ routes: [], strict: false, paramsAlias: !nuxt.options.experimental.routeTypedFetch }),
   })
 
   addTypeTemplate({
@@ -153,7 +153,7 @@ export function setupTypes (nuxt: Nuxt) {
     return serverBuilderReference
   }
 
-  if (nuxt.options.experimental.routeTypedFetch) {
+  if (typeFromRoutes) {
     // imports nothing, so that it precedes nitropack's global `$fetch`
     const { dst } = addTemplate({
       filename: 'types/fetch-global.d.ts',

@@ -51,11 +51,13 @@ function routeSet (count: number) {
 interface ProgramOptions {
   strict?: boolean
   strictFetchPaths?: boolean
+  /** Whether `params` is accepted as a query alias, as it is on nitro v3 without `routeTypedFetch`. */
+  paramsAlias?: boolean
   /** Module-level source appended to the program. */
   source?: string[]
 }
 
-function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number, { strict = true, strictFetchPaths = true, source = [] }: ProgramOptions = {}) {
+function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number, { strict = true, strictFetchPaths = true, paramsAlias = false, source = [] }: ProgramOptions = {}) {
   rmSync(workspace, { recursive: true, force: true })
   mkdirSync(workspace, { recursive: true })
 
@@ -64,6 +66,7 @@ function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number,
     'interface ServerRoutes extends GeneratedServerRoutes {}',
     `export type StrictFetchPaths = ${strictFetchPaths}`,
     'export type RouteTypesEngine = \'generated\'',
+    `export type ParamsAlias = ${paramsAlias}`,
   ].join('\n'))
 
   const callSites = sites.slice(0, calls).map((site, i) => [
@@ -143,12 +146,7 @@ describe('a typed `$fetch` read through its own signature', () => {
     '}',
   ]
 
-  it.each([
-    { strict: true, strictFetchPaths: true },
-    { strict: true, strictFetchPaths: false },
-    { strict: false, strictFetchPaths: true },
-    { strict: false, strictFetchPaths: false },
-  ])('compiles against a large route set with a catch-all that validates a body (strict: $strict, strictFetchPaths: $strictFetchPaths)', (options) => {
+  it.each([true, false].flatMap(paramsAlias => [true, false].flatMap(strict => [true, false].map(strictFetchPaths => ({ paramsAlias, strict, strictFetchPaths })))))('compiles against a large route set with a catch-all that validates a body (paramsAlias: $paramsAlias, strict: $strict, strictFetchPaths: $strictFetchPaths)', (options) => {
     const set = routeSet(50)
     set.routes.push({ segments: [{ type: 'wildcard' }], metadata: { POST: { responseType: '{ proxied: true }', bodyType: '{ target: string }' } } })
     // ~7k as merged; the ceiling catches TypeScript measuring the request shape's variance (~190k)

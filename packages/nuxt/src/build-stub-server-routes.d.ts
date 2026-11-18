@@ -15,6 +15,8 @@ export type StrictFetchPaths = false
 
 export type RouteTypesEngine = 'generated'
 
+export type ParamsAlias = false
+
 export type ValidInput<Path_, Method extends AnyHTTPMethod = 'GET'> = ValidFetchInput<GeneratedServerRoutes, Path_, Method>
 export type Response<Path_, Method extends AnyHTTPMethod = 'GET'> = TypedFetchResponseBody<GeneratedServerRoutes, Path_, Method>
 export type ResponseHeaders<Path_, Method extends AnyHTTPMethod = 'GET'> = TypedFetchResponseHeaders<GeneratedServerRoutes, Path_, Method>

@@ -305,6 +305,12 @@ describe('emitServerRoutesModule', () => {
     expect(emitServerRoutesModule({ routes, strict: false })).toContain('export type StrictFetchPaths = false')
   })
 
+  it('emits `ParamsAlias` alongside the engine when requests still accept `params`', () => {
+    const module = emitServerRoutesModule({ routes, strict: false, typeFromRoutes: true, paramsAlias: true })
+    expect(module).toContain('export type RouteTypesEngine = \'generated\'')
+    expect(module).toContain('export type ParamsAlias = true')
+  })
+
   it('describes pages as routes of their own where they are part of the set', () => {
     const pages = buildServerRoutes(collectServerRoutes(collectPageRoutes([{ path: '/about', file: '/project/app/pages/about.vue' }])), '/project/.nuxt')
       .map(route => ({ ...route, metadata: { GET: { responseType: 'string' } } }))

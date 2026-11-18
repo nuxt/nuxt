@@ -180,6 +180,8 @@ export function emitServerRoutesModule (opts: {
   strict: boolean
   /** Whether `$fetch` and `useFetch` are typed from the generated route set. */
   typeFromRoutes?: boolean
+  /** Whether `params` is still accepted as an alias for `query` at the call site. */
+  paramsAlias?: boolean
 }): string {
   const extractors = [opts.requestTypes?.body, opts.requestTypes?.query, opts.requestTypes?.headers].filter(Boolean)
   const typeFromRoutes = opts.typeFromRoutes ?? true
@@ -209,6 +211,8 @@ export function emitServerRoutesModule (opts: {
     `export type StrictFetchPaths = ${typeFromRoutes && opts.strict}`,
     // which engine types `$fetch` and `useFetch`, resolved here for the same reason
     `export type RouteTypesEngine = '${typeFromRoutes ? 'generated' : 'internal-api'}'`,
+    // whether `params` remains a query alias, resolved here because it can diverge from the engine
+    `export type ParamsAlias = ${opts.paramsAlias ?? false}`,
   ].join('\n')
 }
 
