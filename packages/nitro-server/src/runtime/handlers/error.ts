@@ -13,13 +13,14 @@ import type { SSRErrorInput } from '../host/nuxt4'
 import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
+import { errorCacheControl, ruleCacheControl } from '../utils/cache-control'
 import { toLegacyError } from '../compat/error-shape'
 import { legacyCompat, legacyResponseHeaders } from '#nuxt-compat/flags'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, options) {
   const response = await renderError(error, event, options)
-  // the `cache-control` of a route rule or a public asset directory is for what it serves
-  response.headers.set('cache-control', new Headers(error.headers).get('cache-control') || 'no-cache')
+  // a cacheable `cache-control` of a route rule or a public asset directory is for what it serves
+  response.headers.set('cache-control', new Headers(error.headers).get('cache-control') || errorCacheControl(ruleCacheControl(event as H3Event)))
   return response
 }
 

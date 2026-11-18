@@ -38,17 +38,17 @@ const { docsVersion } = await import('#internal/nuxt/host')
 
 const { default: errorHandler } = await import('../src/runtime/handlers/error.ts')
 
-function event (path: string, accept: string, headers?: HeadersInit) {
+function event (path: string, accept: string, headers?: HeadersInit, ruleHeaders?: Record<string, string>) {
   return {
     url: new URL(`http://localhost${path}`),
     req: { url: `http://localhost${path}`, method: 'GET', headers: new Headers({ accept }) },
     res: { headers: new Headers(headers) },
-    context: {},
+    context: ruleHeaders ? { routeRules: { headers: ruleHeaders } } : {},
   } as unknown as H3Event
 }
 
-function handle (error: Error, accept: string, defaults: { status?: number, statusText?: string, body?: unknown, headers?: HeadersInit } = {}, path = '/unknown', responseHeaders?: HeadersInit) {
-  return errorHandler(error as any, event(path, accept, responseHeaders), {
+function handle (error: Error, accept: string, defaults: { status?: number, statusText?: string, body?: unknown, headers?: HeadersInit } = {}, path = '/unknown', responseHeaders?: HeadersInit, ruleHeaders?: Record<string, string>) {
+  return errorHandler(error as any, event(path, accept, responseHeaders, ruleHeaders), {
     defaultHandler: () => Promise.resolve({
       status: defaults.status ?? 404,
       statusText: defaults.statusText ?? 'Page not found',
@@ -163,6 +163,27 @@ describe('error handler cache-control', () => {
     const res = await handle(new HTTPError({ status: 404, headers: { 'cache-control': 'no-store' } }), accept, { headers: { 'cache-control': 'no-store' } }, '/_nuxt/missing.js', immutable)
 
     expect(res.headers.get('cache-control')).toBe('no-store')
+  })
+
+  async function underRule (cacheControl: string, accept: string, error = new HTTPError({ status: 401 })) {
+    const rule = { 'Cache-Control': cacheControl }
+    serverFetch.mockResolvedValue(new Response('<html></html>', { headers: rule }))
+    const res = await handle(error, accept, { headers: rule }, '/api/internal/me', rule, rule)
+    return res.headers.get('cache-control')
+  }
+
+  describe.each(['application/json', 'text/html'])('on a %s error', (accept) => {
+    it.each(['no-store', 'private, max-age=60', 'no-cache', 'public, no-cache', 'max-age=0, must-revalidate', 'max-age=0, proxy-revalidate', 'public, s-maxage=0'])('keeps the route rule cache-control %s', async (cacheControl) => {
+      expect(await underRule(cacheControl, accept)).toBe(cacheControl)
+    })
+
+    it.each(['public, max-age=60', 'max-age=0', 'max-age=0, s-maxage=60, must-revalidate', 'no-cache, stale-if-error=60', 's-maxage=0, stale-while-revalidate=60', 'no-cache="set-cookie", max-age=60', 'private="set-cookie", max-age=60', 'no-store,,'])('replaces the route rule cache-control %s', async (cacheControl) => {
+      expect(await underRule(cacheControl, accept)).toBe('no-cache')
+    })
+
+    it('keeps the cache-control set on the error over the route rule', async () => {
+      expect(await underRule('no-store', accept, new HTTPError({ status: 401, headers: { 'cache-control': 'private, max-age=5' } }))).toBe('private, max-age=5')
+    })
   })
 })
 

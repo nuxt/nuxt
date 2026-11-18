@@ -58,6 +58,19 @@ describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
     expect(error).toMatchObject({ statusCode: 422, statusMessage: 'Unprocessable', data: { from: 'user' } })
   })
 
+  it('sends the `no-store` of a route rule with errors', async () => {
+    const bodies: unknown[] = []
+    for (const route of ['/api/no-store/thrown', '/api/no-store/module', '/api/no-store/returned']) {
+      const response = await fetch(route, { headers: { accept: 'application/json' } })
+      expect(response.status).toBe(401)
+      expect(response.headers.get('cache-control')).toBe('no-store')
+      bodies.push(await response.json())
+    }
+    expect(bodies[0]).not.toEqual({ status: 401 })
+    expect(bodies[1]).toEqual({ status: 401 })
+    expect(bodies[2]).toEqual({ returned: true })
+  })
+
   it('answers a v1-style handler that returns `null` with no content', async () => {
     const response = await fetch('/api/null')
     expect(response.status).toBe(204)
