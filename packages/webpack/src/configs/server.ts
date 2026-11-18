@@ -37,7 +37,9 @@ export function serverPreset (ctx: WebpackConfigContext) {
 
 export function serverStandalone (ctx: WebpackConfigContext) {
   if (!Array.isArray(ctx.config.externals)) { return }
-  ctx.config.externals.push(createServerExternals(ctx.nuxt))
+  // in development the server bundle is written to disk and imported by Node directly (rather than
+  // bundled by Nitro), so runtime dependencies must be valid ESM specifiers on Windows too
+  ctx.config.externals.push(createServerExternals(ctx.nuxt, { fileURLs: ctx.isDev }))
 }
 
 function serverPlugins (ctx: WebpackConfigContext) {

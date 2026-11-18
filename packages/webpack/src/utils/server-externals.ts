@@ -1,6 +1,7 @@
 import type { Nuxt } from '@nuxt/schema'
 import { directoryToURL, resolveAlias } from '@nuxt/kit'
 import { parseNodeModulePath } from '@nuxt/kit/internal'
+import { pathToFileURL } from 'node:url'
 import { resolveModulePath } from 'exsolve'
 import { isAbsolute, normalize, resolve } from 'pathe'
 
@@ -13,7 +14,19 @@ export type ServerExternals = (data: { request?: string, context?: string }, cal
  * Bundle the Nuxt app and its dependencies that need to be transpiled, and leave other dependencies
  * to be resolved (and traced) by Nitro.
  */
-export function createServerExternals (nuxt: Nuxt, options: { inline?: string[] } = {}): ServerExternals {
+export interface ServerExternalsOptions {
+  /** Additional request prefixes to bundle rather than externalise. */
+  inline?: string[]
+  /**
+   * Emit resolved runtime dependencies as `file://` URLs rather than absolute paths.
+   *
+   * Needed when the server bundle is imported by Node directly instead of being bundled by Nitro,
+   * as Node's ESM loader rejects Windows drive paths (`C:/...`) as import specifiers.
+   */
+  fileURLs?: boolean
+}
+
+export function createServerExternals (nuxt: Nuxt, options: ServerExternalsOptions = {}): ServerExternals {
   const inline = [
     'src/',
     '#app',
@@ -63,7 +76,10 @@ export function createServerExternals (nuxt: Nuxt, options: { inline?: string[] 
         conditions,
         try: true,
       })
-      return callback(undefined, resolved && isAbsolute(resolved) ? resolved : true)
+      if (resolved && isAbsolute(resolved)) {
+        return callback(undefined, options.fileURLs ? pathToFileURL(resolved).href : resolved)
+      }
+      return callback(undefined, true)
     }
     if (
       request[0] === '.' ||
