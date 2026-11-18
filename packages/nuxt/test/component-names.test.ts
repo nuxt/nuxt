@@ -28,6 +28,13 @@ describe('component names', () => {
     expect(res?.code).toMatchInlineSnapshot(`"export default Object.assign({}, { __name: "TestMe" })"`)
   })
 
+  it('wraps `export default` declarations but not `default` specifiers', () => {
+    expect(transformPlugin.transform.handler('export default function setup () {}', 'test.vue')?.code)
+      .toMatchInlineSnapshot(`"export default Object.assign(function setup () {}, { __name: "TestMe" })"`)
+    expect(transformPlugin.transform.handler('const a = {}\nexport { a as default }', 'test.vue')?.code)
+      .toMatchInlineSnapshot(`undefined`)
+  })
+
   it('should add correct default component names', () => {
     const sfc = `
 <script setup>
