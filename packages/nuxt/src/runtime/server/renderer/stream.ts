@@ -8,6 +8,7 @@ import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from '#app/ty
 import { NUXT_DEFER_PREFETCH_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS_PROD, iifeChunkFileName, renderSSRHeadOptions } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
+import { callAppErrorHook } from '../../../app/internal/error-hook'
 
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG } from './build-files'
 import type { SSRError } from './error'
@@ -116,7 +117,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
     if (ssrContext['~renderResponse'] && error?.message === 'skipping render') {
       return renderResponse(ssrContext['~renderResponse'])
     }
-    await ssrContext.nuxt?.hooks.callHook('app:error', error)
+    await callAppErrorHook(ssrContext.nuxt, error)
     throw error
   }
   if (ssrContext['~renderResponse']) {
@@ -148,7 +149,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
     }
     event.res.headers.delete('link')
     const _err = (!ssrError && ssrContext.payload?.error) || error
-    await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+    await callAppErrorHook(ssrContext.nuxt, _err)
     throw _err
   }
 
@@ -303,7 +304,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
         // only reach the client via the payload - the client renders the
         // error page during hydration.
         if (ssrContext.payload?.error && !ssrError) {
-          await ssrContext.nuxt?.hooks.callHook('app:error', ssrContext.payload.error)
+          await callAppErrorHook(ssrContext.nuxt, ssrContext.payload.error)
         }
 
         if (!NO_SCRIPTS) {
@@ -368,7 +369,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
         if (NUXT_INLINE_ERROR_RENDERING) {
           await captureError(runtime, event, error, ['streaming'])
         }
-        await Promise.resolve(ssrContext.nuxt?.hooks.callHook('app:error', error)).catch(() => {})
+        await callAppErrorHook(ssrContext.nuxt, error)
         ssrContext.payload ||= {} as NuxtPayload
         ssrContext.payload.error ||= error as any
         try {

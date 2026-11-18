@@ -2334,6 +2334,12 @@ importers:
         specifier: catalog:dev
         version: 6.0.3
 
+  test/fixtures/clear-error:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/dev-error-client:
     dependencies:
       nuxt:
