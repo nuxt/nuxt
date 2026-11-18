@@ -4,7 +4,7 @@ import type { H3Event } from 'nitro/h3'
 
 const serverFetch = vi.hoisted(() => vi.fn())
 const observeDevError = vi.hoisted(() => vi.fn())
-const flags = vi.hoisted(() => ({ inlineErrors: false, legacyCompat: false, nuxt4Host: false }))
+const flags = vi.hoisted(() => ({ inlineErrors: false, legacyCompat: false, legacyResponseHeaders: false, nuxt4Host: false }))
 
 vi.mock('nitro', () => ({ serverFetch }))
 vi.mock('../src/runtime/utils/error-channel', () => ({
@@ -20,6 +20,9 @@ vi.mock('nuxt/internal/renderer-config', async importOriginal => ({
 vi.mock('#nuxt-compat/flags', () => ({
   get legacyCompat () {
     return flags.legacyCompat
+  },
+  get legacyResponseHeaders () {
+    return flags.legacyResponseHeaders
   },
 }))
 vi.mock('#internal/nuxt/host', async (importOriginal) => {
@@ -58,6 +61,7 @@ function handle (error: Error, accept: string, defaults: { status?: number, stat
 beforeEach(() => {
   flags.inlineErrors = false
   flags.legacyCompat = false
+  flags.legacyResponseHeaders = false
   flags.nuxt4Host = false
   serverFetch.mockReset()
   serverFetch.mockResolvedValue(new Response('<html></html>', { headers: new Headers() }))
@@ -193,11 +197,71 @@ describe('JSON error body', () => {
       : body)
   })
 
+  const securityHeaders = {
+    'x-content-type-options': 'nosniff',
+    'x-frame-options': 'DENY',
+    'referrer-policy': 'no-referrer',
+    'content-security-policy': 'script-src \'none\'; frame-ancestors \'none\';',
+  }
+
+  it('is sent with the Nitro v2 security headers with the legacy response headers on', async () => {
+    flags.legacyResponseHeaders = true
+    const res = await handle(new HTTPError({ status: 404 }), 'application/json', {}, '/api/missing', { 'x-frame-options': 'SAMEORIGIN' })
+
+    expect(Object.fromEntries(res.headers)).toMatchObject(securityHeaders)
+  })
+
+  it('is sent without the Nitro v2 security headers otherwise', async () => {
+    flags.nuxt4Host = true
+    const res = await handle(new HTTPError({ status: 404 }), 'application/json')
+
+    for (const name in securityHeaders) {
+      expect(res.headers.has(name)).toBe(false)
+    }
+  })
+
   it('is the Nitro body without the legacy layer', async () => {
     flags.nuxt4Host = true
     const res = await handle(new HTTPError({ status: 404, statusText: 'Not Found' }), 'application/json', { body })
 
     expect(await res.json()).toEqual(body)
+  })
+})
+
+describe('HTML error page', () => {
+  const securityHeaders = {
+    'x-content-type-options': 'nosniff',
+    'x-frame-options': 'DENY',
+    'referrer-policy': 'no-referrer',
+  }
+
+  it('is sent with the Nitro v2 security headers, without their CSP, with the legacy response headers on', async () => {
+    flags.legacyResponseHeaders = true
+    const rendered = await handle(new HTTPError({ status: 404 }), 'text/html')
+    expect(Object.fromEntries(rendered.headers)).toMatchObject(securityHeaders)
+    expect(rendered.headers.has('content-security-policy')).toBe(false)
+
+    serverFetch.mockRejectedValue(new Error('render failed'))
+    const fallback = await handle(new HTTPError({ status: 404 }), 'text/html')
+    expect(Object.fromEntries(fallback.headers)).toMatchObject(securityHeaders)
+    expect(fallback.headers.has('content-security-policy')).toBe(false)
+  })
+
+  it('lets the rendered error page set its own security headers', async () => {
+    flags.legacyResponseHeaders = true
+    serverFetch.mockResolvedValue(new Response('<html></html>', { headers: { 'x-frame-options': 'SAMEORIGIN' } }))
+    const res = await handle(new HTTPError({ status: 404 }), 'text/html')
+
+    expect(res.headers.get('x-frame-options')).toBe('SAMEORIGIN')
+  })
+
+  it('is sent without the Nitro v2 security headers otherwise', async () => {
+    flags.nuxt4Host = true
+    const res = await handle(new HTTPError({ status: 404 }), 'text/html')
+
+    for (const name in securityHeaders) {
+      expect(res.headers.has(name)).toBe(false)
+    }
   })
 })
 

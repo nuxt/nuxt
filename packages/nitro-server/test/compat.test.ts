@@ -49,6 +49,7 @@ function compatPlugin (nitroConfig: NitroConfig): any {
 function createNuxt (options: Record<string, any> = {}) {
   const hooks = createHooks()
   return {
+    _version: '5.0.0',
     hooks,
     hook: hooks.hook,
     callHook: hooks.callHook,
@@ -1374,6 +1375,19 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
       expect.stringMatching(/compat[\\/]event-plugin/),
       expect.stringMatching(/compat[\\/]hooks-plugin/),
     ])
+  })
+
+  it.for([
+    [4, true, true],
+    [4, false, false],
+    [5, true, false],
+  ] as const)('sends the Nitro v2 response headers on a Nuxt %i host with `nitroLegacy.config: %s`: %s', async ([major, config, expected]) => {
+    const nuxt = createNuxt()
+    nuxt._version = `${major}.0.0`
+    const nitroConfig: NitroConfig = { handlers: [] }
+    await setupNitroCompat(nuxt, nitroConfig, resolveNitroLegacyOptions({ config }), [])
+
+    expect((nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()).toContain(`legacyResponseHeaders = ${expected}`)
   })
 
   it('does not resolve a module virtual through an alias to a file', async () => {

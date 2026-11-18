@@ -14,7 +14,7 @@ import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
 import { toLegacyError } from '../compat/error-shape'
-import { legacyCompat } from '#nuxt-compat/flags'
+import { legacyCompat, legacyResponseHeaders } from '#nuxt-compat/flags'
 
 export default <NitroErrorHandler> async function errorhandler (error, event, options) {
   const response = await renderError(error, event, options)
@@ -83,6 +83,11 @@ async function renderError (...[_error, event, { defaultHandler }]: Parameters<N
     for (const entries of headerEntries) {
       mergeHeaders(headers, entries, setCookies)
     }
+    if (legacyResponseHeaders) {
+      for (const [name, value] of LEGACY_ERROR_HEADERS) {
+        headers.set(name, value)
+      }
+    }
 
     const body = legacyCompat ? toJSONErrorBody(defaultRes.body) : defaultRes.body
     return new Response(typeof body === 'string' ? body : JSON.stringify(body, null, 2), {
@@ -108,6 +113,9 @@ async function renderError (...[_error, event, { defaultHandler }]: Parameters<N
   // Merge defaultRes headers, skipping content-type (would be application/json)
   // and content-security-policy (would disable JS execution in the error page)
   mergeHeaders(headers, new Headers(defaultRes.headers), setCookies, IGNORED_ERROR_HEADERS)
+  if (legacyResponseHeaders) {
+    mergeHeaders(headers, LEGACY_ERROR_HEADERS, setCookies, IGNORED_ERROR_HEADERS)
+  }
 
   // Skip SSR error rendering if we're already inside one, to avoid recursion.
   if (!isRenderingError) {
@@ -217,6 +225,14 @@ const THROWN_VALUE = Symbol.for('nuxt:dev:thrown')
 const ERROR_PAGE_HEADER = 'x-nuxt-error-page'
 // Headers of the rendered error page that should not be forwarded, as its body is rebuilt
 const IGNORED_PAGE_HEADERS = new Set(['content-length', ERROR_PAGE_HEADER])
+
+/** The headers Nitro v2 sent with an error response. */
+const LEGACY_ERROR_HEADERS: [string, string][] = [
+  ['x-content-type-options', 'nosniff'],
+  ['x-frame-options', 'DENY'],
+  ['referrer-policy', 'no-referrer'],
+  ['content-security-policy', 'script-src \'none\'; frame-ancestors \'none\';'],
+]
 
 // Headers that should not be forwarded from the default handler or SSR render to the error page
 const IGNORED_ERROR_HEADERS = new Set(['content-type', 'content-security-policy', ERROR_PAGE_HEADER])

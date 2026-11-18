@@ -10,7 +10,7 @@ import type { Unimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
 import type { ResolverOptions } from 'exsolve'
 import escapeRE from 'escape-string-regexp'
-import { getLayerDirectories, resolveAlias } from '@nuxt/kit'
+import { getLayerDirectories, isNuxtMajorVersion, resolveAlias } from '@nuxt/kit'
 import { isWithinDir, trackPendingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt, ServerApi } from '@nuxt/schema'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
@@ -1267,8 +1267,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // baked in at build time, so that an app with no v2 code keeps Nitro's error semantics
   // with the recovery branch tree-shaken out. One flag for the whole app, decided by what
   // the scoped code imports rather than by which modules are installed.
+  const legacyResponseHeaders = legacy.config && isNuxtMajorVersion(4, nuxt)
   nitroConfig.virtual['#nuxt-compat/flags'] = () =>
-    `export const legacyCompat = ${active}\n`
+    `export const legacyCompat = ${active}\nexport const legacyResponseHeaders = ${legacyResponseHeaders}\n`
 
   // module dists built for nitro v2 dereference `globalThis._importMeta_`
   nitroConfig.virtual['#nuxt-compat/import-meta'] = () => {
