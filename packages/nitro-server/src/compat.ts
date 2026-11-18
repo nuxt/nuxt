@@ -652,6 +652,19 @@ function getLegacyImportsPreset (): Array<LegacyImportsPreset & { priority?: num
   ]
 }
 
+const LEGACY_CACHED_HANDLER_NAMES = ['defineCachedEventHandler', 'cachedEventHandler']
+
+/** The Nitro v2 names, with the cached handler helpers from the compat runtime. */
+function getV2ImportsPreset (): LegacyImportsPreset[] {
+  return [
+    ...v2ImportsPreset.map(preset => ({
+      from: preset.from,
+      imports: preset.imports.filter(entry => typeof entry === 'string' || !LEGACY_CACHED_HANDLER_NAMES.includes(entry.as ?? entry.name)),
+    })),
+    { from: compatRuntimePath('cache'), imports: LEGACY_CACHED_HANDLER_NAMES },
+  ]
+}
+
 /** The portable names that take Nitro v2 semantics under the given toggles, and where each comes from. */
 async function getLegacyImportOverrides (legacy: Pick<ResolvedNitroLegacyOptions, 'h3' | 'runtimeConfig'>): Promise<Record<string, string>> {
   const overrides: Record<string, string> = {}
@@ -677,7 +690,7 @@ async function getLegacyImportOverrides (legacy: Pick<ResolvedNitroLegacyOptions
 export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOptions): Promise<Array<LegacyImportsPreset & { priority?: number }>> {
   return [
     ...getNuxtServerImportsPreset(await getLegacyImportOverrides(legacy)),
-    ...v2ImportsPreset,
+    ...legacy.h3 || legacy.config ? getV2ImportsPreset() : v2ImportsPreset,
     ...legacy.imports ? getLegacyImportsPreset() : [],
     await getH3ImportsPreset(legacy.h3 ? getLegacyH3ShimPath() : undefined),
   ]
@@ -1309,6 +1322,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // with the recovery branch tree-shaken out. One flag for the whole app, decided by what
   // the scoped code imports rather than by which modules are installed.
   const legacyResponseHeaders = legacy.config && isNuxtMajorVersion(4, nuxt)
+  if (legacyResponseHeaders) {
+    (nitroConfig.plugins as string[]).push(compatRuntimePath('cache-control-plugin'))
+  }
   nitroConfig.virtual['#nuxt-compat/flags'] = () =>
     `export const legacyCompat = ${active}\nexport const legacyResponseHeaders = ${legacyResponseHeaders}\n`
 

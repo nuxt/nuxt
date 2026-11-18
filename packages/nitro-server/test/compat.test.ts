@@ -1388,6 +1388,7 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     await setupNitroCompat(nuxt, nitroConfig, resolveNitroLegacyOptions({ config }), [])
 
     expect((nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()).toContain(`legacyResponseHeaders = ${expected}`)
+    expect((nitroConfig.plugins as string[]).some(plugin => /compat[\\/]cache-control-plugin/.test(plugin))).toBe(expected)
   })
 
   describe('server aliases of `h3`', () => {
@@ -1602,6 +1603,18 @@ describe('getServerImportsPresets', () => {
     expect(source.get('defineEventHandler')).toMatch(/compat[\\/]h3-v1/)
     expect(source.get('getQuery')).toMatch(/compat[\\/]h3-v1/)
     expect(source.get('useRuntimeConfig')).toMatch(/compat[\\/]runtime-config/)
+  })
+
+  it.each([
+    [{ h3: true, config: false }, /compat[\\/]cache/],
+    [{ h3: false, config: true }, /compat[\\/]cache/],
+    [{ h3: false, config: false }, /^nitro\/cache$/],
+  ])('resolves the Nitro v2 cached handler names with %o', async (toggles, expected) => {
+    const source = new Map(flatten(await getServerImportsPresets(resolveNitroLegacyOptions(toggles))))
+
+    expect(source.get('defineCachedEventHandler')).toMatch(expected)
+    expect(source.get('cachedEventHandler')).toMatch(expected)
+    expect(source.get('defineCachedHandler')).toBe('nitro/cache')
   })
 
   it('builds declarations for every compat file an auto-import is typed from', async () => {

@@ -83,10 +83,12 @@ describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
 
     expect(await $fetch('/api/null?fetch=1')).toEqual({ value: 'undefined' })
 
-    for (let i = 0; i < 2; i++) {
-      const cached = await fetch('/api/cached-null')
-      expect(cached.status).toBe(204)
-      expect(cached.headers.has('content-type')).toBe(false)
+    for (const route of ['/api/cached-null', '/api/cached-null-auto']) {
+      for (let i = 0; i < 2; i++) {
+        const cached = await fetch(route)
+        expect(cached.status).toBe(204)
+        expect(cached.headers.has('content-type')).toBe(false)
+      }
     }
   })
 

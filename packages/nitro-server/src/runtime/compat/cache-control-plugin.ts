@@ -1,0 +1,30 @@
+import { definePlugin } from 'nitro'
+import type { H3Event } from 'nitro/h3'
+
+import { legacyCacheControl } from './cache.ts'
+
+/** The `cache-control` h3 writes for every response a cache route rule serves. */
+const RULE_CACHE_CONTROL_RE = /^public, max-age=(\d+), s-maxage=\1$/
+
+/**
+ * Send the `cache-control` of Nitro v2 with the responses of a cache route rule, unless the
+ * rule sets `sendCacheControl` or a `cache-control` header itself.
+ */
+export default definePlugin((nitroApp) => {
+  nitroApp.hooks?.hook('response', (response, event) => {
+    const rules = (event as H3Event).context?.routeRules
+    const cache = rules?.cache
+    if (!cache || cache.sendCacheControl !== undefined || response.status === 304 || Object.keys(rules.headers || {}).some(name => name.toLowerCase() === 'cache-control')) {
+      return
+    }
+    if (!RULE_CACHE_CONTROL_RE.test(response.headers.get('cache-control') || '')) {
+      return
+    }
+    const value = legacyCacheControl(cache)
+    if (value) {
+      response.headers.set('cache-control', value)
+    } else {
+      response.headers.delete('cache-control')
+    }
+  })
+})
