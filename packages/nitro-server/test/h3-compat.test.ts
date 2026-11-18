@@ -10,6 +10,7 @@ import { H3, HTTPError, mockEvent } from 'nitro/h3'
 import {
   createError,
   defineEventHandler,
+  eventHandler,
   getCookie,
   getHeader,
   getQuery,
@@ -17,6 +18,7 @@ import {
   getRouterParam,
   handleCacheHeaders,
   handleCors,
+  lazyEventHandler,
   proxyRequest,
   readBody,
   readFormData,
@@ -248,6 +250,21 @@ describe('h3 v1 shim', () => {
 
     expect(await response.text()).toBe('ok')
     expect(calls).toEqual(['onRequest', 'onBeforeResponse:ok'])
+  })
+
+  it('responds to a WebSocket upgrade request with the `websocket` hooks of the v1 object form', async () => {
+    const websocket = { open: () => {} }
+    const handler = defineEventHandler({ websocket, handler: () => 'http' })
+    const upgradeEvent = () => mockEvent('http://nuxt/_ws', { headers: { connection: 'Upgrade', upgrade: 'websocket' } })
+
+    for (const entry of [handler, eventHandler({ websocket, handler: () => 'http' }), lazyEventHandler(() => handler)]) {
+      const response = await (entry as (event: unknown) => Promise<Response & { crossws?: unknown }>)(upgradeEvent())
+      expect(response.status).toBe(426)
+      expect(response.crossws).toBe(websocket)
+    }
+
+    const http = await handler.fetch(new Request('http://nuxt/_ws'))
+    expect(await http.text()).toBe('http')
   })
 
   it('sends a string a handler returns as HTML unless the handler sets a content type', async () => {
