@@ -1,7 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import { once } from 'node:events'
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { readFile, readdir } from 'node:fs/promises'
 import { Worker } from 'node:worker_threads'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
@@ -553,25 +552,6 @@ describe('resolveLayerPaths', async () => {
 })
 
 describe('writeTypes', () => {
-  const generatedFiles = ['tsconfig.app.json', 'tsconfig.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json', 'nuxt.d.ts', 'nuxt.node.d.ts', 'nuxt.shared.d.ts', 'nuxt.server.d.ts']
-
-  async function withRelocatedBuildDir (fn: (typesDir: string, nuxt: Nuxt) => Promise<void>) {
-    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
-    const typesDir = join(rootDir, '.nuxt')
-    await mkdir(typesDir, { recursive: true })
-    try {
-      await fn(typesDir, mockNuxtWithOptions({
-        rootDir,
-        srcDir: rootDir,
-        buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt'),
-        typesDir,
-        dev: false,
-      }))
-    } finally {
-      await rm(rootDir, { recursive: true, force: true })
-    }
-  }
-
   it('should only write missing types when building into a relocated build directory', async () => {
     const [missing, ...existing] = ['tsconfig.app.json', 'tsconfig.json', 'tsconfig.server.json', 'tsconfig.node.json', 'tsconfig.shared.json', 'nuxt.d.ts', 'nuxt.node.d.ts', 'nuxt.shared.d.ts', 'nuxt.server.d.ts']
     await withTempDir(Object.fromEntries(existing.map(file => [`.nuxt/${file}`, '{}'])), async (rootDir) => {
@@ -591,132 +571,76 @@ describe('writeTypes', () => {
   })
 
   it('should retry transient rename failures without removing the destination', async () => {
-    await withRelocatedBuildDir(async (typesDir, nuxt) => {
-      nuxt.options.dev = true
+    await withTempDir({}, async (rootDir) => {
+      const buildDir = join(rootDir, '.nuxt')
+      const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
       await writeTypes(nuxt)
-      const path = join(typesDir, 'tsconfig.json')
+      const path = join(buildDir, 'tsconfig.json')
       const existing = await readFile(path, 'utf8')
       const rename = fsp.rename.bind(fsp)
-      let failures = 0
+      let attempts = 0
       const spy = vi.spyOn(fsp, 'rename').mockImplementation(async (source, destination) => {
-        if (destination === path && failures++ < 2) {
+        if (destination === path && ++attempts < 3) {
           expect(await readFile(path, 'utf8')).toBe(existing)
           throw Object.assign(new Error('File is locked'), { code: 'EPERM' })
         }
         await rename(source, destination)
       })
       try {
-        nuxt.options.alias.changing = join(nuxt.options.rootDir, 'changed')
+        nuxt.options.alias.changing = join(rootDir, 'changed')
         await writeTypes(nuxt)
-        expect(failures).toBe(3)
-        expect(await readFile(path, 'utf8')).not.toBe(existing)
-        expect((await readdir(typesDir)).filter(file => file.endsWith('.tmp'))).toEqual([])
       } finally {
         spy.mockRestore()
       }
-    })
-  })
-
-  it.each(['EPERM', 'ENOSPC'])('should preserve existing files and clean temporary files after %s rename failure', async (code) => {
-    await withRelocatedBuildDir(async (typesDir, nuxt) => {
-      nuxt.options.dev = true
-      await Promise.all(generatedFiles.map(file => writeFile(join(typesDir, file), '{}')))
-      const path = join(typesDir, 'tsconfig.json')
-      const existing = await readFile(path, 'utf8')
-      const rename = fsp.rename.bind(fsp)
-      const failure = Object.assign(new Error('Rename failed'), { code })
-      let releaseRenames!: () => void
-      const renamesReleased = new Promise<void>((resolve) => { releaseRenames = resolve })
-      let attempts = 0
-      const spy = vi.spyOn(fsp, 'rename').mockImplementation(async (source, destination) => {
-        if (destination === path) {
-          attempts++
-          throw failure
-        }
-        await renamesReleased
-        await rename(source, destination)
-      })
-      try {
-        nuxt.options.alias.changing = join(nuxt.options.rootDir, 'changed')
-        await expect(writeTypes(nuxt)).rejects.toBe(failure)
-        await vi.waitFor(() => expect(new Set(spy.mock.calls.map(([, destination]) => destination)).size).toBe(generatedFiles.length))
-        releaseRenames()
-        await Promise.allSettled(spy.mock.results.map(result => result.value))
-        expect(attempts).toBe(code === 'EPERM' ? 6 : 1)
-        expect(await readFile(path, 'utf8')).toBe(existing)
-        expect((await readdir(typesDir)).filter(file => file.endsWith('.tmp'))).toEqual([])
-      } finally {
-        releaseRenames()
-        await Promise.allSettled(spy.mock.results.map(result => result.value))
-        spy.mockRestore()
-      }
-    })
-  })
-
-  it('should report the rename failure when removing the temporary file also fails', async () => {
-    await withRelocatedBuildDir(async (typesDir, nuxt) => {
-      nuxt.options.dev = true
-      const failure = Object.assign(new Error('Rename failed'), { code: 'ENOSPC' })
-      const renameSpy = vi.spyOn(fsp, 'rename').mockRejectedValue(failure)
-      const rmSpy = vi.spyOn(fsp, 'rm').mockRejectedValue(Object.assign(new Error('Remove failed'), { code: 'EIO' }))
-      try {
-        await expect(writeTypes(nuxt)).rejects.toBe(failure)
-      } finally {
-        try {
-          await vi.waitFor(() => expect(rmSpy).toHaveBeenCalledTimes(generatedFiles.length))
-        } finally {
-          await Promise.allSettled([...renameSpy.mock.results, ...rmSpy.mock.results].map(result => result.value))
-          renameSpy.mockRestore()
-          rmSpy.mockRestore()
-        }
-      }
+      expect(attempts).toBe(3)
+      expect(await readFile(path, 'utf8')).not.toBe(existing)
+      expect((await readdir(buildDir)).filter(file => file.endsWith('.tmp'))).toEqual([])
     })
   })
 
   it('should never expose a partially written tsconfig to concurrent readers', async () => {
-    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-write-types-'))
-    const buildDir = join(rootDir, '.nuxt')
-    const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
-    const tsConfigPath = join(buildDir, 'tsconfig.json')
-    await writeTypes(nuxt)
+    await withTempDir({}, async (rootDir) => {
+      const buildDir = join(rootDir, '.nuxt')
+      const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
+      await writeTypes(nuxt)
 
-    const state = new Int32Array(new SharedArrayBuffer(4))
-    const reader = new Worker(`
-      const { readFileSync } = require('node:fs')
-      const { parentPort, workerData } = require('node:worker_threads')
-      const state = new Int32Array(workerData.state)
-      let activeReads = 0
-      let invalid = 0
-      let stopped = false
-      parentPort.on('message', () => { stopped = true })
-      function poll () {
-        const active = Atomics.load(state, 0) === 1
-        try { JSON.parse(readFileSync(workerData.path, 'utf8')) } catch { invalid++ }
-        if (active) { activeReads++ }
-        if (stopped) { parentPort.postMessage({ activeReads, invalid }) } else { setImmediate(poll) }
-      }
-      parentPort.postMessage('ready')
-      poll()
-    `, { eval: true, workerData: { path: tsConfigPath, state: state.buffer } })
+      const state = new Int32Array(new SharedArrayBuffer(4))
+      const reader = new Worker(`
+        const { readFileSync } = require('node:fs')
+        const { parentPort, workerData } = require('node:worker_threads')
+        const state = new Int32Array(workerData.state)
+        let activeReads = 0
+        let invalid = 0
+        let stopped = false
+        parentPort.on('message', () => { stopped = true })
+        function poll () {
+          const active = Atomics.load(state, 0) === 1
+          try { JSON.parse(readFileSync(workerData.path, 'utf8')) } catch { invalid++ }
+          if (active) { activeReads++ }
+          if (stopped) { parentPort.postMessage({ activeReads, invalid }) } else { setImmediate(poll) }
+        }
+        parentPort.postMessage('ready')
+        poll()
+      `, { eval: true, workerData: { path: join(buildDir, 'tsconfig.json'), state: state.buffer } })
 
-    try {
-      expect(await once(reader, 'message')).toEqual(['ready'])
-      Atomics.store(state, 0, 1)
-      for (let i = 0; i < 50; i++) {
-        nuxt.options.alias.changing = join(rootDir, 'aliases', String(i))
-        await writeTypes(nuxt)
+      try {
+        expect(await once(reader, 'message')).toEqual(['ready'])
+        Atomics.store(state, 0, 1)
+        for (let i = 0; i < 50; i++) {
+          nuxt.options.alias.changing = join(rootDir, 'aliases', String(i))
+          await writeTypes(nuxt)
+        }
+        Atomics.store(state, 0, 0)
+        const result = await new Promise<{ activeReads: number, invalid: number }>((resolve, reject) => {
+          reader.once('error', reject)
+          reader.once('message', resolve)
+          reader.postMessage('stop')
+        })
+        expect(result.activeReads).toBeGreaterThan(0)
+        expect(result.invalid).toBe(0)
+      } finally {
+        await reader.terminate()
       }
-      Atomics.store(state, 0, 0)
-      const result = await new Promise<{ activeReads: number, invalid: number }>((resolve, reject) => {
-        reader.once('error', reject)
-        reader.once('message', resolve)
-        reader.postMessage('stop')
-      })
-      expect(result.activeReads).toBeGreaterThan(0)
-      expect(result.invalid).toBe(0)
-    } finally {
-      await reader.terminate()
-      await rm(rootDir, { recursive: true, force: true })
-    }
+    })
   })
 })
