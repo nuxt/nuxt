@@ -251,6 +251,15 @@ describe('nitro config', () => {
     })
   })
 
+  it('leaves dev-only handlers out of the typed server routes', async () => {
+    const devRoutes = await withNitro({ dev: true }, async (_nitro, _config, nuxt) => {
+      const routes: Array<{ route?: string }> = []
+      await nuxt.callHook('server:routes', routes as any, {} as any)
+      return routes.map(r => r.route)
+    })
+    expect(devRoutes.filter(route => route?.startsWith('/__nuxt_dev__') || route?.startsWith('/_nitro/'))).toEqual([])
+  })
+
   it('excludes sources from server sourcemaps for `nosource`', async () => {
     await withNitro({ sourcemap: { server: 'nosource' } }, (_nitro, nitroConfig) => {
       expect(nitroConfig.rollupConfig!.output!.sourcemapExcludeSources).toBe(true)
