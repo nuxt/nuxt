@@ -9,6 +9,7 @@
 import { defineHandler, defineWebSocketHandler } from 'nitro/h3'
 import type { H3Event, defineWebSocket } from 'nitro/h3'
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import type { $Fetch } from 'ofetch'
 
 import { getRouteRules } from '../utils/route-rules.ts'
 import { fromLegacyBody, prepareLegacyEvent } from './event.ts'
@@ -17,8 +18,12 @@ import { toLegacyError } from './error-shape.ts'
 
 export * from './h3-v1-app.ts'
 
-/** The event a v1 handler receives, on which `event.node` is always present. */
-export type LegacyH3Event = H3Event & { node: { req: IncomingMessage, res: ServerResponse } }
+/** The event a v1 handler receives, on which `event.node`, `event.fetch` and `event.$fetch` are always present. */
+export type LegacyH3Event = H3Event & {
+  node: { req: IncomingMessage, res: ServerResponse }
+  fetch: typeof globalThis.fetch
+  $fetch: $Fetch
+}
 
 type LegacyHandlerObject = {
   handler: (event: LegacyH3Event) => any

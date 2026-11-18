@@ -4,6 +4,7 @@ import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, Ro
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Nitro, NitroConfig, NitroOptions, NitroRuntimeHooks, RouteRuleConfig, TracingChannelOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
+import type { $Fetch } from 'ofetch'
 import type { NuxtSSRContext } from '#app/types'
 
 import type { NuxtRouteRuleConfig } from '../src/augments.ts'
@@ -93,5 +94,11 @@ describe('nitro v2 compatibility types', () => {
     expectTypeOf<LegacyEvent>().toExtend<H3Event>()
     expectTypeOf<LegacyEvent['node']['req']>().toExtend<IncomingMessage>()
     expectTypeOf<LegacyEvent['node']['res']>().toExtend<ServerResponse>()
+  })
+
+  it('hands a v1 handler an event that has `event.fetch` and `event.$fetch`', () => {
+    type LegacyEvent = Parameters<Extract<Parameters<typeof defineEventHandler>[0], (...args: any[]) => any>>[0]
+    expectTypeOf<LegacyEvent['fetch']>().toEqualTypeOf<typeof globalThis.fetch>()
+    expectTypeOf<LegacyEvent['$fetch']>().toEqualTypeOf<$Fetch>()
   })
 })
