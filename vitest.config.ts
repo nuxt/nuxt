@@ -106,6 +106,7 @@ const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [
 // re-runs the suites built with nitro on nitro v3 rather than the default nitropack v2
 const nitroV3Matrix: FixtureMatrixEntry[] = [
   { env: 'dev', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', nitro: 3 },
+  { env: 'dev', builder: 'webpack', context: 'async', manifest: 'manifest-on', payload: 'json', nitro: 3 },
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', nitro: 3 },
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on', payload: 'json', nitro: 3 },
 ]

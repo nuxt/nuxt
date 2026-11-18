@@ -10,10 +10,6 @@ const VIRTUAL_RE = /^\0?virtual:(?:nuxt:)?/
 
 export type ServerExternals = (data: { request?: string, context?: string }, callback: (error?: Error | null, result?: string | boolean) => void) => void
 
-/**
- * Bundle the Nuxt app and its dependencies that need to be transpiled, and leave other dependencies
- * to be resolved (and traced) by Nitro.
- */
 export interface ServerExternalsOptions {
   /** Additional request prefixes to bundle rather than externalise. */
   inline?: string[]
@@ -26,6 +22,10 @@ export interface ServerExternalsOptions {
   fileURLs?: boolean
 }
 
+/**
+ * Bundle the Nuxt app and its dependencies that need to be transpiled, and leave other dependencies
+ * to be resolved (and traced) by Nitro.
+ */
 export function createServerExternals (nuxt: Nuxt, options: ServerExternalsOptions = {}): ServerExternals {
   const inline = [
     'src/',
