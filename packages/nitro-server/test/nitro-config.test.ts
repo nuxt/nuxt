@@ -1,8 +1,8 @@
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
-import { isAbsolute, join, resolve } from 'pathe'
+import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { directoryToURL, isNuxtMajorVersion, loadNuxt, updateRuntimeConfig, writeTypes } from '@nuxt/kit'
 import { z } from 'zod'
 import { createNitro } from 'nitro/builder'
@@ -383,6 +383,20 @@ describe('nitro config', () => {
         expect(resolve(buildDir, paths[`${alias}/*`]![0]!)).toBe(join(nuxt.options.rootDir, '*'))
       }
     })
+  })
+
+  it.for([4, 5])('types `h3` in the server program of a Nuxt %i app that depends on `h3` as Nitro\'s h3 with `nitroLegacy.h3`', async (major) => {
+    const nitroH3 = dirname(resolveModulePath('h3/package.json', { from: resolveModulePath('nitro/package.json', { from: import.meta.url }) }))
+    const dependsOnH3 = (_options: unknown, nuxt: Nuxt) => {
+      nuxt._dependencies = new Set([...nuxt._dependencies || [], 'h3'])
+    }
+    for (const nitroLegacy of [{ h3: true }, { h3: false }]) {
+      const tsconfigs = await withTsConfigs({ modules: [asNuxtMajor(major), dependsOnH3], nitroLegacy })
+      const h3Path = tsconfigs.server.h3?.[0]
+      expect(h3Path && realpathSync(resolve(tsconfigs.buildDir, h3Path))).toBe(nitroLegacy.h3 ? realpathSync(nitroH3) : undefined)
+      expect(tsconfigs.app.h3).toBeUndefined()
+      expect(tsconfigs.shared.h3).toBeUndefined()
+    }
   })
 
   it.for([4, 5])('types `nitropack` and `nitropack/types` in the server program of a Nuxt %i app as Nitro\'s types with `nitroLegacy.specifiers`', async (major) => {

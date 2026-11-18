@@ -699,9 +699,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // route rule augmentations are declared on `h3/rules`, so a project has to resolve it to the
   // same copy of h3 for them to apply, even when it depends on another copy of `h3`
   nitroTypePackages.push('h3/rules')
-  const [nitroTypePaths, nitroNodeTypePaths] = await Promise.all([
+  // server code runs on Nitro's h3 under the h3 v1 layer, whichever `h3` the project lists
+  const [nitroTypePaths, nitroNodeTypePaths, legacyH3TypePaths] = await Promise.all([
     resolveNitroTypePaths(nitroTypePackages),
     resolveNitroTypePaths(nitroTypePackages, { entry: true }),
+    resolveNitroTypePaths(legacy.h3 && !nitroTypePackages.includes('h3') ? ['h3'] : []),
   ])
 
   // Extend nitro config with hook
@@ -1083,7 +1085,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.references.push({ path: autoImports.importsModulePath + '.d.ts' })
 
     Object.assign(opts.tsConfig.compilerOptions.paths, nitroTypePaths)
-    Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths)
+    Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths, legacyH3TypePaths)
     for (const [source, path] of Object.entries(await autoImports.getSourceTypePaths())) {
       opts.tsConfig.compilerOptions.paths[source] ??= path
       opts.serverTsConfig.compilerOptions.paths[source] ??= path
