@@ -207,6 +207,39 @@ describe('renderer without a server builder', () => {
   })
 })
 
+describe('cookies in a streamed render', () => {
+  const streamed = (path: string) => render(
+    path,
+    { getRouteRules: () => ({ ssr: true, streaming: true }) },
+    createEvent(path, { headers: { 'user-agent': 'Mozilla/5.0' } }),
+  )
+
+  it('sends a cookie set before the headers are sent', async () => {
+    const { response, html } = await streamed('/streamed-cookie')
+
+    expect(html).toContain('window.__unhead__')
+    expect(response.headers.getSetCookie()).toEqual(['streamed=set-before-headers; Path=/'])
+    expect(html).toContain('__NUXT_DATA__')
+  })
+
+  it('leaves out a cookie set after the headers are sent and still completes the page', async () => {
+    const { response, html, captureError } = await streamed('/late-cookie')
+
+    expect(html).toContain('window.__unhead__')
+    expect(response.headers.getSetCookie()).toEqual([])
+    expect(html).toContain('__NUXT_DATA__')
+    expect(captureError).not.toHaveBeenCalled()
+  })
+
+  it('reports a cookie that cannot be serialized', async () => {
+    const { response, captureError } = await streamed('/invalid-cookie')
+
+    expect(response.status).toBe(500)
+    expect(response.headers.getSetCookie()).toEqual([])
+    expect(captureError.mock.calls[0]![0]).toMatchObject({ code: 'NUXT_E7011' })
+  })
+})
+
 describe('renderer plugins', () => {
   const state = globalThis as { __rendererPluginCalls?: number, __rendererPluginDocument?: string }
 
