@@ -219,7 +219,6 @@ describe('pages:pageComponentNames', () => {
       expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBe('foo')
       expect(spy).toHaveBeenCalledTimes(1)
 
-      // the file is replaced by a symlink
       spy.mockReturnValue('/real/foo.vue')
       invalidateAppStructure(nuxt)
       expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBeUndefined()
