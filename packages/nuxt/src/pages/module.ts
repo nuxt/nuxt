@@ -8,7 +8,6 @@ import { resolveModulePath } from 'exsolve'
 import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
-import { addRoute, createRouter, findRoute } from 'rou3'
 import { rou3PatternToURLPattern } from 'unrouting'
 import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, resolveRoutePaths } from './utils.ts'
 import type { PagesContext } from './utils.ts'
@@ -23,7 +22,7 @@ import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { PageComponentNamePlugin } from './plugins/component-name.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
-import { createNormalizedRouteRulesRouter, normalizeRouteRulePath, resolveRouteRules, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
+import { getRouteRulesMatching, normalizeRouteRulePath } from '../core/utils/route-rules.ts'
 import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
 import { createScanProblems } from '../core/scan-problems.ts'
 import type { ScanReporter } from '../core/scan-problems.ts'
@@ -515,17 +514,13 @@ export default defineNuxtModule({
     async function resolveLinkRouteMatcher (pages?: NuxtPage[]): Promise<((path: string) => boolean) | undefined> {
       const patterns = pages && collectRou3PagePatterns(pages)
       if (!patterns || await findRouterOptionsFileDefining(nuxt, 'routes', builtInRouterOptions)) { return }
-      for (const route of resolveRouteRulesRoutes(nuxt).routes) {
+      const matching = getRouteRulesMatching(nuxt)
+      for (const route of matching.resolvePageRoutes(matching.resolveRoutes(nuxt))) {
         if (route.data.redirect) {
           patterns.push(route.route)
         }
       }
-      const fold = !nuxt.options.router.options.sensitive
-      const router = createRouter<true>()
-      for (const pattern of patterns) {
-        addRoute(router, '', normalizeRouteRulePath(pattern, fold), true)
-      }
-      return path => !!findRoute(router, '', normalizeRouteRulePath(path, fold))
+      return matching.createPatternMatcher(patterns, !nuxt.options.router.options.sensitive)
     }
 
     nuxt.hook('nitro:build:before', (nitro) => {
@@ -544,9 +539,10 @@ export default defineNuxtModule({
         // matcher: decode percent-encoding (page routes are encoded, rule keys usually are
         // not), then case-fold unless routing is `sensitive`.
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
-        const routeRulesRouter = createNormalizedRouteRulesRouter(Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, data })), '', !caseSensitiveRouteRules)
+        const matching = getRouteRulesMatching(nuxt)
+        const routeRulesRouter = matching.createRouter(Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, data })), !caseSensitiveRouteRules)
         for (const route of prerenderRoutes) {
-          const rules = resolveRouteRules(routeRulesRouter, route, !caseSensitiveRouteRules)
+          const rules = matching.resolveRouteRules(routeRulesRouter, route, !caseSensitiveRouteRules)
           if (rules.prerender) {
             nitro.options.prerender.routes.push(route)
           }
@@ -592,7 +588,8 @@ export default defineNuxtModule({
     // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware.
     nuxt.hook('pages:extend', (routes) => {
       let resolvedRoutes: string[]
-      for (const route of resolveRouteRulesRoutes(nuxt).routes) {
+      const matching = getRouteRulesMatching(nuxt)
+      for (const route of matching.resolvePageRoutes(matching.resolveRoutes(nuxt))) {
         if (!route.data.redirect) { continue }
         resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
         // skip if there's already a route matching this path

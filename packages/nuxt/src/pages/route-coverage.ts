@@ -4,7 +4,8 @@ import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
 import { pageDiagnostics } from '@nuxt/kit/internal'
 import { toArray } from '../utils.ts'
-import { createNormalizedRouteRulesRouter, normalizeRouteRulePath, resolveRouteRules } from '../core/utils/route-rules.ts'
+import { getRouteRulesMatching } from '../core/utils/route-rules.ts'
+import type { RouteRulesMatching } from '../core/utils/route-rules.ts'
 
 /**
  * Find the pages that `noScripts` or `ssr: false` route rules restrict to a single environment,
@@ -16,9 +17,11 @@ export function markPagesForRouteRules (nuxt: Nuxt, pages: NuxtPage[], nitro: Ni
   if (!nitro) { return restrictedPages }
 
   const sensitive = !!nuxt.options.router.options.sensitive
+  const matching = getRouteRulesMatching(nuxt)
 
   markPagesCoveredByRouteRule(pages, nitro, {
     sensitive,
+    matching,
     isCovered: rules => !!rules.noScripts,
     mark: (page, covered) => {
       if (covered) { restrictedPages.set(page, 'noScripts') }
@@ -29,6 +32,7 @@ export function markPagesForRouteRules (nuxt: Nuxt, pages: NuxtPage[], nitro: Ni
   const conflicting: string[] = []
   markPagesCoveredByRouteRule(pages, nitro, {
     sensitive,
+    matching,
     isCovered: rules => rules.ssr === false,
     filter: page => page.mode !== 'server',
     mark: (page, covered, resolvedPath) => {
@@ -91,7 +95,6 @@ function createProbeSegment (routes: readonly string[]): string {
   return probe
 }
 
-const ROU3_PARAM_RE = /^:[\w-]+/
 const ROU3_MODIFIER_RE = /^[?+*]/
 
 /** Length of the `(...)` group starting at `index`, or `0` if there is none. */
@@ -110,7 +113,7 @@ function groupLength (segment: string, index: number): number {
  * dynamic token. Escapes are honoured in both directions: `\:` is a literal `:` rather than a
  * param, and the backslash is dropped because rou3 matches against the unescaped path.
  */
-function segmentToProbe (segment: string, probeSegment: string): { probe: string, dynamic: boolean, constrained: boolean } {
+function segmentToProbe (segment: string, probeSegment: string, paramRE: RegExp): { probe: string, dynamic: boolean, constrained: boolean } {
   let probe = ''
   let dynamic = false
   let constrained = false
@@ -125,9 +128,9 @@ function segmentToProbe (segment: string, probeSegment: string): { probe: string
     let length = 0
     if (char === '*') {
       length = segment.startsWith('**', index) ? 2 : 1
-      length += ROU3_PARAM_RE.exec(segment.slice(index + length))?.[0].length ?? 0
+      length += paramRE.exec(segment.slice(index + length))?.[0].length ?? 0
     } else if (char === ':') {
-      length = ROU3_PARAM_RE.exec(segment.slice(index))?.[0].length ?? 0
+      length = paramRE.exec(segment.slice(index))?.[0].length ?? 0
     } else if (char === '(') {
       length = groupLength(segment, index)
     }
@@ -147,8 +150,8 @@ function segmentToProbe (segment: string, probeSegment: string): { probe: string
   return { probe, dynamic, constrained }
 }
 
-function patternToProbePath (pattern: string, probeSegment: string): string {
-  return pattern.split('/').map(segment => segmentToProbe(segment, probeSegment).probe).join('/')
+function patternToProbePath (pattern: string, probeSegment: string, paramRE: RegExp): string {
+  return pattern.split('/').map(segment => segmentToProbe(segment, probeSegment, paramRE).probe).join('/')
 }
 
 const TRAILING_SLASH_RE = /\/$/
@@ -175,20 +178,22 @@ export interface RouteRuleCoverageOptions {
  * canonical path, each alias, and the whole subtree below it. Anything that
  * cannot be proven statically counts as uncovered.
  */
-export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInstance, options: RouteRuleCoverageOptions & { sensitive?: boolean }): boolean {
+export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInstance, options: RouteRuleCoverageOptions & { sensitive?: boolean, matching?: RouteRulesMatching }): boolean {
   // Normalise keys and lookups the same way as the compiled `#build/route-rules.mjs` matcher
   const fold = !options.sensitive
-  const matcher = createNormalizedRouteRulesRouter(Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, data })), '', fold)
+  const matching = options.matching ?? getRouteRulesMatching({ options: { _nitroMajor: 2 } })
+  const { paramRE } = matching
+  const matcher = matching.createRouter(Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, data })), fold)
 
   const PROBE_SEGMENT = createProbeSegment(matcher.routes.map(({ route }) => route))
-  const isPathCovered = (path: string) => options.isCovered(resolveRouteRules(matcher, path, fold))
+  const isPathCovered = (path: string) => options.isCovered(matching.resolveRouteRules(matcher, path, fold))
 
   // A dynamic pattern serves a subset of the region below its first dynamic
   // segment (`/products/*` and `/products/*/reviews` both live under
   // `/products`), so it only counts when that whole region is covered with no
   // more specific rule carving out an exception.
   function patternIsCovered (pattern: string): boolean {
-    const segments = pattern.split('/').map(segment => segmentToProbe(segment, PROBE_SEGMENT))
+    const segments = pattern.split('/').map(segment => segmentToProbe(segment, PROBE_SEGMENT, paramRE))
     const dynamicAt = segments.findIndex(segment => segment.dynamic)
     if (dynamicAt === -1) {
       const path = segments.map(segment => segment.probe).join('/')
@@ -197,12 +202,12 @@ export function markPagesCoveredByRouteRule (pages: NuxtPage[], nitro: NitroInst
     const prefix = segments.slice(0, dynamicAt).map(segment => segment.probe).join('/') || '/'
     const probe = (prefix === '/' ? '' : prefix) + '/' + PROBE_SEGMENT
     if (!isPathCovered(probe)) { return false }
-    const normalizedPrefix = normalizeRouteRulePath(pattern.split('/').slice(0, dynamicAt).join('/') || '/', fold)
+    const normalizedPrefix = matching.normalizeRouteRulePath(pattern.split('/').slice(0, dynamicAt).join('/') || '/', fold)
     const within = normalizedPrefix === '/' ? '/' : normalizedPrefix + '/'
     for (const { route } of matcher.routes) {
       if (route !== normalizedPrefix && !route.startsWith(within)) { continue }
-      if (route.split('/').some(segment => segmentToProbe(segment, PROBE_SEGMENT).constrained)) { return false }
-      if (!isPathCovered(patternToProbePath(route, PROBE_SEGMENT))) { return false }
+      if (route.split('/').some(segment => segmentToProbe(segment, PROBE_SEGMENT, paramRE).constrained)) { return false }
+      if (!isPathCovered(patternToProbePath(route, PROBE_SEGMENT, paramRE))) { return false }
     }
     return true
   }
