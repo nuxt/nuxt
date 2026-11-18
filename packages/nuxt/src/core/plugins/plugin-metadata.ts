@@ -60,6 +60,25 @@ export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode,
 
 const PLUGIN_WRAPPERS = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
+type FallbackReport = (sources: string[]) => unknown
+
+const fallbackReports = new WeakMap<object, FallbackReport>()
+
+function metadataError (report: FallbackReport) {
+  const error = new Error('Plugin metadata cannot be statically analysed.')
+  fallbackReports.set(error, report)
+  return error
+}
+
+export function reportMetadataFallback (src: string, reason: unknown) {
+  const report = typeof reason === 'object' && reason !== null ? fallbackReports.get(reason) : undefined
+  if (report) {
+    report([src])
+  } else {
+    pluginDiagnostics.NUXT_B2010({ src, cause: reason })
+  }
+}
+
 const metaCache: Record<string, ExtractedPluginMeta> = {}
 const failureCache: Record<string, unknown> = {}
 export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
@@ -79,6 +98,8 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
 
 function parseMetadata (code: string, loader: 'ts' | 'tsx') {
   let meta: ExtractedPluginMeta = {}
+  let fallback: FallbackReport | undefined
+  const onFallback = (report: FallbackReport) => { fallback ||= report }
   const { program } = parseModule(code, `file.${loader}`)
   const constants = collectConstants(program)
   const wrappers = new Map<string, string>()
@@ -102,22 +123,25 @@ function parseMetadata (code: string, loader: 'ts' | 'tsx') {
     const metaArg = node.arguments[1] && unwrapExpression(node.arguments[1])
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throw pluginDiagnostics.NUXT_B2001({ name, type: metaArg.type })
+        throw metadataError(sources => pluginDiagnostics.NUXT_B2001({ name, type: metaArg.type, sources }))
       }
-      meta = extractMetaFromObject(metaArg.properties, constantsInScope)
+      meta = extractMetaFromObject(metaArg.properties, constantsInScope, onFallback)
     }
 
     const plugin = node.arguments[0] && unwrapExpression(node.arguments[0])
     if (plugin?.type === 'ObjectExpression') {
-      meta = defu(extractMetaFromObject(plugin.properties, constantsInScope), meta)
+      meta = defu(extractMetaFromObject(plugin.properties, constantsInScope, onFallback), meta)
     } else if (plugin && plugin.type !== 'ArrowFunctionExpression' && plugin.type !== 'FunctionExpression') {
-      pluginDiagnostics.NUXT_B2013({ name, type: plugin.type })
+      onFallback(sources => pluginDiagnostics.NUXT_B2013({ name, type: plugin.type, sources }))
       meta._metaUnknown = true
     }
 
     meta.order ||= orderMap[meta.enforce || 'default'] || orderMap.default
     delete meta.enforce
   } })
+  if (meta._metaUnknown && fallback) {
+    fallbackReports.set(meta, fallback)
+  }
   return meta
 }
 
@@ -187,11 +211,11 @@ function isMetadataKey (key: string | ESTree.IdentifierName): key is ExtractedMe
   return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
-function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, constants: Constants) {
+function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, constants: Constants, onFallback: (report: FallbackReport) => void) {
   const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
-      throw pluginDiagnostics.NUXT_B2002()
+      throw metadataError(sources => pluginDiagnostics.NUXT_B2002({ sources }))
     }
     const propertyKey = property.key.name
     if (propertyKey === 'hooks') {
@@ -207,7 +231,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, co
     if (propertyKey === 'dependsOn') {
       if (value === undefined) { continue }
       if (!Array.isArray(value) || value.some(name => typeof name !== 'string')) {
-        pluginDiagnostics.NUXT_B2003()
+        onFallback(sources => pluginDiagnostics.NUXT_B2003({ sources }))
         meta._metaUnknown = true
         continue
       }
@@ -215,7 +239,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, co
       continue
     }
     if (value === UNRESOLVED) {
-      pluginDiagnostics.NUXT_B2014({ key: propertyKey })
+      onFallback(sources => pluginDiagnostics.NUXT_B2014({ key: propertyKey, sources }))
       meta._metaUnknown = true
       continue
     }

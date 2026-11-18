@@ -323,7 +323,7 @@ describe('plugin dependencies', { timeout: 60_000 }, async () => {
     await buildWith({
       'dynamic.ts': 'const createPlugin = (name: string) => ({ name, setup () {} })\nexport default defineNuxtPlugin(createPlugin(\'dynamic\'))\n',
     }, false, result => expect(result).resolves.toBeUndefined())
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/\[NUXT_B2010\] Failed to parse static properties from plugin `[^`]*dynamic\.ts`/))
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^\[NUXT_B2013\] The plugin passed to `defineNuxtPlugin` is a `CallExpression`[\s\S]*sources: \S*dynamic\.ts$/))
   })
 })
 
