@@ -341,62 +341,40 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const dirs of layerDirs) {
-    if (!dirs.app.startsWith(rootDirWithSlash) || dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) {
-      const rootGlob = join(relativeWithDot(typesDir, dirs.root), '**/*')
-      const paths = resolveLayerPaths(dirs, typesDir, nuxt.options.extensions)
-      for (const path of paths.nuxt) {
-        include.add(path)
-        legacyInclude.add(path)
-        if (path !== rootGlob) {
-          nodeExclude.add(path)
-        }
-      }
-      for (const path of paths.server) {
-        serverInclude.add(path)
-        exclude.add(path)
+    const rootGlob = join(relativeWithDot(typesDir, dirs.root), '**/*')
+    const paths = resolveLayerPaths(dirs, typesDir, nuxt.options.extensions)
+    for (const path of paths.nuxt) {
+      include.add(path)
+      legacyInclude.add(path)
+      if (path !== rootGlob) {
         nodeExclude.add(path)
-        legacyExclude.add(path)
-      }
-      for (const path of paths.node) {
-        nodeInclude.add(path)
-        legacyInclude.add(path)
-        exclude.add(path)
-      }
-      for (const path of paths.shared) {
-        legacyInclude.add(path)
-        sharedInclude.add(path)
-        serverInclude.add(path)
-      }
-      for (const path of paths.sharedDeclarations) {
-        include.add(path)
-      }
-      for (const path of paths.globalDeclarations) {
-        include.add(path)
-        legacyInclude.add(path)
-        sharedInclude.add(path)
-        serverInclude.add(path)
       }
     }
-  }
-
-  // a layer added through `extends` may resolve anywhere, so the `layers/*` globs above do not
-  // necessarily cover its server directory
-  for (const dirs of layerDirs) {
-    const serverGlob = join(relativeWithDot(typesDir, dirs.server), '**/*')
-    const sharedDir = relativeWithDot(typesDir, dirs.shared)
-    include.add(join(relativeWithDot(typesDir, dirs.app), '**/*'))
-    serverInclude.add(serverGlob)
-    for (const extension of ['ts', 'mts', 'cts']) {
-      const sharedDeclarationsGlob = join(sharedDir, `**/*.d.${extension}`)
-      include.add(sharedDeclarationsGlob)
-      serverInclude.add(sharedDeclarationsGlob)
+    for (const path of paths.server) {
+      serverInclude.add(path)
+      exclude.add(path)
+      nodeExclude.add(path)
+      legacyExclude.add(path)
     }
-    sharedInclude.add(join(sharedDir, '**/*'))
-
-    // a layer whose source directory is its root would otherwise match these with its own `**/*`
-    exclude.add(serverGlob)
-    nodeExclude.add(serverGlob)
-    legacyExclude.add(serverGlob)
+    for (const path of paths.node) {
+      nodeInclude.add(path)
+      legacyInclude.add(path)
+      exclude.add(path)
+    }
+    for (const path of paths.shared) {
+      legacyInclude.add(path)
+      sharedInclude.add(path)
+      serverInclude.add(path)
+    }
+    for (const path of paths.sharedDeclarations) {
+      include.add(path)
+    }
+    for (const path of paths.globalDeclarations) {
+      include.add(path)
+      legacyInclude.add(path)
+      sharedInclude.add(path)
+      serverInclude.add(path)
+    }
   }
 
   const moduleEntryPaths: string[] = []

@@ -56,27 +56,31 @@ const mockNuxt = {
 const mockNuxtWithOptions = (options: NuxtConfig) => defu({ options }, mockNuxt) as Nuxt
 
 describe('tsConfig generation', () => {
-  it('includes shared types from layers outside the default layers directory', async () => {
-    const nuxt = mockNuxtWithOptions({})
+  it('should include local layers outside the `layers/` directory', async () => {
+    const nuxt = mockNuxtWithOptions({ srcDir: '/my-app/app', serverDir: '/my-app/server' })
     nuxt.options._layers = [
-      ...nuxt.options._layers,
-      { config: { rootDir: '/my-app/my-layer', srcDir: '/my-app/my-layer/app' }, cwd: '/my-app/my-layer', configFile: '/my-app/my-layer/nuxt.config.ts' },
+      { config: { rootDir: '/my-app', srcDir: '/my-app/app' }, cwd: '/my-app', configFile: '/my-app/nuxt.config.ts' },
+      { config: { rootDir: '/my-app/my-layer', srcDir: '/my-app/my-layer/app', serverDir: '/my-app/my-layer/server' }, cwd: '/my-app/my-layer', configFile: '/my-app/my-layer/nuxt.config.ts' },
     ]
 
-    const { tsConfig, sharedTsConfig, serverTsConfig, legacyTsConfig } = await _generateTypes(nuxt)
-    const declarations = '../my-layer/shared/**/*.d.ts'
-    expect(tsConfig.include).toContain(declarations)
-    expect(sharedTsConfig.include).toContain('../my-layer/shared/**/*')
-    expect(serverTsConfig.include).toContain(declarations)
-    expect(legacyTsConfig.include).toContain(declarations)
-    expect(tsConfig.include).toContain('../my-layer/app/**/*')
-    expect(legacyTsConfig.include).toContain('../my-layer/app/**/*')
-    for (const extension of ['mts', 'cts']) {
-      expect(tsConfig.include).toContain(`../my-layer/shared/**/*.d.${extension}`)
-      expect(serverTsConfig.include).toContain(`../my-layer/shared/**/*.d.${extension}`)
-    }
-    expect(tsConfig.exclude).toContain('../my-layer/app/server/**/*')
-    expect(legacyTsConfig.exclude).toContain('../my-layer/app/server/**/*')
+    const { tsConfig, nodeTsConfig, sharedTsConfig, serverTsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.include).toEqual(expect.arrayContaining(['../my-layer/app/**/*', '../my-layer/shared/**/*.d.ts', '../my-layer/*.d.ts']))
+    expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../my-layer/server/**/*', '../my-layer/nuxt.config.*']))
+    expect(nodeTsConfig.include).toContain('../my-layer/nuxt.config.*')
+    expect(sharedTsConfig.include).toEqual(expect.arrayContaining(['../my-layer/shared/**/*', '../my-layer/*.d.ts']))
+    expect(serverTsConfig.include).toEqual(expect.arrayContaining(['../my-layer/server/**/*', '../my-layer/shared/**/*']))
+  })
+
+  it('should include auto-scanned layers without an `app/` directory', async () => {
+    const nuxt = mockNuxtWithOptions({ srcDir: '/my-app/app', serverDir: '/my-app/server' })
+    nuxt.options._layers = [
+      { config: { rootDir: '/my-app', srcDir: '/my-app/app' }, cwd: '/my-app', configFile: '/my-app/nuxt.config.ts' },
+      { config: { rootDir: '/my-app/layers/foo', srcDir: '/my-app/layers/foo', serverDir: '/my-app/layers/foo/server' }, cwd: '/my-app/layers/foo', configFile: '/my-app/layers/foo/nuxt.config.ts' },
+    ]
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.include).toContain('../layers/foo/**/*')
+    expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../layers/foo/server/**/*', '../layers/foo/nuxt.config.*']))
   })
 
   it('should add correct relative paths for aliases', async () => {
