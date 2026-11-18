@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
-import { runsOncePerEnvInMatrix } from './matrix'
+import { nitroViteEnvironment, runsOncePerViteBuilderInMatrix } from './matrix'
 import { setupFixture } from './utils'
 
-await setupFixture('nitro-legacy', runsOncePerEnvInMatrix)
+await setupFixture('nitro-legacy', runsOncePerViteBuilderInMatrix, { nuxtConfig: { experimental: { nitroViteEnvironment } } })
 
-describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
+describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () => {
   it('runs a v2-tagged module handler on nitro v3', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/v2-module')).toMatchObject({
       flavour: 'earl-grey',
@@ -43,6 +43,10 @@ describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
       statusMessage: 'I am a teapot',
       data: { from: 'v2-module' },
     })
+  })
+
+  it('serves a JSON file imported from a dependency', async () => {
+    expect(await $fetch<Record<string, unknown>>('/api/dependency-json')).toEqual({ name: 'typescript' })
   })
 
   it('runs a v1-style user handler with `nitroLegacy` enabled', async () => {

@@ -33,6 +33,13 @@ export async function linkStaticDist (rootDir: string, publicDir: string): Promi
   await symlink(publicDir, dist, 'junction').catch(() => {})
 }
 
+/**
+ * Absolute paths of files Node cannot import without an import attribute (JSON) or a
+ * loader, such as the targets of `text` and `bytes` imports. Everything but JavaScript,
+ * native addons and WebAssembly.
+ */
+export const NON_JS_FILE_RE = /^(?:[a-z]:)?[\\/].*\.(?!(?:[cm]?js|node|wasm)$)[^.\\/]+$/i
+
 const RELATIVE_RE = /^([^.])/
 
 /** A relative path that always starts with `.`, as tsconfig `paths` require. */
