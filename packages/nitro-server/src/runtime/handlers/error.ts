@@ -16,7 +16,14 @@ import { applyPrerenderHints } from '../utils/prerender'
 import { toLegacyError } from '../compat/error-shape'
 import { legacyCompat } from '#nuxt-compat/flags'
 
-export default <NitroErrorHandler> async function errorhandler (_error, event, { defaultHandler }) {
+export default <NitroErrorHandler> async function errorhandler (error, event, options) {
+  const response = await renderError(error, event, options)
+  // the `cache-control` of a route rule or a public asset directory is for what it serves
+  response.headers.set('cache-control', new Headers(error.headers).get('cache-control') || 'no-cache')
+  return response
+}
+
+async function renderError (...[_error, event, { defaultHandler }]: Parameters<NitroErrorHandler>): Promise<Response> {
   // recovering an h3 v1 error by shape is only correct where v2 code exists: h3's scrubbing
   // of a foreign error is what stops a rethrown upstream payload from choosing this app's
   // status. The flag is baked in at build time, so this branch is not emitted otherwise.

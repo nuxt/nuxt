@@ -35,17 +35,17 @@ const { docsVersion } = await import('#internal/nuxt/host')
 
 const { default: errorHandler } = await import('../src/runtime/handlers/error.ts')
 
-function event (path: string, accept: string) {
+function event (path: string, accept: string, headers?: HeadersInit) {
   return {
     url: new URL(`http://localhost${path}`),
     req: { url: `http://localhost${path}`, method: 'GET', headers: new Headers({ accept }) },
-    res: { headers: new Headers() },
+    res: { headers: new Headers(headers) },
     context: {},
   } as unknown as H3Event
 }
 
-function handle (error: Error, accept: string, defaults: { status?: number, statusText?: string, body?: unknown, headers?: HeadersInit } = {}, path = '/unknown') {
-  return errorHandler(error as any, event(path, accept), {
+function handle (error: Error, accept: string, defaults: { status?: number, statusText?: string, body?: unknown, headers?: HeadersInit } = {}, path = '/unknown', responseHeaders?: HeadersInit) {
+  return errorHandler(error as any, event(path, accept, responseHeaders), {
     defaultHandler: () => Promise.resolve({
       status: defaults.status ?? 404,
       statusText: defaults.statusText ?? 'Page not found',
@@ -124,6 +124,41 @@ describe('error handler vary', () => {
 
     expect(res.headers.get('cache-control')).toBe('public, max-age=60')
     expect(res.headers.get('vary')).toBe('accept, sec-fetch-mode')
+  })
+})
+
+describe('error handler cache-control', () => {
+  const immutable = { 'cache-control': 'public, max-age=31536000, immutable' }
+
+  it.each(['application/json', 'text/html'])('does not keep the cache-control of a route rule on a %s error', async (accept) => {
+    serverFetch.mockResolvedValue(new Response('<html></html>', { headers: immutable }))
+    const res = await handle(new HTTPError({ status: 404 }), accept, { headers: immutable }, '/_nuxt/missing.js', immutable)
+
+    expect(res.headers.get('cache-control')).toBe('no-cache')
+  })
+
+  it('does not keep the cache-control of a route rule on the static error page', async () => {
+    serverFetch.mockRejectedValue(new Error('render failed'))
+    const res = await handle(new HTTPError({ status: 404 }), 'text/html', {}, '/missing', immutable)
+
+    expect(res.headers.get('content-type')).toBe('text/html;charset=UTF-8')
+    expect(res.headers.get('cache-control')).toBe('no-cache')
+  })
+
+  it('does not keep the cache-control of a route rule on the development error report', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+    serverFetch.mockRejectedValue(new Error('render failed'))
+    observeDevError.mockResolvedValue({ page: () => Promise.resolve('<html>report</html>') })
+    const res = await handle(new Error('boom'), 'text/html', { status: 500, body: {} }, '/boom', immutable)
+
+    expect(await res.text()).toBe('<html>report</html>')
+    expect(res.headers.get('cache-control')).toBe('no-cache')
+  })
+
+  it.each(['application/json', 'text/html'])('keeps the cache-control set on a %s error', async (accept) => {
+    const res = await handle(new HTTPError({ status: 404, headers: { 'cache-control': 'no-store' } }), accept, { headers: { 'cache-control': 'no-store' } }, '/_nuxt/missing.js', immutable)
+
+    expect(res.headers.get('cache-control')).toBe('no-store')
   })
 })
 
