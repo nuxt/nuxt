@@ -26,6 +26,11 @@ export default <RouterConfig>{
       if (from.hash && !to.hash) {
         return savedPosition ?? { left: 0, top: 0 }
       }
+      // Only the query changed and the hash stayed the same, so keep the current scroll position
+      // instead of jumping back to the anchor the user may have scrolled away from
+      if (to.hash === from.hash && to.fullPath !== from.fullPath) {
+        return false
+      }
       if (to.hash) {
         return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior: hashScrollBehaviour }
       }

@@ -363,6 +363,35 @@ describe('scrollBehavior with hash on the same page', () => {
 
     expect(position).toMatchObject({ el: `#${id}`, top: 50 })
   })
+
+  // https://github.com/nuxt/nuxt/issues/37124
+  it.each([
+    ['/?tab=pnpm#install', '/?tab=npm#install'],
+    ['/?tab=npm#install', '/#install'],
+    ['/#install', '/?tab=npm#install'],
+  ])('should keep the scroll position when only the query changes (%s from %s)', async (to, from) => {
+    const router = useRouter()
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const position = await router.options.scrollBehavior!(router.resolve(to), router.resolve(from), null)
+
+    expect(position).toBe(false)
+  })
+
+  it('should still scroll to the hash when the hash changes along with the query', async () => {
+    const router = useRouter()
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const position = await router.options.scrollBehavior!(router.resolve('/?tab=pnpm#usage'), router.resolve('/?tab=npm#install'), null)
+
+    expect(position).toMatchObject({ el: '#usage' })
+  })
+
+  it('should still scroll to the hash when navigating to the same hash again', async () => {
+    const router = useRouter()
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const position = await router.options.scrollBehavior!(router.resolve('/?tab=npm#install'), router.resolve('/?tab=npm#install'), null)
+
+    expect(position).toMatchObject({ el: '#install' })
+  })
 })
 
 describe('scrollBehavior between pages', () => {
