@@ -52,22 +52,37 @@ export function toLegacyApp (nitroApp: NitroApp): NitroApp {
   return legacy
 }
 
-/** The app with hooks that report the first `close` listener `plugin` registers. */
+/**
+ * The app with hooks that report the first `close` listener `plugin` registers. Each `hook`
+ * handed out keeps the method it was created for, so a plugin that replaces `hook` with one
+ * calling the previous `hook` registers its listeners.
+ */
 function withCloseReport (nitroApp: NitroApp, plugin: string): NitroApp {
   const hooks = nitroApp.hooks
   if (!hooks) {
     return nitroApp
   }
   let reported = false
-  const hook: Hooks['hook'] = (name, ...args) => {
-    if (name === 'close' && !reported) {
-      reported = true
-      serverDiagnostics.NUXT_E8017({ plugin })
-    }
-    return hooks.hook(name, ...args)
-  }
+  let delegate: Hooks['hook'] | undefined
+  let hook: Hooks['hook'] | undefined
   const reportingHooks = new Proxy(hooks, {
-    get: (target, key) => key === 'hook' ? hook : Reflect.get(target, key),
+    get: (target, key) => {
+      if (key !== 'hook') {
+        return Reflect.get(target, key)
+      }
+      const current = target.hook
+      if (current !== delegate || !hook) {
+        delegate = current
+        hook = (name, ...args) => {
+          if (name === 'close' && !reported) {
+            reported = true
+            serverDiagnostics.NUXT_E8017({ plugin })
+          }
+          return Reflect.apply(current, target, [name, ...args])
+        }
+      }
+      return hook
+    },
   })
   return new Proxy(nitroApp, {
     get: (target, key) => key === 'hooks' ? reportingHooks : Reflect.get(target, key),

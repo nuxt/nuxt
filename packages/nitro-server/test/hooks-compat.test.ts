@@ -532,6 +532,32 @@ describe('nitro v2 plugin wrapper', () => {
     expect(listener).toHaveBeenCalledTimes(3)
   })
 
+  it('registers listeners while prerendering after a plugin replaces `hook` with one calling the previous `hook`', async () => {
+    vi.stubGlobal('__TEST_PRERENDER__', true)
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8017').mockImplementation(() => ({}) as any)
+    onTestFinished(() => {
+      vi.unstubAllGlobals()
+      report.mockRestore()
+    })
+    const listener = vi.fn()
+    const registered: string[] = []
+    const { hooks } = runLegacyPlugin((app) => {
+      const hook = app.hooks.hook
+      app.hooks.hook = (name: string, fn: any) => {
+        registered.push(name)
+        return hook(name, fn)
+      }
+      app.hooks.hook('render:html', listener)
+      app.hooks.hook('close', listener)
+    })
+
+    expect(registered).toEqual(['render:html', 'close'])
+    expect(report).toHaveBeenCalledOnce()
+    await hooks.callHook('render:html')
+    await hooks.callHook('close')
+    expect(listener).toHaveBeenCalledTimes(2)
+  })
+
   it('does not report a `close` listener outside the prerenderer', () => {
     const report = vi.spyOn(serverDiagnostics, 'NUXT_E8017').mockImplementation(() => ({}) as any)
     onTestFinished(() => { report.mockRestore() })
