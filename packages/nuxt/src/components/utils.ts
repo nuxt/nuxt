@@ -41,7 +41,7 @@ export function installComponentModule (component: Component, importer: string, 
 export function assignDefaultExportName (code: string, id: string, s: RolldownString, name: string) {
   for (const { entries } of parseModule(code, id).module.staticExports) {
     for (const { exportName, start, end } of entries) {
-      if (exportName.kind !== 'Default') { continue }
+      if (exportName.kind !== 'Default' || start === end) { continue }
       s.overwrite(start, end, `Object.assign(${code.slice(start, end)}, { __name: ${JSON.stringify(name)} })`)
     }
   }
