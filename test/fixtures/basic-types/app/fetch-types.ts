@@ -56,6 +56,11 @@ export async function probe () {
   expectTypeOf(data.value).toEqualTypeOf<string | undefined>()
   // @ts-expect-error no GET route matches '/api/helo'
   useFetch('/api/helo')
+
+  // a nitro v2 cached handler is typed by the handler it caches
+  expectTypeOf(await $fetch('/api/cached')).toEqualTypeOf<{ cached: boolean, at: string }>()
+  expectTypeOf(useFetch('/api/cached').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
+  expectTypeOf(useLazyFetch('/api/cached').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
 }
 
 declare const runtimeBase: string

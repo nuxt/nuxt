@@ -48,6 +48,16 @@ export type RequestQueryOf<Handler> = 'query' extends keyof RequestOf<Handler>
     : Shape<NonNullable<RequestOf<Handler>['query']>>
   : never
 
+/**
+ * The value a request to a handler resolves to before serialisation: what it returns, or for a
+ * handler that resolves to a `Response`, the body its `fetch` declares for that response.
+ */
+export type ResponseBodyOf<Handler> = Handler extends (...args: any) => infer Result
+  ? Awaited<Result> extends Response
+    ? Handler extends { fetch: (...args: any) => Promise<{ json: () => Promise<infer Body> }> } ? Awaited<Body> : Awaited<Result>
+    : Awaited<Result>
+  : any
+
 /** The headers a handler validates, or `never` when it validates none. */
 export type RequestHeadersOf<Handler> = 'headers' extends keyof RequestOf<Handler>
   ? Shape<NonNullable<RequestOf<Handler>['headers']>>

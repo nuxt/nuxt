@@ -3,7 +3,7 @@
  */
 import { defineCachedHandler } from 'nitro/cache'
 import { handleCacheHeaders, toResponse } from 'nitro/h3'
-import type { H3Event } from 'nitro/h3'
+import type { EventHandler, EventHandlerRequest, EventHandlerResponse, EventHandlerWithFetch, H3Event } from 'nitro/h3'
 import type { CachedHandlerOptions } from 'nitro/types'
 import { legacyResponseHeaders } from '#nuxt-compat/flags'
 
@@ -67,8 +67,16 @@ function withLegacyCacheControl (options: CachedHandlerOptions | undefined): Cac
   } as CachedHandlerOptions
 }
 
+/**
+ * A cached handler. Called directly, it resolves to the `Response` it serves; `fetch` types the
+ * body of that response as what the handler it caches returns.
+ */
+type CachedEventHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> =
+  EventHandler<RequestT, Promise<Response>> & Pick<EventHandlerWithFetch<RequestT, ResponseT>, 'fetch'>
+
 /** v2 `defineCachedEventHandler`, which sends what the handler returns as h3 v1 did. */
-export const defineCachedEventHandler: typeof defineCachedHandler = (handler, options) =>
-  defineCachedHandler(async event => fromLegacyBody(event as H3Event, await handler(event)), legacyResponseHeaders ? withLegacyCacheControl(options) : options)
+export function defineCachedEventHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> (handler: EventHandler<RequestT, ResponseT>, options?: CachedHandlerOptions): CachedEventHandler<RequestT, ResponseT> {
+  return defineCachedHandler(async event => fromLegacyBody(event as H3Event, await handler(event as H3Event<RequestT>)), legacyResponseHeaders ? withLegacyCacheControl(options) : options) as unknown as CachedEventHandler<RequestT, ResponseT>
+}
 
 export { defineCachedEventHandler as cachedEventHandler }

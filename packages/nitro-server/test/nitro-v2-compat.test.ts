@@ -25,14 +25,14 @@ describe('nitro v2 `useNitroApp`', () => {
 
 describe('nitro v2 `defineCachedEventHandler`', () => {
   it.each([defineCachedEventHandler, cachedEventHandler])('answers a handler that returns `null` with no content', async (define) => {
-    const response = await (define(() => null) as (event: unknown) => Promise<unknown>)(mockEvent('http://nuxt/api/_nuxt_icon/custom.json?icons=nope'))
+    const response = await define(() => null)(mockEvent('http://nuxt/api/_nuxt_icon/custom.json?icons=nope'))
 
     expect(response).toBeInstanceOf(HTTPResponse)
-    expect((response as HTTPResponse).status).toBe(204)
+    expect(response.status).toBe(204)
   })
 
   it('passes on what any other handler returns', async () => {
     const data = { icons: {} }
-    expect(await (defineCachedEventHandler(() => data) as (event: unknown) => Promise<unknown>)(mockEvent('http://nuxt/api/icons'))).toBe(data)
+    expect(await defineCachedEventHandler(() => data)(mockEvent('http://nuxt/api/icons'))).toBe(data)
   })
 })
