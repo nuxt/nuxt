@@ -217,6 +217,14 @@ export function setupTypes (nuxt: Nuxt) {
     opts.nodeTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
     opts.sharedTsConfig.compilerOptions = defu(opts.sharedTsConfig.compilerOptions, { paths: { ...paths } })
     opts.sharedTsConfig.compilerOptions!.paths!['#build/server-routes'] ||= [resolve(nuxt.options.buildDir, 'types/shared-server-routes.d.ts')]
+    // the nitro v3 builder remaps `nitropack` to its compat layer in the server program
+    const serverPaths = nuxt.options._nitroMajor === 3
+      ? Object.fromEntries(Object.entries(paths).filter(([key]) => key !== 'nitropack' && !key.startsWith('nitropack/')))
+      : paths
+    // bundler-resolved, so it takes the same substitutions as the app
+    opts.serverTsConfig.compilerOptions = defu(opts.serverTsConfig.compilerOptions, { paths: { ...serverPaths } })
+    // required for the generated route types, which `serverFetch` resolves against
+    opts.serverTsConfig.compilerOptions!.paths!['#app/types'] ||= [resolve(nuxt.options.appDir, 'types')]
 
     const typesDir = nuxt.options.typesDir || nuxt.options.buildDir
     for (const dir of new Set([nuxt.options.rootDir, nuxt.options.workspaceDir])) {
