@@ -11,7 +11,7 @@ import { resolveModulePath } from 'exsolve'
 import type { ResolverOptions } from 'exsolve'
 import escapeRE from 'escape-string-regexp'
 import { getLayerDirectories, isNuxtMajorVersion, resolveAlias } from '@nuxt/kit'
-import { isWithinDir, trackPendingTemplate } from '@nuxt/kit/internal'
+import { isWithinDir, parseNodeModulePath, trackPendingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt, ServerApi } from '@nuxt/schema'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 
@@ -283,6 +283,42 @@ function resolveH3V1Version (dir: string, versions: Map<string, string | undefin
     versions.set(manifest, version?.startsWith('1.') ? version : undefined)
   }
   return versions.get(manifest)
+}
+
+const H3_ALIAS_RE = /^h3(?:\/|$)/
+
+/**
+ * Remove the `h3` aliases that lead into an h3 v1 package. The bundler applies an alias
+ * without calling plugins, so a specifier aliased to `h3` outside the scope would bundle
+ * h3 v1 itself.
+ */
+function dropH3V1Aliases (nuxt: Nuxt, nitroConfig: NitroConfig): string[] {
+  const aliases = { ...nitroConfig.alias } as Record<string, string>
+  const versions = new Map<string, string | undefined>()
+  const dropped: string[] = []
+  const reported: string[] = []
+  for (const key in aliases) {
+    const target = aliases[key]
+    if (!H3_ALIAS_RE.test(key) || typeof target !== 'string') {
+      continue
+    }
+    const { [key]: _, ...others } = aliases
+    const file = normalize(resolveAlias(target, others))
+    const version = isAbsolute(file) && parseNodeModulePath(file).name === 'h3' ? resolveH3V1Version(file, versions) : undefined
+    if (!version) {
+      continue
+    }
+    dropped.push(key)
+    const source = nuxt.options.nitro.alias?.[key] === target ? '`nitro.alias`' : nuxt.options.alias[key] === target ? '`alias`' : 'a `nitro:config` hook'
+    reported.push(`\`${key}\` to \`h3@${version}\`, set in ${source}`)
+  }
+  for (const key of dropped) {
+    delete nitroConfig.alias![key]
+  }
+  if (reported.length > 0) {
+    nitroBuildDiagnostics.NUXT_B9015({ count: reported.length, aliases: reported.join('\n  - ') })
+  }
+  return dropped
 }
 
 async function reportUserLegacyCode (dirs: string[], rootDir: string, legacy: ResolvedNitroLegacyOptions): Promise<void> {
@@ -682,9 +718,14 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     })
   }
 
+  const droppedAliases = legacy.h3 ? dropH3V1Aliases(nuxt, nitroConfig) : []
+
   // resolved as the server build resolves them: a module may add an alias for the server
   // build only, or point an app alias at different code there
   const aliases: Record<string, string> = { ...nuxt.options.alias, ...nitroConfig.alias as Record<string, string> }
+  for (const key of droppedAliases) {
+    delete aliases[key]
+  }
   const files = new Map<string, CompatScope>()
   const dirs: Array<[prefix: string, scope: CompatScope]> = []
   // every file in these is a server entry, unlike a module runtime directory, which also

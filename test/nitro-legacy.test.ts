@@ -90,6 +90,10 @@ describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
     }
   })
 
+  it('resolves an alias of `h3` in module code to h3 v2 when a module pins `h3` to h3 v1', async () => {
+    expect(await $fetch<Record<string, unknown>>('/api/aliased-h3?q=1')).toEqual({ query: { q: '1' }, h3v2: true })
+  })
+
   it('keeps the status of an error page unless a v2 `render:response` listener sets one', async () => {
     for (const accept of ['text/html', 'application/json']) {
       const response = await fetch('/missing', { headers: { accept } })

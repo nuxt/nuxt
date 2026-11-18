@@ -1390,6 +1390,57 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     expect((nitroConfig.virtual!['#nuxt-compat/flags'] as () => string)()).toContain(`legacyResponseHeaders = ${expected}`)
   })
 
+  describe('server aliases of `h3`', () => {
+    function createH3V1 () {
+      const root = mkdtempSync(join(tmpdir(), 'nitro-compat-h3-alias-'))
+      onTestFinished(() => rmSync(root, { recursive: true, force: true }))
+      const dir = join(root, 'node_modules/h3')
+      mkdirSync(join(dir, 'dist'), { recursive: true })
+      writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'h3', version: '1.15.11', exports: { './package.json': './package.json', '.': { import: './dist/index.mjs', require: './dist/index.cjs' } } }))
+      writeFileSync(join(dir, 'dist/index.cjs'), '')
+      return dir
+    }
+
+    it('removes the ones that lead into h3 v1 with `nitroLegacy.h3`, and says where they were set', async () => {
+      const h3V1 = createH3V1()
+      const h3V2 = resolveModulePath('h3', { from: import.meta.url })
+      const report = silence('NUXT_B9015')
+      const nuxt = createNuxt({ nitro: { alias: { 'h3/utils': 'h3/dist/index.cjs' } } })
+      const nitroConfig: NitroConfig = {
+        alias: {
+          'h3': '#h3-v1',
+          '#h3-v1': h3V1,
+          'h3/utils': 'h3/dist/index.cjs',
+          '#module/h3': 'h3',
+          '#module/h3-v2': h3V2,
+        },
+      }
+      await setupNitroCompat(nuxt, nitroConfig, resolveNitroLegacyOptions({ h3: true }), [])
+
+      expect(nitroConfig.alias).toEqual({ '#h3-v1': h3V1, '#module/h3': 'h3', '#module/h3-v2': h3V2 })
+      expect(report).toHaveBeenCalledTimes(1)
+      expect(report).toHaveBeenCalledWith({
+        count: 2,
+        aliases: '`h3` to `h3@1.15.11`, set in a `nitro:config` hook\n  - `h3/utils` to `h3@1.15.11`, set in `nitro.alias`',
+      })
+    })
+
+    it('keeps an alias of `h3` to h3 v2, or with `nitroLegacy.h3` off', async () => {
+      const h3V1 = join(createH3V1(), 'dist/index.cjs')
+      const h3V2 = resolveModulePath('h3', { from: import.meta.url })
+      const report = silence('NUXT_B9015')
+
+      const kept: NitroConfig = { alias: { h3: h3V2 } }
+      await setupNitroCompat(createNuxt(), kept, resolveNitroLegacyOptions(true), [])
+      expect(kept.alias).toEqual({ h3: h3V2 })
+
+      const off: NitroConfig = { alias: { h3: h3V1 } }
+      await setupNitroCompat(createNuxt(), off, resolveNitroLegacyOptions({ h3: false }), [])
+      expect(off.alias).toEqual({ h3: h3V1 })
+      expect(report).not.toHaveBeenCalled()
+    })
+  })
+
   it('does not resolve a module virtual through an alias to a file', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-virtual-file-alias-'))
     onTestFinished(() => rmSync(dir, { recursive: true, force: true }))
