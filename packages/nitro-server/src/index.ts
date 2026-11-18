@@ -703,7 +703,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   await nuxt.callHook('nitro:config', nitroConfig)
 
   // after the hook, so rules and registrations contributed by modules are covered too
-  normalizeLegacyRouteRules(nitroConfig.routeRules)
+  normalizeLegacyRouteRules(nitroConfig.routeRules, { nuxt4Host, legacyConfig: legacy.config })
   for (const key in nitroConfig.routeRules) {
     assertSingleCatchAllRouteRuleKey(key)
   }

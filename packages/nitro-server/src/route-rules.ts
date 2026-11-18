@@ -9,9 +9,11 @@ import type { RouteRuleLayer } from 'h3/rules'
  * Rewrites `redirect.statusCode` to `redirect.status`, with one warning listing the routes.
  *
  * The nitro v2 spelling is silently ignored by the version Nuxt now builds on, which would turn
- * a configured redirect status into a default without any indication.
+ * a configured redirect status into a default without any indication. On a Nuxt 4 host it is the
+ * documented spelling, and nitro v2 ignores `status`, so it is rewritten without a warning while
+ * `nitroLegacy.config` is on.
  */
-export function normalizeLegacyRouteRules (routeRules: NitroConfig['routeRules']): void {
+export function normalizeLegacyRouteRules (routeRules: NitroConfig['routeRules'], options: { nuxt4Host?: boolean, legacyConfig?: boolean } = {}): void {
   const routes: string[] = []
   for (const route in routeRules) {
     const redirect = routeRules[route]?.redirect
@@ -21,8 +23,8 @@ export function normalizeLegacyRouteRules (routeRules: NitroConfig['routeRules']
     routeRules[route]!.redirect = { ...rest, status: rest.status ?? statusCode }
     routes.push(`\`${route}\``)
   }
-  if (routes.length > 0) {
-    bundlerDiagnostics.NUXT_B7026({ count: routes.length, routes: routes.join('\n  - ') })
+  if (routes.length > 0 && !(options.nuxt4Host && options.legacyConfig)) {
+    bundlerDiagnostics.NUXT_B7026({ count: routes.length, routes: routes.join('\n  - '), nitro2: !!options.nuxt4Host })
   }
 }
 
