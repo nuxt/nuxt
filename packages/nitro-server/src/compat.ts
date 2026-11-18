@@ -38,7 +38,10 @@ export interface NitroLegacyOptions {
   specifiers?: boolean
   /** Support the `useRuntimeConfig(event)` signature and its per-request semantics. */
   runtimeConfig?: boolean
-  /** Accept Nitro v2 config shapes (handlers without a `route`) and warn about removed options. */
+  /**
+   * Accept Nitro v2 config shapes (handlers without a `route`), keep dotted suffixes in
+   * server file names that Nitro v3 rejects, and warn about removed options.
+   */
   config?: boolean
 }
 
@@ -715,8 +718,9 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * and `templates.ts`, `rememberRenderBody` in `utils/renderer/options.ts` and the `hasLegacyHookListener`
  * checks in `handlers/renderer.ts`; the `legacyCompat` branches in `handlers/error.ts`,
  * `handlers/renderer.ts` and `utils/renderer/options.ts`; the `NUXT_B9001`-`B9005` and
- * `NUXT_E8008`-`E8010` diagnostics; `runtime/plugins/dev-hooks.ts`, which reads the
- * `legacyCompat` flag; the `nitro-legacy` and `nitro-module-compat` fixtures.
+ * `NUXT_E8008`-`E8010` diagnostics; the `keep` argument of `setupScanSuffixes` and
+ * `NUXT_B9013`; `runtime/plugins/dev-hooks.ts`, which reads the `legacyCompat` flag; the
+ * `nitro-legacy` and `nitro-module-compat` fixtures.
  *
  * Returns a callback that absorbs registrations made after the build config was assembled;
  * call it once the nitro instance exists.
