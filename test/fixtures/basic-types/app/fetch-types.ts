@@ -61,6 +61,11 @@ export async function probe () {
   expectTypeOf(await $fetch('/api/cached')).toEqualTypeOf<{ cached: boolean, at: string }>()
   expectTypeOf(useFetch('/api/cached').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
   expectTypeOf(useLazyFetch('/api/cached').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
+
+  // and so is one cached with `defineCachedHandler`
+  expectTypeOf(await $fetch('/api/cached-v3')).toEqualTypeOf<{ cached: boolean, at: string }>()
+  expectTypeOf(useFetch('/api/cached-v3').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
+  expectTypeOf(useLazyFetch('/api/cached-v3').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
 }
 
 declare const runtimeBase: string

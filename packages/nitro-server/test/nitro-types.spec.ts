@@ -3,7 +3,8 @@ import type { NitroInstance, NitroInstanceOptions } from '@nuxt/kit'
 import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, RouteRuleConfig as SchemaRouteRuleConfig, TSReference } from '@nuxt/schema'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Nitro, NitroConfig, NitroOptions, NitroRuntimeConfig, NitroRuntimeHooks, RouteRuleConfig, TracingChannelOptions } from 'nitro/types'
-import type { EventHandler, EventHandlerWithFetch, H3Event } from 'nitro/h3'
+import type { EventHandler, EventHandlerRequest, EventHandlerWithFetch, H3Event } from 'nitro/h3'
+import type { defineCachedHandler } from 'nitro/cache'
 import type { $Fetch } from 'ofetch'
 import type { NuxtSSRContext } from '#app/types'
 
@@ -141,6 +142,17 @@ describe('response types Nuxt generates for routes', () => {
     expectTypeOf<ResponseBodyOf<EventHandler<any, Promise<Response>>>>().toEqualTypeOf<Response>()
     expectTypeOf<ResponseBodyOf<EventHandlerWithFetch<any, Response>>>().toEqualTypeOf<Response>()
     expectTypeOf<ResponseBodyOf<EventHandler>>().toEqualTypeOf<unknown>()
+  })
+
+  it('reads the response of a handler cached with `defineCachedHandler` from what the handler it caches returns', () => {
+    const cache = (() => {}) as unknown as typeof defineCachedHandler
+    const cached = cache(() => Promise.resolve({ cached: true as const }))
+    expectTypeOf(cached).returns.toEqualTypeOf<Promise<Response>>()
+    expectTypeOf<ResponseBodyOf<typeof cached>>().toEqualTypeOf<{ cached: true }>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, null>>>>().toEqualTypeOf<null>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, Response>>>>().toEqualTypeOf<Response>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, unknown>>>>().toEqualTypeOf<unknown>()
+    expectTypeOf(cache({} as EventHandler)).toEqualTypeOf<ReturnType<typeof defineCachedEventHandler<EventHandlerRequest, unknown>>>()
   })
 })
 

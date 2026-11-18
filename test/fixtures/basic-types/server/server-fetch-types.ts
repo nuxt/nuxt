@@ -20,6 +20,7 @@ export async function serverFetchProbe () {
 
   expectTypeOf(await (await serverFetch(event, '/api/posts/1')).json()).toEqualTypeOf<number>()
   expectTypeOf(await (await serverFetch(event, '/api/cached')).json()).toEqualTypeOf<{ cached: boolean, at: string }>()
+  expectTypeOf(await (await serverFetch(event, '/api/cached-v3')).json()).toEqualTypeOf<{ cached: boolean, at: string }>()
   expectTypeOf(await (await serverFetch(event, '/api/hey?a=1')).json()).toEqualTypeOf<{ foo: string, baz: string }>()
 
   expectTypeOf(await (await serverFetch(event, '/api/hey', { method: 'post' })).json()).toEqualTypeOf<{ method: 'post' }>()

@@ -71,7 +71,7 @@ function withLegacyCacheControl (options: CachedHandlerOptions | undefined): Cac
  * A cached handler. Called directly, it resolves to the `Response` it serves; `fetch` types the
  * body of that response as what the handler it caches returns.
  */
-type CachedEventHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> =
+export type CachedEventHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> =
   EventHandler<RequestT, Promise<Response>> & Pick<EventHandlerWithFetch<RequestT, ResponseT>, 'fetch'>
 
 /** v2 `defineCachedEventHandler`, which sends what the handler returns as h3 v1 did. */
