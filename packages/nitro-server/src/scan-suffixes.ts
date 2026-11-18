@@ -1,6 +1,7 @@
 import { readdirSync, statSync } from 'node:fs'
 import type { Dirent } from 'node:fs'
 import { pathToFileURL } from 'node:url'
+import { matchesGlob } from 'node:path'
 import { basename, dirname, join, relative, resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { isIgnored } from '@nuxt/kit'
@@ -26,7 +27,7 @@ interface ScannedFile {
 type ParseScanPath = (nitro: { options: { dev: boolean, scanSuffixes: string[] }, logger: { error: (message: string) => void } }, file: Pick<ScannedFile, 'dir' | 'path'>, opts?: ScanPathOptions) => { name: string } | undefined
 
 /** The Nitro options that decide which files Nitro scans and how it parses their names. */
-export type ScanOptions = Pick<NitroConfig, 'apiDir' | 'routesDir' | 'experimental'> & {
+export type ScanOptions = Pick<NitroConfig, 'apiDir' | 'routesDir' | 'experimental' | 'ignore'> & {
   scanDirs: string[]
   scanSuffixes?: string[]
 }
@@ -82,12 +83,21 @@ function toScannedFile (nuxt: Nuxt, options: ScanOptions, path: string): Scanned
         continue
       }
       const file = relative(root, path)
-      if (!SCANNED_FILE_RE.test(file) || SCAN_IGNORE_RE.test(file) || (target.entriesOnly && !MODULE_ENTRY_RE.test(file)) || isIgnored(path, undefined, nuxt)) {
+      if (!SCANNED_FILE_RE.test(file) || SCAN_IGNORE_RE.test(file) || (target.entriesOnly && !MODULE_ENTRY_RE.test(file)) || isIgnored(path, undefined, nuxt) || isNitroIgnored(options, scanDir, path)) {
         return
       }
       return { dir: target.dir, path: file, opts: target.opts }
     }
   }
+}
+
+/**
+ * Whether a pattern in `nitro.ignore` matches the file, relative to the scan dir. Wildcards
+ * here do not match dot segments, so a pattern can miss a file Nitro ignores.
+ */
+function isNitroIgnored (options: ScanOptions, scanDir: string, path: string): boolean {
+  const file = relative(scanDir, path)
+  return !!options.ignore?.some(pattern => typeof pattern === 'string' && pattern[0] !== '!' && matchesGlob(file, pattern))
 }
 
 /** The suffix Nitro rejects in the name of a scanned file. */

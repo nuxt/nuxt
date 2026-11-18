@@ -103,6 +103,13 @@ describe('findRejectedScanSuffixes', () => {
     expect(findRejectedScanSuffixes(createNuxt(rootDir), { scanDirs: [join(rootDir, 'server')] }, (await loadParseScanPath())!)).toEqual([])
   })
 
+  it('leaves out files `nitro.ignore` excludes from the scan', async () => {
+    const rootDir = createProject([...npmxFiles, 'server/api/drafts/feed.custom.ts'])
+
+    const found = findRejectedScanSuffixes(createNuxt(rootDir), { scanDirs: [join(rootDir, 'server')], ignore: ['middleware/canonical-redirects.global.ts', '**/drafts/**'] }, (await loadParseScanPath())!)
+    expect(found).toEqual([{ path: join(rootDir, 'server/routes/.well-known/site.standard.publication.get.ts'), suffix: 'publication' }])
+  })
+
   it('follows symbolic links to files, as nitro does', async () => {
     const rootDir = createProject(['shared/stamp.ts'])
     mkdirSync(join(rootDir, 'server/middleware'), { recursive: true })
