@@ -73,6 +73,7 @@ describe('dev hooks plugin', () => {
       'nitro': 'export const definePlugin = plugin => plugin',
       '#nuxt-compat/flags': 'export const legacyCompat = false',
       '../diagnostics': 'export const serverDiagnostics = { NUXT_E8013: params => console.log(JSON.stringify(params)) }',
+      '../diagnostics.ts': 'export const serverDiagnostics = {}',
     }
     const build = await rolldown({
       input: 'entry',
