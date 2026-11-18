@@ -363,8 +363,11 @@ describe('createServerAutoImports', () => {
     await autoImports.writeTypes()
 
     expect(await autoImports.renderModule()).toContain('export { useModuleOnlyDep } from \'module-only-dep\'')
-    expect(readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')).toContain('typeof import(\'module-only-dep\')')
-    expect(await autoImports.getSourceTypePaths()).toEqual({ 'module-only-dep': [join(rootDir, 'module/node_modules/module-only-dep/index.d.mts')] })
+    const declarations = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    expect(declarations).toContain('typeof import(\'#internal/server-imports/module-only-dep\')')
+    expect(declarations).toContain('export { useModuleOnlyDep } from \'#internal/server-imports/module-only-dep\'')
+    expect(declarations).toContain('typeof import(\'root-dep\')')
+    expect(await autoImports.getSourceTypePaths()).toEqual({ '#internal/server-imports/module-only-dep': [join(rootDir, 'module/node_modules/module-only-dep/index.d.mts')] })
 
     const build = await rolldown({
       input: ['#imports/server', join(rootDir, 'server/api/injected.ts')],
