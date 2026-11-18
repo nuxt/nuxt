@@ -1409,12 +1409,18 @@ describe.skipIf(!errorProjects)('errors', () => {
     expect(counts[1]).toBe(counts[0]! + 1)
   })
 
-  it.skipIf(!legacyErrorRendering)('should not let a page error be cached', async () => {
+  it('should not let a page error be cached', async () => {
     for (const accept of ['text/html', 'application/json']) {
       const res = await fetch('/error/not-found', { headers: { accept } })
       expect(res.status).toBe(404)
       expect(res.headers.get('cache-control')).toBe('no-cache')
     }
+  })
+
+  it('should keep the route rule cache-control on an error response a handler returns', async () => {
+    const res = await fetch('/api/returned-error')
+    expect(res.status).toBe(404)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=60')
   })
 
   it.skipIf(!legacyErrorRendering)('should render a JSON error page', async () => {

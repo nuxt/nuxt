@@ -18,6 +18,7 @@ import { getRouteRules } from '../route-rules'
 import { markStreamedResponse, rememberRenderBody, toRenderBody } from '../../compat/render-response'
 import { legacyCompat } from '#nuxt-compat/flags'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
+import { markRenderedErrorPage } from '../error-page'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -60,6 +61,10 @@ export const rendererOptions: NuxtRendererOptions = {
       }
     : undefined,
   captureError: (error, { event, tags }) => {
+    // the renderer reports an error it answers with its own error page, or one raised once a stream has started
+    if (!tags?.includes('streaming')) {
+      markRenderedErrorPage(event.context)
+    }
     // in development the live error channel reports and prints the error itself
     if (!import.meta.dev && ((error as { status?: number } | null)?.status || 500) >= 500) {
       console.error(`[request error] [${event.req.method}] ${event.url.pathname}\n`, error)
