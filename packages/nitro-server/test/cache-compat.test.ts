@@ -83,9 +83,9 @@ describe('route rule cache-control plugin', () => {
   const hooks = createHooks<Record<string, (response: Response, event: unknown) => void>>()
   ;(plugin as (app: NitroApp) => void)({ hooks } as unknown as NitroApp)
 
-  async function respond (routeRules: Record<string, any> | undefined, cacheControl = 'public, max-age=60, s-maxage=60', status = 200) {
+  async function respond (routeRules: Record<string, any> | undefined, cacheControl = 'public, max-age=60, s-maxage=60', status = 200, init?: RequestInit) {
     const response = new Response(null, { status, headers: { 'cache-control': cacheControl } })
-    await hooks.callHook('response', response, { context: { routeRules } })
+    await hooks.callHook('response', response, { req: new Request('http://localhost/api', init), context: { routeRules } })
     return response.headers.get('cache-control')
   }
 
@@ -102,5 +102,11 @@ describe('route rule cache-control plugin', () => {
     expect(await respond({ cache: { swr: true, maxAge: 60, sendCacheControl: true } })).toBe('public, max-age=60, s-maxage=60')
     expect(await respond({ cache: { swr: true, maxAge: 60 }, headers: { 'Cache-Control': 'public, max-age=60, s-maxage=60' } })).toBe('public, max-age=60, s-maxage=60')
     expect(await respond({ cache: { swr: true, maxAge: 60 } }, 'public, max-age=60, s-maxage=60', 304)).toBe('public, max-age=60, s-maxage=60')
+  })
+
+  it('keeps the `cache-control` of a request the cache rule passes to the handler', async () => {
+    expect(await respond({ cache: { swr: true, maxAge: 300 } }, 'public, max-age=60, s-maxage=60', 206, { headers: { range: 'bytes=0-1' } })).toBe('public, max-age=60, s-maxage=60')
+    expect(await respond({ cache: { swr: true, maxAge: 300 } }, 'public, max-age=60, s-maxage=60', 200, { method: 'POST' })).toBe('public, max-age=60, s-maxage=60')
+    expect(await respond({ cache: { swr: true, maxAge: 60 } }, 'public, max-age=60, s-maxage=60', 200, { method: 'HEAD' })).toBe('s-maxage=60, stale-while-revalidate')
   })
 })
