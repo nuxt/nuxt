@@ -84,32 +84,6 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
     },
     async configureServer (viteServer) {
-      await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
-
-      if (!useServerBuild(nuxt).buildsSeparately) {
-        return
-      }
-
-      const staticBases: string[] = []
-      for (const folder of nitro?.options.publicAssets || []) {
-        if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(nuxt.options.app.buildAssetsDir)) {
-          staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
-        }
-      }
-
-      const devHandlerRegexes: RegExp[] = []
-      for (const handler of nuxt.options.devServerHandlers) {
-        if (handler.route && handler.route !== '/' && handler.route.startsWith(nuxt.options.app.buildAssetsDir)) {
-          devHandlerRegexes.push(new RegExp(
-            `^${handler.route
-              .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // escape regex syntax characters
-              .replace(/:[^/]+/g, '[^/]+') // dynamic segments (:param)
-              .replace(/\*\*/g, '.*') // double wildcard (**) to match any path
-              .replace(/\*/g, '[^/]*')}$`, // single wildcard (*) to match any segment
-          ))
-        }
-      }
-
       let proxyPatterns: Array<string | RegExp> | undefined
       const isProxyPath = (path: string) => {
         proxyPatterns ||= Object.keys(viteServer.config.server.proxy || {}).flatMap((key): Array<string | RegExp> => {
@@ -128,40 +102,12 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         || viteServer.middlewares.stack.some(viteRoute => viteRoute.route.length > 1 && url.startsWith(viteRoute.route))
         || isProxyPath(url)
 
-      const viteMiddleware = defineEventHandler(async (event: H3V1Event | H3V2Event) => {
-        const url = 'url' in event ? event.url.pathname + event.url.search + event.url.hash : (event as H3V1Event).path
-
-        const { req, res } = ('runtime' in event ? event.runtime?.node : (event as any).node) as { req: IncomingMessage, res: ServerResponse }
-        if (!isViteRoute(url)) {
-          (req as IncomingMessage & { _skip_transform?: boolean })._skip_transform = true
-        }
-
-        // Workaround: vite devmiddleware modifies req.url
-        const _originalPath = req.url
-        await new Promise((resolve, reject) => {
-          viteServer.middlewares.handle(req as IncomingMessage, res as ServerResponse, (err: Error) => {
-            req.url = _originalPath
-            return err ? reject(err) : resolve(null)
-          })
-        })
-
-        // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
-        if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
-          res!.statusCode = 404
-          res!.end('Not Found')
-          return
-        }
-      })
-      await nuxt.callHook('server:devHandler', viteMiddleware, {
-        cors: url => !useViteCors && isViteRoute(url),
-      })
-
       // Use a post-hook so this runs after Vite registers its internal middleware.
       // This ensures the URL rewrite to /__skip_vite runs after the proxy middleware.
-      return () => {
+      const skipTransform = () => {
         const mw: Connect.ServerStackItem = {
           route: '',
-          handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
+          handle: (req: SkippableRequest, res: ServerResponse, next: (err?: any) => void) => {
             // 'Skip' the transform middleware
             if (req._skip_transform && req.url) {
               req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
@@ -176,9 +122,81 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
           viteServer.middlewares.stack.splice(transformHandler, 0, mw)
         }
       }
+
+      const buildsSeparately = useServerBuild(nuxt).buildsSeparately
+      if (!buildsSeparately) {
+        // registered ahead of `vite:serverCreated`, whose middleware rewrites the URL of Vite's root assets
+        viteServer.middlewares.use((req: SkippableRequest, _res, next) => {
+          if (req.url && !isViteRoute(req.url)) {
+            req._skip_transform = true
+          }
+          next()
+        })
+      }
+
+      await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
+
+      if (!buildsSeparately) {
+        return skipTransform
+      }
+
+      const staticBases: string[] = []
+      for (const folder of nitro?.options.publicAssets || []) {
+        // eslint-disable-next-line local/no-unbounded-dir-prefix -- slashed URL prefix
+        if (folder.baseURL && folder.baseURL !== '/' && folder.baseURL.startsWith(nuxt.options.app.buildAssetsDir)) {
+          staticBases.push(folder.baseURL.replace(/\/?$/, '/'))
+        }
+      }
+
+      const devHandlerRegexes: RegExp[] = []
+      for (const handler of nuxt.options.devServerHandlers) {
+        // eslint-disable-next-line local/no-unbounded-dir-prefix -- slashed URL prefix
+        if (handler.route && handler.route !== '/' && handler.route.startsWith(nuxt.options.app.buildAssetsDir)) {
+          devHandlerRegexes.push(new RegExp(
+            `^${handler.route
+              .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // escape regex syntax characters
+              .replace(/:[^/]+/g, '[^/]+') // dynamic segments (:param)
+              .replace(/\*\*/g, '.*') // double wildcard (**) to match any path
+              .replace(/\*/g, '[^/]*')}$`, // single wildcard (*) to match any segment
+          ))
+        }
+      }
+
+      const viteMiddleware = defineEventHandler(async (event: H3V1Event | H3V2Event) => {
+        const url = 'url' in event ? event.url.pathname + event.url.search + event.url.hash : (event as H3V1Event).path
+
+        const { req, res } = ('runtime' in event ? event.runtime?.node : (event as any).node) as { req: IncomingMessage, res: ServerResponse }
+        if (!isViteRoute(url)) {
+          (req as SkippableRequest)._skip_transform = true
+        }
+
+        // Workaround: vite devmiddleware modifies req.url
+        const _originalPath = req.url
+        await new Promise((resolve, reject) => {
+          viteServer.middlewares.handle(req as IncomingMessage, res as ServerResponse, (err: Error) => {
+            req.url = _originalPath
+            return err ? reject(err) : resolve(null)
+          })
+        })
+
+        // if vite has not handled the request, we want to send a 404 for paths which are not in any static base or dev server handlers
+        // eslint-disable-next-line local/no-unbounded-dir-prefix -- slashed URL prefix
+        if (url.startsWith(nuxt.options.app.buildAssetsDir) && !staticBases.some(baseURL => url.startsWith(baseURL)) && !devHandlerRegexes.some(regex => regex.test(url))) {
+          res!.statusCode = 404
+          res!.end('Not Found')
+          return
+        }
+      })
+      await nuxt.callHook('server:devHandler', viteMiddleware, {
+        cors: url => !useViteCors && isViteRoute(url),
+      })
+
+      return skipTransform
     },
   }
 }
+
+type SkippableRequest = IncomingMessage & { _skip_transform?: boolean }
 
 type GenericHandler = (event: H3V1Event | H3V2Event) => unknown | Promise<unknown>
 

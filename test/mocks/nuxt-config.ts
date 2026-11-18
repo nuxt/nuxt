@@ -22,4 +22,8 @@ export const useStateDefaults = {
   resetOnClear: false,
 }
 
+export const navigateToDefaults = {
+  noopener: true,
+}
+
 export const tracingChannelNuxt = false

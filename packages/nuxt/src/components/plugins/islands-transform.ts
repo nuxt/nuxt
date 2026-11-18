@@ -219,6 +219,7 @@ function getPropsToString (bindings: Record<string, string>): string {
 type ChunkPluginOptions = {
   dev: boolean
   getComponents: () => Component[]
+  waitForClientBuild: () => Promise<void>
 }
 
 const COMPONENT_CHUNK_ID = `#build/component-chunk`
@@ -276,7 +277,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => 
         filter: {
           id: COMPONENT_CHUNK_RESOLVED_ID_RE,
         },
-        handler () {
+        async handler () {
           if (options.dev) {
             const filePaths: Record<string, string> = {}
             for (const c of options.getComponents()) {
@@ -288,6 +289,9 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => 
             return `export default ${genObjectFromRawEntries(Object.entries(filePaths).map(([name, path]) => [name, genString(path)]))}`
           }
 
+          if (this.environment.name !== 'client') {
+            await options.waitForClientBuild()
+          }
           return `export default ${
             genObjectFromRawEntries(Array.from(paths.entries())
               .map(([name, id]) => [name, genString('/' + id)]))

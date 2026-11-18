@@ -311,6 +311,13 @@ describe('route rules', () => {
     }
   })
 
+  it.skipIf(!once)('should not server-render a catch-all page with `ssr: false` when the path has encoded slashes', async () => {
+    for (const path of ['/catchall/client-only/page', '/catchall/client-only%2Fpage', '/catchall/client-only%2fpage']) {
+      const { script } = parseData(await $fetch<string>(path))
+      expect(script.serverRendered, path).toEqual(false)
+    }
+  })
+
   it.skipIf(!oncePerEnv)('should not extract payload for `ssr: false` routes with useAsyncData (#34279)', async () => {
     const html = await $fetch<string>('/route-rules/spa-async-data')
     const { attrs } = parseData(html)
@@ -2599,7 +2606,7 @@ describe.skipIf(!once)('teleports', () => {
 describe.skipIf(!oncePerBuild)('experimental', () => {
   it('decorators support works', async () => {
     const html = await $fetch('/experimental/decorators')
-    expect(html).toContain('decorated-decorated')
+    expect(html).toContain('decorated-decorated-<span>decorated</span>-decorated')
     await expectNoClientErrors('/experimental/decorators')
   })
 

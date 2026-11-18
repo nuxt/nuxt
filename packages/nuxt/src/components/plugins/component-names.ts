@@ -1,7 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 
-import { SX_RE, VUE_ID_FILTER } from '../../core/utils/index.ts'
+import { SX_RE, VUE_FILE_RE } from '../../core/utils/index.ts'
 import { assignDefaultExportName } from '../utils.ts'
 import type { Component } from 'nuxt/schema'
 
@@ -19,7 +19,7 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
     enforce: 'post',
     transform: {
       filter: {
-        id: { include: [...VUE_ID_FILTER, SX_RE] },
+        id: { include: [VUE_FILE_RE, SX_RE] },
       },
       handler (code, id, meta?: unknown) {
         const filename = id.match(FILENAME_RE)?.[1]

@@ -3,8 +3,7 @@ import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
 
-import { matchAllRouteRules } from '../../nuxt/src/core/utils/index.ts'
-import { createNormalizedRouteRulesRouter, genNormalizePathCode, normalizeRouteRuleLookupPath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, genNormalizePathCode, matchAllRouteRules, normalizeRouteRuleLookupPath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '@nuxt/kit/internal'
 
 /**
  * The rules this builder resolves for itself: the renderer reads `ssr`, `streaming`,

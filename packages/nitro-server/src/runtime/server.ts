@@ -43,18 +43,8 @@ export { getRouteRules, matchRouteRules } from './utils/route-rules'
 export { useRuntimeConfig } from 'nitro/runtime-config'
 export { useNitroHooks as useServerHooks } from 'nitro/app'
 
-export {
-  createError,
-  deriveSecret,
-  getRequestHeader,
-  getRequestHeaders,
-  isNuxtError,
-  NuxtError,
-  parseCookies,
-  sendRedirect,
-  setResponseStatus,
-  useAppConfig,
-} from 'nuxt/internal/server-default'
+// the names defined in this module take precedence over the ones re-exported here
+export * from 'nuxt/internal/server-default'
 
 export const clearSession = /* #__PURE__ */ requireRequestEvent('clearSession', clearNuxtSession)
 export const getSession = /* #__PURE__ */ requireRequestEvent('getSession', getNuxtSession)

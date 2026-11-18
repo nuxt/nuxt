@@ -1,3 +1,4 @@
+import type { ServerResponse } from 'node:http'
 import { H3Event } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
 import type { H3Event as H3EventType } from 'nitro/h3'
@@ -19,8 +20,8 @@ export function useEvent (): H3EventType {
 /**
  * Bring an h3 v2 event up to the shape v1 server code expects: a populated
  * `event.context.nitro`, the private `event.context._nitro.routeRules` slot nitro v2
- * populated from `getRouteRules(event)`, and, on runtimes where h3 has no real node
- * objects, an `event.node` bridge forwarding header and status writes onto the web response.
+ * populated from `getRouteRules(event)`, and an `event.node` whose response forwards header
+ * and status writes onto the web response.
  */
 export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRulesResolver): H3EventType {
   const context = event.context as Record<string | symbol, any>
@@ -49,7 +50,18 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
     })
   }
 
-  if (!event.req.runtime?.node) {
+  const node = event.req.runtime?.node
+  if (node) {
+    if (!Object.hasOwn(event, 'node')) {
+      // a websocket upgrade carries a node request without a response
+      const res = node.res as ServerResponse | undefined
+      let bridge: { req: unknown, res: unknown } | undefined
+      Object.defineProperty(event, 'node', {
+        configurable: true,
+        get: () => (bridge ||= { ...node, res: res ? bridgeNodeResponse(event, res) : createNodeResponseBridge(event) }),
+      })
+    }
+  } else {
     const originalUrl = event.url.pathname + event.url.search
     let bridge: { req: unknown, res: unknown } | undefined
     Object.defineProperty(event, 'node', {
@@ -62,6 +74,14 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
   }
 
   return event
+}
+
+/** Send a string a handler returns as HTML unless the handler set a content type, as h3 v1 did. */
+export function withLegacyContentType<T> (event: H3EventType, body: T): T {
+  if (typeof body === 'string' && event.res.status !== 304 && !event.res.headers.has('content-type')) {
+    event.res.headers.set('content-type', 'text/html')
+  }
+  return body
 }
 
 function createLegacyNitroSlot (event: H3EventType, getRouteRules?: RouteRulesResolver) {
@@ -104,6 +124,89 @@ function replaceHeader (event: H3EventType, name: string, value: string | string
   for (const entry of Array.isArray(value) ? value : [value]) {
     event.res.headers.append(name, String(entry))
   }
+}
+
+const NODE_RESPONSE_WRITERS = new Set<string | symbol>(['writeHead', 'write', 'end', 'flushHeaders'])
+
+/**
+ * A node response whose header and status writes also apply to the web response, and which
+ * takes the status and headers of the web response when a handler writes to it directly.
+ */
+function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerResponse {
+  const web = createNodeResponseBridge(event)
+
+  function flush () {
+    if (res.headersSent) { return }
+    if (event.res.status) { res.statusCode = event.res.status }
+    if (event.res.statusText) { res.statusMessage = event.res.statusText }
+    for (const [name, value] of Object.entries(web.getHeaders())) {
+      res.setHeader(name, value)
+    }
+  }
+
+  const headers: Record<string | symbol, (...args: any[]) => unknown> = {
+    setHeader (name: string, value: string | string[]) {
+      res.setHeader(name, value)
+      web.setHeader(name, value)
+      return proxy
+    },
+    appendHeader (name: string, value: string | string[]) {
+      const existing = res.getHeader(name)
+      if (existing !== undefined && !web.hasHeader(name)) {
+        web.setHeader(name, existing as string | string[])
+      }
+      res.appendHeader(name, value)
+      web.appendHeader(name, value)
+      return proxy
+    },
+    setHeaders (entries: Headers | Map<string, string | string[] | number>) {
+      res.setHeaders(entries)
+      const cookies: string[] = []
+      for (const [name, value] of entries) {
+        if (name.toLowerCase() === 'set-cookie') {
+          cookies.push(...(Array.isArray(value) ? value : [String(value)]))
+        } else {
+          web.setHeader(name, value as string | string[])
+        }
+      }
+      if (cookies.length > 0) { web.setHeader('set-cookie', cookies) }
+      return proxy
+    },
+    getHeader: (name: string) => web.getHeader(name) ?? res.getHeader(name),
+    getHeaders: () => ({ ...res.getHeaders(), ...web.getHeaders() }),
+    getHeaderNames: () => Object.keys({ ...res.getHeaders(), ...web.getHeaders() }),
+    hasHeader: (name: string) => web.hasHeader(name) || res.hasHeader(name),
+    removeHeader (name: string) {
+      web.removeHeader(name)
+      res.removeHeader(name)
+    },
+  }
+
+  const proxy: ServerResponse = new Proxy(res, {
+    get (target, prop) {
+      if (!target.headersSent) {
+        if (prop === 'statusCode') { return event.res.status ?? target.statusCode }
+        if (prop === 'statusMessage') { return event.res.statusText ?? target.statusMessage }
+        if (Object.hasOwn(headers, prop)) { return headers[prop] }
+      }
+      const value = Reflect.get(target, prop, target)
+      if (typeof value !== 'function' || prop === 'constructor') { return value }
+      const writes = NODE_RESPONSE_WRITERS.has(prop)
+      return (...args: unknown[]) => {
+        if (writes) { flush() }
+        const result = value.apply(target, args)
+        return result === target ? proxy : result
+      }
+    },
+    set (target, prop, value) {
+      if (!target.headersSent) {
+        if (prop === 'statusCode') { event.res.status = value }
+        if (prop === 'statusMessage') { event.res.statusText = value }
+      }
+      return Reflect.set(target, prop, value, target)
+    },
+  })
+  return proxy
 }
 
 function createNodeResponseBridge (event: H3EventType) {

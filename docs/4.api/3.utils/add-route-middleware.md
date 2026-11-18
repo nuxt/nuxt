@@ -15,8 +15,8 @@ Route middleware are navigation guards stored in the [`app/middleware/`](/docs/d
 ## Type
 
 ```ts [Signature]
-function addRouteMiddleware (name: string, middleware: RouteMiddleware, options?: AddRouteMiddlewareOptions): void
-function addRouteMiddleware (middleware: RouteMiddleware): void
+function addRouteMiddleware (name: string, middleware: RouteMiddleware, options?: AddRouteMiddlewareOptions): () => void
+function addRouteMiddleware (middleware: RouteMiddleware): () => void
 
 interface AddRouteMiddlewareOptions {
   global?: boolean
@@ -44,6 +44,35 @@ The second argument is a function of type `RouteMiddleware`. Same as above, it p
 - **Type:** `AddRouteMiddlewareOptions`
 
 An optional `options` argument lets you set the value of `global` to `true` to indicate whether the router middleware is global or not (set to `false` by default).
+
+## Return Value
+
+`addRouteMiddleware()` returns a function that removes the middleware again. This is useful for middleware that only applies for part of the lifetime of your app:
+
+```ts [app/plugins/onboarding.ts]
+export default defineNuxtPlugin(() => {
+  const onboarded = useCookie<boolean>('onboarded')
+  if (onboarded.value) {
+    return
+  }
+
+  const unregister = addRouteMiddleware((to) => {
+    if (to.path !== '/onboarding') {
+      return navigateTo('/onboarding')
+    }
+  })
+
+  watch(onboarded, (value) => {
+    if (value) {
+      unregister()
+    }
+  })
+})
+```
+
+When registering middleware from a component, call the returned function when the component is unmounted, for example with `onScopeDispose(unregister)`. To guard leaving the current page, use [`onBeforeRouteLeave`](https://router.vuejs.org/api/functions/onBeforeRouteLeave.html) instead.
+
+Removing a named middleware that overrides one in the `app/middleware/` directory restores the original. If the name has since been registered again with a different function, the returned function does nothing.
 
 ## Example
 

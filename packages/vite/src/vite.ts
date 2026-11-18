@@ -19,11 +19,12 @@ import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { DevErrorsDevToolsPlugin, DevErrorsPlugin, DevRequestErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
-import { getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
+import { createSourcemapIgnoreList, getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
+import { ParallelBuildPlugin } from './plugins/parallel-build.ts'
 import { PublicDirsPlugin } from './plugins/public-dirs.ts'
 import { ReplacePlugin } from './plugins/replace.ts'
 import { OptimizeDepsPlugin } from './plugins/optimize-deps.ts'
@@ -84,6 +85,9 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // a configured `server.fs.deny` replaces Vite's defaults
     const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envFile: false, logLevel: 'silent' }, 'serve')).server.fs.deny
     fsDeny = [...defaultDeny, '**/app-secret']
+    if (nitro) {
+      fsDeny.push(`${escapeGlob(resolve(nitro.options.output.serverDir))}/**`)
+    }
   }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
@@ -200,9 +204,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         copyPublicDir: false,
         rolldownOptions: {
           output: {
-            sourcemapIgnoreList: (relativeSourcePath) => {
-              return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(nuxt.options.buildDir)
-            },
+            sourcemapIgnoreList: createSourcemapIgnoreList(nuxt.options.buildDir),
             sanitizeFileName: sanitizeFilePath,
             assetFileNames,
           },
@@ -264,6 +266,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         ClientChunksPlugin(nuxt),
         AnalyzePlugin(nuxt),
         OptimizeDepsHintPlugin(nuxt),
+        ParallelBuildPlugin(nuxt),
       ],
       appType: 'custom',
       server: {
@@ -423,6 +426,12 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   } else {
     nuxt.hooks.hookOnce('build:done', () => { void run() })
   }
+}
+
+const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
+
+function escapeGlob (path: string) {
+  return path.replace(GLOB_SPECIAL_CHARS_RE, '\\$&')
 }
 
 async function withLogs (fn: () => Promise<unknown>, message: string) {

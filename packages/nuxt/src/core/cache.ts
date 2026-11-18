@@ -390,7 +390,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
     return false
   }
 
-  const resolvedCwd = resolve(cwd) + '/'
+  const cwdWithSlash = resolve(cwd) + '/'
   const files = await unpackTar(await readFile(cacheFile))
   for (const file of files) {
     const name = file.header.name
@@ -399,7 +399,7 @@ async function restoreCacheFromFile (cwd: string, cacheFile: string) {
       const filePath = resolve(cwd, name)
 
       // Prevent path traversal attacks
-      if (!filePath.startsWith(resolvedCwd)) {
+      if (!filePath.startsWith(cwdWithSlash)) {
         buildDiagnostics.NUXT_B1012({ path: name })
         continue
       }

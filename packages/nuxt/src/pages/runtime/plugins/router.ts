@@ -176,7 +176,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp._middleware ||= {
       global: [],
-      named: {},
+      named: Object.create(null),
     }
 
     const error = useError()

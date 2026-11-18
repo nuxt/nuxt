@@ -6,7 +6,7 @@ import type { NitroConfig } from 'nitro/types'
 import { addTemplate } from '@nuxt/kit'
 import { defu } from 'defu'
 
-import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeRouteRuleLookupPath } from '../../nuxt/src/core/utils/route-rules.ts'
+import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeRouteRuleLookupPath } from '@nuxt/kit/internal'
 import { relativeWithDot } from './utils.ts'
 
 /**

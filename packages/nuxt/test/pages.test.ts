@@ -185,6 +185,15 @@ describe('pages:page-component-name', () => {
   ])('should %s', (_, code, expected) => {
     expect(transform(code)).toBe(expected)
   })
+
+  it('only sends whole `.vue` modules to the transform', () => {
+    const nuxt = { apps: {}, options: { experimental: { scanPageMeta: true } } } as unknown as Nuxt
+    const { include } = (PageComponentNamePlugin({ nuxt }).raw({}, { framework: 'vite', versions: {} } as any) as any).transform.filter.id as { include: RegExp | RegExp[] }
+    const reaches = (id: string) => [include].flat().some(re => re.test(id))
+    expect(reaches('/pages/foo.vue')).toBe(true)
+    expect(reaches('/pages/foo.vue?macro=true')).toBe(false)
+    expect(reaches('/pages/foo.vue?vue&type=script&setup=true&lang.ts')).toBe(false)
+  })
 })
 
 describe('pages:pageComponentNames', () => {

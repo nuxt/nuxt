@@ -96,6 +96,67 @@ describe('ssr styles', () => {
     expect(html).toMatch(/<p class="[^"]*_moduleClass_/)
   }, 240 * 1000)
 
+  it('inlines styles and links the entry when the server build transforms components before the client build finishes', async () => {
+    await rm(tmpDir, { recursive: true, force: true })
+    await writeApp()
+
+    let ssrTransformedStyled!: () => void
+    const ssrTransformedStyledPromise = new Promise<void>((resolve) => { ssrTransformedStyled = resolve })
+    let clientBuilt = false
+    let ssrTransformedBeforeClient = false
+    await build({}, [{
+      name: 'test:client-waits-for-ssr-transform',
+      async generateBundle () {
+        if (this.environment.name === 'client') {
+          await Promise.race([ssrTransformedStyledPromise, sleep(30_000)])
+          clientBuilt = true
+        }
+      },
+      transform (_code, id) {
+        if (this.environment.name === 'ssr' && id.endsWith('Styled.vue')) {
+          ssrTransformedBeforeClient ||= !clientBuilt
+          ssrTransformedStyled()
+        }
+      },
+    }])
+    expect(ssrTransformedBeforeClient).toBe(true)
+
+    const html = await render()
+    expect(html).toMatch(/<script type="importmap">\{"imports":\{"#entry":"[^"]+\.js"\}\}<\/script>/)
+    const inlined = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('\n')
+    for (const css of ['.app{color:#123456}', '.plain{color:#654321}', 'margin:3px', 'padding:5px', 'border-width:7px']) {
+      expect(inlined).toContain(css)
+    }
+    expect(html).not.toMatch(/<link[^>]+rel="stylesheet"/)
+  }, 240 * 1000)
+
+  it('fails when the client build waits for the client build', async () => {
+    await rm(tmpDir, { recursive: true, force: true })
+    await writeApp()
+
+    await expect(build({}, [{
+      name: 'test:client-waits-for-client-build',
+      transform (code, id) {
+        if (this.environment.name === 'client' && id.endsWith('app.vue')) {
+          return `${code}\nimport ${JSON.stringify('\0nuxt:ssr-styles:client-build')}`
+        }
+      },
+    }])).rejects.toThrow('NUXT_B7038')
+  }, 240 * 1000)
+
+  it('fails when the server entry is not transformed while the client is building', async () => {
+    await rm(tmpDir, { recursive: true, force: true })
+    await writeApp()
+    await writeFile(join(tmpDir, 'server-entry.mjs'), 'export default {}')
+
+    await expect(build({}, [{
+      name: 'test:replace-server-entry',
+      configResolved (config) {
+        config.environments.ssr!.build.rolldownOptions.input = join(tmpDir, 'server-entry.mjs')
+      },
+    }])).rejects.toThrow('NUXT_B7039')
+  }, 240 * 1000)
+
   it.each([false, true])('inlines global CSS when a module rewires the client entry (asyncEntry: %s)', async (asyncEntry) => {
     await rm(tmpDir, { recursive: true, force: true })
     await mkdir(join(tmpDir, 'app'), { recursive: true })

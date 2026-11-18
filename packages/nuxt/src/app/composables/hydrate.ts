@@ -18,6 +18,12 @@ export const useHydration = <K extends keyof NuxtPayload, T = NuxtPayload[K]> (k
   }
 
   if (import.meta.client) {
+    if (nuxtApp._appCreated) {
+      if (nuxtApp.isHydrating) {
+        set(nuxtApp.payload[key] as T)
+      }
+      return
+    }
     nuxtApp.hooks.hook('app:created', () => {
       set(nuxtApp.payload[key] as T)
     })

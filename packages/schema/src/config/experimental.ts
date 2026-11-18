@@ -254,6 +254,9 @@ export default defineResolvers({
       useState: {
         resetOnClear: booleanOr(true),
       },
+      navigateTo: {
+        noopener: booleanOr(true),
+      },
       useFetch: {},
     },
     clientNodeCompat: false,
@@ -293,6 +296,7 @@ export default defineResolvers({
     entryImportMap: true,
     compileHints: true,
     layoutChunk: true,
+    parallelBuild: true,
     extractAsyncDataHandlers: booleanOr(false),
     nitroAutoImports: booleanOr(false),
     typescriptPlugin: booleanOr(false),

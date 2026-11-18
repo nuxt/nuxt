@@ -7,14 +7,13 @@ import { camelCase } from 'scule'
 import escapeRE from 'escape-string-regexp'
 import { ScopeTracker, type ScopeTrackerNode, parseAndWalk, walk } from 'oxc-walker'
 import { resolveAlias } from '@nuxt/kit'
-import { buildDiagnostics } from '@nuxt/kit/internal'
+import { buildDiagnostics, isWithinDir } from '@nuxt/kit/internal'
 import type { KeyedFunction } from '@nuxt/schema'
 import type { ESTree } from 'rolldown/utils'
 
-import { parseStaticImports } from '../../core/utils/static-imports.ts'
-import { isJS } from '../../core/utils/plugins.ts'
+import { getStaticImports } from '../../core/utils/static-imports.ts'
 import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE, isWhitespace, stripExtension } from '../../utils.ts'
-import { type FunctionCallMetadata, findSFCScriptBlocks, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
+import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
 import { resolveImportPath } from '../utils.ts'
 
 interface KeyedFunctionsOptions {
@@ -138,15 +137,29 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
           if (!codeIncludeRE.test(code)) { return }
         }
 
-        const [block] = isJS(_id) ? [] : findSFCScriptBlocks(code)
-        const script = block?.content ?? code
-        const codeIndex = block?.start ?? 0
         const id = stripExtension(_id)
-
-        const { directImports, namespaces } = processImports(parseStaticImports(script, _id), options.alias)
 
         // consider exports when processing a file that exports a keyed function
         const shouldConsiderExports = sources.has(id)
+
+        const scopeTracker = new ScopeTracker({
+          preserveExitedScopes: true,
+        })
+
+        // pre-pass to collect hoisted identifiers & exports
+        const exportNodes: Array<ESTree.ExportNamedDeclaration | ESTree.ExportDefaultDeclaration> = []
+        const { program, module } = parseAndWalk(code, _id, {
+          scopeTracker,
+          enter (node) {
+            if (shouldConsiderExports && (node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration')) {
+              exportNodes.push(node)
+            }
+          },
+        })
+
+        scopeTracker.freeze()
+
+        const { directImports, namespaces } = processImports(getStaticImports(code, module.staticImports), options.alias)
 
         // all local names that refer to a keyed function
         // mapped to their exported names
@@ -181,9 +194,9 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
             if (fnMeta) { return fnMeta }
 
             // TODO: remove in Nuxt 5
-            if (source.startsWith(options.appDir)) {
+            if (isWithinDir(source, options.appDir)) {
               for (const [fnSource, meta] of sourcesToMetas) {
-                if (meta.name !== functionName || !fnSource.startsWith(options.appDir)) { continue }
+                if (meta.name !== functionName || !isWithinDir(fnSource, options.appDir)) { continue }
                 return meta
               }
             }
@@ -201,33 +214,18 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
         let count = 0
         const relativeID = isAbsolute(_id) ? relative(options.rootDir, _id) : _id
 
-        const scopeTracker = new ScopeTracker({
-          preserveExitedScopes: true,
-        })
-
-        // pre-pass to collect hoisted identifiers & exports
-        const { program } = parseAndWalk(code, _id, {
-          scopeTracker,
-          enter (node) {
-            if (!shouldConsiderExports) { return }
-            if (node.type !== 'ExportNamedDeclaration' && node.type !== 'ExportDefaultDeclaration') { return }
-
-            const result = parseStaticExportIdentifiers(node)
-            for (const exportMeta of result) {
-              const { localName, exportedName } = exportMeta
-              const functionName = exportedName === 'default'
-                ? camelCase(parse(id).name)
-                // the function cannot look up function meta by local names yet,
-                // so we need to use the `exportedName` instead because that is the one
-                // that's used in the keyed functions definition
-                : getFunctionMetaByLocalName(exportedName, id)?.name
-              if (!functionName) { continue }
-              localNamesToExportedName.set(localName, functionName)
-            }
-          },
-        })
-
-        scopeTracker.freeze()
+        for (const node of exportNodes) {
+          for (const { localName, exportedName } of parseStaticExportIdentifiers(node)) {
+            const functionName = exportedName === 'default'
+              ? camelCase(parse(id).name)
+              // the function cannot look up function meta by local names yet,
+              // so we need to use the `exportedName` instead because that is the one
+              // that's used in the keyed functions definition
+              : getFunctionMetaByLocalName(exportedName, id)?.name
+            if (!functionName) { continue }
+            localNamesToExportedName.set(localName, functionName)
+          }
+        }
 
         // add exported local identifiers that refer to keyed functions
         for (const localName of localNamesToExportedName.keys()) {
@@ -306,7 +304,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                   stripExtension(fnMeta.source) === importSourceResolved
                   // TODO: remove in Nuxt 5
                   // or the function is from the Nuxt source (`#app` barrel export, for example)
-                  || fnMeta.source.startsWith(options.appDir)
+                  || isWithinDir(fnMeta.source, options.appDir)
                 )
               )
               // or the function is defined in the current file, and we're considering the root level scope declaration
@@ -354,7 +352,7 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
                 let wasKeyInjected = true
                 for (let i = 0; i < NUXT_INJECTED_MARKER.length; i++) {
                   // the magic comment does not match, we have not injected a key yet
-                  if (code[codeIndex + lastArgument.end + 1 + i] !== NUXT_INJECTED_MARKER[i]) {
+                  if (code[lastArgument.end + 1 + i] !== NUXT_INJECTED_MARKER[i]) {
                     wasKeyInjected = false
                     break
                   }
@@ -371,14 +369,14 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
               ) { return }
 
               // inject a key to the function call
-              let i = codeIndex + parsedCall.callExpression.end - 2 // char before the closing `)`
-              while (i >= codeIndex + parsedCall.callExpression.start && isWhitespace(code[i])) {
+              let i = parsedCall.callExpression.end - 2 // char before the closing `)`
+              while (i >= parsedCall.callExpression.start && isWhitespace(code[i])) {
                 i--
               }
               const endsWithComma = code[i] === ','
 
               s.appendLeft(
-                codeIndex + parsedCall.callExpression.end - 1,
+                parsedCall.callExpression.end - 1,
                 (parsedCall.callExpression.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`).slice(0, 10) + `' ${NUXT_INJECTED_MARKER}`,
               )
             })

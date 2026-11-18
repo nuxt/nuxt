@@ -40,7 +40,7 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "@ampproject/remapping": "catalog:build",
+    "@jridgewell/sourcemap-codec": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@unhead/vue": "catalog:app-runtime",
     "consola": "catalog:app-runtime",
@@ -52,6 +52,7 @@
     "exsolve": "catalog:build",
     "flru": "catalog:nitro-runtime",
     "impound": "catalog:build",
+    "js-tokens": "catalog:build",
     "klona": "catalog:app-runtime",
     "magic-string": "catalog:vite",
     "mocked-exports": "catalog:build",

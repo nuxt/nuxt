@@ -13,6 +13,19 @@ function handlerOf<K extends HookName> (plugin: Plugin | undefined, name: K) {
 
 const JSX_RE = /\.[jt]sx$/
 const VUE_JSX_VIRTUAL_RE = /^\/__vue-jsx/
+const DECORATOR_PARSER_PLUGINS = new Set(['decorators', 'decorators-legacy'])
+
+// Parses 2023-11 decorators so `DecoratorsPlugin` can lower them after this Babel pass.
+function decoratorsSyntaxPlugin () {
+  return {
+    name: 'nuxt:syntax-decorators',
+    manipulateOptions (_options: unknown, parserOpts: { plugins: Array<string | [string, unknown]> }) {
+      if (!parserOpts.plugins.some(plugin => DECORATOR_PARSER_PLUGINS.has(Array.isArray(plugin) ? plugin[0] : plugin))) {
+        parserOpts.plugins.push(['decorators', { allowCallParenthesized: false }], 'decoratorAutoAccessors')
+      }
+    },
+  }
+}
 
 /**
  * A lazy wrapper around `@vitejs/plugin-vue-jsx` that defers installation
@@ -54,7 +67,9 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
     }
 
     const { default: viteJsxPlugin } = await import('@vitejs/plugin-vue-jsx')
-    resolvedPlugin = viteJsxPlugin(options)
+    resolvedPlugin = viteJsxPlugin(nuxt.options.experimental.decorators
+      ? { ...options, babelPlugins: [...options?.babelPlugins ?? [], decoratorsSyntaxPlugin] }
+      : options)
 
     // Replay configResolved so the real plugin captures HMR/sourcemap state
     if (resolvedConfig && typeof resolvedPlugin.configResolved === 'function') {

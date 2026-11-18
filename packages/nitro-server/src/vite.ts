@@ -4,15 +4,13 @@ import { readFile, writeFile } from 'node:fs/promises'
 import type { IncomingMessage } from 'node:http'
 import { isAbsolute, resolve } from 'pathe'
 import { addVitePlugin, directoryToURL, resolveAlias } from '@nuxt/kit'
-import type { BuildEnvironment, EnvironmentModuleGraph, EnvironmentModuleNode, ResolvedConfig, Plugin as VitePlugin } from 'vite'
+import type { BuildEnvironment, EnvironmentModuleGraph, EnvironmentModuleNode, ResolvedConfig, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { toFetchHandler } from 'srvx/node'
 import { resolveModulePath } from 'exsolve'
 import { getQuery } from 'ufo'
 import { hash } from 'ohash'
 import { nitro as nitroPlugin } from 'nitro/vite'
 import escapeRE from 'escape-string-regexp'
-import MagicString from 'magic-string'
-import remapping from '@ampproject/remapping'
 
 import type { Nitro } from 'nitro/types'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
@@ -20,6 +18,8 @@ import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 
 import { distDir, getServerReplacements, linkStaticDist } from './utils.ts'
+import { applyEdits } from './sourcemap.ts'
+import type { CodeEdit } from './sourcemap.ts'
 
 const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
@@ -100,7 +100,7 @@ function collectDevCss (nuxt: Nuxt, moduleGraph: EnvironmentModuleGraph): string
  */
 export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro, serverRuntime: NuxtServerRuntime): void {
   addVitePlugin(NuxtBuildOutputsPlugin(nuxt, serverRuntime))
-  addVitePlugin(NitroVirtualBridge(nitro))
+  addVitePlugin(NitroVirtualBridge(nuxt, nitro))
   addVitePlugin(NitroDefinePlugin(nuxt))
 
   // `nitro/vite` calls `build:before` before it derives its bundler config,
@@ -199,7 +199,9 @@ export function setupNitroViteEnvironment (nuxt: Nuxt & { _nitro?: Nitro }, nitr
 }
 
 const VIRTUAL_PREFIX = '\0nuxt-build-output:'
+const VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(VIRTUAL_PREFIX)}`)
 const NITRO_VIRTUAL_PREFIX = '\0nuxt-nitro-virtual:'
+const NITRO_VIRTUAL_PREFIX_RE = new RegExp(`^${escapeRE(NITRO_VIRTUAL_PREFIX)}`)
 
 /**
  * Build outputs whose value is not final until the ssr environment's own
@@ -222,7 +224,7 @@ const NITRO_VIRTUAL_PREFIX = '\0nuxt-nitro-virtual:'
  * resolves to `undefined` when the provider omits it.
  *
  * `entryChunkName` is excluded: `StableEntryPlugin` finalises it in the client
- * env's `writeBundle`, which completes before the ssr env loads it.
+ * env's `writeBundle`, and its provider waits for the client build.
  *
  * `ssrStyles` is deferred because the ssr environment cannot import its own
  * emitted `styles.mjs`; `SSRStylesPlugin` exposes the styles map as a code
@@ -309,16 +311,15 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
     applyToEnvironment: env => env.name === 'ssr',
     resolveId: {
       order: 'pre',
+      filter: { id: new RegExp(`^(?:${Object.keys(outputs).map(id => escapeRE(id)).join('|')})$`) },
       handler (id) {
-        if (id in outputs) {
-          return VIRTUAL_PREFIX + id
-        }
+        return VIRTUAL_PREFIX + id
       },
     },
     load: {
       order: 'pre',
+      filter: { id: VIRTUAL_PREFIX_RE },
       async handler (id) {
-        if (!id.startsWith(VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(VIRTUAL_PREFIX.length)
 
         const key = outputs[specifier]
@@ -361,21 +362,22 @@ function NuxtBuildOutputsPlugin (nuxt: Nuxt & { _nitro?: Nitro }, serverRuntime:
         const sourcemap = !!this.environment.config.build.sourcemap
         for (const file of Object.values(bundle)) {
           if (file.type !== 'chunk') { continue }
-          let s: MagicString | undefined
+          const edits: CodeEdit[] = []
           for (const match of file.code.matchAll(literalRE)) {
             const expression = replacements.get(match[2]!)
             if (!expression) {
               throw new Error(`[nuxt] Unknown build output placeholder \`${match[2]}\` in \`${file.fileName}\`.`)
             }
-            s ??= new MagicString(file.code)
-            s.overwrite(match.index, match.index + match[0].length, expression)
+            edits.push({ start: match.index, end: match.index + match[0].length, content: expression })
           }
-          if (s) {
-            if (sourcemap && file.map) {
-              const editMap = s.generateMap({ hires: true, source: file.fileName })
-              file.map = remapping([editMap as any, file.map as any], () => null) as unknown as typeof file.map
+          if (edits.length) {
+            const map = sourcemap ? file.map : null
+            const result = applyEdits(file.code, map?.mappings, edits)
+            if (map) {
+              map.mappings = result.mappings!
+              file.map = map
             }
-            file.code = s.toString()
+            file.code = result.code
           }
           if (anyRE.test(file.code)) {
             throw new Error(`[nuxt] Failed to substitute build output placeholder in \`${file.fileName}\`. This is a bug in Nuxt; please report it.`)
@@ -483,11 +485,31 @@ function hashEnvironmentConfig (config: ResolvedConfig): string {
   return hash({ define: config.define, resolve: config.resolve, build: config.build })
 }
 
-function NitroVirtualBridge (nitro: Nitro): VitePlugin {
+function NitroVirtualBridge (nuxt: Nuxt, nitro: Nitro): VitePlugin {
   const virtuals: Record<string, string> = {}
+  let server: ViteDevServer | undefined
+
+  if (nuxt.options.dev) {
+    nuxt.hook('app:templatesGenerated', async () => {
+      const environment = server?.environments.ssr
+      if (!environment) { return }
+      for (const specifier in virtuals) {
+        const entry = nitro.options.virtual[specifier]
+        const code = typeof entry === 'function' ? await entry() : entry
+        const module = environment.moduleGraph.getModuleById(NITRO_VIRTUAL_PREFIX + specifier)
+        if (module && hash(code ?? '') !== virtuals[specifier]) {
+          await environment.reloadModule(module)
+        }
+      }
+    })
+  }
+
   return {
     name: 'nuxt:nitro-virtual-bridge',
     applyToEnvironment: env => env.name === 'ssr',
+    configureServer (devServer) {
+      server = devServer
+    },
     resolveId: {
       order: 'pre',
       handler (id) {
@@ -498,8 +520,8 @@ function NitroVirtualBridge (nitro: Nitro): VitePlugin {
     },
     load: {
       order: 'pre',
+      filter: { id: NITRO_VIRTUAL_PREFIX_RE },
       async handler (id) {
-        if (!id.startsWith(NITRO_VIRTUAL_PREFIX)) { return }
         const specifier = id.slice(NITRO_VIRTUAL_PREFIX.length)
         const entry = nitro.options.virtual[specifier]
         const code = typeof entry === 'function' ? await entry() : entry

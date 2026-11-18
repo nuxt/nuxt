@@ -16,6 +16,15 @@ if (path.startsWith('/prefetch-links')) {
     ssrContext!.payload.prefetchLinks = [{ rel: 'preload', as: 'script', href: '/next-page.js' }]
   })
 }
+if (path.startsWith('/response-header')) {
+  const header = useResponseHeader('x-written')
+  const before = String(header.value)
+  header.value = 'written'
+  useResponseHeader('x-read-back').value = `${before} -> ${header.value}`
+}
+if (path.startsWith('/invalid-cookie')) {
+  useCookie('invalid name').value = 'value'
+}
 if (path.startsWith('/rewritten')) {
   useNuxtApp().hook('app:rendered', ({ renderResult }) => {
     renderResult!.html = renderResult!.html.replace('rendered without nitro', 'rewritten after render')

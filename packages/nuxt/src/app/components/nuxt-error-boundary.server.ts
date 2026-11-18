@@ -26,10 +26,18 @@ type NuxtErrorBoundaryEmits = {
 
 type NuxtErrorBoundarySlots = SlotsType<{
   default?: () => VNode[]
-  error?: (props: { error: Error, clearError: () => void }) => VNode[]
+  error?: (props: {
+    error: Error
+    /** Clears the boundary's error and re-renders the default slot. */
+    clearBoundaryError: () => void
+    /** @deprecated Use `clearBoundaryError` instead. */
+    clearError: () => void
+  }) => VNode[]
 }>
 
 type Push = (item: SSRBufferItem) => void
+
+const noop = () => {}
 
 function toPublicError (err: unknown): NuxtError {
   if (import.meta.dev || !isUntrustedError(err)) {
@@ -93,7 +101,7 @@ const NuxtErrorBoundaryServer = defineComponent({
       nuxtApp.runWithContext(() => clearNuxtState(key => key.startsWith(idStatePrefix), { reset: false }))
       resetIdScope(vm, idScope)
       const { getBuffer, push } = createBuffer()
-      ssrRenderSlot(slots, 'error', { error: error.value, clearError: () => {} }, null, push, vm)
+      ssrRenderSlot(slots, 'error', { error: error.value, clearError: noop, clearBoundaryError: noop }, null, push, vm)
       return getBuffer()
     }
 

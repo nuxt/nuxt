@@ -46,13 +46,15 @@ export default definePlugin((nitroApp) => {
     }
 
     // a streamed response is already being written, so its body cannot be read back: a
-    // clone tees the source, and reading one branch holds the response until the render
-    // ends. A buffered body has no such cost, and carries no `content-length` either
-    // until the runtime writes it, so the responses that stream are marked as they are built
-    const streamed = isStreamedResponse(response)
+    // clone tees the source, and reading one branch to its end holds the response until
+    // the source ends. The renderer marks the responses it streams; any other body is read
+    // only as far as it is already in hand
+    let streamed = isStreamedResponse(response)
     let body: unknown
     if (!streamed) {
-      body = await response.clone().text().catch(() => undefined)
+      const text = await readBodyInHand(response)
+      streamed = text === LIVE
+      body = streamed ? undefined : text
     }
 
     for (const hook of wanted) {
@@ -80,6 +82,46 @@ export default definePlugin((nitroApp) => {
     }
   })
 })
+
+const LIVE = Symbol('live')
+const READ_BUDGET_MS = 50
+
+/**
+ * The text of a response body, read from a clone if the whole body arrives within the
+ * current turn and the read budget. A body of declared length, such as a blob or a file, has
+ * the whole read budget to arrive. A body still being produced is left to stream: the
+ * clone is cancelled, which leaves the response itself untouched.
+ */
+async function readBodyInHand (response: Response): Promise<string | undefined | typeof LIVE> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const wait = response.headers.has('content-length') ? READ_BUDGET_MS : 0
+  const turn = new Promise<typeof LIVE>((resolve) => { timer = setTimeout(resolve, wait, LIVE) })
+  try {
+    const reader = response.clone().body?.getReader()
+    if (!reader) {
+      return ''
+    }
+    const decoder = new TextDecoder()
+    const deadline = Date.now() + READ_BUDGET_MS
+    let text = ''
+    while (true) {
+      const result = await Promise.race([reader.read(), turn])
+      if (result !== LIVE && result.done) {
+        return text + decoder.decode()
+      }
+      // chunks that are always ready resolve as microtasks, which the timer cannot interrupt
+      if (result === LIVE || Date.now() > deadline) {
+        reader.cancel().catch(() => {})
+        return LIVE
+      }
+      text += decoder.decode(result.value, { stream: true })
+    }
+  } catch {
+    return undefined
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 interface HeaderSnapshot {
   values: Map<string, string>
