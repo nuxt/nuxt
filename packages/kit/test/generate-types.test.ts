@@ -1,4 +1,7 @@
-import { readFile } from 'node:fs/promises'
+import { promises as fsp } from 'node:fs'
+import { once } from 'node:events'
+import { readFile, readdir } from 'node:fs/promises'
+import { Worker } from 'node:worker_threads'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
@@ -563,6 +566,80 @@ describe('writeTypes', () => {
       expect(await readFile(join(typesDir, missing!), 'utf8')).not.toBe('{}')
       for (const file of existing) {
         expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
+      }
+    })
+  })
+
+  it('should retry transient rename failures without removing the destination', async () => {
+    await withTempDir({}, async (rootDir) => {
+      const buildDir = join(rootDir, '.nuxt')
+      const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
+      await writeTypes(nuxt)
+      const path = join(buildDir, 'tsconfig.json')
+      const existing = await readFile(path, 'utf8')
+      const rename = fsp.rename.bind(fsp)
+      let attempts = 0
+      const spy = vi.spyOn(fsp, 'rename').mockImplementation(async (source, destination) => {
+        if (destination === path && ++attempts < 3) {
+          expect(await readFile(path, 'utf8')).toBe(existing)
+          throw Object.assign(new Error('File is locked'), { code: 'EPERM' })
+        }
+        await rename(source, destination)
+      })
+      try {
+        nuxt.options.alias.changing = join(rootDir, 'changed')
+        await writeTypes(nuxt)
+      } finally {
+        spy.mockRestore()
+      }
+      expect(attempts).toBe(3)
+      expect(await readFile(path, 'utf8')).not.toBe(existing)
+      expect((await readdir(buildDir)).filter(file => file.endsWith('.tmp'))).toEqual([])
+    })
+  })
+
+  it('should never expose a partially written tsconfig to concurrent readers', async () => {
+    await withTempDir({}, async (rootDir) => {
+      const buildDir = join(rootDir, '.nuxt')
+      const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
+      await writeTypes(nuxt)
+
+      const state = new Int32Array(new SharedArrayBuffer(4))
+      const reader = new Worker(`
+        const { readFileSync } = require('node:fs')
+        const { parentPort, workerData } = require('node:worker_threads')
+        const state = new Int32Array(workerData.state)
+        let activeReads = 0
+        let invalid = 0
+        let stopped = false
+        parentPort.on('message', () => { stopped = true })
+        function poll () {
+          const active = Atomics.load(state, 0) === 1
+          try { JSON.parse(readFileSync(workerData.path, 'utf8')) } catch { invalid++ }
+          if (active) { activeReads++ }
+          if (stopped) { parentPort.postMessage({ activeReads, invalid }) } else { setImmediate(poll) }
+        }
+        parentPort.postMessage('ready')
+        poll()
+      `, { eval: true, workerData: { path: join(buildDir, 'tsconfig.json'), state: state.buffer } })
+
+      try {
+        expect(await once(reader, 'message')).toEqual(['ready'])
+        Atomics.store(state, 0, 1)
+        for (let i = 0; i < 50; i++) {
+          nuxt.options.alias.changing = join(rootDir, 'aliases', String(i))
+          await writeTypes(nuxt)
+        }
+        Atomics.store(state, 0, 0)
+        const result = await new Promise<{ activeReads: number, invalid: number }>((resolve, reject) => {
+          reader.once('error', reject)
+          reader.once('message', resolve)
+          reader.postMessage('stop')
+        })
+        expect(result.activeReads).toBeGreaterThan(0)
+        expect(result.invalid).toBe(0)
+      } finally {
+        await reader.terminate()
       }
     })
   })

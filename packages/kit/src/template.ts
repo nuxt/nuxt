@@ -1,6 +1,8 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import process from 'node:process'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -810,12 +812,38 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
 async function writeIfChanged (path: string, contents: string) {
   const existing = await fsp.readFile(path, 'utf8').catch(() => undefined)
   if (existing === contents) { return }
-  await fsp.writeFile(path, contents)
+  await writeFileAtomic(path, contents)
 }
 
 async function writeIfMissing (path: string, contents: string) {
   if (existsSync(path)) { return }
-  await fsp.writeFile(path, contents)
+  await writeFileAtomic(path, contents)
+}
+
+/**
+ * Writes through a temporary file and a rename, so that processes reading the file at the same
+ * time (editors, `tsc`, bundlers following `extends`) get either the previous or the new contents.
+ */
+async function writeFileAtomic (path: string, contents: string) {
+  const tempPath = `${path}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`
+  try {
+    await fsp.writeFile(tempPath, contents, { flag: 'wx' })
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await fsp.rename(tempPath, path)
+        break
+      } catch (error) {
+        // on Windows a rename fails while another process holds either file open
+        if (attempt === 5 || !['EPERM', 'EACCES', 'EBUSY'].includes((error as NodeJS.ErrnoException).code || '')) {
+          throw error
+        }
+        await sleep(50 * (attempt + 1))
+      }
+    }
+  } catch (error) {
+    await fsp.rm(tempPath, { force: true }).catch(() => {})
+    throw error
+  }
 }
 
 /**
