@@ -227,6 +227,9 @@ describe('errors', () => {
         if (to.query.abort !== undefined) {
           return abortNavigation()
         }
+        if (to.query.forbidden !== undefined) {
+          throw createError({ status: 403, message: 'forbidden', fatal: true })
+        }
       })
       addRouteMiddleware(middleware, { global: true })
       onTestFinished(() => {
@@ -238,6 +241,10 @@ describe('errors', () => {
 
       showError('boom')
       await clearError({ redirect: '/?abort' })
+      expect(overlay.isConnected).toBe(true)
+
+      await expect(clearError({ redirect: '/?forbidden' })).rejects.toThrow('forbidden')
+      expect(useError().value).toMatchObject({ message: 'forbidden' })
       expect(overlay.isConnected).toBe(true)
 
       await clearError()

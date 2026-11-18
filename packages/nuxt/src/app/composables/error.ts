@@ -110,7 +110,7 @@ export const clearError = async (options: { redirect?: string } = {}): Promise<v
       error.value = undefined
     }
 
-    if (import.meta.dev && import.meta.client && (!error.value || error.value !== cleared)) {
+    if (import.meta.dev && import.meta.client && !error.value) {
       for (const el of document.querySelectorAll('nuxt-error-overlay')) {
         el.remove()
       }
