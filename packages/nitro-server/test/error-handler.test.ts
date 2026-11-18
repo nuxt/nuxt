@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { HTTPError } from 'nitro/h3'
+import { H3, HTTPError } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
+import { routeRules } from 'h3/rules'
+import { cache } from 'h3/rules/cache'
 
 const serverFetch = vi.hoisted(() => vi.fn())
 const observeDevError = vi.hoisted(() => vi.fn())
@@ -37,6 +39,7 @@ vi.mock('#internal/nuxt/host', async (importOriginal) => {
 const { docsVersion } = await import('#internal/nuxt/host')
 
 const { default: errorHandler } = await import('../src/runtime/handlers/error.ts')
+const { keepArrivalRequest } = await import('../src/runtime/utils/arrival-request.ts')
 
 function event (path: string, accept: string, headers?: HeadersInit, ruleHeaders?: Record<string, string>) {
   return {
@@ -346,5 +349,34 @@ describe('dev error handler', () => {
     vi.stubGlobal('__TEST_TEST__', true)
     expect(await renderHtmlError()).toEqual({ html: '<html>page</html>', publish: false })
     expect(overlay).not.toHaveBeenCalled()
+  })
+})
+
+describe('error handler in a cached route', () => {
+  async function fetchError (path: string, headers: Record<string, string>, keep: boolean) {
+    const app = new H3({
+      silent: true,
+      onRequest: keep ? keepArrivalRequest : undefined,
+      onError: (error, event) => errorHandler(error, event, {
+        defaultHandler: () => ({ status: 500, statusText: 'Server Error', body: { status: 500, statusText: 'Server Error' }, headers: new Headers({ 'content-type': 'application/json' }) }),
+      } as any),
+    })
+    app.use(routeRules({ '/cached/**': { swr: 60 }, '/api/cached/**': { swr: 60 } }, { handlers: { cache } }))
+    app.get('/cached/boom', () => { throw new Error('boom') })
+    app.get('/api/cached/boom', () => { throw new Error('boom') })
+    const res = await app.fetch(new Request(`http://localhost${path}`, { headers }))
+    return { json: res.headers.get('content-type')?.includes('application/json') ?? false, rendered: serverFetch.mock.calls.length > 0 }
+  }
+
+  it.each([
+    ['/cached/boom', { accept: 'application/json' }, true],
+    ['/cached/boom', { 'user-agent': 'curl/8.0' }, true],
+    ['/api/cached/boom', { accept: 'text/html' }, false],
+  ])('follows the headers %s arrived with %o when the arrival request is kept', async (path, headers, json) => {
+    expect(await fetchError(path, headers, true)).toEqual({ json, rendered: !json })
+  })
+
+  it('reads the request the cache rule hands the route otherwise', async () => {
+    expect(await fetchError('/cached/boom', { accept: 'application/json' }, false)).toEqual({ json: false, rendered: true })
   })
 })

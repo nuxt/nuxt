@@ -13,6 +13,7 @@ import type { SSRErrorInput } from '../host/nuxt4'
 import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
+import { arrivalRequest } from '../utils/arrival-request'
 import { errorCacheControl, ruleCacheControl } from '../utils/cache-control'
 import { toLegacyError } from '../compat/error-shape'
 import { legacyCompat, legacyResponseHeaders } from '#nuxt-compat/flags'
@@ -76,7 +77,7 @@ async function renderError (...[_error, event, { defaultHandler }]: Parameters<N
     applyPrerenderHints(event as H3Event, headers)
   }
   // with inline error rendering, page errors never reach this handler
-  if (NUXT_INLINE_ERROR_RENDERING || isJsonRequest(event.req as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
+  if (NUXT_INLINE_ERROR_RENDERING || isJsonRequest(arrivalRequest(event as H3Event) as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
     const headerEntries = [
       new Headers(defaultRes.headers),
       ...('res' in event ? [(event.res as Response).headers.entries()] : []),
