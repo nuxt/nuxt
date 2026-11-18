@@ -13,6 +13,7 @@ import { applyLegacyRenderBefore } from '../src/runtime/compat/render-before.ts'
 import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
 import type { LegacyH3Event } from '../src/runtime/compat/h3-v1.ts'
 import plugin from '../src/runtime/compat/hooks-plugin.ts'
+import { wrapLegacyPlugin } from '../src/runtime/compat/legacy-plugin.ts'
 
 function createNitroApp () {
   const handlers = new Map<string, (...args: any[]) => any>()
@@ -423,5 +424,68 @@ describe('nitro v2 `render:before` hook', () => {
     expect(response.headers.get('x-wrapped')).toBe('1')
     expect(response.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
     expect(await response.text()).toBe('<html>wrapped</html>')
+  })
+})
+
+describe('nitro v2 plugin wrapper', () => {
+  function runLegacyPlugin (plugin: (nitroApp: any) => void | Promise<void>) {
+    const hooks = new HookableCore<Record<string, (...args: any[]) => any>>()
+    observeLegacyHooks(hooks)
+    const nitroApp = { hooks } as any
+    const result = wrapLegacyPlugin(plugin)(nitroApp)
+    return { hooks, nitroApp, result }
+  }
+
+  it('hands a v2 plugin a `callHook` that returns a promise, as Nitro v2 did', async () => {
+    const listener = vi.fn()
+    let called: unknown
+    const { hooks } = runLegacyPlugin((nitroApp) => {
+      nitroApp.hooks.hook('custom', listener)
+      called = nitroApp.hooks.callHook('custom', 1)
+    })
+
+    expect(called).toBeInstanceOf(Promise)
+    await called
+    expect(listener).toHaveBeenCalledWith(1)
+    expect(hooks.callHook('custom', 2)).toBeUndefined()
+  })
+
+  it('registers and removes listeners on the hooks Nitro runs', async () => {
+    const listener = vi.fn()
+    let off: (() => void) | undefined
+    const { hooks } = runLegacyPlugin((nitroApp) => {
+      off = nitroApp.hooks.hook('beforeResponse', listener)
+    })
+
+    expect(hasLegacyHookListener(hooks, 'beforeResponse')).toBe(true)
+    await hooks.callHook('beforeResponse')
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    off!()
+    expect(hasLegacyHookListener(hooks, 'beforeResponse')).toBe(false)
+  })
+
+  it('runs a `render:before` listener a v2 plugin registers', async () => {
+    const { hooks } = runLegacyPlugin((nitroApp) => {
+      nitroApp.hooks.hook('render:before', (context: any) => {
+        context.response = { body: '<html>from plugin</html>', statusCode: 202 }
+      })
+    })
+
+    expect(hasLegacyHookListener(hooks, 'render:before')).toBe(true)
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, () => Promise.resolve(new Response('page')), (body, init) => new Response(body, init))
+    expect(response.status).toBe(202)
+    expect(await response.text()).toBe('<html>from plugin</html>')
+  })
+
+  it('writes to the app Nitro runs and keeps the result of an async plugin', () => {
+    const ready = Promise.resolve()
+    const { nitroApp, result } = runLegacyPlugin((app) => {
+      app.custom = true
+      return ready
+    })
+
+    expect(nitroApp.custom).toBe(true)
+    expect(result).toBe(ready)
   })
 })
