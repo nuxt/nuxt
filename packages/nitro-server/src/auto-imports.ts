@@ -15,10 +15,10 @@ export interface ServerAutoImports {
   refresh: () => Promise<void>
   /** The full set of auto-imports available in the server program. */
   getImports: () => Promise<Import[]>
-  /** Write the module `#imports/server` resolves to in the server build. */
-  writeModule: () => Promise<void>
-  /** Write the type declarations for the server program. */
+  /** Write `#imports` and the type declarations for the server program. */
   writeTypes: () => Promise<void>
+  /** Render the module `#imports/server` resolves to. */
+  renderModule: () => Promise<string>
   /**
    * The directory a bare import source is resolved from, for a registered source that the
    * project root cannot resolve but one of `modulesDir` can.
@@ -26,10 +26,8 @@ export interface ServerAutoImports {
   resolveSourceDir: (source: string) => Promise<string | undefined>
   /** `paths` substitutions for the sources `resolveSourceDir` resolves. */
   getSourceTypePaths: () => Promise<Record<string, [string]>>
-  /** Path of the generated module `#imports/server` resolves to in the server build. */
+  /** Path of the generated module `#imports/server` resolves to in the server program. */
   importsModulePath: string
-  /** Path of the generated declarations `#imports/server` resolves to in the server program. */
-  importsTypesPath: string
   /** Whether auto-imports are enabled at all. */
   enabled: boolean
 }
@@ -39,8 +37,6 @@ export interface ServerAutoImportsContext {
   nestedUtilsDirs?: string[]
   /** Presets that are not auto-imported, but are reported when used without an import. */
   disabledPresets?: InlinePreset[]
-  /** Directory the module `#imports/server` resolves to is written to, when it is not `typesDir`. */
-  buildDir?: string
 }
 
 const MAX_REPORTED_FILES = 10
@@ -52,11 +48,9 @@ const GLOBAL_FETCH_IMPORT: Import = { name: '$fetch', from: 'ofetch' }
 /** Creates and applies the auto-imports available to the modules the server builder bundles. */
 export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptions, typesDir: string, context: ServerAutoImportsContext = {}): ServerAutoImports {
   const enabled = options.autoImport !== false
-  const importsModulePath = join(context.buildDir ?? typesDir, 'types/server-imports')
-  const importsTypesPath = join(typesDir, 'types/server-imports')
+  const importsModulePath = join(typesDir, 'types/server-imports')
   // substitutions are resolved relative to the generated file itself, not to `typesDir`
   const importsModuleDir = dirname(importsModulePath)
-  const importsTypesDir = dirname(importsTypesPath)
 
   const ctx: Unimport = createUnimport({
     parser: 'oxc',
@@ -108,6 +102,10 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       return dirs
     })
     return sourceDirs
+  }
+
+  function renderModule (imports: Import[]) {
+    return (toExports(imports, importsModuleDir).trim() || 'export {}') + '\n'
   }
 
   let initialised: Promise<void> | undefined
@@ -233,7 +231,7 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       resolvedTypePaths.set(
         from,
         isAbsolute(from)
-          ? relativeWithDot(importsTypesDir, from).replace(/\.[cm]?[jt]sx?$/, '')
+          ? relativeWithDot(importsModuleDir, from).replace(/\.[cm]?[jt]sx?$/, '')
           : from,
       )
     }
@@ -242,7 +240,6 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   return {
     enabled,
     importsModulePath,
-    importsTypesPath,
 
     async injectImports (code, id, injectOptions) {
       if (!enabled) { return undefined }
@@ -282,15 +279,8 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       await scan()
     },
 
-    async writeModule () {
-      await mkdir(importsModuleDir, { recursive: true })
-      await init()
-      const imports = await ctx.getImports()
-      await writeFile(importsModulePath + '.mjs', (toExports(imports, importsModuleDir).trim() || 'export {}') + '\n', 'utf8')
-    },
-
     async writeTypes () {
-      await mkdir(importsTypesDir, { recursive: true })
+      await mkdir(join(typesDir, 'types'), { recursive: true })
 
       await init()
       const imports = await ctx.getImports()
@@ -308,9 +298,17 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
 
       // the re-exports make this a module, so `import { x } from '#imports'` resolves as well as
       // the ambient `x` the declarations provide
-      const reExports = toExports(imports, importsTypesDir, true, { declaration: true })
+      const reExports = toExports(imports, importsModuleDir, true, { declaration: true })
 
-      await writeFile(importsTypesPath + '.d.ts', [declarations.trim(), reExports.trim() || 'export {}'].filter(Boolean).join('\n') + '\n', 'utf8')
+      await Promise.all([
+        writeFile(importsModulePath + '.d.ts', [declarations.trim(), reExports.trim() || 'export {}'].filter(Boolean).join('\n') + '\n', 'utf8'),
+        writeFile(importsModulePath + '.mjs', renderModule(imports), 'utf8'),
+      ])
+    },
+
+    async renderModule () {
+      await init()
+      return renderModule(await ctx.getImports())
     },
   }
 }

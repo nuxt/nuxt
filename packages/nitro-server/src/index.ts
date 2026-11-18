@@ -37,7 +37,7 @@ import { nitroSchemaTemplate, nuxt4HostTypeTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
 import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
-import { ServerAutoImportsPlugin, serverImportSourcesPlugin } from './auto-imports-plugin.ts'
+import { ServerAutoImportsPlugin, serverImportSourcesPlugin, serverImportsModulePlugin } from './auto-imports-plugin.ts'
 import { unheadDedupePlugin } from './unhead.ts'
 import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
@@ -732,16 +732,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const autoImports = createServerAutoImports(nuxt, nitroConfig.imports || { autoImport: false }, typesDir, {
     nestedUtilsDirs: nuxt.options.nitro.imports !== false && !legacy.imports ? resolveNestedServerUtilsDirs(nuxt) : [],
     disabledPresets: nuxt.options.nitro.imports !== false && autoImportPresets.length === 0 ? await getServerImportsPresets(legacy) : [],
-    buildDir: nuxt.options.buildDir,
   })
-  await autoImports.writeModule()
   // only for the server bundle: `nuxt.options.alias['#imports']` belongs to the app context
   nitroConfig.alias ||= {}
   nitroConfig.alias['#imports/server'] = autoImports.importsModulePath
   // deprecated, and deliberately left out of the server tsconfig: typing it would give a handler
   // an `any` return type, silently costing the route its response type
   nitroConfig.alias['#imports'] = autoImports.importsModulePath
-  nitroConfig.rollupConfig!.plugins!.push(serverImportSourcesPlugin(autoImports))
+  nitroConfig.rollupConfig!.plugins!.push(serverImportsModulePlugin(autoImports), serverImportSourcesPlugin(autoImports))
 
   if (autoImports.enabled) {
     nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
@@ -760,7 +758,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     const path = resolve(nuxt.options.srcDir, relativePath)
     if (!scannedDirs.some(dir => isWithinDir(path, dir))) { return }
     await autoImports.refresh()
-    await Promise.all([autoImports.writeModule(), autoImports.writeTypes()])
+    await autoImports.writeTypes()
   })
 
   if (nitroConfig.static && nuxt.options.dev) {
@@ -1072,17 +1070,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     await autoImports.writeTypes()
     opts.serverTsConfig.compilerOptions ||= {}
     opts.serverTsConfig.compilerOptions.paths ||= {}
-    opts.serverTsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsTypesPath)]
+    opts.serverTsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsModulePath)]
 
     // `#imports/server` resolves in the app program too, so a handler importing from it still
     // yields a return type for the generated route types
     opts.tsConfig.compilerOptions ||= {}
     opts.tsConfig.compilerOptions.paths ||= {}
-    opts.tsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsTypesPath)]
+    opts.tsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsModulePath)]
     // also referenced from the app program, which loads handler files regardless of its
     // `include`, because the generated route types name them with `typeof import(...)`
-    opts.serverReferences.push({ path: autoImports.importsTypesPath + '.d.ts' })
-    opts.references.push({ path: autoImports.importsTypesPath + '.d.ts' })
+    opts.serverReferences.push({ path: autoImports.importsModulePath + '.d.ts' })
+    opts.references.push({ path: autoImports.importsModulePath + '.d.ts' })
 
     Object.assign(opts.tsConfig.compilerOptions.paths, nitroTypePaths)
     Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths)

@@ -34,6 +34,31 @@ export function serverImportSourcesPlugin (autoImports: Pick<ServerAutoImports, 
   }
 }
 
+/**
+ * Serves the module `#imports/server` and `#imports` resolve to from `autoImports` rather than
+ * from disk, so a build directory cleared after setup does not leave the specifiers unresolved.
+ */
+export function serverImportsModulePlugin (autoImports: Pick<ServerAutoImports, 'importsModulePath' | 'renderModule'>) {
+  const moduleId = autoImports.importsModulePath + '.mjs'
+  const ids = new Set(['#imports', '#imports/server', autoImports.importsModulePath, moduleId])
+  return {
+    name: 'nuxt:server-imports-module',
+    resolveId: {
+      order: 'pre' as const,
+      handler (id: string) {
+        if (ids.has(normalize(id))) {
+          return moduleId
+        }
+      },
+    },
+    load (id: string) {
+      if (id === moduleId) {
+        return autoImports.renderModule()
+      }
+    },
+  }
+}
+
 interface PluginContext {
   resolve: (id: string, importer?: string, options?: Record<string, unknown>) => Promise<{ id: string } | null>
 }
