@@ -95,21 +95,22 @@ export const clearError = async (options: { redirect?: string } = {}): Promise<v
     nuxtApp.callHook('app:error:cleared', options)?.catch(hookError => console.error('[nuxt] Error in `app:error:cleared` hook', hookError))
   }
 
-  let cancelled = false
+  let redirected = !options.redirect
   try {
     if (options.redirect) {
       nuxtApp['~clearingError'] = clearing
-      cancelled = (await useRouter().replace(options.redirect))?.type === 8 /* NavigationFailureType.cancelled */
+      const type = (await useRouter().replace(options.redirect))?.type
+      redirected = type !== 4 /* NavigationFailureType.aborted */ && type !== 8 /* NavigationFailureType.cancelled */
     }
   } finally {
     if (nuxtApp['~clearingError'] === clearing) {
       delete nuxtApp['~clearingError']
     }
-    if (!cancelled && error.value === cleared) {
+    if (redirected && error.value === cleared) {
       error.value = undefined
     }
 
-    if (import.meta.dev && import.meta.client) {
+    if (import.meta.dev && import.meta.client && (!error.value || error.value !== cleared)) {
       for (const el of document.querySelectorAll('nuxt-error-overlay')) {
         el.remove()
       }

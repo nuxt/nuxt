@@ -180,13 +180,68 @@ describe('errors', () => {
       await clearError({ redirect: '/' })
     })
 
-    it('should clear the error even when the redirect rejects', async () => {
-      vi.spyOn(useRouter(), 'replace').mockRejectedValue(new Error('guard threw'))
+    it('should keep the error when the redirect rejects', async () => {
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.unauthorized !== undefined) {
+          throw createError({ status: 401, message: 'unauthorized' })
+        }
+      })
+      addRouteMiddleware(middleware, { global: true })
+      onTestFinished(() => {
+        const globalMiddleware = useNuxtApp()._middleware.global
+        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      })
+
+      const original = showError('boom')
+      await expect(clearError({ redirect: '/?unauthorized' })).rejects.toThrow('unauthorized')
+
+      expect(useError().value).toBe(original)
+      showError('later')
+      expect(useError().value).toBe(original)
+    })
+
+    it('should keep the error when the redirect is aborted', async () => {
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.abort !== undefined) {
+          return abortNavigation()
+        }
+      })
+      addRouteMiddleware(middleware, { global: true })
+      onTestFinished(() => {
+        const globalMiddleware = useNuxtApp()._middleware.global
+        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      })
+
+      const original = showError('boom')
+      await clearError({ redirect: '/?abort' })
+
+      expect(useError().value).toBe(original)
+      showError('later')
+      expect(useError().value).toBe(original)
+    })
+
+    it('should only remove the dev error overlay once the error is cleared', async () => {
+      vi.stubGlobal('__TEST_DEV__', true)
+      onTestFinished(() => { vi.unstubAllGlobals() })
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.abort !== undefined) {
+          return abortNavigation()
+        }
+      })
+      addRouteMiddleware(middleware, { global: true })
+      onTestFinished(() => {
+        const globalMiddleware = useNuxtApp()._middleware.global
+        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      })
+      const overlay = document.body.appendChild(document.createElement('nuxt-error-overlay'))
+      onTestFinished(() => overlay.remove())
 
       showError('boom')
-      await expect(clearError({ redirect: '/' })).rejects.toThrow('guard threw')
+      await clearError({ redirect: '/?abort' })
+      expect(overlay.isConnected).toBe(true)
 
-      expect(useError().value).toBeUndefined()
+      await clearError()
+      expect(overlay.isConnected).toBe(false)
     })
 
     it('should call `app:error:cleared` once for a successful redirect', async () => {
