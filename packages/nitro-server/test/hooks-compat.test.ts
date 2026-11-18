@@ -450,6 +450,27 @@ describe('nitro v2 plugin wrapper', () => {
     expect(hooks.callHook('custom', 2)).toBeUndefined()
   })
 
+  it('reaches the listeners through a `callHook` a v2 plugin decorates', async () => {
+    const listener = vi.fn()
+    const decorator = vi.fn()
+    let decorated: ((...args: any[]) => Promise<unknown>) | undefined
+    const { hooks } = runLegacyPlugin((nitroApp) => {
+      nitroApp.hooks.hook('custom', listener)
+      const original = nitroApp.hooks.callHook.bind(nitroApp.hooks)
+      nitroApp.hooks.callHook = (...args: any[]) => {
+        decorator(...args)
+        return original(...args)
+      }
+      decorated = nitroApp.hooks.callHook
+    })
+
+    await decorated!('custom', 1)
+    await hooks.callHook('custom', 2)
+
+    expect(decorator.mock.calls).toEqual([['custom', 1], ['custom', 2]])
+    expect(listener.mock.calls).toEqual([[1], [2]])
+  })
+
   it('registers and removes listeners on the hooks Nitro runs', async () => {
     const listener = vi.fn()
     let off: (() => void) | undefined
