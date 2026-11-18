@@ -311,6 +311,13 @@ describe('route rules', () => {
     }
   })
 
+  it.skipIf(!once)('should not server-render a catch-all page with `ssr: false` when the path has encoded slashes', async () => {
+    for (const path of ['/catchall/client-only/page', '/catchall/client-only%2Fpage', '/catchall/client-only%2fpage']) {
+      const { script } = parseData(await $fetch<string>(path))
+      expect(script.serverRendered, path).toEqual(false)
+    }
+  })
+
   it.skipIf(!oncePerEnv)('should not extract payload for `ssr: false` routes with useAsyncData (#34279)', async () => {
     const html = await $fetch<string>('/route-rules/spa-async-data')
     const { attrs } = parseData(html)
@@ -695,7 +702,8 @@ describe('pages', () => {
   it.skipIf(!once)('/legacy-async-data-fail', async () => {
     const response = await fetch('/legacy-async-data-fail').then(r => r.text())
     expect(response).not.toContain('don\'t look at this')
-    expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
+    expect(response).toContain('This is the error page')
+    expect(response).not.toContain('OH NNNNNNOOOOOOOOOOO')
   })
 
   it.skipIf(!oncePerEnv)('client only page', async () => {
@@ -1504,6 +1512,55 @@ describe.skipIf(!errorProjects)('errors', () => {
 
     const json = await fetch('/error/upstream', { headers: { accept: 'application/json' } }).then(r => r.text())
     expect(json).not.toMatch(/upstream-failure|upstream-token|upstream-secret/)
+  })
+
+  it('should mask non-HTTP errors thrown in useAsyncData outside development', async () => {
+    const thrownError = isDev ? '500 connect ECONNREFUSED 10.0.0.3:5432 thrown-secret' : '500 Internal Server Error'
+    const html = await $fetch<string>('/error/upstream-async-data')
+    if (!isDev) {
+      expect(html).not.toMatch(/10\.0\.0\.3|thrown-secret/)
+    }
+    expect(html.match(/id="thrown-error"[^>]*>([^<]*)</)![1]!.trim()).toBe(thrownError)
+    expect(html.match(/id="http-error"[^>]*>([^<]*)</)![1]!.trim()).toBe('422 Invalid input invalid-input')
+    expect(html).toContain('upstream-secret')
+
+    const { page } = await renderPage('/error/upstream-async-data')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+    expect(await page.innerText('#thrown-error')).toBe(thrownError)
+    expect(await page.innerText('#http-error')).toBe('422 Invalid input invalid-input')
+    expect(await page.innerText('#fetch-error')).toMatch(/^502 .*upstream-secret/)
+    await page.close()
+  })
+
+  it('should keep the status and data of a fetch error caught by a server-side error boundary', async () => {
+    const thrownError = isDev ? '500 connect ECONNREFUSED 10.0.0.3:5432 thrown-secret' : '500 Internal Server Error'
+    const noStatusError = isDev ? '500 network failure no-status-secret' : '500 Internal Server Error'
+
+    const html = await $fetch<string>('/error/error-boundary-fetch')
+    expect(html).toContain('422 missing-fetch-error')
+    if (!isDev) {
+      expect(html).not.toMatch(/thrown-secret|no-status-secret/)
+    }
+    expect(html.match(/id="thrown-error"[^>]*>([^<]*)</)![1]!.trim()).toBe(thrownError)
+    expect(html.match(/id="fetch-no-status-error"[^>]*>([^<]*)</)![1]!.trim()).toBe(noStatusError)
+
+    const { script: payload } = parseData(html)
+    const fetchError = Object.values(payload.state).find((value: any) => value?.data?.reason === 'missing-fetch-error')
+    expect(fetchError).toMatchObject({
+      status: 422,
+      message: expect.stringContaining('/api/error-boundary-fetch'),
+      data: { reason: 'missing-fetch-error' },
+    })
+    if (!isDev) {
+      expect(JSON.stringify(payload)).not.toMatch(/thrown-secret|no-status-secret/)
+    }
+
+    const { page } = await renderPage('/error/error-boundary-fetch')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp!().isHydrating)
+    expect(await page.innerText('#fetch-error')).toContain('422 missing-fetch-error')
+    expect(await page.innerText('#thrown-error')).toBe(thrownError)
+    expect(await page.innerText('#fetch-no-status-error')).toBe(noStatusError)
+    await page.close()
   })
 
   it.skipIf(!legacyErrorRendering)('should not allow accessing error route directly', async () => {
@@ -2549,7 +2606,7 @@ describe.skipIf(!once)('teleports', () => {
 describe.skipIf(!oncePerBuild)('experimental', () => {
   it('decorators support works', async () => {
     const html = await $fetch('/experimental/decorators')
-    expect(html).toContain('decorated-decorated')
+    expect(html).toContain('decorated-decorated-<span>decorated</span>-decorated')
     await expectNoClientErrors('/experimental/decorators')
   })
 

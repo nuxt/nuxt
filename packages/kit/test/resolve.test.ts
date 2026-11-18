@@ -1,10 +1,11 @@
 import { stat } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
-import { resolve } from 'pathe'
+import { join, resolve } from 'pathe'
 import { loadNuxt } from '../src/loader/nuxt.ts'
 import { findPath, resolveAlias, resolveNuxtModule, resolvePath } from '../src/resolve.ts'
 import { defineNuxtModule } from '../src/module/define.ts'
 import { addTemplate } from '../src/template.ts'
+import { fakePackage, withTempDir } from './utils.ts'
 
 const nuxt = await loadNuxt({
   overrides: {
@@ -62,6 +63,13 @@ describe('resolvePath', () => {
 })
 
 describe('resolveNuxtModule', () => {
+  it('should resolve an installed module configured with an absolute path', async () => {
+    await withTempDir(fakePackage('example', 'export default {}', { exports: './dist/index.js' }), async (rootDir) => {
+      const resolved = await resolveNuxtModule(`${rootDir}/`, [join(rootDir, 'node_modules/example/dist')])
+      expect(resolved).toEqual([join(rootDir, 'node_modules/example')])
+    })
+  })
+
   it('should resolve Nuxt module paths correctly', async () => {
     const installedModulePaths = nuxt.options._installedModules.map(m => m.meta?.rawPath || m.entryPath!).filter(Boolean)
     expect(installedModulePaths).toMatchInlineSnapshot(`
@@ -79,7 +87,9 @@ describe('resolveNuxtModule', () => {
     expect(resolved.length).toBe(3)
 
     for (const path of resolved) {
-      expect(await stat(path).then(r => r.isDirectory() && path.endsWith('node_modules/')).catch(() => false)).toBe(true)
+      expect(await stat(path).then(r => r.isDirectory()).catch(() => false)).toBe(true)
+      expect(path).not.toMatch(/node_modules\/$/)
+      expect((await stat(join(path, 'package.json'))).isFile()).toBe(true)
     }
   })
 })

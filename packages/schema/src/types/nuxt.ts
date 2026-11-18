@@ -318,6 +318,7 @@ export interface Nuxt {
     endPhase: (name?: string) => void
     collectModuleTimings: (modules: Array<{ meta?: { name?: string }, timings?: Record<string, number | undefined> }>) => void
     recordBundlerPluginHook: (pluginName: string, hookName: string, durationMs: number, startTime?: number) => void
+    timeBundlerHook: <T>(pluginName: string, hookName: string, ctx: unknown, run: (ctx: any) => T) => T
     printReport: (options?: { title?: string }) => void
     writeReport: (buildDir: string, options?: { quiet?: boolean }) => string
     dispose: () => void
@@ -351,6 +352,12 @@ export interface Nuxt {
    * @internal
    */
   '_clientBuildState'?: Map<string, { save: () => unknown, restore: (state: any) => void }>
+
+  /**
+   * The client build, while it runs alongside the server build.
+   * @internal
+   */
+  '_clientBuild'?: Promise<void>
 
   /** The resolved Nuxt configuration. */
   'options': NuxtOptions

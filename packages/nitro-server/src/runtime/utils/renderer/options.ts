@@ -13,6 +13,7 @@ import '../../context'
 
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
+import { withRouteRuleDefaults } from '#internal/nuxt/host'
 import { getRouteRules } from '../route-rules'
 import { markStreamedResponse, rememberRenderBody, toRenderBody } from '../../compat/render-response'
 import { legacyCompat } from '#nuxt-compat/flags'
@@ -37,7 +38,7 @@ export const rendererOptions: NuxtRendererOptions = {
   runtimeConfig: () => useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
   buildAssetsURL,
   publicAssetsURL,
-  getRouteRules: event => getRouteRules(event) satisfies RendererRouteRules,
+  getRouteRules: event => withRouteRuleDefaults(getRouteRules(event)) satisfies RendererRouteRules,
   hooks: useNitroHooks as () => RendererHooks,
   createResponse: (body, init) => {
     if (typeof body === 'string') {
@@ -54,8 +55,8 @@ export const rendererOptions: NuxtRendererOptions = {
   writeEarlyHints: (event, hints) => writeEarlyHints(appEvent(event), hints),
   renderIsland: event => import('#internal/nuxt/island-renderer.mjs').then(r => r.default.fetch(event.req)),
   onRenderSuccess: import.meta.dev
-    ? () => {
-        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+    ? (event) => {
+        import('#internal/nuxt/error-channel').then(({ clearErrorReport }) => clearErrorReport(appEvent(event).url)).catch(() => {})
       }
     : undefined,
   captureError: (error, { event, tags }) => {
@@ -67,6 +68,9 @@ export const rendererOptions: NuxtRendererOptions = {
   },
   onDevError: import.meta.dev
     ? (error, event, options) => import('#internal/nuxt/error-channel').then(({ observeDevError }) => observeDevError(error, appEvent(event) as H3Event, options))
+    : undefined,
+  renderDevBadge: import.meta.dev
+    ? (event, nonce) => import('#internal/nuxt/error-channel').then(({ renderDevBadge }) => renderDevBadge(appEvent(event) as H3Event, nonce))
     : undefined,
   prerender: import.meta.prerender
     ? {

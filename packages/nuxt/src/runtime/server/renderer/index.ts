@@ -23,10 +23,11 @@ import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RendererEvent } from './runtime'
 import { getPrerenderedErrorPage, isPrerenderedErrorPage, renderErrorResponse } from './error-page'
-import { normalizeChunks, renderAppTeleports, renderHTMLDocument, renderHTMLDocumentChunks } from './document'
+import { normalizeChunks, renderAppTeleports, renderDevBadge, renderHTMLDocument, renderHTMLDocumentChunks } from './document'
+import { extractCspNonce } from './csp-nonce'
 import { inertPrefetchLink, inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript } from './head'
 import { renderStreamedResponse } from './stream'
-import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appHead, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appComponentHead, appHead, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -118,6 +119,13 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   // an error page rendered as an empty SPA shell shows the visitor nothing
   if (!routeOptions.ssr && !ssrError) {
     ssrContext.noSSR = true
+  }
+
+  // the app component is not rendered into an SPA shell, so its hoisted head is pushed here
+  if (ssrContext.noSSR) {
+    for (const input of appComponentHead) {
+      ssrContext.head.push(input)
+    }
   }
 
   // Fail fast for paths that cannot match any page route, before the app (and
@@ -369,7 +377,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   const htmlContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([headTags]),
+    head: normalizeChunks([headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, extractCspNonce(headTags)) : undefined]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [

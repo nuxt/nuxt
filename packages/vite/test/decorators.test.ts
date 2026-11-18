@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Nuxt } from '@nuxt/schema'
-import { DecoratorsPlugin, hasDecoratorSyntax } from '../src/plugins/decorators'
+import { hasDecoratorSyntax } from '@nuxt/kit/internal'
+import jsTokens from 'js-tokens'
+import { DecoratorsPlugin } from '../src/plugins/decorators'
 
 function matchesFilter (
   filter: {
@@ -73,6 +75,10 @@ describe('DecoratorsPlugin transform filter', () => {
     'f(@sealed class C {})',
     'new (@sealed class C {})()',
     '@(sealed) class C {}',
+    '@decorate<Options>() class C {}',
+    'class C { @decorate <Options>() method () {} }',
+    'x * @decorate<Options>() class C {}',
+    'x / @decorate<Options>() class C {}',
     '@\\u0073ealed class C {}',
     'if (x) {}@sealed class C {}',
     'x = cond ? @sealed class C {} : null',
@@ -134,7 +140,7 @@ describe('hasDecoratorSyntax', () => {
     'const value = `outer@text${`inner${@sealed class {}}`}`',
     'foo! / bar; @sealed class Example { value = /x/ }',
   ])('detects decorators in %s', (code) => {
-    expect(hasDecoratorSyntax(code)).toBe(true)
+    expect(hasDecoratorSyntax(code, jsTokens)).toBe(true)
   })
 
   it.each([
@@ -146,7 +152,7 @@ describe('hasDecoratorSyntax', () => {
     'const value = `contact@${domain}`',
     '#!/usr/bin/env node\nconst value = true // contact@example.com',
   ])('ignores non-decorator usage in %s', (code) => {
-    expect(hasDecoratorSyntax(code)).toBe(false)
+    expect(hasDecoratorSyntax(code, jsTokens)).toBe(false)
   })
 
   it.each([
@@ -154,23 +160,24 @@ describe('hasDecoratorSyntax', () => {
     'const value = /[`"\'@]/',
     String.raw`const value = /https?:\/\/user@example\.com\/\/*/`,
   ])('conservatively checks regular expressions containing at signs in %s', (code) => {
-    expect(hasDecoratorSyntax(code)).toBe(true)
+    expect(hasDecoratorSyntax(code, jsTokens)).toBe(true)
   })
 
   it('handles decorators and non-decorator at signs in JSX', () => {
-    expect(hasDecoratorSyntax('const value = <p title="contact@example.com" />', true)).toBe(false)
-    expect(hasDecoratorSyntax('const value = <p>contact@example.com</p>', true)).toBe(true)
-    expect(hasDecoratorSyntax('const value = <p>{@sealed class Example {}}</p>', true)).toBe(true)
+    expect(hasDecoratorSyntax('const value = <p title="contact@example.com" />', jsTokens, true)).toBe(false)
+    expect(hasDecoratorSyntax('const value = <p>contact@example.com</p>', jsTokens, true)).toBe(true)
+    expect(hasDecoratorSyntax('const value = <p>{@sealed class Example {}}</p>', jsTokens, true)).toBe(true)
   })
 
   it('does not hide decorators after ambiguous TSX syntax', () => {
-    expect(hasDecoratorSyntax('const identity = <T,>(value: T) => value\n@sealed class Example {}', true)).toBe(true)
+    expect(hasDecoratorSyntax('const identity = <T,>(value: T) => value\n@sealed class Example {}', jsTokens, true)).toBe(true)
+    expect(hasDecoratorSyntax('const identity = <T extends "\\"">(v: T) => v\n@sealed class Example { value = "ok" }', jsTokens, true)).toBe(true)
   })
 
   it('conservatively handles unclosed literals', () => {
-    expect(hasDecoratorSyntax('const value = "contact@example.com')).toBe(true)
-    expect(hasDecoratorSyntax('const value = /contact@example.com')).toBe(true)
-    expect(hasDecoratorSyntax('const value = `contact@example.com')).toBe(true)
-    expect(hasDecoratorSyntax('/* contact@example.com')).toBe(true)
+    expect(hasDecoratorSyntax('const value = "contact@example.com', jsTokens)).toBe(true)
+    expect(hasDecoratorSyntax('const value = /contact@example.com', jsTokens)).toBe(true)
+    expect(hasDecoratorSyntax('const value = `contact@example.com', jsTokens)).toBe(true)
+    expect(hasDecoratorSyntax('/* contact@example.com', jsTokens)).toBe(true)
   })
 })

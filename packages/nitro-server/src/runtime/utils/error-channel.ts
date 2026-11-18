@@ -7,7 +7,7 @@ import { isMainThread } from 'node:worker_threads'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { reportFs, rootDir, srcDir } from '#internal/dev-server-logs-options'
+import { allowedHosts, reportFs, rootDir, srcDir } from '#internal/dev-server-logs-options'
 import * as devError from 'nuxt/internal/dev-error'
 
 import { NUXT_ERROR_CHANNEL } from '#internal/nuxt/nitro-config.mjs'
@@ -30,6 +30,7 @@ export function getErrorChannelPath (): string {
 }
 
 devError.setErrorChannelForwarding(() => shouldForwardReports())
+devError.setErrorChannelAccess({ root: reportFs.strict === false ? false : reportFs.allow, allowedHosts })
 
 /** The live error channel, forwarding to the dev server in front when there is one. */
 export function useErrorChannel (): Promise<Channel> {
@@ -39,6 +40,11 @@ export function useErrorChannel (): Promise<Channel> {
 /** Publish a report as the current error, paired with the request it came from. */
 export function publishErrorReport (report: ErrorReport, event?: H3Event): Promise<void> {
   return devError.publishErrorReport(report, event && { method: event.req.method, url: event.url, headers: event.req.headers })
+}
+
+/** Render the badge for the head of a page rendered for `event`. */
+export function renderDevBadge (event: H3Event, nonce?: string): Promise<string> {
+  return devError.renderDevBadge({ cwd: rootDir, channel: getErrorChannelPath(), request: event.req, nonce })
 }
 
 /**

@@ -2,7 +2,6 @@ import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import type { Identifier, ImportSpecifier } from 'estree'
 import { normalize, relative } from 'pathe'
-import { unheadVueComposablesImports } from '@unhead/vue'
 import { genImport } from 'knitwork'
 import { parseAndWalk } from 'oxc-walker'
 import { headDiagnostics } from '@nuxt/kit/internal'
@@ -19,6 +18,16 @@ interface UnheadImportsPluginOptions {
 
 const UNHEAD_LIB_RE = /node_modules[/\\](?:@unhead[/\\][^/\\]+|unhead)[/\\]/
 const NUXT_HEAD_RE = /node_modules[/\\]nuxt[/\\]dist[/\\]head[/\\]runtime[/\\]/
+
+export const UNHEAD_EAGER_TRANSFORM_ID_FILTER = {
+  include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
+  exclude: [VUE_NON_SCRIPT_BLOCK_RE, DIST_DIR_RE, UNHEAD_LIB_RE, NUXT_HEAD_RE],
+}
+
+const UNHEAD_TRANSFORM_ID_FILTER = {
+  include: UNHEAD_EAGER_TRANSFORM_ID_FILTER.include,
+  exclude: [...UNHEAD_EAGER_TRANSFORM_ID_FILTER.exclude, /^virtual:/],
+}
 
 function toImports (specifiers: ImportSpecifier[]) {
   return specifiers.map((specifier) => {
@@ -42,34 +51,44 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
     enforce: 'post',
     transform: {
       filter: {
-        id: {
-          include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
-          exclude: [VUE_NON_SCRIPT_BLOCK_RE, /^virtual:/, DIST_DIR_RE, UNHEAD_LIB_RE, NUXT_HEAD_RE],
-        },
+        id: UNHEAD_TRANSFORM_ID_FILTER,
         code: { include: UnheadVueRE },
       },
-      handler (code, id, meta?: unknown) {
+      async handler (code, id, meta?: unknown) {
         const s = rolldownString(code, id, meta)
-        const importsToAdd: ImportSpecifier[] = []
+        const unheadSpecifiers: ImportSpecifier[] = []
+        const headSpecifiers: ImportSpecifier[] = []
         parseAndWalk(code, id, function (node) {
-          if (node.type === 'ImportDeclaration' && [UnheadVue, '#app/composables/head'].includes(String(node.source.value))) {
-            importsToAdd.push(...node.specifiers as ImportSpecifier[])
-            const { start, end } = node
-            s.remove(start, end)
+          if (node.type !== 'ImportDeclaration') { return }
+          const source = String(node.source.value)
+          if (source === UnheadVue) {
+            unheadSpecifiers.push(...node.specifiers as ImportSpecifier[])
+            s.remove(node.start, node.end)
+          } else if (source === '#app/composables/head') {
+            headSpecifiers.push(...node.specifiers as ImportSpecifier[])
+            s.remove(node.start, node.end)
           }
         })
 
-        const importsFromUnhead = importsToAdd.filter(specifier => unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
-        const importsFromHead = importsToAdd.filter(specifier => !unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
-        if (importsFromUnhead.length) {
+        if (!unheadSpecifiers.length && !headSpecifiers.length) {
+          return generateTransform(s, id)
+        }
+
+        const { unheadVueComposablesImports } = await import('@unhead/vue')
+        const composablesFromUnhead = unheadSpecifiers.filter(specifier => unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
+        const unheadOnlySpecifiers = unheadSpecifiers.filter(specifier => !unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
+        if (composablesFromUnhead.length) {
           // warn if user has imported from @unhead/vue themselves
           if (!normalize(id).includes('node_modules')) {
             headDiagnostics.NUXT_B6001({ module: UnheadVue, file: link(normalize(id), { cwd: options.rootDir, formatter: absolute => `./${relative(normalize(options.rootDir), absolute)}` }) })
           }
-          s.prepend(`${genImport('#app/composables/head', toImports(importsFromUnhead))}\n`)
         }
-        if (importsFromHead.length) {
-          s.prepend(`${genImport(UnheadVue, toImports(importsFromHead))}\n`)
+        const importsToAddFromHead = [...composablesFromUnhead, ...headSpecifiers]
+        if (importsToAddFromHead.length) {
+          s.prepend(`${genImport('#app/composables/head', toImports(importsToAddFromHead))}\n`)
+        }
+        if (unheadOnlySpecifiers.length) {
+          s.prepend(`${genImport(UnheadVue, toImports(unheadOnlySpecifiers))}\n`)
         }
 
         return generateTransform(s, id)

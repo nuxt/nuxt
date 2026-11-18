@@ -1,7 +1,7 @@
 import { resolve } from 'pathe'
-import { joinRelativeURL, withTrailingSlash } from 'ufo'
+import { joinRelativeURL } from 'ufo'
 import { addTemplate } from '@nuxt/kit'
-import { getServerRuntime, resolveSpaLoadingTemplate, useServerBuild } from '@nuxt/kit/internal'
+import { getServerRuntime, isWithinDir, resolveSpaLoadingTemplate, useServerBuild } from '@nuxt/kit/internal'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -195,9 +195,8 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       // the entry substituted below; anything else belongs to a target, whose input vite
       // merges with the app's
       const input = config.build?.rolldownOptions?.input
-      const appDir = withTrailingSlash(nuxt.options.appDir)
       const targetEntries = input && typeof input === 'object' && !Array.isArray(input)
-        ? Object.entries(input).filter(([, value]) => value !== entry && !value.startsWith(appDir))
+        ? Object.entries(input).filter(([, value]) => value !== entry && !isWithinDir(value, nuxt.options.appDir))
         : []
 
       // server runtimes provide `navigator`; the other browser globals stay `undefined`, which

@@ -11,7 +11,7 @@ import { resolveModulePath } from 'exsolve'
 import type { ResolverOptions } from 'exsolve'
 import escapeRE from 'escape-string-regexp'
 import { getLayerDirectories, resolveAlias } from '@nuxt/kit'
-import { trackPendingTemplate } from '@nuxt/kit/internal'
+import { isWithinDir, trackPendingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt, ServerApi } from '@nuxt/schema'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 
@@ -31,7 +31,7 @@ export interface NitroLegacyOptions {
    * and auto-import from subdirectories of `server/utils/`.
    */
   imports?: boolean
-  /** Resolve `h3` to the bundled h3 v1 helper shim. */
+  /** Resolve `h3` to the bundled h3 v1 helpers in server code and, on Nuxt 4, in the server build of the app. */
   h3?: boolean
   /** Resolve `nitropack`, `nitropack/runtime` and `#internal/nitro` to their Nitro v3 equivalents. */
   specifiers?: boolean
@@ -105,8 +105,31 @@ interface ImportSpecifier {
 const STRING_LITERAL_RE = /^(['"])(.*)\1$/s
 const JSX_RE = /\.[cm]?[jt]sx$/
 
+interface ParsedImports {
+  code: string
+  specifiers: ImportSpecifier[]
+}
+
+/**
+ * The last parse of each file, reused while its code is unchanged. Each Nuxt instance
+ * keeps only the previous instance's parses.
+ */
+let parsedImports = new Map<string, ParsedImports>()
+let previousParsedImports = new Map<string, ParsedImports>()
+
 /** Module specifiers of the static and dynamic imports and re-exports of a file. */
 function findImportSpecifiers (code: string, filename: string): ImportSpecifier[] {
+  const cached = parsedImports.get(filename) ?? previousParsedImports.get(filename)
+  if (cached?.code === code) {
+    parsedImports.set(filename, cached)
+    return cached.specifiers
+  }
+  const specifiers = parseImportSpecifiers(code, filename)
+  parsedImports.set(filename, { code, specifiers })
+  return specifiers
+}
+
+function parseImportSpecifiers (code: string, filename: string): ImportSpecifier[] {
   const { module } = parseSync(filename, code, { lang: JSX_RE.test(filename) ? 'tsx' : 'ts', sourceType: 'module' })
   const specifiers: ImportSpecifier[] = []
   const add = (request: { start: number, end: number }, entries?: Array<{ isType: boolean, importName: { name: string | null } }>) => {
@@ -142,6 +165,9 @@ const LEGACY_SPECIFIER_RE = /^(?:h3(?:\/utils)?$|#imports$|nitropack(?:\/|$)|#in
 
 /** The specifiers that say a file is nitro v2 code. A migrated specifier wins over a legacy one. */
 function legacySpecifiers (code: string, filename: string, migratedVirtuals?: Set<string>): string[] {
+  if (!SPECIFIER_HINT_RE.test(code)) {
+    return []
+  }
   const legacy = new Set<string>()
   for (const specifier of findImportSpecifiers(code, filename)) {
     if (MIGRATED_SPECIFIER_RE.test(specifier.value) || migratedVirtuals?.has(specifier.value)) {
@@ -276,7 +302,7 @@ async function reportUserLegacyCode (dirs: string[], rootDir: string, legacy: Re
     } catch {
       continue
     }
-    const specifiers = findImportSpecifiers(code, path)
+    const specifiers = SPECIFIER_HINT_RE.test(code) ? findImportSpecifiers(code, path) : []
     if (!legacy.h3 && specifiers.some(specifier => !specifier.typeOnly && (specifier.value === 'h3' || specifier.value === 'h3/utils'))) {
       const version = resolveH3V1Version(dirname(path), h3V1Versions)
       if (version) {
@@ -414,7 +440,7 @@ function isMigrated (compatibility: ServerApi | undefined): boolean {
 
 export interface LegacyImportsPreset {
   from: string
-  imports: Array<string | { name: string, as?: string }>
+  imports: Array<string | { name: string, as?: string, typeFrom?: string }>
 }
 
 /** Render a set of auto-import presets as explicit re-exports for a barrel module. */
@@ -572,16 +598,21 @@ function getLegacyH3ShimPath (): string {
   return compatRuntimePath('h3-v1')
 }
 
+/** The h3 v1 helpers without the handler wrapper, which load none of Nitro's runtime. */
+export function getLegacyAppH3ShimPath (): string {
+  return compatRuntimePath('h3-v1-app')
+}
+
 export function getLegacyRuntimeConfigPath (): string {
   return compatRuntimePath('runtime-config')
 }
 
 /** The Nitro v2 auto-import names implemented by the compat runtime rather than by Nitro v3. */
-function getLegacyImportsPreset (): Array<{ from: string, imports: string[], priority?: number }> {
+function getLegacyImportsPreset (): Array<LegacyImportsPreset & { priority?: number }> {
   return [
     { from: compatRuntimePath('render'), imports: ['defineRenderHandler'] },
     { from: compatRuntimePath('event'), imports: ['useEvent'] },
-    { from: resolve(distDir, 'runtime/utils/app-config'), imports: ['useAppConfig'], priority: -1 },
+    { from: resolve(distDir, 'runtime/utils/app-config'), imports: [{ name: 'useAppConfig', typeFrom: 'nuxt/server' }], priority: -1 },
   ]
 }
 
@@ -607,7 +638,7 @@ async function getLegacyImportOverrides (legacy: Pick<ResolvedNitroLegacyOptions
  * The server auto-import presets, with the names the `nitroLegacy` toggles affect
  * redirected to their Nitro v2 implementations. With every toggle off, the default list.
  */
-export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOptions): Promise<Array<{ from: string, imports: Array<string | { name: string, as?: string }>, priority?: number }>> {
+export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOptions): Promise<Array<LegacyImportsPreset & { priority?: number }>> {
   return [
     ...getNuxtServerImportsPreset(await getLegacyImportOverrides(legacy)),
     ...v2ImportsPreset,
@@ -629,8 +660,9 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  *
  * Removal checklist: this module and `runtime/compat/*`; the `nitroLegacy` option
  * (`augments.ts`, `schema/config/nitro.ts`); the aliases `getLegacyNitroAliases` adds; the
- * `#nuxt-compat/*` virtuals and their `tsdown` externals; the `render:response` hook,
- * `rememberRenderBody` in `utils/renderer/options.ts` and the `hasLegacyHookListener`
+ * `#nuxt-compat/*` virtuals and their `tsdown` externals; the declarations `tsdown` builds
+ * for `runtime/compat`; the `render:response` hook, its type in `augments.ts` and
+ * `templates.ts`, `rememberRenderBody` in `utils/renderer/options.ts` and the `hasLegacyHookListener`
  * check in `handlers/renderer.ts`; the `legacyCompat` branches in `handlers/error.ts`,
  * `handlers/renderer.ts` and `utils/renderer/options.ts`; the `NUXT_B9001`-`B9005` and
  * `NUXT_E8008`-`E8010` diagnostics; `runtime/plugins/dev-hooks.ts`, which reads the
@@ -640,6 +672,16 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * call it once the nitro instance exists.
  */
 export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, legacy: ResolvedNitroLegacyOptions, modulePresets: LegacyImportsPreset[], installedModules: InstalledModule[] = [], unusedVariants: string[] = []): Promise<(nitro: Pick<Nitro, 'options' | 'hooks'>) => void> {
+  previousParsedImports = parsedImports
+  parsedImports = new Map()
+  // a build is not restarted, so nothing it parsed is read again
+  if (!nuxt.options.dev) {
+    nuxt.hook('close', () => {
+      parsedImports.clear()
+      previousParsedImports.clear()
+    })
+  }
+
   // resolved as the server build resolves them: a module may add an alias for the server
   // build only, or point an app alias at different code there
   const aliases: Record<string, string> = { ...nuxt.options.alias, ...nitroConfig.alias as Record<string, string> }
@@ -684,9 +726,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // declaration rather than by the accident of how core modules are installed. Nitro's
   // own runtime is v3 by definition, and the bare `h3` its internal routes import is h3 v2.
   const protectedDirs = [ownRuntime, withTrailingSlash(normalize(nuxt.options.buildDir)), ...getPackageDirs('nuxt/package.json', nuxt.options.rootDir), ...getPackageDirs('nitro/package.json', nuxt.options.rootDir)]
-  const isProtected = (path: string) => protectedDirs.some(dir => path.startsWith(dir))
+  const isProtected = (path: string) => protectedDirs.some(dir => isWithinDir(path, dir))
   const userDirs = [...layerServerDirs, ...getLayerDirectories(nuxt).map(layer => withTrailingSlash(normalize(layer.shared)))]
-  const isUserCode = (path: string) => userDirs.some(dir => path.startsWith(dir))
+  const isUserCode = (path: string) => userDirs.some(dir => isWithinDir(path, dir))
 
   /** The most specific module holding the real path, else one of the given paths. */
   const ownerOf = (real: string, paths: string[]) => {
@@ -1030,6 +1072,10 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
 
   /** The scanned files the server build can reach, so app-side module code is left out. */
   const attributable = (found: Map<string, string[]>): Map<string, string[]> => {
+    // the walk only filters what the scan found
+    if (found.size === 0) {
+      return found
+    }
     const roots = new Set<string>()
     for (const id of files.keys()) {
       // a registration names a specifier, while the scan keys the file it read

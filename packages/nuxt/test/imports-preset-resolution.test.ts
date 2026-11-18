@@ -1,12 +1,15 @@
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { normalize } from 'pathe'
+import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import type { MockInstance } from 'vitest'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { buildNuxt } from '@nuxt/kit'
 import type { InlinePreset } from 'unimport'
 import { loadNuxt } from '../src/index.ts'
 import { appCompatPresets, defaultPresets } from '../src/imports/presets.ts'
+import { ERROR_CHANNEL_BROADCAST } from '../src/runtime/server/dev-error/index.ts'
+import type { ErrorChannelMessage } from '../src/runtime/server/dev-error/index.ts'
 
 const fixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./imports-preset-fixture', import.meta.url))))
 
@@ -142,5 +145,43 @@ describe('imports preset resolution', () => {
 
     const messages = warn.mock.calls.map(call => call.join(' '))
     expect(messages.filter(message => message.includes('NUXT_B6002'))).toHaveLength(1)
+  })
+
+  it('warns once about a duplicated import, publishing it as a problem in development', async () => {
+    const published: ErrorChannelMessage[] = []
+    const listener = new BroadcastChannel(ERROR_CHANNEL_BROADCAST)
+    listener.onmessage = event => published.push((event as MessageEvent<ErrorChannelMessage>).data)
+    onTestFinished(() => listener.close())
+    const dir = await mkdtemp(join(fixtureDir, '.duplicated-'))
+    onTestFinished(() => rm(dir, { recursive: true, force: true }))
+    const file = join(dir, 'duplicated.ts')
+    await writeFile(file, 'export const other = 1\nexport const duplicated = 2\n')
+
+    const nuxt = await loadFixtureNuxt({
+      dev: true,
+      hooks: {
+        'imports:extend': (imports: Array<{ name: string, from: string }>) => {
+          imports.push({ name: 'duplicated', from: file }, { name: 'duplicated', from: 'some-package' })
+        },
+      },
+    })
+
+    await nuxt.ready()
+    await buildNuxt(nuxt)
+    const isImportProblems = (message: ErrorChannelMessage) => message.type === 'nuxt:dev:error:problems' && message.source === 'nuxt:imports'
+    await vi.waitFor(() => expect(published.some(isImportProblems)).toBe(true))
+    await nuxt.close()
+
+    const messages = warn.mock.calls.map(call => call.join(' '))
+    expect(messages.filter(message => message.includes('Duplicated imports "duplicated"'))).toHaveLength(1)
+
+    const problems = published.find(isImportProblems) as Extract<ErrorChannelMessage, { type: 'nuxt:dev:error:problems' }> | undefined
+    expect(problems).toMatchObject({ meta: { group: 'Nuxt', label: 'Imports' } })
+    expect(problems?.reports).toMatchObject([{
+      kind: 'warning',
+      name: 'Imports',
+      message: expect.stringMatching(/^Duplicated imports "duplicated", the one from "~~\/\.duplicated-\w+\/duplicated\.ts" has been ignored and "some-package" is used$/),
+      frames: [{ file, line: 2, column: 14 }],
+    }])
   })
 })

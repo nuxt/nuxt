@@ -2,20 +2,29 @@ import { dirname } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { VUE_PACKAGE_SPECIFIER_RE, isInVuePackages, resolveVuePackageImporter } from '@nuxt/kit/internal'
 import type { VuePackages } from '@nuxt/kit/internal'
-import type { Plugin } from 'vite'
+import type { Plugin, Rollup } from 'vite'
+
+type PluginContext = Rollup.PluginContext & { environment?: { mode: string, config: { consumer: string } } }
+type ResolvedId = Rollup.ResolvedId | Rollup.PartialResolvedId
+type ResolveIdHandler = Extract<NonNullable<Plugin['resolveId']>, { handler: unknown }>['handler']
 
 /**
  * Resolves every import of a Vue runtime package to the single copy of Vue the app is built
  * with, wherever the importing file is. Used as both a Vite and a Rolldown plugin.
  */
-export function VuePackagesPlugin (packages: VuePackages): Plugin {
+export function VuePackagesPlugin (packages: VuePackages, { cache = false }: { cache?: boolean } = {}): Plugin {
+  const resolutions = new WeakMap<object, Map<string, Promise<ResolvedId | null>>>()
+  const noEnvironment = {}
   return {
     name: 'nuxt:vue-packages',
     enforce: 'pre',
+    buildStart () {
+      resolutions.delete(this.environment ?? noEnvironment)
+    },
     resolveId: {
       order: 'pre',
       filter: { id: VUE_PACKAGE_SPECIFIER_RE },
-      async handler (id, importer, options) {
+      handler (id, importer, options) {
         if (importer && isInVuePackages(packages, importer)) {
           return
         }
@@ -23,16 +32,34 @@ export function VuePackagesPlugin (packages: VuePackages): Plugin {
         if (!pinnedImporter) {
           return
         }
-        const resolved = await this.resolve(id, pinnedImporter, { ...options, skipSelf: true })
-        if (!resolved || resolved.external || id === 'vue' || this.environment?.mode !== 'build' || this.environment.config.consumer !== 'server') {
-          return resolved
+        if (!cache) {
+          return resolvePinned.call(this, id, pinnedImporter, options)
         }
-        // a server build that leaves `vue` external has to load the rest of Vue from outside it too
-        const vue = await this.resolve('vue', resolveVuePackageImporter(packages, 'vue'), { skipSelf: true })
-        const path = vue?.external && resolveModulePath(id, { from: pinnedImporter, conditions: ['node', 'import'], try: true })
-        return path ? { id: path, external: 'absolute' } : resolved
+        const environment = this.environment ?? noEnvironment
+        let byEnvironment = resolutions.get(environment)
+        if (!byEnvironment) {
+          resolutions.set(environment, byEnvironment = new Map())
+        }
+        const isRequire = (options.custom?.['node-resolve'] as { isRequire?: boolean } | undefined)?.isRequire
+        const key = `${id}\0${options.kind ?? ''}\0${isRequire ? 1 : 0}\0${options.isEntry ? 1 : 0}`
+        let resolution = byEnvironment.get(key)
+        if (!resolution) {
+          byEnvironment.set(key, resolution = resolvePinned.call(this, id, pinnedImporter, options))
+        }
+        return resolution.then(resolved => resolved && { ...resolved })
       },
     },
+  }
+
+  async function resolvePinned (this: PluginContext, id: string, pinnedImporter: string, options: Parameters<ResolveIdHandler>[2]): Promise<ResolvedId | null> {
+    const resolved = await this.resolve(id, pinnedImporter, { ...options, skipSelf: true })
+    if (!resolved || resolved.external || id === 'vue' || this.environment?.mode !== 'build' || this.environment.config.consumer !== 'server') {
+      return resolved
+    }
+    // a server build that leaves `vue` external has to load the rest of Vue from outside it too
+    const vue = await this.resolve('vue', resolveVuePackageImporter(packages, 'vue'), { skipSelf: true })
+    const path = vue?.external && resolveModulePath(id, { from: pinnedImporter, conditions: ['node', 'import'], try: true })
+    return path ? { id: path, external: 'absolute' } : resolved
   }
 }
 

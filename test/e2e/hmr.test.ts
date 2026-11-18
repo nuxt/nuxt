@@ -52,6 +52,23 @@ test('basic HMR functionality', async ({ page, goto }) => {
   expect(page).toHaveNoErrorsOrWarnings()
 })
 
+test('HMR for static head of the app component', async ({ page, goto, fetch }) => {
+  const content = (path: string) => () => fetch(path).then(r => r.text()).then(html => html.match(/name="hmr-static-head" content="([^"]+)"/)?.[1])
+  const meta = page.locator('meta[name="hmr-static-head"]')
+
+  await goto('/')
+  await expect(meta).toHaveAttribute('content', 'v1')
+  await poll(content('/spa-shell')).toBe('v1')
+
+  fixture.replace('app/app.vue', `content: 'v1'`, `content: 'v2'`)
+  await poll(content('/'), 20_000).toBe('v2')
+  await poll(content('/spa-shell'), 20_000).toBe('v2')
+  await expect(meta).toHaveAttribute('content', 'v2')
+  await expect(meta).toHaveCount(1)
+
+  expect(page).toHaveNoErrorsOrWarnings()
+})
+
 test('detecting new routes', async ({ fetch }) => {
   expect((await fetch('/some-404')).status).toBe(404)
 
@@ -67,6 +84,15 @@ test('hot reloading route rules', async ({ fetch }) => {
   fixture.replace('app/pages/route-rules.vue', 'added in routeRules', 'edited in dev')
 
   await poll(header, 20_000).toBe('edited in dev')
+})
+
+test('SSR picks up a noScripts route rule added in dev', async ({ fetch }) => {
+  const speculatesRouteRules = () => fetch('/').then(r => r.text()).then(html => html.includes('"href_matches":"/route-rules"'))
+  await poll(speculatesRouteRules).toBe(false)
+
+  fixture.replace('app/pages/route-rules.vue', 'headers: {', 'noScripts: true,\n  headers: {')
+
+  await poll(speculatesRouteRules, 20_000).toBe(true)
 })
 
 test('SSR fetches pick up an edited server route', async ({ fetch }) => {
@@ -243,10 +269,18 @@ test('SSR picks up a changed export style in an auto-imported file', async ({ fe
   const key = () => ssrText(fetch, '/auto-import-key', 'key')
   await poll(key).toBe('default-export')
 
+  fixture.replace('app/composables/useHmrKey.ts', `'default-export'`, `'default-edited'`)
+
+  await poll(key, 30_000).toBe('default-edited')
+
   // the import injected into the page has to change from `default` to `useHmrKey`
   fixture.write('app/composables/useHmrKey.ts', `export function useHmrKey () {\n  return 'named-export'\n}\n`)
 
   await poll(key, 30_000).toBe('named-export')
+
+  fixture.replace('app/composables/useHmrKey.ts', `'named-export'`, `'edited-body'`)
+
+  await poll(key, 30_000).toBe('edited-body')
 })
 
 // https://github.com/nuxt/nuxt/issues/30169

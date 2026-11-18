@@ -16,7 +16,7 @@ const UNEMITTED_HOOKS: Record<string, string> = {
   },
 }
 
-const PACKAGE_FIX = 'Update the package to a version that supports Nuxt 5, or report the issue to its maintainers.'
+const PACKAGE_FIX = 'Update the package to a version that supports Nitro v3, or report the issue to its maintainers.'
 
 const INTERNAL_FRAME_RE = /[\\/]hookable[\\/]|[\\/]nitro-server[\\/](?:dist|src)[\\/]runtime[\\/]/
 const NODE_MODULES_RE = /^.*[\\/]node_modules[\\/]/

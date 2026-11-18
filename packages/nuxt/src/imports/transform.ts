@@ -23,6 +23,18 @@ interface TransformPluginOptions {
    * one we scan for imports.
    */
   refreshImports?: (file: string) => void | Promise<void>
+  /**
+   * Returns a counter that increases whenever the imports available for injection change, as
+   * computed with `getImportsSignature`.
+   */
+  getImportsVersion?: () => number
+}
+
+/** Serialises the fields of `imports` that affect the code injected into consumers. */
+export function getImportsSignature (imports: Import[]) {
+  return imports
+    .map(i => JSON.stringify([i.from, i.name, i.as, i.type, i.typeFrom, i.priority, i.disabled, i.declarationType, i.with]))
+    .join('\n')
 }
 
 function isTransformed (options: Partial<ImportsOptions>, id: string) {
@@ -35,7 +47,9 @@ function isTransformed (options: Partial<ImportsOptions>, id: string) {
   return isVue(id, { type: ['script', 'template'] }) || isJS(id)
 }
 
-export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: TransformPluginOptions) => createUnplugin(() => {
+export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getImportsVersion }: TransformPluginOptions) => createUnplugin(() => {
+  const invalidatedAt = new WeakMap<object, Map<string, number>>()
+
   // `$fetch` is not a global on the client, so code that relies on the global (including
   // module runtime code, which is not auto-imported) receives an import instead
   const fetchCtx = createUnimport({
@@ -84,9 +98,23 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports }: Tra
           // The exports a file provides can change with its contents, so it has to be rescanned
           // before its consumers are transformed again - otherwise they keep the imports it used
           // to provide, and the module they resolve to no longer has them.
-          const pending = refreshImports?.(normalize(file))
+          const path = normalize(file)
+          const pending = refreshImports?.(path)
           if (!pending) { return }
           await pending
+
+          // Vite soft-invalidates importers, which reuses their transform output, so they only
+          // need a fresh transform once the available imports have changed.
+          const version = getImportsVersion?.()
+          if (version !== undefined) {
+            let seen = invalidatedAt.get(this.environment)
+            if (!seen) {
+              seen = new Map()
+              invalidatedAt.set(this.environment, seen)
+            }
+            if ((seen.get(path) ?? 0) === version) { return }
+            seen.set(path, version)
+          }
 
           // The injected imports live in the consumers' transform output, which is only
           // regenerated if their modules are invalidated as well.

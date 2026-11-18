@@ -1,11 +1,13 @@
 import process from 'node:process'
 import type { Nuxt } from '@nuxt/schema'
 import type { ErrorReport } from 'my-bad'
-import type { BuildProgress } from 'my-bad/channel'
+import type { BuildProgress, ProblemMeta } from 'my-bad/channel'
 import { isFileLoadingAllowed } from 'vite'
-import type { NormalizedHotChannelClient, ViteDevServer, Plugin as VitePlugin } from 'vite'
+import type { ServerResponse } from 'node:http'
+import type { Connect, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { joinURL } from 'ufo'
-import { ERROR_CHANNEL_ENV, createReportFsLoader, openErrorBroadcast, stripControlCharacters } from 'nuxt/internal/dev-error'
+import { ERROR_CHANNEL_ENV, REQUEST_ID_HEADER, createProblemSetPublisher, createReportFsLoader, openErrorBroadcast, stripControlCharacters } from 'nuxt/internal/dev-error'
+import type { ErrorChannelMessage } from 'nuxt/internal/dev-error'
 
 /** The shape Vite gives transform failures. */
 export interface ViteTransformError {
@@ -19,7 +21,12 @@ export interface ViteTransformError {
 }
 
 export function isTransformError (error: unknown): error is ViteTransformError {
-  return typeof error === 'object' && error !== null && 'message' in error && ('plugin' in error || 'loc' in error || 'frame' in error)
+  if (typeof error !== 'object' || error === null || !('message' in error)) {
+    return false
+  }
+  // vite sends every error its middleware catches with these fields, unset unless a transform failed
+  const { plugin, loc, frame } = error as Partial<ViteTransformError>
+  return !!(plugin || loc || frame)
 }
 
 /** An error the browser raised at runtime, as the client plugin serialises it. */
@@ -27,9 +34,8 @@ export interface ClientRuntimeError {
   name?: string
   message: string
   stack?: string
-  /** Whether the app is left without a page to update, so it reloads once the report clears. */
-  fatal?: boolean
-
+  /** The page load that raised it, which the report is shown to. */
+  requestId?: string
 }
 
 export interface DevErrorReporter {
@@ -39,56 +45,83 @@ export interface DevErrorReporter {
   clear: () => void
   /** The file whose transform failed, while a report is current. */
   readonly file: string | undefined
-  /** Whether the current report came from the browser rather than the bundler. */
+  /** Whether a report from the browser, rather than the bundler, is open. */
   readonly isRuntime: boolean
   /** Show what the bundler is busy with on pages showing a report. */
   progress: (progress: BuildProgress) => void
-  /** Push overlays to open pages over the HMR channel. */
+  /** Report the errors open pages raise, and the compile errors Vite only sends to them. */
   attach: (server: ViteDevServer) => void
+  /** Replace the problem set for `source`. */
+  setProblems: (source: string, reports: ErrorReport[], meta?: ProblemMeta) => void
+  /** Clear the problem set for `source`. */
+  clearProblems: (source: string) => void
+  /** Tell the channel a my-bad dock is registered in Vite DevTools. */
+  registerDevTools: () => void
+  /** Report an error a dev server middleware raised serving `request`, as `METHOD /path`. */
+  reportRequestError: (error: unknown, request: string, requestId?: string) => Promise<void>
+  /** Whether `request` raised an error that is still open. */
+  hasRequestError: (request: string) => boolean
+  /** Retire the error `request` raised, which has since been served. */
+  requestServed: (request: string) => void
 }
+
+/** Where a producer publishes its problem sets. */
+export type ProblemSink = Pick<DevErrorReporter, 'setProblems' | 'clearProblems'>
 
 /** Turns the compile errors Vite raises into reports on the dev error channel. */
 export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered: string) => void }): DevErrorReporter {
   const broadcast = openErrorBroadcast()
-  nuxt.hook('close', () => broadcast.close())
-
   let server: ViteDevServer | undefined
-  // an error raised while the page loads predates its hmr connection
-  let pendingOverlay: { type: 'custom', event: string, data: unknown } | undefined
-  const channelPath = () => process.env[ERROR_CHANNEL_ENV] || joinURL(nuxt.options.app.baseURL, nuxt.options.devServer.errorChannel)
-  const overlayPath = joinURL(nuxt.options.app.baseURL, `${nuxt.options.devServer.errorChannel}-overlay`)
-  function showOverlay (report: ErrorReport, options: { reloadOnClear?: boolean } = {}) {
-    const hot = server?.environments.client?.hot
-    if (!hot) {
-      return
-    }
-    pendingOverlay = { type: 'custom', event: 'nuxt:dev:error', data: { id: report.id, url: joinURL(overlayPath, report.id), reloadOnClear: options.reloadOnClear } }
-    hot.send(pendingOverlay)
-  }
-
-  async function renderOverlayFor (report: ErrorReport): Promise<string> {
-    const [{ renderOverlay }, { nuxtTheme }] = await Promise.all([import('my-bad'), import('my-bad/presets')])
-    return renderOverlay(report, { cwd: nuxt.options.rootDir, channel: channelPath(), theme: nuxtTheme, tag: 'nuxt-error-overlay', startMinimized: true })
-  }
-
-  // a page rendered into a report may connect after the update that retired it, and asks
-  let clearedAt = 0
 
   let lastKey: string | undefined
   let current: ErrorReport | undefined
   let file: string | undefined
-  let isRuntime = false
+  // the browser error each page load is reporting, by request id, and the last one published for it
+  const browserReports = new Map<string, { key: string, report?: ErrorReport }>()
+  // the error each request a dev server middleware failed is reporting, by `METHOD /path`, and the last one published for it
+  const requestReports = new Map<string, { key: string, report?: ErrorReport }>()
+  // another process published an error that no file compiling again retires
+  let publishedRuntime = false
   // the file of a compile report another process published, which vite's hmr payload would replace without its name
   let publishedFile: string | undefined
+  // the reports another process published that are still open
+  const published = new Set<string>()
+  const problems = createProblemSetPublisher()
+  let devtools = false
+  let closed = false
+  // a rebuild or report still pending when Nuxt closes would post to a closed channel
+  const post = (message: ErrorChannelMessage) => closed || broadcast.postMessage(message)
+  // the channel can outlive this instance, and this runs before the dev server closes
+  nuxt.hook('close', () => {
+    closed = true
+    problems.close()
+    if (devtools) {
+      broadcast.postMessage({ type: 'nuxt:dev:error:devtools', registered: false } satisfies ErrorChannelMessage)
+    }
+    broadcast.close()
+  })
   // the same failure reaches the logger and the hot channel worded differently, at one position
   const keyOf = (error: ViteTransformError) => [error.loc?.file ?? error.id, error.loc?.line, error.loc?.column, error.loc ? '' : error.message].join(':')
 
   broadcast.onmessage = (event) => {
-    const message = event.data as { type?: string, report?: ErrorReport }
+    const message = event.data as { type?: string, report?: ErrorReport, id?: string, requestId?: string, request?: string }
     switch (message?.type) {
       case 'nuxt:dev:error:sync':
         if (current) {
           broadcast.postMessage({ type: 'nuxt:dev:error:report', report: current })
+        }
+        for (const [requestId, { report }] of browserReports) {
+          if (report) {
+            broadcast.postMessage({ type: 'nuxt:dev:error:report', report, requestId: requestId || undefined } satisfies ErrorChannelMessage)
+          }
+        }
+        for (const [request, { report }] of requestReports) {
+          if (report) {
+            broadcast.postMessage({ type: 'nuxt:dev:error:report', report, request } satisfies ErrorChannelMessage)
+          }
+        }
+        if (devtools) {
+          broadcast.postMessage({ type: 'nuxt:dev:error:devtools', registered: true } satisfies ErrorChannelMessage)
         }
         return
       // a compile error is remembered by file, so fixing the file clears it;
@@ -96,17 +129,35 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       case 'nuxt:dev:error:report':
 
         if (message.report && message.report.id !== current?.id) {
+          published.add(message.report.id)
           const compiled = compileFile(message.report)
           file = compiled ?? file
-          isRuntime ||= !compiled
+          publishedRuntime ||= !compiled
           publishedFile = compiled
+          // an error from no request replaces every open error
+          if (!message.requestId && !message.request) {
+            browserReports.clear()
+            requestReports.clear()
+          }
         }
         return
       case 'nuxt:dev:error:clear':
+        // a clear naming a request leaves the report open for the other requests that raised it
+        if (message.requestId || message.request) {
+          return
+        }
+        if (message.id) {
+          published.delete(message.id)
+        } else {
+          published.clear()
+        }
+        if (published.size) {
+          return
+        }
         publishedFile = undefined
         if (!current) {
           file = undefined
-          isRuntime = false
+          publishedRuntime = false
         }
     }
   }
@@ -119,7 +170,10 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         return
       }
       lastKey = key
-      isRuntime = false
+      publishedRuntime = false
+      // a compile error is published from no request, so it replaces the errors pages raised
+      browserReports.clear()
+      requestReports.clear()
       publishedFile = undefined
       file = (error.loc?.file ?? error.id)?.split('?')[0]
       try {
@@ -130,9 +184,12 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
           createReportFsLoader({ cwd: nuxt.options.rootDir, canRead: config && (file => isFileLoadingAllowed(config, file)) }),
         ])
         const report = await createReport(error, { cwd: nuxt.options.rootDir, kind: 'compile', loaders: [fs], presets: [nuxtPreset()] })
+        // cleared or replaced while it was being built
+        if (lastKey !== key) {
+          return undefined
+        }
         current = report
-        broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
-        showOverlay(report)
+        post({ type: 'nuxt:dev:error:report', report })
         if (!process.env[ERROR_CHANNEL_ENV]) {
           options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
         }
@@ -143,42 +200,79 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       }
     },
     clear () {
-      if (lastKey === undefined && file === undefined && !isRuntime) {
+      if (lastKey === undefined && file === undefined && !reporter.isRuntime) {
         return
       }
       lastKey = undefined
       publishedFile = undefined
-      clearedAt = Date.now()
+      published.clear()
       current = undefined
       file = undefined
-      isRuntime = false
-      pendingOverlay = undefined
-      broadcast.postMessage({ type: 'nuxt:dev:error:clear' })
-      server?.environments.client?.hot.send({ type: 'custom', event: 'nuxt:dev:error:clear' })
+      publishedRuntime = false
+      browserReports.clear()
+      requestReports.clear()
+      post({ type: 'nuxt:dev:error:clear' })
     },
     get file () {
       return file
     },
     get isRuntime () {
-      return isRuntime
+      return publishedRuntime || browserReports.size > 0 || requestReports.size > 0
     },
     progress (progress) {
-      broadcast.postMessage({ type: 'nuxt:dev:error:progress', progress })
+      post({ type: 'nuxt:dev:error:progress', progress })
+    },
+    setProblems: problems.set,
+    clearProblems: problems.clear,
+    registerDevTools () {
+      if (closed || devtools) {
+        return
+      }
+      devtools = true
+      broadcast.postMessage({ type: 'nuxt:dev:error:devtools', registered: true } satisfies ErrorChannelMessage)
+    },
+    async reportRequestError (error, request, requestId) {
+      if (!server || isTransformError(error) || !(error instanceof Error)) {
+        return
+      }
+      const key = `${error.name}:${error.message}:${error.stack}`
+      if (requestReports.get(request)?.key === key) {
+        return
+      }
+      const pending: { key: string, report?: ErrorReport } = { key, report: requestReports.get(request)?.report }
+      requestReports.set(request, pending)
+      try {
+        const config = server.config
+        const [{ createReport }, { nuxtPreset }, fs] = await Promise.all([
+          import('my-bad'),
+          import('my-bad/presets'),
+          createReportFsLoader({ cwd: nuxt.options.rootDir, canRead: file => isFileLoadingAllowed(config, file) }),
+        ])
+        const report = await createReport(error, { cwd: nuxt.options.rootDir, kind: 'error', loaders: [fs], presets: [nuxtPreset()] })
+        if (requestReports.get(request) !== pending) {
+          return
+        }
+        pending.report = report
+        post({ type: 'nuxt:dev:error:report', report, request, ...requestId && { requestId } })
+      } catch {
+        // vite has already logged the error
+      }
+    },
+    hasRequestError (request) {
+      return requestReports.has(request)
+    },
+    requestServed (request) {
+      const reported = requestReports.get(request)
+      if (!reported) {
+        return
+      }
+      requestReports.delete(request)
+      if (reported.report) {
+        post({ type: 'nuxt:dev:error:clear', id: reported.report.id, request })
+      }
     },
     attach (devServer) {
       server = devServer
-      devServer.middlewares.use(overlayPath, (req, res, next) => {
-        const id = req.url?.split('?')[0]?.replace(/^\//, '')
-        // a report quotes source, so it is only served to the page that was told about it
-        const site = req.headers['sec-fetch-site']
-        if (!id || !current || current.id !== id || (site !== undefined && site !== 'same-origin')) {
-          return next()
-        }
-        renderOverlayFor(current).then((html) => {
-          res.setHeader('content-type', 'text/html;charset=utf-8')
-          res.end(html)
-        }, next)
-      })
       // a hot update that fails to transform is only sent to the client, whose overlay is off
       for (const environment of Object.values(devServer.environments)) {
         const send = environment.hot.send.bind(environment.hot) as (...args: unknown[]) => void
@@ -191,22 +285,22 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         }) as typeof environment.hot.send
       }
       const hot = devServer.environments.client?.hot
-      hot?.on?.('nuxt:dev:client-error', (data: unknown, client) => {
+      hot?.on?.('nuxt:dev:client-error', (data: unknown) => {
         const error = toClientRuntimeError(data)
         if (error) {
-          reportRuntimeError(error, client).catch(() => {})
+          reportRuntimeError(error).catch(() => {})
         }
       })
-      hot?.on?.('nuxt:dev:error:shown', (data: unknown, client) => {
-        const since = (data as { since?: unknown } | null)?.since
-        if (typeof since === 'number' && since < clearedAt) {
-          client.send({ type: 'custom', event: 'nuxt:dev:error:clear' })
+      hot?.on?.('nuxt:dev:client-error:clear', (data: unknown) => {
+        const requestId = (data as { requestId?: unknown } | null)?.requestId
+        const slot = typeof requestId === 'string' ? requestId : ''
+        const reported = browserReports.get(slot)
+        if (!reported) {
+          return
         }
-      })
-      hot?.on?.('nuxt:dev:error:ready', (_data: unknown, client) => {
-        // a runtime report belongs to the page load that raised it
-        if (pendingOverlay && current?.kind === 'compile') {
-          client.send(pendingOverlay)
+        browserReports.delete(slot)
+        if (reported.report) {
+          post({ type: 'nuxt:dev:error:clear', id: reported.report.id, ...slot && { requestId: slot } })
         }
       })
     },
@@ -218,30 +312,32 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
   }
 
   /** Report an error the browser raised, whose stack points at the modules Vite served. */
-  async function reportRuntimeError (error: ClientRuntimeError, client: NormalizedHotChannelClient): Promise<void> {
+  async function reportRuntimeError (error: ClientRuntimeError): Promise<void> {
     if (!server) {
       return
     }
     // a module the browser could not import failed to compile, which is already reported
-    if (file
- && !isRuntime && IMPORT_FAILURE_RE.test(error.message)) {
+    if (file && IMPORT_FAILURE_RE.test(error.message)) {
       return
     }
-    const key = `runtime:${error.name}:${error.message}:${error.stack}`
-    if (key === lastKey) {
-      if (pendingOverlay) {
-        client.send(pendingOverlay)
-      }
+    const stack = error.stack && resolveStackUrls(server, error.stack)
+    // raised by code the dev server never served, such as DevTools or a browser extension
+    if (server.environments.client?.moduleGraph && error.stack && hasLocatedFrame(error.stack) && !hasLocatedFrame(stack!)) {
       return
     }
-    lastKey = key
-    isRuntime = true
-    file = undefined
+    // a runtime report belongs to the page load that raised it
+    const slot = error.requestId ?? ''
+    const key = `${error.name}:${error.message}:${error.stack}`
+    if (browserReports.get(slot)?.key === key) {
+      return
+    }
+    const pending: { key: string, report?: ErrorReport } = { key, report: browserReports.get(slot)?.report }
+    browserReports.set(slot, pending)
     try {
       const [{ createReport, renderAnsi }, { viteLoader }, { nuxtPreset }] = await Promise.all([import('my-bad'), import('my-bad/vite'), import('my-bad/presets')])
       const input = Object.assign(new Error(error.message), {
         name: error.name || 'Error',
-        stack: error.stack && resolveStackUrls(server, error.stack),
+        stack,
       })
       const report = await createReport(input, {
         cwd: nuxt.options.rootDir,
@@ -250,9 +346,12 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
         loaders: [viteLoader(server, { fs: false })],
         presets: [nuxtPreset()],
       })
-      current = report
-      broadcast.postMessage({ type: 'nuxt:dev:error:report', report })
-      showOverlay(report, { reloadOnClear: error.fatal !== false })
+      // the page recovered, raised another error, or was replaced while this was being built
+      if (browserReports.get(slot) !== pending) {
+        return
+      }
+      pending.report = report
+      post({ type: 'nuxt:dev:error:report', report, requestId: error.requestId })
       if (!process.env[ERROR_CHANNEL_ENV]) {
         options.print(renderAnsi(report, { cwd: nuxt.options.rootDir }))
       }
@@ -311,7 +410,7 @@ function toClientRuntimeError (data: unknown): ClientRuntimeError | undefined {
   if (typeof data !== 'object' || data === null) {
     return undefined
   }
-  const { name, message, stack, fatal } = data as Record<string, unknown>
+  const { name, message, stack, requestId } = data as Record<string, unknown>
   if (typeof message !== 'string') {
     return undefined
   }
@@ -319,8 +418,12 @@ function toClientRuntimeError (data: unknown): ClientRuntimeError | undefined {
     message,
     ...typeof name === 'string' && { name },
     ...typeof stack === 'string' && { stack },
-    ...typeof fatal === 'boolean' && { fatal },
+    ...typeof requestId === 'string' && { requestId },
   }
+}
+
+function hasLocatedFrame (stack: string): boolean {
+  return stack.split('\n').some(line => FRAME_LOCATION_RE.test(line))
 }
 
 /** The file of a frame, if it names one. */
@@ -379,6 +482,43 @@ function compileFile (report: ErrorReport): string | undefined {
   }
 }
 
+/** Adds the dev error channel's dock to Vite DevTools, when it is installed. */
+export async function DevErrorsDevToolsPlugin (nuxt: Nuxt, reporter: DevErrorReporter): Promise<VitePlugin> {
+  const { myBadDevTools } = await import('my-bad/vite')
+  return myBadDevTools({
+    channel: process.env[ERROR_CHANNEL_ENV] || joinURL(nuxt.options.app.baseURL, nuxt.options.devServer.errorChannel),
+    title: 'Problems',
+    onRegister: () => reporter.registerDevTools(),
+  })
+}
+
+/**
+ * Reports the errors dev server middlewares raise serving a request, which Vite only logs.
+ * Its middleware runs after every other plugin's, ahead of Vite's own error handler.
+ */
+export function DevRequestErrorsPlugin (reporter: DevErrorReporter): VitePlugin {
+  return {
+    name: 'nuxt:dev-request-errors',
+    apply: 'serve',
+    configureServer: {
+      order: 'post',
+      handler (server) {
+        return () => {
+          server.middlewares.use(function nuxtDevRequestErrors (error: unknown, req: Connect.IncomingMessage, _res: ServerResponse, next: Connect.NextFunction) {
+            const requestId = req.headers[REQUEST_ID_HEADER]
+            reporter.reportRequestError(error, requestOf(req), typeof requestId === 'string' ? requestId : undefined).catch(() => {})
+            next(error)
+          })
+        }
+      },
+    },
+  }
+}
+
+function requestOf (req: Connect.IncomingMessage): string {
+  return `${req.method} ${req.originalUrl || req.url || '/'}`
+}
+
 /**
  * Clears the report once the file that failed compiles again, and clears a browser
  * runtime error on any update. Vite transforms on demand and the page showing the error
@@ -393,11 +533,22 @@ export function DevErrorsPlugin (reporter: DevErrorReporter): VitePlugin {
       // runtime errors reach the terminal through the reporter, mapped and framed
       config.server.forwardConsole.unhandledErrors = false
     },
-    configureServer (server) {
-      reporter.attach(server)
+    configureServer: {
+      order: 'pre',
+      handler (server) {
+        reporter.attach(server)
+        server.middlewares.use(function nuxtDevErrorsServed (req, res, next) {
+          const request = requestOf(req)
+          if (reporter.hasRequestError(request)) {
+            res.once('finish', () => res.statusCode < 500 && reporter.requestServed(request))
+          }
+          next()
+        })
+      },
     },
     hotUpdate ({ file }) {
-      if (reporter.isRuntime) {
+      // a file that still fails to compile keeps its report until it compiles, which clears everything
+      if (reporter.isRuntime && !reporter.file) {
         reporter.clear()
       }
       if (!reporter.file || file !== reporter.file || pending === file) {

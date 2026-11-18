@@ -2,10 +2,10 @@ import { addRoute, createRouter, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import type { CompileRouterToStringOptions } from 'rou3/compiler'
 import { defu } from 'defu'
-import { tryUseNitro } from '@nuxt/kit'
-import { pageDiagnostics } from '@nuxt/kit/internal'
+import { tryUseNitro } from '../nitro.ts'
+import { pageDiagnostics } from '../diagnostics/pages.ts'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
-import { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './index.ts'
+import { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './route-path.ts'
 
 /** One entry of a route-rules router: the pattern it matches and the rules it resolves to. */
 export interface RouteRulesRoute {
@@ -374,6 +374,12 @@ export function normalizeAppMiddlewareRules (routeRules: Record<string, Record<s
   }
 }
 
+/** A server builder's resolved route rules: a router in Nitro v3, a record keyed by pattern in Nitro v2. */
+interface ResolvedRouteRulesHost {
+  routing?: { routeRules: { routes: RouteRulesRoute[] } }
+  options: { baseURL?: string, routeRules?: Record<string, Record<string, any>> }
+}
+
 /**
  * The route rules the build has resolved, as router entries.
  *
@@ -383,9 +389,13 @@ export function normalizeAppMiddlewareRules (routeRules: Record<string, Record<s
  * @internal
  */
 export function resolveRouteRulesRoutes (nuxt: Nuxt): { routes: RouteRulesRoute[], baseURL: string } {
-  const nitro = tryUseNitro()
+  const nitro = tryUseNitro() as ResolvedRouteRulesHost | undefined
   if (nitro?.routing) {
     return { routes: nitro.routing.routeRules.routes, baseURL: nitro.options.baseURL || '' }
+  }
+  if (nitro?.options.routeRules) {
+    const routes = Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, method: '', data }))
+    return { routes, baseURL: nitro.options.baseURL || '' }
   }
   const routeRules = normalizeRouteRules(nuxt.options.routeRules)
   normalizeAppMiddlewareRules(routeRules)

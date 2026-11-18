@@ -1,11 +1,9 @@
 import { pathToFileURL } from 'node:url'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { assertCaseIndependentRouteRuleKey, bundlerDiagnostics, createNormalizedRouteRulesRouter, foldRouteCase, foldRouteRulePath, foldRouteRulePattern, normalizeRouteRuleLookupPath, normalizeRouteRules } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nitro, NitroConfig } from 'nitro/types'
 import type { RouteRuleLayer } from 'h3/rules'
-import { foldRouteCase, foldRouteRulePath } from '../../nuxt/src/core/utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, createNormalizedRouteRulesRouter, foldRouteRulePattern, normalizeRouteRuleLookupPath, normalizeRouteRules } from '../../nuxt/src/core/utils/route-rules.ts'
 
 /**
  * Rewrites `redirect.statusCode` to `redirect.status`, warning once per route.
@@ -37,6 +35,16 @@ export function keepCachedIslandQuery (nitroConfig: Pick<NitroConfig, 'routeRule
   if (!cache || cache.allowQuery !== undefined) { return }
   nitroConfig.routeRules ||= {}
   nitroConfig.routeRules[ISLAND_ROUTE] = defu(nitroConfig.routeRules[ISLAND_ROUTE], { cache: { allowQuery: true } })
+}
+
+/**
+ * Key cached handlers and cached routes on their whole query, and pass it to the handler,
+ * unless the app sets a default `allowQuery` of its own.
+ */
+export function keepCachedQuery (nitroConfig: Pick<NitroConfig, 'cache'>): void {
+  const cache = nitroConfig.cache ||= {}
+  const defaults = cache.defaults ||= {}
+  defaults.allowQuery ??= true
 }
 
 /**
@@ -104,7 +112,7 @@ export function routeRulesCaseFoldPlugin (getNitro: () => Nitro) {
           preMerge: true,
         }
 
-        return [
+        const lines = [
           code.replace(FIND_ROUTE_RULES_EXPORT, 'const findSensitiveRouteRules = '),
           compileHandlersImport(rules, options),
           `const findFoldedRouteRules = ${compileFindRouteRules(rules, options)}`,
@@ -117,7 +125,9 @@ export function routeRulesCaseFoldPlugin (getNitro: () => Nitro) {
           `  const folded = findFoldedRouteRules(method, foldRouteRulePath(path))`,
           `  return folded.length > sensitive.length ? withRequestBases(folded, path) : sensitive`,
           `}`,
-        ].join('\n')
+        ]
+        // the module is generated, so there is no source for a sourcemap to point at
+        return { code: lines.join('\n'), map: { mappings: '' } }
       },
     },
   }

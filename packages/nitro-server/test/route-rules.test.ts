@@ -7,11 +7,11 @@ import { resolveModulePath } from 'exsolve'
 import { createMatcherFromFind } from 'h3/rules'
 import { compileRouteRules } from 'h3/rules/compiler'
 import type { Nitro, NitroConfig } from 'nitro/types'
-import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
+import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
 
-vi.mock('@nuxt/kit/internal', () => ({
+vi.mock('@nuxt/kit/internal', async importOriginal => ({
+  ...await importOriginal<typeof import('@nuxt/kit/internal')>(),
   bundlerDiagnostics: { NUXT_B7026: vi.fn() },
-  pageDiagnostics: { NUXT_B4022: vi.fn((p: { route: string, part: string }) => new Error(`NUXT_B4022 ${p.route} ${p.part}`)) },
 }))
 
 const { bundlerDiagnostics } = await import('@nuxt/kit/internal')
@@ -96,15 +96,33 @@ describe('keepCachedIslandQuery', () => {
   })
 })
 
+describe('keepCachedQuery', () => {
+  it('keys cached responses on their query by default', () => {
+    const config: Pick<NitroConfig, 'cache'> = {}
+    keepCachedQuery(config)
+    expect(config.cache?.defaults?.allowQuery).toBe(true)
+  })
+
+  it.each<[NonNullable<NonNullable<NitroConfig['cache']>['defaults']>['allowQuery']]>([
+    [false],
+    [[]],
+    [['page']],
+  ])('keeps a configured default (%j)', (allowQuery) => {
+    const config: Pick<NitroConfig, 'cache'> = { cache: { driver: 'memory', defaults: { allowQuery, maxAge: 60 } } }
+    keepCachedQuery(config)
+    expect(config.cache).toEqual({ driver: 'memory', defaults: { allowQuery, maxAge: 60 } })
+  })
+})
+
 describe('routeRulesCaseFoldPlugin', () => {
   const nitroPackage = resolveModulePath('nitro/package.json', { from: import.meta.url })
 
   async function loadMatcher (routeRules: NonNullable<NitroConfig['routeRules']>, baseURL = '/', middleware = false) {
     const options = { runtimeRules: { cache: '#nitro/runtime/route-rule-handlers' }, baseURL, preMerge: true }
     const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules, baseURL } }) as Nitro)
-    const code = await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing')
+    const { code } = (await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing'))!
     const file = join(await mkdtemp(join(tmpdir(), 'nuxt-route-rules-')), 'routing.mjs')
-    await writeFile(file, code!.replace(/from "(h3[^"]*)"/g, (_, id) => `from ${JSON.stringify(pathToFileURL(resolveModulePath(id, { from: nitroPackage })).href)}`))
+    await writeFile(file, code.replace(/from "(h3[^"]*)"/g, (_, id) => `from ${JSON.stringify(pathToFileURL(resolveModulePath(id, { from: nitroPackage })).href)}`))
     const { findRouteRules } = await import(pathToFileURL(file).href)
     const match = createMatcherFromFind(findRouteRules)
     return (path: string, method = 'GET') => {
@@ -218,8 +236,8 @@ describe('routeRulesCaseFoldPlugin', () => {
   })
 
   it('rejects constraints that depend on letter case', async () => {
-    await expect(loadMatcher({ '/x/:id((?:FOO|bar))': { headers: { 'x-id': '1' } } })).rejects.toThrow('NUXT_B4022 /x/:id((?:FOO|bar)) F')
-    await expect(loadMatcher({ '/x/:id([a-zς]+)': { headers: { 'x-id': '1' } } })).rejects.toThrow('NUXT_B4022 /x/:id([a-zς]+) [a-zς]')
+    await expect(loadMatcher({ '/x/:id((?:FOO|bar))': { headers: { 'x-id': '1' } } })).rejects.toThrow('The route rule `/x/:id((?:FOO|bar))` has a regex constraint that depends on letter case (`F`)')
+    await expect(loadMatcher({ '/x/:id([a-zς]+)': { headers: { 'x-id': '1' } } })).rejects.toThrow('The route rule `/x/:id([a-zς]+)` has a regex constraint that depends on letter case (`[a-zς]`)')
   })
 
   it('matches rules under a base URL regardless of casing', async () => {
@@ -227,6 +245,14 @@ describe('routeRulesCaseFoldPlugin', () => {
 
     expect(match('/App/admin').headers).toEqual({ 'x-admin': '1' })
     expect(match('/app/Admin').headers).toEqual({ 'x-admin': '1' })
+  })
+
+  it('returns an empty sourcemap for the module it rewrites', async () => {
+    const routeRules: NonNullable<NitroConfig['routeRules']> = { '/admin': { headers: { 'x-a': 'admin' } } }
+    const options = { runtimeRules: { cache: '#nitro/runtime/route-rule-handlers' }, baseURL: '/', preMerge: true }
+    const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules, baseURL: '/' } }) as Nitro)
+    const result = await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing')
+    expect(result?.map).toEqual({ mappings: '' })
   })
 
   it('leaves other modules alone', async () => {

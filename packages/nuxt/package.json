@@ -134,12 +134,10 @@
     "ultrahtml": "catalog:build",
     "uncrypto": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
-    "undici": "catalog:build",
     "unhead": "catalog:app-runtime",
     "unimport": "catalog:build",
     "unplugin": "catalog:build",
     "unrouting": "catalog:build",
-    "untyped": "catalog:build",
     "verkit": "catalog:build",
     "vue-bundle-renderer": "catalog:app-runtime",
     "vue-component-type-helpers": "catalog:vue"
@@ -158,6 +156,8 @@
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
+    "undici": "catalog:build",
+    "untyped": "catalog:build",
     "vite": "catalog:vite",
     "vitest": "catalog:dev",
     "vue": "catalog:app-runtime",
@@ -170,7 +170,7 @@
     "jiti": "^2.7.0",
     "rolldown": "^1.1.5",
     "vue": "^3.5.45",
-    "vue-router": "^5.5.0"
+    "vue-router": "^5.5.1"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {
@@ -187,7 +187,7 @@
     }
   },
   "engines": {
-    "node": "^22.22.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.22.0 || ^24.15.0 || >=26.0.0"
   },
   "publishConfig": {
     "exports": {
@@ -219,5 +219,8 @@
       "#pages/composables": "./dist/pages/runtime/composables.js"
     },
     "types": "./types.d.ts"
+  },
+  "inlinedDependencies": {
+    "untyped": "2.0.0"
   }
 }

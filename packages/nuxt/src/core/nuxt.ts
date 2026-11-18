@@ -3,13 +3,14 @@ import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { performance } from 'node:perf_hooks'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Hookable } from 'hookable'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveIgnorePatterns, runWithNuxtContext } from '@nuxt/kit'
-import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
+import { configDiagnostics, createServerBuild, installModules, isWithinDir } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -37,11 +38,11 @@ import { runtimeDependencies } from '../../meta.js'
 import pkg from '../../package.json' with { type: 'json' }
 import { scriptsStubsPreset } from '../imports/presets.ts'
 import { linkToAlias, logger } from '../utils.ts'
-import { installProxyDispatcher } from './utils/proxy.ts'
+import { setupProxyFromEnv } from './utils/proxy.ts'
 import { NavigateToEarlyReturnPlugin } from './plugins/navigate-to.ts'
 import { addModuleTranspiles, resolveModules } from './modules.ts'
 import { bundleServer } from './server.ts'
-import { NuxtPerfProfiler } from './perf.ts'
+import { NuxtPerfProfiler, claimCliStartTime } from './perf.ts'
 import schemaModule from './schema.ts'
 import { setupTemplateDiagnostics } from './template-diagnostics.ts'
 import { setupTypes } from './typescript.ts'
@@ -148,7 +149,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Restart Nuxt when layer directories are added or removed
   const layersDir = withTrailingSlash(resolve(nuxt.options.rootDir, 'layers'))
   nuxt.hook('builder:watch', (event, relativePath) => {
-    if ((event === 'addDir' || event === 'unlinkDir') && resolve(nuxt.options.srcDir, relativePath).startsWith(layersDir)) {
+    if ((event === 'addDir' || event === 'unlinkDir') && isWithinDir(resolve(nuxt.options.srcDir, relativePath), layersDir)) {
       return nuxt.callHook('restart', { hard: true })
     }
   })
@@ -218,7 +219,7 @@ async function initNuxt (nuxt: Nuxt) {
   const locallyScannedLayersDirs = layerDirs.map(l => join(l.root, 'layers/'))
   const rootWithTrailingSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const dirs of layerDirs) {
-    if (dirs.root !== rootWithTrailingSlash && locallyScannedLayersDirs.every(dir => !dirs.root.startsWith(dir))) {
+    if (dirs.root !== rootWithTrailingSlash && locallyScannedLayersDirs.every(dir => !isWithinDir(dirs.root, dir))) {
       nuxt.options.modulesDir.push(join(dirs.root, 'node_modules'))
     }
   }
@@ -321,22 +322,23 @@ async function initNuxt (nuxt: Nuxt) {
 }
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
-  await installProxyDispatcher()
+  setupProxyFromEnv()
 
   // Early-init profiler when CLI passes perf overrides (captures config loading).
   // Otherwise, create after config resolves from nuxt.config / env vars.
   let perf: NuxtPerfProfiler | undefined
-  const cliStartTime = (globalThis as any).__nuxt_cli__?.startTime as number | undefined
   const perfOverride = typeof opts.overrides?.debug === 'object' && opts.overrides.debug.perf
   if (perfOverride) {
-    perf = new NuxtPerfProfiler({ startTime: cliStartTime })
+    perf = new NuxtPerfProfiler({ startTime: claimCliStartTime() })
     perf.startPhase('config')
   }
 
+  const configStartTime = performance.now()
   const options = await loadNuxtConfig(opts)
 
   if (!perf && typeof options.debug === 'object' && options.debug.perf) {
-    perf = new NuxtPerfProfiler({ startTime: cliStartTime })
+    perf = new NuxtPerfProfiler({ startTime: claimCliStartTime(), startupEndTime: configStartTime })
+    perf.recordPhase('config', configStartTime)
   }
   perf?.endPhase('config')
 
@@ -549,7 +551,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     // build-dir entries are generated later in startup, and bare specifiers may
     // be resolved by builder-specific aliases, so neither can be checked here
     const resolved = resolveAlias(entry, nuxt.options.alias)
-    if (isAbsolute(resolved) && !resolved.startsWith(nuxt.options.buildDir) && !existsSync(resolved)) {
+    if (isAbsolute(resolved) && !isWithinDir(resolved, nuxt.options.buildDir) && !existsSync(resolved)) {
       configDiagnostics.NUXT_B5026({ entry, resolved: resolved === entry ? undefined : linkToAlias(resolved, nuxt) })
     }
   }

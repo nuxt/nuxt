@@ -12,6 +12,7 @@ import { _generateTypes } from '../../kit/src/template.ts'
 import { configDiagnostics } from '@nuxt/kit/internal'
 import { loadNuxt } from '../src/index.ts'
 import type { NitroConfig, NuxtConfig } from '../schema.ts'
+import type { NuxtPerfProfiler } from '../src/core/perf.ts'
 
 const repoRoot = await findWorkspaceDir()
 
@@ -126,6 +127,43 @@ describe('loadNuxt', () => {
       }),
     ])
     expect(loggerWarn).not.toHaveBeenCalled()
+  })
+
+  it('profiles CLI startup and config loading when `debug.perf` is set by the environment', async () => {
+    const rootDir = mkdtempSync(join(tmpdir(), 'nuxt-perf-config-'))
+    onTestFinished(() => rmSync(rootDir, { recursive: true, force: true }))
+    writeFileSync(join(rootDir, 'nuxt.config.ts'), 'await new Promise(resolve => setTimeout(resolve, 50))\nexport default {}\n')
+    vi.stubEnv('NUXT_DEBUG_PERF', 'quiet')
+    onTestFinished(() => { vi.unstubAllEnvs() })
+    ;(globalThis as any).__nuxt_cli__ = { startTime: Date.now() - 1000 }
+    onTestFinished(() => { delete (globalThis as any).__nuxt_cli__ })
+
+    const nuxt = await loadNuxt({ cwd: rootDir, ready: false })
+    onTestFinished(() => nuxt.close())
+
+    const { phases } = (nuxt._perf as unknown as NuxtPerfProfiler).getReport()
+    const startup = phases.find(p => p.name === 'startup')
+    const config = phases.find(p => p.name === 'config')
+    expect(startup!.duration).toBeGreaterThanOrEqual(950)
+    expect(config).toMatchObject({ memoryUnmeasured: true })
+    expect(config!.duration).toBeGreaterThanOrEqual(45)
+  })
+
+  it('profiles config loading without a CLI start time', async () => {
+    const rootDir = mkdtempSync(join(tmpdir(), 'nuxt-perf-config-'))
+    onTestFinished(() => rmSync(rootDir, { recursive: true, force: true }))
+    writeFileSync(join(rootDir, 'nuxt.config.ts'), 'await new Promise(resolve => setTimeout(resolve, 50))\nexport default {}\n')
+    vi.stubEnv('NUXT_DEBUG_PERF', 'quiet')
+    onTestFinished(() => { vi.unstubAllEnvs() })
+
+    const nuxt = await loadNuxt({ cwd: rootDir, ready: false })
+    onTestFinished(() => nuxt.close())
+
+    const report = (nuxt._perf as unknown as NuxtPerfProfiler).getReport()
+    const config = report.phases.find(p => p.name === 'config')
+    expect(report.phases.find(p => p.name === 'startup')).toBeUndefined()
+    expect(config!.duration).toBeGreaterThanOrEqual(45)
+    expect(report.totalDuration).toBeGreaterThanOrEqual(config!.duration)
   })
 
   it('reports experimental options that were removed', async () => {

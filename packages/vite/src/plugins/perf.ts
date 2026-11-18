@@ -1,4 +1,3 @@
-import { performance } from 'node:perf_hooks'
 import type { Nuxt } from '@nuxt/schema'
 import type { DevEnvironment, Plugin } from 'vite'
 import { isBundlerTracingEnabled, traceAsync } from '../utils/tracing.ts'
@@ -36,6 +35,23 @@ export function PerfPlugin (nuxt: Nuxt): Plugin {
     buildStart () {
       wrapPlugins(this.environment.plugins)
     },
+    buildApp: {
+      order: 'pre',
+      handler (builder) {
+        const perf = nuxt._perf
+        if (perf) {
+          const build = builder.build
+          builder.build = async (environment) => {
+            perf.startPhase(`vite:${environment.name}`)
+            const output = await build.call(builder, environment)
+            // a build that throws stays open, so the report shows it as unfinished
+            perf.endPhase(`vite:${environment.name}`)
+            return output
+          }
+        }
+        return Promise.resolve()
+      },
+    },
   }
 }
 
@@ -47,44 +63,24 @@ function traceFetchModule (environment: DevEnvironment): void {
 }
 
 function wrapPluginHook (plugin: Plugin, pluginName: string, hookName: typeof HOOKS_TO_TRACK[number], nuxt: Nuxt, tracing: boolean): void {
-  const original = plugin[hookName]
-  if (!original) { return }
-
-  if (typeof original === 'function') {
-    ;(plugin as any)[hookName] = function (this: any, ...args: any[]) {
-      return timedCall(original as (...a: any[]) => any, this, args, pluginName, hookName, nuxt, tracing)
-    }
-  } else if (typeof original === 'object' && 'handler' in original) {
-    const originalHandler = original.handler as (...a: any[]) => any
-    ;(original as { handler: (...a: any[]) => any }).handler = function (this: any, ...args: any[]) {
-      return timedCall(originalHandler, this, args, pluginName, hookName, nuxt, tracing)
-    }
+  const hook = plugin[hookName]
+  const handler = typeof hook === 'function' ? hook : hook?.handler
+  if (typeof handler !== 'function') { return }
+  const timed = function (this: any, ...args: any[]) {
+    return timedCall(handler as (...a: any[]) => any, this, args, pluginName, hookName, nuxt, tracing)
   }
+  // frozen plugins are left untimed rather than throwing
+  Reflect.set(plugin, hookName, typeof hook === 'function' ? timed : { ...hook, handler: timed })
 }
 
 function timedCall (fn: (...a: any[]) => any, ctx: any, args: any[], pluginName: string, hookName: typeof HOOKS_TO_TRACK[number], nuxt: Nuxt, tracing: boolean): any {
-  const call = tracing
-    ? () => traceAsync('nuxt.bundler.plugin', {
+  const call = (thisArg: any) => tracing
+    ? traceAsync('nuxt.bundler.plugin', {
         plugin: pluginName,
         hook: hookName,
         id: hookName === 'transform' ? args[1] : args[0],
         environment: ctx?.environment?.name,
-      }, () => fn.apply(ctx, args))
-    : () => fn.apply(ctx, args)
-  if (!nuxt._perf) {
-    return call()
-  }
-  const start = performance.now()
-  const record = () => nuxt._perf?.recordBundlerPluginHook(pluginName, hookName, performance.now() - start, start)
-  try {
-    const result = call()
-    if (result && typeof result === 'object' && 'then' in result) {
-      return (result as Promise<any>).finally(record)
-    }
-    record()
-    return result
-  } catch (err) {
-    record()
-    throw err
-  }
+      }, () => fn.apply(thisArg, args))
+    : fn.apply(thisArg, args)
+  return nuxt._perf ? nuxt._perf.timeBundlerHook(pluginName, hookName, ctx, call) : call(ctx)
 }

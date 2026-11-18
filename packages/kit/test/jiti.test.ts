@@ -335,4 +335,38 @@ describe('jiti resolution', { concurrent: false, timeout: 60_000 }, () => {
     expect(result).toMatchObject({ ok: false, code: 'NUXT_B5017' })
     expect(result.message).toMatch(/could not be loaded/)
   })
+
+  const INSTALL_DURING_LOOKUP = `const [hook, entry, target, destination] = process.argv.slice(-4)
+const { register } = await import('node:module')
+register(hook)
+const { symlink } = await import('node:fs/promises')
+const { loadJiti } = await import(entry)
+const before = !!await loadJiti({ rootDir: process.cwd(), install: false })
+await symlink(target, destination, 'dir')
+const after = !!await loadJiti({ rootDir: process.cwd(), install: false })
+console.log(JSON.stringify({ before, after }))`
+
+  it('finds a project-level jiti installed after a failed lookup', async () => {
+    const projectJiti = join(projectDir, 'node_modules/jiti')
+    try {
+      await expect(runNode(INSTALL_DURING_LOOKUP, [blockBare(), jitiInternal, installedJiti, projectJiti], projectDir)).resolves.toMatchObject({ before: false, after: true })
+    } finally {
+      await rm(projectJiti, { recursive: true, force: true })
+    }
+  })
+
+  it('finds the jiti that nuxt depends on installed after a failed lookup', async () => {
+    const store = join(projectDir, 'node_modules/.store/nuxt/node_modules')
+    await writeFiles(store, {
+      'nuxt/package.json': { name: 'nuxt', version: '4.5.1', type: 'module', main: 'index.mjs' },
+      'nuxt/index.mjs': 'export default {}\n',
+    })
+    await symlink(join(store, 'nuxt'), join(projectDir, 'node_modules/nuxt'), 'dir')
+    try {
+      await expect(runNode(INSTALL_DURING_LOOKUP, [blockBare(), jitiInternal, installedJiti, join(store, 'jiti')], projectDir)).resolves.toMatchObject({ before: false, after: true })
+    } finally {
+      await rm(join(projectDir, 'node_modules/nuxt'), { recursive: true, force: true })
+      await rm(join(projectDir, 'node_modules/.store'), { recursive: true, force: true })
+    }
+  })
 })

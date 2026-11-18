@@ -1,7 +1,7 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const MAX_TIMEOUT_DELAY = 2_147_483_647
 
@@ -152,6 +152,55 @@ describe('useCookie', () => {
     const cookie = useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
     expect(cookie.value).toBe('foo')
     expect(document.cookie).not.toContain('cookie-readonly')
+  })
+
+  it('should only write an initial cookie when there is something to persist or clear', async () => {
+    document.cookie = 'present-expired=value; Path=/'
+    document.cookie = 'present-null=null; Path=/'
+    await nextTick()
+
+    let target: any = document
+    let descriptor: PropertyDescriptor | undefined
+    while (target && !descriptor) {
+      descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
+      if (!descriptor) { target = Object.getPrototypeOf(target) }
+    }
+
+    const writes: string[] = []
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      get () {
+        return descriptor!.get!.call(document)
+      },
+      set (value: string) {
+        writes.push(value)
+        descriptor!.set!.call(document, value)
+      },
+    })
+
+    try {
+      const scope = effectScope()
+      scope.run(() => {
+        useCookie('absent-null-default', { default: () => null })
+        useCookie('absent-undefined-default', { default: () => undefined })
+        useCookie('absent-ref-null-default', { default: () => ref(null) })
+        useCookie('absent-ref-undefined-default', { default: () => ref(undefined) })
+      })
+      expect(writes).toEqual([])
+      scope.stop()
+      expect(writes).toEqual([])
+
+      useCookie('present-expired', { maxAge: 0, default: () => 'value' })
+      useCookie('present-null')
+      useCookie('absent-expired-with-default', { maxAge: 0, default: () => 'value' })
+      expect(writes).toEqual([
+        'present-expired=; Max-Age=0; Path=/',
+        'present-null=; Max-Age=0; Path=/',
+        'absent-expired-with-default=; Max-Age=0; Path=/',
+      ])
+    } finally {
+      delete (document as any).cookie
+    }
   })
 
   it('should re-write cookie on same-value assignment when refresh is true', async () => {
@@ -337,6 +386,16 @@ describe('useCookie', () => {
       expires: () => undefined,
     })
     expect(cookie.value).toBe('fallback')
+  })
+
+  it('should report a cookie that cannot be serialized', () => {
+    expect(() => useCookie('invalid name', { default: () => 'value' })).toThrow(expect.objectContaining({
+      code: 'NUXT_E7011',
+      cause: expect.any(TypeError),
+    }))
+    expect(() => useCookie('invalid-same-site', { default: () => 'value', sameSite: 'none' })).toThrow(expect.objectContaining({
+      code: 'NUXT_E7011',
+    }))
   })
 
   it('should keep session cookies without expires or maxAge as plain refs', async () => {

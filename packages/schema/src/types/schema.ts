@@ -1049,8 +1049,9 @@ export interface ConfigSchema {
     /**
      * Base path of the live error channel served in development.
      *
-     * Error pages and overlays subscribe to it to update in place, dismiss
-     * themselves when the problem is fixed, and open a frame in the editor.
+     * Every page subscribes to it to show errors and warnings as they arrive,
+     * dismiss them when the problem is fixed, and open a frame in the editor.
+     * It also serves the overlay's scripts.
      *
      * @experimental
      */
@@ -1281,8 +1282,8 @@ export interface ConfigSchema {
      * - a function or class instance passed as a prop to a server component, or in the `props`
      *   of a `<NuxtIsland>`
      *
-     * Warnings are printed to the terminal and, in development, sent to open error pages and
-     * overlays.
+     * Warnings are printed to the terminal and, in development, shown on every open page until
+     * fixed.
      *
      * The route check cannot see routes added at runtime with `router.addRoute()` or paths
      * that route middleware redirects, and is skipped when a custom `app/router.options` file
@@ -1533,6 +1534,22 @@ export interface ConfigSchema {
          * @default true
          */
         resetOnClear: boolean
+      }
+
+      /**
+       * Options that apply to `navigateTo`.
+       * @default { noopener: true }
+       */
+      navigateTo: {
+        /**
+         * When `true`, `navigateTo(url, { open })` passes `noopener` to `window.open` unless
+         * `open.windowFeatures.noopener` is set explicitly.
+         *
+         * This prevents the opened document from accessing your app through `window.opener`.
+         *
+         * @default true
+         */
+        noopener: boolean
       }
 
       useFetch: {
@@ -1819,6 +1836,13 @@ export interface ConfigSchema {
      * @default true
      */
     layoutChunk: boolean
+
+    /**
+     * Whether to build the client and server environments concurrently in a Vite production build.
+     *
+     * @default true
+     */
+    parallelBuild: boolean
 
     /**
      * Extract async data handler functions into separate chunks for better performance and caching.

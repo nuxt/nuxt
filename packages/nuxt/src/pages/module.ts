@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, ensureDependencyInstalled, findPath, getLayerDirectories, isIgnored, resolvePath, resolveTypePaths, tryUseNitro } from '@nuxt/kit'
-import { pageDiagnostics } from '@nuxt/kit/internal'
+import { createNormalizedRouteRulesRouter, isWithinDir, mergeMethodRouteRulesRoutes, normalizeRouteRuleLookupPath, normalizeRouteRulePath, pageDiagnostics, parseRouteRulesRoute, resolveRouteRulesRoutes } from '@nuxt/kit/internal'
 import { join, relative, resolve } from 'pathe'
 import { genInlineTypeImport, genObjectKey, genString, genTypeImport } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -24,9 +24,10 @@ import { PageMetaPlugin } from './plugins/page-meta.ts'
 import { PageComponentNamePlugin } from './plugins/component-name.ts'
 import { RouteInjectionPlugin } from './plugins/route-injection.ts'
 import { toVirtualId } from '../core/utils/virtual.ts'
-import { createNormalizedRouteRulesRouter, mergeMethodRouteRulesRoutes, normalizeRouteRuleLookupPath, normalizeRouteRulePath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '../core/utils/route-rules.ts'
 import { setTemplateDiagnosticsRouteMatcher } from '../core/template-diagnostics.ts'
 import { checkPeerVersion } from '../core/peer-version.ts'
+import { createScanProblems } from '../core/scan-problems.ts'
+import type { ScanReporter } from '../core/scan-problems.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import type { NitroInstance, NitroInstanceOptions, NuxtConfig, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
@@ -120,7 +121,15 @@ export default defineNuxtModule({
       return pages
     }
 
-    const resolvePagesRoutes = async () => handleRouteRules(await _resolvePagesRoutes(options.pattern, nuxt, pagesCtx, originalPagePaths))
+    const problems = createScanProblems(nuxt, 'nuxt:pages', 'Pages')
+    const scanPages = async (resolvePages: (report: ScanReporter) => Promise<NuxtPage[]>) => {
+      const scan = problems.scan()
+      const pages = await resolvePages(scan.report)
+      scan.done()
+      return handleRouteRules(pages)
+    }
+
+    const resolvePagesRoutes = () => scanPages(report => _resolvePagesRoutes(options.pattern, nuxt, pagesCtx, originalPagePaths, report))
 
     nuxt.options.alias['#vue-router'] = 'vue-router'
     const routerPath = (await resolveTypePaths(['vue-router'], nuxt.options.modulesDir))[0]?.[1] || 'vue-router'
@@ -188,7 +197,7 @@ export default defineNuxtModule({
 
     nuxt.hooks.hook('builder:watch', async (event, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
-      if (restartPaths.some(p => p === path || path.startsWith(p + '/'))) {
+      if (restartPaths.some(p => isWithinDir(path, p))) {
         const newSetting = await isPagesEnabled()
         if (options.enabled !== newSetting) {
           logger.info('Pages', newSetting ? 'enabled' : 'disabled')
@@ -325,7 +334,7 @@ export default defineNuxtModule({
       if (event === 'change' && !shouldAlwaysRegenerate) { return }
 
       // Attempt incremental tree update for page file add/unlink in dev mode
-      const layerIndex = pagesDirs.findIndex(dir => path.startsWith(dir))
+      const layerIndex = pagesDirs.findIndex(dir => isWithinDir(path, dir))
 
       if (pagesCtx && layerIndex !== -1 && !shouldAlwaysRegenerate) {
         try {
@@ -336,13 +345,13 @@ export default defineNuxtModule({
           } else if (event === 'unlink') {
             if (!pagesCtx.removeFile(path)) { return }
           }
-          nuxt.apps.default!.pages = await handleRouteRules(await augmentAndResolve(pagesCtx.emit(), pagesCtx.trackedFiles, nuxt, originalPagePaths))
+          nuxt.apps.default!.pages = await scanPages(report => augmentAndResolve(pagesCtx.emit(report), pagesCtx.trackedFiles, nuxt, originalPagePaths, report))
         } catch (err) {
           // Fallback: full rebuild on unexpected tree error
           pageDiagnostics.NUXT_B4012({ event, path, cause: err })
           nuxt.apps.default!.pages = await resolvePagesRoutes()
         }
-      } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
+      } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => isWithinDir(path, dir))) {
         // Full rebuild: scanPageMeta content change, layout/middleware change, or no pagesCtx
         nuxt.apps.default!.pages = await resolvePagesRoutes()
       }
@@ -408,7 +417,7 @@ export default defineNuxtModule({
       const clientBuildDir = resolve(nuxt.options.buildDir, 'dist/client')
       publicAssets = nitro.options.publicAssets.filter((asset) => {
         const dir = resolve(asset.dir)
-        return dir !== clientBuildDir && !dir.startsWith(clientBuildDir + '/')
+        return !isWithinDir(dir, clientBuildDir)
       })
     })
 

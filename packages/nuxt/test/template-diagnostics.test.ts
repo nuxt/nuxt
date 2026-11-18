@@ -51,7 +51,7 @@ function setup (options: TemplateDiagnosticsOptions = {}) {
     }
   }
 
-  return { compile, warnings }
+  return { compile, warnings, forget: diagnostics.forget }
 }
 
 describe('template diagnostics', () => {
@@ -196,6 +196,67 @@ describe('template diagnostics', () => {
       compile(`<template><ServerCard /></template>`)
       compile(broken, { ssr: true })
       expect(warnings).toHaveLength(2)
+    })
+
+    it('resolves a warning with the diagnostic it was reported as, once a compile no longer raises it', () => {
+      const resolved: Diagnostic<unknown>[] = []
+      const { compile, warnings } = setup({ onWarningResolved: diagnostic => resolved.push(diagnostic) })
+      const broken = `<template><ServerCard v-model="value" /><ServerCard @click="go" /></template>`
+      const fixed = `<template><ServerCard v-model="value" /><ServerCard /></template>`
+      compile(broken)
+      compile(broken, { ssr: true })
+
+      compile(fixed)
+      expect(warnings).toHaveLength(2)
+      expect(resolved).toStrictEqual([warnings[1]])
+      compile(fixed, { ssr: true })
+      expect(resolved).toHaveLength(1)
+    })
+
+    it('names a finding by its place among identical findings, so it keeps its id when it moves', () => {
+      const raised: string[] = []
+      const resolved: string[] = []
+      const { compile } = setup({ onWarning: (_, id) => raised.push(id), onWarningResolved: (_, id) => resolved.push(id) })
+      compile(`<template><ServerCard @click="go" /><ServerCard @click="go" /></template>`)
+      expect(new Set(raised).size).toBe(2)
+
+      compile(`<template><div /><ServerCard @click="go" /><ServerCard @click="go" /></template>`)
+      expect(raised.slice(2)).toStrictEqual(raised.slice(0, 2))
+      expect(resolved).toStrictEqual(raised.slice(0, 2))
+    })
+
+    it('reports a finding again under its id when only its line changes', () => {
+      const raised: Diagnostic<unknown>[] = []
+      const ids: string[] = []
+      const { compile } = setup({ onWarning: (diagnostic, id) => { raised.push(diagnostic); ids.push(id) } })
+      compile(`<template><div> <ServerCard @click="go" /></div></template>`)
+      compile(`<template><div>\n<ServerCard @click="go" /></div></template>`)
+      expect(raised.map(diagnostic => diagnostic.sources)).toStrictEqual([['/app/pages/index.vue:1:29'], ['/app/pages/index.vue:2:13']])
+      expect(ids[1]).toBe(ids[0])
+    })
+
+    it('resolves the findings of a deleted file, or of the files in a deleted directory', () => {
+      const resolved: string[] = []
+      const { compile, forget } = setup({ onWarningResolved: (_, id) => resolved.push(id) })
+      const broken = `<template><ServerCard @click="go" /></template>`
+      compile(broken, { file: '/app/pages/a.vue' })
+      compile(broken, { file: '/app/pages/nested/b.vue' })
+      compile(broken, { file: '/app/pages/nested-c.vue' })
+
+      forget('/app/pages/a.vue')
+      expect(resolved).toHaveLength(1)
+      forget('/app/pages/nested')
+      expect(resolved).toHaveLength(2)
+      expect(resolved[1]).toContain('/app/pages/nested/b.vue')
+    })
+
+    it('gives a new finding an id no other raised finding holds', () => {
+      const raised: string[] = []
+      const { compile } = setup({ onWarning: (_, id) => raised.push(id) })
+      compile(`<template><ServerCard @click="go" /><ServerCard @click="go" /></template>`)
+      compile(`<template><ServerCard  class="go" /><ServerCard @click="go" /><ServerCard @click="go" /></template>`)
+      expect(raised).toHaveLength(3)
+      expect(new Set(raised.slice(1)).size).toBe(2)
     })
   })
 
@@ -367,6 +428,66 @@ describe('template diagnostics in a Nuxt app', () => {
     const { compile, printed } = await loadApp({ ...pages, 'app/router.options.ts': 'export default { routes: routes => routes }' })
     compile('<template><NuxtLink to="/missing" /></template>')
     expect(printed('NUXT_B4025')).toStrictEqual([])
+  })
+
+  it('publishes warnings to the dev error channel in development, updates them when they move, and retires them once fixed or closed', async () => {
+    const { nuxt, compile } = await loadApp(pages, { dev: true })
+    const messages: Array<{ type: string, id?: string, report?: { id: string, name: string } }> = []
+    const channel = new BroadcastChannel('nuxt:dev:error')
+    onTestFinished(() => channel.close())
+    channel.onmessage = event => messages.push(event.data)
+
+    compile('<template><NuxtLink to="/missing" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+    expect(messages[0]).toMatchObject({ type: 'nuxt:dev:error:warning', report: { name: 'NUXT_B4025' } })
+
+    compile('<template><NuxtLink to="/users/1" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(2))
+    expect(messages[1]).toStrictEqual({ type: 'nuxt:dev:error:warning:clear', id: messages[0]!.report!.id })
+
+    compile('<template><NuxtLink to="/missing" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(3))
+    compile('<template><div /><NuxtLink to="/missing" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(4))
+    expect(messages[3]).toMatchObject({ type: 'nuxt:dev:error:warning', report: { id: messages[2]!.report!.id, frames: [{ line: 1, column: 28 }] } })
+
+    await nuxt.close()
+    await vi.waitFor(() => expect(messages).toHaveLength(5))
+    expect(messages[4]).toStrictEqual({ type: 'nuxt:dev:error:warning:clear', id: messages[2]!.report!.id })
+  })
+
+  it('repeats open warnings to a channel that starts listening late', async () => {
+    const { nuxt, compile } = await loadApp(pages, { dev: true })
+    const messages: Array<{ type: string, id?: string, report?: { id: string } }> = []
+    const channel = new BroadcastChannel('nuxt:dev:error')
+    onTestFinished(() => channel.close())
+    onTestFinished(() => nuxt.close())
+    channel.onmessage = event => messages.push(event.data)
+
+    compile('<template><NuxtLink to="/missing" /><NuxtLink to="/gone" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(2))
+    compile('<template><NuxtLink to="/missing" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(3))
+
+    channel.postMessage({ type: 'nuxt:dev:error:sync' })
+    await vi.waitFor(() => expect(messages).toHaveLength(4))
+    expect(messages[3]).toMatchObject({ type: 'nuxt:dev:error:warning', report: { id: messages[0]!.report!.id } })
+  })
+
+  it('retires the warnings of a page once it is deleted', async () => {
+    const { nuxt, rootDir, compile } = await loadApp(pages, { dev: true })
+    const messages: Array<{ type: string, id?: string, report?: { id: string } }> = []
+    const channel = new BroadcastChannel('nuxt:dev:error')
+    onTestFinished(() => channel.close())
+    onTestFinished(() => nuxt.close())
+    channel.onmessage = event => messages.push(event.data)
+
+    compile('<template><NuxtLink to="/missing" /></template>')
+    await vi.waitFor(() => expect(messages).toHaveLength(1))
+
+    await nuxt.callHook('builder:watch', 'unlink', join(rootDir, 'app/pages/index.vue'))
+    await vi.waitFor(() => expect(messages).toHaveLength(2))
+    expect(messages[1]).toStrictEqual({ type: 'nuxt:dev:error:warning:clear', id: messages[0]!.report!.id })
   })
 
   it('can be disabled', async () => {

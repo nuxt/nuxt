@@ -138,6 +138,14 @@ useKeyTwo(() => {})
     expect(await transform(`const html = '<script>0</script>'\nimport { useKey } from '#app'\nuseKey()`)).toContain(`useKey('$HJiaryoL2y' /* nuxt-injected */)`)
   })
 
+  it('should not treat script tags in a compiled Vue module as an SFC script block', async () => {
+    expect(await transform(`import { useKey } from '#app'\nuseKey()\nconst text = _createTextVNode("<script setup>0</script>")`, 'page.vue')).toMatchInlineSnapshot(`
+      "import { useKey } from '#app'
+      useKey('$seCKjW67AB' /* nuxt-injected */)
+      const text = _createTextVNode("<script setup>0</script>")"
+    `)
+  })
+
   it('should use different hash for each call of the same function', async () => {
     expect(await transform(`
 import { useKey } from '#app'

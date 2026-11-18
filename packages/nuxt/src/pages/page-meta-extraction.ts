@@ -6,7 +6,7 @@ import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 
 import { getLoader, parseModuleId } from '../core/utils/index.ts'
-import { findSFCScriptBlocks, getStaticPropertyKey, unwrapStaticExpression } from '../core/utils/parse-utils.ts'
+import { findOptionsApiSetupBody, findSFCScriptBlocks, getStaticPropertyKey, unwrapStaticExpression } from '../core/utils/parse-utils.ts'
 import { linkToAlias, logger, offsetToPosition } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
 
@@ -87,31 +87,6 @@ function collectStatementCalls (body: Array<ESTree.Node>, into: Set<ESTree.Node>
     if (expression?.type === 'CallExpression') {
       into.add(expression)
     }
-  }
-}
-
-/**
- * The body of the `setup()` option of an Options API default export, if the module has one.
- */
-function findOptionsApiSetupBody (program: ESTree.Program): Array<ESTree.Node> | undefined {
-  for (const statement of program.body) {
-    if (statement.type !== 'ExportDefaultDeclaration') { continue }
-
-    let declaration = unwrapStaticExpression(statement.declaration as ESTree.Node)
-    // `export default defineComponent({ ... })`
-    if (declaration?.type === 'CallExpression') {
-      declaration = unwrapStaticExpression(declaration.arguments[0])
-    }
-    if (declaration?.type !== 'ObjectExpression') { return }
-
-    for (const property of declaration.properties) {
-      if (property.type !== 'Property' || property.kind !== 'init' || getStaticPropertyKey(property) !== 'setup') { continue }
-      const value = property.value
-      if ((value.type === 'FunctionExpression' || value.type === 'ArrowFunctionExpression') && value.body?.type === 'BlockStatement') {
-        return value.body.body
-      }
-    }
-    return
   }
 }
 
@@ -247,6 +222,32 @@ export function getDynamicMetaKeys (absolutePath: string, extraExtractionKeys: S
 export function isScannablePageFile (path: string) {
   const { pathname } = parseModuleId(path)
   return !!getLoader(pathname) || !extname(pathname)
+}
+
+/** Where the first `definePageMeta` call of a page sets `key` to the string `value`, as `file:line:column`. */
+export function locatePageMetaKey (contents: string, absolutePath: string, key: string, value: string): string | undefined {
+  const loader = getLoader(absolutePath)
+  if (!loader) {
+    return
+  }
+  const scriptBlocks = loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader, offset: 0 }]
+  for (const script of scriptBlocks) {
+    if (!script.code.includes('definePageMeta')) { continue }
+    let call: ESTree.CallExpression | undefined
+    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+      if (!call && node.type === 'CallExpression' && node.callee.type === 'Identifier' && node.callee.name === 'definePageMeta') {
+        call = node
+      }
+    })
+    const argument = unwrapStaticExpression(call?.arguments[0])
+    if (argument?.type !== 'ObjectExpression') { continue }
+    const property = argument.properties.findLast(property => getStaticPropertyKey(property) === key)
+    const set = property?.type === 'Property' ? unwrapStaticExpression(property.value) : undefined
+    if (property && set?.type === 'Literal' && set.value === value) {
+      const { line, column } = offsetToPosition(contents, script.offset + property.start)
+      return `${absolutePath}:${line}:${column}`
+    }
+  }
 }
 
 export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: Set<string> = new Set(), options: ClassifyPageMetaOptions = {}): Partial<Record<keyof NuxtPage, any>> {

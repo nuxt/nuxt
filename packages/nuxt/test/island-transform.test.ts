@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Component } from '@nuxt/schema'
-import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
+import { ComponentsChunkPlugin, IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
 import { normalizeLineEndings } from './utils.ts'
 
 const getComponents = () => [{
@@ -614,5 +614,41 @@ import InteractiveButton from '~/components/InteractiveButton.vue'
       const result = await viteTransform(source, pageFile, true, () => [pageFile])
       expect(result).toContain('<NuxtTeleportIslandComponent :nuxt-client=')
     })
+  })
+})
+
+describe('components chunk', () => {
+  function setup (waitForClientBuild: () => Promise<void>) {
+    const plugins = ComponentsChunkPlugin({
+      dev: false,
+      getComponents: () => [{ filePath: '/app/components/Counter.vue', mode: 'all', pascalName: 'Counter' } as Component],
+      waitForClientBuild,
+    })
+    const client = plugins.find(p => p.name === 'nuxt:components-chunk:client')!
+    const server = plugins.find(p => p.name === 'nuxt:components-chunk:server')!
+    return {
+      buildClient () {
+        (client.buildStart as (this: unknown) => void).call({ emitFile: () => 'ref' })
+        ;(client.generateBundle as (this: unknown, options: unknown, bundle: object) => void).call({ getFileName: () => '_nuxt/Counter.js' }, {}, {})
+      },
+      load (environment: string) {
+        const load = server.load as { handler: (this: unknown, id: string) => Promise<string> }
+        return load.handler.call({ environment: { name: environment } }, '\0nuxt-component-chunk')
+      },
+    }
+  }
+
+  it('should not wait for the client build when loaded by the client build', async () => {
+    const { load } = setup(() => new Promise(() => {}))
+    await expect(load('client')).resolves.toBe('export default {}')
+  })
+
+  it('should include client chunk paths when loaded by the server build before the client build finishes', async () => {
+    let finish!: () => void
+    const { buildClient, load } = setup(() => new Promise((resolve) => { finish = resolve }))
+    const result = load('ssr')
+    buildClient()
+    finish()
+    expect(await result).toContain('Counter: "/_nuxt/Counter.js"')
   })
 })

@@ -2,7 +2,7 @@ import { lstat, symlink, unlink } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { matchesGlob } from 'node:path'
 import { dirname, isAbsolute, normalize, relative, resolve } from 'pathe'
-import { withTrailingSlash } from 'ufo'
+import { withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import type { Nuxt } from '@nuxt/schema'
 
@@ -56,8 +56,39 @@ export const nitroImplicitDependencies = ['nitro', 'h3', 'srvx', 'defu', 'consol
 
 export const GLOB_SUFFIX_RE = /\/[^/*]*\*[\s\S]*$/
 
+const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
+
+/**
+ * Drop the `server.fs.deny` pattern for Nitro's dev output, which dev error reports
+ * read to map frames through the server bundle's source map.
+ */
+export function withoutServerDirDeny (deny: string[], serverDir: string | undefined): string[] {
+  if (!serverDir) {
+    return deny
+  }
+  const pattern = `${resolve(serverDir).replace(GLOB_SPECIAL_CHARS_RE, '\\$&')}/**`
+  return deny.filter(entry => entry !== pattern)
+}
+
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
+}
+
+export function timePluginHooks (perf: Pick<NonNullable<Nuxt['_perf']>, 'timeBundlerHook'>, plugins: unknown[]): void {
+  for (const plugin of plugins as Array<Record<string, any> | null | undefined>) {
+    if (!plugin?.name) { continue }
+    const pluginName = `nitro:${plugin.name}`
+    for (const hookName of ['transform', 'resolveId', 'load'] as const) {
+      const hook = plugin[hookName]
+      const handler = typeof hook === 'function' ? hook : hook?.handler
+      if (typeof handler !== 'function') { continue }
+      const timed = function (this: unknown, ...args: unknown[]) {
+        return perf.timeBundlerHook(pluginName, hookName, this, ctx => handler.apply(ctx, args))
+      }
+      // frozen plugins are left untimed rather than throwing
+      Reflect.set(plugin, hookName, typeof hook === 'function' ? timed : { ...hook, handler: timed })
+    }
+  }
 }
 
 const NODE_MODULES_SEGMENT = '/node_modules/'
@@ -102,8 +133,8 @@ export function toTranspileNoExternal (entry: string): string | RegExp {
   if (!isAbsolute(entry)) {
     return entry
   }
-  const dir = escapeRE(normalize(entry)).replace(/\//g, '[\\\\/]')
-  return new RegExp(`^${dir}(?!.*[\\\\/]node_modules[\\\\/])`)
+  const dir = escapeRE(withoutTrailingSlash(normalize(entry))).replace(/\//g, '[\\\\/]')
+  return new RegExp(`^${dir}(?=[\\\\/]|$)(?!.*[\\\\/]node_modules[\\\\/])`)
 }
 
 /**
@@ -167,9 +198,8 @@ export function getSsrResolveConditions (...sources: Array<string[] | undefined>
 /**
  * Recover the package directory of an installed module.
  *
- * `resolveNuxtModule` answers with the `node_modules` directory a module resolved from
- * rather than the package root, so the package name has to be taken from the entry path
- * for the module's runtime directories to be findable.
+ * When `dir` is the containing `node_modules` directory, the package name is taken
+ * from the entry path; otherwise `dir` is already the package root.
  */
 export function toModulePackageDir (dir: string, entryPath: string): string {
   const resolved = normalize(dir)

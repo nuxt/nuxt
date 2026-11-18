@@ -3,10 +3,13 @@ import { createUnplugin } from 'unplugin'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import escapeStringRegexp from 'escape-string-regexp'
 import { genImport } from 'knitwork'
+import { VUE_PACKAGE_NAMES } from '@nuxt/kit/internal'
 
 import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 
 type ImportPath = string
+
+const VUE_RUNTIME_RE = new RegExp(String.raw`[\\/]node_modules[\\/](?:${VUE_PACKAGE_NAMES.map(name => name.replace('/', String.raw`[\\/]`)).join('|')})[\\/]`)
 
 interface TreeShakeComposablesPluginOptions {
   composables: Record<ImportPath, string[]>
@@ -50,7 +53,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
       filter: {
         id: {
           include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
-          exclude: VUE_NON_SCRIPT_BLOCK_RE,
+          exclude: [VUE_NON_SCRIPT_BLOCK_RE, VUE_RUNTIME_RE],
         },
         code: { include: new RegExp(`\\b(?:${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\b`) },
       },

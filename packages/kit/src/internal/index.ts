@@ -18,22 +18,31 @@ export { pageDiagnostics } from '../diagnostics/pages.ts'
 export { configDiagnostics } from '../diagnostics/config.ts'
 export { headDiagnostics } from '../diagnostics/head.ts'
 export { bundlerDiagnostics } from '../diagnostics/bundler.ts'
+export { docsBase } from '../diagnostics/_shared.ts'
 
 export { reportPendingTemplates, trackPendingTemplate } from './pending-templates.ts'
 
-export { loadJiti } from './jiti.ts'
+export { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from './jiti.ts'
 
 export { findPackageMissingSubpath } from '../dependency.ts'
 
-export { resolvePostcssPlugins } from './postcss.ts'
+export { resolvePostcssPluginPath, resolvePostcssPlugins } from './postcss.ts'
 
 export { lookupNodeModuleSubpath, parseNodeModulePath } from './node-module.ts'
 export type { ParsedNodeModulePath } from './node-module.ts'
 
 export { hasOwnSubpathImport } from './subpath-imports.ts'
 
+export { isWithinDir } from './paths.ts'
+
 export { VUE_PACKAGE_NAMES, VUE_PACKAGE_SPECIFIER_RE, isInVuePackages, resolveVuePackageImporter, resolveVuePackages } from './vue-packages.ts'
 export type { VuePackageName, VuePackages } from './vue-packages.ts'
+
+export { MAY_CONTAIN_DECORATOR_RE, hasDecoratorSyntax } from './decorators.ts'
+
+export { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './route-path.ts'
+export { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, createRouteRulesRouter, encodeRoutePattern, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, genNormalizePathCode, isWildcardRedirect, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath, normalizeRouteRules, parseRouteRulesRoute, resolveRouteRulesRoutes, resolveWildcardRedirect } from './route-rules.ts'
+export type { RouteRulesRoute, RouteRulesRouter } from './route-rules.ts'
 
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'
@@ -46,7 +55,7 @@ export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../cons
 
 export { createServerBuild, setServerBuild, useServerBuild } from './server-build.ts'
 
-export { addClientBuildState, restoreClientBuildState, saveClientBuildState } from './client-build-state.ts'
+export { addClientBuildState, restoreClientBuildState, saveClientBuildState, waitForClientBuild } from './client-build-state.ts'
 export type { ClientBuildState } from './client-build-state.ts'
 
 export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'

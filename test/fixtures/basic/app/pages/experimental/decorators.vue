@@ -13,11 +13,12 @@ class SomeClass {
 const value = new SomeClass().someMethod()
 
 const { data } = await useFetch('/api/experimental/decorators')
+const { data: tsxData } = await useFetch('/api/experimental/decorators-tsx')
 </script>
 
 <template>
   <div>
-    {{ value }}-{{ data }}
+    {{ value }}-{{ data }}-<DecoratedTsx />-{{ tsxData }}
   </div>
 </template>
 

@@ -68,7 +68,7 @@ export class NuxtError<DataT = unknown> extends Error implements _NuxtErrorContr
     this.data = details.data
     this.body = details.body
     this.cause = details instanceof Error ? details : details.cause
-    this.fatal = details.fatal ?? !!this.unhandled
+    this.fatal = details.fatal ?? (cause?.fatal === true || !!this.unhandled)
   }
 
   /** @deprecated use `status` */
@@ -166,4 +166,19 @@ export function createErrorFromThrown (thrown: unknown, context?: ThrownContext)
     }
   }
   return error
+}
+
+/**
+ * Whether an error thrown on the server should be masked from the client.
+ *
+ * Only errors deliberately raised with an HTTP status and `$fetch` errors with a
+ * response status share their status, message and data.
+ *
+ * @internal
+ */
+export function isUntrustedError (error: unknown): boolean {
+  if (error instanceof Error && error.name === 'FetchError' && typeof (error as { status?: unknown }).status === 'number') {
+    return false
+  }
+  return !!createErrorFromThrown(error).unhandled
 }

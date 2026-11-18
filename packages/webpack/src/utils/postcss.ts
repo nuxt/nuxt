@@ -3,7 +3,7 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { Plugin } from 'postcss'
 import { directoryToURL, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
-import { bundlerDiagnostics, findPackageMissingSubpath } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, findPackageMissingSubpath, resolvePostcssPluginPath } from '@nuxt/kit/internal'
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
@@ -59,13 +59,14 @@ export async function getPostcssConfig (nuxt: Nuxt) {
         ? [new URL(import.meta.url)]
         : nuxt.options.modulesDir.map(dir => directoryToURL(dir.replace(/\/node_modules\/?$/, '')))
 
-      const pluginFn = await tryImportModule<(opts: Record<string, any>) => Plugin>(pluginName, { url: parentURLs })
+      const pluginPath = resolvePostcssPluginPath(pluginName, parentURLs)
+      const pluginFn = pluginPath ? await tryImportModule<(opts: Record<string, any>) => Plugin>(pluginPath) : undefined
       if (typeof pluginFn === 'function') {
         plugins.push(pluginFn(pluginOptions))
         continue
       }
 
-      const packageName = isDefault ? undefined : findPackageMissingSubpath(pluginName, nuxt.options.modulesDir)
+      const packageName = isDefault || pluginPath ? undefined : findPackageMissingSubpath(pluginName, nuxt.options.modulesDir)
       if (packageName) {
         bundlerDiagnostics.NUXT_B7027({ pluginName, packageName })
       } else {

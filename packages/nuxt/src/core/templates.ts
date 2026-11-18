@@ -7,13 +7,12 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { tryUseNitro } from '@nuxt/kit'
-import { bundlerDiagnostics, getRuntimeConfigSchema, runtimeConfigSchemaToType, useServerBuild } from '@nuxt/kit/internal'
+import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, bundlerDiagnostics, createNormalizedRouteRulesRouter, genNormalizePathCode, getRuntimeConfigSchema, isWildcardRedirect, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes, resolveWildcardRedirect, runtimeConfigSchemaToType, useServerBuild } from '@nuxt/kit/internal'
 
-import { annotatePlugins, checkForCircularDependencies, filterPluginDependencies, hasPluginCapability, sortPluginsByDependsOn } from './app.ts'
+import { annotatePlugins, breakCircularDependencies, filterPluginDependencies, hasPluginCapability, sortPluginsByDependsOn } from './app.ts'
 import type { PluginCapability } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, createNormalizedRouteRulesRouter, genNormalizePathCode, isWildcardRedirect, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes, resolveWildcardRedirect } from './utils/route-rules.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
@@ -116,9 +115,9 @@ function createPluginTemplate (mode: 'client' | 'server'): NuxtTemplate {
     async getContents ({ nuxt, app }) {
       // in dev, plugins for the other mode are annotated too, for the cross-mode dependency warning
       const allPlugins = await annotatePlugins(nuxt, app.plugins.filter(p => nuxt.options.dev || p.mode !== excludedMode))
-      const plugins = sortPluginsByDependsOn(filterPluginDependencies(allPlugins.filter(p => p.mode !== excludedMode), { warn: nuxt.options.dev, mode, allPlugins }))
+      const isProductionBuild = !nuxt.options.dev && !nuxt.options._prepare
+      const plugins = sortPluginsByDependsOn(breakCircularDependencies(filterPluginDependencies(allPlugins.filter(p => p.mode !== excludedMode), { warn: nuxt.options.dev, mode, allPlugins }), isProductionBuild ? () => {} : undefined))
       setPluginDependenciesForMode(nuxt, mode, plugins)
-      checkForCircularDependencies(plugins)
       const exports: string[] = []
       const imports: string[] = []
       for (const plugin of plugins) {
@@ -736,6 +735,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
       `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const useStateDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useState)}`,
+      `export const navigateToDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.navigateTo)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
