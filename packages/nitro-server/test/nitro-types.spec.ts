@@ -2,7 +2,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type { NitroInstance, NitroInstanceOptions } from '@nuxt/kit'
 import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, RouteRuleConfig as SchemaRouteRuleConfig, TSReference } from '@nuxt/schema'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { Nitro, NitroConfig, NitroOptions, NitroRuntimeHooks, RouteRuleConfig, TracingChannelOptions } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroOptions, NitroRuntimeConfig, NitroRuntimeHooks, RouteRuleConfig, TracingChannelOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { $Fetch } from 'ofetch'
 import type { NuxtSSRContext } from '#app/types'
@@ -10,6 +10,7 @@ import type { NuxtSSRContext } from '#app/types'
 import type { NuxtRouteRuleConfig } from '../src/augments.ts'
 import type { defineEventHandler } from '../src/runtime/compat/h3-v1.ts'
 import type {} from '../src/runtime/compat/nitro-v2-types.ts'
+import type { useRuntimeConfig } from '../src/runtime/compat/runtime-config.ts'
 
 describe('contributed nitro instance types', () => {
   it('resolves `NitroInstance` to the instance this builder constructs', () => {
@@ -106,10 +107,25 @@ describe('nitro v2 compatibility types', () => {
   it('merges an augmentation of `nitropack/types` into the nitro v3 interface', () => {
     expectTypeOf<Parameters<NitroRuntimeHooks['nitro-types-spec:hook']>[0]>().toEqualTypeOf<{ ok: boolean }>()
   })
+
+  it('types the runtime config of `useRuntimeConfig(event)` with the declared keys', () => {
+    expectTypeOf<ReturnType<typeof useRuntimeConfig>>().toEqualTypeOf<NitroRuntimeConfig>()
+    expectTypeOf<ReturnType<typeof useRuntimeConfig>['nitroTypesSpecKey']>().toEqualTypeOf<string | undefined>()
+    expectTypeOf<ReturnType<typeof useRuntimeConfig>['nitroTypesSpecModuleKey']>().toEqualTypeOf<number | undefined>()
+  })
 })
+
+declare module '@nuxt/schema' {
+  interface RuntimeConfig {
+    nitroTypesSpecKey?: string
+  }
+}
 
 declare module '../src/runtime/compat/nitro-v2-types.ts' {
   interface NitroRuntimeHooks {
     'nitro-types-spec:hook': (payload: { ok: boolean }) => void
+  }
+  interface NitroRuntimeConfig {
+    nitroTypesSpecModuleKey?: number
   }
 }
