@@ -113,6 +113,13 @@ describe('nitro v2 compatibility types', () => {
     expectTypeOf<ReturnType<typeof useRuntimeConfig>['nitroTypesSpecKey']>().toEqualTypeOf<string | undefined>()
     expectTypeOf<ReturnType<typeof useRuntimeConfig>['nitroTypesSpecModuleKey']>().toEqualTypeOf<number | undefined>()
   })
+
+  it('accepts route rule keys declared on `nitropack/types` in the route rules Nuxt resolves', () => {
+    expectTypeOf<SchemaRouteRuleConfig['nitroTypesSpecRule']>().toEqualTypeOf<{ enabled: boolean } | undefined>()
+    expectTypeOf<NonNullable<NuxtPage['rules']>['nitroTypesSpecRule']>().toEqualTypeOf<{ enabled: boolean } | undefined>()
+    expectTypeOf<NuxtRouteRuleConfig<{ nuxt4: true }>['nitroTypesSpecRule']>().toEqualTypeOf<{ enabled: boolean } | undefined>()
+    expectTypeOf<NuxtRouteRuleConfig<Record<never, never>>['nitroTypesSpecRule']>().toEqualTypeOf<{ enabled: boolean } | undefined>()
+  })
 })
 
 declare module '@nuxt/schema' {
@@ -127,5 +134,8 @@ declare module '../src/runtime/compat/nitro-v2-types.ts' {
   }
   interface NitroRuntimeConfig {
     nitroTypesSpecModuleKey?: number
+  }
+  interface NitroRouteConfig {
+    nitroTypesSpecRule?: { enabled: boolean }
   }
 }

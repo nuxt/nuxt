@@ -7,6 +7,7 @@ import { describe, expect, it, onTestFinished } from 'vitest'
 
 const declaration = resolve(import.meta.dirname, '../src/runtime/compat/nitro-v2-types.ts')
 const nitroTypes = resolveModulePath('nitro/types', { from: import.meta.url }).replace(/\.mjs$/, '.d.mts')
+const h3Rules = resolveModulePath('h3/rules', { from: resolveModulePath('nitro/package.json', { from: import.meta.url }) }).replace(/\.mjs$/, '.d.mts')
 
 async function check (files: Record<string, string>) {
   const dir = await mkdtemp(join(tmpdir(), 'nitro-v2-types-'))
@@ -19,7 +20,7 @@ async function check (files: Record<string, string>) {
     noEmit: true,
     skipLibCheck: true,
     strict: true,
-    paths: { 'nitro/types': [nitroTypes], 'nitropack/types': [declaration] },
+    paths: { 'nitro/types': [nitroTypes], 'h3/rules': [h3Rules], 'nitropack': [declaration], 'nitropack/types': [declaration] },
   })
   return ts.getPreEmitDiagnostics(program).map(diagnostic => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
 }
@@ -50,6 +51,22 @@ export const hooks: Pick<NitroRuntimeHooks, 'module:hook' | 'app:hook'> = { 'mod
     const diagnostics = await check(first === 'nitropack/types'
       ? { 'module.d.ts': augmentation, 'app.d.ts': nitroAugmentation, 'usage.ts': usage }
       : { 'app.d.ts': nitroAugmentation, 'module.d.ts': augmentation, 'usage.ts': usage })
+    expect(diagnostics).toEqual([])
+  })
+
+  it('apply route rule keys declared on `nitropack` and `nitropack/types` to `h3/rules`', { timeout: 60_000 }, async () => {
+    const augmentation = (specifier: string) => `declare module '${specifier}' {
+  interface NitroRouteConfig { security?: { rateLimiter: boolean } }
+}
+`
+    const usage = `import type { NormalizedRouteRules, RouteRuleConfig } from 'h3/rules'
+export const config: RouteRuleConfig = { security: { rateLimiter: false } }
+// @ts-expect-error not a declared rule
+export const typo: RouteRuleConfig = { securty: { rateLimiter: false } }
+declare const rules: NormalizedRouteRules
+export const rateLimiter: boolean | undefined = rules.security?.rateLimiter
+`
+    const diagnostics = await check({ 'module.d.ts': `${augmentation('nitropack/types')}${augmentation('nitropack')}export {}\n`, 'usage.ts': usage })
     expect(diagnostics).toEqual([])
   })
 })
