@@ -186,11 +186,7 @@ describe('errors', () => {
           throw createError({ status: 401, message: 'unauthorized' })
         }
       })
-      addRouteMiddleware(middleware, { global: true })
-      onTestFinished(() => {
-        const globalMiddleware = useNuxtApp()._middleware.global
-        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
-      })
+      onTestFinished(addRouteMiddleware(middleware, { global: true }))
 
       const original = showError('boom')
       await expect(clearError({ redirect: '/?unauthorized' })).rejects.toThrow('unauthorized')
@@ -206,11 +202,7 @@ describe('errors', () => {
           return abortNavigation()
         }
       })
-      addRouteMiddleware(middleware, { global: true })
-      onTestFinished(() => {
-        const globalMiddleware = useNuxtApp()._middleware.global
-        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
-      })
+      onTestFinished(addRouteMiddleware(middleware, { global: true }))
 
       const original = showError('boom')
       await clearError({ redirect: '/?abort' })
@@ -231,11 +223,7 @@ describe('errors', () => {
           throw createError({ status: 403, message: 'forbidden', fatal: true })
         }
       })
-      addRouteMiddleware(middleware, { global: true })
-      onTestFinished(() => {
-        const globalMiddleware = useNuxtApp()._middleware.global
-        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
-      })
+      onTestFinished(addRouteMiddleware(middleware, { global: true }))
       const overlay = document.body.appendChild(document.createElement('nuxt-error-overlay'))
       onTestFinished(() => overlay.remove())
 
@@ -269,11 +257,7 @@ describe('errors', () => {
           return new Promise<void>((resolve) => { release = resolve })
         }
       })
-      addRouteMiddleware(middleware, { global: true })
-      onTestFinished(() => {
-        const globalMiddleware = useNuxtApp()._middleware.global
-        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
-      })
+      onTestFinished(addRouteMiddleware(middleware, { global: true }))
 
       const calls: unknown[] = []
       onTestFinished(useNuxtApp().hook('app:error:cleared', (options) => { calls.push(options) }))
@@ -301,11 +285,7 @@ describe('errors', () => {
           return false
         }
       })
-      addRouteMiddleware(middleware, { global: true })
-      onTestFinished(() => {
-        const globalMiddleware = useNuxtApp()._middleware.global
-        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
-      })
+      onTestFinished(addRouteMiddleware(middleware, { global: true }))
 
       const original = showError('boom')
       const settled = clearError({ redirect: '/?pending' })
@@ -328,11 +308,7 @@ describe('errors', () => {
           return new Promise<void>((resolve) => { release = resolve })
         }
       })
-      addRouteMiddleware(middleware, { global: true })
-      onTestFinished(() => {
-        const globalMiddleware = useNuxtApp()._middleware.global
-        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
-      })
+      onTestFinished(addRouteMiddleware(middleware, { global: true }))
 
       showError('boom')
       const settled = clearError({ redirect: '/?pending' })
@@ -356,11 +332,7 @@ describe('errors', () => {
           return new Promise<void>((resolve) => { pending[key] = resolve })
         }
       })
-      addRouteMiddleware(middleware, { global: true })
-      onTestFinished(() => {
-        const globalMiddleware = useNuxtApp()._middleware.global
-        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
-      })
+      onTestFinished(addRouteMiddleware(middleware, { global: true }))
 
       showError('boom')
       const first = clearError({ redirect: '/?pending=first' })
@@ -386,11 +358,7 @@ describe('errors', () => {
           throw createError({ status: 403, message: 'forbidden', fatal: true })
         }
       })
-      addRouteMiddleware(middleware, { global: true })
-      onTestFinished(() => {
-        const globalMiddleware = useNuxtApp()._middleware.global
-        globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
-      })
+      onTestFinished(addRouteMiddleware(middleware, { global: true }))
 
       await useRouter().replace('/?from')
       showError('boom')
