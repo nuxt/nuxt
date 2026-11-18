@@ -244,6 +244,35 @@ describe('h3 v1 shim', () => {
     expect(notModified.headers.has('content-type')).toBe(false)
   })
 
+  it('answers a handler that returns `null` with no content', async () => {
+    const empty = await defineEventHandler(() => null).fetch(new Request('http://nuxt/api/null'))
+    expect(empty.status).toBe(204)
+    expect(empty.headers.has('content-type')).toBe(false)
+    expect(await empty.text()).toBe('')
+
+    const accepted = await defineEventHandler((event) => {
+      setResponseStatus(event, 202)
+      return null
+    }).fetch(new Request('http://nuxt/api/null'))
+    expect(accepted.status).toBe(202)
+    expect(accepted.headers.has('content-type')).toBe(false)
+    expect(await accepted.text()).toBe('')
+
+    const written = await defineEventHandler((event) => {
+      event.node.res.statusCode = 201
+      event.node.res.setHeader('x-written', '1')
+      return null
+    }).fetch(new Request('http://nuxt/api/null'))
+    expect(written.status).toBe(201)
+    expect(written.headers.get('x-written')).toBe('1')
+  })
+
+  it('passes on from a handler that returns `undefined`', async () => {
+    const event = mockEvent('http://nuxt/api/test')
+    expect(await (defineEventHandler(() => undefined) as (event: unknown) => unknown)(event)).toBeUndefined()
+    expect(event.res.status).toBeUndefined()
+  })
+
   it('normalises errors thrown from a handler', async () => {
     const handler = defineEventHandler(() => {
       throw createError({ statusCode: 422, statusMessage: 'Unprocessable', data: { field: 'name' } })

@@ -361,6 +361,19 @@ describe('wrapLegacyHandler', () => {
     expect(passed.res.headers.has('content-type')).toBe(false)
   })
 
+  it('answers a handler that returns `null` with no content, keeping a status it set', async () => {
+    const empty = await (wrapLegacyHandler(() => null) as { fetch: (request: Request) => Promise<Response> }).fetch(new Request('http://nuxt/api/null'))
+    expect(empty.status).toBe(204)
+    expect(empty.headers.has('content-type')).toBe(false)
+
+    const gone = await (wrapLegacyHandler((event: any) => {
+      event.node.res.statusCode = 410
+      return null
+    }) as { fetch: (request: Request) => Promise<Response> }).fetch(new Request('http://nuxt/api/null'))
+    expect(gone.status).toBe(410)
+    expect(await gone.text()).toBe('')
+  })
+
   it.each([
     ['/_mw/deep?q=1', '/deep?q=1'],
     ['/_mw', '/'],

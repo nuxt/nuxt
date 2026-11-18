@@ -58,6 +58,25 @@ describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
     expect(error).toMatchObject({ statusCode: 422, statusMessage: 'Unprocessable', data: { from: 'user' } })
   })
 
+  it('answers a v1-style handler that returns `null` with no content', async () => {
+    const response = await fetch('/api/null')
+    expect(response.status).toBe(204)
+    expect(response.headers.has('content-type')).toBe(false)
+    expect(await response.text()).toBe('')
+
+    const accepted = await fetch('/api/null?status=1')
+    expect(accepted.status).toBe(202)
+    expect(accepted.headers.has('content-type')).toBe(false)
+
+    expect(await $fetch('/api/null?fetch=1')).toEqual({ value: 'undefined' })
+
+    for (let i = 0; i < 2; i++) {
+      const cached = await fetch('/api/cached-null')
+      expect(cached.status).toBe(204)
+      expect(cached.headers.has('content-type')).toBe(false)
+    }
+  })
+
   it('keeps the status of an error page unless a v2 `render:response` listener sets one', async () => {
     for (const accept of ['text/html', 'application/json']) {
       const response = await fetch('/missing', { headers: { accept } })
