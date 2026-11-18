@@ -1,4 +1,4 @@
-import { logger } from '@nuxt/kit'
+import { getNitroVersion, logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
 import { getDevtool, shouldTypeCheck } from '../utils/options.ts'
@@ -37,7 +37,11 @@ export function serverPreset (ctx: WebpackConfigContext) {
 
 export function serverStandalone (ctx: WebpackConfigContext) {
   if (!Array.isArray(ctx.config.externals)) { return }
-  ctx.config.externals.push(createServerExternals(ctx.nuxt))
+  // on nitropack v2 the dev bundle is imported by Node from disk, while on nitro v3 it is inlined
+  // into the Nitro build, which resolves these imports itself
+  ctx.config.externals.push(createServerExternals(ctx.nuxt, {
+    fileURLs: ctx.isDev && getNitroVersion(ctx.nuxt) !== 3,
+  }))
 }
 
 function serverPlugins (ctx: WebpackConfigContext) {
