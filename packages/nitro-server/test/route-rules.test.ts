@@ -27,7 +27,7 @@ describe('normalizeLegacyRouteRules', () => {
     const { routeRules, warnings } = normalize({ '/old': { redirect: { to: '/new', statusCode: 302 } as any } })
 
     expect(routeRules!['/old']!.redirect).toEqual({ to: '/new', status: 302 })
-    expect(warnings).toEqual([{ route: '/old' }])
+    expect(warnings).toEqual([{ count: 1, routes: '`/old`' }])
   })
 
   it('leaves a rule that already uses `status` alone', () => {
@@ -50,14 +50,14 @@ describe('normalizeLegacyRouteRules', () => {
     expect(routeRules!['/both']!.redirect).toEqual({ to: '/x', status: 307 })
   })
 
-  it('warns once per affected route', () => {
+  it('warns once, listing every affected route', () => {
     const { warnings } = normalize({
       '/a': { redirect: { to: '/1', statusCode: 302 } as any },
       '/b': { redirect: { to: '/2', statusCode: 301 } as any },
       '/c': { redirect: { to: '/3', status: 302 } },
     })
 
-    expect(warnings).toEqual([{ route: '/a' }, { route: '/b' }])
+    expect(warnings).toEqual([{ count: 2, routes: '`/a`\n  - `/b`' }])
   })
 
   it('tolerates absent or empty route rules', () => {

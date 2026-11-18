@@ -6,19 +6,23 @@ import type { Nitro, NitroConfig } from 'nitro/types'
 import type { RouteRuleLayer } from 'h3/rules'
 
 /**
- * Rewrites `redirect.statusCode` to `redirect.status`, warning once per route.
+ * Rewrites `redirect.statusCode` to `redirect.status`, with one warning listing the routes.
  *
  * The nitro v2 spelling is silently ignored by the version Nuxt now builds on, which would turn
  * a configured redirect status into a default without any indication.
  */
 export function normalizeLegacyRouteRules (routeRules: NitroConfig['routeRules']): void {
+  const routes: string[] = []
   for (const route in routeRules) {
     const redirect = routeRules[route]?.redirect
     if (!redirect || typeof redirect !== 'object' || !('statusCode' in redirect)) { continue }
 
     const { statusCode, ...rest } = redirect as { statusCode?: number, status?: number, to: string }
     routeRules[route]!.redirect = { ...rest, status: rest.status ?? statusCode }
-    bundlerDiagnostics.NUXT_B7026({ route })
+    routes.push(`\`${route}\``)
+  }
+  if (routes.length > 0) {
+    bundlerDiagnostics.NUXT_B7026({ count: routes.length, routes: routes.join('\n  - ') })
   }
 }
 
