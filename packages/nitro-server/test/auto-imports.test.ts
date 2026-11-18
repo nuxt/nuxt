@@ -2,9 +2,10 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from 'node:os'
 import { describe, expect, it, vi } from 'vitest'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
+import { rolldown } from 'rolldown'
 import type { Nuxt } from '@nuxt/schema'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from '../src/auto-imports.ts'
-import { ServerAutoImportsPlugin } from '../src/auto-imports-plugin.ts'
+import { ServerAutoImportsPlugin, serverImportSourcesPlugin } from '../src/auto-imports-plugin.ts'
 import { getServerImportsPresets, resolveNitroLegacyOptions } from '../src/compat.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
@@ -318,6 +319,53 @@ describe('createServerAutoImports', () => {
     }
     report.mockRestore()
     presetReport.mockRestore()
+  })
+
+  it('resolves a registered bare import from the module directory that can resolve it', async () => {
+    const rootDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-module-dep-'))
+    const files: Record<string, string> = {
+      'module/node_modules/module-only-dep/package.json': JSON.stringify({ name: 'module-only-dep', type: 'module', exports: { '.': { types: './index.d.mts', default: './index.mjs' } } }),
+      'module/node_modules/module-only-dep/index.mjs': 'export const useModuleOnlyDep = () => \'from-module-dep\'',
+      'module/node_modules/module-only-dep/index.d.mts': 'export declare const useModuleOnlyDep: () => \'from-module-dep\'',
+      'node_modules/root-dep/package.json': JSON.stringify({ name: 'root-dep', type: 'module', exports: './index.mjs' }),
+      'node_modules/root-dep/index.mjs': 'export const useRootDep = () => \'from-root-dep\'',
+      'server/api/injected.ts': 'export default () => [useModuleOnlyDep(), useRootDep()]',
+    }
+    for (const [path, contents] of Object.entries(files)) {
+      mkdirSync(dirname(join(rootDir, path)), { recursive: true })
+      writeFileSync(join(rootDir, path), contents + '\n')
+    }
+    const nuxt = mockNuxt()
+    nuxt.options.rootDir = rootDir
+    nuxt.options.modulesDir = [join(rootDir, 'node_modules'), join(rootDir, 'module/node_modules')]
+    const autoImports = createServerAutoImports(
+      nuxt,
+      { autoImport: true, imports: [{ name: 'useModuleOnlyDep', from: 'module-only-dep' }, { name: 'useRootDep', from: 'root-dep' }] },
+      join(rootDir, '.nuxt'),
+    )
+
+    await autoImports.writeTypes()
+
+    expect(readFileSync(autoImports.importsModulePath + '.mjs', 'utf8')).toContain('export { useModuleOnlyDep } from \'module-only-dep\'')
+    expect(readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')).toContain('typeof import(\'module-only-dep\')')
+    expect(await autoImports.getSourceTypePaths()).toEqual({ 'module-only-dep': [join(rootDir, 'module/node_modules/module-only-dep/index.d.mts')] })
+
+    const build = await rolldown({
+      input: [autoImports.importsModulePath + '.mjs', join(rootDir, 'server/api/injected.ts')],
+      plugins: [
+        ServerAutoImportsPlugin.rolldown({ autoImports, buildDir: join(rootDir, '.nuxt'), exclude: [] }),
+        serverImportSourcesPlugin(autoImports),
+      ],
+    })
+    try {
+      const { output } = await build.generate({ format: 'esm' })
+      const chunks = output.filter(o => o.type === 'chunk')
+      const fileNames = new Set(output.map(o => o.fileName))
+      expect(chunks.flatMap(chunk => chunk.imports).filter(id => !fileNames.has(id))).toEqual([])
+      expect(chunks.map(chunk => chunk.code).join('\n')).toContain('from-module-dep')
+    } finally {
+      await build.close()
+    }
   })
 
   it('resolves `#imports` to a path inside the types directory', () => {

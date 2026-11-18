@@ -37,7 +37,7 @@ import { nitroSchemaTemplate, nuxt4HostTypeTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
 import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
-import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
+import { ServerAutoImportsPlugin, serverImportSourcesPlugin } from './auto-imports-plugin.ts'
 import { unheadDedupePlugin } from './unhead.ts'
 import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
@@ -739,6 +739,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // deprecated, and deliberately left out of the server tsconfig: typing it would give a handler
   // an `any` return type, silently costing the route its response type
   nitroConfig.alias['#imports'] = autoImports.importsModulePath
+  nitroConfig.rollupConfig!.plugins!.push(serverImportSourcesPlugin(autoImports))
 
   if (autoImports.enabled) {
     nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
@@ -1083,6 +1084,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     Object.assign(opts.tsConfig.compilerOptions.paths, nitroTypePaths)
     Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths)
+    for (const [source, path] of Object.entries(await autoImports.getSourceTypePaths())) {
+      opts.tsConfig.compilerOptions.paths[source] ??= path
+      opts.serverTsConfig.compilerOptions.paths[source] ??= path
+    }
     opts.sharedTsConfig.compilerOptions ||= {}
     opts.sharedTsConfig.compilerOptions.paths ||= {}
     Object.assign(opts.sharedTsConfig.compilerOptions.paths, nitroTypePaths)

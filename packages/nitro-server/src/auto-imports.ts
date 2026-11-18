@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import { createIsIgnored } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, resolveTypePaths as resolvePackageTypePaths } from '@nuxt/kit'
 import { isWithinDir } from '@nuxt/kit/internal'
+import { resolveModulePath } from 'exsolve'
 import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { Import, InjectImportsOptions, InlinePreset, Unimport } from 'unimport'
@@ -16,6 +17,13 @@ export interface ServerAutoImports {
   getImports: () => Promise<Import[]>
   /** Write `#imports` and the type declarations for the server program. */
   writeTypes: () => Promise<void>
+  /**
+   * The directory a bare import source is resolved from, for a registered source that the
+   * project root cannot resolve but one of `modulesDir` can.
+   */
+  resolveSourceDir: (source: string) => Promise<string | undefined>
+  /** `paths` substitutions for the sources `resolveSourceDir` resolves. */
+  getSourceTypePaths: () => Promise<Record<string, [string]>>
   /** Path of the generated module `#imports/server` resolves to in the server program. */
   importsModulePath: string
   /** Whether auto-imports are enabled at all. */
@@ -31,6 +39,8 @@ export interface ServerAutoImportsContext {
 
 const MAX_REPORTED_FILES = 10
 const DOLLAR_FETCH_RE = /(?<![\w$.])\$fetch\b/
+const BARE_SPECIFIER_RE = /^(?:@[\w.-]+\/)?\w[\w.-]*(?:\/|$)/
+const SOURCE_RESOLVE_CONDITIONS = ['node', 'import', 'require']
 const GLOBAL_FETCH_IMPORT: Import = { name: '$fetch', from: 'ofetch' }
 
 /** Creates and applies the auto-imports available to the modules the server builder bundles. */
@@ -74,6 +84,23 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
   const layerPriorities = nuxt.options._layers
     .map((layer, i) => [layer.config.rootDir, nuxt.options._layers.length - i] as const)
     .sort(([a], [b]) => b.length - a.length)
+
+  let sourceDirs: Promise<Map<string, string>> | undefined
+  function resolveSourceDirs () {
+    sourceDirs ??= init().then(async () => {
+      const dirs = new Map<string, string>()
+      const searchDirs = [nuxt.options.rootDir, ...nuxt.options.modulesDir ?? []]
+      for (const { from } of await ctx.getImports()) {
+        if (dirs.has(from) || !BARE_SPECIFIER_RE.test(from)) { continue }
+        const dir = searchDirs.find(dir => resolveModulePath(from, { from: directoryToURL(dir), conditions: SOURCE_RESOLVE_CONDITIONS, try: true }))
+        if (dir && dir !== nuxt.options.rootDir) {
+          dirs.set(from, dir)
+        }
+      }
+      return dirs
+    })
+    return sourceDirs
+  }
 
   let initialised: Promise<void> | undefined
   function init () {
@@ -225,6 +252,15 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     async getImports () {
       await init()
       return ctx.getImports()
+    },
+
+    async resolveSourceDir (source) {
+      return (await resolveSourceDirs()).get(source)
+    },
+
+    async getSourceTypePaths () {
+      const resolved = await Promise.all([...await resolveSourceDirs()].map(([source, dir]) => resolvePackageTypePaths([source], [dir], { entry: true })))
+      return Object.fromEntries(resolved.flat().map(([source, path]) => [source, [path]]))
     },
 
     async refresh () {
