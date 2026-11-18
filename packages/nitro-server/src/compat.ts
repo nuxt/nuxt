@@ -1363,6 +1363,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     importsBarrel,
     unimport,
     nuxt.options.rootDir,
+    id => [...v3Plugins].some(plugin => registrationPaths(plugin).includes(normalize(id.replace(/\?.*$/, '')))),
   )
 
   const withNitro = nuxt as Nuxt & { _nitro?: { options: NitroOptions } }
@@ -1457,6 +1458,7 @@ function createLegacyResolvePlugin (
   importsBarrel: string,
   unimport: Unimport,
   rootDir: string,
+  isV3PluginFile: (id: string) => boolean,
 ) {
   const h3Shim = compatRuntimePath('h3-v1')
   const nitroShim = compatRuntimePath('nitro-v2')
@@ -1480,7 +1482,7 @@ function createLegacyResolvePlugin (
 
   /** A plugin in scope that keeps v2 semantics. A module virtual has no file to read and counts as v2. */
   const isLegacyPlugin = async (id: string) => {
-    if (!scopeFor(id)) {
+    if (!scopeFor(id) || isV3PluginFile(id)) {
       return false
     }
     const code = await readFile(id.replace(/\?.*$/, ''), 'utf8').catch(() => undefined)

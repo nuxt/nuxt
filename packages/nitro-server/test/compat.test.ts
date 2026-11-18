@@ -15,6 +15,7 @@ import { exec } from 'tinyexec'
 import { getLegacyNitroAliases, getLegacyRuntimeConfigPath, getNitroPackageResolutions, getServerImportsPresets, resolveNitroLegacyOptions, scanLegacyScope, setupNitroCompat } from '../src/compat.ts'
 import { getH3ImportsPreset, nuxtServerImportsPreset, v2ImportsPreset } from '../src/imports.ts'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
+import { migratedPlugins } from '../src/registrations.ts'
 import { kServerApi } from '@nuxt/kit/internal'
 import { H3 } from 'nitro/h3'
 import { parseSync } from 'rolldown/utils'
@@ -533,9 +534,13 @@ describe('setupNitroCompat', () => {
     writeFileSync(join(dir, 'handler.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => 'legacy')`)
     writeFileSync(legacy, `export default (nitroApp) => { nitroApp.hooks.callHook('legacy').catch(() => {}) }`)
     writeFileSync(migrated, `import { definePlugin } from 'nitro'\nexport default definePlugin(() => {})`)
+    const declared = join(dir, 'declared.ts')
+    writeFileSync(declared, `export default (nitroApp) => {}`)
 
     const nitroConfig: NitroConfig = { handlers: [{ route: '/legacy', handler: join(dir, 'handler.ts') } as any] }
-    await setupNitroCompat(createNuxt({ nitro: { plugins: [legacy, migrated] } }), nitroConfig, legacyOff, [])
+    const nuxt = createNuxt({ nitro: { plugins: [legacy, migrated, declared] } })
+    migratedPlugins(nuxt).add(declared)
+    await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
 
     const plugin = compatPlugin(nitroConfig)
     const resolveId = (id: string) => plugin.resolveId.handler.call({ resolve: () => Promise.resolve({ id }) }, id, '#nitro/virtual/plugins')
@@ -545,6 +550,7 @@ describe('setupNitroCompat', () => {
     expect(plugin.load.handler(wrapped)).toContain(`import plugin from ${JSON.stringify(legacy)}`)
     expect(plugin.load.handler(wrapped)).toContain('export default wrapLegacyPlugin(plugin)')
     await expect(resolveId(migrated)).resolves.toBeUndefined()
+    await expect(resolveId(declared)).resolves.toBeUndefined()
     await expect(resolveId('/elsewhere/plugin.ts')).resolves.toBeUndefined()
   })
 
