@@ -39,7 +39,7 @@ import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, rout
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
 import { ServerAutoImportsPlugin, serverImportSourcesPlugin, serverImportsModulePlugin } from './auto-imports-plugin.ts'
 import { unheadDedupePlugin } from './unhead.ts'
-import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
+import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getLegacyNitroTypesDeclaration, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
 import { setupScanSuffixes } from './scan-suffixes.ts'
 import { addLegacyRuntimeMounts, createLegacyBuildStorage, getLegacyStorageMounts } from './storage.ts'
@@ -1132,6 +1132,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (target.endsWith('/') || stats?.isDirectory()) {
         serverPaths[`${alias}/*`] = [`${absolutePath}/*`]
       }
+    }
+    if (legacy.specifiers) {
+      const declaration = getLegacyNitroTypesDeclaration()
+      serverPaths.nitropack = [declaration]
+      serverPaths['nitropack/types'] = [declaration]
+      // first, so that it loads before any file augmenting `nitropack/types`
+      opts.serverReferences.unshift({ path: declaration })
     }
 
     // the renderers import these app modules directly, so they resolve in the server program even

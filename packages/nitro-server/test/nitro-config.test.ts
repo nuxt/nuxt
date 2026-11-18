@@ -50,6 +50,17 @@ function h3Entry (major: '1' | '2') {
   return join(dir, 'dist/index.mjs')
 }
 
+async function withTsConfigs (overrides: NuxtConfig) {
+  const buildDir = await mkdtemp(join(tmpdir(), 'nitro-server-tsconfig-'))
+  onTestFinished(() => rm(buildDir, { recursive: true, force: true }))
+  return withNitro({ ...overrides, buildDir, typesDir: buildDir }, async (_nitro, _nitroConfig, nuxt) => {
+    await writeTypes(nuxt)
+    const readPaths = async (name: string): Promise<Record<string, string[]>> => JSON.parse(await readFile(join(buildDir, name), 'utf8')).compilerOptions.paths
+    const [server, app, shared] = await Promise.all(['tsconfig.server.json', 'tsconfig.app.json', 'tsconfig.shared.json'].map(readPaths))
+    return { buildDir, server: server!, app: app!, shared: shared!, serverDeclaration: await readFile(join(buildDir, 'nuxt.server.d.ts'), 'utf8') }
+  })
+}
+
 const hasBundledVuePlugin = (nitroConfig: NitroConfig) => (nitroConfig.rollupConfig!.plugins as Array<{ name?: string }>).some(plugin => plugin?.name === 'nuxt:bundled-vue')
 
 async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConfig: NitroConfig, nuxt: Nuxt) => T | Promise<T>) {
@@ -372,6 +383,29 @@ describe('nitro config', () => {
         expect(resolve(buildDir, paths[`${alias}/*`]![0]!)).toBe(join(nuxt.options.rootDir, '*'))
       }
     })
+  })
+
+  it.for([4, 5])('types `nitropack` and `nitropack/types` in the server program of a Nuxt %i app as Nitro\'s types with `nitroLegacy.specifiers`', async (major) => {
+    for (const specifiers of [true, false]) {
+      const tsconfigs = await withTsConfigs({ modules: [asNuxtMajor(major)], nitroLegacy: { specifiers } })
+      for (const specifier of ['nitropack', 'nitropack/types']) {
+        const declaration = expect(tsconfigs.server[specifier]?.[0])
+        if (specifiers) {
+          declaration.toMatch(/runtime\/compat\/nitro-v2-types$/)
+        } else {
+          declaration.not.toMatch(/nitro-v2-types/)
+        }
+      }
+      const firstReference = tsconfigs.serverDeclaration.split('\n')[0]
+      if (specifiers) {
+        expect(firstReference).toMatch(/^\/\/\/ <reference path=".*runtime\/compat\/nitro-v2-types(?:\.d)?\.ts" \/>$/)
+      } else {
+        expect(tsconfigs.serverDeclaration).not.toContain('nitro-v2-types')
+      }
+      for (const specifier of ['nitropack/runtime', '#internal/nitro']) {
+        expect(tsconfigs.server[specifier]?.[0]).not.toMatch(/nitro-v2-types/)
+      }
+    }
   })
 
   it('resolves the h3 v1 helpers of a Nuxt 4 app to the app h3 v1 shim', async () => {

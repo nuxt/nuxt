@@ -9,6 +9,7 @@ import type { NuxtSSRContext } from '#app/types'
 
 import type { NuxtRouteRuleConfig } from '../src/augments.ts'
 import type { defineEventHandler } from '../src/runtime/compat/h3-v1.ts'
+import type {} from '../src/runtime/compat/nitro-v2-types.ts'
 
 describe('contributed nitro instance types', () => {
   it('resolves `NitroInstance` to the instance this builder constructs', () => {
@@ -101,4 +102,14 @@ describe('nitro v2 compatibility types', () => {
     expectTypeOf<LegacyEvent['fetch']>().toEqualTypeOf<typeof globalThis.fetch>()
     expectTypeOf<LegacyEvent['$fetch']>().toEqualTypeOf<$Fetch>()
   })
+
+  it('merges an augmentation of `nitropack/types` into the nitro v3 interface', () => {
+    expectTypeOf<Parameters<NitroRuntimeHooks['nitro-types-spec:hook']>[0]>().toEqualTypeOf<{ ok: boolean }>()
+  })
 })
+
+declare module '../src/runtime/compat/nitro-v2-types.ts' {
+  interface NitroRuntimeHooks {
+    'nitro-types-spec:hook': (payload: { ok: boolean }) => void
+  }
+}
