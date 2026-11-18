@@ -191,6 +191,41 @@ describe('tsConfig generation', () => {
     expect(nodeTsConfig.include).not.toEqual(expect.arrayContaining([expect.stringMatching(/\*\.\*$/)]))
   })
 
+  it('avoids redundant app excludes for modules in node_modules', async () => {
+    const { tsConfig, serverTsConfig, legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      _installedModules: [{ meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }],
+    }))
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/*.ts')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/runtime/server')
+    expect(serverTsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(legacyTsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+  })
+
+  it.each([
+    { tsConfig: { include: ['../node_modules/installed/**/*.ts'] } },
+    { appTsConfig: { include: ['../node_modules/installed/**/*.ts'] } },
+  ])('keeps dependency excludes when the app has custom includes: %o', async (typescript) => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript,
+      _installedModules: [{ meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+  })
+
+  it('keeps dependency excludes when a layer is installed in node_modules', async () => {
+    const nuxt = mockNuxtWithOptions({
+      _installedModules: [{ meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }],
+    })
+    nuxt.options._layers = [
+      { config: { rootDir: '/my-app', srcDir: '/my-app' }, cwd: '/my-app', configFile: '/my-app/nuxt.config.ts' },
+      { config: { rootDir: '/my-app/node_modules/installed', srcDir: '/my-app/node_modules/installed' }, cwd: '/my-app/node_modules/installed', configFile: '/my-app/node_modules/installed/nuxt.config.ts' },
+    ]
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+  })
+
   it('should not exclude layer module runtime files from app tsconfig', async () => {
     const { tsConfig } = await _generateTypes(mockNuxt)
     // a module living in `layers/*/modules/<name>/runtime/**` is part of the app/runtime

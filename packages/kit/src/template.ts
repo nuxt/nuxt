@@ -389,6 +389,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const modulePaths = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
 
+  // Explicit includes or layers inside node_modules can opt those files back into the app project.
+  const canSkipDependencyExcludes = !nuxt.options.typescript?.tsConfig?.include?.length
+    && !nuxt.options.typescript?.appTsConfig?.include?.length
+    && !layerDirs.some(dirs => Object.values(dirs).some(dir => /(?:^|\/)node_modules(?:\/|$)/.test(dir)))
+
   for (const path of modulePaths) {
     const relative = relativeWithDot(typesDir, path)
     const sourceGlobs = moduleFileGlobs(relative, nuxt.options.extensions)
@@ -410,11 +415,16 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     serverInclude.add(join(relative, 'runtime/server'))
     serverInclude.add(join(relative, 'dist/runtime/server'))
 
-    exclude.add(join(relative, 'runtime/server'))
-    exclude.add(join(relative, 'dist/runtime/server'))
+    const skipAppExclude = canSkipDependencyExcludes && /(?:^|\/)node_modules(?:\/|$)/.test(path)
+    if (!skipAppExclude) {
+      exclude.add(join(relative, 'runtime/server'))
+      exclude.add(join(relative, 'dist/runtime/server'))
+    }
     for (const glob of entryGlobs) {
       serverExclude.add(glob)
-      exclude.add(glob)
+      if (!skipAppExclude) {
+        exclude.add(glob)
+      }
     }
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
