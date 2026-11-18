@@ -26,7 +26,7 @@ const getSchema = (nitro: Nitro) => JSON.parse((nitro.options.virtual[RUNTIME_CO
 
 const hasBundledVuePlugin = (nitroConfig: NitroConfig) => (nitroConfig.rollupConfig!.plugins as Array<{ name?: string }>).some(plugin => plugin?.name === 'nuxt:bundled-vue')
 
-async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConfig: NitroConfig) => T | Promise<T>) {
+async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConfig: NitroConfig, nuxt: Nuxt) => T | Promise<T>) {
   let nitroConfig: NitroConfig | undefined
   let nitro: Nitro | undefined
   const nuxt = await loadNuxt({
@@ -45,10 +45,30 @@ async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConf
     },
   })
   try {
-    return await fn(nitro!, nitroConfig!)
+    return await fn(nitro!, nitroConfig!, nuxt)
   } finally {
     await nuxt.close()
   }
+}
+
+async function bundleRuntimeRouteRules (nitro: Nitro, config: ReturnType<typeof getRollupConfig>): Promise<Record<string, Record<string, any>>> {
+  const bundle = await rollup({
+    ...config,
+    input: 'entry',
+    plugins: [
+      {
+        name: 'entry',
+        resolveId: id => id === 'entry' ? id : undefined,
+        load: id => id === 'entry' ? 'export default process.env.RUNTIME_CONFIG' : undefined,
+      },
+      ...config.plugins as InputPluginOption[],
+    ],
+  })
+  const { output } = await bundle.generate({ format: 'esm' })
+  await bundle.close()
+  const entry = output.find(chunk => chunk.type === 'chunk' && chunk.facadeModuleId === 'entry') as OutputChunk
+  const { default: runtimeConfig } = await import(`data:text/javascript,${encodeURIComponent(entry.code)}`)
+  return runtimeConfig.nitro.routeRules
 }
 
 async function isInlined (nitro: Nitro, id: string) {
@@ -177,20 +197,7 @@ describe('nitro config', () => {
       await mkdir(nitro.options.output.serverDir, { recursive: true })
       const config = getRollupConfig(nitro)
       await nitro.hooks.callHook('rollup:before', nitro, config)
-      const bundle = await rollup({
-        ...config,
-        input: 'entry',
-        plugins: [
-          {
-            name: 'entry',
-            resolveId: id => id === 'entry' ? id : undefined,
-            load: id => id === 'entry' ? 'export default process.env.RUNTIME_CONFIG' : undefined,
-          },
-          ...config.plugins as InputPluginOption[],
-        ],
-      })
-      const { output } = await bundle.generate({ format: 'esm' })
-      await bundle.close()
+      const runtimeRouteRules = await bundleRuntimeRouteRules(nitro, config)
 
       expect(Object.keys(nitro.options.routeRules)).toEqual(expect.arrayContaining([
         '/package/:name/_payload.json',
@@ -205,9 +212,7 @@ describe('nitro config', () => {
       ]))
       expect(nitro.options.routeRules['/:locale/moved']!.redirect).toMatchObject({ to: '/new/:locale' })
 
-      const entry = output.find(chunk => chunk.type === 'chunk' && chunk.facadeModuleId === 'entry') as OutputChunk
-      const { default: runtimeConfig } = await import(`data:text/javascript,${encodeURIComponent(entry.code)}`)
-      expect(Object.keys(runtimeConfig.nitro.routeRules)).toEqual(expect.arrayContaining([
+      expect(Object.keys(runtimeRouteRules)).toEqual(expect.arrayContaining([
         '/package/:name/_payload.json',
         '/package/:name/:name_/_payload.json',
         '/:slug/about',
@@ -218,7 +223,73 @@ describe('nitro config', () => {
         '/team/:slug/view',
         '/team/:slug/edit',
       ]))
-      expect(runtimeConfig.nitro.routeRules['/:slug/moved'].redirect).toMatchObject({ to: '/new/:slug' })
+      expect(runtimeRouteRules['/:slug/moved']!.redirect).toMatchObject({ to: '/new/:slug' })
+    }).finally(() => rm(outputDir, { recursive: true, force: true }))
+  }, 60_000)
+
+  it.each([
+    ['nitro:init', 'mutate', true],
+    ['nitro:init', 'reassign', false],
+    ['build:before', 'mutate', true],
+    ['build:before', 'reassign', false],
+    ['nitro:build:before', 'mutate', true],
+    ['nitro:build:before', 'reassign', false],
+    ['prerender:done', 'mutate', true],
+    ['prerender:done', 'reassign', false],
+    ['updateConfig', 'reassign', true],
+  ] as const)('passes the route rules as changed in `%s` (%s) to the server runtime: %s', async (phase, mode, seenByRuntime) => {
+    const outputDir = await mkdtemp(join(tmpdir(), 'nuxt-route-rules-'))
+    const addRule = (nitro: Nitro) => {
+      const rule = { headers: { 'x-added': '1' } }
+      if (mode === 'mutate') {
+        nitro.options.routeRules['/added'] = rule
+      } else {
+        nitro.options.routeRules = { ...nitro.options.routeRules, '/added': rule }
+      }
+    }
+    const overrides: NuxtConfig = {
+      dev: false,
+      nitro: { output: { dir: outputDir } },
+      routeRules: {
+        '/:slug/about': { swr: 60 },
+        '/:locale/:slug/about': { swr: 60 },
+      },
+      modules: [
+        (_options, nuxt) => {
+          nuxt.hook('nitro:init', (nitro) => {
+            if (phase === 'nitro:init') { addRule(nitro) }
+            nitro.hooks.hook('build:before', (nitro) => {
+              if (phase === 'build:before') { addRule(nitro) }
+            })
+            nitro.hooks.hook('prerender:done', () => {
+              if (phase === 'prerender:done') { addRule(nitro) }
+            })
+          })
+          nuxt.hook('nitro:build:before', (nitro) => {
+            if (phase === 'nitro:build:before') { addRule(nitro) }
+          })
+        },
+      ],
+    }
+    await withNitro(overrides, async (nitro, _nitroConfig, nuxt) => {
+      await nuxt.callHook('nitro:build:before', nitro)
+      await nitro.hooks.callHook('prerender:done', { prerenderedRoutes: [], failedRoutes: [] })
+      await nitro.hooks.callHook('build:before', nitro)
+      await mkdir(nitro.options.output.serverDir, { recursive: true })
+      const config = getRollupConfig(nitro)
+      await nitro.hooks.callHook('rollup:before', nitro, config)
+      let runtimeRouteRules = await bundleRuntimeRouteRules(nitro, config)
+      if (phase === 'updateConfig') {
+        await nitro.updateConfig({ routeRules: { ...nitro.options.routeRules, '/added': { headers: { 'x-added': '1' } } } })
+        runtimeRouteRules = await bundleRuntimeRouteRules(nitro, config)
+      }
+
+      const builtIn = ['/__nuxt_error', '/_nuxt/**', '/_nuxt/builds/**', '/_nuxt/builds/meta/**']
+      const configured = ['/:/:/about', '/:/about']
+      const derived = ['/:/:/about/_payload.json', '/:/about/_payload.json']
+      const expected = seenByRuntime ? [...builtIn, ...configured, ...derived, '/added'] : [...builtIn, ...configured]
+      expect(Object.keys(runtimeRouteRules).map(key => key.replace(/:[$\w]+/g, ':')).sort()).toEqual(expected.sort())
+      expect(new Set(Object.keys(runtimeRouteRules).filter(key => key.endsWith('/about')).map(key => key.split('/')[1]))).toEqual(new Set([':slug']))
     }).finally(() => rm(outputDir, { recursive: true, force: true }))
   }, 60_000)
 

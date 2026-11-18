@@ -536,18 +536,25 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nuxt.hook('nitro:init', (nitro) => {
     nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
       const plugins = rollupConfig.plugins as Plugin[]
-      let renamedKeys = new Map<string, string>()
+      const sources = new WeakMap<object, Record<string, Record<string, any>>>()
       plugins.push({
         name: 'nuxt:unify-route-rules',
+        // the runtime receives the object `runtimeConfig` references, which reassigning
+        // `nitro.options.routeRules` does not replace
         buildStart () {
-          const routeRules = { ...nitro.options.routeRules }
-          renamedKeys = unifyDynamicRouteRuleSegments(routeRules)
-          nitro.options.runtimeConfig.nitro.routeRules = routeRules
+          const config = nitro.options.runtimeConfig.nitro
+          if (!config.routeRules) { return }
+          const source = sources.get(config.routeRules) ?? config.routeRules
+          const routeRules = { ...source }
+          unifyDynamicRouteRuleSegments(routeRules)
+          sources.set(routeRules, source)
+          config.routeRules = routeRules
         },
         // nitropack registers each cached rule key as a handler route, which h3 matches with radix3
         transform: {
           filter: { id: SERVER_HANDLERS_ID_RE },
           handler (code) {
+            const renamedKeys = unifyDynamicRouteRuleSegments({ ...nitro.options.routeRules })
             if (!renamedKeys.size) { return }
             const declaredRoutes = new Set([...nitro.scannedHandlers, ...nitro.options.handlers].map(handler => handler.route))
             return {
