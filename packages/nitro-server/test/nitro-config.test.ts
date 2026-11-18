@@ -358,6 +358,17 @@ describe('nitro config', () => {
     })
   })
 
+  it('writes the module `#imports/server` resolves to into the build directory before the server is built', async () => {
+    const [buildDir, typesDir] = await Promise.all([mkdtemp(join(tmpdir(), 'nitro-server-build-')), mkdtemp(join(tmpdir(), 'nitro-server-types-'))])
+    onTestFinished(async () => {
+      await Promise.all([rm(buildDir, { recursive: true, force: true }), rm(typesDir, { recursive: true, force: true })])
+    })
+    await withNitro({ buildDir, typesDir }, (_nitro, nitroConfig) => {
+      expect(nitroConfig.alias!['#imports/server']).toBe(join(buildDir, 'types/server-imports'))
+      expect(existsSync(join(buildDir, 'types/server-imports.mjs'))).toBe(true)
+    })
+  })
+
   it.for([4, 5])('maps the app and project root aliases in the server tsconfig of a Nuxt %i app', async (major) => {
     const buildDir = await mkdtemp(join(tmpdir(), 'nitro-server-tsconfig-'))
     onTestFinished(() => rm(buildDir, { recursive: true, force: true }))

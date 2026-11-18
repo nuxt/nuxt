@@ -59,7 +59,7 @@ describe('createServerAutoImports', () => {
 
     await autoImports.writeTypes()
 
-    const contents = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    const contents = readFileSync(autoImports.importsTypesPath + '.d.ts', 'utf8')
     const referenced = [...new Set([...contents.matchAll(/import\('([^']+)'\)/g)].map(m => m[1]!))]
     expect(referenced.length).toBeGreaterThan(0)
 
@@ -95,7 +95,7 @@ describe('createServerAutoImports', () => {
 
     await autoImports.writeTypes()
 
-    const declarationPath = autoImports.importsModulePath + '.d.ts'
+    const declarationPath = autoImports.importsTypesPath + '.d.ts'
     const contents = readFileSync(declarationPath, 'utf8')
     const referenced = [...new Set([...contents.matchAll(/import\('([^']+)'\)/g)].map(m => m[1]!))]
 
@@ -115,7 +115,7 @@ describe('createServerAutoImports', () => {
 
     await autoImports.writeTypes()
 
-    const declarations = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    const declarations = readFileSync(autoImports.importsTypesPath + '.d.ts', 'utf8')
     expect(declarations).toContain('const useAppConfig: typeof import(\'nuxt/server\').useAppConfig')
     expect(declarations).toMatch(/^export \{[^}]*\buseAppConfig\b[^}]*\} from 'nuxt\/server';$/m)
   })
@@ -124,10 +124,25 @@ describe('createServerAutoImports', () => {
     const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-'))
     const autoImports = createServerAutoImports(mockNuxt(), { autoImport: true }, typesDir)
 
-    await autoImports.writeTypes()
+    await Promise.all([autoImports.writeModule(), autoImports.writeTypes()])
 
-    expect(readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')).toContain('export {}')
+    expect(readFileSync(autoImports.importsTypesPath + '.d.ts', 'utf8')).toContain('export {}')
     expect(readFileSync(autoImports.importsModulePath + '.mjs', 'utf8')).toContain('export {}')
+  })
+
+  it('writes the module `#imports/server` resolves to into the build directory without generating types', async () => {
+    const typesDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-types-'))
+    const buildDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-build-'))
+    const base = resolve(import.meta.dirname, '../src/runtime/utils/base.ts')
+    const autoImports = createServerAutoImports(mockNuxt(), { autoImport: true, imports: [{ name: 'withBaseURL', from: base }] }, typesDir, { buildDir })
+
+    await autoImports.writeModule()
+
+    expect(autoImports.importsModulePath).toBe(join(buildDir, 'types/server-imports'))
+    expect(autoImports.importsTypesPath).toBe(join(typesDir, 'types/server-imports'))
+    const [, from] = readFileSync(autoImports.importsModulePath + '.mjs', 'utf8').match(/export \{ withBaseURL \} from '([^']+)'/)!
+    expect(resolve(dirname(autoImports.importsModulePath), from!)).toBe(base.replace(/\.ts$/, ''))
+    expect(existsSync(autoImports.importsTypesPath + '.d.ts')).toBe(false)
   })
 
   it('still re-exports registered imports when auto-importing is disabled', async () => {
@@ -138,10 +153,10 @@ describe('createServerAutoImports', () => {
       typesDir,
     )
 
-    await autoImports.writeTypes()
+    await Promise.all([autoImports.writeModule(), autoImports.writeTypes()])
 
     const module = readFileSync(autoImports.importsModulePath + '.mjs', 'utf8')
-    const declarations = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    const declarations = readFileSync(autoImports.importsTypesPath + '.d.ts', 'utf8')
     expect(module).toContain('export { withBaseURL }')
     expect(declarations).toContain('export { withBaseURL }')
     expect(declarations).not.toContain('declare global')
@@ -231,7 +246,7 @@ describe('createServerAutoImports', () => {
     expect(imports.map(i => i.name).sort()).toEqual(['AdminSession', 'requireAdminSession', 'useLayerNestedUtil', 'useTopLevelUtil'])
 
     await autoImports.writeTypes()
-    const declarations = readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')
+    const declarations = readFileSync(autoImports.importsTypesPath + '.d.ts', 'utf8')
     expect(declarations).toContain('const requireAdminSession: typeof import(')
     expect(declarations).toContain('const useLayerNestedUtil: typeof import(')
   })
@@ -344,10 +359,10 @@ describe('createServerAutoImports', () => {
       join(rootDir, '.nuxt'),
     )
 
-    await autoImports.writeTypes()
+    await Promise.all([autoImports.writeModule(), autoImports.writeTypes()])
 
     expect(readFileSync(autoImports.importsModulePath + '.mjs', 'utf8')).toContain('export { useModuleOnlyDep } from \'module-only-dep\'')
-    expect(readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')).toContain('typeof import(\'module-only-dep\')')
+    expect(readFileSync(autoImports.importsTypesPath + '.d.ts', 'utf8')).toContain('typeof import(\'module-only-dep\')')
     expect(await autoImports.getSourceTypePaths()).toEqual({ 'module-only-dep': [join(rootDir, 'module/node_modules/module-only-dep/index.d.mts')] })
 
     const build = await rolldown({

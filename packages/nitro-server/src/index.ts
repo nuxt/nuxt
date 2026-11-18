@@ -732,7 +732,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const autoImports = createServerAutoImports(nuxt, nitroConfig.imports || { autoImport: false }, typesDir, {
     nestedUtilsDirs: nuxt.options.nitro.imports !== false && !legacy.imports ? resolveNestedServerUtilsDirs(nuxt) : [],
     disabledPresets: nuxt.options.nitro.imports !== false && autoImportPresets.length === 0 ? await getServerImportsPresets(legacy) : [],
+    buildDir: nuxt.options.buildDir,
   })
+  await autoImports.writeModule()
   // only for the server bundle: `nuxt.options.alias['#imports']` belongs to the app context
   nitroConfig.alias ||= {}
   nitroConfig.alias['#imports/server'] = autoImports.importsModulePath
@@ -758,7 +760,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     const path = resolve(nuxt.options.srcDir, relativePath)
     if (!scannedDirs.some(dir => isWithinDir(path, dir))) { return }
     await autoImports.refresh()
-    await autoImports.writeTypes()
+    await Promise.all([autoImports.writeModule(), autoImports.writeTypes()])
   })
 
   if (nitroConfig.static && nuxt.options.dev) {
@@ -1070,17 +1072,17 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     await autoImports.writeTypes()
     opts.serverTsConfig.compilerOptions ||= {}
     opts.serverTsConfig.compilerOptions.paths ||= {}
-    opts.serverTsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsModulePath)]
+    opts.serverTsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsTypesPath)]
 
     // `#imports/server` resolves in the app program too, so a handler importing from it still
     // yields a return type for the generated route types
     opts.tsConfig.compilerOptions ||= {}
     opts.tsConfig.compilerOptions.paths ||= {}
-    opts.tsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsModulePath)]
+    opts.tsConfig.compilerOptions.paths['#imports/server'] = [relativeWithDot(typesDir, autoImports.importsTypesPath)]
     // also referenced from the app program, which loads handler files regardless of its
     // `include`, because the generated route types name them with `typeof import(...)`
-    opts.serverReferences.push({ path: autoImports.importsModulePath + '.d.ts' })
-    opts.references.push({ path: autoImports.importsModulePath + '.d.ts' })
+    opts.serverReferences.push({ path: autoImports.importsTypesPath + '.d.ts' })
+    opts.references.push({ path: autoImports.importsTypesPath + '.d.ts' })
 
     Object.assign(opts.tsConfig.compilerOptions.paths, nitroTypePaths)
     Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths)
