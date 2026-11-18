@@ -15,6 +15,9 @@ import type { useRuntimeConfig } from '../src/runtime/compat/runtime-config.ts'
 import type { defineCachedEventHandler } from '../src/runtime/compat/cache.ts'
 import type { ResponseBodyOf } from '../src/request-types.ts'
 
+declare const cacheV2: typeof defineCachedEventHandler
+declare const cacheV3: typeof defineCachedHandler
+
 describe('contributed nitro instance types', () => {
   it('resolves `NitroInstance` to the instance this builder constructs', () => {
     expectTypeOf<NitroInstance>().toEqualTypeOf<Nitro>()
@@ -125,14 +128,14 @@ describe('nitro v2 compatibility types', () => {
   })
 
   it('types a direct call of a cached handler as the `Response` it resolves to, and its response as what the handler it caches returns', () => {
-    const cache = (() => {}) as unknown as typeof defineCachedEventHandler
-    const cached = cache(() => Promise.resolve({ cached: true as const }))
-    expectTypeOf(cached).returns.toEqualTypeOf<Promise<Response>>()
-    expectTypeOf(cached).toExtend<EventHandler>()
-    expectTypeOf<ReturnType<Awaited<ReturnType<typeof cached.fetch>>['json']>>().toEqualTypeOf<Promise<{ cached: true }>>()
-    expectTypeOf<ResponseBodyOf<typeof cached>>().toEqualTypeOf<{ cached: true }>()
-    expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, null>>>>().toEqualTypeOf<null>()
-    expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, Response>>>>().toEqualTypeOf<Response>()
+    const define = () => cacheV2(() => Promise.resolve({ cached: true as const }))
+    type Cached = ReturnType<typeof define>
+    expectTypeOf(define).returns.returns.toEqualTypeOf<Promise<Response>>()
+    expectTypeOf<Cached>().toExtend<EventHandler>()
+    expectTypeOf<ReturnType<Awaited<ReturnType<Cached['fetch']>>['json']>>().toEqualTypeOf<Promise<{ cached: true }>>()
+    expectTypeOf<ResponseBodyOf<Cached>>().toEqualTypeOf<{ cached: true }>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof cacheV2<any, null>>>>().toEqualTypeOf<null>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof cacheV2<any, Response>>>>().toEqualTypeOf<Response>()
   })
 })
 
@@ -146,14 +149,15 @@ describe('response types Nuxt generates for routes', () => {
   })
 
   it('reads the response of a handler cached with `defineCachedHandler` from what the handler it caches returns', () => {
-    const cache = (() => {}) as unknown as typeof defineCachedHandler
-    const cached = cache(() => Promise.resolve({ cached: true as const }))
-    expectTypeOf(cached).returns.toEqualTypeOf<Promise<Response>>()
-    expectTypeOf<ResponseBodyOf<typeof cached>>().toEqualTypeOf<{ cached: true }>()
-    expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, null>>>>().toEqualTypeOf<null>()
-    expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, Response>>>>().toEqualTypeOf<Response>()
-    expectTypeOf<ResponseBodyOf<ReturnType<typeof cache<any, unknown>>>>().toEqualTypeOf<unknown>()
-    expectTypeOf(cache({} as EventHandler)).toEqualTypeOf<ReturnType<typeof defineCachedEventHandler<EventHandlerRequest, unknown>>>()
+    const define = () => cacheV3(() => Promise.resolve({ cached: true as const }))
+    type Cached = ReturnType<typeof define>
+    expectTypeOf(define).returns.returns.toEqualTypeOf<Promise<Response>>()
+    expectTypeOf<ResponseBodyOf<Cached>>().toEqualTypeOf<{ cached: true }>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof cacheV3<any, null>>>>().toEqualTypeOf<null>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof cacheV3<any, Response>>>>().toEqualTypeOf<Response>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof cacheV3<any, unknown>>>>().toEqualTypeOf<unknown>()
+    const untyped = (handler: EventHandler) => cacheV3(handler)
+    expectTypeOf(untyped).returns.toEqualTypeOf<ReturnType<typeof cacheV2<EventHandlerRequest, unknown>>>()
   })
 })
 
