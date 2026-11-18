@@ -134,6 +134,12 @@ describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () =>
     expect(await $fetch('/api/item', { method: 'POST', body: { name: 'nuxt' } })).toEqual({ received: { name: 'nuxt' } })
   })
 
+  it('rejects a v1 body read of a GET request with `405`', async () => {
+    const response = await fetch('/api/body')
+    expect(response.status).toBe(405)
+    expect(await response.json()).toMatchObject({ statusCode: 405, statusMessage: 'HTTP method is not allowed.' })
+  })
+
   it('resolves an alias of `h3` in module code to h3 v2 when a module pins `h3` to h3 v1', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/aliased-h3?q=1')).toEqual({ query: { q: '1' }, h3v2: true })
   })

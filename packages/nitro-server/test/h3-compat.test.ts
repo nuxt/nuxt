@@ -621,10 +621,27 @@ describe('v1 body readers', () => {
   })
 
   it('returns `undefined` for a request with no body', async () => {
-    const event = mockEvent('http://nuxt/api/test')
+    const event = mockEvent('http://nuxt/api/test', { method: 'POST' })
 
     expect(await readRawBody(event)).toBeUndefined()
     expect(getRequestWebStream(event)).toBeUndefined()
+  })
+
+  it.each(['GET', 'HEAD', 'OPTIONS'])('rejects a read of a %s request with `405`, as h3 v1 did', async (method) => {
+    const event = mockEvent('http://nuxt/api/test', { method })
+    const notAllowed = { statusCode: 405, statusMessage: 'HTTP method is not allowed.' }
+
+    await expect(readBody(event)).rejects.toMatchObject(notAllowed)
+    await expect(readBody(event, { type: 'text' })).rejects.toMatchObject(notAllowed)
+    await expect(readRawBody(event)).rejects.toMatchObject(notAllowed)
+    await expect(readValidatedBody(event, data => data)).rejects.toMatchObject(notAllowed)
+    await expect(readValidatedBody(event, data => data, { type: 'text' })).rejects.toMatchObject(notAllowed)
+
+    const response = await defineEventHandler(async (event) => {
+      const { name } = await readBody(event)
+      return { name }
+    }).fetch(new Request('http://nuxt/api/test', { method }))
+    expect(response.status).toBe(405)
   })
 
   it('returns the first parsed body to every later read, whatever its strictness', async () => {

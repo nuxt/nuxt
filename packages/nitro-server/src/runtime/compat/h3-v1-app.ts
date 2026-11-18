@@ -63,6 +63,15 @@ async function withReplayedBody (event: H3Event): Promise<H3Event> {
   return Object.create(event, { req: { value: request, enumerable: true } }) as H3Event
 }
 
+const PAYLOAD_METHODS = new Set(['PATCH', 'POST', 'PUT', 'DELETE'])
+
+/** The error v1 body readers reject a request with when its method carries no payload. */
+function getMethodError (event: H3Event) {
+  if (!PAYLOAD_METHODS.has(event.req.method.toUpperCase())) {
+    return createError({ statusCode: 405, statusMessage: 'HTTP method is not allowed.' })
+  }
+}
+
 interface ReadBodyOptions {
   /** Reject a body that is not valid JSON, rather than returning its text. */
   strict?: boolean
@@ -78,6 +87,10 @@ interface ReadBodyOptions {
  * parse is returned to every later read without a `type`, whatever its `strict`.
  */
 export function readBody<T = any> (event: H3Event, options?: ReadBodyOptions): Promise<T> {
+  const methodError = getMethodError(event)
+  if (methodError) {
+    return Promise.reject(methodError)
+  }
   const context = event.context as Record<symbol, any>
   const cache: Map<string, Promise<any>> = context[kParsedBody] ||= new Map()
   const type = options?.type
@@ -114,6 +127,10 @@ async function parseBody (event: H3Event, strict?: boolean): Promise<any> {
 
 /** v1 `readRawBody`, which returned `undefined` when there was no body. */
 export async function readRawBody (event: H3Event, encoding: 'utf8' | false = 'utf8'): Promise<any> {
+  const methodError = getMethodError(event)
+  if (methodError) {
+    throw methodError
+  }
   const buffer = await readBufferedBody(event)
   if (buffer.byteLength === 0) {
     return undefined
@@ -133,6 +150,10 @@ export async function readMultipartFormData (event: H3Event): ReturnType<typeof 
 
 /** v1 `readValidatedBody`, validating the body as a strict `readBody` reads it unless a `type` is given. */
 export async function readValidatedBody<T> (event: H3Event, validate: (data: unknown) => T | Promise<T>, options?: { type?: 'json' | 'text' | 'formData' | 'urlencoded' }): Promise<T> {
+  const methodError = getMethodError(event)
+  if (methodError) {
+    throw methodError
+  }
   if (options?.type) {
     return _readValidatedBody(await withReplayedBody(event), validate as any, options as any) as Promise<T>
   }
