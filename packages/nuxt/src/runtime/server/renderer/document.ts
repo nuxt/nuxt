@@ -3,6 +3,7 @@ import type { SSRHeadPayload } from '@unhead/vue/server'
 import type { NuxtRenderHTMLContext, NuxtSSRContext } from '#app/types'
 import { appTeleportAttrs, appTeleportTag } from 'nuxt/internal/renderer-config'
 import type { NuxtRendererOptions, RendererEvent } from './runtime'
+import { extractCspNonce } from './csp-nonce'
 
 const APP_TELEPORT_ID = appTeleportTag && appTeleportAttrs.id ? `#${appTeleportAttrs.id}` : undefined
 const APP_TELEPORT_OPEN_TAG = APP_TELEPORT_ID ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
@@ -17,6 +18,23 @@ export function renderAppTeleports (ssrContext: NuxtSSRContext): string {
 export function renderDevBadge (runtime: NuxtRendererOptions, event: RendererEvent, noScripts: boolean, nonce?: string): Promise<string | undefined> | undefined {
   if (!import.meta.test && !noScripts) {
     return runtime.renderDevBadge?.(event, nonce).catch(() => undefined)
+  }
+}
+
+/**
+ * Give the dev badge the CSP nonce a `render:html` listener added, when the head had none
+ * as the badge was rendered. A listener that creates a per-request nonce can only stamp the
+ * tags it sees, and the badge is rendered before the hook runs (#37120).
+ */
+export async function stampDevBadgeNonce (runtime: NuxtRendererOptions, event: RendererEvent, context: NuxtRenderHTMLContext, badge: string | undefined, nonce: string | undefined): Promise<void> {
+  const index = badge && !nonce ? context.head.indexOf(badge.trim()) : -1
+  if (index === -1) {
+    return
+  }
+  const hookNonce = extractCspNonce(joinTags([...context.head, ...context.bodyPrepend, ...context.bodyAppend]))
+  const stamped = hookNonce ? (await runtime.renderDevBadge?.(event, hookNonce).catch(() => undefined))?.trim() : undefined
+  if (stamped) {
+    context.head[index] = stamped
   }
 }
 
