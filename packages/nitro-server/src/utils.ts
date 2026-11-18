@@ -190,10 +190,16 @@ function toFsDriverGlob (pattern: string): string | undefined {
  * `'import'` is required so that packages whose top-level `exports` map is
  * keyed only by `import`/`require` (notably `vue` and `vue-router`) resolve
  * when the only available copy is nested under `nuxt`'s own `node_modules`.
+ *
+ * `'wasm'` and `'unwasm'` are left out: they select WebAssembly modules that only
+ * Nitro's unwasm plugin can load, and it does not run in the SSR environment.
  */
 export function getSsrResolveConditions (...sources: Array<string[] | undefined>): string[] {
-  return [...new Set([...sources.flatMap(conditions => conditions || []), 'import'])]
+  const conditions = sources.flatMap(conditions => conditions || []).filter(condition => !WASM_CONDITIONS.has(condition))
+  return [...new Set([...conditions, 'import'])]
 }
+
+const WASM_CONDITIONS = new Set(['wasm', 'unwasm'])
 
 /**
  * Recover the package directory of an installed module.

@@ -228,6 +228,11 @@ describe('getSsrResolveConditions', () => {
   it('merges conditions without duplicates', () => {
     expect(getSsrResolveConditions(['custom', 'node'], ['development', 'node', 'import'])).toEqual(['custom', 'node', 'development', 'import'])
   })
+
+  it('leaves out the conditions only Nitro\'s unwasm plugin can honour', () => {
+    expect(getSsrResolveConditions(['custom'], ['production', 'wasm', 'unwasm', 'node'])).toEqual(['custom', 'production', 'node', 'import'])
+    expect(getSsrResolveConditions(['workerd', 'wasm', 'unwasm'])).toEqual(['workerd', 'import'])
+  })
 })
 
 describe('timePluginHooks', () => {
