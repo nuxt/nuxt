@@ -359,6 +359,25 @@ describe('nitro v2 `render:before` hook', () => {
     expect(await response.text()).toContain('url=/fr')
   })
 
+  it('keeps a streamed page live through a replaced `render`', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      const render = context.render
+      context.render = async (event: unknown) => ({ ...await render(event), headers: { 'x-wrapped': '1' } })
+    })
+    const renderPage = () => {
+      const streamed = new Response(new ReadableStream({ start (controller) { controller.enqueue(new TextEncoder().encode('<html>')) } }))
+      markStreamedResponse(streamed)
+      return Promise.resolve(streamed)
+    }
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(response.headers.get('x-wrapped')).toBe('1')
+    const { value } = await response.body!.getReader().read()
+    expect(new TextDecoder().decode(value)).toBe('<html>')
+  })
+
   it('fails the request when a replaced `render` returns no response', async () => {
     const hooks = createHooks<Record<string, (context: any) => void>>()
     hooks.hook('render:before', (context) => {

@@ -1,6 +1,7 @@
 import type { H3Event } from 'nitro/h3'
 
 import { fromLegacyBody } from './event.ts'
+import { isStreamedResponse } from './render-response.ts'
 
 interface LegacyHooks {
   callHook: (name: any, ...args: any[]) => unknown
@@ -68,7 +69,7 @@ async function toLegacyRenderResponse (response: Response): Promise<LegacyRender
     headers['set-cookie'] = cookies
   }
   return {
-    body: await response.text(),
+    body: isStreamedResponse(response) ? response.body : await response.text(),
     statusCode: response.status,
     statusMessage: response.statusText || undefined,
     headers,
