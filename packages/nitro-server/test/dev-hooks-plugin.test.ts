@@ -99,6 +99,6 @@ describe('dev hooks plugin', () => {
     hooks.hook('beforeResponse', () => {})
     hooks.hook('render:response', () => {})
     hooks.hook('render:before', () => {})
-    expect(reported()).toEqual(['render:before'])
+    expect(reported()).toEqual([])
   })
 })

@@ -35,6 +35,8 @@ declare module 'nitro/types' {
     'render:document': (documentContext: NuxtRenderDocumentContext, context: { event: H3Event }) => void | Promise<void>
     'render:route': (renderRouteContext: NuxtRenderRouteContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+    /** @deprecated Called only while the \`nitroLegacy\` layer covers Nitro v2 code. Return a \`Response\` from a server middleware instead. */
+    'render:before': (context: { event: H3Event, render: (event: H3Event) => Promise<{ body?: unknown, statusCode?: number, statusMessage?: string, headers?: Record<string, string | string[] | number | undefined> }>, response?: { body?: unknown, statusCode?: number, statusMessage?: string, headers?: Record<string, string | string[] | number | undefined> } }) => void | Promise<void>
     /** @deprecated Called only while the \`nitroLegacy\` layer covers Nitro v2 code. Use the Nitro \`response\` hook instead. */
     'render:response': (response: { body?: string, statusCode?: number, statusMessage?: string, headers?: Record<string, string> }, context: { event: H3Event }) => void | Promise<void>
   }

@@ -100,6 +100,15 @@ describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () =>
     expect(await $fetch<Record<string, unknown>>('/api/aliased-h3?q=1')).toEqual({ query: { q: '1' }, h3v2: true })
   })
 
+  it('responds with the redirect a v2 `render:before` listener sets, instead of rendering the page', async () => {
+    const response = await fetch('/render-before', { headers: { accept: 'text/html' }, redirect: 'manual' })
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/fr')
+    expect(response.headers.getSetCookie()).toEqual([expect.stringMatching(/^locale=fr;/)])
+    expect(response.headers.get('x-render-response')).toBe('applied')
+    expect(await response.text()).toContain('url=/fr')
+  })
+
   it('keeps the status of an error page unless a v2 `render:response` listener sets one', async () => {
     for (const accept of ['text/html', 'application/json']) {
       const response = await fetch('/missing', { headers: { accept } })

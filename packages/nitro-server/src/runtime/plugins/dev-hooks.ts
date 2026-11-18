@@ -10,8 +10,8 @@ import { legacyCompat } from '#nuxt-compat/flags'
 const RESPONSE_HOOK_FIX = 'Use the Nitro v3 `response` hook, which receives the built `Response` and can return a new one.'
 
 const UNEMITTED_HOOKS: Record<string, string> = {
-  'render:before': 'To respond before a page renders, return a `Response` from a server middleware instead.',
   ...!legacyCompat && {
+    'render:before': 'To respond before a page renders, return a `Response` from a server middleware instead.',
     'render:response': RESPONSE_HOOK_FIX,
     'beforeResponse': RESPONSE_HOOK_FIX,
     'afterResponse': RESPONSE_HOOK_FIX,
