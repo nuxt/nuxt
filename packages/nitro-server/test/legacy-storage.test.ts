@@ -100,6 +100,19 @@ describe('nitro v2 build-time storage', () => {
     expect(await storage.getItem('remote:key')).toBe('project:key')
   })
 
+  it('loads the library of a builtin driver from the project', async () => {
+    const { rootDir, mounts } = createProject()
+    const libDir = join(rootDir, 'node_modules/ioredis')
+    mkdirSync(libDir, { recursive: true })
+    writeFileSync(join(libDir, 'package.json'), JSON.stringify({ name: 'ioredis', type: 'module', exports: './index.mjs' }))
+    writeFileSync(join(libDir, 'index.mjs'), `export class Redis { get (key) { return 'project:' + key } disconnect () {} }`)
+    const nitro = createNitro({ rootDir, kv: { redis: { driver: 'redis' } } })
+    const storage = await createLegacyBuildStorage(nitro, mounts)
+
+    expect(await storage.getItem('redis:key')).toBe('project:key')
+    await nitro.hooks.callHook('close')
+  })
+
   it('disposes the storage when Nitro closes', async () => {
     const { mounts } = createProject()
     const nitro = createNitro()

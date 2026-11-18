@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { isAbsolute, resolve } from 'pathe'
-import { builtinDrivers, createStorage } from 'unstorage'
+import { builtinDriverDependencies, builtinDrivers, createStorage } from 'unstorage'
 import { resolveModulePath } from 'exsolve'
 import { directoryToURL } from '@nuxt/kit'
 import type { Driver, Storage } from 'unstorage'
@@ -12,6 +12,7 @@ type StorageMounts = NonNullable<NitroConfig['kv']>
 
 const MOUNT_SEPARATOR_RE = /[/\\]/g
 const MOUNT_EDGE_RE = /^:+|:+$/g
+const LIB_OPTION_RE = /^lib$|Lib$/
 
 const toMountKey = (key: string) => key.replace(MOUNT_SEPARATOR_RE, ':').replace(MOUNT_EDGE_RE, '')
 
@@ -62,6 +63,12 @@ export async function createLegacyBuildStorage (nitro: Pick<Nitro, 'options' | '
 async function loadDriver (rootDir: string, base: string, name: string, options: Record<string, unknown>): Promise<Driver> {
   const builtin = builtinDrivers[name as keyof typeof builtinDrivers]
   const path = builtin ? undefined : isAbsolute(name) ? name : resolveModulePath(name, { from: directoryToURL(rootDir), try: true })
+  for (const [option, dependency] of Object.entries(builtinDriverDependencies[name as keyof typeof builtinDriverDependencies] || {})) {
+    const lib = LIB_OPTION_RE.test(option) && options[option] === undefined && resolveModulePath(dependency.import || dependency.name, { from: directoryToURL(rootDir), try: true })
+    if (lib) {
+      options[option] = () => import(pathToFileURL(lib).href)
+    }
+  }
   try {
     const { default: factory } = await import(path ? pathToFileURL(path).href : builtin || name) as { default: (options: Record<string, unknown>) => Driver }
     return factory(options)
