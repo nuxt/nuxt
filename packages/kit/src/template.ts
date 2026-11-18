@@ -282,7 +282,7 @@ async function resolveExtensionlessTarget (absolutePath: string): Promise<string
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
 // Left out of the server tsconfig: these resolve only in the app environment.
-const appOnlyAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', 'vue-demi', /^#app/, /^#imports/, '~', '@', '~~', '@@']
+const appOnlyAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', 'vue-demi', /^#app/, /^#imports/]
 
 interface GenerateTypesReturn {
   declaration: string

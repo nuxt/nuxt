@@ -54,7 +54,7 @@ const REQUEST_TYPES_MODULE = `${nitroBuilder.name}/request-types`
 const RELATIVE_BASE_URL_RE = /^\.(?:$|\/)/
 
 // App-only aliases Nitro carries in its own alias map, which must not resolve in the server program
-const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/]
 
 /** Packages whose own imports of `h3` mean h3 v2. */
 const H3_PROVIDER_RE = /^(?:h3|nitro)(?:-nightly)?$/
