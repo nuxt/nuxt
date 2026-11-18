@@ -37,7 +37,11 @@ export async function applyLegacyRenderBefore (event: H3Event, hooks: LegacyHook
   }
 
   const response = context.response ?? await context.render(event)
-  for (const [name, value] of Object.entries(response?.headers || {})) {
+  if (!response) {
+    const status = event.res.status && event.res.status !== 200 ? event.res.status : 500
+    return createResponse(`No response returned from render handler: ${event.url.pathname + event.url.search}`, { status, headers: event.res.headers })
+  }
+  for (const [name, value] of Object.entries(response.headers || {})) {
     if (value === undefined) {
       continue
     }
@@ -46,14 +50,14 @@ export async function applyLegacyRenderBefore (event: H3Event, hooks: LegacyHook
       event.res.headers.append(name, String(entry))
     }
   }
-  if (response?.statusCode) {
+  if (response.statusCode) {
     event.res.status = response.statusCode
   }
-  if (response?.statusMessage) {
+  if (response.statusMessage) {
     event.res.statusText = response.statusMessage
   }
 
-  const body = typeof response?.body === 'string' ? fromLegacyBody(event, response.body) as string : (response?.body ?? null) as BodyInit | null
+  const body = typeof response.body === 'string' ? fromLegacyBody(event, response.body) as string : (response.body ?? null) as BodyInit | null
   return createResponse(body, { status: event.res.status, statusText: event.res.statusText, headers: event.res.headers })
 }
 

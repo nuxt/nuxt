@@ -359,6 +359,18 @@ describe('nitro v2 `render:before` hook', () => {
     expect(await response.text()).toContain('url=/fr')
   })
 
+  it('fails the request when a replaced `render` returns no response', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      context.render = () => Promise.resolve(undefined)
+    })
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/page'), hooks, page(), (body, init) => new Response(body, init))
+
+    expect(response.status).toBe(500)
+    expect(await response.text()).toBe('No response returned from render handler: /page')
+  })
+
   it('keeps the status of a response a listener sets without a body', async () => {
     const hooks = createHooks<Record<string, (context: any) => void>>()
     hooks.hook('render:before', (context) => {
