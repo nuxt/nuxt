@@ -22,7 +22,8 @@ function toLegacyHooks (hooks: Hooks): Hooks {
   return legacy
 }
 
-function toLegacyApp (nitroApp: NitroApp): NitroApp {
+/** The `nitroApp` as Nitro v2 code sees it, the same object for every caller. */
+export function toLegacyApp (nitroApp: NitroApp): NitroApp {
   let legacy = legacyApps.get(nitroApp)
   if (!legacy) {
     legacy = new Proxy(nitroApp, {
