@@ -114,6 +114,14 @@ describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () =>
     expect(mounts).toEqual(expect.arrayContaining(['build:', 'cache:', 'data:', 'root:', 'src:']))
   })
 
+  it('gives in-process requests the socket a v1 middleware reads', async () => {
+    expect(await $fetch('/socket')).toContain('in-process: true')
+    expect(await $fetch('/api/socket?sub=1')).toEqual({ inProcess: true })
+
+    const response = await fetch('/missing', { headers: { accept: 'text/html' } })
+    expect(response.status).toBe(404)
+  })
+
   it('resolves an alias of `h3` in module code to h3 v2 when a module pins `h3` to h3 v1', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/aliased-h3?q=1')).toEqual({ query: { q: '1' }, h3v2: true })
   })

@@ -104,6 +104,7 @@ function createLegacyNitroSlot (event: H3EventType, getRouteRules?: RouteRulesRe
 }
 
 function createNodeRequestBridge (event: H3EventType, originalUrl: string) {
+  const socket = createSocketBridge(event)
   return {
     // the path as the handler sees it, which a mounted handler sees with its base stripped
     get url () {
@@ -119,7 +120,30 @@ function createNodeRequestBridge (event: H3EventType, originalUrl: string) {
       return headers
     },
     originalUrl,
+    socket,
+    connection: socket,
   }
+}
+
+/**
+ * The socket of a request that reached the app without one, such as a request made in
+ * process. Its `readyState` is `readOnly`, which is how v1 code tells such a request apart.
+ */
+function createSocketBridge (event: H3EventType) {
+  const socket = {
+    readyState: 'readOnly',
+    destroyed: false,
+    get remoteAddress () {
+      return event.req.ip
+    },
+    get encrypted () {
+      return event.url.protocol === 'https:'
+    },
+    setTimeout: () => socket,
+    setNoDelay: () => socket,
+    setKeepAlive: () => socket,
+  }
+  return socket
 }
 
 /**
