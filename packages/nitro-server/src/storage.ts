@@ -47,8 +47,9 @@ export function addLegacyRuntimeMounts (nitroConfig: NitroConfig, mounts: Storag
  */
 export async function createLegacyBuildStorage (nitro: Pick<Nitro, 'options' | 'hooks'>, defaults: StorageMounts): Promise<Storage> {
   const storage = createStorage()
+  const toMounts = (layer: StorageMounts = {}) => Object.fromEntries(Object.entries(layer).map(([base, mount]) => [toMountKey(base), mount]))
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const mounts = { ...defaults, ...nitro.options.kv, ...nitro.options.devStorage }
+  const mounts = { ...toMounts(defaults), ...toMounts(nitro.options.kv), ...toMounts(nitro.options.devStorage) }
   for (const [base, { driver, ...options }] of Object.entries(mounts)) {
     storage.mount(base, await loadDriver(base, driver, options))
   }

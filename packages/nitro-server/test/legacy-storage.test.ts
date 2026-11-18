@@ -80,7 +80,7 @@ describe('nitro v2 build-time storage', () => {
 
   it('mounts the storage a project declares over the defaults', async () => {
     const { mounts } = createProject()
-    const storage = await createLegacyBuildStorage(createNitro({ kv: { data: { driver: 'memory' } }, devStorage: { 'build:module': { driver: 'memory' } } }), mounts)
+    const storage = await createLegacyBuildStorage(createNitro({ kv: { '/data/': { driver: 'memory' } }, devStorage: { 'build:module': { driver: 'memory' } } }), mounts)
     await storage.setItem('data:key', 'value')
     await storage.setItem('build:module:key', 'value')
 
