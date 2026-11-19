@@ -31,17 +31,10 @@ export async function callOnce (...args: any[]): Promise<void> {
   const nuxtApp = useNuxtApp()
   nuxtApp._once ||= {}
 
-  // set once the route this call ran on is left, so a callback still running then is not
-  // marked as done when it settles and the next visit runs it again (#37146)
-  let superseded = false
-  let promise: unknown = undefined
   if (options?.mode === 'navigation') {
     const removeGuard = useRouter().beforeResolve(() => {
       nuxtApp.payload.once.delete(_key)
-      if (promise !== undefined && nuxtApp._once![_key] === promise) {
-        delete nuxtApp._once![_key]
-      }
-      superseded = true
+      delete nuxtApp._once[_key]
       removeGuard()
     })
   }
@@ -54,8 +47,7 @@ export async function callOnce (...args: any[]): Promise<void> {
     }
   }
 
-  // wrap each run in its own promise, so the identity checks tell runs apart even when `fn` returns a shared promise
-  promise = nuxtApp._once[_key] ||= (async () => { await fn() })()
+  const promise = nuxtApp._once[_key] ||= fn() || true
   try {
     await promise
   } catch (e) {
@@ -64,10 +56,8 @@ export async function callOnce (...args: any[]): Promise<void> {
     }
     throw e
   }
-  if (!superseded) {
-    nuxtApp.payload.once.add(_key)
-  }
   if (nuxtApp._once[_key] === promise) {
+    nuxtApp.payload.once.add(_key)
     delete nuxtApp._once[_key]
   }
 }
