@@ -130,6 +130,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
   nuxt.options.nitro.plugins.unshift(resolve(distDir, 'runtime/plugins/runtime-config'))
+  nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/error-cache-control'))
 
   for (const asset of [...nuxt.options.nitro.publicAssets || [], ...nuxt.options.nitro.serverAssets || []]) {
     if (asset?.dir) {

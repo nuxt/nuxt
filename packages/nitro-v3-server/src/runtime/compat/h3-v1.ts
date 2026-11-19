@@ -11,7 +11,7 @@ import type { H3Event } from 'nitro/h3'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import { getRouteRules } from '../utils/route-rules.ts'
-import { prepareLegacyEvent, withLegacyContentType } from './event.ts'
+import { fromLegacyBody, prepareLegacyEvent } from './event.ts'
 import { toLegacyError } from './error-shape.ts'
 
 export * from './h3-v1-app.ts'
@@ -56,7 +56,7 @@ export function defineEventHandler (input: ((event: LegacyH3Event) => any) | Leg
         for (const hook of onBeforeResponseHooks) {
           await hook(event, response)
         }
-        return withLegacyContentType(event, response.body)
+        return fromLegacyBody(event, response.body)
       } catch (error) {
         throw toLegacyError(error)
       }
