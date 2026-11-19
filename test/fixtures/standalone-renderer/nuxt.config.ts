@@ -5,6 +5,7 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   app: {
     head: {
+      htmlAttrs: { lang: 'en' },
       titleTemplate: '%s | nuxt',
     },
   },

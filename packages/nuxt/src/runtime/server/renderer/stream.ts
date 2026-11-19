@@ -14,7 +14,7 @@ import type { SSRError } from './error'
 import { captureError } from './error-page'
 import { returnRenderResponse } from './app'
 import { applyRenderOptions, joinTags, normalizeChunks, renderAppTeleports, renderDevBadge, renderDocumentOpen } from './document'
-import { inertPrefetchLink, inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript } from './head'
+import { inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript, renderDeferredPrefetchHints } from './head'
 import { renderInlineStyles } from './inline-styles'
 import { renderPayloadJsonScript } from './payload'
 import { renderStreamedIslandTeleports } from './islands'
@@ -79,9 +79,10 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   }
 
   const entryScriptHrefs = new Set(Object.values(entryScripts).map(resource => rendererContext.buildAssetsURL(resource.file)))
+  const prefetchHints = getPrefetchLinks({}, rendererContext, { scripts: !NO_SCRIPTS }) as Link[]
   const entryHints = [
     ...(getPreloadLinks({}, rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).filter(l => !(l.href && entryScriptHrefs.has(l.href))),
-    ...(getPrefetchLinks({}, rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => DEFER_PREFETCH ? inertPrefetchLink(l) : l),
+    ...DEFER_PREFETCH ? [] : prefetchHints,
   ]
   if (entryHints.length) {
     ssrContext.head.push({ link: entryHints })
@@ -188,7 +189,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   }
   const shellContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, cspNonce) : undefined]),
+    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, DEFER_PREFETCH ? renderDeferredPrefetchHints(prefetchHints) : undefined, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, cspNonce) : undefined]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
     body: [],

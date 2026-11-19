@@ -15,7 +15,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     onNuxtReady(() => {
       if (!canPrefetch()) { return }
       const assetsURL = new URL(buildAssetsURL('/'), document.baseURI).href
-      const links = document.head.querySelectorAll<HTMLLinkElement>('link[rel=prefetch][data-href]')
+      const links = document.head.querySelector<HTMLTemplateElement>('template[data-nuxt-prefetch]')?.content.querySelectorAll<HTMLLinkElement>('link[rel=prefetch][href]') ?? []
       let index = 0
 
       const activate = (deadline?: IdleDeadline) => {
@@ -24,12 +24,12 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
           const link = links[index++]!
           let href: string
           try {
-            href = new URL(link.dataset.href!, document.baseURI).href
+            href = new URL(link.getAttribute('href')!, document.baseURI).href
           } catch {
             continue
           }
           if (href.startsWith(assetsURL)) {
-            link.href = href
+            document.head.appendChild(link)
           }
         } while (index < links.length && performance.now() < end)
 
