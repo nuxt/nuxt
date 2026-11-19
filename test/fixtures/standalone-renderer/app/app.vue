@@ -25,6 +25,23 @@ if (path.startsWith('/response-header')) {
 if (path.startsWith('/invalid-cookie')) {
   useCookie('invalid name').value = 'value'
 }
+if (path.startsWith('/streamed-cookie')) {
+  useCookie('streamed').value = 'set-before-headers'
+}
+if (path.startsWith('/late-cookie')) {
+  useNuxtApp().hook('app:rendered', () => {
+    lateCookie.value = 'set-after-headers'
+  })
+  const lateCookie = useCookie('late')
+}
+if (path.startsWith('/redirected-cookie')) {
+  useCookie('redirected').value = 'set-before-redirect'
+  await navigateTo('/')
+}
+if (path.startsWith('/failed-cookie')) {
+  useCookie('failed').value = 'set-before-error'
+  showError({ status: 401, statusText: 'Unauthorized' })
+}
 if (path.startsWith('/failing-fetch')) {
   const { error } = await useFetch('/api/standalone')
   useResponseHeader('x-fetch-error').value = String(error.value?.status)
