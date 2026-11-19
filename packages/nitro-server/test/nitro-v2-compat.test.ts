@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { HookableCore } from 'hookable'
 import { HTTPResponse, mockEvent } from 'nitro/h3'
 
@@ -10,6 +10,7 @@ vi.mock('../src/runtime/utils/app-config.ts', () => ({}))
 
 const { cachedEventHandler, defineCachedEventHandler, useNitroApp } = await import('../src/runtime/compat/nitro-v2.ts')
 const { wrapLegacyPlugin } = await import('../src/runtime/compat/legacy-plugin.ts')
+const { serverDiagnostics } = await import('../src/runtime/diagnostics.ts')
 
 describe('nitro v2 `useNitroApp`', () => {
   it('returns the `nitroApp` a nitro v2 plugin receives', () => {
@@ -20,6 +21,28 @@ describe('nitro v2 `useNitroApp`', () => {
     expect(useNitroApp()).toBe(received)
     expect(useNitroApp().hooks).toBe((received as typeof nitroApp).hooks)
     expect(useNitroApp().hooks!.callHook('close')).toBeInstanceOf(Promise)
+  })
+
+  it.each([false, true])('returns the `nitroApp` a named nitro v2 plugin receives (prerendering: %s)', (prerender) => {
+    vi.stubGlobal('__TEST_PRERENDER__', prerender)
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8017').mockImplementation(() => ({}) as any)
+    onTestFinished(() => {
+      vi.unstubAllGlobals()
+      report.mockRestore()
+    })
+    nitroApp.hooks = new HookableCore()
+    const state = new WeakMap<object, string>()
+    let received: any
+    wrapLegacyPlugin((app) => {
+      received = app
+      state.set(app, 'plugin')
+      app.hooks.hook('close', () => {})
+    }, 'server/plugins/state.ts')(nitroApp as any)
+
+    expect(useNitroApp()).toBe(received)
+    expect(useNitroApp().hooks).toBe(received.hooks)
+    expect(state.get(useNitroApp())).toBe('plugin')
+    expect(report).toHaveBeenCalledTimes(prerender ? 1 : 0)
   })
 })
 

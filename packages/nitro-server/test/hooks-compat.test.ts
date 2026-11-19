@@ -558,6 +558,28 @@ describe('nitro v2 plugin wrapper', () => {
     expect(listener).toHaveBeenCalledTimes(2)
   })
 
+  it('reports a `close` listener an async plugin registers while prerendering, but not one registered after its setup', async () => {
+    vi.stubGlobal('__TEST_PRERENDER__', true)
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8017').mockImplementation(() => ({}) as any)
+    onTestFinished(() => {
+      vi.unstubAllGlobals()
+      report.mockRestore()
+    })
+    let app: any
+    const { nitroApp, result } = runLegacyPlugin(async (legacyApp) => {
+      await Promise.resolve()
+      legacyApp.hooks.hook('close', () => {})
+    })
+    await result
+    await wrapLegacyPlugin(async (legacyApp) => {
+      app = legacyApp
+      await Promise.resolve()
+    }, 'server/plugins/other.ts')(nitroApp)
+    app.hooks.hook('close', () => {})
+
+    expect(report.mock.calls).toEqual([[{ plugin: 'modules/runtime/plugin.ts' }]])
+  })
+
   it('does not report a `close` listener outside the prerenderer', () => {
     const report = vi.spyOn(serverDiagnostics, 'NUXT_E8017').mockImplementation(() => ({}) as any)
     onTestFinished(() => { report.mockRestore() })
