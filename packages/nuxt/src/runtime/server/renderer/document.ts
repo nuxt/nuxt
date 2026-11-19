@@ -21,8 +21,6 @@ export function renderDevBadge (runtime: NuxtRendererOptions, event: RendererEve
   }
 }
 
-const HTML_COMMENT_RE = /<!--[\s\S]*?-->/g
-
 /**
  * Give the dev badge the CSP nonce a `render:html` listener added, when the head had none
  * as the badge was rendered. A listener that creates a per-request nonce can only stamp the
@@ -33,8 +31,7 @@ export async function stampDevBadgeNonce (runtime: NuxtRendererOptions, event: R
   if (index === -1) {
     return
   }
-  // skip commented-out markup, so a `<script nonce>` inside a comment is not taken for the page's nonce
-  const hookNonce = extractCspNonce(joinTags([...context.head, ...context.bodyPrepend, ...context.bodyAppend, ...context.body]).replace(HTML_COMMENT_RE, ''))
+  const hookNonce = extractCspNonce(joinTags([...context.head, ...context.bodyPrepend, ...context.bodyAppend, ...context.body]))
   const stamped = hookNonce ? (await runtime.renderDevBadge?.(event, hookNonce).catch(() => undefined))?.trim() : undefined
   if (stamped) {
     context.head[index] = stamped

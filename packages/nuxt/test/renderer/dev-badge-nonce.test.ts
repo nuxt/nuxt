@@ -34,14 +34,6 @@ describe('stampDevBadgeNonce', () => {
     expect(html.head[1]).toContain('nonce="inbody"')
   })
 
-  it('ignores a nonce on a commented-out script', async () => {
-    const { runtime, renderDevBadge, html } = setup({ body: ['<!-- <script nonce="example"></script> --><script nonce="real">window.app=1</script>'] })
-
-    await stampDevBadgeNonce(runtime, event, html, badge, undefined)
-
-    expect(renderDevBadge).toHaveBeenCalledWith(event, 'real')
-  })
-
   it('keeps the badge when it was already rendered with the head nonce', async () => {
     const { runtime, renderDevBadge, html } = setup({ bodyAppend: ['<script nonce="fromhook"></script>'] })
 
