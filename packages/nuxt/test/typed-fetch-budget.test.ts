@@ -48,14 +48,21 @@ function routeSet (count: number) {
   return { routes, sites }
 }
 
-function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number) {
+interface ProgramOptions {
+  strict?: boolean
+  strictFetchPaths?: boolean
+  /** Module-level source appended to the program. */
+  source?: string[]
+}
+
+function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number, { strict = true, strictFetchPaths = true, source = [] }: ProgramOptions = {}) {
   rmSync(workspace, { recursive: true, force: true })
   mkdirSync(workspace, { recursive: true })
 
   writeFileSync(join(workspace, 'server-routes.ts'), [
     compileRoutes([{ routes }], { name: 'GeneratedServerRoutes', moduleSpecifier: 'fetchdts', resolveAgainst: 'ServerRoutes' }).code,
     'interface ServerRoutes extends GeneratedServerRoutes {}',
-    'export type StrictFetchPaths = true',
+    `export type StrictFetchPaths = ${strictFetchPaths}`,
     'export type RouteTypesEngine = \'generated\'',
   ].join('\n'))
 
@@ -74,6 +81,7 @@ function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number)
     'export async function calls () {',
     ...callSites,
     '}',
+    ...source,
   ].join('\n'))
 
   // the legacy engine's types reach `@nuxt/schema` for the routes nitro contributes, which would
@@ -82,7 +90,7 @@ function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number)
 
   writeFileSync(join(workspace, 'tsconfig.json'), JSON.stringify({
     compilerOptions: {
-      strict: true,
+      strict,
       noEmit: true,
       skipLibCheck: true,
       module: 'preserve',
@@ -119,4 +127,31 @@ describe('the cost of resolving a typed `$fetch` call', () => {
     // upgrade moving the number by a few per cent does not fail the build
     expect(perCallLarge).toBeLessThan(1000)
   }, 300_000)
+})
+
+describe('a typed `$fetch` read through its own signature', () => {
+  const source = [
+    'export function api<T> (url: string, options: Parameters<typeof $fetch>[1] = {}) { return $fetch<T>(url, { ...options }) }',
+    'export function rawApi<T> (url: string, options: Parameters<typeof $fetch.raw>[1] = {}) { return $fetch.raw<T>(url, { ...options }) }',
+    'export function post<T> (url: string, body: Record<string, unknown>) { return $fetch<T>(url, { method: \'POST\', body }) }',
+    'export const request: Parameters<typeof $fetch>[0] = new Request(\'https://example.com\')',
+    'export const created: Parameters<ReturnType<typeof $fetch.create>>[1] = { method: \'PATCH\' }',
+    'export async function named (url: string) {',
+    '  await $fetch<unknown>(url, { method: \'PUT\' })',
+    '  await $fetch<{ id?: number }>(url, { method: \'POST\' })',
+    '  await $fetch<{}>(url, { method: \'POST\' })',
+    '}',
+  ]
+
+  it.each([
+    { strict: true, strictFetchPaths: true },
+    { strict: true, strictFetchPaths: false },
+    { strict: false, strictFetchPaths: true },
+    { strict: false, strictFetchPaths: false },
+  ])('compiles against a large route set with a catch-all that validates a body (strict: $strict, strictFetchPaths: $strictFetchPaths)', (options) => {
+    const set = routeSet(50)
+    set.routes.push({ segments: [{ type: 'wildcard' }], metadata: { POST: { responseType: '{ proxied: true }', bodyType: '{ target: string }' } } })
+    // ~7k as merged; the ceiling catches TypeScript measuring the request shape's variance (~190k)
+    expect(program(set, 0, { ...options, source })).toBeLessThan(50_000)
+  }, 60_000)
 })
