@@ -404,6 +404,61 @@ describe('nitro v2 `render:before` hook', () => {
     expect(await response.text()).toBe('')
   })
 
+  function respondWith (response: Record<string, unknown>) {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => { context.response = response })
+    return applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, page(), (body, init) => new Response(body, init))
+  }
+
+  it('keeps the status and headers of a redirect a listener sets with an empty body', async () => {
+    const response = await respondWith({ headers: { location: '/fr' }, statusCode: 302, body: '' })
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/fr')
+    expect(await response.text()).toBe('')
+  })
+
+  it('responds with no content to a `null` body a listener sets', async () => {
+    const response = await respondWith({ body: null, headers: { 'content-length': '4' } })
+
+    expect(response.status).toBe(204)
+    expect(response.headers.has('content-length')).toBe(false)
+    expect(response.body).toBeNull()
+  })
+
+  it('keeps the status a listener sets with a `null` body', async () => {
+    const response = await respondWith({ body: null, statusCode: 404 })
+
+    expect(response.status).toBe(404)
+    expect(await response.text()).toBe('')
+  })
+
+  it.each([[{ ok: true }], [[1, 2]]])('responds with JSON to an object or array body a listener sets (%j)', async (body) => {
+    const response = await respondWith({ body })
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('application/json')
+    expect(await response.json()).toEqual(body)
+  })
+
+  it('keeps the content type a listener sets with an object body', async () => {
+    const response = await respondWith({ body: { ok: true }, headers: { 'content-type': 'application/ld+json' } })
+
+    expect(response.headers.get('content-type')).toBe('application/ld+json')
+    expect(await response.text()).toBe('{"ok":true}')
+  })
+
+  it.each([
+    ['a `Uint8Array`', () => new TextEncoder().encode('bytes')],
+    ['a `Buffer`', () => Buffer.from('bytes')],
+    ['a stream', () => new Blob(['bytes']).stream()],
+  ])('sends %s body a listener sets as it is', async (_, body) => {
+    const response = await respondWith({ body: body() })
+
+    expect(response.headers.has('content-type')).toBe(false)
+    expect(await response.text()).toBe('bytes')
+  })
+
   it('renders with the function a listener puts in place of `render`', async () => {
     const hooks = createHooks<Record<string, (context: any) => void>>()
     const event = mockEvent('http://nuxt/')
