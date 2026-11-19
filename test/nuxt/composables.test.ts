@@ -1825,6 +1825,49 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(3)
     })
 
+    // https://github.com/nuxt/nuxt/issues/37146
+    it.runIf(options?.mode === 'navigation')('should rerun on the next navigation after navigating away while it was still running', async () => {
+      let finish!: () => void
+      const fn = vi.fn()
+        .mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve }))
+        .mockImplementation(() => {})
+      const execute = () => callOnce('superseded-nav', fn, options)
+
+      await navigateTo('/superseded-1')
+      const pending = execute()
+
+      // navigate away while the callback is still running
+      await navigateTo('/superseded-2')
+      finish()
+      await pending
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      // the next navigation must run the callback again
+      await navigateTo('/superseded-3')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation')('should not reuse a callback still running from the previous route', async () => {
+      let finish!: () => void
+      const fn = vi.fn()
+        .mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve }))
+        .mockImplementation(() => {})
+      const execute = () => callOnce('superseded-reuse', fn, options)
+
+      await navigateTo('/superseded-reuse-1')
+      const pending = execute()
+
+      await navigateTo('/superseded-reuse-2')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      finish()
+      await pending
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
     it('should retry after a rejected promise', async () => {
       const fn = vi.fn()
         .mockRejectedValueOnce(new Error('fail'))
