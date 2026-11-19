@@ -44,7 +44,7 @@ describe('legacyCacheControl', () => {
     [{ swr: true, maxAge: 60, staleMaxAge: 30 }, 's-maxage=60, stale-while-revalidate=30'],
     [{ swr: true }, 'stale-while-revalidate'],
     [{}, undefined],
-  ])('is what Nitro v2 sent for %o', (options, expected) => {
+  ])('is what Nitro v2 wrote for %o', (options, expected) => {
     expect(legacyCacheControl(options)).toBe(expected)
   })
 })
@@ -60,13 +60,14 @@ describe('nitro v2 cached handlers', () => {
     expect(sentCacheControl({ maxAge: 60 })).toBe('max-age=60')
     expect(sentCacheControl({ swr: true, maxAge: 300 })).toBe('s-maxage=300, stale-while-revalidate')
     expect(sentCacheControl(undefined)).toBe('s-maxage=1, stale-while-revalidate')
-    expect(sentCacheControl({ name: 'unbounded' })).toBeNull()
+    expect(sentCacheControl({ name: 'unbounded' })).toBe('public')
     expect(optionsOf({ maxAge: 60 })).toMatchObject({ maxAge: 60, sendCacheControl: false })
   })
 
-  it('keep the `cache-control` of a handler only where it forbids shared caching', () => {
+  it('keep the `cache-control` of a handler where it forbids shared caching or the options set none', () => {
     expect(sentCacheControl({ maxAge: 60 }, 'private, max-age=7')).toBe('private, max-age=7')
     expect(sentCacheControl({ maxAge: 60 }, 'max-age=7')).toBe('max-age=60')
+    expect(sentCacheControl({ name: 'unbounded' }, 'max-age=7')).toBe('max-age=7')
   })
 
   it('leave options that control the header alone', () => {
@@ -91,7 +92,7 @@ describe('route rule cache-control plugin', () => {
     expect(await respond({ cache: { swr: true, maxAge: 60 } })).toBe('s-maxage=60, stale-while-revalidate')
     expect(await respond({ cache: { maxAge: 60 } })).toBe('max-age=60')
     expect(await respond({ cache: { swr: true, maxAge: 60, staleMaxAge: 30 } })).toBe('s-maxage=60, stale-while-revalidate=30')
-    expect(await respond({ cache: {} }, 'public, max-age=1, s-maxage=1')).toBeNull()
+    expect(await respond({ cache: {} }, 'public, max-age=1, s-maxage=1')).toBe('public')
   })
 
   it('keeps any other `cache-control`', async () => {
