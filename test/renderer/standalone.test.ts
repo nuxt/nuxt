@@ -231,6 +231,14 @@ describe('cookies in a streamed render', () => {
     expect(captureError).not.toHaveBeenCalled()
   })
 
+  it('sends a cookie set before a redirect', async () => {
+    const { response } = await streamed('/redirected-cookie')
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/')
+    expect(response.headers.getSetCookie()).toEqual(['redirected=set-before-redirect; Path=/'])
+  })
+
   it('reports a cookie that cannot be serialized', async () => {
     const { response, captureError } = await streamed('/invalid-cookie')
 

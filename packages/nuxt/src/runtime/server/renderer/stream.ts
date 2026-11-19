@@ -101,6 +101,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   // a response the app chose over the render needs none of the hints sent for the stream
   const renderResponse = (response: Response) => {
     event.res.headers.delete('link')
+    ssrContext.nuxt?._cookieWriters?.forEach(write => write())
     return returnRenderResponse(runtime, event, response)
   }
 
