@@ -1917,6 +1917,81 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(3)
     })
 
+    // https://github.com/nuxt/nuxt/issues/37146
+    it.runIf(options?.mode === 'navigation')('should rerun on the next navigation after navigating away while it was still running', async () => {
+      let finish!: () => void
+      const fn = vi.fn()
+        .mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve }))
+        .mockImplementation(() => {})
+      const execute = () => callOnce('superseded-nav', fn, options)
+
+      await navigateTo('/superseded-1')
+      const pending = execute()
+
+      // navigate away while the callback is still running
+      await navigateTo('/superseded-2')
+      finish()
+      await pending
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      // the next navigation must run the callback again
+      await navigateTo('/superseded-3')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation').each(['resolves', 'rejects'] as const)('should not reuse a callback still running from the previous route when it %s', async (outcome) => {
+      const settlers: Array<{ resolve: () => void, reject: (e: Error) => void }> = []
+      const fn = vi.fn().mockImplementation(() => new Promise<void>((resolve, reject) => { settlers.push({ resolve, reject }) }))
+      const key = `superseded-reuse-${outcome}`
+      const execute = () => callOnce(key, fn, options)
+
+      await navigateTo(`/${key}-1`)
+      const first = execute()
+
+      await navigateTo(`/${key}-2`)
+      const second = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      // settling the first call must not drop the second, still running one
+      if (outcome === 'resolves') {
+        settlers[0]!.resolve()
+        await first
+      } else {
+        settlers[0]!.reject(new Error('first'))
+        await expect(first).rejects.toThrow('first')
+      }
+      expect(nuxtApp.payload.once.has(key)).toBe(false)
+      const third = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      settlers[1]!.resolve()
+      await Promise.all([second, third])
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation')('should tell runs apart when the callback returns a shared promise', async () => {
+      let finish!: () => void
+      const shared = new Promise<void>((resolve) => { finish = resolve })
+      const fn = vi.fn(() => shared)
+      const execute = () => callOnce('superseded-shared', fn, options)
+
+      await navigateTo('/superseded-shared-1')
+      const first = execute()
+      let rerun: Promise<void> | undefined
+      void shared.then(() => { rerun = execute() })
+
+      await navigateTo('/superseded-shared-2')
+      const second = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      finish()
+      await Promise.all([first, second])
+      await rerun
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
     it('should retry after a rejected promise', async () => {
       const fn = vi.fn()
         .mockRejectedValueOnce(new Error('fail'))
