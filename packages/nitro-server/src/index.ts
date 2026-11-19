@@ -144,21 +144,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
-  for (const asset of nuxt.options.nitro.publicAssets || []) {
-    if (!asset?.dir) { continue }
-    const dir = resolve(nuxt.options.rootDir, asset.dir)
-    // dirs within the build dir are generated later in the build
-    const isGenerated = !relative(nuxt.options.buildDir, dir).startsWith('..')
-    if (!existsSync(dir) && !isGenerated) {
-      bundlerDiagnostics.NUXT_B7023({
-        dir,
-        baseURL: joinURL('/', asset.baseURL || '/', '**'),
-        resolvedFrom: 'your project root',
-      })
-    }
-  }
-
   if (nuxt.options.dev) {
     let reportFs: { allow: string[], deny: string[], strict?: boolean } | undefined
     let viteAllowedHosts: string[] | true | undefined
@@ -850,6 +835,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     canReuseSsrBuild: environment => canReuseSsrBuild(nitro, environment),
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)
+
+  // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
+  nitro.hooks.hook('build:config', () => {
+    for (const asset of nitro.options.publicAssets || []) {
+      if (!asset?.dir) { continue }
+      // dirs within the build dir are generated later in the build
+      const isGenerated = !relative(nuxt.options.buildDir, asset.dir).startsWith('..')
+      if (!existsSync(asset.dir) && !isGenerated) {
+        bundlerDiagnostics.NUXT_B7023({
+          dir: asset.dir,
+          baseURL: joinURL('/', asset.baseURL || '/', '**'),
+          resolvedFrom: 'your project root',
+        })
+      }
+    }
+  })
 
   // Modules add aliases from `nitro:init`, and Nitro v3 resolves them in
   // insertion order, so a short prefix registered first shadows a longer key.
