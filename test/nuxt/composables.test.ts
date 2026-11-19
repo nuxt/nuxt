@@ -1878,6 +1878,27 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(2)
     })
 
+    it.runIf(options?.mode === 'navigation')('should tell runs apart when the callback returns a shared promise', async () => {
+      let finish!: () => void
+      const shared = new Promise<void>((resolve) => { finish = resolve })
+      const fn = vi.fn(() => shared)
+      const execute = () => callOnce('superseded-shared', fn, options)
+
+      await navigateTo('/superseded-shared-1')
+      const first = execute()
+      let rerun: Promise<void> | undefined
+      void shared.then(() => { rerun = execute() })
+
+      await navigateTo('/superseded-shared-2')
+      const second = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      finish()
+      await Promise.all([first, second])
+      await rerun
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
     it('should retry after a rejected promise', async () => {
       const fn = vi.fn()
         .mockRejectedValueOnce(new Error('fail'))

@@ -54,7 +54,8 @@ export async function callOnce (...args: any[]): Promise<void> {
     }
   }
 
-  promise = nuxtApp._once[_key] ||= fn() || true
+  // wrap each run in its own promise, so the identity checks tell runs apart even when `fn` returns a shared promise
+  promise = nuxtApp._once[_key] ||= (async () => { await fn() })()
   try {
     await promise
   } catch (e) {
