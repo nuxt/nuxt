@@ -922,7 +922,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Connect vfs storages
   const nitroVfs = nitro.vfs
-  nitro.vfs = new Proxy(nitroVfs, {
+  const vfsProxy = nitro.vfs = new Proxy(nitroVfs, {
     get (target, prop: string) {
       return Reflect.get(target, prop) || { render: () => nuxt.vfs[prop] }
     },
@@ -933,10 +933,12 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // Serve nitro's own virtual modules at `/.nuxt/@id/` in development, alongside Nuxt's
   if (nuxt.options.dev) {
+    // Map methods cannot be called through the proxy, which stays until nitro's build replaces `nitro.vfs`
+    const currentVfs = () => nitro.vfs === vfsProxy ? nitroVfs : nitro.vfs
     nuxt._vfsSources ||= []
     nuxt._vfsSources.push({
-      keys: () => nitro.vfs.keys(),
-      read: id => nitro.vfs.get(id)?.render(),
+      keys: () => currentVfs().keys(),
+      read: id => currentVfs().get(id)?.render(),
     })
   }
 
