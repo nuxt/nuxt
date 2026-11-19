@@ -6,7 +6,7 @@ import escapeRE from 'escape-string-regexp'
 import { normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 
-import { isJS, isVue } from '../core/utils/index.ts'
+import { isJS, isVue, vitestCacheKey } from '../core/utils/index.ts'
 import { installNuxtModule } from '../core/features.ts'
 import type { ImportsOptions } from 'nuxt/schema'
 
@@ -28,6 +28,7 @@ interface TransformPluginOptions {
    * computed with `getImportsSignature`.
    */
   getImportsVersion?: () => number
+  getImportsHash?: () => string
 }
 
 /** Serialises the fields of `imports` that affect the code injected into consumers. */
@@ -47,7 +48,7 @@ function isTransformed (options: Partial<ImportsOptions>, id: string) {
   return isVue(id, { type: ['script', 'template'] }) || isJS(id)
 }
 
-export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getImportsVersion }: TransformPluginOptions) => createUnplugin(() => {
+export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getImportsVersion, getImportsHash }: TransformPluginOptions) => createUnplugin(() => {
   const invalidatedAt = new WeakMap<object, Map<string, number>>()
 
   // `$fetch` is not a global on the client, so code that relies on the global (including
@@ -92,6 +93,7 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getIm
       }
     },
     vite: {
+      configureVitest: vitestCacheKey(({ id }) => isTransformed(options, id) ? getImportsHash?.() : undefined),
       hotUpdate: {
         order: 'pre',
         async handler ({ file, modules }) {

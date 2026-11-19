@@ -1,4 +1,5 @@
 import { extname } from 'pathe'
+import type { VitestPluginContext } from 'vitest/node'
 
 /**
  * Split a bundler module ID into its pathname and search (query) parts.
@@ -68,6 +69,19 @@ export function isJS (id: string) {
   // JavaScript files
   const { pathname } = parseModuleId(id)
   return JS_RE.test(pathname)
+}
+
+/**
+ * Creates a `configureVitest` hook that adds the string returned by `generator` to the key of
+ * each module in Vitest's persisted module cache.
+ */
+export function vitestCacheKey (generator: Parameters<VitestPluginContext['defineCacheKeyGenerator']>[0]) {
+  return (context: VitestPluginContext) => {
+    // TODO: remove `experimental_defineCacheKeyGenerator` when dropping support for vitest v4
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const defineCacheKeyGenerator = context.defineCacheKeyGenerator ?? context.experimental_defineCacheKeyGenerator
+    defineCacheKeyGenerator?.(generator)
+  }
 }
 
 export function getLoader (id: string): 'vue' | 'ts' | 'tsx' | null {

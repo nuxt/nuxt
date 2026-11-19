@@ -8,6 +8,7 @@ import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash } from 'ufo'
 import { klona } from 'klona'
 import { resolveModulePath } from 'exsolve'
+import { hash } from 'ohash'
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 
@@ -161,6 +162,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       refreshImports: file => refreshImports(file),
       getImportsVersion: () => importsVersion,
+      getImportsHash: () => importsHash ??= hash(getImportsSignature(resolvedImports)),
     }))
 
     // runs ahead of other build plugins, which may rewrite calls to former auto-imports
@@ -208,6 +210,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     let lastScannedImports: Import[] | undefined
     let importsSignature: string | undefined
     let importsVersion = 0
+    let resolvedImports: Import[] = []
+    let importsHash: string | undefined
     const regenerateImports = async ({ rescan = true } = {}) => {
       const scan = problems.scan()
       let registeredFiles = new Set<string>()
@@ -269,7 +273,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       dedupingScans.set(scan, (file, name) => registeredFiles.has(file) && readable(file) ? locateExport(file, name) : file)
       try {
         ctx.getInternalContext().invalidate()
-        await ctx.getImports()
+        resolvedImports = await ctx.getImports()
+        importsHash = undefined
       } finally {
         dedupingScans.delete(scan)
       }
