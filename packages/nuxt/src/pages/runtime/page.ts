@@ -61,6 +61,7 @@ export default defineComponent({
     const keepAliveInclude = new Set<string>()
 
     let previousPageKey: string | undefined | false
+    let previousRoute: RouteLocationNormalizedLoaded | undefined
 
     expose({ pageRef })
 
@@ -151,7 +152,9 @@ export default defineComponent({
               const key = generateRouteKey(routeProps, props.pageKey)
 
               const willRenderAnotherChild = hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component)
-              if (!nuxtApp.isHydrating && previousPageKey === key && !willRenderAnotherChild) {
+
+              // end page loading on a navigation that keeps the page key
+              if (!nuxtApp.isHydrating && previousRoute !== routeProps.route && previousPageKey === key && !willRenderAnotherChild) {
                 nextTick(() => {
                   if (!pageLoadingEndHookAlreadyCalled) {
                     pageLoadingEndHookAlreadyCalled = true
@@ -167,6 +170,7 @@ export default defineComponent({
               }
 
               previousPageKey = key
+              previousRoute = routeProps.route
 
               const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
               const transitionProps = hasTransition && _mergeTransitionProps([

@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 
 import { flushPromises } from '@vue/test-utils'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
@@ -1193,6 +1193,47 @@ describe('NuxtPage transitions on nested child routes (#12361)', () => {
     expect(hooks).toEqual(['enter', 'leave'])
 
     el.unmount()
+  })
+})
+
+describe('NuxtPage loading hooks', () => {
+  it('does not call `page:loading:end` early when NuxtPage re-renders during navigation', async () => {
+    const router = useRouter()
+    const nuxtApp = useNuxtApp()
+    let resolvePage!: () => void
+    router.addRoute({
+      name: 'slow-loading',
+      path: '/slow-loading',
+      component: defineComponent({
+        async setup () {
+          await new Promise<void>((resolve) => { resolvePage = resolve })
+          return () => h('div', 'slow')
+        },
+      }),
+    })
+
+    const pending = ref(false)
+    const events: string[] = []
+    const el = await mountSuspended({ setup: () => () => h(NuxtPage, { 'data-pending': pending.value }) })
+    const unhooks = [
+      nuxtApp.hook('page:start', () => { pending.value = true }),
+      nuxtApp.hook('page:finish', () => { events.push('page:finish') }),
+      nuxtApp.hook('page:loading:end', () => { events.push('page:loading:end') }),
+    ]
+    onTestFinished(async () => {
+      for (const unhook of unhooks) { unhook() }
+      el.unmount()
+      await navigateTo('/')
+      router.removeRoute('slow-loading')
+    })
+
+    await navigateTo('/slow-loading')
+    await flushPromises()
+    expect(events).toEqual([])
+
+    resolvePage()
+    await flushPromises()
+    expect(events).toEqual(['page:finish', 'page:loading:end'])
   })
 })
 
