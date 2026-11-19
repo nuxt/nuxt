@@ -39,7 +39,7 @@ import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, rout
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
 import { ServerAutoImportsPlugin, serverImportSourcesPlugin, serverImportsModulePlugin } from './auto-imports-plugin.ts'
 import { unheadDedupePlugin } from './unhead.ts'
-import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
+import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getLegacyNitroTypesDeclaration, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
 import { setupScanSuffixes } from './scan-suffixes.ts'
 import { addLegacyRuntimeMounts, createLegacyBuildStorage, getLegacyStorageMounts } from './storage.ts'
@@ -699,9 +699,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // route rule augmentations are declared on `h3/rules`, so a project has to resolve it to the
   // same copy of h3 for them to apply, even when it depends on another copy of `h3`
   nitroTypePackages.push('h3/rules')
-  const [nitroTypePaths, nitroNodeTypePaths] = await Promise.all([
+  // server code runs on Nitro's h3 under the h3 v1 layer, whichever `h3` the project lists
+  const [nitroTypePaths, nitroNodeTypePaths, legacyH3TypePaths] = await Promise.all([
     resolveNitroTypePaths(nitroTypePackages),
     resolveNitroTypePaths(nitroTypePackages, { entry: true }),
+    resolveNitroTypePaths(legacy.h3 && !nitroTypePackages.includes('h3') ? ['h3'] : []),
   ])
 
   // Extend nitro config with hook
@@ -1083,7 +1085,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.references.push({ path: autoImports.importsModulePath + '.d.ts' })
 
     Object.assign(opts.tsConfig.compilerOptions.paths, nitroTypePaths)
-    Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths)
+    Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths, legacyH3TypePaths)
     for (const [source, path] of Object.entries(await autoImports.getSourceTypePaths())) {
       opts.tsConfig.compilerOptions.paths[source] ??= path
       opts.serverTsConfig.compilerOptions.paths[source] ??= path
@@ -1132,6 +1134,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (target.endsWith('/') || stats?.isDirectory()) {
         serverPaths[`${alias}/*`] = [`${absolutePath}/*`]
       }
+    }
+    if (legacy.specifiers) {
+      const declaration = getLegacyNitroTypesDeclaration()
+      serverPaths.nitropack = [declaration]
+      serverPaths['nitropack/types'] = [declaration]
+      // first, so that it loads before any file augmenting `nitropack/types`
+      opts.serverReferences.unshift({ path: declaration })
     }
 
     // the renderers import these app modules directly, so they resolve in the server program even

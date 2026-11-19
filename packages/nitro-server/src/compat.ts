@@ -562,6 +562,12 @@ export function getLegacyNitroAliases (): Record<string, string> {
   return Object.fromEntries(NITRO_V2_ENTRIES.map(entry => [entry, barrel]))
 }
 
+/** The declaration the Nitro v2 specifiers that only carry types resolve to in the server tsconfig. */
+export function getLegacyNitroTypesDeclaration (): string {
+  const base = resolve(distDir, 'runtime/compat/nitro-v2-types')
+  return existsSync(base + '.d.ts') ? base + '.d.ts' : base + '.ts'
+}
+
 /** A package's root, and its real path where the two differ, for a prefix comparison. */
 function getPackageDirs (manifest: string, rootDir: string): string[] {
   const resolved = resolveModulePath(manifest, { from: [rootDir, import.meta.url], try: true })
