@@ -143,8 +143,8 @@ declare module '@nuxt/schema' {
      * Transitional: this option and the compatibility layer behind it are removed in
      * Nuxt 6. Prefer importing from `nuxt/server`.
      *
-     * @note Enabling this, or installing any module whose server code imports from `h3`
-     * or `nitropack`, also turns on Nitro v2 error-shape recovery app-wide: an error
+     * @note Enabling this, or installing any module whose server code gets the
+     * compatibility layer, also turns on Nitro v2 error-shape recovery app-wide: an error
      * thrown as `{ statusCode, statusMessage }` keeps that status instead of being
      * scrubbed to a 500.
      *
@@ -185,8 +185,8 @@ declare module 'nuxt/schema' {
      * Transitional: this option and the compatibility layer behind it are removed in
      * Nuxt 6. Prefer importing from `nuxt/server`.
      *
-     * @note Enabling this, or installing any module whose server code imports from `h3`
-     * or `nitropack`, also turns on Nitro v2 error-shape recovery app-wide: an error
+     * @note Enabling this, or installing any module whose server code gets the
+     * compatibility layer, also turns on Nitro v2 error-shape recovery app-wide: an error
      * thrown as `{ statusCode, statusMessage }` keeps that status instead of being
      * scrubbed to a 500.
      *
