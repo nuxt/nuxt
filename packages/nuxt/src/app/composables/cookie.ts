@@ -275,7 +275,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const writeFinalCookieValue = () => {
       if (!nuxtApp.ssrContext?.['~headersSent']) {
         writeCookieValue()
-      } else if (import.meta.dev && !opts.readonly && (!isEqual(cookie.value, valueAtLastWrite) || (opts.refresh && assignedSinceWrite))) {
+      } else if (import.meta.dev && !opts.readonly && (!isEqual(cookie.value ?? null, valueAtLastWrite ?? null) || (opts.refresh && assignedSinceWrite))) {
         stateDiagnostics.NUXT_E7012({ name })
       }
       if (import.meta.dev) {

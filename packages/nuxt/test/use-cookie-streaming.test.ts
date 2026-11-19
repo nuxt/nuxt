@@ -82,6 +82,14 @@ describe('useCookie in a streamed render', () => {
     expect(lateWrites()).toBe(1)
   })
 
+  it('does not report an absent cookie that defaults to `null` after the headers are sent', async () => {
+    sendHeaders()
+    useCookie('absent', { default: () => null })
+    await finishRender()
+
+    expect(lateWrites()).toBe(0)
+  })
+
   it('does not report cookies assigned before the headers are sent', async () => {
     const unchanged = useCookie('shared')
     useCookie('shared').value = 'B'
