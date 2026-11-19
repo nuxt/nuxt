@@ -32,12 +32,16 @@ export function legacyCacheControl (options: LegacyCacheOptions): string | undef
 
 const UNCACHEABLE_RE = /(?:^|[\s,])(?:private|no-store|no-cache)(?:$|[\s,=])/i
 
+/** The statuses `nitro/cache` serves from an entry, and the `304` it revalidates them with. */
+const CACHED_STATUSES = new Set([200, 203, 301, 304, 308])
+
 /**
  * Send the `cache-control` of Nitro v2 in place of the one h3 writes for every cached
  * response. A handler's own value is kept where it forbids shared caching, or where the
  * options set none; with neither, the response is sent with `public`. The value is read from
- * the cached response so that every request served from it gets the same header. Options
- * Nitro v2 did not have (`headersOnly`, `stream`) keep the header of Nitro v3.
+ * the cached response so that every request served from it gets the same header. A response
+ * with any other status keeps its own headers. Options Nitro v2 did not have (`headersOnly`,
+ * `stream`) keep the header of Nitro v3.
  */
 function withLegacyCacheControl (options: CachedHandlerOptions | undefined): CachedHandlerOptions | undefined {
   if (options?.sendCacheControl !== undefined || options?.headersOnly || options?.stream) {
@@ -54,6 +58,9 @@ function withLegacyCacheControl (options: CachedHandlerOptions | undefined): Cac
       return matched
     },
     createResponse: (body: BodyInit | null, init?: ResponseInit) => {
+      if (!CACHED_STATUSES.has(init?.status ?? 200)) {
+        return new FastResponse(body, init)
+      }
       const headers = new Headers(init?.headers)
       const value = headers.get('cache-control')
       if (cacheControl && !(value && UNCACHEABLE_RE.test(value))) {

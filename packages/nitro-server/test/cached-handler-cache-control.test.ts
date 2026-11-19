@@ -40,6 +40,15 @@ describe('the cache-control of a nitro v2 cached handler', () => {
     expect(responses.map(response => response.headers.get('cache-control'))).toEqual(['max-age=7', 'max-age=7', 'public', 'public', 'no-store'])
   })
 
+  it.each([{ maxAge: 3600 }, { name: 'unset' }])('is the handler\'s own for a response with a status that is not cached (%o)', async (options) => {
+    const unavailable = serve(() => new Response('unavailable', { status: 503 }), options)
+    const notFound = serve(() => new Response('missing', { status: 404, headers: { 'cache-control': 'max-age=5' } }), options)
+
+    const responses = [await unavailable('/unavailable'), await notFound('/not-found')]
+
+    expect(responses.map(response => [response.status, response.headers.get('cache-control')])).toEqual([[503, null], [404, 'max-age=5']])
+  })
+
   it('is the Nitro v2 value for every request served from a result, including a revalidation', async () => {
     const fetch = serve(() => delayed(() => new Response('body', { headers: { 'cache-control': 'max-age=5' } })), { maxAge: 60 })
 
