@@ -337,11 +337,14 @@ describe('createServerAutoImports', () => {
     presetReport.mockRestore()
   })
 
-  it('types a registered import from the module directory that can resolve its `typeFrom`', async () => {
+  it.each([
+    ['with a runtime entry', { '.': { types: './index.d.mts', default: './index.mjs' } }],
+    ['that only declares types', { '.': { types: './index.d.mts' } }],
+  ])('types a registered import from the module directory that can resolve its `typeFrom`, a package %s', async (_, exports) => {
     const rootDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-module-types-'))
     const files: Record<string, string> = {
-      'module/node_modules/module-types/package.json': JSON.stringify({ name: 'module-types', type: 'module', exports: { '.': { types: './index.d.mts', default: './index.mjs' } } }),
-      'module/node_modules/module-types/index.mjs': '',
+      'module/node_modules/module-types/package.json': JSON.stringify({ name: 'module-types', type: 'module', exports }),
+      ...'default' in exports['.'] && { 'module/node_modules/module-types/index.mjs': '' },
       'module/node_modules/module-types/index.d.mts': 'export declare const useTyped: () => \'typed\'',
       'node_modules/root-dep/package.json': JSON.stringify({ name: 'root-dep', type: 'module', exports: './index.mjs' }),
       'node_modules/root-dep/index.mjs': 'export const useTyped = () => \'typed\'',
