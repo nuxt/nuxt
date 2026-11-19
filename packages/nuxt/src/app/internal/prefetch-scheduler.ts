@@ -34,9 +34,8 @@ function defer (run: () => void, promoted: boolean, priority: PrefetchPriority) 
 
 /**
  * The single scheduler every client-side prefetch mechanism queues work on.
- * @internal
  */
-export function usePrefetchScheduler (nuxtApp: NuxtApp = useNuxtApp()): PrefetchScheduler {
+export function usePrefetchScheduler (nuxtApp: NuxtApp = useNuxtApp()): Pick<PrefetchScheduler, 'schedule' | 'promote'> {
   if (nuxtApp._prefetch) { return nuxtApp._prefetch }
   // a hidden tab shows nothing to speculate about, and a navigation waits on a request of its own
   let navigating = false

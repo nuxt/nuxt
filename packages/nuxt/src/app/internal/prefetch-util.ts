@@ -18,7 +18,6 @@ export function canPrefetch (): boolean {
 
 /**
  * The destination a piece of prefetch work belongs to. The hash does not affect what is fetched.
- * @internal
  */
 export function prefetchGroup (url: string): string {
   const { pathname, search } = new URL(url, document.baseURI)

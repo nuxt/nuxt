@@ -74,7 +74,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/ready',
   },
   {
-    imports: ['preloadComponents', 'prefetchComponents', 'preloadRouteComponents'],
+    imports: ['preloadComponents', 'prefetchComponents', 'preloadRouteComponents', 'usePrefetchScheduler', 'prefetchGroup'],
     from: '#app/composables/preload',
   },
   {
