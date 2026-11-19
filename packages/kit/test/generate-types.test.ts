@@ -266,6 +266,14 @@ describe('tsConfig generation', () => {
     expect(reached.tsConfig.exclude).toContain('../../installed/*.ts')
   })
 
+  it('should exclude dependency module files reached by an include that differs in case', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { tsConfig: { include: ['../node_modules/Installed/runtime/**/*'] } },
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+  })
+
   it('should exclude dependency module files reached by an include added in prepare:types', async () => {
     const nuxt = mockNuxtWithOptions({ _installedModules: [dependencyModule] })
     onPrepareTypes(nuxt, (ctx) => {

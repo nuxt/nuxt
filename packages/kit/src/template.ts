@@ -274,7 +274,8 @@ function staticRoot (entry: string): string {
  * Remove the `candidates` from `config.exclude` that no `include` entry can reach.
  *
  * TypeScript does not expand a wildcard into `node_modules`, so files there are matched only by an
- * `include` entry that names the path.
+ * `include` entry that names the path. Paths are compared in lower case, as TypeScript matches
+ * them case-insensitively on case-insensitive file systems.
  */
 function pruneDependencyExcludes (config: TSConfig, candidates: Set<string>, userExclude: string[], typesDir: string): void {
   if (!config.exclude || !candidates.size) {
@@ -283,7 +284,7 @@ function pruneDependencyExcludes (config: TSConfig, candidates: Set<string>, use
 
   const includeRoots: string[] = []
   for (const entry of config.include ?? []) {
-    const absolute = resolve(typesDir, entry)
+    const absolute = resolve(typesDir, entry).toLowerCase()
     if (NODE_MODULES_RE.test(absolute)) {
       // the trailing slash marks a directory: a literal entry can also name a file
       includeRoots.push(GLOB_RE.test(absolute) ? withTrailingSlash(staticRoot(absolute)) : absolute)
@@ -294,7 +295,7 @@ function pruneDependencyExcludes (config: TSConfig, candidates: Set<string>, use
     if (!candidates.has(entry) || userExclude.includes(entry)) {
       return true
     }
-    const excludeRoot = staticRoot(resolve(typesDir, entry))
+    const excludeRoot = staticRoot(resolve(typesDir, entry).toLowerCase())
     // `dir/*.ext` covers only the files directly inside `dir`
     const isShallow = GLOB_RE.test(entry)
     return includeRoots.some((includeRoot) => {
