@@ -28,6 +28,15 @@ interface NuxtDevAsyncContext {
   request: ServerRequest
 }
 
+function appendLogs (ctx: NuxtDevAsyncContext, bodyAppend: string[]) {
+  try {
+    const reducers = Object.assign(Object.create(null), devReducers, ctx.request.context?.['~payloadReducers'])
+    bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, reducers)}</script>`)
+  } catch (e) {
+    serverDiagnostics.NUXT_E8003({ error: e instanceof Error ? e.toString() : undefined, cause: e })
+  }
+}
+
 const asyncContext = getContext<NuxtDevAsyncContext>('nuxt-dev', { asyncContext: true, AsyncLocalStorage })
 
 const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
@@ -81,16 +90,20 @@ const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
     return nitroHooks.callHook('dev:ssr-logs', { logs: ctx.logs, path })
   })
 
-  // Pass any logs to the client
-  nitroHooks.hook('render:html', (htmlContext) => {
+  // `render:html` runs before a streamed body is rendered, so streamed logs are
+  // attached from `render:html:close` once the render is complete.
+  nitroHooks.hook('render:html', (htmlContext, { streaming }) => {
+    if (streaming) { return }
+
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
-    try {
-      const reducers = Object.assign(Object.create(null), devReducers, ctx.request.context?.['~payloadReducers'])
-      htmlContext.bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, reducers)}</script>`)
-    } catch (e) {
-      serverDiagnostics.NUXT_E8003({ error: e instanceof Error ? e.toString() : undefined, cause: e })
-    }
+    appendLogs(ctx, htmlContext.bodyAppend)
+  })
+
+  nitroHooks.hook('render:html:close', (closeContext) => {
+    const ctx = asyncContext.tryUse()
+    if (!ctx) { return }
+    appendLogs(ctx, closeContext.bodyAppend)
   })
 })
 
