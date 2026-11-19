@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module'
 import { addServerHandler, createResolver, defineNuxtModule } from '@nuxt/kit'
 
 export default defineNuxtModule({
@@ -17,11 +18,24 @@ export default defineNuxtModule({
       '#legacy-probe': resolver.resolve('./runtime'),
       '#legacy-probe/specific': resolver.resolve('./runtime/probe-specific'),
       '#legacy-probe/node-variant': resolver.resolve('./runtime/probe-specific.node'),
+      '#legacy-h3': 'h3',
     }
+
+    // a module that pins `h3` to the h3 v1 that nitropack depends on
+    nuxt.hook('nitro:config', (nitroConfig) => {
+      const require = createRequire(import.meta.url)
+      nitroConfig.alias ||= {}
+      nitroConfig.alias.h3 ??= createRequire(require.resolve('nitropack/package.json')).resolve('h3')
+    })
 
     // a module whose error handler responds to some errors before the one Nuxt registers
     nuxt.hook('nitro:config', (nitroConfig) => {
       nitroConfig.errorHandler = [resolver.resolve('./runtime/error-handler'), ...[nitroConfig.errorHandler || []].flat()]
+    })
+
+    addServerHandler({
+      route: '/api/aliased-h3',
+      handler: resolver.resolve('./runtime/aliased-h3'),
     })
     nuxt.options.nitro.virtual = {
       ...nuxt.options.nitro.virtual,

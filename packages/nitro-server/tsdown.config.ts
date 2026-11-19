@@ -39,6 +39,7 @@ export default defineConfig([
     dts: { emitDtsOnly: true },
     outDir: 'dist/runtime/compat/',
     entry: [
+      'src/runtime/compat/cache.ts',
       'src/runtime/compat/event.ts',
       'src/runtime/compat/h3-v1.ts',
       'src/runtime/compat/render.ts',
