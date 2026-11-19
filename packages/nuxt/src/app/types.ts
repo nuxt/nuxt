@@ -163,6 +163,8 @@ export interface NuxtSSRContext extends SSRContext {
   ['~htmlChunks']?: string[]
   /** @internal */
   ['~payloadReducers']: Record<string, (data: any) => any>
+  /** Report an error that is kept out of the response to the server runtime. @internal */
+  ['~captureError']?: (error: unknown) => void
   /** @internal */
   ['~sharedPrerenderCache']?: {
     get<T = unknown> (key: string): Promise<T> | undefined

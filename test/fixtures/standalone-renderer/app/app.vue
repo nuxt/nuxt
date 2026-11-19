@@ -25,6 +25,14 @@ if (path.startsWith('/response-header')) {
 if (path.startsWith('/invalid-cookie')) {
   useCookie('invalid name').value = 'value'
 }
+if (path.startsWith('/failing-fetch')) {
+  const { error } = await useFetch('/api/standalone')
+  useResponseHeader('x-fetch-error').value = String(error.value?.status)
+}
+if (path.startsWith('/thrown-status')) {
+  const { error } = await useAsyncData('thrown-status', () => Promise.reject(Object.assign(new Error('gone'), { statusCode: 410 })))
+  useResponseHeader('x-async-data-error').value = String(error.value?.status)
+}
 if (path.startsWith('/rewritten')) {
   useNuxtApp().hook('app:rendered', ({ renderResult }) => {
     renderResult!.html = renderResult!.html.replace('rendered without nitro', 'rewritten after render')
