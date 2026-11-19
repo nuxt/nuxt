@@ -58,6 +58,18 @@ const mockNuxt = {
 
 const mockNuxtWithOptions = (options: NuxtConfig) => defu({ options }, mockNuxt) as Nuxt
 
+const dependencyModule = { meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }
+
+interface PrepareTypesContext { tsConfig: { include: string[], exclude: string[] } }
+function onPrepareTypes (nuxt: Nuxt, handler: (ctx: PrepareTypesContext) => void) {
+  nuxt.callHook = ((name: string, ctx: PrepareTypesContext) => {
+    if (name === 'prepare:types') {
+      handler(ctx)
+    }
+    return Promise.resolve()
+  }) as Nuxt['callHook']
+}
+
 describe('tsConfig generation', () => {
   it('should include local layers outside the `layers/` directory', async () => {
     const nuxt = mockNuxtWithOptions({ srcDir: '/my-app/app', serverDir: '/my-app/server' })
@@ -205,6 +217,133 @@ describe('tsConfig generation', () => {
     expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../modules/*.ts', '../modules/1.dotted/*.ts']))
     expect(nodeTsConfig.include).toEqual(expect.arrayContaining(['../modules/*.ts', '../modules/1.dotted/*.ts']))
     expect(nodeTsConfig.include).not.toEqual(expect.arrayContaining([expect.stringMatching(/\*\.\*$/)]))
+  })
+
+  it('should not exclude dependency module files that no include can reach', async () => {
+    const { tsConfig, serverTsConfig, legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/installed/')]))
+    expect(serverTsConfig.include).toContain('../node_modules/installed/runtime/server')
+    expect(serverTsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/installed/')]))
+    expect(legacyTsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+  })
+
+  it.each([
+    { typescript: { tsConfig: { include: ['../i18n/**/*'] } } },
+    { typescript: { appTsConfig: { include: ['./types/custom.d.ts'] } } },
+    { typescript: { includeWorkspace: true }, workspaceDir: '/' },
+  ])('should not exclude dependency module files when an include cannot reach them: %o', async (options) => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      ...options,
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/installed/')]))
+  })
+
+  it.each([
+    { tsConfig: { include: ['../node_modules/installed/dist/runtime/**/*'] } },
+    { appTsConfig: { include: ['../node_modules/installed/dist/runtime/**/*'] } },
+  ])('should exclude only the dependency module files an include can reach: %o', async (typescript) => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript,
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/dist/runtime/server')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringMatching(/node_modules\/installed\/.*\*/)]))
+  })
+
+  it('should exclude the entry files of a dependency module when one of them is included', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { tsConfig: { include: ['../node_modules/installed/module.ts'] } },
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/dist/*.ts')
+  })
+
+  it('should exclude dependency module entry files the server includes can reach', async () => {
+    const { serverTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { serverTsConfig: { include: ['../node_modules/installed/dist/*'] } },
+      _installedModules: [dependencyModule],
+    }))
+    expect(serverTsConfig.exclude).toContain('../node_modules/installed/dist/*.ts')
+    expect(serverTsConfig.exclude).not.toContain('../node_modules/installed/*.ts')
+  })
+
+  it('should resolve includes against the types directory when matching dependency excludes', async () => {
+    const options = { buildDir: '/my-app/node_modules/.cache/nuxt', _installedModules: [dependencyModule] }
+
+    const unreached = await _generateTypes(mockNuxtWithOptions(options))
+    expect(unreached.tsConfig.exclude).not.toContain('../../installed/*.ts')
+
+    const reached = await _generateTypes(mockNuxtWithOptions({ ...options, typescript: { tsConfig: { include: ['../../installed/**/*'] } } }))
+    expect(reached.tsConfig.exclude).toContain('../../installed/*.ts')
+  })
+
+  it('should exclude dependency module files reached by an include that differs in case', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { tsConfig: { include: ['../node_modules/Installed/runtime/**/*'] } },
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+  })
+
+  it('should exclude dependency module files reached by an include added in prepare:types', async () => {
+    const nuxt = mockNuxtWithOptions({ _installedModules: [dependencyModule] })
+    onPrepareTypes(nuxt, (ctx) => {
+      ctx.tsConfig.include.push('../node_modules/installed/runtime/**/*')
+    })
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/dist/runtime/server')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/*.ts')
+  })
+
+  it('should keep excludes added in prepare:types when an added include cannot reach a dependency', async () => {
+    const nuxt = mockNuxtWithOptions({ _installedModules: [dependencyModule] })
+    onPrepareTypes(nuxt, (ctx) => {
+      expect(ctx.tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+      ctx.tsConfig.include.push('./module/components.d.ts')
+      ctx.tsConfig.exclude.push('../custom-exclude')
+    })
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/installed/')]))
+    expect(tsConfig.exclude).toContain('../custom-exclude')
+  })
+
+  it('should keep user-configured dependency excludes', async () => {
+    const { tsConfig, serverTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        appTsConfig: { exclude: ['../node_modules/installed/runtime/server'] },
+        serverTsConfig: { exclude: ['../node_modules/installed/*.ts'] },
+      },
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/*.ts')
+    expect(serverTsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(serverTsConfig.exclude).not.toContain('../node_modules/installed/*.js')
+  })
+
+  it('should exclude dependency module files only for modules inside a layer in node_modules', async () => {
+    const nuxt = mockNuxtWithOptions({
+      _installedModules: [
+        dependencyModule,
+        { meta: { name: 'other', rawPath: '/my-app/node_modules/other/index.ts' }, entryPath: '/my-app/node_modules/other/index.ts', timings: {} },
+      ],
+    })
+    nuxt.options._layers = [
+      { config: { rootDir: '/my-app', srcDir: '/my-app' }, cwd: '/my-app', configFile: '/my-app/nuxt.config.ts' },
+      { config: { rootDir: '/my-app/node_modules/installed', srcDir: '/my-app/node_modules/installed' }, cwd: '/my-app/node_modules/installed', configFile: '/my-app/node_modules/installed/nuxt.config.ts' },
+    ]
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/other/')]))
   })
 
   it('should not exclude layer module runtime files from app tsconfig', async () => {

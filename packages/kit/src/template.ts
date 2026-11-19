@@ -261,6 +261,52 @@ function withExplicitExtension (entry: string, extension: string): string | unde
   return join(entry, '**/*' + extension)
 }
 
+const NODE_MODULES_RE = /(?:^|\/)node_modules(?:\/|$)/
+const GLOB_RE = /[*?]/
+
+/** Everything before the first wildcard segment of an `include` or `exclude` entry. */
+function staticRoot (entry: string): string {
+  const index = entry.search(GLOB_RE)
+  return index === -1 ? entry : entry.slice(0, entry.lastIndexOf('/', index))
+}
+
+/**
+ * Remove the `candidates` from `config.exclude` that no `include` entry can reach.
+ *
+ * TypeScript does not expand a wildcard into `node_modules`, so files there are matched only by an
+ * `include` entry that names the path. Paths are compared in lower case, as TypeScript matches
+ * them case-insensitively on case-insensitive file systems.
+ */
+function pruneDependencyExcludes (config: TSConfig, candidates: Set<string>, userExclude: string[], typesDir: string): void {
+  if (!config.exclude || !candidates.size) {
+    return
+  }
+
+  const includeRoots: string[] = []
+  for (const entry of config.include ?? []) {
+    const absolute = resolve(typesDir, entry).toLowerCase()
+    if (NODE_MODULES_RE.test(absolute)) {
+      // the trailing slash marks a directory: a literal entry can also name a file
+      includeRoots.push(GLOB_RE.test(absolute) ? withTrailingSlash(staticRoot(absolute)) : absolute)
+    }
+  }
+
+  config.exclude = config.exclude.filter((entry) => {
+    if (!candidates.has(entry) || userExclude.includes(entry)) {
+      return true
+    }
+    const excludeRoot = staticRoot(resolve(typesDir, entry).toLowerCase())
+    // `dir/*.ext` covers only the files directly inside `dir`
+    const isShallow = GLOB_RE.test(entry)
+    return includeRoots.some((includeRoot) => {
+      if (isWithinDir(excludeRoot, includeRoot)) {
+        return true
+      }
+      return isWithinDir(includeRoot, excludeRoot) && (!isShallow || !includeRoot.slice(excludeRoot.length + 1).includes('/'))
+    })
+  })
+}
+
 /**
  * Resolve an extensionless `paths` target to the file TypeScript should load for it.
  *
@@ -389,7 +435,11 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const modulePaths = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
 
+  const dependencyExcludes = new Set<string>()
+  const serverDependencyExcludes = new Set<string>()
+
   for (const path of modulePaths) {
+    const isDependency = NODE_MODULES_RE.test(path)
     const relative = relativeWithDot(typesDir, path)
     const sourceGlobs = moduleFileGlobs(relative, nuxt.options.extensions)
     const entryGlobs = [...sourceGlobs, ...moduleFileGlobs(join(relative, 'dist'), nuxt.options.extensions)]
@@ -410,11 +460,17 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
     serverInclude.add(join(relative, 'runtime/server'))
     serverInclude.add(join(relative, 'dist/runtime/server'))
 
-    exclude.add(join(relative, 'runtime/server'))
-    exclude.add(join(relative, 'dist/runtime/server'))
+    for (const entry of [join(relative, 'runtime/server'), join(relative, 'dist/runtime/server'), ...entryGlobs]) {
+      exclude.add(entry)
+      if (isDependency) {
+        dependencyExcludes.add(entry)
+      }
+    }
     for (const glob of entryGlobs) {
       serverExclude.add(glob)
-      exclude.add(glob)
+      if (isDependency) {
+        serverDependencyExcludes.add(glob)
+      }
     }
     legacyExclude.add(join(relative, 'runtime/server'))
     legacyExclude.add(join(relative, 'dist/runtime/server'))
@@ -670,6 +726,9 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   const declarations: string[] = []
 
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig, nodeTsConfig, nodeReferences, sharedTsConfig, sharedReferences, serverTsConfig, serverReferences })
+
+  pruneDependencyExcludes(tsConfig, dependencyExcludes, userExclude, typesDir)
+  pruneDependencyExcludes(serverTsConfig, serverDependencyExcludes, nuxt.options.typescript?.serverTsConfig?.exclude ?? [], typesDir)
 
   // Legacy tsConfig for backward compatibility
   const legacyTsConfig: TSConfig = defu({}, {
