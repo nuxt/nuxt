@@ -107,6 +107,7 @@
     "nitro": "catalog:nitro-runtime",
     "nuxt": "workspace:*",
     "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
     "vitest": "catalog:dev"
   },
   "engines": {
