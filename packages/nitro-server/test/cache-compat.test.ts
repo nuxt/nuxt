@@ -28,15 +28,13 @@ function optionsOf (options?: Record<string, any>, define = defineCachedEventHan
   return defined[0]
 }
 
-async function sentCacheControl (options: Record<string, any> | undefined, served?: string) {
+function sentCacheControl (options: Record<string, any> | undefined, served?: string) {
   flags.legacyResponseHeaders = true
   const resolved = optionsOf(options)!
   const event = new H3Event(new Request('http://localhost/api'))
-  if (served) {
-    await resolved.toResponse(new Response('{}', { headers: { 'cache-control': served } }), event)
-  }
   resolved.handleCacheHeaders(event, { maxAge: options?.maxAge ?? 1 })
-  return event.res.headers.get('cache-control')
+  const response: Response = resolved.createResponse('{}', { headers: served ? { 'cache-control': served } : {} })
+  return event.res.headers.get('cache-control') ?? response.headers.get('cache-control')
 }
 
 describe('legacyCacheControl', () => {
@@ -46,7 +44,7 @@ describe('legacyCacheControl', () => {
     [{ swr: true, maxAge: 60, staleMaxAge: 30 }, 's-maxage=60, stale-while-revalidate=30'],
     [{ swr: true }, 'stale-while-revalidate'],
     [{}, undefined],
-  ])('is what Nitro v2 sent for %o', (options, expected) => {
+  ])('is what Nitro v2 wrote for %o', (options, expected) => {
     expect(legacyCacheControl(options)).toBe(expected)
   })
 })
@@ -55,26 +53,27 @@ describe('nitro v2 cached handlers', () => {
   it.each([['defineCachedEventHandler', defineCachedEventHandler], ['cachedEventHandler', cachedEventHandler]] as const)('pass the options of `%s` on as given without the Nitro v2 `cache-control`', (_name, define) => {
     flags.legacyResponseHeaders = false
     const options = { maxAge: 60 }
-    expect(optionsOf(options, define)).toBe(options)
+    expect(optionsOf(options, define)).toEqual({ ...options, toResponse: expect.any(Function) })
   })
 
-  it('send the `cache-control` of Nitro v2 with it', async () => {
-    expect(await sentCacheControl({ maxAge: 60 })).toBe('max-age=60')
-    expect(await sentCacheControl({ swr: true, maxAge: 300 })).toBe('s-maxage=300, stale-while-revalidate')
-    expect(await sentCacheControl(undefined)).toBe('s-maxage=1, stale-while-revalidate')
-    expect(await sentCacheControl({ name: 'unbounded' })).toBeNull()
+  it('send the `cache-control` of Nitro v2 with it', () => {
+    expect(sentCacheControl({ maxAge: 60 })).toBe('max-age=60')
+    expect(sentCacheControl({ swr: true, maxAge: 300 })).toBe('s-maxage=300, stale-while-revalidate')
+    expect(sentCacheControl(undefined)).toBe('s-maxage=1, stale-while-revalidate')
+    expect(sentCacheControl({ name: 'unbounded' })).toBe('public')
     expect(optionsOf({ maxAge: 60 })).toMatchObject({ maxAge: 60, sendCacheControl: false })
   })
 
-  it('keep the `cache-control` of a handler only where it forbids shared caching', async () => {
-    expect(await sentCacheControl({ maxAge: 60 }, 'private, max-age=7')).toBe('private, max-age=7')
-    expect(await sentCacheControl({ maxAge: 60 }, 'max-age=7')).toBe('max-age=60')
+  it('keep the `cache-control` of a handler where it forbids shared caching or the options set none', () => {
+    expect(sentCacheControl({ maxAge: 60 }, 'private, max-age=7')).toBe('private, max-age=7')
+    expect(sentCacheControl({ maxAge: 60 }, 'max-age=7')).toBe('max-age=60')
+    expect(sentCacheControl({ name: 'unbounded' }, 'max-age=7')).toBe('max-age=7')
   })
 
   it('leave options that control the header alone', () => {
     flags.legacyResponseHeaders = true
     for (const options of [{ maxAge: 60, sendCacheControl: true }, { maxAge: 60, sendCacheControl: false }, { maxAge: 60, headersOnly: true }, { maxAge: 60, stream: true }]) {
-      expect(optionsOf(options)).toBe(options)
+      expect(optionsOf(options)).toEqual({ ...options, toResponse: expect.any(Function) })
     }
   })
 })
@@ -93,12 +92,13 @@ describe('route rule cache-control plugin', () => {
     expect(await respond({ cache: { swr: true, maxAge: 60 } })).toBe('s-maxage=60, stale-while-revalidate')
     expect(await respond({ cache: { maxAge: 60 } })).toBe('max-age=60')
     expect(await respond({ cache: { swr: true, maxAge: 60, staleMaxAge: 30 } })).toBe('s-maxage=60, stale-while-revalidate=30')
-    expect(await respond({ cache: {} }, 'public, max-age=1, s-maxage=1')).toBeNull()
+    expect(await respond({ cache: {} }, 'public, max-age=1, s-maxage=1')).toBe('public')
   })
 
   it('keeps any other `cache-control`', async () => {
     expect(await respond(undefined)).toBe('public, max-age=60, s-maxage=60')
     expect(await respond({ cache: { swr: true, maxAge: 60 } }, 'private, max-age=7')).toBe('private, max-age=7')
+    expect(await respond({ cache: {} }, 'private, max-age=7')).toBe('private, max-age=7')
     expect(await respond({ cache: { swr: true, maxAge: 60, sendCacheControl: true } })).toBe('public, max-age=60, s-maxage=60')
     expect(await respond({ cache: { swr: true, maxAge: 60 }, headers: { 'Cache-Control': 'public, max-age=60, s-maxage=60' } })).toBe('public, max-age=60, s-maxage=60')
     expect(await respond({ cache: { swr: true, maxAge: 60 } }, 'public, max-age=60, s-maxage=60', 304)).toBe('public, max-age=60, s-maxage=60')

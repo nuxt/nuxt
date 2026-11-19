@@ -1,6 +1,6 @@
 import type { H3Event } from 'nitro/h3'
 
-const DIRECTIVE_RE = /([^\s=,"]+)(?:=("(?:[^"\\]|\\.)*"|[^\s,]*))?\s*(?:,\s*|$)/y
+const DIRECTIVE_RE = /[\s,]*([^\s=,"]+)(?:=("(?:[^"\\]|\\.)*"|[^\s,]*))?\s*(?:,[\s,]*|$)/y
 const ZERO_RE = /^0+$/
 
 /** The `cache-control` of the `headers` route rule matched for the request. */
@@ -45,7 +45,10 @@ export function errorCacheControl (rule: string | undefined): string {
   return revalidated && typeof maxAge === 'string' && ZERO_RE.test(maxAge) ? rule! : 'no-cache'
 }
 
-/** The directives of a `cache-control` value by lowercase name, with the value each first appears with. */
+/**
+ * The directives of a `cache-control` value by lowercase name, with the value each first appears
+ * with. Empty list elements are skipped.
+ */
 function parseDirectives (value: string): Map<string, string | true> | undefined {
   const input = value.trim()
   const directives = new Map<string, string | true>()

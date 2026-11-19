@@ -160,6 +160,21 @@ describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () =>
     expect(await response.text()).toContain('url=/fr')
   })
 
+  it('responds with the web `Response` a v2 `render:before` listener sets as the body', async () => {
+    const response = await fetch('/render-before-response', { headers: { accept: 'text/html' } })
+    expect(response.status).toBe(203)
+    expect(response.headers.get('x-from')).toBe('response')
+    expect(await response.text()).toBe('from a web response')
+  })
+
+  it('responds with an error to the error a v2 `render:before` listener sets as the body', async () => {
+    for (const accept of ['text/html', 'application/json']) {
+      const response = await fetch('/render-before-error', { headers: { accept } })
+      expect(response.status).toBe(418)
+      expect(response.statusText).toBe('Teapot')
+    }
+  })
+
   it('keeps the status of an error page unless a v2 `render:response` listener sets one', async () => {
     for (const accept of ['text/html', 'application/json']) {
       const response = await fetch('/missing', { headers: { accept } })

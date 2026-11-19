@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
-import { dirname, join, resolve } from 'pathe'
+import { dirname, join, normalize, resolve } from 'pathe'
 import { rolldown } from 'rolldown'
 import { resolveModulePath } from 'exsolve'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
@@ -93,7 +93,7 @@ describe('dev hooks plugin', () => {
     await build.close()
 
     const output = execFileSync(process.execPath, [join(root, '.nuxt/dev/index.mjs')], { encoding: 'utf8' })
-    expect(output.trim().split('\n').map(line => JSON.parse(line))).toEqual([
+    expect(output.trim().split('\n').map(line => JSON.parse(line)).map(report => ({ ...report, location: normalize(report.location) }))).toEqual([
       expect.objectContaining({ location: '@nuxtjs/i18n/dist/runtime/server/plugin.js', fix: expect.stringContaining('report the issue to its maintainers') }),
       expect.objectContaining({ location: join(root, 'server/plugins/locale.js'), fix: expect.stringContaining('server middleware') }),
       expect.objectContaining({ location: 'legacy-module/dist/runtime/plugin.js', fix: expect.stringContaining('report the issue to its maintainers') }),

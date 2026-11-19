@@ -18,7 +18,10 @@ import { toLegacyError } from './error-shape.ts'
 
 export * from './h3-v1-app.ts'
 
-/** The event a v1 handler receives, on which `event.node`, `event.fetch` and `event.$fetch` are always present. */
+/**
+ * The event a v1 handler receives. `event.node` is always present; `event.fetch` and
+ * `event.$fetch` are present on the requests Nitro serves, not on a direct `handler.fetch()` call.
+ */
 export type LegacyH3Event = H3Event & {
   node: { req: IncomingMessage, res: ServerResponse }
   fetch: typeof globalThis.fetch

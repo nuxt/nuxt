@@ -13,7 +13,8 @@ function bypassesCache (request: Request): boolean {
 
 /**
  * Send the `cache-control` of Nitro v2 with the responses of a cache route rule, unless the
- * rule sets `sendCacheControl` or a `cache-control` header itself.
+ * rule sets `sendCacheControl` or a `cache-control` header itself. A rule whose options set
+ * none sends `public`.
  */
 export default definePlugin((nitroApp) => {
   nitroApp.hooks?.hook('response', (response, event) => {
@@ -25,11 +26,6 @@ export default definePlugin((nitroApp) => {
     if (!RULE_CACHE_CONTROL_RE.test(response.headers.get('cache-control') || '')) {
       return
     }
-    const value = legacyCacheControl(cache)
-    if (value) {
-      response.headers.set('cache-control', value)
-    } else {
-      response.headers.delete('cache-control')
-    }
+    response.headers.set('cache-control', legacyCacheControl(cache) ?? 'public')
   })
 })
