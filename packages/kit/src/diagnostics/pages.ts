@@ -150,5 +150,10 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Give each route a unique name, for example with `definePageMeta({ name })`.',
       docs: false,
     },
+    NUXT_B4029: {
+      why: (p: { route: string, part: string }) => `The route rule \`${p.route}\` contains \`${p.part}\`, which matches different paths with Nitro v3 than with nitropack.`,
+      fix: 'Check that the rule still covers only the paths it should. With Nitro v3, a single `*` and `(.*)` match any number of segments, so use a named parameter such as `/blog/:slug` to match exactly one. A `**` followed by more of the pattern requires that suffix. A parameter name ends at the first character that is not a letter, digit or `_`, so `:user-id` is the parameter `:user` followed by `-id`. If the rule is not in your configuration, a module or a `nitro:config` hook added it.',
+      docs: false,
+    },
   },
 })
