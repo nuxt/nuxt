@@ -5,6 +5,7 @@ import type { NuxtApp, NuxtPayload } from '../nuxt'
 import { isBotUserAgent } from '../utils'
 import { useRouter } from './router'
 import { appDiagnostics } from '../diagnostics/core'
+import { callAppErrorHook } from '../internal/error-hook'
 import { NUXT_ERROR_SIGNATURE, NuxtError, THROWN_CONTEXT, THROWN_VALUE, createError, createErrorFromThrown, isNuxtError, isUntrustedError } from '../error'
 import type { NuxtErrorDetails } from '../error'
 
@@ -23,14 +24,16 @@ export const showError = <DataT = unknown>(
   const nuxtError = createError<DataT>(error)
 
   try {
+    const nuxtApp = useNuxtApp()
     const error = useError()
 
     if (import.meta.client) {
-      const nuxtApp = useNuxtApp()
-      nuxtApp.hooks.callHook('app:error', nuxtError)
+      callAppErrorHook(nuxtApp, nuxtError)
     }
 
-    error.value ||= nuxtError
+    if (!error.value || error.value === nuxtApp['~clearingError']?.error) {
+      error.value = nuxtError
+    }
   } catch {
     throw nuxtError
   }
@@ -45,7 +48,7 @@ export const showError = <DataT = unknown>(
  * @internal
  */
 export const _notifyCrawlerError = (nuxtApp: NuxtApp, error: Error): Promise<void> | void => {
-  const result = nuxtApp.callHook('app:error', createErrorFromThrown(error))
+  const result = callAppErrorHook(nuxtApp, createErrorFromThrown(error))
   appDiagnostics.NUXT_E1012({ userAgent: navigator.userAgent, cause: error })
   return result
 }
@@ -85,18 +88,32 @@ export const _showErrorUnlessCrawler = async (nuxtApp: NuxtApp, error: Error): P
 export const clearError = async (options: { redirect?: string } = {}): Promise<void> => {
   const nuxtApp = useNuxtApp()
   const error = useError()
+  const cleared = error.value
+  const clearing = { error: cleared }
 
-  nuxtApp.callHook('app:error:cleared', options)
-
-  if (options.redirect) {
-    await useRouter().replace(options.redirect)
+  if (!cleared || cleared !== nuxtApp['~clearingError']?.error) {
+    nuxtApp.callHook('app:error:cleared', options)?.catch(hookError => console.error('[nuxt] Error in `app:error:cleared` hook', hookError))
   }
 
-  error.value = undefined
+  let redirected = !options.redirect
+  try {
+    if (options.redirect) {
+      nuxtApp['~clearingError'] = clearing
+      const type = (await useRouter().replace(options.redirect))?.type
+      redirected = type !== 4 /* NavigationFailureType.aborted */ && type !== 8 /* NavigationFailureType.cancelled */
+    }
+  } finally {
+    if (nuxtApp['~clearingError'] === clearing) {
+      delete nuxtApp['~clearingError']
+    }
+    if (redirected && error.value === cleared) {
+      error.value = undefined
+    }
 
-  if (import.meta.dev && import.meta.client) {
-    for (const el of document.querySelectorAll('nuxt-error-overlay')) {
-      el.remove()
+    if (import.meta.dev && import.meta.client && !error.value) {
+      for (const el of document.querySelectorAll('nuxt-error-overlay')) {
+        el.remove()
+      }
     }
   }
 }

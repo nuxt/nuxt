@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 
 import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
+import { flushPromises } from '@vue/test-utils'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
 import { createApp, inject } from 'vue'
 import { headSymbol } from '@unhead/vue'
@@ -23,7 +24,7 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
-import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
+import { encodeRoutePath, encodeURL, resolveRouteObject, useRouter } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
 import { loadPayload, preloadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
@@ -171,6 +172,233 @@ describe('errors', () => {
     expect(error.value).toMatchInlineSnapshot('[HTTPError: new error]')
     clearError()
     expect(error.value).toBe(undefined)
+  })
+
+  describe('clearError', () => {
+    afterEach(async () => {
+      vi.restoreAllMocks()
+      await clearError({ redirect: '/' })
+    })
+
+    it('should keep the error when the redirect rejects', async () => {
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.unauthorized !== undefined) {
+          throw createError({ status: 401, message: 'unauthorized' })
+        }
+      })
+      onTestFinished(addRouteMiddleware(middleware))
+
+      const original = showError('boom')
+      await expect(clearError({ redirect: '/?unauthorized' })).rejects.toThrow('unauthorized')
+
+      expect(useError().value).toBe(original)
+      showError('later')
+      expect(useError().value).toBe(original)
+    })
+
+    it('should keep the error when the redirect is aborted', async () => {
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.abort !== undefined) {
+          return abortNavigation()
+        }
+      })
+      onTestFinished(addRouteMiddleware(middleware))
+
+      const original = showError('boom')
+      await clearError({ redirect: '/?abort' })
+
+      expect(useError().value).toBe(original)
+      showError('later')
+      expect(useError().value).toBe(original)
+    })
+
+    it('should only remove the dev error overlay once the error is cleared', async () => {
+      vi.stubGlobal('__TEST_DEV__', true)
+      onTestFinished(() => { vi.unstubAllGlobals() })
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.abort !== undefined) {
+          return abortNavigation()
+        }
+        if (to.query.forbidden !== undefined) {
+          throw createError({ status: 403, message: 'forbidden', fatal: true })
+        }
+      })
+      onTestFinished(addRouteMiddleware(middleware))
+      const overlay = document.body.appendChild(document.createElement('nuxt-error-overlay'))
+      onTestFinished(() => overlay.remove())
+
+      showError('boom')
+      await clearError({ redirect: '/?abort' })
+      expect(overlay.isConnected).toBe(true)
+
+      await expect(clearError({ redirect: '/?forbidden' })).rejects.toThrow('forbidden')
+      expect(useError().value).toMatchObject({ message: 'forbidden' })
+      expect(overlay.isConnected).toBe(true)
+
+      await clearError()
+      expect(overlay.isConnected).toBe(false)
+    })
+
+    it('should call `app:error:cleared` once for a successful redirect', async () => {
+      const calls: unknown[] = []
+      onTestFinished(useNuxtApp().hook('app:error:cleared', (options) => { calls.push(options) }))
+
+      showError('boom')
+      await clearError({ redirect: '/?cleared' })
+
+      expect(useError().value).toBeUndefined()
+      expect(calls).toEqual([{ redirect: '/?cleared' }])
+    })
+
+    it('should clear the error when another navigation supersedes a pending redirect', async () => {
+      let release: (() => void) | undefined
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.pending !== undefined) {
+          return new Promise<void>((resolve) => { release = resolve })
+        }
+      })
+      onTestFinished(addRouteMiddleware(middleware))
+
+      const calls: unknown[] = []
+      onTestFinished(useNuxtApp().hook('app:error:cleared', (options) => { calls.push(options) }))
+
+      showError('boom')
+      const settled = clearError({ redirect: '/?pending' })
+      await vi.waitFor(() => expect(release).toBeDefined())
+
+      await useRouter().push('/?other')
+      expect(useError().value).toBeUndefined()
+
+      release!()
+      await settled
+      expect(useError().value).toBeUndefined()
+      expect(calls).toEqual([{ redirect: '/?pending' }])
+    })
+
+    it('should stop letting `showError` replace the error once a cancelled redirect settles', async () => {
+      let release: (() => void) | undefined
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.pending !== undefined) {
+          return new Promise<void>((resolve) => { release = resolve })
+        }
+        if (to.query.abort !== undefined) {
+          return false
+        }
+      })
+      onTestFinished(addRouteMiddleware(middleware))
+
+      const original = showError('boom')
+      const settled = clearError({ redirect: '/?pending' })
+      await vi.waitFor(() => expect(release).toBeDefined())
+
+      const failure = await useRouter().push('/?abort')
+      expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(true)
+      release!()
+      await settled
+
+      expect(useError().value).toBe(original)
+      showError('later')
+      expect(useError().value).toBe(original)
+    })
+
+    it('should keep the error until the redirect settles, replacing it only with the first error shown meanwhile', async () => {
+      let release: (() => void) | undefined
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.pending !== undefined) {
+          return new Promise<void>((resolve) => { release = resolve })
+        }
+      })
+      onTestFinished(addRouteMiddleware(middleware))
+
+      showError('boom')
+      const settled = clearError({ redirect: '/?pending' })
+      await vi.waitFor(() => expect(release).toBeDefined())
+      expect(useError().value).toMatchObject({ message: 'boom' })
+
+      showError('replacement')
+      showError('later')
+      expect(useError().value).toMatchObject({ message: 'replacement' })
+
+      release!()
+      await settled
+      expect(useError().value).toBeUndefined()
+    })
+
+    it('should keep the error until a superseding redirect settles', async () => {
+      const pending: Record<string, () => void> = {}
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        const key = to.query.pending as string | undefined
+        if (key) {
+          return new Promise<void>((resolve) => { pending[key] = resolve })
+        }
+      })
+      onTestFinished(addRouteMiddleware(middleware))
+
+      showError('boom')
+      const first = clearError({ redirect: '/?pending=first' })
+      await vi.waitFor(() => expect(pending.first).toBeDefined())
+      const second = clearError({ redirect: '/?pending=second' })
+      await vi.waitFor(() => expect(pending.second).toBeDefined())
+
+      pending.first!()
+      await first
+      expect(useError().value).toMatchObject({ message: 'boom' })
+
+      showError('replacement')
+      expect(useError().value).toMatchObject({ message: 'replacement' })
+
+      pending.second!()
+      await second
+      expect(useError().value).toBeUndefined()
+    })
+
+    it('should keep a fatal error raised while redirecting', async () => {
+      const middleware = defineNuxtRouteMiddleware((to) => {
+        if (to.query.forbidden !== undefined) {
+          throw createError({ status: 403, message: 'forbidden', fatal: true })
+        }
+      })
+      onTestFinished(addRouteMiddleware(middleware))
+
+      await useRouter().replace('/?from')
+      showError('boom')
+      await expect(clearError({ redirect: '/?forbidden' })).rejects.toThrow('forbidden')
+
+      expect(useError().value).toMatchObject({ status: 403, message: 'forbidden' })
+    })
+  })
+
+  describe('hook rejections', () => {
+    afterEach(async () => {
+      vi.restoreAllMocks()
+      await clearError()
+    })
+
+    it('should log rather than leave unhandled a rejection from `app:error`', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const hookError = new Error('hook failed')
+      onTestFinished(useNuxtApp().hook('app:error', () => { throw hookError }))
+
+      showError('boom')
+      await flushPromises()
+
+      expect(useError().value).toMatchObject({ message: 'boom' })
+      expect(consoleError).toHaveBeenCalledWith('[nuxt] Error in `app:error` hook', hookError)
+    })
+
+    it('should log rather than leave unhandled a rejection from `app:error:cleared`', async () => {
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const hookError = new Error('hook failed')
+      const off = useNuxtApp().hook('app:error:cleared', () => { throw hookError })
+
+      showError('boom')
+      await clearError()
+      off()
+      await flushPromises()
+
+      expect(useError().value).toBeUndefined()
+      expect(consoleError).toHaveBeenCalledWith('[nuxt] Error in `app:error:cleared` hook', hookError)
+    })
   })
 
   describe('_showErrorUnlessCrawler', () => {

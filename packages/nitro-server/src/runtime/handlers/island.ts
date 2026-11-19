@@ -11,6 +11,7 @@ import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES, exceedsMaxBytes, exceeds
 import { mergeIslandHead } from '../utils/island-head'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
+import { callAppErrorHook } from '#app/internal/error-hook'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
 import { createSSRContext } from 'nuxt/internal/renderer/app'
@@ -144,7 +145,7 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     if (ssrContext['~renderResponse'] && (err as Error)?.message === 'skipping render') {
       return {} as Awaited<ReturnType<typeof renderer.renderToString>>
     }
-    await ssrContext.nuxt?.hooks.callHook('app:error', err)
+    await callAppErrorHook(ssrContext.nuxt, err)
     throw err
   })
 

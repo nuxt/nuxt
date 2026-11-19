@@ -9,6 +9,7 @@ import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createErrorFromThrown } from './composables/error'
 import { appDiagnostics } from './diagnostics/core'
+import { callAppErrorHook } from './internal/error-hook'
 import { waitForPaint, yieldToMain } from './internal/yield'
 
 import '#build/css'
@@ -40,7 +41,7 @@ if (import.meta.server) {
       await applyPlugins(nuxt, plugins)
       await nuxt.hooks.callHook('app:created', vueApp)
     } catch (error) {
-      await nuxt.hooks.callHook('app:error', error)
+      await callAppErrorHook(nuxt, error)
       nuxt.payload.error ||= createErrorFromThrown(error, { route: nuxt._route })
     }
     if (ssrContext?.['~renderResponse']) { throw new Error('skipping render') }
@@ -75,7 +76,7 @@ if (import.meta.client) {
     const nuxt = createNuxtApp({ vueApp })
 
     async function handleVueError (error: any) {
-      await nuxt.callHook('app:error', error)
+      await callAppErrorHook(nuxt, error)
       nuxt.payload.error ||= createErrorFromThrown(error, { route: nuxt._route })
     }
     // marker so nuxt-root.vue can skip re-invoking the default handler from

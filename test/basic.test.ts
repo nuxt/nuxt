@@ -1461,6 +1461,24 @@ describe.skipIf(!errorProjects)('errors', () => {
     expect(html).toContain('This page does not exist')
   })
 
+  it('should render the error page of a plugin error when an `app:error` hook rejects on the server', async () => {
+    const res = await fetch('/?hook-rejection=server', { headers: { accept: 'text/html' } })
+    expect(res.status).toBe(418)
+    const html = await res.text()
+    expect(html).toContain('This is the error page')
+    expect(html).toContain('plugin failed')
+  })
+
+  it('should render the error page of a plugin error when an `app:error` hook rejects on the client', async () => {
+    const { page, consoleLogs } = await renderPage('/?hook-rejection=client')
+
+    await page.getByText('This is the error page').waitFor()
+    expect(await page.textContent('h1')).toBe('plugin failed')
+    expect(consoleLogs.some(log => log.type === 'error' && log.text.includes('Error in `app:error` hook'))).toBe(true)
+
+    await page.close()
+  })
+
   it('should send the error page typed and structured values in the payload', async () => {
     const errorPayload = async (path: string) => {
       const html = await fetch(path, { headers: { accept: 'text/html' } }).then(r => r.text())
