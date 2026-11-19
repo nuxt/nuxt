@@ -208,11 +208,10 @@ describe('renderer without a server builder', () => {
 })
 
 describe('cookies in a streamed render', () => {
-  const streamed = (path: string) => render(
-    path,
-    { getRouteRules: () => ({ ssr: true, streaming: true }) },
-    createEvent(path, { headers: { 'user-agent': 'Mozilla/5.0' } }),
-  )
+  const streamed = async (path: string) => {
+    const event = createEvent(path, { headers: { 'user-agent': 'Mozilla/5.0' } })
+    return { event, ...await render(path, { getRouteRules: () => ({ ssr: true, streaming: true }) }, event) }
+  }
 
   it('sends a cookie set before the headers are sent', async () => {
     const { response, html } = await streamed('/streamed-cookie')
@@ -223,10 +222,11 @@ describe('cookies in a streamed render', () => {
   })
 
   it('leaves out a cookie set after the headers are sent and still completes the page', async () => {
-    const { response, html, captureError } = await streamed('/late-cookie')
+    const { event, response, html, captureError } = await streamed('/late-cookie')
 
     expect(html).toContain('window.__unhead__')
     expect(response.headers.getSetCookie()).toEqual([])
+    expect(event.res.headers.getSetCookie()).toEqual([])
     expect(html).toContain('__NUXT_DATA__')
     expect(captureError).not.toHaveBeenCalled()
   })
