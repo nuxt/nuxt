@@ -216,7 +216,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   ssrContext['~headersSent'] = true
 
   // Snapshot status + headers before shell commit so we can warn in dev when
-  // composables like `useCookie`, `setResponseStatus`, or `useResponseHeader`
+  // composables like `setResponseStatus` or `useResponseHeader`
   // mutate the response after the wire is closed. These mutations are
   // silently lost in production - the warning is dev-only diagnostic.
   const committedSnapshot = import.meta.dev
@@ -365,7 +365,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
             lateMutations.push(`response statusText changed (e.g. \`setResponseStatus\`)`)
           }
           if (serializeHeaders(event.res.headers) !== committedSnapshot.headers) {
-            lateMutations.push(`response headers changed during render (e.g. \`useCookie\`, \`useResponseHeader\`, \`setHeader\`)`)
+            lateMutations.push(`response headers changed during render (e.g. \`useResponseHeader\`, \`setHeader\`)`)
           }
           if (lateMutations.length) {
             rendererDiagnostics.NUXT_E8002({ mutations: lateMutations.join('\n  - '), path: event.url.pathname })

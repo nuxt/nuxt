@@ -62,7 +62,7 @@ export const stateDiagnostics = !import.meta.dev
         },
         NUXT_E7012: {
           why: (p: { name: string }) => `Cookie \`${p.name}\` was changed after SSR streaming had already sent the response headers, so it was not sent to the client.`,
-          fix: 'Set the cookie in a plugin, which runs before the headers are sent, or opt the route out of streaming with `routeRules: { \'/path\': { streaming: false } }`.',
+          fix: 'Set the cookie in a plugin or route middleware, which run before the headers are sent, or opt the route out of streaming with `routeRules: { \'/path\': { streaming: false } }`.',
           docs: false,
         },
       },
