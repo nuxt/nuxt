@@ -72,5 +72,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Install the version of `nitro` that `@nuxt/nitro-server` depends on, or upgrade Nuxt.',
       docs: false,
     },
+    NUXT_B9015: {
+      why: (p: { count: number, aliases: string }) => `${p.count} server alias${p.count === 1 ? '' : 'es'} pointed \`h3\` at h3 v1, which does not work with Nitro v3 events, and ${p.count === 1 ? 'was' : 'were'} removed, so that \`h3\` resolves to the h3 v1 helpers of \`nitroLegacy.h3\` in Nitro v2 server code and to h3 v2 elsewhere:\n  - ${p.aliases}`,
+      fix: 'Remove the alias from your configuration, or report it to the author of the module that sets it.',
+      docs: false,
+    },
   },
 })
