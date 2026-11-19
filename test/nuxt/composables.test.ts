@@ -1869,6 +1869,7 @@ describe('callOnce', () => {
         settlers[0]!.reject(new Error('first'))
         await expect(first).rejects.toThrow('first')
       }
+      expect(nuxtApp.payload.once.has(key)).toBe(false)
       const third = execute()
       expect(fn).toHaveBeenCalledTimes(2)
 
