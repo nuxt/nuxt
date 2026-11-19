@@ -98,10 +98,12 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
     })
   }
 
+  const writeCookies = () => ssrContext.nuxt?._cookieWriters?.forEach(write => write())
+
   // a response the app chose over the render needs none of the hints sent for the stream
   const renderResponse = (response: Response) => {
     event.res.headers.delete('link')
-    ssrContext.nuxt?._cookieWriters?.forEach(write => write())
+    writeCookies()
     return returnRenderResponse(runtime, event, response)
   }
 
@@ -162,6 +164,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   if (ssrContext.payload?.error && !ssrError) {
     reader.cancel().catch(() => {})
     event.res.headers.delete('link')
+    writeCookies()
     throw ssrContext.payload.error
   }
 
@@ -205,10 +208,9 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   const shellHtml = renderDocumentOpen(shellContext)
 
   try {
-    ssrContext.nuxt?._cookieWriters?.forEach(write => write())
+    writeCookies()
   } catch (error) {
     reader.cancel().catch(() => {})
-    // drop the entry preload hints that `linkHeader` appended in step 1
     event.res.headers.delete('link')
     throw error
   }

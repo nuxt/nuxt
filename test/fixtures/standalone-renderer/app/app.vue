@@ -38,6 +38,10 @@ if (path.startsWith('/redirected-cookie')) {
   useCookie('redirected').value = 'set-before-redirect'
   await navigateTo('/')
 }
+if (path.startsWith('/failed-cookie')) {
+  useCookie('failed').value = 'set-before-error'
+  showError({ status: 401, statusText: 'Unauthorized' })
+}
 if (path.startsWith('/failing-fetch')) {
   const { error } = await useFetch('/api/standalone')
   useResponseHeader('x-fetch-error').value = String(error.value?.status)
