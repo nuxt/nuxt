@@ -1848,22 +1848,32 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(2)
     })
 
-    it.runIf(options?.mode === 'navigation')('should not reuse a callback still running from the previous route', async () => {
-      let finish!: () => void
-      const fn = vi.fn()
-        .mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve }))
-        .mockImplementation(() => {})
-      const execute = () => callOnce('superseded-reuse', fn, options)
+    it.runIf(options?.mode === 'navigation').each(['resolves', 'rejects'] as const)('should not reuse a callback still running from the previous route when it %s', async (outcome) => {
+      const settlers: Array<{ resolve: () => void, reject: (e: Error) => void }> = []
+      const fn = vi.fn().mockImplementation(() => new Promise<void>((resolve, reject) => { settlers.push({ resolve, reject }) }))
+      const key = `superseded-reuse-${outcome}`
+      const execute = () => callOnce(key, fn, options)
 
-      await navigateTo('/superseded-reuse-1')
-      const pending = execute()
+      await navigateTo(`/${key}-1`)
+      const first = execute()
 
-      await navigateTo('/superseded-reuse-2')
-      await execute()
+      await navigateTo(`/${key}-2`)
+      const second = execute()
       expect(fn).toHaveBeenCalledTimes(2)
 
-      finish()
-      await pending
+      // settling the first call must not drop the second, still running one
+      if (outcome === 'resolves') {
+        settlers[0]!.resolve()
+        await first
+      } else {
+        settlers[0]!.reject(new Error('first'))
+        await expect(first).rejects.toThrow('first')
+      }
+      const third = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      settlers[1]!.resolve()
+      await Promise.all([second, third])
       await execute()
       expect(fn).toHaveBeenCalledTimes(2)
     })
