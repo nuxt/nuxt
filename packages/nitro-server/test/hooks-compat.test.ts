@@ -2,7 +2,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises'
 import { openAsBlob } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { HookableCore, createHooks } from 'hookable'
 import { H3, mockEvent } from 'nitro/h3'
 
@@ -432,7 +432,7 @@ describe('nitro v2 plugin wrapper', () => {
     const hooks = new HookableCore<Record<string, (...args: any[]) => any>>()
     observeLegacyHooks(hooks)
     const nitroApp = { hooks } as any
-    const result = wrapLegacyPlugin(plugin)(nitroApp)
+    const result = wrapLegacyPlugin(plugin, 'modules/runtime/plugin.ts')(nitroApp)
     return { hooks, nitroApp, result }
   }
 
@@ -508,5 +508,37 @@ describe('nitro v2 plugin wrapper', () => {
 
     expect(nitroApp.custom).toBe(true)
     expect(result).toBe(ready)
+  })
+
+  it('reports once per plugin a `close` listener registered while prerendering, and still registers it', async () => {
+    vi.stubGlobal('__TEST_PRERENDER__', true)
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8017').mockImplementation(() => ({}) as any)
+    onTestFinished(() => {
+      vi.unstubAllGlobals()
+      report.mockRestore()
+    })
+    const listener = vi.fn()
+    const { hooks, nitroApp } = runLegacyPlugin((app) => {
+      app.hooks.hook('close', listener)
+      app.hooks.hook('close', listener)
+      app.hooks.hook('render:html', () => {})
+    })
+    wrapLegacyPlugin((app) => {
+      app.hooks.hook('close', listener)
+    }, 'server/plugins/other.ts')(nitroApp)
+
+    expect(report.mock.calls).toEqual([[{ plugin: 'modules/runtime/plugin.ts' }], [{ plugin: 'server/plugins/other.ts' }]])
+    await hooks.callHook('close')
+    expect(listener).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not report a `close` listener outside the prerenderer', () => {
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8017').mockImplementation(() => ({}) as any)
+    onTestFinished(() => { report.mockRestore() })
+    runLegacyPlugin((nitroApp) => {
+      nitroApp.hooks.hook('close', () => {})
+    })
+
+    expect(report).not.toHaveBeenCalled()
   })
 })

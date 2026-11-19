@@ -87,5 +87,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove the alias from your configuration, or report it to the author of the module that sets it.',
       docs: false,
     },
+    NUXT_B9016: {
+      why: (p: { base: string, driver: string, error: string }) => `\`nitro.storage\` cannot read or write \`${p.base}:\` at build time, because its \`${p.driver}\` driver failed to load: ${p.error}`,
+      fix: 'Check that the driver can be imported from your project, or report it to the author of the module that reads this storage at build time.',
+      docs: false,
+    },
   },
 })

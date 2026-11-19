@@ -538,7 +538,7 @@ describe('setupNitroCompat', () => {
     writeFileSync(declared, `export default (nitroApp) => {}`)
 
     const nitroConfig: NitroConfig = { handlers: [{ route: '/legacy', handler: join(dir, 'handler.ts') } as any] }
-    const nuxt = createNuxt({ nitro: { plugins: [legacy, migrated, declared] } })
+    const nuxt = createNuxt({ rootDir: dir, nitro: { plugins: [legacy, migrated, declared] } })
     migratedPlugins(nuxt).add(declared)
     await setupNitroCompat(nuxt, nitroConfig, legacyOff, [])
 
@@ -548,7 +548,7 @@ describe('setupNitroCompat', () => {
     const wrapped = await resolveId(legacy)
     expect(wrapped).toBe(`\0nuxt-compat/plugin:${legacy}`)
     expect(plugin.load.handler(wrapped)).toContain(`import plugin from ${JSON.stringify(legacy)}`)
-    expect(plugin.load.handler(wrapped)).toContain('export default wrapLegacyPlugin(plugin)')
+    expect(plugin.load.handler(wrapped)).toContain('export default wrapLegacyPlugin(plugin, "legacy.ts")')
     await expect(resolveId(migrated)).resolves.toBeUndefined()
     await expect(resolveId(declared)).resolves.toBeUndefined()
     await expect(resolveId('/elsewhere/plugin.ts')).resolves.toBeUndefined()

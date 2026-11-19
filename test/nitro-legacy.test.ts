@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
-import { nitroViteEnvironment, runsOncePerViteBuilderInMatrix } from './matrix'
+import { isDev, nitroViteEnvironment, runsOncePerViteBuilderInMatrix } from './matrix'
 import { setupFixture } from './utils'
 
 await setupFixture('nitro-legacy', runsOncePerViteBuilderInMatrix, { nuxtConfig: { experimental: { nitroViteEnvironment } } })
@@ -101,6 +101,17 @@ describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () =>
         expect(cached.headers.has('content-type')).toBe(false)
       }
     }
+  })
+
+  it.skipIf(isDev)('ships to the server what the prerenderer stored and a build hook read back from `nitro.storage`', async () => {
+    const { mounts, prerendered } = await $fetch<{ mounts: string[], prerendered: unknown }>('/api/storage')
+    expect(prerendered).toEqual(['/prerendered'])
+    expect(mounts).not.toEqual(expect.arrayContaining([expect.stringMatching(/^(?:build|cache|data|root|src):$/)]))
+  })
+
+  it.skipIf(!isDev)('mounts the Nitro v2 storage in development', async () => {
+    const { mounts } = await $fetch<{ mounts: string[] }>('/api/storage')
+    expect(mounts).toEqual(expect.arrayContaining(['build:', 'cache:', 'data:', 'root:', 'src:']))
   })
 
   it('resolves an alias of `h3` in module code to h3 v2 when a module pins `h3` to h3 v1', async () => {

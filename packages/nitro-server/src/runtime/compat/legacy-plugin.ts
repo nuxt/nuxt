@@ -1,6 +1,8 @@
 import { definePlugin } from 'nitro'
 import type { NitroApp, NitroAppPlugin } from 'nitro/types'
 
+import { serverDiagnostics } from '../diagnostics.ts'
+
 type Hooks = NonNullable<NitroApp['hooks']>
 
 const legacyApps = new WeakMap<NitroApp, NitroApp>()
@@ -50,7 +52,35 @@ export function toLegacyApp (nitroApp: NitroApp): NitroApp {
   return legacy
 }
 
-/** Hand a plugin written for Nitro v2 the `nitroApp` it expects. */
-export function wrapLegacyPlugin (plugin: NitroAppPlugin): NitroAppPlugin {
-  return definePlugin(nitroApp => plugin(toLegacyApp(nitroApp) as typeof nitroApp))
+/** The app with hooks that report the first `close` listener `plugin` registers. */
+function withCloseReport (nitroApp: NitroApp, plugin: string): NitroApp {
+  const hooks = nitroApp.hooks
+  if (!hooks) {
+    return nitroApp
+  }
+  let reported = false
+  const hook: Hooks['hook'] = (name, ...args) => {
+    if (name === 'close' && !reported) {
+      reported = true
+      serverDiagnostics.NUXT_E8017({ plugin })
+    }
+    return hooks.hook(name, ...args)
+  }
+  const reportingHooks = new Proxy(hooks, {
+    get: (target, key) => key === 'hook' ? hook : Reflect.get(target, key),
+  })
+  return new Proxy(nitroApp, {
+    get: (target, key) => key === 'hooks' ? reportingHooks : Reflect.get(target, key),
+  })
+}
+
+/**
+ * Hand a plugin written for Nitro v2 the `nitroApp` it expects. `name` identifies the plugin
+ * in diagnostics.
+ */
+export function wrapLegacyPlugin (plugin: NitroAppPlugin, name?: string): NitroAppPlugin {
+  return definePlugin((nitroApp) => {
+    const legacyApp = toLegacyApp(nitroApp)
+    return plugin((import.meta.prerender && name ? withCloseReport(legacyApp, name) : legacyApp) as typeof nitroApp)
+  })
 }

@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module'
+import { join } from 'node:path'
 import { addServerHandler, createResolver, defineNuxtModule } from '@nuxt/kit'
 
 export default defineNuxtModule({
@@ -58,6 +59,16 @@ export default defineNuxtModule({
     addServerHandler({
       route: '/api/v3-module',
       handler: { nitro3: resolver.resolve('./runtime/v3-handler') },
+    })
+
+    // a module that reads what the prerenderer stored and ships it to the server as an asset
+    nuxt.options.routeRules = { ...nuxt.options.routeRules, '/prerendered': { prerender: true } }
+    nuxt.hook('nitro:init', (nitro: any) => {
+      nitro.hooks.hook('prerender:done', async () => {
+        const routes = await nitro.storage.getItem('build:legacy-storage:prerendered.json')
+        await nitro.storage.setItem('build:legacy-storage-assets:routes.json', routes)
+        nitro.options.serverAssets.push({ baseName: 'legacy-storage', dir: join(nuxt.options.buildDir, 'legacy-storage-assets') })
+      })
     })
   },
 })
