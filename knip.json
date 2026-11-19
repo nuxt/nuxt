@@ -106,6 +106,17 @@
       },
       "ignoreDependencies": ["@rsbuild/plugin-pug", "pug"]
     },
+    "test/fixtures/server-module-imports": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreDependencies": ["module-only-dep"]
+    },
     "test/fixtures/unhead-duplicate": {
       "entry": [
         "**/*.{js,ts,tsx,mjs,mts,vue}!"
