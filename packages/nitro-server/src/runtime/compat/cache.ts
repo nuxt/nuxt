@@ -2,8 +2,9 @@
  * The Nitro v2 cached handler helpers, implemented on `nitro/cache`.
  */
 import { defineCachedHandler } from 'nitro/cache'
-import { handleCacheHeaders, toResponse } from 'nitro/h3'
+import { handleCacheHeaders } from 'nitro/h3'
 import type { EventHandler, EventHandlerRequest, EventHandlerResponse, EventHandlerWithFetch, H3Event } from 'nitro/h3'
+import { FastResponse } from 'srvx'
 import type { CachedHandlerOptions } from 'nitro/types'
 import { legacyResponseHeaders } from '#nuxt-compat/flags'
 
@@ -33,7 +34,8 @@ const UNCACHEABLE_RE = /(?:^|[\s,])(?:private|no-store|no-cache)(?:$|[\s,=])/i
 
 /**
  * Send the `cache-control` of Nitro v2 in place of the one h3 writes for every cached
- * response. A handler's own value is kept only where it forbids shared caching. Options
+ * response. A handler's own value is kept only where it forbids shared caching, read from
+ * the cached response so that every request served from it gets the same header. Options
  * Nitro v2 did not have (`headersOnly`, `stream`) keep the header of Nitro v3.
  */
 function withLegacyCacheControl (options: CachedHandlerOptions | undefined): CachedHandlerOptions | undefined {
@@ -42,27 +44,25 @@ function withLegacyCacheControl (options: CachedHandlerOptions | undefined): Cac
   }
   // a handler defined without options was cached with `swr` for a second in Nitro v2
   const cacheControl = legacyCacheControl(options ?? { swr: true, maxAge: 1 })
-  const own = new WeakMap<H3Event, string>()
   return {
     ...options,
     sendCacheControl: false,
-    toResponse: async (result: unknown, event: H3Event) => {
-      const response = await toResponse(result, event)
-      const value = response.headers.get('cache-control')
-      if (value && UNCACHEABLE_RE.test(value)) {
-        own.set(event, value)
-      }
-      return response
-    },
     handleCacheHeaders: (event: H3Event, conditions: Parameters<typeof handleCacheHeaders>[1]) => {
       const matched = handleCacheHeaders(event, conditions)
-      const value = own.get(event) ?? cacheControl
-      if (value) {
-        event.res.headers.set('cache-control', value)
-      } else {
-        event.res.headers.delete('cache-control')
-      }
+      event.res.headers.delete('cache-control')
       return matched
+    },
+    createResponse: (body: BodyInit | null, init?: ResponseInit) => {
+      const headers = new Headers(init?.headers)
+      const value = headers.get('cache-control')
+      if (!value || !UNCACHEABLE_RE.test(value)) {
+        if (cacheControl) {
+          headers.set('cache-control', cacheControl)
+        } else {
+          headers.delete('cache-control')
+        }
+      }
+      return new FastResponse(body, { ...init, headers })
     },
   } as CachedHandlerOptions
 }
