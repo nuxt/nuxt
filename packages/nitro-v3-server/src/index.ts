@@ -41,6 +41,7 @@ import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
 import { unheadDedupePlugin } from './unhead.ts'
 import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
+import { setupScanSuffixes } from './scan-suffixes.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
@@ -717,6 +718,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const unusedVariants = collectServerRegistrations(nuxt, nitroConfig)
 
   const registerLateNitroCompatScope = await setupNitroCompat(nuxt, nitroConfig, legacy, legacyModulePresets, installedModules, unusedVariants)
+  const watchScanSuffixes = await setupScanSuffixes(nuxt, nitroConfig, legacy.config)
   nitroConfig.alias = sortAliasesByPrecedence(nitroConfig.alias!)
 
   const autoImports = createServerAutoImports(nuxt, nitroConfig.imports || { autoImport: false }, typesDir, {
@@ -840,6 +842,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Modules that bypass kit and push handlers or plugins into `nitro.options`
   // are nitro v2 code too, and are only visible now.
   registerLateNitroCompatScope(nitro)
+  watchScanSuffixes(nitro)
 
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {
