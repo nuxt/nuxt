@@ -2,6 +2,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import { join, relative, resolve } from 'pathe'
 import { withTrailingSlash } from 'ufo'
 import { addDevServerHandler } from '@nuxt/kit'
+import { isWithinDir } from '@nuxt/kit/internal'
 import type { Nuxt, NuxtTemplate, RequestEvent } from 'nuxt/schema'
 
 import { isLoopbackAddress } from '../runtime/server/dev/peer.ts'
@@ -47,7 +48,7 @@ interface BuildDirResponse {
 function listModuleIds (nuxt: Nuxt) {
   const { buildDir } = nuxt.options
   // each template is stored under its absolute path and its `#build/` alias
-  const ids = Object.keys(nuxt.vfs).filter(id => !id.startsWith('#build/') && !id.startsWith(buildDir) && !WIN32_SEPARATOR_RE.test(id))
+  const ids = Object.keys(nuxt.vfs).filter(id => !id.startsWith('#build/') && !isWithinDir(id, buildDir) && !WIN32_SEPARATOR_RE.test(id))
   for (const source of nuxt._vfsSources || []) {
     ids.push(...source.keys())
   }
@@ -215,7 +216,7 @@ export async function handleBuildDirRequest (nuxt: Nuxt, pathname: string, accep
   }
 
   const dir = path && withTrailingSlash(path)
-  const entries = (await listBuildDir(nuxt)).filter(entry => entry.path.startsWith(dir))
+  const entries = (await listBuildDir(nuxt)).filter(entry => !dir || isWithinDir(entry.path, dir))
   if (!entries.length) {
     return { status: 404, type: markdownType, body: `\`${BUILD_DIR_URL}${path}\` was not found. \`${BUILD_DIR_URL}\` lists every file.\n` }
   }
