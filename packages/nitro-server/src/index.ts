@@ -168,21 +168,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
   }
 
-  // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
-  for (const asset of nuxt.options.nitro.publicAssets || []) {
-    if (!asset?.dir) { continue }
-    const dir = resolve(nitroSrcDir, asset.dir)
-    // dirs within the build dir are generated later in the build
-    const isGenerated = !relative(nuxt.options.buildDir, dir).startsWith('..')
-    if (!existsSync(dir) && !isGenerated) {
-      bundlerDiagnostics.NUXT_B7023({
-        dir,
-        baseURL: joinURL('/', asset.baseURL || '/', '**'),
-        resolvedFrom: 'your server directory and then your project root',
-      })
-    }
-  }
-
   if (nuxt.options.dev) {
     let reportFs: { allow: string[], deny: string[], strict?: boolean } | undefined
     let viteAllowedHosts: string[] | true | undefined
@@ -865,6 +850,29 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     preview: { command: () => resolveNitroCommand(nitro.options.commands.preview, nitro.options) },
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)
+
+  // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
+  const reportedPublicAssets = new Set<string>()
+  const warnMissingPublicAssets = () => {
+    for (const asset of nitro.options.publicAssets || []) {
+      if (!asset?.dir || reportedPublicAssets.has(asset.dir)) { continue }
+      // dirs within the build dir are generated later in the build
+      const isGenerated = !relative(nuxt.options.buildDir, asset.dir).startsWith('..')
+      if (!existsSync(asset.dir) && !isGenerated) {
+        reportedPublicAssets.add(asset.dir)
+        bundlerDiagnostics.NUXT_B7023({
+          dir: asset.dir,
+          baseURL: joinURL('/', asset.baseURL || '/', '**'),
+          resolvedFrom: 'your server directory and then your project root',
+        })
+      }
+    }
+  }
+  if (nuxt.options.dev) {
+    nitro.hooks.hook('dev:start', warnMissingPublicAssets)
+  } else {
+    nitro.hooks.hook('rollup:before', warnMissingPublicAssets)
+  }
 
   setupVuePackage(nuxt, nitro)
 
