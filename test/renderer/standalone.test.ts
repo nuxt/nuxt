@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { parse } from 'devalue'
 import { createNuxtRenderer } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
 import { renderPayloadJsonScript } from '../../packages/nuxt/src/runtime/server/renderer/payload.ts'
@@ -204,6 +204,35 @@ describe('renderer without a server builder', () => {
 
     expect(ssrHtml).toContain('rendered without nitro')
     expect(spaHtml).not.toContain('rendered without nitro')
+  })
+})
+
+describe('a streamed render in development', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it.each([
+    ['reports a header set after the shell', true, 1],
+    ['does not report a render that leaves the response alone', false, 0],
+  ])('%s', async (_, setsLateHeader, reports) => {
+    vi.stubGlobal('__TEST_DEV__', true)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const event = createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } })
+
+    await render('/', {
+      getRouteRules: () => ({ ssr: true, streaming: true }),
+      hooks: () => ({
+        callHook: ((name: string) => {
+          if (setsLateHeader && name === 'render:html:close') {
+            event.res.headers.set('x-late', 'dropped')
+          }
+        }) as never,
+      }),
+    }, event)
+
+    expect(warn.mock.calls.filter(args => args.join(' ').includes('NUXT_E8002'))).toHaveLength(reports)
   })
 })
 

@@ -215,6 +215,9 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
 
   ssrContext['~headersSent'] = true
 
+  event.res.headers.set('content-type', 'text/html;charset=utf-8')
+  event.res.headers.set('x-powered-by', 'Nuxt')
+
   // Snapshot status + headers before shell commit so we can warn in dev when
   // composables like `setResponseStatus` or `useResponseHeader`
   // mutate the response after the wire is closed. These mutations are
@@ -426,9 +429,6 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
       reader.cancel(reason).catch(() => {})
     },
   })
-
-  event.res.headers.set('content-type', 'text/html;charset=utf-8')
-  event.res.headers.set('x-powered-by', 'Nuxt')
 
   return runtime.createResponse(outputStream, event.res)
 }
