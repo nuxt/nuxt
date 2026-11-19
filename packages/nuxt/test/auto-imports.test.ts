@@ -66,6 +66,16 @@ describe('imports:transform', () => {
   it('should exclude files from transform', async () => {
     expect(await transform('excluded')).toEqual(undefined)
   })
+
+  it('should include files matching a global pattern on every check', async () => {
+    const plugin = TransformPlugin({ ctx, options: { autoImport: true, transform: { include: [/\.custom$/g] } } }).raw({}, { framework: 'rollup', versions: {} }) as Plugin & { transformInclude: (id: string) => boolean }
+    const id = '/node_modules/pkg/example.custom'
+    expect(plugin.transformInclude(id)).toBe(true)
+    expect(plugin.transformInclude(id)).toBe(true)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    const result = await (plugin.transform! as Function).call({ error: null, warn: null } as any, 'const a = ref(0)', id)
+    expect(result?.code).toContain('import { ref } from \'vue\'')
+  })
 })
 
 describe('imports:options', () => {
