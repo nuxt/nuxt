@@ -33,10 +33,11 @@ describe('the cache-control of a nitro v2 cached handler', () => {
   it('is the handler\'s own value, or `public`, when the options set none', async () => {
     const own = serve(() => new Response('body', { headers: { 'cache-control': 'max-age=7' } }), { name: 'own' })
     const none = serve(() => 'body', { name: 'none' })
+    const unshared = serve(() => new Response('body', { headers: { 'cache-control': 'no-store' } }), { name: 'unshared' })
 
-    const responses = [await own('/own'), await own('/own'), await none('/none'), await none('/none')]
+    const responses = [await own('/own'), await own('/own'), await none('/none'), await none('/none'), await unshared('/unshared')]
 
-    expect(responses.map(response => response.headers.get('cache-control'))).toEqual(['max-age=7', 'max-age=7', 'public', 'public'])
+    expect(responses.map(response => response.headers.get('cache-control'))).toEqual(['max-age=7', 'max-age=7', 'public', 'public', 'no-store'])
   })
 
   it('is the Nitro v2 value for every request served from a result, including a revalidation', async () => {

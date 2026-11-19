@@ -98,6 +98,7 @@ describe('route rule cache-control plugin', () => {
   it('keeps any other `cache-control`', async () => {
     expect(await respond(undefined)).toBe('public, max-age=60, s-maxage=60')
     expect(await respond({ cache: { swr: true, maxAge: 60 } }, 'private, max-age=7')).toBe('private, max-age=7')
+    expect(await respond({ cache: {} }, 'private, max-age=7')).toBe('private, max-age=7')
     expect(await respond({ cache: { swr: true, maxAge: 60, sendCacheControl: true } })).toBe('public, max-age=60, s-maxage=60')
     expect(await respond({ cache: { swr: true, maxAge: 60 }, headers: { 'Cache-Control': 'public, max-age=60, s-maxage=60' } })).toBe('public, max-age=60, s-maxage=60')
     expect(await respond({ cache: { swr: true, maxAge: 60 } }, 'public, max-age=60, s-maxage=60', 304)).toBe('public, max-age=60, s-maxage=60')
