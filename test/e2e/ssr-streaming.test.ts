@@ -195,15 +195,17 @@ test.describe('SSR Streaming', () => {
     expect(html).not.toContain('window.__unhead__.push(')
   })
 
-  test('navigateTo() from a page is honored as a redirect', async ({ baseURL }) => {
-    const res = await fetchRaw(baseURL, '/redirect', { redirect: 'manual' })
-    expect(res.status).toBe(307)
-    expect(res.headers.get('location')).toBe('/')
+  for (const [source, path] of [['page middleware', '/redirect'], ['page setup', '/redirect-setup']] as const) {
+    test(`navigateTo() from ${source} is honored as a redirect`, async ({ baseURL }) => {
+      const res = await fetchRaw(baseURL, path, { redirect: 'manual' })
+      expect(res.status).toBe(307)
+      expect(res.headers.get('location')).toBe('/')
 
-    const body = await res.text()
-    expect(body).not.toContain('window.__unhead__={_q:[]')
-    expect(body).not.toMatch(/<body[^>]*>this content must never reach the client/)
-  })
+      const body = await res.text()
+      expect(body).not.toContain('window.__unhead__={_q:[]')
+      expect(body).not.toMatch(/<body[^>]*>this content must never reach the client/)
+    })
+  }
 
   test('bot user-agent falls back to buffered response', async ({ baseURL }) => {
     const html = await fetchRaw(baseURL, '/', { headers: { 'user-agent': 'Googlebot/2.1' } }).then(r => r.text())
