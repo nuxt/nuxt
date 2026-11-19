@@ -1030,7 +1030,11 @@ function buildAsyncData<
             return
           }
 
-          asyncData.error.value = (import.meta.server && !import.meta.dev && isUntrustedError(error)
+          const masked = import.meta.server && !import.meta.dev && isUntrustedError(error)
+          if (masked && !hasStatus(error)) {
+            nuxtApp.ssrContext?.['~captureError']?.(error)
+          }
+          asyncData.error.value = (masked
             ? createError({ status: 500, statusText: 'Internal Server Error' })
             : createError<NuxtErrorDataT>(error)) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
@@ -1105,6 +1109,12 @@ function buildAsyncData<
 
 // Used to get default values
 const getDefault = () => undefined
+
+function hasStatus (error: unknown): boolean {
+  const { status, statusCode } = (error ?? {}) as { status?: unknown, statusCode?: unknown }
+  return typeof status === 'number' || typeof statusCode === 'number'
+}
+
 const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtApp, ctx) => {
   if (nuxtApp.isHydrating) {
     return Object.hasOwn(nuxtApp.payload.data, key) ? nuxtApp.payload.data[key] : undefined
