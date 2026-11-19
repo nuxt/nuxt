@@ -1,3 +1,4 @@
+import type { AnyServerRouteMethod, TypedFetchOptions } from '#app'
 import { expectTypeOf } from 'vitest'
 
 export async function probe () {
@@ -165,14 +166,22 @@ export async function namedResponseMethodProbe<T> (url: string, body: Record<str
 }
 
 /** The parameters of `$fetch` and `useFetch` can be read off their types. */
-export async function fetchParametersProbe<T> (url: string, options: Parameters<typeof $fetch>[1] = {}, rawOptions: Parameters<typeof $fetch.raw>[1] = {}) {
-  await $fetch<T>(url, { ...options })
-  await $fetch.raw<T>(url, { ...rawOptions })
+export async function externalFetchProbe<T> (url: string, options: TypedFetchOptions<string, AnyServerRouteMethod> = {}) {
+  await $fetch(new Request('https://example.com'))
+  await $fetch.raw(new Request('https://example.com'))
+  return await $fetch<T>(url, { ...options, method: 'POST' })
+}
 
-  const request: Parameters<typeof $fetch>[0] = new Request('https://example.com')
-  const rawRequest: Parameters<typeof $fetch.raw>[0] = new Request('https://example.com')
-  const created: Parameters<ReturnType<typeof $fetch.create>>[1] = { method: 'PATCH' }
-  const fetchOptions: Parameters<typeof useFetch>[1] = { method: 'POST', body: { a: 1 }, query: { a: 1 } }
-  const lazyFetchOptions: Parameters<typeof useLazyFetch>[1] = { method: 'POST', body: { a: 1 }, query: { a: 1 } }
-  return { request, rawRequest, created, fetchOptions, lazyFetchOptions }
+const api = $fetch.create({ headers: { 'x-client': 'app' } })
+
+/** An instance created from `$fetch` is typed by the routes it is called with. */
+export async function createdFetchProbe () {
+  expectTypeOf(await api('/api/hello')).toEqualTypeOf<string>()
+  expectTypeOf(await api('/api/validated', { method: 'POST', body: { title: 'a', count: 1 } })).toEqualTypeOf<{ created: boolean }>()
+  // @ts-expect-error the route validates a body, so it cannot be omitted
+  await api('/api/validated', { method: 'POST' })
+  // @ts-expect-error `count` is not a string
+  await api('/api/validated', { method: 'POST', body: { title: 'a', count: '1' } })
+  // @ts-expect-error no GET route matches '/api/helo'
+  await api('/api/helo')
 }

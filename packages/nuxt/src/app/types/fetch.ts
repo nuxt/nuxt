@@ -38,7 +38,7 @@ export type AnyFetchPath = `/${string}` | `${string}://${string}` | (string & {}
 
 /**
  * {@link AnyFetchPath}, or any non-string request `fetch` accepts: what `$fetch`'s permissive
- * signature, the one `Parameters<typeof $fetch>` reads, takes as its request.
+ * signature takes as its request.
  *
  * @internal
  */
@@ -120,18 +120,10 @@ export type AvailableServerRouteMethod<Request> = Lowercase<Methods<Request> & s
  * set.
  */
 export type TypedRequestShape<in out Request, in out Method extends AnyServerRouteMethod> = {
-  body?: Declared<RequestBody<KnownRequest<Request>, Uppercase<Method>, never>, FetchOptions['body']>
-  query?: Declared<RequestQuery<KnownRequest<Request>, Uppercase<Method>, never>, FetchOptions['query']>
-  headers?: DeclaredHeaders<RequestHeaders<KnownRequest<Request>, Uppercase<Method>, never>>
+  body?: Declared<RequestBody<Request, Uppercase<Method>, never>, FetchOptions['body']>
+  query?: Declared<RequestQuery<Request, Uppercase<Method>, never>, FetchOptions['query']>
+  headers?: DeclaredHeaders<RequestHeaders<Request, Uppercase<Method>, never>>
 }
-
-/**
- * `unknown` for an `any` request, which is what a signature's request is erased to when it is
- * compared, as `Parameters<typeof $fetch>` does, and the request itself otherwise.
- *
- * @internal
- */
-type KnownRequest<Request> = 0 extends 1 & Request ? unknown : Request
 
 /**
  * The shape a route declares for a field, or `Fallback` where it declares none.
@@ -167,17 +159,14 @@ export type RequiredRequestBody<Request, Method extends AnyServerRouteMethod> =
  * Whether the route declares a body a request to it cannot omit, asking the generated answer first.
  *
  * A route that declares nothing declares `never`, which is not a body anyone can supply, so it does
- * not count as required however the accessor answers. Nor does an `any` request, which is what a
- * signature's request is erased to when it is compared, as `Parameters<typeof $fetch>` does.
+ * not count as required however the accessor answers.
  *
  * @internal
  */
 type RequiresBody<Request, Method extends AnyServerRouteMethod> =
-  0 extends 1 & Request
+  [RequestBody<Request, Uppercase<Method>, never>] extends [never]
     ? false
-    : [RequestBody<Request, Uppercase<Method>, never>] extends [never]
-        ? false
-        : Requires<Request, Uppercase<Method>, 'body'>
+    : Requires<Request, Uppercase<Method>, 'body'>
 
 /**
  * Requires `body` for a request to `Request` with `Method`, without saying what it holds.

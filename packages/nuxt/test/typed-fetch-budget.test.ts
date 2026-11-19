@@ -124,13 +124,14 @@ describe('the cost of resolving a typed `$fetch` call', () => {
   }, 300_000)
 })
 
-describe('a typed `$fetch` read through its own signature', () => {
+describe('a typed `$fetch` wrapped or called with a response type it names', () => {
   const source = [
-    'export function api<T> (url: string, options: Parameters<typeof $fetch>[1] = {}) { return $fetch<T>(url, { ...options }) }',
-    'export function rawApi<T> (url: string, options: Parameters<typeof $fetch.raw>[1] = {}) { return $fetch.raw<T>(url, { ...options }) }',
+    `import type { AnyServerRouteMethod, TypedFetchOptions } from '${typesModule}'`,
     'export function post<T> (url: string, body: Record<string, unknown>) { return $fetch<T>(url, { method: \'POST\', body }) }',
-    'export const request: Parameters<typeof $fetch>[0] = new Request(\'https://example.com\')',
-    'export const created: Parameters<ReturnType<typeof $fetch.create>>[1] = { method: \'PATCH\' }',
+    'export function external<T> (url: string, options: TypedFetchOptions<string, AnyServerRouteMethod> = {}) { return $fetch<T>(url, options) }',
+    'export const api = $fetch.create({ headers: { \'x-client\': \'app\' } })',
+    'export const viaInstance = () => api(\'/api/group1/route1\')',
+    'export const request = () => $fetch(new Request(\'https://example.com\'))',
     'export async function named (url: string) {',
     '  await $fetch<unknown>(url, { method: \'PUT\' })',
     '  await $fetch<{ id?: number }>(url, { method: \'POST\' })',
@@ -146,6 +147,8 @@ describe('a typed `$fetch` read through its own signature', () => {
   ])('compiles against a large route set with a catch-all that validates a body (strict: $strict, strictFetchPaths: $strictFetchPaths)', (options) => {
     const set = routeSet(50)
     set.routes.push({ segments: [{ type: 'wildcard' }], metadata: { POST: { responseType: '{ proxied: true }', bodyType: '{ target: string }' } } })
-    program(set, 0, { ...options, source })
+    // ~3k as merged; the ceiling catches the options of two calls being related by measuring their
+    // variance, which costs ~200k and more as the route set grows
+    expect(program(set, 0, { ...options, source })).toBeLessThan(50_000)
   }, 60_000)
 })
