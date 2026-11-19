@@ -58,6 +58,38 @@ describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
     expect(error).toMatchObject({ statusCode: 422, statusMessage: 'Unprocessable', data: { from: 'user' } })
   })
 
+  it('sends the `no-store` of a route rule with errors', async () => {
+    const bodies: unknown[] = []
+    for (const route of ['/api/no-store/thrown', '/api/no-store/module', '/api/no-store/returned']) {
+      const response = await fetch(route, { headers: { accept: 'application/json' } })
+      expect(response.status).toBe(401)
+      expect(response.headers.get('cache-control')).toBe('no-store')
+      bodies.push(await response.json())
+    }
+    expect(bodies[0]).not.toEqual({ status: 401 })
+    expect(bodies[1]).toEqual({ status: 401 })
+    expect(bodies[2]).toEqual({ returned: true })
+  })
+
+  it('answers a v1-style handler that returns `null` with no content', async () => {
+    const response = await fetch('/api/null')
+    expect(response.status).toBe(204)
+    expect(response.headers.has('content-type')).toBe(false)
+    expect(await response.text()).toBe('')
+
+    const accepted = await fetch('/api/null?status=1')
+    expect(accepted.status).toBe(202)
+    expect(accepted.headers.has('content-type')).toBe(false)
+
+    expect(await $fetch('/api/null?fetch=1')).toEqual({ value: 'undefined' })
+
+    for (let i = 0; i < 2; i++) {
+      const cached = await fetch('/api/cached-null')
+      expect(cached.status).toBe(204)
+      expect(cached.headers.has('content-type')).toBe(false)
+    }
+  })
+
   it('keeps the status of an error page unless a v2 `render:response` listener sets one', async () => {
     for (const accept of ['text/html', 'application/json']) {
       const response = await fetch('/missing', { headers: { accept } })

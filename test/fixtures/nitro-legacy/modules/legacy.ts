@@ -18,6 +18,11 @@ export default defineNuxtModule({
       '#legacy-probe/specific': resolver.resolve('./runtime/probe-specific'),
       '#legacy-probe/node-variant': resolver.resolve('./runtime/probe-specific.node'),
     }
+
+    // a module whose error handler responds to some errors before the one Nuxt registers
+    nuxt.hook('nitro:config', (nitroConfig) => {
+      nitroConfig.errorHandler = [resolver.resolve('./runtime/error-handler'), ...[nitroConfig.errorHandler || []].flat()]
+    })
     nuxt.options.nitro.virtual = {
       ...nuxt.options.nitro.virtual,
       '#legacy-module-runtime': [

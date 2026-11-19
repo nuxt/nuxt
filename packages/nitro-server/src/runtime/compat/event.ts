@@ -1,5 +1,5 @@
 import type { ServerResponse } from 'node:http'
-import { H3Event } from 'nitro/h3'
+import { H3Event, HTTPResponse } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
 import type { H3Event as H3EventType } from 'nitro/h3'
 
@@ -76,8 +76,15 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
   return event
 }
 
-/** Send a string a handler returns as HTML unless the handler set a content type, as h3 v1 did. */
-export function withLegacyContentType<T> (event: H3EventType, body: T): T {
+/**
+ * Send what a v1 handler returns as h3 v1 did: a string as HTML unless the handler set a content
+ * type, and `null` as an empty response, with `204 No Content` unless the handler set a status.
+ */
+export function fromLegacyBody<T> (event: H3EventType, body: T): T | HTTPResponse {
+  if (body === null) {
+    const status = event.res.status
+    return new HTTPResponse(null, { status: status && status !== 200 ? status : 204 })
+  }
   if (typeof body === 'string' && event.res.status !== 304 && !event.res.headers.has('content-type')) {
     event.res.headers.set('content-type', 'text/html')
   }

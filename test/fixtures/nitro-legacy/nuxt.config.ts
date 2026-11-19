@@ -7,6 +7,9 @@ export default defineNuxtConfig({
       flavour: 'earl-grey',
     },
   },
+  routeRules: {
+    '/api/no-store/**': { headers: { 'cache-control': 'no-store' } },
+  },
   compatibilityDate: 'latest',
   nitroLegacy: true,
 })
