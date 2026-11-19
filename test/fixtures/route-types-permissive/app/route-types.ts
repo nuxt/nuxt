@@ -1,4 +1,4 @@
-import type { AnyServerRouteMethod, TypedFetchOptions } from '#app'
+import type { FetchOptions } from '#app'
 import { expectTypeOf } from 'vitest'
 
 /**
@@ -49,10 +49,13 @@ export async function permissiveNamedResponseMethod<T> (url: string, body: Recor
   expectTypeOf(await $fetch<SearchResponse>('https://api.github.com/graphql', { method: 'POST', headers: { Authorization: 'x' }, body: { query: 'q' } })).toEqualTypeOf<SearchResponse>()
 }
 
-export async function permissiveExternalFetch<T> (url: string, options: TypedFetchOptions<string, AnyServerRouteMethod> = {}) {
+/** A URL the app does not serve is fetched with options typed for any request. */
+export async function permissiveExternalFetch<T> (url: string, options: FetchOptions = {}) {
+  const post: FetchOptions = { method: 'POST', body: { a: 1 }, query: { a: 1 }, headers: { a: 'b' } }
   await $fetch(new Request('https://example.com'))
   await $fetch.raw(new Request('https://example.com'))
-  return await $fetch<T>(url, { ...options, method: 'POST' })
+  await $fetch<T>(url, post)
+  return await $fetch<T>(url, options)
 }
 
 const api = $fetch.create({ headers: { 'x-client': 'app' } })

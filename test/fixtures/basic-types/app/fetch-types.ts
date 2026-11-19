@@ -1,4 +1,5 @@
-import type { AnyServerRouteMethod, TypedFetchOptions } from '#app'
+import type { FetchOptions } from '#app'
+import type { FetchOptions as OFetchOptions } from 'ofetch'
 import { expectTypeOf } from 'vitest'
 
 export async function probe () {
@@ -165,11 +166,18 @@ export async function namedResponseMethodProbe<T> (url: string, body: Record<str
   expectTypeOf(await $fetch('/api/validated', { method: 'POST', body: { title: 'a', count: 1 } })).toEqualTypeOf<{ created: boolean }>()
 }
 
-/** The parameters of `$fetch` and `useFetch` can be read off their types. */
-export async function externalFetchProbe<T> (url: string, options: TypedFetchOptions<string, AnyServerRouteMethod> = {}) {
+/** A URL the app does not serve is fetched with options typed for any request. */
+export async function externalFetchProbe<T> (url: string, options: FetchOptions = {}) {
+  const post: FetchOptions = { method: 'POST', body: { a: 1 }, query: { a: 1 }, headers: { a: 'b' } }
   await $fetch(new Request('https://example.com'))
   await $fetch.raw(new Request('https://example.com'))
-  return await $fetch<T>(url, { ...options, method: 'POST' })
+  await $fetch<T>(url, post)
+  return await $fetch<T>(url, options)
+}
+
+export async function ofetchOptionsProbe<T> (url: string, options: OFetchOptions) {
+  // @ts-expect-error ofetch's `FetchOptions` types `method` as a plain `string`
+  return await $fetch<T>(url, options)
 }
 
 const api = $fetch.create({ headers: { 'x-client': 'app' } })

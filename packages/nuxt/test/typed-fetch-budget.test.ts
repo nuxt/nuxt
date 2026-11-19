@@ -126,9 +126,13 @@ describe('the cost of resolving a typed `$fetch` call', () => {
 
 describe('a typed `$fetch` wrapped or called with a response type it names', () => {
   const source = [
-    `import type { AnyServerRouteMethod, TypedFetchOptions } from '${typesModule}'`,
+    `import type { FetchOptions } from '${typesModule}'`,
     'export function post<T> (url: string, body: Record<string, unknown>) { return $fetch<T>(url, { method: \'POST\', body }) }',
-    'export function external<T> (url: string, options: TypedFetchOptions<string, AnyServerRouteMethod> = {}) { return $fetch<T>(url, options) }',
+    'export function external<T> (url: string, options: FetchOptions = {}) { return $fetch<T>(url, options) }',
+    'export const postOptions: FetchOptions = { method: \'POST\', body: { a: 1 }, query: { a: 1 }, headers: { a: \'b\' } }',
+    'import type { FetchOptions as OFetchOptions } from \'ofetch\'',
+    '// @ts-expect-error ofetch\'s `FetchOptions` types `method` as a plain `string`',
+    'export function viaOfetch<T> (url: string, options: OFetchOptions) { return $fetch<T>(url, options) }',
     'export const api = $fetch.create({ headers: { \'x-client\': \'app\' } })',
     'export const viaInstance = () => api(\'/api/group1/route1\')',
     'export const request = () => $fetch(new Request(\'https://example.com\'))',
