@@ -3,7 +3,7 @@ import { lstat, mkdir, mkdtemp, readdir, readlink, rm, symlink, writeFile } from
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'pathe'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { NON_JS_FILE_RE, getLayerNodeModulesExcludePattern, getSsrResolveConditions, linkStaticDist, timePluginHooks, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
+import { NON_JS_FILE_RE, getLayerNodeModulesExcludePattern, getSsrResolveConditions, linkStaticDist, timePluginHooks, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal, withoutWasmConditions } from '../src/utils.ts'
 
 describe('linkStaticDist', () => {
   let rootDir: string
@@ -256,6 +256,18 @@ describe('NON_JS_FILE_RE', () => {
 describe('getSsrResolveConditions', () => {
   it('merges conditions without duplicates', () => {
     expect(getSsrResolveConditions(['custom', 'node'], ['development', 'node', 'import'])).toEqual(['custom', 'node', 'development', 'import'])
+  })
+
+  it('keeps conditions set explicitly', () => {
+    expect(getSsrResolveConditions(['custom', 'wasm'], withoutWasmConditions(['production', 'wasm', 'unwasm', 'node']))).toEqual(['custom', 'wasm', 'production', 'node', 'import'])
+  })
+})
+
+describe('withoutWasmConditions', () => {
+  it('leaves out the conditions only Nitro\'s unwasm plugin can honour', () => {
+    expect(withoutWasmConditions(['production', 'wasm', 'unwasm', 'node'])).toEqual(['production', 'node'])
+    expect(withoutWasmConditions(['workerd', 'wasm', 'unwasm'])).toEqual(['workerd'])
+    expect(withoutWasmConditions(undefined)).toBeUndefined()
   })
 })
 

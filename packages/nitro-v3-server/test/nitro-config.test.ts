@@ -11,6 +11,7 @@ import type { Nitro, NitroConfig } from 'nitro/types'
 import { resolveModulePath } from 'exsolve'
 import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID } from '../src/runtime-config.ts'
+import { distDir } from '../src/utils.ts'
 
 const fixtureDir = resolve(import.meta.dirname, '../../../test/fixtures/minimal')
 
@@ -243,6 +244,23 @@ describe('nitro config', () => {
       expect(noExternals).toContain('@nuxt/image')
       expect(isNoExternal(`${moduleDir}/src/runtime/server/routes/_ipx.ts`)).toBe(true)
       expect(isNoExternal(`${moduleDir}/node_modules/.pnpm/sharp@0.34.5/node_modules/sharp/lib/index.js`)).toBe(false)
+    })
+  })
+
+  it.each([
+    ['false', false, []],
+    ['undefined', undefined, []],
+    ['an array', ['my-module', /^my-other-module/], ['my-module', /^my-other-module/]],
+  ] as const)('keeps the nuxt `noExternals` entries in dev with `nitro.noExternals` set to %s', async (_name, noExternals, extra) => {
+    await withNitro({ dev: true, nitro: { noExternals: noExternals as NitroConfig['noExternals'] } }, (nitro) => {
+      const entries = nitro.options.noExternals as Array<string | RegExp>
+      expect(entries).toEqual(expect.arrayContaining(['nuxt/dist', distDir, ...extra]))
+    })
+  })
+
+  it('bundles everything with `nitro.noExternals: true`', async () => {
+    await withNitro({ dev: true, nitro: { noExternals: true } }, (nitro) => {
+      expect(nitro.options.noExternals).toBe(true)
     })
   })
 
