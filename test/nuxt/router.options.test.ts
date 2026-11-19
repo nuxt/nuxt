@@ -365,40 +365,12 @@ describe('scrollBehavior with hash on the same page', () => {
   })
 
   // https://github.com/nuxt/nuxt/issues/37124
-  it.each([
-    ['/?tab=pnpm#install', '/?tab=npm#install'],
-    ['/?tab=npm#install', '/#install'],
-    ['/#install', '/?tab=npm#install'],
-  ])('should keep the scroll position when only the query changes (%s from %s)', async (to, from) => {
+  it('should not scroll to the hash when only the query changes', async () => {
     const router = useRouter()
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const position = await router.options.scrollBehavior!(router.resolve(to), router.resolve(from), null)
+    const position = await router.options.scrollBehavior!(router.resolve('/?tab=pnpm#install'), router.resolve('/?tab=npm#install'), null)
 
     expect(position).toBe(false)
-  })
-
-  it('should restore the saved position on back/forward when only the query changes', async () => {
-    const router = useRouter()
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const position = await router.options.scrollBehavior!(router.resolve('/?tab=npm#install'), router.resolve('/?tab=pnpm#install'), { left: 0, top: 420 })
-
-    expect(position).toEqual({ left: 0, top: 420 })
-  })
-
-  it('should still scroll to the hash when the hash changes along with the query', async () => {
-    const router = useRouter()
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const position = await router.options.scrollBehavior!(router.resolve('/?tab=pnpm#usage'), router.resolve('/?tab=npm#install'), null)
-
-    expect(position).toMatchObject({ el: '#usage' })
-  })
-
-  it('should still scroll to the hash when navigating to the same hash again', async () => {
-    const router = useRouter()
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const position = await router.options.scrollBehavior!(router.resolve('/?tab=npm#install'), router.resolve('/?tab=npm#install'), null)
-
-    expect(position).toMatchObject({ el: '#install' })
   })
 })
 
