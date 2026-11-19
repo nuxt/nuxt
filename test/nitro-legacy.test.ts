@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { $fetch, fetch } from '@nuxt/test-utils/e2e'
 
-import { runsOncePerEnvInMatrix } from './matrix'
+import { nitroViteEnvironment, runsOncePerViteBuilderInMatrix } from './matrix'
 import { setupFixture } from './utils'
 
-await setupFixture('nitro-legacy', runsOncePerEnvInMatrix)
+await setupFixture('nitro-legacy', runsOncePerViteBuilderInMatrix, { nuxtConfig: { experimental: { nitroViteEnvironment } } })
 
-describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
+describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () => {
   it('runs a v2-tagged module handler on nitro v3', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/v2-module')).toMatchObject({
       flavour: 'earl-grey',
@@ -43,6 +43,10 @@ describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
       statusMessage: 'I am a teapot',
       data: { from: 'v2-module' },
     })
+  })
+
+  it('serves a JSON file imported from a dependency', async () => {
+    expect(await $fetch<Record<string, unknown>>('/api/dependency-json')).toEqual({ name: 'typescript' })
   })
 
   it('runs a v1-style user handler with `nitroLegacy` enabled', async () => {
@@ -94,6 +98,15 @@ describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 compatibility', () => {
 
   it('resolves an alias of `h3` in module code to h3 v2 when a module pins `h3` to h3 v1', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/aliased-h3?q=1')).toEqual({ query: { q: '1' }, h3v2: true })
+  })
+
+  it('responds with the redirect a v2 `render:before` listener sets, instead of rendering the page', async () => {
+    const response = await fetch('/render-before', { headers: { accept: 'text/html' }, redirect: 'manual' })
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/fr')
+    expect(response.headers.getSetCookie()).toEqual([expect.stringMatching(/^locale=fr;/)])
+    expect(response.headers.get('x-render-response')).toBe('applied')
+    expect(await response.text()).toContain('url=/fr')
   })
 
   it('keeps the status of an error page unless a v2 `render:response` listener sets one', async () => {

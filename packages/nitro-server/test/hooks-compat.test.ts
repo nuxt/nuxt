@@ -9,6 +9,9 @@ import { H3, mockEvent } from 'nitro/h3'
 import { serverDiagnostics } from '../src/runtime/diagnostics.ts'
 import { hasLegacyHookListener, observeLegacyHooks } from '../src/runtime/compat/hook-registry.ts'
 import { markStreamedResponse } from '../src/runtime/compat/render-response.ts'
+import { applyLegacyRenderBefore } from '../src/runtime/compat/render-before.ts'
+import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
+import type { LegacyH3Event } from '../src/runtime/compat/h3-v1.ts'
 import plugin from '../src/runtime/compat/hooks-plugin.ts'
 
 function createNitroApp () {
@@ -308,5 +311,117 @@ describe('nitro v2 runtime hook bridge', () => {
     await handlers.get('response')!(response, {})
 
     expect(seen).toBe(response)
+  })
+})
+
+describe('nitro v2 `render:before` hook', () => {
+  const page = () => vi.fn((_event: unknown) => Promise.resolve(new Response('<html>page</html>', { headers: { 'content-type': 'text/html' } })))
+
+  it('renders the page after the listeners, with the v2 render context', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    const event = mockEvent('http://nuxt/')
+    const renderPage = page()
+    let seen: Record<string, unknown> | undefined
+    hooks.hook('render:before', (context) => { seen = { ...context } })
+
+    const response = await applyLegacyRenderBefore(event, hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(seen).toEqual({ event, render: expect.any(Function), response: undefined })
+    expect(renderPage).toHaveBeenCalledExactlyOnceWith(event)
+    expect(await response.text()).toBe('<html>page</html>')
+  })
+
+  it('responds with the response a listener sets, without rendering the page', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    const event = prepareLegacyEvent(mockEvent('http://nuxt/')) as LegacyH3Event
+    const renderPage = page()
+    hooks.hook('render:before', (context) => {
+      const { res } = context.event.node
+      res.setHeader('location', '/fr')
+      context.event.res.headers.append('set-cookie', 'i18n_redirected=fr; Path=/')
+      context.response = {
+        headers: { ...res.getHeaders(), 'x-redirect-by': 'render:before' },
+        statusCode: 302,
+        statusMessage: 'Found',
+        body: '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/fr"></head></html>',
+      }
+    })
+
+    const response = await applyLegacyRenderBefore(event, hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(renderPage).not.toHaveBeenCalled()
+    expect(response.status).toBe(302)
+    expect(response.statusText).toBe('Found')
+    expect(response.headers.get('location')).toBe('/fr')
+    expect(response.headers.get('x-redirect-by')).toBe('render:before')
+    expect(response.headers.getSetCookie()).toEqual(['i18n_redirected=fr; Path=/'])
+    expect(response.headers.get('content-type')).toBe('text/html')
+    expect(await response.text()).toContain('url=/fr')
+  })
+
+  it('keeps a streamed page live through a replaced `render`', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      const render = context.render
+      context.render = async (event: unknown) => ({ ...await render(event), headers: { 'x-wrapped': '1' } })
+    })
+    const renderPage = () => {
+      const streamed = new Response(new ReadableStream({ start (controller) { controller.enqueue(new TextEncoder().encode('<html>')) } }))
+      markStreamedResponse(streamed)
+      return Promise.resolve(streamed)
+    }
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(response.headers.get('x-wrapped')).toBe('1')
+    const { value } = await response.body!.getReader().read()
+    expect(new TextDecoder().decode(value)).toBe('<html>')
+  })
+
+  it('fails the request when a replaced `render` returns no response', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      context.render = () => Promise.resolve(undefined)
+    })
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/page'), hooks, page(), (body, init) => new Response(body, init))
+
+    expect(response.status).toBe(500)
+    expect(await response.text()).toBe('No response returned from render handler: /page')
+  })
+
+  it('keeps the status of a response a listener sets without a body', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      context.response = { headers: { location: '/fr' }, statusCode: 302 }
+    })
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, page(), (body, init) => new Response(body, init))
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/fr')
+    expect(await response.text()).toBe('')
+  })
+
+  it('renders with the function a listener puts in place of `render`', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    const event = mockEvent('http://nuxt/')
+    const renderPage = vi.fn((_event: unknown) => Promise.resolve(new Response('<html>page</html>', {
+      headers: [['content-type', 'text/html'], ['set-cookie', 'a=1'], ['set-cookie', 'b=2']],
+    })))
+    hooks.hook('render:before', (context) => {
+      const render = context.render
+      context.render = async (event: unknown) => {
+        const rendered = await render(event)
+        return { ...rendered, body: rendered.body.replace('page', 'wrapped'), headers: { ...rendered.headers, 'x-wrapped': '1' } }
+      }
+    })
+
+    const response = await applyLegacyRenderBefore(event, hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(renderPage).toHaveBeenCalledOnce()
+    expect(response.headers.get('x-wrapped')).toBe('1')
+    expect(response.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
+    expect(await response.text()).toBe('<html>wrapped</html>')
   })
 })
