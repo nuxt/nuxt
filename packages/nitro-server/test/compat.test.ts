@@ -1444,13 +1444,14 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
   })
 
   describe('server aliases of `h3`', () => {
-    function createH3V1 () {
+    function createH3V1 (installName = 'h3') {
       const root = mkdtempSync(join(tmpdir(), 'nitro-compat-h3-alias-'))
       onTestFinished(() => rmSync(root, { recursive: true, force: true }))
-      const dir = join(root, 'node_modules/h3')
+      const dir = join(root, 'node_modules', installName)
       mkdirSync(join(dir, 'dist'), { recursive: true })
       writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'h3', version: '1.15.11', exports: { './package.json': './package.json', '.': { import: './dist/index.mjs', require: './dist/index.cjs' } } }))
       writeFileSync(join(dir, 'dist/index.cjs'), '')
+      writeFileSync(join(dir, 'dist/index.mjs'), '')
       return dir
     }
 
@@ -1475,6 +1476,20 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
       expect(report).toHaveBeenCalledWith({
         count: 2,
         aliases: '`h3` to `h3@1.15.11`, set in a `nitro:config` hook\n  - `h3/utils` to `h3@1.15.11`, set in `nitro.alias`',
+      })
+    })
+
+    it('removes the ones that lead into h3 v1 installed under another name', async () => {
+      const h3V1 = createH3V1('h3-v1')
+      const rootDir = join(h3V1, '../..')
+      const report = silence('NUXT_B9015')
+      const nitroConfig: NitroConfig = { alias: { 'h3': 'h3-v1', 'h3/utils': join(h3V1, 'dist/index.cjs') } }
+      await setupNitroCompat(createNuxt({ rootDir }), nitroConfig, resolveNitroLegacyOptions({ h3: true }), [])
+
+      expect(nitroConfig.alias).toEqual({})
+      expect(report).toHaveBeenCalledWith({
+        count: 2,
+        aliases: '`h3` to `h3@1.15.11`, set in a `nitro:config` hook\n  - `h3/utils` to `h3@1.15.11`, set in a `nitro:config` hook',
       })
     })
 
