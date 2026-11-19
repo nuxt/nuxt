@@ -2744,6 +2744,15 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/server-module-imports:
+    dependencies:
+      nitro:
+        specifier: catalog:nitro-runtime
+        version: 3.0.261103-rc
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/server-page-css:
     dependencies:
       nuxt:

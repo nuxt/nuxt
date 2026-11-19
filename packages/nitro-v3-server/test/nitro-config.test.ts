@@ -1,9 +1,9 @@
 import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { isAbsolute, join, resolve } from 'pathe'
-import { directoryToURL, isNuxtMajorVersion, loadNuxt, updateRuntimeConfig } from '@nuxt/kit'
+import { directoryToURL, isNuxtMajorVersion, loadNuxt, updateRuntimeConfig, writeTypes } from '@nuxt/kit'
 import { z } from 'zod'
 import { createNitro } from 'nitro/builder'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
@@ -355,6 +355,22 @@ describe('nitro config', () => {
   ] as const)('keeps the arrival request for the error handler on a Nuxt %i host with `inlineErrorRendering: %s`: %s', async ([major, inlineErrorRendering, expected]) => {
     await withNitro({ modules: [asNuxtMajor(major)], experimental: { inlineErrorRendering } }, (_nitro, nitroConfig) => {
       expect((nitroConfig.plugins as string[]).some(plugin => /runtime[\\/]plugins[\\/]arrival-request$/.test(plugin))).toBe(expected)
+    })
+  })
+
+  it.for([4, 5])('maps the app and project root aliases in the server tsconfig of a Nuxt %i app', async (major) => {
+    const buildDir = await mkdtemp(join(tmpdir(), 'nitro-server-tsconfig-'))
+    onTestFinished(() => rm(buildDir, { recursive: true, force: true }))
+    await withNitro({ buildDir, typesDir: buildDir, modules: [asNuxtMajor(major)] }, async (_nitro, _nitroConfig, nuxt) => {
+      await writeTypes(nuxt)
+      const paths: Record<string, string[]> = JSON.parse(await readFile(join(buildDir, 'tsconfig.server.json'), 'utf8')).compilerOptions.paths
+
+      for (const alias of ['~', '@']) {
+        expect(resolve(buildDir, paths[`${alias}/*`]![0]!)).toBe(join(nuxt.options.srcDir, '*'))
+      }
+      for (const alias of ['~~', '@@']) {
+        expect(resolve(buildDir, paths[`${alias}/*`]![0]!)).toBe(join(nuxt.options.rootDir, '*'))
+      }
     })
   })
 

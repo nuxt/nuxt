@@ -100,6 +100,22 @@ describe('tsConfig generation', () => {
     `)
   })
 
+  it('should map the app and project root aliases in the server tsconfig', async () => {
+    const { serverTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      alias: { '~': '/my-app/app/', '@': '/my-app/app/', '~~': '/my-app/', '@@': '/my-app/' },
+    }))
+    expect(serverTsConfig.compilerOptions?.paths).toMatchObject({
+      '~': ['../app'],
+      '~/*': ['../app/*'],
+      '@': ['../app'],
+      '@/*': ['../app/*'],
+      '~~': ['..'],
+      '~~/*': ['../*'],
+      '@@': ['..'],
+      '@@/*': ['../*'],
+    })
+  })
+
   it.each([
     {
       compatibilityVersion: 4,

@@ -37,7 +37,7 @@ import { nitroSchemaTemplate, nuxt4HostTypeTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
 import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
-import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
+import { ServerAutoImportsPlugin, serverImportSourcesPlugin, serverImportsModulePlugin } from './auto-imports-plugin.ts'
 import { unheadDedupePlugin } from './unhead.ts'
 import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
@@ -54,7 +54,7 @@ const REQUEST_TYPES_MODULE = `${nitroBuilder.name}/request-types`
 const RELATIVE_BASE_URL_RE = /^\.(?:$|\/)/
 
 // App-only aliases Nitro carries in its own alias map, which must not resolve in the server program
-const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/]
 
 /** Packages whose own imports of `h3` mean h3 v2. */
 const H3_PROVIDER_RE = /^(?:h3|nitro)(?:-nightly)?$/
@@ -739,6 +739,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // deprecated, and deliberately left out of the server tsconfig: typing it would give a handler
   // an `any` return type, silently costing the route its response type
   nitroConfig.alias['#imports'] = autoImports.importsModulePath
+  nitroConfig.rollupConfig!.plugins!.push(serverImportsModulePlugin(autoImports), serverImportSourcesPlugin(autoImports))
 
   if (autoImports.enabled) {
     nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
@@ -1083,6 +1084,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
     Object.assign(opts.tsConfig.compilerOptions.paths, nitroTypePaths)
     Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths)
+    for (const [source, path] of Object.entries(await autoImports.getSourceTypePaths())) {
+      opts.tsConfig.compilerOptions.paths[source] ??= path
+      opts.serverTsConfig.compilerOptions.paths[source] ??= path
+    }
     opts.sharedTsConfig.compilerOptions ||= {}
     opts.sharedTsConfig.compilerOptions.paths ||= {}
     Object.assign(opts.sharedTsConfig.compilerOptions.paths, nitroTypePaths)

@@ -2,6 +2,15 @@ import { expectTypeOf } from 'vitest'
 import type { H3Event } from 'h3'
 import type { NuxtRequestEvent, RequestEvent, RequestEventContext } from 'nuxt/server'
 import { defineEventHandler, getQuery, getRequestURL, getRouteRules } from 'nuxt/server'
+import type { foo as fooFromRoot } from '~~/shared/other'
+import type { foo as fooFromRootAt } from '@@/shared/other'
+import type { IsEqual } from '~/utils/type-utils'
+import type { IsEqual as IsEqualAt } from '@/utils/type-utils'
+
+expectTypeOf<typeof fooFromRoot>().toEqualTypeOf<'bar'>()
+expectTypeOf<typeof fooFromRootAt>().toEqualTypeOf<'bar'>()
+expectTypeOf<IsEqual<1, 1>>().toEqualTypeOf<true>()
+expectTypeOf<IsEqualAt<1, 2>>().toEqualTypeOf<false>()
 
 // @ts-expect-error Fromage is 'cheese'
 const _fake: Fromage = 'babybel'
