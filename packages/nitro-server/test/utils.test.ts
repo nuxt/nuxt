@@ -3,7 +3,7 @@ import { lstat, mkdir, mkdtemp, readdir, readlink, rm, symlink, writeFile } from
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'pathe'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern, getSsrResolveConditions, linkStaticDist, timePluginHooks, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
+import { NON_JS_FILE_RE, getLayerNodeModulesExcludePattern, getSsrResolveConditions, linkStaticDist, timePluginHooks, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
 
 describe('linkStaticDist', () => {
   let rootDir: string
@@ -221,6 +221,35 @@ describe('toTranspileNoExternal', () => {
     expect(re.test('C:\\code\\nuxt\\image\\src\\runtime\\server\\routes\\_ipx.ts')).toBe(true)
     expect(re.test('C:/code/nuxt/image/src/runtime/server/routes/_ipx.ts')).toBe(true)
     expect(re.test('C:\\code\\nuxt\\image\\node_modules\\sharp\\lib\\index.js')).toBe(false)
+  })
+})
+
+describe('NON_JS_FILE_RE', () => {
+  it('matches resolved files Node cannot import as they are', () => {
+    for (const path of [
+      '/proj/node_modules/spdx-license-list/spdx-simple.json',
+      '/proj/node_modules/pkg/templates/note.txt',
+      'C:\\proj\\node_modules\\pkg\\data.json',
+      'C:/proj/node_modules/pkg/data.json',
+    ]) {
+      expect(NON_JS_FILE_RE.test(path), path).toBe(true)
+    }
+  })
+
+  it('leaves JavaScript, native addons, WebAssembly and bare specifiers alone', () => {
+    for (const id of [
+      '/proj/node_modules/pkg/dist/index.mjs',
+      '/proj/node_modules/pkg/dist/index.cjs',
+      '/proj/node_modules/pkg/index.js',
+      '/proj/node_modules/pkg/build/Release/addon.node',
+      '/proj/node_modules/pkg/dist/module.wasm',
+      '/proj/node_modules/pkg.json/bin/cli',
+      'C:\\proj\\node_modules\\pkg\\index.js',
+      'spdx-license-list/spdx-simple.json',
+      'lodash.merge',
+    ]) {
+      expect(NON_JS_FILE_RE.test(id), id).toBe(false)
+    }
   })
 })
 

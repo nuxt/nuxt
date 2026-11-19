@@ -16,9 +16,9 @@ vi.mock('@nuxt/kit/internal', async importOriginal => ({
 
 const { bundlerDiagnostics } = await import('@nuxt/kit/internal')
 
-function normalize (routeRules: NitroConfig['routeRules']) {
+function normalize (routeRules: NitroConfig['routeRules'], options?: Parameters<typeof normalizeLegacyRouteRules>[1]) {
   vi.mocked(bundlerDiagnostics.NUXT_B7026).mockClear()
-  normalizeLegacyRouteRules(routeRules)
+  normalizeLegacyRouteRules(routeRules, options)
   return { routeRules, warnings: vi.mocked(bundlerDiagnostics.NUXT_B7026).mock.calls.map(c => c[0]) }
 }
 
@@ -27,7 +27,7 @@ describe('normalizeLegacyRouteRules', () => {
     const { routeRules, warnings } = normalize({ '/old': { redirect: { to: '/new', statusCode: 302 } as any } })
 
     expect(routeRules!['/old']!.redirect).toEqual({ to: '/new', status: 302 })
-    expect(warnings).toEqual([{ route: '/old' }])
+    expect(warnings).toEqual([{ count: 1, routes: '`/old`', nitro2: false }])
   })
 
   it('leaves a rule that already uses `status` alone', () => {
@@ -50,14 +50,33 @@ describe('normalizeLegacyRouteRules', () => {
     expect(routeRules!['/both']!.redirect).toEqual({ to: '/x', status: 307 })
   })
 
-  it('warns once per affected route', () => {
+  it('warns once, listing every affected route', () => {
     const { warnings } = normalize({
       '/a': { redirect: { to: '/1', statusCode: 302 } as any },
       '/b': { redirect: { to: '/2', statusCode: 301 } as any },
       '/c': { redirect: { to: '/3', status: 302 } },
     })
 
-    expect(warnings).toEqual([{ route: '/a' }, { route: '/b' }])
+    expect(warnings).toEqual([{ count: 2, routes: '`/a`\n  - `/b`', nitro2: false }])
+  })
+
+  it('rewrites without a warning on a Nuxt 4 host while `nitroLegacy.config` is on', () => {
+    const { routeRules, warnings } = normalize({ '/old': { redirect: { to: '/new', statusCode: 302 } as any } }, { nuxt4Host: true, legacyConfig: true })
+
+    expect(routeRules!['/old']!.redirect).toEqual({ to: '/new', status: 302 })
+    expect(warnings).toEqual([])
+  })
+
+  it('warns that Nitro v2 ignores `status` on a Nuxt 4 host with `nitroLegacy.config` off', async () => {
+    const { routeRules, warnings } = normalize({ '/old': { redirect: { to: '/new', statusCode: 302 } as any } }, { nuxt4Host: true, legacyConfig: false })
+
+    expect(routeRules!['/old']!.redirect).toEqual({ to: '/new', status: 302 })
+    expect(warnings).toEqual([{ count: 1, routes: '`/old`', nitro2: true }])
+
+    const actual = await vi.importActual<typeof import('@nuxt/kit/internal')>('@nuxt/kit/internal')
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(actual.bundlerDiagnostics.NUXT_B7026(warnings[0]!).fix).toContain('Nitro v2 ignores `redirect.status`')
+    expect(actual.bundlerDiagnostics.NUXT_B7026({ ...warnings[0]!, nitro2: false }).fix).toMatch(/^Rename /)
   })
 
   it('tolerates absent or empty route rules', () => {

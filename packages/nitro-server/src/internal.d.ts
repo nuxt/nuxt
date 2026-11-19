@@ -27,4 +27,6 @@ declare module '#nuxt-compat/import-meta' {
 declare module '#nuxt-compat/flags' {
   /** Whether the app has any nitro v2 code, so the compat runtime is wanted. */
   export const legacyCompat: boolean
+  /** Whether responses carry the headers Nitro v2 sent with them: `nitroLegacy.config` on a Nuxt 4 host. */
+  export const legacyResponseHeaders: boolean
 }

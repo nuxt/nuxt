@@ -3,7 +3,7 @@ import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, Nitro
 import type { EventHandler, H3Event } from 'nitro/h3'
 import type { NitroLegacyOptions } from './compat.ts'
 import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
+import type { NitroServerHost, NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
 
 /**
  * Per-channel toggles for `tracingChannel`: Nitro's own {@link NitroTracingChannelOptions}, plus the
@@ -83,10 +83,24 @@ declare module 'nitro/types' {
     'render:document': (documentContext: NuxtRenderDocumentContext, context: { event: H3Event }) => void | Promise<void>
     'render:route': (renderRouteContext: NuxtRenderRouteContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+    /** @deprecated Called only while the `nitroLegacy` layer covers Nitro v2 code. Return a `Response` from a server middleware instead. */
+    'render:before': (context: { event: H3Event, render: (event: H3Event) => Promise<{ body?: unknown, statusCode?: number, statusMessage?: string, headers?: Record<string, string | string[] | number | undefined> }>, response?: { body?: unknown, statusCode?: number, statusMessage?: string, headers?: Record<string, string | string[] | number | undefined> } }) => void | Promise<void>
     /** @deprecated Called only while the `nitroLegacy` layer covers Nitro v2 code. Use the Nitro `response` hook instead. */
     'render:response': (response: { body?: string, statusCode?: number, statusMessage?: string, headers?: Record<string, string> }, context: { event: H3Event }) => void | Promise<void>
   }
 }
+
+type RedirectRuleConfig = Extract<RouteRuleConfig['redirect'], { to: string }>
+
+/** A route rule as a project configures it, also accepting the Nitro v2 `redirect.statusCode` on a Nuxt 4 host. */
+export type NuxtRouteRuleConfig<Host = NitroServerHost> = Host extends { nuxt4: true }
+  ? Omit<RouteRuleConfig, 'redirect'> & {
+    redirect?: RouteRuleConfig['redirect'] | (RedirectRuleConfig & {
+      /** @deprecated Use `status` instead. */
+      statusCode?: RedirectRuleConfig['status']
+    })
+  }
+  : RouteRuleConfig
 
 type _NitroOnlyRuntimeConfig = Omit<NonNullable<NitroRuntimeConfig['nitro']>, 'envPrefix'> & { envPrefix: string }
 
@@ -96,7 +110,7 @@ interface NitroSchemaTypes {
   config: NitroConfig
   handler: NitroEventHandler
   devHandler: NitroDevEventHandler
-  routeRuleConfig: RouteRuleConfig
+  routeRuleConfig: NuxtRouteRuleConfig
   tracingChannels: NitroTracingChannelOptions
 }
 
@@ -110,6 +124,10 @@ interface NitroServerTypes {
 declare module '@nuxt/schema' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroTypes extends NitroSchemaTypes {}
+
+  /** The Nuxt major this builder runs on, declared as `{ nuxt4: true }` in the generated types of a Nuxt 4 project. */
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface NitroServerHost {}
 
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface ServerTypes extends NitroServerTypes {}

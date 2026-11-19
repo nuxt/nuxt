@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-server-module-imports",
+  "scripts": {
+    "test:types": "nuxt prepare && npx vue-tsc -b --noEmit"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^22.21.0 || ^24.15.0 || >=26.0.0"
+  }
+}

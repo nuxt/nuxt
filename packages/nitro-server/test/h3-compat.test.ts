@@ -5,23 +5,33 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { dirname, resolve } from 'pathe'
 import { parseSync } from 'rolldown/utils'
-import { HTTPError, mockEvent } from 'nitro/h3'
+import { H3, HTTPError, mockEvent } from 'nitro/h3'
 
 import {
   createError,
   defineEventHandler,
+  eventHandler,
   getCookie,
   getHeader,
   getQuery,
   getRequestWebStream,
   getRouterParam,
+  handleCacheHeaders,
+  handleCors,
+  lazyEventHandler,
+  proxyRequest,
   readBody,
   readFormData,
   readRawBody,
   readValidatedBody,
   send,
   sendError,
+  sendIterable,
+  sendNoContent,
+  sendProxy,
   sendRedirect,
+  sendStream,
+  sendWebResponse,
   setCookie,
   setResponseStatus,
   splitCookiesString,
@@ -31,6 +41,7 @@ import {
 import * as serverShim from '../src/runtime/compat/h3-v1.ts'
 import * as appShim from '../src/runtime/compat/h3-v1-app.ts'
 import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
+import { wrapLegacyHandler } from '../src/runtime/compat/legacy-handler.ts'
 
 describe('h3 v1 shim', () => {
   it('reads the request through v1 helpers', async () => {
@@ -75,6 +86,23 @@ describe('h3 v1 shim', () => {
       statusMessage: 'I am a teapot',
       data: { cup: true },
     })
+  })
+
+  it('creates errors whose v1 fields can be assigned', () => {
+    const error: any = createError({ statusCode: 404, statusMessage: 'Not Found', data: { page: 1 }, fatal: true })
+    const cause = new Error('inner')
+
+    error.fatal = false
+    error.unhandled = true
+    error.statusCode = 410
+    error.statusMessage = 'Gone'
+    error.data = { page: 2 }
+    error.cause = cause
+
+    expect(error).toMatchObject({ fatal: false, unhandled: true, status: 410, statusText: 'Gone', statusCode: 410, statusMessage: 'Gone', data: { page: 2 }, cause })
+    expect(error.toJSON()).toMatchObject({ status: 410, statusCode: 410, statusMessage: 'Gone' })
+    expect(Object.keys(error)).not.toContain('fatal')
+    expect(Object.keys(error)).not.toContain('statusCode')
   })
 
   it('keeps the cause an error is created with', () => {
@@ -224,6 +252,21 @@ describe('h3 v1 shim', () => {
     expect(calls).toEqual(['onRequest', 'onBeforeResponse:ok'])
   })
 
+  it('responds to a WebSocket upgrade request with the `websocket` hooks of the v1 object form', async () => {
+    const websocket = { open: () => {} }
+    const handler = defineEventHandler({ websocket, handler: () => 'http' })
+    const upgradeEvent = () => mockEvent('http://nuxt/_ws', { headers: { connection: 'Upgrade', upgrade: 'websocket' } })
+
+    for (const entry of [handler, eventHandler({ websocket, handler: () => 'http' }), lazyEventHandler(() => handler)]) {
+      const response = await (entry as (event: unknown) => Promise<Response & { crossws?: unknown }>)(upgradeEvent())
+      expect(response.status).toBe(426)
+      expect(response.crossws).toBe(websocket)
+    }
+
+    const http = await handler.fetch(new Request('http://nuxt/_ws'))
+    expect(await http.text()).toBe('http')
+  })
+
   it('sends a string a handler returns as HTML unless the handler sets a content type', async () => {
     const html = await defineEventHandler(() => '<h1>ok</h1>').fetch(new Request('http://nuxt/page'))
     expect(html.headers.get('content-type')).toBe('text/html')
@@ -242,6 +285,35 @@ describe('h3 v1 shim', () => {
       return ''
     }).fetch(new Request('http://nuxt/page'))
     expect(notModified.headers.has('content-type')).toBe(false)
+  })
+
+  it('answers a handler that returns `null` with no content', async () => {
+    const empty = await defineEventHandler(() => null).fetch(new Request('http://nuxt/api/null'))
+    expect(empty.status).toBe(204)
+    expect(empty.headers.has('content-type')).toBe(false)
+    expect(await empty.text()).toBe('')
+
+    const accepted = await defineEventHandler((event) => {
+      setResponseStatus(event, 202)
+      return null
+    }).fetch(new Request('http://nuxt/api/null'))
+    expect(accepted.status).toBe(202)
+    expect(accepted.headers.has('content-type')).toBe(false)
+    expect(await accepted.text()).toBe('')
+
+    const written = await defineEventHandler((event) => {
+      event.node.res.statusCode = 201
+      event.node.res.setHeader('x-written', '1')
+      return null
+    }).fetch(new Request('http://nuxt/api/null'))
+    expect(written.status).toBe(201)
+    expect(written.headers.get('x-written')).toBe('1')
+  })
+
+  it('passes on from a handler that returns `undefined`', async () => {
+    const event = mockEvent('http://nuxt/api/test')
+    expect(await (defineEventHandler(() => undefined) as (event: unknown) => unknown)(event)).toBeUndefined()
+    expect(event.res.status).toBeUndefined()
   })
 
   it('normalises errors thrown from a handler', async () => {
@@ -266,6 +338,161 @@ describe('h3 v1 shim', () => {
     const body = await response.text()
     expect(JSON.parse(body)).toMatchObject({ statusCode: 422, statusMessage: 'Unprocessable' })
     expect(body).not.toContain('field')
+  })
+})
+
+describe('v1 helpers that end the response', () => {
+  const corsOptions = { origin: ['https://app.example'], methods: ['GET', 'POST'] }
+  const preflight = (path = '/api/item') => new Request(`http://nuxt${path}`, {
+    method: 'OPTIONS',
+    headers: { 'origin': 'https://app.example', 'access-control-request-method': 'POST' },
+  })
+  const cors = (event: any) => {
+    if (handleCors(event, corsOptions)) {
+      return
+    }
+  }
+
+  function createApp (middleware: unknown) {
+    const routes: string[] = []
+    const app = new H3()
+    app.use(middleware as any)
+    app.post('/api/item', defineEventHandler(() => 'route'))
+    app.all('/api/any', defineEventHandler(() => {
+      routes.push('/api/any')
+      return 'route'
+    }))
+    app.get('/api/target', () => 'proxied')
+    return { app, routes }
+  }
+
+  it.each([
+    ['a v1 middleware', defineEventHandler(cors)],
+    ['a function middleware the layer wraps', wrapLegacyHandler(cors)],
+  ])('responds to a preflight request handled by %s that returns nothing', async (_, middleware) => {
+    const response = await createApp(middleware).app.fetch(preflight())
+
+    expect(response.status).toBe(204)
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://app.example')
+    expect(response.headers.get('access-control-allow-methods')).toBe('GET,POST')
+  })
+
+  it('skips a v1 handler after a function middleware that handled a preflight request', async () => {
+    const { app, routes } = createApp(cors)
+    const response = await app.fetch(preflight('/api/any'))
+
+    expect(response.status).toBe(204)
+    expect(routes).toEqual([])
+  })
+
+  it('skips a handler the layer wraps after a function middleware that handled a preflight request', async () => {
+    const routes: string[] = []
+    const app = new H3()
+    app.use(cors as any)
+    app.all('/api/any', wrapLegacyHandler(() => {
+      routes.push('/api/any')
+      return 'route'
+    }) as any)
+
+    const response = await app.fetch(preflight('/api/any'))
+
+    expect(response.status).toBe(204)
+    expect(routes).toEqual([])
+  })
+
+  it('skips the handler and later hooks after an `onRequest` hook that ended the response', async () => {
+    const calls: string[] = []
+    const handler = defineEventHandler({
+      onRequest: [
+        (event) => {
+          calls.push('onRequest:1')
+          sendRedirect(event, '/login')
+        },
+        () => { calls.push('onRequest:2') },
+      ],
+      onBeforeResponse: [() => { calls.push('onBeforeResponse') }],
+      handler: () => {
+        calls.push('handler')
+        return 'ok'
+      },
+    })
+
+    const response = await handler.fetch(new Request('http://nuxt/api/test', { redirect: 'manual' }))
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/login')
+    expect(calls).toEqual(['onRequest:1'])
+  })
+
+  it('responds to a preflight request handled by a route handler that returns nothing', async () => {
+    const response = await defineEventHandler((event) => {
+      if (handleCors(event, corsOptions)) {
+        return
+      }
+      return 'route'
+    }).fetch(preflight())
+
+    expect(response.status).toBe(204)
+    expect(await response.text()).toBe('')
+  })
+
+  it('continues past `handleCors` for a request that is not a preflight', async () => {
+    const event = mockEvent('http://nuxt/api/item', { method: 'POST', headers: { origin: 'https://app.example' } })
+    expect(handleCors(event, corsOptions)).toBe(false)
+
+    const response = await createApp(defineEventHandler(cors)).app.fetch(new Request('http://nuxt/api/item', { method: 'POST', headers: { origin: 'https://app.example' } }))
+    expect(await response.text()).toBe('route')
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://app.example')
+  })
+
+  it.each<[string, (event: any) => unknown, { status: number, body?: string, headers?: Record<string, string> }]>([
+    ['sendRedirect', event => sendRedirect(event, '/login'), { status: 302, headers: { location: '/login' } }],
+    ['sendNoContent', event => sendNoContent(event), { status: 204, body: '' }],
+    ['sendNoContent after a status', (event) => {
+      setResponseStatus(event, 202)
+      sendNoContent(event)
+    }, { status: 202, body: '' }],
+    ['send', event => send(event, 'sent', 'text/plain'), { status: 200, body: 'sent', headers: { 'content-type': 'text/plain' } }],
+    ['sendStream', event => sendStream(event, new Response('streamed').body), { status: 200, body: 'streamed' }],
+    ['sendError', event => sendError(event, createError({ statusCode: 418, statusMessage: 'Teapot' })), { status: 418, headers: { 'content-type': 'application/json' } }],
+    ['sendWebResponse', event => sendWebResponse(event, new Response('web', { status: 201 })), { status: 201, body: 'web' }],
+    ['sendIterable', event => sendIterable(event, ['a', 'b']), { status: 200, body: 'ab' }],
+    ['sendProxy', event => sendProxy(event, '/api/target'), { status: 200, body: 'proxied' }],
+    ['proxyRequest', event => proxyRequest(event, '/api/target'), { status: 200, body: 'proxied' }],
+  ])('responds with what `%s` sends from a middleware that returns nothing', async (_, helper, expected) => {
+    const middleware = defineEventHandler(async (event) => {
+      if (event.path === '/api/any') {
+        await helper(event)
+      }
+    })
+    const { app, routes } = createApp(middleware)
+    const response = await app.fetch(new Request('http://nuxt/api/any', { redirect: 'manual' }))
+
+    expect(routes).toEqual([])
+    expect(response.status).toBe(expected.status)
+    if (expected.body !== undefined) {
+      expect(await response.text()).toBe(expected.body)
+    }
+    for (const [name, value] of Object.entries(expected.headers || {})) {
+      expect(response.headers.get(name)).toBe(value)
+    }
+  })
+
+  it('responds with `304 Not Modified` from `handleCacheHeaders` in a middleware that returns nothing', async () => {
+    const middleware = defineEventHandler((event) => {
+      if (handleCacheHeaders(event, { etag: '"v1"' })) {
+        return
+      }
+    })
+    const { app, routes } = createApp(middleware)
+    const response = await app.fetch(new Request('http://nuxt/api/any', { headers: { 'if-none-match': '"v1"' } }))
+
+    expect(response.status).toBe(304)
+    expect(routes).toEqual([])
+
+    const miss = await app.fetch(new Request('http://nuxt/api/any'))
+    expect(await miss.text()).toBe('route')
+    expect(miss.headers.get('etag')).toBe('"v1"')
   })
 })
 
@@ -411,10 +638,27 @@ describe('v1 body readers', () => {
   })
 
   it('returns `undefined` for a request with no body', async () => {
-    const event = mockEvent('http://nuxt/api/test')
+    const event = mockEvent('http://nuxt/api/test', { method: 'POST' })
 
     expect(await readRawBody(event)).toBeUndefined()
     expect(getRequestWebStream(event)).toBeUndefined()
+  })
+
+  it.each(['GET', 'HEAD', 'OPTIONS'])('rejects a read of a %s request with `405`, as h3 v1 did', async (method) => {
+    const event = mockEvent('http://nuxt/api/test', { method })
+    const notAllowed = { statusCode: 405, statusMessage: 'HTTP method is not allowed.' }
+
+    await expect(readBody(event)).rejects.toMatchObject(notAllowed)
+    await expect(readBody(event, { type: 'text' })).rejects.toMatchObject(notAllowed)
+    await expect(readRawBody(event)).rejects.toMatchObject(notAllowed)
+    await expect(readValidatedBody(event, data => data)).rejects.toMatchObject(notAllowed)
+    await expect(readValidatedBody(event, data => data, { type: 'text' })).rejects.toMatchObject(notAllowed)
+
+    const response = await defineEventHandler(async (event) => {
+      const { name } = await readBody(event)
+      return { name }
+    }).fetch(new Request('http://nuxt/api/test', { method }))
+    expect(response.status).toBe(405)
   })
 
   it('returns the first parsed body to every later read, whatever its strictness', async () => {

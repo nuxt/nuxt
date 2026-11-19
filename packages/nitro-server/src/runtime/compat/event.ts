@@ -1,7 +1,9 @@
 import type { ServerResponse } from 'node:http'
-import { H3Event } from 'nitro/h3'
+import { H3Event, HTTPResponse } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
 import type { H3Event as H3EventType } from 'nitro/h3'
+
+import { takeEndedResponse } from './ended-response.ts'
 
 export type RouteRulesResolver = (event: H3EventType) => Record<string, any>
 
@@ -76,8 +78,18 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
   return event
 }
 
-/** Send a string a handler returns as HTML unless the handler set a content type, as h3 v1 did. */
-export function withLegacyContentType<T> (event: H3EventType, body: T): T {
+/**
+ * Send what a v1 handler returns as h3 v1 did: a string as HTML unless the handler set a content
+ * type, and `null` as an empty response, with `204 No Content` unless the handler set a status.
+ * A response a v1 helper ended the request with takes the place of the returned value.
+ */
+export function fromLegacyBody<T> (event: H3EventType, returned: T): T | HTTPResponse {
+  const ended = takeEndedResponse(event)
+  const body = (ended === undefined ? returned : ended) as T
+  if (body === null) {
+    const status = event.res.status
+    return new HTTPResponse(null, { status: status && status !== 200 ? status : 204 })
+  }
   if (typeof body === 'string' && event.res.status !== 304 && !event.res.headers.has('content-type')) {
     event.res.headers.set('content-type', 'text/html')
   }
@@ -97,6 +109,7 @@ function createLegacyNitroSlot (event: H3EventType, getRouteRules?: RouteRulesRe
 }
 
 function createNodeRequestBridge (event: H3EventType, originalUrl: string) {
+  const socket = createSocketBridge(event)
   return {
     // the path as the handler sees it, which a mounted handler sees with its base stripped
     get url () {
@@ -112,7 +125,30 @@ function createNodeRequestBridge (event: H3EventType, originalUrl: string) {
       return headers
     },
     originalUrl,
+    socket,
+    connection: socket,
   }
+}
+
+/**
+ * The socket of a request that reached the app without one, such as a request made in
+ * process. Its `readyState` is `readOnly`, which is how v1 code tells such a request apart.
+ */
+function createSocketBridge (event: H3EventType) {
+  const socket = {
+    readyState: 'readOnly',
+    destroyed: false,
+    get remoteAddress () {
+      return event.req.ip
+    },
+    get encrypted () {
+      return event.url.protocol === 'https:'
+    },
+    setTimeout: () => socket,
+    setNoDelay: () => socket,
+    setKeepAlive: () => socket,
+  }
+  return socket
 }
 
 /**

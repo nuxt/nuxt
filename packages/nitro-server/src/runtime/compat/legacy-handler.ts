@@ -2,9 +2,10 @@ import { defineHandler, toEventHandler } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
 import type { IncomingMessage } from 'node:http'
 
-import { prepareLegacyEvent, withLegacyContentType } from './event.ts'
+import { fromLegacyBody, prepareLegacyEvent } from './event.ts'
 import type { RouteRulesResolver } from './event.ts'
 import { toLegacyError } from './error-shape.ts'
+import { getEndedResponse } from './ended-response.ts'
 
 /**
  * Wrap a handler written for nitro v2 so it sees the event and error shape it expects.
@@ -21,9 +22,12 @@ export function wrapLegacyHandler (input: unknown, base?: string, getRouteRules?
 
   const wrapped = defineHandler(async (event: H3Event) => {
     prepareLegacyEvent(event, getRouteRules)
+    if (getEndedResponse(event) !== undefined) {
+      return fromLegacyBody(event, undefined)
+    }
     const restore = base ? withStrippedBase(event, base) : undefined
     try {
-      return withLegacyContentType(event, await handler(event))
+      return fromLegacyBody(event, await handler(event))
     } catch (error) {
       throw toLegacyError(error)
     } finally {

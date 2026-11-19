@@ -1392,6 +1392,37 @@ describe.skipIf(!errorProjects)('errors', () => {
     expect(res.headers.get('content-type')).toContain(legacyErrorRendering ? 'text/html' : 'application/json')
   })
 
+  it.skipIf(isDev)('should not let a missing build asset be cached', async () => {
+    const res = await fetch('/_nuxt/missing-chunk.js')
+    expect(res.status).toBe(404)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('should not let an error from a cached route be cached', async () => {
+    const counts: number[] = []
+    for (let i = 0; i < 2; i++) {
+      const res = await fetch('/api/cached-error', { headers: { accept: 'application/json' } })
+      expect(res.status).toBe(404)
+      expect(res.headers.get('cache-control')).toBe('no-cache')
+      counts.push((await res.json()).data.count)
+    }
+    expect(counts[1]).toBe(counts[0]! + 1)
+  })
+
+  it('should not let a page error be cached', async () => {
+    for (const accept of ['text/html', 'application/json']) {
+      const res = await fetch('/error/not-found', { headers: { accept } })
+      expect(res.status).toBe(404)
+      expect(res.headers.get('cache-control')).toBe('no-cache')
+    }
+  })
+
+  it('should keep the route rule cache-control on an error response a handler returns', async () => {
+    const res = await fetch('/api/returned-error')
+    expect(res.status).toBe(404)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=60')
+  })
+
   it.skipIf(!legacyErrorRendering)('should render a JSON error page', async () => {
     const res = await fetch('/error', {
       headers: {

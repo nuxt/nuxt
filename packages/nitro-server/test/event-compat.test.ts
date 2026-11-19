@@ -2,11 +2,12 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
 import { Socket } from 'node:net'
 import { describe, expect, it, vi } from 'vitest'
-import { mockEvent } from 'nitro/h3'
+import { H3Event, mockEvent } from 'nitro/h3'
 
 import plugin from '../src/runtime/compat/event-plugin.ts'
 import { decorateLegacyEvent } from '../src/runtime/compat/decorate.ts'
-import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
+import { fromLegacyBody, prepareLegacyEvent } from '../src/runtime/compat/event.ts'
+import { sendStream } from '../src/runtime/compat/h3-v1-app.ts'
 import { wrapLegacyHandler } from '../src/runtime/compat/wrapper.ts'
 import { getRouteRules } from '../src/runtime/utils/route-rules.ts'
 
@@ -67,6 +68,22 @@ describe('v2 event decoration', () => {
     await event.$fetch('/api/inner')
 
     expect((app.fetch.mock.calls[0]![0] as Request & { context?: any }).context?.nuxt).toEqual({ '~rendering-error': true })
+  })
+
+  it('dispatches a sub-request of a node request as an in-process request', async () => {
+    const seen: Array<Record<string, unknown>> = []
+    const app = {
+      fetch: vi.fn((request: Request) => {
+        const inner = prepareLegacyEvent(new H3Event(request))
+        seen.push({ url: inner.node!.req.url, readyState: (inner.node!.req.socket as any).readyState })
+        return Promise.resolve(new Response('ok'))
+      }),
+    }
+    const { event } = nodeEvent('/api/outer')
+
+    await decorate(event, app).fetch('/api/inner')
+
+    expect(seen).toEqual([{ url: '/api/inner', readyState: 'readOnly' }])
   })
 
   it('dispatches a path into the running app', async () => {
@@ -322,6 +339,26 @@ describe('v2 event bridge', () => {
     expect(event.res.status).toBe(401)
   })
 
+  it('gives a request without a node socket the read-only socket of an in-process request', () => {
+    const event = mockEvent('http://nuxt/api/test')
+    const req = prepareLegacyEvent(event).node!.req as any
+
+    expect(req.socket).toMatchObject({ readyState: 'readOnly', destroyed: false, remoteAddress: undefined, encrypted: false })
+    Object.defineProperty(event.req, 'ip', { value: '192.0.2.1' })
+    expect(req.socket.remoteAddress).toBe('192.0.2.1')
+    expect(req.connection).toBe(req.socket)
+    expect(req.socket.setTimeout(0).setNoDelay(true).setKeepAlive(true)).toBe(req.socket)
+
+    const secure = prepareLegacyEvent(mockEvent('https://nuxt/api/test')).node!.req as any
+    expect(secure.socket.encrypted).toBe(true)
+  })
+
+  it('keeps the socket of a node request', () => {
+    const { event, req } = nodeEvent()
+
+    expect(event.node!.req.socket).toBe(req.socket)
+  })
+
   it('does not clobber a `_nitro` slot the handler chain already set', () => {
     const event = mockEvent('http://nuxt/x')
     ;(event.context as any)._nitro = { routeRules: { own: true } }
@@ -359,6 +396,30 @@ describe('wrapLegacyHandler', () => {
     const passed = mockEvent('http://nuxt/_mw')
     await (wrapLegacyHandler(() => undefined) as (event: any) => unknown)(passed)
     expect(passed.res.headers.has('content-type')).toBe(false)
+  })
+
+  it('sends what a handler returns once an inner handler has turned its ended response into another', async () => {
+    const wrapped = wrapLegacyHandler(async (event: any) => {
+      const ended = fromLegacyBody(event, sendStream(event, new Response('streamed').body))
+      return new Response(await new Response(ended as BodyInit).text())
+    }) as { fetch: (request: Request) => Promise<Response> }
+
+    const response = await wrapped.fetch(new Request('http://nuxt/api/cached'))
+
+    expect(await response.text()).toBe('streamed')
+  })
+
+  it('answers a handler that returns `null` with no content, keeping a status it set', async () => {
+    const empty = await (wrapLegacyHandler(() => null) as { fetch: (request: Request) => Promise<Response> }).fetch(new Request('http://nuxt/api/null'))
+    expect(empty.status).toBe(204)
+    expect(empty.headers.has('content-type')).toBe(false)
+
+    const gone = await (wrapLegacyHandler((event: any) => {
+      event.node.res.statusCode = 410
+      return null
+    }) as { fetch: (request: Request) => Promise<Response> }).fetch(new Request('http://nuxt/api/null'))
+    expect(gone.status).toBe(410)
+    expect(await gone.text()).toBe('')
   })
 
   it.each([

@@ -2,12 +2,15 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type { NitroInstance, NitroInstanceOptions } from '@nuxt/kit'
 import type { NuxtConfig, NuxtHooks, NuxtOptions, NuxtPage, NuxtRequestEvent, RouteRuleConfig as SchemaRouteRuleConfig, TSReference } from '@nuxt/schema'
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { Nitro, NitroConfig, NitroOptions, NitroRuntimeHooks, RouteRuleConfig, TracingChannelOptions } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroOptions, NitroRuntimeConfig, NitroRuntimeHooks, RouteRuleConfig, TracingChannelOptions } from 'nitro/types'
 import type { EventHandler, H3Event } from 'nitro/h3'
+import type { $Fetch } from 'ofetch'
 import type { NuxtSSRContext } from '#app/types'
 
-import type {} from '../src/augments.ts'
+import type { NuxtRouteRuleConfig } from '../src/augments.ts'
 import type { defineEventHandler } from '../src/runtime/compat/h3-v1.ts'
+import type {} from '../src/runtime/compat/nitro-v2-types.ts'
+import type { useRuntimeConfig } from '../src/runtime/compat/runtime-config.ts'
 
 describe('contributed nitro instance types', () => {
   it('resolves `NitroInstance` to the instance this builder constructs', () => {
@@ -41,6 +44,17 @@ describe('contributed configuration types', () => {
 
   it('resolves the route rules a page may declare', () => {
     expectTypeOf<NuxtPage['rules']>().toEqualTypeOf<RouteRuleConfig | undefined>()
+  })
+
+  it('accepts the Nitro v2 redirect status only on a Nuxt 4 host', () => {
+    const rule = <Host>(config: NuxtRouteRuleConfig<Host>) => config
+
+    expectTypeOf(rule<{ nuxt4: true }>({ redirect: { to: '/new', statusCode: 302 } })).toExtend<RouteRuleConfig>()
+    // @ts-expect-error Nitro v3 reads `redirect.status`
+    rule<Record<never, never>>({ redirect: { to: '/new', statusCode: 302 } })
+    expectTypeOf<Omit<NuxtRouteRuleConfig<{ nuxt4: true }>, 'redirect'>>().toEqualTypeOf<Omit<RouteRuleConfig, 'redirect'>>()
+    expectTypeOf<NuxtRouteRuleConfig<Record<never, never>>>().toEqualTypeOf<RouteRuleConfig>()
+    expectTypeOf<SchemaRouteRuleConfig>().toEqualTypeOf<NuxtRouteRuleConfig>()
   })
 })
 
@@ -83,4 +97,45 @@ describe('nitro v2 compatibility types', () => {
     expectTypeOf<LegacyEvent['node']['req']>().toExtend<IncomingMessage>()
     expectTypeOf<LegacyEvent['node']['res']>().toExtend<ServerResponse>()
   })
+
+  it('hands a v1 handler an event that has `event.fetch` and `event.$fetch`', () => {
+    type LegacyEvent = Parameters<Extract<Parameters<typeof defineEventHandler>[0], (...args: any[]) => any>>[0]
+    expectTypeOf<LegacyEvent['fetch']>().toEqualTypeOf<typeof globalThis.fetch>()
+    expectTypeOf<LegacyEvent['$fetch']>().toEqualTypeOf<$Fetch>()
+  })
+
+  it('merges an augmentation of `nitropack/types` into the nitro v3 interface', () => {
+    expectTypeOf<Parameters<NitroRuntimeHooks['nitro-types-spec:hook']>[0]>().toEqualTypeOf<{ ok: boolean }>()
+  })
+
+  it('types the runtime config of `useRuntimeConfig(event)` with the declared keys', () => {
+    expectTypeOf<ReturnType<typeof useRuntimeConfig>>().toEqualTypeOf<NitroRuntimeConfig>()
+    expectTypeOf<ReturnType<typeof useRuntimeConfig>['nitroTypesSpecKey']>().toEqualTypeOf<string | undefined>()
+    expectTypeOf<ReturnType<typeof useRuntimeConfig>['nitroTypesSpecModuleKey']>().toEqualTypeOf<number | undefined>()
+  })
+
+  it('accepts route rule keys declared on `nitropack/types` in the route rules Nuxt resolves', () => {
+    expectTypeOf<SchemaRouteRuleConfig['nitroTypesSpecRule']>().toEqualTypeOf<{ enabled: boolean } | undefined>()
+    expectTypeOf<NonNullable<NuxtPage['rules']>['nitroTypesSpecRule']>().toEqualTypeOf<{ enabled: boolean } | undefined>()
+    expectTypeOf<NuxtRouteRuleConfig<{ nuxt4: true }>['nitroTypesSpecRule']>().toEqualTypeOf<{ enabled: boolean } | undefined>()
+    expectTypeOf<NuxtRouteRuleConfig<Record<never, never>>['nitroTypesSpecRule']>().toEqualTypeOf<{ enabled: boolean } | undefined>()
+  })
 })
+
+declare module '@nuxt/schema' {
+  interface RuntimeConfig {
+    nitroTypesSpecKey?: string
+  }
+}
+
+declare module '../src/runtime/compat/nitro-v2-types.ts' {
+  interface NitroRuntimeHooks {
+    'nitro-types-spec:hook': (payload: { ok: boolean }) => void
+  }
+  interface NitroRuntimeConfig {
+    nitroTypesSpecModuleKey?: number
+  }
+  interface NitroRouteConfig {
+    nitroTypesSpecRule?: { enabled: boolean }
+  }
+}

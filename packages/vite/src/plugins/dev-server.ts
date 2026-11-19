@@ -84,10 +84,60 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
       }
     },
     async configureServer (viteServer) {
+      let proxyPatterns: Array<string | RegExp> | undefined
+      const isProxyPath = (path: string) => {
+        proxyPatterns ||= Object.keys(viteServer.config.server.proxy || {}).flatMap((key): Array<string | RegExp> => {
+          if (!key.startsWith('^')) { return [key] }
+          try {
+            return [new RegExp(key)]
+          } catch {
+            return []
+          }
+        })
+        return proxyPatterns.some(pattern => typeof pattern === 'string' ? path.startsWith(pattern) : pattern.test(path))
+      }
+
+      // the middleware stack can change, so it is checked on each request
+      const isViteRoute = (url: string) => url.startsWith(viteServer.config.base!)
+        || viteServer.middlewares.stack.some(viteRoute => viteRoute.route.length > 1 && url.startsWith(viteRoute.route))
+        || isProxyPath(url)
+
+      // Use a post-hook so this runs after Vite registers its internal middleware.
+      // This ensures the URL rewrite to /__skip_vite runs after the proxy middleware.
+      const skipTransform = () => {
+        const mw: Connect.ServerStackItem = {
+          route: '',
+          handle: (req: SkippableRequest, res: ServerResponse, next: (err?: any) => void) => {
+            // 'Skip' the transform middleware
+            if (req._skip_transform && req.url) {
+              req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
+            }
+            next()
+          },
+        }
+        const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
+        if (transformHandler === -1) {
+          viteServer.middlewares.stack.push(mw)
+        } else {
+          viteServer.middlewares.stack.splice(transformHandler, 0, mw)
+        }
+      }
+
+      const buildsSeparately = useServerBuild(nuxt).buildsSeparately
+      if (!buildsSeparately) {
+        // registered ahead of `vite:serverCreated`, whose middleware rewrites the URL of Vite's root assets
+        viteServer.middlewares.use((req: SkippableRequest, _res, next) => {
+          if (req.url && !isViteRoute(req.url)) {
+            req._skip_transform = true
+          }
+          next()
+        })
+      }
+
       await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: true })
 
-      if (!useServerBuild(nuxt).buildsSeparately) {
-        return
+      if (!buildsSeparately) {
+        return skipTransform
       }
 
       const staticBases: string[] = []
@@ -112,30 +162,12 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         }
       }
 
-      let proxyPatterns: Array<string | RegExp> | undefined
-      const isProxyPath = (path: string) => {
-        proxyPatterns ||= Object.keys(viteServer.config.server.proxy || {}).flatMap((key): Array<string | RegExp> => {
-          if (!key.startsWith('^')) { return [key] }
-          try {
-            return [new RegExp(key)]
-          } catch {
-            return []
-          }
-        })
-        return proxyPatterns.some(pattern => typeof pattern === 'string' ? path.startsWith(pattern) : pattern.test(path))
-      }
-
-      // the middleware stack can change, so it is checked on each request
-      const isViteRoute = (url: string) => url.startsWith(viteServer.config.base!)
-        || viteServer.middlewares.stack.some(viteRoute => viteRoute.route.length > 1 && url.startsWith(viteRoute.route))
-        || isProxyPath(url)
-
       const viteMiddleware = defineEventHandler(async (event: H3V1Event | H3V2Event) => {
         const url = 'url' in event ? event.url.pathname + event.url.search + event.url.hash : (event as H3V1Event).path
 
         const { req, res } = ('runtime' in event ? event.runtime?.node : (event as any).node) as { req: IncomingMessage, res: ServerResponse }
         if (!isViteRoute(url)) {
-          (req as IncomingMessage & { _skip_transform?: boolean })._skip_transform = true
+          (req as SkippableRequest)._skip_transform = true
         }
 
         // Workaround: vite devmiddleware modifies req.url
@@ -159,29 +191,12 @@ export function DevServerPlugin (nuxt: Nuxt): Plugin {
         cors: url => !useViteCors && isViteRoute(url),
       })
 
-      // Use a post-hook so this runs after Vite registers its internal middleware.
-      // This ensures the URL rewrite to /__skip_vite runs after the proxy middleware.
-      return () => {
-        const mw: Connect.ServerStackItem = {
-          route: '',
-          handle: (req: IncomingMessage & { _skip_transform?: boolean }, res: ServerResponse, next: (err?: any) => void) => {
-            // 'Skip' the transform middleware
-            if (req._skip_transform && req.url) {
-              req.url = joinURL('/__skip_vite', req.url.replace(/\?.*/, ''))
-            }
-            next()
-          },
-        }
-        const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
-        if (transformHandler === -1) {
-          viteServer.middlewares.stack.push(mw)
-        } else {
-          viteServer.middlewares.stack.splice(transformHandler, 0, mw)
-        }
-      }
+      return skipTransform
     },
   }
 }
+
+type SkippableRequest = IncomingMessage & { _skip_transform?: boolean }
 
 type GenericHandler = (event: H3V1Event | H3V2Event) => unknown | Promise<unknown>
 
