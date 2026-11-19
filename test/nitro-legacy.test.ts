@@ -57,6 +57,13 @@ describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () =>
     })
   })
 
+  it('registers user server files with a dotted suffix in their names', async () => {
+    const response = await fetch('/.well-known/site.standard.publication')
+    expect(response.status).toBe(200)
+    expect(response.headers.get('x-stamp')).toBe('yes')
+    expect(await response.text()).toBe('at://did:example/site.standard.publication/1')
+  })
+
   it('serialises `createError` from a user handler with the v2 keys', async () => {
     const error = await $fetch<Record<string, unknown>>('/api/v2-user?fail=1', { ignoreResponseError: true })
     expect(error).toMatchObject({ statusCode: 422, statusMessage: 'Unprocessable', data: { from: 'user' } })
