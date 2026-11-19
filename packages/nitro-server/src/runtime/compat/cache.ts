@@ -2,7 +2,7 @@
  * The Nitro v2 cached handler helpers, implemented on `nitro/cache`.
  */
 import { defineCachedHandler } from 'nitro/cache'
-import { handleCacheHeaders } from 'nitro/h3'
+import { handleCacheHeaders, toResponse } from 'nitro/h3'
 import type { EventHandler, EventHandlerRequest, EventHandlerResponse, EventHandlerWithFetch, H3Event } from 'nitro/h3'
 import { FastResponse } from 'srvx'
 import type { CachedHandlerOptions } from 'nitro/types'
@@ -76,7 +76,10 @@ export type CachedEventHandler<RequestT extends EventHandlerRequest = EventHandl
 
 /** v2 `defineCachedEventHandler`, which sends what the handler returns as h3 v1 did. */
 export function defineCachedEventHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> (handler: EventHandler<RequestT, ResponseT>, options?: CachedHandlerOptions): CachedEventHandler<RequestT, ResponseT> {
-  return defineCachedHandler(async event => fromLegacyBody(event as H3Event, await handler(event as H3Event<RequestT>)), legacyResponseHeaders ? withLegacyCacheControl(options) : options) as unknown as CachedEventHandler<RequestT, ResponseT>
+  return defineCachedHandler(handler as EventHandler, {
+    ...legacyResponseHeaders ? withLegacyCacheControl(options) : options,
+    toResponse: (value: unknown, event: H3Event) => toResponse(fromLegacyBody(event, value), event),
+  } as CachedHandlerOptions) as unknown as CachedEventHandler<RequestT, ResponseT>
 }
 
 export { defineCachedEventHandler as cachedEventHandler }

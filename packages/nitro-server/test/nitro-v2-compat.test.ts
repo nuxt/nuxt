@@ -1,11 +1,14 @@
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { HookableCore } from 'hookable'
-import { HTTPResponse, mockEvent } from 'nitro/h3'
+import { mockEvent } from 'nitro/h3'
 
 const nitroApp = vi.hoisted(() => ({ hooks: undefined as unknown }))
 
 vi.mock('nitro/app', () => ({ useNitroApp: () => nitroApp }))
-vi.mock('nitro/cache', () => ({ defineCachedHandler: (handler: unknown) => handler }))
+vi.mock('nitro/cache', () => ({
+  defineCachedHandler: (handler: (event: unknown) => unknown, options: { toResponse: (value: unknown, event: unknown) => unknown }) =>
+    async (event: unknown) => options.toResponse(await handler(event), event),
+}))
 vi.mock('../src/runtime/utils/app-config.ts', () => ({}))
 
 const { cachedEventHandler, defineCachedEventHandler, useNitroApp } = await import('../src/runtime/compat/nitro-v2.ts')
@@ -50,12 +53,12 @@ describe('nitro v2 `defineCachedEventHandler`', () => {
   it.each([defineCachedEventHandler, cachedEventHandler])('answers a handler that returns `null` with no content', async (define) => {
     const response = await define(() => null)(mockEvent('http://nuxt/api/_nuxt_icon/custom.json?icons=nope'))
 
-    expect(response).toBeInstanceOf(HTTPResponse)
     expect(response.status).toBe(204)
   })
 
   it('passes on what any other handler returns', async () => {
     const data = { icons: {} }
-    expect(await defineCachedEventHandler(() => data)(mockEvent('http://nuxt/api/icons'))).toBe(data)
+    const response = await defineCachedEventHandler(() => data)(mockEvent('http://nuxt/api/icons'))
+    expect(await response.json()).toEqual(data)
   })
 })
