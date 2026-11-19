@@ -100,6 +100,7 @@
     "mlly": "catalog:build",
     "oxc-parser": "catalog:build",
     "pkg-types": "catalog:build",
+    "radix3": "1.1.2",
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "untyped": "catalog:build",
