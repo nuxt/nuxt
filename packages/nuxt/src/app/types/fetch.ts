@@ -260,8 +260,8 @@ interface TypedFetchOptionsBase<in out Request, in out Method extends AnyServerR
 
 /**
  * Options for a request to a URL the app does not serve, where the caller names the response type.
- * This is Nuxt's type, imported from `#app`: ofetch's type of the same name types `method` as a plain
- * `string`, which typed `$fetch` does not accept.
+ * This is Nuxt's type, imported from `nuxt/app` (or `#app` in app code): ofetch's type of the same
+ * name types `method` as a plain `string`, which typed `$fetch` does not accept.
  *
  * @example
  * function fetchRegistry<T> (url: string, options: FetchOptions = {}) {
