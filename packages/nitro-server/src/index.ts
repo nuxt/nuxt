@@ -23,7 +23,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { GLOB_SUFFIX_RE, NON_JS_FILE_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, timePluginHooks, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal, withoutServerDirDeny } from './utils.ts'
+import { GLOB_SUFFIX_RE, NON_JS_FILE_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, timePluginHooks, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal, withoutServerDirDeny, withoutWasmConditions } from './utils.ts'
 import { setupAppManifest, setupPayloadRouteRules } from './app-manifest.ts'
 import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
@@ -887,8 +887,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         config.resolve ||= {}
         // nitro's vite environment sets conditions for its dev runner (`workerd` excludes `node`)
         config.resolve.conditions = nuxt.options.experimental.nitroViteEnvironment && config.resolve.conditions
-          ? getSsrResolveConditions(config.resolve.conditions)
-          : getSsrResolveConditions(config.resolve.conditions, nitro.options.exportConditions)
+          ? getSsrResolveConditions(withoutWasmConditions(config.resolve.conditions))
+          : getSsrResolveConditions(config.resolve.conditions, withoutWasmConditions(nitro.options.exportConditions))
       }
     },
   })
