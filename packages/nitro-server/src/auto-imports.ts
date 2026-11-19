@@ -93,11 +93,11 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     sourceDirs ??= init().then(async () => {
       const dirs = new Map<string, string>()
       const searchDirs = [nuxt.options.rootDir, ...nuxt.options.modulesDir ?? []]
-      for (const { from } of await ctx.getImports()) {
-        if (dirs.has(from) || !BARE_SPECIFIER_RE.test(from)) { continue }
-        const dir = searchDirs.find(dir => resolveModulePath(from, { from: directoryToURL(dir), conditions: SOURCE_RESOLVE_CONDITIONS, try: true }))
+      for (const source of (await ctx.getImports()).flatMap(i => i.typeFrom ? [i.from, i.typeFrom] : [i.from])) {
+        if (dirs.has(source) || !BARE_SPECIFIER_RE.test(source)) { continue }
+        const dir = searchDirs.find(dir => resolveModulePath(source, { from: directoryToURL(dir), conditions: SOURCE_RESOLVE_CONDITIONS, try: true }))
         if (dir && dir !== nuxt.options.rootDir) {
-          dirs.set(from, dir)
+          dirs.set(source, dir)
         }
       }
       return dirs
