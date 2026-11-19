@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { HookableCore, createHooks } from 'hookable'
-import { H3, mockEvent } from 'nitro/h3'
+import { H3, HTTPError, mockEvent } from 'nitro/h3'
 
 import { serverDiagnostics } from '../src/runtime/diagnostics.ts'
 import { hasLegacyHookListener, observeLegacyHooks } from '../src/runtime/compat/hook-registry.ts'
@@ -446,6 +446,49 @@ describe('nitro v2 `render:before` hook', () => {
 
     expect(response.headers.get('content-type')).toBe('application/ld+json')
     expect(await response.text()).toBe('{"ok":true}')
+  })
+
+  it('responds with a `Response` a listener sets as the body, over the status and headers it sets', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      context.event.res.headers.append('set-cookie', 'a=1')
+      context.response = {
+        statusCode: 201,
+        statusMessage: 'From listener',
+        headers: { 'x-listener': '1', 'x-shared': 'listener' },
+        body: new Response('from response', { status: 203, headers: [['x-shared', 'response'], ['set-cookie', 'b=2']] }),
+      }
+    })
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, page(), (body, init) => new Response(body, init))
+
+    expect(response.status).toBe(203)
+    expect(response.statusText).toBe('From listener')
+    expect(response.headers.get('x-listener')).toBe('1')
+    expect(response.headers.get('x-shared')).toBe('response')
+    expect(response.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
+    expect(await response.text()).toBe('from response')
+  })
+
+  it.each([
+    ['an http error', () => new HTTPError({ status: 418, statusText: 'Teapot' }), 418, false],
+    ['an error with a v1 status code', () => Object.assign(new Error('gone'), { statusCode: 410 }), 410, false],
+    ['a plain error', () => new Error('failed'), 500, true],
+  ])('fails the request with %s a listener sets as the body', async (_, body, status, unhandled) => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    const event = mockEvent('http://nuxt/')
+    hooks.hook('render:before', (context) => {
+      context.response = { headers: { 'set-cookie': 'a=1' }, body: body() }
+    })
+    const renderPage = page()
+
+    const error = await applyLegacyRenderBefore(event, hooks, renderPage, (body, init) => new Response(body, init)).catch(error => error)
+
+    expect(renderPage).not.toHaveBeenCalled()
+    expect(HTTPError.isError(error)).toBe(true)
+    expect(error.status).toBe(status)
+    expect(!!error.unhandled).toBe(unhandled)
+    expect((event.context as any).nuxt['~response-headers'].getSetCookie()).toEqual(['a=1'])
   })
 
   it.each([

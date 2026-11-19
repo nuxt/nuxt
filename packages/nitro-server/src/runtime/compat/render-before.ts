@@ -1,5 +1,7 @@
 import type { H3Event } from 'nitro/h3'
 
+import { rethrowWithResponseHeaders } from '#internal/nuxt/host'
+import { toLegacyError } from './error-shape.ts'
 import { fromLegacyBody } from './event.ts'
 import { isStreamedResponse } from './render-response.ts'
 
@@ -58,8 +60,30 @@ export async function applyLegacyRenderBefore (event: H3Event, hooks: LegacyHook
     event.res.statusText = response.statusMessage
   }
 
+  if (response.body instanceof Error) {
+    rethrowWithResponseHeaders(event, toLegacyError(response.body))
+  }
+  if (response.body instanceof Response) {
+    return createResponse(...fromWebResponse(event, response.body))
+  }
+
   const body = toResponseBody(event, response.body)
   return createResponse(body, { status: event.res.status, statusText: event.res.statusText, headers: event.res.headers })
+}
+
+function fromWebResponse (event: H3Event, response: Response): [BodyInit | null, ResponseInit] {
+  for (const [name, value] of response.headers) {
+    if (name !== 'set-cookie') {
+      event.res.headers.set(name, value)
+    }
+  }
+  for (const cookie of response.headers.getSetCookie()) {
+    event.res.headers.append('set-cookie', cookie)
+  }
+  if (response.redirected) {
+    event.res.headers.set('location', response.url)
+  }
+  return [response.body, { status: response.status, statusText: response.statusText || event.res.statusText, headers: event.res.headers }]
 }
 
 function toResponseBody (event: H3Event, body: unknown): BodyInit | null {
