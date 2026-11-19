@@ -69,6 +69,13 @@ describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () =>
     expect(error).toMatchObject({ statusCode: 422, statusMessage: 'Unprocessable', data: { from: 'user' } })
   })
 
+  it('applies `headers` route rules over the headers a handler sets', async () => {
+    for (const route of ['/api/rule-headers/me', '/api/rule-headers/response']) {
+      expect((await fetch(route)).headers.get('cache-control')).toBe('public, max-age=60')
+    }
+    expect((await fetch('/api/rule-headers/ctype')).headers.get('content-type')).toBe('application/x-from-rule')
+  })
+
   it('sends the `no-store` of a route rule with errors', async () => {
     const bodies: unknown[] = []
     for (const route of ['/api/no-store/thrown', '/api/no-store/module', '/api/no-store/returned']) {

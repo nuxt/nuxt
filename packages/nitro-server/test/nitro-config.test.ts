@@ -348,6 +348,16 @@ describe('nitro config', () => {
     })
   })
 
+  it.for([
+    [4, false, true],
+    [4, true, false],
+    [5, false, false],
+  ] as const)('keeps the arrival request for the error handler on a Nuxt %i host with `inlineErrorRendering: %s`: %s', async ([major, inlineErrorRendering, expected]) => {
+    await withNitro({ modules: [asNuxtMajor(major)], experimental: { inlineErrorRendering } }, (_nitro, nitroConfig) => {
+      expect((nitroConfig.plugins as string[]).some(plugin => /runtime[\\/]plugins[\\/]arrival-request$/.test(plugin))).toBe(expected)
+    })
+  })
+
   it('resolves the h3 v1 helpers of a Nuxt 4 app to the app h3 v1 shim', async () => {
     await withNitro({ modules: [asNuxtMajor(4)], nitroLegacy: { h3: false } }, async (_nitro, nitroConfig, nuxt) => {
       const plugin = findH3RuntimePlugin(nitroConfig)
