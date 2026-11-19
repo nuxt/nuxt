@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs'
 import type { Dirent } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { dirname, isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import MagicString from 'magic-string'
@@ -698,7 +699,7 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
 
 /**
  * Set up Nitro v2 compatibility: a resolution transform scoped to nitro v2 code, plus a
- * runtime wrapper on declared v2 handler entries for what resolution cannot fix.
+ * runtime wrapper on declared v2 handler entries and v2 plugins for what resolution cannot fix.
  *
  * Transitional, and removed in Nuxt 6. Installed only when the scope holds code importing
  * from `h3`, `nitropack` or `#imports`.
@@ -1362,6 +1363,8 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     importsBarrel,
     unimport,
     nuxt.options.rootDir,
+    id => [...v3Plugins].some(plugin => registrationPaths(plugin).includes(normalize(id.replace(/\?.*$/, '')))),
+    id => virtualSources.get(id),
   )
 
   const withNitro = nuxt as Nuxt & { _nitro?: { options: NitroOptions } }
@@ -1417,6 +1420,9 @@ interface ResolvePluginContext {
 }
 
 const NITRO_SPECIFIER_RE = /^nitro(?:\/|$)/
+const NITRO_PLUGINS_ID = '#nitro/virtual/plugins'
+const LEGACY_PLUGIN_PREFIX = '\0nuxt-compat/plugin:'
+const LEGACY_PLUGIN_RE = /^\0nuxt-compat\/plugin:/
 const NITRO_IMPLICIT_DEPENDENCY_RE = new RegExp(`^(?:${nitroImplicitDependencies.map(escapeRE).join('|')})(?:/|$)`)
 
 /**
@@ -1453,9 +1459,12 @@ function createLegacyResolvePlugin (
   importsBarrel: string,
   unimport: Unimport,
   rootDir: string,
+  isV3PluginFile: (id: string) => boolean,
+  virtualSource: (id: string) => string | undefined,
 ) {
   const h3Shim = compatRuntimePath('h3-v1')
   const nitroShim = compatRuntimePath('nitro-v2')
+  const pluginWrapper = compatRuntimePath('legacy-plugin')
   const migratedFiles = new Map<string, boolean>()
 
   /**
@@ -1471,6 +1480,15 @@ function createLegacyResolvePlugin (
       migratedFiles.set(id, migrated)
     }
     return migrated
+  }
+
+  /** A plugin in scope that keeps v2 semantics. A module virtual whose source is not known counts as v2. */
+  const isLegacyPlugin = async (id: string) => {
+    if (!scopeFor(id) || isV3PluginFile(id)) {
+      return false
+    }
+    const code = virtualSource(id) ?? await readFile(id.replace(/\?.*$/, ''), 'utf8').catch(() => undefined)
+    return code === undefined || !isMigrated(id, findImportSpecifiers(code, id))
   }
 
   const mapSpecifier = (source: string, scope: CompatScope) => {
@@ -1516,6 +1534,15 @@ function createLegacyResolvePlugin (
         return resolved
       }
 
+      // a v2 plugin is wrapped where nitro imports it, so that it receives the v2 `nitroApp`
+      if (importer === NITRO_PLUGINS_ID) {
+        const resolved = await this.resolve(source, importer, { skipSelf: true })
+        if (resolved && !resolved.external && await isLegacyPlugin(resolved.id)) {
+          return LEGACY_PLUGIN_PREFIX + resolved.id
+        }
+        return
+      }
+
       if (!scope) {
         return
       }
@@ -1529,6 +1556,20 @@ function createLegacyResolvePlugin (
         return resolved
       }
     } },
+    load: {
+      order: 'pre' as const,
+      filter: { id: LEGACY_PLUGIN_RE },
+      handler (id: string) {
+        if (!id.startsWith(LEGACY_PLUGIN_PREFIX)) {
+          return
+        }
+        return [
+          `import { wrapLegacyPlugin } from ${JSON.stringify(pluginWrapper)}`,
+          `import plugin from ${JSON.stringify(id.slice(LEGACY_PLUGIN_PREFIX.length))}`,
+          `export default wrapLegacyPlugin(plugin)`,
+        ].join('\n')
+      },
+    },
     // the bundler resolves nitro v2 specifiers itself (`nitropack` is often installed, and
     // `resolveId` order is not guaranteed once Nitro hands the plugin to Vite), so they are
     // rewritten in the source too

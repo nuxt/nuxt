@@ -52,6 +52,7 @@ describe('dev hooks plugin', () => {
     const files = {
       'node_modules/@nuxtjs/i18n/dist/runtime/server/plugin.js': registerAfterAwait,
       'server/plugins/locale.js': registerAfterAwait,
+      'node_modules/legacy-module/dist/runtime/plugin.js': registerAfterAwait,
     }
     for (const [file, code] of Object.entries(files)) {
       await mkdir(dirname(join(root, file)), { recursive: true })
@@ -60,10 +61,13 @@ describe('dev hooks plugin', () => {
 
     const entry = [
       `import devHooks from ${JSON.stringify(resolve(import.meta.dirname, '../src/runtime/plugins/dev-hooks.ts'))}`,
+      `import { wrapLegacyPlugin } from ${JSON.stringify(resolve(import.meta.dirname, '../src/runtime/compat/legacy-plugin.ts'))}`,
       ...Object.keys(files).map((file, index) => `import plugin${index} from ${JSON.stringify(join(root, file))}`),
       'const nitroApp = { hooks: { hook: () => () => {} } }',
       'devHooks(nitroApp)',
-      ...Object.keys(files).map((_, index) => `await plugin${index}(nitroApp)`),
+      'await plugin0(nitroApp)',
+      'await plugin1(nitroApp)',
+      'await wrapLegacyPlugin(plugin2)(nitroApp)',
     ].join('\n')
     const stubs: Record<string, string> = {
       'nitro': 'export const definePlugin = plugin => plugin',
@@ -91,6 +95,7 @@ describe('dev hooks plugin', () => {
     expect(output.trim().split('\n').map(line => JSON.parse(line))).toEqual([
       expect.objectContaining({ location: '@nuxtjs/i18n/dist/runtime/server/plugin.js', fix: expect.stringContaining('report the issue to its maintainers') }),
       expect.objectContaining({ location: join(root, 'server/plugins/locale.js'), fix: expect.stringContaining('server middleware') }),
+      expect.objectContaining({ location: 'legacy-module/dist/runtime/plugin.js', fix: expect.stringContaining('report the issue to its maintainers') }),
     ])
   })
 
