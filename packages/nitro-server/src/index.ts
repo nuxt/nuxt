@@ -1049,6 +1049,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       body: 'RequestBodyOf',
       query: 'RequestQueryOf',
       headers: 'RequestHeadersOf',
+      response: 'ResponseBodyOf',
     }
 
     for (const handler of [...nitro.scannedHandlers, ...nitro.options.handlers]) {
