@@ -40,4 +40,16 @@ describe('renderer options', () => {
 
     expect([isRenderedErrorPage(page), isRenderedErrorPage(nested), isRenderedErrorPage(streamed)]).toEqual([true, true, false])
   })
+
+  it('does not mark a request for an error captured with another tag', async () => {
+    const { rendererOptions } = await import('../src/runtime/utils/renderer/options.ts')
+    const { isRenderedErrorPage } = await import('../src/runtime/utils/error-page.ts')
+    const context = {}
+    const event = { req: new Request('http://localhost/page'), url: new URL('http://localhost/page'), context } as unknown as RendererEvent
+
+    await rendererOptions.captureError!(new Error('masked'), { event, tags: ['async-data'] })
+    await rendererOptions.captureError!(new Error('other'), { event, tags: ['custom'] })
+
+    expect(isRenderedErrorPage(context)).toBe(false)
+  })
 })

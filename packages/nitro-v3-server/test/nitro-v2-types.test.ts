@@ -42,10 +42,12 @@ export {}
 `
     const usage = `import type { NitroRuntimeConfig, NitroRuntimeHooks } from 'nitro/types'
 declare const config: NitroRuntimeConfig
+export const fromModule: number = config.fromModule
+export const fromApp: string = config.fromApp
 // @ts-expect-error a number
-export const fromModule: string = config.fromModule
+export const fromModuleAsString: string = config.fromModule
 // @ts-expect-error a string
-export const fromApp: number = config.fromApp
+export const fromAppAsNumber: number = config.fromApp
 export const hooks: Pick<NitroRuntimeHooks, 'module:hook' | 'app:hook'> = { 'module:hook': (payload: number) => {}, 'app:hook': () => {} }
 `
     const diagnostics = await check(first === 'nitropack/types'

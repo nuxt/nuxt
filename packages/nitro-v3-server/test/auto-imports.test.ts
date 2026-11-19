@@ -337,6 +337,37 @@ describe('createServerAutoImports', () => {
     presetReport.mockRestore()
   })
 
+  it.each([
+    ['with a runtime entry', { '.': { types: './index.d.mts', default: './index.mjs' } }],
+    ['that only declares types', { '.': { types: './index.d.mts' } }],
+  ])('types a registered import from the module directory that can resolve its `typeFrom`, a package %s', async (_, exports) => {
+    const rootDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-module-types-'))
+    const files: Record<string, string> = {
+      'module/node_modules/module-types/package.json': JSON.stringify({ name: 'module-types', type: 'module', exports }),
+      ...'default' in exports['.'] && { 'module/node_modules/module-types/index.mjs': '' },
+      'module/node_modules/module-types/index.d.mts': 'export declare const useTyped: () => \'typed\'',
+      'node_modules/root-dep/package.json': JSON.stringify({ name: 'root-dep', type: 'module', exports: './index.mjs' }),
+      'node_modules/root-dep/index.mjs': 'export const useTyped = () => \'typed\'',
+    }
+    for (const [path, contents] of Object.entries(files)) {
+      mkdirSync(dirname(join(rootDir, path)), { recursive: true })
+      writeFileSync(join(rootDir, path), contents + '\n')
+    }
+    const nuxt = mockNuxt()
+    nuxt.options.rootDir = rootDir
+    nuxt.options.modulesDir = [join(rootDir, 'node_modules'), join(rootDir, 'module/node_modules')]
+    const autoImports = createServerAutoImports(
+      nuxt,
+      { autoImport: true, imports: [{ name: 'useTyped', from: 'root-dep', typeFrom: 'module-types' }] },
+      join(rootDir, '.nuxt'),
+    )
+
+    await autoImports.writeTypes()
+
+    expect(readFileSync(autoImports.importsModulePath + '.d.ts', 'utf8')).toContain('typeof import(\'#internal/server-imports/module-types\')')
+    expect(await autoImports.getSourceTypePaths()).toEqual({ '#internal/server-imports/module-types': [join(rootDir, 'module/node_modules/module-types/index.d.mts')] })
+  })
+
   it('resolves a registered bare import from the module directory that can resolve it', async () => {
     const rootDir = mkdtempSync(join(tmpdir(), 'server-auto-imports-module-dep-'))
     const files: Record<string, string> = {

@@ -61,8 +61,8 @@ export const rendererOptions: NuxtRendererOptions = {
       }
     : undefined,
   captureError: (error, { event, tags }) => {
-    // the renderer reports an error it answers with its own error page, or one raised once a stream has started
-    if (!tags?.includes('streaming')) {
+    // the renderer captures the error it renders its error page for without a tag, and one `error.vue` throws with `error-page`
+    if (!tags?.length || tags.includes('error-page')) {
       markRenderedErrorPage(event.context)
     }
     // in development the live error channel reports and prints the error itself

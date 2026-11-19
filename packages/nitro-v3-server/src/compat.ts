@@ -293,6 +293,25 @@ function resolveH3V1Version (dir: string, versions: Map<string, string | undefin
   return versions.get(manifest)
 }
 
+/** The version of h3 v1 that `file` belongs to, read from the `package.json` of its package. */
+function resolveH3V1PackageVersion (file: string, versions: Map<string, string | undefined>): string | undefined {
+  const { dir, name } = parseNodeModulePath(file)
+  if (!dir || !name) {
+    return
+  }
+  const manifest = join(dir, name, 'package.json')
+  if (!versions.has(manifest)) {
+    let pkg: { name?: string, version?: string } | undefined
+    try {
+      pkg = JSON.parse(readFileSync(manifest, 'utf8'))
+    } catch {
+      pkg = undefined
+    }
+    versions.set(manifest, pkg?.name === 'h3' && pkg.version?.startsWith('1.') ? pkg.version : undefined)
+  }
+  return versions.get(manifest)
+}
+
 const H3_ALIAS_RE = /^h3(?:\/|$)/
 
 /**
@@ -311,8 +330,9 @@ function dropH3V1Aliases (nuxt: Nuxt, nitroConfig: NitroConfig): string[] {
       continue
     }
     const { [key]: _, ...others } = aliases
-    const file = normalize(resolveAlias(target, others))
-    const version = isAbsolute(file) && parseNodeModulePath(file).name === 'h3' ? resolveH3V1Version(file, versions) : undefined
+    const resolved = normalize(resolveAlias(target, others))
+    const file = isAbsolute(resolved) ? resolved : resolveModulePath(resolved, { from: withTrailingSlash(nuxt.options.rootDir), try: true })
+    const version = file ? resolveH3V1PackageVersion(file, versions) : undefined
     if (!version) {
       continue
     }

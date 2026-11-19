@@ -189,11 +189,11 @@ describe('error handler cache-control', () => {
   }
 
   describe.each(['application/json', 'text/html'])('on a %s error', (accept) => {
-    it.each(['no-store', 'private, max-age=60', 'no-cache', 'public, no-cache', 'max-age=0, must-revalidate', 'max-age=0, proxy-revalidate', 'public, s-maxage=0', 'no-store, must-understand, private'])('keeps the route rule cache-control %s', async (cacheControl) => {
+    it.each(['no-store', 'private, max-age=60', 'no-cache', 'public, no-cache', 'max-age=0, must-revalidate', 'max-age=0, proxy-revalidate', 'public, s-maxage=0', 'no-store, must-understand, private', 'no-store,,', ',no-store', 'no-store, ,private', 'no-store, no-cache="set-cookie,authorization"'])('keeps the route rule cache-control %s', async (cacheControl) => {
       expect(await underRule(cacheControl, accept)).toBe(cacheControl)
     })
 
-    it.each(['public, max-age=60', 'max-age=0', 'max-age=0, s-maxage=60, must-revalidate', 'no-cache, stale-if-error=60', 's-maxage=0, stale-while-revalidate=60', 'no-cache="set-cookie", max-age=60', 'private="set-cookie", max-age=60', 'no-store,,', 'no-store, must-understand, public, max-age=60'])('replaces the route rule cache-control %s', async (cacheControl) => {
+    it.each(['public, max-age=60', 'max-age=0', 'max-age=0, s-maxage=60, must-revalidate', 'no-cache, stale-if-error=60', 's-maxage=0, stale-while-revalidate=60', 'no-cache="set-cookie", max-age=60', 'private="set-cookie", max-age=60', 'private="set-cookie,,authorization", max-age=60', 'no-store, must-understand, public, max-age=60', 'no-store,, must-understand', 'no-store private', 'no-store, =private', 'no-store, "private"', ',,'])('replaces the route rule cache-control %s', async (cacheControl) => {
       expect(await underRule(cacheControl, accept)).toBe('no-cache')
     })
 

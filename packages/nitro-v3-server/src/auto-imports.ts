@@ -43,6 +43,7 @@ const MAX_REPORTED_FILES = 10
 const DOLLAR_FETCH_RE = /(?<![\w$.])\$fetch\b/
 const BARE_SPECIFIER_RE = /^(?:@[\w.-]+\/)?\w[\w.-]*(?:\/|$)/
 const SOURCE_RESOLVE_CONDITIONS = ['node', 'import', 'require']
+const TYPE_SOURCE_RESOLVE_CONDITIONS = ['types', ...SOURCE_RESOLVE_CONDITIONS]
 const SOURCE_TYPES_PREFIX = '#internal/server-imports/'
 const GLOBAL_FETCH_IMPORT: Import = { name: '$fetch', from: 'ofetch' }
 
@@ -93,11 +94,12 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     sourceDirs ??= init().then(async () => {
       const dirs = new Map<string, string>()
       const searchDirs = [nuxt.options.rootDir, ...nuxt.options.modulesDir ?? []]
-      for (const { from } of await ctx.getImports()) {
-        if (dirs.has(from) || !BARE_SPECIFIER_RE.test(from)) { continue }
-        const dir = searchDirs.find(dir => resolveModulePath(from, { from: directoryToURL(dir), conditions: SOURCE_RESOLVE_CONDITIONS, try: true }))
+      const sources = (await ctx.getImports()).flatMap((i): Array<[string, string[]]> => [[i.from, SOURCE_RESOLVE_CONDITIONS], ...i.typeFrom ? [[i.typeFrom, TYPE_SOURCE_RESOLVE_CONDITIONS] as [string, string[]]] : []])
+      for (const [source, conditions] of sources) {
+        if (dirs.has(source) || !BARE_SPECIFIER_RE.test(source)) { continue }
+        const dir = searchDirs.find(dir => resolveModulePath(source, { from: directoryToURL(dir), conditions, try: true }))
         if (dir && dir !== nuxt.options.rootDir) {
-          dirs.set(from, dir)
+          dirs.set(source, dir)
         }
       }
       return dirs
