@@ -441,6 +441,13 @@ describe('nitro v2 `render:before` hook', () => {
     expect(await response.json()).toEqual(body)
   })
 
+  it('responds with JSON to a `bigint` body a listener sets', async () => {
+    const response = await respondWith({ body: 42n })
+
+    expect(response.headers.get('content-type')).toBe('application/json')
+    expect(await response.text()).toBe('42')
+  })
+
   it('keeps the content type a listener sets with an object body', async () => {
     const response = await respondWith({ body: { ok: true }, headers: { 'content-type': 'application/ld+json' } })
 
