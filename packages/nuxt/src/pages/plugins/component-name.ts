@@ -1,7 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import { generateTransform, rolldownString } from 'rolldown-string'
 
-import { VUE_FILE_RE } from '../../core/utils/index.ts'
+import { VUE_FILE_RE, vitestCacheKey } from '../../core/utils/index.ts'
 import { assignDefaultExportName } from '../../components/utils.ts'
 import { getPageComponentNames } from '../utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -30,6 +30,7 @@ export const PageComponentNamePlugin = (options: PageComponentNamePluginOptions)
   return {
     name: 'nuxt:page-component-name-plugin',
     enforce: 'post',
+    vite: vitestCacheKey(({ id }) => getPageNames().get(id)),
     transform: {
       filter: {
         // Only the component module itself carries the page name; the macro and SFC block requests

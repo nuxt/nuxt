@@ -11,6 +11,7 @@ import { buildDiagnostics, isWithinDir } from '@nuxt/kit/internal'
 import type { KeyedFunction } from '@nuxt/schema'
 import type { ESTree } from 'rolldown/utils'
 
+import { vitestCacheKey } from '../../core/utils/index.ts'
 import { getStaticImports } from '../../core/utils/static-imports.ts'
 import { MACRO_QUERY_RE, NUXT_LIB_RE, STYLE_QUERY_RE, SUPPORTED_EXT_RE, isWhitespace, stripExtension } from '../../utils.ts'
 import { type FunctionCallMetadata, parseStaticExportIdentifiers, parseStaticFunctionCall, processImports } from '../../core/utils/parse-utils.ts'
@@ -101,15 +102,16 @@ function getImportedFunctionName (directImport: { originalName: string, source: 
 export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUnplugin(() => {
   // Build initial state from the static keyedFunctions list
   let state = buildKeyedFunctionsState(options.keyedFunctions)
-  let lastKeyedFunctionsLength = options.keyedFunctions.length
+  let keyedFunctionsKey = JSON.stringify(options.keyedFunctions)
 
   // In dev mode with a reactive getter, rebuild state when data changes
   function getState () {
     if (options.dev && options.getKeyedFunctions) {
       const current = options.getKeyedFunctions()
-      if (current.length !== lastKeyedFunctionsLength) {
+      const currentKey = JSON.stringify(current)
+      if (currentKey !== keyedFunctionsKey) {
         state = buildKeyedFunctionsState(current)
-        lastKeyedFunctionsLength = current.length
+        keyedFunctionsKey = currentKey
       }
     }
     return state
@@ -118,6 +120,10 @@ export const KeyedFunctionsPlugin = (options: KeyedFunctionsOptions) => createUn
   return {
     name: 'nuxt:compiler:keyed-functions',
     enforce: 'post',
+    vite: vitestCacheKey(() => {
+      getState()
+      return keyedFunctionsKey
+    }),
     transform: {
       filter: {
         id: {

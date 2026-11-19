@@ -29,6 +29,19 @@ describe('keyed functions plugin - reactive getter (dev mode)', () => {
     expect(await transform(code)).toContain('/* nuxt-injected */')
   })
 
+  it('should pick up a renamed keyed function', async () => {
+    const keyedFunctions: KeyedFunction[] = [
+      { name: 'useFoo', source: '#app/composables/data', argumentLength: 1 },
+    ]
+    const transform = createTransform({ keyedFunctions, getKeyedFunctions: () => keyedFunctions, dev: true })
+
+    expect(await transform(`import { useFoo } from '#app/composables/data'\nuseFoo()`)).toContain('/* nuxt-injected */')
+
+    keyedFunctions.splice(0, 1, { name: 'useBar', source: '#app/composables/data', argumentLength: 1 })
+    expect(await transform(`import { useBar } from '#app/composables/data'\nuseBar()`)).toContain('/* nuxt-injected */')
+    expect(await transform(`import { useFoo } from '#app/composables/data'\nuseFoo()`)).toBeUndefined()
+  })
+
   it('should use static code filter in production mode', () => {
     const keyedFunctions: KeyedFunction[] = [
       { name: 'useExisting', source: '#app', argumentLength: 1 },

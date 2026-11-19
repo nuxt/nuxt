@@ -6,7 +6,7 @@ import escapeRE from 'escape-string-regexp'
 import { normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 
-import { isJS, isVue } from '../core/utils/index.ts'
+import { isJS, isVue, vitestCacheKey } from '../core/utils/index.ts'
 import { installNuxtModule } from '../core/features.ts'
 import type { ImportsOptions } from 'nuxt/schema'
 
@@ -28,6 +28,7 @@ interface TransformPluginOptions {
    * computed with `getImportsSignature`.
    */
   getImportsVersion?: () => number
+  getImportsHash?: () => string
 }
 
 /** Serialises the fields of `imports` that affect the code injected into consumers. */
@@ -37,17 +38,25 @@ export function getImportsSignature (imports: Import[]) {
     .join('\n')
 }
 
+function matches (patterns: RegExp[] | undefined, id: string) {
+  return !!patterns?.some((pattern) => {
+    // a global or sticky pattern otherwise resumes from the end of its previous match
+    pattern.lastIndex = 0
+    return pattern.test(id)
+  })
+}
+
 function isTransformed (options: Partial<ImportsOptions>, id: string) {
-  if (options.transform?.include?.some(pattern => pattern.test(id))) {
+  if (matches(options.transform?.include, id)) {
     return true
   }
-  if (options.transform?.exclude?.some(pattern => pattern.test(id))) {
+  if (matches(options.transform?.exclude, id)) {
     return false
   }
   return isVue(id, { type: ['script', 'template'] }) || isJS(id)
 }
 
-export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getImportsVersion }: TransformPluginOptions) => createUnplugin(() => {
+export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getImportsVersion, getImportsHash }: TransformPluginOptions) => createUnplugin(() => {
   const invalidatedAt = new WeakMap<object, Map<string, number>>()
 
   // `$fetch` is not a global on the client, so code that relies on the global (including
@@ -65,7 +74,7 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getIm
     transformInclude: id => isTransformed(options, id),
     async transform (code, id) {
       id = normalize(id)
-      const isNodeModule = NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))
+      const isNodeModule = NODE_MODULES_RE.test(id) && !matches(options.transform?.include, id)
       const usesFetch = DOLLAR_FETCH_RE.test(code)
       // For modules in node_modules, we only transform `#imports` but not doing imports
       if (isNodeModule && !usesFetch && !IMPORTS_RE.test(code)) {
@@ -92,6 +101,7 @@ export const TransformPlugin = ({ ctx, options, sourcemap, refreshImports, getIm
       }
     },
     vite: {
+      ...vitestCacheKey(({ id }) => isTransformed(options, id) ? getImportsHash?.() : undefined),
       hotUpdate: {
         order: 'pre',
         async handler ({ file, modules }) {
@@ -150,7 +160,7 @@ export const RemovedImportsPlugin = ({ ctx, options, imports, onRemovedImports }
       },
       async handler (code, id) {
         id = normalize(id)
-        if (NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))) {
+        if (NODE_MODULES_RE.test(id) && !matches(options.transform?.include, id)) {
           return
         }
         const { imports: used } = await removedCtx.injectImports(code, id, { autoImport: true })
