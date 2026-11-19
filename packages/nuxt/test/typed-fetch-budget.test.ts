@@ -151,4 +151,14 @@ describe('a typed `$fetch` wrapped or called with a response type it names', () 
     // variance, which costs ~200k and more as the route set grows
     expect(program(set, 0, { ...options, source })).toBeLessThan(50_000)
   }, 60_000)
+
+  it('compiles a wrapper generic over the request that passes its options through', () => {
+    const set = routeSet(50)
+    set.routes.push({ segments: [{ type: 'wildcard' }], metadata: { POST: { responseType: '{ proxied: true }', bodyType: '{ target: string }' } } })
+    const wrapper = [
+      `import type { AnyServerRouteMethod, TypedFetchOptions } from '${typesModule}'`,
+      'export function api<R extends string, M extends AnyServerRouteMethod = \'get\'> (request: R, options?: TypedFetchOptions<R, M>) { return $fetch(request, options) }',
+    ]
+    expect(program(set, 0, { strictFetchPaths: false, source: wrapper })).toBeLessThan(50_000)
+  }, 60_000)
 })

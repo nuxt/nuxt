@@ -241,11 +241,22 @@ export type FallbackBaseURL<Request, Default> = [Default] extends [Request] ? st
 
 /** Options accepted by Nuxt's typed `$fetch`, narrowed to what the matching route validates. */
 export type TypedFetchOptions<Request, Method extends AnyServerRouteMethod = 'get', BaseURL extends string = string> =
-  & Omit<FetchOptions, 'method' | 'body' | 'query' | 'params' | 'headers' | 'baseURL'>
-  & { baseURL?: BaseURL }
-  & { method?: AcceptedMethod<Request, Method> }
-  & TypedRequestShape<Request, Method>
+  & TypedFetchOptionsBase<Request, Method, BaseURL>
   & RequiredRequestBody<Request, Method>
+
+/**
+ * {@link TypedFetchOptions} without the requiredness of `body`, which an interface cannot express.
+ *
+ * An interface so that its variance can be declared: inferring from one instantiation of the
+ * options to another otherwise measures it, by resolving the route accessors against placeholder
+ * types, at a cost that can exhaust the checker.
+ *
+ * @internal
+ */
+interface TypedFetchOptionsBase<in out Request, in out Method extends AnyServerRouteMethod, out BaseURL extends string> extends Omit<FetchOptions, 'method' | 'body' | 'query' | 'params' | 'headers' | 'baseURL'>, TypedRequestShape<Request, Method> {
+  baseURL?: BaseURL
+  method?: AcceptedMethod<Request, Method>
+}
 
 /**
  * A request accepted by a client built for the route set `Schema` describes: one of its paths, a
