@@ -887,7 +887,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         config.resolve ||= {}
         // nitro's vite environment sets conditions for its dev runner (`workerd` excludes `node`)
         config.resolve.conditions = nuxt.options.experimental.nitroViteEnvironment && config.resolve.conditions
-          ? getSsrResolveConditions(withoutWasmConditions(config.resolve.conditions))
+          ? getSsrResolveConditions(config.resolve.conditions)
           : getSsrResolveConditions(config.resolve.conditions, withoutWasmConditions(nitro.options.exportConditions))
       }
     },
