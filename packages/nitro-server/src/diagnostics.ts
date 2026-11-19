@@ -72,5 +72,25 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Install the version of `nitro` that `@nuxt/nitro-server` depends on, or upgrade Nuxt.',
       docs: false,
     },
+    NUXT_B9013: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? ' has a suffix in its name' : 's have a suffix in their names'} that Nitro v3 rejects unless it is listed in \`scanSuffixes\`. The Nitro v2 compatibility layer added ${p.count === 1 ? 'it' : 'them'} to \`nitro.scanSuffixes\`, which keeps a suffix part of the name as Nitro v2 did:\n  - ${p.files}`,
+      fix: (p: { suffixes: string }) => `This layer is transitional and will be removed in Nuxt 6. Rename the files, or add ${p.suffixes} to \`nitro.scanSuffixes\` in your \`nuxt.config\` to keep the names.`,
+      docs: false,
+    },
+    NUXT_B9014: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? ' has a suffix in its name' : 's have a suffix in their names'} that Nitro v3 rejects unless it is listed in \`scanSuffixes\`, so Nitro fails the build, or ignores ${p.count === 1 ? 'the file' : 'them'} in development:\n  - ${p.files}`,
+      fix: (p: { suffixes: string }) => `Rename the files, or add ${p.suffixes} to \`nitro.scanSuffixes\` in your \`nuxt.config\` to keep the names.`,
+      docs: false,
+    },
+    NUXT_B9015: {
+      why: (p: { count: number, aliases: string }) => `${p.count} server alias${p.count === 1 ? '' : 'es'} pointed \`h3\` at h3 v1, which does not work with Nitro v3 events, and ${p.count === 1 ? 'was' : 'were'} removed, so that \`h3\` resolves to the h3 v1 helpers of \`nitroLegacy.h3\` in Nitro v2 server code and to h3 v2 elsewhere:\n  - ${p.aliases}`,
+      fix: 'Remove the alias from your configuration, or report it to the author of the module that sets it.',
+      docs: false,
+    },
+    NUXT_B9016: {
+      why: (p: { base: string, driver: string, error: string }) => `\`nitro.storage\` cannot read or write \`${p.base}:\` at build time, because its \`${p.driver}\` driver failed to load: ${p.error}`,
+      fix: 'Check that the driver can be imported from your project, or report it to the author of the module that reads this storage at build time.',
+      docs: false,
+    },
   },
 })

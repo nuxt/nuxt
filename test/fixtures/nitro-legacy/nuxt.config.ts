@@ -7,6 +7,11 @@ export default defineNuxtConfig({
       flavour: 'earl-grey',
     },
   },
+  routeRules: {
+    '/api/rule-headers/**': { headers: { 'cache-control': 'public, max-age=60' } },
+    '/api/rule-headers/ctype': { headers: { 'content-type': 'application/x-from-rule' } },
+    '/api/no-store/**': { headers: { 'cache-control': 'no-store' } },
+  },
   compatibilityDate: 'latest',
   nitroLegacy: true,
 })

@@ -199,7 +199,7 @@ export interface NuxtHooks {
    * `serverHandlers`.
    * @param routes Array of route handlers to be extended
    * @param context Object the builder can extend
-   * @param context.requestTypes How the builder's types read a handler's validated request shapes
+   * @param context.requestTypes How the builder's types read a handler's validated request shapes and response
    * @returns Promise
    */
   'server:routes': (routes: ServerRouteHandler[], context: { requestTypes?: ServerRequestTypes }) => HookResult

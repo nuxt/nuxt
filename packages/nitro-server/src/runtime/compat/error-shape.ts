@@ -50,22 +50,37 @@ export function createError (input: string | (Error & H3ErrorInput) | H3ErrorInp
   }
 
   if (typeof input === 'object' && input.fatal !== undefined) {
-    Object.defineProperty(error, 'fatal', { value: input.fatal, configurable: true, enumerable: false })
+    Object.defineProperty(error, 'fatal', { value: input.fatal, configurable: true, enumerable: false, writable: true })
   }
 
   return withLegacyErrorShape(error)
 }
 
-/** Serialise an error with the v1 body keys as well as the v2 ones. */
+/**
+ * Serialise an error with the v1 body keys as well as the v2 ones, and accept writes to
+ * `statusCode` and `statusMessage` as h3 v1 did.
+ */
 export function withLegacyErrorShape<T extends HTTPError> (error: T): T {
   if ((error as any)[kLegacyShape]) {
     return error
   }
   const toJSON = error.toJSON.bind(error)
+  const fields = error as { status: number, statusText?: string }
   Object.defineProperties(error, {
     [kLegacyShape]: { value: true },
+    statusCode: {
+      configurable: true,
+      get: () => fields.status,
+      set: (value: number) => { fields.status = value },
+    },
+    statusMessage: {
+      configurable: true,
+      get: () => fields.statusText,
+      set: (value: string | undefined) => { fields.statusText = value },
+    },
     toJSON: {
       configurable: true,
+      writable: true,
       value: () => {
         const json = toJSON()
         return {

@@ -1119,6 +1119,9 @@ importers:
       pkg-types:
         specifier: catalog:build
         version: 2.4.0
+      radix3:
+        specifier: 1.1.2
+        version: 1.1.2
       rolldown:
         specifier: 1.2.19
         version: 1.2.19
@@ -1267,6 +1270,9 @@ importers:
       tsdown:
         specifier: catalog:dev
         version: 0.23.5(@arethetypeswrong/core@0.18.5)(@vitejs/devtools@0.8.2)(@volar/typescript@2.4.30(typescript@6.0.3))(@vue/language-core@3.3.14)(oxc-resolver@11.24.2)(typescript@6.0.3)(vue-tsc@3.3.14(typescript@6.0.3))
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
       vitest:
         specifier: catalog:dev
         version: 5.1.0(@opentelemetry/api@1.9.1)(@types/node@24.19.2)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8)
@@ -2531,6 +2537,12 @@ importers:
         version: link:../../../packages/nuxt
 
   test/fixtures/server-components:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
+  test/fixtures/server-module-imports:
     dependencies:
       nuxt:
         specifier: workspace:*

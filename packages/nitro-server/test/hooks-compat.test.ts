@@ -2,14 +2,18 @@ import { mkdtemp, writeFile } from 'node:fs/promises'
 import { openAsBlob } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { HookableCore, createHooks } from 'hookable'
 import { H3, mockEvent } from 'nitro/h3'
 
 import { serverDiagnostics } from '../src/runtime/diagnostics.ts'
 import { hasLegacyHookListener, observeLegacyHooks } from '../src/runtime/compat/hook-registry.ts'
 import { markStreamedResponse } from '../src/runtime/compat/render-response.ts'
+import { applyLegacyRenderBefore } from '../src/runtime/compat/render-before.ts'
+import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
+import type { LegacyH3Event } from '../src/runtime/compat/h3-v1.ts'
 import plugin from '../src/runtime/compat/hooks-plugin.ts'
+import { wrapLegacyPlugin } from '../src/runtime/compat/legacy-plugin.ts'
 
 function createNitroApp () {
   const handlers = new Map<string, (...args: any[]) => any>()
@@ -308,5 +312,233 @@ describe('nitro v2 runtime hook bridge', () => {
     await handlers.get('response')!(response, {})
 
     expect(seen).toBe(response)
+  })
+})
+
+describe('nitro v2 `render:before` hook', () => {
+  const page = () => vi.fn((_event: unknown) => Promise.resolve(new Response('<html>page</html>', { headers: { 'content-type': 'text/html' } })))
+
+  it('renders the page after the listeners, with the v2 render context', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    const event = mockEvent('http://nuxt/')
+    const renderPage = page()
+    let seen: Record<string, unknown> | undefined
+    hooks.hook('render:before', (context) => { seen = { ...context } })
+
+    const response = await applyLegacyRenderBefore(event, hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(seen).toEqual({ event, render: expect.any(Function), response: undefined })
+    expect(renderPage).toHaveBeenCalledExactlyOnceWith(event)
+    expect(await response.text()).toBe('<html>page</html>')
+  })
+
+  it('responds with the response a listener sets, without rendering the page', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    const event = prepareLegacyEvent(mockEvent('http://nuxt/')) as LegacyH3Event
+    const renderPage = page()
+    hooks.hook('render:before', (context) => {
+      const { res } = context.event.node
+      res.setHeader('location', '/fr')
+      context.event.res.headers.append('set-cookie', 'i18n_redirected=fr; Path=/')
+      context.response = {
+        headers: { ...res.getHeaders(), 'x-redirect-by': 'render:before' },
+        statusCode: 302,
+        statusMessage: 'Found',
+        body: '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/fr"></head></html>',
+      }
+    })
+
+    const response = await applyLegacyRenderBefore(event, hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(renderPage).not.toHaveBeenCalled()
+    expect(response.status).toBe(302)
+    expect(response.statusText).toBe('Found')
+    expect(response.headers.get('location')).toBe('/fr')
+    expect(response.headers.get('x-redirect-by')).toBe('render:before')
+    expect(response.headers.getSetCookie()).toEqual(['i18n_redirected=fr; Path=/'])
+    expect(response.headers.get('content-type')).toBe('text/html')
+    expect(await response.text()).toContain('url=/fr')
+  })
+
+  it('keeps a streamed page live through a replaced `render`', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      const render = context.render
+      context.render = async (event: unknown) => ({ ...await render(event), headers: { 'x-wrapped': '1' } })
+    })
+    const renderPage = () => {
+      const streamed = new Response(new ReadableStream({ start (controller) { controller.enqueue(new TextEncoder().encode('<html>')) } }))
+      markStreamedResponse(streamed)
+      return Promise.resolve(streamed)
+    }
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(response.headers.get('x-wrapped')).toBe('1')
+    const { value } = await response.body!.getReader().read()
+    expect(new TextDecoder().decode(value)).toBe('<html>')
+  })
+
+  it('fails the request when a replaced `render` returns no response', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      context.render = () => Promise.resolve(undefined)
+    })
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/page'), hooks, page(), (body, init) => new Response(body, init))
+
+    expect(response.status).toBe(500)
+    expect(await response.text()).toBe('No response returned from render handler: /page')
+  })
+
+  it('keeps the status of a response a listener sets without a body', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      context.response = { headers: { location: '/fr' }, statusCode: 302 }
+    })
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, page(), (body, init) => new Response(body, init))
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/fr')
+    expect(await response.text()).toBe('')
+  })
+
+  it('renders with the function a listener puts in place of `render`', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    const event = mockEvent('http://nuxt/')
+    const renderPage = vi.fn((_event: unknown) => Promise.resolve(new Response('<html>page</html>', {
+      headers: [['content-type', 'text/html'], ['set-cookie', 'a=1'], ['set-cookie', 'b=2']],
+    })))
+    hooks.hook('render:before', (context) => {
+      const render = context.render
+      context.render = async (event: unknown) => {
+        const rendered = await render(event)
+        return { ...rendered, body: rendered.body.replace('page', 'wrapped'), headers: { ...rendered.headers, 'x-wrapped': '1' } }
+      }
+    })
+
+    const response = await applyLegacyRenderBefore(event, hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(renderPage).toHaveBeenCalledOnce()
+    expect(response.headers.get('x-wrapped')).toBe('1')
+    expect(response.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
+    expect(await response.text()).toBe('<html>wrapped</html>')
+  })
+})
+
+describe('nitro v2 plugin wrapper', () => {
+  function runLegacyPlugin (plugin: (nitroApp: any) => void | Promise<void>) {
+    const hooks = new HookableCore<Record<string, (...args: any[]) => any>>()
+    observeLegacyHooks(hooks)
+    const nitroApp = { hooks } as any
+    const result = wrapLegacyPlugin(plugin, 'modules/runtime/plugin.ts')(nitroApp)
+    return { hooks, nitroApp, result }
+  }
+
+  it('hands a v2 plugin a `callHook` that returns a promise, as Nitro v2 did', async () => {
+    const listener = vi.fn()
+    let called: unknown
+    const { hooks } = runLegacyPlugin((nitroApp) => {
+      nitroApp.hooks.hook('custom', listener)
+      called = nitroApp.hooks.callHook('custom', 1)
+    })
+
+    expect(called).toBeInstanceOf(Promise)
+    await called
+    expect(listener).toHaveBeenCalledWith(1)
+    expect(hooks.callHook('custom', 2)).toBeUndefined()
+  })
+
+  it('reaches the listeners through a `callHook` a v2 plugin decorates', async () => {
+    const listener = vi.fn()
+    const decorator = vi.fn()
+    let decorated: ((...args: any[]) => Promise<unknown>) | undefined
+    const { hooks } = runLegacyPlugin((nitroApp) => {
+      nitroApp.hooks.hook('custom', listener)
+      const original = nitroApp.hooks.callHook.bind(nitroApp.hooks)
+      nitroApp.hooks.callHook = (...args: any[]) => {
+        decorator(...args)
+        return original(...args)
+      }
+      decorated = nitroApp.hooks.callHook
+    })
+
+    await decorated!('custom', 1)
+    await hooks.callHook('custom', 2)
+
+    expect(decorator.mock.calls).toEqual([['custom', 1], ['custom', 2]])
+    expect(listener.mock.calls).toEqual([[1], [2]])
+  })
+
+  it('registers and removes listeners on the hooks Nitro runs', async () => {
+    const listener = vi.fn()
+    let off: (() => void) | undefined
+    const { hooks } = runLegacyPlugin((nitroApp) => {
+      off = nitroApp.hooks.hook('beforeResponse', listener)
+    })
+
+    expect(hasLegacyHookListener(hooks, 'beforeResponse')).toBe(true)
+    await hooks.callHook('beforeResponse')
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    off!()
+    expect(hasLegacyHookListener(hooks, 'beforeResponse')).toBe(false)
+  })
+
+  it('runs a `render:before` listener a v2 plugin registers', async () => {
+    const { hooks } = runLegacyPlugin((nitroApp) => {
+      nitroApp.hooks.hook('render:before', (context: any) => {
+        context.response = { body: '<html>from plugin</html>', statusCode: 202 }
+      })
+    })
+
+    expect(hasLegacyHookListener(hooks, 'render:before')).toBe(true)
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, () => Promise.resolve(new Response('page')), (body, init) => new Response(body, init))
+    expect(response.status).toBe(202)
+    expect(await response.text()).toBe('<html>from plugin</html>')
+  })
+
+  it('writes to the app Nitro runs and keeps the result of an async plugin', () => {
+    const ready = Promise.resolve()
+    const { nitroApp, result } = runLegacyPlugin((app) => {
+      app.custom = true
+      return ready
+    })
+
+    expect(nitroApp.custom).toBe(true)
+    expect(result).toBe(ready)
+  })
+
+  it('reports once per plugin a `close` listener registered while prerendering, and still registers it', async () => {
+    vi.stubGlobal('__TEST_PRERENDER__', true)
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8017').mockImplementation(() => ({}) as any)
+    onTestFinished(() => {
+      vi.unstubAllGlobals()
+      report.mockRestore()
+    })
+    const listener = vi.fn()
+    const { hooks, nitroApp } = runLegacyPlugin((app) => {
+      app.hooks.hook('close', listener)
+      app.hooks.hook('close', listener)
+      app.hooks.hook('render:html', () => {})
+    })
+    wrapLegacyPlugin((app) => {
+      app.hooks.hook('close', listener)
+    }, 'server/plugins/other.ts')(nitroApp)
+
+    expect(report.mock.calls).toEqual([[{ plugin: 'modules/runtime/plugin.ts' }], [{ plugin: 'server/plugins/other.ts' }]])
+    await hooks.callHook('close')
+    expect(listener).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not report a `close` listener outside the prerenderer', () => {
+    const report = vi.spyOn(serverDiagnostics, 'NUXT_E8017').mockImplementation(() => ({}) as any)
+    onTestFinished(() => { report.mockRestore() })
+    runLegacyPlugin((nitroApp) => {
+      nitroApp.hooks.hook('close', () => {})
+    })
+
+    expect(report).not.toHaveBeenCalled()
   })
 })

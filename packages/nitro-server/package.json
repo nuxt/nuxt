@@ -103,6 +103,7 @@
     "hookable": "catalog:app-runtime",
     "nuxt": "workspace:*",
     "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
     "vitest": "catalog:dev",
     "vue": "catalog:app-runtime"
   },

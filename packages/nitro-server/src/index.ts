@@ -11,7 +11,7 @@ import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { createNitro } from 'nitro/builder'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
-import { addPlugin, addTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
+import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, isWithinDir, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -23,7 +23,7 @@ import { resolveModulePath } from 'exsolve'
 import { runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
-import { GLOB_SUFFIX_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, timePluginHooks, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal, withoutServerDirDeny } from './utils.ts'
+import { GLOB_SUFFIX_RE, NON_JS_FILE_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, timePluginHooks, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal, withoutServerDirDeny } from './utils.ts'
 import { setupAppManifest, setupPayloadRouteRules } from './app-manifest.ts'
 import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
@@ -33,14 +33,16 @@ import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKe
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
-import { nitroSchemaTemplate } from './templates.ts'
+import { nitroSchemaTemplate, nuxt4HostTypeTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
 import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin } from './runtime-config.ts'
-import { ServerAutoImportsPlugin } from './auto-imports-plugin.ts'
+import { ServerAutoImportsPlugin, serverImportSourcesPlugin, serverImportsModulePlugin } from './auto-imports-plugin.ts'
 import { unheadDedupePlugin } from './unhead.ts'
-import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
+import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getLegacyNitroTypesDeclaration, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
+import { setupScanSuffixes } from './scan-suffixes.ts'
+import { addLegacyRuntimeMounts, createLegacyBuildStorage, getLegacyStorageMounts } from './storage.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
@@ -52,7 +54,7 @@ const REQUEST_TYPES_MODULE = `${nitroBuilder.name}/request-types`
 const RELATIVE_BASE_URL_RE = /^\.(?:$|\/)/
 
 // App-only aliases Nitro carries in its own alias map, which must not resolve in the server program
-const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/, '~', '@', '~~', '@@']
+const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/]
 
 /** Packages whose own imports of `h3` mean h3 v2. */
 const H3_PROVIDER_RE = /^(?:h3|nitro)(?:-nightly)?$/
@@ -68,6 +70,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   const nuxt4Host = isNuxtMajorVersion(4, nuxt)
 
   if (nuxt4Host) {
+    addTypeTemplate(nuxt4HostTypeTemplate, { nuxt: true, node: true, shared: true, nitro: true })
     addVitePlugin({
       name: 'nuxt:nitro:h3-v1-runtime',
       enforce: 'pre',
@@ -130,25 +133,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
   nuxt.options.nitro.plugins.unshift(resolve(distDir, 'runtime/plugins/runtime-config'))
+  nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/error-cache-control'))
+  if (nuxt4Host && !nuxt.options.experimental.inlineErrorRendering) {
+    nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/arrival-request'))
+  }
 
   for (const asset of [...nuxt.options.nitro.publicAssets || [], ...nuxt.options.nitro.serverAssets || []]) {
     if (asset?.dir) {
       asset.dir = resolveAlias(asset.dir, nuxt.options.alias)
-    }
-  }
-
-  // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
-  for (const asset of nuxt.options.nitro.publicAssets || []) {
-    if (!asset?.dir) { continue }
-    const dir = resolve(nuxt.options.rootDir, asset.dir)
-    // dirs within the build dir are generated later in the build
-    const isGenerated = !relative(nuxt.options.buildDir, dir).startsWith('..')
-    if (!existsSync(dir) && !isGenerated) {
-      bundlerDiagnostics.NUXT_B7023({
-        dir,
-        baseURL: joinURL('/', asset.baseURL || '/', '**'),
-        resolvedFrom: 'your project root',
-      })
     }
   }
 
@@ -415,6 +407,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       distDir,
       // Ensure app config files have auto-imports injected even if they are pure .js files
       ...layerDirs.map(dirs => join(dirs.app, 'app.config')),
+      // otherwise externalised in development and prerendering, where Node cannot import them
+      NON_JS_FILE_RE,
 
     ],
     alias: {
@@ -691,16 +685,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // route rule augmentations are declared on `h3/rules`, so a project has to resolve it to the
   // same copy of h3 for them to apply, even when it depends on another copy of `h3`
   nitroTypePackages.push('h3/rules')
-  const [nitroTypePaths, nitroNodeTypePaths] = await Promise.all([
+  // server code runs on Nitro's h3 under the h3 v1 layer, whichever `h3` the project lists
+  const [nitroTypePaths, nitroNodeTypePaths, legacyH3TypePaths] = await Promise.all([
     resolveNitroTypePaths(nitroTypePackages),
     resolveNitroTypePaths(nitroTypePackages, { entry: true }),
+    resolveNitroTypePaths(legacy.h3 && !nitroTypePackages.includes('h3') ? ['h3'] : []),
   ])
 
   // Extend nitro config with hook
   await nuxt.callHook('nitro:config', nitroConfig)
 
   // after the hook, so rules and registrations contributed by modules are covered too
-  normalizeLegacyRouteRules(nitroConfig.routeRules)
+  normalizeLegacyRouteRules(nitroConfig.routeRules, { nuxt4Host, legacyConfig: legacy.config })
   for (const key in nitroConfig.routeRules) {
     assertSingleCatchAllRouteRuleKey(key)
   }
@@ -711,9 +707,14 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     keepCachedQuery(nitroConfig)
   }
   normalizeAppMiddlewareRules(nitroConfig.routeRules)
+  const legacyStorageMounts = getLegacyStorageMounts(nuxt.options.rootDir, nuxt.options.buildDir)
+  if (legacy.config) {
+    addLegacyRuntimeMounts(nitroConfig, legacyStorageMounts)
+  }
   const unusedVariants = collectServerRegistrations(nuxt, nitroConfig)
 
   const registerLateNitroCompatScope = await setupNitroCompat(nuxt, nitroConfig, legacy, legacyModulePresets, installedModules, unusedVariants)
+  const watchScanSuffixes = await setupScanSuffixes(nuxt, nitroConfig, legacy.config)
   nitroConfig.alias = sortAliasesByPrecedence(nitroConfig.alias!)
 
   const autoImports = createServerAutoImports(nuxt, nitroConfig.imports || { autoImport: false }, typesDir, {
@@ -726,6 +727,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // deprecated, and deliberately left out of the server tsconfig: typing it would give a handler
   // an `any` return type, silently costing the route its response type
   nitroConfig.alias['#imports'] = autoImports.importsModulePath
+  nitroConfig.rollupConfig!.plugins!.push(serverImportsModulePlugin(autoImports), serverImportSourcesPlugin(autoImports))
 
   if (autoImports.enabled) {
     nitroConfig.rollupConfig!.plugins!.push(ServerAutoImportsPlugin.rollup({
@@ -763,6 +765,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
   nuxt._perf?.endPhase('nitro:createNitro')
+
+  if (legacy.config) {
+    // @ts-expect-error Nitro v3 has no build-time storage
+    nitro.storage = await createLegacyBuildStorage(nitro, { ...sourceKV, ...legacyStorageMounts })
+  }
 
   // TODO: remove when devtools gains support for nitro v3
   // @ts-expect-error devtools calls storage.watch() and storage.getMount()
@@ -830,6 +837,22 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)
 
+  // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
+  nitro.hooks.hook('build:config', () => {
+    for (const asset of nitro.options.publicAssets || []) {
+      if (!asset?.dir) { continue }
+      // dirs within the build dir are generated later in the build
+      const isGenerated = !relative(nuxt.options.buildDir, asset.dir).startsWith('..')
+      if (!existsSync(asset.dir) && !isGenerated) {
+        bundlerDiagnostics.NUXT_B7023({
+          dir: asset.dir,
+          baseURL: joinURL('/', asset.baseURL || '/', '**'),
+          resolvedFrom: 'your project root',
+        })
+      }
+    }
+  })
+
   // Modules add aliases from `nitro:init`, and Nitro v3 resolves them in
   // insertion order, so a short prefix registered first shadows a longer key.
   nitro.options.alias = sortAliasesByPrecedence(nitro.options.alias)
@@ -837,6 +860,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // Modules that bypass kit and push handlers or plugins into `nitro.options`
   // are nitro v2 code too, and are only visible now.
   registerLateNitroCompatScope(nitro)
+  watchScanSuffixes(nitro)
 
   // Instrument Nitro rollup plugins for perf tracking
   if (nuxt._perf) {
@@ -1027,6 +1051,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       body: 'RequestBodyOf',
       query: 'RequestQueryOf',
       headers: 'RequestHeadersOf',
+      response: 'ResponseBodyOf',
     }
 
     for (const handler of [...nitro.scannedHandlers, ...nitro.options.handlers]) {
@@ -1063,7 +1088,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     opts.references.push({ path: autoImports.importsModulePath + '.d.ts' })
 
     Object.assign(opts.tsConfig.compilerOptions.paths, nitroTypePaths)
-    Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths)
+    Object.assign(opts.serverTsConfig.compilerOptions.paths, nitroTypePaths, legacyH3TypePaths)
+    for (const [source, path] of Object.entries(await autoImports.getSourceTypePaths())) {
+      opts.tsConfig.compilerOptions.paths[source] ??= path
+      opts.serverTsConfig.compilerOptions.paths[source] ??= path
+    }
     opts.sharedTsConfig.compilerOptions ||= {}
     opts.sharedTsConfig.compilerOptions.paths ||= {}
     Object.assign(opts.sharedTsConfig.compilerOptions.paths, nitroTypePaths)
@@ -1108,6 +1137,13 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       if (target.endsWith('/') || stats?.isDirectory()) {
         serverPaths[`${alias}/*`] = [`${absolutePath}/*`]
       }
+    }
+    if (legacy.specifiers) {
+      const declaration = getLegacyNitroTypesDeclaration()
+      serverPaths.nitropack = [declaration]
+      serverPaths['nitropack/types'] = [declaration]
+      // first, so that it loads before any file augmenting `nitropack/types`
+      opts.serverReferences.unshift({ path: declaration })
     }
 
     // the renderers import these app modules directly, so they resolve in the server program even

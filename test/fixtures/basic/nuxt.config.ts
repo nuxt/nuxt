@@ -214,6 +214,9 @@ export default withMatrix({
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
       '/payload-query': { cache: { swr: true, maxAge: 60, allowQuery: true } },
       '/swr': { swr: 60 },
+      '/api/cached-error': { swr: 60, headers: { 'cache-control': 'public, max-age=60' } },
+      '/error/not-found': { headers: { 'cache-control': 'public, max-age=60' } },
+      '/api/returned-error': { headers: { 'cache-control': 'public, max-age=60' } },
     },
     prerender: {
       routes: [

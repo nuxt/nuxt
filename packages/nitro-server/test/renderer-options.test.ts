@@ -5,6 +5,7 @@ const clearErrorReport = vi.hoisted(() => vi.fn())
 
 vi.mock('#internal/nuxt/nitro-config.mjs', () => ({ NUXT_SHARED_DATA: false }))
 vi.mock('#internal/nuxt/error-channel', () => ({ clearErrorReport }))
+vi.mock('nitro/app', async importOriginal => ({ ...await importOriginal<typeof import('nitro/app')>(), useNitroApp: () => ({}) }))
 
 describe('renderer options', () => {
   beforeAll(() => {
@@ -23,5 +24,20 @@ describe('renderer options', () => {
     rendererOptions.onRenderSuccess!(event)
 
     await vi.waitFor(() => expect(clearErrorReport).toHaveBeenCalledWith(appURL))
+  })
+
+  it('marks a request the renderer answers with its own error page', async () => {
+    const { rendererOptions } = await import('../src/runtime/utils/renderer/options.ts')
+    const { isRenderedErrorPage } = await import('../src/runtime/utils/error-page.ts')
+    const event = (context: object) => ({ req: new Request('http://localhost/page'), url: new URL('http://localhost/page'), context }) as unknown as RendererEvent
+
+    const page = {}
+    await rendererOptions.captureError!(new Error('page'), { event: event(page) })
+    const nested = {}
+    await rendererOptions.captureError!(new Error('error page'), { event: event(nested), tags: ['error-page'] })
+    const streamed = {}
+    await rendererOptions.captureError!(new Error('stream'), { event: event(streamed), tags: ['streaming'] })
+
+    expect([isRenderedErrorPage(page), isRenderedErrorPage(nested), isRenderedErrorPage(streamed)]).toEqual([true, true, false])
   })
 })

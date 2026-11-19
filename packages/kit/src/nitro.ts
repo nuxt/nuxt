@@ -114,12 +114,16 @@ function withVariantMeta<T extends object, V> (entry: T, resolved: ResolvedVaria
 
 const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace|query)(\.\w+)*$/
 const WILDCARD_SUFFIX_RE = /\/\*\*(?::\w+)?$/
+const UNNAMED_WILDCARD_SUFFIX_RE = /\/\*\*$/
 
 /**
  * h3 v1 routes with radix3, where `/fonts/**` matches every path below `/fonts` but not
  * `/fonts` itself; h3 v2 routes with rou3, where it matches both. A second registration on
  * the base path gives one wildcard route the same reach on either, and rou3 prefers the
  * static route, so the pair is unambiguous where both are registered.
+ *
+ * A named catch-all such as `/raw/**:slug` matches one or more segments on both routers, so
+ * its base path is out of reach on either and it is not given a second registration.
  *
  * A handler already registered on the base path for the same method keeps it: a
  * method-specific handler there does not answer the other methods the wildcard covers.
@@ -132,7 +136,7 @@ function addLegacyBaseRoute (nuxt: Nuxt, entry: ServerHandler, resolved: Resolve
   if (!route || entry.middleware || getNitroVersion(nuxt) !== 2) {
     return
   }
-  const base = route.replace(WILDCARD_SUFFIX_RE, '')
+  const base = route.replace(UNNAMED_WILDCARD_SUFFIX_RE, '')
   if (base === route || !base || base === '/') {
     return
   }

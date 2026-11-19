@@ -1,6 +1,8 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import process from 'node:process'
+import { setTimeout as sleep } from 'node:timers/promises'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -280,7 +282,7 @@ async function resolveExtensionlessTarget (absolutePath: string): Promise<string
 const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
 // Left out of the server tsconfig: these resolve only in the app environment.
-const appOnlyAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', 'vue-demi', /^#app/, /^#imports/, '~', '@', '~~', '@@']
+const appOnlyAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', 'vue-demi', /^#app/, /^#imports/]
 
 interface GenerateTypesReturn {
   declaration: string
@@ -341,55 +343,40 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const dirs of layerDirs) {
-    if (!dirs.app.startsWith(rootDirWithSlash) || dirs.root === rootDirWithSlash || dirs.app.includes('node_modules')) {
-      const rootGlob = join(relativeWithDot(typesDir, dirs.root), '**/*')
-      const paths = resolveLayerPaths(dirs, typesDir, nuxt.options.extensions)
-      for (const path of paths.nuxt) {
-        include.add(path)
-        legacyInclude.add(path)
-        if (path !== rootGlob) {
-          nodeExclude.add(path)
-        }
-      }
-      for (const path of paths.server) {
-        serverInclude.add(path)
-        exclude.add(path)
+    const rootGlob = join(relativeWithDot(typesDir, dirs.root), '**/*')
+    const paths = resolveLayerPaths(dirs, typesDir, nuxt.options.extensions)
+    for (const path of paths.nuxt) {
+      include.add(path)
+      legacyInclude.add(path)
+      if (path !== rootGlob) {
         nodeExclude.add(path)
-        legacyExclude.add(path)
-      }
-      for (const path of paths.node) {
-        nodeInclude.add(path)
-        legacyInclude.add(path)
-        exclude.add(path)
-      }
-      for (const path of paths.shared) {
-        legacyInclude.add(path)
-        sharedInclude.add(path)
-        serverInclude.add(path)
-      }
-      for (const path of paths.sharedDeclarations) {
-        include.add(path)
-      }
-      for (const path of paths.globalDeclarations) {
-        include.add(path)
-        legacyInclude.add(path)
-        sharedInclude.add(path)
-        serverInclude.add(path)
       }
     }
-  }
-
-  // a layer added through `extends` may resolve anywhere, so the `layers/*` globs above do not
-  // necessarily cover its server directory
-  for (const dirs of layerDirs) {
-    const serverGlob = join(relativeWithDot(typesDir, dirs.server), '**/*')
-    serverInclude.add(serverGlob)
-    serverInclude.add(join(relativeWithDot(typesDir, dirs.shared), '**/*.d.ts'))
-
-    // a layer whose source directory is its root would otherwise match these with its own `**/*`
-    exclude.add(serverGlob)
-    nodeExclude.add(serverGlob)
-    legacyExclude.add(serverGlob)
+    for (const path of paths.server) {
+      serverInclude.add(path)
+      exclude.add(path)
+      nodeExclude.add(path)
+      legacyExclude.add(path)
+    }
+    for (const path of paths.node) {
+      nodeInclude.add(path)
+      legacyInclude.add(path)
+      exclude.add(path)
+    }
+    for (const path of paths.shared) {
+      legacyInclude.add(path)
+      sharedInclude.add(path)
+      serverInclude.add(path)
+    }
+    for (const path of paths.sharedDeclarations) {
+      include.add(path)
+    }
+    for (const path of paths.globalDeclarations) {
+      include.add(path)
+      legacyInclude.add(path)
+      sharedInclude.add(path)
+      serverInclude.add(path)
+    }
   }
 
   const moduleEntryPaths: string[] = []
@@ -810,12 +797,38 @@ export async function writeTypes (nuxt: Nuxt): Promise<void> {
 async function writeIfChanged (path: string, contents: string) {
   const existing = await fsp.readFile(path, 'utf8').catch(() => undefined)
   if (existing === contents) { return }
-  await fsp.writeFile(path, contents)
+  await writeFileAtomic(path, contents)
 }
 
 async function writeIfMissing (path: string, contents: string) {
   if (existsSync(path)) { return }
-  await fsp.writeFile(path, contents)
+  await writeFileAtomic(path, contents)
+}
+
+/**
+ * Writes through a temporary file and a rename, so that processes reading the file at the same
+ * time (editors, `tsc`, bundlers following `extends`) get either the previous or the new contents.
+ */
+async function writeFileAtomic (path: string, contents: string) {
+  const tempPath = `${path}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`
+  try {
+    await fsp.writeFile(tempPath, contents, { flag: 'wx' })
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await fsp.rename(tempPath, path)
+        break
+      } catch (error) {
+        // on Windows a rename fails while another process holds either file open
+        if (attempt === 5 || !['EPERM', 'EACCES', 'EBUSY'].includes((error as NodeJS.ErrnoException).code || '')) {
+          throw error
+        }
+        await sleep(50 * (attempt + 1))
+      }
+    }
+  } catch (error) {
+    await fsp.rm(tempPath, { force: true }).catch(() => {})
+    throw error
+  }
 }
 
 /**

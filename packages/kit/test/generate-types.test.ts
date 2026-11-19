@@ -1,4 +1,7 @@
-import { readFile } from 'node:fs/promises'
+import { promises as fsp } from 'node:fs'
+import { once } from 'node:events'
+import { readFile, readdir } from 'node:fs/promises'
+import { Worker } from 'node:worker_threads'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
@@ -56,6 +59,33 @@ const mockNuxt = {
 const mockNuxtWithOptions = (options: NuxtConfig) => defu({ options }, mockNuxt) as Nuxt
 
 describe('tsConfig generation', () => {
+  it('should include local layers outside the `layers/` directory', async () => {
+    const nuxt = mockNuxtWithOptions({ srcDir: '/my-app/app', serverDir: '/my-app/server' })
+    nuxt.options._layers = [
+      { config: { rootDir: '/my-app', srcDir: '/my-app/app' }, cwd: '/my-app', configFile: '/my-app/nuxt.config.ts' },
+      { config: { rootDir: '/my-app/my-layer', srcDir: '/my-app/my-layer/app', serverDir: '/my-app/my-layer/server' }, cwd: '/my-app/my-layer', configFile: '/my-app/my-layer/nuxt.config.ts' },
+    ]
+
+    const { tsConfig, nodeTsConfig, sharedTsConfig, serverTsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.include).toEqual(expect.arrayContaining(['../my-layer/app/**/*', '../my-layer/shared/**/*.d.ts', '../my-layer/*.d.ts']))
+    expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../my-layer/server/**/*', '../my-layer/nuxt.config.*']))
+    expect(nodeTsConfig.include).toContain('../my-layer/nuxt.config.*')
+    expect(sharedTsConfig.include).toEqual(expect.arrayContaining(['../my-layer/shared/**/*', '../my-layer/*.d.ts']))
+    expect(serverTsConfig.include).toEqual(expect.arrayContaining(['../my-layer/server/**/*', '../my-layer/shared/**/*']))
+  })
+
+  it('should include auto-scanned layers without an `app/` directory', async () => {
+    const nuxt = mockNuxtWithOptions({ srcDir: '/my-app/app', serverDir: '/my-app/server' })
+    nuxt.options._layers = [
+      { config: { rootDir: '/my-app', srcDir: '/my-app/app' }, cwd: '/my-app', configFile: '/my-app/nuxt.config.ts' },
+      { config: { rootDir: '/my-app/layers/foo', srcDir: '/my-app/layers/foo', serverDir: '/my-app/layers/foo/server' }, cwd: '/my-app/layers/foo', configFile: '/my-app/layers/foo/nuxt.config.ts' },
+    ]
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.include).toContain('../layers/foo/**/*')
+    expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../layers/foo/server/**/*', '../layers/foo/nuxt.config.*']))
+  })
+
   it('should add correct relative paths for aliases', async () => {
     const { tsConfig } = await _generateTypes(mockNuxt)
     expect(tsConfig.compilerOptions?.paths).toMatchInlineSnapshot(`
@@ -68,6 +98,22 @@ describe('tsConfig generation', () => {
         ],
       }
     `)
+  })
+
+  it('should map the app and project root aliases in the server tsconfig', async () => {
+    const { serverTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      alias: { '~': '/my-app/app/', '@': '/my-app/app/', '~~': '/my-app/', '@@': '/my-app/' },
+    }))
+    expect(serverTsConfig.compilerOptions?.paths).toMatchObject({
+      '~': ['../app'],
+      '~/*': ['../app/*'],
+      '@': ['../app'],
+      '@/*': ['../app/*'],
+      '~~': ['..'],
+      '~~/*': ['../*'],
+      '@@': ['..'],
+      '@@/*': ['../*'],
+    })
   })
 
   it.each([
@@ -563,6 +609,80 @@ describe('writeTypes', () => {
       expect(await readFile(join(typesDir, missing!), 'utf8')).not.toBe('{}')
       for (const file of existing) {
         expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
+      }
+    })
+  })
+
+  it('should retry transient rename failures without removing the destination', async () => {
+    await withTempDir({}, async (rootDir) => {
+      const buildDir = join(rootDir, '.nuxt')
+      const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
+      await writeTypes(nuxt)
+      const path = join(buildDir, 'tsconfig.json')
+      const existing = await readFile(path, 'utf8')
+      const rename = fsp.rename.bind(fsp)
+      let attempts = 0
+      const spy = vi.spyOn(fsp, 'rename').mockImplementation(async (source, destination) => {
+        if (destination === path && ++attempts < 3) {
+          expect(await readFile(path, 'utf8')).toBe(existing)
+          throw Object.assign(new Error('File is locked'), { code: 'EPERM' })
+        }
+        await rename(source, destination)
+      })
+      try {
+        nuxt.options.alias.changing = join(rootDir, 'changed')
+        await writeTypes(nuxt)
+      } finally {
+        spy.mockRestore()
+      }
+      expect(attempts).toBe(3)
+      expect(await readFile(path, 'utf8')).not.toBe(existing)
+      expect((await readdir(buildDir)).filter(file => file.endsWith('.tmp'))).toEqual([])
+    })
+  })
+
+  it('should never expose a partially written tsconfig to concurrent readers', async () => {
+    await withTempDir({}, async (rootDir) => {
+      const buildDir = join(rootDir, '.nuxt')
+      const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
+      await writeTypes(nuxt)
+
+      const state = new Int32Array(new SharedArrayBuffer(4))
+      const reader = new Worker(`
+        const { readFileSync } = require('node:fs')
+        const { parentPort, workerData } = require('node:worker_threads')
+        const state = new Int32Array(workerData.state)
+        let activeReads = 0
+        let invalid = 0
+        let stopped = false
+        parentPort.on('message', () => { stopped = true })
+        function poll () {
+          const active = Atomics.load(state, 0) === 1
+          try { JSON.parse(readFileSync(workerData.path, 'utf8')) } catch { invalid++ }
+          if (active) { activeReads++ }
+          if (stopped) { parentPort.postMessage({ activeReads, invalid }) } else { setImmediate(poll) }
+        }
+        parentPort.postMessage('ready')
+        poll()
+      `, { eval: true, workerData: { path: join(buildDir, 'tsconfig.json'), state: state.buffer } })
+
+      try {
+        expect(await once(reader, 'message')).toEqual(['ready'])
+        Atomics.store(state, 0, 1)
+        for (let i = 0; i < 50; i++) {
+          nuxt.options.alias.changing = join(rootDir, 'aliases', String(i))
+          await writeTypes(nuxt)
+        }
+        Atomics.store(state, 0, 0)
+        const result = await new Promise<{ activeReads: number, invalid: number }>((resolve, reject) => {
+          reader.once('error', reject)
+          reader.once('message', resolve)
+          reader.postMessage('stop')
+        })
+        expect(result.activeReads).toBeGreaterThan(0)
+        expect(result.invalid).toBe(0)
+      } finally {
+        await reader.terminate()
       }
     })
   })

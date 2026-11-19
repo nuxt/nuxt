@@ -34,13 +34,15 @@ export default defineConfig([
     },
   },
   {
-    // declarations for the files server auto-imports are typed from by path, named so
-    // that an extensionless path resolves them
+    // declarations for the files server auto-imports and the server tsconfig name by path,
+    // named so that an extensionless path resolves them
     dts: { emitDtsOnly: true },
     outDir: 'dist/runtime/compat/',
     entry: [
+      'src/runtime/compat/cache.ts',
       'src/runtime/compat/event.ts',
       'src/runtime/compat/h3-v1.ts',
+      'src/runtime/compat/nitro-v2-types.ts',
       'src/runtime/compat/render.ts',
       'src/runtime/compat/runtime-config.ts',
     ],

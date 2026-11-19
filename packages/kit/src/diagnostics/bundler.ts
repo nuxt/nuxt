@@ -132,8 +132,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B7026: {
-      why: (p: { route: string }) => `The route rule for \`${p.route}\` sets \`redirect.statusCode\`, which the server builder no longer reads.`,
-      fix: 'Rename it to `redirect.status`. Nuxt has applied it as `status` for now.',
+      why: (p: { count: number, routes: string }) => `${p.count} route rule${p.count === 1 ? ' sets' : 's set'} \`redirect.statusCode\`, which the server builder no longer reads:\n  - ${p.routes}`,
+      fix: (p: { nitro2: boolean }) => p.nitro2
+        ? 'Nuxt has applied it as `status` for now. Nitro v2 ignores `redirect.status`, so rename `redirect.statusCode` to `redirect.status` only once the project no longer builds with Nitro v2.'
+        : 'Rename `redirect.statusCode` to `redirect.status`. Nuxt has applied it as `status` for now.',
       docs: false,
     },
     NUXT_B7027: {

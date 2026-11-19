@@ -65,5 +65,10 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Pass the handler function directly, or import `defineHandler` from `nitro/h3` in this file to use the object form (`{ handler, middleware, meta }`). h3 v2 does not run h3 v1 `onRequest` or `onBeforeResponse` hooks, so move them into `middleware` or the handler first.',
       docs: false,
     },
+    NUXT_E8017: {
+      why: (p: { plugin: string }) => `The Nitro v2 plugin \`${p.plugin}\` registered a \`close\` listener while prerendering, which does not run when prerendering ends on Nitro v3, so anything the listener writes or flushes (for example to \`useStorage('build:...')\`) is lost.`,
+      fix: 'A module author can write the data as each route is prerendered (for example from a `render:html` listener, to `useStorage(\'build:...\')`) and read it back in a build-time hook such as `prerender:done`, instead of writing it on `close`. A listener that only releases resources loses nothing. Report it to the module author if the plugin is not your own.',
+      docs: false,
+    },
   },
 })

@@ -1,0 +1,5 @@
+{
+  "name": "module-with-dep",
+  "private": true,
+  "type": "module"
+}
