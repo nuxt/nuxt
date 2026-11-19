@@ -33,8 +33,11 @@ function createFakeNuxt () {
       },
     },
     _vfsSources: [{
-      keys: () => ['#nitro/virtual/app'],
-      read: (id: string) => id === '#nitro/virtual/app' ? 'export const app = {}' : undefined,
+      keys: () => ['#nitro/virtual/app', '#nitro/virtual/runtime-config'],
+      read: (id: string) => ({
+        '#nitro/virtual/app': 'export const app = {}',
+        '#nitro/virtual/runtime-config': 'export const runtimeConfig = {"appSecret":"secret"}',
+      })[id],
     }],
   } as unknown as Nuxt
 }
@@ -112,6 +115,10 @@ describe('dev build directory at /.nuxt/', () => {
     expect(await handleBuildDirRequest(nuxt, '/.nuxt/types/../app-secret')).toMatchObject({ status: 404 })
     expect(await handleBuildDirRequest(nuxt, '/.nuxt/APP-SECRET')).toMatchObject({ status: 404 })
     expect((await handleBuildDirRequest(nuxt, '/.nuxt/'))?.body).not.toContain('app-secret')
+    // so does the runtime config, which includes it
+    expect(await handleBuildDirRequest(nuxt, '/.nuxt/@id/%23nitro%2Fvirtual%2Fruntime-config')).toMatchObject({ status: 404 })
+    expect((await handleBuildDirRequest(nuxt, '/.nuxt/'))?.body).not.toContain('runtime-config')
+    expect((await handleBuildDirRequest(nuxt, '/.nuxt/', 'application/json'))?.body).not.toContain('runtime-config')
   })
 
   it('answers as a portable dev server handler, only to a loopback peer', async () => {

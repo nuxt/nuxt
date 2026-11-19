@@ -25,6 +25,8 @@ const UNLISTED_DIRS = new Set(['dist', 'cache', 'manifest', 'vite'])
 const UNLISTED_FILES = new Set(['nuxt.lock', 'nuxt.json'])
 /** files that must not be served */
 const PRIVATE_FILES = new Set([APP_SECRET_FILE])
+/** virtual modules that must not be served: nitro's serialises the runtime config, including `appSecret` */
+const PRIVATE_MODULES = new Set(['#nitro/virtual/runtime-config'])
 const WIN32_SEPARATOR_RE = /\\/
 const NODE_MODULES_PACKAGE_RE = /\/node_modules\/((?:@[^/]+\/)?[^/]+)\//g
 const TEXT_TYPE = 'text/plain; charset=utf-8'
@@ -52,10 +54,13 @@ function listModuleIds (nuxt: Nuxt) {
   for (const source of nuxt._vfsSources || []) {
     ids.push(...source.keys())
   }
-  return [...new Set(ids)].sort()
+  return [...new Set(ids)].filter(id => !PRIVATE_MODULES.has(id)).sort()
 }
 
 async function readModule (nuxt: Nuxt, id: string) {
+  if (PRIVATE_MODULES.has(id)) {
+    return
+  }
   if (id in nuxt.vfs) {
     return nuxt.vfs[id]
   }
