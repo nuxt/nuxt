@@ -25,6 +25,15 @@ describe('stampDevBadgeNonce', () => {
     expect(html.head).toEqual(['<title>x</title>', '<script nonce="fromhook">window.__NUXT_DEV_ERROR__={}</script>'])
   })
 
+  it('re-renders the badge with a nonce a listener added to a script in the body', async () => {
+    const { runtime, renderDevBadge, html } = setup({ body: ['<div>app</div><script nonce="inbody">window.app=1</script>'] })
+
+    await stampDevBadgeNonce(runtime, event, html, badge, undefined)
+
+    expect(renderDevBadge).toHaveBeenCalledWith(event, 'inbody')
+    expect(html.head[1]).toContain('nonce="inbody"')
+  })
+
   it('keeps the badge when it was already rendered with the head nonce', async () => {
     const { runtime, renderDevBadge, html } = setup({ bodyAppend: ['<script nonce="fromhook"></script>'] })
 

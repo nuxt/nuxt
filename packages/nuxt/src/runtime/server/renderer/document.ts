@@ -31,7 +31,7 @@ export async function stampDevBadgeNonce (runtime: NuxtRendererOptions, event: R
   if (index === -1) {
     return
   }
-  const hookNonce = extractCspNonce(joinTags([...context.head, ...context.bodyPrepend, ...context.bodyAppend]))
+  const hookNonce = extractCspNonce(joinTags([...context.head, ...context.bodyPrepend, ...context.bodyAppend, ...context.body]))
   const stamped = hookNonce ? (await runtime.renderDevBadge?.(event, hookNonce).catch(() => undefined))?.trim() : undefined
   if (stamped) {
     context.head[index] = stamped
