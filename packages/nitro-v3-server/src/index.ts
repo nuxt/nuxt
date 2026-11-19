@@ -42,6 +42,7 @@ import { unheadDedupePlugin } from './unhead.ts'
 import { getLegacyAppH3ShimPath, getLegacyNitroAliases, getServerImportsPresets, resolveNitroLegacyOptions, setupNitroCompat, sortAliasesByPrecedence } from './compat.ts'
 import { addDevServerHandlers, collectServerRegistrations } from './registrations.ts'
 import { setupScanSuffixes } from './scan-suffixes.ts'
+import { addLegacyRuntimeMounts, createLegacyBuildStorage, getLegacyStorageMounts } from './storage.ts'
 import { nitroBuildDiagnostics } from './diagnostics.ts'
 // Re-export a type from the augment module rather than a bare `import './augments.ts'`
 // side-effect import to work around bug in oxc's dts emitter which drops side-effect-only imports
@@ -715,6 +716,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     keepCachedQuery(nitroConfig)
   }
   normalizeAppMiddlewareRules(nitroConfig.routeRules)
+  const legacyStorageMounts = getLegacyStorageMounts(nuxt.options.rootDir, nuxt.options.buildDir)
+  if (legacy.config) {
+    addLegacyRuntimeMounts(nitroConfig, legacyStorageMounts)
+  }
   const unusedVariants = collectServerRegistrations(nuxt, nitroConfig)
 
   const registerLateNitroCompatScope = await setupNitroCompat(nuxt, nitroConfig, legacy, legacyModulePresets, installedModules, unusedVariants)
@@ -768,6 +773,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     dotenv: nuxt.options._loadOptions?.dotenv,
   })
   nuxt._perf?.endPhase('nitro:createNitro')
+
+  if (legacy.config) {
+    // @ts-expect-error Nitro v3 has no build-time storage
+    nitro.storage = await createLegacyBuildStorage(nitro, { ...sourceKV, ...legacyStorageMounts })
+  }
 
   // TODO: remove when devtools gains support for nitro v3
   // @ts-expect-error devtools calls storage.watch() and storage.getMount()

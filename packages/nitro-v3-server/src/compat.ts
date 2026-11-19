@@ -707,7 +707,8 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * Transitional, and removed in Nuxt 6. Installed only when the scope holds code importing
  * from `h3`, `nitropack` or `#imports`.
  *
- * Not covered, and expected to break: live storage and task introspection, handing the
+ * Not covered, and expected to break: watching build-time storage, task introspection, the
+ * runtime `close` hook in the prerenderer (reported with `NUXT_E8017`), handing the
  * node request/response to an external framework beyond the `event.node` bridge, imports
  * of copied nitro internals, `useStorage` cache key layout, render-hook body replacement.
  *
@@ -719,7 +720,8 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
  * checks in `handlers/renderer.ts`; the `legacyCompat` branches in `handlers/error.ts`,
  * `handlers/renderer.ts` and `utils/renderer/options.ts`; the `NUXT_B9001`-`B9005` and
  * `NUXT_E8008`-`E8010` diagnostics; the `keep` argument of `setupScanSuffixes` and
- * `NUXT_B9013`; `runtime/plugins/dev-hooks.ts`, which reads the `legacyCompat` flag; the
+ * `NUXT_B9013`; `storage.ts` and `NUXT_B9016`, the plugin name and `NUXT_E8017` in
+ * `runtime/compat/legacy-plugin.ts`; `runtime/plugins/dev-hooks.ts`, which reads the `legacyCompat` flag; the
  * `nitro-legacy` and `nitro-module-compat` fixtures.
  *
  * Returns a callback that absorbs registrations made after the build config was assembled;
@@ -1567,10 +1569,11 @@ function createLegacyResolvePlugin (
         if (!id.startsWith(LEGACY_PLUGIN_PREFIX)) {
           return
         }
+        const pluginId = id.slice(LEGACY_PLUGIN_PREFIX.length)
         return [
           `import { wrapLegacyPlugin } from ${JSON.stringify(pluginWrapper)}`,
-          `import plugin from ${JSON.stringify(id.slice(LEGACY_PLUGIN_PREFIX.length))}`,
-          `export default wrapLegacyPlugin(plugin)`,
+          `import plugin from ${JSON.stringify(pluginId)}`,
+          `export default wrapLegacyPlugin(plugin, ${JSON.stringify(displayPath(normalize(pluginId.replace(/\?.*$/, '')), rootDir))})`,
         ].join('\n')
       },
     },
