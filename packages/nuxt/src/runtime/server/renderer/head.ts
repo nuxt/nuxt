@@ -1,5 +1,6 @@
 import { getQuery as getURLQuery, joinURL } from 'ufo'
 import { relative } from 'pathe'
+import { propsToString } from '@unhead/vue/server'
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import type { Link, Script } from '@unhead/vue/types'
 import type { NuxtSSRContext } from '#app/types'
@@ -147,7 +148,11 @@ export function pushEntryImportMap (instance: NuxtRendererInstance, event: Rende
   })
 }
 
-/** Rendered without `href`, so the browser ignores it until the client activates it. */
-export function inertPrefetchLink ({ href, ...link }: Link): Link {
-  return { ...link, 'data-href': href } as Link
+/** Prefetch hints in an inert `<template>`, which the client moves into the head to activate them. */
+export function renderDeferredPrefetchHints (links: Link[]): string {
+  let html = ''
+  for (const link of links) {
+    html += `<link${propsToString('crossorigin' in link && link.crossorigin === '' ? { ...link, crossorigin: true } : link)}>`
+  }
+  return html && `<template data-nuxt-prefetch>${html}</template>`
 }

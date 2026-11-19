@@ -939,6 +939,9 @@ importers:
       hookable:
         specifier: catalog:app-runtime
         version: 6.1.2
+      html-validate:
+        specifier: catalog:dev
+        version: 11.21.1(vitest@5.1.0)
       installed-check:
         specifier: catalog:dev
         version: 11.0.0

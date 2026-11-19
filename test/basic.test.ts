@@ -2216,6 +2216,30 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await expectNoClientErrors('/prefetch/server-components')
   })
 
+  it.skipIf(!once)('should fetch deferred prefetch hints only once the app is ready', async () => {
+    const html = await $fetch<string>('/')
+    const deferred = html.match(/<template data-nuxt-prefetch>(.*?)<\/template>/s)?.[1] ?? ''
+    const hints = [...deferred.matchAll(/ href="([^"]+)"/g)].map(m => m[1]!)
+    expect(hints.length).toBeGreaterThan(0)
+
+    const staticPage = await createPage(undefined, { javaScriptEnabled: false })
+    const staticRequests: string[] = []
+    staticPage.on('request', req => staticRequests.push(new URL(req.url()).pathname))
+    await staticPage.goto(url('/'), { waitUntil: 'networkidle' })
+    expect(staticRequests).toContain('/')
+    expect(staticRequests.filter(path => hints.includes(path))).toEqual([])
+    await staticPage.close()
+
+    const page = await createPage('/')
+    await page.waitForFunction(hints => hints.every(href => performance.getEntriesByName(new URL(href, location.href).href).length), hints)
+    const timings = await page.evaluate(hints => ({
+      entryLoaded: (performance.getEntriesByName(document.querySelector<HTMLScriptElement>('script[type="module"][src]')!.src)[0] as PerformanceResourceTiming).responseEnd,
+      hintsStarted: Math.min(...hints.map(href => performance.getEntriesByName(new URL(href, location.href).href)[0]!.startTime)),
+    }), hints)
+    expect(timings.hintsStarted).toBeGreaterThanOrEqual(timings.entryLoaded)
+    await page.close()
+  })
+
   it.skipIf(!once)('should prefetch everything needed when NuxtLink is used', async () => {
     const { page, requests } = await renderPage()
 

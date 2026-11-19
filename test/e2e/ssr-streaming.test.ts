@@ -47,7 +47,7 @@ test.describe('SSR Streaming', () => {
 
     expect(res.headers.get('link')).toContain('rel="modulepreload"')
     expect(res.headers.get('link')).not.toContain('rel="prefetch"')
-    expect(html).toMatch(/<link rel="prefetch"[^>]* data-href="[^"]+\.js"/)
+    expect(html).toMatch(/<template data-nuxt-prefetch>(?:<link [^>]+>)*<link rel="prefetch"[^>]* href="[^"]+\.js"/)
   })
 
   test('synchronous head tags land in the shell <head>', async ({ fetch }) => {

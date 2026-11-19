@@ -22,7 +22,7 @@ import { getPrerenderedErrorPage, isPrerenderedErrorPage, renderErrorResponse } 
 import type { SSRError } from './error-page'
 import { normalizeChunks, renderAppTeleports, renderDevBadge, renderHTMLDocument, renderHTMLDocumentChunks } from './document'
 import { extractCspNonce } from './csp-nonce'
-import { inertPrefetchLink, inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript } from './head'
+import { inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript, renderDeferredPrefetchHints } from './head'
 import { renderStreamedResponse } from './stream'
 import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_JSON_PAYLOADS, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appComponentHead, appHead, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
@@ -357,6 +357,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     }
   }
   const hints: Link[] = []
+  const deferredHints: Link[] = []
   let preloadContext: Pick<NuxtSSRContext, 'modules'> = ssrContext
   if (NUXT_SPA_PAGE_MATCHER && ssrContext.noSSR && !ssrError && !NO_SCRIPTS && !(import.meta.prerender && NUXT_PRERENDER_NO_SSR_ROUTES.includes(event.url.pathname))) {
     const spaPageSources = NUXT_SPA_PAGE_MATCHER('', toPageMatcherPath(event.url.pathname))?.data
@@ -377,7 +378,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   }
   for (const l of getPrefetchLinks(preloadContext, rendererContext, dependencyOptions) as Link[]) {
     if (!excludeHrefs.has(l.href)) {
-      hints.push(DEFER_PREFETCH ? inertPrefetchLink(l) : l)
+      (DEFER_PREFETCH ? deferredHints : hints).push(l)
     }
   }
   if (hints.length) {
@@ -397,7 +398,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   const htmlContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, extractCspNonce(headTags)) : undefined]),
+    head: normalizeChunks([headTags, renderDeferredPrefetchHints(deferredHints), import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, extractCspNonce(headTags)) : undefined]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
