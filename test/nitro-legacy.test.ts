@@ -114,6 +114,32 @@ describe.skipIf(!runsOncePerViteBuilderInMatrix)('nitro v2 compatibility', () =>
     expect(mounts).toEqual(expect.arrayContaining(['build:', 'cache:', 'data:', 'root:', 'src:']))
   })
 
+  it('gives in-process requests the socket a v1 middleware reads', async () => {
+    expect(await $fetch('/socket')).toContain('in-process: true')
+    expect(await $fetch('/api/socket?sub=1')).toEqual({ inProcess: true })
+
+    const response = await fetch('/missing', { headers: { accept: 'text/html' } })
+    expect(response.status).toBe(404)
+  })
+
+  it('responds to a preflight request a v1 `handleCors` middleware handles, for a method-specific route', async () => {
+    const response = await fetch('/api/item', {
+      method: 'OPTIONS',
+      headers: { 'origin': 'https://app.example', 'access-control-request-method': 'POST' },
+    })
+    expect(response.status).toBe(204)
+    expect(response.headers.get('access-control-allow-origin')).toBe('https://app.example')
+    expect(response.headers.get('access-control-allow-methods')).toBe('GET,POST')
+
+    expect(await $fetch('/api/item', { method: 'POST', body: { name: 'nuxt' } })).toEqual({ received: { name: 'nuxt' } })
+  })
+
+  it('rejects a v1 body read of a GET request with `405`', async () => {
+    const response = await fetch('/api/body')
+    expect(response.status).toBe(405)
+    expect(await response.json()).toMatchObject({ statusCode: 405, statusMessage: 'HTTP method is not allowed.' })
+  })
+
   it('resolves an alias of `h3` in module code to h3 v2 when a module pins `h3` to h3 v1', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/aliased-h3?q=1')).toEqual({ query: { q: '1' }, h3v2: true })
   })

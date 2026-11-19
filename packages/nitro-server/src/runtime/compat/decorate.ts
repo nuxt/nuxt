@@ -2,6 +2,7 @@ import { fetchWithEvent } from 'nitro/h3'
 import { createFetch } from 'ofetch'
 import type { H3Event } from 'nitro/h3'
 import type { NitroApp } from 'nitro/types'
+import type { ServerRequest } from 'srvx'
 
 import { prepareLegacyEvent } from './event.ts'
 
@@ -83,20 +84,30 @@ function eventFetch (event: H3Event, request: any, init?: any) {
 
   // `fetchWithEvent` builds the sub-request with `new Request(url, { ...init })`, which a
   // `Request` passed as init would not survive either
-  return fetchWithEvent(withRenderingErrorFlag(event), internal, merged ? toRequestInit(merged) : init)
+  return fetchWithEvent(withInProcessApp(event), internal, merged ? toRequestInit(merged) : init)
 }
 
-/** Marks a sub-request made while rendering an error page, so its own failure does not render another one. */
-function withRenderingErrorFlag (event: H3Event): H3Event {
+/**
+ * The event with an app that dispatches a sub-request without the node request of the event,
+ * as a request made in process. A sub-request made while rendering an error page is marked,
+ * so its own failure does not render another one.
+ */
+function withInProcessApp (event: H3Event): H3Event {
   const app = event.app
-  if (!app || !(event.context as { nuxt?: Record<string, unknown> }).nuxt?.['~rendering-error']) {
+  if (!app) {
     return event
   }
+  const renderingError = !!(event.context as { nuxt?: Record<string, unknown> }).nuxt?.['~rendering-error']
   return Object.create(event, {
     app: {
       value: {
-        fetch: (request: Request & { context?: Record<string, unknown> }) => {
-          request.context = { ...request.context, nuxt: { '~rendering-error': true } }
+        fetch: (request: ServerRequest & { context?: Record<string, unknown> }) => {
+          if (request.runtime?.node) {
+            request.runtime = { ...request.runtime, node: undefined }
+          }
+          if (renderingError) {
+            request.context = { ...request.context, nuxt: { '~rendering-error': true } }
+          }
           return app.fetch(request)
         },
       },
