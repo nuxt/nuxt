@@ -202,6 +202,16 @@ export function getSsrResolveConditions (...sources: Array<string[] | undefined>
   return [...new Set([...sources.flatMap(conditions => conditions || []), 'import'])]
 }
 
+const WASM_CONDITIONS = new Set(['wasm', 'unwasm'])
+
+/**
+ * Nitro's export conditions without `'wasm'` and `'unwasm'`, which select WebAssembly
+ * modules that only Nitro's unwasm plugin can load. It does not run in the SSR environment.
+ */
+export function withoutWasmConditions (conditions: string[] | undefined): string[] | undefined {
+  return conditions?.filter(condition => !WASM_CONDITIONS.has(condition))
+}
+
 /**
  * Recover the package directory of an installed module.
  *
