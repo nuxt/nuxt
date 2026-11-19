@@ -60,5 +60,10 @@ export const stateDiagnostics = !import.meta.dev
           why: (p: { name: string, reason: string }) => `Cookie \`${p.name}\` could not be written: ${p.reason}.`,
           fix: 'Check the cookie name, the value returned by `encode`, and the attributes passed to `useCookie()`.',
         },
+        NUXT_E7012: {
+          why: (p: { name: string }) => `Cookie \`${p.name}\` was changed after SSR streaming had already sent the response headers, so it was not sent to the client.`,
+          fix: 'Set the cookie in a plugin or route middleware, which run before the headers are sent, or opt the route out of streaming with `routeRules: { \'/path\': { streaming: false } }`.',
+          docs: false,
+        },
       },
     })

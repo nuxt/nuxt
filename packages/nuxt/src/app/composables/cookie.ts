@@ -137,11 +137,13 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       : hasExpired ? opts.default !== undefined : unref(cookieValue) !== undefined && unref(cookieValue) !== null
   )
 
+  let assignedSinceWrite = false
+
   // use a custom ref to expire the cookie on client side otherwise use a plain ref (or cookieServerRef on the server to track writes for the `refresh` option)
   const cookie = import.meta.client && (typeof opts.expires === 'function' || (delay && !hasExpired))
     ? cookieRef<T | undefined>(cookieValue, delay, getDelay, opts.watch && opts.watch !== 'shallow')
     : import.meta.server
-      ? cookieServerRef<T | undefined>(name, cookieValue, opts, nuxtApp)
+      ? cookieServerRef<T | undefined>(name, cookieValue, opts, nuxtApp, () => { assignedSinceWrite = true })
       : ref<T | undefined>(cookieValue)
 
   if (import.meta.server && !opts.readonly && rawValue === undefined) {
@@ -241,7 +243,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       cookies[name] = klona(cookie.value)
     }
   } else if (import.meta.server) {
-    const writeFinalCookieValue = () => {
+    const writeCookieValue = () => {
       const valueIsSame = isEqual(cookie.value, cookies[name])
 
       if (
@@ -269,6 +271,21 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         : opts.encode(cookie.value as T)
       writeServerCookie(useRequestEvent(nuxtApp)!, name, encoded, opts)
     }
+
+    let valueAtLastWrite = cookies[name]
+    const writeFinalCookieValue = () => {
+      if (!nuxtApp.ssrContext?.['~headersSent']) {
+        writeCookieValue()
+      } else if (import.meta.dev && !opts.readonly && (!isEqual(cookie.value ?? null, valueAtLastWrite ?? null) || (opts.refresh && assignedSinceWrite))) {
+        stateDiagnostics.NUXT_E7012({ name })
+      }
+      if (import.meta.dev) {
+        valueAtLastWrite = klona(cookie.value)
+      }
+      assignedSinceWrite = false
+    }
+    const writers = nuxtApp._cookieWriters ||= new Set()
+    writers.add(writeFinalCookieValue)
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
       unhook() // don't write cookie subsequently when app:rendered is called
@@ -564,7 +581,7 @@ function cookieRef<T> (value: T | undefined, initialDelay: number | undefined, g
  * This is required for the `refresh` option to ensure the cookie is
  * re-written on SSR even when the value remains unchanged.
  */
-function cookieServerRef<T> (name: string, value: T | undefined, opts: UseCookieOptions<any> & { encode: (value: any) => string }, nuxtApp: NuxtApp) {
+function cookieServerRef<T> (name: string, value: T | undefined, opts: UseCookieOptions<any> & { encode: (value: any) => string }, nuxtApp: NuxtApp, onAssign: () => void) {
   const internalRef = ref(value)
 
   return customRef((track, trigger) => {
@@ -574,6 +591,7 @@ function cookieServerRef<T> (name: string, value: T | undefined, opts: UseCookie
         return internalRef.value
       },
       set (newValue) {
+        onAssign()
         nuxtApp._cookiesChanged ||= {}
         nuxtApp._cookiesChanged[name] = true
 

@@ -100,11 +100,14 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
     })
   }
 
+  const writeCookies = () => ssrContext.nuxt?._cookieWriters?.forEach(write => write())
+
   // a response the app chose over the render needs none of the hints sent for the stream
   // TODO: remove _renderResponse in nuxt v5
   const getRenderResponse = (): RenderedResponse | undefined => ssrContext['~renderResponse'] || ssrContext._renderResponse as RenderedResponse | undefined
   const renderResponse = (response: RenderedResponse) => {
     event.res.headers.delete('link')
+    writeCookies()
     return response
   }
 
@@ -167,6 +170,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   if (ssrContext.payload?.error && !ssrError) {
     reader.cancel().catch(() => {})
     event.res.headers.delete('link')
+    writeCookies()
     throw ssrContext.payload.error
   }
 
@@ -207,8 +211,21 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
 
   const shellHtml = renderDocumentOpen(shellContext)
 
+  try {
+    writeCookies()
+  } catch (error) {
+    reader.cancel().catch(() => {})
+    event.res.headers.delete('link')
+    throw error
+  }
+
+  ssrContext['~headersSent'] = true
+
+  event.res.headers.set('content-type', 'text/html;charset=utf-8')
+  event.res.headers.set('x-powered-by', 'Nuxt')
+
   // Snapshot status + headers before shell commit so we can warn in dev when
-  // composables like `useCookie`, `setResponseStatus`, or `useResponseHeader`
+  // composables like `setResponseStatus` or `useResponseHeader`
   // mutate the response after the wire is closed. These mutations are
   // silently lost in production - the warning is dev-only diagnostic.
   const committedSnapshot = import.meta.dev
@@ -352,7 +369,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
             lateMutations.push(`response statusText changed (e.g. \`setResponseStatus\`)`)
           }
           if (serializeHeaders(event.res.headers) !== committedSnapshot.headers) {
-            lateMutations.push(`response headers changed during render (e.g. \`useCookie\`, \`useResponseHeader\`, \`setHeader\`)`)
+            lateMutations.push(`response headers changed during render (e.g. \`useResponseHeader\`, \`setHeader\`)`)
           }
           if (lateMutations.length) {
             rendererDiagnostics.NUXT_E8002({ mutations: lateMutations.join('\n  - '), path: event.url.pathname })
@@ -415,9 +432,6 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
       reader.cancel(reason).catch(() => {})
     },
   })
-
-  event.res.headers.set('content-type', 'text/html;charset=utf-8')
-  event.res.headers.set('x-powered-by', 'Nuxt')
 
   return {
     body: outputStream as unknown as RenderedResponse['body'],

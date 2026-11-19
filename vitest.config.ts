@@ -171,7 +171,10 @@ function rendererProject (name: string, include: string[], rendererConfig: strin
 }
 
 const rendererProjects = [
-  rendererProject('renderer', ['test/renderer/*.test.ts', '!test/renderer/inline-errors.test.ts'], './test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
+  {
+    ...rendererProject('renderer', ['test/renderer/*.test.ts', '!test/renderer/inline-errors.test.ts'], './test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
+    plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
+  },
   rendererProject('renderer-inline-errors', ['test/renderer/inline-errors.test.ts'], './test/fixtures/standalone-renderer/renderer-config-inline-errors.mjs'),
 ]
 
