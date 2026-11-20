@@ -156,7 +156,7 @@ export default defineComponent({
               // end page loading on a navigation that keeps the page key
               if (!nuxtApp.isHydrating && previousRoute !== routeProps.route && previousPageKey === key && !willRenderAnotherChild) {
                 nextTick(() => {
-                  if (!pageLoadingEndHookAlreadyCalled) {
+                  if (!pageLoadingEndHookAlreadyCalled && !isSuspensePending) {
                     pageLoadingEndHookAlreadyCalled = true
                     nuxtApp.callHook('page:loading:end')
                   }
