@@ -333,10 +333,10 @@ export default defineNuxtModule({
 
       if (event === 'change' && !shouldAlwaysRegenerate) { return }
 
-      // Attempt incremental tree update for page file add/unlink in dev mode
+      // Attempt incremental tree update for page file add/unlink/change in dev mode
       const layerIndex = pagesDirs.findIndex(dir => isWithinDir(path, dir))
 
-      if (pagesCtx && layerIndex !== -1 && !shouldAlwaysRegenerate) {
+      if (pagesCtx && layerIndex !== -1) {
         try {
           if (event === 'add') {
             const relativeToDir = relative(pagesDirs[layerIndex]!, path)
@@ -352,7 +352,7 @@ export default defineNuxtModule({
           nuxt.apps.default!.pages = await resolvePagesRoutes()
         }
       } else if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => isWithinDir(path, dir))) {
-        // Full rebuild: scanPageMeta content change, layout/middleware change, or no pagesCtx
+        // Full rebuild: page outside the pages dirs, layout/middleware change, or no pagesCtx
         nuxt.apps.default!.pages = await resolvePagesRoutes()
       }
     })

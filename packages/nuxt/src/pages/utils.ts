@@ -9,7 +9,7 @@ import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import { defu } from 'defu'
 import { addFile, buildTree, compileParsePath, removeFile, toVueRouter4 } from 'unrouting'
-import type { BuildTreeOptions, InputFile, RouteTree, VueRouterEmitOptions } from 'unrouting'
+import type { BuildTreeOptions, InputFile, RouteNode, RouteTree, VueRouterEmitOptions } from 'unrouting'
 
 import { linkToAlias, toArray } from '../utils.ts'
 import { reportScanProblem } from '../core/scan-problems.ts'
@@ -26,7 +26,7 @@ export interface PagesContext {
   emit: (report?: ScanReporter) => NuxtPage[]
   /** Add a file to the tree (incremental). */
   addFile: (filePath: string, priority?: number) => void
-  /** Remove a file from the tree. Returns `true` if the file was found and removed. */
+  /** Remove a file from the tree, restoring any file it overrode. Returns `true` if the file was found and removed. */
   removeFile: (filePath: string) => boolean
   /** Replace the tree contents from a fresh file list. */
   rebuild: (files: InputFile[]) => void
@@ -60,6 +60,26 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
 
   let tree: RouteTree = buildTree([], treeOptions)
   const trackedFiles = new Set<string>()
+  const priorities = new Map<string, number>()
+
+  /** Re-add tracked files that a higher-priority file for the same route kept out of the tree. */
+  function restoreShadowedFiles () {
+    const inTree = new Set<string>()
+    const collect = (node: RouteNode) => {
+      for (const file of node.files) {
+        inTree.add(file.path)
+      }
+      for (const child of node.children.values()) {
+        collect(child)
+      }
+    }
+    collect(tree.root)
+    for (const [path, priority] of priorities) {
+      if (!inTree.has(path)) {
+        addFile(tree, { path, priority }, compiledParse)
+      }
+    }
+  }
 
   return {
     emit (report) {
@@ -80,12 +100,15 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
       changed = true
       addFile(tree, { path: filePath, priority }, compiledParse)
       trackedFiles.add(filePath)
+      priorities.set(filePath, priority)
     },
     removeFile (filePath: string) {
+      trackedFiles.delete(filePath)
+      priorities.delete(filePath)
       const removed = removeFile(tree, filePath)
       if (removed) {
         changed = true
-        trackedFiles.delete(filePath)
+        restoreShadowedFiles()
       }
       return removed
     },
@@ -93,8 +116,10 @@ export function createPagesContext (options: PagesContextOptions = {}): PagesCon
       changed = true
       tree = buildTree(files, treeOptions)
       trackedFiles.clear()
+      priorities.clear()
       for (const f of files) {
         trackedFiles.add(f.path)
+        priorities.set(f.path, f.priority ?? 0)
       }
     },
     trackedFiles,
