@@ -1,5 +1,5 @@
 import { ErrorCodes, defineComponent, getCurrentInstance, h, handleError, shallowRef, watch } from 'vue'
-import type { FunctionalComponent, PropType, Slots, VNode } from 'vue'
+import type { Component, FunctionalComponent, PropType, Slots, VNode } from 'vue'
 import { importFn as localImportFn } from '#islands-v2-manifest'
 import type { IslandComponentMarker } from './shared'
 import { type RemoteIsland, htmlToVNodes } from './dom-to-vnode'
@@ -33,8 +33,16 @@ export default /* @__PURE__ */ defineComponent({
       required: false,
       default: undefined,
     },
+    /**
+     * Server HTML of a component the client mounts rather than hydrates, shown until its chunk loads.
+     */
+    fallback: {
+      type: Object as PropType<VNode>,
+      required: false,
+      default: undefined,
+    },
   },
-  async setup (props) {
+  setup (props) {
     const instance = getCurrentInstance()
 
     const loadComponent = async (chunk: string, exportName: string) => {
@@ -48,14 +56,16 @@ export default /* @__PURE__ */ defineComponent({
       }
     }
 
-    const Loaded = shallowRef(await loadComponent(props.data[1], props.data[2] ?? 'default'))
-
+    const Loaded = shallowRef<Component>()
     let loadId = 0
-    watch([() => props.data[1], () => props.data[2]], async ([chunk, exportName]) => {
+    const load = async (chunk: string, exportName: string) => {
       const id = ++loadId
-      const component = await loadComponent(chunk, exportName ?? 'default')
-      if (id === loadId) { Loaded.value = component }
-    })
+      const component = await loadComponent(chunk, exportName)
+      // A mounted component keeps showing its server HTML when its chunk fails to load.
+      if (id === loadId && !(component === LOAD_FAILED && props.fallback && !Loaded.value)) { Loaded.value = component }
+    }
+    const loaded = load(props.data[1], props.data[2] ?? 'default')
+    watch([() => props.data[1], () => props.data[2]], ([chunk, exportName]) => load(chunk, exportName ?? 'default'))
 
     const htmlSlots = new Map<string, VNode[]>()
     const renderHtmlSlot = (html: string): VNode[] => {
@@ -67,8 +77,12 @@ export default /* @__PURE__ */ defineComponent({
       return vnodes
     }
 
-    return () => h(Loaded.value, props.data[0], Object.fromEntries(
-      Object.entries(props.data[3] ?? {}).map(([name, html]) => [name, () => renderHtmlSlot(html)]),
-    ))
+    const render = () => Loaded.value
+      ? h(Loaded.value, props.data[0], Object.fromEntries(
+          Object.entries(props.data[3] ?? {}).map(([name, html]) => [name, () => renderHtmlSlot(html)]),
+        ))
+      : props.fallback
+    // Replacing the hydrated fallback mounts the component; otherwise setup suspends and hydrates it.
+    return props.fallback ? render : loaded.then(() => render)
   },
 })

@@ -1,18 +1,32 @@
 import type { Slots, VNode } from 'vue'
 import { randomUUID } from 'uncrypto'
 
+/**
+ * Data of a component marker, the comment pair written around each `v-load-client` component:
+ * `<!--i:c:NONCE[props,"/components/Counter.vue","default"]-->…<!--/i:c:NONCE-->`. The client loads
+ * that chunk export and hydrates the HTML in between with it, passing `slots` as its slot HTML.
+ *
+ * @remarks `mount: 1`: a `.server.vue` half rendered the HTML, so the client mounts the `.client.vue` half
+ */
 export type IslandComponentMarker = [
   props: Record<string, any> | null,
   chunk: string,
   exportName?: string,
   slots?: Record<string, string>,
+  mount?: 1,
 ]
 
+/**
+ * Data of a teleport marker, written right before Vue's teleport anchors:
+ * `<!--i:t:NONCE["#modal",false,"<p>Hi</p>"]--><!--teleport start-->…<!--teleport end-->`.
+ * An enabled teleport carries its content HTML, as that HTML was rendered into the target.
+ */
 export type IslandTeleportMarker = [to: string, disabled: boolean, html?: string]
 
 /**
- * `i:s` tuple the island render writes at a root `<slot>` outlet. It carries the fallback HTML,
- * leaving the region between the markers to the page's slot content.
+ * Data of a slot marker, written where the island's root component renders one of its `<slot>`s:
+ * `<!--i:s:NONCE["default",props,"data-v-123",fallbackHtml]--><!--/i:s:NONCE-->`. The empty region
+ * between the comments is a slot outlet: the page renders its slot content there, or the fallback.
  */
 export type IslandSlotMarker = [
   name: string,
@@ -22,13 +36,18 @@ export type IslandSlotMarker = [
 ]
 
 /**
- * Nonces an island's markers are bound to: its own, then those of the nested islands it embeds.
+ * Nonces the client accepts in an island's markers: the island's own,
+ * then those of the nested islands rendered inside it.
  */
 export interface MarkerNonces {
   nonce: string
   nonces?: string[]
 }
 
+/**
+ * Marker prefixes of one render, such as `i:c:NONCE`. The nonce is a random string each render
+ * creates, and a comment only counts as a marker when its prefix holds a nonce the client accepts.
+ */
 export interface MarkerSet {
   nonce: string
   component: string
@@ -43,19 +62,20 @@ export interface MarkerSet {
  */
 export interface IslandRenderState {
   /**
-   * Markers of this render, bound to its nonce.
+   * Marker prefixes this render writes.
    */
   markers: MarkerSet
   /**
-   * Nonces of nested islands whose markers this render embeds.
+   * Nonces of the nested islands whose HTML this render includes, sent to the client with its own.
    */
   nested: Set<string>
   /**
-   * Client path of each chunk the render's `v-load-client` components load, by chunk ref, for remote hosts.
+   * Client path of each chunk the `v-load-client` components of this render load, by chunk ref,
+   * so a remote host can import them.
    */
   chunks: Record<string, string>
   /**
-   * VNode of the component the render mounts, whose own `<slot>` outlets get slot markers.
+   * VNode of the island component itself; only its own `<slot>`s get slot markers.
    */
   root?: VNode
 }
@@ -66,7 +86,7 @@ export const MARKER_TELEPORT = 'i:t'
 export const MARKER_SLOT = 'i:s'
 export const MARKER_SLOT_END = '/i:s'
 /**
- * Keys that would reach the prototype when a parsed record is copied; markers never carry them.
+ * Keys that could reach `Object.prototype` when a parsed object is copied; markers must not carry them.
  */
 export const PROTOTYPE_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constructor', 'prototype'])
 /**
@@ -74,22 +94,23 @@ export const PROTOTYPE_KEYS: ReadonlySet<string> = new Set(['__proto__', 'constr
  */
 export const VNODE_RESERVED_PROPS: ReadonlySet<string> = new Set(['key', 'ref', 'ref_for', 'ref_key'])
 /**
- * A Vue scope id attribute, the only value an island's `scopeId` prop or a slot marker may apply.
+ * Shape of a Vue scope id attribute. An island's `scopeId` prop and a slot marker's scope id
+ * must match it, as both are written into the page as attributes.
  */
 export const VUE_SCOPE_ID_RE = /^data-v-[\w-]+$/
 
 const MARKER_NONCE_MIN_LENGTH = 16
 const MARKER_NONCE_RE = /^[A-Z0-9]+$/i
-// A root-relative path not starting with `//`, without `\`, a query or a fragment.
+// A root-relative path, not protocol-relative (`//host`), without `\`, a query or a fragment.
 const CHUNK_PATH_RE = /^\/(?!\/)[\w\-.~@:+%/]*$/
 const CHUNK_PATH_DOT_SEGMENT_RE = /(?:^|\/)\.{1,2}(?:\/|$)/
 const ENCODED_SEPARATOR_RE = /%(?:2e|2f|5c)/i
-// The nonce of a marker prefix, in a comment or in a tuple's HTML at any depth of JSON escaping.
+// A marker prefix and its nonce, in a comment or inside the HTML that marker data carries.
 const MARKER_NONCE_TOKEN_RE = /(i:[cst]:)([a-z0-9]+)/gi
 
 /**
- * Whether a value can bind markers: a string of 16 or more alphanumeric characters.
- * Hosts check a nonce read from a response with it before building anything from it.
+ * Whether a value is a valid marker nonce: a string of 16 or more alphanumeric characters.
+ * Check any nonce read from a response or payload with it before using it.
  */
 export function isMarkerNonce (value: unknown): value is string {
   return (
@@ -100,16 +121,18 @@ export function isMarkerNonce (value: unknown): value is string {
 }
 
 /**
- * The page slots when they hold `name` as their own slot function, else none: a slot marker's name
- * may be an inherited key or Vue's internal `_` flag, which `renderSlot` would call.
+ * The page's slots if `name` is one of their own slot functions, else an empty object.
+ * A slot marker's name comes from HTML, so it may be an inherited key or Vue's internal `_` flag,
+ * which `renderSlot` would otherwise call.
  */
 export function ownSlots (slots: Slots | undefined, name: string): Slots {
   return slots && name !== '_' && Object.hasOwn(slots, name) && typeof slots[name] === 'function' ? slots : {}
 }
 
 /**
- * Marker nonces of an island response or payload entry, or `undefined` when any is invalid. A remote
- * island without valid ones, such as a legacy app's, gets a fresh nonce no marker carries, so it renders statically.
+ * Read the marker nonces of an island response or payload entry, `undefined` when any is invalid.
+ * A remote island without valid nonces, such as one from an app without islands v2, gets a fresh
+ * nonce that no comment carries, so its HTML stays static.
  */
 export function readMarkerNonces (data: { nonce?: unknown, nonces?: unknown } | undefined, remote: boolean): MarkerNonces | undefined {
   if (!data) { return }
@@ -121,7 +144,7 @@ export function readMarkerNonces (data: { nonce?: unknown, nonces?: unknown } | 
 }
 
 /**
- * Chunk paths of a remote island response that are safe to import from its source; others are dropped.
+ * Keep only the chunk paths of a remote island response that pass `isChunkPath`.
  */
 export function readChunkPaths (chunks: unknown): Record<string, string> | undefined {
   if (!chunks || typeof chunks !== 'object') { return }
@@ -129,8 +152,9 @@ export function readChunkPaths (chunks: unknown): Record<string, string> | undef
 }
 
 /**
- * Whether a chunk path from a remote island response stays a path on that island's source:
- * root-relative, with no other origin, protocol, `.`/`..` segment or encoded separator.
+ * Whether a chunk path from a remote island response is root-relative, with no `//` prefix,
+ * `.` or `..` segment, or encoded `.`, `/` or `\`. Otherwise a remote server could make
+ * the host page import a script from outside the island's source URL.
  */
 export function isChunkPath (value: unknown): value is string {
   return (
@@ -142,9 +166,9 @@ export function isChunkPath (value: unknown): value is string {
 }
 
 /**
- * Build the marker set of a render. The nonce stops raw HTML rendered before it existed
- * (`v-html`, user content) from forging a marker. It is not a secret and does not guard
- * against a runtime DOM injection, which is already XSS.
+ * Build the marker prefixes of a render from its nonce. HTML written before the nonce existed,
+ * such as `v-html` user content, cannot know it, so it cannot forge a marker. The nonce is not
+ * a secret and does not protect against script injected into the page, which is already XSS.
  */
 export function createMarkerSet (nonce: string): MarkerSet {
   if (!isMarkerNonce(nonce)) {
@@ -161,8 +185,9 @@ export function createMarkerSet (nonce: string): MarkerSet {
 }
 
 /**
- * Fresh nonces for an island response the server renders content into, kept per original nonce in the
- * island's own `rebound`: content made before then, such as remote HTML or `v-html` in a slot, cannot know them.
+ * Rebind an island response's nonces: map each to a fresh one, created once and kept in `rebound`.
+ * The response nonces are public, so without this, content the page renders into the island HTML
+ * (such as a slot with `v-html`) could forge markers that the client would hydrate.
  */
 export function rebindMarkerNonces ({ nonce, nonces }: MarkerNonces, rebound: Map<string, string>): MarkerNonces {
   const rebind = (original: string): string => {
@@ -174,8 +199,9 @@ export function rebindMarkerNonces ({ nonce, nonces }: MarkerNonces, rebound: Ma
 }
 
 /**
- * Bind the markers of an island response's HTML to the nonces `rebindMarkerNonces` gives it.
- * Only the response's own nonces are rebound, so a marker it holds for another island stays inert.
+ * Rebind the markers in an island response's HTML to the fresh nonces of `rebindMarkerNonces`.
+ * Only the response's own nonces are replaced, so a marker copying another island's nonce
+ * stays a plain comment.
  */
 export function rebindMarkers (html: string, nonces: MarkerNonces, rebound: Map<string, string>): { html: string } & MarkerNonces {
   const own = new Set([nonces.nonce, ...nonces.nonces ?? []])
@@ -187,15 +213,15 @@ export function rebindMarkers (html: string, nonces: MarkerNonces, rebound: Map<
 }
 
 /**
- * Encode a marker tuple as JSON that cannot close or open an HTML comment:
- * `--` and `<` become JSON escape text, which `JSON.parse` decodes on the client.
+ * Encode marker data as JSON that cannot end or start an HTML comment:
+ * `--` and `<` are written as JSON escapes, which `JSON.parse` decodes on the client.
  */
 export function encodeMarker (value: unknown): string {
   return JSON.stringify(value).replaceAll('--', '-\\u002D').replaceAll('<', '\\u003C')
 }
 
 /**
- * Random per-render nonce for marker prefixes: a UUID v4 without dashes, 122 random bits as hex.
+ * Create a random nonce for one render: a UUID v4 without dashes (122 random bits as hex).
  */
 export function createMarkerNonce (): string {
   return randomUUID().replaceAll('-', '')

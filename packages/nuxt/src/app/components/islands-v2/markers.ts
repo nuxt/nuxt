@@ -9,7 +9,7 @@ import {
 } from './shared'
 
 /**
- * Role of a comment in a region scan: opening a nested region, closing one, or neither.
+ * How a comment affects a region scan: it opens a nested region, closes one, or neither.
  */
 export type RegionToken = 'open' | 'close' | undefined
 
@@ -20,7 +20,7 @@ export const TELEPORT_START = 'teleport start'
 export const TELEPORT_END = 'teleport end'
 
 /**
- * First item closing the region opened right before `items`, skipping the regions nested in it.
+ * Find the item that closes the region opened just before `items`, skipping regions nested in it.
  */
 export function findRegionEnd<T> (items: Iterable<T>, tokenOf: (item: T) => RegionToken): T | undefined {
   let depth = 0
@@ -37,8 +37,8 @@ export function findRegionEnd<T> (items: Iterable<T>, tokenOf: (item: T) => Regi
 }
 
 /**
- * Whether a decoded `i:s` tuple is well formed as the island render writes it: a slot name that
- * cannot reach the prototype, plain props without reserved keys, a Vue scope id or `null`, and the fallback HTML.
+ * Whether decoded slot marker data has the shape the island render writes: a name that is not
+ * a prototype key, plain props without reserved keys, a Vue scope id or `null`, and fallback HTML.
  */
 export function isSlotMarker (value: unknown): value is IslandSlotMarker {
   if (!Array.isArray(value) || value.length !== 4) { return false }
@@ -54,12 +54,13 @@ export function isSlotMarker (value: unknown): value is IslandSlotMarker {
 
 export function isComponentMarker (value: unknown): value is IslandComponentMarker {
   if (!Array.isArray(value)) { return false }
-  const [props, chunk, exportName, slots] = value as unknown[]
+  const [props, chunk, exportName, slots, mount] = value as unknown[]
   return (
     typeof chunk === 'string' &&
     isMarkerProps(props) &&
     (exportName === undefined || typeof exportName === 'string') &&
-    (slots === undefined || (isPlainObject(slots) && !hasKeyIn(slots, PROTOTYPE_KEYS) && Object.values(slots).every(isString)))
+    (slots === undefined || (isPlainObject(slots) && !hasKeyIn(slots, PROTOTYPE_KEYS) && Object.values(slots).every(isString))) &&
+    (mount === undefined || mount === 1)
   )
 }
 
@@ -74,14 +75,14 @@ export function isTeleportMarker (value: unknown): value is IslandTeleportMarker
 }
 
 /**
- * Whether comment data starts with a marker prefix followed by its JSON tuple.
+ * Whether comment data starts with a marker prefix directly followed by its JSON data.
  */
 export function hasMarkerPrefix (data: string, marker: string): boolean {
   return data.startsWith(`${marker}[`)
 }
 
 /**
- * Parse a marker's JSON tuple, `undefined` when malformed.
+ * Parse a marker's JSON data, `undefined` when malformed.
  */
 export function tryDecodeMarker (json: string): unknown {
   try {
@@ -95,7 +96,8 @@ function isMarkerProps (props: unknown): boolean {
   return props === null || (isPlainObject(props) && !hasKeyIn(props, PROTOTYPE_KEYS) && !hasKeyIn(props, VNODE_RESERVED_PROPS))
 }
 
-// Marker props are plain JSON.parse output, unlike the devalue payload.
+// Marker data comes from `JSON.parse`, which makes `__proto__` an ordinary own key,
+// so `Object.keys` lists every key.
 function hasKeyIn (record: object, keys: ReadonlySet<string>): boolean {
   return Object.keys(record).some(key => keys.has(key))
 }

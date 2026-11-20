@@ -9,12 +9,13 @@ import {
 } from '@vue/compiler-dom'
 
 /**
- * Gives the fallback closure of each SSR `ssrRenderSlot` call a `_push` parameter, so the islands
- * `ssrRenderSlot` can render a fallback into a buffer of its own instead of the template's stream.
+ * Gives the fallback closure of each SSR `ssrRenderSlot` call, e.g. for `<slot>Default</slot>`,
+ * a `_push` parameter, so the islands `ssrRenderSlot` can render the fallback into its own buffer.
  */
 export const ssrSlotFallbackTransform: NodeTransform = (node, context) => {
   if (!context.ssr || node.type !== NodeTypes.ELEMENT || node.tagType !== ElementTypes.SLOT || node.children.length === 0) { return }
-  // Vue's own transform has set the call already; `ssrRenderSlotInner` (inside `<Transition>`) stays Vue's.
+  // Vue's own transform has set the call already.
+  // `ssrRenderSlotInner` (a slot inside `<Transition>`) stays Vue's.
   const call = (node as ElementNode & { ssrCodegenNode?: CallExpression }).ssrCodegenNode
   if (!call || typeof call.callee !== 'symbol' || helperNameMap[call.callee] !== 'ssrRenderSlot') { return }
   // Vue builds the closure `() => { _push(...) }` at codegen, after every node transform, and stores it

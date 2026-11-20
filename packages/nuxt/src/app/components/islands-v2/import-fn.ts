@@ -17,8 +17,8 @@ export function createImportFn (table: ChunkTable): ImportFn {
 }
 
 /**
- * Import function loading each chunk from `source`, at the path a remote island response gave for it.
- * The paths must be checked with `isChunkPath` first.
+ * Import function that loads each chunk from `source`, at the path the remote island response gave.
+ * The paths must pass `isChunkPath` first, or a remote server could make the host import any script.
  */
 export function createRemoteImportFn (source: string, paths: Record<string, string>): ImportFn {
   // `fromEntries` defines own properties, so a `__proto__` chunk ref cannot reach the prototype.

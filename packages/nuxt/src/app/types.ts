@@ -180,7 +180,7 @@ export interface NuxtSSRContext extends SSRContext {
   /** @internal */
   ['~neverHydratedModules']?: Set<string>
   /**
-   * State of an islands v2 render, set by the island handler; its presence means one is in progress.
+   * State of the islands v2 render in progress, set by the island handler.
    *
    * @internal
    */
@@ -213,9 +213,12 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
+  /**
+   * Nonce of the islands v2 markers in `html`.
+   */
   nonce?: string
   /**
-   * Nonces of nested islands whose markers `html` embeds, besides `nonce`.
+   * Nonces of nested islands whose markers `html` includes, besides `nonce`.
    */
   nonces?: string[]
   /**

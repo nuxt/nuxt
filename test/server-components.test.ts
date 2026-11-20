@@ -404,6 +404,33 @@ describe('component islands', () => {
     expect((await contents(output.serverDir)).some(code => code.includes(marker))).toBe(true)
   })
 
+  it.skipIf(!oncePerBuild || isDev || !islandsV2)('loads the client half of a pair and never a server-only component with `v-load-client`', async () => {
+    // @ts-expect-error ssssh! untyped secret property
+    const { output } = useTestContext().nuxt._nitro.options
+    const contents = async (dir: string) => (await Promise.all((await glob('**/*.{js,mjs}', { cwd: dir, absolute: true })).map(file => readFile(file, 'utf8')))).join('\n')
+    const [publicCode, serverCode] = await Promise.all([contents(output.publicDir), contents(output.serverDir)])
+
+    for (const sentinel of ['PAIRED_LOAD_CLIENT_SERVER_SENTINEL', 'SOLO_LOAD_CLIENT_SERVER_SENTINEL']) {
+      expect(publicCode).not.toContain(sentinel)
+      expect(serverCode).toContain(sentinel)
+    }
+    expect(publicCode).toContain('PAIRED_LOAD_CLIENT_CLIENT_SENTINEL')
+  })
+
+  it.skipIf(!oncePerBuild || !islandsV2)('renders `v-load-client` pairs with their client half in the browser', async () => {
+    const { page, consoleLogs, pageErrors } = await renderPage('/load-client-targets')
+    await page.locator('#paired-load-client').getByText('PAIRED_LOAD_CLIENT_CLIENT_SENTINEL').waitFor()
+    await page.locator('#paired-load-client button').click()
+    await page.locator('#paired-load-client button').getByText('count: 1').waitFor()
+    expect(await page.locator('#paired-load-client').count()).toBe(1)
+    expect(await page.locator('#paired-load-client').innerText()).not.toContain('PAIRED_LOAD_CLIENT_SERVER_SENTINEL')
+    expect(await page.locator('#solo-load-client').innerText()).toContain('SOLO_LOAD_CLIENT_SERVER_SENTINEL')
+    expect(consoleLogs.filter(l => l.text.includes('Hydration'))).toEqual([])
+    expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
+    expect(pageErrors).toEqual([])
+    await page.close()
+  })
+
   it.skipIf(!oncePerBuild)('render async component', async () => {
     const result = normaliseIslandResponse(await $fetch<NuxtIslandResponse>(islandURL('LongAsyncComponent', { props: { count: 3 } })))
 

@@ -30,7 +30,7 @@ const Child = defineComponent({
   },
 })
 
-function createParent (props: Record<string, unknown>, enabled?: boolean, chunk: string | null = CHUNK) {
+function createParent (props: Record<string, unknown>, enabled?: boolean, chunk: string | null = CHUNK, mount?: boolean) {
   return defineComponent({
     ssrRender (_ctx: unknown, push: Push, parent: ComponentInternalInstance) {
       push('<div>')
@@ -38,7 +38,7 @@ function createParent (props: Record<string, unknown>, enabled?: boolean, chunk:
       push(ssrRenderClientComponent(Child, props, {
         default: (_props: unknown, slotPush?: Push) => { slotPush?.('<b>slot</b>') },
         _: 1,
-      } as any, parent, { enabled, chunk: chunk ?? undefined }))
+      } as any, parent, { enabled, chunk: chunk ?? undefined, mount }))
       push('</div>')
     },
   })
@@ -92,6 +92,23 @@ describe('ssrRenderClientComponent', () => {
     expect(html).toContain(`<!--i:c:${nonce}[`)
     expect(html).toContain(`<span>hi</span><!--[--><b>slot</b><!--]--><!--/i:c:${nonce}--></div>`)
     expect(readMarker(html, nonce)).toEqual([{ msg: 'hi' }, CHUNK, 'default', { default: '<b>slot</b>' }])
+  })
+
+  it('flags a mounted target in the tuple and wraps its HTML in fragment anchors', async () => {
+    const context = islandContext()
+    const nonce = context.islands.markers.nonce
+    const html = await renderToString(createSSRApp(createParent(props, undefined, CHUNK, true)), context)
+    expect(html).toContain(`--><!--[--><span>hi</span><!--[--><b>slot</b><!--]--><!--]--><!--/i:c:${nonce}--></div>`)
+    expect(readMarker(html, nonce)).toEqual([{ msg: 'hi' }, CHUNK, 'default', { default: '<b>slot</b>' }, 1])
+
+    const bare = islandContext()
+    const withoutSlots = defineComponent({
+      ssrRender (_ctx: unknown, push: Push, parent: ComponentInternalInstance) {
+        push(ssrRenderClientComponent(Child, { msg: 'x' }, null, parent, { chunk: CHUNK, mount: true }))
+      },
+    })
+    const bareHtml = await renderToString(createSSRApp(withoutSlots), bare)
+    expect(readMarker(bareHtml, bare.islands.markers.nonce)).toEqual([{ msg: 'x' }, CHUNK, 'default', {}, 1])
   })
 
   it('records the client path of the chunk for remote hosts', async () => {

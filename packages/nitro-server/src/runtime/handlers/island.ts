@@ -195,7 +195,8 @@ async function renderIsland (event: H3Event): Promise<IslandRenderResult> {
     }
   }
 
-  // Undefined fields (empty `components`/`slots`/`chunks`, nonces without islands v2) are dropped from the JSON.
+  // Undefined fields, such as empty `components`, `slots` or `chunks`, or nonces without islands v2,
+  // are dropped from the JSON.
   const islandResponse: NuxtIslandResponse = {
     id: islandContext.id,
     head: mergeIslandHead(ssrContext.head.entries.values()),

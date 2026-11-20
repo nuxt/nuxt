@@ -32,25 +32,26 @@ import type { SSRBuffer, SSRBufferItem } from '../utils'
 import type { NuxtSSRContext } from '../../types'
 
 /**
- * Props the SSR transform hands the boundary in place of the `v-load-client` component.
+ * What the islands compiler passes in place of a `v-load-client` component and its props.
  */
 interface ClientBoundaryProps {
   /**
-   * Component the island renders on the server and the client reloads.
+   * Component to render on the server; the client loads its chunk and hydrates it.
    */
   is: Component | string
   /**
-   * Props of that component; listeners and reserved keys are dropped from the marker.
+   * Props of that component; the marker keeps only the ones that serialize to JSON.
    */
   props?: Record<string, any> | null
   /**
-   * The `v-load-client` binding.
+   * Value of the `v-load-client` binding.
    *
    * @remarks `false` renders the component inline without markers
    */
   enabled?: boolean
   /**
-   * Chunk the client loads the component from; without one the component renders inline.
+   * Chunk the client loads the component from. Without one, the component renders inline
+   * without markers.
    */
   chunk?: string
   /**
@@ -59,10 +60,15 @@ interface ClientBoundaryProps {
    * @default 'default'
    */
   exportName?: string
+  /**
+   * Makes the client mount the chunk's component over the server HTML instead of hydrating it.
+   * Used when `is` comes from `Foo.server.vue` and the chunk from `Foo.client.vue`.
+   */
+  mount?: boolean
 }
 
 /**
- * Options the SSR transform passes `ssrRenderClientComponent` after Vue's own arguments.
+ * Options the compiled SSR code passes `ssrRenderClientComponent` after Vue's own arguments.
  */
 type ClientRenderOptions = Omit<ClientBoundaryProps, 'is' | 'props'>
 
@@ -75,28 +81,30 @@ type SSRSlot = (
 ) => unknown
 type SSRSlots = Record<string, SSRSlot>
 /**
- * Compiled slot fallback, given the push it writes to by the islands compiler (see `ssr-slot-fallback`).
+ * A compiled slot fallback. The islands compiler gives it a `push` parameter
+ * (see `ssr-slot-fallback.ts`), so it can render into a separate buffer.
  */
 type SlotFallback = (push: PushFn) => void
 type MaybePromise<T> = T | Promise<T>
 
 /**
- * VNodes of marked client components; their own templates never write teleport markers.
+ * VNodes of the `v-load-client` components rendered with markers. Teleports inside them get no
+ * teleport marker, because the client renders those components, teleports included, itself.
  */
 const CLIENT_VNODES = new WeakSet<VNode>()
 const UNSCANNED_WARNED = new WeakSet<Component>()
 
 /**
- * Render a `v-load-client` component with Vue's SSR renderer and wrap its output in island markers.
- * The SSR transform emits this in place of `ssrRenderComponent` with `options` after `parent`;
- * Vue appends the slot scope id after them. Outside an island render it is Vue's own call.
+ * Render a `v-load-client` component and, during an island render, wrap it in a component marker.
+ * Compiled SSR code calls it in place of `ssrRenderComponent`, with `options` after `parent`.
+ * Outside an island render it behaves like Vue's `ssrRenderComponent`.
  */
 export function ssrRenderClientComponent (
   is: Component | string,
   props: Record<string, any> | null | undefined,
   slots: SSRSlots | null | undefined,
   parent: ComponentInternalInstance,
-  { enabled, chunk, exportName = 'default' }: ClientRenderOptions = {},
+  { enabled, chunk, exportName = 'default', mount }: ClientRenderOptions = {},
   slotScopeId?: string,
 ): SSRBuffer | Promise<SSRBuffer> {
   if (typeof is === 'string') {
@@ -116,12 +124,12 @@ export function ssrRenderClientComponent (
       slotScopeId,
     ) as SSRBuffer | Promise<SSRBuffer>
   }
-  // Only filled when the app serves remote islands.
+  // `chunkPaths` is empty unless the app serves remote islands.
   if (Object.hasOwn(chunkPaths, chunk)) { islands.chunks[chunk] = chunkPaths[chunk]! }
   const markers = islands.markers
 
   const captured: Record<string, SSRBuffer> = {}
-  // Same as `ssrRenderComponent`, but holding the vnode tells its subtree apart.
+  // Built by hand, unlike in `ssrRenderComponent`, so the vnode can be recorded in `CLIENT_VNODES`.
   const vnode = createVNode(is, props, captureSlots(slots, captured, parent))
   CLIENT_VNODES.add(vnode)
   const buffer: SSRBuffer = []
@@ -130,10 +138,12 @@ export function ssrRenderClientComponent (
   return chain(unroll(buffer), html =>
     chain(unrollRecord(captured), (slotHtml): SSRBuffer => {
       const tuple: IslandComponentMarker = [markerProps(props), chunk, exportName]
-      if (slotHtml) { tuple.push(slotHtml) }
+      if (slotHtml || mount) { tuple.push(slotHtml ?? {}) }
+      if (mount) { tuple.push(1) }
       return [
         `<!--${markers.component}${encodeMarker(tuple)}-->`,
-        html,
+        // Fragment anchors let the client hydrate this HTML as one fragment and later replace it.
+        mount ? `<!--[-->${html}<!--]-->` : html,
         `<!--${markers.componentEnd}-->`,
       ]
     }),
@@ -141,8 +151,8 @@ export function ssrRenderClientComponent (
 }
 
 /**
- * Statement form of `ssrRenderClientComponent` for dynamic components, at Vue's `ssrRenderVNode`
- * call site: `_push` first, then the same arguments.
+ * Statement form of `ssrRenderClientComponent`, replacing Vue's `ssrRenderVNode` call
+ * for dynamic components: `_push` comes first, then the same arguments.
  */
 export function ssrRenderClientVNode (
   push: PushFn,
@@ -157,9 +167,8 @@ export function ssrRenderClientVNode (
 }
 
 /**
- * Vue's `ssrRenderTeleport`, writing an `i:t` marker with the target, the disabled flag and the
- * content HTML before Vue's own output. SSR templates import it through `ssr-runtime` in place of
- * Vue's; it is Vue's call outside an island render.
+ * Vue's `ssrRenderTeleport` that, during an island render, first writes a teleport marker
+ * (see `IslandTeleportMarker`). Compiled SSR code imports it from `ssr-runtime.ts`.
  */
 export function ssrRenderTeleport (
   parentPush: PushFn,
@@ -169,7 +178,7 @@ export function ssrRenderTeleport (
   parentComponent: ComponentInternalInstance,
 ): void {
   const markers = markersOf(parentComponent)
-  // The owner is the instance whose template holds the call, slot content included.
+  // `getCurrentInstance()` is the component whose template holds the teleport, even in slot content.
   if (!markers || insideClientComponent(getCurrentInstance())) {
     vueSsrRenderTeleport(parentPush, contentRenderFn, target, disabled, parentComponent)
     return
@@ -179,14 +188,14 @@ export function ssrRenderTeleport (
     if (html !== undefined) { tuple.push(html) }
     return `<!--${markers.teleport}${encodeMarker(tuple)}-->`
   }
-  // Disabled content renders inline, so the walker reads it from the DOM.
+  // Disabled content renders inline, so the client reads it from the DOM, not from the marker.
   if (disabled) {
     parentPush(open())
     vueSsrRenderTeleport(parentPush, contentRenderFn, target, disabled, parentComponent)
     return
   }
 
-  // Filled once the content is rendered; flagged async in case the content is.
+  // Placeholder for the marker, filled once the content HTML is known, which may be async.
   const marker: SSRBuffer = []
   marker.hasAsync = true
   parentPush(marker)
@@ -206,9 +215,9 @@ export function ssrRenderTeleport (
 }
 
 /**
- * Vue's `ssrRenderSlot`, writing an `i:s` marker that carries the fallback HTML (see `IslandSlotMarker`)
- * at the island root's own `<slot>` outlets, so the page can render its slot content there.
- * Other outlets are Vue's call.
+ * Vue's `ssrRenderSlot` that writes an empty slot outlet (see `IslandSlotMarker`) for each `<slot>`
+ * of the island's root component, so the page can render its own slot content there.
+ * Other `<slot>`s render as with Vue.
  */
 export function ssrRenderSlot (
   slots: SSRSlots,
@@ -221,14 +230,15 @@ export function ssrRenderSlot (
 ): void {
   const vueSlots = slots as Parameters<typeof vueSsrRenderSlot>[0]
   const markers = markersOf(parentComponent)
-  // A child's slot content can hold a root outlet, so the root's slots object decides, not the parent.
+  // A root `<slot>` placed in a child's slot content has the child as parent,
+  // so compare against the root's slots object instead.
   if (!markers || toRaw(slots) !== ssrContextOf(parentComponent)?.islands?.root?.component?.slots) {
     vueSsrRenderSlot(vueSlots, slotName, slotProps, fallbackRenderFn && (() => fallbackRenderFn(push)), push, parentComponent, slotScopeId)
     return
   }
 
-  // Filled once the fallback is rendered; flagged async in case it is. An array item, unlike a
-  // comment string, also keeps Vue from taking a slot holding only this outlet as empty.
+  // Placeholder filled once the fallback HTML is known. Being an array, not a string, it also
+  // stops Vue from treating a slot that holds only this outlet as empty.
   const marker: SSRBuffer = []
   marker.hasAsync = true
   push(marker)
@@ -244,21 +254,21 @@ export function ssrRenderSlot (
 }
 
 /**
- * Component form of `ssrRenderClientComponent` for Vue's vnode slot branch,
- * taken when a non-compiled child renders the slot that holds the component.
+ * Component form of `ssrRenderClientComponent`, used in the vnode branch of compiled slots.
+ * Vue takes that branch when a child without an SSR render function renders the slot.
  */
 export const IslandClientBoundary = /* @__PURE__ */ defineComponent({
   name: 'IslandClientBoundary',
-  props: ['is', 'props', 'enabled', 'chunk', 'exportName'],
+  props: ['is', 'props', 'enabled', 'chunk', 'exportName', 'mount'],
   ssrRender (
     _ctx: unknown,
     push: PushFn,
     instance: ComponentInternalInstance,
     attrs: Record<string, unknown> | undefined,
   ) {
-    const { is, props, enabled, chunk, exportName } = instance.props as unknown as ClientBoundaryProps
-    // Every real prop is declared, so Vue's attrs here are scope ids only: this vnode's own,
-    // which belongs on the child's root, and slot scope ids, which Vue applies to the whole subtree.
+    const { is, props, enabled, chunk, exportName, mount } = instance.props as unknown as ClientBoundaryProps
+    // Every real prop is declared, so `attrs` only holds scope ids: this vnode's own, which belongs
+    // on the child's root, and slot scope ids, which Vue applies to the whole subtree.
     const rootScopeId = instance.vnode.scopeId
     const slotScopeIds = attrs
       ? Object.keys(attrs)
@@ -273,7 +283,7 @@ export const IslandClientBoundary = /* @__PURE__ */ defineComponent({
           props,
           instance.slots as SSRSlots,
           instance,
-          { enabled, chunk, exportName },
+          { enabled, chunk, exportName, mount },
           slotScopeIds || undefined,
         ),
       )
@@ -306,7 +316,8 @@ function warnUnscanned (component: Component): void {
 }
 
 /**
- * Wrap each slot so its first render is recorded for the marker while still reaching the child.
+ * Wrap each slot so its first render is also recorded as HTML for the component marker,
+ * while the output still reaches the child.
  */
 function captureSlots (
   slots: SSRSlots | null | undefined,
@@ -319,10 +330,11 @@ function captureSlots (
   const wrapped: SSRSlots = {}
   for (const name of names) {
     const slot = slots[name]!
-    // Rest args keep `length` at 0: dev `renderSlot` empties any slot declaring SSR-style params.
+    // Rest args keep `length` at 0: in dev, `renderSlot` replaces a slot taking several parameters
+    // with an empty one.
     wrapped[name] = (...args: Parameters<SSRSlot>) => {
       const [slotProps, push, parent = boundary, scopeId = null] = args
-      // Vnode-style callers (manual render functions) pass no push; the vnodes render twice then.
+      // Render functions call slots without `push` and get vnodes back, rendered again for the marker.
       if (!push) {
         const result = slot(slotProps, undefined, parent, scopeId)
         if (!(name in captured) && Array.isArray(result)) {
@@ -351,7 +363,7 @@ function renderVNodesToBuffer (
   parent: ComponentInternalInstance,
   scopeId: string | null,
 ): SSRBuffer {
-  // Read per call: a top-level read of `ssrUtils` would keep this module in client bundles.
+  // Read inside the call: reading `ssrUtils` at module level would keep this module in client bundles.
   const { normalizeVNode }: { normalizeVNode: (child: unknown) => VNode } = ssrUtils
   const buffer: SSRBuffer = []
   const push: PushFn = (item) => {
@@ -364,7 +376,7 @@ function renderVNodesToBuffer (
 }
 
 /**
- * Props a marker carries: listeners, functions, reserved VNode props and prototype keys are dropped.
+ * Props a marker can carry: listeners, functions, reserved VNode props and prototype keys are left out.
  */
 function markerProps (
   props: Record<string, any> | null | undefined,

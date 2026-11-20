@@ -32,8 +32,9 @@ type NuxtIslandSlots = SlotsType<{
 
 const ERROR_PAYLOAD_PREFIX = 'nuxt-island-error:'
 /**
- * Fresh marker nonce of each response nonce, per server render and island key: keying by the island
- * keeps a response that claims another island's public nonce from getting that island's fresh one.
+ * Fresh nonce for each response nonce (see `rebindMarkerNonces`), per Nuxt app and island key.
+ * Keying by island stops a response that copies another island's public nonce
+ * from receiving that island's fresh nonce.
  */
 const REBOUND_NONCES = new WeakMap<NuxtApp, Map<string, Map<string, string>>>()
 
@@ -81,10 +82,10 @@ const NuxtIsland = defineComponent({
       uid: id,
       emit,
       toPayload: ({ html, chunks, ...rest }) => {
-        // Only a remote island loading its client components reads the chunk paths.
+        // Chunk paths are only kept for a remote island allowed to load its client components.
         const data: Partial<NuxtIslandResponse> = chunks && remoteOf(props, { chunks })?.chunks ? { ...rest, chunks } : rest
         const markerNonces = import.meta.server ? readMarkerNonces(data, false) : undefined
-        // The page hydrates with the nonces `apply` rebinds the markers to.
+        // Store the rebound nonces, which match the markers `apply` writes into the page HTML.
         if (markerNonces) { Object.assign(data, rebindMarkerNonces(markerNonces, reboundNoncesOf(nuxtApp, islandKey.value))) }
         const revive: Partial<NuxtIslandResponse> = {}
         if (data.head) { revive.head = data.head }
@@ -104,9 +105,10 @@ const NuxtIsland = defineComponent({
         }
         const html = withIslandScopeId(res.html, props.scopeId)
         if (import.meta.server) {
-          // Slots render into the HTML, so its markers move to nonces this render made (see `rebindMarkerNonces`).
+          // Rebind the markers before the page's slots render into this HTML (see `rebindMarkerNonces`).
           const bound = rebindMarkers(html, markerNonces, reboundNoncesOf(nuxtApp, islandKey.value))
-          // Inside another island's render, the outer response carries these markers; a remote island's stay plain.
+          // Inside another island's render, list these nonces so the outer island's client accepts them.
+          // A remote island's markers are not listed and stay plain comments.
           const islands = nuxtApp.ssrContext?.islands
           if (islands && !remote && islands.markers.nonce !== markerNonces.nonce) {
             for (const nonce of [bound.nonce, ...bound.nonces ?? []]) { islands.nested.add(nonce) }
@@ -173,7 +175,8 @@ function reboundNoncesOf (nuxtApp: NuxtApp, islandKey: string): Map<string, stri
 }
 
 /**
- * Remote rules for an island fetched from `source`, with the chunks it may load when opted in.
+ * Rules for an island fetched from another app at `source`, including the chunks it may load
+ * when `dangerouslyLoadClientComponents` is set.
  */
 function remoteOf (props: Pick<NuxtIslandProps, 'source' | 'dangerouslyLoadClientComponents'>, data: Partial<NuxtIslandResponse> | undefined): RemoteIsland | undefined {
   if (!remoteComponentIslands || !props.source) { return }

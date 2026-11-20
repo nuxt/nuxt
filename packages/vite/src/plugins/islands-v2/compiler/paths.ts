@@ -2,7 +2,8 @@ import { parseNodeModulePath } from '@nuxt/kit/internal'
 import { isAbsolute, normalize, relative } from 'pathe'
 
 /**
- * Key a component file is loaded under, shared by its server marker and the client manifest:
+ * Chunk ref of a component file: the key it is loaded under, shared by its server marker
+ * and the client manifest:
  * - `/`-prefixed root-relative path inside `root`
  * - `<package>/<subpath>` inside `node_modules`
  * - else relative to `root`.

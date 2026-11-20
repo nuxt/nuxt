@@ -9,8 +9,8 @@ type SlottedVNode = VNode & { slotScopeIds?: string[] }
 const COMMENT_END = '-->'
 
 /**
- * Server render of island HTML with the page's slots in the island's own `i:s` regions, which the
- * island render leaves empty with the fallback in the marker (see `IslandSlotMarker`).
+ * Server render of island HTML with the page's slots rendered into the island's slot outlets,
+ * which the island HTML leaves empty (see `IslandSlotMarker`).
  */
 export function renderIslandSlots (html: string, markers: MarkerSet, slots: Slots): VNode {
   const vnodes = renderParts(html, markers, slots)
@@ -22,7 +22,8 @@ function renderParts (html: string, markers: MarkerSet, slots: Slots): VNode[] {
   const close = `<!--${markers.slotEnd}${COMMENT_END}`
   const vnodes: VNode[] = []
   let from = 0
-  // Marker JSON never holds `-->` or `<`, so outlets nested in a fallback stay inside its tuple.
+  // Marker JSON never contains `-->` or `<`, so an outlet nested in a fallback stays hidden
+  // inside that marker's data and is not matched here.
   for (let start = html.indexOf(open); start !== -1; start = html.indexOf(open, start + open.length)) {
     const contentStart = html.indexOf(COMMENT_END, start + open.length) + COMMENT_END.length
     if (contentStart < COMMENT_END.length || !html.startsWith(close, contentStart)) { continue }

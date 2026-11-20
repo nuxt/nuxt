@@ -45,6 +45,33 @@ describe('islandsV2ManifestPlugin', () => {
   })
 })
 
+describe('islandsV2ManifestPlugin server-only backstop', () => {
+  const barrel = `${root}/components/index.ts`
+  const secret = `${root}/components/Secret.server.vue`
+  const graph: Record<string, { importedIds: string[], dynamicallyImportedIds: string[] }> = {
+    [MANIFEST_ID]: { importedIds: [], dynamicallyImportedIds: [barrel] },
+    [barrel]: { importedIds: [`${secret}?vue&type=script`], dynamicallyImportedIds: [] },
+  }
+
+  function generate (serverOnly: string[]) {
+    const plugin = islandsV2ManifestPlugin({ targets: new Map(), components: new Map() }, { serverOnlyFiles: () => new Set(serverOnly) })
+    const ctx = {
+      environment: { config: { consumer: 'client', root } },
+      getModuleInfo: (id: string) => graph[id] ?? null,
+      error: (message: string) => { throw new Error(message) },
+    }
+    return () => (plugin.generateBundle as (this: typeof ctx, ...args: unknown[]) => void).call(ctx, {}, {})
+  }
+
+  it('fails the client build when a target reaches a server-only file through its imports', () => {
+    expect(generate([secret])).toThrow(`v-load-client target \`${barrel}\` imports the server-only component \`${secret}\``)
+  })
+
+  it('passes when no target reaches one', () => {
+    expect(generate([`${root}/components/Other.server.vue`])).not.toThrow()
+  })
+})
+
 describe('islandsV2ManifestPlugin with remote islands', () => {
   const inRoot = `${root}/components/Foo.vue`
   const outside = resolve(root, '../layers/base/app/components/Bar.vue')

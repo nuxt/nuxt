@@ -6,8 +6,8 @@ import { ownSlots } from './shared'
 type SlottedVNode = VNode & { slotScopeIds?: string[] }
 
 /**
- * Renders a page slot at an island's `i:s` marker. `renderSlot` needs a rendering instance,
- * which the DOM walk runs without, so the walk creates this component instead.
+ * Renders a page slot at an island's slot outlet. `renderSlot` needs a rendering instance,
+ * which the DOM walk does not have, so the walk creates this component instead.
  */
 export default /* @__PURE__ */ defineComponent({
   name: 'NuxtIslandSlotOutlet',
@@ -40,7 +40,7 @@ export default /* @__PURE__ */ defineComponent({
   setup (props) {
     return () => {
       const fallback = props.fallback
-      // `noSlotted`: the slotted scope id is the island's, carried by the marker, not this component's.
+      // `noSlotted`: the slot scope id comes from the marker (the island's), not from this component.
       const vnode = renderSlot(ownSlots(props.islandSlots, props.name), props.name, props.slotProps ?? {}, fallback && (() => fallback), true)
       if (props.slotScopeId) { (vnode as SlottedVNode).slotScopeIds = [props.slotScopeId] }
       return vnode

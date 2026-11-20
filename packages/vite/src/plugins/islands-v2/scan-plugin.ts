@@ -1,42 +1,43 @@
 import type { Plugin, ResolvedConfig, Rollup } from 'vite'
 import { normalize } from 'pathe'
-import { type ScanSfcOptions, type ScannedImport, scanClientTargets, scanSfcSource } from './scan.ts'
+import { type ComponentIndex, type ScanSfcOptions, scanClientTargets, scanSfcSource } from './scan.ts'
 import type { IslandsV2Registry } from './manifest.ts'
 import { toChunkRef } from './compiler/paths.ts'
 
 export interface IslandsV2ScanPluginOptions {
   registry: IslandsV2Registry
   /**
-   * SFCs scanned at build start, across every Nuxt layer.
+   * SFCs to scan at build start, across every Nuxt layer.
    */
   collectFiles: () => Promise<Iterable<string>>
   /**
-   * Components the SFC doesn't import statically, such as auto-imports, by PascalCase name.
+   * Nuxt components, which SFCs use without a static import; their server-only files are refused
+   * as targets.
    */
-  additionalImports: () => ReadonlyMap<string, ScannedImport>
+  components: () => ComponentIndex
 }
 
 /**
- * `buildStart` pre-pass scanning SFC templates for `v-load-client` targets,
- * so the client manifest and the template transform see them before any environment builds.
- * In dev, each transformed SFC is scanned again to pick up new targets.
+ * Scans SFC templates for `v-load-client` targets at `buildStart`, so the client manifest and
+ * the template transform know them before any environment builds. In dev, each transformed SFC
+ * is scanned again to pick up new targets.
  */
 export function islandsV2ScanPlugin (options: IslandsV2ScanPluginOptions): Plugin {
-  const { additionalImports, collectFiles, registry } = options
+  const { components, collectFiles, registry } = options
   let config: ResolvedConfig
   let scanPromise: Promise<void> | undefined
-  // Dev scans a file again on transform; its warnings already surfaced at buildStart.
+  // Dev scans a file again on each transform, so each warning is shown only once.
   const warned = new Set<string>()
 
   const scanOptions = (ctx: Rollup.PluginContext, scanned: IslandsV2Registry['components']): ScanSfcOptions => ({
     root: config.root,
-    additionalImports: additionalImports(),
+    ...components(),
     resolveImport: async (source, importer) => (await ctx.resolve(source, importer, { skipSelf: true }))?.id,
     registerTarget (sfcFile, tag, target) {
       const chunk = toChunkRef(target.path, config.root)
       let tags = scanned.get(sfcFile)
       if (!tags) { scanned.set(sfcFile, tags = new Map()) }
-      tags.set(tag, { chunk, exportName: target.export })
+      tags.set(tag, { chunk, exportName: target.export, mount: target.mount })
       if (registry.targets.get(target.path) === chunk) { return }
       registry.targets.set(target.path, chunk)
       registry.invalidate?.()

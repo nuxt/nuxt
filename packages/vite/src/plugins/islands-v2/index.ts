@@ -7,7 +7,7 @@ import { isIslandsV2 } from '@nuxt/kit/internal'
 import { createSsrLoadClientTransform } from './compiler/ssr-load-client.ts'
 import { ssrSlotFallbackTransform } from './compiler/ssr-slot-fallback.ts'
 import { type IslandsV2Registry, islandsV2ManifestPlugin } from './manifest.ts'
-import { type ScannedImport, collectSfcFiles } from './scan.ts'
+import { type ComponentIndex, collectSfcFiles, indexComponents } from './scan.ts'
 import { islandsV2ScanPlugin } from './scan-plugin.ts'
 
 const SSR_RUNTIME_MODULE = '#app/components/islands-v2/ssr-runtime'
@@ -19,27 +19,25 @@ export function IslandsV2Plugins (nuxt: Nuxt): Plugin[] {
     return []
   }
 
-  const componentImports = new Map<string, ScannedImport>()
-  const setComponents = (components: Iterable<Component>) => {
-    componentImports.clear()
-    for (const component of components) {
-      if (!component.pascalName || !component.filePath || component._raw) { continue }
-      componentImports.set(component.pascalName, { path: component.filePath, export: component.export || 'default' })
-    }
+  let components: Component[] = Object.values(nuxt.apps).flatMap(app => app.components ?? [])
+  let indexed: { components: Component[], index: ComponentIndex } | undefined
+  nuxt.hook('components:extend', (extended) => { components = extended })
+  const componentIndex = () => {
+    if (indexed?.components !== components) { indexed = { components, index: indexComponents(components) } }
+    return indexed.index
   }
-  setComponents(Object.values(nuxt.apps).flatMap(app => app.components ?? []))
-  nuxt.hook('components:extend', setComponents)
 
   const dirs = [...new Set(getLayerDirectories(nuxt).map(layer => resolve(layer.app)))]
   return [
     islandsV2ScanPlugin({
       registry: registryOf(nuxt),
-      // `resolveFiles` reads the Nuxt ignore patterns from the context.
+      // `resolveFiles` reads the Nuxt ignore patterns from the Nuxt context.
       collectFiles: () => runWithNuxtContext(nuxt, () => collectSfcFiles(dirs)),
-      additionalImports: () => componentImports,
+      components: componentIndex,
     }),
     islandsV2ManifestPlugin(registryOf(nuxt), {
       remote: typeof islands === 'object' && islands.remoteIsland ? { dev: nuxt.options.dev, buildAssetsDir: nuxt.options.app.buildAssetsDir } : undefined,
+      serverOnlyFiles: () => componentIndex().serverOnlyFiles,
     }),
   ]
 }
@@ -58,7 +56,8 @@ export function withIslandsV2NodeTransform (nuxt: Nuxt, options: VuePluginOption
       compilerOptions: {
         ...compilerOptions,
         nodeTransforms: [...compilerOptions?.nodeTransforms ?? [], transform, ssrSlotFallbackTransform],
-        // Swaps `ssrRenderTeleport` and `ssrRenderSlot` for the marker-writing ones; see `ssr-runtime.ts`.
+        // Compiled SSR code imports its helpers from this module, which replaces Vue's
+        // `ssrRenderTeleport` and `ssrRenderSlot` with ones that write markers.
         ssrRuntimeModuleName: SSR_RUNTIME_MODULE,
       },
     },

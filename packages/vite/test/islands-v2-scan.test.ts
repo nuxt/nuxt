@@ -3,7 +3,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'pathe'
 import { afterAll, describe, expect, it, vi } from 'vitest'
-import { type ScanSfcOptions, type ScannedImport, collectSfcFiles, scanClientTargets, scanSfcSource } from '../src/plugins/islands-v2/scan'
+import type { Component } from '@nuxt/schema'
+import { type ScanSfcOptions, type ScannedImport, collectSfcFiles, indexComponents, scanClientTargets, scanSfcSource } from '../src/plugins/islands-v2/scan'
 
 const tmpDir = fileURLToPath(new URL('./.tmp/islands-v2-scan', import.meta.url))
 const root = path.resolve('/project/app')
@@ -20,6 +21,7 @@ function createOptions (overrides: Partial<ScanSfcOptions> = {}) {
   const options: ScanSfcOptions = {
     root,
     additionalImports: new Map(),
+    serverOnlyFiles: new Set(),
     registerTarget (sfcFile, tag, target) {
       targets.push(target.path)
       tags.push([sfcFile, tag, target])
@@ -81,6 +83,89 @@ describe('scanSfcSource', () => {
     await scanSfcSource('<template><Foo /></template>', file, options)
     expect(targets).toEqual([])
     expect(warn).not.toHaveBeenCalled()
+  })
+})
+
+describe('server-only targets', () => {
+  const component = (pascalName: string, fileName: string, extra: Partial<Component> = {}): Component => ({
+    pascalName,
+    kebabName: pascalName.toLowerCase(),
+    filePath: abs(root, 'components', fileName),
+    shortPath: `components/${fileName}`,
+    chunkName: `components/${pascalName.toLowerCase()}`,
+    export: 'default',
+    prefetch: false,
+    preload: false,
+    mode: 'all',
+    ...extra,
+  })
+  const index = indexComponents([
+    component('Pair', 'Pair.server.vue', { mode: 'server' }),
+    component('Pair', 'Pair.client.vue', { mode: 'client' }),
+    component('Solo', 'Solo.server.vue', { mode: 'server' }),
+    component('Isle', 'islands/Isle.vue', { mode: 'server', island: true }),
+    component('Extended', 'Extended.vue', { island: true }),
+    component('Universal', 'Universal.vue'),
+    component('OnlyClient', 'OnlyClient.client.vue', { mode: 'client' }),
+    component('OnlyClient', '/runtime/server-placeholder.js', { mode: 'server', _raw: true }),
+  ])
+  const scan = async (template: string, overrides: Partial<ScanSfcOptions> = {}) => {
+    const result = createOptions({ ...index, ...overrides })
+    await scanSfcSource(template, file, result.options)
+    return result
+  }
+
+  it('resolves auto-imported pairs to their client half, flagged to mount', async () => {
+    const { tags, targets, warn } = await scan('<template><Pair v-load-client /><pair v-load-client /><Universal v-load-client /><OnlyClient v-load-client /></template>')
+    expect(targets.slice(0, 2)).toEqual([abs(root, 'components/Pair.client.vue'), abs(root, 'components/Pair.client.vue')])
+    expect(tags.map(([, tag, target]) => [tag, target.mount])).toEqual([['Pair', true], ['pair', true], ['Universal', undefined], ['OnlyClient', undefined]])
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('keeps the client half when the server build resolves client files to the placeholder', async () => {
+    const { targets, warn } = await scan('<template><Pair v-load-client /></template>', {
+      resolveImport: () => Promise.resolve('/runtime/server-placeholder.js'),
+    })
+    expect(targets).toEqual([abs(root, 'components/Pair.client.vue')])
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('keeps universal and client-only components', async () => {
+    const { targets, warn } = await scan('<template><Universal v-load-client /><OnlyClient v-load-client /></template>')
+    expect(targets).toEqual([abs(root, 'components/Universal.vue'), abs(root, 'components/OnlyClient.client.vue')])
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('refuses unpaired server components and islands with a warning', async () => {
+    const { targets, warn } = await scan('<template><Solo v-load-client /><Isle v-load-client /><Extended v-load-client /></template>')
+    expect(targets).toEqual([])
+    expect(warn.mock.calls.map(([message]) => message)).toEqual(['Solo', 'Isle', 'Extended'].map(tag =>
+      expect.stringContaining(`v-load-client target "${tag}" is a server-only component, which cannot load on the client`),
+    ))
+  })
+
+  it('refuses server files imported explicitly, including the server half of a pair', async () => {
+    const { targets, warn } = await scan([
+      '<script setup>',
+      'import Pair from \'../components/Pair.server.vue\'',
+      'import Solo from \'~/components/Solo.server.vue\'',
+      '</script>',
+      '<template><Pair v-load-client /><Solo v-load-client /></template>',
+    ].join('\n'), {
+      resolveImport: source => Promise.resolve(source === '~/components/Solo.server.vue' ? abs(root, 'components/Solo.server.vue') : null),
+    })
+    expect(targets).toEqual([])
+    expect(warn).toHaveBeenCalledTimes(2)
+  })
+
+  it('refuses server components registered by a specifier the bundler resolves', async () => {
+    const resolved = abs(root, 'node_modules/pkg/Remote.vue')
+    const { targets, warn } = await scan('<script setup>import Direct from \'pkg/Remote.vue\'</script><template><Remote v-load-client /><Direct v-load-client /></template>', {
+      ...indexComponents([component('Remote', '', { filePath: 'pkg/Remote.vue', mode: 'server' })]),
+      resolveImport: source => Promise.resolve(source === 'pkg/Remote.vue' ? resolved : null),
+    })
+    expect(targets).toEqual([])
+    expect(warn).toHaveBeenCalledTimes(2)
   })
 })
 

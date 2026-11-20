@@ -13,7 +13,7 @@ import { rawVaporSlotKey } from '#build/nuxt.config.mjs'
 import { VUE_SCOPE_ID_RE } from './islands-v2/shared'
 
 /**
- * Opening tag of an island's root, which a parent's scope id is appended to.
+ * Start of an island's root opening tag, such as `<div`, where the parent's scope id is appended.
  */
 const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
 

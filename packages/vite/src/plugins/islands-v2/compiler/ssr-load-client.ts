@@ -23,8 +23,11 @@ import { normalize } from 'pathe'
 /**
  * Client chunk a `v-load-client` tag of `file` loads, `undefined` when the scan found none.
  */
-export type ClientTargetLookup = (file: string, tag: string) => { chunk: string, exportName: string } | undefined
+export type ClientTargetLookup = (file: string, tag: string) => { chunk: string, exportName: string, mount?: boolean } | undefined
 
+/**
+ * A `v-load-client` component whose render call is rewritten once the compile root exits.
+ */
 interface PendingBoundary {
   node: ElementNode & { ssrCodegenNode?: CallExpression }
   enabled: ExpressionNode | undefined
@@ -32,7 +35,8 @@ interface PendingBoundary {
 }
 
 /**
- * Marks a directive as belonging to an SSR compile; survives Vue's clone into the vnode fallback branch.
+ * Directive marked as found in an SSR compile. The mark survives Vue's copy of slot content into
+ * the vnode branch of compiled slots, which compiles with `ssr: false`.
  */
 type TaggedDirective = DirectiveNode & { __islandSsr?: true }
 
@@ -43,17 +47,22 @@ const BOUNDARY_MODULE = '#app/components/islands-v2/server'
 const DIRECTIVE_NAME = 'load-client'
 
 /**
- * Pending wraps per (sub)compilation root.
+ * Pending `v-load-client` components of each compile root; a slot's vnode branch has its own root.
  */
 const PENDING = new WeakMap<RootNode, PendingBoundary[]>()
 
+/**
+ * Node transform that rewrites the SSR render call of each `v-load-client` component,
+ * e.g. `<Counter v-load-client />`, into the islands helpers with its scanned chunk.
+ */
 export function createSsrLoadClientTransform (lookup: ClientTargetLookup): NodeTransform {
   return (node, context) => {
     if (node.type === NodeTypes.ROOT) {
       const pending: PendingBoundary[] = []
       if (context.ssr) { tagSsrDirectives(node.children) }
       PENDING.set(node, pending)
-      // Vue sets the codegen node in its own exit hook, which runs before ours; the root exit runs last.
+      // Vue sets each element's codegen node in its exit hook, which runs before ours,
+      // so the calls are rewritten when the root exits, last.
       return () => finishRoot(pending, context)
     }
 
@@ -64,7 +73,7 @@ export function createSsrLoadClientTransform (lookup: ClientTargetLookup): NodeT
     if (index === -1) { return }
     const directive = node.props[index] as TaggedDirective
     node.props.splice(index, 1)
-    // Vue's slot fallback branch compiles with `ssr: false`; the tag tells it apart from a client build.
+    // A slot's vnode branch compiles with `ssr: false`; the mark tells it apart from a client build.
     if (!context.ssr && !directive.__islandSsr) { return }
     PENDING.get(context.root)?.push({
       node,
@@ -91,7 +100,7 @@ function finishRoot (pending: PendingBoundary[], context: TransformContext): voi
   for (const entry of pending) {
     used = (context.ssr ? wrapSsrCall(entry) : wrapVNodeCall(entry)) || used
   }
-  // The fallback branch shares `imports` with the main pass, so the import is added once.
+  // The vnode branch shares `imports` with the SSR pass, so the import is added only once.
   if (used && !context.imports.some(item => item.path === BOUNDARY_MODULE)) {
     context.imports.push({
       exp: createSimpleExpression(
@@ -115,7 +124,8 @@ function wrapSsrCall ({ node, enabled, target }: PendingBoundary): boolean {
     call.arguments.push(options)
     return true
   }
-  // `_ssrRenderVNode(_push, _createVNode(comp, props, slots), _parent)` becomes the statement twin.
+  // `_ssrRenderVNode(_push, _createVNode(comp, props, slots), _parent)` becomes
+  // `_islandRenderClientVNode(_push, comp, props, slots, _parent, options)`.
   if (callee === 'ssrRenderVNode') {
     const [push, vnode] = call.arguments as [string, CallExpression]
     const [component, props = 'null', slots = 'null'] = vnode.arguments
@@ -127,7 +137,8 @@ function wrapSsrCall ({ node, enabled, target }: PendingBoundary): boolean {
 }
 
 /**
- * Slot fallback branch: `_createVNode(comp, props, slots, patchFlag, dynamicProps)`.
+ * Vnode branch of a slot: `_createVNode(comp, props, slots, patchFlag, dynamicProps)` becomes
+ * `_createVNode(_islandClientBoundary, { is: comp, props, ...options }, slots)`.
  */
 function wrapVNodeCall ({ node, enabled, target }: PendingBoundary): boolean {
   const call = node.codegenNode as VNodeCall | undefined
@@ -144,7 +155,7 @@ function wrapVNodeCall ({ node, enabled, target }: PendingBoundary): boolean {
 }
 
 /**
- * `enabled`, `chunk` and `exportName` properties, each only when present.
+ * `enabled`, `chunk`, `exportName` and `mount` properties, each only when present.
  */
 function boundaryOptions (enabled: ExpressionNode | undefined, target: PendingBoundary['target']): Property[] {
   const properties: Property[] = []
@@ -154,6 +165,7 @@ function boundaryOptions (enabled: ExpressionNode | undefined, target: PendingBo
       createObjectProperty('chunk', createSimpleExpression(genString(target.chunk), false)),
       createObjectProperty('exportName', createSimpleExpression(genString(target.exportName), false)),
     )
+    if (target.mount) { properties.push(createObjectProperty('mount', createSimpleExpression('true', false))) }
   }
   return properties
 }

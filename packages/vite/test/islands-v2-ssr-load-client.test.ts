@@ -10,9 +10,10 @@ const SERVER_MODULE = '#app/components/islands-v2/server'
 const SSR_RUNTIME_MODULE = '#app/components/islands-v2/ssr-runtime'
 const FILE = '/project/app/components/Test.vue'
 
-const TARGETS: Record<string, { chunk: string, exportName: string }> = {
+const TARGETS: Record<string, { chunk: string, exportName: string, mount?: boolean }> = {
   Foo: { chunk: '/components/Foo.vue', exportName: 'default' },
   Bar: { chunk: '/components/Bar.vue', exportName: 'Bar' },
+  Pair: { chunk: '/components/Pair.client.vue', exportName: 'default', mount: true },
 }
 const lookup: ClientTargetLookup = (file, tag) => file === FILE ? TARGETS[tag] : undefined
 
@@ -33,6 +34,12 @@ describe('createSsrLoadClientTransform', () => {
     expect(code).toMatch(/_islandRenderClient\(_component_Bar, null, null, _parent, \{\s*enabled: _ctx\.cond,\s*chunk: "\/components\/Bar\.vue",\s*exportName: "Bar"\s*\}\)/)
     expect(code).toContain('_ssrRenderComponent(_component_Baz')
     expect(code.split(SERVER_MODULE)).toHaveLength(2)
+  })
+
+  it('passes `mount` for the client half of a pair, in both branches', () => {
+    const code = compile('<Wrapper><Pair v-load-client /></Wrapper>', true)
+    expect(code).toMatch(/_islandRenderClient\(_component_Pair, null, null, _parent, \{\s*chunk: "\/components\/Pair\.client\.vue",\s*exportName: "default",\s*mount: true\s*\}, _scopeId\)/)
+    expect(code).toMatch(/_createVNode\(_islandClientBoundary, \{\s*is: _component_Pair,\s*props: null,\s*chunk: "\/components\/Pair\.client\.vue",\s*exportName: "default",\s*mount: true\s*\}\)/)
   })
 
   it('emits empty options for unscanned targets', () => {

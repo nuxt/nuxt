@@ -1334,7 +1334,8 @@ export interface ConfigSchema {
      *
      * By default it is set to 'auto', which means it will be enabled only when there are islands, server components or server pages in your app.
      *
-     * Set it to 'v2' to use the experimental islands v2 implementation, which renders islands as HTML with nonce-bound markers around the `v-load-client` components it hydrates.
+     * Set it to 'v2' to use the experimental islands v2 implementation. It renders islands as HTML
+     * with comment markers around the `v-load-client` components that the client hydrates.
      * Use `{ version: 'v2', remoteIsland: true }` to also enable remote islands with it.
      *
      * @default 'auto'

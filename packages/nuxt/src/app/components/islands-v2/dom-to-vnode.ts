@@ -39,42 +39,43 @@ import slotOutlet from './slot-outlet'
 
 export interface DomToVNodeOptions {
   /**
-   * Nonce the server bound the island's own markers to; comments without a known nonce stay plain comments.
+   * Nonce of the island's own markers. Comments without an accepted nonce stay plain comments.
    */
   nonce: string
   /**
-   * Nonces of nested islands whose markers the HTML embeds, accepted besides `nonce`.
+   * Nonces of nested islands whose markers the HTML includes, accepted besides `nonce`.
    */
   nonces?: readonly string[]
   /**
-   * Makes static runs adopt the live DOM in place, as hydration needs.
+   * Makes static runs reuse the live DOM nodes in place, as hydration needs.
    *
    * @default true
    * @remarks `false` suits a detached DOM, such as HTML parsed from a fetch; `htmlToVNode` always sets it.
    */
   adopt?: boolean
   /**
-   * Tree currently rendered for the island, whose static runs are kept where the new DOM is unchanged.
+   * Tree currently rendered for the island; its static runs are reused where the new DOM is unchanged.
    */
   previous?: VNode
   /**
-   * Slots the page passed to the island, rendered at the island's own `i:s` slot markers.
+   * Slots the page passed to the island, rendered at the island's slot outlets.
    */
   slots?: Slots
   /**
-   * Set when the HTML comes from another app
-   * teleport markers stay plain comments and client components render statically unless their chunk is listed.
+   * Source of an island fetched from another app. Its teleport markers stay plain comments,
+   * and its client components stay static unless their chunk is listed.
    */
   remote?: RemoteIsland
 }
 
 export interface RemoteIsland {
   /**
-   * Origin and base URL the island was fetched from.
+   * Base URL the island was fetched from.
    */
   source: string
   /**
-   * Checked client path of each chunk the host may import from `source`, by chunk ref.
+   * Client path of each chunk the host may import from `source`, by chunk ref,
+   * already checked with `isChunkPath`.
    */
   chunks?: Record<string, string>
 }
@@ -87,18 +88,27 @@ type DecodedMarker =
 interface WalkContext {
   adopt: boolean
   /**
-   * Decoded marker of each comment read so far, `null` for a plain comment.
+   * Cache of the decoded marker of each comment read so far.
+   *
+   * @remarks `null` marks a plain comment
    */
   decoded: WeakMap<Comment, DecodedMarker | null>
+  /**
+   * Elements that contain a marker. They become element VNodes, never part of a static run.
+   */
   markerAncestors: Set<Node>
   /**
-   * Only comments carrying one of these nonce-bound prefixes and a valid tuple are markers.
+   * Prefixes of the accepted nonces. A comment is a marker only with one of them and valid data.
    */
   markerSets: MarkerSet[]
   options: DomToVNodeOptions
+  /**
+   * Reads every comment as a plain comment, for HTML that only stays on screen until it is replaced.
+   */
+  plain?: boolean
   previousRuns?: Map<string, VNode[]>
   /**
-   * Static runs carry their HTML instead of parsed nodes to clone.
+   * Makes static runs carry their HTML instead of pointing at parsed nodes.
    */
   serialize?: boolean
 }
@@ -115,7 +125,7 @@ const TEXT_NODE = 3
 let STATIC_RUN_ID = 0
 
 /**
- * Rebuild a hydratable VNode tree from the island root DOM node.
+ * Build a VNode tree that hydrates the island's server-rendered DOM, starting at its root node.
  */
 export function domToVNode (start: Node, options: DomToVNodeOptions): VNode | undefined {
   const context = createWalkContext(start, options)
@@ -123,7 +133,8 @@ export function domToVNode (start: Node, options: DomToVNodeOptions): VNode | un
 }
 
 /**
- * Parse marked HTML for an update; pass the rendered tree as `previous` to keep unchanged static runs.
+ * Parse island HTML for a client update. Pass the rendered tree as `previous`
+ * to reuse its unchanged static runs.
  */
 export function htmlToVNode (html: string, options: DomToVNodeOptions): VNode | undefined {
   const { content } = parseHtml(html)
@@ -136,8 +147,8 @@ export function htmlToVNode (html: string, options: DomToVNodeOptions): VNode | 
 }
 
 /**
- * Parse marked HTML into sibling VNodes for slot content: the parent renders the anchors
- * and each static run carries its HTML so one VNode can hydrate or mount, then be cloned.
+ * Parse island HTML into sibling VNodes, for slot, fallback and teleport content. Each static run
+ * carries its HTML, so one VNode can mount or hydrate and later be cloned.
  */
 export function htmlToVNodes (html: string, options: DomToVNodeOptions): VNode[] {
   const { content } = parseHtml(html)
@@ -148,8 +159,8 @@ export function htmlToVNodes (html: string, options: DomToVNodeOptions): VNode[]
 }
 
 /**
- * HTML of a hydrated island for its payload entry, with its own slot regions emptied
- * pagecontent rendered there is not the island's, and a later mount renders the slots at the outlets.
+ * HTML of a hydrated island, stored in its payload entry, with its slot outlets emptied:
+ * what the page rendered there is not part of the island, and a later render fills them again.
  */
 export function outerHTMLOf (start: Node, nonce: string): string {
   const end = isFragmentStart(start) ? findFragmentEnd(start) : start
@@ -221,7 +232,7 @@ function collectMarkerAncestors (
  * Walk one node into its VNodes and return the sibling to continue from.
  */
 function walkNode (node: ChildNode, context: WalkContext): WalkResult {
-  // Structural comments carry no nonce, so an unmatched one (raw HTML) stays a plain comment.
+  // Fragment anchors carry no nonce; one without a matching end (e.g. from raw HTML) stays a comment.
   const fragmentEnd = isFragmentStart(node) ? findFragmentEnd(node) : undefined
   if (fragmentEnd) {
     const children = walkSiblings(node.nextSibling, fragmentEnd, context)
@@ -280,7 +291,7 @@ function walkSiblings (first: ChildNode | null, stop: Node | null, context: Walk
 }
 
 /**
- * VNodes of a decoded marker, or `undefined` when a teleport marker has no teleport after it.
+ * VNodes for a decoded marker, or `undefined` when its closing comment or teleport anchors are missing.
  */
 function handleMarkerComment (
   comment: Comment,
@@ -298,7 +309,7 @@ function handleMarkerComment (
       next: closing.nextSibling,
       vnodes: [
         createCommentVNode(comment.data),
-        renderClientComponent(marker.tuple, context.options),
+        renderClientComponent(marker.tuple, context.options, mountFallback(comment, closing, marker.tuple, context)),
         createCommentVNode(marker.markers.componentEnd),
       ],
     }
@@ -309,7 +320,8 @@ function handleMarkerComment (
   const end = findAnchorEnd(start, TELEPORT_START, TELEPORT_END)
   if (!end) { return }
   const [to, disabled, html] = marker.tuple
-  // Disabled content sits inline; otherwise it lives in the target and travels in the marker.
+  // Disabled content sits inline. Enabled content was rendered into the target,
+  // so its HTML comes from the marker.
   const children = disabled
     ? walkSiblings(start.nextSibling, end, context)
     : htmlToVNodes(html ?? '', context.options)
@@ -320,8 +332,8 @@ function handleMarkerComment (
 }
 
 /**
- * Outlet rendering the page's slot in place of an `i:s` region, with the fallback read from the tuple
- * (see `IslandSlotMarker`).
+ * Render the page's slot at a slot outlet, or the marker's fallback HTML
+ * when the page passes no such slot.
  */
 function handleSlotMarker (
   comment: Comment,
@@ -348,9 +360,10 @@ function handleSlotMarker (
 }
 
 /**
- * Decode and validate a nonce-bound marker comment, cached per comment; `null` means a plain comment.
+ * Decode and validate a marker comment, caching the result per comment; `null` means a plain comment.
  */
 function readMarker (comment: Comment, context: WalkContext): DecodedMarker | null {
+  if (context.plain) { return null }
   let marker = context.decoded.get(comment)
   if (marker === undefined) {
     marker = decodeMarkerComment(comment.data, context.markerSets, context.options.remote)
@@ -360,11 +373,12 @@ function readMarker (comment: Comment, context: WalkContext): DecodedMarker | nu
 }
 
 /**
- * A remote island cannot teleport into the host page, and its client components without a
- * listed chunk keep their server HTML, so both markers stay plain comments for it.
+ * Decode comment data into a marker when it has an accepted prefix and valid data, else `null`.
+ * For a remote island, teleport markers are ignored, or its server could place content anywhere
+ * in the host page; component markers only count when the host may import their chunk.
  */
 function decodeMarkerComment (data: string, markerSets: MarkerSet[], remote: RemoteIsland | undefined): DecodedMarker | null {
-  // Only the island's own slots resolve; a nested island's slot markers stay plain comments.
+  // Only the island's own slot outlets are filled; a nested island's slot markers stay plain comments.
   const own = markerSets[0]!
   if (hasMarkerPrefix(data, own.slot)) {
     const tuple = tryDecodeMarker(data.slice(own.slot.length))
@@ -387,7 +401,8 @@ function decodeMarkerComment (data: string, markerSets: MarkerSet[], remote: Rem
 }
 
 /**
- * Closing comment of a component or slot marker; only valid open markers of the same kind and nonce count as nested.
+ * Find the closing comment of a component or slot marker. Only valid opening markers
+ * of the same kind and nonce count as nested regions.
  */
 function findClosingMarker (start: Comment, open: DecodedMarker, context: WalkContext): Comment | undefined {
   const end = open.kind === 'slot' ? open.markers.slotEnd : open.markers.componentEnd
@@ -400,8 +415,8 @@ function findClosingMarker (start: Comment, open: DecodedMarker, context: WalkCo
 }
 
 /**
- * Remove the page content of the own slot regions under `parent`
- * `true` when a region had no close
+ * Remove what the page rendered in the island's slot outlets under `parent`.
+ * Returns `true` when an outlet has no closing comment.
  */
 function emptySlotRegions (parent: Node, markers: MarkerSet): boolean {
   const tokenOf = (node: Node): RegionToken => {
@@ -411,7 +426,8 @@ function emptySlotRegions (parent: Node, markers: MarkerSet): boolean {
     return decodeMarkerComment(data, [markers], undefined)?.kind === 'slot' ? 'open' : undefined
   }
   for (let current = parent.firstChild; current; current = current.nextSibling) {
-    // Without a close, markup in the slot broke out of this parent, so nothing after the outlet is the island's.
+    // Without a closing comment, slot markup broke out of this parent,
+    // so nothing after the outlet belongs to the island.
     const end = tokenOf(current) === 'open' ? findRegionEnd(siblingsAfter(current), tokenOf) ?? null : undefined
     if (end === undefined && !emptySlotRegions(current, markers)) { continue }
     while (current.nextSibling !== (end ?? null)) { current.nextSibling!.remove() }
@@ -464,13 +480,18 @@ function collectStaticRuns (previous: VNode): Map<string, VNode[]> {
   return runs
 }
 
+/**
+ * Build a static run: one Vue `Static` VNode for consecutive DOM nodes without markers, mounted or
+ * hydrated as a block. An unchanged run from the previous tree is reused instead.
+ */
 function createStaticRun (nodes: Node[], context: WalkContext): VNode {
   const previous = context.previousRuns ? findPreviousRun(nodes, context.previousRuns) : undefined
   if (previous) { return previous }
   const vnode = createStaticVNode('', nodes.length)
-  // Production Vue never transfers DOM anchors between distinct Static vnodes.
+  // A unique key makes Vue replace a different run instead of patching it:
+  // production Vue never moves DOM from one Static vnode to another.
   vnode.key = ++STATIC_RUN_ID
-  // Vue clones mounted children and reconstructs their keys from props.
+  // Vue rebuilds a cloned vnode's key from its props, so the key is kept there too.
   vnode.props = { key: vnode.key }
   if (context.serialize) {
     // Carrying the HTML lets the same VNode mount or hydrate once and be cloned on later renders.
@@ -537,8 +558,19 @@ function wrapRoot (vnodes: VNode[]): VNode | undefined {
   return createElementVNode(Fragment, null, vnodes)
 }
 
-function renderClientComponent (data: IslandComponentMarker, options: DomToVNodeOptions): VNode {
+/**
+ * HTML of a `.server.vue` half as one plain fragment, shown by the loader until the `.client.vue` half
+ * replaces it. `undefined` hydrates the region with the loaded component, as for any other component.
+ */
+function mountFallback (open: Comment, closing: Comment, tuple: IslandComponentMarker, context: WalkContext): VNode | undefined {
+  const start = open.nextSibling
+  if (tuple[4] !== 1 || !start || !isFragmentStart(start) || findFragmentEnd(start)?.nextSibling !== closing) { return }
+  // Markers inside belong to the server half's HTML; the client half gets its slots from the marker data.
+  return walkNode(start, { ...context, markerAncestors: new Set(), plain: true, previousRuns: undefined }).vnodes[0]
+}
+
+function renderClientComponent (data: IslandComponentMarker, options: DomToVNodeOptions, fallback: VNode | undefined): VNode {
   return h(Suspense, null, {
-    default: () => h(loader, { data, nonce: options.nonce, nonces: options.nonces, islandSlots: options.slots, remote: options.remote }),
+    default: () => h(loader, { data, nonce: options.nonce, nonces: options.nonces, islandSlots: options.slots, remote: options.remote, fallback }),
   })
 }
