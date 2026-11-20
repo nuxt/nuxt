@@ -15,7 +15,7 @@ import { navigationDiagnostics } from '../diagnostics/navigation'
 import { navigateToDefaults, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
-import { parseQuery, stringifyQuery } from '#build/pages'
+import { parseQuery, parseURL as parseRouteURL, stringifyQuery } from '#build/pages'
 
 /**
  * Augmented by Nuxt with the router methods that `experimental.staticRoutes` or
@@ -279,10 +279,10 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
   if (import.meta.client && !isExternal && inMiddleware) {
     if (options?.replace) {
       if (typeof to === 'string') {
-        const { pathname, search, hash } = parseURL(to)
+        const { path, query, hash } = parseRouteURL(to, useRouter().currentRoute.value.path)
         return {
-          path: pathname,
-          ...(search && { query: parseQuery(search) }),
+          path,
+          ...(Object.keys(query).length && { query }),
           ...(hash && { hash }),
           replace: true,
         }

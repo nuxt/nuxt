@@ -1182,6 +1182,23 @@ describe('routing utilities: `navigateTo`', () => {
     nuxtApp._processingMiddleware = false
     expect(location.query).toEqual({ search: 'a=1' })
   })
+  it.each([
+    ['/to#%20b', { path: '/to', hash: '# b', fullPath: '/to#%20b' }],
+    ['?page=2', { path: '/parent/child', query: { page: '2' }, fullPath: '/parent/child?page=2' }],
+    ['sibling#h', { path: '/parent/sibling', hash: '#h', fullPath: '/parent/sibling#h' }],
+  ])('navigateTo(%j, { replace: true }) should redirect from middleware like a direct navigation', async (target, expected) => {
+    const router = useRouter()
+    await router.push('/parent/child')
+    const unregister = addRouteMiddleware((to) => {
+      if (to.query.redirect) { return navigateTo(target, { replace: true }) }
+    }, { global: true })
+    try {
+      await router.push('/parent/child?redirect=1')
+    } finally {
+      unregister()
+    }
+    expect(router.currentRoute.value).toMatchObject(expected)
+  })
 
   it('#28425', async () => {
     router.addRoute({

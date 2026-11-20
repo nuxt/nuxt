@@ -247,7 +247,10 @@ export default defineNuxtModule({
         dependsOn: [],
         getContents: () => [
           'export { useRoute } from \'#app/composables/router\'',
+          `import { parseQuery, parseURL as _parseURL } from ${JSON.stringify(ufoPath)}`,
           `export { parseQuery, stringifyQuery } from ${JSON.stringify(ufoPath)}`,
+          // keeps the raw hash, which is what the no-pages router expects
+          'export const parseURL = location => { const { pathname, search, hash } = _parseURL(location); return { path: pathname, query: search ? parseQuery(search) : {}, hash } }',
           'export const START_LOCATION = Symbol(\'router:start-location\')',
         ].join('\n'),
       })
@@ -685,10 +688,11 @@ export default defineNuxtModule({
       dependsOn: [],
       getContents: () => [
         'import routerOptions from \'#build/router.options.mjs\'',
-        'import { parseQuery as _parseQuery, stringifyQuery as _stringifyQuery } from \'vue-router\'',
+        'import { _parseURL, parseQuery as _parseQuery, stringifyQuery as _stringifyQuery } from \'vue-router\'',
         'export { START_LOCATION, useRoute } from \'vue-router\'',
         'export const parseQuery = search => (routerOptions.parseQuery || _parseQuery)(search[0] === \'?\' ? search.slice(1) : search)',
         'export const stringifyQuery = query => (routerOptions.stringifyQuery || _stringifyQuery)(query)',
+        'export const parseURL = (location, currentLocation) => _parseURL(parseQuery, location, currentLocation)',
       ].join('\n'),
     })
 
