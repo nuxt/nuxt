@@ -90,6 +90,13 @@ describe.skipIf(!shouldRun)('nitro v3 server builder', () => {
     }
   })
 
+  it('should not let a page error outside a route rule be cached', async () => {
+    for (const accept of ['text/html', 'application/json']) {
+      const res = await fetch('/page-that-does-not-exist', { headers: { accept } })
+      expect([res.status, res.headers.get('cache-control')]).toEqual([404, 'no-cache'])
+    }
+  })
+
   it('should keep the route rule cache-control on an error response a handler returns', async () => {
     const res = await fetch('/api/returned-error')
     expect(res.status).toBe(404)

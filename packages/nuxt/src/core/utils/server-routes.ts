@@ -184,7 +184,7 @@ export function emitServerRoutesModule (opts: {
   /** Whether `params` is still accepted as an alias for `query` at the call site. */
   paramsAlias?: boolean
 }): string {
-  const extractors = [opts.requestTypes?.body, opts.requestTypes?.query, opts.requestTypes?.headers, opts.requestTypes?.response].filter(Boolean)
+  const extractors = [...new Set([opts.requestTypes?.body, opts.requestTypes?.query, opts.requestTypes?.headers, opts.requestTypes?.response].filter(Boolean))]
   const typeFromRoutes = opts.typeFromRoutes ?? true
 
   return [
