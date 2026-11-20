@@ -50,7 +50,16 @@ const fetchPatterns = [
 ].join('\n')
 
 const files: Record<string, string> = {
-  'nuxt.config.ts': `export default defineNuxtConfig({ compatibilityDate: 'latest' })\n`,
+  'nuxt.config.ts': [
+    `export default defineNuxtConfig({`,
+    `  compatibilityDate: 'latest',`,
+    `  runtimeConfig: {`,
+    `    apiSecret: 'secret',`,
+    `    public: { apiBase: '/api' },`,
+    `  },`,
+    `})`,
+    ``,
+  ].join('\n'),
   'tsconfig.json': JSON.stringify({
     files: [],
     references: ['app', 'server', 'shared', 'node'].map(name => ({ path: `./.nuxt/tsconfig.${name}.json` })),
@@ -102,6 +111,19 @@ const files: Record<string, string> = {
   ].join('\n'),
   'server/api/typed.ts': [
     `export default defineEventHandler(() => ({ hello: 'world' }))`,
+    ``,
+  ].join('\n'),
+  'server/api/runtime-config.ts': [
+    `import { defineEventHandler, useRuntimeConfig } from 'nuxt/server'`,
+    ``,
+    `export default defineEventHandler(() => {`,
+    `  const config = useRuntimeConfig()`,
+    `  const secret: string = config.apiSecret`,
+    `  const base: string = config.public.apiBase`,
+    `  // @ts-expect-error the key is not part of the typed config`,
+    `  const wrong: string = config.notARealKey`,
+    `  return { secret, base, wrong }`,
+    `})`,
     ``,
   ].join('\n'),
   'server/plugins/response.ts': [
@@ -189,6 +211,14 @@ try {
 
   run('pnpm', ['install', '--no-frozen-lockfile'], project)
   run('pnpm', ['exec', 'nuxt', 'prepare'], project)
+
+  // `nitropack` resolves to the builder's compat layer on nitro v3, not to the real package
+  const serverTsConfig = JSON.parse(readFileSync(join(project, '.nuxt/tsconfig.server.json'), 'utf8'))
+  const nitropackPath = serverTsConfig.compilerOptions?.paths?.['nitropack/runtime']?.[0]
+  if (!nitropackPath?.includes('nitro-v2')) {
+    throw new Error(`\`nitropack/runtime\` should resolve to the nitro v3 compat layer, got ${nitropackPath}`)
+  }
+
   run('pnpm', ['exec', 'vue-tsc', '-b', '--noEmit'], project)
 
   // without `strict`, `unknown` is assignable to a type whose properties are all optional

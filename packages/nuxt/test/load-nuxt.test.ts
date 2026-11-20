@@ -310,6 +310,22 @@ describe('loadNuxt', () => {
     expect(second).toEqual(first)
   })
 
+  it('applies the hoist paths and `#app/types` to the nitro v3 server tsconfig', async () => {
+    const nuxt = await loadNuxt({ cwd: repoRoot, ready: true, overrides: { _nitroMajor: 3 } })
+    onTestFinished(() => nuxt.close())
+
+    const { serverTsConfig } = await _generateTypes(nuxt)
+    const paths = serverTsConfig.compilerOptions?.paths ?? {}
+
+    expect(paths).toHaveProperty('@nuxt/schema')
+    expect(paths['nuxt/schema']).toEqual(paths['@nuxt/schema'])
+    expect(paths).toHaveProperty('nuxt')
+    expect(paths).toHaveProperty('#app/types')
+    for (const nitropack of ['nitropack', 'nitropack/types', 'nitropack/runtime']) {
+      expect(paths[nitropack]?.[0]).toMatch(/nitro-v3-server.*compat\/nitro-v2/)
+    }
+  })
+
   it('does not write a stub app manifest when only preparing types', async () => {
     const buildDir = mkdtempSync(join(tmpdir(), 'nuxt-prepare-manifest-'))
     onTestFinished(() => rmSync(buildDir, { recursive: true, force: true }))
