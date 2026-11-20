@@ -35,6 +35,7 @@ import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/impo
 import { normalizeAppMiddlewareRules, normalizePathCode } from '../../nuxt/src/core/utils/route-rules.ts'
 import { foldRouteCase } from '../../nuxt/src/core/utils/index.ts'
 import { unifyDynamicRouteRuleSegments } from './route-rules.ts'
+import { nitroBuildDiagnostics } from './diagnostics.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID, getRuntimeConfigSchemaModule, runtimeConfigPlugin, usesRuntimeConfigSchema } from './runtime-config.ts'
 import { addDevServerHandlers, collectServerRegistrations, toPortableDevHandlers } from './registrations.ts'
 import { nitroInternalApiTemplate, nitroSchemaTemplate } from './templates.ts'
@@ -206,6 +207,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   // blanket `ssr: false` route rule; remember the original setting for static output decisions
   const clientOnlyApp = !nuxt.options.ssr
 
+  const builtInRouteRuleKeys = new Set<string>()
+
   if (nuxt.options.experimental.componentIslands) {
     const islandHandlerPath = JSON.stringify(resolve(distDir, 'runtime/handlers/island'))
     const h3Path = JSON.stringify(resolve(distDir, 'h3'))
@@ -228,6 +231,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       nuxt.options.ssr = true
       nuxt.options.routeRules ||= {}
       nuxt.options.routeRules['/**'] = defu(nuxt.options.routeRules['/**'], { ssr: false })
+      builtInRouteRuleKeys.add('/**')
     }
   }
 
@@ -305,6 +309,16 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
   }, nuxt)
 
+  const builtInRouteRules: NitroConfig['routeRules'] = {
+    ...(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
+      ? { '/**': { streaming: true } }
+      : {}),
+    '/__nuxt_error': { cache: false },
+  }
+  for (const key in builtInRouteRules) {
+    builtInRouteRuleKeys.add(key)
+  }
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, globalTypescriptDefaults, {
     debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
@@ -377,12 +391,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         `export { matchAllRouteRules }`,
       ].join('\n'),
     },
-    routeRules: {
-      ...(typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
-        ? { '/**': { streaming: true } }
-        : {}),
-      '/__nuxt_error': { cache: false },
-    },
+    routeRules: builtInRouteRules,
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -745,6 +754,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   if (nitroConfig.static && nuxt.options.dev) {
     nitroConfig.routeRules ||= {}
     nitroConfig.routeRules['/**'] = defu(nitroConfig.routeRules['/**'], { prerender: true })
+    builtInRouteRuleKeys.add('/**')
   }
 
   // TODO: extract to shared utility?
@@ -872,7 +882,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     },
     preview: { command: () => resolveNitroCommand(nitro.options.commands.preview, nitro.options) },
   }, nuxt)
+  const createdRouteRules = nitro.options.routeRules
   await nuxt.callHook('nitro:init', nitro)
+
+  let reportedDroppedRouteRules = false
+  nitro.hooks.hook('rollup:before', (nitro) => {
+    if (reportedDroppedRouteRules || nitro.options.routeRules === createdRouteRules) { return }
+    // nitropack adds a cache rule for public asset directories served with a `maxAge`
+    const keys = new Set([...builtInRouteRuleKeys, ...nitro.options.publicAssets.map(asset => `${asset.baseURL}/**`)])
+    const dropped = [...keys].filter(key => key in createdRouteRules && !(key in nitro.options.routeRules))
+    if (dropped.length) {
+      reportedDroppedRouteRules = true
+      nitroBuildDiagnostics.NUXT_B9017({ keys: dropped.map(key => `\`${key}\``).join(', ') })
+    }
+  })
 
   // a missing `dir` is otherwise silent: nitro registers the base URL and serves a hard 404 from it
   const reportedPublicAssets = new Set<string>()

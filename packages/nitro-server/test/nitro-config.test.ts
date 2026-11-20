@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { basename, dirname, isAbsolute, join, resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { rollup } from 'rollup'
@@ -10,6 +10,7 @@ import { loadNuxt } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { getRollupConfig } from 'nitropack/rollup'
 import type { Nitro, NitroConfig } from 'nitropack/types'
+import { nitroBuildDiagnostics } from '../src/diagnostics.ts'
 import { RUNTIME_CONFIG_SCHEMA_ID } from '../src/runtime-config.ts'
 import { setupVuePackage } from '../src/vue-package.ts'
 
@@ -291,6 +292,58 @@ describe('nitro config', () => {
       expect(Object.keys(runtimeRouteRules).map(key => key.replace(/:[$\w]+/g, ':')).sort()).toEqual(expected.sort())
       expect(new Set(Object.keys(runtimeRouteRules).filter(key => key.endsWith('/about')).map(key => key.split('/')[1]))).toEqual(new Set([':slug']))
     }).finally(() => rm(outputDir, { recursive: true, force: true }))
+  }, 60_000)
+
+  it.each([
+    ['reassigned without the built-in rules', true],
+    ['reassigned with the existing rules', false],
+    ['mutated', false],
+  ] as const)('reports dropped built-in route rules once when the route rules are %s: %s', async (change, warns) => {
+    const outputDir = await mkdtemp(join(tmpdir(), 'nuxt-route-rules-'))
+    const report = vi.spyOn(nitroBuildDiagnostics, 'NUXT_B9017').mockImplementation(() => ({}) as ReturnType<typeof nitroBuildDiagnostics.NUXT_B9017>)
+    const overrides: NuxtConfig = {
+      dev: false,
+      nitro: { output: { dir: outputDir } },
+      experimental: { ssrStreaming: { enabled: true } },
+      routeRules: { '/configured': { headers: { 'x-configured': '1' } } },
+      modules: [
+        (_options, nuxt) => {
+          nuxt.hook('nitro:init', (nitro) => {
+            nitro.hooks.hook('prerender:done', () => {
+              const rule = { headers: { 'x-added': '1' } }
+              if (change === 'mutated') {
+                for (const key in nitro.options.routeRules) {
+                  delete nitro.options.routeRules[key]
+                }
+                nitro.options.routeRules['/added'] = rule
+              } else if (change === 'reassigned with the existing rules') {
+                nitro.options.routeRules = { ...nitro.options.routeRules, '/added': rule }
+              } else {
+                nitro.options.routeRules = { '/added': rule }
+              }
+            })
+          })
+        },
+      ],
+    }
+    await withNitro(overrides, async (nitro, _nitroConfig, nuxt) => {
+      await nuxt.callHook('nitro:build:before', nitro)
+      await nitro.hooks.callHook('prerender:done', { prerenderedRoutes: [], failedRoutes: [] })
+      await nitro.hooks.callHook('build:before', nitro)
+      await mkdir(nitro.options.output.serverDir, { recursive: true })
+      await nitro.hooks.callHook('rollup:before', nitro, getRollupConfig(nitro))
+      await nitro.hooks.callHook('rollup:before', nitro, getRollupConfig(nitro))
+
+      if (warns) {
+        expect(report).toHaveBeenCalledTimes(1)
+        expect(report.mock.calls[0]![0].keys.split(', ').sort()).toEqual(['`/**`', '`/__nuxt_error`', '`/_nuxt/**`', '`/_nuxt/builds/**`', '`/_nuxt/builds/meta/**`'])
+      } else {
+        expect(report).not.toHaveBeenCalled()
+      }
+    }).finally(() => {
+      report.mockRestore()
+      return rm(outputDir, { recursive: true, force: true })
+    })
   }, 60_000)
 
   it('registers the handlers of cached sibling dynamic rules under unified routes', async () => {
