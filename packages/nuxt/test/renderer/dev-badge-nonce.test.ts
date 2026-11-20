@@ -4,7 +4,6 @@ import type { NuxtRenderHTMLContext } from '../../src/app/types.ts'
 import { stampDevBadgeNonce } from '../../src/runtime/server/renderer/document.ts'
 import type { NuxtRendererOptions, RendererEvent } from '../../src/runtime/server/renderer/runtime.ts'
 
-// https://github.com/nuxt/nuxt/issues/37120
 describe('stampDevBadgeNonce', () => {
   const badge = '<script>window.__NUXT_DEV_ERROR__={}</script>'
   const event = {} as RendererEvent
@@ -32,6 +31,15 @@ describe('stampDevBadgeNonce', () => {
 
     expect(renderDevBadge).toHaveBeenCalledWith(event, 'inbody')
     expect(html.head[1]).toContain('nonce="inbody"')
+  })
+
+  it('re-renders the badge when a listener joined the head into one chunk', async () => {
+    const { runtime, renderDevBadge, html } = setup({ head: [`<title>x</title>${badge}<script nonce="joined">window.app=1</script>`] })
+
+    await stampDevBadgeNonce(runtime, event, html, badge, undefined)
+
+    expect(renderDevBadge).toHaveBeenCalledWith(event, 'joined')
+    expect(html.head).toEqual(['<title>x</title><script nonce="joined">window.__NUXT_DEV_ERROR__={}</script><script nonce="joined">window.app=1</script>'])
   })
 
   it('keeps the badge when it was already rendered with the head nonce', async () => {

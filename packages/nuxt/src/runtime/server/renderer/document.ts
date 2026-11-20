@@ -21,20 +21,17 @@ export function renderDevBadge (runtime: NuxtRendererOptions, event: RendererEve
   }
 }
 
-/**
- * Give the dev badge the CSP nonce a `render:html` listener added, when the head had none
- * as the badge was rendered. A listener that creates a per-request nonce can only stamp the
- * tags it sees, and the badge is rendered before the hook runs (#37120).
- */
+/** Re-render the dev badge with a CSP nonce added by a `render:html` listener. */
 export async function stampDevBadgeNonce (runtime: NuxtRendererOptions, event: RendererEvent, context: NuxtRenderHTMLContext, badge: string | undefined, nonce: string | undefined): Promise<void> {
-  const index = badge && !nonce ? context.head.indexOf(badge.trim()) : -1
-  if (index === -1) {
+  const rendered = badge?.trim()
+  const index = rendered && !nonce ? context.head.findIndex(chunk => chunk.includes(rendered)) : -1
+  if (!rendered || index === -1) {
     return
   }
   const hookNonce = extractCspNonce(joinTags([...context.head, ...context.bodyPrepend, ...context.bodyAppend, ...context.body]))
-  const stamped = hookNonce ? (await runtime.renderDevBadge?.(event, hookNonce).catch(() => undefined))?.trim() : undefined
+  const stamped = hookNonce ? (await renderDevBadge(runtime, event, false, hookNonce))?.trim() : undefined
   if (stamped) {
-    context.head[index] = stamped
+    context.head[index] = context.head[index]!.replace(rendered, () => stamped)
   }
 }
 
