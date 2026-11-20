@@ -797,4 +797,4 @@ export const useLazyFetch: UseFetch = _createUseFetch({
   _functionName: 'useLazyFetch',
 })
 
-export type { AnyServerRouteMethod, AvailableServerRouteMethod, ServerRouteMethod, ServerRouteMethods, TypedFetch, TypedFetch as $Fetch, TypedFetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from '../types/fetch'
+export type { AnyServerRouteMethod, AvailableServerRouteMethod, ServerRouteMethod, ServerRouteMethods, TypedFetch, TypedFetch as $Fetch, TypedFetchOptions, FetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from '../types/fetch'

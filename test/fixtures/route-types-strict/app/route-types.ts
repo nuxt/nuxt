@@ -1,3 +1,4 @@
+import type { FetchOptions } from '#app'
 import { expectTypeOf } from 'vitest'
 
 /**
@@ -92,15 +93,25 @@ export async function namedResponseMethodProbe<T> (url: string, body: Record<str
   expectTypeOf(await $fetch('/api/validated', { method: 'POST', body: { title: 'a', count: 1 }, query: { page: '1' } })).toEqualTypeOf<{ created: boolean }>()
 }
 
-/** The parameters of `$fetch` and `useFetch` can be read off their types. */
-export async function fetchParametersProbe<T> (url: string, options: Parameters<typeof $fetch>[1] = {}, rawOptions: Parameters<typeof $fetch.raw>[1] = {}) {
-  await $fetch<T>(url, { ...options })
-  await $fetch.raw<T>(url, { ...rawOptions })
+/** A URL the app does not serve is fetched with options typed for any request. */
+export async function externalFetchProbe<T> (url: string, options: FetchOptions = {}) {
+  const post: FetchOptions = { method: 'POST', body: { a: 1 }, query: { a: 1 }, headers: { a: 'b' } }
+  await $fetch(new Request('https://example.com'))
+  await $fetch.raw(new Request('https://example.com'))
+  await $fetch<T>(url, post)
+  return await $fetch<T>(url, options)
+}
 
-  const request: Parameters<typeof $fetch>[0] = new Request('https://example.com')
-  const rawRequest: Parameters<typeof $fetch.raw>[0] = new Request('https://example.com')
-  const created: Parameters<ReturnType<typeof $fetch.create>>[1] = { method: 'PATCH' }
-  const fetchOptions: Parameters<typeof useFetch>[1] = { method: 'POST', body: { a: 1 }, query: { a: 1 } }
-  const lazyFetchOptions: Parameters<typeof useLazyFetch>[1] = { method: 'POST', body: { a: 1 }, query: { a: 1 } }
-  return { request, rawRequest, created, fetchOptions, lazyFetchOptions }
+const api = $fetch.create({ headers: { 'x-client': 'app' } })
+
+/** An instance created from `$fetch` is typed by the routes it is called with. */
+export async function createdFetchProbe () {
+  expectTypeOf(await api('/api/hello')).toEqualTypeOf<{ hello: boolean }>()
+  expectTypeOf(await api('/api/validated', { method: 'POST', body: { title: 'a', count: 1 }, query: { page: '1' } })).toEqualTypeOf<{ created: boolean }>()
+  // @ts-expect-error the route validates a body, so it cannot be omitted
+  await api('/api/validated', { method: 'POST', query: { page: '1' } })
+  // @ts-expect-error `count` is not a string
+  await api('/api/validated', { method: 'POST', body: { title: 'a', count: '1' }, query: { page: '1' } })
+  // @ts-expect-error no GET route matches '/api/helo'
+  await api('/api/helo')
 }
