@@ -82,7 +82,7 @@ function generateOptionSegments (opts: Record<string, any>) {
     }
     segments.push(unwrapped)
   }
-  if (opts.body) {
+  if (opts.body != null) {
     const value = toValue(opts.body)
     if (!value) {
       segments.push(hashKey(value))
