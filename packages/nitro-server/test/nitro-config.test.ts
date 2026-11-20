@@ -228,16 +228,16 @@ describe('nitro config', () => {
   }, 60_000)
 
   it.each([
-    ['nitro:init', 'mutate', true],
-    ['nitro:init', 'reassign', false],
-    ['build:before', 'mutate', true],
-    ['build:before', 'reassign', false],
-    ['nitro:build:before', 'mutate', true],
-    ['nitro:build:before', 'reassign', false],
-    ['prerender:done', 'mutate', true],
-    ['prerender:done', 'reassign', false],
-    ['updateConfig', 'reassign', true],
-  ] as const)('passes the route rules as changed in `%s` (%s) to the server runtime: %s', async (phase, mode, seenByRuntime) => {
+    ['nitro:init', 'mutate'],
+    ['nitro:init', 'reassign'],
+    ['build:before', 'mutate'],
+    ['build:before', 'reassign'],
+    ['nitro:build:before', 'mutate'],
+    ['nitro:build:before', 'reassign'],
+    ['prerender:done', 'mutate'],
+    ['prerender:done', 'reassign'],
+    ['updateConfig', 'reassign'],
+  ] as const)('passes the route rules as changed in `%s` (%s) to the server runtime', async (phase, mode) => {
     const outputDir = await mkdtemp(join(tmpdir(), 'nuxt-route-rules-'))
     const addRule = (nitro: Nitro) => {
       const rule = { headers: { 'x-added': '1' } }
@@ -287,7 +287,7 @@ describe('nitro config', () => {
       const builtIn = ['/__nuxt_error', '/_nuxt/**', '/_nuxt/builds/**', '/_nuxt/builds/meta/**']
       const configured = ['/:/:/about', '/:/about']
       const derived = ['/:/:/about/_payload.json', '/:/about/_payload.json']
-      const expected = seenByRuntime ? [...builtIn, ...configured, ...derived, '/added'] : [...builtIn, ...configured]
+      const expected = [...builtIn, ...configured, ...derived, '/added']
       expect(Object.keys(runtimeRouteRules).map(key => key.replace(/:[$\w]+/g, ':')).sort()).toEqual(expected.sort())
       expect(new Set(Object.keys(runtimeRouteRules).filter(key => key.endsWith('/about')).map(key => key.split('/')[1]))).toEqual(new Set([':slug']))
     }).finally(() => rm(outputDir, { recursive: true, force: true }))
