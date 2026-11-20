@@ -1,8 +1,25 @@
 import { defu } from 'defu'
-import { addRoute, createRouter, findAllRoutes } from 'rou3'
+import { addRoute, createRouter, findAllRoutes, findRoute } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import type { RouterCompilerOptions } from 'rou3/compiler'
 import { tryUseNitro } from '@nuxt/kit'
+import {
+  createNormalizedRouteRulesRouter as createNitroV3NormalizedRouteRulesRouter,
+  decodeRoutePath as decodeNitroV3RoutePath,
+  encodeRoutePath,
+  findCaseDependentRouteRuleKeyPart as findNitroV3CaseDependentRouteRuleKeyPart,
+  foldRouteCase as foldNitroV3RouteCase,
+  isWildcardRedirect as isNitroV3WildcardRedirectTarget,
+  matchAllRouteRules as matchAllNitroV3RouteRules,
+  mergeMethodRouteRulesRoutes,
+  normalizeAppMiddlewareRules as normalizeNitroV3AppMiddlewareRules,
+  normalizeRouteRulePath as normalizeNitroV3RouteRulePath,
+  normalizeRouteRules as normalizeNitroV3RouteRules,
+  normalizeRouteRuleLookupPath,
+  pageDiagnostics,
+  parseRouteRulesRoute,
+  resolveWildcardRedirect as resolveNitroV3WildcardRedirect,
+} from '@nuxt/kit/internal'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
 import { decodeRoutePath, foldRouteCase, matchAllRouteRules, resolveRoutePathDotSegments } from './index.ts'
 
@@ -351,4 +368,205 @@ export function createNormalizedRouteRulesRouter (routes: RouteRulesRoute[], bas
     return { ...route, route: key }
   })
   return createRouteRulesRouter(normalizedRoutes, normalizeRouteRulePath(String(baseURL || ''), fold))
+}
+
+/**
+ * Route-rule matching in the pattern syntax of the server a Nuxt instance builds with: rou3 0.9
+ * for nitropack, and rou3 1.0 (through `@nuxt/kit`) for Nitro v3.
+ *
+ * @internal
+ */
+export interface RouteRulesMatching {
+  nitroMajor: 2 | 3
+  /** The resolved route rules as router entries, keyed as they were resolved. */
+  resolveRoutes (nuxt: Nuxt): RouteRulesRoute[]
+  /** The entries that apply to a page request. */
+  resolvePageRoutes (routes: RouteRulesRoute[]): RouteRulesRoute[]
+  /** A router over page requests whose keys are normalised the way lookups are. */
+  createRouter (routes: RouteRulesRoute[], fold: boolean, onDuplicate?: (existing: string, route: string, key: string) => void): RouteRulesRouter
+  /** Whether a path matches any of `patterns`. */
+  createPatternMatcher (patterns: string[], fold: boolean): (path: string) => boolean
+  /** The rules a router built with {@link RouteRulesMatching.createRouter} resolves for `path`, merged most-specific-last. */
+  resolveRouteRules<T extends Record<string, any>> (router: RouteRulesRouter, path: string, fold: boolean): T
+  normalizeRouteRulePath (path: string, fold: boolean): string
+  findCaseDependentRouteRuleKeyPart (key: string): string | undefined
+  isWildcardRedirect (redirect: unknown): boolean
+  /** Source of `normalizePath(path, fold)` and `matchAllRouteRules` for a compiled matcher. */
+  normalizePathCode: string
+  /** Source of `resolveWildcardRedirect(rules, path)` for a compiled matcher. */
+  resolveWildcardRedirectCode: string
+  /** The name of a param at the start of a pattern. */
+  paramRE: RegExp
+}
+
+const NITROPACK_PARAM_RE = /^:[\w-]+/
+const NITRO_V3_PARAM_RE = /^:[A-Z_]\w*/i
+
+const nitropackMatching: RouteRulesMatching = {
+  nitroMajor: 2,
+  resolveRoutes: nuxt => resolveRouteRulesRoutes(nuxt).routes,
+  resolvePageRoutes: routes => routes,
+  createRouter: (routes, fold, onDuplicate) => createNormalizedRouteRulesRouter(routes, '', fold, onDuplicate),
+  createPatternMatcher (patterns, fold) {
+    const router = createRouter<true>()
+    for (const pattern of patterns) {
+      addRoute(router, '', normalizeRouteRulePath(pattern, fold), true)
+    }
+    return path => !!findRoute(router, '', normalizeRouteRulePath(path, fold))
+  },
+  resolveRouteRules,
+  normalizeRouteRulePath,
+  findCaseDependentRouteRuleKeyPart,
+  isWildcardRedirect,
+  normalizePathCode,
+  resolveWildcardRedirectCode: `const resolveWildcardRedirect = ${resolveWildcardRedirect.toString()}`,
+  paramRE: NITROPACK_PARAM_RE,
+}
+
+const nitroV3Matching: RouteRulesMatching = {
+  nitroMajor: 3,
+  resolveRoutes (nuxt) {
+    const nitro = tryUseNitro()
+    let rules: Record<string, Record<string, any>>
+    if (nitro) {
+      rules = nitro.options.routeRules
+    } else {
+      rules = normalizeNitroV3RouteRules(nuxt.options.routeRules)
+      normalizeNitroV3AppMiddlewareRules(rules)
+    }
+    return Object.entries(rules).map(([route, data]) => ({ route, method: '', data }))
+  },
+  resolvePageRoutes: routes => mergeMethodRouteRulesRoutes(routes),
+  createRouter: (routes, fold, onDuplicate) => createNitroV3NormalizedRouteRulesRouter(mergeMethodRouteRulesRoutes(routes), '', fold, onDuplicate),
+  createPatternMatcher (patterns, fold) {
+    const router = createNitroV3NormalizedRouteRulesRouter(patterns.map(route => ({ route, data: {} })), '', fold)
+    return path => router.matchAll('', normalizeRouteRuleLookupPath(path, fold)).length > 0
+  },
+  resolveRouteRules: <T extends Record<string, any>> (router: RouteRulesRouter, path: string, fold: boolean): T =>
+    defu({} as T, ...matchAllNitroV3RouteRules(path => router.matchAll('', normalizeRouteRuleLookupPath(path, fold)), path).reverse()),
+  normalizeRouteRulePath: normalizeNitroV3RouteRulePath,
+  findCaseDependentRouteRuleKeyPart: findNitroV3CaseDependentRouteRuleKeyPart,
+  // a target interpolates the matched tail when it ends with `/**`, or when the key ends with a
+  // catch-all, which is what gives the redirect a `base`
+  isWildcardRedirect: redirect => isNitroV3WildcardRedirectTarget(redirect) && ((redirect as { to: string }).to.endsWith('/**') || (redirect as { base?: string }).base !== undefined),
+  normalizePathCode: [
+    `const decodeRoutePath = ${decodeNitroV3RoutePath.toString()}`,
+    `const encodeRoutePath = ${encodeRoutePath.toString()}`,
+    `const foldRouteCase = ${foldNitroV3RouteCase.toString()}`,
+    `const matchAllRouteRules = ${matchAllNitroV3RouteRules.toString()}`,
+    `const normalizePath = (path, fold) => {`,
+    `  if (typeof path !== 'string') { return path }`,
+    `  const decoded = decodeRoutePath(path)`,
+    `  return encodeRoutePath(fold ? foldRouteCase(decoded) : decoded)`,
+    `}`,
+  ].join('\n'),
+  resolveWildcardRedirectCode: `const resolveWildcardRedirect = ${resolveNitroV3WildcardRedirect.toString()}`,
+  paramRE: NITRO_V3_PARAM_RE,
+}
+
+/**
+ * The route-rule matching for the server `nuxt` builds with.
+ *
+ * @internal
+ */
+export function getRouteRulesMatching (nuxt: { options: Pick<Nuxt['options'], '_nitroMajor'> }): RouteRulesMatching {
+  return nuxt.options._nitroMajor === 3 ? nitroV3Matching : nitropackMatching
+}
+
+const CATCH_ALL_NAME_RE = /^:\w+/
+
+/**
+ * The first part of a route-rule key that matches different paths in the pattern syntax of Nitro
+ * v3 than in that of nitropack: a single `*`, a `(.*)` constraint, a `**` followed by more of the
+ * pattern, or a param name that is not an identifier.
+ *
+ * @internal
+ */
+export function findChangedRouteRuleKeyPart (key: string): string | undefined {
+  const { path } = parseRouteRulesRoute({ route: key, data: {} })
+  let modifiable = false
+  for (let index = 0; index < path.length;) {
+    const char = path[index]!
+    if (char === '\\') {
+      index += 2
+      modifiable = false
+      continue
+    }
+    if (char === ':') {
+      const name = NITROPACK_PARAM_RE.exec(path.slice(index))?.[0]
+      if (!name) {
+        index++
+        modifiable = false
+        continue
+      }
+      if (name !== NITRO_V3_PARAM_RE.exec(path.slice(index))?.[0]) { return name }
+      const length = groupLength(path, index + name.length)
+      if (length && path.slice(index + name.length, index + name.length + length) === '(.*)' && !/[?*+]/.test(path[index + name.length + length] || '')) {
+        return path.slice(index, index + name.length + length)
+      }
+      index += name.length + length
+      modifiable = true
+      continue
+    }
+    if (char === '(') {
+      const length = groupLength(path, index)
+      if (path.slice(index, index + length) === '(.*)' && !/[?*+]/.test(path[index + length] || '')) { return '(.*)' }
+      index += length
+      modifiable = true
+      continue
+    }
+    if (char === '*') {
+      if (path[index + 1] === '*') {
+        const end = index + 2 + (CATCH_ALL_NAME_RE.exec(path.slice(index + 2))?.[0].length ?? 0)
+        if (path.slice(end).replace(/^\/$/, '')) { return path.slice(index) }
+        index = end
+        modifiable = false
+        continue
+      }
+      if (!modifiable) { return '*' }
+    }
+    modifiable = char === '}'
+    index++
+  }
+}
+
+function groupLength (pattern: string, index: number): number {
+  if (pattern[index] !== '(') { return 0 }
+  let depth = 0
+  let inClass = false
+  for (let cursor = index; cursor < pattern.length; cursor++) {
+    const char = pattern[cursor]
+    if (char === '\\') {
+      cursor++
+    } else if (inClass) {
+      inClass = char !== ']'
+    } else if (char === '[') {
+      inClass = true
+    } else if (char === '(') {
+      depth++
+    } else if (char === ')' && --depth === 0) {
+      return cursor + 1 - index
+    }
+  }
+  return pattern.length - index
+}
+
+const reportedChangedRouteRuleKeys = new WeakMap<Nuxt, Set<string>>()
+
+/**
+ * Report each route-rule key whose pattern matches different paths on Nitro v3 than on
+ * nitropack, once per key, when `nuxt` builds with Nitro v3.
+ *
+ * @internal
+ */
+export function reportChangedRouteRuleKeys (nuxt: Nuxt, routes: RouteRulesRoute[]): void {
+  if (nuxt.options._nitroMajor !== 3) { return }
+  const reported = reportedChangedRouteRuleKeys.get(nuxt) ?? reportedChangedRouteRuleKeys.set(nuxt, new Set()).get(nuxt)!
+  for (const { route } of routes) {
+    if (typeof route !== 'string' || reported.has(route)) { continue }
+    const part = findChangedRouteRuleKeyPart(route)
+    if (part === undefined) { continue }
+    reported.add(route)
+    pageDiagnostics.NUXT_B4029({ route, part })
+  }
 }

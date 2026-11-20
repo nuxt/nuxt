@@ -9,7 +9,7 @@ import { routeRulesTemplate } from '../src/core/templates.ts'
 
 const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
 
-async function getRouteRulesTemplate (sensitive: boolean, routeRules: Record<string, any> = { '/admin/**': { prerender: true } }, routerOptions?: string) {
+async function getRouteRulesTemplate (sensitive: boolean, routeRules: Record<string, any> = { '/admin/**': { prerender: true } }, routerOptions?: string, nitroMajor?: 2 | 3) {
   const routerOptionsDir = routerOptions === undefined ? undefined : await mkdtemp(join(tmpdir(), 'nuxt-router-options-'))
   const routerOptionsFile = routerOptionsDir && join(routerOptionsDir, 'router.options.ts')
   if (routerOptionsFile) {
@@ -19,6 +19,7 @@ async function getRouteRulesTemplate (sensitive: boolean, routeRules: Record<str
     cwd: pagesFixtureDir,
     ready: true,
     overrides: {
+      ...nitroMajor ? { _nitroMajor: nitroMajor } : {},
       router: { options: { sensitive } },
       routeRules,
       hooks: routerOptionsFile ? { 'pages:routerOptions': ({ files }) => { files.push({ path: routerOptionsFile }) } } : {},
@@ -187,5 +188,77 @@ describe('wildcard route rule redirects', () => {
       expect(matcher('/OLD/A/b').redirect).toBe(sensitive ? undefined : '/new/A/b')
       expect(matcher('/old/A/b').redirect).toBe(sensitive ? undefined : '/new/A/b')
     }
+  })
+})
+
+describe('route rules template on Nitro v3', () => {
+  const patternRules = {
+    '/star/*': { appMiddleware: 'star' },
+    '/file/name.*': { appMiddleware: 'file' },
+    '/before/*/end': { appMiddleware: 'before' },
+    '/any/:id(.*)': { appMiddleware: 'any' },
+    '/suffix/**/end': { appMiddleware: 'suffix' },
+    '/user/:user-id': { appMiddleware: 'user' },
+    '/named/:id': { appMiddleware: 'named' },
+  }
+
+  it('matches route rule patterns the way Nitro v3 does', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, patternRules, undefined, 3))
+    expect(matcher('/star/a/b').appMiddleware).toEqual({ star: true })
+    expect(matcher('/file/name.tar/gz').appMiddleware).toEqual({ file: true })
+    expect(matcher('/before/a/b/end').appMiddleware).toEqual({ before: true })
+    expect(matcher('/any/a/b').appMiddleware).toEqual({ any: true })
+    expect(matcher('/suffix/a/end').appMiddleware).toEqual({ suffix: true })
+    expect(matcher('/suffix/a/b').appMiddleware).toBeUndefined()
+    expect(matcher('/user/a-id').appMiddleware).toEqual({ user: true })
+    expect(matcher('/user/a').appMiddleware).toBeUndefined()
+    expect(matcher('/named/a').appMiddleware).toEqual({ named: true })
+    expect(matcher('/named/a/b').appMiddleware).toBeUndefined()
+  })
+
+  it('keeps matching route rule patterns the way nitropack does', async () => {
+    for (const nitroMajor of [undefined, 2] as const) {
+      const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, patternRules, undefined, nitroMajor))
+      expect(matcher('/star/a').appMiddleware).toEqual({ star: true })
+      expect(matcher('/star/a/b').appMiddleware).toBeUndefined()
+      expect(matcher('/file/name.tar/gz').appMiddleware).toBeUndefined()
+      expect(matcher('/before/a/b/end').appMiddleware).toBeUndefined()
+      expect(matcher('/any/a/b').appMiddleware).toBeUndefined()
+      expect(matcher('/suffix/a/b').appMiddleware).toEqual({ suffix: true })
+      expect(matcher('/user/a').appMiddleware).toEqual({ user: true })
+    }
+  })
+
+  it('folds the case of a lookup on Nitro v3 unless routing is `sensitive`', async () => {
+    const folded = await evaluateMatcher(await getRouteRulesTemplate(false, { '/Admin/*': { appMiddleware: 'auth' } }, undefined, 3))
+    expect(folded('/ADMIN/a/b').appMiddleware).toEqual({ auth: true })
+    const sensitive = await evaluateMatcher(await getRouteRulesTemplate(true, { '/Admin/*': { appMiddleware: 'auth' } }, undefined, 3), { sensitive: true })
+    expect(sensitive('/Admin/a/b').appMiddleware).toEqual({ auth: true })
+    expect(sensitive('/admin/a/b').appMiddleware).toBeUndefined()
+  })
+
+  it('applies the rules for page requests from method-scoped keys on Nitro v3', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, {
+      'GET /get/**': { appMiddleware: 'get' },
+      'POST /post/**': { appMiddleware: 'post' },
+      '/both/**': { appLayout: 'all', appMiddleware: 'all' },
+      'GET /both/**': { appLayout: 'get' },
+    }, undefined, 3))
+    expect(matcher('/get/a').appMiddleware).toEqual({ get: true })
+    expect(matcher('/post/a').appMiddleware).toBeUndefined()
+    expect(matcher('/both/a')).toMatchObject({ appLayout: 'get', appMiddleware: { all: true } })
+  })
+
+  it('resolves wildcard redirect targets the way Nitro v3 does', async () => {
+    const matcher = await evaluateMatcher(await getRouteRulesTemplate(false, {
+      '/old/**': { redirect: '/new/**' },
+      '/query/**': { redirect: '/new?path=**' },
+      '/star/*': { redirect: '/new/**' },
+      '/exact': { redirect: '/new?path=**' },
+    }, undefined, 3))
+    expect(matcher('/old/A/b').redirect).toBe('/new/A/b')
+    expect(matcher('/query/a').redirect).toBe('/new?path=a')
+    expect(matcher('/star/a/b').redirect).toBe('/new/star/a/b')
+    expect(matcher('/exact').redirect).toBe('/new?path=**')
   })
 })

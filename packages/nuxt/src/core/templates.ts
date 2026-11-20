@@ -14,7 +14,7 @@ import { annotatePlugins, breakCircularDependencies, filterPluginDependencies, h
 import type { PluginCapability } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { VALID_MANIFEST_KEYS, createNormalizedRouteRulesRouter, findCaseDependentRouteRuleKeyPart, isWildcardRedirect, normalizePathCode, resolveRouteRulesRoutes, resolveWildcardRedirect } from './utils/route-rules.ts'
+import { VALID_MANIFEST_KEYS, getRouteRulesMatching, reportChangedRouteRuleKeys } from './utils/route-rules.ts'
 import type { RouteRulesRouter } from './utils/route-rules.ts'
 import { findRouterOptionsFileDefining } from '../pages/router-options.ts'
 import { resolveServerBuilderPackage } from './server.ts'
@@ -833,7 +833,7 @@ const ROUTER_OPTIONS_FILE_RE = /(?:^|[/\\])router\.options\.\w+$/
 /** Compiled matchers, keyed by a hash of the route rules they were compiled from. */
 const cachedMatchers = new WeakMap<Nuxt, Record<string, string>>()
 
-function serializeAppRouteRules (routeRules: Record<string, any>): string {
+function serializeAppRouteRules (routeRules: Record<string, any>, isWildcardRedirect: (redirect: unknown) => boolean): string {
   return `{${Object.entries(routeRules)
     .filter(([name, value]) => value !== undefined && VALID_MANIFEST_KEYS.includes(name))
     .map(([name, value]) => {
@@ -870,11 +870,14 @@ export const routeRulesTemplate: NuxtTemplate = {
   // can set `sensitive`
   dependsOn: (change, { nuxt }) => !!nuxt.options.experimental.inlineRouteRules || ROUTER_OPTIONS_FILE_RE.test(change.path),
   async getContents ({ nuxt }) {
-    const routes = resolveRouteRulesRoutes(nuxt).routes
+    const matching = getRouteRulesMatching(nuxt)
+    const allRoutes = matching.resolveRoutes(nuxt)
+    reportChangedRouteRuleKeys(nuxt, allRoutes)
+    const routes = matching.resolvePageRoutes(allRoutes)
       .filter(({ route, data }) => route !== '/__nuxt_error' && VALID_MANIFEST_KEYS.some(key => data[key] !== undefined))
     const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
     const caseDependent = routes
-      .map(({ route }) => ({ route, part: findCaseDependentRouteRuleKeyPart(route) }))
+      .map(({ route }) => ({ route, part: matching.findCaseDependentRouteRuleKeyPart(route) }))
       .find((entry): entry is { route: string, part: string } => entry.part !== undefined)
     const mayBeCaseSensitive = caseSensitiveRouteRules || (!!caseDependent && !!await findRouterOptionsFileDefining(nuxt, 'sensitive'))
     if (caseDependent && !mayBeCaseSensitive) {
@@ -884,11 +887,12 @@ export const routeRulesTemplate: NuxtTemplate = {
     if (!routes.length) {
       return [hasRedirects, `export default () => ({})`].join('\n')
     }
-    if (routes.length === 1 && routes[0]!.route === '/**' && !isWildcardRedirect(routes[0]!.data.redirect)) {
-      return [hasRedirects, `export default () => (${serializeAppRouteRules(routes[0]!.data)})`].join('\n')
+    const serialize = (rules: Record<string, any>) => serializeAppRouteRules(rules, matching.isWildcardRedirect)
+    if (routes.length === 1 && routes[0]!.route === '/**' && !matching.isWildcardRedirect(routes[0]!.data.redirect)) {
+      return [hasRedirects, `export default () => (${serialize(routes[0]!.data)})`].join('\n')
     }
     const cache = cachedMatchers.get(nuxt) ?? cachedMatchers.set(nuxt, {}).get(nuxt)!
-    const cacheKey = hash({ routes, mayBeCaseSensitive })
+    const cacheKey = hash({ routes, mayBeCaseSensitive, nitroMajor: matching.nitroMajor })
     if (cache[cacheKey]) {
       return cache[cacheKey]
     }
@@ -899,7 +903,7 @@ export const routeRulesTemplate: NuxtTemplate = {
     // matcher and pick at runtime.
     const warned = warnedKeyCollisions.get(nuxt) ?? warnedKeyCollisions.set(nuxt, new Set()).get(nuxt)!
     // rule keys are matched against router paths, which carry no base URL
-    const getNormalizedRouter = (fold: boolean) => createNormalizedRouteRulesRouter(routes, '', fold, (existing, route, key) => {
+    const getNormalizedRouter = (fold: boolean) => matching.createRouter(routes, fold, (existing, route, key) => {
       // Only the matcher that will actually be used at runtime should report collisions.
       if (fold === caseSensitiveRouteRules || warned.has(key)) { return }
       warned.add(key)
@@ -907,12 +911,12 @@ export const routeRulesTemplate: NuxtTemplate = {
     })
     const compileOptions: NonNullable<Parameters<RouteRulesRouter['compileToString']>[0]> = {
       matchAll: true,
-      serialize: serializeAppRouteRules,
+      serialize,
     }
     const sensitiveMatcher = getNormalizedRouter(false).compileToString(compileOptions)
     const foldedMatcher = getNormalizedRouter(true).compileToString(compileOptions)
     const needsRouterOptions = foldedMatcher !== sensitiveMatcher || mayBeCaseSensitive
-    const wildcardRedirects = routes.some(({ data }) => isWildcardRedirect(data.redirect))
+    const wildcardRedirects = routes.some(({ data }) => matching.isWildcardRedirect(data.redirect))
     const withWildcardRedirect = (rules: string) => wildcardRedirects ? `resolveWildcardRedirect(${rules}, path)` : rules
     return cache[cacheKey] = [
       hasRedirects,
@@ -923,8 +927,8 @@ export const routeRulesTemplate: NuxtTemplate = {
       needsRouterOptions
         ? (foldedMatcher === sensitiveMatcher ? `const foldedMatcher = sensitiveMatcher` : `const foldedMatcher = ${foldedMatcher}`)
         : `const foldedMatcher = ${foldedMatcher}`,
-      normalizePathCode,
-      wildcardRedirects ? `const resolveWildcardRedirect = ${resolveWildcardRedirect.toString()}` : ``,
+      matching.normalizePathCode,
+      wildcardRedirects ? matching.resolveWildcardRedirectCode : ``,
       needsRouterOptions
         ? [
             `export default (path) => routerOptions.sensitive`,

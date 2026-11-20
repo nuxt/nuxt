@@ -2676,6 +2676,16 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/route-rule-patterns:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+    devDependencies:
+      typescript:
+        specifier: catalog:dev
+        version: 6.0.3
+
   test/fixtures/route-types-internal-api:
     dependencies:
       nuxt:

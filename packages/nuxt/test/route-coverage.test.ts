@@ -6,7 +6,9 @@ import type { Nitro, NitroRouteConfig } from 'nitropack/types'
 import type { NitroInstance, NuxtPage } from 'nuxt/schema'
 
 import { loadNuxt } from '../src/index.ts'
-import { markPagesCoveredByRouteRule } from '../src/pages/route-coverage.ts'
+import { markPagesCoveredByRouteRule, markPagesForRouteRules } from '../src/pages/route-coverage.ts'
+import { getRouteRulesMatching } from '../src/core/utils/route-rules.ts'
+import type { RouteRulesMatching } from '../src/core/utils/route-rules.ts'
 
 const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
 
@@ -14,7 +16,7 @@ function createNitro (rules: Record<string, NitroRouteConfig>) {
   return { options: { routeRules: rules } } as unknown as Nitro
 }
 
-function isCovered (nitro: Nitro, pages: NuxtPage[], options: { sensitive?: boolean } = {}) {
+function isCovered (nitro: Nitro, pages: NuxtPage[], options: { sensitive?: boolean, matching?: RouteRulesMatching } = {}) {
   const marks = new Map<string, boolean>()
   markPagesCoveredByRouteRule(pages, nitro, {
     isCovered: rules => rules.ssr === false,
@@ -156,6 +158,45 @@ describe('markPagesCoveredByRouteRule', () => {
       })
     } finally {
       await nuxt.close()
+    }
+  })
+
+  it('should cover nested pages from a single `*` rule only on Nitro v3', () => {
+    const nitro = createNitro({ '/foo/*': { ssr: false } })
+    const pages = [{ path: '/foo/bar/:id()', file: 'id.vue' }]
+    expect(isCovered(nitro, pages, { matching: getRouteRulesMatching({ options: { _nitroMajor: 3 } }) }).get('/foo/bar/:id()')).toBe(true)
+    expect(isCovered(nitro, pages).get('/foo/bar/:id()')).toBe(false)
+  })
+
+  it('should end a param name at a hyphen in a route rule on Nitro v3', () => {
+    const nitro = createNitro({ '/foo/:user-id': { ssr: false } })
+    const pages = [{ path: '/foo/:x()', file: 'x.vue' }]
+    expect(isCovered(nitro, pages, { matching: getRouteRulesMatching({ options: { _nitroMajor: 3 } }) }).get('/foo/:x()')).toBe(false)
+    expect(isCovered(nitro, pages).get('/foo/:x()')).toBe(true)
+  })
+
+  it('should mark pages with the matching of the Nitro major the project builds with', async () => {
+    for (const nitroMajor of [2, 3] as const) {
+      let nitro: NitroInstance | undefined
+      const nuxt = await loadNuxt({
+        cwd: pagesFixtureDir,
+        ready: true,
+        overrides: {
+          _nitroMajor: nitroMajor,
+          routeRules: { '/admin/*': { ssr: false } },
+          modules: [
+            (_options, nuxt) => {
+              nuxt.hook('nitro:init', (n) => { nitro = n })
+            },
+          ],
+        },
+      })
+      try {
+        markPagesForRouteRules(nuxt, [{ path: '/admin/users/:id()', file: `${nuxt.options.srcDir}/pages/admin-user.vue` }], nitro)
+        expect(nuxt.options._spaOnlyPageSources).toEqual(nitroMajor === 3 ? ['pages/admin-user.vue'] : [])
+      } finally {
+        await nuxt.close()
+      }
     }
   })
 })
