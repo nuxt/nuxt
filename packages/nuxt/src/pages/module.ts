@@ -249,6 +249,8 @@ export default defineNuxtModule({
           'export { useRoute } from \'#app/composables/router\'',
           `export { parseQuery, stringifyQuery } from ${JSON.stringify(ufoPath)}`,
           'export const START_LOCATION = Symbol(\'router:start-location\')',
+          // copy of vue-router's `_shouldHandleLinkClick`
+          'export const shouldHandleLinkClick = (e, el = e.currentTarget) => !(e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.defaultPrevented || e.button || /\\b_blank\\b/i.test(el?.getAttribute?.(\'target\') || \'\'))',
         ].join('\n'),
       })
       // used by `<NuxtLink>`
@@ -686,7 +688,7 @@ export default defineNuxtModule({
       getContents: () => [
         'import routerOptions from \'#build/router.options.mjs\'',
         'import { parseQuery as _parseQuery, stringifyQuery as _stringifyQuery } from \'vue-router\'',
-        'export { START_LOCATION, useRoute } from \'vue-router\'',
+        'export { START_LOCATION, useRoute, _shouldHandleLinkClick as shouldHandleLinkClick } from \'vue-router\'',
         'export const parseQuery = search => (routerOptions.parseQuery || _parseQuery)(search[0] === \'?\' ? search.slice(1) : search)',
         'export const stringifyQuery = query => (routerOptions.stringifyQuery || _stringifyQuery)(query)',
       ].join('\n'),

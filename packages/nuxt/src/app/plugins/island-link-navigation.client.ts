@@ -3,11 +3,12 @@ import type { ObjectPlugin, Plugin } from '../nuxt'
 import { useRouter } from '../composables/router'
 import { onNuxtReady } from '../composables/ready'
 import { prefetchRouteComponents } from '../composables/preload'
-import { guardEvent, useObserver } from '../components/nuxt-link'
+import { useObserver } from '../components/nuxt-link'
 import { canPrefetch } from '../internal/prefetch-util'
 import { documentURL } from '../internal/location'
 
 import { componentIslands } from '#build/nuxt.config.mjs'
+import { shouldHandleLinkClick } from '#build/pages'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:island-link-navigation',
@@ -44,7 +45,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       const anchor = (e.target as Element | null)?.closest('a')
       if (!anchor || !anchor.hasAttribute('data-internal') || anchor.hasAttribute('download')) { return }
 
-      if (!guardEvent(e, anchor)) { return }
+      if (!shouldHandleLinkClick(e, anchor)) { return }
 
       const route = resolveInternalLink(anchor)
       if (!route) { return }

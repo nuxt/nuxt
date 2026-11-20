@@ -273,6 +273,49 @@ describe('template links without a component instance', () => {
     }
   })
 
+  describe.each([
+    ['a string location', '/inline-link-param/1'],
+    ['an object location', { name: 'inline-link-param', params: { id: '1' } }],
+  ])('click guard for %s', (_, to) => {
+    async function click (init: MouseEventInit, prevent = false) {
+      const el = await mount(defineComponent({
+        render: () => (openBlock(), createElementBlock('div', null, [
+          createNuxtLinkVNode(NuxtLink, { to }, { default: textSlot(() => 'one'), _: 1 }),
+        ])),
+      }))
+      expect(el.findComponent(NuxtLink).exists()).toBe(false)
+      const push = vi.spyOn(router, 'push')
+      const anchor = el.get('a').element
+      const preventer = (e: Event) => e.preventDefault()
+      if (prevent) { anchor.addEventListener('click', preventer, { capture: true }) }
+      try {
+        const event = new MouseEvent('click', { cancelable: true, ...init })
+        anchor.dispatchEvent(event)
+        return { prevented: event.defaultPrevented, pushed: push.mock.calls.length }
+      } finally {
+        anchor.removeEventListener('click', preventer, { capture: true })
+        push.mockRestore()
+        el.unmount()
+      }
+    }
+
+    it('navigates on a plain left click', async () => {
+      expect(await click({ button: 0 })).toEqual({ prevented: true, pushed: 1 })
+    })
+
+    it.each(['metaKey', 'altKey', 'ctrlKey', 'shiftKey'])('leaves a click with %s to the browser', async (key) => {
+      expect(await click({ [key]: true })).toEqual({ prevented: false, pushed: 0 })
+    })
+
+    it.each([1, 2])('leaves a click with button %i to the browser', async (button) => {
+      expect(await click({ button })).toEqual({ prevented: false, pushed: 0 })
+    })
+
+    it('does not navigate when the default is already prevented', async () => {
+      expect(await click({}, true)).toEqual({ prevented: true, pushed: 0 })
+    })
+  })
+
   it('leaves `download` links to the browser', async () => {
     const el = await mount(defineComponent({
       render: () => (openBlock(), createElementBlock('div', null, [

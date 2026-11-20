@@ -32,7 +32,7 @@ import { navigationDiagnostics } from '../diagnostics/navigation'
 import { componentIslands, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
-import { parseQuery } from '#build/pages'
+import { parseQuery, shouldHandleLinkClick } from '#build/pages'
 import { isPlainAbsolutePath, mayMatchCurrentRoute } from './route-match'
 import { PageRouteSymbol } from './injections'
 import type { NuxtLinkOptions } from '../types'
@@ -786,7 +786,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     const to = resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash)
     const link = resolveStaticLink(props, router, rawTo, inject(PageRouteSymbol, nuxtApp._route))
     link.navigate = (e?: MouseEvent) => {
-      if (e && !guardEvent(e, e.currentTarget as Element)) { return Promise.resolve() }
+      if (e && !shouldHandleLinkClick(e)) { return Promise.resolve() }
       e?.preventDefault()
       return router.push(to).then(() => {}, () => {})
     }
@@ -872,7 +872,7 @@ function createInlineLinks (nuxtApp: NuxtApp): InlineLinks | false {
     router,
     onClick (e) {
       const anchor = e.currentTarget as Element
-      if (guardEvent(e, anchor)) {
+      if (shouldHandleLinkClick(e, anchor)) {
         e.preventDefault()
         router.push(pathOf(anchor)).catch(() => {})
       }
@@ -1031,20 +1031,6 @@ function activeRecordIndex (route: RouteLocationGeneric, currentRoute: RouteLoca
   return length > 1 && getOriginalPath(routeMatched) === parentRecordPath && currentMatched[currentMatched.length - 1]!.path !== parentRecordPath
     ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2]!))
     : index
-}
-
-/**
- * Whether a click should be handled as a client-side navigation rather than by the browser.
- * @internal
- */
-export function guardEvent (e: MouseEvent, anchor: Element | undefined): boolean {
-  if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.defaultPrevented) { return false }
-  if (e.button !== undefined && e.button !== 0) { return false }
-  if (anchor) {
-    const target = anchor.getAttribute('target')
-    if (target && /\b_blank\b/i.test(target)) { return false }
-  }
-  return true
 }
 
 /** Resolve an active-link class, falling back from the per-link value to the router-wide one. */

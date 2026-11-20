@@ -92,6 +92,47 @@ describe('app in an `<iframe srcdoc>` document', () => {
     }
   })
 
+  it.each([
+    ['`target="_blank"`', { target: '_blank' }, {}],
+    ['`target="_BLANK foo"`', { target: '_BLANK foo' }, {}],
+    ['a modifier key', {}, { metaKey: true }],
+    ['a middle click', {}, { button: 1 }],
+  ])('should leave a click with %s to the browser', (_, attrs: Record<string, string>, init: MouseEventInit) => {
+    mockSrcdocDocument()
+    const anchor = document.createElement('a')
+    anchor.setAttribute('href', '/index')
+    anchor.setAttribute('data-internal', '')
+    for (const [name, value] of Object.entries(attrs)) { anchor.setAttribute(name, value) }
+    const child = anchor.appendChild(document.createElement('span'))
+    document.body.appendChild(anchor)
+    try {
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true, ...init })
+      child.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(false)
+      expect(useRouter().currentRoute.value.fullPath).not.toBe('/index')
+    } finally {
+      anchor.remove()
+    }
+  })
+
+  it('should navigate from a click on a link child', async () => {
+    mockSrcdocDocument()
+    const anchor = document.createElement('a')
+    anchor.setAttribute('href', '/index')
+    anchor.setAttribute('data-internal', '')
+    anchor.setAttribute('target', '_self')
+    const child = anchor.appendChild(document.createElement('span'))
+    document.body.appendChild(anchor)
+    try {
+      const event = new MouseEvent('click', { bubbles: true, cancelable: true })
+      child.dispatchEvent(event)
+      expect(event.defaultPrevented).toBe(true)
+      await vi.waitFor(() => expect(useRouter().currentRoute.value.fullPath).toBe('/index'))
+    } finally {
+      anchor.remove()
+    }
+  })
+
   it('should reload the current document', () => {
     const location = mockSrcdocDocument()
     reloadNuxtApp({ force: true })
