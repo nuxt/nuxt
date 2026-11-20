@@ -94,8 +94,8 @@ describe.skipIf(!runs)('dev ssr error page', () => {
     }
   })
 
-  it('stamps the badge with a nonce a `render:html` listener adds', async () => {
-    const res = await fetch('/ok', { headers: { 'accept': 'text/html', 'x-nonce-hook': 'yes' } })
+  it.each(['/ok', '/streamed'])('stamps the badge with a nonce a `render:html` listener adds (%s)', async (path) => {
+    const res = await fetch(path, { headers: { 'accept': 'text/html', 'x-boom': 'fixed', 'x-nonce-hook': 'yes' } })
     const html = await res.text()
     const badge = html.match(/<script[^>]*>(?=window\.__NUXT_DEV_ERROR__)|<script[^>]*badge\.js[^>]*>/g)
 
