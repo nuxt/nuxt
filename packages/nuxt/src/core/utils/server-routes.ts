@@ -180,7 +180,7 @@ export function emitServerRoutesModule (opts: {
   /** Whether a path the route set does not describe is an error. */
   strict: boolean
 }): string {
-  const extractors = [opts.requestTypes?.body, opts.requestTypes?.query, opts.requestTypes?.headers, opts.requestTypes?.response].filter(Boolean)
+  const extractors = [...new Set([opts.requestTypes?.body, opts.requestTypes?.query, opts.requestTypes?.headers, opts.requestTypes?.response].filter(Boolean))]
 
   return [
     compileRoutes([{ routes: [...opts.routes, ...opts.pages || []] }], {
