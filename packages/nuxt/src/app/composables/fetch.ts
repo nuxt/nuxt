@@ -46,9 +46,9 @@ export interface UseFetchOptions<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
-  R extends string = string,
-  M extends AnyServerRouteMethod = 'get',
-  B extends string = string,
+  in out R extends string = string,
+  in out M extends AnyServerRouteMethod = 'get',
+  in out B extends string = string,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT, B>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
   $fetch?: TypedFetch
@@ -60,9 +60,9 @@ export interface UseFetchOptionsWithTransform<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
-  R extends string = string,
-  M extends AnyServerRouteMethod = 'get',
-  B extends string = string,
+  in out R extends string = string,
+  in out M extends AnyServerRouteMethod = 'get',
+  in out B extends string = string,
 > extends Omit<UseFetchOptions<ResT, DataT, PickKeys, DefaultT, R, M, B>, 'transform'> {
   transform: _Transform<ResT, DataT>
 }

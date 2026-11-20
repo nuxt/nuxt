@@ -53,9 +53,13 @@ interface ProgramOptions {
   strictFetchPaths?: boolean
   /** Module-level source appended to the program. */
   source?: string[]
+  /** Whether the program resolves `#app`, so that the source can import the composables. */
+  composables?: boolean
 }
 
-function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number, { strict = true, strictFetchPaths = true, source = [] }: ProgramOptions = {}) {
+const appDir = join(repoRoot, 'packages/nuxt/src/app')
+
+function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number, { strict = true, strictFetchPaths = true, source = [], composables = false }: ProgramOptions = {}) {
   rmSync(workspace, { recursive: true, force: true })
   mkdirSync(workspace, { recursive: true })
 
@@ -93,10 +97,15 @@ function program ({ routes, sites }: ReturnType<typeof routeSet>, calls: number,
       target: 'es2022',
       allowImportingTsExtensions: true,
       types: [],
-      lib: ['es2023', 'dom'],
-      paths: { '#build/server-routes': ['./server-routes.ts'], ...dependencies },
+      lib: ['es2023', 'dom', ...composables ? ['dom.iterable', 'webworker'] : []],
+      paths: {
+        '#build/server-routes': ['./server-routes.ts'],
+        ...composables ? { '#app': [join(appDir, 'index')], '#app/*': [join(appDir, '*')], 'nuxt/app': [join(appDir, 'index')], '#unhead/composables': [join(repoRoot, 'packages/nuxt/src/head/runtime/composables')] } : {},
+        ...dependencies,
+      },
+      ...composables ? { noUncheckedIndexedAccess: true, verbatimModuleSyntax: true, isolatedModules: true, moduleDetection: 'force', allowJs: true, resolveJsonModule: true, esModuleInterop: true } : {},
     },
-    include: ['./calls.ts'],
+    include: ['./calls.ts', ...composables ? [join(repoRoot, 'packages/nuxt/src/build-stubs.d.ts')] : []],
   }))
 
   const out = execFileSync(process.execPath, [nuxtRequire.resolve('typescript/bin/tsc'), '-p', join(workspace, 'tsconfig.json'), '--extendedDiagnostics'], { cwd: repoRoot, encoding: 'utf8' })
@@ -148,4 +157,17 @@ describe('a typed `$fetch` read through its own signature', () => {
     set.routes.push({ segments: [{ type: 'wildcard' }], metadata: { POST: { responseType: '{ proxied: true }', bodyType: '{ target: string }' } } })
     program(set, 0, { ...options, source })
   }, 60_000)
+})
+
+describe('the options of `useFetch` read through its own signature', () => {
+  it('compiles against a large route set', () => {
+    const source = [
+      `import type { UseFetch } from '${join(appDir, 'composables/fetch.ts')}'`,
+      'declare const useFetch: UseFetch',
+      'export type Options = Parameters<typeof useFetch>[1]',
+    ]
+    // ~410k as merged, nearly all of it checking the composables themselves; measuring the variance
+    // of `UseFetchOptions` instead of declaring it costs over 5M with this route set
+    expect(program(routeSet(50), 0, { source, composables: true })).toBeLessThan(1_000_000)
+  }, 120_000)
 })
