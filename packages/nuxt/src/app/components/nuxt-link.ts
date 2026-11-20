@@ -32,7 +32,7 @@ import { navigationDiagnostics } from '../diagnostics/navigation'
 import { componentIslands, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
-import { parseQuery } from '#build/pages'
+import { decode, parseQuery } from '#build/pages'
 import { isPlainAbsolutePath, mayMatchCurrentRoute } from './route-match'
 import { PageRouteSymbol } from './injections'
 import type { NuxtLinkOptions } from '../types'
@@ -743,14 +743,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
               // Focus the target element for hash links to restore accessibility behavior
               // that was prevented by event.preventDefault()
               if (import.meta.client && isHashLinkWithoutHashMode(to.value)) {
-                const rawHash = (to.value as string).slice(1)
-                let hash = rawHash
-                try {
-                  hash = decodeURIComponent(rawHash)
-                } catch {
-                  // ignore errors
-                }
-                const el = document.getElementById(hash)
+                const el = document.getElementById(decode((to.value as string).slice(1)))
                 el?.focus()
               }
             }

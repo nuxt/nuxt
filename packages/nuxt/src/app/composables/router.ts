@@ -15,7 +15,7 @@ import { navigationDiagnostics } from '../diagnostics/navigation'
 import { navigateToDefaults, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
-import { parseQuery, stringifyQuery } from '#build/pages'
+import { encodePath, parseQuery, stringifyQuery } from '#build/pages'
 
 /**
  * Augmented by Nuxt with the router methods that `experimental.staticRoutes` or
@@ -493,27 +493,8 @@ export function encodeURL (location: string, isExternalHost = false): string {
  */
 export function encodeRoutePath (url: string): string {
   const parsed = parseURL(url)
-  return encodeVueRouterPath(decodePath(parsed.pathname)) + parsed.search + parsed.hash
+  // `%252F` -> `%2F` matches the route records from unrouting
+  return encodePath(decodePath(parsed.pathname)).replace(ENC_ENC_SLASH_RE, '%2F') + parsed.search + parsed.hash
 }
 
-const ENC_PIPE_RE = /%7C/g
-const ENC_BRACKET_OPEN_RE = /%5B/g
-const ENC_BRACKET_CLOSE_RE = /%5D/g
 const ENC_ENC_SLASH_RE = /%252F/gi
-const HASH_RE = /#/g
-const QUESTION_MARK_RE = /\?/g
-
-/**
- * Apply vue-router's own path encoding, which leaves sub-delimiters like `&`
- * and `+` literal. This must stay in sync with `encodeVueRouterPath` in
- * `unrouting`, which encodes the route records we need to match against.
- */
-function encodeVueRouterPath (value: string): string {
-  return encodeURI(value)
-    .replace(ENC_PIPE_RE, '|')
-    .replace(ENC_BRACKET_OPEN_RE, '[')
-    .replace(ENC_BRACKET_CLOSE_RE, ']')
-    .replace(HASH_RE, '%23')
-    .replace(QUESTION_MARK_RE, '%3F')
-    .replace(ENC_ENC_SLASH_RE, '%2F')
-}

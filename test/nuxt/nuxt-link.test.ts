@@ -507,3 +507,22 @@ describe('custom slot route', () => {
     el.unmount()
   })
 })
+
+describe('hash links focus', () => {
+  it.each([
+    ['#caf%C3%A9', 'café'],
+    ['#café', 'café'],
+    ['#%E0%A4%A', '%E0%A4%A'],
+  ])('clicking %s focuses the element with id %s', async (to, id) => {
+    const el = await mountSuspended(defineComponent({
+      setup: () => () => h('div', [
+        h(NuxtLink, { to, id: 'hash-link' }, () => 'link'),
+        h('div', { id, tabindex: -1 }),
+      ]),
+    }), { attachTo: document.body })
+    onTestFinished(() => el.unmount())
+
+    await el.get('#hash-link').trigger('click')
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe(id))
+  })
+})
