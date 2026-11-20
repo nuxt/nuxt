@@ -74,6 +74,19 @@ describe('error cache-control plugin', () => {
     expect(await respond(404, 'private, max-age=5', { 'cache-control': 'no-store' }, true)).toBe('private, max-age=5')
   })
 
+  it('sends an error page the renderer rendered without a cache-control with no-cache', async () => {
+    expect(await respond(404, null, undefined, true)).toBe('no-cache')
+    expect(await respond(500, null, { 'x-other': '1' }, true)).toBe('no-cache')
+  })
+
+  it('sends an error response a handler returns without a cache-control or route rule without one', async () => {
+    expect(await respond(404, null, undefined, false)).toBe(null)
+  })
+
+  it('sends a response that is not an error without a cache-control', async () => {
+    expect(await respond(200, null, undefined, true)).toBe(null)
+  })
+
   describe('in an app', () => {
     const rules = {
       '/no-store/**': { headers: { 'cache-control': 'no-store' } },
@@ -121,6 +134,12 @@ describe('error cache-control plugin', () => {
       const res = await app().fetch(new Request(`http://localhost/${prefix}/page`))
       expect(res.status).toBe(404)
       expect(res.headers.get('cache-control')).toBe(expected)
+    })
+
+    it('sends an error page the renderer renders inline outside a route rule with no-cache', async () => {
+      const res = await app().fetch(new Request('http://localhost/other/page'))
+      expect(res.status).toBe(404)
+      expect(res.headers.get('cache-control')).toBe('no-cache')
     })
 
     it.each(cases)('sends the %s route rule as %s with an error response another error handler returns', async (prefix, expected) => {

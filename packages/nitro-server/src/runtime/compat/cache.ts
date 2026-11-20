@@ -80,10 +80,14 @@ function withLegacyCacheControl (options: CachedHandlerOptions | undefined): Cac
 export type CachedEventHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> =
   EventHandler<RequestT, Promise<Response>> & Pick<EventHandlerWithFetch<RequestT, Awaited<ResponseT>>, 'fetch'>
 
-/** v2 `defineCachedEventHandler`, which sends what the handler returns as h3 v1 did. */
+/**
+ * v2 `defineCachedEventHandler`, which sends what the handler returns as h3 v1 did, and serves
+ * an expired entry while it revalidates unless `swr` is `false`.
+ */
 export function defineCachedEventHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> (handler: EventHandler<RequestT, ResponseT>, options?: CachedHandlerOptions): CachedEventHandler<RequestT, ResponseT> {
   return defineCachedHandler(handler as EventHandler, {
     ...legacyResponseHeaders ? withLegacyCacheControl(options) : options,
+    swr: options?.swr ?? true,
     toResponse: (value: unknown, event: H3Event) => toResponse(fromLegacyBody(event, value), event),
   } as CachedHandlerOptions) as unknown as CachedEventHandler<RequestT, ResponseT>
 }

@@ -315,6 +315,12 @@ describe('emitServerRoutesModule', () => {
     expect(emitServerRoutesModule({ routes, strict: false })).toContain('export type StrictFetchPaths = false')
   })
 
+  it('imports an extractor the builder names for several request shapes once', () => {
+    const module = emitServerRoutesModule({ routes, requestTypes: { module: '@builder/request-types', body: 'ShapeOf', response: 'ShapeOf' }, strict: true })
+
+    expect(module).toContain('import type { ShapeOf } from \'@builder/request-types\'')
+  })
+
   it('describes pages as routes of their own where they are part of the set', () => {
     const pages = buildServerRoutes(collectServerRoutes(collectPageRoutes([{ path: '/about', file: '/project/app/pages/about.vue' }])), '/project/.nuxt')
       .map(route => ({ ...route, metadata: { GET: { responseType: 'string' } } }))

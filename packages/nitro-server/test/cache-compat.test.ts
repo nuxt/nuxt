@@ -53,7 +53,7 @@ describe('nitro v2 cached handlers', () => {
   it.each([['defineCachedEventHandler', defineCachedEventHandler], ['cachedEventHandler', cachedEventHandler]] as const)('pass the options of `%s` on as given without the Nitro v2 `cache-control`', (_name, define) => {
     flags.legacyResponseHeaders = false
     const options = { maxAge: 60 }
-    expect(optionsOf(options, define)).toEqual({ ...options, toResponse: expect.any(Function) })
+    expect(optionsOf(options, define)).toEqual({ ...options, swr: true, toResponse: expect.any(Function) })
   })
 
   it('send the `cache-control` of Nitro v2 with it', () => {
@@ -73,7 +73,7 @@ describe('nitro v2 cached handlers', () => {
   it('leave options that control the header alone', () => {
     flags.legacyResponseHeaders = true
     for (const options of [{ maxAge: 60, sendCacheControl: true }, { maxAge: 60, sendCacheControl: false }, { maxAge: 60, headersOnly: true }, { maxAge: 60, stream: true }]) {
-      expect(optionsOf(options)).toEqual({ ...options, toResponse: expect.any(Function) })
+      expect(optionsOf(options)).toEqual({ ...options, swr: true, toResponse: expect.any(Function) })
     }
   })
 })
