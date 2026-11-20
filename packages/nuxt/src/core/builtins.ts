@@ -6,7 +6,7 @@ import type { PackageJson } from 'pkg-types'
 import { resolveModulePath } from 'exsolve'
 import { satisfies } from 'verkit'
 import type { AddComponentOptions } from '@nuxt/kit'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt, NuxtPlugin } from 'nuxt/schema'
 
 import { BUILTIN_COMPONENT_META, getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
 import type { BuiltinComponentName } from '../components/builtin-metadata.ts'
@@ -39,8 +39,8 @@ function addBuiltinComponent (nuxt: Nuxt, [name, file, options]: BuiltinComponen
   })
 }
 
-export function addAppPlugin (nuxt: Nuxt, name: string) {
-  addPlugin(resolve(nuxt.options.appDir, 'plugins', name))
+export function addAppPlugin (nuxt: Nuxt, name: string, options?: Omit<NuxtPlugin, 'src'>) {
+  addPlugin({ ...options, src: resolve(nuxt.options.appDir, 'plugins', name) })
 }
 
 function isPagesEnabled (nuxt: Nuxt) {
@@ -89,7 +89,7 @@ export function addBuiltinsBeforeModules (nuxt: Nuxt) {
 
   // https://developer.chrome.com/docs/devtools/performance/extension
   if (nuxt.options.experimental.browserDevtoolsTiming) {
-    addAppPlugin(nuxt, 'browser-devtools-timing.client')
+    addAppPlugin(nuxt, 'browser-devtools-timing.client', { _skipTypes: true })
   }
 }
 

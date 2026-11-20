@@ -20,7 +20,7 @@ import { isWindows } from 'std-env'
 import { rou3PatternToURLPattern } from 'unrouting'
 import { ImpoundPlugin } from 'impound'
 import { resolveModulePath } from 'exsolve'
-import { runtimeDependencies } from 'nitro/meta'
+import { runtimeDir as nitroRuntimeDir, runtimeDependencies } from 'nitro/meta'
 
 import nitroBuilder from '../package.json' with { type: 'json' }
 import { GLOB_SUFFIX_RE, NON_JS_FILE_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, timePluginHooks, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal, withoutServerDirDeny, withoutWasmConditions } from './utils.ts'
@@ -52,6 +52,14 @@ export type { NuxtTracingChannelOptions } from './augments.ts'
 const REQUEST_TYPES_MODULE = `${nitroBuilder.name}/request-types`
 
 const RELATIVE_BASE_URL_RE = /^\.(?:$|\/)/
+
+const errorChannelHandler = resolve(distDir, 'runtime/handlers/error-channel')
+
+/** Handlers registered only by `nuxt dev`, which are left out of the typed server routes. */
+const devInternalHandlers = new Set([
+  errorChannelHandler,
+  resolve(nitroRuntimeDir, 'internal/routes/dev-tasks'),
+])
 
 // App-only aliases Nitro carries in its own alias map, which must not resolve in the server program
 const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/]
@@ -163,10 +171,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         `export const allowedHosts = ${JSON.stringify(resolveDevAllowedHosts(nuxt.options, viteAllowedHosts))};`,
       ].join('\n'),
     })
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'))
+    addPlugin({ src: resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'), _skipTypes: true })
   }
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
+    addPlugin({ src: resolve(nuxt.options.appDir, 'plugins/dev-server-logs'), _skipTypes: true })
     nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
   }
 
@@ -974,7 +982,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitro.options.handlers.unshift({
       route: joinURL(nuxt.options.devServer.errorChannel, '**'),
       lazy: true,
-      handler: resolve(distDir, 'runtime/handlers/error-channel'),
+      handler: errorChannelHandler,
     })
     const peerToken = process.env[DEV_PEER_TOKEN_ENV] ||= randomBytes(32).toString('base64url')
     const errorChannel = nuxt.options.devServer.errorChannel
@@ -1055,7 +1063,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
 
     for (const handler of [...nitro.scannedHandlers, ...nitro.options.handlers]) {
-      if (!handler.route) { continue }
+      if (!handler.route || devInternalHandlers.has(normalize(handler.handler))) { continue }
       // an optional parameter matches with and without the segment, so it resolves to two routes
       for (const nodeKey of routeNodeKeys(handler.route)) {
         routes.push({

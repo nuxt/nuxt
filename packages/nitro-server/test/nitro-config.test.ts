@@ -280,6 +280,27 @@ describe('nitro config', () => {
     })
   })
 
+  it('reports the same typed server routes in dev as in `nuxt prepare`', async () => {
+    const serverHandlers = [{ route: '/api/debug', env: 'dev' as const, handler: resolve(fixtureDir, 'server/api/debug.dev.ts') }]
+    const getRoutes = (overrides: NuxtConfig) => withNitro({ ...overrides, serverHandlers }, async (_nitro, _config, nuxt) => {
+      const routes: Array<{ route?: string, middleware?: boolean }> = []
+      await nuxt.callHook('server:routes', routes as any, {} as any)
+      return routes.filter(r => !r.middleware).map(r => r.route)
+    })
+    const devRoutes = await getRoutes({ dev: true })
+    expect(devRoutes).toEqual(['/api/debug'])
+    expect(devRoutes).toEqual(await getRoutes({ _prepare: true }))
+  })
+
+  it('registers the same typed plugins in dev as in `nuxt prepare`', async () => {
+    const getPlugins = (overrides: NuxtConfig) => withNitro({ ...overrides, pages: true }, (_nitro, _config, nuxt) => {
+      return nuxt.options.plugins.filter(p => typeof p === 'string' || !p._skipTypes).map(p => typeof p === 'string' ? p : p.src)
+    })
+    const devPlugins = await getPlugins({ dev: true })
+    expect(devPlugins).not.toEqual([])
+    expect(devPlugins).toEqual(await getPlugins({ _prepare: true }))
+  })
+
   it('excludes sources from server sourcemaps for `nosource`', async () => {
     await withNitro({ sourcemap: { server: 'nosource' } }, (_nitro, nitroConfig) => {
       expect(nitroConfig.rollupConfig!.output!.sourcemapExcludeSources).toBe(true)
