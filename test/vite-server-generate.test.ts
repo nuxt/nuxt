@@ -54,12 +54,18 @@ function read (path: string) {
 describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
   let files: string[]
   const targets: Array<string | undefined> = []
+  const prerender: Array<[string, any]> = []
 
   beforeAll(async () => {
     const nuxt = await buildInProcess(rootDir, {
       buildDir,
       nitro: { static: true, output: { dir: outputDir } },
-    }, nuxt => targets.push(nuxt.serverBuild.target?.()))
+    }, (nuxt) => {
+      targets.push(nuxt.serverBuild.target?.())
+      for (const hook of ['build:prerender:start', 'build:prerender:route', 'build:prerender:done'] as const) {
+        nuxt.hook(hook, (payload: any) => { prerender.push([hook, payload]) })
+      }
+    })
     targets.push(nuxt.serverBuild.target?.())
     expect((nuxt as { _nitro?: unknown })._nitro).toBeUndefined()
 
@@ -68,6 +74,20 @@ describe.skipIf(!runsOnceInMatrix)('pure vite prerendered build', () => {
 
   it('reports no deploy target', () => {
     expect(targets).toEqual([undefined, undefined])
+  })
+
+  it('reports the prerendered routes through the build hooks', () => {
+    expect(prerender[0]).toEqual(['build:prerender:start', { routes: expect.any(Number) }])
+    expect(prerender.at(-1)).toEqual(['build:prerender:done', { duration: expect.any(Number), written: expect.any(Number), failed: [] }])
+
+    const routes = prerender.filter(([hook]) => hook === 'build:prerender:route').map(([, route]) => route)
+    expect(routes).toContainEqual({ route: '/about', duration: expect.any(Number), total: expect.any(Number), skipped: false, fileName: 'about/index.html' })
+    const totals = routes.map(route => route.total)
+    expect(totals).toEqual([...totals].sort((a, b) => a - b))
+    expect(totals.at(-1)).toBeGreaterThan(prerender[0]![1].routes)
+    expect(totals.at(-1)).toBeGreaterThanOrEqual(routes.length)
+    expect(prerender.at(-1)![1].written).toBe(routes.filter(route => route.fileName).length)
+    expect(routes.filter(route => route.fileName).map(route => route.fileName).sort()).toEqual(expect.arrayContaining(files.filter(file => file.endsWith('.html'))))
   })
 
   it('writes an html file per prerendered route', () => {

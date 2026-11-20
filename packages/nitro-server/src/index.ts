@@ -12,7 +12,7 @@ import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { createNitro } from 'nitro/builder'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
-import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, isWithinDir, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
+import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, isWithinDir, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, reportNitroPrerender, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
@@ -452,7 +452,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
       plugins: [],
     },
-    logLevel: logLevelMapReverse[nuxt.options.logLevel],
+    // production builds are reported through the `build:*` hooks, so Nitro only prints warnings and errors
+    logLevel: nuxt.options.dev || nuxt.options.logLevel === 'silent' ? logLevelMapReverse[nuxt.options.logLevel] : 1,
   } satisfies NitroConfig)
 
   if (serverBundler === undefined || serverBundler === 'rolldown' || serverBundler === 'vite') {
@@ -844,6 +845,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       server: resolve(distDir, 'runtime/server'),
     },
     preview: { command: () => nitro.options.commands.preview },
+    deploy: { command: () => typeof nitro.options.commands.deploy === 'string' ? nitro.options.commands.deploy : undefined },
     canReuseSsrBuild: environment => canReuseSsrBuild(nitro, environment),
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)
@@ -948,6 +950,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitro.hooks.hook('prerender:routes', (routes) => {
     return nuxt.callHook('prerender:routes', { routes })
   })
+  if (!nuxt.options.dev) {
+    reportNitroPrerender(nitro, nuxt)
+  }
 
   // Enable runtime compiler client side
   if (nuxt.options.vue.runtimeCompiler) {

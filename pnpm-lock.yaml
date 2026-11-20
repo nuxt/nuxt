@@ -2040,9 +2040,6 @@ importers:
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
-      clickable-path:
-        specifier: catalog:build
-        version: 0.1.1
       defu:
         specifier: catalog:build
         version: 6.1.7
