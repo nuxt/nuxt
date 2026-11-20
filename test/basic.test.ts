@@ -1417,6 +1417,15 @@ describe.skipIf(!errorProjects)('errors', () => {
     }
   })
 
+  it('should not let a page error outside a route rule be cached', async () => {
+    for (const path of ['/page-that-does-not-exist', '/error-cause']) {
+      for (const accept of ['text/html', 'application/json']) {
+        const res = await fetch(path, { headers: { accept } })
+        expect([res.status, res.headers.get('cache-control')]).toEqual([path === '/error-cause' ? 500 : 404, 'no-cache'])
+      }
+    }
+  })
+
   it('should keep the route rule cache-control on an error response a handler returns', async () => {
     const res = await fetch('/api/returned-error')
     expect(res.status).toBe(404)
