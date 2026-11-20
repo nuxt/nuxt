@@ -302,8 +302,6 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
       let location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
       const redirect = async function (response: any) {
-        // TODO: consider deprecating in favour of `app:rendered` and removing
-        await nuxtApp.callHook('app:redirected')
         const encodedHeader = encodeURL(location, isExternalHost)
         const encodedLoc = encodeForHtmlAttr(encodedHeader)
 
@@ -312,6 +310,8 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
           headers: { location: encodedHeader },
         }
+        // TODO: consider deprecating in favour of `app:rendered` and removing
+        await nuxtApp.callHook('app:redirected')
         return response
       }
 
