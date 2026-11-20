@@ -89,7 +89,7 @@ describe('prerendering pages covered by route rules', () => {
         { route: `/about${payloadSuffix}` },
       ]
 
-      await nitro.hooks.callHook('rollup:before', nitro)
+      await nitro.hooks.callHook('rollup:before', nitro, { plugins: [] })
 
       const buildId = nuxt.options.runtimeConfig.app.buildId
       const manifestPath = join(nuxt.options.buildDir, 'manifest/meta', `${buildId}.json`)

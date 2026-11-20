@@ -51,6 +51,8 @@ const REQUEST_TYPES_MODULE = '@nuxt/nitro-server/request-types'
 
 const UNHEAD_IMPORT_RE = /^unhead(?:\/|$)/
 const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
+const SERVER_HANDLERS_ID_RE = /^\0virtual:#nitro-internal-virtual\/server-handlers$/
+const HANDLER_ROUTE_RE = /\broute: '([^']*)'/g
 
 const h3Presets = [
   {
@@ -530,10 +532,38 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
   )
 
-  // runs before payload rules are derived so generated `/_payload.json` keys inherit unified names
+  // only the runtime matchers need unified names; presets and modules read the keys as written
   nuxt.hook('nitro:init', (nitro) => {
-    nitro.hooks.hook('build:before', (nitro) => {
-      unifyDynamicRouteRuleSegments(nitro.options.routeRules)
+    nitro.hooks.hook('rollup:before', (nitro, rollupConfig) => {
+      const plugins = rollupConfig.plugins as Plugin[]
+      const sources = new WeakMap<object, Record<string, Record<string, any>>>()
+      plugins.push({
+        name: 'nuxt:unify-route-rules',
+        // the runtime receives the object `runtimeConfig` references, which reassigning
+        // `nitro.options.routeRules` does not replace
+        buildStart () {
+          const config = nitro.options.runtimeConfig.nitro
+          if (!config.routeRules) { return }
+          const source = sources.get(config.routeRules) ?? config.routeRules
+          const routeRules = { ...source }
+          unifyDynamicRouteRuleSegments(routeRules)
+          sources.set(routeRules, source)
+          config.routeRules = routeRules
+        },
+        // nitropack registers each cached rule key as a handler route, which h3 matches with radix3
+        transform: {
+          filter: { id: SERVER_HANDLERS_ID_RE },
+          handler (code) {
+            const renamedKeys = unifyDynamicRouteRuleSegments({ ...nitro.options.routeRules })
+            if (!renamedKeys.size) { return }
+            const declaredRoutes = new Set([...nitro.scannedHandlers, ...nitro.options.handlers].map(handler => handler.route))
+            return {
+              code: code.replace(HANDLER_ROUTE_RE, (match, route: string) => renamedKeys.has(route) && !declaredRoutes.has(route) ? `route: '${renamedKeys.get(route)}'` : match),
+              map: null,
+            }
+          },
+        },
+      })
     })
   })
 
