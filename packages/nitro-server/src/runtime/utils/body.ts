@@ -12,9 +12,8 @@ const BODY_READ_METHODS = new Set(['arrayBuffer', 'blob', 'bytes', 'formData', '
  */
 export function bufferRequestBody (event: H3Event): void {
   const request = event.req
-  // Don't touch `request.body` here: on Node, srvx creates the body stream on first access, and
-  // once it exists Node no longer discards an unread body after the response, which stalls the
-  // next request on a keep-alive connection (#37119). The body is only accessed once a read asks for it.
+  // Don't touch `request.body` here: on Node, srvx creates the body stream on first access, and an
+  // unread body stream stops Node from discarding the rest of the upload after the response (#37119).
   if (request.method === 'GET' || request.method === 'HEAD' || BUFFERED in request) {
     return
   }
@@ -66,7 +65,7 @@ export function bufferRequestBody (event: H3Event): void {
         return false
       }
       if (property === 'body') {
-        // keep `null` for a request without a body; reading `body` here is a read, so it may create the stream
+        // `null` for a bodyless request; reading `body` is a read, so creating the stream here is fine
         return target.body ? stream() : null
       }
       if (property === 'clone') {

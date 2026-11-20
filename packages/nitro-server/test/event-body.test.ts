@@ -215,26 +215,36 @@ describe('reading a request body more than once', () => {
   })
 })
 
-describe('a handler that answers without reading the body', () => {
-  // https://github.com/nuxt/nuxt/issues/37119
+describe('a handler that responds without reading the body', () => {
   it('leaves a keep-alive connection usable for the next request', async () => {
     const { port } = new URL(base)
     const socket = connect(Number(port), '127.0.0.1')
     onTestFinished(() => { socket.destroy() })
 
     let received = ''
+    let socketError: Error | undefined
     socket.setEncoding('latin1')
     socket.on('data', (chunk: string) => { received += chunk })
-    const waitFor = (pattern: RegExp, label: string) => withTimeout(new Promise<void>((resolve) => {
-      const check = () => {
-        if (pattern.test(received)) {
-          socket.off('data', check)
-          resolve()
-        }
+    socket.on('error', (error) => { socketError = error })
+    const waitFor = async (pattern: RegExp, label: string) => {
+      let timer: ReturnType<typeof setTimeout> | undefined
+      try {
+        await withTimeout(new Promise<void>((resolve, reject) => {
+          const check = () => {
+            if (pattern.test(received)) {
+              resolve()
+            } else if (socketError) {
+              reject(socketError)
+            } else {
+              timer = setTimeout(check, 5)
+            }
+          }
+          check()
+        }), label)
+      } finally {
+        clearTimeout(timer)
       }
-      socket.on('data', check)
-      check()
-    }), label)
+    }
 
     const body = 'x'.repeat(2 * 1024 * 1024)
     socket.write(`POST /reject-unread HTTP/1.1\r\nHost: localhost\r\nContent-Length: ${body.length}\r\n\r\n`)
