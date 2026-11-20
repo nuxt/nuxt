@@ -179,10 +179,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         `export const allowedHosts = ${JSON.stringify(resolveDevAllowedHosts(nuxt.options, viteAllowedHosts))};`,
       ].join('\n'),
     })
-    addPlugin({ src: resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'), _devOnly: true })
+    addPlugin({ src: resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'), _skipTypes: true })
   }
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
-    addPlugin({ src: resolve(nuxt.options.appDir, 'plugins/dev-server-logs'), _devOnly: true })
+    addPlugin({ src: resolve(nuxt.options.appDir, 'plugins/dev-server-logs'), _skipTypes: true })
     nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
   }
 

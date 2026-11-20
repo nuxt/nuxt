@@ -179,11 +179,11 @@ describe('schemaTemplate', () => {
 })
 
 describe('pluginsDeclaration', () => {
-  it('leaves dev-only plugins out so `nuxt dev` and `nuxt prepare` write the same types', async () => {
+  it('leaves plugins marked `_skipTypes` out of the generated types', async () => {
     const buildDir = '/project/.nuxt'
     const plugins: NuxtPlugin[] = [
       { src: '/project/app/plugins/user.ts' },
-      { src: '/nuxt/app/plugins/dev-overlay.client.ts', _devOnly: true },
+      { src: '/nuxt/app/plugins/dev-overlay.client.ts', _skipTypes: true },
     ]
     const nuxt = {
       ...makeNuxt({ buildDir, extensions: ['.ts'] } as unknown as Partial<Nuxt['options']>),

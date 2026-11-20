@@ -89,7 +89,7 @@ export function addBuiltinsBeforeModules (nuxt: Nuxt) {
 
   // https://developer.chrome.com/docs/devtools/performance/extension
   if (nuxt.options.experimental.browserDevtoolsTiming) {
-    addAppPlugin(nuxt, 'browser-devtools-timing.client', { _devOnly: true })
+    addAppPlugin(nuxt, 'browser-devtools-timing.client', { _skipTypes: true })
   }
 }
 

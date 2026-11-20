@@ -170,8 +170,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (nuxt.options.dev) {
     // warn when layouts are defined without `<NuxtLayout>` being instantiated
-    addAppPlugin(nuxt, 'check-if-layout-used', { _devOnly: true })
-    addAppPlugin(nuxt, 'warn.dev.server', { _devOnly: true })
+    addAppPlugin(nuxt, 'check-if-layout-used', { _skipTypes: true })
+    addAppPlugin(nuxt, 'warn.dev.server', { _skipTypes: true })
   }
 
   // Registered before `installModules` so module `build:manifest` hooks can attach to these
