@@ -544,4 +544,25 @@ describe('nitro config', () => {
       expect(reportFs).toEqual({ ...fs, deny: ['.env', '**/app-secret'] })
     })
   }, 60_000)
+
+  it.each([
+    [{ dev: false, logLevel: 'info' }, 1],
+    [{ dev: false, logLevel: 'verbose' }, 1],
+    [{ dev: false, logLevel: 'silent' }, 0],
+    [{ dev: false, logLevel: 'info', nitro: { logLevel: 3 } }, 3],
+    [{ dev: true, logLevel: 'info' }, 3],
+  ] satisfies Array<[NuxtConfig, number]>)('only prints warnings and errors from nitro in a production build unless the project sets a level (%j)', async (overrides, logLevel) => {
+    await withNitro(overrides, (nitro) => {
+      expect(nitro.options.logLevel).toBe(logLevel)
+    })
+  }, 60_000)
+
+  it('describes the deploy command of the preset', async () => {
+    await withNitro({ dev: false, nitro: { commands: { deploy: 'npx wrangler --cwd ./ pages deploy' } } }, (_nitro, _nitroConfig, nuxt) => {
+      expect(nuxt.serverBuild.deploy?.command?.()).toBe('npx wrangler --cwd ./ pages deploy')
+    })
+    await withNitro({ dev: false }, (_nitro, _nitroConfig, nuxt) => {
+      expect(nuxt.serverBuild.deploy?.command?.()).toBeUndefined()
+    })
+  }, 60_000)
 })

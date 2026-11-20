@@ -1,11 +1,12 @@
 import { cpus } from 'node:os'
+import { performance } from 'node:perf_hooks'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { dirname, join, resolve } from 'pathe'
-import { joinURL, parseURL, withBase, withoutBase } from 'ufo'
+import { joinURL, parseURL, withBase, withoutBase, withoutLeadingSlash } from 'ufo'
 import { logger } from '@nuxt/kit'
 import { parse, walk } from 'ultrahtml'
-import type { Nuxt, NuxtPage } from '@nuxt/schema'
+import type { Nuxt, NuxtPage, NuxtPrerenderFailure, NuxtPrerenderRoute } from '@nuxt/schema'
 
 import { createRouteRulesMatcher } from './route-rules.ts'
 
@@ -33,12 +34,6 @@ interface ResolvedPrerenderConfig {
   concurrency: number
   interval: number
   failOnError: boolean
-}
-
-interface PrerenderedRoute {
-  route: string
-  fileName?: string
-  error?: { status: number, statusText: string }
 }
 
 /** Whether the build produces a prerendered site rather than a server. */
@@ -81,24 +76,38 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
 
   const canPrerender = createPrerenderFilter(nuxt, config)
   const generated = new Set<string>()
-  const failed: PrerenderedRoute[] = []
-  const written: PrerenderedRoute[] = []
-  const linkParents = new Map<string, Set<string>>()
+  const failed: NuxtPrerenderFailure[] = []
+  const written: string[] = []
+  let emitted = 0
+  let total = 0
+
+  async function report (entry: Omit<NuxtPrerenderRoute, 'total'>): Promise<void> {
+    if (entry.error) {
+      failed.push({ route: entry.route, ...entry.error })
+    } else if (!entry.skipped) {
+      written.push(entry.route)
+    }
+    total = Math.max(total, generated.size + queue.size, ++emitted)
+    await nuxt.callHook('build:prerender:route', { ...entry, total })
+  }
 
   async function generateRoute (route: string): Promise<void> {
     route = decodeURI(route)
     if (generated.has(route) || !canPrerender(route)) { return }
     generated.add(route)
 
+    const start = performance.now()
     const request = new Request(new URL(withBase(encodeURI(route), baseURL), 'http://localhost'))
     const response = await fetch(request)
     const body = Buffer.from(await response.arrayBuffer())
 
-    const entry: PrerenderedRoute = { route }
     if (!WRITABLE_STATUSES.has(response.status)) {
-      entry.error = { status: response.status, statusText: response.statusText }
-      failed.push(entry)
-      logRoute(entry, linkParents)
+      await report({
+        route,
+        duration: performance.now() - start,
+        skipped: false,
+        error: { status: response.status, message: response.statusText || `HTTP ${response.status}` },
+      })
       return
     }
 
@@ -108,24 +117,17 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
     const htmlPath = route.endsWith('/') || config.autoSubfolderIndex ? joinURL(route, 'index.html') : route + '.html'
     const fileName = withoutBase(isImplicitHTML ? htmlPath : (route.endsWith('/') ? route + 'index' : route), baseURL)
 
-    if (canWriteToDisk(route, fileName)) {
-      entry.fileName = fileName
+    const writable = canWriteToDisk(route, fileName)
+    if (writable) {
       const path = join(options.publicDir, fileName)
       await mkdir(dirname(path), { recursive: true })
       await writeFile(path, body)
-      written.push(entry)
     }
 
-    logRoute(entry, linkParents)
+    const duration = performance.now() - start
 
     if (isImplicitHTML || route.endsWith('.html')) {
       for (const link of await extractLinks(body.toString('utf-8'), route, response, config.crawlLinks)) {
-        const parents = linkParents.get(link)
-        if (parents) {
-          parents.add(route)
-        } else {
-          linkParents.set(link, new Set([route]))
-        }
         // a route carrying a query cannot become a file, so following one only risks a
         // crawl that never drains (`?page=2` linking `?page=3`, and so on)
         if (!link.includes('?') && canPrerender(link) && !generated.has(link)) {
@@ -133,23 +135,25 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
         }
       }
     }
+
+    await report({ route, duration, skipped: !writable, ...writable ? { fileName: withoutLeadingSlash(fileName) } : {} })
   }
 
-  const start = Date.now()
-  logger.info(config.crawlLinks ? `Prerendering ${queue.size} initial routes with crawler` : `Prerendering ${queue.size} routes`)
-  await runParallel(queue, generateRoute, config, (route, error) => {
-    const entry: PrerenderedRoute = { route, error: { status: 500, statusText: error instanceof Error ? error.message : String(error) } }
-    failed.push(entry)
-    logRoute(entry, linkParents)
-  })
+  const start = performance.now()
+  await nuxt.callHook('build:prerender:start', { routes: queue.size })
+  await runParallel(queue, generateRoute, config, (route, error) => report({
+    route,
+    duration: 0,
+    skipped: false,
+    error: { message: error instanceof Error ? error.message : String(error) },
+  }))
+  await nuxt.callHook('build:prerender:done', { duration: performance.now() - start, written: written.length, failed })
 
   if (failed.length && config.failOnError) {
-    throw new Error(`[nuxt:vite-server] Exiting due to prerender errors: ${failed.map(entry => `"${entry.route}" (${entry.error!.status})`).join(', ')}.`)
+    throw new Error(`[nuxt:vite-server] Exiting due to prerender errors: ${failed.map(entry => `"${entry.route}" (${entry.status ?? entry.message})`).join(', ')}.`)
   }
 
-  logger.info(`Prerendered ${written.length} routes in ${(Date.now() - start) / 1000} seconds`)
-
-  return written.map(entry => entry.route)
+  return written
 }
 
 /**
@@ -282,20 +286,8 @@ function decode (value: string): string | undefined {
   }
 }
 
-function logRoute (route: PrerenderedRoute, linkParents: Map<string, Set<string>>): void {
-  if (!route.error) {
-    logger.log(`  ├─ ${route.route}${route.fileName ? '' : ' (skipped)'}`)
-    return
-  }
-  const parents = linkParents.get(route.route)
-  logger.log([
-    `  ├─ ${route.route} (${route.error.status} ${route.error.statusText})`,
-    ...[...parents || []].map(parent => `  │ └── Linked from ${parent}`),
-  ].join('\n'))
-}
-
 /** Drain a set the tasks themselves add to, running at most `concurrency` at a time. */
-async function runParallel (queue: Set<string>, task: (route: string) => Promise<void>, options: { concurrency: number, interval: number }, onError: (route: string, error: unknown) => void): Promise<void> {
+async function runParallel (queue: Set<string>, task: (route: string) => Promise<void>, options: { concurrency: number, interval: number }, onError: (route: string, error: unknown) => Promise<void>): Promise<void> {
   const running = new Set<Promise<void>>()
 
   function next (): Promise<void> | undefined {
