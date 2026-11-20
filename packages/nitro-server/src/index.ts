@@ -5,12 +5,12 @@ import { cpus } from 'node:os'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { randomBytes, randomUUID } from 'node:crypto'
 import type { Nuxt, NuxtBuildOutputs, NuxtOptions, ServerApi, ServerImportsOptions, ServerRouteSegment } from '@nuxt/schema'
-import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { createNitro } from 'nitro/builder'
-import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig, NitroEventHandler } from 'nitro/types'
+import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
 import { addPlugin, addTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, isWithinDir, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
@@ -50,6 +50,14 @@ export type { NuxtTracingChannelOptions } from './augments.ts'
 const REQUEST_TYPES_MODULE = `${nitroBuilder.name}/request-types`
 
 const RELATIVE_BASE_URL_RE = /^\.(?:$|\/)/
+
+const errorChannelHandler = resolve(distDir, 'runtime/handlers/error-channel')
+
+/** Handlers registered only by `nuxt dev`, which are left out of the typed server routes. */
+const devInternalHandlers = new Set([
+  errorChannelHandler,
+  resolve(nitroRuntimeDir, 'internal/routes/dev-tasks'),
+])
 
 // App-only aliases Nitro carries in its own alias map, which must not resolve in the server program
 const excludedServerAlias = [/^@vue\/.*$/, 'vue', /vue-router/, 'vite/client', /^#imports/, 'vue-demi', /^#app/, '~', '@', '~~', '@@']
@@ -949,8 +957,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitro.options.handlers.unshift({
       route: joinURL(nuxt.options.devServer.errorChannel, '**'),
       lazy: true,
-      env: 'dev',
-      handler: resolve(distDir, 'runtime/handlers/error-channel'),
+      handler: errorChannelHandler,
     })
     const peerToken = process.env[DEV_PEER_TOKEN_ENV] ||= randomBytes(32).toString('base64url')
     const errorChannel = nuxt.options.devServer.errorChannel
@@ -1030,7 +1037,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
 
     for (const handler of [...nitro.scannedHandlers, ...nitro.options.handlers]) {
-      if (!handler.route || isDevOnlyHandler(handler)) { continue }
+      if (!handler.route || devInternalHandlers.has(normalize(handler.handler))) { continue }
       // an optional parameter matches with and without the segment, so it resolves to two routes
       for (const nodeKey of routeNodeKeys(handler.route)) {
         routes.push({
@@ -1246,11 +1253,4 @@ async function resolveNitroTypePaths (packages: string[], options?: { entry?: bo
   const searchPaths = nitroPackageJson ? [dirname(nitroPackageJson), ownDir] : [ownDir]
   const resolved = await resolveTypePaths(packages, searchPaths, options)
   return Object.fromEntries(resolved.map(([pkg, path]) => [pkg, [path]]))
-}
-
-const nitroRoutesDir = resolve(nitroRuntimeDir, 'internal/routes')
-
-function isDevOnlyHandler (handler: NitroEventHandler): boolean {
-  const envs = [handler.env].flat().filter(Boolean)
-  return (envs.length > 0 && envs.every(env => env === 'dev')) || (isWithinDir(handler.handler, nitroRoutesDir) && basename(handler.handler).startsWith('dev-'))
 }

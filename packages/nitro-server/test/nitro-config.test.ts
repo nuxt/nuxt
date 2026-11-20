@@ -251,13 +251,16 @@ describe('nitro config', () => {
     })
   })
 
-  it('leaves dev-only handlers out of the typed server routes', async () => {
-    const devRoutes = await withNitro({ dev: true }, async (_nitro, _config, nuxt) => {
-      const routes: Array<{ route?: string }> = []
+  it('reports the same typed server routes in dev as in `nuxt prepare`', async () => {
+    const serverHandlers = [{ route: '/api/debug', env: 'dev' as const, handler: resolve(fixtureDir, 'server/api/debug.dev.ts') }]
+    const getRoutes = (overrides: NuxtConfig) => withNitro({ ...overrides, serverHandlers }, async (_nitro, _config, nuxt) => {
+      const routes: Array<{ route?: string, middleware?: boolean }> = []
       await nuxt.callHook('server:routes', routes as any, {} as any)
-      return routes.map(r => r.route)
+      return routes.filter(r => !r.middleware).map(r => r.route)
     })
-    expect(devRoutes.filter(route => route?.startsWith('/__nuxt_dev__') || route?.startsWith('/_nitro/'))).toEqual([])
+    const devRoutes = await getRoutes({ dev: true })
+    expect(devRoutes).toEqual(['/api/debug'])
+    expect(devRoutes).toEqual(await getRoutes({ _prepare: true }))
   })
 
   it('excludes sources from server sourcemaps for `nosource`', async () => {
