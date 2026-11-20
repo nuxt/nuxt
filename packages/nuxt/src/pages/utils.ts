@@ -324,6 +324,11 @@ export function getPageComponentNames (pages: NuxtPage[], nuxt = useNuxt()): Map
 
 const symlinkCache = new WeakMap<Nuxt, { version: number, files: Map<string, boolean> }>()
 
+/** Drop the cached symlink check for `file`, which an in-place change does not invalidate. */
+export function invalidatePageSymlink (nuxt: Nuxt, file: string): void {
+  symlinkCache.get(nuxt)?.files.delete(normalize(file))
+}
+
 function isSymlink (file: string, nuxt: Nuxt): boolean {
   const version = getAppStructureVersion(nuxt)
   let cache = symlinkCache.get(nuxt)
@@ -336,7 +341,7 @@ function isSymlink (file: string, nuxt: Nuxt): boolean {
     try {
       result = normalize(fs.realpathSync(file)) !== file
     } catch {
-      result = false
+      return false
     }
     cache.files.set(file, result)
   }

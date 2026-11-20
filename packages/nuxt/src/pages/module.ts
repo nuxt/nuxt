@@ -11,7 +11,7 @@ import { linkToAlias, logger } from '../utils.ts'
 import picomatch from 'picomatch'
 import { addRoute, createRouter, findRoute } from 'rou3'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, normalizeRoutes, resolveRoutePaths } from './utils.ts'
+import { resolvePagesRoutes as _resolvePagesRoutes, augmentAndResolve, createPagesContext, invalidatePageSymlink, normalizeRoutes, resolveRoutePaths } from './utils.ts'
 import type { PagesContext } from './utils.ts'
 import { resolvePageMetaExtractionKeys, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
 import { collectRou3PagePatterns, collectRou3PageSources, toRou3RoutePatterns } from './route-patterns.ts'
@@ -330,6 +330,7 @@ export default defineNuxtModule({
 
     nuxt.hook('builder:watch', async (event, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
+      if (event === 'change') { invalidatePageSymlink(nuxt, path) }
       const shouldAlwaysRegenerate = nuxt.options.experimental.scanPageMeta && isPage(path)
 
       if (event === 'change' && !shouldAlwaysRegenerate) { return }
