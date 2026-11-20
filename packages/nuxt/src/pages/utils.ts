@@ -13,6 +13,7 @@ import type { BuildTreeOptions, InputFile, RouteNode, RouteTree, VueRouterEmitOp
 
 import { linkToAlias, toArray } from '../utils.ts'
 import { reportScanProblem } from '../core/scan-problems.ts'
+import { getAppStructureVersion } from '../core/app.ts'
 import type { ScanReporter } from '../core/scan-problems.ts'
 import { defaultExtractionKeys, dynamicPageMetaCache, getDynamicMetaKeys, getDynamicPageMeta, getRouteMeta, locatePageMetaKey, shouldExtractSerializablePageMeta } from './page-meta-extraction.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -317,7 +318,7 @@ export function getPageComponentNames (pages: NuxtPage[], nuxt = useNuxt()): Map
   const visit = (page: NuxtPage) => {
     if (page.file && PAGE_COMPONENT_FILE_RE.test(page.file)) {
       const file = normalize(page.file)
-      const name = page.name && !getDynamicPageMeta(page, dynamicPageMeta).has('name') && !isSymlink(file)
+      const name = page.name && !getDynamicPageMeta(page, dynamicPageMeta).has('name') && !isSymlink(file, nuxt)
         ? page.name
         : undefined
       if (!pageNames.has(file)) {
@@ -346,12 +347,30 @@ export function getPageComponentNames (pages: NuxtPage[], nuxt = useNuxt()): Map
   return pageNames
 }
 
-function isSymlink (file: string): boolean {
-  try {
-    return normalize(fs.realpathSync(file)) !== file
-  } catch {
-    return false
+const symlinkCache = new WeakMap<Nuxt, { version: number, files: Map<string, boolean> }>()
+
+/** Drop the cached symlink check for `file`, which an in-place change does not invalidate. */
+export function invalidatePageSymlink (nuxt: Nuxt, file: string): void {
+  symlinkCache.get(nuxt)?.files.delete(normalize(file))
+}
+
+function isSymlink (file: string, nuxt: Nuxt): boolean {
+  const version = getAppStructureVersion(nuxt)
+  let cache = symlinkCache.get(nuxt)
+  if (!cache || cache.version !== version) {
+    cache = { version, files: new Map() }
+    symlinkCache.set(nuxt, cache)
   }
+  let result = cache.files.get(file)
+  if (result === undefined) {
+    try {
+      result = normalize(fs.realpathSync(file)) !== file
+    } catch {
+      return false
+    }
+    cache.files.set(file, result)
+  }
+  return result
 }
 
 function serializeRouteValue (value: any, skipSerialisation = false) {

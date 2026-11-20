@@ -2,10 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 
 import fs from 'node:fs'
 import type { RouteLocationNormalizedLoaded, RouteRecordRaw } from 'vue-router'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { augmentAndResolve, augmentPages, createPagesContext, getPageComponentNames, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
+import { augmentAndResolve, augmentPages, createPagesContext, getPageComponentNames, invalidatePageSymlink, normalizeRoutes, relativizeToParent, resolveRoutePaths } from '../src/pages/utils.ts'
 import { dynamicPageMetaCache, getDynamicPageMeta } from '../src/pages/page-meta-extraction.ts'
 import type { ScanReporter } from '../src/core/scan-problems.ts'
 import { PageComponentNamePlugin } from '../src/pages/plugins/component-name.ts'
+import { invalidateAppStructure } from '../src/core/app.ts'
 import type { RouterViewSlotProps } from '../src/pages/runtime/utils.ts'
 import { generateRouteKey, memoizeRouteComponent } from '../src/pages/runtime/utils.ts'
 import type { Nuxt, NuxtPage } from 'nuxt/schema'
@@ -197,7 +198,11 @@ describe('pages:page-component-name', () => {
 })
 
 describe('pages:pageComponentNames', () => {
-  const nuxt = { options: { experimental: { scanPageMeta: true } } } as unknown as Nuxt
+  let nuxt: Nuxt
+
+  beforeEach(() => {
+    nuxt = { options: { experimental: { scanPageMeta: true } } } as unknown as Nuxt
+  })
 
   it('excludes a page file that another route uses as a named view', () => {
     const names = getPageComponentNames([
@@ -212,6 +217,66 @@ describe('pages:pageComponentNames', () => {
     const spy = vi.spyOn(fs, 'realpathSync').mockReturnValue('/real/foo.vue')
     try {
       expect(getPageComponentNames([{ file: '/pages/foo.vue', name: 'foo', path: '/foo' }], nuxt).get('/pages/foo.vue')).toBeUndefined()
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  it('resolves each page file once until the app structure changes', () => {
+    const pages: NuxtPage[] = [{ file: '/pages/foo.vue', name: 'foo', path: '/foo' }]
+    const spy = vi.spyOn(fs, 'realpathSync').mockReturnValue('/pages/foo.vue')
+    try {
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBe('foo')
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBe('foo')
+      expect(spy).toHaveBeenCalledTimes(1)
+
+      spy.mockReturnValue('/real/foo.vue')
+      invalidateAppStructure(nuxt)
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBeUndefined()
+      expect(spy).toHaveBeenCalledTimes(2)
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  it('resolves a page file again after it changes in place', () => {
+    const pages: NuxtPage[] = [{ file: '/pages/foo.vue', name: 'foo', path: '/foo' }]
+    const spy = vi.spyOn(fs, 'realpathSync').mockReturnValue('/pages/foo.vue')
+    try {
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBe('foo')
+
+      spy.mockReturnValue('/real/foo.vue')
+      invalidatePageSymlink(nuxt, '/pages/foo.vue')
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBeUndefined()
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  it('retries a page file whose symlink lookup failed', () => {
+    const pages: NuxtPage[] = [{ file: '/pages/foo.vue', name: 'foo', path: '/foo' }]
+    const spy = vi.spyOn(fs, 'realpathSync').mockImplementationOnce(() => { throw new Error('ENOENT') })
+    try {
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBe('foo')
+
+      spy.mockReturnValue('/real/foo.vue')
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBeUndefined()
+      expect(spy).toHaveBeenCalledTimes(2)
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  it('resolves page files per nuxt instance', () => {
+    const pages: NuxtPage[] = [{ file: '/pages/foo.vue', name: 'foo', path: '/foo' }]
+    const otherNuxt = { options: { experimental: { scanPageMeta: true } } } as unknown as Nuxt
+    const spy = vi.spyOn(fs, 'realpathSync').mockReturnValue('/pages/foo.vue')
+    try {
+      expect(getPageComponentNames(pages, nuxt).get('/pages/foo.vue')).toBe('foo')
+
+      spy.mockReturnValue('/real/foo.vue')
+      expect(getPageComponentNames(pages, otherNuxt).get('/pages/foo.vue')).toBeUndefined()
+      expect(spy).toHaveBeenCalledTimes(2)
     } finally {
       spy.mockRestore()
     }
