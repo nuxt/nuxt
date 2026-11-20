@@ -159,7 +159,7 @@ export const pluginsDeclaration: NuxtTemplate = {
       return app.templates.some(t => t.write && path === t.dst) || existsSync(path)
     }
 
-    for (const plugin of await annotatePlugins(nuxt, app.plugins)) {
+    for (const plugin of await annotatePlugins(nuxt, app.plugins.filter(plugin => !plugin._skipTypes))) {
       if (plugin.name) {
         pluginNames.push(`'${plugin.name}'`)
       }

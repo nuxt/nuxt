@@ -25,6 +25,11 @@ export interface NuxtPlugin {
    * @internal
    */
   name?: string
+  /**
+   * Left out of the generated plugin types.
+   * @internal
+   */
+  _skipTypes?: boolean
 }
 
 // Internal type for simpler NuxtTemplate interface extension

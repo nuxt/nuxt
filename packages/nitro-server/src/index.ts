@@ -7,7 +7,7 @@ import process from 'node:process'
 import type { Nuxt, NuxtOptions, ServerRouteSegment } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
-import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
+import { dirname, isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type { Plugin } from 'rollup'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
@@ -54,6 +54,8 @@ const UNHEAD_IMPORT_RE = /^unhead(?:\/|$)/
 const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
 const SERVER_HANDLERS_ID_RE = /^\0virtual:#nitro-internal-virtual\/server-handlers$/
 const HANDLER_ROUTE_RE = /\broute: '([^']*)'/g
+
+const errorChannelHandler = resolve(distDir, 'runtime/handlers/error-channel')
 
 const h3Presets = [
   {
@@ -196,10 +198,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nuxt.options.nitro.externals = defu(nuxt.options.nitro.externals, {
       inline: [/#internal\/dev-server-logs-options/],
     })
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'))
+    addPlugin({ src: resolve(nuxt.options.appDir, 'plugins/dev-error-overlay.client'), _skipTypes: true })
   }
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
+    addPlugin({ src: resolve(nuxt.options.appDir, 'plugins/dev-server-logs'), _skipTypes: true })
     nuxt.options.nitro.plugins.push(resolve(distDir, 'runtime/plugins/dev-server-logs'))
   }
 
@@ -1010,7 +1012,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     nitro.options.handlers.unshift({
       route: joinURL(nuxt.options.devServer.errorChannel, '**'),
       lazy: true,
-      handler: resolve(distDir, 'runtime/handlers/error-channel'),
+      handler: errorChannelHandler,
     })
     const peerToken = process.env[DEV_PEER_TOKEN_ENV] ||= randomBytes(32).toString('base64url')
     const errorChannel = nuxt.options.devServer.errorChannel
@@ -1085,7 +1087,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     }
 
     for (const handler of [...nitro.scannedHandlers, ...nitro.options.handlers]) {
-      if (!handler.route) { continue }
+      if (!handler.route || normalize(handler.handler) === errorChannelHandler) { continue }
       // an optional parameter matches with and without the segment, so it resolves to two routes
       for (const nodeKey of routeNodeKeys(handler.route)) {
         routes.push({
