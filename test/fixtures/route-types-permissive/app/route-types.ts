@@ -1,3 +1,4 @@
+import type { FetchOptions } from '#app'
 import { expectTypeOf } from 'vitest'
 
 /**
@@ -48,15 +49,23 @@ export async function permissiveNamedResponseMethod<T> (url: string, body: Recor
   expectTypeOf(await $fetch<SearchResponse>('https://api.github.com/graphql', { method: 'POST', headers: { Authorization: 'x' }, body: { query: 'q' } })).toEqualTypeOf<SearchResponse>()
 }
 
-/** The parameters of `$fetch` and `useFetch` can be read off their types. */
-export async function permissiveFetchParameters<T> (url: string, options: Parameters<typeof $fetch>[1] = {}, rawOptions: Parameters<typeof $fetch.raw>[1] = {}) {
-  await $fetch<T>(url, { ...options })
-  await $fetch.raw<T>(url, { ...rawOptions })
+/** A URL the app does not serve is fetched with options typed for any request. */
+export async function permissiveExternalFetch<T> (url: string, options: FetchOptions = {}) {
+  const post: FetchOptions = { method: 'POST', body: { a: 1 }, query: { a: 1 }, headers: { a: 'b' } }
+  await $fetch(new Request('https://example.com'))
+  await $fetch.raw(new Request('https://example.com'))
+  await $fetch<T>(url, post)
+  return await $fetch<T>(url, options)
+}
 
-  const request: Parameters<typeof $fetch>[0] = new Request('https://example.com')
-  const rawRequest: Parameters<typeof $fetch.raw>[0] = new Request('https://example.com')
-  const created: Parameters<ReturnType<typeof $fetch.create>>[1] = { method: 'PATCH' }
-  const fetchOptions: Parameters<typeof useFetch>[1] = { method: 'POST', body: { a: 1 }, query: { a: 1 } }
-  const lazyFetchOptions: Parameters<typeof useLazyFetch>[1] = { method: 'POST', body: { a: 1 }, query: { a: 1 } }
-  return { request, rawRequest, created, fetchOptions, lazyFetchOptions }
+const api = $fetch.create({ headers: { 'x-client': 'app' } })
+
+/** An instance created from `$fetch` is typed by the routes it is called with. */
+export async function permissiveCreatedFetch () {
+  expectTypeOf(await api('/api/hello')).toEqualTypeOf<{ hello: boolean }>()
+  expectTypeOf(await api('/proxied', { method: 'POST', body: { target: 'x' } })).toEqualTypeOf<{ proxied: boolean }>()
+  // @ts-expect-error the route validates a body, so it cannot be omitted
+  await api('/proxied', { method: 'POST' })
+  // @ts-expect-error `target` is not a number
+  await api('/proxied', { method: 'POST', body: { target: 1 } })
 }
