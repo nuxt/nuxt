@@ -92,5 +92,10 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Check that the driver can be imported from your project, or report it to the author of the module that reads this storage at build time.',
       docs: false,
     },
+    NUXT_B9017: {
+      why: (p: { keys: string }) => `\`nitro.options.routeRules\` was replaced after Nitro was initialised, and the new object leaves out built-in route rules, so the server no longer applies them: ${p.keys}.`,
+      fix: 'Keep the existing rules when replacing `nitro.options.routeRules`, for example `nitro.options.routeRules = { ...nitro.options.routeRules, ...rules }`, or add the rules to the existing object. If your code does not replace `nitro.options.routeRules`, a module does: report it to the module author.',
+      docs: false,
+    },
   },
 })
