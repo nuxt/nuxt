@@ -38,7 +38,8 @@ export async function applyLegacyRenderBefore (event: H3Event, hooks: LegacyHook
   await hooks.callHook('render:before', context)
 
   if (getEndedResponse(event) !== undefined) {
-    return toResponse(fromLegacyBody(event, undefined), event)
+    const ended = fromLegacyBody(event, undefined)
+    return ended instanceof Response ? createResponse(...fromWebResponse(event, ended)) : toResponse(ended, event)
   }
 
   if (!context.response && context.render === render) {

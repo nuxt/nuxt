@@ -549,6 +549,21 @@ describe('nitro v2 `render:before` hook', () => {
     expect([response.status, response.headers.get('content-type'), await response.text()]).toEqual([403, 'text/plain', 'denied'])
   })
 
+  it.each([200, 401])('keeps the headers a listener sets before ending the request with a %i response', async (status) => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', async (context) => {
+      context.event.res.headers.set('content-type', 'text/html')
+      context.event.res.headers.set('www-authenticate', 'Bearer')
+      context.event.res.headers.append('set-cookie', 'a=1')
+      await sendWebResponse(context.event, Response.json({ ok: true }, { status, headers: { 'set-cookie': 'b=2' } }))
+    })
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, page(), (body, init) => new Response(body, init))
+
+    expect([response.status, response.headers.get('content-type'), response.headers.get('www-authenticate'), response.headers.getSetCookie(), await response.json()])
+      .toEqual([status, 'application/json', 'Bearer', ['a=1', 'b=2'], { ok: true }])
+  })
+
   it('responds with the body a listener sends with `send`', async () => {
     const hooks = createHooks<Record<string, (context: any) => void>>()
     hooks.hook('render:before', (context) => {
