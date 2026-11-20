@@ -1,6 +1,6 @@
 import type { RequestEvent } from 'nuxt/schema'
 
-import { createError, getQuery, isNuxtError, readBody } from './index'
+import { createError, getQuery, getRouterParams, isNuxtError, readBody } from './index'
 import type { NuxtErrorDetails } from '../app/error'
 
 /** A validation failure, as a Standard Schema reports it. */
@@ -98,6 +98,32 @@ export function getValidatedQuery<S extends StandardSchema> (event: Pick<Request
 export function getValidatedQuery<Output> (event: Pick<RequestEvent, 'req'> & { url?: URL }, validate: (data: Record<string, string | string[]>) => ValidateResult<Output> | Promise<ValidateResult<Output>>, options?: ValidateOptions): Promise<Output>
 export function getValidatedQuery (event: Pick<RequestEvent, 'req'> & { url?: URL }, validate: Validator<any, unknown>, options?: ValidateOptions): Promise<unknown> {
   return validateData(getQuery(event), validate, options)
+}
+
+/**
+ * Read the dynamic segments matched for the request as {@link getRouterParams}
+ * does, validated with a Standard Schema or a validator function. Invalid
+ * input is rejected with a `400` whose `data` carries the issues, unless
+ * `onError` returns a different error.
+ *
+ * @example
+ * ```ts
+ * // server/api/users/[id].ts
+ * import { z } from 'zod'
+ *
+ * export default defineEventHandler(async (event) => {
+ *   const { id } = await getValidatedRouterParams(event, z.object({ id: z.coerce.number() }))
+ *   return { id }
+ * })
+ * ```
+ *
+ * @since 4.6.1
+ */
+export function getValidatedRouterParams<S extends StandardSchema> (event: Pick<RequestEvent, 'context'>, validate: S, options?: ValidateOptions & { decode?: boolean }): Promise<SchemaOutput<S>>
+export function getValidatedRouterParams<Output> (event: Pick<RequestEvent, 'context'>, validate: (data: Record<string, string | undefined>) => ValidateResult<Output> | Promise<ValidateResult<Output>>, options?: ValidateOptions & { decode?: boolean }): Promise<Output>
+export function getValidatedRouterParams (event: Pick<RequestEvent, 'context'>, validate: Validator<any, unknown>, options: ValidateOptions & { decode?: boolean } = {}): Promise<unknown> {
+  const { decode, ...validateOptions } = options
+  return validateData(getRouterParams(event, { decode }), validate, validateOptions)
 }
 
 /**
