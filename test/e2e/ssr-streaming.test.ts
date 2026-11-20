@@ -40,6 +40,17 @@ test.describe('SSR Streaming', () => {
     }
   })
 
+  test('dev logs are attached to streamed and buffered renders', async ({ fetch, isDev }) => {
+    test.skip(!isDev, 'the dev-server-logs plugin only runs in development')
+
+    for (const path of ['/dev-logs', '/dev-logs?no-stream']) {
+      const html = await fetch(path).then(r => r.text())
+
+      expect(html.match(/data-nuxt-logs=/g)).toHaveLength(1)
+      expect(html).toContain('logged during streamed render')
+    }
+  })
+
   test('sends prefetch hints in the shell rather than the link header', async ({ fetch, isDev }) => {
     test.skip(isDev, 'dev sends no resource hints in the link header')
     const res = await fetch('/')
