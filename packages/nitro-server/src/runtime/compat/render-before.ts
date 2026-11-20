@@ -1,8 +1,10 @@
+import { toResponse } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
 
 import { rethrowWithResponseHeaders } from '#internal/nuxt/host'
 import { toLegacyError } from './error-shape.ts'
 import { fromLegacyBody } from './event.ts'
+import { getEndedResponse } from './ended-response.ts'
 import { isStreamedResponse } from './render-response.ts'
 
 interface LegacyHooks {
@@ -26,14 +28,18 @@ interface LegacyRenderContext {
 
 /**
  * Emit the nitro v2 `render:before` runtime hook before a page renders. A listener can respond
- * in place of the page by setting `response`, or render it differently by replacing `render`;
- * otherwise the page is rendered as usual.
+ * in place of the page by setting `response` or by ending the response with an h3 v1 helper, or
+ * render it differently by replacing `render`; otherwise the page is rendered as usual.
  */
 export async function applyLegacyRenderBefore (event: H3Event, hooks: LegacyHooks, renderPage: (event: H3Event) => Promise<Response>, createResponse: (body: BodyInit | null, init?: ResponseInit) => Response): Promise<Response> {
   const render = async (renderEvent: H3Event) => toLegacyRenderResponse(await renderPage(renderEvent))
   const context: LegacyRenderContext = { event, render, response: undefined }
 
   await hooks.callHook('render:before', context)
+
+  if (getEndedResponse(event) !== undefined) {
+    return toResponse(fromLegacyBody(event, undefined), event)
+  }
 
   if (!context.response && context.render === render) {
     return renderPage(event)

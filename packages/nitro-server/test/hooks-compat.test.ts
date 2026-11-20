@@ -10,6 +10,7 @@ import { serverDiagnostics } from '../src/runtime/diagnostics.ts'
 import { hasLegacyHookListener, observeLegacyHooks } from '../src/runtime/compat/hook-registry.ts'
 import { markStreamedResponse } from '../src/runtime/compat/render-response.ts'
 import { applyLegacyRenderBefore } from '../src/runtime/compat/render-before.ts'
+import { send, sendWebResponse } from '../src/runtime/compat/h3-v1-app.ts'
 import { prepareLegacyEvent } from '../src/runtime/compat/event.ts'
 import type { LegacyH3Event } from '../src/runtime/compat/h3-v1.ts'
 import plugin from '../src/runtime/compat/hooks-plugin.ts'
@@ -529,6 +530,35 @@ describe('nitro v2 `render:before` hook', () => {
     expect(response.headers.get('x-wrapped')).toBe('1')
     expect(response.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
     expect(await response.text()).toBe('<html>wrapped</html>')
+  })
+
+  it.each([
+    ['with an empty response', (context: any) => { context.response = { body: '' } }],
+    ['without a response', () => {}],
+  ])('responds with the response a listener ends the request with (%s)', async (_, set) => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', async (context) => {
+      await sendWebResponse(context.event, new Response('denied', { status: 403, headers: { 'content-type': 'text/plain' } }))
+      set(context)
+    })
+    const renderPage = page()
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect(renderPage).not.toHaveBeenCalled()
+    expect([response.status, response.headers.get('content-type'), await response.text()]).toEqual([403, 'text/plain', 'denied'])
+  })
+
+  it('responds with the body a listener sends with `send`', async () => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      context.event.res.status = 401
+      send(context.event, 'login required', 'text/plain')
+    })
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, page(), (body, init) => new Response(body, init))
+
+    expect([response.status, response.headers.get('content-type'), await response.text()]).toEqual([401, 'text/plain', 'login required'])
   })
 
   it.each([204, 304])('responds with no body to a %i page rendered through a replaced `render`', async (status) => {
