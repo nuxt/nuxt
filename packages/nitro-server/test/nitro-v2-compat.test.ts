@@ -50,7 +50,7 @@ describe('nitro v2 `useNitroApp`', () => {
 })
 
 describe('nitro v2 `defineCachedEventHandler`', () => {
-  it.each([defineCachedEventHandler, cachedEventHandler])('answers a handler that returns `null` with no content', async (define) => {
+  it.each([['defineCachedEventHandler', defineCachedEventHandler], ['cachedEventHandler', cachedEventHandler]] as const)('`%s` answers a handler that returns `null` with no content', async (_name, define) => {
     const response = await define(() => null)(mockEvent('http://nuxt/api/_nuxt_icon/custom.json?icons=nope'))
 
     expect(response.status).toBe(204)
