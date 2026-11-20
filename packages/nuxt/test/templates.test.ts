@@ -194,10 +194,11 @@ describe('pluginsDeclaration', () => {
     } as unknown as Nuxt
     const contents = await pluginsDeclaration.getContents!({
       nuxt,
-      app: { plugins, templates: [] } as unknown as NuxtApp,
+      app: { plugins, templates: plugins.map(plugin => ({ dst: plugin.src, write: true })) } as unknown as NuxtApp,
       options: {},
     })
 
+    expect(contents).toContain('import("../../app/plugins/user")')
     expect(contents).toContain(`'user'`)
     expect(contents).not.toContain('dev-overlay')
   })

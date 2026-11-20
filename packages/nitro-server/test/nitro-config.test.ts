@@ -263,6 +263,15 @@ describe('nitro config', () => {
     expect(devRoutes).toEqual(await getRoutes({ _prepare: true }))
   })
 
+  it('registers the same typed plugins in dev as in `nuxt prepare`', async () => {
+    const getPlugins = (overrides: NuxtConfig) => withNitro({ ...overrides, pages: true }, (_nitro, _config, nuxt) => {
+      return nuxt.options.plugins.filter(p => typeof p === 'string' || !p._skipTypes).map(p => typeof p === 'string' ? p : p.src)
+    })
+    const devPlugins = await getPlugins({ dev: true })
+    expect(devPlugins).not.toEqual([])
+    expect(devPlugins).toEqual(await getPlugins({ _prepare: true }))
+  })
+
   it('excludes sources from server sourcemaps for `nosource`', async () => {
     await withNitro({ sourcemap: { server: 'nosource' } }, (_nitro, nitroConfig) => {
       expect(nitroConfig.rollupConfig!.output!.sourcemapExcludeSources).toBe(true)
