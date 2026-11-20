@@ -67,9 +67,11 @@ export async function applyLegacyRenderBefore (event: H3Event, hooks: LegacyHook
     return createResponse(...fromWebResponse(event, response.body))
   }
 
-  const body = toResponseBody(event, response.body)
+  const body = response.body !== null && NULL_BODY_STATUSES.has(event.res.status ?? 200) ? null : toResponseBody(event, response.body)
   return createResponse(body, { status: event.res.status, statusText: event.res.statusText, headers: event.res.headers })
 }
+
+const NULL_BODY_STATUSES = new Set([204, 205, 304])
 
 function fromWebResponse (event: H3Event, response: Response): [BodyInit | null, ResponseInit] {
   for (const [name, value] of response.headers) {

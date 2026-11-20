@@ -530,6 +530,25 @@ describe('nitro v2 `render:before` hook', () => {
     expect(response.headers.getSetCookie()).toEqual(['a=1', 'b=2'])
     expect(await response.text()).toBe('<html>wrapped</html>')
   })
+
+  it.each([204, 304])('responds with no body to a %i page rendered through a replaced `render`', async (status) => {
+    const hooks = createHooks<Record<string, (context: any) => void>>()
+    hooks.hook('render:before', (context) => {
+      const render = context.render
+      context.render = async (event: unknown) => ({ ...await render(event), headers: { 'x-wrapped': '1' } })
+    })
+    const renderPage = () => Promise.resolve(new Response(null, { status, headers: { etag: '"page"' } }))
+
+    const response = await applyLegacyRenderBefore(mockEvent('http://nuxt/'), hooks, renderPage, (body, init) => new Response(body, init))
+
+    expect([response.status, response.headers.get('x-wrapped'), response.body]).toEqual([status, '1', null])
+  })
+
+  it.each([204, 304])('responds with no body to a %i a listener sets with a body', async (status) => {
+    const response = await respondWith({ statusCode: status, body: 'stale' })
+
+    expect([response.status, response.headers.get('content-type'), response.body]).toEqual([status, null, null])
+  })
 })
 
 describe('nitro v2 plugin wrapper', () => {
