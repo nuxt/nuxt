@@ -20,7 +20,7 @@ import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RenderedResponse, RendererEvent } from './runtime'
 import { getPrerenderedErrorPage, isPrerenderedErrorPage, renderErrorResponse } from './error-page'
 import type { SSRError } from './error-page'
-import { normalizeChunks, renderAppTeleports, renderDevBadge, renderHTMLDocument, renderHTMLDocumentChunks } from './document'
+import { normalizeChunks, renderAppTeleports, renderDevBadge, renderHTMLDocument, renderHTMLDocumentChunks, stampDevBadgeNonce } from './document'
 import { extractCspNonce } from './csp-nonce'
 import { inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript, renderDeferredPrefetchHints } from './head'
 import { renderStreamedResponse } from './stream'
@@ -396,9 +396,11 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderSSRHead(ssrContext.head, renderSSRHeadOptions)
 
+  const headNonce = import.meta.dev ? extractCspNonce(headTags) : undefined
+  const devBadge = import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, headNonce) : undefined
   const htmlContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([headTags, renderDeferredPrefetchHints(deferredHints), import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, extractCspNonce(headTags)) : undefined]),
+    head: normalizeChunks([headTags, renderDeferredPrefetchHints(deferredHints), devBadge]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
@@ -409,6 +411,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   }
 
   await hooks.callHook('render:html', htmlContext, { event: hookEvent })
+  if (import.meta.dev) {
+    await stampDevBadgeNonce(runtime, event, htmlContext, devBadge, headNonce)
+  }
 
   // the document is only serialised here if a listener reads it
   let documentHtml: string | undefined

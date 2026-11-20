@@ -12,7 +12,7 @@ import { entryFileName } from 'nuxt/internal/entry-chunk'
 import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG } from './build-files'
 import { captureError } from './error-page'
 import type { SSRError } from './error-page'
-import { applyRenderOptions, joinTags, normalizeChunks, renderAppTeleports, renderDevBadge, renderDocumentOpen } from './document'
+import { applyRenderOptions, joinTags, normalizeChunks, renderAppTeleports, renderDevBadge, renderDocumentOpen, stampDevBadgeNonce } from './document'
 import { inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript, renderDeferredPrefetchHints } from './head'
 import { renderInlineStyles } from './inline-styles'
 import { renderPayloadJsonScript, renderPayloadScript } from './payload'
@@ -196,15 +196,19 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
       ? `<script async${nonceAttr} src="${runtime.buildAssetsURL(iifeChunkFileName)}"></script>`
       : `<script${nonceAttr}>${streamingIifeCode}</script>`
   }
+  const devBadge = import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, cspNonce) : undefined
   const shellContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, DEFER_PREFETCH ? renderDeferredPrefetchHints(prefetchHints) : undefined, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, cspNonce) : undefined]),
+    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, DEFER_PREFETCH ? renderDeferredPrefetchHints(prefetchHints) : undefined, devBadge]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
     body: [],
     bodyAppend: [],
   }
   await hooks.callHook('render:html', shellContext, { event: hookEvent, streaming: true })
+  if (import.meta.dev) {
+    await stampDevBadgeNonce(runtime, event, shellContext, devBadge, cspNonce)
+  }
   if (import.meta.dev && (shellContext.body.length || shellContext.bodyAppend.length)) {
     rendererDiagnostics.NUXT_E8001({ path: event.url.pathname })
   }

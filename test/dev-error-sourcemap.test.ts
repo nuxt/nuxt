@@ -94,6 +94,18 @@ describe.skipIf(!runs)('dev ssr error page', () => {
     }
   })
 
+  it.each(['/ok', '/streamed'])('stamps the badge with a nonce a `render:html` listener adds (%s)', async (path) => {
+    const res = await fetch(path, { headers: { 'accept': 'text/html', 'x-boom': 'fixed', 'x-nonce-hook': 'yes' } })
+    const html = await res.text()
+    const badge = html.match(/<script[^>]*>(?=window\.__NUXT_DEV_ERROR__)|<script[^>]*badge\.js[^>]*>/g)
+
+    expect(html).toContain('nonce="fromhook"')
+    expect(badge).toHaveLength(2)
+    for (const tag of badge!) {
+      expect(tag).toContain('nonce="fromhook"')
+    }
+  })
+
   it('retires the error once its page streams without one', async () => {
     const { report } = await renderErrorPage('/streamed')
     expect((await channelState('/streamed')).current?.id).toBe(report.id)
