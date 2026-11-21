@@ -43,6 +43,7 @@ describe('prerenderRoutes', () => {
   })
 
   it('finishes when failOnError is disabled', async () => {
-    await expect(prerenderRoutes(createNuxt({ failOnError: false }), createProject())).resolves.toEqual(['/200.html', '/404.html'])
+    const routes = await prerenderRoutes(createNuxt({ failOnError: false }), createProject())
+    expect(routes.sort()).toEqual(['/200.html', '/404.html'])
   })
 })
