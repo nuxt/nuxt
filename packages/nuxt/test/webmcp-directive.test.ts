@@ -93,14 +93,15 @@ describe('agent tool directive', () => {
   })
 
   it('leaves the values of passwords, payment cards and hidden fields out of the schema', async () => {
-    const state = reactive({ email: 'daniel@example.com', password: 'hunter2', card: '4111111111111111', token: 'secret' })
+    const state = reactive({ email: 'daniel@example.com', password: 'hunter2', card: '4111111111111111', token: 'secret', pin: '0000' })
     const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
     const { registry } = mount(directive => () => withDirectives(h('form', [
       h('input', { 'type': 'email', 'aria-label': 'Email', 'data-agent-field': 'state.email' }),
       h('input', { 'type': 'password', 'required': true, 'aria-label': 'Password', 'data-agent-field': 'state.password' }),
-      h('input', { 'autocomplete': 'section-pay cc-number', 'aria-label': 'Card number', 'data-agent-field': 'state.card' }),
+      h('input', { 'autocomplete': 'section-pay CC-Number', 'aria-label': 'Card number', 'data-agent-field': 'state.card' }),
       h('input', { 'type': 'hidden', 'data-agent-field': 'state.token' }),
-    ]), [[directive, binding({ name: 'pay', kind: 'form', fields: { email: field('email'), password: field('password'), card: field('card'), token: field('token') } })]]))
+      h('div', { 'autocomplete': 'one-time-code', 'data-agent-field': 'state.pin' }, [h('input', { 'aria-label': 'Code' })]),
+    ]), [[directive, binding({ name: 'pay', kind: 'form', fields: { email: field('email'), password: field('password'), card: field('card'), token: field('token'), pin: field('pin') } })]]))
     await nextTick()
 
     const schema = registry.list()[0]!.inputSchema
@@ -109,9 +110,10 @@ describe('agent tool directive', () => {
       password: { type: 'string', description: 'Password' },
       card: { type: 'string', description: 'Card number' },
       token: { type: 'string' },
+      pin: { type: 'string', description: 'Code' },
     })
     expect(schema.required).toEqual([])
-    expect(JSON.stringify(schema)).not.toMatch(/hunter2|4111|secret/)
+    expect(JSON.stringify(schema)).not.toMatch(/hunter2|4111|secret|0000/)
   })
 
   it('describes multiple selects and checkbox groups as arrays of their options', async () => {
@@ -215,6 +217,24 @@ describe('agent tool directive', () => {
     expect(await registry.call('save', { email: 'daniel@example.com', plan: 'free', note: 'Hi' })).not.toHaveProperty('isError')
     expect(sent).toHaveBeenCalledOnce()
     expect(state.note).toBe('Hi')
+  })
+
+  it('checks the fields of a form component that renders no form element', async () => {
+    const state = reactive({ email: 'daniel@example.com' })
+    const invoke = vi.fn()
+    const { registry } = mount(directive => () => withDirectives(h('div', [
+      h('input', { 'readonly': true, 'data-agent-field': 'state.email' }),
+    ]), [[directive, binding({
+      name: 'save',
+      kind: 'form',
+      invoke,
+      fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
+    })]]))
+    await nextTick()
+
+    expect(await registry.call('save', { email: 'sarah@example.com' })).toMatchObject({ isError: true, content: [{ text: expect.stringContaining('email: this field cannot be changed') }] })
+    expect(invoke).not.toHaveBeenCalled()
+    expect(state.email).toBe('daniel@example.com')
   })
 
   it('rejects a call to a form that another call is filling in', async () => {

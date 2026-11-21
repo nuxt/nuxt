@@ -108,15 +108,15 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
         return
       }
     }
-    const form = formOf(el)
-    const locked = form ? lockedProblems(fields, form, input) : []
+    const form = formOf(el) ?? el
+    const locked = lockedProblems(fields, form, input)
     if (locked.length) {
       return text(`The form was not submitted. ${locked.join('; ')}`, true)
     }
     const previous = Object.values(fields).map(field => field.get())
     const problems = fillFields(fields, input)
     await nextTick()
-    if (!problems.length && form) {
+    if (!problems.length) {
       problems.push(...nativeProblems(fields, form))
       const submitter = submitterOf(form)
       if (!problems.length && !binding.confirm && submitter && isDisabled(submitter)) {

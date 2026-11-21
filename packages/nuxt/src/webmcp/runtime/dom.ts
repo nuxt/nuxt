@@ -159,12 +159,12 @@ export function formSchema (fields: FormFields, form: Element): JSONSchema {
   return describeSchema(schema, fields, form)
 }
 
-const SENSITIVE_AUTOCOMPLETE_RE = /(?:^|\s)(?:current-password|new-password|one-time-code|cc-\S+)(?:\s|$)/
+const SENSITIVE_AUTOCOMPLETE_RE = /(?:^|\s)(?:current-password|new-password|one-time-code|cc-\S+)(?:\s|$)/i
 
 /** Whether the value of `control` is a secret, which must not reach an agent as part of a schema. */
 function isSensitive (control: FieldControl) {
   return (control instanceof HTMLInputElement && (control.type === 'password' || control.type === 'hidden'))
-    || SENSITIVE_AUTOCOMPLETE_RE.test(control.getAttribute('autocomplete') ?? '')
+    || SENSITIVE_AUTOCOMPLETE_RE.test(control.getAttribute('autocomplete') || control.closest('[data-agent-field]')?.getAttribute('autocomplete') || '')
 }
 
 /**
