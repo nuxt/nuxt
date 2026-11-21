@@ -22,7 +22,7 @@ describe('vite server prerender', () => {
       'export async function fetch (request) {',
       '  const { pathname } = new URL(request.url)',
       '  if (pathname === \'/base/missing\') { return new Response(\'\', { status: 404, statusText: \'Not Found\' }) }',
-      '  return new Response(`<html><body>${pages[pathname] ?? \'\'}</body></html>`, { headers: { \'content-type\': \'text/html\' } })',
+      '  return new Response(\'<html><body>\' + (pages[pathname] ?? \'\') + \'</body></html>\', { headers: { \'content-type\': \'text/html\' } })',
       '}',
     ].join('\n'))
   })
