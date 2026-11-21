@@ -118,6 +118,35 @@ describe('agent tool directive', () => {
     expect(state).toEqual({ quantity: 4, express: true })
   })
 
+  it('rejects a call to a form that another call is filling in', async () => {
+    const state = reactive({ email: '' })
+    const sent: string[] = []
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('send', () => {
+          sent.push(state.email)
+        })
+      },
+    }), [[directive, binding({
+      name: 'send',
+      kind: 'form',
+      fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
+    })]]))
+    await nextTick()
+
+    const [first, second] = await Promise.all([
+      registry.call('send', { email: 'daniel@example.com' }),
+      registry.call('send', { email: 'sarah@example.com' }),
+    ])
+    expect(first).not.toHaveProperty('isError')
+    expect(second).toEqual({ isError: true, content: [{ type: 'text', text: '"send" is already running. Wait for it to finish before calling it again.' }] })
+    expect(sent).toEqual(['daniel@example.com'])
+
+    expect(await registry.call('send', { email: 'sarah@example.com' })).not.toHaveProperty('isError')
+    expect(sent).toEqual(['daniel@example.com', 'sarah@example.com'])
+  })
+
   it('returns the error of a submit handler that throws', async () => {
     const { registry, app } = mount((directive, submits) => () => withDirectives(h('form', {
       onSubmit: (event: Event) => {
