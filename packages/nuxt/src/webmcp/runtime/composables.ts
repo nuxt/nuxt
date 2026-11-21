@@ -1,5 +1,5 @@
 import type { InjectionKey, MaybeRefOrGetter } from 'vue'
-import { computed, inject, onActivated, onBeforeUnmount, onDeactivated, onMounted, shallowRef, toValue, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, inject, onActivated, onBeforeUnmount, onDeactivated, onMounted, onScopeDispose, shallowRef, toValue, watch } from 'vue'
 import type { AgentToolActivity, AgentToolContext, AgentToolDefinition, AgentToolRegistry, AgentToolTarget } from './registry'
 
 export type { AgentToolActivity, AgentToolAnnotations, AgentToolContext, AgentToolDefinition, AgentToolResult, AgentToolTarget, StandardSchemaV1 } from './registry'
@@ -75,12 +75,19 @@ export function useAgentActivity () {
   const activities = shallowRef<AgentToolActivity[]>([])
   if (registry) {
     let dispose: (() => void) | undefined
-    onMounted(() => {
+    const subscribe = () => {
       dispose = registry.onActivity((list) => {
         activities.value = list
       })
-    })
-    onBeforeUnmount(() => dispose?.())
+    }
+    if (getCurrentInstance()) {
+      onMounted(subscribe)
+    } else {
+      subscribe()
+    }
+    if (getCurrentScope()) {
+      onScopeDispose(() => dispose?.())
+    }
   }
   return {
     activities,

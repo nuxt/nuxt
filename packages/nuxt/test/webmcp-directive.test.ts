@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { KeepAlive, createApp, defineComponent, h, nextTick, reactive, ref, vModelText, withDirectives } from 'vue'
+import { KeepAlive, createApp, defineComponent, effectScope, h, nextTick, reactive, ref, vModelText, withDirectives } from 'vue'
 
 import type { AgentToolBinding } from '../src/webmcp/runtime/directive.ts'
 import { createAgentToolDirective, createSubmitCapture } from '../src/webmcp/runtime/directive.ts'
@@ -540,6 +540,32 @@ describe('agent tool directive', () => {
 
     activity.stop()
     expect(await result).toMatchObject({ isError: true })
+    expect(activity.activities.value).toEqual([])
+  })
+
+  it('keeps `useAgentActivity` subscribed for as long as the scope it was called in', async () => {
+    const shown = ref(true)
+    const scope = effectScope(true)
+    let activity!: ReturnType<typeof useAgentActivity>
+    const Status = defineComponent({
+      setup () {
+        activity = scope.run(() => useAgentActivity())!
+        return () => h('div')
+      },
+    })
+    const { registry } = mount(() => () => shown.value ? h(Status) : h('span'))
+    registry.activate(defineAgentTool({ name: 'slow', description: 'Take a while.', execute: () => new Promise(() => {}) }))
+    await nextTick()
+    shown.value = false
+    await nextTick()
+
+    const first = registry.call('slow')
+    expect(activity.current.value?.tool).toBe('slow')
+    activity.stop()
+    await first
+
+    scope.stop()
+    registry.call('slow')
     expect(activity.activities.value).toEqual([])
   })
 
