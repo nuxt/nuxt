@@ -224,7 +224,7 @@ function interceptTypelessPackageWarnings (): () => void {
         return (original as (...args: unknown[]) => void).call(process, warning, ...args)
       }
       const url = message.match(TYPELESS_MODULE_RE)?.[1]
-      configDiagnostics.NUXT_B5040({ filePath: url ? fileURLToPath(url) : 'nuxt.config', packageJson })
+      configDiagnostics.NUXT_B5040({ filePath: url ? normalize(fileURLToPath(url)) : 'nuxt.config', packageJson: normalize(packageJson) })
     } as typeof process.emitWarning
   }
   return () => {
