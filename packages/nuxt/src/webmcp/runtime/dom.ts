@@ -171,11 +171,13 @@ export function formSchema (fields: FormFields, form: Element): JSONSchema {
 
 const SENSITIVE_AUTOCOMPLETE_RE = /(?:^|\s)(?:current-password|new-password|one-time-code|cc-\S+)(?:\s|$)/i
 
-/** Whether the value of the field `el` is a secret, which must not reach an agent as part of a schema. */
-function isSensitive (el: Element) {
+/** Whether the value of the field `el` must not reach an agent as part of a schema: it is a secret, or the user cannot see it. */
+function isPrivate (el: Element): boolean {
+  const marker = el.closest('[data-agent-field]')
   const type = el instanceof HTMLInputElement ? el.type : el.getAttribute('type')
-  return type === 'password' || type === 'hidden'
-    || SENSITIVE_AUTOCOMPLETE_RE.test(el.getAttribute('autocomplete') || el.closest('[data-agent-field]')?.getAttribute('autocomplete') || '')
+  return type === 'password' || type === 'hidden' || !!el.closest('[hidden]')
+    || SENSITIVE_AUTOCOMPLETE_RE.test(el.getAttribute('autocomplete') ?? '')
+    || (!!marker && marker !== el && isPrivate(marker))
 }
 
 /**
@@ -201,7 +203,7 @@ export function describeSchema (schema: JSONSchema, fields: FormFields, form: El
     }
     const value = field.get()
     if (value !== undefined && value !== null && value !== '' && property.default === undefined) {
-      if (markers.length && property.writeOnly !== true && !subjectsOf(markers).some(isSensitive)) {
+      if (markers.length && property.writeOnly !== true && !subjectsOf(markers).some(isPrivate)) {
         property.default = value
       }
       at.parent.required = (at.parent.required as string[] | undefined)?.filter(name => name !== at.name)
@@ -285,7 +287,7 @@ function selects (value: unknown, choice: Choice) {
 /**
  * Problems with input for a field the user could not edit: one that is not rendered, one whose
  * controls are disabled, read-only or hidden, a disabled choice, or a disabled checkbox of a group.
- * Input that repeats the current value of a locked field is accepted, unless the value is a secret.
+ * Input that repeats the current value of a locked field is accepted, unless that value is not published.
  */
 export function lockedProblems (fields: FormFields, form: Element, input: Record<string, unknown>) {
   const problems: string[] = []
@@ -303,7 +305,7 @@ export function lockedProblems (fields: FormFields, form: Element, input: Record
     const current = field.get()
     const next = coerce(value, current)
     if (subjects.every(isLocked)) {
-      if (subjects.some(isSensitive) || JSON.stringify(next) !== JSON.stringify(current)) {
+      if (subjects.some(isPrivate) || JSON.stringify(next) !== JSON.stringify(current)) {
         problems.push(`${key}: this field cannot be changed`)
       }
       continue

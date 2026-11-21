@@ -117,13 +117,16 @@ describe('agent tool directive', () => {
   })
 
   it('leaves the values of fields that are not rendered, and of secrets in components without a native control, out of the schema', async () => {
-    const state = reactive({ name: 'Daniel', password: 'hunter2', pin: '0000', plan: 'pro' })
+    const state = reactive({ name: 'Daniel', password: 'hunter2', pin: '0000', plan: 'pro', key: 'sk-live', shown: 's3cret', draft: 'private' })
     const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
     const { registry } = mount(directive => () => withDirectives(h('form', [
       h('input', { 'data-agent-field': 'state.name' }),
       h('div', { 'type': 'password', 'data-agent-field': 'state.pin' }),
       h('div', { 'role': 'combobox', 'aria-label': 'Plan', 'data-agent-field': 'state.plan' }),
-    ]), [[directive, binding({ name: 'save', kind: 'form', fields: { name: field('name'), password: field('password'), pin: field('pin'), plan: field('plan') } })]]))
+      h('div', { 'autocomplete': 'current-password', 'data-agent-field': 'state.key' }, [h('input', { autocomplete: 'off' })]),
+      h('div', { 'type': 'password', 'data-agent-field': 'state.shown' }, [h('input', { type: 'text' })]),
+      h('div', { hidden: '' }, [h('input', { 'data-agent-field': 'state.draft' })]),
+    ]), [[directive, binding({ name: 'save', kind: 'form', fields: Object.fromEntries(Object.keys(state).map(key => [key, field(key as keyof typeof state)])) })]]))
     await nextTick()
 
     const schema = registry.list()[0]!.inputSchema
@@ -132,8 +135,11 @@ describe('agent tool directive', () => {
       password: { type: 'string' },
       pin: { type: 'string' },
       plan: { type: 'string', description: 'Plan', default: 'pro' },
+      key: { type: 'string' },
+      shown: { type: 'string' },
+      draft: { type: 'string' },
     })
-    expect(JSON.stringify(schema)).not.toMatch(/hunter2|0000/)
+    expect(JSON.stringify(schema)).not.toMatch(/hunter2|0000|sk-live|s3cret|private/)
   })
 
   it('leaves the values of `writeOnly` properties out of the schema', async () => {
