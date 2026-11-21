@@ -1,3 +1,4 @@
+import { stripVTControlCharacters } from 'node:util'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Diagnostic } from 'nostics'
 
@@ -22,7 +23,7 @@ describe('diagnostic reporters', () => {
     reporters[0](diagnostic, { method: 'error' })
 
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('Something happened.'))
-    expect(error).toHaveBeenCalledWith(expect.stringContaining('fix: Fix it.'))
+    expect(stripVTControlCharacters(String(error.mock.calls[0]![0]))).toContain('fix: Fix it.')
     expect(consoleWarn).not.toHaveBeenCalled()
   })
 })
