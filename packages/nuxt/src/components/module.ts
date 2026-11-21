@@ -393,7 +393,7 @@ export default defineNuxtModule<ComponentsOptions>({
         return paths
       }
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient }), { client: false, prepend: true })
+      addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient, nuxt }), { client: false, prepend: true })
       addBuildPlugin(RenderListPlugin(), { client: false })
 
       if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {
