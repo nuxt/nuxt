@@ -40,4 +40,27 @@ describe('formatCompilationErrors', () => {
       ' @ ./nuxt-root.vue',
     ].join('\n'))
   })
+
+  it('includes the errors of child compilations', () => {
+    const childStats = {
+      toJson: (options: { children?: boolean }) => ({
+        errors: [],
+        children: options.children ? [{ errors: [{ message: 'Failed in a child compilation' }], children: [{ errors: [{ message: 'Failed in a nested child' }] }] }] : undefined,
+      }),
+    } as any
+    expect(formatCompilationErrors(childStats)).toBe([
+      'ERROR',
+      'Failed in a child compilation',
+      '',
+      'ERROR',
+      'Failed in a nested child',
+    ].join('\n'))
+  })
+
+  it('names the file of an error that has no module', () => {
+    expect(formatCompilationErrors(stats([{ file: 'app/app.vue:3:7', message: 'TS2322: Type \'string\' is not assignable to type \'number\'.' }]))).toBe([
+      'ERROR in app/app.vue:3:7',
+      'TS2322: Type \'string\' is not assignable to type \'number\'.',
+    ].join('\n'))
+  })
 })
