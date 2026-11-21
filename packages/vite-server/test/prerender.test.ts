@@ -14,7 +14,7 @@ const event = (url: string) => ({ url: new URL(url, 'http://localhost') }) as Re
 
 const pages: Record<string, string> = {
   '/base': '<a href="/base/about">about</a><a href="/base/blog">blog</a>',
-  '/base/blog': '<a href="/base/blog/one">one</a><a href="/base/blog/two">two</a><a href="/base/missing">missing</a>',
+  '/base/blog': '<a href="/base/blog/one">one</a><a href="/base/blog/two">two</a><a href="/base/missing">missing</a><a href="/base/offer%2520code">offer</a>',
 }
 
 describe('createPrerenderOptions', () => {
@@ -39,7 +39,7 @@ describe('vite server prerender', () => {
       `const pages = ${JSON.stringify(pages)}`,
       'export async function fetch (request) {',
       '  const { pathname } = new URL(request.url)',
-      '  if (pathname === \'/base/missing\') { return new Response(\'\', { status: 404, statusText: \'Not Found\' }) }',
+      '  if (pathname === \'/base/missing\' || pathname.startsWith(\'/base/offer\')) { return new Response(\'\', { status: 404, statusText: \'Not Found\' }) }',
       '  return new Response(\'<html><body>\' + (pages[pathname] ?? \'\') + \'</body></html>\', { headers: { \'content-type\': \'text/html\' } })',
       '}',
     ].join('\n'))
@@ -81,14 +81,18 @@ describe('vite server prerender', () => {
   it('reports routes without the base URL', async () => {
     const { routes, done } = await prerender(['/'])
 
-    expect(routes.map(route => route.route).sort()).toEqual(['/', '/200.html', '/404.html', '/about', '/blog', '/blog/one', '/blog/two', '/missing'])
-    expect(done[0]!.failed).toEqual([{ route: '/missing', status: 404, message: 'Not Found', linkedFrom: ['/blog'] }])
+    expect(routes.map(route => route.route).sort()).toEqual(['/', '/200.html', '/404.html', '/about', '/blog', '/blog/one', '/blog/two', '/missing', '/offer%20code'])
+    expect(done[0]!.failed.sort((a, b) => a.route.localeCompare(b.route))).toEqual([
+      { route: '/missing', status: 404, message: 'Not Found', linkedFrom: ['/blog'] },
+      { route: '/offer%20code', status: 404, message: 'Not Found', linkedFrom: ['/blog'] },
+    ])
   })
 
   it('reports the pages linking to a route that fails to prerender', async () => {
     const { routes } = await prerender(['/'])
 
     expect(routes.find(route => route.route === '/missing')).toMatchObject({ error: { status: 404 }, linkedFrom: ['/blog'] })
+    expect(routes.find(route => route.route === '/offer%20code')).toMatchObject({ error: { status: 404 }, linkedFrom: ['/blog'] })
     expect(routes.filter(route => !route.error).every(route => !('linkedFrom' in route))).toBe(true)
   })
 
