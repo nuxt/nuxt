@@ -569,6 +569,22 @@ describe('agent tool directive', () => {
     expect(activity.activities.value).toEqual([])
   })
 
+  it('returns `useAgentActivity` activities that cannot be replaced', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    let activity!: ReturnType<typeof useAgentActivity>
+    mount(() => () => h(defineComponent({
+      setup () {
+        activity = useAgentActivity()
+        return () => h('div')
+      },
+    })))
+    await nextTick()
+    // @ts-expect-error `activities` is read-only
+    activity.activities.value = [{ id: 1, tool: 'fake', message: '', input: {}, stop: () => {} }]
+    expect(activity.activities.value).toEqual([])
+    warn.mockRestore()
+  })
+
   it('withdraws a `useAgentTool` tool while its component is kept alive but inactive', async () => {
     const shown = ref(true)
     const Search = defineComponent({

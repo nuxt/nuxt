@@ -1,5 +1,5 @@
 import type { InjectionKey, MaybeRefOrGetter } from 'vue'
-import { computed, getCurrentInstance, getCurrentScope, inject, onActivated, onBeforeUnmount, onDeactivated, onMounted, onScopeDispose, shallowRef, toValue, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, inject, onActivated, onBeforeUnmount, onDeactivated, onMounted, onScopeDispose, shallowReadonly, shallowRef, toValue, watch } from 'vue'
 import type { AgentToolActivity, AgentToolContext, AgentToolDefinition, AgentToolRegistry, AgentToolTarget } from './registry'
 
 export type { AgentToolActivity, AgentToolAnnotations, AgentToolContext, AgentToolDefinition, AgentToolResult, AgentToolTarget, StandardSchemaV1 } from './registry'
@@ -90,7 +90,7 @@ export function useAgentActivity () {
     }
   }
   return {
-    activities,
+    activities: shallowReadonly(activities),
     current: computed(() => activities.value.at(-1)),
     stop: () => activities.value.forEach(a => a.stop()),
   }
