@@ -72,7 +72,7 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
       : undefined,
     captureError: (error) => {
       // in development the live error channel reports and prints the error itself
-      if (!import.meta.dev) {
+      if (!import.meta.dev && ((error as { status?: number } | null)?.status || 500) >= 500) {
         console.error(error)
       }
     },

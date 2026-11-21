@@ -28,6 +28,7 @@ import { runtimeDependencies } from 'nitropack/runtime/meta'
 import nitroBuilder from '../package.json' with { type: 'json' }
 import { distDir, getLayerNodeModulesExcludePattern, isNuxtDistId, linkStaticDist, relativeWithDot, resolveNitroCommand, timePluginHooks, toArray, toFsDriverIgnorePatterns, toTranspileNoExternal } from './utils.ts'
 import { setupAppManifest, setupPayloadRouteRules } from './app-manifest.ts'
+import { failOnPrerenderErrors } from './prerender.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from './dev-request.ts'
 import { DEV_PEER_TOKEN_ENV } from 'nuxt/internal/dev/peer'
 // TODO: figure out a good way to share this
@@ -859,6 +860,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       base: cacheDir,
     },
   })
+
+  failOnPrerenderErrors(nitro)
 
   // the prerenderer copies `virtual` from the server, but its runtime config comes from `_config`
   nitro.hooks.hook('prerender:init', (prerenderer) => {
