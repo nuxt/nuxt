@@ -25,6 +25,7 @@ import { runtimeDir as nitroRuntimeDir, runtimeDependencies } from 'nitro/meta'
 import nitroBuilder from '../package.json' with { type: 'json' }
 import { GLOB_SUFFIX_RE, NON_JS_FILE_RE, PATHS_SPECIFIER, distDir, getLayerNodeModulesExcludePattern, getServerReplacements, getSsrResolveConditions, nitroImplicitDependencies, relativeWithDot, timePluginHooks, toArray, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal, withoutServerDirDeny, withoutWasmConditions } from './utils.ts'
 import { setupAppManifest, setupPayloadRouteRules } from './app-manifest.ts'
+import { failOnPrerenderErrors } from './prerender.ts'
 import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from './dev-request.ts'
@@ -806,6 +807,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       base: cacheDir,
     },
   })
+
+  failOnPrerenderErrors(nitro)
 
   // the prerenderer copies `virtual` from the server, but its runtime config comes from `_config`
   nitro.hooks.hook('prerender:init', (prerenderer) => {
