@@ -305,7 +305,7 @@ describe('agent tool directive', () => {
   })
 
   it('rejects input that changes a component without a native control that is disabled, or a field inside an inert or hidden element', async () => {
-    const state = reactive({ plan: 'free', size: 's', color: 'red', note: '', tag: '', open: 'a' })
+    const state = reactive({ plan: 'free', size: 's', color: 'red', tier: 'basic', note: '', tag: '', open: 'a' })
     const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
     const sent = vi.fn()
     const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
@@ -317,18 +317,19 @@ describe('agent tool directive', () => {
       h('div', { 'role': 'combobox', 'aria-disabled': 'true', 'data-agent-field': 'state.plan' }),
       h('div', { 'role': 'combobox', 'data-disabled': '', 'data-agent-field': 'state.size' }),
       h('div', { 'role': 'combobox', 'disabled': '', 'data-agent-field': 'state.color' }),
+      h('div', { 'role': 'combobox', 'data-agent-locked': '', 'data-agent-field': 'state.tier' }),
       h('div', { inert: '' }, [h('input', { 'data-agent-field': 'state.note' })]),
       h('div', { hidden: '' }, [h('input', { 'data-agent-field': 'state.tag' })]),
       h('div', { 'role': 'combobox', 'data-agent-field': 'state.open' }),
     ]), [[directive, binding({ name: 'save', kind: 'form', fields: Object.fromEntries(Object.keys(state).map(key => [key, field(key as keyof typeof state)])) })]]))
     await nextTick()
 
-    expect(await registry.call('save', { plan: 'pro', size: 'm', color: 'blue', note: 'Hi', tag: 'x', open: 'b' })).toEqual({
+    expect(await registry.call('save', { plan: 'pro', size: 'm', color: 'blue', tier: 'plus', note: 'Hi', tag: 'x', open: 'b' })).toEqual({
       isError: true,
-      content: [{ type: 'text', text: `The form was not submitted. ${['plan', 'size', 'color', 'note', 'tag'].map(key => `${key}: this field cannot be changed`).join('; ')}` }],
+      content: [{ type: 'text', text: `The form was not submitted. ${['plan', 'size', 'color', 'tier', 'note', 'tag'].map(key => `${key}: this field cannot be changed`).join('; ')}` }],
     })
     expect(sent).not.toHaveBeenCalled()
-    expect(state).toEqual({ plan: 'free', size: 's', color: 'red', note: '', tag: '', open: 'a' })
+    expect(state).toEqual({ plan: 'free', size: 's', color: 'red', tier: 'basic', note: '', tag: '', open: 'a' })
 
     expect(await registry.call('save', { plan: 'free', open: 'b' })).not.toHaveProperty('isError')
     expect(sent).toHaveBeenCalledOnce()

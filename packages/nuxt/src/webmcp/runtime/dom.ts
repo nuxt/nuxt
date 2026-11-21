@@ -259,7 +259,7 @@ export function fillFields (fields: FormFields, input: Record<string, unknown>) 
   return problems
 }
 
-const LOCKED = ':disabled, [disabled]:not(fieldset), [readonly], [aria-disabled="true"], [aria-readonly="true"], [data-disabled]:not([data-disabled="false"]), [inert], [hidden]'
+const LOCKED = ':disabled, [disabled]:not(fieldset), [readonly], [aria-disabled="true"], [aria-readonly="true"], [data-disabled]:not([data-disabled="false"]), [data-agent-locked], [inert], [hidden]'
 
 /** Whether the user cannot edit the field `el`: it is disabled, read-only or hidden, or inside an element that is. */
 function isLocked (el: Element) {

@@ -105,6 +105,24 @@ describe('agent tool transform', () => {
     expect(code).toContain('$event => (_ctx.$agentTools.capture("checkout", () => ($setup.checkout($event))))')
   })
 
+  it('marks a component field as locked while its `disabled` or `readonly` prop is set', () => {
+    const { code } = compile(`${script}
+<template>
+  <form @submit.prevent="subscribe">
+    <AppInput v-model="email" :disabled="busy" />
+    <AppInput v-model="name" :disabled="busy" :readonly="!editable" />
+    <AppInput v-model="plan" readonly />
+    <AppInput v-model="coupon" />
+    <input v-model="note" :disabled="busy" aria-label="Note">
+  </form>
+</template>`)
+    expect([...code.matchAll(/"data-agent-locked": (.+)$/gm)].map(match => match[1])).toEqual([
+      '((_ctx.busy)) ? \'\' : undefined',
+      '((_ctx.busy) || (!_ctx.editable)) ? \'\' : undefined',
+      '""',
+    ])
+  })
+
   it('leaves fields that read a `v-for` or slot variable declared inside the form out of its input', () => {
     const { code } = compile(`${script}
 <template>

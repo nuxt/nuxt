@@ -199,6 +199,18 @@ function addAttr (el: ElementNode, name: string, value: string) {
   } as AttributeNode)
 }
 
+function addBinding (el: ElementNode, name: string, source: string) {
+  el.props.push({
+    type: NODE_DIRECTIVE,
+    name: 'bind',
+    rawName: `:${name}`,
+    arg: { ...simpleExpression(name, el.loc), isStatic: true, constType: 3 },
+    exp: simpleExpression(source, el.loc),
+    modifiers: [],
+    loc: el.loc,
+  } as DirectiveNode)
+}
+
 function findProp (el: ElementNode, name: string): { dynamic: string } | { static: string } | undefined {
   for (const p of el.props) {
     if (p.type === NODE_DIRECTIVE && p.name === 'bind' && p.arg?.type === NODE_SIMPLE_EXPRESSION && (p.arg as SimpleExpressionNode).content === name && p.exp) {
@@ -325,6 +337,13 @@ function visitElement (el: ElementNode, state: WalkState) {
     if (source && !(scopes.length && readsScope(source, scopes))) {
       addAttr(el, 'data-agent-field', source)
       state.form.models.push(source)
+      // a component may not reflect these props on the element it renders
+      const locks = el.tagType === ELEMENT_COMPONENT ? ['disabled', 'readonly'].flatMap(name => findProp(el, name) ?? []) : []
+      if (locks.some(lock => 'static' in lock)) {
+        addAttr(el, 'data-agent-locked', '')
+      } else if (locks.length) {
+        addBinding(el, 'data-agent-locked', `(${locks.map(lock => `(${(lock as { dynamic: string }).dynamic})`).join(' || ')}) ? '' : undefined`)
+      }
       if (el.tagType !== ELEMENT_COMPONENT && NATIVE_FIELDS.has(el.tag) && !state.labels && !LABEL_ATTRS.some(attr => findProp(el, attr))) {
         const id = findProp(el, 'id')
         state.unlabelled.push({ id: id && 'static' in id ? id.static : undefined, source, offset: el.loc.start.offset })

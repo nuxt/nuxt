@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const tier = defineModel<string>()
+const props = defineProps<{ disabled?: boolean }>()
 </script>
 
 <template>
@@ -9,7 +10,7 @@ const tier = defineModel<string>()
       :key="option"
       role="option"
       :aria-selected="option === tier"
-      @click="tier = option"
+      @click="props.disabled || (tier = option)"
     >{{ option }}</span>
   </div>
 </template>

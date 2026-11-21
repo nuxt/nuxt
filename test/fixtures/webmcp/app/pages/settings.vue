@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const form = reactive({ name: 'Daniel', password: 'hunter2', role: 'member', plan: 'free', tier: 'basic', legacyTier: 'basic' })
+const form = reactive({ name: 'Daniel', password: 'hunter2', role: 'member', plan: 'free', tier: 'basic', legacyTier: 'basic', trialTier: 'basic' })
 const isAdmin = ref(false)
 const saved = ref<string>()
 
@@ -8,7 +8,7 @@ const saved = ref<string>()
  * @tool
  */
 function saveSettings () {
-  saved.value = `${form.name}, ${form.role}, ${form.plan}, ${form.tier}, ${form.legacyTier}`
+  saved.value = `${form.name}, ${form.role}, ${form.plan}, ${form.tier}, ${form.legacyTier}, ${form.trialTier}`
   return 'Saved.'
 }
 </script>
@@ -32,6 +32,11 @@ function saveSettings () {
       v-model="form.legacyTier"
       aria-label="Legacy tier"
       aria-disabled="true"
+    />
+    <TierPicker
+      v-model="form.trialTier"
+      aria-label="Trial tier"
+      :disabled="!isAdmin"
     />
     <button type="submit">
       Save
