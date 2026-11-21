@@ -65,6 +65,16 @@ describe('agent tool transform', () => {
     ])
   })
 
+  it('compiles handlers that end in a semicolon', () => {
+    const { code } = compile(`${script}
+<template>
+  <button @click="addToCart('tea');">Add</button>
+  <form @submit.prevent="subscribe($event);" />
+</template>`)
+    expect(code).toContain('invoke: ($event) => ($setup.addToCart(\'tea\'))')
+    expect(code).toContain('_ctx.$agentTools.capture("subscribe", () => ($setup.subscribe($event)))')
+  })
+
   it('compiles forms to field accessors and captures the submit handler result', () => {
     const { code } = compile(`${script}
 <template>
