@@ -126,5 +126,14 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { name: string, installCommand: string, range: string }) => `Run \`${p.installCommand}\` to add a version of \`${p.name}\` matching \`${p.range}\` to your dependencies.`,
       docs: false,
     },
+    NUXT_B1024: {
+      why: (p: { routes: Array<{ route: string, status?: number }> }) => {
+        const shown = p.routes.slice(0, 5).map(r => r.status ? `\`${r.route}\` (${r.status})` : `\`${r.route}\``).join(', ')
+        const more = p.routes.length > 5 ? ` and ${p.routes.length - 5} more` : ''
+        return `${p.routes.length} route${p.routes.length === 1 ? '' : 's'} failed to prerender: ${shown}${more}.`
+      },
+      fix: 'Fix the errors logged above, skip the routes with `prerender.ignore` or a `prerender: false` route rule, or set `nitro.prerender.failOnError` to `false` to finish the build anyway.',
+      docs: false,
+    },
   },
 })
