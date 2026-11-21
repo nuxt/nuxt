@@ -227,7 +227,9 @@ function readsScope (expression: string, scopes: string[]) {
   if (errors.length) {
     return true
   }
-  const scopeTracker = new ScopeTracker()
+  const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
+  walk(program, { scopeTracker })
+  scopeTracker.freeze()
   let reads = false
   walk(program, {
     scopeTracker,
