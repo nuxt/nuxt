@@ -232,7 +232,7 @@ function analyseHandler (source: string, tools: Map<string, ToolMeta>): Handler 
       return { fn: expression.name, call: `${expression.name}($event)` }
     }
     if (expression.type === 'CallExpression' && expression.callee.type === 'Identifier' && tools.has(expression.callee.name)) {
-      return { fn: expression.callee.name, call: source }
+      return { fn: expression.callee.name, call: source.slice(expression.start, expression.end) }
     }
   }
   const mentions = [...tools.keys()].filter(fn => new RegExp(`(^|[^\\w$.])${escapeRE(fn)}([^\\w$]|$)`).test(source))
