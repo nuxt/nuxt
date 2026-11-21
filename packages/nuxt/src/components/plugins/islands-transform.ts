@@ -1,4 +1,4 @@
-import type { Component } from '@nuxt/schema'
+import type { Component, Nuxt } from '@nuxt/schema'
 import { componentDiagnostics } from '@nuxt/kit/internal'
 import { linkToAlias } from '../../utils.ts'
 import { createUnplugin } from 'unplugin'
@@ -22,6 +22,7 @@ interface ServerOnlyComponentTransformPluginOptions {
    * allow using `nuxt-client` attribute on components
    */
   selectiveClient?: boolean | 'deep'
+  nuxt?: Nuxt
 }
 
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
@@ -52,7 +53,7 @@ function findScriptBlocks (code: string): ScriptBlock[] {
 }
 
 export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => {
-  const reportOnce = createReportOnce()
+  const reportOnce = createReportOnce(options.nuxt)
   return createUnplugin((_options, meta) => {
     const isVite = meta.framework === 'vite'
     return {

@@ -265,7 +265,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
   const plugins = nuxt.apps.default?.plugins ?? []
   let reportOnce = reportOnceByNuxt.get(nuxt)
   if (!reportOnce) {
-    reportOnce = createReportOnce()
+    reportOnce = createReportOnce(nuxt)
     reportOnceByNuxt.set(nuxt, reportOnce)
   }
   return {
