@@ -16,6 +16,7 @@ import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
 import { ChunkErrorPlugin } from './plugins/chunk.ts'
 import { SSRStylesPlugin } from './plugins/ssr-styles.ts'
 import { createMFS } from './utils/mfs.ts'
+import { formatCompilationErrors } from './utils/errors.ts'
 import { isSameOriginRequest, resolveAllowedHosts } from './utils/same-origin.ts'
 import { client } from './configs/client.ts'
 import { server } from './configs/server.ts'
@@ -213,13 +214,16 @@ export async function compile (compiler: Compiler): Promise<unknown> {
   const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
-    const formatted = stats.toString({ errors: true, warnings: false, colors: false, errorDetails: true })
+    const formatted = formatCompilationErrors(stats)
     const compilationErrors = stats.compilation?.errors ?? []
-    // eslint-disable-next-line no-restricted-syntax -- raw compiler output; the diagnostic below carries the errors as `cause`
-    logger.error(formatted || '(no formatted errors emitted; see compilation errors below)')
-    for (const err of compilationErrors) {
+    if (formatted) {
       // eslint-disable-next-line no-restricted-syntax -- raw compiler output; the diagnostic below carries the errors as `cause`
-      logger.error(err)
+      logger.error(formatted)
+    } else {
+      for (const err of compilationErrors) {
+        // eslint-disable-next-line no-restricted-syntax -- raw compiler output; the diagnostic below carries the errors as `cause`
+        logger.error(err)
+      }
     }
     throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name!, cause: compilationErrors })
   }
