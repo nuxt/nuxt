@@ -120,10 +120,11 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
     getContents: () => [
       `import match from ${JSON.stringify(routeRules)}`,
       `import { createServerHelpers } from ${JSON.stringify(resolve(distDir, 'runtime/server'))}`,
+      `import { fetch as appFetch } from ${JSON.stringify(handler)}`,
       '',
       `export * from 'nuxt/internal/server-default'`,
       '',
-      `const helpers = createServerHelpers(match, () => import(${JSON.stringify(handler)}).then(m => m.fetch), ${JSON.stringify(nuxt.options.app.baseURL || '/')})`,
+      `const helpers = createServerHelpers(match, () => Promise.resolve(appFetch), ${JSON.stringify(nuxt.options.app.baseURL || '/')})`,
       `export const getRouteRules = helpers.getRouteRules`,
       `export const matchRouteRules = helpers.matchRouteRules`,
       `export const serverFetch = helpers.serverFetch`,
@@ -135,8 +136,9 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
     write: true,
     getContents: () => [
       `import { createAppFetch } from ${JSON.stringify(resolve(distDir, 'runtime/fetch'))}`,
+      `import { fetch as appFetch } from ${JSON.stringify(handler)}`,
       '',
-      `export const fetch = createAppFetch(() => import(${JSON.stringify(handler)}).then(m => m.fetch))`,
+      `export const fetch = createAppFetch(() => Promise.resolve(appFetch))`,
     ].join('\n'),
   })
 
