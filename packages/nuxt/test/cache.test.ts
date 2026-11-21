@@ -223,6 +223,34 @@ describe('buildCache', { concurrent: false, timeout: 120_000 }, async () => {
     expect(restored.entryIds).not.toBe('export default []')
   })
 
+  // a cache hit skips the bundler, so how the client build requests its chunks has to come from the cache
+  it.each([true, false])('should render route chunk hints on cache hit with nitroViteEnvironment: %s', { timeout: 300_000 }, async (nitroViteEnvironment) => {
+    const rootDir = join(tmpDir, 'project')
+    const outputDir = join(rootDir, '.output')
+    await writeFile(join(rootDir, 'app.vue'), '<template><NuxtPage /></template>')
+    await mkdir(join(rootDir, 'pages'), { recursive: true })
+    await writeFile(join(rootDir, 'pages/index.vue'), '<template><div>hello</div></template>')
+
+    const overrides = {
+      experimental: { buildCache: true, nitroViteEnvironment, routeChunkHints: true },
+      dev: false,
+      workspaceDir: tmpDir,
+    }
+
+    const nuxt1 = await loadNuxt({ cwd: rootDir, overrides: { ...overrides, buildId: `hints-${nitroViteEnvironment}-1` } })
+    await build(nuxt1)
+    const expectedHtml = await renderIndex(outputDir)
+    expect(expectedHtml).toContain('data-nuxt-preload')
+
+    await rm(outputDir, { recursive: true, force: true })
+
+    const nuxt2 = await loadNuxt({ cwd: rootDir, overrides: { ...overrides, buildId: `hints-${nitroViteEnvironment}-2` } })
+    // the buildId is only restored on a cache hit
+    expect(nuxt2.options.buildId).toBe(`hints-${nitroViteEnvironment}-1`)
+    await build(nuxt2)
+    expect(await renderIndex(outputDir)).toBe(expectedHtml)
+  })
+
   it.each([true, false])('should build nitro on cache hit with nitroViteEnvironment: %s', { timeout: 300_000 }, async (nitroViteEnvironment) => {
     const rootDir = join(tmpDir, 'project')
     const outputDir = join(rootDir, '.output')

@@ -202,6 +202,7 @@ export default defineResolvers({
     },
     crossOriginPrefetch: false,
     deferPrefetchHints: true,
+    routeChunkHints: false,
 
     /**
      * Enable View Transition API integration with client-side router.

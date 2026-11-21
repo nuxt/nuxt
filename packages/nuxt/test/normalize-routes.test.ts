@@ -2,6 +2,7 @@ import fc from 'fast-check'
 import { describe, expect, it, vi } from 'vitest'
 import { parseSync } from 'rolldown/utils'
 import type { NuxtPage } from 'nuxt/schema'
+import { useNuxt } from '@nuxt/kit'
 import { normalizeRoutes } from '../src/pages/utils.ts'
 
 vi.mock('@nuxt/kit', async (original) => {
@@ -34,7 +35,9 @@ function allPages (pages: NuxtPage[]): NuxtPage[] {
 
 describe('normalizeRoutes', () => {
   it('should emit parseable route definitions for any page tree', () => {
-    fc.assert(fc.property(fc.array(page, { minLength: 1, maxLength: 3 }), fc.boolean(), fc.boolean(), (pages, overrideMeta, memoize) => {
+    fc.assert(fc.property(fc.array(page, { minLength: 1, maxLength: 3 }), fc.boolean(), fc.boolean(), fc.boolean(), (pages, overrideMeta, memoize, routeChunkHints) => {
+      // @ts-expect-error partial
+      vi.mocked(useNuxt).mockReturnValue({ options: { dev: false, srcDir: '/', experimental: { normalizePageNames: false, routeChunkHints } } })
       const metaImports = new Set<string>()
       const { routes, imports } = normalizeRoutes(pages, metaImports, {
         clientComponentRuntime: '<client>',

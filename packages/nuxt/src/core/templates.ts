@@ -739,6 +739,8 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
+      // there are no hints in development, where the manifest is built on demand
+      `export const routeChunkHints = ${!!ctx.nuxt.options.experimental.routeChunkHints && !ctx.nuxt.options.dev}`,
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,

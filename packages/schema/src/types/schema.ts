@@ -1329,6 +1329,19 @@ export interface ConfigSchema {
     deferPrefetchHints: boolean
 
     /**
+     * Fetch the layout and page of a prefetched `<NuxtLink>` without evaluating them.
+     *
+     * Their code does not run and their styles do not apply to the current page until they
+     * render. What cannot be fetched this way is left to the navigation rather than loaded.
+     *
+     * Has no effect in development, nor with webpack, Rspack or Rsbuild when
+     * `output.crossOriginLoading` is set.
+     *
+     * @default false
+     */
+    routeChunkHints: boolean
+
+    /**
      * Enable View Transition API integration with client-side router.
      *
      * @default false

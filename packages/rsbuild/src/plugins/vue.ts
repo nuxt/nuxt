@@ -22,7 +22,7 @@ export function VueSSRPlugin (nuxt: Nuxt): RsbuildPlugin {
       const emitManifest = createClientManifestEmitter(nuxt)
       api.onAfterEnvironmentCompile(async ({ environment, stats }) => {
         if (environment.name === 'client' && stats) {
-          await emitManifest(stats.toJson(clientManifestStatsOptions))
+          await emitManifest(stats.toJson(clientManifestStatsOptions), stats.compilation.outputOptions)
         }
       })
     },
