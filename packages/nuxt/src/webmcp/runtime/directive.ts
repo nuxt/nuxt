@@ -95,7 +95,7 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
     return definition
   }
 
-  async function fill (binding: AgentToolBinding, el: HTMLElement, input: Record<string, unknown>) {
+  async function fill (binding: AgentToolBinding, el: HTMLElement, input: Record<string, unknown>, signal: AbortSignal) {
     const fields = binding.fields ?? {}
     const schema = binding.schema?.()
     if (isStandardSchema(schema)) {
@@ -103,6 +103,9 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
       const result = await schema['~standard'].validate(mergeInput(current, input))
       if (result.issues) {
         return text(`The form was not submitted. ${formatIssues(result.issues)}`, true)
+      }
+      if (signal.aborted) {
+        return
       }
     }
     const previous = Object.values(fields).map(field => field.get())
@@ -141,7 +144,7 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
         ? () => el.isConnected ? [{ key: String(current.binding.target), label: itemLabel(el), element: el }] : []
         : undefined,
       element: () => el,
-      prepare: isForm ? input => fill(current.binding, el, input as Record<string, unknown>) : undefined,
+      prepare: isForm ? (input, ctx) => fill(current.binding, el, input as Record<string, unknown>, ctx.signal) : undefined,
       stage: () => {
         if (isForm) {
           const form = formOf(el) ?? el
