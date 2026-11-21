@@ -12,6 +12,15 @@ interface EnvironmentReport {
   files: Set<string>
 }
 
+function countOutputs (build: Environment['config']['build']): number {
+  const output = build.rolldownOptions.output
+  if (Array.isArray(output)) {
+    return Math.max(output.length, 1)
+  }
+  // a library build writes one output per format, and two by default
+  return build.lib ? build.lib.formats?.length || 2 : 1
+}
+
 /**
  * Report every environment of a production build through the `build:environment:*` hooks,
  * including environments the server builder or a deploy target adds.
@@ -30,10 +39,9 @@ export function BuildReportPlugin (nuxt: Nuxt): Plugin {
         consumer: environment.config.consumer,
         builder: 'vite',
       }, nuxt)
-      const output = environment.config.build.rolldownOptions.output
       reports.set(environment, {
         report,
-        remaining: Array.isArray(output) ? Math.max(output.length, 1) : 1,
+        remaining: countOutputs(environment.config.build),
         outDirs: new Set(),
         files: new Set(),
       })
