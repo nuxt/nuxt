@@ -419,10 +419,11 @@ export function createAgentToolTransform (options: AgentToolTransformOptions = {
     }
     const root = node as RootNode
     const source = typeof root.source === 'string' ? root.source : ''
+    const file = context.filename.split('?')[0]!
     if (!source.includes('@tool') && !source.includes('defineAgentTool')) {
+      reported.delete(file)
       return
     }
-    const file = context.filename.split('?')[0]!
     const findings: AgentToolFinding[] = []
     const tools = readScripts(source, file, findings)
     const state: WalkState = {
