@@ -363,6 +363,15 @@ describe('scrollBehavior with hash on the same page', () => {
 
     expect(position).toMatchObject({ el: `#${id}`, top: 50 })
   })
+
+  // https://github.com/nuxt/nuxt/issues/37124
+  it('should not scroll to the hash when only the query changes', async () => {
+    const router = useRouter()
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const position = await router.options.scrollBehavior!(router.resolve('/?tab=pnpm#install'), router.resolve('/?tab=npm#install'), null)
+
+    expect(position).toBe(false)
+  })
 })
 
 describe('scrollBehavior between pages', () => {
