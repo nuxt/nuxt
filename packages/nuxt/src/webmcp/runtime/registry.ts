@@ -211,6 +211,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
   let scheduled = false
 
   const schedule = host.schedule ?? (flush => queueMicrotask(flush))
+  const snapshot = () => [...activities].map(a => ({ ...a }))
 
   function requestFlush () {
     if (!scheduled) {
@@ -384,8 +385,8 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       stop: () => controller.abort('stopped by the user'),
     }
     const notify = () => {
-      const snapshot = [...activities].map(a => ({ ...a }))
-      activityListeners.forEach(listener => listener(snapshot))
+      const current = snapshot()
+      activityListeners.forEach(listener => listener(current))
     }
 
     const ctx: AgentToolContext = { signal: controller.signal, target }
@@ -488,9 +489,13 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
     list (): AgentToolSummary[] {
       return [...entries.values()].filter(e => e.activations.size).map(summarize)
     },
-    /** Observe calls in progress, e.g. to show what the agent is doing and offer a way to stop it. */
+    /**
+     * Observe calls in progress, e.g. to show what the agent is doing and offer a way to stop it.
+     * The listener is called with the calls already in progress, then each time they change.
+     */
     onActivity (listener: (activities: AgentToolActivity[]) => void) {
       activityListeners.add(listener)
+      listener(snapshot())
       return () => {
         activityListeners.delete(listener)
       }
