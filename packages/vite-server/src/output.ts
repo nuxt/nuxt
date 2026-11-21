@@ -1,15 +1,14 @@
 import { existsSync } from 'node:fs'
 import { cp, readFile, rm, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'pathe'
-import { getLayerDirectories, logger } from '@nuxt/kit'
+import { getLayerDirectories } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
-import { link } from 'clickable-path'
 import { withTrailingSlash } from 'ufo'
 
 /** Static hosts commonly map unknown paths to one of these files. */
 const SPA_FALLBACK_FILES = ['index.html', '200.html', '404.html']
 
-export async function writeStaticOutput (nuxt: Nuxt, publicDir: string, options: { ssr?: boolean, prerender?: boolean } = {}): Promise<void> {
+export async function writeStaticOutput (nuxt: Nuxt, publicDir: string, options: { ssr?: boolean } = {}): Promise<void> {
   const document = resolve(publicDir, 'index.html')
 
   if (!existsSync(document)) {
@@ -32,24 +31,17 @@ export async function writeStaticOutput (nuxt: Nuxt, publicDir: string, options:
   }
 
   if (options.ssr) {
-    if (!options.prerender) {
-      logger.success(`Server output written to ${link(resolve(publicDir, '..'))}`)
-    }
     return
   }
 
   for (const file of SPA_FALLBACK_FILES) {
     await writeFile(join(publicDir, file), html, 'utf-8')
   }
-
-  logger.success(`Static SPA output written to ${link(publicDir)}`)
 }
 
 /** Drop the bundle the crawl rendered with, leaving the static site as the whole output. */
-export async function finishStaticOutput (outputDir: string, publicDir: string): Promise<void> {
+export async function finishStaticOutput (outputDir: string): Promise<void> {
   await rm(join(outputDir, 'server'), { recursive: true, force: true })
-
-  logger.success(`Prerendered output written to ${link(publicDir)}`)
 }
 
 export function publicDirs (nuxt: Nuxt): string[] {

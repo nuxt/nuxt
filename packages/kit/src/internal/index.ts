@@ -53,7 +53,10 @@ export { installModules } from '../module/install.ts'
 
 export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../constants.ts'
 
-export { createServerBuild, setServerBuild, useServerBuild } from './server-build.ts'
+export { createServerBuild, resolveNitroDeployCommand, setServerBuild, useServerBuild } from './server-build.ts'
+
+export { reportNitroPrerender, startBuildEnvironment } from './build-report.ts'
+export type { BuildEnvironmentReport } from './build-report.ts'
 
 export { addClientBuildState, restoreClientBuildState, saveClientBuildState, waitForClientBuild } from './client-build-state.ts'
 export type { ClientBuildState } from './client-build-state.ts'

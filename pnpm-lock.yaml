@@ -241,8 +241,8 @@ catalogs:
       specifier: ^1.6.0
       version: 1.6.0
     '@nuxt/cli':
-      specifier: ^4.1.0-alpha.0
-      version: 4.1.0-alpha.0
+      specifier: https://pkg.pr.new/@nuxt/cli@5bf423a
+      version: https://pkg.pr.new/@nuxt/cli@5bf423a
     '@nuxt/devtools-onboard':
       specifier: ^4.1.0
       version: 4.1.0
@@ -818,7 +818,7 @@ importers:
         version: 1.12.0
       '@nuxt/cli':
         specifier: catalog:build
-        version: 4.1.0-alpha.0(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.158.0)(rolldown@1.2.19)(vite@8.3.8)
+        version: https://pkg.pr.new/@nuxt/cli@5bf423a(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.158.0)(rolldown@1.2.19)(vite@8.3.8)
       '@nuxt/eslint-config':
         specifier: catalog:dev
         version: 1.17.0(@typescript-eslint/utils@8.70.0(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(@vue/compiler-sfc@3.5.45)(eslint@10.14.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -1293,7 +1293,7 @@ importers:
         version: 0.3.31
       '@nuxt/cli':
         specifier: catalog:build
-        version: 4.1.0-alpha.0(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.158.0)(rolldown@1.2.19)(vite@8.3.8)
+        version: https://pkg.pr.new/@nuxt/cli@5bf423a(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.158.0)(rolldown@1.2.19)(vite@8.3.8)
       '@nuxt/devtools-onboard':
         specifier: catalog:build
         version: 4.1.0(@nuxt/devtools@4.1.0(cd2f13d89eb21b6b75f0ecfdd38c248a))(@nuxt/kit@packages+kit)
@@ -2040,9 +2040,6 @@ importers:
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
-      clickable-path:
-        specifier: catalog:build
-        version: 0.1.1
       defu:
         specifier: catalog:build
         version: 6.1.7
@@ -4860,8 +4857,9 @@ packages:
     resolution: {integrity: sha512-llZkSzeTsimFx64U+ThT2xQM2uEce8GIQUYvxgbB6ZFvBhV2LP9LeJJb3HT+syG0uCFLsTCHjV9SfC0WNU1vtA==}
     engines: {node: ^22.22.2 || ^24.15.0 || >=26.0.0}
 
-  '@nuxt/cli@4.1.0-alpha.0':
-    resolution: {integrity: sha512-2Z97Idnuerx16jlKP9R4bwRqBc1awBg7BHVfyynlgmkejpi80s+M1mEuSThgvWxNZS9IZOefwhU/gXyKqoFPTw==}
+  '@nuxt/cli@https://pkg.pr.new/@nuxt/cli@5bf423a':
+    resolution: {integrity: sha512-ged8lSE9nCzHZPDB93tZy94uXAT11VSfuJAsHUfsI/1BerE3z5ZuvD2dttBqgNhx5Il78p7rp62Sl7Xowk4EoQ==, tarball: https://pkg.pr.new/@nuxt/cli@5bf423a}
+    version: 4.1.0-alpha.0
     engines: {node: ^22.21.0 || ^24.11.0 || >=26.0.0}
     hasBin: true
     peerDependencies:
@@ -14986,7 +14984,7 @@ snapshots:
     dependencies:
       which: 7.0.0
 
-  '@nuxt/cli@4.1.0-alpha.0(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.158.0)(rolldown@1.2.19)(vite@8.3.8)':
+  '@nuxt/cli@https://pkg.pr.new/@nuxt/cli@5bf423a(@nuxt/schema@packages+schema)(jiti@2.7.0)(oxc-parser@0.158.0)(rolldown@1.2.19)(vite@8.3.8)':
     dependencies:
       '@clack/prompts': 1.8.1
       args-tokenizer: 0.3.0

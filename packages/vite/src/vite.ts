@@ -49,6 +49,7 @@ import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 import { InlinedVuePlugin } from './plugins/inlined-vue.ts'
 import { PerfPlugin } from './plugins/perf.ts'
+import { BuildReportPlugin } from './plugins/build-report.ts'
 import { isNavigationRequest, warmupViteServer } from './utils/warmup.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
@@ -108,12 +109,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ? undefined
     : (chunk: PreRenderedAsset) => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`))
 
+  // production bundles are reported through the `build:environment:*` hooks, so Vite only
+  // prints warnings and errors unless the project sets a level itself
+  const reportsBuild = !nuxt.options.dev && nuxt.options.logLevel !== 'silent' && !viteConfig.logLevel
+
   const config: vite.InlineConfig = mergeConfig(
     {
       base: nuxt.options.dev
         ? joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
         : undefined,
-      logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
+      logLevel: reportsBuild ? 'warn' : logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
       experimental: {
         renderBuiltUrl: (filename, { type, hostType, ssr }) => {
           if (hostType !== 'js') {
@@ -202,6 +207,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       },
       build: {
         copyPublicDir: false,
+        reportCompressedSize: reportsBuild ? false : undefined,
         rolldownOptions: {
           output: {
             sourcemapIgnoreList: createSourcemapIgnoreList(nuxt.options.buildDir),
@@ -225,6 +231,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       plugins: [
         // per-plugin timing when profiling is enabled
         PerfPlugin(nuxt),
+        BuildReportPlugin(nuxt),
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
