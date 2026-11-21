@@ -1,6 +1,6 @@
 import type { AttributeNode, DirectiveNode, ElementNode, NodeTransform, RootNode, SimpleExpressionNode, SourceLocation, TemplateChildNode } from '@vue/compiler-core'
 import type { ESTree } from 'rolldown/utils'
-import { walk } from 'oxc-walker'
+import { getUndeclaredIdentifiersInFunction, walk } from 'oxc-walker'
 import escapeRE from 'escape-string-regexp'
 import { findSFCScriptBlocks } from '../core/utils/parse-utils.ts'
 import { parseModule } from '../core/utils/parse.ts'
@@ -52,8 +52,8 @@ interface WalkState {
   tools: Map<string, ToolMeta>
   client: boolean
   fors: { key?: string, aliases: string[] }[]
-  /** Variables declared by each enclosing `v-for` and `v-slot`. */
-  scopes: string[][]
+  /** The parameters each enclosing `v-for` and `v-slot` declares. */
+  scopes: string[]
   form?: { models: string[], scope: number }
   labels: number
   labelFor: Set<string>
@@ -220,8 +220,20 @@ function findHandlers (el: ElementNode) {
 
 type Handler = { fn: string, call: string } | { mentions: string[] }
 
-function mentions (source: string, name: string) {
-  return new RegExp(`(^|[^\\w$.])${escapeRE(name)}([^\\w$]|$)`).test(source)
+/** Whether `expression` reads a variable declared by one of `scopes`, each the parameters of a function around it. */
+function readsScope (expression: string, scopes: string[]) {
+  const free = (params: string[]) => {
+    const [statement] = parseModule(`() => ${params.map(p => `(${p}) => `).join('')}(${expression})`, 'scope.ts').program.body
+    return statement?.type === 'ExpressionStatement' && statement.expression.type === 'ArrowFunctionExpression'
+      ? getUndeclaredIdentifiersInFunction(statement.expression)
+      : undefined
+  }
+  try {
+    const outside = free(scopes)
+    return !outside || !free([])?.every(name => outside.includes(name))
+  } catch {
+    return true
+  }
 }
 
 function analyseHandler (source: string, tools: Map<string, ToolMeta>): Handler | undefined {
@@ -241,8 +253,8 @@ function analyseHandler (source: string, tools: Map<string, ToolMeta>): Handler 
       return { fn: expression.callee.name, call: source.slice(expression.start, expression.end) }
     }
   }
-  const mentioned = [...tools.keys()].filter(fn => mentions(source, fn))
-  return mentioned.length ? { mentions: mentioned } : undefined
+  const mentions = [...tools.keys()].filter(fn => new RegExp(`(^|[^\\w$.])${escapeRE(fn)}([^\\w$]|$)`).test(source))
+  return mentions.length ? { mentions } : undefined
 }
 
 function fieldAccessors (models: string[]) {
@@ -270,8 +282,8 @@ function addDirective (el: ElementNode, source: string) {
 
 function visitElement (el: ElementNode, state: WalkState) {
   const exits: (() => void)[] = []
-  const pushScope = (declaration: string) => {
-    state.scopes.push(declaration.match(/[A-Z_$][\w$]*/gi) ?? [])
+  const pushScope = (params: string) => {
+    state.scopes.push(params)
     exits.push(() => state.scopes.pop())
   }
 
@@ -287,7 +299,7 @@ function visitElement (el: ElementNode, state: WalkState) {
     state.fors.push({ key: keySource, aliases })
     exits.push(() => state.fors.pop())
     const { value } = loop.forParseResult
-    pushScope([value, keyAlias, index].map(node => node?.loc.source ?? '').join(' '))
+    pushScope([value, keyAlias, index].flatMap(node => node?.loc.source ?? []).join(', '))
   }
 
   if (el.tag === 'label') {
@@ -302,7 +314,8 @@ function visitElement (el: ElementNode, state: WalkState) {
   if (state.form) {
     const model = el.props.find((p): p is DirectiveNode => p.type === NODE_DIRECTIVE && p.name === 'model')
     const source = model?.exp?.loc.source.trim()
-    if (source && !state.scopes.slice(state.form.scope).flat().some(name => mentions(source, name))) {
+    const scopes = state.scopes.slice(state.form.scope)
+    if (source && !(scopes.length && readsScope(source, scopes))) {
       addAttr(el, 'data-agent-field', source)
       state.form.models.push(source)
       if (el.tagType !== ELEMENT_COMPONENT && NATIVE_FIELDS.has(el.tag) && !state.labels && !LABEL_ATTRS.some(attr => findProp(el, attr))) {

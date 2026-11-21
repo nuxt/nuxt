@@ -113,11 +113,14 @@ describe('agent tool transform', () => {
     <label v-for="({ id, selected }, i) in topics" :key="id">Topic <input v-model="topics[i].selected" type="checkbox"></label>
     <Field v-slot="{ field }"><input v-model="field.value" aria-label="Name"></Field>
     <Field #default="{ error }"><input v-model="name" aria-label="Name"></Field>
+    <Field v-slot="{ value: slotValue = fallback }"><input v-model="value" aria-label="Value"></Field>
+    <label v-for="(city, index) in cities" :key="city">City <input v-model="profile['city']"><input v-model="profile[city]"><input v-model="profile.index"></label>
+    <template v-for="item in outer"><label v-for="item in inner" :key="item">Item <input v-model="item.value"></label></template>
   </form>
 </template>`)
-    expect(code).toContain('fields: { "email": { source: "email", get: () => (_ctx.email), set: ($v) => { _ctx.email = $v } }, "name": { source: "name", get: () => (_ctx.name), set: ($v) => { _ctx.name = $v } } }')
-    expect(code).not.toContain('"data-agent-field": "topics[i].selected"')
-    expect(code).not.toContain('"data-agent-field": "field.value"')
+    const fields = [...code.matchAll(/"data-agent-field": "([^"]+)"/g)].map(match => match[1])
+    expect(fields).toEqual(['email', 'name', 'value', 'profile[\'city\']', 'profile.index'])
+    expect(code).toContain('fields: { "email": { source: "email", get: () => (_ctx.email), set: ($v) => { _ctx.email = $v } }, "name": {')
   })
 
   it('writes refs through `.value` when the template is inlined', () => {
