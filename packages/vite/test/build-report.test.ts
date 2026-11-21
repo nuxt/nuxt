@@ -4,8 +4,11 @@ import { performance } from 'node:perf_hooks'
 import { fileURLToPath } from 'node:url'
 import { join } from 'pathe'
 import { afterAll, describe, expect, it } from 'vitest'
-import type { NuxtBuildEnvironment, NuxtBuildEnvironmentResult, NuxtConfig } from '@nuxt/schema'
+import { createHooks } from 'hookable'
+import type { Nuxt, NuxtBuildEnvironment, NuxtBuildEnvironmentResult, NuxtConfig, NuxtHooks } from '@nuxt/schema'
+import type { Plugin } from 'vite'
 
+import { BuildReportPlugin } from '../src/plugins/build-report.ts'
 import { buildFixture, writeFiles } from './utils.ts'
 
 const tmpDir = fileURLToPath(new URL('./.tmp/build-report', import.meta.url))
@@ -77,4 +80,30 @@ describe('build report', () => {
     expect(client.doneAt).toBeLessThanOrEqual(ssr.startedAt)
     expect(new Set(logLevels)).toEqual(new Set(['error']))
   }, 240 * 1000)
+
+  it('reports an environment with several outputs once every output is written', async () => {
+    await writeFiles(tmpDir, { 'dist/esm/index.mjs': 'export {}', 'dist/cjs/index.cjs': 'module.exports = {}' })
+    const hooks = createHooks<NuxtHooks>()
+    const nuxt = { options: { dev: false }, hooks, callHook: hooks.callHook.bind(hooks) } as unknown as Nuxt
+    const done: NuxtBuildEnvironmentResult[] = []
+    hooks.hook('build:environment:done', (_environment, result) => { done.push(result) })
+
+    const plugin = BuildReportPlugin(nuxt) as Plugin & { buildStart: () => Promise<void>, writeBundle: { handler: (options: object, bundle: object) => Promise<void> } }
+    const context = {
+      environment: {
+        name: 'lib',
+        config: { consumer: 'server', root: tmpDir, build: { write: true, outDir: 'dist', rolldownOptions: { output: [{}, {}] } } },
+      },
+    }
+    await plugin.buildStart.call(context)
+    await plugin.writeBundle.handler.call(context, { dir: join(tmpDir, 'dist/esm') }, { 'index.mjs': { type: 'chunk', fileName: 'index.mjs' } })
+    expect(done).toEqual([])
+    await plugin.writeBundle.handler.call(context, { dir: join(tmpDir, 'dist/cjs') }, { 'index.cjs': { type: 'chunk', fileName: 'index.cjs' } })
+
+    expect(done).toEqual([{
+      duration: expect.any(Number),
+      outDir: join(tmpDir, 'dist'),
+      files: [{ path: 'esm/index.mjs', size: 9 }, { path: 'cjs/index.cjs', size: 19 }],
+    }])
+  })
 })
