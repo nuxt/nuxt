@@ -559,7 +559,7 @@ describe('nitro config', () => {
 
   it('describes the deploy command of the preset, to run from the project root', async () => {
     await withNitro({ dev: false, nitro: { commands: { deploy: 'npx wrangler --cwd ./ pages deploy' }, output: { dir: 'my output' } } }, (_nitro, _nitroConfig, nuxt) => {
-      expect(nuxt.serverBuild.deploy?.command?.()).toBe('npx wrangler --cwd \'my output/\' pages deploy')
+      expect(nuxt.serverBuild.deploy?.command?.()).toBe('npx wrangler --cwd "my output/" pages deploy')
     })
     await withNitro({ dev: false }, (_nitro, _nitroConfig, nuxt) => {
       expect(nuxt.serverBuild.deploy?.command?.()).toBeUndefined()

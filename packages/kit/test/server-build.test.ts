@@ -24,8 +24,8 @@ describe('resolveNitroDeployCommand', () => {
   })
 
   it('quotes a resolved path containing whitespace', () => {
-    expect(resolveNitroDeployCommand('npx wrangler --cwd ./ pages deploy', options('/project/my output'))).toBe('npx wrangler --cwd \'my output/\' pages deploy')
-    expect(resolveNitroDeployCommand('npx wrangler pages deploy {{ output.publicDir }}', options('/project/it\'s here'))).toBe('npx wrangler pages deploy \'it\'\\\'\'s here/public\'')
+    expect(resolveNitroDeployCommand('npx wrangler --cwd ./ pages deploy', options('/project/my output'))).toBe('npx wrangler --cwd "my output/" pages deploy')
+    expect(resolveNitroDeployCommand('npx wrangler pages deploy {{ output.publicDir }}', options('/project/say "hi" there'))).toBe('npx wrangler pages deploy "say \\"hi\\" there/public"')
   })
 
   it('keeps paths relative to an output directory at the project root', () => {
