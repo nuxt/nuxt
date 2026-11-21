@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-nitro-legacy",
   "scripts": {
     "build": "nuxt build"

@@ -265,6 +265,26 @@ describe('jiti fallback', { concurrent: false, timeout: 60_000 }, () => {
     expect(result).toMatchObject({ ok: true, value: 'native' })
     expect(result.logs).not.toContain('NUXT_B5023')
   })
+
+  it('should suggest `"type": "module"` in place of the runtime warning for a typeless package', async () => {
+    const result = await loadConfig('typeless', 'export default { runtimeConfig: { value: \'typeless\' } }\n', { pkg: { type: undefined } })
+    expect(result).toMatchObject({ ok: true, value: 'typeless' })
+    expect(result.logs.match(/NUXT_B5040/g)).toHaveLength(1)
+    expect(result.logs).toContain(`\`${join(result.cwd, 'nuxt.config.ts')}\` uses ES module syntax`)
+    expect(result.logs).toContain(`\`"type": "module"\` to \`${join(result.cwd, 'package.json')}\``)
+    expect(result.logs).not.toContain('MODULE_TYPELESS_PACKAGE_JSON')
+  })
+
+  it('should leave the runtime warning about a typeless module the config imports as it is', async () => {
+    await writeFiles(join(dir, 'configs', 'typeless-helper'), {
+      'package.json': { name: 'typeless-helper', private: true },
+      'helper.ts': 'export const value = \'helper\'\n',
+    })
+    const result = await loadConfig('imports-typeless', 'import { value } from \'../typeless-helper/helper.ts\'\nexport default { runtimeConfig: { value } }\n')
+    expect(result).toMatchObject({ ok: true, value: 'helper' })
+    expect(result.logs).not.toContain('NUXT_B5040')
+    expect(result.logs).toContain('MODULE_TYPELESS_PACKAGE_JSON')
+  })
 })
 
 // `enum` is the cheapest syntax the runtime refuses to strip, so both the config and the module
