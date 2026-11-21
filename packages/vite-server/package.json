@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
-    "clickable-path": "catalog:build",
     "defu": "catalog:build",
     "exsolve": "catalog:build",
     "mocked-exports": "catalog:build",

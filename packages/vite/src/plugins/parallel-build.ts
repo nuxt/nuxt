@@ -1,4 +1,3 @@
-import { logger } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import type { BuildEnvironment, Plugin } from 'vite'
 
@@ -18,7 +17,6 @@ export function ParallelBuildPlugin (nuxt: Nuxt): Plugin {
         const { client, ssr } = builder.environments
         if (!client || !ssr || !needsBuild(client) || !needsBuild(ssr)) { return }
 
-        logger.start('Building client and server')
         const clientBuild = builder.build(client)
         const clientBuilt = clientBuild.then(() => {})
         clientBuilt.catch(() => {})
