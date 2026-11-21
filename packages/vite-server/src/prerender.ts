@@ -89,7 +89,7 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
   }
 
   async function report (entry: Omit<NuxtPrerenderRoute, 'total'>): Promise<void> {
-    const route = routeKey(entry.route)
+    const route = withoutBase(entry.route, baseURL)
     if (entry.error) {
       failed.push({ route, ...entry.error })
     } else if (!entry.skipped) {
@@ -136,7 +136,7 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
     if (isImplicitHTML || route.endsWith('.html')) {
       for (const link of await extractLinks(body.toString('utf-8'), route, response, config.crawlLinks)) {
         const parents = linkParents.get(routeKey(link)) ?? new Set()
-        linkParents.set(routeKey(link), parents.add(routeKey(route)))
+        linkParents.set(routeKey(link), parents.add(withoutBase(route, baseURL)))
         // a route carrying a query cannot become a file, so following one only risks a
         // crawl that never drains (`?page=2` linking `?page=3`, and so on)
         if (!link.includes('?') && canPrerender(link) && !generated.has(link)) {
@@ -152,7 +152,7 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
   const start = performance.now()
   await nuxt.callHook('build:prerender:start', { routes: queue.size })
   await runParallel(queue, generateRoute, config, (route, error) => report({
-    route,
+    route: decodeURISafe(route),
     duration: 0,
     skipped: false,
     error: { message: error instanceof Error ? error.message : String(error) },
