@@ -26,6 +26,7 @@ overrides:
   rolldown: "1.2.19"
   vite: "8.3.8"
   vue: "3.5.45"
+  vue-router: https://pkg.pr.new/vue-router@d7f4784
 
 allowBuilds:
   '@parcel/watcher': true
@@ -46,7 +47,6 @@ minimumReleaseAgeExclude:
   - unrouting
   - unimport
   - oxc-walker@1.1.1
-  - vue-router@5.5.1
   - vite-plugin-checker@1.0.0
   - vue
   - '@vue/*'

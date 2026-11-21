@@ -247,7 +247,9 @@ export default defineNuxtModule({
         dependsOn: [],
         getContents: () => [
           'export { useRoute } from \'#app/composables/router\'',
-          `export { parseQuery, stringifyQuery } from ${JSON.stringify(ufoPath)}`,
+          `export { decode, parseQuery, stringifyQuery } from ${JSON.stringify(ufoPath)}`,
+          // not ufo's `encodePath`: it also encodes `&+[]`, unlike vue-router
+          'export const encodePath = p => encodeURI(p).replace(/%7C/g, \'|\').replace(/%5B/g, \'[\').replace(/%5D/g, \']\').replace(/#/g, \'%23\').replace(/\\?/g, \'%3F\')',
           'export const START_LOCATION = Symbol(\'router:start-location\')',
         ].join('\n'),
       })
@@ -687,7 +689,7 @@ export default defineNuxtModule({
       getContents: () => [
         'import routerOptions from \'#build/router.options.mjs\'',
         'import { parseQuery as _parseQuery, stringifyQuery as _stringifyQuery } from \'vue-router\'',
-        'export { START_LOCATION, useRoute } from \'vue-router\'',
+        'export { START_LOCATION, useRoute, _encodePath as encodePath, _decode as decode } from \'vue-router\'',
         'export const parseQuery = search => (routerOptions.parseQuery || _parseQuery)(search[0] === \'?\' ? search.slice(1) : search)',
         'export const stringifyQuery = query => (routerOptions.stringifyQuery || _stringifyQuery)(query)',
       ].join('\n'),
