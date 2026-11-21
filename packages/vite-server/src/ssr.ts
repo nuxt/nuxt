@@ -314,7 +314,9 @@ function disableUnsupported (nuxt: Nuxt): string[] {
   // the renderer's module for it has been loaded in the same build
   if (nuxt.options.features.inlineStyles) {
     nuxt.options.features.inlineStyles = false
-    unsupported.push('inlined styles (stylesheets are linked instead)')
+    if (nuxt.options._layers?.some(layer => layer.config.features?.inlineStyles)) {
+      unsupported.push('inlined styles (stylesheets are linked instead)')
+    }
   }
   if (nuxt.options.experimental.componentIslands && nuxt.options.experimental.componentIslands !== 'auto') {
     unsupported.push('server components and islands')
