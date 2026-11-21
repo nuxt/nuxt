@@ -9,6 +9,9 @@ type PluginFactory = (opts: Record<string, any>) => Plugin
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
+/** Every style rule loads the plugins, so each one is resolved, and offered for install, once per build. */
+const pluginFactories = new WeakMap<Nuxt, Map<string, Promise<PluginFactory | undefined>>>()
+
 export async function getPostcssConfig (nuxt: Nuxt) {
   if (!nuxt.options.webpack.postcss || !nuxt.options.postcss) {
     return false
@@ -51,9 +54,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions) { continue }
 
-      const pluginFn = defaultPluginNames.has(pluginName)
-        ? await resolveDefaultPlugin(pluginName, nuxt)
-        : await resolvePostcssPlugin<Plugin>(pluginName, nuxt, { install: false })
+      const pluginFn = await loadPlugin(pluginName, nuxt, defaultPluginNames.has(pluginName))
       if (typeof pluginFn === 'function') {
         plugins.push(pluginFn(pluginOptions))
       }
@@ -68,6 +69,20 @@ export async function getPostcssConfig (nuxt: Nuxt) {
     ...nuxt.options.webpack.postcss,
     postcssOptions,
   }
+}
+
+function loadPlugin (pluginName: string, nuxt: Nuxt, isDefault: boolean): Promise<PluginFactory | undefined> {
+  let factories = pluginFactories.get(nuxt)
+  if (!factories) {
+    factories = new Map()
+    pluginFactories.set(nuxt, factories)
+  }
+  let factory = factories.get(pluginName)
+  if (!factory) {
+    factory = isDefault ? resolveDefaultPlugin(pluginName, nuxt) : resolvePostcssPlugin<Plugin>(pluginName, nuxt)
+    factories.set(pluginName, factory)
+  }
+  return factory
 }
 
 async function resolveDefaultPlugin (pluginName: string, nuxt: Nuxt): Promise<PluginFactory | undefined> {

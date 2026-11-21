@@ -6,6 +6,9 @@ import type { Nuxt } from '@nuxt/schema'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { getPostcssConfig } from '../src/utils/postcss.ts'
 
+const { ensureDependencyInstalled } = vi.hoisted(() => ({ ensureDependencyInstalled: vi.fn(() => Promise.resolve(false)) }))
+vi.mock('../../kit/src/dependency.ts', async original => ({ ...await original<typeof import('../../kit/src/dependency.ts')>(), ensureDependencyInstalled }))
+
 describe('getPostcssConfig', () => {
   let rootDir: string
 
@@ -30,10 +33,11 @@ describe('getPostcssConfig', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    ensureDependencyInstalled.mockClear()
   })
 
-  async function resolvePlugins (plugins: Record<string, unknown>) {
-    const nuxt = {
+  function createNuxt (plugins: Record<string, unknown>) {
+    return {
       options: {
         dev: true,
         rootDir,
@@ -43,6 +47,9 @@ describe('getPostcssConfig', () => {
         postcss: { plugins: { 'autoprefixer': false, 'postcss-import': false, 'postcss-url': false, ...plugins } },
       },
     } as unknown as Nuxt
+  }
+
+  async function resolvePlugins (plugins: Record<string, unknown>, nuxt = createNuxt(plugins)) {
     const config = await getPostcssConfig(nuxt)
     return config && config.postcssOptions.plugins
   }
@@ -61,6 +68,35 @@ describe('getPostcssConfig', () => {
 
     expect(await resolvePlugins({ '~~/postcss/plugin': {}, '~~/postcss/missing': {} })).toEqual([{ postcssPlugin: 'local' }])
     expect(missingPlugin).toHaveBeenCalledWith({ pluginName: '~~/postcss/missing' })
+    expect(ensureDependencyInstalled).not.toHaveBeenCalled()
+  })
+
+  it('offers to install a missing plugin and loads it once installed', async () => {
+    const missingPlugin = vi.spyOn(bundlerDiagnostics, 'NUXT_B7007').mockImplementation(() => ({}) as any)
+    ensureDependencyInstalled.mockImplementationOnce(() => {
+      for (const [path, contents] of Object.entries({
+        'node_modules/postcss-late/package.json': JSON.stringify({ name: 'postcss-late', main: 'index.js' }),
+        'node_modules/postcss-late/index.js': 'module.exports = () => ({ postcssPlugin: "late" })\n',
+      })) {
+        mkdirSync(dirname(join(rootDir, path)), { recursive: true })
+        writeFileSync(join(rootDir, path), contents)
+      }
+      return Promise.resolve(true)
+    })
+
+    expect(await resolvePlugins({ 'postcss-late': {} })).toEqual([{ postcssPlugin: 'late' }])
+    expect(ensureDependencyInstalled).toHaveBeenCalledWith('postcss-late', expect.objectContaining({ rootDir }))
+    expect(missingPlugin).not.toHaveBeenCalled()
+  })
+
+  it('offers to install a missing plugin once for every style rule of a build', async () => {
+    vi.spyOn(bundlerDiagnostics, 'NUXT_B7007').mockImplementation(() => ({}) as any)
+    const nuxt = createNuxt({ 'postcss-declined': {} })
+
+    await Promise.all([resolvePlugins({}, nuxt), resolvePlugins({}, nuxt), resolvePlugins({}, nuxt)])
+    await resolvePlugins({}, nuxt)
+
+    expect(ensureDependencyInstalled).toHaveBeenCalledOnce()
   })
 
   it('resolves a default plugin from the builder rather than the app', async () => {

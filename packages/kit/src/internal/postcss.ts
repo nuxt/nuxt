@@ -54,20 +54,11 @@ export function resolvePostcssPluginPath (pluginName: string, from: URL[]): stri
   }
 }
 
-export interface ResolvePostcssPluginOptions {
-  /**
-   * Whether to offer to install a missing plugin.
-   *
-   * @default true
-   */
-  install?: boolean
-}
-
 /**
- * Load the factory of the PostCSS plugin `pluginName` from the app, resolving aliases, and report
- * a plugin that cannot be loaded.
+ * Load the factory of the PostCSS plugin `pluginName` from the app, resolving aliases, offering to
+ * install a missing one and reporting a plugin that cannot be loaded.
  */
-export async function resolvePostcssPlugin<T = unknown> (pluginName: string, nuxt: Nuxt, options: ResolvePostcssPluginOptions = {}): Promise<PostcssPluginFactory<T> | undefined> {
+export async function resolvePostcssPlugin<T = unknown> (pluginName: string, nuxt: Nuxt): Promise<PostcssPluginFactory<T> | undefined> {
   const parentURLs = nuxt.options.modulesDir.map(dir => directoryToURL(dir.replace(/\/node_modules\/?$/, '')))
 
   const importPlugin = (path: string | undefined) => path ? tryImportModule<PostcssPluginFactory<T>>(path) : undefined
@@ -90,16 +81,14 @@ export async function resolvePostcssPlugin<T = unknown> (pluginName: string, nux
     return
   }
 
-  if (options.install !== false) {
-    await ensureDependencyInstalled(specifier, {
-      rootDir: nuxt.options.rootDir,
-      searchPaths: nuxt.options.modulesDir,
-    })
+  await ensureDependencyInstalled(specifier, {
+    rootDir: nuxt.options.rootDir,
+    searchPaths: nuxt.options.modulesDir,
+  })
 
-    pluginFn = await importPlugin(resolvePostcssPluginPath(specifier, parentURLs))
-    if (typeof pluginFn === 'function') {
-      return pluginFn
-    }
+  pluginFn = await importPlugin(resolvePostcssPluginPath(specifier, parentURLs))
+  if (typeof pluginFn === 'function') {
+    return pluginFn
   }
 
   bundlerDiagnostics.NUXT_B7007({ pluginName, installCommand: await getAddDependencyCommand(specifier, nuxt.options.rootDir, { dev: true }) })
