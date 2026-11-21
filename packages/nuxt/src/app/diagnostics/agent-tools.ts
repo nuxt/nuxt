@@ -17,7 +17,7 @@ export const agentToolDiagnostics = !import.meta.dev
           docs: false,
         },
         NUXT_E9002: {
-          why: (p: { tool: string }) => `The agent tool \`${p.tool}\` is defined more than once with different descriptions, so only the first is used.`,
+          why: (p: { tool: string }) => `The agent tool \`${p.tool}\` is defined more than once with different descriptions or flags, so only the first is described to agents.`,
           fix: 'Give each tool its own name, or share one `defineAgentTool()` definition between the components that use it.',
           docs: false,
         },

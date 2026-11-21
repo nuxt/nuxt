@@ -115,6 +115,40 @@ describe('agent tool registry', () => {
     expect(execute).not.toHaveBeenCalled()
   })
 
+  it('applies the definition of the activation a call selects when tools share a name', async () => {
+    const duplicate = vi.fn()
+    const registered = new Map<string, ModelContextTool>()
+    const registry = createAgentToolRegistry({
+      modelContext: () => ({ registerTool: (tool, { signal }) => { registered.set(tool.name, tool); signal.addEventListener('abort', () => registered.delete(tool.name)) } }),
+      schedule: flush => flush(),
+      diagnostics: { duplicate },
+    })
+    const archive = vi.fn()
+    const destroy = vi.fn()
+    const first = registry.activate(defineAgentTool({ name: 'remove', description: 'Archive a note.', annotations: { readOnlyHint: true } }), {
+      targets: () => [{ key: 'note', label: 'Note' }],
+      execute: archive,
+    })
+    registry.activate(defineAgentTool({ name: 'remove', description: 'Delete an account.', confirm: true, annotations: { consequentialHint: true }, input: z.object({ reason: z.string() }) }), {
+      targets: () => [{ key: 'account', label: 'Account' }],
+      stage: () => 'Ready to delete.',
+      execute: destroy,
+    })
+    expect(duplicate).toHaveBeenCalledWith('remove')
+    expect(registered.get('remove')!.annotations).toEqual({ consequentialHint: true })
+
+    expect(await registry.call('remove', { target: 'account' })).toMatchObject({ isError: true, content: [{ text: expect.stringContaining('reason') }] })
+    expect(await registry.call('remove', { target: 'account', reason: 'Asked.' })).toMatchObject({ content: [{ text: expect.stringContaining('requires_user_action') }] })
+    expect(destroy).not.toHaveBeenCalled()
+    expect(await registry.call('remove', { target: 'note' })).not.toHaveProperty('isError')
+    expect(archive).toHaveBeenCalledOnce()
+
+    first.dispose()
+    expect(registered.get('remove')!.description).toBe('Delete an account. This prepares the action on the page; the user completes it.')
+    expect(await registry.call('remove', { target: 'account', reason: 'Asked.' })).toMatchObject({ content: [{ text: expect.stringContaining('requires_user_action') }] })
+    expect(destroy).not.toHaveBeenCalled()
+  })
+
   it('only declares hints that are true', () => {
     const { registry } = setup()
     registry.activate(defineAgentTool({ name: 'look', description: 'Look.', annotations: { readOnlyHint: true, consequentialHint: false } }))
