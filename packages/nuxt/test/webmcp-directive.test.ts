@@ -216,7 +216,10 @@ describe('agent tool directive', () => {
         event.preventDefault()
         submits.capture('ship', sent)
       },
-    }), [[directive, binding({
+    }, [
+      h('input', { 'type': 'number', 'data-agent-field': 'state.quantity' }),
+      h('input', { 'type': 'checkbox', 'data-agent-field': 'state.express' }),
+    ]), [[directive, binding({
       name: 'ship',
       kind: 'form',
       fields: {
@@ -261,6 +264,83 @@ describe('agent tool directive', () => {
     expect(await registry.call('save', { email: 'daniel@example.com', plan: 'free', note: 'Hi' })).not.toHaveProperty('isError')
     expect(sent).toHaveBeenCalledOnce()
     expect(state.note).toBe('Hi')
+  })
+
+  it('rejects input for a field that is not rendered', async () => {
+    const state = reactive({ name: 'Daniel', role: 'member' })
+    const admin = ref(false)
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('save', sent)
+      },
+    }, [
+      h('input', { 'data-agent-field': 'state.name' }),
+      admin.value ? h('input', { 'data-agent-field': 'state.role' }) : null,
+    ]), [[directive, binding({ name: 'save', kind: 'form', fields: { name: field('name'), role: field('role') } })]]))
+    await nextTick()
+
+    for (const role of ['admin', 'member']) {
+      expect(await registry.call('save', { name: 'Sarah', role })).toEqual({
+        isError: true,
+        content: [{ type: 'text', text: 'The form was not submitted. role: this field is not on the page' }],
+      })
+    }
+    expect(sent).not.toHaveBeenCalled()
+    expect(state).toEqual({ name: 'Daniel', role: 'member' })
+
+    admin.value = true
+    await nextTick()
+    expect(await registry.call('save', { role: 'admin' })).not.toHaveProperty('isError')
+    expect(sent).toHaveBeenCalledOnce()
+    expect(state.role).toBe('admin')
+  })
+
+  it('rejects input that changes a component without a native control that is disabled, or a field inside an inert or hidden element', async () => {
+    const state = reactive({ plan: 'free', size: 's', color: 'red', note: '', tag: '', open: 'a' })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('save', sent)
+      },
+    }, [
+      h('div', { 'role': 'combobox', 'aria-disabled': 'true', 'data-agent-field': 'state.plan' }),
+      h('div', { 'role': 'combobox', 'data-disabled': '', 'data-agent-field': 'state.size' }),
+      h('div', { 'role': 'combobox', 'disabled': '', 'data-agent-field': 'state.color' }),
+      h('div', { inert: '' }, [h('input', { 'data-agent-field': 'state.note' })]),
+      h('div', { hidden: '' }, [h('input', { 'data-agent-field': 'state.tag' })]),
+      h('div', { 'role': 'combobox', 'data-agent-field': 'state.open' }),
+    ]), [[directive, binding({ name: 'save', kind: 'form', fields: Object.fromEntries(Object.keys(state).map(key => [key, field(key as keyof typeof state)])) })]]))
+    await nextTick()
+
+    expect(await registry.call('save', { plan: 'pro', size: 'm', color: 'blue', note: 'Hi', tag: 'x', open: 'b' })).toEqual({
+      isError: true,
+      content: [{ type: 'text', text: `The form was not submitted. ${['plan', 'size', 'color', 'note', 'tag'].map(key => `${key}: this field cannot be changed`).join('; ')}` }],
+    })
+    expect(sent).not.toHaveBeenCalled()
+    expect(state).toEqual({ plan: 'free', size: 's', color: 'red', note: '', tag: '', open: 'a' })
+
+    expect(await registry.call('save', { plan: 'free', open: 'b' })).not.toHaveProperty('isError')
+    expect(sent).toHaveBeenCalledOnce()
+    expect(state.open).toBe('b')
+  })
+
+  it('rejects input that repeats the value of a locked secret', async () => {
+    const state = reactive({ password: 'hunter2' })
+    const invoke = vi.fn()
+    const { registry } = mount(directive => () => withDirectives(h('div', [
+      h('input', { 'type': 'password', 'disabled': true, 'data-agent-field': 'state.password' }),
+    ]), [[directive, binding({ name: 'save', kind: 'form', invoke, fields: { password: { source: 'state.password', get: () => state.password, set: (value) => { state.password = value as string } } } })]]))
+    await nextTick()
+
+    for (const password of ['hunter2', 'guess']) {
+      expect(await registry.call('save', { password })).toMatchObject({ isError: true, content: [{ text: 'The form was not submitted. password: this field cannot be changed' }] })
+    }
+    expect(invoke).not.toHaveBeenCalled()
   })
 
   it('rejects input that selects a disabled choice or changes a disabled checkbox of a group', async () => {
@@ -322,7 +402,7 @@ describe('agent tool directive', () => {
           sent.push(state.email)
         })
       },
-    }), [[directive, binding({
+    }, [h('input', { 'data-agent-field': 'state.email' })]), [[directive, binding({
       name: 'send',
       kind: 'form',
       fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
@@ -355,7 +435,7 @@ describe('agent tool directive', () => {
           sent.push(state.email)
         }))
       },
-    }), [[directive, binding({
+    }, [h('input', { 'data-agent-field': 'state.email' })]), [[directive, binding({
       name: 'send',
       kind: 'form',
       fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
@@ -387,6 +467,7 @@ describe('agent tool directive', () => {
         submits.capture('send', sent)
       },
     }, [
+      h('input', { 'data-agent-field': 'state.email' }),
       h('button', { disabled: true }, 'Save draft'),
       h('button', { disabled: state.locked || !state.email }, 'Send'),
     ]), [[directive, binding({
@@ -428,7 +509,7 @@ describe('agent tool directive', () => {
 
   it('restores a form when the call is stopped while it is being filled in', async () => {
     const state = reactive({ email: 'daniel@example.com' })
-    const { registry } = mount(directive => () => withDirectives(h('form'), [[directive, binding({
+    const { registry } = mount(directive => () => withDirectives(h('form', [h('input', { 'data-agent-field': 'state.email' })]), [[directive, binding({
       name: 'send',
       kind: 'form',
       fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },

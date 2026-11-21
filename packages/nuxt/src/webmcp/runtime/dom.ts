@@ -257,11 +257,11 @@ export function fillFields (fields: FormFields, input: Record<string, unknown>) 
   return problems
 }
 
-function isLocked (control: FieldControl) {
-  return isDisabled(control)
-    || ('readOnly' in control && control.readOnly)
-    || (control instanceof HTMLInputElement && control.type === 'hidden')
-    || !!control.closest('[aria-readonly="true"]')
+const LOCKED = ':disabled, [disabled]:not(fieldset), [readonly], [aria-disabled="true"], [aria-readonly="true"], [data-disabled]:not([data-disabled="false"]), [inert], [hidden]'
+
+/** Whether the user cannot edit the field `el`: it is disabled, read-only or hidden, or inside an element that is. */
+function isLocked (el: Element) {
+  return !!el.closest(LOCKED) || (el instanceof HTMLInputElement && el.type === 'hidden')
 }
 
 /** The options of a select, the radios of a group, or the checkboxes bound to one array. */
@@ -283,26 +283,32 @@ function selects (value: unknown, choice: Choice) {
 }
 
 /**
- * Problems with input that changes a field whose controls are disabled, read-only or hidden,
- * selects a disabled choice, or changes a disabled checkbox of a group.
+ * Problems with input for a field the user could not edit: one that is not rendered, one whose
+ * controls are disabled, read-only or hidden, a disabled choice, or a disabled checkbox of a group.
+ * Input that repeats the current value of a locked field is accepted, unless the value is a secret.
  */
 export function lockedProblems (fields: FormFields, form: Element, input: Record<string, unknown>) {
   const problems: string[] = []
   for (const [key, field] of Object.entries(fields)) {
     const value = getIn(input, key.split('.'))
-    const controls = controlsOf(markersOf(form, field))
-    if (value === undefined || !controls.length) {
+    if (value === undefined) {
       continue
     }
+    const markers = markersOf(form, field)
+    if (!markers.length) {
+      problems.push(`${key}: this field is not on the page`)
+      continue
+    }
+    const subjects = subjectsOf(markers)
     const current = field.get()
     const next = coerce(value, current)
-    if (controls.every(isLocked)) {
-      if (JSON.stringify(next) !== JSON.stringify(current)) {
+    if (subjects.every(isLocked)) {
+      if (subjects.some(isSensitive) || JSON.stringify(next) !== JSON.stringify(current)) {
         problems.push(`${key}: this field cannot be changed`)
       }
       continue
     }
-    const refused = choicesOf(controls, current).filter(choice => isLockedChoice(choice)
+    const refused = choicesOf(controlsOf(markers), current).filter(choice => isLockedChoice(choice)
       && selects(next, choice) !== selects(current, choice)
       && (selects(next, choice) || (choice instanceof HTMLInputElement && choice.type === 'checkbox')))
     if (refused.length) {
