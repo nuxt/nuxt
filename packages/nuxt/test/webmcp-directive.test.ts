@@ -92,6 +92,28 @@ describe('agent tool directive', () => {
     })
   })
 
+  it('leaves the values of passwords, payment cards and hidden fields out of the schema', async () => {
+    const state = reactive({ email: 'daniel@example.com', password: 'hunter2', card: '4111111111111111', token: 'secret' })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
+    const { registry } = mount(directive => () => withDirectives(h('form', [
+      h('input', { 'type': 'email', 'aria-label': 'Email', 'data-agent-field': 'state.email' }),
+      h('input', { 'type': 'password', 'required': true, 'aria-label': 'Password', 'data-agent-field': 'state.password' }),
+      h('input', { 'autocomplete': 'section-pay cc-number', 'aria-label': 'Card number', 'data-agent-field': 'state.card' }),
+      h('input', { 'type': 'hidden', 'data-agent-field': 'state.token' }),
+    ]), [[directive, binding({ name: 'pay', kind: 'form', fields: { email: field('email'), password: field('password'), card: field('card'), token: field('token') } })]]))
+    await nextTick()
+
+    const schema = registry.list()[0]!.inputSchema
+    expect(schema.properties).toEqual({
+      email: { type: 'string', format: 'email', description: 'Email', default: 'daniel@example.com' },
+      password: { type: 'string', description: 'Password' },
+      card: { type: 'string', description: 'Card number' },
+      token: { type: 'string' },
+    })
+    expect(schema.required).toEqual([])
+    expect(JSON.stringify(schema)).not.toMatch(/hunter2|4111|secret/)
+  })
+
   it('describes multiple selects and checkbox groups as arrays of their options', async () => {
     const state = reactive({ sizes: [] as string[], toppings: [] as string[] })
     const { registry } = mount(directive => () => withDirectives(h('form', [
