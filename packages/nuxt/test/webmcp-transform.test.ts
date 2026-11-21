@@ -96,6 +96,18 @@ describe('agent tool transform', () => {
     expect(code).toContain('$event => (_ctx.$agentTools.capture("checkout", () => ($setup.checkout($event))))')
   })
 
+  it('leaves fields rendered by a `v-for` inside the form out of its input', () => {
+    const { code } = compile(`${script}
+<template>
+  <form @submit.prevent="subscribe">
+    <label>Email <input v-model="email"></label>
+    <label v-for="topic in topics" :key="topic.id">{{ topic.name }} <input v-model="topic.selected" type="checkbox"></label>
+  </form>
+</template>`)
+    expect(code).toContain('fields: { "email": { source: "email", get: () => (_ctx.email), set: ($v) => { _ctx.email = $v } } }')
+    expect(code).not.toContain('"data-agent-field": "topic.selected"')
+  })
+
   it('writes refs through `.value` when the template is inlined', () => {
     const transform = createAgentToolTransform()
     const { descriptor } = parse(`${script.replace('</script>', 'const email = ref(\'\')\n</script>')}
