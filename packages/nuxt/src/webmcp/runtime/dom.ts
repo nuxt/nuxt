@@ -88,12 +88,17 @@ function valueSchema (value: unknown): JSONSchema {
   return Array.isArray(value) ? { type: 'array' } : {}
 }
 
-/** A schema for one of `choices`, with the value `v-model` writes for each: its bound number or boolean, or its string value. */
-function choiceSchema (choices: (HTMLOptionElement | HTMLInputElement)[], title: (choice: HTMLOptionElement | HTMLInputElement) => string): JSONSchema {
-  const oneOf = choices.map((choice) => {
-    const bound = (choice as { _value?: unknown })._value
-    return { const: typeof bound === 'number' || typeof bound === 'boolean' ? bound : choice.value, title: title(choice) }
-  })
+type Choice = HTMLOptionElement | HTMLInputElement
+
+/** The value `v-model` writes for `choice`: its bound number or boolean, or its string value. */
+function choiceValue (choice: Choice) {
+  const bound = (choice as { _value?: unknown })._value
+  return typeof bound === 'number' || typeof bound === 'boolean' ? bound : choice.value
+}
+
+/** A schema for one of `choices`. */
+function choiceSchema (choices: Choice[], title: (choice: Choice) => string): JSONSchema {
+  const oneOf = choices.map(choice => ({ const: choiceValue(choice), title: title(choice) }))
   const types = new Set(oneOf.map(option => typeof option.const))
   return { ...types.size > 1 ? {} : { type: [...types][0] ?? 'string' }, oneOf }
 }
@@ -252,14 +257,49 @@ function isLocked (control: FieldControl) {
     || !!control.closest('[aria-readonly="true"]')
 }
 
-/** Problems with input that changes a field whose controls are disabled, read-only or hidden. */
+/** The options of a select, the radios of a group, or the checkboxes bound to one array. */
+function choicesOf (controls: FieldControl[], value: unknown): Choice[] {
+  const [control] = controls
+  if (control instanceof HTMLSelectElement) {
+    return [...control.options]
+  }
+  const grouped = control instanceof HTMLInputElement && (control.type === 'radio' || (control.type === 'checkbox' && Array.isArray(value)))
+  return grouped ? controls as HTMLInputElement[] : []
+}
+
+function isLockedChoice (choice: Choice) {
+  return choice instanceof HTMLOptionElement ? choice.disabled || !!choice.closest('optgroup[disabled]') : isLocked(choice)
+}
+
+function selects (value: unknown, choice: Choice) {
+  return (Array.isArray(value) ? value : [value]).some(item => item != null && String(item) === String(choiceValue(choice)))
+}
+
+/**
+ * Problems with input that changes a field whose controls are disabled, read-only or hidden,
+ * selects a disabled choice, or changes a disabled checkbox of a group.
+ */
 export function lockedProblems (fields: FormFields, form: Element, input: Record<string, unknown>) {
   const problems: string[] = []
   for (const [key, field] of Object.entries(fields)) {
     const value = getIn(input, key.split('.'))
     const controls = controlsOf(markersOf(form, field))
-    if (value !== undefined && controls.length && controls.every(isLocked) && JSON.stringify(coerce(value, field.get())) !== JSON.stringify(field.get())) {
-      problems.push(`${key}: this field cannot be changed`)
+    if (value === undefined || !controls.length) {
+      continue
+    }
+    const current = field.get()
+    const next = coerce(value, current)
+    if (controls.every(isLocked)) {
+      if (JSON.stringify(next) !== JSON.stringify(current)) {
+        problems.push(`${key}: this field cannot be changed`)
+      }
+      continue
+    }
+    const refused = choicesOf(controls, current).filter(choice => isLockedChoice(choice)
+      && selects(next, choice) !== selects(current, choice)
+      && (selects(next, choice) || (choice instanceof HTMLInputElement && choice.type === 'checkbox')))
+    if (refused.length) {
+      problems.push(`${key}: ${refused.map(choice => `${JSON.stringify(choiceValue(choice))} is disabled`).join(', ')}`)
     }
   }
   return problems

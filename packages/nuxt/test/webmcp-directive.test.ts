@@ -243,6 +243,37 @@ describe('agent tool directive', () => {
     expect(state.note).toBe('Hi')
   })
 
+  it('rejects input that selects a disabled choice or changes a disabled checkbox of a group', async () => {
+    const state = reactive({ plan: 'free', size: 's', extras: ['terms'] as string[] })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { (state as Record<string, unknown>)[key] = value } })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('order', sent)
+      },
+    }, [
+      h('input', { 'type': 'radio', 'value': 'free', 'data-agent-field': 'state.plan' }),
+      h('input', { 'type': 'radio', 'value': 'pro', 'data-agent-field': 'state.plan' }),
+      h('input', { 'type': 'radio', 'value': 'restricted', 'disabled': true, 'data-agent-field': 'state.plan' }),
+      h('select', { 'data-agent-field': 'state.size' }, [h('option', { value: 's' }), h('option', { value: 'm' }), h('option', { value: 'xl', disabled: true })]),
+      h('input', { 'type': 'checkbox', 'value': 'terms', 'disabled': true, 'data-agent-field': 'state.extras' }),
+      h('input', { 'type': 'checkbox', 'value': 'news', 'data-agent-field': 'state.extras' }),
+    ]), [[directive, binding({ name: 'order', kind: 'form', fields: { plan: field('plan'), size: field('size'), extras: field('extras') } })]]))
+    await nextTick()
+
+    expect(await registry.call('order', { plan: 'restricted', size: 'xl', extras: ['news'] })).toEqual({
+      isError: true,
+      content: [{ type: 'text', text: 'The form was not submitted. plan: "restricted" is disabled; size: "xl" is disabled; extras: "terms" is disabled' }],
+    })
+    expect(sent).not.toHaveBeenCalled()
+    expect(state).toEqual({ plan: 'free', size: 's', extras: ['terms'] })
+
+    expect(await registry.call('order', { plan: 'pro', size: 'm', extras: ['terms', 'news'] })).not.toHaveProperty('isError')
+    expect(sent).toHaveBeenCalledOnce()
+    expect(state).toEqual({ plan: 'pro', size: 'm', extras: ['terms', 'news'] })
+  })
+
   it('checks the fields of a form component that renders no form element', async () => {
     const state = reactive({ email: 'daniel@example.com' })
     const invoke = vi.fn()
