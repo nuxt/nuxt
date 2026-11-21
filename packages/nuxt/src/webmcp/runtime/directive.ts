@@ -61,9 +61,10 @@ export function createSubmitCapture () {
 
 export type SubmitCapture = ReturnType<typeof createSubmitCapture>
 
-export function createAgentToolDirective (registry: AgentToolRegistry, submits: SubmitCapture): ObjectDirective<HTMLElement, AgentToolBinding> {
+export function createAgentToolDirective (registry: AgentToolRegistry, submits: SubmitCapture): ObjectDirective<HTMLElement, AgentToolBinding | AgentToolBinding[]> {
   const definitions = new Map<string, AgentToolDefinition>()
-  const state = new WeakMap<HTMLElement, { binding: AgentToolBinding, dispose: () => void }>()
+  const state = new WeakMap<HTMLElement, { binding: AgentToolBinding, dispose: () => void }[]>()
+  const toArray = (value: AgentToolBinding | AgentToolBinding[]) => Array.isArray(value) ? value : [value]
 
   function definitionFor (binding: AgentToolBinding, el: HTMLElement): AgentToolDefinition {
     const form = binding.kind === 'form' ? formOf(el) ?? el : undefined
@@ -127,42 +128,46 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
     return binding.invoke(new Event('submit', { cancelable: true }))
   }
 
+  function activate (el: HTMLElement, value: AgentToolBinding) {
+    const current = { binding: value, dispose: () => {} }
+    const isForm = value.kind === 'form'
+    current.dispose = registry.activate(definitionFor(value, el), {
+      enabled: () => el.isConnected && (current.binding.enabled?.() ?? true) && !isDisabled(el),
+      targets: 'target' in value
+        ? () => el.isConnected ? [{ key: String(current.binding.target), label: itemLabel(el), element: el }] : []
+        : undefined,
+      element: () => el,
+      prepare: isForm ? input => fill(current.binding, el, input as Record<string, unknown>) : undefined,
+      stage: () => {
+        if (isForm) {
+          const form = formOf(el) ?? el
+          const submitter = submitterOf(form)
+          highlight(submitter ? [form, submitter] : [form])
+          submitter?.focus({ preventScroll: true })
+          return 'Filled in the form. The user needs to review and submit it.'
+        }
+        el.focus({ preventScroll: true })
+        return `Highlighted "${labelOf(el)}". The user needs to click it.`
+      },
+      execute: () => isForm
+        ? submit(current.binding, el)
+        : current.binding.invoke(new MouseEvent('click', { bubbles: true, cancelable: true })),
+    }).dispose
+    return current
+  }
+
   return {
     mounted (el, { value }) {
-      const current = { binding: value, dispose: () => {} }
-      state.set(el, current)
-      const isForm = value.kind === 'form'
-      current.dispose = registry.activate(definitionFor(value, el), {
-        enabled: () => el.isConnected && (current.binding.enabled?.() ?? true) && !isDisabled(el),
-        targets: 'target' in value
-          ? () => el.isConnected ? [{ key: String(current.binding.target), label: itemLabel(el), element: el }] : []
-          : undefined,
-        element: () => el,
-        prepare: isForm ? input => fill(current.binding, el, input as Record<string, unknown>) : undefined,
-        stage: () => {
-          if (isForm) {
-            const form = formOf(el) ?? el
-            const submitter = submitterOf(form)
-            highlight(submitter ? [form, submitter] : [form])
-            submitter?.focus({ preventScroll: true })
-            return 'Filled in the form. The user needs to review and submit it.'
-          }
-          el.focus({ preventScroll: true })
-          return `Highlighted "${labelOf(el)}". The user needs to click it.`
-        },
-        execute: () => isForm
-          ? submit(current.binding, el)
-          : current.binding.invoke(new MouseEvent('click', { bubbles: true, cancelable: true })),
-      }).dispose
+      state.set(el, toArray(value).map(binding => activate(el, binding)))
     },
     updated (el, { value }) {
-      const current = state.get(el)
-      if (current) {
-        current.binding = value
-      }
+      const bindings = toArray(value)
+      state.get(el)?.forEach((current, i) => {
+        current.binding = bindings[i] ?? current.binding
+      })
     },
     beforeUnmount (el) {
-      state.get(el)?.dispose()
+      state.get(el)?.forEach(current => current.dispose())
       state.delete(el)
     },
   }

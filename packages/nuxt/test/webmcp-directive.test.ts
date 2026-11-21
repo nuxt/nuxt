@@ -153,6 +153,26 @@ describe('agent tool directive', () => {
     expect(document.activeElement).toBe(container.querySelector('#clear'))
   })
 
+  it('registers every binding of an element and keeps each one current', async () => {
+    const calls: string[] = []
+    const suffix = ref('1')
+    const { registry, app } = mount(directive => () => withDirectives(h('button', suffix.value), [[directive, [
+      binding({ name: 'add', invoke: () => { calls.push(`add${suffix.value}`) } }),
+      binding({ name: 'remove', invoke: () => { calls.push(`remove${suffix.value}`) } }),
+    ]]]))
+    await nextTick()
+    expect(registry.list().map(tool => tool.name)).toEqual(['add', 'remove'])
+
+    suffix.value = '2'
+    await nextTick()
+    await registry.call('add')
+    await registry.call('remove')
+    expect(calls).toEqual(['add2', 'remove2'])
+
+    app.unmount()
+    expect(registry.list()).toEqual([])
+  })
+
   it('focuses the submit button of a form handed to the user', async () => {
     const { registry, container } = mount(directive => () => withDirectives(h('form', [
       h('button', { type: 'submit' }, 'Pay'),

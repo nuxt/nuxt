@@ -300,6 +300,8 @@ function visitElement (el: ElementNode, state: WalkState) {
     }
   }
 
+  const bindings: string[] = []
+  const names = new Set<string>()
   for (const handler of findHandlers(el)) {
     const result = analyseHandler(handler.exp.loc.source, state.tools)
     if (!result) {
@@ -312,6 +314,10 @@ function visitElement (el: ElementNode, state: WalkState) {
     }
     const meta = state.tools.get(result.fn)!
     const kind = handler.arg.content === 'submit' ? 'form' : 'action'
+    if (names.has(meta.name) || (kind === 'form' && state.form)) {
+      continue
+    }
+    names.add(meta.name)
     const target = state.fors.findLast(f => f.key)
     if (target && target.aliases.includes(target.key!)) {
       state.findings.push({ code: 'NUXT_B1028', offset: el.loc.start.offset, params: { fn: meta.fn } })
@@ -331,10 +337,8 @@ function visitElement (el: ElementNode, state: WalkState) {
     state.bound.add(meta.fn)
 
     if (kind === 'action') {
-      if (state.client) {
-        addDirective(el, `{ ${props.join(', ')} }`)
-      }
-      break
+      bindings.push(`{ ${props.join(', ')} }`)
+      continue
     }
 
     if (state.client) {
@@ -351,20 +355,20 @@ function visitElement (el: ElementNode, state: WalkState) {
       if (repeated.length > 1) {
         state.findings.push({ code: 'NUXT_B1029', offset: meta.offset, params: { tool: meta.name, problem: `its description lists fields (${repeated.join(', ')}) that the input schema already describes` } })
       }
-      if (state.client) {
-        addDirective(el, `{ ${[
-          ...props,
-          `fields: ${source}`,
-          ...root ? [`root: () => (${root})`] : [],
-          ...schema ? [`schema: () => (${schema})`] : [],
-        ].join(', ')} }`)
-      }
+      bindings.push(`{ ${[
+        ...props,
+        `fields: ${source}`,
+        ...root ? [`root: () => (${root})`] : [],
+        ...schema ? [`schema: () => (${schema})`] : [],
+      ].join(', ')} }`)
     })
-    break
   }
 
   visitChildren(el.children, state)
   exits.reverse().forEach(exit => exit())
+  if (state.client && bindings.length) {
+    addDirective(el, bindings.length === 1 ? bindings[0]! : `[${bindings.join(', ')}]`)
+  }
 }
 
 function visitChildren (children: TemplateChildNode[], state: WalkState) {
