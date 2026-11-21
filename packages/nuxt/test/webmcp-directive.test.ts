@@ -188,6 +188,35 @@ describe('agent tool directive', () => {
     expect(state).toEqual({ quantity: 4, express: true })
   })
 
+  it('rejects input that changes a disabled, read-only or hidden field', async () => {
+    const state = reactive({ email: 'daniel@example.com', plan: 'free', account: 'a1', note: '' })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('save', sent)
+      },
+    }, [
+      h('input', { 'readonly': true, 'data-agent-field': 'state.email' }),
+      h('select', { 'disabled': true, 'data-agent-field': 'state.plan' }, [h('option', { value: 'free' }), h('option', { value: 'pro' })]),
+      h('input', { 'type': 'hidden', 'data-agent-field': 'state.account' }),
+      h('input', { 'data-agent-field': 'state.note' }),
+    ]), [[directive, binding({ name: 'save', kind: 'form', fields: { email: field('email'), plan: field('plan'), account: field('account'), note: field('note') } })]]))
+    await nextTick()
+
+    expect(await registry.call('save', { email: 'sarah@example.com', plan: 'pro', account: 'b2', note: 'Hi' })).toEqual({
+      isError: true,
+      content: [{ type: 'text', text: 'The form was not submitted. email: this field cannot be changed; plan: this field cannot be changed; account: this field cannot be changed' }],
+    })
+    expect(sent).not.toHaveBeenCalled()
+    expect(state).toEqual({ email: 'daniel@example.com', plan: 'free', account: 'a1', note: '' })
+
+    expect(await registry.call('save', { email: 'daniel@example.com', plan: 'free', note: 'Hi' })).not.toHaveProperty('isError')
+    expect(sent).toHaveBeenCalledOnce()
+    expect(state.note).toBe('Hi')
+  })
+
   it('rejects a call to a form that another call is filling in', async () => {
     const state = reactive({ email: '' })
     const sent: string[] = []
