@@ -81,7 +81,11 @@ describe('build report', () => {
     expect(new Set(logLevels)).toEqual(new Set(['error']))
   }, 240 * 1000)
 
-  it('reports an environment with several outputs once every output is written', async () => {
+  it.each([
+    ['an array of outputs', { rolldownOptions: { output: [{}, {}] } }],
+    ['library formats', { lib: { entry: 'index.ts', formats: ['es', 'cjs'] }, rolldownOptions: {} }],
+    ['the default library formats', { lib: { entry: 'index.ts' }, rolldownOptions: {} }],
+  ])('reports an environment with several outputs once every output is written (%s)', async (_, build) => {
     await writeFiles(tmpDir, { 'dist/esm/index.mjs': 'export {}', 'dist/cjs/index.cjs': 'module.exports = {}' })
     const hooks = createHooks<NuxtHooks>()
     const nuxt = { options: { dev: false }, hooks, callHook: hooks.callHook.bind(hooks) } as unknown as Nuxt
@@ -92,7 +96,7 @@ describe('build report', () => {
     const context = {
       environment: {
         name: 'lib',
-        config: { consumer: 'server', root: tmpDir, build: { write: true, outDir: 'dist', rolldownOptions: { output: [{}, {}] } } },
+        config: { consumer: 'server', root: tmpDir, build: { write: true, outDir: 'dist', ...build } },
       },
     }
     await plugin.buildStart.call(context)
