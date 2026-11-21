@@ -16,8 +16,9 @@ export default <RouterConfig>{
     // @ts-expect-error untyped, nuxt-injected option
     const hashScrollBehaviour = router.options?.scrollBehaviorType ?? 'auto'
 
-    // keep the position the browser restored on load (see `scrollRestoration` in the router plugin)
-    if (from === START_LOCATION && !savedPosition && !to.hash) {
+    // keep the position the browser restored or scrolled to on load (see `scrollRestoration` in the router plugin)
+    const browserScrolledToHash = !to.redirectedFrom && !router.options.history.base.includes('#')
+    if (from === START_LOCATION && !savedPosition && (!to.hash || browserScrolledToHash)) {
       return false
     }
 
