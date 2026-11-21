@@ -77,7 +77,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
           const bare = id.replace(/\?.*/, '')
           const componentExport = params.get('nuxt_component_export') || 'default'
           if (!IDENTIFIER_RE.test(componentExport)) {
-            throw buildDiagnostics.NUXT_B1021({ export: componentExport })
+            throw buildDiagnostics.NUXT_B1021({ export: componentExport }, { method: 'error' })
           }
           const exportWording = componentExport === 'default' ? 'export default' : `export const ${componentExport} =`
           if (mode === 'async') {
@@ -116,7 +116,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else {
-            throw buildDiagnostics.NUXT_B1019({ mode: String(mode) })
+            throw buildDiagnostics.NUXT_B1019({ mode: String(mode) }, { method: 'error' })
           }
         },
       },

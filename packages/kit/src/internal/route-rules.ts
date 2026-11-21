@@ -206,7 +206,7 @@ export function assertEncodingIndependentRouteRuleKey (key: string): void {
   for (const { text, constraint } of splitRouteConstraints(key)) {
     const part = constraint ? findEncodingDependentConstraint(text) : undefined
     if (part !== undefined) {
-      throw pageDiagnostics.NUXT_B4026({ route: decodeRoutePath(key), part: decodeRoutePath(part) })
+      throw pageDiagnostics.NUXT_B4026({ route: decodeRoutePath(key), part: decodeRoutePath(part) }, { method: 'error' })
     }
   }
 }
@@ -225,7 +225,7 @@ export function assertSingleCatchAllRouteRuleKey (key: string): void {
     if (!constraint) { count += text.match(CATCH_ALL_RE)?.length ?? 0 }
   }
   if (count > 1) {
-    throw pageDiagnostics.NUXT_B4027({ route: key })
+    throw pageDiagnostics.NUXT_B4027({ route: key }, { method: 'error' })
   }
 }
 
@@ -291,7 +291,7 @@ export function findCaseDependentRouteRuleKeyPart (key: string): string | undefi
 export function assertCaseIndependentRouteRuleKey (key: string): void {
   const part = findCaseDependentRouteRuleKeyPart(key)
   if (part !== undefined) {
-    throw pageDiagnostics.NUXT_B4022({ route: key, part })
+    throw pageDiagnostics.NUXT_B4022({ route: key, part }, { method: 'error' })
   }
 }
 

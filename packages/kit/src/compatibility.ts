@@ -84,7 +84,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
 export async function assertNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<true> {
   const issues = await checkNuxtCompatibility(constraints, nuxt)
   if (issues.length) {
-    throw kitDiagnostics.NUXT_B8004({ issues: issues.toString() })
+    throw kitDiagnostics.NUXT_B8004({ issues: issues.toString() }, { method: 'error' })
   }
   return true
 }
@@ -205,7 +205,7 @@ const NUXT_VERSION_RE = /^v/g
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */): string {
   const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
   if (typeof rawVersion !== 'string') {
-    throw kitDiagnostics.NUXT_B8005()
+    throw kitDiagnostics.NUXT_B8005({}, { method: 'error' })
   }
   return rawVersion.replace(NUXT_VERSION_RE, '')
 }

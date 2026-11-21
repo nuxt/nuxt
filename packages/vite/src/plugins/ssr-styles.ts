@@ -557,7 +557,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         },
         buildEnd (error) {
           if (!error && this.environment.name === 'ssr' && pendingExtractions) {
-            throw bundlerDiagnostics.NUXT_B7039({ entry: ssrEntry })
+            throw bundlerDiagnostics.NUXT_B7039({ entry: ssrEntry }, { method: 'error' })
           }
         },
         generateBundle (outputOptions, bundle) {

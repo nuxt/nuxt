@@ -86,7 +86,7 @@ function resolveVariant<T, Api extends ServerApi> (api: string, variants: Server
   const declared = new Map<ServerApi, T>()
   for (const key in variants) {
     if (!accepted.has(key as ServerApi)) {
-      throw kitDiagnostics.NUXT_B8025({ api, value: key, accepted: [...accepted].join('`, `') })
+      throw kitDiagnostics.NUXT_B8025({ api, value: key, accepted: [...accepted].join('`, `') }, { method: 'error' })
     }
     declared.set(key as ServerApi, normalizeValue((variants as Record<string, T>)[key]!))
   }
@@ -335,7 +335,7 @@ export function addPrerenderRoutes (routes: string | string[]): void {
 export function useNitro (): NitroInstance {
   const nitro = tryUseNitro()
   if (!nitro) {
-    throw kitDiagnostics.NUXT_B8003()
+    throw kitDiagnostics.NUXT_B8003({}, { method: 'error' })
   }
   return nitro
 }

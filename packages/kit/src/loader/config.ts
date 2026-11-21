@@ -217,7 +217,7 @@ async function assertRemoteLayerSupport (source: string, rootDir: string) {
     throw configDiagnostics.NUXT_B5018({
       source,
       installCommand: await getAddDependencyCommand('giget', rootDir, { dev: true }),
-    })
+    }, { method: 'error' })
   }
 }
 
@@ -337,7 +337,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
           hint: describeNativeImportFailure(error),
           installCommand: await getAddDependencyCommand('jiti', rootCwd, { dev: true }),
           cause: error,
-        })
+        }, { method: 'error' })
       }
 
       let loaded: unknown
@@ -437,7 +437,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       throw configDiagnostics.NUXT_B5022({
         installCommand: await getAddDependencyCommand('confbox', rootCwd, { dev: true }),
         cause: error,
-      })
+      }, { method: 'error' })
     }
     // The abandoned load already recorded the layers it reached, and a layer it has seen resolves
     // to an empty config on the way past

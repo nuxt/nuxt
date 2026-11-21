@@ -74,7 +74,7 @@ async function loadDriver (rootDir: string, base: string, name: string, options:
     return factory(options)
   } catch (error) {
     const fail = () => {
-      throw nitroBuildDiagnostics.NUXT_B9016({ base: toMountKey(base), driver: name, error: error instanceof Error ? error.message : String(error) })
+      throw nitroBuildDiagnostics.NUXT_B9016({ base: toMountKey(base), driver: name, error: error instanceof Error ? error.message : String(error) }, { method: 'error' })
     }
     return { name, hasItem: fail, getItem: fail, setItem: fail, removeItem: fail, getKeys: fail, clear: fail }
   }

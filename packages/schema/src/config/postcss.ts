@@ -24,7 +24,7 @@ export default defineResolvers({
       $resolve: (val) => {
         if (typeof val === 'string') {
           if (!(val in orderPresets)) {
-            throw schemaDiagnostics.NUXT_B5015({ preset: val })
+            throw schemaDiagnostics.NUXT_B5015({ preset: val }, { method: 'error' })
           }
           return orderPresets[val as keyof typeof orderPresets]
         }
