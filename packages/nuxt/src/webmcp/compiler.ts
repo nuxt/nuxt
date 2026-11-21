@@ -1,6 +1,6 @@
 import type { AttributeNode, DirectiveNode, ElementNode, NodeTransform, RootNode, SimpleExpressionNode, SourceLocation, TemplateChildNode } from '@vue/compiler-core'
 import type { ESTree } from 'rolldown/utils'
-import { getUndeclaredIdentifiersInFunction, walk } from 'oxc-walker'
+import { ScopeTracker, isReferenceIdentifier, walk } from 'oxc-walker'
 import escapeRE from 'escape-string-regexp'
 import { findSFCScriptBlocks } from '../core/utils/parse-utils.ts'
 import { parseModule } from '../core/utils/parse.ts'
@@ -222,18 +222,23 @@ type Handler = { fn: string, call: string } | { mentions: string[] }
 
 /** Whether `expression` reads a variable declared by one of `scopes`, each the parameters of a function around it. */
 function readsScope (expression: string, scopes: string[]) {
-  const free = (params: string[]) => {
-    const [statement] = parseModule(`() => ${params.map(p => `(${p}) => `).join('')}(${expression})`, 'scope.ts').program.body
-    return statement?.type === 'ExpressionStatement' && statement.expression.type === 'ArrowFunctionExpression'
-      ? getUndeclaredIdentifiersInFunction(statement.expression)
-      : undefined
-  }
-  try {
-    const outside = free(scopes)
-    return !outside || !free([])?.every(name => outside.includes(name))
-  } catch {
+  const prefix = scopes.map(params => `(${params}) => `).join('')
+  const { program, errors } = parseModule(`${prefix}(${expression})`, 'scope.ts')
+  if (errors.length) {
     return true
   }
+  const scopeTracker = new ScopeTracker()
+  let reads = false
+  walk(program, {
+    scopeTracker,
+    enter (node, parent) {
+      if (node.type === 'Identifier' && node.start >= prefix.length && isReferenceIdentifier(node, parent)) {
+        const declaration = scopeTracker.getDeclaration(node.name)
+        reads ||= declaration?.type === 'FunctionParam' && declaration.fnNode.start < prefix.length
+      }
+    },
+  })
+  return reads
 }
 
 function analyseHandler (source: string, tools: Map<string, ToolMeta>): Handler | undefined {
