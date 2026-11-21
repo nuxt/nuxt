@@ -385,16 +385,13 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
 
   nuxt.hook('close', () => { stop = true })
 
-  // both crawls share one budget so speculative work cannot outlive it twice over
-  let deadline = Number.POSITIVE_INFINITY
-
   const crawl = async (label: string, environment: vite.DevEnvironment, entries: string[]) => {
     try {
       const { modules, visited, duration, stopped } = await warmupViteServer(environment, entries, {
         root: server.config.root,
         base: server.config.base,
         maxModules: WARMUP_MAX_MODULES,
-        maxDuration: Math.max(0, deadline - performance.now()),
+        maxDuration: WARMUP_MAX_DURATION,
         shouldStop: () => stop,
         shouldPause: () => inFlight > 0,
       })
@@ -405,7 +402,6 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   }
 
   const run = async () => {
-    deadline = performance.now() + WARMUP_MAX_DURATION
     try {
       // the first visitor waits on the document before the browser asks for any
       // client module, so the server graph is warmed first
