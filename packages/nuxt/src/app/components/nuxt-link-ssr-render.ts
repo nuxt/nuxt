@@ -1,5 +1,5 @@
 import type { Component, ComponentInternalInstance, Slots, VNode } from 'vue'
-import { getCurrentInstance, h } from 'vue'
+import { Fragment, createTextVNode, getCurrentInstance, h, isVNode } from 'vue'
 import { ssrRenderAttrs, ssrRenderComponent, ssrRenderVNode } from 'vue/server-renderer'
 import type { NuxtLinkSsrState } from './nuxt-link'
 
@@ -16,6 +16,10 @@ export function ssrRenderNuxtLink (comp: Component & { __ssrLink?: (props: Recor
   const state = props && slots && comp.__ssrLink?.(props, parent)
   if (!state || !slots) {
     return ssrRenderComponent(comp, props, slots, parent, slotScopeId)
+  }
+
+  if (state.custom) {
+    return renderSlot(state, slots, parent, slotScopeId)
   }
 
   let html = (state.openTag ?? `<a${ssrRenderAttrs(state.attrs())}`) + ssrScopeIds(slotScopeId) + '>'
@@ -44,6 +48,29 @@ export function ssrRenderNuxtLink (comp: Component & { __ssrLink?: (props: Recor
     return buffer
   }
   return html + '</a>'
+}
+
+/** Renders only the slot of a `custom` link, as the component would. */
+function renderSlot (state: NuxtLinkSsrState, slots: Slots, parent: ComponentInternalInstance, slotScopeId?: string) {
+  let html = ''
+  let buffer: SSRBuffer | undefined
+  const push = (item: SSRBufferItem) => {
+    if (buffer) {
+      buffer.push(item)
+    } else if (typeof item === 'string') {
+      html += item
+    } else {
+      buffer = [html, item]
+      buffer.hasAsync = true
+    }
+  }
+  const ret = (slots.default as SSRSlot | undefined)?.(state.link, push, parent, slotScopeId ? ' ' + slotScopeId : '')
+  if (ret !== undefined) {
+    // like the component, which returns a single slot node as its root and wraps any other in a fragment
+    const vnodes = (Array.isArray(ret) ? ret : [ret]).map(vnode => isVNode(vnode) ? vnode : createTextVNode(String(vnode)))
+    ssrRenderVNode(push, vnodes.length === 1 ? vnodes[0]! : h(Fragment, vnodes), parent, slotScopeId)
+  }
+  return buffer ?? html
 }
 
 function ssrScopeIds (slotScopeId?: string): string {
