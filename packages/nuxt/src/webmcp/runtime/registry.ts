@@ -422,17 +422,18 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       return toolResult
     }
 
-    activities.add(activity)
-    notify()
-    const running = run()
     if (activation.prepare) {
       busy.add(activation)
-      const release = () => busy.delete(activation)
-      running.then(release, release)
     }
+    const release = () => busy.delete(activation)
     try {
+      activities.add(activity)
+      notify()
+      const running = run()
+      running.then(release, release)
       return await Promise.race([running, stopped])
     } catch (error) {
+      release()
       return text(errorMessage(error), true)
     } finally {
       activities.delete(activity)
