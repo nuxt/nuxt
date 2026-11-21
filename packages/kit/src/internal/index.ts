@@ -18,7 +18,7 @@ export { pageDiagnostics } from '../diagnostics/pages.ts'
 export { configDiagnostics } from '../diagnostics/config.ts'
 export { headDiagnostics } from '../diagnostics/head.ts'
 export { bundlerDiagnostics } from '../diagnostics/bundler.ts'
-export { docsBase } from '../diagnostics/_shared.ts'
+export { docsBase, reporters as diagnosticReporters } from '../diagnostics/_shared.ts'
 
 export { reportPendingTemplates, trackPendingTemplate } from './pending-templates.ts'
 
