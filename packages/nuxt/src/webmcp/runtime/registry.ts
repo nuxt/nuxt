@@ -295,7 +295,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       .filter(t => words.every(word => t.label.toLowerCase().includes(word)))
     const total_pages = Math.max(1, Math.ceil(all.length / PAGE_SIZE))
     const page = Math.min(Math.max(1, Math.floor(input.page ?? 1)), total_pages)
-    const grouped: ReturnType<typeof targets> = {}
+    const grouped: ReturnType<typeof targets> = Object.create(null)
     for (const { tool, ...target } of all.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)) {
       (grouped[tool] ||= []).push(target)
     }
@@ -303,7 +303,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
   }
 
   function targets (tool?: string) {
-    const result: Record<string, { target: string, label: string, disabled?: true }[]> = {}
+    const result: Record<string, { target: string, label: string, disabled?: true }[]> = Object.create(null)
     for (const [name, entry] of entries) {
       if (tool && tool !== name) {
         continue

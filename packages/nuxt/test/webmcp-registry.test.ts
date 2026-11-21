@@ -76,6 +76,14 @@ describe('agent tool registry', () => {
     expect(registered.get('eat')!.inputSchema.required).toEqual(['target'])
   })
 
+  it('lists targets of tools named like object prototype members', async () => {
+    const { registry, registered } = setup()
+    registry.activate(defineAgentTool({ name: 'constructor', description: 'Build it.' }), { targets: () => [{ key: 'a', label: 'Apple' }] })
+    expect(registry.targets()).toEqual({ constructor: [{ target: 'a', label: 'Apple' }] })
+    const page = JSON.parse((await registered.get('list_targets')!.execute({})).content[0]!.text)
+    expect(page.targets).toEqual({ constructor: [{ target: 'a', label: 'Apple' }] })
+  })
+
   it('pages and searches list_targets', async () => {
     const { registry, registered } = setup()
     const items = Array.from({ length: 45 }, (_, i) => ({ key: String(i), label: i % 2 ? `Odd ${i}` : `Even ${i}` }))
