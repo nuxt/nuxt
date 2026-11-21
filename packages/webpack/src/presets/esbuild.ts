@@ -1,6 +1,8 @@
 import { EsbuildPlugin } from 'esbuild-loader'
 import type { WebpackConfigContext } from '../utils/config.ts'
 
+const NODE_MODULES_SEGMENT_RE = /[\\/]node_modules(?=[\\/])/
+
 export function esbuild (ctx: WebpackConfigContext) {
   // https://esbuild.github.io/getting-started/#bundling-for-the-browser
   // https://gs.statcounter.com/browser-version-market-share
@@ -16,7 +18,7 @@ export function esbuild (ctx: WebpackConfigContext) {
       loader: 'esbuild-loader',
       exclude: (file) => {
         // Not exclude files outside node_modules
-        const lastSegment = file.split('node_modules', 2)[1]
+        const lastSegment = file.split(NODE_MODULES_SEGMENT_RE, 2)[1]
         if (!lastSegment) { return false }
 
         return !ctx.transpile.some(module => module.test(lastSegment))
