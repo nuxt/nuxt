@@ -116,6 +116,26 @@ describe('agent tool directive', () => {
     expect(JSON.stringify(schema)).not.toMatch(/hunter2|4111|secret|0000/)
   })
 
+  it('leaves the values of fields that are not rendered, and of secrets in components without a native control, out of the schema', async () => {
+    const state = reactive({ name: 'Daniel', password: 'hunter2', pin: '0000', plan: 'pro' })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
+    const { registry } = mount(directive => () => withDirectives(h('form', [
+      h('input', { 'data-agent-field': 'state.name' }),
+      h('div', { 'type': 'password', 'data-agent-field': 'state.pin' }),
+      h('div', { 'role': 'combobox', 'aria-label': 'Plan', 'data-agent-field': 'state.plan' }),
+    ]), [[directive, binding({ name: 'save', kind: 'form', fields: { name: field('name'), password: field('password'), pin: field('pin'), plan: field('plan') } })]]))
+    await nextTick()
+
+    const schema = registry.list()[0]!.inputSchema
+    expect(schema.properties).toEqual({
+      name: { type: 'string', default: 'Daniel' },
+      password: { type: 'string' },
+      pin: { type: 'string' },
+      plan: { type: 'string', description: 'Plan', default: 'pro' },
+    })
+    expect(JSON.stringify(schema)).not.toMatch(/hunter2|0000/)
+  })
+
   it('leaves the values of `writeOnly` properties out of the schema', async () => {
     const state = reactive({ name: 'Daniel', token: 'existing-private-token' })
     const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })

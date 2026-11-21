@@ -64,6 +64,11 @@ function controlsOf (markers: Element[]) {
     .filter((c): c is FieldControl => !!c)
 }
 
+/** For each marker, the native control it is or contains, or the marker itself when it has none. */
+function subjectsOf (markers: Element[]) {
+  return markers.map(m => m.matches(INPUTS) ? m : m.querySelector(INPUTS) ?? m)
+}
+
 function describe (markers: Element[], controls: FieldControl[]) {
   const control = controls[0]
   const label = control?.labels?.[0]
@@ -166,15 +171,17 @@ export function formSchema (fields: FormFields, form: Element): JSONSchema {
 
 const SENSITIVE_AUTOCOMPLETE_RE = /(?:^|\s)(?:current-password|new-password|one-time-code|cc-\S+)(?:\s|$)/i
 
-/** Whether the value of `control` is a secret, which must not reach an agent as part of a schema. */
-function isSensitive (control: FieldControl) {
-  return (control instanceof HTMLInputElement && (control.type === 'password' || control.type === 'hidden'))
-    || SENSITIVE_AUTOCOMPLETE_RE.test(control.getAttribute('autocomplete') || control.closest('[data-agent-field]')?.getAttribute('autocomplete') || '')
+/** Whether the value of the field `el` is a secret, which must not reach an agent as part of a schema. */
+function isSensitive (el: Element) {
+  const type = el instanceof HTMLInputElement ? el.type : el.getAttribute('type')
+  return type === 'password' || type === 'hidden'
+    || SENSITIVE_AUTOCOMPLETE_RE.test(el.getAttribute('autocomplete') || el.closest('[data-agent-field]')?.getAttribute('autocomplete') || '')
 }
 
 /**
- * Fills gaps in a form's schema from the page: descriptions from labels, and the current values
- * as defaults, except for passwords, payment card details, hidden fields and `writeOnly` properties.
+ * Fills gaps in a form's schema from the page: descriptions from labels, and the current values of
+ * rendered fields as defaults, except for passwords, payment card details, hidden fields and
+ * `writeOnly` properties.
  * Fields with a value are not required, because input is merged into the form's state.
  */
 export function describeSchema (schema: JSONSchema, fields: FormFields, form: Element) {
@@ -194,7 +201,7 @@ export function describeSchema (schema: JSONSchema, fields: FormFields, form: El
     }
     const value = field.get()
     if (value !== undefined && value !== null && value !== '' && property.default === undefined) {
-      if (property.writeOnly !== true && !controls.some(isSensitive)) {
+      if (markers.length && property.writeOnly !== true && !subjectsOf(markers).some(isSensitive)) {
         property.default = value
       }
       at.parent.required = (at.parent.required as string[] | undefined)?.filter(name => name !== at.name)
