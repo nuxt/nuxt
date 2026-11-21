@@ -147,6 +147,33 @@ describe('agent tool directive', () => {
     expect(sent).toEqual(['daniel@example.com', 'sarah@example.com'])
   })
 
+  it('submits a form only while one of its submit buttons is enabled', async () => {
+    const state = reactive({ email: '', locked: false })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('send', sent)
+      },
+    }, [
+      h('button', { disabled: state.locked || !state.email }, 'Send'),
+    ]), [[directive, binding({
+      name: 'send',
+      kind: 'form',
+      fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
+    })]]))
+    await nextTick()
+
+    expect(await registry.call('send', { email: 'daniel@example.com' })).not.toHaveProperty('isError')
+    expect(sent).toHaveBeenCalledOnce()
+
+    state.locked = true
+    await nextTick()
+    expect(await registry.call('send', { email: 'sarah@example.com' })).toEqual({ isError: true, content: [{ type: 'text', text: 'The form was not submitted. The submit button is disabled.' }] })
+    expect(sent).toHaveBeenCalledOnce()
+    expect(state.email).toBe('daniel@example.com')
+  })
+
   it('returns the error of a submit handler that throws', async () => {
     const { registry, app } = mount((directive, submits) => () => withDirectives(h('form', {
       onSubmit: (event: Event) => {

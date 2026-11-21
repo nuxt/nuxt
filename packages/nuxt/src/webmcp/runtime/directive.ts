@@ -111,6 +111,10 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
     const form = formOf(el)
     if (!problems.length && form) {
       problems.push(...nativeProblems(fields, form))
+      const submitter = submitterOf(form)
+      if (!problems.length && !binding.confirm && submitter && isDisabled(submitter)) {
+        problems.push('The submit button is disabled.')
+      }
     }
     if (problems.length) {
       Object.values(fields).forEach((field, i) => field.set(previous[i]))
