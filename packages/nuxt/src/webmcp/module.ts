@@ -7,7 +7,7 @@ import { distDir } from '../dirs.ts'
 import { linkToAlias, logger } from '../utils.ts'
 import type { AgentToolFinding } from './compiler.ts'
 import { createAgentToolTransform } from './compiler.ts'
-import type { AgentToolSummary } from './runtime/registry.ts'
+import type { AgentToolSummary } from './runtime/types.ts'
 
 interface SchemaFile {
   tools: AgentToolSummary[]
