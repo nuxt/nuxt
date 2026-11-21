@@ -174,6 +174,26 @@ describe('agent tool directive', () => {
     expect(state.email).toBe('daniel@example.com')
   })
 
+  it('leaves a form unchanged when the call is stopped while its schema validates', async () => {
+    const state = reactive({ email: 'daniel@example.com' })
+    let validated!: () => void
+    const validating = new Promise<void>((resolve) => { validated = resolve })
+    const schema = { '~standard': { version: 1, vendor: 'test', validate: (value: unknown) => validating.then(() => ({ value })) } }
+    const { registry } = mount(directive => () => withDirectives(h('form'), [[directive, binding({
+      name: 'send',
+      kind: 'form',
+      schema: () => schema,
+      fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
+    })]]))
+    await nextTick()
+    registry.onActivity(activities => activities.forEach(activity => activity.stop()))
+
+    expect(await registry.call('send', { email: 'sarah@example.com' })).toMatchObject({ isError: true })
+    validated()
+    await new Promise(resolve => setTimeout(resolve))
+    expect(state.email).toBe('daniel@example.com')
+  })
+
   it('returns the error of a submit handler that throws', async () => {
     const { registry, app } = mount((directive, submits) => () => withDirectives(h('form', {
       onSubmit: (event: Event) => {
