@@ -119,9 +119,9 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
         problems.push('The submit button is disabled.')
       }
     }
-    if (problems.length) {
+    if (problems.length || signal.aborted) {
       Object.values(fields).forEach((field, i) => field.set(previous[i]))
-      return text(`The form was not submitted. ${problems.join('; ')}`, true)
+      return problems.length ? text(`The form was not submitted. ${problems.join('; ')}`, true) : undefined
     }
   }
 
