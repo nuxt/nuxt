@@ -79,8 +79,8 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
   const generated = new Set<string>()
   const failed: NuxtPrerenderFailure[] = []
   const written: string[] = []
+  const queued = new Set([...queue].map(route => withoutBase(route, baseURL)))
   let emitted = 0
-  let total = 0
 
   async function report (entry: Omit<NuxtPrerenderRoute, 'total'>): Promise<void> {
     const route = withoutBase(entry.route, baseURL)
@@ -89,8 +89,7 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
     } else if (!entry.skipped) {
       written.push(entry.route)
     }
-    total = Math.max(total, generated.size + queue.size, ++emitted)
-    await nuxt.callHook('build:prerender:route', { ...entry, route, total })
+    await nuxt.callHook('build:prerender:route', { ...entry, route, total: Math.max(queued.size, ++emitted) })
   }
 
   async function generateRoute (route: string): Promise<void> {
@@ -134,6 +133,7 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
         // crawl that never drains (`?page=2` linking `?page=3`, and so on)
         if (!link.includes('?') && canPrerender(link) && !generated.has(link)) {
           queue.add(link)
+          queued.add(withoutBase(link, baseURL))
         }
       }
     }

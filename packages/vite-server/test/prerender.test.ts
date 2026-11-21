@@ -84,4 +84,16 @@ describe('vite server prerender', () => {
     expect(routes.map(route => route.route).sort()).toEqual(['/', '/200.html', '/404.html', '/about', '/blog', '/blog/one', '/blog/two', '/missing'])
     expect(done[0]!.failed).toEqual([{ route: '/missing', status: 404, message: 'Not Found' }])
   })
+
+  it('reports a total of every route queued so far, including routes waiting for a worker', async () => {
+    const { start, routes } = await prerender(['/%E0%A4%A', '/'])
+
+    const totals = routes.map(route => route.total)
+    expect(totals[0]).toBeGreaterThanOrEqual(start!.routes)
+    expect(routes.find(route => route.route === '/')!.total).toBe(start!.routes + 2)
+    expect(routes.find(route => route.route === '/blog')!.total).toBe(routes.length)
+    expect(totals).toEqual([...totals].sort((a, b) => a - b))
+    expect(totals.every((total, index) => total >= index + 1)).toBe(true)
+    expect(totals.at(-1)).toBe(routes.length)
+  })
 })
