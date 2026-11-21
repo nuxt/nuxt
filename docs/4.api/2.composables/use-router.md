@@ -26,7 +26,7 @@ If you only need the router instance within your template, use `$router`:
 
 If you have a `app/pages/` directory, `useRouter` is identical in behavior to the one provided by `vue-router`.
 
-::read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/routerclassic#currentRoute" target="_blank"}
+::read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/RouterClassic.html#currentRoute" target="_blank"}
 Read `vue-router` documentation about the `Router` interface.
 ::
 
