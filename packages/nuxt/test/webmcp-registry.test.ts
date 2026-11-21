@@ -203,6 +203,33 @@ describe('agent tool registry', () => {
     expect(await registry.call('save')).not.toHaveProperty('isError')
   })
 
+  it('keeps a tool reserved for a call that starts as a failed call settles', async () => {
+    const { registry } = setup()
+    let fail!: (error: Error) => void
+    let finish!: () => void
+    const prepare = vi.fn()
+      .mockImplementationOnce(() => new Promise<void>((_resolve, reject) => { fail = reject }))
+      .mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve }))
+    registry.activate(defineAgentTool({ name: 'save', description: 'Save. Use when asked.', execute: () => {} }), { prepare })
+
+    const first = registry.call('save')
+    fail(new Error('Could not prepare.'))
+    let replacement: ReturnType<typeof registry.call> | undefined
+    for (let tick = 0; tick < 20 && !replacement; tick++) {
+      await Promise.resolve()
+      const attempt = registry.call('save')
+      if (prepare.mock.calls.length === 2) {
+        replacement = attempt
+      }
+    }
+    expect(await first).toEqual({ isError: true, content: [{ type: 'text', text: 'Could not prepare.' }] })
+
+    expect(await registry.call('save')).toMatchObject({ isError: true, content: [{ text: expect.stringContaining('already running') }] })
+    finish()
+    expect(await replacement).not.toHaveProperty('isError')
+    expect(await registry.call('save')).not.toHaveProperty('isError')
+  })
+
   it('does not run a call whose signal has already aborted', async () => {
     const { registry } = setup()
     const execute = vi.fn()

@@ -422,10 +422,16 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       return toolResult
     }
 
-    if (activation.prepare) {
+    let reserved = !!activation.prepare
+    if (reserved) {
       busy.add(activation)
     }
-    const release = () => busy.delete(activation)
+    const release = () => {
+      if (reserved) {
+        reserved = false
+        busy.delete(activation)
+      }
+    }
     try {
       activities.add(activity)
       notify()
