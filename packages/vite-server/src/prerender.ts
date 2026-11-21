@@ -82,13 +82,14 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
   let total = 0
 
   async function report (entry: Omit<NuxtPrerenderRoute, 'total'>): Promise<void> {
+    const route = withoutBase(entry.route, baseURL)
     if (entry.error) {
-      failed.push({ route: entry.route, ...entry.error })
+      failed.push({ route, ...entry.error })
     } else if (!entry.skipped) {
       written.push(entry.route)
     }
     total = Math.max(total, generated.size + queue.size, ++emitted)
-    await nuxt.callHook('build:prerender:route', { ...entry, total })
+    await nuxt.callHook('build:prerender:route', { ...entry, route, total })
   }
 
   async function generateRoute (route: string): Promise<void> {
