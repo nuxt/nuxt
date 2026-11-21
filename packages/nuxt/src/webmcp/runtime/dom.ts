@@ -159,9 +159,18 @@ export function formSchema (fields: FormFields, form: Element): JSONSchema {
   return describeSchema(schema, fields, form)
 }
 
+const SENSITIVE_AUTOCOMPLETE_RE = /(?:^|\s)(?:current-password|new-password|one-time-code|cc-\S+)(?:\s|$)/
+
+/** Whether the value of `control` is a secret, which must not reach an agent as part of a schema. */
+function isSensitive (control: FieldControl) {
+  return (control instanceof HTMLInputElement && (control.type === 'password' || control.type === 'hidden'))
+    || SENSITIVE_AUTOCOMPLETE_RE.test(control.getAttribute('autocomplete') ?? '')
+}
+
 /**
  * Fills gaps in a form's schema from the page: descriptions from labels, and the current values
- * as defaults. Fields with a value are not required, because input is merged into the form's state.
+ * as defaults, except for passwords, payment card details and hidden fields. Fields with a value
+ * are not required, because input is merged into the form's state.
  */
 export function describeSchema (schema: JSONSchema, fields: FormFields, form: Element) {
   for (const [key, field] of Object.entries(fields)) {
@@ -170,16 +179,19 @@ export function describeSchema (schema: JSONSchema, fields: FormFields, form: El
     if (!at || !property) {
       continue
     }
+    const markers = markersOf(form, field)
+    const controls = controlsOf(markers)
     if (!property.description) {
-      const markers = markersOf(form, field)
-      const description = describe(markers, controlsOf(markers))
+      const description = describe(markers, controls)
       if (description) {
         property.description = description
       }
     }
     const value = field.get()
     if (value !== undefined && value !== null && value !== '' && property.default === undefined) {
-      property.default = value
+      if (!controls.some(isSensitive)) {
+        property.default = value
+      }
       at.parent.required = (at.parent.required as string[] | undefined)?.filter(name => name !== at.name)
     }
   }
