@@ -115,11 +115,11 @@ describe('agent tool transform', () => {
     <Field #default="{ error }"><input v-model="name" aria-label="Name"></Field>
     <Field v-slot="{ value: slotValue = fallback }"><input v-model="value" aria-label="Value"></Field>
     <label v-for="(city, index) in cities" :key="city">City <input v-model="profile['city']"><input v-model="profile[city]"><input v-model="profile.index"></label>
-    <template v-for="item in outer"><label v-for="item in inner" :key="item">Item <input v-model="item.value"></label></template>
+    <template v-for="item in outer"><label v-for="item in inner" :key="item">Item <input v-model="item.value"><input v-model="coupon"></label></template>
   </form>
 </template>`)
     const fields = [...code.matchAll(/"data-agent-field": "([^"]+)"/g)].map(match => match[1])
-    expect(fields).toEqual(['email', 'name', 'value', 'profile[\'city\']', 'profile.index'])
+    expect(fields).toEqual(['email', 'name', 'value', 'profile[\'city\']', 'profile.index', 'coupon'])
     expect(code).toContain('fields: { "email": { source: "email", get: () => (_ctx.email), set: ($v) => { _ctx.email = $v } }, "name": {')
   })
 
