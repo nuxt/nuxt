@@ -102,15 +102,42 @@ describe('normalizeNitroPrerenderRoute', () => {
     const error = Object.assign(new Error('[502] '), { status: 502, statusText: '' })
     expect(normalizeNitroPrerenderRoute({ route: '/', error }, 1).error).toEqual({ status: 502, message: '[502] ' })
   })
+
+  it('passes through the pages linking to a failed route, without the base URL', () => {
+    const error = Object.assign(new Error('[404] Not Found'), { status: 404, statusText: 'Not Found' })
+    expect(normalizeNitroPrerenderRoute({ route: '/missing', error, linkedFrom: ['/base/blog', '/base', '/other/page'] }, 1, '/base/').linkedFrom)
+      .toEqual(['/blog', '/', '/other/page'])
+    expect(normalizeNitroPrerenderRoute({ route: '/missing', error, linkedFrom: ['/blog'] }, 1).linkedFrom).toEqual(['/blog'])
+  })
+
+  it('leaves out the pages linking to a failed route when nitro does not report them', () => {
+    const error = Object.assign(new Error('[404] Not Found'), { status: 404, statusText: 'Not Found' })
+    for (const linkedFrom of [undefined, 'not-an-array', [1, 2]]) {
+      expect(normalizeNitroPrerenderRoute({ route: '/missing', error, linkedFrom }, 1)).not.toHaveProperty('linkedFrom')
+    }
+  })
 })
 
 describe('reportNitroPrerender', () => {
-  function setup () {
+  function setup (baseURL?: string) {
     const { nuxt, calls } = createNuxt()
     const nitroHooks = createHooks<Record<string, (...args: any[]) => any>>()
-    reportNitroPrerender({ hooks: nitroHooks }, nuxt)
+    reportNitroPrerender({ hooks: nitroHooks, options: { baseURL } }, nuxt)
     return { nitroHooks, calls }
   }
+
+  it('reports the pages linking to each failed route', async () => {
+    const { nitroHooks, calls } = setup('/base/')
+
+    await nitroHooks.callHook('prerender:routes', new Set(['/']))
+    await nitroHooks.callHook('prerender:init', {})
+    const failed = { route: '/missing', error: Object.assign(new Error('[404] Not Found'), { status: 404, statusText: 'Not Found' }), linkedFrom: ['/base/', '/base/blog'] }
+    await nitroHooks.callHook('prerender:route', failed)
+    await nitroHooks.callHook('prerender:done', { prerenderedRoutes: [], failedRoutes: [failed] })
+
+    expect(calls.at(-2)![1]).toMatchObject({ route: '/missing', linkedFrom: ['/', '/blog'] })
+    expect(calls.at(-1)![1]).toMatchObject({ failed: [{ route: '/missing', status: 404, message: 'Not Found', linkedFrom: ['/', '/blog'] }] })
+  })
 
   it.each([
     ['Nitro 2', { statusCode: 404, statusMessage: 'Not Found' }],

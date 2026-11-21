@@ -82,7 +82,14 @@ describe('vite server prerender', () => {
     const { routes, done } = await prerender(['/'])
 
     expect(routes.map(route => route.route).sort()).toEqual(['/', '/200.html', '/404.html', '/about', '/blog', '/blog/one', '/blog/two', '/missing'])
-    expect(done[0]!.failed).toEqual([{ route: '/missing', status: 404, message: 'Not Found' }])
+    expect(done[0]!.failed).toEqual([{ route: '/missing', status: 404, message: 'Not Found', linkedFrom: ['/blog'] }])
+  })
+
+  it('reports the pages linking to a route that fails to prerender', async () => {
+    const { routes } = await prerender(['/'])
+
+    expect(routes.find(route => route.route === '/missing')).toMatchObject({ error: { status: 404 }, linkedFrom: ['/blog'] })
+    expect(routes.filter(route => !route.error).every(route => !('linkedFrom' in route))).toBe(true)
   })
 
   it('reports a total of every route queued so far, including routes waiting for a worker', async () => {

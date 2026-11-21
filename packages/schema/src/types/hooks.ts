@@ -163,6 +163,11 @@ export interface NuxtPrerenderRoute {
     status?: number
     message: string
   }
+  /**
+   * With `error`, the pages that link to the route, without the base URL. Absent when the
+   * prerenderer does not report them.
+   */
+  linkedFrom?: string[]
 }
 
 /** A route that failed to prerender. */
@@ -171,6 +176,11 @@ export interface NuxtPrerenderFailure {
   /** HTTP status the route responded with, when it responded at all. */
   status?: number
   message: string
+  /**
+   * The pages that link to the route, without the base URL. Absent when the prerenderer does
+   * not report them.
+   */
+  linkedFrom?: string[]
 }
 
 /** The outcome of prerendering, passed to the `build:prerender:done` hook. */

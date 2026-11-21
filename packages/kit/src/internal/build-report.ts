@@ -63,9 +63,11 @@ interface NitroPrerenderRoute {
   generateTimeMS?: number
   skip?: boolean
   error?: Error & { status?: number, statusText?: string, statusCode?: number, statusMessage?: string }
+  linkedFrom?: unknown
 }
 
 const LEADING_SLASH_RE = /^\/+/
+const TRAILING_SLASH_RE = /\/+$/
 
 interface NitroPrerenderHooks {
   hook: (name: any, callback: any) => unknown
@@ -76,7 +78,7 @@ interface NitroPrerenderHooks {
  *
  * @internal
  */
-export function reportNitroPrerender (nitro: { hooks: NitroPrerenderHooks }, nuxt: Nuxt = useNuxt()): void {
+export function reportNitroPrerender (nitro: { hooks: NitroPrerenderHooks, options?: { baseURL?: string } }, nuxt: Nuxt = useNuxt()): void {
   let routes: Set<string> | undefined
   let queued = 0
   let start = performance.now()
@@ -100,7 +102,7 @@ export function reportNitroPrerender (nitro: { hooks: NitroPrerenderHooks }, nux
   })
   nitro.hooks.hook('prerender:route', (route: NitroPrerenderRoute) => {
     emitted++
-    return nuxt.callHook('build:prerender:route', normalizeNitroPrerenderRoute(route, Math.max(queued, emitted)))
+    return nuxt.callHook('build:prerender:route', normalizeNitroPrerenderRoute(route, Math.max(queued, emitted), nitro.options?.baseURL))
   })
   nitro.hooks.hook('prerender:done', (result: { prerenderedRoutes?: unknown[], failedRoutes?: NitroPrerenderRoute[] }) => {
     return nuxt.callHook('build:prerender:done', {
@@ -109,6 +111,7 @@ export function reportNitroPrerender (nitro: { hooks: NitroPrerenderHooks }, nux
       failed: (result.failedRoutes ?? []).map((route): NuxtPrerenderFailure => ({
         route: route.route,
         ...normalizeNitroPrerenderError(route.error),
+        ...normalizeLinkedFrom(route.linkedFrom, nitro.options?.baseURL),
       })),
     })
   })
@@ -119,7 +122,7 @@ export function reportNitroPrerender (nitro: { hooks: NitroPrerenderHooks }, nux
  *
  * @internal
  */
-export function normalizeNitroPrerenderRoute (route: NitroPrerenderRoute, total: number): NuxtPrerenderRoute {
+export function normalizeNitroPrerenderRoute (route: NitroPrerenderRoute, total: number, baseURL?: string): NuxtPrerenderRoute {
   if (route.error) {
     return {
       route: route.route,
@@ -127,6 +130,7 @@ export function normalizeNitroPrerenderRoute (route: NitroPrerenderRoute, total:
       total,
       skipped: false,
       error: normalizeNitroPrerenderError(route.error),
+      ...normalizeLinkedFrom(route.linkedFrom, baseURL),
     }
   }
   return {
@@ -135,6 +139,16 @@ export function normalizeNitroPrerenderRoute (route: NitroPrerenderRoute, total:
     total,
     skipped: !!route.skip,
     ...route.skip || !route.fileName ? {} : { fileName: route.fileName.replace(LEADING_SLASH_RE, '') },
+  }
+}
+
+function normalizeLinkedFrom (linkedFrom: unknown, baseURL = '/'): { linkedFrom?: string[] } {
+  if (!Array.isArray(linkedFrom) || !linkedFrom.every(page => typeof page === 'string')) {
+    return {}
+  }
+  const base = baseURL.replace(TRAILING_SLASH_RE, '')
+  return {
+    linkedFrom: linkedFrom.map(page => !base || (page !== base && !page.startsWith(`${base}/`)) ? page : page.slice(base.length) || '/'),
   }
 }
 

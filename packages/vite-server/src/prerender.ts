@@ -80,16 +80,23 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
   const failed: NuxtPrerenderFailure[] = []
   const written: string[] = []
   const queued = new Set([...queue].map(route => withoutBase(route, baseURL)))
+  const linkParents = new Map<string, Set<string>>()
   let emitted = 0
 
+  const routeKey = (route: string) => withoutBase(decodeURISafe(route), baseURL)
+  const linkedFrom = (route: string) => {
+    const parents = linkParents.get(route)
+    return parents?.size ? { linkedFrom: [...parents] } : {}
+  }
+
   async function report (entry: Omit<NuxtPrerenderRoute, 'total'>): Promise<void> {
-    const route = withoutBase(entry.route, baseURL)
+    const route = routeKey(entry.route)
     if (entry.error) {
       failed.push({ route, ...entry.error })
     } else if (!entry.skipped) {
       written.push(entry.route)
     }
-    await nuxt.callHook('build:prerender:route', { ...entry, route, total: Math.max(queued.size, ++emitted) })
+    await nuxt.callHook('build:prerender:route', { ...entry, route, total: Math.max(queued.size, ++emitted), ...entry.error ? linkedFrom(route) : {} })
   }
 
   async function generateRoute (route: string): Promise<void> {
@@ -129,6 +136,8 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
 
     if (isImplicitHTML || route.endsWith('.html')) {
       for (const link of await extractLinks(body.toString('utf-8'), route, response, config.crawlLinks)) {
+        const parents = linkParents.get(routeKey(link)) ?? new Set()
+        linkParents.set(routeKey(link), parents.add(routeKey(route)))
         // a route carrying a query cannot become a file, so following one only risks a
         // crawl that never drains (`?page=2` linking `?page=3`, and so on)
         if (!link.includes('?') && canPrerender(link) && !generated.has(link)) {
@@ -149,7 +158,11 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
     skipped: false,
     error: { message: error instanceof Error ? error.message : String(error) },
   }))
-  await nuxt.callHook('build:prerender:done', { duration: performance.now() - start, written: written.length, failed })
+  await nuxt.callHook('build:prerender:done', {
+    duration: performance.now() - start,
+    written: written.length,
+    failed: failed.map(entry => ({ ...entry, ...linkedFrom(entry.route) })),
+  })
 
   if (failed.length && config.failOnError) {
     throw buildDiagnostics.NUXT_B1024({ routes: failed.map(entry => ({ route: entry.route, status: entry.status })) }, { method: 'error' })
@@ -277,6 +290,14 @@ async function extractLinks (html: string, from: string, response: Response, cra
     links.push(url.pathname + url.search)
   }
   return links
+}
+
+function decodeURISafe (value: string): string {
+  try {
+    return decodeURI(value)
+  } catch {
+    return value
+  }
 }
 
 /** Percent-decode a link, or report it as one to leave alone. */
