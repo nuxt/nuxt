@@ -222,6 +222,27 @@ describe('agent tool directive', () => {
     expect(state.email).toBe('daniel@example.com')
   })
 
+  it('restores a form when the call is stopped while it is being filled in', async () => {
+    const state = reactive({ email: 'daniel@example.com' })
+    const { registry } = mount(directive => () => withDirectives(h('form'), [[directive, binding({
+      name: 'send',
+      kind: 'form',
+      fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
+    })]]))
+    await nextTick()
+    let stop = () => {}
+    registry.onActivity((activities) => {
+      stop = () => activities.forEach(activity => activity.stop())
+    })
+
+    const result = registry.call('send', { email: 'sarah@example.com' })
+    expect(state.email).toBe('sarah@example.com')
+    stop()
+    expect(await result).toMatchObject({ isError: true })
+    await nextTick()
+    expect(state.email).toBe('daniel@example.com')
+  })
+
   it('returns the error of a submit handler that throws', async () => {
     const { registry, app } = mount((directive, submits) => () => withDirectives(h('form', {
       onSubmit: (event: Event) => {
