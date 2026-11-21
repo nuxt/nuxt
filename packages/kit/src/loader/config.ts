@@ -205,30 +205,40 @@ let configImportCounter = 0
 
 const TYPELESS_MODULE_RE = /^Module type of (\S+) is not specified/
 const TYPELESS_PACKAGE_JSON_RE = /add "type": "module" to (.+)\.$/m
-let typelessWarningInterceptors = 0
+const activeConfigImports = new Map<string, number>()
 let emitWarning: typeof process.emitWarning | undefined
 
 /**
- * Report Node's warning about a config file in a package with no `type` as a Nuxt diagnostic, for
- * as long as the returned function has not been called.
+ * Report Node's warning about the config file at `filePath` being in a package with no `type` as a
+ * Nuxt diagnostic, for as long as the returned function has not been called. Warnings about other
+ * modules are passed through unchanged.
  */
-function interceptTypelessPackageWarnings (): () => void {
-  if (typelessWarningInterceptors++ === 0) {
+function interceptTypelessPackageWarnings (filePath: string): () => void {
+  filePath = normalize(filePath)
+  activeConfigImports.set(filePath, (activeConfigImports.get(filePath) ?? 0) + 1)
+  if (!emitWarning) {
     const original = emitWarning = process.emitWarning
     process.emitWarning = function (warning: string | Error, ...args: unknown[]) {
       const options = args[0]
       const code = options && typeof options === 'object' ? (options as { code?: unknown }).code : args[1]
       const message = String(warning)
       const packageJson = message.match(TYPELESS_PACKAGE_JSON_RE)?.[1]
-      if (code !== 'MODULE_TYPELESS_PACKAGE_JSON' || !packageJson) {
+      const url = message.match(TYPELESS_MODULE_RE)?.[1]
+      const modulePath = url?.startsWith('file:') ? normalize(fileURLToPath(url)) : undefined
+      if (code !== 'MODULE_TYPELESS_PACKAGE_JSON' || !packageJson || !modulePath || !activeConfigImports.has(modulePath)) {
         return (original as (...args: unknown[]) => void).call(process, warning, ...args)
       }
-      const url = message.match(TYPELESS_MODULE_RE)?.[1]
-      configDiagnostics.NUXT_B5040({ filePath: url ? normalize(fileURLToPath(url)) : 'nuxt.config', packageJson: normalize(packageJson) })
+      configDiagnostics.NUXT_B5040({ filePath: modulePath, packageJson: normalize(packageJson) })
     } as typeof process.emitWarning
   }
   return () => {
-    if (--typelessWarningInterceptors === 0 && emitWarning) {
+    const remaining = (activeConfigImports.get(filePath) ?? 1) - 1
+    if (remaining) {
+      activeConfigImports.set(filePath, remaining)
+    } else {
+      activeConfigImports.delete(filePath)
+    }
+    if (activeConfigImports.size === 0 && emitWarning) {
       process.emitWarning = emitWarning
       emitWarning = undefined
     }
@@ -350,7 +360,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // edits to a config file; this has to do the same
     const url = pathToFileURL(id)
     url.search = `_${++configImportCounter}`
-    const restoreWarnings = interceptTypelessPackageWarnings()
+    const restoreWarnings = interceptTypelessPackageWarnings(id)
     try {
       return await import(url.href).finally(restoreWarnings)
     } catch (error) {
