@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-fetch-global-always",
   "scripts": {
     "build": "nuxt build"

@@ -1,6 +1,6 @@
 import { existsSync, realpathSync, statSync } from 'node:fs'
 import process from 'node:process'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import { loadConfig, setupDotenv } from 'c12'
@@ -203,6 +203,48 @@ const CONFIG_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs', '.mts', '.cts', '.json'
 // and re-reads the file rather than getting the cached module back
 let configImportCounter = 0
 
+const TYPELESS_MODULE_RE = /^Module type of (\S+) is not specified/
+const TYPELESS_PACKAGE_JSON_RE = /add "type": "module" to (.+)\.$/m
+const activeConfigImports = new Map<string, number>()
+let emitWarning: typeof process.emitWarning | undefined
+
+/**
+ * Report Node's warning about the config file at `filePath` being in a package with no `type` as a
+ * Nuxt diagnostic, for as long as the returned function has not been called. Warnings about other
+ * modules are passed through unchanged.
+ */
+function interceptTypelessPackageWarnings (filePath: string): () => void {
+  filePath = normalize(filePath)
+  activeConfigImports.set(filePath, (activeConfigImports.get(filePath) ?? 0) + 1)
+  if (!emitWarning) {
+    const original = emitWarning = process.emitWarning
+    process.emitWarning = function (warning: string | Error, ...args: unknown[]) {
+      const options = args[0]
+      const code = options && typeof options === 'object' ? (options as { code?: unknown }).code : args[1]
+      const message = String(warning)
+      const packageJson = message.match(TYPELESS_PACKAGE_JSON_RE)?.[1]
+      const url = message.match(TYPELESS_MODULE_RE)?.[1]
+      const modulePath = url?.startsWith('file:') ? normalize(fileURLToPath(url)) : undefined
+      if (code !== 'MODULE_TYPELESS_PACKAGE_JSON' || !packageJson || !modulePath || !activeConfigImports.has(modulePath)) {
+        return (original as (...args: unknown[]) => void).call(process, warning, ...args)
+      }
+      configDiagnostics.NUXT_B5040({ filePath: modulePath, packageJson: normalize(packageJson) })
+    } as typeof process.emitWarning
+  }
+  return () => {
+    const remaining = (activeConfigImports.get(filePath) ?? 1) - 1
+    if (remaining) {
+      activeConfigImports.set(filePath, remaining)
+    } else {
+      activeConfigImports.delete(filePath)
+    }
+    if (activeConfigImports.size === 0 && emitWarning) {
+      process.emitWarning = emitWarning
+      emitWarning = undefined
+    }
+  }
+}
+
 // The `extends` sources the config loader hands to `giget`. Kept in step with c12; a prefix that
 // is missing here only means the loader reports the missing downloader in its own words.
 const REMOTE_SOURCE_RE = /^(?:gh|github|gitlab|bitbucket):|^https?:\/\//
@@ -318,8 +360,9 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // edits to a config file; this has to do the same
     const url = pathToFileURL(id)
     url.search = `_${++configImportCounter}`
+    const restoreWarnings = interceptTypelessPackageWarnings(id)
     try {
-      return await import(url.href)
+      return await import(url.href).finally(restoreWarnings)
     } catch (error) {
       const missingGlobal = getMissingCjsGlobal(error)
       // Whether jiti is the answer, or the file simply has a bug that a second loader will repeat

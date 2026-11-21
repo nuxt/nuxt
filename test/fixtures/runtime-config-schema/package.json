@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-runtime-config-schema",
   "scripts": {
     "build": "nuxt build"

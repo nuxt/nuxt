@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-static-routes",
   "scripts": {
     "build": "nuxt build"
