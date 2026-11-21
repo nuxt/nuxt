@@ -93,7 +93,7 @@ function requireJiti (): typeof import('jiti') {
     const rootDir = tryUseNuxt()?.options.rootDir
     const path = rootDir && resolveModulePath('jiti', { from: directoryToURL(rootDir), try: true })
     if (!path) {
-      throw kitDiagnostics.NUXT_B8021({ cause: error })
+      throw kitDiagnostics.NUXT_B8021({ cause: error }, { method: 'error' })
     }
     return require(path) as typeof import('jiti')
   }

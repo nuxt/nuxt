@@ -32,7 +32,7 @@ export function installComponentModule (component: Component, importer: string, 
   const internalInstall = (component as { _internal_install?: string })._internal_install
   if (!internalInstall || nuxt?.options.test !== false) { return }
   if (!nuxt.options.dev) {
-    throw componentDiagnostics.NUXT_B3004({ file: linkToAlias(importer, nuxt), component: component.pascalName, requiredModule: internalInstall })
+    throw componentDiagnostics.NUXT_B3004({ file: linkToAlias(importer, nuxt), component: component.pascalName, requiredModule: internalInstall }, { method: 'error' })
   }
   installNuxtModule(internalInstall)
 }

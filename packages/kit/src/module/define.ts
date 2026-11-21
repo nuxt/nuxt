@@ -83,7 +83,7 @@ function _defineNuxtModule<
   // Module format is always a simple function
   async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
-      throw kitDiagnostics.NUXT_B8012({ name: module.meta.name || 'module' })
+      throw kitDiagnostics.NUXT_B8012({ name: module.meta.name || 'module' }, { method: 'error' })
     }
 
     const uniqueKey = module.meta.name || module.meta.configKey

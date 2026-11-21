@@ -130,7 +130,7 @@ export interface Resolver {
  */
 export function createResolver (base: string | URL): Resolver {
   if (!base) {
-    throw kitDiagnostics.NUXT_B8002()
+    throw kitDiagnostics.NUXT_B8002({}, { method: 'error' })
   }
 
   base = base.toString()

@@ -19,16 +19,24 @@ const majorVersion = Number.parseInt(kit.version, 10)
 export const docsBase = (code: string): string =>
   `https://nuxt.com/docs/${majorVersion}.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
+/** Set on a diagnostic once it has been printed, so that whatever catches it can skip printing it again. */
+const reported = Symbol.for('nuxt.diagnostic.reported')
+
 const formatter = /* #__PURE__ */ ansiFormatter(colors)
 
-// renders the same whether or not `console` is wrapped by the logger
-const loggerReporter: DiagnosticReporter<{ method?: ConsoleMethod }> = (diagnostic, options) => {
-  logger[options?.method ?? 'warn'](formatter(diagnostic))
+// Tests stay plain and observable through `console`.
+const consoleReporter = process.env.NODE_ENV === 'test' ? /* #__PURE__ */ createConsoleReporter() : undefined
+
+const reporter: DiagnosticReporter<{ method?: ConsoleMethod }> = (diagnostic, options) => {
+  if (consoleReporter) {
+    consoleReporter(diagnostic, options)
+  } else {
+    // renders the same whether or not `console` is wrapped by the logger
+    logger[options?.method ?? 'warn'](formatter(diagnostic))
+  }
+  Object.defineProperty(diagnostic, reported, { value: true })
 }
 
 // `as const` preserves the tuple shape `defineDiagnostics` reads to type each
 // reporter's call-site options; a plain array collapses them to `{}`.
-export const reporters = [
-  // Tests stay plain and observable through `console`.
-  process.env.NODE_ENV === 'test' ? /* #__PURE__ */ createConsoleReporter() : loggerReporter,
-] as const
+export const reporters = [reporter] as const

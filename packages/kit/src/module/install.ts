@@ -339,7 +339,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof nuxtModule !== 'string') {
-    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
+    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` }, { method: 'error' })
   }
 
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)
@@ -357,7 +357,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       module: nuxtModule,
       installCommand: isAbsolute(nuxtModule) ? undefined : await getAddDependencyCommand(nuxtModule, nuxt.options.rootDir),
       cause: error,
-    })
+    }, { method: 'error' })
   }
 
   // module is resolved on disk, so import failures are real load errors, not a missing install
@@ -373,7 +373,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     const jiti = await getSharedJiti(nuxt, jitiCanHelp)
     if (!jiti) {
       if (!jitiCanHelp) {
-        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError })
+        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError }, { method: 'error' })
       }
       throw kitDiagnostics.NUXT_B8020({
         module: nuxtModule,
@@ -381,7 +381,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         hint: describeNativeImportFailure(nativeError),
         installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
         cause: nativeError,
-      })
+      }, { method: 'error' })
     }
     try {
       resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
@@ -390,7 +390,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       // same failure keeps the native error and its untransformed stack
       const repeated = missingGlobal && getMissingCjsGlobal(error) === missingGlobal
       const reported = jitiCanHelp && !repeated ? error : nativeError
-      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(reported), cause: reported })
+      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(reported), cause: reported }, { method: 'error' })
     }
     if (shouldReportJitiFallbackOnce(resolvedModulePath, nuxt.options.rootDir, nuxt.options.future?.compatibilityVersion ?? 4)) {
       kitDiagnostics.NUXT_B8023({
@@ -404,7 +404,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof resolvedNuxtModule !== 'function') {
-    throw kitDiagnostics.NUXT_B8016({ module: nuxtModule })
+    throw kitDiagnostics.NUXT_B8016({ module: nuxtModule }, { method: 'error' })
   }
 
   // nuxt-module-builder generates a module.json with metadata including the version

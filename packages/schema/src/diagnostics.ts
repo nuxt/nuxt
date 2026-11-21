@@ -1,4 +1,5 @@
 import { createConsoleReporter, defineDiagnostics } from 'nostics'
+import type { ConsoleMethod, DiagnosticReporter } from 'nostics'
 
 /**
  * B5xxx (schema-resolved configuration)
@@ -9,9 +10,16 @@ import { createConsoleReporter, defineDiagnostics } from 'nostics'
 const docsBase = (code: string): string =>
   `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
+const consoleReporter = /* #__PURE__ */ createConsoleReporter()
+
+const reporter: DiagnosticReporter<{ method?: ConsoleMethod }> = (diagnostic, options) => {
+  consoleReporter(diagnostic, options)
+  Object.defineProperty(diagnostic, Symbol.for('nuxt.diagnostic.reported'), { value: true })
+}
+
 export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
-  reporters: [/* #__PURE__ */ (createConsoleReporter())] as const,
+  reporters: [reporter] as const,
   codes: {
     NUXT_B5012: {
       why: (p: { value: string }) => `Invalid \`logLevel\` option: \`${p.value}\`.`,
