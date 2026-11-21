@@ -13,6 +13,7 @@ import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
 import { serverDiagnostics } from '../diagnostics'
+import { prerenderDiagnostics } from 'nuxt/internal/renderer/diagnostics'
 import { createSSRContext } from 'nuxt/internal/renderer/app'
 import { patchDevClientCss, rethrowWithResponseHeaders, returnRenderResponse, toRenderResponse } from '#internal/nuxt/host'
 import { renderInlineStyles } from 'nuxt/internal/renderer/inline-styles'
@@ -60,11 +61,9 @@ export default {
       const islandPath = event.url.pathname
       const stack = prerenderRenderingURLs!.getStore()
       if (stack?.includes(islandPath)) {
-        const chain = [...stack, islandPath].map(url => `"${url}"`).join(' -> ')
-        throw new HTTPError({
-          status: 508,
-          statusText: `Loop detected while prerendering island "${islandPath}" (${chain}).`,
-        })
+        const chain = [...stack, islandPath].map(url => `\`${url}\``).join(' -> ')
+        prerenderDiagnostics.NUXT_E8019({ url: islandPath, chain })
+        return new FastResponse(null, { status: 508, statusText: 'Loop Detected' })
       }
 
       // Only a render holding no claim of its own may wait on another, or two nested island

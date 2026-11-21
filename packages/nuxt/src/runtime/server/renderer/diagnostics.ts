@@ -71,5 +71,10 @@ export const prerenderDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Check for `useFetch` or `$fetch` calls that target the page being rendered, for example from a middleware or layout that runs on every page.',
       docs: false,
     },
+    NUXT_E8019: {
+      why: (p: { url: string, chain: string }) => `The island \`${p.url}\` was requested while it was already being prerendered (${p.chain}), so the request failed with \`508 Loop Detected\`.`,
+      fix: 'Check for a server component that renders itself with the same props, directly or through another server component.',
+      docs: false,
+    },
   },
 })
