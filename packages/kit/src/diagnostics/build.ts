@@ -156,5 +156,10 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Wrap the field in a `<label>`, point a `<label for>` at its `id`, or add `aria-label`.',
       docs: false,
     },
+    NUXT_B1030: {
+      why: (p: { file: string }) => `Could not write the agent tools registered while you browse to \`${p.file}\`.`,
+      fix: 'Check that the path set in `experimental.webmcp.schema` is writable.',
+      docs: false,
+    },
   },
 })
