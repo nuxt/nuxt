@@ -1,8 +1,5 @@
-import process from 'node:process'
-import { createConsoleReporter, defineDiagnostics } from 'nostics'
-import { ansiFormatter } from 'nostics/formatters/ansi'
-import { colors } from 'consola/utils'
-import { docsBase } from '@nuxt/kit/internal'
+import { defineDiagnostics } from 'nostics'
+import { diagnosticReporters, docsBase } from '@nuxt/kit/internal'
 
 /**
  * B9xxx
@@ -10,7 +7,7 @@ import { docsBase } from '@nuxt/kit/internal'
  */
 export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
-  reporters: [/* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) }))] as const,
+  reporters: diagnosticReporters,
   codes: {
     NUXT_B9001: {
       why: (p: { keys: string }) => `The following \`nitro\` config options are no longer supported by Nitro v3 and were ignored: ${p.keys}.`,
