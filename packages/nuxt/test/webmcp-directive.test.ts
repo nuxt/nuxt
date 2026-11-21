@@ -92,6 +92,33 @@ describe('agent tool directive', () => {
     })
   })
 
+  it('describes multiple selects and checkbox groups as arrays of their options', async () => {
+    const state = reactive({ sizes: [] as string[], toppings: [] as string[] })
+    const { registry } = mount(directive => () => withDirectives(h('form', [
+      h('select', { 'multiple': true, 'aria-label': 'Sizes', 'data-agent-field': 'state.sizes' }, [
+        h('option', { value: 's' }, 'Small'),
+        h('option', { value: 'l' }, 'Large'),
+      ]),
+      h('fieldset', [
+        h('label', ['Ham ', h('input', { 'type': 'checkbox', 'value': 'ham', 'data-agent-field': 'state.toppings' })]),
+        h('label', ['Olives ', h('input', { 'type': 'checkbox', 'value': 'olives', 'data-agent-field': 'state.toppings' })]),
+      ]),
+    ]), [[directive, binding({
+      name: 'order',
+      kind: 'form',
+      fields: {
+        sizes: { source: 'state.sizes', get: () => state.sizes, set: (value) => { state.sizes = value as string[] } },
+        toppings: { source: 'state.toppings', get: () => state.toppings, set: (value) => { state.toppings = value as string[] } },
+      },
+    })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema.properties).toMatchObject({
+      sizes: { type: 'array', items: { type: 'string', oneOf: [{ const: 's', title: 'Small' }, { const: 'l', title: 'Large' }] } },
+      toppings: { type: 'array', items: { type: 'string', oneOf: [{ const: 'ham', title: 'Ham' }, { const: 'olives', title: 'Olives' }] } },
+    })
+  })
+
   it('rejects input for unknown fields and converts values to the type of the field', async () => {
     const state = reactive({ quantity: 1, express: false })
     const sent = vi.fn()
