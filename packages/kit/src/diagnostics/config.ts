@@ -151,5 +151,10 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Set `NODE_USE_ENV_PROXY=1` to send `fetch`, `node:http` and `node:https` requests through the proxy, or upgrade to Node.js 24. Set `NODE_USE_ENV_PROXY=0` to keep requests direct and silence this warning.',
       docs: false,
     },
+    NUXT_B5040: {
+      why: (p: { filePath: string }) => `The config file \`${p.filePath}\` uses ES module syntax, but its \`package.json\` does not declare a module type, so Node.js has to parse it twice to load it.`,
+      fix: (p: { packageJson: string }) => `Add \`"type": "module"\` to \`${p.packageJson}\`.`,
+      docs: false,
+    },
   },
 })
