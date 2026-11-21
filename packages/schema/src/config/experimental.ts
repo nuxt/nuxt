@@ -185,6 +185,8 @@ export default defineResolvers({
      */
     templateDiagnostics: true,
 
+    webmcp: false,
+
     /** @deprecated use `<NuxtErrorBoundary retry-on-client>` instead */
     clientFallback: false,
     /**

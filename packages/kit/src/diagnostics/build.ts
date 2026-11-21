@@ -126,5 +126,40 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: (p: { name: string, installCommand: string, range: string }) => `Run \`${p.installCommand}\` to add a version of \`${p.name}\` matching \`${p.range}\` to your dependencies.`,
       docs: false,
     },
+    NUXT_B1024: {
+      why: (p: { fn: string, flags: string, file: string }) => `\`@tool\` on \`${p.fn}\` in \`${p.file}\` has unknown flags: ${p.flags}.`,
+      fix: 'Use `readonly`, `consequential` or `confirm`, separated by spaces.',
+      docs: false,
+    },
+    NUXT_B1025: {
+      why: (p: { fn: string, file: string }) => `The \`@tool\` function \`${p.fn}\` in \`${p.file}\` is not bound to an element, so agents cannot call it.`,
+      fix: 'Bind it to `@click` or `@submit` on an element, or to an event on a component, as `fn` or `fn(...args)`.',
+      docs: false,
+    },
+    NUXT_B1026: {
+      why: (p: { handler: string, file: string }) => `\`${p.handler}\` in \`${p.file}\` calls a \`@tool\` function, but only handlers written as \`fn\` or \`fn(...args)\` become agent tools.`,
+      fix: 'Move the extra logic into the `@tool` function and bind it directly.',
+      docs: false,
+    },
+    NUXT_B1027: {
+      why: (p: { fn: string, file: string }) => `The \`@tool\` function \`${p.fn}\` in \`${p.file}\` is inside a \`v-for\` keyed by its index, so agents see positions rather than items.`,
+      fix: 'Key the `v-for` by a stable id, such as `:key="item.id"`.',
+      docs: false,
+    },
+    NUXT_B1028: {
+      why: (p: { tool: string, problem: string, file: string }) => `The agent tool \`${p.tool}\` in \`${p.file}\` does not follow the tool design guidance: ${p.problem}.`,
+      fix: 'Describe what the tool does for the user and when to use it, in up to 500 characters, with a name of up to 30.',
+      docs: false,
+    },
+    NUXT_B1029: {
+      why: (p: { source: string, file: string }) => `The form field bound to \`${p.source}\` in \`${p.file}\` has no label, so agents get no description for it.`,
+      fix: 'Wrap the field in a `<label>`, point a `<label for>` at its `id`, or add `aria-label`.',
+      docs: false,
+    },
+    NUXT_B1030: {
+      why: (p: { file: string }) => `Could not write the agent tools registered while you browse to \`${p.file}\`.`,
+      fix: 'Check that the path set in `experimental.webmcp.schema` is writable.',
+      docs: false,
+    },
   },
 })
