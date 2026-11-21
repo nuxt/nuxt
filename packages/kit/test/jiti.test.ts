@@ -265,6 +265,15 @@ describe('jiti fallback', { concurrent: false, timeout: 60_000 }, () => {
     expect(result).toMatchObject({ ok: true, value: 'native' })
     expect(result.logs).not.toContain('NUXT_B5023')
   })
+
+  it('should suggest `"type": "module"` in place of the runtime warning for a typeless package', async () => {
+    const result = await loadConfig('typeless', 'export default { runtimeConfig: { value: \'typeless\' } }\n', { pkg: { type: undefined } })
+    expect(result).toMatchObject({ ok: true, value: 'typeless' })
+    expect(result.logs.match(/NUXT_B5040/g)).toHaveLength(1)
+    expect(result.logs).toContain(`\`${join(result.cwd, 'nuxt.config.ts')}\` uses ES module syntax`)
+    expect(result.logs).toContain(`\`"type": "module"\` to \`${join(result.cwd, 'package.json')}\``)
+    expect(result.logs).not.toContain('MODULE_TYPELESS_PACKAGE_JSON')
+  })
 })
 
 // `enum` is the cheapest syntax the runtime refuses to strip, so both the config and the module
