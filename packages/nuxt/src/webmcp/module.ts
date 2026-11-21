@@ -75,23 +75,29 @@ export default defineNuxtModule({
     const schemaPath = schemaOption ? resolve(nuxt.options.rootDir, schemaOption) : resolve(nuxt.options.buildDir, 'webmcp/schema.json')
     const schema: SchemaFile = { tools: [], routes: {} }
     let logged = false
+    let writing = Promise.resolve()
     nuxt.hook('vite:serverCreated', (server, { isClient }) => {
       if (!isClient) {
         return
       }
-      server.ws.on('nuxt:agent-tools', async ({ path, tools }: { path: string, tools: SchemaFile['tools'] }) => {
+      server.ws.on('nuxt:agent-tools', ({ path, tools }: { path: string, tools: SchemaFile['tools'] }) => {
         const byName = new Map(schema.tools.map(tool => [tool.name, tool]))
         for (const tool of tools) {
           byName.set(tool.name, tool)
         }
         schema.tools = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
         schema.routes[path] = [...new Set([...schema.routes[path] ?? [], ...tools.map(tool => tool.name)])].sort()
-        await mkdir(dirname(schemaPath), { recursive: true })
-        await writeFile(schemaPath, `${JSON.stringify(schema, null, 2)}\n`)
-        if (!logged) {
-          logged = true
-          logger.info(`Writing the agent tools registered while you browse to \`${linkToAlias(schemaPath, nuxt)}\``)
-        }
+        const content = `${JSON.stringify(schema, null, 2)}\n`
+        writing = writing.then(async () => {
+          await mkdir(dirname(schemaPath), { recursive: true })
+          await writeFile(schemaPath, content)
+          if (!logged) {
+            logged = true
+            logger.info(`Writing the agent tools registered while you browse to \`${linkToAlias(schemaPath, nuxt)}\``)
+          }
+        }).catch((cause) => {
+          buildDiagnostics.NUXT_B1031({ file: relative(nuxt.options.rootDir, schemaPath), cause })
+        })
       })
     })
   },
