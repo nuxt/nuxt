@@ -336,18 +336,32 @@ describe('agent tool directive', () => {
     expect(state.open).toBe('b')
   })
 
-  it('rejects input that repeats the value of a locked secret', async () => {
-    const state = reactive({ password: 'hunter2' })
+  it('rejects input that repeats the value of a locked field whose value is not published', async () => {
+    const state = reactive({ password: 'hunter2', token: 'existing-private-token', name: 'Daniel' })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
+    const schema = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: (value: unknown) => ({ value }),
+        jsonSchema: { input: () => ({ type: 'object', properties: { password: { type: 'string' }, token: { type: 'string', writeOnly: true }, name: { type: 'string' } } }) },
+      },
+    }
     const invoke = vi.fn()
     const { registry } = mount(directive => () => withDirectives(h('div', [
       h('input', { 'type': 'password', 'disabled': true, 'data-agent-field': 'state.password' }),
-    ]), [[directive, binding({ name: 'save', kind: 'form', invoke, fields: { password: { source: 'state.password', get: () => state.password, set: (value) => { state.password = value as string } } } })]]))
+      h('input', { 'disabled': true, 'data-agent-field': 'state.token' }),
+      h('input', { 'disabled': true, 'data-agent-field': 'state.name' }),
+    ]), [[directive, binding({ name: 'save', kind: 'form', invoke, schema: () => schema, fields: { password: field('password'), token: field('token'), name: field('name') } })]]))
     await nextTick()
 
-    for (const password of ['hunter2', 'guess']) {
-      expect(await registry.call('save', { password })).toMatchObject({ isError: true, content: [{ text: 'The form was not submitted. password: this field cannot be changed' }] })
+    for (const input of [{ password: 'hunter2' }, { password: 'guess' }, { token: 'existing-private-token' }, { token: 'guess' }]) {
+      expect(await registry.call('save', input)).toMatchObject({ isError: true, content: [{ text: `The form was not submitted. ${Object.keys(input)[0]}: this field cannot be changed` }] })
     }
     expect(invoke).not.toHaveBeenCalled()
+
+    expect(await registry.call('save', { name: 'Daniel' })).not.toHaveProperty('isError')
+    expect(invoke).toHaveBeenCalledOnce()
   })
 
   it('rejects input that selects a disabled choice or changes a disabled checkbox of a group', async () => {

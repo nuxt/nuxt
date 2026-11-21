@@ -287,9 +287,10 @@ function selects (value: unknown, choice: Choice) {
 /**
  * Problems with input for a field the user could not edit: one that is not rendered, one whose
  * controls are disabled, read-only or hidden, a disabled choice, or a disabled checkbox of a group.
- * Input that repeats the current value of a locked field is accepted, unless that value is not published.
+ * Input that repeats the current value of a locked field is accepted when `schema` publishes that value as its default.
  */
-export function lockedProblems (fields: FormFields, form: Element, input: Record<string, unknown>) {
+export function lockedProblems (fields: FormFields, form: Element, input: Record<string, unknown>, schema?: JSONSchema) {
+  const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
   const problems: string[] = []
   for (const [key, field] of Object.entries(fields)) {
     const value = getIn(input, key.split('.'))
@@ -305,7 +306,9 @@ export function lockedProblems (fields: FormFields, form: Element, input: Record
     const current = field.get()
     const next = coerce(value, current)
     if (subjects.every(isLocked)) {
-      if (subjects.some(isPrivate) || JSON.stringify(next) !== JSON.stringify(current)) {
+      const at = schema && propertyAt(schema, key.split('.'), false)
+      const published = at && (at.parent.properties as Record<string, JSONSchema>)[at.name]?.default
+      if (published === undefined || !same(next, current) || !same(current, published)) {
         problems.push(`${key}: this field cannot be changed`)
       }
       continue

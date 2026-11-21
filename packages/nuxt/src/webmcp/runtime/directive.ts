@@ -1,6 +1,6 @@
 import type { ObjectDirective } from 'vue'
 import { nextTick, toRaw } from 'vue'
-import type { AgentToolDefinition, AgentToolRegistry } from './registry'
+import type { AgentToolDefinition, AgentToolRegistry, JSONSchema } from './registry'
 import { formatIssues, isStandardSchema, text, toJsonSchema } from './registry'
 import type { FormFields } from './dom'
 import { describeSchema, fillFields, formOf, formSchema, highlight, isDisabled, itemLabel, labelOf, lockedProblems, mergeInput, nativeProblems, readFields, submitterOf } from './dom'
@@ -95,7 +95,7 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
     return definition
   }
 
-  async function fill (binding: AgentToolBinding, el: HTMLElement, input: Record<string, unknown>, signal: AbortSignal) {
+  async function fill (binding: AgentToolBinding, el: HTMLElement, input: Record<string, unknown>, signal: AbortSignal, published?: JSONSchema) {
     const fields = binding.fields ?? {}
     const schema = binding.schema?.()
     if (isStandardSchema(schema)) {
@@ -109,7 +109,7 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
       }
     }
     const form = formOf(el) ?? el
-    const locked = lockedProblems(fields, form, input)
+    const locked = lockedProblems(fields, form, input, published)
     if (locked.length) {
       return text(`The form was not submitted. ${locked.join('; ')}`, true)
     }
@@ -142,13 +142,14 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
   function activate (el: HTMLElement, value: AgentToolBinding) {
     const current = { binding: value, dispose: () => {} }
     const isForm = value.kind === 'form'
-    current.dispose = registry.activate(definitionFor(value, el), {
+    const definition = definitionFor(value, el)
+    current.dispose = registry.activate(definition, {
       enabled: () => el.isConnected && (current.binding.enabled?.() ?? true) && !isDisabled(el),
       targets: 'target' in value
         ? () => el.isConnected ? [{ key: String(current.binding.target), label: itemLabel(el), element: el }] : []
         : undefined,
       element: () => el,
-      prepare: isForm ? (input, ctx) => fill(current.binding, el, input as Record<string, unknown>, ctx.signal) : undefined,
+      prepare: isForm ? (input, ctx) => fill(current.binding, el, input as Record<string, unknown>, ctx.signal, definition.inputSchema) : undefined,
       stage: () => {
         if (isForm) {
           const form = formOf(el) ?? el
