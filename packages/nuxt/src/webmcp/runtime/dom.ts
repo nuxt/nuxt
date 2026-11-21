@@ -48,8 +48,10 @@ export function formOf (el: Element) {
   return el instanceof HTMLFormElement ? el : el.querySelector('form') ?? el.closest('form')
 }
 
+/** The first submit button of `form` the user can activate, or its first submit button when none can be. */
 export function submitterOf (form: Element) {
-  return form.querySelector<HTMLElement>('[type="submit"], button:not([type])')
+  const submitters = [...form.querySelectorAll<HTMLElement>('[type="submit"], button:not([type])')]
+  return submitters.find(submitter => !isDisabled(submitter)) ?? submitters[0] ?? null
 }
 
 function markersOf (form: Element, field: FormField) {
