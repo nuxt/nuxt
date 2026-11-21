@@ -1,18 +1,16 @@
 import type { Compiler, WebpackPluginInstance } from 'webpack'
 import { isJS } from './vue/util.ts'
 
-const STUB_MARKER = '/* unused pure expression or super */'
-const INVALID_ANNOTATION_RE = /\/\* @__PURE__ \*\/(?= \(\/\* unused pure expression or super \*\/ null && \()/g
-const PURE_ANNOTATION_REPLACEMENT = ' '.repeat('/* @__PURE__ */'.length)
+const INVALID_ANNOTATION_RE = /\/\*\s*[#@]__PURE__\s*\*\/(?=\s*(?:\(\/\* unused pure expression or super \*\/ null && \(|0(?![\w$.])))/g
 
 /**
  * Replace any orphaned `/* @__PURE__ *\/` that webpack and rspack leave in
- * front of their dead-code stubs with whitespace of equal length. Exported
- * for unit testing.
+ * front of their dead-code stubs, or of the `0` a call in a dead branch is
+ * replaced with, with whitespace of equal length. Exported for unit testing.
  */
 export function stripInvalidPureAnnotations (code: string): string {
-  if (!code.includes(STUB_MARKER)) { return code }
-  return code.replace(INVALID_ANNOTATION_RE, PURE_ANNOTATION_REPLACEMENT)
+  if (!code.includes('__PURE__')) { return code }
+  return code.replace(INVALID_ANNOTATION_RE, annotation => ' '.repeat(annotation.length))
 }
 
 /**
