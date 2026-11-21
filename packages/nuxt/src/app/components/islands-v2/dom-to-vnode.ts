@@ -5,10 +5,12 @@ import {
   Suspense,
   Teleport,
   type VNode,
+  cloneVNode,
   createCommentVNode,
   createElementVNode,
   createStaticVNode,
   createVNode,
+  defineComponent,
   h,
   isVNode,
 } from 'vue'
@@ -108,7 +110,8 @@ interface WalkContext {
   plain?: boolean
   previousRuns?: Map<string, VNode[]>
   /**
-   * Makes static runs carry their HTML instead of pointing at parsed nodes.
+   * Makes each static node a `StaticNode` component carrying its HTML, instead of a static run
+   * pointing at parsed nodes, so copies made with `cloneVNodes` can mount anywhere.
    */
   serialize?: boolean
 }
@@ -117,6 +120,8 @@ interface WalkResult {
   next: ChildNode | null
   vnodes: VNode[]
 }
+
+type InternalVNode = VNode & { ssContent?: VNode | null, ssFallback?: VNode | null, memo?: unknown[] }
 
 const COMMENT_NODE = 8
 const ELEMENT_NODE = 1
@@ -147,8 +152,8 @@ export function htmlToVNode (html: string, options: DomToVNodeOptions): VNode | 
 }
 
 /**
- * Parse island HTML into sibling VNodes, for slot, fallback and teleport content. Each static run
- * carries its HTML, so one VNode can mount or hydrate and later be cloned.
+ * Parse island HTML into sibling VNodes, for slot, fallback and teleport content. Code that renders
+ * the result more than once must render copies made with `cloneVNodes`, not the result itself.
  */
 export function htmlToVNodes (html: string, options: DomToVNodeOptions): VNode[] {
   const { content } = parseHtml(html)
@@ -174,6 +179,33 @@ export function outerHTMLOf (start: Node, nonce: string): string {
   for (const node of copy.childNodes) { html += serializeNode(node) }
   return html
 }
+
+/**
+ * Copy VNodes built by the DOM walk into ones Vue has never mounted. Vue mounts a component VNode
+ * that still holds the `el` of an earlier mount by hydrating that stale DOM, so reused VNodes break.
+ */
+export function cloneVNodes (vnodes: VNode[]): VNode[] {
+  return vnodes.map(cloneVNodeTree)
+}
+
+/**
+ * Renders the HTML of one static node. Each instance owns its `Static` VNode, so copies of the same
+ * walk result can mount side by side. One node per component, as Vue hydrates a component root
+ * as a single DOM node.
+ */
+const StaticNode = /* @__PURE__ */ defineComponent({
+  name: 'NuxtIslandStaticNode',
+  props: {
+    html: {
+      type: String,
+      required: true,
+    },
+  },
+  setup (props) {
+    const vnode = createStaticVNode(props.html, 1)
+    return () => vnode
+  },
+})
 
 function parseHtml (html: string): HTMLTemplateElement {
   const template = document.createElement('template')
@@ -261,7 +293,7 @@ function walkNode (node: ChildNode, context: WalkContext): WalkResult {
     }
   }
   if (isStaticNode(node)) {
-    return { next: node.nextSibling, vnodes: [createStaticRun([node], context)] }
+    return { next: node.nextSibling, vnodes: createStaticRun([node], context) }
   }
   return { next: node.nextSibling, vnodes: [] }
 }
@@ -278,7 +310,7 @@ function walkSiblings (first: ChildNode | null, stop: Node | null, context: Walk
       continue
     }
     if (staticRun.length > 0) {
-      vnodes.push(createStaticRun(staticRun, context))
+      vnodes.push(...createStaticRun(staticRun, context))
       staticRun.length = 0
     }
     const result = walkNode(current, context)
@@ -286,7 +318,7 @@ function walkSiblings (first: ChildNode | null, stop: Node | null, context: Walk
     current = result.next
   }
 
-  if (staticRun.length > 0) { vnodes.push(createStaticRun(staticRun, context)) }
+  if (staticRun.length > 0) { vnodes.push(...createStaticRun(staticRun, context)) }
   return vnodes
 }
 
@@ -482,29 +514,36 @@ function collectStaticRuns (previous: VNode): Map<string, VNode[]> {
 
 /**
  * Build a static run: one Vue `Static` VNode for consecutive DOM nodes without markers, mounted or
- * hydrated as a block. An unchanged run from the previous tree is reused instead.
+ * hydrated as a block. An unchanged run from the previous tree is copied with its live DOM.
+ * With `serialize`, each node becomes a `StaticNode` component instead.
  */
-function createStaticRun (nodes: Node[], context: WalkContext): VNode {
+function createStaticRun (nodes: Node[], context: WalkContext): VNode[] {
+  if (context.serialize) {
+    // A unique key makes Vue replace a different node instead of patching it.
+    return nodes.map(node => createVNode(StaticNode, { key: ++STATIC_RUN_ID, html: serializeNode(node) }))
+  }
   const previous = context.previousRuns ? findPreviousRun(nodes, context.previousRuns) : undefined
-  if (previous) { return previous }
-  const vnode = createStaticVNode('', nodes.length)
+  // Dev Vue replaces a static run whose HTML changed, so the old run gets the same HTML.
+  if (previous && !previous.children) { previous.children = nodes.map(serializeNode).join('') }
+  const vnode: InternalVNode = createStaticVNode((previous?.children as string | undefined) ?? '', nodes.length)
   // A unique key makes Vue replace a different run instead of patching it:
   // production Vue never moves DOM from one Static vnode to another.
-  vnode.key = ++STATIC_RUN_ID
+  vnode.key = previous?.key ?? ++STATIC_RUN_ID
   // Vue rebuilds a cloned vnode's key from its props, so the key is kept there too.
   vnode.props = { key: vnode.key }
-  if (context.serialize) {
-    // Carrying the HTML lets the same VNode mount or hydrate once and be cloned on later renders.
-    vnode.children = nodes.map(serializeNode).join('')
+  if (previous) {
+    vnode.el = previous.el
+    vnode.anchor = previous.anchor
+    vnode.memo = []
   } else if (!context.adopt) {
     // With anchors set, Vue clones the parsed nodes at mount instead of parsing the HTML again.
     vnode.el = nodes[0]!
-    vnode.anchor = nodes[nodes.length - 1]!;
-    // A memo keeps Vue from cloning the vnode on re-render: production Vue never moves `el`
-    // from one Static vnode to another, so a clone would keep pointing at the parsed nodes.
-    (vnode as VNode & { memo?: unknown[] }).memo = []
+    vnode.anchor = nodes[nodes.length - 1]!
+    // A memo keeps Vue from cloning the vnode on re-render
+    // production Vue never moves `el` from one Static vnode to another, so a clone would keep pointing at the parsed nodes.
+    vnode.memo = []
   }
-  return vnode
+  return [vnode]
 }
 
 function serializeNode (node: Node): string {
@@ -567,6 +606,25 @@ function mountFallback (open: Comment, closing: Comment, tuple: IslandComponentM
   if (tuple[4] !== 1 || !start || !isFragmentStart(start) || findFragmentEnd(start)?.nextSibling !== closing) { return }
   // Markers inside belong to the server half's HTML; the client half gets its slots from the marker data.
   return walkNode(start, { ...context, markerAncestors: new Set(), plain: true, previousRuns: undefined }).vnodes[0]
+}
+
+/**
+ * Deep copy of a walk result with no mount state. A static run keeps its `el`: Vue copies that DOM
+ * to mount it, and the run may hold no HTML of its own (`serialize` off).
+ */
+function cloneVNodeTree (vnode: InternalVNode): VNode {
+  const clone: InternalVNode = cloneVNode(vnode)
+  if (vnode.type === Static) {
+    clone.memo = vnode.memo
+    return clone
+  }
+  if (Array.isArray(vnode.children)) { clone.children = (vnode.children as VNode[]).map(cloneVNodeTree) }
+  if (vnode.ssContent) { clone.ssContent = cloneVNodeTree(vnode.ssContent) }
+  if (vnode.ssFallback) { clone.ssFallback = cloneVNodeTree(vnode.ssFallback) }
+  clone.el = clone.anchor = clone.target = clone.targetStart = clone.targetAnchor = null
+  clone.component = null
+  clone.suspense = null
+  return clone
 }
 
 function renderClientComponent (data: IslandComponentMarker, options: DomToVNodeOptions, fallback: VNode | undefined): VNode {

@@ -31,6 +31,13 @@ function loaderProps (vnode: VNode): Record<string, any> {
   return (vnode.children as { default: () => VNode }).default().props!
 }
 
+function staticHtml (vnodes: VNode[]): string[] {
+  return vnodes.map((vnode) => {
+    expect((vnode.type as { name?: string }).name).toBe('NuxtIslandStaticNode')
+    return vnode.props!.html
+  })
+}
+
 describe('htmlToVNode', () => {
   it('keeps plain comments as comments', () => {
     const [comment, run] = children(htmlToVNode('<!-- hello --><p>a</p>', { nonce: NONCE }))
@@ -72,9 +79,7 @@ describe('htmlToVNode', () => {
     const html = `<!--i:t:${NONCE}${encodeMarker(['body', false, '<b>moved</b>'])}--><!--teleport start--><!--teleport end-->`
     const [, teleport] = children(htmlToVNode(html, { nonce: NONCE }))
     expect(teleport!.type).toBe(Teleport)
-    const [run] = teleport!.children as VNode[]
-    expect(run!.type).toBe(Static)
-    expect(run!.children).toBe('<b>moved</b>')
+    expect(staticHtml(teleport!.children as VNode[])).toEqual(['<b>moved</b>'])
   })
 
   it('reuses unchanged static runs of the previous tree', () => {
@@ -83,10 +88,27 @@ describe('htmlToVNode', () => {
     render(previous, container)
     expect(container.innerHTML).toBe('<p>keep</p><!--sep--><p>old</p>')
 
-    const next = children(htmlToVNode('<p>keep</p><!--sep--><p>new</p>', { nonce: NONCE, previous }))
+    const kept = container.querySelector('p')
+    const next = htmlToVNode('<p>keep</p><!--sep--><p>new</p>', { nonce: NONCE, previous })!
     const before = children(previous)
-    expect(next[0]).toBe(before[0])
-    expect(next[2]).not.toBe(before[2])
+    expect(children(next)[0]!.key).toBe(before[0]!.key)
+    expect(children(next)[2]!.key).not.toBe(before[2]!.key)
+    render(next, container)
+    expect(container.innerHTML).toBe('<p>keep</p><!--sep--><p>new</p>')
+    expect(container.querySelector('p')).toBe(kept)
+  })
+
+  it.each([
+    ['into a new parent, after the old run was removed', '<div><b>a</b>t{m}</div>', '<div><section><b>a</b>t{m}</section></div>', '<div><section><b>a</b>t</section></div>'],
+    ['to a parent patched before the old one', '<div><p>{m}</p><p><b>a</b>t{m}</p></div>', '<div><p><b>a</b>t{m}</p><p>{m}</p></div>', '<div><p><b>a</b>t</p><p></p></div>'],
+  ])('moves an unchanged run of the previous tree %s', (_, before, after, expected) => {
+    const marker = `${open([null, '/c.vue'])}<i>x</i>${close()}`
+    const container = document.createElement('div')
+    const previous = htmlToVNode(before.replaceAll('{m}', marker), { nonce: NONCE })!
+    render(previous, container)
+    render(htmlToVNode(after.replaceAll('{m}', marker), { nonce: NONCE, previous })!, container)
+    // The client component regions render empty until their chunk loads.
+    expect(container.innerHTML.replaceAll(/<!--\/?i:c:[^>]*-->|<!---->/g, '')).toBe(expected)
   })
 
   it('accepts markers of nested island nonces', () => {
@@ -123,10 +145,8 @@ describe('htmlToVNode', () => {
 })
 
 describe('htmlToVNodes', () => {
-  it('serializes static runs for slot content', () => {
-    const [run] = htmlToVNodes('<b>a</b>text', { nonce: NONCE })
-    expect(run!.type).toBe(Static)
-    expect(run!.children).toBe('<b>a</b>text')
+  it('serializes each static node for slot content', () => {
+    expect(staticHtml(htmlToVNodes('<b>a</b>text', { nonce: NONCE }))).toEqual(['<b>a</b>', 'text'])
   })
 })
 
@@ -154,15 +174,14 @@ describe('slot markers', () => {
     expect(vnodes[3]!.children).toBe(`/i:s:${NONCE}`)
     const props = vnodes[2]!.props!
     expect(props).toMatchObject({ islandSlots: slots, name: 'default', slotProps: { n: 1 }, slotScopeId: 'data-v-x-s' })
-    expect(props.fallback.map((vnode: VNode) => vnode.type)).toEqual([Static])
+    expect(staticHtml(props.fallback)).toEqual(['<i>fb</i>'])
   })
 
   it('takes the fallback from the tuple once the page rendered its content in place', () => {
     const html = `${slotOpen(['default', null, null, '<i>fb</i>'])}<!--[--><b>page</b><!--]-->${slotClose()}`
     const [, outlet] = children(htmlToVNode(html, { nonce: NONCE }))
     expect(outlet!.type).toBe(slotOutlet)
-    const [run] = outlet!.props!.fallback as VNode[]
-    expect(run!.children).toBe('<i>fb</i>')
+    expect(staticHtml(outlet!.props!.fallback)).toEqual(['<i>fb</i>'])
   })
 
   it('renders the page slot, or the fallback without one', () => {

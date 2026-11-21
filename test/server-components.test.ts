@@ -425,6 +425,31 @@ describe('component islands', () => {
     expect(await page.locator('#paired-load-client').count()).toBe(1)
     expect(await page.locator('#paired-load-client').innerText()).not.toContain('PAIRED_LOAD_CLIENT_SERVER_SENTINEL')
     expect(await page.locator('#solo-load-client').innerText()).toContain('SOLO_LOAD_CLIENT_SERVER_SENTINEL')
+    // The `.server` half renders no slot, so the slot is captured for the client half only.
+    await page.locator('#paired-load-client #paired-slot').getByText('PAIRED_SLOT').waitFor()
+    expect(consoleLogs.filter(l => l.text.includes('Hydration'))).toEqual([])
+    expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
+    expect(pageErrors).toEqual([])
+    await page.close()
+  })
+
+  it.skipIf(!oncePerBuild || !islandsV2)('shows `v-load-client` slot content closed on the server, again after hiding it', async () => {
+    const { page, consoleLogs, pageErrors } = await renderPage('/load-client-targets')
+    const toggle = page.locator('#toggle-slot')
+    await page.locator('#toggle-slot[data-ready="true"]').waitFor()
+    expect(await toggle.locator('.toggle-slot-content').count()).toBe(0)
+    for (const clicks of [1, 2]) {
+      await toggle.locator('.toggle-slot-button').click()
+      await toggle.locator('.toggle-slot-content').getByText('TOGGLE_SLOT').waitFor()
+      // The nested target in the slot loads and stays interactive each time the slot shows again.
+      await toggle.locator('.sugar-counter button').click()
+      await toggle.locator('.sugar-counter').getByText('Sugar Counter 13 x 2 = 26').waitFor()
+      if (clicks === 1) {
+        await toggle.locator('.toggle-slot-button').click()
+        await toggle.locator('.toggle-slot-button').getByText('open').waitFor()
+        expect(await toggle.locator('.toggle-slot-content').count()).toBe(0)
+      }
+    }
     expect(consoleLogs.filter(l => l.text.includes('Hydration'))).toEqual([])
     expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
     expect(pageErrors).toEqual([])

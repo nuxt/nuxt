@@ -8,5 +8,6 @@ const count = ref(0)
     <button @click="count++">
       count: {{ count }}
     </button>
+    <slot />
   </div>
 </template>

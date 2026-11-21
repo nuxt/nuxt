@@ -1,6 +1,7 @@
 import { defineComponent, renderSlot } from 'vue'
 import type { PropType, Slots, VNode } from 'vue'
 import { ownSlots } from './shared'
+import { cloneVNodes } from './dom-to-vnode'
 
 // `slotScopeIds` is internal to Vue's VNode type.
 type SlottedVNode = VNode & { slotScopeIds?: string[] }
@@ -40,8 +41,7 @@ export default /* @__PURE__ */ defineComponent({
   setup (props) {
     return () => {
       const fallback = props.fallback
-      // `noSlotted`: the slot scope id comes from the marker (the island's), not from this component.
-      const vnode = renderSlot(ownSlots(props.islandSlots, props.name), props.name, props.slotProps ?? {}, fallback && (() => fallback), true)
+      const vnode = renderSlot(ownSlots(props.islandSlots, props.name), props.name, props.slotProps ?? {}, fallback && (() => cloneVNodes(fallback)), true)
       if (props.slotScopeId) { (vnode as SlottedVNode).slotScopeIds = [props.slotScopeId] }
       return vnode
     }

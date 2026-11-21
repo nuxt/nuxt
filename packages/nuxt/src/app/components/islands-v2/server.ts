@@ -136,17 +136,20 @@ export function ssrRenderClientComponent (
   ssrRenderVNode(item => buffer.push(item), vnode, parent, slotScopeId)
 
   return chain(unroll(buffer), html =>
-    chain(unrollRecord(captured), (slotHtml): SSRBuffer => {
-      const tuple: IslandComponentMarker = [markerProps(props), chunk, exportName]
-      if (slotHtml || mount) { tuple.push(slotHtml ?? {}) }
-      if (mount) { tuple.push(1) }
-      return [
-        `<!--${markers.component}${encodeMarker(tuple)}-->`,
-        // Fragment anchors let the client hydrate this HTML as one fragment and later replace it.
-        mount ? `<!--[-->${html}<!--]-->` : html,
-        `<!--${markers.componentEnd}-->`,
-      ]
-    }),
+    chain(captureUnrenderedSlots(slots, captured, vnode.component ?? parent, is), unrendered =>
+      chain(unrollRecord(captured), (rendered): SSRBuffer => {
+        const slotHtml = rendered || unrendered ? { ...unrendered, ...rendered } : undefined
+        const tuple: IslandComponentMarker = [markerProps(props), chunk, exportName]
+        if (slotHtml || mount) { tuple.push(slotHtml ?? {}) }
+        if (mount) { tuple.push(1) }
+        return [
+          `<!--${markers.component}${encodeMarker(tuple)}-->`,
+          // Fragment anchors let the client hydrate this HTML as one fragment and later replace it.
+          mount ? `<!--[-->${html}<!--]-->` : html,
+          `<!--${markers.componentEnd}-->`,
+        ]
+      }),
+    ),
   )
 }
 
@@ -311,14 +314,62 @@ function insideClientComponent (owner: ComponentInternalInstance | null): boolea
 function warnUnscanned (component: Component): void {
   if (UNSCANNED_WARNED.has(component)) { return }
   UNSCANNED_WARNED.add(component)
-  const name = (component as { __name?: string }).__name ?? (component as { name?: string }).name ?? 'anonymous component'
-  console.warn(`[nuxt] [islands] <${name} v-load-client> has no scanned client chunk, as with a \`<component :is>\` target, so it rendered inline without island markers and stays static on the client.`)
+  console.warn(`[nuxt] [islands] <${nameOf(component)} v-load-client> has no scanned client chunk, as with a \`<component :is>\` target, so it rendered inline without island markers and stays static on the client.`)
 }
 
-/**
- * Wrap each slot so its first render is also recorded as HTML for the component marker,
- * while the output still reaches the child.
- */
+function nameOf (component: Component): string {
+  return (component as { __name?: string }).__name ?? (component as { name?: string }).name ?? 'anonymous component'
+}
+
+function captureUnrenderedSlots (
+  slots: SSRSlots | null | undefined,
+  rendered: Record<string, SSRBuffer>,
+  parent: ComponentInternalInstance,
+  component: Component,
+): MaybePromise<Record<string, string> | undefined> {
+  if (!slots) { return }
+  let result: Record<string, string> | undefined
+  let pending: Promise<void>[] | undefined
+  for (const name of Object.keys(slots)) {
+    const slot = slots[name]
+    if (name === '_' || name in rendered || typeof slot !== 'function') { continue }
+    let failure: unknown
+    const skip = (error: unknown): void => {
+      if (import.meta.dev) {
+        console.warn(`[nuxt] [islands] Slot \`${name}\` of <${nameOf(component)} v-load-client> was not rendered on the server and could not be rendered without slot props, so the client gets no content for it.`, error)
+      }
+    }
+    const settle = (html: string): void => {
+      if (failure === undefined) { (result ??= {})[name] = html } else { skip(failure) }
+    }
+    try {
+      const html = renderSlotHtml(slot, errorTrap(parent, (error) => { failure ??= error }))
+      if (isPromise(html)) { (pending ??= []).push(html.then(settle, skip)) } else { settle(html) }
+    } catch (error) {
+      skip(error)
+    }
+  }
+  return pending ? Promise.all(pending).then(() => result) : result
+}
+
+function renderSlotHtml (slot: SSRSlot, parent: ComponentInternalInstance): MaybePromise<string> {
+  const buffer: SSRBuffer = []
+  const result = slot({}, (item) => { buffer.push(item) }, parent, null)
+  if (Array.isArray(result)) {
+    for (const item of renderVNodesToBuffer(result, parent, null)) { buffer.push(item) }
+  }
+  return unroll(buffer)
+}
+
+function errorTrap (parent: ComponentInternalInstance, onError: (error: unknown) => void): ComponentInternalInstance {
+  const trap: ComponentInternalInstance & { ec?: ((error: unknown) => boolean)[] } = Object.create(parent)
+  trap.ec = [(error) => {
+    onError(error)
+    return false
+  }]
+  return trap
+}
+
 function captureSlots (
   slots: SSRSlots | null | undefined,
   captured: Record<string, SSRBuffer>,
@@ -337,8 +388,9 @@ function captureSlots (
       // Render functions call slots without `push` and get vnodes back, rendered again for the marker.
       if (!push) {
         const result = slot(slotProps, undefined, parent, scopeId)
-        if (!(name in captured) && Array.isArray(result)) {
-          captured[name] = renderVNodesToBuffer(result, parent, scopeId)
+        // Recorded even without vnodes, so the slot is not rendered again for the marker.
+        if (!(name in captured)) {
+          captured[name] = Array.isArray(result) ? renderVNodesToBuffer(result, parent, scopeId) : []
         }
         return result
       }

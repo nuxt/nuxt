@@ -147,6 +147,100 @@ describe('ssrRenderClientComponent', () => {
   })
 })
 
+describe('slots the server render did not call', () => {
+  type SlotFn = (props: any, push: Push, parent: ComponentInternalInstance) => void
+
+  // Renders none of its slots, as a `.server.vue` skeleton or a closed accordion does.
+  const Skeleton = defineComponent({
+    name: 'Skeleton',
+    ssrRender (_ctx: unknown, push: Push) { push('<p>skeleton</p>') },
+  })
+
+  // Renders `slots` for a target, as the island root, so its own `<slot>`s become outlets.
+  async function render (target: object, slots: (rootSlots: any) => Record<string, SlotFn>, options: { mount?: boolean } = {}) {
+    const context = islandContext()
+    const errorHandler = vi.fn()
+    const Root = defineComponent({
+      ssrRender (ctx: any, push: Push, parent: ComponentInternalInstance) {
+        push(ssrRenderClientComponent(target as any, null, { ...slots(ctx.$slots), _: 1 } as any, parent, { chunk: CHUNK, ...options }))
+      },
+    })
+    const app = createSSRApp({
+      render: () => {
+        const vnode = h(Root)
+        context.islands.root = vnode
+        return vnode
+      },
+    })
+    app.config.errorHandler = errorHandler
+    const html = await renderToString(app, context)
+    expect(errorHandler).not.toHaveBeenCalled()
+    return { html, context, nonce: context.islands.markers.nonce, slots: (readMarker(html, context.islands.markers.nonce) as unknown[])[3] }
+  }
+
+  it('captures the slots of a mounted pair whose server half renders none, outside the page HTML', async () => {
+    const { html, nonce, slots } = await render(Skeleton, () => ({
+      default: (_, push) => { push('<b>d</b>') },
+      named: (_, push) => { push('<i>n</i>') },
+    }), { mount: true })
+    expect(slots).toEqual({ default: '<b>d</b>', named: '<i>n</i>' })
+    expect(html.replace(/<!--i:c:.*?-->/, '')).toBe(`<!--[--><p>skeleton</p><!--]--><!--/i:c:${nonce}-->`)
+  })
+
+  it('captures a slot an ordinary target leaves closed, rendering each slot once', async () => {
+    const calls: string[] = []
+    const { html, slots } = await render(Child, () => ({
+      default: (_, push) => { calls.push('default'); push('<b>d</b>') },
+      closed: (_, push) => { calls.push('closed'); push('<i>c</i>') },
+    }))
+    expect(slots).toEqual({ default: '<b>d</b>', closed: '<i>c</i>' })
+    expect(calls).toEqual(['default', 'closed'])
+    expect(html.replace(/<!--i:c:.*?-->/, '')).not.toContain('<i>c</i>')
+  })
+
+  it('leaves out a scoped slot that throws without its props', async () => {
+    const { slots } = await render(Skeleton, () => ({
+      default: (_, push) => { push('<b>d</b>') },
+      row: (props, push) => { push(`<b>${props.item.name}</b>`) },
+    }))
+    expect(slots).toEqual({ default: '<b>d</b>' })
+  })
+
+  it.each([
+    ['setup', defineComponent({ props: ['item'], setup: (props: any) => { return props.item.name } })],
+    ['async setup', defineComponent({ props: ['item'], async setup (props: any) { await Promise.resolve(); return props.item.name } })],
+    ['render', defineComponent({ props: ['item'], ssrRender: (ctx: any, push: Push) => { push(ctx.item.name) } })],
+  ])('leaves out a slot whose component fails in %s, without reaching the app error handler', async (_, Failing) => {
+    const { slots } = await render(Skeleton, () => ({
+      default: (_, push) => { push('<b>d</b>') },
+      row: (props, push, parent) => { push(ssrRenderComponent(Failing, { item: props.item }, null, parent)) },
+    }))
+    expect(slots).toEqual({ default: '<b>d</b>' })
+  })
+
+  it('gives nested targets and page slot outlets in a captured slot their markers', async () => {
+    const Async = defineComponent({
+      async setup () {
+        await new Promise(resolve => setTimeout(resolve))
+        return () => h('u', 'async')
+      },
+    })
+    const { context, nonce, slots } = await render(Skeleton, rootSlots => ({
+      default: (_, push, parent) => {
+        push(ssrRenderClientComponent(Child, { msg: 'in' }, null, parent, { chunk: CHUNK }))
+        islandSsrRenderSlot(rootSlots, 'page', {}, null, push as any, parent)
+        push(ssrRenderComponent(Async, null, null, parent))
+      },
+    }))
+    expect((slots as Record<string, string>).default).toBe([
+      `<!--i:c:${nonce}${encodeMarker([{ msg: 'in' }, CHUNK, 'default'])}--><span>in</span><!--[--><!--]--><!--/i:c:${nonce}-->`,
+      `<!--i:s:${nonce}${encodeMarker(['page', {}, null, ''])}--><!--/i:s:${nonce}-->`,
+      '<u>async</u>',
+    ].join(''))
+    expect(context.islands.chunks).toEqual({ [CHUNK]: '/_nuxt/child.js' })
+  })
+})
+
 describe('ssrRenderSlot', () => {
   const SCOPE_ID = 'data-v-island-s'
 

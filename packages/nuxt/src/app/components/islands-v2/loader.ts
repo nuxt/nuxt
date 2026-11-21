@@ -1,8 +1,8 @@
-import { ErrorCodes, defineComponent, getCurrentInstance, h, handleError, shallowRef, watch } from 'vue'
+import { ErrorCodes, computed, defineComponent, getCurrentInstance, h, handleError, shallowRef, watch } from 'vue'
 import type { Component, FunctionalComponent, PropType, Slots, VNode } from 'vue'
 import { importFn as localImportFn } from '#islands-v2-manifest'
 import type { IslandComponentMarker } from './shared'
-import { type RemoteIsland, htmlToVNodes } from './dom-to-vnode'
+import { type RemoteIsland, cloneVNodes, htmlToVNodes } from './dom-to-vnode'
 import { createRemoteImportFn } from './import-fn'
 
 const LOAD_FAILED: FunctionalComponent = () => null
@@ -74,14 +74,15 @@ export default /* @__PURE__ */ defineComponent({
         vnodes = htmlToVNodes(html, { nonce: props.nonce, nonces: props.nonces, slots: props.islandSlots, remote: props.remote })
         htmlSlots.set(html, vnodes)
       }
-      return vnodes
+      return cloneVNodes(vnodes)
     }
+    const fallback = computed(() => props.fallback && cloneVNodes([props.fallback])[0])
 
     const render = () => Loaded.value
       ? h(Loaded.value, props.data[0], Object.fromEntries(
           Object.entries(props.data[3] ?? {}).map(([name, html]) => [name, () => renderHtmlSlot(html)]),
         ))
-      : props.fallback
+      : fallback.value
     // Replacing the hydrated fallback mounts the component; otherwise setup suspends and hydrates it.
     return props.fallback ? render : loaded.then(() => render)
   },
