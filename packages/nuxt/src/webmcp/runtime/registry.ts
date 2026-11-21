@@ -142,6 +142,8 @@ interface Entry {
   definition: AgentToolDefinition
   activations: Set<AgentToolActivation>
   controller?: AbortController
+  /** The serialised summary the tool is registered with. */
+  registered?: string
   linted?: boolean
 }
 
@@ -259,14 +261,22 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
     }
     const modelContext = host.modelContext?.()
     let targeted = false
+    const summaries: AgentToolSummary[] = []
     for (const [name, entry] of entries) {
       if (!entry.activations.size) {
         entry.controller?.abort()
         entries.delete(name)
         continue
       }
+      const summary = summarize(entry)
+      summaries.push(summary)
       if (modelContext) {
-        entry.controller ??= register(modelContext, summarize(entry), (input, signal) => call(name, input, { signal }))
+        const serialised = JSON.stringify(summary)
+        if (entry.registered !== serialised) {
+          entry.controller?.abort()
+          entry.controller = register(modelContext, summary, (input, signal) => call(name, input, { signal }))
+          entry.registered = serialised
+        }
       }
       targeted ||= isTargeted(entry)
     }
@@ -276,7 +286,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       listTargets.abort()
       listTargets = undefined
     }
-    host.onChange?.([...entries.values()].map(summarize).concat(targeted ? [listTargetsSummary] : []))
+    host.onChange?.(targeted ? [...summaries, listTargetsSummary] : summaries)
   }
 
   function pageOfTargets (input: { tool?: string, query?: string, page?: number } = {}) {

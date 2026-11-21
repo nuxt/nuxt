@@ -61,6 +61,21 @@ describe('agent tool registry', () => {
     expect(await registry.call('eat', { target: 'c' })).toMatchObject({ isError: true })
   })
 
+  it('registers a tool again when an activation changes its input schema', () => {
+    const { registry, registered, registerTool } = setup()
+    const eat = defineAgentTool({ name: 'eat', description: 'Eat a fruit.' })
+    registry.activate(eat)
+    expect(registered.get('eat')!.inputSchema.required).toBeUndefined()
+
+    const targeted = registry.activate(eat, { targets: () => [{ key: 'a', label: 'Apple' }] })
+    expect(registered.get('eat')!.inputSchema.required).toEqual(['target'])
+    registry.activate(eat, { targets: () => [{ key: 'b', label: 'Banana' }] })
+    expect(registerTool.mock.calls.filter(([tool]) => tool.name === 'eat')).toHaveLength(2)
+
+    targeted.dispose()
+    expect(registered.get('eat')!.inputSchema.required).toEqual(['target'])
+  })
+
   it('pages and searches list_targets', async () => {
     const { registry, registered } = setup()
     const items = Array.from({ length: 45 }, (_, i) => ({ key: String(i), label: i % 2 ? `Odd ${i}` : `Even ${i}` }))
