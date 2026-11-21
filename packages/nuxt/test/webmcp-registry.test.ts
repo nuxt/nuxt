@@ -149,6 +149,18 @@ describe('agent tool registry', () => {
     expect(destroy).not.toHaveBeenCalled()
   })
 
+  it('reports tools that share a name and description but differ in flags', () => {
+    const duplicate = vi.fn()
+    const registry = createAgentToolRegistry({ schedule: flush => flush(), diagnostics: { duplicate } })
+    const description = 'Remove an item. Use when asked.'
+    registry.activate(defineAgentTool({ name: 'remove', description }))
+    registry.activate(defineAgentTool({ name: 'remove', description }))
+    expect(duplicate).not.toHaveBeenCalled()
+    registry.activate(defineAgentTool({ name: 'remove', description, confirm: true }))
+    registry.activate(defineAgentTool({ name: 'remove', description, annotations: { consequentialHint: true } }))
+    expect(duplicate).toHaveBeenCalledTimes(2)
+  })
+
   it('only declares hints that are true', () => {
     const { registry } = setup()
     registry.activate(defineAgentTool({ name: 'look', description: 'Look.', annotations: { readOnlyHint: true, consequentialHint: false } }))
