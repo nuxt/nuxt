@@ -172,6 +172,23 @@ describe('agent tool registry', () => {
     expect(execute).not.toHaveBeenCalled()
   })
 
+  it('rejects a call that an activity listener makes to a tool that is starting', async () => {
+    const { registry } = setup()
+    const execute = vi.fn()
+    registry.activate(defineAgentTool({ name: 'save', description: 'Save. Use when asked.', execute }), { prepare: () => {} })
+    let nested: ReturnType<typeof registry.call> | undefined
+    registry.onActivity((activities) => {
+      if (activities.length) {
+        nested ??= registry.call('save')
+      }
+    })
+
+    expect(await registry.call('save')).not.toHaveProperty('isError')
+    expect(await nested).toMatchObject({ isError: true, content: [{ text: expect.stringContaining('already running') }] })
+    expect(execute).toHaveBeenCalledOnce()
+    expect(await registry.call('save')).not.toHaveProperty('isError')
+  })
+
   it('does not run a call whose signal has already aborted', async () => {
     const { registry } = setup()
     const execute = vi.fn()
