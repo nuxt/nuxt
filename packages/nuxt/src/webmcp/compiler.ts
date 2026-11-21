@@ -1,6 +1,7 @@
 import type { AttributeNode, DirectiveNode, ElementNode, NodeTransform, RootNode, SimpleExpressionNode, SourceLocation, TemplateChildNode } from '@vue/compiler-core'
 import type { ESTree } from 'rolldown/utils'
 import { walk } from 'oxc-walker'
+import escapeRE from 'escape-string-regexp'
 import { findSFCScriptBlocks } from '../core/utils/parse-utils.ts'
 import { parseModule } from '../core/utils/parse.ts'
 
@@ -234,7 +235,7 @@ function analyseHandler (source: string, tools: Map<string, ToolMeta>): Handler 
       return { fn: expression.callee.name, call: source }
     }
   }
-  const mentions = [...tools.keys()].filter(fn => new RegExp(`(^|[^\\w$.])${fn.replace(/\$/g, '\\$')}([^\\w$]|$)`).test(source))
+  const mentions = [...tools.keys()].filter(fn => new RegExp(`(^|[^\\w$.])${escapeRE(fn)}([^\\w$]|$)`).test(source))
   return mentions.length ? { mentions } : undefined
 }
 
