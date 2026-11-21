@@ -245,6 +245,26 @@ export function fillFields (fields: FormFields, input: Record<string, unknown>) 
   return problems
 }
 
+function isLocked (control: FieldControl) {
+  return isDisabled(control)
+    || ('readOnly' in control && control.readOnly)
+    || (control instanceof HTMLInputElement && control.type === 'hidden')
+    || !!control.closest('[aria-readonly="true"]')
+}
+
+/** Problems with input that changes a field whose controls are disabled, read-only or hidden. */
+export function lockedProblems (fields: FormFields, form: Element, input: Record<string, unknown>) {
+  const problems: string[] = []
+  for (const [key, field] of Object.entries(fields)) {
+    const value = getIn(input, key.split('.'))
+    const controls = controlsOf(markersOf(form, field))
+    if (value !== undefined && controls.length && controls.every(isLocked) && JSON.stringify(coerce(value, field.get())) !== JSON.stringify(field.get())) {
+      problems.push(`${key}: this field cannot be changed`)
+    }
+  }
+  return problems
+}
+
 /** The form's values, shaped like the tool input. */
 export function readFields (fields: FormFields) {
   const value: Record<string, unknown> = {}

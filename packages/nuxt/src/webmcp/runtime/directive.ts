@@ -3,7 +3,7 @@ import { nextTick, toRaw } from 'vue'
 import type { AgentToolDefinition, AgentToolRegistry } from './registry'
 import { formatIssues, isStandardSchema, text, toJsonSchema } from './registry'
 import type { FormFields } from './dom'
-import { describeSchema, fillFields, formOf, formSchema, highlight, isDisabled, itemLabel, labelOf, mergeInput, nativeProblems, readFields, submitterOf } from './dom'
+import { describeSchema, fillFields, formOf, formSchema, highlight, isDisabled, itemLabel, labelOf, lockedProblems, mergeInput, nativeProblems, readFields, submitterOf } from './dom'
 
 /** Compiled from a template binding of a `@tool` function. */
 export interface AgentToolBinding {
@@ -108,10 +108,14 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
         return
       }
     }
+    const form = formOf(el)
+    const locked = form ? lockedProblems(fields, form, input) : []
+    if (locked.length) {
+      return text(`The form was not submitted. ${locked.join('; ')}`, true)
+    }
     const previous = Object.values(fields).map(field => field.get())
     const problems = fillFields(fields, input)
     await nextTick()
-    const form = formOf(el)
     if (!problems.length && form) {
       problems.push(...nativeProblems(fields, form))
       const submitter = submitterOf(form)
