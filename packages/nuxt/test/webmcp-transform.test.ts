@@ -65,6 +65,15 @@ describe('agent tool transform', () => {
     ])
   })
 
+  it('compiles every tool bound on one element', () => {
+    const { code, findings } = compile(`${script}
+<template>
+  <ProductCard v-for="p in products" :key="p.sku" @add="addToCart(p.sku)" @buy="checkout" />
+</template>`)
+    expect(code).toMatch(/\[\{ name: "add_to_cart".*\}, \{ name: "checkout".*invoke: \(\$event\) => \(\$setup\.checkout\(\$event\)\) \}\]/)
+    expect(findings).toEqual([{ code: 'NUXT_B1025', fn: 'subscribe' }])
+  })
+
   it('compiles handlers that end in a semicolon', () => {
     const { code } = compile(`${script}
 <template>
