@@ -52,7 +52,9 @@ interface WalkState {
   tools: Map<string, ToolMeta>
   client: boolean
   fors: { key?: string, aliases: string[] }[]
-  form?: { models: string[], depth: number }
+  /** Variables declared by each enclosing `v-for` and `v-slot`. */
+  scopes: string[][]
+  form?: { models: string[], scope: number }
   labels: number
   labelFor: Set<string>
   unlabelled: { id?: string, source: string, offset: number }[]
@@ -218,6 +220,10 @@ function findHandlers (el: ElementNode) {
 
 type Handler = { fn: string, call: string } | { mentions: string[] }
 
+function mentions (source: string, name: string) {
+  return new RegExp(`(^|[^\\w$.])${escapeRE(name)}([^\\w$]|$)`).test(source)
+}
+
 function analyseHandler (source: string, tools: Map<string, ToolMeta>): Handler | undefined {
   let program: ESTree.Program
   try {
@@ -235,8 +241,8 @@ function analyseHandler (source: string, tools: Map<string, ToolMeta>): Handler 
       return { fn: expression.callee.name, call: source.slice(expression.start, expression.end) }
     }
   }
-  const mentions = [...tools.keys()].filter(fn => new RegExp(`(^|[^\\w$.])${escapeRE(fn)}([^\\w$]|$)`).test(source))
-  return mentions.length ? { mentions } : undefined
+  const mentioned = [...tools.keys()].filter(fn => mentions(source, fn))
+  return mentioned.length ? { mentions: mentioned } : undefined
 }
 
 function fieldAccessors (models: string[]) {
@@ -264,6 +270,10 @@ function addDirective (el: ElementNode, source: string) {
 
 function visitElement (el: ElementNode, state: WalkState) {
   const exits: (() => void)[] = []
+  const pushScope = (declaration: string) => {
+    state.scopes.push(declaration.match(/[A-Z_$][\w$]*/gi) ?? [])
+    exits.push(() => state.scopes.pop())
+  }
 
   const loop = el.props.find((p): p is DirectiveNode => p.type === NODE_DIRECTIVE && p.name === 'for')
   if (loop?.forParseResult) {
@@ -276,6 +286,8 @@ function visitElement (el: ElementNode, state: WalkState) {
     const aliases = [keyAlias, index].filter(a => a?.type === NODE_SIMPLE_EXPRESSION).map(a => (a as SimpleExpressionNode).content)
     state.fors.push({ key: keySource, aliases })
     exits.push(() => state.fors.pop())
+    const { value } = loop.forParseResult
+    pushScope([value, keyAlias, index].map(node => node?.loc.source ?? '').join(' '))
   }
 
   if (el.tag === 'label') {
@@ -287,10 +299,10 @@ function visitElement (el: ElementNode, state: WalkState) {
     exits.push(() => state.labels--)
   }
 
-  if (state.form && state.fors.length === state.form.depth) {
+  if (state.form) {
     const model = el.props.find((p): p is DirectiveNode => p.type === NODE_DIRECTIVE && p.name === 'model')
-    if (model?.exp) {
-      const source = model.exp.loc.source.trim()
+    const source = model?.exp?.loc.source.trim()
+    if (source && !state.scopes.slice(state.form.scope).flat().some(name => mentions(source, name))) {
       addAttr(el, 'data-agent-field', source)
       state.form.models.push(source)
       if (el.tagType !== ELEMENT_COMPONENT && NATIVE_FIELDS.has(el.tag) && !state.labels && !LABEL_ATTRS.some(attr => findProp(el, attr))) {
@@ -346,7 +358,7 @@ function visitElement (el: ElementNode, state: WalkState) {
     }
     const schemaProp = findProp(el, 'schema') ?? findProp(el, 'validation-schema') ?? findProp(el, 'validationSchema')
     const schema = meta.input ?? (schemaProp && 'dynamic' in schemaProp ? schemaProp.dynamic : undefined)
-    const form = { models: [] as string[], depth: state.fors.length }
+    const form = { models: [] as string[], scope: state.scopes.length }
     state.form = form
     exits.push(() => {
       state.form = undefined
@@ -362,6 +374,11 @@ function visitElement (el: ElementNode, state: WalkState) {
         ...schema ? [`schema: () => (${schema})`] : [],
       ].join(', ')} }`)
     })
+  }
+
+  const slot = el.props.find((p): p is DirectiveNode => p.type === NODE_DIRECTIVE && p.name === 'slot')
+  if (slot?.exp) {
+    pushScope(slot.exp.loc.source)
   }
 
   visitChildren(el.children, state)
@@ -434,6 +451,7 @@ export function createAgentToolTransform (options: AgentToolTransformOptions = {
       tools,
       client: !context.ssr,
       fors: [],
+      scopes: [],
       labels: 0,
       labelFor: new Set(),
       unlabelled: [],
