@@ -16,7 +16,6 @@ export function needsBuild (environment: BuildEnvironment): boolean {
  * client build state wait for it with `waitForClientBuild()`.
  */
 export async function buildConcurrently (nuxt: Nuxt, builder: ViteBuilder, client: BuildEnvironment, ssr: BuildEnvironment): Promise<void> {
-  logger.start('Building client and server')
   logger.restoreAll()
   const clientBuild = builder.build(client)
   const clientBuilt = clientBuild.then(() => {})

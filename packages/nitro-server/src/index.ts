@@ -15,7 +15,7 @@ import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitropack'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitropack/types'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
-import { MAY_CONTAIN_DECORATOR_RE, bundlerDiagnostics, getServerRuntime, hasDecoratorSyntax, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
+import { MAY_CONTAIN_DECORATOR_RE, bundlerDiagnostics, getServerRuntime, hasDecoratorSyntax, reportNitroPrerender, resolveNitroDeployCommand, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild, startBuildEnvironment } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler, dynamicEventHandler, handleCors, setHeader, setResponseStatus } from 'h3'
@@ -511,7 +511,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
       plugins: [],
     },
-    logLevel: logLevelMapReverse[nuxt.options.logLevel],
+    // production builds are reported through the `build:*` hooks, so Nitro only prints warnings and errors
+    logLevel: nuxt.options.dev || nuxt.options.logLevel === 'silent' ? logLevelMapReverse[nuxt.options.logLevel] : 1,
   } satisfies NitroConfig)
 
   if (nuxt.options.sourcemap.server === 'nosource') {
@@ -886,6 +887,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       server: resolve(distDir, 'runtime/server'),
     },
     preview: { command: () => resolveNitroCommand(nitro.options.commands.preview, nitro.options) },
+    deploy: { command: () => resolveNitroDeployCommand(nitro.options.commands.deploy, nitro.options) },
   }, nuxt)
   const createdRouteRules = nitro.options.routeRules
   await nuxt.callHook('nitro:init', nitro)
@@ -976,6 +978,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   nitro.hooks.hook('prerender:routes', (routes) => {
     return nuxt.callHook('prerender:routes', { routes })
   })
+  if (!nuxt.options.dev) {
+    reportNitroPrerender(nitro, nuxt)
+  }
 
   // Enable runtime compiler client side
   if (nuxt.options.vue.runtimeCompiler) {
@@ -1261,7 +1266,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
       logger.restoreAll()
       try {
+        const report = nitro.options.static
+          ? undefined
+          : await startBuildEnvironment({ name: 'nitro', consumer: 'server', builder: 'rollup' }, nuxt)
         await build(nitro)
+        await report?.done(nitro.options.output.serverDir)
       } finally {
         logger.wrapAll()
       }

@@ -3,6 +3,7 @@ import { build, copyPublicAssets, createDevServer, prepare, prerender } from 'ni
 import type { Nitro } from 'nitro/types'
 import type { Nuxt } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
+import { startBuildEnvironment } from '@nuxt/kit/internal'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
 
 import { linkStaticDist } from './utils.ts'
@@ -79,7 +80,11 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
 
       logger.restoreAll()
       try {
+        const report = nitro.options.static
+          ? undefined
+          : await startBuildEnvironment({ name: 'nitro', consumer: 'server', builder: nitro.options.builder || 'nitro' }, nuxt)
         await build(nitro)
+        await report?.done(nitro.options.output.serverDir)
       } finally {
         logger.wrapAll()
       }

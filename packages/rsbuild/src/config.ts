@@ -59,11 +59,16 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
     rsdoctorPlugin,
   ]
 
+  // production bundles are reported through the `build:environment:*` hooks, so Rsbuild only
+  // prints warnings and errors unless the project sets a level itself
+  const reportsBuild = !nuxt.options.dev && nuxt.options.logLevel !== 'silent' && !userConfig.logLevel
+
   const config: RsbuildConfig = {
     // passed to Rspack as `context` as is; unplugin's virtual modules require the platform's path format on Windows
     root: resolvePlatformPath(nuxt.options.rootDir),
     mode: nuxt.options.dev ? 'development' : 'production',
-    logLevel: nuxt.options.logLevel === 'silent' ? 'silent' : 'info',
+    logLevel: nuxt.options.logLevel === 'silent' ? 'silent' : reportsBuild ? 'warn' : 'info',
+    performance: reportsBuild ? { printFileSize: false } : undefined,
     plugins,
     source: {
       decorators: nuxt.options.experimental.decorators ? { version: '2023-11' } : undefined,

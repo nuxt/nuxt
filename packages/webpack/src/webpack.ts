@@ -9,7 +9,7 @@ import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { joinURL } from 'ufo'
 import { logger, setBuildOutput, useNitro, useNuxt } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, startBuildEnvironment } from '@nuxt/kit/internal'
 import type { InputPluginOption } from 'rollup'
 
 import { DynamicBasePlugin } from './plugins/dynamic-base.ts'
@@ -224,6 +224,8 @@ export async function compile (compiler: Compiler): Promise<unknown> {
   }
 
   // --- Production Build ---
+  const name = compiler.options.name!
+  const report = await startBuildEnvironment({ name, consumer: name === 'server' ? 'server' : 'client', builder }, nuxt)
   const stats = await new Promise<Stats>((resolve, reject) => compiler.run((err, stats) => err ? reject(err) : resolve(stats!)))
 
   if (stats.hasErrors()) {
@@ -240,6 +242,8 @@ export async function compile (compiler: Compiler): Promise<unknown> {
     }
     throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name!, cause: compilationErrors }, { method: 'error' })
   }
+
+  await report.done(compiler.outputPath, stats.compilation.getAssets().map(asset => asset.name))
 }
 
 type GenericHandler = (event: H3V1Event | H3V2Event) => unknown | Promise<unknown>

@@ -499,6 +499,27 @@ describe('nitro config', () => {
     expect(devPlugins).toEqual(await getPlugins({ _prepare: true }))
   })
 
+  it.each([
+    [{ dev: false, logLevel: 'info' }, 1],
+    [{ dev: false, logLevel: 'verbose' }, 1],
+    [{ dev: false, logLevel: 'silent' }, 0],
+    [{ dev: false, logLevel: 'info', nitro: { logLevel: 3 } }, 3],
+    [{ dev: true, logLevel: 'info' }, 3],
+  ] satisfies Array<[NuxtConfig, number]>)('only prints warnings and errors from nitro in a production build unless the project sets a level (%j)', async (overrides, logLevel) => {
+    await withNitro(overrides, (nitro) => {
+      expect(nitro.options.logLevel).toBe(logLevel)
+    })
+  }, 60_000)
+
+  it('describes the deploy command of the preset, to run from the project root', async () => {
+    await withNitro({ dev: false, nitro: { commands: { deploy: 'npx wrangler --cwd ./ pages deploy' }, output: { dir: 'my output' } } }, (_nitro, _nitroConfig, nuxt) => {
+      expect(nuxt.serverBuild.deploy?.command?.()).toBe('npx wrangler --cwd "my output/" pages deploy')
+    })
+    await withNitro({ dev: false }, (_nitro, _nitroConfig, nuxt) => {
+      expect(nuxt.serverBuild.deploy?.command?.()).toBeUndefined()
+    })
+  }, 60_000)
+
   it('excludes sources from server sourcemaps for `nosource`', async () => {
     await withNitro({ sourcemap: { server: 'nosource' } }, (_nitro, nitroConfig) => {
       expect(nitroConfig.sourceMap).toBe(true)

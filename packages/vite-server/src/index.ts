@@ -159,14 +159,14 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     setupDevServer(nuxt, server?.entry)
   } else {
     nuxt.hook('build:done', async () => {
-      await writeStaticOutput(nuxt, publicDir, { ssr, prerender })
+      await writeStaticOutput(nuxt, publicDir, { ssr })
       if (!prerender || !handler) { return }
 
       const routes = await prerenderRoutes(nuxt, { publicDir, handler })
       if (nuxt.options.experimental.appManifest) {
         await writeAppManifest(nuxt, publicDir, routes)
       }
-      await finishStaticOutput(outputDir, publicDir)
+      await finishStaticOutput(outputDir)
     })
   }
 

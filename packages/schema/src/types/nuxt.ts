@@ -255,6 +255,20 @@ export interface NuxtServerBuildPreview {
 }
 
 /**
+ * How to deploy the build output.
+ *
+ * @internal
+ */
+export interface NuxtServerBuildDeploy {
+  /**
+   * Shell command that deploys the build with the deploy target's own tooling, such as
+   * `npx wrangler --cwd .output pages deploy`, when the target has one. Runs from `rootDir`
+   * (`output.root()`), and the paths in it are relative to that directory.
+   */
+  command?: () => string | undefined
+}
+
+/**
  * A description of the build the configured `server.builder` produces, for consumers
  * (the Nuxt CLI, deployment tooling) that need to know what was built and where without
  * reaching for a Nitro instance.
@@ -295,6 +309,7 @@ export interface NuxtServerBuild {
   capabilities: NuxtServerBuildCapabilities
   runtime: NuxtServerBuildRuntime
   preview?: NuxtServerBuildPreview
+  deploy?: NuxtServerBuildDeploy
   /** Whether the `ssr` environment output restored by a build cache hit can be used as is. */
   canReuseSsrBuild?: (environment: BuildEnvironment) => Promise<boolean>
 }
