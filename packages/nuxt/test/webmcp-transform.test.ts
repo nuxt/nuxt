@@ -105,16 +105,19 @@ describe('agent tool transform', () => {
     expect(code).toContain('$event => (_ctx.$agentTools.capture("checkout", () => ($setup.checkout($event))))')
   })
 
-  it('leaves fields rendered by a `v-for` inside the form out of its input', () => {
+  it('leaves fields that read a `v-for` or slot variable declared inside the form out of its input', () => {
     const { code } = compile(`${script}
 <template>
   <form @submit.prevent="subscribe">
-    <label>Email <input v-model="email"></label>
-    <label v-for="topic in topics" :key="topic.id">{{ topic.name }} <input v-model="topic.selected" type="checkbox"></label>
+    <label v-for="row in rows" :key="row">Email <input v-model="email"></label>
+    <label v-for="({ id, selected }, i) in topics" :key="id">Topic <input v-model="topics[i].selected" type="checkbox"></label>
+    <Field v-slot="{ field }"><input v-model="field.value" aria-label="Name"></Field>
+    <Field #default="{ error }"><input v-model="name" aria-label="Name"></Field>
   </form>
 </template>`)
-    expect(code).toContain('fields: { "email": { source: "email", get: () => (_ctx.email), set: ($v) => { _ctx.email = $v } } }')
-    expect(code).not.toContain('"data-agent-field": "topic.selected"')
+    expect(code).toContain('fields: { "email": { source: "email", get: () => (_ctx.email), set: ($v) => { _ctx.email = $v } }, "name": { source: "name", get: () => (_ctx.name), set: ($v) => { _ctx.name = $v } } }')
+    expect(code).not.toContain('"data-agent-field": "topics[i].selected"')
+    expect(code).not.toContain('"data-agent-field": "field.value"')
   })
 
   it('writes refs through `.value` when the template is inlined', () => {
