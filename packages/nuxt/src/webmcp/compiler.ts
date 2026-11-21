@@ -52,7 +52,7 @@ interface WalkState {
   tools: Map<string, ToolMeta>
   client: boolean
   fors: { key?: string, aliases: string[] }[]
-  form?: { models: string[] }
+  form?: { models: string[], depth: number }
   labels: number
   labelFor: Set<string>
   unlabelled: { id?: string, source: string, offset: number }[]
@@ -287,7 +287,7 @@ function visitElement (el: ElementNode, state: WalkState) {
     exits.push(() => state.labels--)
   }
 
-  if (state.form) {
+  if (state.form && state.fors.length === state.form.depth) {
     const model = el.props.find((p): p is DirectiveNode => p.type === NODE_DIRECTIVE && p.name === 'model')
     if (model?.exp) {
       const source = model.exp.loc.source.trim()
@@ -342,7 +342,7 @@ function visitElement (el: ElementNode, state: WalkState) {
     }
     const schemaProp = findProp(el, 'schema') ?? findProp(el, 'validation-schema') ?? findProp(el, 'validationSchema')
     const schema = meta.input ?? (schemaProp && 'dynamic' in schemaProp ? schemaProp.dynamic : undefined)
-    const form = { models: [] as string[] }
+    const form = { models: [] as string[], depth: state.fors.length }
     state.form = form
     exits.push(() => {
       state.form = undefined
