@@ -183,6 +183,7 @@ describe('agent tool directive', () => {
         submits.capture('send', sent)
       },
     }, [
+      h('button', { disabled: true }, 'Save draft'),
       h('button', { disabled: state.locked || !state.email }, 'Send'),
     ]), [[directive, binding({
       name: 'send',
