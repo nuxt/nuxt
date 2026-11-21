@@ -189,6 +189,20 @@ describe('agent tool registry', () => {
     expect(await registry.call('save')).not.toHaveProperty('isError')
   })
 
+  it('releases a tool when an activity listener throws as its call starts', async () => {
+    const { registry } = setup()
+    registry.activate(defineAgentTool({ name: 'save', description: 'Save. Use when asked.', execute: () => {} }), { prepare: () => {} })
+    const stopListening = registry.onActivity((activities) => {
+      if (activities.length) {
+        throw new Error('Listener failed.')
+      }
+    })
+
+    expect(await registry.call('save')).toEqual({ isError: true, content: [{ type: 'text', text: 'Listener failed.' }] })
+    stopListening()
+    expect(await registry.call('save')).not.toHaveProperty('isError')
+  })
+
   it('does not run a call whose signal has already aborted', async () => {
     const { registry } = setup()
     const execute = vi.fn()

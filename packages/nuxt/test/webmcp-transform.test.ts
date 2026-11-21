@@ -116,7 +116,7 @@ describe('agent tool transform', () => {
     <Field v-slot="{ value: slotValue = fallback }"><input v-model="value" aria-label="Value"></Field>
     <label v-for="(city, index) in cities" :key="city">City <input v-model="profile['city']"><input v-model="profile[city]"><input v-model="profile.index"></label>
     <template v-for="item in outer"><label v-for="item in inner" :key="item">Item <input v-model="item.value"><input v-model="coupon"></label></template>
-    <Field v-slot="{ error = entry }"><label v-for="entry in entries" :key="entry">Entry <input v-model="entry.name"><input v-model="notes[list.findIndex(note => note.id === noteId)]"></label></Field>
+    <Field v-slot="{ error = entry, detail = error }"><label v-for="entry in entries" :key="entry">Entry <input v-model="entry.name"><input v-model="notes[list.findIndex(note => note.id === noteId)]"></label></Field>
   </form>
 </template>`)
     const fields = [...code.matchAll(/"data-agent-field": "([^"]+)"/g)].map(match => match[1])
