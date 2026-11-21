@@ -131,7 +131,7 @@ describe('nitro v2 build-time storage', () => {
 
     expect(report).not.toHaveBeenCalled()
     await expect(storage.getItem('remote:key')).rejects.toThrow('NUXT_B9016')
-    expect(report).toHaveBeenCalledWith(expect.objectContaining({ base: 'remote', driver: 'not-a-storage-driver' }))
+    expect(report).toHaveBeenCalledWith(expect.objectContaining({ base: 'remote', driver: 'not-a-storage-driver' }), { method: 'error' })
     expect(await storage.getItem('build:key')).toBeNull()
   })
 })

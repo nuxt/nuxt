@@ -145,7 +145,7 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
   })
 
   if (failed.length && config.failOnError) {
-    throw buildDiagnostics.NUXT_B1024({ routes: failed.map(entry => ({ route: entry.route, status: entry.error!.status })) })
+    throw buildDiagnostics.NUXT_B1024({ routes: failed.map(entry => ({ route: entry.route, status: entry.error!.status })) }, { method: 'error' })
   }
 
   logger.info(`Prerendered ${written.length} routes in ${(Date.now() - start) / 1000} seconds`)

@@ -37,7 +37,7 @@ export function addClientBuildState<T> (key: string, state: ClientBuildState<T>,
  */
 export async function waitForClientBuild (nuxt: Nuxt = useNuxt(), environment?: string): Promise<void> {
   if (environment === 'client') {
-    throw bundlerDiagnostics.NUXT_B7038()
+    throw bundlerDiagnostics.NUXT_B7038({}, { method: 'error' })
   }
   await nuxt._clientBuild
 }

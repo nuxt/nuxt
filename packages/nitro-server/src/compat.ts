@@ -1565,7 +1565,7 @@ function createLegacyResolvePlugin (
       if (NITRO_V2_SPECIFIER_RE.test(source) && !NITRO_V2_ENTRIES.includes(source)) {
         const resolved = await this.resolve(source, importer, { skipSelf: true })
         if (!resolved || resolved.id.startsWith(`${nitroShim}/`)) {
-          throw nitroBuildDiagnostics.NUXT_B9010({ specifier: source, file: importer ? displayPath(normalize(importer), rootDir) : 'server code' })
+          throw nitroBuildDiagnostics.NUXT_B9010({ specifier: source, file: importer ? displayPath(normalize(importer), rootDir) : 'server code' }, { method: 'error' })
         }
         return resolved
       }

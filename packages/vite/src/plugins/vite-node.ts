@@ -467,7 +467,7 @@ function createViteNodeSocketServer (nuxt: Nuxt, viteServer: ViteDevServer, sock
   })
 
   if (!socketPath) {
-    throw bundlerDiagnostics.NUXT_B7013()
+    throw bundlerDiagnostics.NUXT_B7013({}, { method: 'error' })
   }
 
   listenAndRestrict(server, socketPath)

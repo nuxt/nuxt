@@ -44,10 +44,10 @@ export async function resolvePreprocessorPlugins (nuxt: Nuxt): Promise<RsbuildPl
       continue
     }
     const module = await importModule<Record<string, () => RsbuildPlugin>>(packageName, { url, interopDefault: false }).catch((cause) => {
-      throw bundlerDiagnostics.NUXT_B7035({ packageName, exportName, cause })
+      throw bundlerDiagnostics.NUXT_B7035({ packageName, exportName, cause }, { method: 'error' })
     })
     if (!module[exportName]) {
-      throw bundlerDiagnostics.NUXT_B7035({ packageName, exportName })
+      throw bundlerDiagnostics.NUXT_B7035({ packageName, exportName }, { method: 'error' })
     }
     plugins.push(module[exportName]())
   }
@@ -106,14 +106,14 @@ async function installPreprocessorPlugin (nuxt: Nuxt, { packageName, lang, file 
       lang,
       packageName,
       installCommand: await getAddDependencyCommand(packageName, nuxt.options.rootDir, { dev: true }),
-    })
+    }, { method: 'error' })
   }
   // Rsbuild plugins are applied when the build starts
   if (nuxt.options.dev) {
     void nuxt.callHook('restart', { hard: true })
     return
   }
-  throw bundlerDiagnostics.NUXT_B7034({ file, packageName })
+  throw bundlerDiagnostics.NUXT_B7034({ file, packageName }, { method: 'error' })
 }
 
 export async function resolveTypeCheckPlugin (nuxt: Nuxt): Promise<RsbuildPlugin | undefined> {

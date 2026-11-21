@@ -16,7 +16,7 @@ export async function genRouterOptions (nuxt: Nuxt, builtInRouterOptions: string
     if (file.path === builtInRouterOptions) { continue }
     const code = await readFile(file.path, 'utf-8').catch(() => undefined)
     if (code !== undefined && getRouterOptionsKeys(code, file.path)?.has('sensitive')) {
-      throw pageDiagnostics.NUXT_B4023({ file: linkToAlias(file.path, nuxt) })
+      throw pageDiagnostics.NUXT_B4023({ file: linkToAlias(file.path, nuxt) }, { method: 'error' })
     }
   }
 
