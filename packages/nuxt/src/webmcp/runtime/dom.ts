@@ -88,16 +88,26 @@ function valueSchema (value: unknown): JSONSchema {
   return Array.isArray(value) ? { type: 'array' } : {}
 }
 
+/** A schema for one of `choices`, with the value `v-model` writes for each: its bound number or boolean, or its string value. */
+function choiceSchema (choices: (HTMLOptionElement | HTMLInputElement)[], title: (choice: HTMLOptionElement | HTMLInputElement) => string): JSONSchema {
+  const oneOf = choices.map((choice) => {
+    const bound = (choice as { _value?: unknown })._value
+    return { const: typeof bound === 'number' || typeof bound === 'boolean' ? bound : choice.value, title: title(choice) }
+  })
+  const types = new Set(oneOf.map(option => typeof option.const))
+  return { ...types.size > 1 ? {} : { type: [...types][0] ?? 'string' }, oneOf }
+}
+
 function controlSchema (controls: FieldControl[], value: unknown): JSONSchema | undefined {
   const [control] = controls
   if (control instanceof HTMLSelectElement) {
-    const option = { type: 'string', oneOf: [...control.options].filter(o => o.value).map(o => ({ const: o.value, title: labelOf(o) })) }
+    const option = choiceSchema([...control.options].filter(o => o.value), labelOf)
     return control.multiple ? { type: 'array', items: option } : option
   }
   if (!(control instanceof HTMLInputElement)) {
     return control && { type: 'string' }
   }
-  const choice = () => ({ type: 'string', oneOf: (controls as HTMLInputElement[]).map(c => ({ const: c.value, title: describe([], [c]) ?? c.value })) })
+  const choice = () => choiceSchema(controls as HTMLInputElement[], c => describe([], [c as HTMLInputElement]) ?? c.value)
   switch (control.type) {
     case 'radio':
       return choice()

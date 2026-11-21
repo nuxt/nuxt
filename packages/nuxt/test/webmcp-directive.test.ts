@@ -119,6 +119,27 @@ describe('agent tool directive', () => {
     })
   })
 
+  it('describes choices bound to numbers and booleans with those values', async () => {
+    const state = reactive({ ids: [] as number[], days: [] as number[], size: null as number | null, answer: null as boolean | string | null })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { (state as Record<string, unknown>)[key] = value } })
+    const { registry } = mount(directive => () => withDirectives(h('form', [
+      h('select', { 'multiple': true, 'data-agent-field': 'state.ids' }, [h('option', { value: 1 }, 'One'), h('option', { value: 2 }, 'Two')]),
+      h('label', ['Monday ', h('input', { 'type': 'checkbox', 'value': 1, 'data-agent-field': 'state.days' })]),
+      h('select', { 'data-agent-field': 'state.size' }, [h('option', { value: '' }, 'Choose'), h('option', { value: 0 }, 'None'), h('option', { value: 10 }, 'Ten')]),
+      h('label', ['Yes ', h('input', { 'type': 'radio', 'value': true, 'data-agent-field': 'state.answer' })]),
+      h('label', ['Maybe ', h('input', { 'type': 'radio', 'value': 'maybe', 'data-agent-field': 'state.answer' })]),
+    ]), [[directive, binding({ name: 'pick', kind: 'form', fields: { ids: field('ids'), days: field('days'), size: field('size'), answer: field('answer') } })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema.properties).toMatchObject({
+      ids: { type: 'array', items: { type: 'number', oneOf: [{ const: 1, title: 'One' }, { const: 2, title: 'Two' }] } },
+      days: { type: 'array', items: { type: 'number', oneOf: [{ const: 1, title: 'Monday' }] } },
+      size: { type: 'number', oneOf: [{ const: 0, title: 'None' }, { const: 10, title: 'Ten' }] },
+      answer: { oneOf: [{ const: true, title: 'Yes' }, { const: 'maybe', title: 'Maybe' }] },
+    })
+    expect(registry.list()[0]!.inputSchema.properties).not.toHaveProperty('answer.type')
+  })
+
   it('rejects input for unknown fields and converts values to the type of the field', async () => {
     const state = reactive({ quantity: 1, express: false })
     const sent = vi.fn()
