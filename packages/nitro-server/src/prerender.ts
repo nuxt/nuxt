@@ -14,7 +14,7 @@ export function failOnPrerenderErrors (nitro: Nitro): void {
       const ignoreStatusCodes = nitro.options.prerender.ignoreStatusCodes || []
       const fatalRoutes = failedRoutes.filter(route => !ignoreStatusCodes.includes(route.error?.status as number))
       if (fatalRoutes.length) {
-        throw buildDiagnostics.NUXT_B1024({ routes: fatalRoutes.map(route => ({ route: route.route, status: route.error?.status })) })
+        throw buildDiagnostics.NUXT_B1024({ routes: fatalRoutes.map(route => ({ route: route.route, status: route.error?.status })) }, { method: 'error' })
       }
     })
   })

@@ -56,10 +56,10 @@ describe('resolvePreprocessorPlugins', () => {
     await transform('/project/app/assets/main.css')
 
     expect(vi.mocked(ensureDependencyInstalled).mock.calls.map(([name]) => name)).toEqual(['@rsbuild/plugin-sass', '@rsbuild/plugin-less', '@rsbuild/plugin-pug'])
-    expect(diagnostic.mock.calls.map(([params]) => params)).toEqual([
-      { file: 'app/app.vue', lang: 'scss', packageName: '@rsbuild/plugin-sass', installCommand: 'pnpm add -D @rsbuild/plugin-sass' },
-      { file: 'app/assets/main.less', lang: 'less', packageName: '@rsbuild/plugin-less', installCommand: 'pnpm add -D @rsbuild/plugin-less' },
-      { file: 'app/pages/index.vue', lang: 'pug', packageName: '@rsbuild/plugin-pug', installCommand: 'pnpm add -D @rsbuild/plugin-pug' },
+    expect(diagnostic.mock.calls).toEqual([
+      [{ file: 'app/app.vue', lang: 'scss', packageName: '@rsbuild/plugin-sass', installCommand: 'pnpm add -D @rsbuild/plugin-sass' }, { method: 'error' }],
+      [{ file: 'app/assets/main.less', lang: 'less', packageName: '@rsbuild/plugin-less', installCommand: 'pnpm add -D @rsbuild/plugin-less' }, { method: 'error' }],
+      [{ file: 'app/pages/index.vue', lang: 'pug', packageName: '@rsbuild/plugin-pug', installCommand: 'pnpm add -D @rsbuild/plugin-pug' }, { method: 'error' }],
     ])
   })
 
@@ -78,7 +78,7 @@ describe('resolvePreprocessorPlugins', () => {
     }
 
     expect(ensureDependencyInstalled).not.toHaveBeenCalled()
-    expect(diagnostic).toHaveBeenCalledWith(expect.objectContaining({ packageName: '@rsbuild/plugin-sass', exportName: 'pluginSass', cause: expect.objectContaining({ message: 'boom' }) }))
+    expect(diagnostic).toHaveBeenCalledWith(expect.objectContaining({ packageName: '@rsbuild/plugin-sass', exportName: 'pluginSass', cause: expect.objectContaining({ message: 'boom' }) }), { method: 'error' })
   })
 
   it('restarts nuxt in development once a missing plugin is installed', async () => {
@@ -100,6 +100,6 @@ describe('resolvePreprocessorPlugins', () => {
     await expect(transform('/project/app/pages/index.vue?vue&type=template&lang=pug')).rejects.toThrow('rebuild')
 
     expect(callHook).not.toHaveBeenCalled()
-    expect(diagnostic).toHaveBeenCalledWith({ file: 'app/pages/index.vue', packageName: '@rsbuild/plugin-pug' })
+    expect(diagnostic).toHaveBeenCalledWith({ file: 'app/pages/index.vue', packageName: '@rsbuild/plugin-pug' }, { method: 'error' })
   })
 })

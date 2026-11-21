@@ -67,6 +67,20 @@ describe('getNitroVersion', () => {
     expect(getNitroVersion(nuxt5)).toBe(3)
   })
 
+  it('resolves the package without reporting a missing nuxt version', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const nuxt = createMockNuxt()
+    nuxt.options.rootDir = repoRoot
+    delete (nuxt as any)._version
+
+    expect(getNitroVersion(nuxt)).toBe(3)
+    expect(error).not.toHaveBeenCalled()
+    expect(warn).not.toHaveBeenCalled()
+    error.mockRestore()
+    warn.mockRestore()
+  })
+
   it('prefers the host-stamped `_nitroMajor` marker over anything else', () => {
     const nuxt = createMockNuxt('3.0.1')
     nuxt.options._nitroMajor = 2

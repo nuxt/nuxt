@@ -26,4 +26,15 @@ describe('diagnostic reporters', () => {
     expect(stripVTControlCharacters(error.mock.calls[0]![0])).toContain('fix: Fix it.')
     expect(consoleWarn).not.toHaveBeenCalled()
   })
+
+  it('mark a diagnostic as reported', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const { reporters } = await import('../src/diagnostics/_shared.ts')
+    const diagnostic = new Diagnostic({ code: 'NUXT_B0000', why: 'Something happened.' })
+    const reported = Symbol.for('nuxt.diagnostic.reported')
+
+    expect((diagnostic as any)[reported]).toBeUndefined()
+    reporters[0](diagnostic, {})
+    expect((diagnostic as any)[reported]).toBe(true)
+  })
 })

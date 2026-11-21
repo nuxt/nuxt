@@ -13,6 +13,11 @@ import { generatedTemplateCopies } from './packages/ui-templates/lib/paths.mjs'
 const DIR_NAME_RE = /dir|root|cwd/i
 const SLASHED_NAME_RE = /slash/i
 
+const throwDiagnosticRestriction = {
+  message: 'Pass `{ method: \'error\' }` when throwing a diagnostic, so that it is reported as an error.',
+  selector: 'ThrowStatement > CallExpression[callee.object.name=/Diagnostics$/]:not(:has(Property[key.name="method"]))',
+}
+
 /**
  * Flags `.startsWith(x)` where `x` is named like a directory: without a trailing slash, `/foo`
  * also matches `/foo-bar`.
@@ -248,7 +253,15 @@ export default createConfigForNuxt({
         'no-restricted-syntax': ['error', {
           message: 'Use a nostics diagnostic (see packages/kit/src/diagnostics/) instead of logger/console for build-time warnings and errors.',
           selector: 'CallExpression[callee.object.name=/^(logger|console)$/][callee.property.name=/^(warn|error)$/]',
-        }],
+        }, throwDiagnosticRestriction],
+      },
+    },
+    {
+      files: ['packages/vite-server/src/**'],
+      ignores: ['**/runtime/**', '**/*.{spec,test}.{js,mjs,ts,mts}'],
+      name: 'local/requires/thrown-diagnostics',
+      rules: {
+        'no-restricted-syntax': ['error', throwDiagnosticRestriction],
       },
     },
     {

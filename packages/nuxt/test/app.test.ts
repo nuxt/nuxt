@@ -426,15 +426,20 @@ describe('generateApp template diagnostics', () => {
     const app = createApp(nuxt)
 
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       await generateApp(nuxt, app, { filter: t => t.filename === 'bad-src.mjs' || t.filename === 'bad-contents.mjs' })
-      const messages = warn.mock.calls.map(call => String(call[0]))
+      const warnings = warn.mock.calls.map(call => String(call[0]))
+      const errors = error.mock.calls.map(call => String(call[0]))
       // unreadable `src` keeps its specific diagnostic
-      expect(messages.filter(m => m.includes('NUXT_B1002'))).toHaveLength(1)
+      expect(errors.filter(m => m.includes('NUXT_B1002'))).toHaveLength(1)
+      expect(warnings.filter(m => m.includes('NUXT_B1002'))).toHaveLength(0)
       // only uncoded failures (e.g. from `getContents`) get the generic diagnostic
-      expect(messages.filter(m => m.includes('NUXT_B1001'))).toHaveLength(1)
+      expect(warnings.filter(m => m.includes('NUXT_B1001'))).toHaveLength(1)
+      expect(errors.filter(m => m.includes('NUXT_B1001'))).toHaveLength(0)
     } finally {
       warn.mockRestore()
+      error.mockRestore()
       await nuxt.close()
       await rm(rootDir, { recursive: true, force: true })
     }

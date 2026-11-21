@@ -179,14 +179,14 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     try {
       return await fsp.readFile(template.src, 'utf-8')
     } catch (err) {
-      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err })
+      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err }, { method: 'error' })
     }
   }
   if (template.getContents) {
     return template.getContents({ ...ctx, options: template.options! })
   }
 
-  throw buildDiagnostics.NUXT_B1003()
+  throw buildDiagnostics.NUXT_B1003({}, { method: 'error' })
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
@@ -344,7 +344,7 @@ export async function assertNoCircularPluginDependencies (nuxt: Nuxt, plugins: N
   const annotated = await annotatePlugins(nuxt, plugins)
   for (const excludedMode of ['client', 'server'] as const) {
     breakCircularDependencies(annotated.filter(plugin => plugin.mode !== excludedMode), (cycle) => {
-      throw pluginDiagnostics.NUXT_B2009(cycle)
+      throw pluginDiagnostics.NUXT_B2009(cycle, { method: 'error' })
     })
   }
 }
