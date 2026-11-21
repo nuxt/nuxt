@@ -20,6 +20,7 @@ import { getClientIslandResponse, getServerComponentHTML, getSlotIslandResponse 
 import { isStyleOfModule } from 'nuxt/internal/renderer/dev-css'
 import { toRequestEvent } from '../utils/event'
 import { applyIslandPrerenderHints } from '../utils/prerender'
+import { prerenderDiagnostics } from 'nuxt/internal/renderer/diagnostics'
 
 import { rendererInstance } from '../utils/renderer/options'
 
@@ -61,11 +62,10 @@ async function prerenderIslandRequest (event: H3Event) {
   const islandPath = (event.path || '').replace(/\?.*$/, '')
   const stack = prerenderRenderingURLs!.getStore()
   if (stack?.includes(islandPath)) {
-    const chain = [...stack, islandPath].map(url => `"${url}"`).join(' -> ')
-    throw createError({
-      statusCode: 508,
-      statusMessage: `Loop detected while prerendering island "${islandPath}" (${chain}).`,
-    })
+    const chain = [...stack, islandPath].map(url => `\`${url}\``).join(' -> ')
+    prerenderDiagnostics.NUXT_E8019({ url: islandPath, chain })
+    setResponseStatus(event, 508, 'Loop Detected')
+    return null
   }
 
   // Only a render holding no claim of its own may wait on another, or two nested island

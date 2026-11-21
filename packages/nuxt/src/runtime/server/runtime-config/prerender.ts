@@ -1,7 +1,7 @@
 import type { RuntimeConfigSchemaNode, RuntimeConfigSchemaObject } from '@nuxt/schema/internal'
 import type { RuntimeConfigIssue } from './schema'
 import { isObject } from './schema'
-import { prerenderDiagnostics } from './diagnostics'
+import { prerenderDiagnostics } from '../renderer/diagnostics'
 
 /**
  * Guard the missing required values of the runtime config, so that reading one while prerendering

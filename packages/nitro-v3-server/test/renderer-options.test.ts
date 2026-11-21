@@ -52,4 +52,20 @@ describe('renderer options', () => {
 
     expect(isRenderedErrorPage(context)).toBe(false)
   })
+
+  it('responds with 508 to a prerender request for a URL that is already rendering', async () => {
+    vi.resetModules()
+    vi.stubGlobal('__TEST_PRERENDER__', true)
+    const { prerenderDiagnostics } = await import('nuxt/internal/renderer/diagnostics')
+    const loop = vi.spyOn(prerenderDiagnostics, 'NUXT_E8018').mockImplementation(() => ({}) as any)
+    const { rendererOptions } = await import('../src/runtime/utils/renderer/options.ts')
+    const { wrapRender } = rendererOptions.prerender!
+    const event = (url: string) => ({ url: new URL(url, 'http://localhost') }) as RendererEvent
+
+    const nested = wrapRender!(event('/page'), () => wrapRender!(event('/other'), () => wrapRender!(event('/page'), () => Promise.resolve(new Response('page')))))
+
+    expect((await nested).status).toBe(508)
+    expect(loop).toHaveBeenCalledOnce()
+    expect(loop).toHaveBeenCalledWith({ url: '/page', chain: '`/page` -> `/other` -> `/page`' })
+  })
 })

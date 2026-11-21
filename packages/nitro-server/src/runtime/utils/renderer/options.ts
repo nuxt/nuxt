@@ -15,6 +15,7 @@ import { getRouteRules } from '../route-rules'
 import { payloadCache, prerenderRenderingURLs, sharedPrerenderCache } from '../cache'
 import { NodeRenderResponse } from '../response'
 import { toPortableEvent } from '../event'
+import { prerenderDiagnostics } from 'nuxt/internal/renderer/diagnostics'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -56,11 +57,9 @@ export const rendererOptions: NuxtRendererOptions = {
           // a `useFetch`/`$fetch` against the URL currently rendering deadlocks the
           // build: https://github.com/nuxt/nuxt/issues/33871
           if (stack?.includes(renderingURL)) {
-            const chain = [...stack, renderingURL].filter(url => !url.startsWith('/__nuxt_error')).map(url => `"${url}"`).join(' -> ')
-            throw createError({
-              statusCode: 508,
-              statusMessage: `Loop detected while prerendering "${renderingURL}" (${chain}). Check for \`useFetch\`/\`$fetch\` calls targeting a URL that is currently being rendered.`,
-            })
+            const chain = [...stack, renderingURL].filter(url => !url.startsWith('/__nuxt_error')).map(url => `\`${url}\``).join(' -> ')
+            prerenderDiagnostics.NUXT_E8018({ url: renderingURL, chain })
+            return Promise.resolve(new NodeRenderResponse(null, { status: 508, statusText: 'Loop Detected' }) as unknown as Response)
           }
           return prerenderRenderingURLs!.run([...(stack || []), renderingURL], render)
         },

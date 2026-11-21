@@ -29,17 +29,3 @@ export const runtimeConfigDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
   },
 })
-
-/** Diagnostics reported only while prerendering. */
-export const prerenderDiagnostics = /* #__PURE__ */ defineDiagnostics({
-  docsBase,
-  // eslint-disable-next-line
-  reporters: [/* #__PURE__ */ (createConsoleReporter(import.meta.dev && process.env.NODE_ENV !== 'test' ? { formatter: ansiFormatter(colors) } : undefined))] as const,
-  codes: {
-    NUXT_E8015: {
-      why: (p: { path: string, env: string }) => `\`${p.path}\` was read while prerendering, but it is required and \`${p.env}\` is not set.`,
-      fix: 'Set the environment variable when prerendering, or make the value optional in its schema. The server will not start without it.',
-      docs: false,
-    },
-  },
-})

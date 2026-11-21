@@ -115,7 +115,7 @@ export interface NuxtRendererOptions {
     payloadCache: PayloadCache
     sharedDataCache?: NuxtSSRContext['~sharedPrerenderCache']
     /** Wrap a render so the runtime can track the URLs in flight. */
-    wrapRender?: <T>(event: RendererEvent, render: () => Promise<T>) => Promise<T>
+    wrapRender?: (event: RendererEvent, render: () => Promise<Response>) => Promise<Response>
   }
 }
 
