@@ -24,7 +24,7 @@ export { reportPendingTemplates, trackPendingTemplate } from './pending-template
 
 export { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from './jiti.ts'
 
-export { findPackageMissingSubpath } from '../dependency.ts'
+export { findPackageMissingSubpath, isPackageSpecifier } from '../dependency.ts'
 
 export { resolvePostcssPluginPath, resolvePostcssPlugins } from './postcss.ts'
 

@@ -2,8 +2,8 @@ import createResolver from 'postcss-import-resolver'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { Plugin } from 'postcss'
-import { directoryToURL, getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
-import { bundlerDiagnostics, findPackageMissingSubpath, resolvePostcssPluginPath } from '@nuxt/kit/internal'
+import { directoryToURL, getAddDependencyCommand, resolveAlias, tryImportModule } from '@nuxt/kit'
+import { bundlerDiagnostics, findPackageMissingSubpath, isPackageSpecifier, resolvePostcssPluginPath } from '@nuxt/kit/internal'
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
@@ -59,18 +59,21 @@ export async function getPostcssConfig (nuxt: Nuxt) {
         ? [new URL(import.meta.url)]
         : nuxt.options.modulesDir.map(dir => directoryToURL(dir.replace(/\/node_modules\/?$/, '')))
 
-      const pluginPath = resolvePostcssPluginPath(pluginName, parentURLs)
+      const specifier = isDefault ? pluginName : resolveAlias(pluginName, nuxt.options.alias)
+      const pluginPath = resolvePostcssPluginPath(specifier, parentURLs)
       const pluginFn = pluginPath ? await tryImportModule<(opts: Record<string, any>) => Plugin>(pluginPath) : undefined
       if (typeof pluginFn === 'function') {
         plugins.push(pluginFn(pluginOptions))
         continue
       }
 
-      const packageName = isDefault || pluginPath ? undefined : findPackageMissingSubpath(pluginName, nuxt.options.modulesDir)
+      const packageName = isDefault || pluginPath ? undefined : findPackageMissingSubpath(specifier, nuxt.options.modulesDir)
       if (packageName) {
         bundlerDiagnostics.NUXT_B7027({ pluginName, packageName })
+      } else if (!isPackageSpecifier(specifier)) {
+        bundlerDiagnostics.NUXT_B7007({ pluginName })
       } else {
-        const installCommand = await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true })
+        const installCommand = await getAddDependencyCommand(specifier, nuxt.options.rootDir, { dev: true })
         if (isDefault) {
           bundlerDiagnostics.NUXT_B7011({ pluginName, installCommand })
         } else {

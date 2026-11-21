@@ -5,7 +5,8 @@ import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { resolveModulePath } from 'exsolve'
 import { bundlerDiagnostics } from '../diagnostics/bundler.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
-import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand } from '../dependency.ts'
+import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand, isPackageSpecifier } from '../dependency.ts'
+import { resolveAlias } from '../resolve.ts'
 import { directoryToURL, tryImportModule } from './esm.ts'
 
 type PostcssPluginFactory<T> = (options: Record<string, any>) => T
@@ -57,27 +58,33 @@ async function resolvePostcssPlugin<T> (pluginName: string, nuxt: Nuxt): Promise
 
   const importPlugin = (path: string | undefined) => path ? tryImportModule<PostcssPluginFactory<T>>(path) : undefined
 
-  const pluginPath = resolvePostcssPluginPath(pluginName, parentURLs)
+  const specifier = resolveAlias(pluginName, nuxt.options.alias)
+  const pluginPath = resolvePostcssPluginPath(specifier, parentURLs)
   let pluginFn = await importPlugin(pluginPath)
   if (typeof pluginFn === 'function') {
     return pluginFn
   }
 
-  const packageName = pluginPath ? undefined : findPackageMissingSubpath(pluginName, nuxt.options.modulesDir)
+  if (!isPackageSpecifier(specifier)) {
+    bundlerDiagnostics.NUXT_B7007({ pluginName })
+    return
+  }
+
+  const packageName = pluginPath ? undefined : findPackageMissingSubpath(specifier, nuxt.options.modulesDir)
   if (packageName) {
     bundlerDiagnostics.NUXT_B7027({ pluginName, packageName })
     return
   }
 
-  await ensureDependencyInstalled(pluginName, {
+  await ensureDependencyInstalled(specifier, {
     rootDir: nuxt.options.rootDir,
     searchPaths: nuxt.options.modulesDir,
   })
 
-  pluginFn = await importPlugin(resolvePostcssPluginPath(pluginName, parentURLs))
+  pluginFn = await importPlugin(resolvePostcssPluginPath(specifier, parentURLs))
   if (typeof pluginFn === 'function') {
     return pluginFn
   }
 
-  bundlerDiagnostics.NUXT_B7007({ pluginName, installCommand: await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true }) })
+  bundlerDiagnostics.NUXT_B7007({ pluginName, installCommand: await getAddDependencyCommand(specifier, nuxt.options.rootDir, { dev: true }) })
 }

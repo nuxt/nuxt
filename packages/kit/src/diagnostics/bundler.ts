@@ -43,7 +43,7 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B7007: {
       why: (p: { pluginName: string }) => `The PostCSS plugin \`${p.pluginName}\` could not be loaded.`,
-      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install the PostCSS plugin.`,
+      fix: (p: { installCommand?: string }) => p.installCommand ? `Run \`${p.installCommand}\` to install the PostCSS plugin.` : 'Check that the path exists and that its default export is a PostCSS plugin.',
       docs: false,
     },
     NUXT_B7008: {

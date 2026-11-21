@@ -92,6 +92,15 @@ describe('ensureDependencyInstalled', () => {
     expect(x).not.toHaveBeenCalled()
   })
 
+  it.each(['~~/postcss/plugin', './postcss.js', '/abs/postcss.js', '#build/postcss'])('does not offer to install %s', async (specifier) => {
+    const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+
+    await expect(ensureDependencyInstalled(specifier, { rootDir, searchPaths: [] })).resolves.toBe(false)
+
+    expect(prompt).not.toHaveBeenCalled()
+    expect(x).not.toHaveBeenCalled()
+  })
+
   it('installs the package a missing subpath belongs to', async () => {
     const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
     installCreatesPackage('@scope/missing', { './plugin': './index.js' })

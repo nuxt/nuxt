@@ -23,6 +23,7 @@ beforeAll(async () => {
     'node_modules/tailwindcss-v3/variants/package.json': { main: 'plugin.js' },
     'node_modules/tailwindcss-v3/variants/plugin.js': 'module.exports = () => ({ postcssPlugin: "tailwindcss/variants" })\n',
     'node_modules/tailwindcss-v3/broken/index.js': 'require("missing-dependency")\n',
+    'postcss/plugin.ts': 'export default (_opts: unknown) => ({ postcssPlugin: "local" })\n',
   })
 })
 
@@ -69,6 +70,15 @@ describe('resolvePostcssPlugins', () => {
     expect(await resolvePostcssPlugins(nuxt)).toEqual([])
     expect(missingSubpath).toHaveBeenCalledWith({ pluginName: 'tailwindcss/nesting', packageName: 'tailwindcss' })
     expect(missingPlugin).not.toHaveBeenCalled()
+    expect(ensureDependencyInstalled).not.toHaveBeenCalled()
+  })
+
+  it('loads a plugin named by an alias without offering to install a missing one', async () => {
+    const missingPlugin = vi.spyOn(bundlerDiagnostics, 'NUXT_B7007').mockImplementation(() => ({}) as any)
+
+    const nuxt = { options: { rootDir, alias: { '~~': rootDir }, modulesDir: [join(rootDir, 'node_modules')], postcss: { plugins: { '~~/postcss/plugin': {}, '~~/postcss/missing': {} } } } } as unknown as Nuxt
+    expect(await resolvePostcssPlugins(nuxt)).toEqual([{ postcssPlugin: 'local' }])
+    expect(missingPlugin).toHaveBeenCalledWith({ pluginName: '~~/postcss/missing' })
     expect(ensureDependencyInstalled).not.toHaveBeenCalled()
   })
 
