@@ -12,7 +12,10 @@ const BODY_READ_METHODS = new Set(['arrayBuffer', 'blob', 'bytes', 'formData', '
  */
 export function bufferRequestBody (event: H3Event): void {
   const request = event.req
-  if (!request.body || BUFFERED in request) {
+  // Don't touch `request.body` here: on Node, srvx creates the body stream on first access, and
+  // once it exists Node no longer discards an unread body after the response, which stalls the
+  // next request on a keep-alive connection (#37119). The body is only accessed once a read asks for it.
+  if (request.method === 'GET' || request.method === 'HEAD' || BUFFERED in request) {
     return
   }
 
@@ -21,7 +24,7 @@ export function bufferRequestBody (event: H3Event): void {
   let done = false
   let pending: Promise<void> | undefined
 
-  const readChunk = () => (pending ??= (source ??= request.body!.getReader()).read().then((result) => {
+  const readChunk = () => (pending ??= (source ??= request.body?.getReader() ?? emptyReader()).read().then((result) => {
     if (result.done) {
       done = true
     } else {
@@ -63,7 +66,8 @@ export function bufferRequestBody (event: H3Event): void {
         return false
       }
       if (property === 'body') {
-        return stream()
+        // keep `null` for a request without a body; reading `body` here is a read, so it may create the stream
+        return target.body ? stream() : null
       }
       if (property === 'clone') {
         return () => event.req
@@ -78,4 +82,8 @@ export function bufferRequestBody (event: H3Event): void {
       return property === BUFFERED || Reflect.has(target, property)
     },
   }) as typeof event.req
+}
+
+function emptyReader (): ReadableStreamDefaultReader<Uint8Array<ArrayBuffer>> {
+  return new ReadableStream<Uint8Array<ArrayBuffer>>({ start: controller => controller.close() }).getReader()
 }

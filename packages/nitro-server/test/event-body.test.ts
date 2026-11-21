@@ -1,7 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { H3, readBody, serve } from 'nitro/h3'
+import { afterAll, beforeAll, describe, expect, it, onTestFinished } from 'vitest'
+import { connect } from 'node:net'
+import { H3, HTTPError, readBody, serve } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
 import { defineEventHandler, defineHandler } from '../src/runtime/server.ts'
+import { bufferRequestBody } from '../src/runtime/utils/body.ts'
 import { readBody as readLegacyBody } from '../src/runtime/compat/h3-v1.ts'
 
 function withTimeout<T> (promise: Promise<T>, label: string): Promise<T> {
@@ -85,6 +87,12 @@ app.post('/middleware-then-handler', defineEventHandler(async event => ({
   handler: await withTimeout(readBody(event), 'readBody'),
   wrappedOnce: event.req === event.context.requestFromMiddleware,
 })))
+
+app.post('/reject-unread', defineEventHandler(() => {
+  throw new HTTPError({ status: 413, statusText: 'Payload Too Large' })
+}))
+
+app.get('/ping', defineEventHandler(() => 'pong'))
 
 const server = serve(app, { port: 0, hostname: '127.0.0.1', silent: true })
 let base: string
@@ -204,5 +212,46 @@ describe('reading a request body more than once', () => {
       handler: { hello: 'world' },
       wrappedOnce: true,
     })
+  })
+})
+
+describe('a handler that answers without reading the body', () => {
+  // https://github.com/nuxt/nuxt/issues/37119
+  it('leaves a keep-alive connection usable for the next request', async () => {
+    const { port } = new URL(base)
+    const socket = connect(Number(port), '127.0.0.1')
+    onTestFinished(() => { socket.destroy() })
+
+    let received = ''
+    socket.setEncoding('latin1')
+    socket.on('data', (chunk: string) => { received += chunk })
+    const waitFor = (pattern: RegExp, label: string) => withTimeout(new Promise<void>((resolve) => {
+      const check = () => {
+        if (pattern.test(received)) {
+          socket.off('data', check)
+          resolve()
+        }
+      }
+      socket.on('data', check)
+      check()
+    }), label)
+
+    const body = 'x'.repeat(2 * 1024 * 1024)
+    socket.write(`POST /reject-unread HTTP/1.1\r\nHost: localhost\r\nContent-Length: ${body.length}\r\n\r\n`)
+    socket.write(body)
+    await waitFor(/HTTP\/1\.1 413/, 'rejecting the upload')
+
+    socket.write('GET /ping HTTP/1.1\r\nHost: localhost\r\n\r\n')
+    await waitFor(/pong/, 'the next request on the same connection')
+  })
+})
+
+describe('buffering a request without a body', () => {
+  it('keeps `body` null after the body was read', async () => {
+    const event = { req: new Request('http://localhost/', { method: 'POST' }) } as H3Event
+    bufferRequestBody(event)
+
+    await expect(event.req.text()).resolves.toBe('')
+    expect(event.req.body).toBeNull()
   })
 })
