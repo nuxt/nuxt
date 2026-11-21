@@ -88,19 +88,21 @@ function valueSchema (value: unknown): JSONSchema {
   return Array.isArray(value) ? { type: 'array' } : {}
 }
 
-function controlSchema (controls: FieldControl[]): JSONSchema | undefined {
+function controlSchema (controls: FieldControl[], value: unknown): JSONSchema | undefined {
   const [control] = controls
   if (control instanceof HTMLSelectElement) {
-    return { type: 'string', oneOf: [...control.options].filter(o => o.value).map(o => ({ const: o.value, title: labelOf(o) })) }
+    const option = { type: 'string', oneOf: [...control.options].filter(o => o.value).map(o => ({ const: o.value, title: labelOf(o) })) }
+    return control.multiple ? { type: 'array', items: option } : option
   }
   if (!(control instanceof HTMLInputElement)) {
     return control && { type: 'string' }
   }
+  const choice = () => ({ type: 'string', oneOf: (controls as HTMLInputElement[]).map(c => ({ const: c.value, title: describe([], [c]) ?? c.value })) })
   switch (control.type) {
     case 'radio':
-      return { type: 'string', oneOf: (controls as HTMLInputElement[]).map(c => ({ const: c.value, title: describe([], [c]) ?? c.value })) }
+      return choice()
     case 'checkbox':
-      return { type: 'boolean' }
+      return Array.isArray(value) ? { type: 'array', items: choice() } : { type: 'boolean' }
     case 'number':
     case 'range':
       return {
@@ -139,7 +141,7 @@ export function formSchema (fields: FormFields, form: Element): JSONSchema {
     const markers = markersOf(form, field)
     const controls = controlsOf(markers)
     const { parent, name } = propertyAt(schema, key.split('.'), true)!
-    ;(parent.properties as Record<string, JSONSchema>)[name] = controlSchema(controls) ?? valueSchema(field.get())
+    ;(parent.properties as Record<string, JSONSchema>)[name] = controlSchema(controls, field.get()) ?? valueSchema(field.get())
     if (controls.some(c => c.required)) {
       parent.required = [...(parent.required as string[] | undefined) ?? [], name]
     }
