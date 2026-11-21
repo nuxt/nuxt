@@ -28,13 +28,14 @@ function createNuxt (dev: boolean): Nuxt {
   } as unknown as Nuxt
 }
 
-function setup ({ prerender = false, dev = false } = {}) {
+function setup ({ prerender = false, dev = false, prepare = (_nuxt: Nuxt) => {} } = {}) {
   const nuxt = createNuxt(dev)
   nuxt.options.nitro.static = prerender
+  prepare(nuxt)
   nuxt.serverBuild = createServerBuild(nuxt.options)
   setServerBuild({ runtime: { runtimeConfig: '/app/.nuxt/vite-server/runtime-config.mjs', handler: '/app/.output/server/index.mjs' } }, nuxt)
 
-  const { entry } = runWithNuxtContext(nuxt, () => setupSSR(nuxt, '/app/.output'))
+  const { entry, unsupported } = runWithNuxtContext(nuxt, () => setupSSR(nuxt, '/app/.output'))
   const plugin = (nuxt.options.vite.plugins as Plugin[]).find(p => p.name === 'nuxt:vite-server:server-environment')!
   const configureEnvironment = (input?: EnvironmentOptions['build'], define?: EnvironmentOptions['define']) => {
     const config = { consumer: 'server', build: input, define } as unknown as EnvironmentOptions
@@ -50,8 +51,34 @@ function setup ({ prerender = false, dev = false } = {}) {
     return config
   }
 
-  return { nuxt, entry, configure, configureEnvironment, resolve }
+  return { nuxt, entry, unsupported, configure, configureEnvironment, resolve }
 }
+
+describe('unsupported features', () => {
+  it('turns off inlined styles without reporting them when they were not configured', () => {
+    const { nuxt, unsupported } = setup({
+      prepare: (nuxt) => {
+        nuxt.options.features.inlineStyles = true
+        nuxt.options._layers = [{ config: {} }] as unknown as Nuxt['options']['_layers']
+      },
+    })
+
+    expect(nuxt.options.features.inlineStyles).toBe(false)
+    expect(unsupported).toEqual([])
+  })
+
+  it('reports inlined styles when a layer configures them', () => {
+    const { nuxt, unsupported } = setup({
+      prepare: (nuxt) => {
+        nuxt.options.features.inlineStyles = true
+        nuxt.options._layers = [{ config: {} }, { config: { features: { inlineStyles: true } } }] as unknown as Nuxt['options']['_layers']
+      },
+    })
+
+    expect(nuxt.options.features.inlineStyles).toBe(false)
+    expect(unsupported).toEqual(['inlined styles (stylesheets are linked instead)'])
+  })
+})
 
 describe('the server environment', () => {
   it('builds the app entry and keeps the handler it emits', () => {
