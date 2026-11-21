@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'pathe'
 import { describe, expect, it, vi } from 'vitest'
@@ -18,12 +18,12 @@ vi.mock('nitro/builder', () => ({
   prerender: vi.fn(),
 }))
 
-function setup (options: { dev?: boolean, nitro?: Record<string, unknown> } = {}) {
+function setup (options: { dev?: boolean, rootDir?: string, nitro?: Record<string, unknown> } = {}) {
   reload.mockClear()
   const nuxtHooks = createHooks<any>()
   const nitroHooks = createHooks<any>()
   const nuxt = {
-    options: { dev: options.dev ?? true, buildDir: '/build', rootDir: '/root', devServer: {} },
+    options: { dev: options.dev ?? true, buildDir: '/build', rootDir: options.rootDir ?? '/root', devServer: {} },
     hook: nuxtHooks.hook,
     hooks: nuxtHooks,
     callHook: nuxtHooks.callHook,
@@ -49,10 +49,12 @@ describe('setupLegacyDevAndBuild', () => {
   })
 
   it.each([false, true])('reports the nitro bundle of a production build unless it is static (%s)', async (isStatic) => {
-    const serverDir = await mkdtemp(join(tmpdir(), 'nuxt-nitro-legacy-'))
+    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-nitro-legacy-'))
+    const serverDir = join(rootDir, '.output/server')
+    await mkdir(serverDir, { recursive: true })
     try {
       vi.mocked(build).mockImplementationOnce(() => writeFile(join(serverDir, 'index.mjs'), 'export {}'))
-      const { nuxt, nuxtHooks } = setup({ dev: false, nitro: { static: isStatic, builder: 'rolldown', output: { serverDir, publicDir: serverDir } } })
+      const { nuxt, nuxtHooks } = setup({ dev: false, rootDir, nitro: { static: isStatic, builder: 'rolldown', output: { serverDir, publicDir: join(rootDir, '.output/public') } } })
       const calls: unknown[][] = []
       nuxtHooks.beforeEach(({ name, args }) => {
         if (name.startsWith('build:environment:')) { calls.push([name, ...args]) }
@@ -68,7 +70,7 @@ describe('setupLegacyDevAndBuild', () => {
             ['build:environment:done', environment, { duration: expect.any(Number), outDir: serverDir, files: [{ path: 'index.mjs', size: 9 }] }],
           ])
     } finally {
-      await rm(serverDir, { recursive: true, force: true })
+      await rm(rootDir, { recursive: true, force: true })
     }
   })
 })
