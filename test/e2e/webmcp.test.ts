@@ -126,6 +126,31 @@ test('fills and submits forms through their `v-model` bindings', async ({ page, 
   await expect(page).toHaveNoErrorsOrWarnings()
 })
 
+test('only fills in fields the user could edit', async ({ page, goto }) => {
+  await goto('/settings')
+  await expect.poll(() => names(page)).toEqual(['navigate', 'save_settings'])
+
+  const [saveSettings] = (await tools(page)).filter(tool => tool.name === 'save_settings')
+  expect(saveSettings!.inputSchema.properties).toEqual({
+    name: { type: 'string', description: 'Name', default: 'Daniel' },
+    password: { type: 'string', description: 'Password' },
+    role: { type: 'string' },
+    plan: { type: 'string', description: 'Plan', default: 'free' },
+    tier: { type: 'string', description: 'Tier', default: 'basic' },
+    legacyTier: { type: 'string', description: 'Legacy tier', default: 'basic' },
+  })
+
+  expect(await call(page, 'save_settings', { role: 'admin', plan: 'pro', legacyTier: 'plus' })).toEqual({
+    isError: true,
+    text: 'The form was not submitted. role: this field is not on the page; plan: this field cannot be changed; legacyTier: this field cannot be changed',
+  })
+  await expect(page.getByTestId('saved')).toHaveText('')
+
+  expect(await call(page, 'save_settings', { name: 'Sarah', tier: 'plus' })).toEqual({ text: 'Saved.', isError: false })
+  await expect(page.getByTestId('saved')).toHaveText('Sarah, member, free, plus, basic')
+  await expect(page).toHaveNoErrorsOrWarnings()
+})
+
 test('swaps page tools when the agent navigates', async ({ page, goto }) => {
   await goto('/')
   await expect.poll(() => names(page)).toContain('add_to_cart')
