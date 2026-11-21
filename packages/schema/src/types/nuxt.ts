@@ -262,8 +262,8 @@ export interface NuxtServerBuildPreview {
 export interface NuxtServerBuildDeploy {
   /**
    * Shell command that deploys the build with the deploy target's own tooling, such as
-   * `npx wrangler --cwd ./ pages deploy`, when the target has one. Like `preview.command`,
-   * it runs from `output.dir()`, and the paths in it are relative to that directory.
+   * `npx wrangler --cwd .output pages deploy`, when the target has one. Runs from `rootDir`
+   * (`output.root()`), and the paths in it are relative to that directory.
    */
   command?: () => string | undefined
 }

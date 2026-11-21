@@ -12,7 +12,7 @@ import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { createNitro } from 'nitro/builder'
 import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
-import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, isWithinDir, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, reportNitroPrerender, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
+import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, isWithinDir, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, reportNitroPrerender, resolveNitroDeployCommand, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
@@ -845,7 +845,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       server: resolve(distDir, 'runtime/server'),
     },
     preview: { command: () => nitro.options.commands.preview },
-    deploy: { command: () => typeof nitro.options.commands.deploy === 'string' ? nitro.options.commands.deploy : undefined },
+    deploy: { command: () => resolveNitroDeployCommand(nitro.options.commands.deploy, nitro.options) },
     canReuseSsrBuild: environment => canReuseSsrBuild(nitro, environment),
   }, nuxt)
   await nuxt.callHook('nitro:init', nitro)

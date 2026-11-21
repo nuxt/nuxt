@@ -1,4 +1,4 @@
-import { join, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { NuxtServerBuild } from '@nuxt/schema/internal'
 
@@ -75,4 +75,32 @@ export function createServerBuild (options: NuxtOptions): NuxtServerBuild {
       ? { fetch: 'nitro', runtimeConfig: 'nitro/runtime-config' }
       : { runtimeConfig: 'nitropack/runtime' },
   }
+}
+
+const OUTPUT_RELATIVE_PATH_RE = /(^|[\s:])\.\/(\S*)/g
+const TEMPLATE_PARAM_RE = /\{\{ ?([\w.]+) ?\}\}/g
+const WHITESPACE_RE = /\s/
+
+/**
+ * Resolve a Nitro (2 or 3) preset's deploy command into one to run from `rootDir`: paths
+ * starting with `./` are relative to the output directory, and `{{ path.to.option }}`
+ * placeholders name an option holding a path. Paths containing whitespace are quoted.
+ *
+ * @internal
+ */
+export function resolveNitroDeployCommand (command: unknown, options: Record<string, any> & { rootDir: string, output: { dir: string } }): string | undefined {
+  if (typeof command !== 'string' || !command) {
+    return
+  }
+  const outputDir = relative(options.rootDir, options.output.dir) || '.'
+  return command
+    .replace(OUTPUT_RELATIVE_PATH_RE, (_, prefix: string, path: string) => prefix + quoteShellPath(`${outputDir}/${path}`))
+    .replace(TEMPLATE_PARAM_RE, (match, key: string) => {
+      const value = key.split('.').reduce<any>((object, segment) => object?.[segment], options)
+      return typeof value === 'string' && value ? quoteShellPath(relative(options.rootDir, value) || '.') : match
+    })
+}
+
+function quoteShellPath (path: string): string {
+  return WHITESPACE_RE.test(path) ? `'${path.replaceAll('\'', '\'\\\'\'')}'` : path
 }
