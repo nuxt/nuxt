@@ -1,7 +1,5 @@
-import process from 'node:process'
-import { createConsoleReporter, defineDiagnostics } from 'nostics'
-import { ansiFormatter } from 'nostics/formatters/ansi'
-import { colors } from 'consola/utils'
+import { defineDiagnostics } from 'nostics'
+import { diagnosticReporters } from '@nuxt/kit/internal'
 
 const docsBase = (code: string): string =>
   `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
@@ -12,7 +10,7 @@ const docsBase = (code: string): string =>
  */
 export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
-  reporters: [/* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) }))] as const,
+  reporters: diagnosticReporters,
   codes: {
     NUXT_B9012: {
       why: (p: { id: string }) => `Nitro does not provide \`${p.id}\` in the form Nuxt reads the runtime config from. This version of Nitro is not supported by this version of Nuxt.`,

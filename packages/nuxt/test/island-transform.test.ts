@@ -553,6 +553,36 @@ const fields: any[] = []
         expect(spyOnWarn).toHaveBeenCalledWith(expect.stringContaining('only supported with the Vite builder'))
         expect(spyOnWarn).toHaveBeenCalledWith(expect.stringContaining('hello.server.vue'))
       })
+
+      it('warns about nuxt-client once per file source, however many requests transform it', async () => {
+        const plugin = IslandsTransformPlugin({ getComponents, selectiveClient: true })
+          .raw({}, { framework: 'webpack', webpack: { compiler: {} as any }, versions: {} }) as { transform: { handler: (code: string, id: string) => Promise<unknown> } }
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const source = '<template><HelloWorld nuxt-client /></template>'
+
+        await plugin.transform.handler(source, 'hello.server.vue')
+        await plugin.transform.handler(source, 'hello.server.vue?vue&type=template')
+        expect(warn).toHaveBeenCalledTimes(1)
+
+        await plugin.transform.handler(`<template><div>${source}</div></template>`, 'hello.server.vue')
+        expect(warn).toHaveBeenCalledTimes(2)
+        warn.mockRestore()
+      })
+
+      it('warns again about a restored nuxt-client after the file changes on disk in development', async () => {
+        const hooks: Record<string, (event: string, path: string) => void> = {}
+        const nuxt = { options: { dev: true, srcDir: '/app' }, hook: (name: string, fn: (event: string, path: string) => void) => { hooks[name] = fn } } as any
+        const plugin = IslandsTransformPlugin({ getComponents, selectiveClient: true, nuxt })
+          .raw({}, { framework: 'webpack', webpack: { compiler: {} as any }, versions: {} }) as { transform: { handler: (code: string, id: string) => Promise<unknown> } }
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const source = '<template><HelloWorld nuxt-client /></template>'
+
+        await plugin.transform.handler(source, '/app/hello.server.vue')
+        hooks['builder:watch']!('change', 'hello.server.vue')
+        await plugin.transform.handler(source, '/app/hello.server.vue')
+        expect(warn).toHaveBeenCalledTimes(2)
+        warn.mockRestore()
+      })
     })
   })
 

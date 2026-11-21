@@ -175,7 +175,7 @@ describe('plugin-metadata', () => {
     const emptyNuxt = { options: { dev: false }, apps: { default: { plugins: [] } } } as any
     expect((RemovePluginMetadataPlugin(emptyNuxt, 'client').raw({}, {} as any) as any).transform.filter?.id.test('/app/a.ts')).toBe(false)
 
-    const devNuxt = { options: { dev: true }, apps: { default: { plugins: [] } } } as any
+    const devNuxt = { options: { dev: true }, hook: () => {}, apps: { default: { plugins: [] } } } as any
     expect((RemovePluginMetadataPlugin(devNuxt, 'client').raw({}, {} as any) as any).transform.filter).toBeUndefined()
   })
 
@@ -186,6 +186,41 @@ describe('plugin-metadata', () => {
     for (const plugin of invalidPlugins) {
       expect(transformPlugin.transform.handler(plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
     }
+  })
+
+  it('should warn about an invalid plugin once across builds until it changes', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const invalidNuxt = { options: {}, apps: { default: { plugins: [{ src: 'invalid-plugin.mjs' }] } } } as any
+    const transform = (mode: 'client' | 'server', code: string) => (RemovePluginMetadataPlugin(invalidNuxt, mode).raw({}, {} as any) as any).transform.handler(code, 'invalid-plugin.mjs')
+
+    transform('client', 'export const plugin = {}')
+    transform('server', 'export const plugin = {}')
+    expect(warn).toHaveBeenCalledTimes(1)
+
+    transform('client', 'export const plugin = { changed: true }')
+    expect(warn).toHaveBeenCalledTimes(2)
+    warn.mockRestore()
+  })
+
+  it('should warn again about a restored invalid plugin after it changes on disk in development', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const hooks: Record<string, (event: string, path: string) => void> = {}
+    const devNuxt = {
+      options: { dev: true, srcDir: '/app' },
+      hook: (name: string, fn: (event: string, path: string) => void) => { hooks[name] = fn },
+      apps: { default: { plugins: [{ src: '/app/plugins/invalid.mjs' }] } },
+    } as any
+    const plugin = RemovePluginMetadataPlugin(devNuxt, 'client').raw({}, {} as any) as any
+    const edit = (code: string) => {
+      hooks['builder:watch']!('change', 'plugins/invalid.mjs')
+      plugin.transform.handler(code, '/app/plugins/invalid.mjs')
+    }
+
+    plugin.transform.handler('export const plugin = {}', '/app/plugins/invalid.mjs')
+    edit('export default defineNuxtPlugin(() => {})')
+    edit('export const plugin = {}')
+    expect(warn).toHaveBeenCalledTimes(2)
+    warn.mockRestore()
   })
 
   it('should remove order/name properties from object-syntax plugins', () => {
