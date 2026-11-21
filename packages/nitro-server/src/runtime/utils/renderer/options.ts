@@ -7,7 +7,7 @@ import type { NuxtSSRContext } from '#app/types'
 import { createRendererInstance } from 'nuxt/internal/renderer/instance'
 import type { NuxtRendererInstance } from 'nuxt/internal/renderer/instance'
 import { appEvent } from 'nuxt/internal/renderer/runtime'
-import type { NuxtRendererOptions, RendererHooks, RendererRouteRules } from 'nuxt/internal/renderer/runtime'
+import type { NuxtRendererOptions, RendererEvent, RendererHooks, RendererRouteRules } from 'nuxt/internal/renderer/runtime'
 
 import '../../context'
 
@@ -32,6 +32,12 @@ function createDocumentResponse (document: string | string[], init?: ResponseIni
     rememberRenderBody(response, rendered)
   }
   return response
+}
+
+/** Nitro's prerenderer logs a captured, handled 5xx error of a prerender request itself. */
+function isLoggedByPrerenderer (error: unknown, event: RendererEvent): boolean {
+  const { status, unhandled } = (error || {}) as { status?: number, unhandled?: boolean }
+  return !unhandled && !!status && status >= 500 && !!event.req.headers.get('x-nitro-prerender')
 }
 
 /** The capabilities Nitro provides to the Nuxt renderer. */
@@ -66,7 +72,7 @@ export const rendererOptions: NuxtRendererOptions = {
       markRenderedErrorPage(event.context)
     }
     // in development the live error channel reports and prints the error itself
-    if (!import.meta.dev && ((error as { status?: number } | null)?.status || 500) >= 500) {
+    if (!import.meta.dev && ((error as { status?: number } | null)?.status || 500) >= 500 && !(import.meta.prerender && isLoggedByPrerenderer(error, event))) {
       console.error(`[request error] [${event.req.method}] ${event.url.pathname}\n`, error)
     }
     useNitroApp().captureError?.(error as Error, { event: appEvent(event) as H3Event, tags: ['ssr', ...tags ?? []] })

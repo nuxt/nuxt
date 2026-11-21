@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { dirname, join, resolve } from 'pathe'
 import { joinURL, parseURL, withBase, withoutBase } from 'ufo'
 import { logger } from '@nuxt/kit'
+import { buildDiagnostics } from '@nuxt/kit/internal'
 import { parse, walk } from 'ultrahtml'
 import type { Nuxt, NuxtPage } from '@nuxt/schema'
 
@@ -144,7 +145,7 @@ export async function prerenderRoutes (nuxt: Nuxt, options: { publicDir: string,
   })
 
   if (failed.length && config.failOnError) {
-    throw new Error(`[nuxt:vite-server] Exiting due to prerender errors: ${failed.map(entry => `"${entry.route}" (${entry.error!.status})`).join(', ')}.`)
+    throw buildDiagnostics.NUXT_B1024({ routes: failed.map(entry => ({ route: entry.route, status: entry.error!.status })) })
   }
 
   logger.info(`Prerendered ${written.length} routes in ${(Date.now() - start) / 1000} seconds`)
