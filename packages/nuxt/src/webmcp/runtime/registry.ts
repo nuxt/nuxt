@@ -1,4 +1,6 @@
-export type JSONSchema = Record<string, unknown>
+import type { AgentToolAnnotations, AgentToolSummary, JSONSchema } from './types'
+
+export type { AgentToolAnnotations, AgentToolSummary, JSONSchema } from './types'
 
 interface StandardIssue {
   message: string
@@ -21,16 +23,6 @@ export interface StandardSchemaV1<Output = unknown> {
 export interface AgentToolResult {
   content: { type: 'text', text: string }[]
   isError?: boolean
-}
-
-/** Hints for the browser and agent. Only hints set to `true` are declared. */
-export interface AgentToolAnnotations {
-  /** The tool only reads, so an agent can call it freely. */
-  readOnlyHint?: boolean
-  /** The tool has effects that are hard to undo, so the browser or agent may ask the user first. */
-  consequentialHint?: boolean
-  /** The result contains content from users or third parties. */
-  untrustedContentHint?: boolean
 }
 
 export interface AgentToolTarget<T = unknown> {
@@ -84,13 +76,6 @@ export interface AgentToolActivity {
   target?: AgentToolTarget
   /** Abort the call: `ctx.signal` aborts and the agent gets a "stopped" result immediately. */
   stop: () => void
-}
-
-export interface AgentToolSummary {
-  name: string
-  description: string
-  inputSchema: JSONSchema
-  annotations: AgentToolAnnotations
 }
 
 export interface ModelContextTool extends AgentToolSummary {
