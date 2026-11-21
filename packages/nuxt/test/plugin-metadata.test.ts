@@ -188,6 +188,20 @@ describe('plugin-metadata', () => {
     }
   })
 
+  it('should warn about an invalid plugin once across builds until it changes', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const invalidNuxt = { options: {}, apps: { default: { plugins: [{ src: 'invalid-plugin.mjs' }] } } } as any
+    const transform = (mode: 'client' | 'server', code: string) => (RemovePluginMetadataPlugin(invalidNuxt, mode).raw({}, {} as any) as any).transform.handler(code, 'invalid-plugin.mjs')
+
+    transform('client', 'export const plugin = {}')
+    transform('server', 'export const plugin = {}')
+    expect(warn).toHaveBeenCalledTimes(1)
+
+    transform('client', 'export const plugin = { changed: true }')
+    expect(warn).toHaveBeenCalledTimes(2)
+    warn.mockRestore()
+  })
+
   it('should remove order/name properties from object-syntax plugins', () => {
     const plugin = `
       export default defineNuxtPlugin({

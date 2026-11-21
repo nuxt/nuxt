@@ -1,6 +1,19 @@
 export { getNameFromPath, hasSuffix, resolveComponentNameSegments } from './names.ts'
 export { JS_ID_RE, VUE_FILE_RE, VUE_ID_FILTER, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER, VUE_SCRIPT_TEMPLATE_ID_FILTER, VUE_TEMPLATE_ID_FILTER, getLoader, isJS, isVue, parseModuleId, vitestCacheKey } from './plugins.ts'
 
+/**
+ * Create a reporter that runs `report` once per `key` and `source`, so a diagnostic about a module
+ * prints once however many bundles transform it, and again if the module changes.
+ */
+export function createReportOnce () {
+  const reported = new Map<string, string>()
+  return (key: string, source: string, report: () => void) => {
+    if (reported.get(key) === source) { return }
+    reported.set(key, source)
+    report()
+  }
+}
+
 export function uniqueBy<T, K extends keyof T> (arr: T[], key: K) {
   if (arr.length < 2) {
     return arr

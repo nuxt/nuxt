@@ -553,6 +553,21 @@ const fields: any[] = []
         expect(spyOnWarn).toHaveBeenCalledWith(expect.stringContaining('only supported with the Vite builder'))
         expect(spyOnWarn).toHaveBeenCalledWith(expect.stringContaining('hello.server.vue'))
       })
+
+      it('warns about nuxt-client once per file source, however many requests transform it', async () => {
+        const plugin = IslandsTransformPlugin({ getComponents, selectiveClient: true })
+          .raw({}, { framework: 'webpack', webpack: { compiler: {} as any }, versions: {} }) as { transform: { handler: (code: string, id: string) => Promise<unknown> } }
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const source = '<template><HelloWorld nuxt-client /></template>'
+
+        await plugin.transform.handler(source, 'hello.server.vue')
+        await plugin.transform.handler(source, 'hello.server.vue?vue&type=template')
+        expect(warn).toHaveBeenCalledTimes(1)
+
+        await plugin.transform.handler(`<template><div>${source}</div></template>`, 'hello.server.vue')
+        expect(warn).toHaveBeenCalledTimes(2)
+        warn.mockRestore()
+      })
     })
   })
 

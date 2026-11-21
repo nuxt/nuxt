@@ -8,6 +8,7 @@ import type { NuxtAppLiterals, PluginMeta } from '../../app/types.ts'
 
 import { ScopeTracker, walk } from 'oxc-walker'
 import { parseModule } from '../utils/parse.ts'
+import { createReportOnce } from '../utils/index.ts'
 import type { ESTree } from 'rolldown/utils'
 import { pluginDiagnostics } from '@nuxt/kit/internal'
 import { linkToAlias } from '../../utils.ts'
@@ -42,6 +43,8 @@ export const orderMap: Record<NonNullable<PluginMeta['enforce']>, number> = {
 export type ExtractedPluginMeta = PluginMeta & { parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean, _metaUnknown?: boolean }
 
 export type PluginBuildMode = 'client' | 'server'
+
+const reportOnceByNuxt = new WeakMap<Nuxt, ReturnType<typeof createReportOnce>>()
 
 const pluginDependenciesByMode = new WeakMap<Nuxt, Partial<Record<PluginBuildMode, Map<string, string[]>>>>()
 
@@ -260,6 +263,11 @@ function toPluginIdPattern (src: string) {
 
 export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) => createUnplugin(() => {
   const plugins = nuxt.apps.default?.plugins ?? []
+  let reportOnce = reportOnceByNuxt.get(nuxt)
+  if (!reportOnce) {
+    reportOnce = createReportOnce()
+    reportOnceByNuxt.set(nuxt, reportOnce)
+  }
   return {
     name: `nuxt:remove-plugin-metadata:${mode}`,
     transform: {
@@ -271,9 +279,11 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
         if (!plugin) { return }
 
         const filteredDependencies = pluginDependenciesByMode.get(nuxt)?.[mode]?.get(id)
+        const src = linkToAlias(plugin.src, nuxt)
+        const report = (diagnostic: () => unknown) => reportOnce(id, code, diagnostic)
 
         if (!code.trim()) {
-          pluginDiagnostics.NUXT_B2004({ src: linkToAlias(plugin.src, nuxt) })
+          report(() => pluginDiagnostics.NUXT_B2004({ src }))
 
           return {
             code: 'export default () => {}',
@@ -285,13 +295,13 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
         try {
           parsed = parseModule(code, id)
         } catch (e) {
-          pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
+          report(() => pluginDiagnostics.NUXT_B2006({ src, cause: e }))
           return
         }
 
         const hasDefaultExport = parsed.module.staticExports.some(statement => statement.entries.some(entry => !entry.isType && (entry.exportName.kind === 'Default' || entry.exportName.name === 'default')))
         if (!hasDefaultExport) {
-          pluginDiagnostics.NUXT_B2005({ src: linkToAlias(plugin.src, nuxt) })
+          report(() => pluginDiagnostics.NUXT_B2005({ src }))
           return {
             code: 'export default () => {}',
             map: null,
@@ -345,12 +355,12 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
             }
           } })
         } catch (e) {
-          pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
+          report(() => pluginDiagnostics.NUXT_B2006({ src, cause: e }))
           return
         }
 
         if (!wrapped) {
-          pluginDiagnostics.NUXT_B2007({ src: linkToAlias(plugin.src, nuxt) })
+          report(() => pluginDiagnostics.NUXT_B2007({ src }))
         }
 
         return generateTransform(s, id)
