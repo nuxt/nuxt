@@ -6,7 +6,7 @@ import type { AgentToolBinding } from '../src/webmcp/runtime/directive.ts'
 import { createAgentToolDirective, createSubmitCapture } from '../src/webmcp/runtime/directive.ts'
 import { createAgentToolRegistry } from '../src/webmcp/runtime/registry.ts'
 import { highlight } from '../src/webmcp/runtime/dom.ts'
-import { agentToolRegistryKey, defineAgentTool, useAgentTool } from '../src/webmcp/runtime/composables.ts'
+import { agentToolRegistryKey, defineAgentTool, useAgentActivity, useAgentTool } from '../src/webmcp/runtime/composables.ts'
 
 const cleanups: (() => void)[] = []
 afterEach(() => cleanups.splice(0).forEach(cleanup => cleanup()))
@@ -313,6 +313,28 @@ describe('agent tool directive', () => {
     items.value = []
     await nextTick()
     expect(registry.list()).toEqual([])
+  })
+
+  it('reports and stops a call that started before `useAgentActivity` mounted', async () => {
+    const shown = ref(false)
+    let activity!: ReturnType<typeof useAgentActivity>
+    const Status = defineComponent({
+      setup () {
+        activity = useAgentActivity()
+        return () => h('div')
+      },
+    })
+    const { registry } = mount(() => () => shown.value ? h(Status) : h('span'))
+    registry.activate(defineAgentTool({ name: 'slow', description: 'Take a while.', execute: () => new Promise(() => {}) }))
+    const result = registry.call('slow')
+
+    shown.value = true
+    await nextTick()
+    expect(activity.current.value?.tool).toBe('slow')
+
+    activity.stop()
+    expect(await result).toMatchObject({ isError: true })
+    expect(activity.activities.value).toEqual([])
   })
 
   it('withdraws a `useAgentTool` tool while its component is kept alive but inactive', async () => {
