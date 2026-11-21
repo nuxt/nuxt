@@ -23,6 +23,15 @@ describe('resolveNitroDeployCommand', () => {
     expect(resolveNitroDeployCommand(command, options('/project/.output'))).toBe(resolved)
   })
 
+  it.each([
+    ['/project/release\'s', 'npx gh-pages -d "release\'s/public"'],
+    ['/project/$HOME', 'npx gh-pages -d "\\$HOME/public"'],
+    ['/project/out`id`', 'npx gh-pages -d "out\\`id\\`/public"'],
+    ['/project/a&b', 'npx gh-pages -d "a&b/public"'],
+  ])('quotes a resolved path containing shell syntax (%s)', (outputDir, resolved) => {
+    expect(resolveNitroDeployCommand('npx gh-pages -d ./public', options(outputDir))).toBe(resolved)
+  })
+
   it('quotes a resolved path containing whitespace', () => {
     expect(resolveNitroDeployCommand('npx wrangler --cwd ./ pages deploy', options('/project/my output'))).toBe('npx wrangler --cwd "my output/" pages deploy')
     expect(resolveNitroDeployCommand('npx wrangler pages deploy {{ output.publicDir }}', options('/project/say "hi" there'))).toBe('npx wrangler pages deploy "say \\"hi\\" there/public"')

@@ -79,13 +79,14 @@ export function createServerBuild (options: NuxtOptions): NuxtServerBuild {
 
 const OUTPUT_RELATIVE_PATH_RE = /(^|[\s:])\.\/(\S*)/g
 const TEMPLATE_PARAM_RE = /\{\{ ?([\w.]+) ?\}\}/g
-const WHITESPACE_RE = /\s/
-const DOUBLE_QUOTED_ESCAPE_RE = /["\\]/g
+const SHELL_SPECIAL_RE = /[\s"'`$\\!&|;<>()[\]{}*?#~]/
+const DOUBLE_QUOTED_ESCAPE_RE = /["`$\\]/g
 
 /**
  * Resolve a Nitro (2 or 3) preset's deploy command into one to run from `rootDir`: paths
  * starting with `./` are relative to the output directory, and `{{ path.to.option }}`
- * placeholders name an option holding a path. Paths containing whitespace are quoted.
+ * placeholders name an option holding a path. Paths containing whitespace or shell syntax are
+ * quoted.
  *
  * @internal
  */
@@ -103,5 +104,5 @@ export function resolveNitroDeployCommand (command: unknown, options: Record<str
 }
 
 function quoteShellPath (path: string): string {
-  return WHITESPACE_RE.test(path) ? `"${path.replace(DOUBLE_QUOTED_ESCAPE_RE, '\\$&')}"` : path
+  return SHELL_SPECIAL_RE.test(path) ? `"${path.replace(DOUBLE_QUOTED_ESCAPE_RE, '\\$&')}"` : path
 }
