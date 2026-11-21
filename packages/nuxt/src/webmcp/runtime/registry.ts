@@ -138,9 +138,12 @@ export function lintTool (tool: AgentToolSummary): string[] {
   return problems
 }
 
+type Activation = AgentToolActivation & { definition: AgentToolDefinition }
+
 interface Entry {
+  /** The definition agents are told about: the one of the first activation still active. */
   definition: AgentToolDefinition
-  activations: Set<AgentToolActivation>
+  activations: Set<Activation>
   controller?: AbortController
   /** The serialised summary the tool is registered with. */
   registered?: string
@@ -191,6 +194,10 @@ export function toJsonSchema (schema: StandardSchemaV1 | undefined): JSONSchema 
   }
 }
 
+function contract ({ description, confirm, annotations }: AgentToolDefinition) {
+  return JSON.stringify([description, !!confirm, annotations?.readOnlyHint === true, annotations?.consequentialHint === true])
+}
+
 function baseSchema (definition: AgentToolDefinition): JSONSchema {
   const { $schema: _, ...schema } = definition.inputSchema ?? toJsonSchema(definition.input) ?? { type: 'object', properties: {} }
   return schema
@@ -230,6 +237,8 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
   function summarize (entry: Entry): AgentToolSummary {
     const { definition } = entry
     const schema = baseSchema(definition)
+    const definitions = [definition, ...[...entry.activations].map(a => a.definition)]
+    const hints = new Set(definitions.flatMap(d => Object.keys(d.annotations ?? {}) as (keyof AgentToolAnnotations)[]))
     if (isTargeted(entry)) {
       schema.properties = {
         target: { type: 'string', description: `Which item to act on. Call ${LIST_TARGETS} with {"tool":"${definition.name}"} for the items on screen.` },
@@ -241,7 +250,9 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       name: definition.name,
       description: definition.confirm ? `${definition.description} This prepares the action on the page; the user completes it.` : definition.description,
       inputSchema: schema,
-      annotations: Object.fromEntries(Object.entries(definition.annotations ?? {}).filter(([, value]) => value === true)),
+      annotations: Object.fromEntries([...hints]
+        .filter(hint => definitions[hint === 'readOnlyHint' ? 'every' : 'some'](d => d.annotations?.[hint] === true))
+        .map(hint => [hint, true])),
     }
   }
 
@@ -328,10 +339,9 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
     if (!entry?.activations.size) {
       return text(`"${name}" is not available on the current page.`, true)
     }
-    const { definition } = entry
     const activations = [...entry.activations]
     let input = (rawInput ?? {}) as Record<string, unknown>
-    let activation: AgentToolActivation | undefined
+    let activation: Activation | undefined
     let target: AgentToolTarget | undefined
 
     if (isTargeted(entry)) {
@@ -355,6 +365,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       return text(`"${name}" is currently disabled${target ? ` for "${target.label}"` : ''}.`, true)
     }
 
+    const { definition } = activation
     let value: unknown = input
     if (definition.input) {
       const result = await definition.input['~standard'].validate(input)
@@ -472,10 +483,10 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       }
       if (!entry) {
         entries.set(definition.name, entry = { definition, activations: new Set() })
-      } else if (entry.definition !== definition && entry.definition.description !== definition.description) {
+      } else if (entry.definition !== definition && contract(entry.definition) !== contract(definition)) {
         host.diagnostics?.duplicate?.(definition.name)
       }
-      const activation: AgentToolActivation = { ...options }
+      const activation: Activation = { ...options, definition }
       entry.activations.add(activation)
       if (!entry.linted && host.diagnostics?.lint) {
         entry.linted = true
@@ -488,6 +499,10 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       return {
         dispose () {
           entry.activations.delete(activation)
+          const [next] = entry.activations
+          if (next && [...entry.activations].every(a => a.definition !== entry.definition)) {
+            entry.definition = next.definition
+          }
           requestFlush()
         },
       }
