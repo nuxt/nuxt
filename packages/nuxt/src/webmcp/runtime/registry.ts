@@ -61,7 +61,7 @@ export interface AgentToolActivation<I = any, T = unknown> {
   /** Items the tool can act on. Adds a `target` argument and a shared `list_targets` tool. */
   targets?: () => AgentToolTarget<T>[]
   element?: () => Element | undefined
-  /** Runs after validation; return a result to stop the call. Calls to an activation with `prepare` run one at a time. */
+  /** Runs after validation; return a result to stop the call. An activation with `prepare` runs one call at a time, until that call settles, even if it is stopped. */
   prepare?: (input: I, ctx: AgentToolContext<T>) => AgentToolResult | void | Promise<AgentToolResult | void>
   /** Hands a prepared action to the user, for tools with `confirm`. */
   stage?: (input: I, ctx: AgentToolContext<T>) => string
@@ -204,7 +204,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
   const entries = new Map<string, Entry>()
   const activities = new Set<AgentToolActivity>()
   const activityListeners = new Set<(activities: AgentToolActivity[]) => void>()
-  const preparing = new WeakSet<AgentToolActivation>()
+  const busy = new WeakSet<AgentToolActivation>()
   let nextActivity = 0
   let listTargets: AbortController | undefined
   let holds = 0
@@ -368,7 +368,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
     if (options.signal?.aborted) {
       return stoppedResult
     }
-    if (preparing.has(activation)) {
+    if (busy.has(activation)) {
       return text(`"${name}" is already running. Wait for it to finish before calling it again.`, true)
     }
     const controller = new AbortController()
@@ -422,17 +422,19 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       return toolResult
     }
 
-    if (activation.prepare) {
-      preparing.add(activation)
-    }
     activities.add(activity)
     notify()
+    const running = run()
+    if (activation.prepare) {
+      busy.add(activation)
+      const release = () => busy.delete(activation)
+      running.then(release, release)
+    }
     try {
-      return await Promise.race([run(), stopped])
+      return await Promise.race([running, stopped])
     } catch (error) {
       return text(errorMessage(error), true)
     } finally {
-      preparing.delete(activation)
       activities.delete(activity)
       notify()
     }

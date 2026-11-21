@@ -174,6 +174,43 @@ describe('agent tool directive', () => {
     expect(sent).toEqual(['daniel@example.com', 'sarah@example.com'])
   })
 
+  it('rejects calls to a form while the submit handler of a stopped call is pending', async () => {
+    const state = reactive({ email: '' })
+    const sent: string[] = []
+    let finish!: () => void
+    const saving = new Promise<void>((resolve) => { finish = resolve })
+    const submitted = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submitted()
+        submits.capture('send', () => saving.then(() => {
+          sent.push(state.email)
+        }))
+      },
+    }), [[directive, binding({
+      name: 'send',
+      kind: 'form',
+      fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
+    })]]))
+    await nextTick()
+    let stop = () => {}
+    registry.onActivity((activities) => {
+      stop = () => activities.forEach(activity => activity.stop())
+    })
+
+    const first = registry.call('send', { email: 'daniel@example.com' })
+    await vi.waitFor(() => expect(submitted).toHaveBeenCalledOnce())
+    stop()
+    expect(await first).toMatchObject({ isError: true, content: [{ text: expect.stringContaining('stopped') }] })
+    expect(await registry.call('send', { email: 'sarah@example.com' })).toMatchObject({ isError: true, content: [{ text: expect.stringContaining('already running') }] })
+
+    finish()
+    await vi.waitFor(() => expect(sent).toEqual(['daniel@example.com']))
+    expect(await registry.call('send', { email: 'sarah@example.com' })).not.toHaveProperty('isError')
+    expect(sent).toEqual(['daniel@example.com', 'sarah@example.com'])
+  })
+
   it('submits a form only while one of its submit buttons is enabled', async () => {
     const state = reactive({ email: '', locked: false })
     const sent = vi.fn()
