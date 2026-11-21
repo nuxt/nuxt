@@ -42,7 +42,7 @@ export function runtimeConfigPlugin (runtimeConfigPath: string, { strict = false
     },
     buildEnd (error?: Error) {
       if (strict && !error && !replaced) {
-        throw nitroBuildDiagnostics.NUXT_B9012({ id: 'useRuntimeConfig' })
+        throw nitroBuildDiagnostics.NUXT_B9012({ id: 'useRuntimeConfig' }, { method: 'error' })
       }
     },
     resolveId: {
@@ -53,7 +53,7 @@ export function runtimeConfigPlugin (runtimeConfigPath: string, { strict = false
         }
         const resolved = await this.resolve(id, importer, { ...options, skipSelf: true })
         if (!resolved) {
-          throw nitroBuildDiagnostics.NUXT_B9012({ id })
+          throw nitroBuildDiagnostics.NUXT_B9012({ id }, { method: 'error' })
         }
         return resolved
       },

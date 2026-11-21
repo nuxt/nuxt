@@ -64,7 +64,7 @@ export function extractRuntimeConfigSchemas (runtimeConfig: unknown): { config: 
   const config = extract(runtimeConfig, [], (schema, path, configured) => {
     const compiled = compileRuntimeConfigSchema(schema, path)
     if (!path.length && !isObjectNode(compiled.node)) {
-      throw configDiagnostics.NUXT_B5031({ path: 'runtimeConfig', error: 'a schema for the whole runtime config must describe a single object' })
+      throw configDiagnostics.NUXT_B5031({ path: 'runtimeConfig', error: 'a schema for the whole runtime config must describe a single object' }, { method: 'error' })
     }
     const resolved = mergeDefaults(configured, compiled.value)
     entries.push({ path, node: compiled.node, required: resolved === undefined && compiled.required })
@@ -211,13 +211,13 @@ export function compileRuntimeConfigSchema (schema: RuntimeConfigSchema, path: s
   const name = ['runtimeConfig', ...path].join('.')
   const standard = schema['~standard']
   if (typeof standard.jsonSchema?.output !== 'function') {
-    throw configDiagnostics.NUXT_B5031({ path: name, error: 'it does not implement Standard JSON Schema' })
+    throw configDiagnostics.NUXT_B5031({ path: name, error: 'it does not implement Standard JSON Schema' }, { method: 'error' })
   }
   let json: JSONSchema
   try {
     json = standard.jsonSchema.output({ target: 'draft-2020-12' })
   } catch (error) {
-    throw configDiagnostics.NUXT_B5031({ path: name, error: error instanceof Error ? error.message : undefined, cause: error })
+    throw configDiagnostics.NUXT_B5031({ path: name, error: error instanceof Error ? error.message : undefined, cause: error }, { method: 'error' })
   }
   const node = toNode(json, json, new Set())
 
@@ -225,7 +225,7 @@ export function compileRuntimeConfigSchema (schema: RuntimeConfigSchema, path: s
     const result = standard.validate(value)
     if (result instanceof Promise) {
       result.catch(() => {})
-      throw configDiagnostics.NUXT_B5031({ path: name, error: 'it validates asynchronously' })
+      throw configDiagnostics.NUXT_B5031({ path: name, error: 'it validates asynchronously' }, { method: 'error' })
     }
     return result
   }

@@ -881,7 +881,7 @@ export const routeRulesTemplate: NuxtTemplate = {
       .find((entry): entry is { route: string, part: string } => entry.part !== undefined)
     const mayBeCaseSensitive = caseSensitiveRouteRules || (!!caseDependent && !!await findRouterOptionsFileDefining(nuxt, 'sensitive'))
     if (caseDependent && !mayBeCaseSensitive) {
-      throw pageDiagnostics.NUXT_B4022(caseDependent)
+      throw pageDiagnostics.NUXT_B4022(caseDependent, { method: 'error' })
     }
     const hasRedirects = `export const hasRedirects = ${routes.some(({ data }) => !!data.redirect)}`
     if (!routes.length) {

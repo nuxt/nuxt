@@ -238,7 +238,7 @@ export async function compile (compiler: Compiler): Promise<unknown> {
         logger.error(err)
       }
     }
-    throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name!, cause: compilationErrors })
+    throw bundlerDiagnostics.NUXT_B7014({ name: compiler.options.name!, cause: compilationErrors }, { method: 'error' })
   }
 }
 

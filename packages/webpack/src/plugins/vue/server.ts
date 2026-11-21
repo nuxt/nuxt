@@ -31,11 +31,11 @@ export default class VueSSRServerPlugin {
         const entryAssets = entryInfo.assets!.filter(asset => isJS(asset.name))
 
         if (entryAssets.length > 1) {
-          throw bundlerDiagnostics.NUXT_B7003()
+          throw bundlerDiagnostics.NUXT_B7003({}, { method: 'error' })
         }
 
         if (typeof entryAssets[0]?.name !== 'string') {
-          throw bundlerDiagnostics.NUXT_B7004({ entryName: entryName! })
+          throw bundlerDiagnostics.NUXT_B7004({ entryName: entryName! }, { method: 'error' })
         }
 
         for (const asset of stats.assets!) {

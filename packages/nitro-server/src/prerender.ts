@@ -11,7 +11,7 @@ export function failOnPrerenderErrors (nitro: Nitro): void {
       if (!nitro.options.prerender.failOnError || !failedRoutes.length) {
         return
       }
-      throw buildDiagnostics.NUXT_B1024({ routes: failedRoutes.map(route => ({ route: route.route, status: route.error?.statusCode })) })
+      throw buildDiagnostics.NUXT_B1024({ routes: failedRoutes.map(route => ({ route: route.route, status: route.error?.statusCode })) }, { method: 'error' })
     })
   })
 }

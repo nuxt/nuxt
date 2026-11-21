@@ -49,7 +49,7 @@ export function runtimeConfigPlugin (runtimeConfigPath: string, { strict = false
     },
     buildEnd (error?: Error) {
       if (strict && !error && !replaced) {
-        throw nitroBuildDiagnostics.NUXT_B9012({ id: 'useRuntimeConfig' })
+        throw nitroBuildDiagnostics.NUXT_B9012({ id: 'useRuntimeConfig' }, { method: 'error' })
       }
     },
     transform: {

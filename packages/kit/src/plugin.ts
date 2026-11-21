@@ -26,7 +26,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   }
 
   if (!plugin.src) {
-    throw pluginDiagnostics.NUXT_B2011({ src: JSON.stringify(plugin) })
+    throw pluginDiagnostics.NUXT_B2011({ src: JSON.stringify(plugin) }, { method: 'error' })
   }
 
   plugin.src = normalize(resolveAlias(plugin.src))

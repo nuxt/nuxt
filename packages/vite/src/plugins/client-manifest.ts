@@ -166,7 +166,7 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
       return readFileSync(manifestFile, 'utf-8')
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        throw bundlerDiagnostics.NUXT_B7021({ manifestFile })
+        throw bundlerDiagnostics.NUXT_B7021({ manifestFile }, { method: 'error' })
       }
       throw error
     }

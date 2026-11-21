@@ -79,6 +79,6 @@ async function build (rsbuild: RsbuildInstance) {
     throw bundlerDiagnostics.NUXT_B7032({
       environments: names.length > 1 ? `${names.join(' and ')} environments` : `${names[0]} environment`,
       cause: failures.flatMap(({ stats }) => stats.compilation.errors),
-    })
+    }, { method: 'error' })
   }
 }

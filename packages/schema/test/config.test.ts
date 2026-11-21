@@ -124,6 +124,20 @@ describe('devServer', () => {
   })
 })
 
+describe('postcss.order', () => {
+  it('reports an unknown preset as an error and marks it as reported', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const thrown = await resolveConfig({ postcss: { order: 'unknown-preset' as never } }).catch(err => err)
+      expect(thrown.name).toBe('NUXT_B5015')
+      expect(thrown[Symbol.for('nuxt.diagnostic.reported')]).toBe(true)
+      expect(error).toHaveBeenCalledWith(expect.stringContaining('NUXT_B5015'))
+    } finally {
+      error.mockRestore()
+    }
+  })
+})
+
 describe('vite.cacheDir', () => {
   afterEach(() => {
     existingPaths.clear()
