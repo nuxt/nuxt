@@ -1302,7 +1302,8 @@ export interface ConfigSchema {
      *
      * - `navigate`: register a `navigate` tool listing the app's pages. Defaults to `true`.
      * - `schema`: where `nuxt dev` writes the tools registered while you browse, relative to
-     *   `rootDir`, or `false` to skip it. Defaults to `<buildDir>/webmcp/schema.json`.
+     *   `rootDir`, or `false` to skip it. Defaults to `<buildDir>/webmcp/schema.json`. Only the
+     *   Vite builder writes this file.
      *
      * @see [WebMCP](https://nuxt.com/docs/guide/ai/webmcp)
      * @default false
