@@ -169,8 +169,8 @@ function isSensitive (control: FieldControl) {
 
 /**
  * Fills gaps in a form's schema from the page: descriptions from labels, and the current values
- * as defaults, except for passwords, payment card details and hidden fields. Fields with a value
- * are not required, because input is merged into the form's state.
+ * as defaults, except for passwords, payment card details, hidden fields and `writeOnly` properties.
+ * Fields with a value are not required, because input is merged into the form's state.
  */
 export function describeSchema (schema: JSONSchema, fields: FormFields, form: Element) {
   for (const [key, field] of Object.entries(fields)) {
@@ -189,7 +189,7 @@ export function describeSchema (schema: JSONSchema, fields: FormFields, form: El
     }
     const value = field.get()
     if (value !== undefined && value !== null && value !== '' && property.default === undefined) {
-      if (!controls.some(isSensitive)) {
+      if (property.writeOnly !== true && !controls.some(isSensitive)) {
         property.default = value
       }
       at.parent.required = (at.parent.required as string[] | undefined)?.filter(name => name !== at.name)

@@ -116,6 +116,30 @@ describe('agent tool directive', () => {
     expect(JSON.stringify(schema)).not.toMatch(/hunter2|4111|secret|0000/)
   })
 
+  it('leaves the values of `writeOnly` properties out of the schema', async () => {
+    const state = reactive({ name: 'Daniel', token: 'existing-private-token' })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
+    const schema = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: (value: unknown) => ({ value }),
+        jsonSchema: { input: () => ({ type: 'object', properties: { name: { type: 'string' }, token: { type: 'string', writeOnly: true } }, required: ['name', 'token'] }) },
+      },
+    }
+    const { registry } = mount(directive => () => withDirectives(h('form', [
+      h('input', { 'data-agent-field': 'state.name' }),
+      h('input', { 'data-agent-field': 'state.token' }),
+    ]), [[directive, binding({ name: 'save', kind: 'form', confirm: true, schema: () => schema, fields: { name: field('name'), token: field('token') } })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema).toEqual({
+      type: 'object',
+      properties: { name: { type: 'string', default: 'Daniel' }, token: { type: 'string', writeOnly: true } },
+      required: [],
+    })
+  })
+
   it('describes multiple selects and checkbox groups as arrays of their options', async () => {
     const state = reactive({ sizes: [] as string[], toppings: [] as string[] })
     const { registry } = mount(directive => () => withDirectives(h('form', [
