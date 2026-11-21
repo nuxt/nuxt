@@ -11,7 +11,8 @@ import { directoryToURL, tryImportModule } from './esm.ts'
 
 type PostcssPluginFactory<T> = (options: Record<string, any>) => T
 
-function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
+/** The names of the configured PostCSS plugins, in the order set by the `order` option. */
+export function sortPostcssPlugins ({ plugins, order }: Pick<NuxtOptions['postcss'], 'plugins' | 'order'>): string[] {
   const names = Object.keys(plugins)
   return typeof order === 'function' ? order(names) : (order || names)
 }
@@ -22,7 +23,7 @@ function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
 export async function resolvePostcssPlugins<T = unknown> (nuxt: Nuxt): Promise<T[]> {
   const plugins: T[] = []
 
-  for (const pluginName of sortPlugins(nuxt.options.postcss)) {
+  for (const pluginName of sortPostcssPlugins(nuxt.options.postcss)) {
     const pluginOptions = nuxt.options.postcss.plugins[pluginName]
     if (!pluginOptions) { continue }
 
@@ -53,7 +54,20 @@ export function resolvePostcssPluginPath (pluginName: string, from: URL[]): stri
   }
 }
 
-async function resolvePostcssPlugin<T> (pluginName: string, nuxt: Nuxt): Promise<PostcssPluginFactory<T> | undefined> {
+export interface ResolvePostcssPluginOptions {
+  /**
+   * Whether to offer to install a missing plugin.
+   *
+   * @default true
+   */
+  install?: boolean
+}
+
+/**
+ * Load the factory of the PostCSS plugin `pluginName` from the app, resolving aliases, and report
+ * a plugin that cannot be loaded.
+ */
+export async function resolvePostcssPlugin<T = unknown> (pluginName: string, nuxt: Nuxt, options: ResolvePostcssPluginOptions = {}): Promise<PostcssPluginFactory<T> | undefined> {
   const parentURLs = nuxt.options.modulesDir.map(dir => directoryToURL(dir.replace(/\/node_modules\/?$/, '')))
 
   const importPlugin = (path: string | undefined) => path ? tryImportModule<PostcssPluginFactory<T>>(path) : undefined
@@ -76,14 +90,16 @@ async function resolvePostcssPlugin<T> (pluginName: string, nuxt: Nuxt): Promise
     return
   }
 
-  await ensureDependencyInstalled(specifier, {
-    rootDir: nuxt.options.rootDir,
-    searchPaths: nuxt.options.modulesDir,
-  })
+  if (options.install !== false) {
+    await ensureDependencyInstalled(specifier, {
+      rootDir: nuxt.options.rootDir,
+      searchPaths: nuxt.options.modulesDir,
+    })
 
-  pluginFn = await importPlugin(resolvePostcssPluginPath(specifier, parentURLs))
-  if (typeof pluginFn === 'function') {
-    return pluginFn
+    pluginFn = await importPlugin(resolvePostcssPluginPath(specifier, parentURLs))
+    if (typeof pluginFn === 'function') {
+      return pluginFn
+    }
   }
 
   bundlerDiagnostics.NUXT_B7007({ pluginName, installCommand: await getAddDependencyCommand(specifier, nuxt.options.rootDir, { dev: true }) })

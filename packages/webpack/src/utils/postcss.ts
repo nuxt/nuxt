@@ -1,16 +1,13 @@
 import createResolver from 'postcss-import-resolver'
-import type { Nuxt, NuxtOptions } from '@nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { Plugin } from 'postcss'
-import { directoryToURL, getAddDependencyCommand, resolveAlias, tryImportModule } from '@nuxt/kit'
-import { bundlerDiagnostics, findPackageMissingSubpath, isPackageSpecifier, resolvePostcssPluginPath } from '@nuxt/kit/internal'
+import { getAddDependencyCommand, tryImportModule } from '@nuxt/kit'
+import { bundlerDiagnostics, resolvePostcssPlugin, resolvePostcssPluginPath, sortPostcssPlugins } from '@nuxt/kit/internal'
+
+type PluginFactory = (opts: Record<string, any>) => Plugin
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
-
-function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
-  const names = Object.keys(plugins)
-  return typeof order === 'function' ? order(names) : (order || names)
-}
 
 export async function getPostcssConfig (nuxt: Nuxt) {
   if (!nuxt.options.webpack.postcss || !nuxt.options.postcss) {
@@ -50,35 +47,15 @@ export async function getPostcssConfig (nuxt: Nuxt) {
   if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {
     // Map postcss plugins into instances on object mode once
     const plugins: Plugin[] = []
-    for (const pluginName of sortPlugins(postcssOptions)) {
+    for (const pluginName of sortPostcssPlugins(postcssOptions)) {
       const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions) { continue }
 
-      const isDefault = defaultPluginNames.has(pluginName)
-      const parentURLs = isDefault
-        ? [new URL(import.meta.url)]
-        : nuxt.options.modulesDir.map(dir => directoryToURL(dir.replace(/\/node_modules\/?$/, '')))
-
-      const specifier = isDefault ? pluginName : resolveAlias(pluginName, nuxt.options.alias)
-      const pluginPath = resolvePostcssPluginPath(specifier, parentURLs)
-      const pluginFn = pluginPath ? await tryImportModule<(opts: Record<string, any>) => Plugin>(pluginPath) : undefined
+      const pluginFn = defaultPluginNames.has(pluginName)
+        ? await resolveDefaultPlugin(pluginName, nuxt)
+        : await resolvePostcssPlugin<Plugin>(pluginName, nuxt, { install: false })
       if (typeof pluginFn === 'function') {
         plugins.push(pluginFn(pluginOptions))
-        continue
-      }
-
-      const packageName = isDefault || pluginPath ? undefined : findPackageMissingSubpath(specifier, nuxt.options.modulesDir)
-      if (packageName) {
-        bundlerDiagnostics.NUXT_B7027({ pluginName, packageName })
-      } else if (!isPackageSpecifier(specifier)) {
-        bundlerDiagnostics.NUXT_B7007({ pluginName })
-      } else {
-        const installCommand = await getAddDependencyCommand(specifier, nuxt.options.rootDir, { dev: true })
-        if (isDefault) {
-          bundlerDiagnostics.NUXT_B7011({ pluginName, installCommand })
-        } else {
-          bundlerDiagnostics.NUXT_B7007({ pluginName, installCommand })
-        }
       }
     }
 
@@ -91,4 +68,13 @@ export async function getPostcssConfig (nuxt: Nuxt) {
     ...nuxt.options.webpack.postcss,
     postcssOptions,
   }
+}
+
+async function resolveDefaultPlugin (pluginName: string, nuxt: Nuxt): Promise<PluginFactory | undefined> {
+  const pluginPath = resolvePostcssPluginPath(pluginName, [new URL(import.meta.url)])
+  const pluginFn = pluginPath ? await tryImportModule<PluginFactory>(pluginPath) : undefined
+  if (typeof pluginFn === 'function') {
+    return pluginFn
+  }
+  bundlerDiagnostics.NUXT_B7011({ pluginName, installCommand: await getAddDependencyCommand(pluginName, nuxt.options.rootDir, { dev: true }) })
 }

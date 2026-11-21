@@ -63,6 +63,15 @@ describe('getPostcssConfig', () => {
     expect(missingPlugin).toHaveBeenCalledWith({ pluginName: '~~/postcss/missing' })
   })
 
+  it('resolves a default plugin from the builder rather than the app', async () => {
+    const missingPlugin = vi.spyOn(bundlerDiagnostics, 'NUXT_B7007').mockImplementation(() => ({}) as any)
+    const missingDefault = vi.spyOn(bundlerDiagnostics, 'NUXT_B7011').mockImplementation(() => ({}) as any)
+
+    expect(await resolvePlugins({ 'postcss-url': {} })).toEqual([expect.objectContaining({ postcssPlugin: 'postcss-url' })])
+    expect(missingPlugin).not.toHaveBeenCalled()
+    expect(missingDefault).not.toHaveBeenCalled()
+  })
+
   it('does not report a subpath that resolves but fails to load as missing', async () => {
     const missingSubpath = vi.spyOn(bundlerDiagnostics, 'NUXT_B7027').mockImplementation(() => ({}) as any)
     const missingPlugin = vi.spyOn(bundlerDiagnostics, 'NUXT_B7007').mockImplementation(() => ({}) as any)
