@@ -3,7 +3,8 @@ import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc'
 
 import type { AgentToolFinding } from '../src/webmcp/compiler.ts'
 import { createAgentToolTransform } from '../src/webmcp/compiler.ts'
-import { reportAgentToolFinding } from '../src/webmcp/module.ts'
+import type { SchemaFile } from '../src/webmcp/module.ts'
+import { mergeSchemaUpdate, reportAgentToolFinding } from '../src/webmcp/module.ts'
 
 const FILE = '/app/pages/index.vue'
 
@@ -360,5 +361,16 @@ function print () {}
     run(unbound.replace(' * @tool\n', ''))
     run(unbound)
     expect(findings).toEqual(['NUXT_B1026', 'NUXT_B1026', 'NUXT_B1026'])
+  })
+
+  it('ignores updates to the schema file that do not have the shape the client sends', () => {
+    const schema: SchemaFile = { tools: [], routes: {} }
+    const tool = { name: 'checkout', description: 'Place the order.', inputSchema: { type: 'object' }, annotations: {} }
+    expect(mergeSchemaUpdate(schema, { path: '/cart', tools: [tool] })).toBe(true)
+
+    for (const update of [undefined, 'tools', {}, { path: '/cart' }, { path: '/cart', tools: 'checkout' }, { path: '/cart', tools: [null] }, { path: '/cart', tools: [{ name: 1 }] }, { path: 1, tools: [] }, { path: '__proto__', tools: [tool] }]) {
+      expect(mergeSchemaUpdate(schema, update)).toBe(false)
+    }
+    expect(schema).toEqual({ tools: [tool], routes: { '/cart': ['checkout'] } })
   })
 })

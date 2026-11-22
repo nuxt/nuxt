@@ -9,9 +9,26 @@ import type { AgentToolFinding } from './compiler.ts'
 import { createAgentToolTransform } from './compiler.ts'
 import type { AgentToolSummary } from './runtime/types.ts'
 
-interface SchemaFile {
+export interface SchemaFile {
   tools: AgentToolSummary[]
   routes: Record<string, string[]>
+}
+
+/** Adds the tools a page reports to `schema`; returns whether `update` has the shape the client sends. */
+export function mergeSchemaUpdate (schema: SchemaFile, update: unknown) {
+  const { path, tools } = (update ?? {}) as { path?: unknown, tools?: unknown }
+  const isTool = (tool: unknown): tool is AgentToolSummary => !!tool && typeof tool === 'object'
+    && typeof (tool as AgentToolSummary).name === 'string' && typeof (tool as AgentToolSummary).description === 'string'
+  if (typeof path !== 'string' || !path.startsWith('/') || !Array.isArray(tools) || !tools.every(isTool)) {
+    return false
+  }
+  const byName = new Map(schema.tools.map(tool => [tool.name, tool]))
+  for (const tool of tools) {
+    byName.set(tool.name, tool)
+  }
+  schema.tools = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
+  schema.routes[path] = [...new Set([...schema.routes[path] ?? [], ...tools.map(tool => tool.name)])].sort()
+  return true
 }
 
 function lineAndColumn (source: string, offset: number) {
@@ -80,13 +97,10 @@ export default defineNuxtModule({
       if (!isClient) {
         return
       }
-      server.ws.on('nuxt:agent-tools', ({ path, tools }: { path: string, tools: SchemaFile['tools'] }) => {
-        const byName = new Map(schema.tools.map(tool => [tool.name, tool]))
-        for (const tool of tools) {
-          byName.set(tool.name, tool)
+      server.ws.on('nuxt:agent-tools', (update: unknown) => {
+        if (!mergeSchemaUpdate(schema, update)) {
+          return
         }
-        schema.tools = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
-        schema.routes[path] = [...new Set([...schema.routes[path] ?? [], ...tools.map(tool => tool.name)])].sort()
         const content = `${JSON.stringify(schema, null, 2)}\n`
         writing = writing.then(async () => {
           await mkdir(dirname(schemaPath), { recursive: true })
