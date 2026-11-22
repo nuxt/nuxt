@@ -1,7 +1,11 @@
+import type { Server as HttpServer } from 'node:http'
+import type { Http2SecureServer } from 'node:http2'
+import type { Server as HttpsServer } from 'node:https'
 import type { Import, InlinePreset, PackagePreset, Preset, UnimportOptions } from 'unimport'
 import type { Manifest } from 'vue-bundle-renderer'
 import { describe, expectTypeOf, it } from 'vitest'
 
+import type { NuxtHooks } from '../src/types/hooks.ts'
 import type { ImportsOptions, NuxtImport, NuxtImportPreset, NuxtImportPresetSource, NuxtPackageImportPreset } from '../src/types/imports.ts'
 import type { NuxtManifest } from '../src/types/manifest.ts'
 
@@ -39,5 +43,11 @@ describe('`build:manifest` contract', () => {
   it('is interchangeable with the renderer manifest it is built from', () => {
     expectTypeOf<Manifest>().toExtend<NuxtManifest>()
     expectTypeOf<NuxtManifest>().toExtend<Manifest>()
+  })
+})
+
+describe('`listen` hook contract', () => {
+  it('accepts the HTTP, HTTPS and HTTP/2 servers the dev server can listen on', () => {
+    expectTypeOf<Parameters<NuxtHooks['listen']>[0]>().toEqualTypeOf<HttpServer | HttpsServer | Http2SecureServer>()
   })
 })
