@@ -18,7 +18,7 @@ const devOnlyTests = ['hmr', 'dev-error-*']
 const builtOnlyTests = ['spa-preloader-*', 'server-page-css', 'chunk-error', 'no-scripts*']
 const viteOnlyTests = ['server-page-css', 'no-scripts*', 'dev-error-*']
 /** Suites of client runtime behaviour, which does not depend on the builder. */
-const runtimeTests = ['nested-suspense', 'navigation-repaint', 'nuxt-time', 'preview', 'server-path-fallback', 'spa-preloader-*', 'suspense', 'ui-templates']
+const runtimeTests = ['nested-suspense', 'navigation-repaint', 'nuxt-time', 'preview', 'server-path-fallback', 'spa-preloader-*', 'suspense', 'ui-templates', 'webmcp']
 /**
  * The chunk error runtime module is only applied with webpack, and vue-loader compiles vapor
  * SFCs as vdom components, which the webpack project already covers.

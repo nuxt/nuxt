@@ -243,6 +243,8 @@ export default createConfigForNuxt({
               'experimental',
               'knipignore',
               '__NO_SIDE_EFFECTS__',
+              'tool',
+              'input',
             ],
           },
         ],

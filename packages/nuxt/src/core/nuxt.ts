@@ -30,6 +30,7 @@ import metaModule from '../head/module.ts'
 import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 import compilerModule from '../compiler/module.ts'
+import webmcpModule from '../webmcp/module.ts'
 
 import { resolveDevAppSecret } from './app-secret.ts'
 import { assertRuntimeConfigWithoutSchemas, checkRuntimeConfig } from './runtime-config.ts'
@@ -384,6 +385,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push(compilerModule)
+  if (options.experimental.webmcp) {
+    options._modules.push(webmcpModule)
+  }
   const importIncludes: RegExp[] = []
   for (const layer of options._layers) {
     if (layer.cwd && layer.cwd.includes('node_modules')) {
