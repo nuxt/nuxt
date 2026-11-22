@@ -1,6 +1,8 @@
 name: agent-scan
 
 on:
+  # zizmor: ignore[dangerous-triggers] needs write access to rename PRs from forks
+  # DO NOT add actions/checkout in this workflow
   pull_request_target:
     types:
       - closed
