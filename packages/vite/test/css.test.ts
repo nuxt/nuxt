@@ -15,14 +15,15 @@ describe('toFsUrl', () => {
 
 describe('collectDevCss', () => {
   const nuxt = { options: { css: [], alias: {}, modulesDir: [] } } as unknown as Nuxt
+  const importer = { id: '/app/app.vue' }
 
   function graph (urls: string[]) {
-    return { urlToModuleMap: new Map(urls.map(url => [url, { importers: new Set() }])) } as unknown as EnvironmentModuleGraph
+    return { urlToModuleMap: new Map(urls.map(url => [url, { importers: new Set([importer]) }])) } as unknown as EnvironmentModuleGraph
   }
 
   it('should link a module registered under several urls once', () => {
-    const tokens = { file: '/layer/tokens.css', importers: new Set() }
-    const theme = { file: '/app/theme.css', importers: new Set() }
+    const tokens = { file: '/layer/tokens.css', importers: new Set([importer]) }
+    const theme = { file: '/app/theme.css', importers: new Set([importer]) }
     const urlToModuleMap = new Map([
       ['/@fs/layer/tokens.css', tokens],
       ['/theme.css', theme],
@@ -36,8 +37,8 @@ describe('collectDevCss', () => {
 
   it('should link every style block of a component', () => {
     const urlToModuleMap = new Map([
-      ['/app.vue?vue&type=style&index=0&lang.css', { file: '/app/app.vue', importers: new Set() }],
-      ['/app.vue?vue&type=style&index=1&lang.css', { file: '/app/app.vue', importers: new Set() }],
+      ['/app.vue?vue&type=style&index=0&lang.css', { file: '/app/app.vue', importers: new Set([importer]) }],
+      ['/app.vue?vue&type=style&index=1&lang.css', { file: '/app/app.vue', importers: new Set([importer]) }],
     ])
     expect(collectDevCss(nuxt, { urlToModuleMap } as unknown as EnvironmentModuleGraph)).toEqual([
       '/app.vue?vue&type=style&index=0&lang.css',
@@ -66,6 +67,28 @@ describe('collectDevCss', () => {
       'D:/project/node_modules/lib/dist/lib.css',
     ]))).toEqual([
       '/@fs/D:/project/node_modules/lib/dist/lib.css',
+    ])
+  })
+
+  it('should ignore css modules with no importers', () => {
+    const urlToModuleMap = new Map([
+      ['/app.vue?vue&type=style&index=0&lang.css', { file: '/app/app.vue', importers: new Set() }],
+      ['/app.vue?vue&type=style&index=1&lang.css', { file: '/app/app.vue', importers: new Set([importer]) }],
+      ['/orphan.css', { file: '/app/orphan.css' }],
+    ])
+    expect(collectDevCss(nuxt, { urlToModuleMap } as unknown as EnvironmentModuleGraph)).toEqual([
+      '/app.vue?vue&type=style&index=1&lang.css',
+    ])
+  })
+
+  it('should ignore css modules imported only with ?raw', () => {
+    const rawImporter = { id: '/app/page.vue?raw' }
+    const urlToModuleMap = new Map([
+      ['/raw-only.css', { importers: new Set([rawImporter]) }],
+      ['/shared.css', { importers: new Set([rawImporter, importer]) }],
+    ])
+    expect(collectDevCss(nuxt, { urlToModuleMap } as unknown as EnvironmentModuleGraph)).toEqual([
+      '/shared.css',
     ])
   })
 })
