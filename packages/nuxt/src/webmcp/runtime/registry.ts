@@ -436,6 +436,9 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       }
       activities.add(activity)
       notify()
+      if (controller.signal.aborted) {
+        return stoppedResult
+      }
       const element = target?.element ?? activation.element?.()
       if (element) {
         host.highlight?.([element])

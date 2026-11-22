@@ -266,6 +266,18 @@ describe('agent tool registry', () => {
     expect(execute).not.toHaveBeenCalled()
   })
 
+  it('does not prepare a call that a listener stops as it starts', async () => {
+    const { registry } = setup()
+    const prepare = vi.fn()
+    const execute = vi.fn()
+    registry.activate(defineAgentTool({ name: 'save', description: 'Save. Use when asked.', execute }), { prepare })
+    registry.onActivity(list => list[0]?.stop())
+
+    expect(await registry.call('save')).toMatchObject({ isError: true, content: [{ text: expect.stringContaining('stopped') }] })
+    expect(prepare).not.toHaveBeenCalled()
+    expect(execute).not.toHaveBeenCalled()
+  })
+
   it('does not run a call whose tool is withdrawn while its input validates or it is being prepared', async () => {
     const { registry } = setup()
     const execute = vi.fn()
