@@ -75,10 +75,13 @@ export function useAgentActivity () {
   const activities = shallowRef<AgentToolActivity[]>([])
   if (registry) {
     let dispose: (() => void) | undefined
+    let stopped = false
     const subscribe = () => {
-      dispose = registry.onActivity((list) => {
-        activities.value = list
-      })
+      if (!stopped) {
+        dispose = registry.onActivity((list) => {
+          activities.value = list
+        })
+      }
     }
     if (getCurrentInstance()) {
       onMounted(subscribe)
@@ -86,7 +89,10 @@ export function useAgentActivity () {
       subscribe()
     }
     if (getCurrentScope()) {
-      onScopeDispose(() => dispose?.())
+      onScopeDispose(() => {
+        stopped = true
+        dispose?.()
+      })
     }
   }
   return {

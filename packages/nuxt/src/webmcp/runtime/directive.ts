@@ -41,19 +41,22 @@ export function createSubmitCapture () {
     wait (name: string, timeout = 5000) {
       return new Promise<unknown>((resolve, reject) => {
         const timer = setTimeout(() => {
-          pending.delete(name)
+          if (pending.get(name) === entry) {
+            pending.delete(name)
+          }
           reject(new Error('The form did not submit. It may be showing validation errors.'))
         }, timeout)
-        pending.set(name, {
-          resolve: (result) => {
+        const entry = {
+          resolve: (result: unknown) => {
             clearTimeout(timer)
             resolve(result)
           },
-          reject: (error) => {
+          reject: (error: unknown) => {
             clearTimeout(timer)
             reject(error)
           },
-        })
+        }
+        pending.set(name, entry)
       })
     },
   }

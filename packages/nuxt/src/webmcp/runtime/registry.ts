@@ -93,6 +93,8 @@ export interface AgentToolDiagnostics {
   /** Problems with a tool's metadata, measured against {@link BUDGETS}. */
   lint?: (tool: string, problems: string[]) => void
   longResult?: (tool: string, length: number) => void
+  /** A tool with targets whose input also has a `target` property. */
+  targetConflict?: (tool: string) => void
 }
 
 export interface AgentToolHost {
@@ -138,7 +140,13 @@ export function lintTool (tool: AgentToolSummary): string[] {
   return problems
 }
 
-type Activation = AgentToolActivation & { definition: AgentToolDefinition }
+type Activation = AgentToolActivation & {
+  definition: AgentToolDefinition
+  /** Calls that have not started to run or been handed to the user. */
+  pending: Set<AbortController>
+}
+
+const WITHDRAWN = Symbol('withdrawn')
 
 interface Entry {
   /** The definition agents are told about: the one of the first activation still active. */
@@ -212,6 +220,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
   const activities = new Set<AgentToolActivity>()
   const activityListeners = new Set<(activities: AgentToolActivity[]) => void>()
   const busy = new WeakSet<AgentToolActivation>()
+  const conflicts = new WeakSet<AgentToolDefinition>()
   let nextActivity = 0
   let listTargets: AbortController | undefined
   let holds = 0
@@ -241,10 +250,10 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
     const hints = new Set(definitions.flatMap(d => Object.keys(d.annotations ?? {}) as (keyof AgentToolAnnotations)[]))
     if (isTargeted(entry)) {
       schema.properties = {
-        target: { type: 'string', description: `Which item to act on. Call ${LIST_TARGETS} with {"tool":"${definition.name}"} for the items on screen.` },
         ...schema.properties as object,
+        target: { type: 'string', description: `Which item to act on. Call ${LIST_TARGETS} with {"tool":"${definition.name}"} for the items on screen.` },
       }
-      schema.required = ['target', ...(schema.required as string[] | undefined) ?? []]
+      schema.required = [...new Set(['target', ...(schema.required as string[] | undefined) ?? []])]
     }
     return {
       name: definition.name,
@@ -336,8 +345,9 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
 
   async function call (name: string, rawInput: unknown = {}, options: { signal?: AbortSignal } = {}): Promise<AgentToolResult> {
     const entry = entries.get(name)
+    const unavailable = text(`"${name}" is not available on the current page.`, true)
     if (!entry?.activations.size) {
-      return text(`"${name}" is not available on the current page.`, true)
+      return unavailable
     }
     const activations = [...entry.activations]
     let input = (rawInput ?? {}) as Record<string, unknown>
@@ -361,18 +371,30 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       activation = activations.find(a => a.enabled?.() !== false) ?? activations[0]!
     }
 
+    const disabled = text(`"${name}" is currently disabled${target ? ` for "${target.label}"` : ''}.`, true)
     if (activation.enabled?.() === false || target?.disabled) {
-      return text(`"${name}" is currently disabled${target ? ` for "${target.label}"` : ''}.`, true)
+      return disabled
     }
 
     const { definition } = activation
     let value: unknown = input
     if (definition.input) {
-      const result = await definition.input['~standard'].validate(input)
+      let result
+      try {
+        result = await definition.input['~standard'].validate(input)
+      } catch (error) {
+        return text(errorMessage(error), true)
+      }
       if (result.issues) {
         return text(`Invalid input. ${formatIssues(result.issues)}`, true)
       }
       value = result.value
+      if (!entry.activations.has(activation)) {
+        return unavailable
+      }
+      if (activation.enabled?.() === false) {
+        return disabled
+      }
     }
 
     const stoppedResult = text('The user stopped this action. Do not retry unless they ask.', true)
@@ -383,10 +405,12 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       return text(`"${name}" is already running. Wait for it to finish before calling it again.`, true)
     }
     const controller = new AbortController()
-    options.signal?.addEventListener('abort', () => controller.abort(options.signal!.reason), { once: true })
+    const forward = () => controller.abort(options.signal!.reason)
+    options.signal?.addEventListener('abort', forward, { once: true })
     const stopped = new Promise<AgentToolResult>((resolve) => {
-      controller.signal.addEventListener('abort', () => resolve(stoppedResult), { once: true })
+      controller.signal.addEventListener('abort', () => resolve(controller.signal.reason === WITHDRAWN ? unavailable : stoppedResult), { once: true })
     })
+    activation.pending.add(controller)
     const activity: AgentToolActivity = {
       id: ++nextActivity,
       tool: name,
@@ -414,6 +438,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       if (prepared) {
         return prepared
       }
+      activation.pending.delete(controller)
       if (definition.confirm) {
         return activation.stage
           ? text(JSON.stringify({ status: 'requires_user_action', message: activation.stage(value, ctx) }))
@@ -453,6 +478,8 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       release()
       return text(errorMessage(error), true)
     } finally {
+      activation.pending.delete(controller)
+      options.signal?.removeEventListener('abort', forward)
       activities.delete(activity)
       notify()
     }
@@ -475,6 +502,10 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
   return {
     /** Make a tool available until the returned `dispose` is called. */
     activate<I> (definition: AgentToolDefinition<I>, options: AgentToolActivation<I, any> = {}) {
+      if (definition.name === LIST_TARGETS) {
+        host.diagnostics?.registerFailed?.(definition.name, new Error(`\`${LIST_TARGETS}\` is the name of the tool that lists targets.`))
+        return { dispose () {} }
+      }
       let entry = entries.get(definition.name)
       if (entry && !entry.activations.size && entry.definition !== definition) {
         entry.controller?.abort()
@@ -486,8 +517,12 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       } else if (entry.definition !== definition && contract(entry.definition) !== contract(definition)) {
         host.diagnostics?.duplicate?.(definition.name)
       }
-      const activation: Activation = { ...options, definition }
+      const activation: Activation = { ...options, definition, pending: new Set() }
       entry.activations.add(activation)
+      if (options.targets && !conflicts.has(definition) && 'target' in ((baseSchema(definition).properties ?? {}) as object)) {
+        conflicts.add(definition)
+        host.diagnostics?.targetConflict?.(definition.name)
+      }
       if (!entry.linted && host.diagnostics?.lint) {
         entry.linted = true
         const problems = lintTool(summarize(entry))
@@ -499,6 +534,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       return {
         dispose () {
           entry.activations.delete(activation)
+          activation.pending.forEach(controller => controller.abort(WITHDRAWN))
           const [next] = entry.activations
           if (next && [...entry.activations].every(a => a.definition !== entry.definition)) {
             entry.definition = next.definition

@@ -31,5 +31,10 @@ export const agentToolDiagnostics = !import.meta.dev
           fix: 'Keep results under 1,500 characters by summarising them or returning a page at a time, so they fit in the agent\'s context.',
           docs: false,
         },
+        NUXT_E9005: {
+          why: (p: { tool: string }) => `The agent tool \`${p.tool}\` has targets and an input property named \`target\`, which is the name of the argument an agent chooses a target with.`,
+          fix: 'Rename the input property.',
+          docs: false,
+        },
       },
     })

@@ -528,6 +528,33 @@ describe('agent tool directive', () => {
     expect(state.email).toBe('daniel@example.com')
   })
 
+  it('leaves a form unchanged and unsubmitted when it unmounts while its schema validates', async () => {
+    const state = reactive({ email: 'daniel@example.com' })
+    const shown = ref(true)
+    const sent = vi.fn()
+    let validated!: () => void
+    const validating = new Promise<void>((resolve) => { validated = resolve })
+    const schema = { '~standard': { version: 1, vendor: 'test', validate: (value: unknown) => validating.then(() => ({ value })) } }
+    const { registry } = mount(directive => () => shown.value
+      ? withDirectives(h('section', [h('input', { 'data-agent-field': 'state.email' })]), [[directive, binding({
+          name: 'send',
+          kind: 'form',
+          invoke: sent,
+          schema: () => schema,
+          fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
+        })]])
+      : h('p'))
+    await nextTick()
+
+    const call = registry.call('send', {})
+    shown.value = false
+    await nextTick()
+    validated()
+    expect(await call).toEqual({ isError: true, content: [{ type: 'text', text: '"send" is not available on the current page.' }] })
+    await new Promise(resolve => setTimeout(resolve))
+    expect(sent).not.toHaveBeenCalled()
+  })
+
   it('restores a form when the call is stopped while it is being filled in', async () => {
     const state = reactive({ email: 'daniel@example.com' })
     const { registry } = mount(directive => () => withDirectives(h('form', [h('input', { 'data-agent-field': 'state.email' })]), [[directive, binding({
@@ -547,6 +574,20 @@ describe('agent tool directive', () => {
     expect(await result).toMatchObject({ isError: true })
     await nextTick()
     expect(state.email).toBe('daniel@example.com')
+  })
+
+  it('keeps waiting for a submit when an earlier wait for the same form times out', async () => {
+    vi.useFakeTimers()
+    cleanups.push(() => vi.useRealTimers())
+    const submits = createSubmitCapture()
+    const first = submits.wait('send', 100)
+    first.catch(() => {})
+    await vi.advanceTimersByTimeAsync(50)
+    const second = submits.wait('send', 100)
+    await vi.advanceTimersByTimeAsync(60)
+    await expect(first).rejects.toThrow('The form did not submit.')
+    submits.capture('send', () => 'sent')
+    await expect(second).resolves.toBe('sent')
   })
 
   it('returns the error of a submit handler that throws', async () => {
@@ -687,6 +728,24 @@ describe('agent tool directive', () => {
     await first
 
     scope.stop()
+    registry.call('slow')
+    expect(activity.activities.value).toEqual([])
+  })
+
+  it('does not subscribe `useAgentActivity` when its scope stops before the component mounts', async () => {
+    let activity!: ReturnType<typeof useAgentActivity>
+    const Status = defineComponent({
+      setup () {
+        const scope = effectScope(true)
+        activity = scope.run(() => useAgentActivity())!
+        scope.stop()
+        return () => h('div')
+      },
+    })
+    const { registry } = mount(() => () => h(Status))
+    registry.activate(defineAgentTool({ name: 'slow', description: 'Take a while.', execute: () => new Promise(() => {}) }))
+    await nextTick()
+
     registry.call('slow')
     expect(activity.activities.value).toEqual([])
   })

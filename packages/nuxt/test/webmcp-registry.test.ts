@@ -47,6 +47,19 @@ describe('agent tool registry', () => {
     expect(await registry.call('greet', { name: 1 })).toMatchObject({ isError: true })
   })
 
+  it('returns the error of an input schema that fails to validate', async () => {
+    const { registry } = setup()
+    const execute = vi.fn()
+    registry.activate({
+      name: 'lookup',
+      description: 'Look something up. Use when asked.',
+      input: { '~standard': { version: 1, vendor: 'test', validate: () => Promise.reject(new Error('The validator is offline')) } },
+      execute,
+    })
+    expect(await registry.call('lookup', {})).toEqual({ isError: true, content: [{ type: 'text', text: 'The validator is offline' }] })
+    expect(execute).not.toHaveBeenCalled()
+  })
+
   it('adds a target argument and list_targets for targeted activations', async () => {
     const { registry, registered } = setup()
     const items = [{ id: 'a', name: 'Apple' }, { id: 'b', name: 'Banana' }]
@@ -59,6 +72,41 @@ describe('agent tool registry', () => {
     expect(registry.targets()).toEqual({ eat: [{ target: 'a', label: 'Apple' }, { target: 'b', label: 'Banana' }] })
     expect(await registry.call('eat', { target: 'b' })).toMatchObject({ content: [{ text: 'Ate Banana' }] })
     expect(await registry.call('eat', { target: 'c' })).toMatchObject({ isError: true })
+  })
+
+  it('keeps the name `list_targets` for the tool that lists targets', async () => {
+    const registerFailed = vi.fn()
+    const registry = createAgentToolRegistry({ schedule: flush => flush(), diagnostics: { registerFailed } })
+    const execute = vi.fn()
+    registry.activate({ name: 'list_targets', description: 'List the shipping targets. Use when asked.', execute })
+    registry.activate({ name: 'remove', description: 'Remove an item. Use when asked.' }, { targets: () => [{ key: 'tea', label: 'Tea' }] })
+
+    expect(registerFailed).toHaveBeenCalledWith('list_targets', expect.any(Error))
+    expect(registry.list().map(tool => tool.name)).toEqual(['remove'])
+    expect(await registry.call('list_targets')).toMatchObject({ isError: true })
+    expect(execute).not.toHaveBeenCalled()
+  })
+
+  it('reports a tool with targets whose input has a `target` property', () => {
+    const targetConflict = vi.fn()
+    const registry = createAgentToolRegistry({ schedule: flush => flush(), diagnostics: { targetConflict } })
+    const move = defineAgentTool({
+      name: 'move',
+      description: 'Move a file to a folder. Use when asked.',
+      input: z.object({ target: z.string().describe('The folder to move the file to.') }),
+      execute: () => {},
+    })
+    registry.activate(greet, { targets: () => [{ key: 'a', label: 'A' }] })
+    registry.activate(move)
+    expect(targetConflict).not.toHaveBeenCalled()
+
+    registry.activate(move, { targets: () => [{ key: 'a.txt', label: 'a.txt' }] })
+    registry.activate(move, { targets: () => [{ key: 'b.txt', label: 'b.txt' }] })
+    expect(targetConflict.mock.calls).toEqual([['move']])
+    expect(registry.list().find(tool => tool.name === 'move')!.inputSchema).toMatchObject({
+      properties: { target: { description: expect.stringContaining('list_targets') } },
+      required: ['target'],
+    })
   })
 
   it('registers a tool again when an activation changes its input schema', () => {
@@ -218,6 +266,53 @@ describe('agent tool registry', () => {
     expect(execute).not.toHaveBeenCalled()
   })
 
+  it('does not run a call whose tool is withdrawn while its input validates or it is being prepared', async () => {
+    const { registry } = setup()
+    const execute = vi.fn()
+    let validated!: (result: { value: unknown }) => void
+    const validating = registry.activate({
+      name: 'lookup',
+      description: 'Look something up. Use when asked.',
+      input: { '~standard': { version: 1, vendor: 'test', validate: () => new Promise<{ value: unknown }>((resolve) => { validated = resolve }) } },
+      execute,
+    })
+    const first = registry.call('lookup', {})
+    validating.dispose()
+    validated({ value: {} })
+    expect(await first).toEqual({ isError: true, content: [{ type: 'text', text: '"lookup" is not available on the current page.' }] })
+
+    let prepared!: () => void
+    const signals: AbortSignal[] = []
+    const preparing = registry.activate({ name: 'save', description: 'Save the draft. Use when asked.' }, {
+      prepare: (_input, { signal }) => {
+        signals.push(signal)
+        return new Promise<void>((resolve) => { prepared = resolve })
+      },
+      execute,
+    })
+    const second = registry.call('save')
+    preparing.dispose()
+    expect(signals[0]!.aborted).toBe(true)
+    expect(await second).toEqual({ isError: true, content: [{ type: 'text', text: '"save" is not available on the current page.' }] })
+    prepared()
+    await new Promise(resolve => setTimeout(resolve))
+    expect(execute).not.toHaveBeenCalled()
+  })
+
+  it('returns the result of a call that withdraws its own tool as it runs', async () => {
+    const { registry } = setup()
+    const tool = registry.activate({
+      name: 'remove',
+      description: 'Remove the item. Use when asked.',
+      execute: async () => {
+        tool.dispose()
+        await Promise.resolve()
+        return 'Removed'
+      },
+    })
+    expect(await registry.call('remove')).toEqual({ content: [{ type: 'text', text: 'Removed' }] })
+  })
+
   it('rejects a call that an activity listener makes to a tool that is starting', async () => {
     const { registry } = setup()
     const execute = vi.fn()
@@ -283,6 +378,17 @@ describe('agent tool registry', () => {
 
     expect(await registry.call('save', {}, { signal: AbortSignal.abort() })).toMatchObject({ isError: true, content: [{ text: expect.stringContaining('stopped') }] })
     expect(execute).not.toHaveBeenCalled()
+  })
+
+  it('stops listening to the signal of a call that has finished', async () => {
+    const { registry } = setup()
+    registry.activate(greet)
+    const { signal } = new AbortController()
+    const added = vi.spyOn(signal, 'addEventListener')
+    const removed = vi.spyOn(signal, 'removeEventListener')
+    await registry.call('greet', { name: 'Sarah' }, { signal })
+    expect(added).toHaveBeenCalledOnce()
+    expect(removed).toHaveBeenCalledWith('abort', added.mock.calls[0]![1])
   })
 
   it('uses the newest definition when a tool is replaced while registrations are held', async () => {

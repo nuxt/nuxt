@@ -25,6 +25,7 @@ export default defineNuxtPlugin({
           duplicate: tool => agentToolDiagnostics.NUXT_E9002({ tool }),
           lint: (tool, problems) => agentToolDiagnostics.NUXT_E9003({ tool, problems }),
           longResult: (tool, length) => agentToolDiagnostics.NUXT_E9004({ tool, length }),
+          targetConflict: tool => agentToolDiagnostics.NUXT_E9005({ tool }),
         }
       : undefined
 
