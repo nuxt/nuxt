@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "fixture-webmcp",
+  "scripts": {
+    "build": "nuxt build"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*",
+    "zod": "catalog:dev"
+  },
+  "engines": {
+    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
+  }
+}

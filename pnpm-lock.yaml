@@ -2723,6 +2723,15 @@ importers:
         specifier: 0.1.11
         version: 0.1.11(h3@1.15.11)(srvx@1.0.8)(vite@8.3.8)
 
+  test/fixtures/webmcp:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+      zod:
+        specifier: catalog:dev
+        version: 4.6.7
+
   test/fixtures/worker-assets:
     dependencies:
       nuxt:

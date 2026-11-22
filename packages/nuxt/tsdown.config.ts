@@ -18,6 +18,7 @@ const RUNTIME_TREES = [
   'src/components/runtime',
   'src/pages/runtime',
   'src/compiler/runtime',
+  'src/webmcp/runtime',
   'src/runtime/server',
   'src/server',
 ]
