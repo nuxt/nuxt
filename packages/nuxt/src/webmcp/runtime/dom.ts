@@ -177,6 +177,18 @@ function propertyAt (schema: JSONSchema, path: string[], create: boolean): { par
   return { parent: node, name: path.at(-1)! }
 }
 
+/** Whether `schema` marks the property at `path`, or an object that contains it, as `writeOnly`. */
+function isWriteOnly (schema: JSONSchema, path: string[]) {
+  let node: JSONSchema | undefined = schema
+  for (const segment of path) {
+    node = (node.properties as Record<string, JSONSchema> | undefined)?.[segment]
+    if (!node || node.writeOnly === true) {
+      return !!node
+    }
+  }
+  return false
+}
+
 /** JSON Schema for a form without a Standard Schema: types from the current values, refined by native controls. */
 export function formSchema (fields: FormFields, form: Element, values?: boolean): JSONSchema {
   const schema: JSONSchema = { type: 'object', properties: {} }
@@ -242,7 +254,7 @@ export function describeSchema (schema: JSONSchema, fields: FormFields, form: El
     }
     const value = readField(field)
     const filled = value !== undefined && value !== null && value !== ''
-    if (values && filled && markers.length && property.default === undefined && property.writeOnly !== true && !subjectsOf(markers).some(isSecret)) {
+    if (values && filled && markers.length && property.default === undefined && !isWriteOnly(schema, key.split('.')) && !subjectsOf(markers).some(isSecret)) {
       property.default = value
     }
     if (filled) {
