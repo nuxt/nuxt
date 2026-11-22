@@ -55,6 +55,15 @@ export function submitterOf (form: Element) {
   return submitters.find(submitter => !isDisabled(submitter)) ?? submitters[0] ?? null
 }
 
+/** The current value of `field`, or `undefined` when its `v-model` expression reads a property of something that is not set. */
+export function readField (field: FormField) {
+  try {
+    return field.get()
+  } catch {
+    return undefined
+  }
+}
+
 function markersOf (form: Element, field: FormField) {
   return [...form.querySelectorAll('[data-agent-field]')].filter(m => m.getAttribute('data-agent-field') === field.source)
 }
@@ -168,7 +177,7 @@ export function formSchema (fields: FormFields, form: Element, values?: boolean)
   for (const [key, field] of Object.entries(fields)) {
     const controls = controlsOf(markersOf(form, field).filter(isShown))
     const { parent, name } = propertyAt(schema, key.split('.'), true)!
-    ;(parent.properties as Record<string, JSONSchema>)[name] = controlSchema(controls, field.get()) ?? valueSchema(field.get())
+    ;(parent.properties as Record<string, JSONSchema>)[name] = controlSchema(controls, readField(field)) ?? valueSchema(readField(field))
     if (controls.some(c => c.required)) {
       parent.required = [...(parent.required as string[] | undefined) ?? [], name]
     }
@@ -225,7 +234,7 @@ export function describeSchema (schema: JSONSchema, fields: FormFields, form: El
         property.description = description
       }
     }
-    const value = field.get()
+    const value = readField(field)
     const filled = value !== undefined && value !== null && value !== ''
     if (values && filled && markers.length && property.default === undefined && property.writeOnly !== true && !subjectsOf(markers).some(isSecret)) {
       property.default = value
@@ -282,7 +291,7 @@ export function fillFields (fields: FormFields, input: Record<string, unknown>) 
   for (const [key, field] of Object.entries(fields)) {
     const value = getIn(input, key.split('.'))
     if (value !== undefined) {
-      field.set(coerce(value, field.get()))
+      field.set(coerce(value, readField(field)))
     }
   }
   return problems
@@ -332,7 +341,7 @@ export function lockedProblems (fields: FormFields, form: Element, input: Record
       continue
     }
     const subjects = subjectsOf(markers)
-    const current = field.get()
+    const current = readField(field)
     const next = coerce(value, current)
     if (subjects.every(isLocked)) {
       const at = schema && propertyAt(schema, key.split('.'), false)
@@ -370,7 +379,7 @@ export function readFields (fields: FormFields) {
     for (const segment of path.slice(0, -1)) {
       node = (node[segment] ??= {}) as Record<string, unknown>
     }
-    node[path.at(-1)!] = field.get()
+    node[path.at(-1)!] = readField(field)
   }
   return value
 }

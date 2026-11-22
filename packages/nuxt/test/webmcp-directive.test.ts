@@ -201,6 +201,33 @@ describe('agent tool directive', () => {
     expect(registry.list()[0]!.inputSchema.required).toEqual(['email'])
   })
 
+  it('registers and submits a form with a field whose model cannot be read until it is rendered', async () => {
+    const state = reactive<{ email: string, extra?: { note: string } }>({ email: '' })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('send', sent)
+      },
+    }, [
+      h('input', { 'data-agent-field': 'state.email' }),
+      state.extra ? h('input', { 'data-agent-field': 'state.extra.note' }) : null,
+    ]), [[directive, binding({
+      name: 'send',
+      kind: 'form',
+      fields: {
+        'email': { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } },
+        'extra.note': { source: 'state.extra.note', get: () => state.extra!.note, set: (value) => { state.extra!.note = value as string } },
+      },
+    })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema.properties).toEqual({ email: { type: 'string' }, extra: { type: 'object', properties: { note: {} } } })
+    expect(await registry.call('send', { email: 'daniel@example.com' })).not.toHaveProperty('isError')
+    expect(sent).toHaveBeenCalled()
+    expect(state).toEqual({ email: 'daniel@example.com' })
+  })
+
   it('describes multiple selects and checkbox groups as arrays of their options', async () => {
     const state = reactive({ sizes: [] as string[], toppings: [] as string[] })
     const { registry } = mount(directive => () => withDirectives(h('form', [
