@@ -118,10 +118,16 @@ function choiceSchema (choices: Choice[], title: (choice: Choice) => string): JS
   return { ...types.size > 1 ? {} : { type: [...types][0] ?? 'string' }, oneOf }
 }
 
+/** The options of `select` that are not hidden, by the `hidden` attribute or `display: none` on them or on their group. */
+function optionsOf (select: HTMLSelectElement) {
+  const isHidden = (el: Element | null) => !!el && (el.hasAttribute('hidden') || getComputedStyle(el).display === 'none')
+  return [...select.options].filter(option => !isHidden(option) && !isHidden(option.closest('optgroup')))
+}
+
 function controlSchema (controls: FieldControl[], value: unknown): JSONSchema | undefined {
   const [control] = controls
   if (control instanceof HTMLSelectElement) {
-    const option = choiceSchema([...control.options].filter(o => o.value), labelOf)
+    const option = choiceSchema(optionsOf(control).filter(o => o.value), labelOf)
     return control.multiple ? { type: 'array', items: option } : option
   }
   if (!(control instanceof HTMLInputElement)) {
@@ -304,11 +310,11 @@ function isLocked (el: Element) {
   return !!el.closest(LOCKED)
 }
 
-/** The options of a select, the radios of a group, or the checkboxes bound to one array; `undefined` for a field that takes any value. */
+/** The options of a select that are not hidden, the radios of a group, or the checkboxes bound to one array; `undefined` for a field that takes any value. */
 function choicesOf (controls: FieldControl[], value: unknown): Choice[] | undefined {
   const [control] = controls
   if (control instanceof HTMLSelectElement) {
-    return [...control.options]
+    return optionsOf(control)
   }
   const grouped = control instanceof HTMLInputElement && (control.type === 'radio' || (control.type === 'checkbox' && Array.isArray(value)))
   return grouped ? controls as HTMLInputElement[] : undefined

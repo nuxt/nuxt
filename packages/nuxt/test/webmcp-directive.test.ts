@@ -420,6 +420,46 @@ describe('agent tool directive', () => {
     expect(state).toEqual({ plan: '', region: '', size: 's', extras: [] })
   })
 
+  it('leaves the hidden options of a select out of the schema and rejects input that selects one', async () => {
+    const style = document.createElement('style')
+    style.textContent = '.gone { display: none }'
+    document.head.append(style)
+    cleanups.push(() => style.remove())
+    const state = reactive({ plan: 'free' })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('order', sent)
+      },
+    }, [
+      h('select', { 'data-agent-field': 'state.plan' }, [
+        h('option', { value: 'free' }, 'Free'),
+        h('option', { value: 'pro' }, 'Pro'),
+        h('option', { value: 'legacy', hidden: '' }, 'Legacy'),
+        withDirectives(h('option', { value: 'trial' }, 'Trial'), [[vShow, false]]),
+        h('option', { value: 'staff', class: 'gone' }, 'Staff'),
+        h('optgroup', { label: 'Retired', hidden: '' }, [h('option', { value: 'beta' }, 'Beta')]),
+      ]),
+    ]), [[directive, binding({
+      name: 'order',
+      kind: 'form',
+      fields: { plan: { source: 'state.plan', get: () => state.plan, set: (value) => { state.plan = value as string } } },
+    })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema.properties).toEqual({
+      plan: { type: 'string', oneOf: [{ const: 'free', title: 'Free' }, { const: 'pro', title: 'Pro' }] },
+    })
+    for (const plan of ['legacy', 'trial', 'staff', 'beta']) {
+      expect(await registry.call('order', { plan })).toEqual({ isError: true, content: [{ type: 'text', text: `The form was not submitted. plan: "${plan}" is not one of the choices` }] })
+    }
+    expect(sent).not.toHaveBeenCalled()
+
+    expect(await registry.call('order', { plan: 'pro' })).not.toHaveProperty('isError')
+    expect(state.plan).toBe('pro')
+  })
+
   it('describes a checkbox with `true-value` and `false-value` by the values it writes', async () => {
     const state = reactive({ newsletter: 'no', terms: false })
     const fields = Object.fromEntries(Object.keys(state).map(key => [key, {
