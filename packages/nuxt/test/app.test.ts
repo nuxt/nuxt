@@ -1,5 +1,6 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
+import { format } from 'node:util'
 import { afterAll, describe, expect, it, vi } from 'vitest'
 import { dirname, join, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
@@ -429,8 +430,8 @@ describe('generateApp template diagnostics', () => {
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       await generateApp(nuxt, app, { filter: t => t.filename === 'bad-src.mjs' || t.filename === 'bad-contents.mjs' })
-      const warnings = warn.mock.calls.map(call => String(call[0]))
-      const errors = error.mock.calls.map(call => String(call[0]))
+      const warnings = warn.mock.calls.map(call => format(...call))
+      const errors = error.mock.calls.map(call => format(...call))
       // unreadable `src` keeps its specific diagnostic
       expect(errors.filter(m => m.includes('NUXT_B1002'))).toHaveLength(1)
       expect(warnings.filter(m => m.includes('NUXT_B1002'))).toHaveLength(0)

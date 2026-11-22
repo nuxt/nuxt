@@ -512,7 +512,6 @@ export async function DevErrorsDevToolsPlugin (nuxt: Nuxt, reporter: DevErrorRep
   const { myBadDevTools } = await import('my-bad/vite')
   return myBadDevTools({
     channel: process.env[ERROR_CHANNEL_ENV] || joinURL(nuxt.options.app.baseURL, nuxt.options.devServer.errorChannel),
-    title: 'Problems',
     onRegister: () => reporter.registerDevTools(),
   })
 }
