@@ -12,7 +12,9 @@ const BODY_READ_METHODS = new Set(['arrayBuffer', 'blob', 'bytes', 'formData', '
  */
 export function bufferRequestBody (event: H3Event): void {
   const request = event.req
-  if (!request.body || BUFFERED in request) {
+  // Don't touch `request.body` here: on Node, srvx creates the body stream on first access, and an
+  // unread body stream stops Node from discarding the rest of the upload after the response (#37119).
+  if (request.method === 'GET' || request.method === 'HEAD' || BUFFERED in request) {
     return
   }
 
@@ -21,7 +23,7 @@ export function bufferRequestBody (event: H3Event): void {
   let done = false
   let pending: Promise<void> | undefined
 
-  const readChunk = () => (pending ??= (source ??= request.body!.getReader()).read().then((result) => {
+  const readChunk = () => (pending ??= (source ??= request.body?.getReader() ?? emptyReader()).read().then((result) => {
     if (result.done) {
       done = true
     } else {
@@ -63,7 +65,8 @@ export function bufferRequestBody (event: H3Event): void {
         return false
       }
       if (property === 'body') {
-        return stream()
+        // `null` for a bodyless request; reading `body` is a read, so creating the stream here is fine
+        return target.body ? stream() : null
       }
       if (property === 'clone') {
         return () => event.req
@@ -78,4 +81,8 @@ export function bufferRequestBody (event: H3Event): void {
       return property === BUFFERED || Reflect.has(target, property)
     },
   }) as typeof event.req
+}
+
+function emptyReader (): ReadableStreamDefaultReader<Uint8Array<ArrayBuffer>> {
+  return new ReadableStream<Uint8Array<ArrayBuffer>>({ start: controller => controller.close() }).getReader()
 }
