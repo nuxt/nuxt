@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=https://agentscan.tools/schemas/agentscan.json
+version: 1
+
+mode: full
+
+auto-close: true
+auto-close-classifications:
+  - automation
+
+trusted-author-associations:
+  - owner
+  - member
+  - collaborator
+  - contributor
+
+labels:
+  automation: possible bot
+  mixed: possible bot
+  community-flagged: possible bot
+
+messages:
+  automation: |
+    We've flagged this as a potential contribution without a human behind it. We welcome the thoughtful use of AI tools when contributing, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):
+
+    1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.
+    2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.
+
+    Please review these AI-assisted contribution guidelines and update this contribution if needed.
+
+    We're closing this for now as the account looks automated. If we got that wrong, please just reopen the PR and we'll take another look.
+  mixed: |
+    We've flagged this as a potential contribution without a human behind it. We welcome the thoughtful use of AI tools when contributing, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):
+
+    1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.
+    2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.
+
+    Please review these AI-assisted contribution guidelines and update this contribution if needed.
+
+    If this was flagged in error, we apologise! 😳 Just let us know. 🙏
+  community-flagged: |
+    We've flagged this as a potential contribution without a human behind it. We welcome the thoughtful use of AI tools when contributing, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):
+
+    1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.
+    2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.
+
+    Please review these AI-assisted contribution guidelines and update this contribution if needed.
+
+    If this was flagged in error, we apologise! 😳 Just let us know. 🙏
+  insufficient-data: |
+    Looks like you're new to GitHub - we're delighted you'd like to contribute! 💚
+
+    We welcome the thoughtful use of AI tools when contributing, but ask all contributors to follow [two core principles](https://roe.dev/blog/using-ai-in-open-source):
+
+    1. **Never let an LLM speak for you** - all comments, issues, and PR descriptions should be written in your own words, reflecting your own understanding.
+    2. **Never let an LLM think for you** - only submit contributions you fully understand and can explain.
