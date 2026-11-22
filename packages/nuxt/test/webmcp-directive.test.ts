@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { KeepAlive, createApp, defineComponent, effectScope, h, nextTick, reactive, ref, vModelText, withDirectives } from 'vue'
+import { KeepAlive, createApp, defineComponent, effectScope, h, nextTick, reactive, ref, vModelText, vShow, withDirectives } from 'vue'
 
 import type { AgentToolBinding } from '../src/webmcp/runtime/directive.ts'
 import { createAgentToolDirective, createSubmitCapture } from '../src/webmcp/runtime/directive.ts'
@@ -378,6 +378,40 @@ describe('agent tool directive', () => {
     expect(Date.now() - started).toBeLessThan(1000)
     expect(sent).not.toHaveBeenCalled()
     expect(state.email).toBe('daniel@example.com')
+  })
+
+  it('leaves the value of a field hidden with `v-show` out of the schema and rejects input for it until it is shown', async () => {
+    const state = reactive({ email: 'daniel@example.com', coupon: 'STAFF50', note: 'internal', advanced: false })
+    const sent = vi.fn()
+    const fields = Object.fromEntries(['email', 'coupon', 'note'].map(key => [key, {
+      source: `state.${key}`,
+      get: () => state[key as keyof typeof state],
+      set: (value: unknown) => { (state as Record<string, unknown>)[key] = value },
+    }]))
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('order', sent)
+      },
+    }, [
+      h('input', { 'data-agent-field': 'state.email' }),
+      withDirectives(h('fieldset', [h('input', { 'data-agent-field': 'state.coupon' })]), [[vShow, state.advanced]]),
+      withDirectives(h('input', { 'data-agent-field': 'state.note' }), [[vShow, state.advanced]]),
+    ]), [[directive, binding({ name: 'order', kind: 'form', fields })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema.properties).toEqual({
+      email: { type: 'string', default: 'daniel@example.com' },
+      coupon: { type: 'string' },
+      note: { type: 'string' },
+    })
+    expect(await registry.call('order', { coupon: 'FREE', note: 'public' })).toEqual({ isError: true, content: [{ type: 'text', text: 'The form was not submitted. coupon: this field cannot be changed; note: this field cannot be changed' }] })
+    expect(sent).not.toHaveBeenCalled()
+
+    state.advanced = true
+    await nextTick()
+    expect(await registry.call('order', { coupon: 'FREE', note: 'public' })).not.toHaveProperty('isError')
+    expect(state).toMatchObject({ coupon: 'FREE', note: 'public' })
   })
 
   it('rejects input that changes a disabled, read-only or hidden field', async () => {

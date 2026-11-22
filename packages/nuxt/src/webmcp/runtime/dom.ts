@@ -177,13 +177,23 @@ export function formSchema (fields: FormFields, form: Element): JSONSchema {
   return describeSchema(schema, fields, form)
 }
 
+/** Whether the bound element of the field `el`, or an element around it, has an inline `display: none`, which is how `v-show` hides. */
+function isUndisplayed (el: Element) {
+  for (let node = el.closest('[data-agent-field]') ?? el as Element | null; node; node = node.parentElement) {
+    if ((node as HTMLElement).style?.display === 'none') {
+      return true
+    }
+  }
+  return false
+}
+
 const SENSITIVE_AUTOCOMPLETE_RE = /(?:^|\s)(?:current-password|new-password|one-time-code|cc-\S+)(?:\s|$)/i
 
 /** Whether the value of the field `el` must not reach an agent as part of a schema: it is a secret, or the user cannot see it. */
 function isPrivate (el: Element): boolean {
   const marker = el.closest('[data-agent-field]')
   const type = el instanceof HTMLInputElement ? el.type : el.getAttribute('type')
-  return type === 'password' || type === 'hidden' || !!el.closest('[hidden]')
+  return type === 'password' || type === 'hidden' || !!el.closest('[hidden]') || isUndisplayed(el)
     || SENSITIVE_AUTOCOMPLETE_RE.test(el.getAttribute('autocomplete') ?? '')
     || (!!marker && marker !== el && isPrivate(marker))
 }
@@ -275,7 +285,7 @@ const LOCKED = ':disabled, [disabled]:not(fieldset), [readonly], [aria-disabled=
 
 /** Whether the user cannot edit the field `el`: it is disabled, read-only or hidden, or inside an element that is. */
 function isLocked (el: Element) {
-  return !!el.closest(LOCKED) || (el instanceof HTMLInputElement && el.type === 'hidden')
+  return !!el.closest(LOCKED) || (el instanceof HTMLInputElement && el.type === 'hidden') || isUndisplayed(el)
 }
 
 /** The options of a select, the radios of a group, or the checkboxes bound to one array. */
