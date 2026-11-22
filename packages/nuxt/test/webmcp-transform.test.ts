@@ -95,14 +95,14 @@ describe('agent tool transform', () => {
     <AppInput v-model="order.address.city" />
   </AppForm>
 </template>`)
-    expect(code).toContain('_withModifiers($event => (_ctx.$agentTools.capture("subscribe", () => ($setup.subscribe($event)))), ["prevent"])')
+    expect(code).toContain('_withModifiers((...$args) => _ctx.$agentTools.capture("subscribe", () => ($setup.subscribe(...$args))), ["prevent"])')
     expect(code).toContain('"email": { source: "email", get: () => (_ctx.email), set: ($v) => { _ctx.email = $v } }')
     expect(code).toContain('schema: () => (_ctx.newsletterSchema)')
     expect(code).toContain('"data-agent-field": "order.email"')
     expect(code).toContain('"address.city": { source: "order.address.city", get: () => (_ctx.order.address.city), set: ($v) => { _ctx.order.address.city = $v } }')
     expect(code).toContain('root: () => (_ctx.order)')
     expect(code).toContain('schema: () => (_ctx.checkoutSchema)')
-    expect(code).toContain('$event => (_ctx.$agentTools.capture("checkout", () => ($setup.checkout($event))))')
+    expect(code).toContain('(...$args) => _ctx.$agentTools.capture("checkout", () => ($setup.checkout(...$args)))')
   })
 
   it('marks a component field as locked while its `disabled` or `readonly` prop is set', () => {
@@ -121,6 +121,76 @@ describe('agent tool transform', () => {
       '((_ctx.busy) || (!_ctx.editable)) ? \'\' : undefined',
       '""',
     ])
+  })
+
+  it('reads props written with the same-name shorthand', () => {
+    const { code } = compile(`${script}
+<template>
+  <form :schema @submit.prevent="checkout">
+    <AppInput v-model="email" :disabled />
+  </form>
+  <button v-for="sku in skus" :key :disabled @click="addToCart(sku)">Add</button>
+  <AppForm :validation-schema @submit="addToCart" />
+</template>`)
+    expect(code).toContain('schema: () => (_ctx.schema)')
+    expect(code).toContain('"data-agent-locked": ((_ctx.disabled)) ? \'\' : undefined')
+    expect(code).toContain('target: (_ctx.key), enabled: () => !(_ctx.disabled)')
+    expect(code).toContain('schema: () => (_ctx.validationSchema)')
+  })
+
+  it('reads expressions written with character references', () => {
+    const { code } = compile(`${script}
+<template>
+  <form @submit.prevent="subscribe">
+    <input v-model="emails[count &lt; 1 ? 0 : 1]" aria-label="Email">
+  </form>
+  <button :disabled="count &lt; 1 &amp;&amp; !ready" @click="addToCart(count &gt; 1 ? 'a' : 'b')">Add</button>
+</template>`)
+    expect(code).toContain('get: () => (_ctx.emails[_ctx.count < 1 ? 0 : 1])')
+    expect(code).toContain('enabled: () => !(_ctx.count < 1 && !_ctx.ready), invoke: ($event) => ($setup.addToCart(_ctx.count > 1 ? \'a\' : \'b\'))')
+  })
+
+  it('writes a model whose expression uses the name of the setter parameter', () => {
+    const { code } = compile(`${script}
+<template>
+  <form @submit.prevent="subscribe">
+    <input v-model="$v.email.$model" aria-label="Email">
+  </form>
+</template>`)
+    expect(code).toContain('set: ($v_) => { _ctx.$v.email.$model = $v_ }')
+  })
+
+  it('leaves handlers alone when a `v-for` or slot variable shadows a `@tool` function', () => {
+    const { code, findings } = compile(`${script}
+<template>
+  <button v-for="addToCart in callbacks" :key="addToCart.id" @click="addToCart">Run</button>
+  <Field v-slot="{ checkout }"><button @click="checkout">Pay</button><button @click="() => checkout()">Pay later</button><button @click="() => checkout(subscribe())">Pay and subscribe</button></Field>
+  <form @submit.prevent="subscribe" />
+</template>`)
+    expect([...code.matchAll(/name: "(\w+)"/g)].map(match => match[1])).toEqual(['subscribe'])
+    expect(findings).toEqual([
+      { code: 'NUXT_B1027', handler: '() => checkout(subscribe())' },
+      { code: 'NUXT_B1026', fn: 'addToCart' },
+      { code: 'NUXT_B1026', fn: 'checkout' },
+    ])
+  })
+
+  it('identifies a target inside nested keyed loops by every key', () => {
+    const { code } = compile(`${script}
+<template>
+  <section v-for="product in products" :key="product.sku">
+    <button v-for="variant in product.variants" :key="variant.id" @click="addToCart(variant.id)">Add</button>
+  </section>
+</template>`)
+    expect(code).toContain('target: [(product.sku), (variant.id)].join(\'/\'), invoke:')
+
+    const { findings } = compile(`${script}
+<template>
+  <section v-for="(product, i) in products" :key="i">
+    <button v-for="variant in product.variants" :key="variant.id" @click="addToCart(variant.id)">Add</button>
+  </section>
+</template>`)
+    expect(findings).toContainEqual({ code: 'NUXT_B1028', fn: 'addToCart' })
   })
 
   it('leaves fields that read a `v-for` or slot variable declared inside the form out of its input', () => {
@@ -150,7 +220,7 @@ describe('agent tool transform', () => {
 </template>`, { filename: FILE })
     const { content } = compileScript(descriptor, { id: 'test', inlineTemplate: true, templateOptions: { compilerOptions: { nodeTransforms: [transform] } } })
     expect(content).toContain('"email": { source: "email", get: () => (_unref(email)), set: ($v) => { email.value = $v } }')
-    expect(content).toContain('_ctx.$agentTools.capture("subscribe", () => (subscribe($event)))')
+    expect(content).toContain('_ctx.$agentTools.capture("subscribe", () => (subscribe(...$args)))')
   })
 
   it('renders only the data attributes on the server', () => {

@@ -19,6 +19,7 @@ const LABEL_ATTRS = ['aria-label', 'aria-labelledby', 'aria-description', 'toolp
 const MEMBER_PATH_RE = /^[A-Z_$][\w$]*(?:\.[A-Z_$][\w$]*)*$/i
 const SCRIPT_LANG_RE = /\blang=["']?([a-z]+)/i
 const CAMEL_RE = /([a-z0-9])([A-Z])/g
+const HYPHEN_RE = /-(\w)/g
 const JARGON_RE = /\b(?:pinia|vuex|redux|zustand|graphql|grpc|rest api|express|postgres(?:ql)?|mysql|mongodb|nitro|composables?|mutation handler|controller|endpoint|\$fetch|ajax)\b/i
 const WHEN_RE = /\bwhen\b/i
 const JSDOC_TAG_RE = /^@(\w+)(?:\s(.*))?$/
@@ -213,8 +214,8 @@ function addBinding (el: ElementNode, name: string, source: string) {
 
 function findProp (el: ElementNode, name: string): { dynamic: string } | { static: string } | undefined {
   for (const p of el.props) {
-    if (p.type === NODE_DIRECTIVE && p.name === 'bind' && p.arg?.type === NODE_SIMPLE_EXPRESSION && (p.arg as SimpleExpressionNode).content === name && p.exp) {
-      return { dynamic: p.exp.loc.source }
+    if (p.type === NODE_DIRECTIVE && p.name === 'bind' && p.arg?.type === NODE_SIMPLE_EXPRESSION && (p.arg as SimpleExpressionNode).isStatic && (p.arg as SimpleExpressionNode).content === name) {
+      return { dynamic: p.exp ? (p.exp as SimpleExpressionNode).content : name.replace(HYPHEN_RE, (_, char: string) => char.toUpperCase()) }
     }
     if (p.type === NODE_ATTRIBUTE && p.name === name) {
       return { static: p.value?.content ?? '' }
@@ -230,7 +231,7 @@ function findHandlers (el: ElementNode) {
   )
 }
 
-type Handler = { fn: string, call: string } | { mentions: string[] }
+type Handler = { fn: string, call: string, direct?: boolean } | { mentions: string[] }
 
 /** Whether `expression` reads a variable declared by one of `scopes`, each the parameters of a function around it. */
 function readsScope (expression: string, scopes: string[]) {
@@ -266,7 +267,7 @@ function analyseHandler (source: string, tools: Map<string, ToolMeta>): Handler 
   if (program.body.length === 1 && statement?.type === 'ExpressionStatement') {
     const expression = statement.expression
     if (expression.type === 'Identifier' && tools.has(expression.name)) {
-      return { fn: expression.name, call: `${expression.name}($event)` }
+      return { fn: expression.name, call: `${expression.name}($event)`, direct: true }
     }
     if (expression.type === 'CallExpression' && expression.callee.type === 'Identifier' && tools.has(expression.callee.name)) {
       return { fn: expression.callee.name, call: source.slice(expression.start, expression.end) }
@@ -281,9 +282,13 @@ function fieldAccessors (models: string[]) {
   const first = paths[0]?.[0]
   const root = paths.length && paths.every(p => p.length > 1 && p[0] === first) ? first : undefined
   const keys = paths.map(p => (root ? p.slice(1) : p).join('.'))
-  const fields = models.map((source, i) =>
-    `${JSON.stringify(keys[i])}: { source: ${JSON.stringify(source)}, get: () => (${source}), set: ($v) => { ${source} = $v } }`,
-  )
+  const fields = models.map((source, i) => {
+    let value = '$v'
+    while (source.includes(value)) {
+      value += '_'
+    }
+    return `${JSON.stringify(keys[i])}: { source: ${JSON.stringify(source)}, get: () => (${source}), set: (${value}) => { ${source} = ${value} } }`
+  })
   return { root, keys, source: `{ ${fields.join(', ')} }` }
 }
 
@@ -332,7 +337,7 @@ function visitElement (el: ElementNode, state: WalkState) {
 
   if (state.form) {
     const model = el.props.find((p): p is DirectiveNode => p.type === NODE_DIRECTIVE && p.name === 'model')
-    const source = model?.exp?.loc.source.trim()
+    const source = (model?.exp as SimpleExpressionNode | undefined)?.content.trim()
     const scopes = state.scopes.slice(state.form.scope)
     if (source && !(scopes.length && readsScope(source, scopes))) {
       addAttr(el, 'data-agent-field', source)
@@ -354,12 +359,14 @@ function visitElement (el: ElementNode, state: WalkState) {
   const bindings: string[] = []
   const names = new Set<string>()
   for (const handler of findHandlers(el)) {
-    const result = analyseHandler(handler.exp.loc.source, state.tools)
-    if (!result) {
+    const result = analyseHandler(handler.exp.content, state.tools)
+    const shadowed = (fn: string) => state.scopes.length > 0 && readsScope(fn, state.scopes)
+    const mentions = result && 'mentions' in result ? result.mentions.filter(fn => !shadowed(fn)) : []
+    if (!result || ('fn' in result ? shadowed(result.fn) : !mentions.length)) {
       continue
     }
     if ('mentions' in result) {
-      result.mentions.forEach(fn => state.mentioned.add(fn))
+      mentions.forEach(fn => state.mentioned.add(fn))
       state.findings.push({ code: 'NUXT_B1027', offset: handler.loc.start.offset, params: { handler: handler.exp.loc.source } })
       continue
     }
@@ -369,8 +376,9 @@ function visitElement (el: ElementNode, state: WalkState) {
       continue
     }
     names.add(meta.name)
-    const target = state.fors.findLast(f => f.key)
-    if (target && target.aliases.includes(target.key!)) {
+    const keyed = state.fors.filter(f => f.key)
+    const target = keyed.at(-1)
+    if (keyed.some(f => f.aliases.includes(f.key!))) {
       state.findings.push({ code: 'NUXT_B1028', offset: el.loc.start.offset, params: { fn: meta.fn } })
     }
     const disabled = findProp(el, 'disabled')
@@ -381,7 +389,7 @@ function visitElement (el: ElementNode, state: WalkState) {
       `readonly: ${meta.readonly}`,
       `consequential: ${meta.consequential}`,
       `confirm: ${meta.confirm}`,
-      ...target ? [`target: (${target.key})`] : [],
+      ...target ? [`target: ${keyed.length > 1 ? `[${keyed.map(f => `(${f.key})`).join(', ')}].join('/')` : `(${target.key})`}`] : [],
       ...disabled ? [`enabled: ${'dynamic' in disabled ? `() => !(${disabled.dynamic})` : '() => false'}`] : [],
       `invoke: ($event) => (${result.call})`,
     ]
@@ -393,7 +401,8 @@ function visitElement (el: ElementNode, state: WalkState) {
     }
 
     if (state.client) {
-      handler.exp = simpleExpression(`$agentTools.capture(${JSON.stringify(meta.name)}, () => (${result.call}))`, handler.exp.loc)
+      const capture = (call: string) => `$agentTools.capture(${JSON.stringify(meta.name)}, () => (${call}))`
+      handler.exp = simpleExpression(result.direct ? `(...$args) => ${capture(`${result.fn}(...$args)`)}` : capture(result.call), handler.exp.loc)
     }
     const schemaProp = findProp(el, 'schema') ?? findProp(el, 'validation-schema') ?? findProp(el, 'validationSchema')
     const schema = meta.input ?? (schemaProp && 'dynamic' in schemaProp ? schemaProp.dynamic : undefined)
