@@ -228,7 +228,7 @@ catalogs:
     '@babel/plugin-syntax-typescript': 8.0.3
     '@codspeed/core': 6.1.1
     '@codspeed/vitest-plugin': 6.1.1
-    '@eslint/markdown': 8.0.3
+    '@eslint/markdown': 9.0.0
     '@flakiness/playwright': 2.0.3
     '@flakiness/vitest': 1.12.0
     '@nuxt/devtools': 4.1.0

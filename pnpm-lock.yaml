@@ -449,8 +449,8 @@ catalogs:
       specifier: 6.1.1
       version: 6.1.1
     '@eslint/markdown':
-      specifier: 8.0.3
-      version: 8.0.3
+      specifier: 9.0.0
+      version: 9.0.0
     '@flakiness/playwright':
       specifier: 2.0.3
       version: 2.0.3
@@ -809,7 +809,7 @@ importers:
         version: 6.1.1(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(tinybench@6.2.3)(vite@8.3.8)(vitest@5.1.0)
       '@eslint/markdown':
         specifier: catalog:dev
-        version: 8.0.3(supports-color@10.2.2)
+        version: 9.0.0(supports-color@10.2.2)
       '@flakiness/playwright':
         specifier: catalog:dev
         version: 2.0.3
@@ -3779,8 +3779,8 @@ packages:
       eslint:
         optional: true
 
-  '@eslint/markdown@8.0.3':
-    resolution: {integrity: sha512-rBTSSShrq7e4O+PWfeE4azH4/CWPNrC+VGxBXiW00o3vYVJnznsZiDayj3KC9JztIMVRZxZHn2nrDIUau/4j7A==}
+  '@eslint/markdown@9.0.0':
+    resolution: {integrity: sha512-287jt3NwhChN7TLsWq44IB5vUAKwwNXafzLlR1CMcQK5/4mAwbwwAzqr/S7gCYRRJOSHCgGXzIV9uPCh1P810A==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   '@eslint/object-schema@3.0.5':
@@ -11271,8 +11271,8 @@ packages:
     resolution: {integrity: sha512-i6W3epmp98tibZ2rycV6YP4FhSJvvui9JnJm7SicSC1fXzkPBGSS1g9BNZLGUqVGM6opWEq/Aw2uzD3Q0pnQOg==}
     peerDependencies:
       '@rspack/core': ^1.0.0 || ^2.0.0
-      '@vue/compiler-sfc': 3.5.45
-      vue: 3.5.45
+      '@vue/compiler-sfc': '*'
+      vue: '*'
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -12516,8 +12516,8 @@ packages:
   vue-loader@17.4.2:
     resolution: {integrity: sha512-yTKOA4R/VN4jqjw4y5HrynFL8AK0Z3/Jt7eOJXEitsm0GMRHDBjCfCiuTiLP7OESvsZYo2pATCWhDqxC5ZrM6w==}
     peerDependencies:
-      '@vue/compiler-sfc': 3.5.45
-      vue: 3.5.45
+      '@vue/compiler-sfc': '*'
+      vue: '*'
       webpack: ^4.1.0 || ^5.0.0-0
     peerDependenciesMeta:
       '@vue/compiler-sfc':
@@ -13845,7 +13845,7 @@ snapshots:
     optionalDependencies:
       eslint: 10.14.0(jiti@2.7.0)(supports-color@10.2.2)
 
-  '@eslint/markdown@8.0.3(supports-color@10.2.2)':
+  '@eslint/markdown@9.0.0(supports-color@10.2.2)':
     dependencies:
       '@eslint/core': 1.2.1
       '@eslint/plugin-kit': 0.7.3
