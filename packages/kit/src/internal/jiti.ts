@@ -3,7 +3,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { basename, dirname, join } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { directoryToURL } from './esm.ts'
-import { ensureDependencyInstalled } from '../dependency.ts'
+import { ensureDependencyInstalled, getAddDependencyCommand, isPackageSpecifier } from '../dependency.ts'
+import { describeMissingTypeStripping } from './node-support.ts'
+import { parseNodeModulePath } from './node-module.ts'
 
 export type Jiti = ReturnType<typeof import('jiti')['createJiti']>
 type JitiModule = typeof import('jiti')
@@ -58,7 +60,57 @@ export function getMissingCjsGlobal (error: unknown): string | undefined {
   return CJS_GLOBAL_ERROR_RE.exec(message)?.[1]
 }
 
+const MISSING_PACKAGE_RE = /^Cannot find package '([^']+)' imported from (.+)$/m
+
+/** A package that a failed `import()` could not find. */
+export interface MissingPackage {
+  name: string
+  /** Path of the file that imports the package. */
+  importer: string
+}
+
+/**
+ * The package a failed `import()` could not find, or `undefined` if it failed for another reason
+ * or the specifier is a path or an alias rather than a package.
+ *
+ * @param error the error the failed `import()` rejected with
+ * @param aliases aliases the file may import through, which are not packages
+ */
+export function getMissingPackage (error: unknown, aliases: Record<string, string> = {}): MissingPackage | undefined {
+  const { code, message } = (error ?? {}) as { code?: unknown, message?: unknown }
+  if (code !== 'ERR_MODULE_NOT_FOUND' || typeof message !== 'string') {
+    return
+  }
+  const [, name, importer] = MISSING_PACKAGE_RE.exec(message) ?? []
+  if (!name || !importer || !isPackageSpecifier(name)) {
+    return
+  }
+  if (Object.keys(aliases).some((alias) => {
+    alias = alias.replace(/\/$/, '')
+    return name === alias || name.startsWith(`${alias}/`) || alias.startsWith(`${name}/`)
+  })) {
+    return
+  }
+  return { name, importer }
+}
+
+/**
+ * Explain how to install a package that a failed `import()` could not find.
+ *
+ * @param missing the package, as returned by {@link getMissingPackage}
+ * @param rootDir project root, used to pick the package manager
+ */
+export async function describeMissingPackage (missing: MissingPackage, rootDir: string): Promise<string> {
+  const installCommand = await getAddDependencyCommand(missing.name, rootDir, { dev: true })
+  const importingPackage = parseNodeModulePath(missing.importer).name
+  if (importingPackage) {
+    return `\`${missing.name}\` is not a dependency of \`${importingPackage}\`, which imports it. Report it to the author of \`${importingPackage}\`, and until then run \`${installCommand}\` to add it to your project.`
+  }
+  return `\`${missing.name}\` is not installed as a dependency of your project. Run \`${installCommand}\` to add it.`
+}
+
 const MISSING_EXPORT_RE = /does not provide an export named\b/
+const TYPESCRIPT_EXTENSION_RE = /^Unknown file extension "\.[cm]?ts"/
 
 /**
  * Whether a failed `import()` failed to link because a module does not provide a named export.
@@ -74,15 +126,19 @@ export function isMissingExportError (error: unknown): boolean {
 const CJS_GLOBALS_HINT = 'The file was loaded as native ESM, which does not provide the CommonJS globals `__dirname`, `__filename`, `require`, `module` or `exports`. Use `import.meta.url`, `import.meta.dirname` and `createRequire(import.meta.url)` from `node:module` instead.'
 
 /**
- * Explain a failed native import in terms of what the author can change. The runtime supports
- * TypeScript, so the fix is never "stop using TypeScript": it is the specific thing the runtime
- * will not do.
+ * Explain a failed native import in terms of what the author can change. The fix is never "stop
+ * using TypeScript": it is the specific thing the runtime will not do, or a runtime that strips
+ * types.
  *
  * @param error the error the failed `import()` rejected with
  */
 export function describeNativeImportFailure (error: unknown): string {
   if (getMissingCjsGlobal(error)) {
     return CJS_GLOBALS_HINT
+  }
+  const typeStrippingHint = isUnknownTypeScriptExtension(error) ? describeMissingTypeStripping() : undefined
+  if (typeStrippingHint) {
+    return typeStrippingHint
   }
   if (isMissingExportError(error)) {
     return 'The runtime erases types without checking which imports refer to them, so types have to be imported with `import type`.'
@@ -110,6 +166,11 @@ export function describeNativeImportFailure (error: unknown): string {
   }
 }
 
+function isUnknownTypeScriptExtension (error: unknown): boolean {
+  const { code, message } = (error ?? {}) as { code?: unknown, message?: unknown }
+  return code === 'ERR_UNKNOWN_FILE_EXTENSION' && typeof message === 'string' && TYPESCRIPT_EXTENSION_RE.test(message)
+}
+
 const MISSING_EXTENSIONS = ['.ts', '.mts', '.mjs', '.js']
 
 function describeMissingExtension (error: unknown): string | undefined {
@@ -134,14 +195,16 @@ const reportedFallbacks = new Set<string>()
  * record that they have been told.
  *
  * Returns `true` at most once per file, so a dev server reloading a config does not repeat itself.
- * Silent only where jiti is not something the project could lose.
+ * Silent only where jiti is not something the project could lose, unless `missingPackage` is set.
  *
  * @param filePath the file that had to be loaded through jiti
  * @param rootDir project root, where the search for a declared `jiti` starts
  * @param compatibilityVersion resolved `future.compatibilityVersion`
+ * @param missingPackage whether the runtime could not find a package the file imports, which
+ * jiti only hides
  */
-export function shouldReportJitiFallbackOnce (filePath: string, rootDir: string, compatibilityVersion: number): boolean {
-  if (reportedFallbacks.has(filePath) || jitiIsGuaranteed(rootDir, compatibilityVersion)) {
+export function shouldReportJitiFallbackOnce (filePath: string, rootDir: string, compatibilityVersion: number, missingPackage = false): boolean {
+  if (reportedFallbacks.has(filePath) || (!missingPackage && jitiIsGuaranteed(rootDir, compatibilityVersion))) {
     return false
   }
   reportedFallbacks.add(filePath)

@@ -17,7 +17,7 @@ import { logger } from '../logger.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
-import { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
+import { describeMissingPackage, describeNativeImportFailure, getMissingCjsGlobal, getMissingPackage, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
@@ -367,11 +367,22 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     resolvedNuxtModule = await import(src).then(r => interopDefault(r))
   } catch (nativeError: unknown) {
     const missingGlobal = getMissingCjsGlobal(nativeError)
-    // Whether jiti is the answer, or the module simply has a bug a second loader will repeat
-    const jitiCanHelp = isLoaderError(nativeError) || !!missingGlobal
+    const missingPackage = getMissingPackage(nativeError, nuxt.options.alias)
+    // Whether jiti is the answer, or the module simply has a bug a second loader will repeat.
+    // jiti may find a package the module does not depend on, which only hides the problem.
+    const jitiCanHelp = !missingPackage && (isLoaderError(nativeError) || !!missingGlobal)
+    const missingPackageError = async (missing: NonNullable<typeof missingPackage>) => kitDiagnostics.NUXT_B8020({
+      module: nuxtModule,
+      error: nativeError instanceof Error ? nativeError.message : String(nativeError),
+      hint: await describeMissingPackage(missing, nuxt.options.rootDir),
+      cause: nativeError,
+    }, { method: 'error' })
     // A module is a function Nuxt calls later, so evaluating one twice repeats no work of its own
     const jiti = await getSharedJiti(nuxt, jitiCanHelp)
     if (!jiti) {
+      if (missingPackage) {
+        throw await missingPackageError(missingPackage)
+      }
       if (!jitiCanHelp) {
         throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError }, { method: 'error' })
       }
@@ -386,19 +397,23 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     try {
       resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
     } catch (error: unknown) {
+      if (missingPackage) {
+        throw await missingPackageError(missingPackage)
+      }
       // jiti's error is only the better one where jiti was expected to get further; a repeat of the
       // same failure keeps the native error and its untransformed stack
       const repeated = missingGlobal && getMissingCjsGlobal(error) === missingGlobal
       const reported = jitiCanHelp && !repeated ? error : nativeError
       throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(reported), cause: reported }, { method: 'error' })
     }
-    if (shouldReportJitiFallbackOnce(resolvedModulePath, nuxt.options.rootDir, nuxt.options.future?.compatibilityVersion ?? 4)) {
+    if (shouldReportJitiFallbackOnce(resolvedModulePath, nuxt.options.rootDir, nuxt.options.future?.compatibilityVersion ?? 4, !!missingPackage)) {
       kitDiagnostics.NUXT_B8023({
         module: nuxtModule,
         error: nativeError instanceof Error ? nativeError.message : String(nativeError),
-        hint: describeNativeImportFailure(nativeError),
-        installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
-        local: !normalize(resolvedModulePath).includes('/node_modules/'),
+        hint: missingPackage ? await describeMissingPackage(missingPackage, nuxt.options.rootDir) : describeNativeImportFailure(nativeError),
+        installCommand: missingPackage ? undefined : await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
+        // the hint for a missing package already names whoever has to fix it
+        local: !!missingPackage || !normalize(resolvedModulePath).includes('/node_modules/'),
       })
     }
   }

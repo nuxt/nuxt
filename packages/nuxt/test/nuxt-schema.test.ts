@@ -5,13 +5,17 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'pathe'
 import { exec } from 'tinyexec'
 import { afterEach, describe, expect, it } from 'vitest'
+import pkg from '../package.json' with { type: 'json' }
 
 const nuxtEntry = pathToFileURL(fileURLToPath(new URL('../src/index.ts', import.meta.url))).href
 const kitEntry = pathToFileURL(fileURLToPath(new URL('../../kit/src/index.ts', import.meta.url))).href
 
 // The schema module imports schema files natively, which the test runner's own module loader
 // would intercept, so projects are loaded in a plain node process.
-const PREPARE = `const { blockJiti, withoutModuleHooks } = JSON.parse(process.argv.at(-1))
+const PREPARE = `const { blockJiti, withoutModuleHooks, nodeVersion } = JSON.parse(process.argv.at(-1))
+if (nodeVersion) {
+  Object.defineProperty(process.versions, 'node', { value: nodeVersion })
+}
 const nodeModule = (await import('node:module')).default
 const jitiRequests = []
 if (blockJiti) {
@@ -56,9 +60,9 @@ async function createProject (files: Record<string, string>) {
   return rootDir
 }
 
-async function prepare (rootDir: string, options: { blockJiti?: boolean, withoutModuleHooks?: boolean } = {}) {
+async function prepare (rootDir: string, { env, ...options }: { blockJiti?: boolean, withoutModuleHooks?: boolean, nodeVersion?: string, env?: Record<string, string> } = {}) {
   const { stdout, stderr } = await exec(process.execPath, ['--input-type=module', '-e', PREPARE, '--', JSON.stringify(options)], {
-    nodeOptions: { cwd: rootDir },
+    nodeOptions: { cwd: rootDir, env: env && { ...process.env, ...env } },
   })
   const line = stdout.trim().split('\n').at(-1)
   if (!line?.startsWith('{')) {
@@ -193,6 +197,32 @@ describe('nuxt.schema', () => {
       expect(withoutJiti.logs).toContain('NUXT_B5036')
       expect(withoutJiti.logs).toContain('imported with `import type`')
     })
+
+    it.each([true, false])('names a package that is not installed rather than offering jiti (jiti blocked: %s)', async (blockJiti) => {
+      const rootDir = await createProject({
+        'nuxt.schema.ts': `import { value } from '@undeclared/package'\nexport default defineNuxtSchema({ appConfig: { value } })`,
+      })
+      const result = await prepare(rootDir, { blockJiti })
+
+      expect(result.logs).not.toContain('NUXT_B5005')
+      expect(result.logs).toMatch(/NUXT_B5036.*\n.*fix: `@undeclared\/package` is not installed as a dependency of your project\. Run `.* -D @undeclared\/package` to add it\.\n/)
+      expect(result.logs.split('\n').filter(line => !line.startsWith('{')).join('\n')).not.toContain('jiti')
+    })
+
+    it('warns about a package that only jiti can find, even in a project that depends on jiti', async () => {
+      const rootDir = await createProject({
+        'package.json': JSON.stringify({ private: true, type: 'module', name: 'fixture-nuxt-schema', devDependencies: { jiti: '^2.7.0' } }),
+        'phantom/node_modules/@phantom/package/package.json': JSON.stringify({ name: '@phantom/package', version: '1.0.0', main: 'index.js' }),
+        'phantom/node_modules/@phantom/package/index.js': `exports.value = 'phantom'`,
+        'nuxt.schema.ts': `import { value } from '@phantom/package'\nexport default defineNuxtSchema({ appConfig: { phantom: { $default: value } } })`,
+      })
+      const result = await prepare(rootDir, { env: { NODE_PATH: join(rootDir, 'phantom/node_modules') } })
+
+      expect(result.schema.properties.appConfig.properties.phantom).toMatchObject({ default: 'phantom' })
+      expect(result.logs).toContain('NUXT_B5037')
+      expect(result.logs).toMatch(/fix: `@phantom\/package` is not installed as a dependency of your project\. Run `.* -D @phantom\/package` to add it\.\n/)
+      expect(result.logs).not.toMatch(/keep loading it through jiti/)
+    })
   })
 
   describe('on a runtime without synchronous module hooks', () => {
@@ -210,6 +240,15 @@ describe('nuxt.schema', () => {
 
       expect(result.schema.properties).toBeUndefined()
       expect(result.logs).toContain('NUXT_B5019')
+      expect(result.logs).not.toContain('Upgrade Node.js')
+    })
+
+    it('suggests upgrading an unsupported Node.js before installing jiti', async () => {
+      const rootDir = await createProject({ 'nuxt.schema.ts': annotatedSchema('root') })
+      const result = await prepare(rootDir, { blockJiti: true, withoutModuleHooks: true, nodeVersion: '22.12.0' })
+
+      expect(result.logs).toMatch(/NUXT_B5019.*\n.*fix: Upgrade Node\.js to a supported version \(`[^`]+`\)\. Alternatively, run `.*jiti` to load it/)
+      expect(result.logs).toContain(`(\`${pkg.engines.node}\`)`)
     })
   })
 })
