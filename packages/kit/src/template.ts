@@ -197,8 +197,10 @@ export function resolveLayerPaths (dirs: LayerDirectories, projectBuildDir: stri
     nuxt: [
       join(relativeSrcDir, '**/*'),
       join(relativeModulesDir, `*/runtime/**/*`),
-      join(relativeRootDir, `test/nuxt/**/*`),
-      join(relativeRootDir, `tests/nuxt/**/*`),
+      // all tests typecheck in the app context, which has the aliases and DOM types they need
+      // (`test/nuxt` runtime tests are covered by the broader `test` glob)
+      join(relativeRootDir, `test/**/*`),
+      join(relativeRootDir, `tests/**/*`),
       join(relativeRootDir, `layers/*/app/**/*`),
       join(relativeRootDir, `layers/*/modules/*/runtime/**/*`),
     ],
