@@ -299,6 +299,30 @@ describe('agent tool registry', () => {
     expect(execute).not.toHaveBeenCalled()
   })
 
+  it('settles a call that is stopped or withdrawn while its input validates, without waiting for the schema', async () => {
+    const { registry } = setup()
+    const execute = vi.fn()
+    const seen = vi.fn()
+    registry.onActivity(seen)
+    const activation = registry.activate({
+      name: 'lookup',
+      description: 'Look something up. Use when asked.',
+      input: { '~standard': { version: 1, vendor: 'test', validate: () => new Promise<{ value: unknown }>(() => {}) } },
+      execute,
+    })
+
+    const controller = new AbortController()
+    const stopped = registry.call('lookup', {}, { signal: controller.signal })
+    controller.abort()
+    expect(await stopped).toEqual({ isError: true, content: [{ type: 'text', text: 'The user stopped this action. Do not retry unless they ask.' }] })
+
+    const withdrawn = registry.call('lookup', {})
+    activation.dispose()
+    expect(await withdrawn).toEqual({ isError: true, content: [{ type: 'text', text: '"lookup" is not available on the current page.' }] })
+    expect(execute).not.toHaveBeenCalled()
+    expect(seen.mock.calls).toEqual([[[]]])
+  })
+
   it('does not run a call whose tool becomes disabled while its input validates', async () => {
     const { registry } = setup()
     const execute = vi.fn()

@@ -376,34 +376,11 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       return disabled
     }
 
-    const { definition } = activation
-    let value: unknown = input
-    if (definition.input) {
-      let result
-      try {
-        result = await definition.input['~standard'].validate(input)
-      } catch (error) {
-        return text(errorMessage(error), true)
-      }
-      if (result.issues) {
-        return text(`Invalid input. ${formatIssues(result.issues)}`, true)
-      }
-      value = result.value
-      if (!entry.activations.has(activation)) {
-        return unavailable
-      }
-      if (activation.enabled?.() === false) {
-        return disabled
-      }
-    }
-
     const stoppedResult = text('The user stopped this action. Do not retry unless they ask.', true)
     if (options.signal?.aborted) {
       return stoppedResult
     }
-    if (busy.has(activation)) {
-      return text(`"${name}" is already running. Wait for it to finish before calling it again.`, true)
-    }
+    // aborted by the caller, by the user, or when the activation is disposed before the call runs
     const controller = new AbortController()
     const forward = () => controller.abort(options.signal!.reason)
     options.signal?.addEventListener('abort', forward, { once: true })
@@ -411,26 +388,58 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       controller.signal.addEventListener('abort', () => resolve(controller.signal.reason === WITHDRAWN ? unavailable : stoppedResult), { once: true })
     })
     activation.pending.add(controller)
-    const activity: AgentToolActivity = {
-      id: ++nextActivity,
-      tool: name,
-      message: target ? `${definition.description} (${target.label})` : definition.description,
-      input: value,
-      target,
-      stop: () => controller.abort('stopped by the user'),
-    }
+
+    const { definition } = activation
+    const ctx: AgentToolContext = { signal: controller.signal, target }
     const notify = () => {
       const current = snapshot()
       activityListeners.forEach(listener => listener(current))
     }
-
-    const ctx: AgentToolContext = { signal: controller.signal, target }
-    const element = target?.element ?? activation.element?.()
-    if (element) {
-      host.highlight?.([element])
+    let activity: AgentToolActivity | undefined
+    let reserved = false
+    const release = () => {
+      if (reserved) {
+        reserved = false
+        busy.delete(activation)
+      }
     }
 
     const run = async (): Promise<AgentToolResult> => {
+      let value: unknown = input
+      if (definition.input) {
+        const result = await definition.input['~standard'].validate(input)
+        if (result.issues) {
+          return text(`Invalid input. ${formatIssues(result.issues)}`, true)
+        }
+        value = result.value
+        if (controller.signal.aborted) {
+          return stoppedResult
+        }
+        if (activation.enabled?.() === false) {
+          return disabled
+        }
+      }
+      if (busy.has(activation)) {
+        return text(`"${name}" is already running. Wait for it to finish before calling it again.`, true)
+      }
+      if (activation.prepare) {
+        reserved = true
+        busy.add(activation)
+      }
+      activity = {
+        id: ++nextActivity,
+        tool: name,
+        message: target ? `${definition.description} (${target.label})` : definition.description,
+        input: value,
+        target,
+        stop: () => controller.abort('stopped by the user'),
+      }
+      activities.add(activity)
+      notify()
+      const element = target?.element ?? activation.element?.()
+      if (element) {
+        host.highlight?.([element])
+      }
       const prepared = await activation.prepare?.(value, ctx)
       if (controller.signal.aborted) {
         return stoppedResult
@@ -458,19 +467,7 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
       return toolResult
     }
 
-    let reserved = !!activation.prepare
-    if (reserved) {
-      busy.add(activation)
-    }
-    const release = () => {
-      if (reserved) {
-        reserved = false
-        busy.delete(activation)
-      }
-    }
     try {
-      activities.add(activity)
-      notify()
       const running = run()
       running.then(release, release)
       return await Promise.race([running, stopped])
@@ -480,8 +477,9 @@ export function createAgentToolRegistry (host: AgentToolHost = {}) {
     } finally {
       activation.pending.delete(controller)
       options.signal?.removeEventListener('abort', forward)
-      activities.delete(activity)
-      notify()
+      if (activity && activities.delete(activity)) {
+        notify()
+      }
     }
   }
 
