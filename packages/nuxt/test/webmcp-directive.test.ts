@@ -181,24 +181,42 @@ describe('agent tool directive', () => {
     })
   })
 
-  it('does not require a field the user cannot see', async () => {
+  it('keeps a field the user cannot see required while the form needs a value for it', async () => {
     const state = reactive({ email: '', coupon: '' })
+    const sent = vi.fn()
     const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
     const schema = {
       '~standard': {
         version: 1,
         vendor: 'test',
-        validate: (value: unknown) => ({ value }),
+        validate: (value: unknown) => (value as typeof state).coupon ? { value } : { issues: [{ message: 'Required', path: ['coupon'] }] },
         jsonSchema: { input: () => ({ type: 'object', properties: { email: { type: 'string' }, coupon: { type: 'string' } }, required: ['email', 'coupon'] }) },
       },
     }
-    const { registry } = mount(directive => () => withDirectives(h('form', [
-      h('input', { 'data-agent-field': 'state.email' }),
-      withDirectives(h('input', { 'data-agent-field': 'state.coupon' }), [[vShow, false]]),
-    ]), [[directive, binding({ name: 'order', kind: 'form', schema: () => schema, fields: { email: field('email'), coupon: field('coupon') } })]]))
+    const { registry } = mount((directive, submits) => () => h('div', [
+      withDirectives(h('form', {
+        onSubmit: (event: Event) => {
+          event.preventDefault()
+          submits.capture('order', sent)
+        },
+      }, [
+        h('input', { 'data-agent-field': 'state.email' }),
+        withDirectives(h('input', { 'data-agent-field': 'state.coupon' }), [[vShow, false]]),
+      ]), [[directive, binding({ name: 'order', kind: 'form', schema: () => schema, fields: { email: field('email'), coupon: field('coupon') } })]]),
+      withDirectives(h('form', [
+        h('input', { 'data-agent-field': 'state.email' }),
+        withDirectives(h('input', { 'required': true, 'data-agent-field': 'state.coupon' }), [[vShow, false]]),
+      ]), [[directive, binding({ name: 'redeem', kind: 'form', fields: { email: field('email'), coupon: field('coupon') } })]]),
+    ]))
     await nextTick()
 
-    expect(registry.list()[0]!.inputSchema.required).toEqual(['email'])
+    expect(registry.list().map(tool => tool.inputSchema.required)).toEqual([['email', 'coupon'], ['coupon']])
+    expect(await registry.call('order', { email: 'daniel@example.com' })).toEqual({ isError: true, content: [{ type: 'text', text: expect.stringContaining('coupon') }] })
+    expect(sent).not.toHaveBeenCalled()
+
+    state.coupon = 'SAVE10'
+    expect(await registry.call('order', { email: 'daniel@example.com' })).not.toHaveProperty('isError')
+    expect(sent).toHaveBeenCalled()
   })
 
   it('registers and submits a form with a field whose model cannot be read until it is rendered', async () => {

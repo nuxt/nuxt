@@ -175,10 +175,11 @@ function propertyAt (schema: JSONSchema, path: string[], create: boolean): { par
 export function formSchema (fields: FormFields, form: Element, values?: boolean): JSONSchema {
   const schema: JSONSchema = { type: 'object', properties: {} }
   for (const [key, field] of Object.entries(fields)) {
-    const controls = controlsOf(markersOf(form, field).filter(isShown))
+    const markers = markersOf(form, field)
+    const controls = controlsOf(markers.filter(isShown))
     const { parent, name } = propertyAt(schema, key.split('.'), true)!
     ;(parent.properties as Record<string, JSONSchema>)[name] = controlSchema(controls, readField(field)) ?? valueSchema(readField(field))
-    if (controls.some(c => c.required)) {
+    if (controlsOf(markers).some(c => c.required)) {
       parent.required = [...(parent.required as string[] | undefined) ?? [], name]
     }
   }
@@ -217,8 +218,7 @@ function isSecret (el: Element): boolean {
 /**
  * Fills gaps in a form's schema from the fields the user can see: descriptions from labels and, with
  * `values`, current values as defaults, except for passwords, payment card details and `writeOnly` properties.
- * Fields with a value are not required, because input is merged into the form's state, and neither
- * are fields the user cannot see.
+ * Fields with a value are not required, because input is merged into the form's state.
  */
 export function describeSchema (schema: JSONSchema, fields: FormFields, form: Element, values?: boolean) {
   for (const [key, field] of Object.entries(fields)) {
@@ -239,7 +239,7 @@ export function describeSchema (schema: JSONSchema, fields: FormFields, form: El
     if (values && filled && markers.length && property.default === undefined && property.writeOnly !== true && !subjectsOf(markers).some(isSecret)) {
       property.default = value
     }
-    if (filled || !markers.length) {
+    if (filled) {
       at.parent.required = (at.parent.required as string[] | undefined)?.filter(name => name !== at.name)
     }
   }
