@@ -68,7 +68,7 @@
     "@vue/test-utils": "catalog:dev",
     "acorn": "catalog:dev",
     "arktype": "catalog:dev",
-    "autoprefixer": "10.6.2",
+    "autoprefixer": "10.7.0",
     "case-police": "catalog:dev",
     "consola": "catalog:build",
     "cssnano": "9.9.0",
@@ -119,7 +119,7 @@
     "webpack": "catalog:webpack",
     "zod": "catalog:dev"
   },
-  "packageManager": "pnpm@12.18.0",
+  "packageManager": "pnpm@12.21.0",
   "simple-git-hooks": {
     "pre-commit": "pnpm nano-staged"
   },
