@@ -106,6 +106,29 @@ describe('agent tool transform', () => {
     expect(code).toContain('(...$args) => _ctx.$agentTools.capture("checkout", () => ($setup.checkout(...$args)))')
   })
 
+  it('publishes the current values of a form whose tool is marked `values`', () => {
+    const { code, findings } = compile(`
+<script setup lang="ts">
+/**
+ * Save the profile. Use when the user wants to change their details.
+ * @tool values
+ */
+function save () {}
+/**
+ * Send the message. Use when the user wants to get in touch.
+ * @tool
+ */
+function send () {}
+</script>
+<template>
+  <form @submit.prevent="save"><input v-model="name" aria-label="Name"></form>
+  <form @submit.prevent="send"><input v-model="message" aria-label="Message"></form>
+</template>`)
+    expect(code).toMatch(/name: "save", kind: "form".*, values: true \}/)
+    expect(code).not.toMatch(/name: "send", kind: "form".*, values: true \}/)
+    expect(findings).toEqual([])
+  })
+
   it('marks a component field as locked while its `disabled` or `readonly` prop is set', () => {
     const { code } = compile(`${script}
 <template>

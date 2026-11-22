@@ -57,7 +57,7 @@ describe('agent tool directive', () => {
     expect(container.querySelector('input')!.value).toBe('daniel@example.com')
   })
 
-  it('describes a form without a schema from its controls, labels and current values', async () => {
+  it('describes a form without a schema from its controls and labels, and from its current values when marked `values`', async () => {
     const state = reactive({ email: '', quantity: 2, gift: false, plan: 'pro', note: '', code: '' })
     const fields = Object.fromEntries(Object.keys(state).map(key => [key, {
       source: `state.${key}`,
@@ -75,7 +75,7 @@ describe('agent tool directive', () => {
       h('span', { id: 'note-label' }, 'Note for the courier'),
       h('textarea', { 'aria-labelledby': 'note-label', 'data-agent-field': 'state.note' }),
       h('label', ['Code ', h('input', { 'toolparamdescription': 'A discount code, if the user has one', 'data-agent-field': 'state.code' })]),
-    ]), [[directive, binding({ name: 'order', kind: 'form', fields })]]))
+    ]), [[directive, binding({ name: 'order', kind: 'form', values: true, fields })]]))
     await nextTick()
 
     expect(registry.list()[0]!.inputSchema).toEqual({
@@ -92,6 +92,21 @@ describe('agent tool directive', () => {
     })
   })
 
+  it('leaves current values out of the schema of a form that is not marked `values`', async () => {
+    const state = reactive({ email: 'daniel@example.com', plan: 'pro' })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
+    const invoke = vi.fn()
+    const { registry } = mount(directive => () => withDirectives(h('div', [
+      h('input', { 'required': true, 'data-agent-field': 'state.email' }),
+      h('input', { 'disabled': true, 'data-agent-field': 'state.plan' }),
+    ]), [[directive, binding({ name: 'save', kind: 'form', invoke, fields: { email: field('email'), plan: field('plan') } })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema).toEqual({ type: 'object', properties: { email: { type: 'string' }, plan: { type: 'string' } }, required: [] })
+    expect(await registry.call('save', { plan: 'pro' })).toMatchObject({ isError: true, content: [{ text: 'The form was not submitted. plan: this field cannot be changed' }] })
+    expect(invoke).not.toHaveBeenCalled()
+  })
+
   it('leaves the values of passwords, payment cards and hidden fields out of the schema', async () => {
     const state = reactive({ email: 'daniel@example.com', password: 'hunter2', card: '4111111111111111', token: 'secret', pin: '0000' })
     const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
@@ -101,7 +116,7 @@ describe('agent tool directive', () => {
       h('input', { 'autocomplete': 'section-pay CC-Number', 'aria-label': 'Card number', 'data-agent-field': 'state.card' }),
       h('input', { 'type': 'hidden', 'data-agent-field': 'state.token' }),
       h('div', { 'autocomplete': 'one-time-code', 'data-agent-field': 'state.pin' }, [h('input', { 'aria-label': 'Code' })]),
-    ]), [[directive, binding({ name: 'pay', kind: 'form', fields: { email: field('email'), password: field('password'), card: field('card'), token: field('token'), pin: field('pin') } })]]))
+    ]), [[directive, binding({ name: 'pay', kind: 'form', values: true, fields: { email: field('email'), password: field('password'), card: field('card'), token: field('token'), pin: field('pin') } })]]))
     await nextTick()
 
     const schema = registry.list()[0]!.inputSchema
@@ -126,7 +141,7 @@ describe('agent tool directive', () => {
       h('div', { 'autocomplete': 'current-password', 'data-agent-field': 'state.key' }, [h('input', { autocomplete: 'off' })]),
       h('div', { 'type': 'password', 'data-agent-field': 'state.shown' }, [h('input', { type: 'text' })]),
       h('div', { hidden: '' }, [h('input', { 'data-agent-field': 'state.draft' })]),
-    ]), [[directive, binding({ name: 'save', kind: 'form', fields: Object.fromEntries(Object.keys(state).map(key => [key, field(key as keyof typeof state)])) })]]))
+    ]), [[directive, binding({ name: 'save', kind: 'form', values: true, fields: Object.fromEntries(Object.keys(state).map(key => [key, field(key as keyof typeof state)])) })]]))
     await nextTick()
 
     const schema = registry.list()[0]!.inputSchema
@@ -156,7 +171,7 @@ describe('agent tool directive', () => {
     const { registry } = mount(directive => () => withDirectives(h('form', [
       h('input', { 'data-agent-field': 'state.name' }),
       h('input', { 'data-agent-field': 'state.token' }),
-    ]), [[directive, binding({ name: 'save', kind: 'form', confirm: true, schema: () => schema, fields: { name: field('name'), token: field('token') } })]]))
+    ]), [[directive, binding({ name: 'save', kind: 'form', confirm: true, values: true, schema: () => schema, fields: { name: field('name'), token: field('token') } })]]))
     await nextTick()
 
     expect(registry.list()[0]!.inputSchema).toEqual({
@@ -353,8 +368,8 @@ describe('agent tool directive', () => {
     await nextTick()
 
     expect(registry.list()[0]!.inputSchema.properties).toEqual({
-      newsletter: { oneOf: [{ const: 'yes', title: 'checked' }, { const: 'no', title: 'unchecked' }], default: 'no' },
-      terms: { type: 'boolean', default: false },
+      newsletter: { oneOf: [{ const: 'yes', title: 'checked' }, { const: 'no', title: 'unchecked' }] },
+      terms: { type: 'boolean' },
     })
   })
 
@@ -400,7 +415,7 @@ describe('agent tool directive', () => {
       h('input', { 'data-agent-field': 'state.email' }),
       withDirectives(h('fieldset', [h('input', { 'data-agent-field': 'state.coupon' })]), [[vShow, state.advanced]]),
       withDirectives(h('input', { 'data-agent-field': 'state.note' }), [[vShow, state.advanced]]),
-    ]), [[directive, binding({ name: 'order', kind: 'form', fields })]]))
+    ]), [[directive, binding({ name: 'order', kind: 'form', values: true, fields })]]))
     await nextTick()
 
     expect(registry.list()[0]!.inputSchema.properties).toEqual({
@@ -447,7 +462,7 @@ describe('agent tool directive', () => {
       h('select', { 'disabled': true, 'data-agent-field': 'state.plan' }, [h('option', { value: 'free' }), h('option', { value: 'pro' })]),
       h('input', { 'type': 'hidden', 'data-agent-field': 'state.account' }),
       h('input', { 'data-agent-field': 'state.note' }),
-    ]), [[directive, binding({ name: 'save', kind: 'form', fields: { email: field('email'), plan: field('plan'), account: field('account'), note: field('note') } })]]))
+    ]), [[directive, binding({ name: 'save', kind: 'form', values: true, fields: { email: field('email'), plan: field('plan'), account: field('account'), note: field('note') } })]]))
     await nextTick()
 
     expect(await registry.call('save', { email: 'sarah@example.com', plan: 'pro', account: 'b2', note: 'Hi' })).toEqual({
@@ -511,7 +526,7 @@ describe('agent tool directive', () => {
       h('div', { inert: '' }, [h('input', { 'data-agent-field': 'state.note' })]),
       h('div', { hidden: '' }, [h('input', { 'data-agent-field': 'state.tag' })]),
       h('div', { 'role': 'combobox', 'data-agent-field': 'state.open' }),
-    ]), [[directive, binding({ name: 'save', kind: 'form', fields: Object.fromEntries(Object.keys(state).map(key => [key, field(key as keyof typeof state)])) })]]))
+    ]), [[directive, binding({ name: 'save', kind: 'form', values: true, fields: Object.fromEntries(Object.keys(state).map(key => [key, field(key as keyof typeof state)])) })]]))
     await nextTick()
 
     expect(await registry.call('save', { plan: 'pro', size: 'm', color: 'blue', tier: 'plus', note: 'Hi', tag: 'x', open: 'b' })).toEqual({
@@ -542,7 +557,7 @@ describe('agent tool directive', () => {
       h('input', { 'type': 'password', 'disabled': true, 'data-agent-field': 'state.password' }),
       h('input', { 'disabled': true, 'data-agent-field': 'state.token' }),
       h('input', { 'disabled': true, 'data-agent-field': 'state.name' }),
-    ]), [[directive, binding({ name: 'save', kind: 'form', invoke, schema: () => schema, fields: { password: field('password'), token: field('token'), name: field('name') } })]]))
+    ]), [[directive, binding({ name: 'save', kind: 'form', values: true, invoke, schema: () => schema, fields: { password: field('password'), token: field('token'), name: field('name') } })]]))
     await nextTick()
 
     for (const input of [{ password: 'hunter2' }, { password: 'guess' }, { token: 'existing-private-token' }, { token: 'guess' }]) {

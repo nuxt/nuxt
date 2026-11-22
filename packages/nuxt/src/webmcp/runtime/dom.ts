@@ -163,7 +163,7 @@ function propertyAt (schema: JSONSchema, path: string[], create: boolean): { par
 }
 
 /** JSON Schema for a form without a Standard Schema: types from the current values, refined by native controls. */
-export function formSchema (fields: FormFields, form: Element): JSONSchema {
+export function formSchema (fields: FormFields, form: Element, values?: boolean): JSONSchema {
   const schema: JSONSchema = { type: 'object', properties: {} }
   for (const [key, field] of Object.entries(fields)) {
     const markers = markersOf(form, field)
@@ -174,7 +174,7 @@ export function formSchema (fields: FormFields, form: Element): JSONSchema {
       parent.required = [...(parent.required as string[] | undefined) ?? [], name]
     }
   }
-  return describeSchema(schema, fields, form)
+  return describeSchema(schema, fields, form, values)
 }
 
 /** Whether the field `el`, or an element around it, has an inline `display: none`, which is how `v-show` hides. */
@@ -204,7 +204,7 @@ function isPrivate (el: Element): boolean {
  * `writeOnly` properties.
  * Fields with a value are not required, because input is merged into the form's state.
  */
-export function describeSchema (schema: JSONSchema, fields: FormFields, form: Element) {
+export function describeSchema (schema: JSONSchema, fields: FormFields, form: Element, values?: boolean) {
   for (const [key, field] of Object.entries(fields)) {
     const at = propertyAt(schema, key.split('.'), false)
     const property = at && (at.parent.properties as Record<string, JSONSchema>)[at.name]
@@ -221,7 +221,7 @@ export function describeSchema (schema: JSONSchema, fields: FormFields, form: El
     }
     const value = field.get()
     if (value !== undefined && value !== null && value !== '' && property.default === undefined) {
-      if (markers.length && property.writeOnly !== true && !subjectsOf(markers).some(isPrivate)) {
+      if (values && markers.length && property.writeOnly !== true && !subjectsOf(markers).some(isPrivate)) {
         property.default = value
       }
       at.parent.required = (at.parent.required as string[] | undefined)?.filter(name => name !== at.name)

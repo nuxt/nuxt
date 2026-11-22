@@ -21,6 +21,8 @@ export interface AgentToolBinding {
   /** The object every field belongs to, validated as a whole. */
   root?: () => unknown
   schema?: () => unknown
+  /** Whether the current values of the form's fields are published as defaults. */
+  values?: boolean
 }
 
 /** Connects `requestSubmit()` from a tool call to the result of the compiled submit handler. */
@@ -82,7 +84,7 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
       if (form) {
         const schema = binding.schema?.()
         const json = isStandardSchema(schema) ? toJsonSchema(schema) : undefined
-        inputSchema = json ? describeSchema(json, binding.fields ?? {}, form) : formSchema(binding.fields ?? {}, form)
+        inputSchema = json ? describeSchema(json, binding.fields ?? {}, form, binding.values) : formSchema(binding.fields ?? {}, form, binding.values)
       }
       return {
         name: binding.name,

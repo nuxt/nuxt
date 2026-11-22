@@ -13,7 +13,7 @@ const NODE_DIRECTIVE = 7
 const ELEMENT_COMPONENT = 1
 const ELEMENT_TEMPLATE = 3
 
-const FLAGS = ['readonly', 'consequential', 'confirm']
+const FLAGS = ['readonly', 'consequential', 'confirm', 'values']
 const NATIVE_FIELDS = new Set(['input', 'select', 'textarea'])
 const LABEL_ATTRS = ['aria-label', 'aria-labelledby', 'aria-description', 'toolparamdescription']
 const MEMBER_PATH_RE = /^[A-Z_$][\w$]*(?:\.[A-Z_$][\w$]*)*$/i
@@ -44,6 +44,7 @@ interface ToolMeta {
   readonly: boolean
   consequential: boolean
   confirm: boolean
+  values: boolean
   input?: string
   unknownFlags: string[]
   offset: number
@@ -151,6 +152,7 @@ function readScripts (source: string, file: string, findings: AgentToolFinding[]
           readonly: flags.includes('readonly'),
           consequential: flags.includes('consequential'),
           confirm: flags.includes('confirm'),
+          values: flags.includes('values'),
           input: tags.find(t => t.tag === 'input')?.text.trim().split(/\s+/)[0] || undefined,
           unknownFlags: flags.filter(flag => !FLAGS.includes(flag)),
           offset: block.start + statement.start,
@@ -420,6 +422,7 @@ function visitElement (el: ElementNode, state: WalkState) {
         `fields: ${source}`,
         ...root ? [`root: () => (${root})`] : [],
         ...schema ? [`schema: () => (${schema})`] : [],
+        ...meta.values ? ['values: true'] : [],
       ].join(', ')} }`)
     })
   }

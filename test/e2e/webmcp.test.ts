@@ -111,11 +111,12 @@ test('fills and submits forms through their `v-model` bindings', async ({ page, 
   expect(sendMessage!.inputSchema).toMatchObject({
     properties: {
       email: { type: 'string', format: 'email', description: 'Email' },
-      topic: { enum: ['order', 'other'], description: 'Topic', default: 'order' },
+      topic: { enum: ['order', 'other'], description: 'Topic' },
       message: { type: 'string', minLength: 5, description: 'Message' },
     },
     required: ['email', 'message'],
   })
+  expect(JSON.stringify(sendMessage!.inputSchema)).not.toContain('default')
 
   expect(await call(page, 'send_message', { email: 'not an email', message: 'Where is my tea?' })).toMatchObject({ isError: true, text: expect.stringContaining('email') })
   await expect(page.getByLabel('Email')).toHaveValue('')

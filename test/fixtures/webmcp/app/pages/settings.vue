@@ -5,7 +5,7 @@ const saved = ref<string>()
 
 /**
  * Save the account settings. Use when the user asks to update their profile.
- * @tool
+ * @tool values
  */
 function saveSettings () {
   saved.value = `${form.name}, ${form.role}, ${form.plan}, ${form.tier}, ${form.legacyTier}, ${form.trialTier}`
