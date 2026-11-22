@@ -684,6 +684,95 @@ describe('pages:duplicateRouteNames', () => {
   })
 })
 
+describe('pages:duplicateRoutePaths', () => {
+  type Hook = (pages: NuxtPage[]) => void
+  let warn: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    warn = vi.spyOn(pageDiagnostics, 'NUXT_B4030').mockReturnValue(undefined as never)
+    vi.spyOn(pageDiagnostics, 'NUXT_B4028').mockReturnValue(undefined as never)
+    vi.spyOn(pageDiagnostics, 'NUXT_B4004').mockReturnValue(undefined as never)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  function resolve (vfs: Record<string, string>, hooks: Record<string, Hook> = {}, report?: ScanReporter) {
+    const ctx = createPagesContext({ roots: ['pages/'] })
+    ctx.rebuild(Object.keys(vfs).filter(file => file.startsWith('pages/')).map(path => ({ path })))
+    const nuxt = {
+      options: { experimental: { scanPageMeta: true } },
+      vfs,
+      callHook: (name: string, pages: NuxtPage[]) => hooks[name]?.(pages),
+    } as unknown as Nuxt
+    return augmentAndResolve(ctx.emit(report), ctx.trackedFiles, nuxt, undefined, report)
+  }
+
+  const plain = '<template><div /></template>'
+
+  it('warns when a route added in `pages:extend` resolves to an existing path', async () => {
+    await resolve({ 'pages/test.vue': plain, 'module/test.vue': plain }, {
+      'pages:extend': pages => pages.push({ name: 'module-test', path: '/test', file: 'module/test.vue' }),
+    })
+    expect(warn).toHaveBeenCalledExactlyOnceWith({
+      path: '/test',
+      file: 'module/test.vue',
+      existingPath: '/test',
+      existingFile: 'pages/test.vue',
+    })
+  })
+
+  it('reports both files of a duplicated path as a problem', async () => {
+    const report = vi.fn<ScanReporter>()
+    await resolve({ 'pages/test.vue': plain, 'module/test.vue': plain }, {
+      'pages:extend': pages => pages.push({ name: 'module-test', path: '/test', file: 'module/test.vue' }),
+    }, report)
+    expect(report).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('NUXT_B4030'), ['module/test.vue', 'pages/test.vue'], expect.any(Function))
+    report.mock.calls[0]![2]()
+    expect(warn).toHaveBeenCalledExactlyOnceWith({
+      path: '/test',
+      file: 'module/test.vue',
+      existingPath: '/test',
+      existingFile: 'pages/test.vue',
+    })
+  })
+
+  it('warns when two routes use the same path with different parameter names', async () => {
+    await resolve({ 'pages/users/[id].vue': plain, 'module/user.vue': plain }, {
+      'pages:extend': pages => pages.push({ name: 'module-user', path: '/users/:slug', file: 'module/user.vue' }),
+    })
+    expect(warn).toHaveBeenCalledExactlyOnceWith({
+      path: '/users/:slug',
+      file: 'module/user.vue',
+      existingPath: '/users/:id()',
+      existingFile: 'pages/users/[id].vue',
+    })
+  })
+
+  it('does not warn when a parameter has a constraint', async () => {
+    await resolve({ 'pages/users/[id].vue': plain, 'module/user.vue': plain }, {
+      'pages:extend': pages => pages.push({ name: 'module-user', path: '/users/:slug([0-9]+)', file: 'module/user.vue' }),
+    })
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('does not warn for the default child of a parent page', async () => {
+    await resolve({
+      'pages/parent.vue': '<template><NuxtPage /></template>',
+      'pages/parent/index.vue': plain,
+    })
+    expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('does not warn when the paths differ', async () => {
+    await resolve({ 'pages/test.vue': plain, 'module/test.vue': plain }, {
+      'pages:extend': pages => pages.push({ name: 'module-test', path: '/module-test', file: 'module/test.vue' }),
+    })
+    expect(warn).not.toHaveBeenCalled()
+  })
+})
+
 const pagesDir = 'pages'
 const layerDir = 'layer/pages'
 const pageTests: PageTest[] = [

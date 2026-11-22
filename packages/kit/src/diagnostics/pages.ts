@@ -155,5 +155,10 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Check that the rule still covers only the paths it should. With Nitro v3, a single `*` and `(.*)` match any number of segments, so use a named parameter such as `/blog/:slug` to match exactly one. A `**` followed by more of the pattern requires that suffix. A parameter name ends at the first character that is not a letter, digit or `_`, so `:user-id` is the parameter `:user` followed by `-id`. If the rule is not in your configuration, a module or a `nitro:config` hook added it.',
       docs: false,
     },
+    NUXT_B4030: {
+      why: (p: { path: string, file: string, existingPath: string, existingFile: string }) => `The route \`${p.path}\` (\`${p.file}\`) resolves to the same path as \`${p.existingPath}\` (\`${p.existingFile}\`), so only one of the two pages can ever be matched.`,
+      fix: 'Give each route a distinct path, or remove one of the duplicate routes.',
+      docs: false,
+    },
   },
 })

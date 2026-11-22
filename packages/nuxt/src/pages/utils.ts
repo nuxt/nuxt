@@ -152,6 +152,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
 
   if (shouldAugment === false) {
     await nuxt.callHook('pages:extend', pages)
+    warnOnDuplicateRoutePaths(pages, report)
     return pages
   }
 
@@ -179,6 +180,7 @@ export async function augmentAndResolve (pages: NuxtPage[], trackedFiles: Set<st
   await nuxt.callHook('pages:resolved', pages)
 
   warnOnDuplicateRouteNames(pages, generatedNames, dynamicPageMetaCache(nuxt), { vfs: nuxt.vfs, trackedFiles }, report)
+  warnOnDuplicateRoutePaths(pages, report)
 
   return pages
 }
@@ -236,6 +238,49 @@ function warnOnDuplicateRouteNames (pages: NuxtPage[], generatedNames: WeakMap<N
           }))
         }
         seen.set(route.name, { route, file: route.file, path })
+      }
+      if (route.children?.length) {
+        walk(route.children, path)
+      }
+    }
+  }
+
+  walk(pages, '/')
+}
+
+/**
+ * Warn when two routes resolve to the same path, as vue-router only ever matches one of them.
+ */
+function warnOnDuplicateRoutePaths (pages: NuxtPage[], report: ScanReporter) {
+  const seen = new Map<string, NamedRoute>()
+
+  /** Parameter names don't affect matching, so `/:id` and `/:slug` resolve to the same path. Constraints and modifiers (`?`, `*`) are kept as they change what a route matches. */
+  function normalize (path: string) {
+    return path.split('/').map((part) => {
+      if (!part.startsWith(':')) { return part }
+      const modifier = part.match(/[?*+]+$/)?.[0] || ''
+      const body = part.slice(1, part.length - modifier.length)
+      const constraint = /\((.*)\)$/.exec(body)?.[1]
+      // an empty constraint is equivalent to none, and parameter names don't affect matching
+      return `:${constraint ? `(${constraint})` : ''}${modifier}`
+    }).join('/')
+  }
+
+  function walk (routes: NuxtPage[], parentPath: string) {
+    for (const route of routes) {
+      const path = route.path.startsWith('/') ? route.path : joinURL(parentPath, route.path)
+      // a child with an empty path is the default page rendered by its parent, not a route of its own
+      if (route.file && route.path !== '' && route.path !== '/') {
+        const existing = seen.get(normalize(path))
+        if (existing && existing.route !== route) {
+          report(`NUXT_B4030\0${path}\0${route.file}\0${existing.file}`, [route.file, existing.file], () => pageDiagnostics.NUXT_B4030({
+            path,
+            file: linkToAlias(route.file!),
+            existingPath: existing.path,
+            existingFile: linkToAlias(existing.file),
+          }))
+        }
+        seen.set(normalize(path), { route, file: route.file, path })
       }
       if (route.children?.length) {
         walk(route.children, path)
