@@ -140,16 +140,18 @@ test('only fills in fields the user could edit', async ({ page, goto }) => {
     tier: { type: 'string', description: 'Tier', default: 'basic' },
     legacyTier: { type: 'string', description: 'Legacy tier', default: 'basic' },
     trialTier: { type: 'string', description: 'Trial tier', default: 'basic' },
+    referral: { type: 'string' },
+    newsletter: { type: 'boolean', description: 'Newsletter', default: false },
   })
 
-  expect(await call(page, 'save_settings', { role: 'admin', plan: 'pro', legacyTier: 'plus', trialTier: 'plus' })).toEqual({
+  expect(await call(page, 'save_settings', { role: 'admin', plan: 'pro', legacyTier: 'plus', trialTier: 'plus', referral: 'agent' })).toEqual({
     isError: true,
-    text: 'The form was not submitted. role: this field is not on the page; plan: this field cannot be changed; legacyTier: this field cannot be changed; trialTier: this field cannot be changed',
+    text: 'The form was not submitted. role: this field is not on the page; plan: this field cannot be changed; legacyTier: this field cannot be changed; trialTier: this field cannot be changed; referral: this field is not on the page',
   })
   await expect(page.getByTestId('saved')).toHaveText('')
 
-  expect(await call(page, 'save_settings', { name: 'Sarah', tier: 'plus' })).toEqual({ text: 'Saved.', isError: false })
-  await expect(page.getByTestId('saved')).toHaveText('Sarah, member, free, plus, basic, basic')
+  expect(await call(page, 'save_settings', { name: 'Sarah', tier: 'plus', newsletter: true })).toEqual({ text: 'Saved.', isError: false })
+  await expect(page.getByTestId('saved')).toHaveText('Sarah, member, free, plus, basic, basic, friend, true')
   await expect(page).toHaveNoErrorsOrWarnings()
 })
 

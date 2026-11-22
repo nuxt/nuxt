@@ -166,8 +166,7 @@ function propertyAt (schema: JSONSchema, path: string[], create: boolean): { par
 export function formSchema (fields: FormFields, form: Element, values?: boolean): JSONSchema {
   const schema: JSONSchema = { type: 'object', properties: {} }
   for (const [key, field] of Object.entries(fields)) {
-    const markers = markersOf(form, field)
-    const controls = controlsOf(markers)
+    const controls = controlsOf(markersOf(form, field).filter(isShown))
     const { parent, name } = propertyAt(schema, key.split('.'), true)!
     ;(parent.properties as Record<string, JSONSchema>)[name] = controlSchema(controls, field.get()) ?? valueSchema(field.get())
     if (controls.some(c => c.required)) {
@@ -177,32 +176,40 @@ export function formSchema (fields: FormFields, form: Element, values?: boolean)
   return describeSchema(schema, fields, form, values)
 }
 
-/** Whether the field `el`, or an element around it, has an inline `display: none`, which is how `v-show` hides. */
-function isUndisplayed (el: Element) {
-  for (let node: Element | null = el; node; node = node.parentElement) {
-    if ((node as HTMLElement).style?.display === 'none') {
-      return true
-    }
+const VISIBILITY = { opacityProperty: true, visibilityProperty: true }
+
+/** Whether the browser reports `el` as rendered: it is displayed, visible and not fully transparent. */
+function isRendered (el: Element) {
+  return !el.closest('[hidden]') && (el.checkVisibility ? el.checkVisibility(VISIBILITY) : el.getClientRects().length > 0)
+}
+
+/**
+ * Whether the user can see the field whose `v-model` is on `marker`: the element is rendered, or it is
+ * a checkbox or radio button with a rendered label.
+ */
+function isShown (marker: Element) {
+  if (!(marker instanceof HTMLInputElement)) {
+    return isRendered(marker)
   }
-  return false
+  return marker.type !== 'hidden' && (isRendered(marker) || ((marker.type === 'checkbox' || marker.type === 'radio') && [...marker.labels ?? []].some(isRendered)))
 }
 
 const SENSITIVE_AUTOCOMPLETE_RE = /(?:^|\s)(?:current-password|new-password|one-time-code|cc-\S+)(?:\s|$)/i
 
-/** Whether the value of the field `el` must not reach an agent as part of a schema: it is a secret, or the user cannot see it. */
-function isPrivate (el: Element): boolean {
+/** Whether the field `el`, or the element its `v-model` is on, is marked as holding a password or payment card details. */
+function isSecret (el: Element): boolean {
   const marker = el.closest('[data-agent-field]')
   const type = el instanceof HTMLInputElement ? el.type : el.getAttribute('type')
-  return type === 'password' || type === 'hidden' || !!el.closest('[hidden]') || isUndisplayed(el)
+  return type === 'password'
     || SENSITIVE_AUTOCOMPLETE_RE.test(el.getAttribute('autocomplete') ?? '')
-    || (!!marker && marker !== el && isPrivate(marker))
+    || (!!marker && marker !== el && isSecret(marker))
 }
 
 /**
- * Fills gaps in a form's schema from the page: descriptions from labels, and the current values of
- * rendered fields as defaults, except for passwords, payment card details, hidden fields and
- * `writeOnly` properties.
- * Fields with a value are not required, because input is merged into the form's state.
+ * Fills gaps in a form's schema from the fields the user can see: descriptions from labels and, with
+ * `values`, current values as defaults, except for passwords, payment card details and `writeOnly` properties.
+ * Fields with a value are not required, because input is merged into the form's state, and neither
+ * are fields the user cannot see.
  */
 export function describeSchema (schema: JSONSchema, fields: FormFields, form: Element, values?: boolean) {
   for (const [key, field] of Object.entries(fields)) {
@@ -211,19 +218,19 @@ export function describeSchema (schema: JSONSchema, fields: FormFields, form: El
     if (!at || !property) {
       continue
     }
-    const markers = markersOf(form, field)
-    const controls = controlsOf(markers)
+    const markers = markersOf(form, field).filter(isShown)
     if (!property.description) {
-      const description = describe(markers, controls)
+      const description = describe(markers, controlsOf(markers))
       if (description) {
         property.description = description
       }
     }
     const value = field.get()
-    if (value !== undefined && value !== null && value !== '' && property.default === undefined) {
-      if (values && markers.length && property.writeOnly !== true && !subjectsOf(markers).some(isPrivate)) {
-        property.default = value
-      }
+    const filled = value !== undefined && value !== null && value !== ''
+    if (values && filled && markers.length && property.default === undefined && property.writeOnly !== true && !subjectsOf(markers).some(isSecret)) {
+      property.default = value
+    }
+    if (filled || !markers.length) {
       at.parent.required = (at.parent.required as string[] | undefined)?.filter(name => name !== at.name)
     }
   }
@@ -281,11 +288,11 @@ export function fillFields (fields: FormFields, input: Record<string, unknown>) 
   return problems
 }
 
-const LOCKED = ':disabled, [disabled]:not(fieldset), [readonly], [aria-disabled="true"], [aria-readonly="true"], [data-disabled]:not([data-disabled="false"]), [data-agent-locked], [inert], [hidden]'
+const LOCKED = ':disabled, [disabled]:not(fieldset), [readonly], [aria-disabled="true"], [aria-readonly="true"], [data-disabled]:not([data-disabled="false"]), [data-agent-locked], [inert]'
 
-/** Whether the user cannot edit the field `el`: it is disabled, read-only or hidden, or inside an element that is. */
+/** Whether the user cannot edit the field `el`: it is disabled, read-only or inert, or inside an element that is. */
 function isLocked (el: Element) {
-  return !!el.closest(LOCKED) || (el instanceof HTMLInputElement && el.type === 'hidden') || isUndisplayed(el)
+  return !!el.closest(LOCKED)
 }
 
 /** The options of a select, the radios of a group, or the checkboxes bound to one array. */
@@ -307,8 +314,8 @@ function selects (value: unknown, choice: Choice) {
 }
 
 /**
- * Problems with input for a field the user could not edit: one that is not rendered, one whose
- * controls are disabled, read-only or hidden, a choice that is disabled or not offered, or a disabled checkbox of a group.
+ * Problems with input for a field the user could not edit: one the user cannot see, one whose
+ * controls are disabled or read-only, a choice that is disabled or not offered, or a disabled checkbox of a group.
  * Input that repeats the current value of a locked field is accepted when `schema` publishes that value as its default.
  */
 export function lockedProblems (fields: FormFields, form: Element, input: Record<string, unknown>, schema?: JSONSchema) {
@@ -319,7 +326,7 @@ export function lockedProblems (fields: FormFields, form: Element, input: Record
     if (value === undefined) {
       continue
     }
-    const markers = markersOf(form, field)
+    const markers = markersOf(form, field).filter(isShown)
     if (!markers.length) {
       problems.push(`${key}: this field is not on the page`)
       continue

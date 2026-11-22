@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const form = reactive({ name: 'Daniel', password: 'hunter2', role: 'member', plan: 'free', tier: 'basic', legacyTier: 'basic', trialTier: 'basic' })
+const form = reactive({ name: 'Daniel', password: 'hunter2', role: 'member', plan: 'free', tier: 'basic', legacyTier: 'basic', trialTier: 'basic', referral: 'friend', newsletter: false })
 const isAdmin = ref(false)
 const saved = ref<string>()
 
@@ -8,7 +8,7 @@ const saved = ref<string>()
  * @tool values
  */
 function saveSettings () {
-  saved.value = `${form.name}, ${form.role}, ${form.plan}, ${form.tier}, ${form.legacyTier}, ${form.trialTier}`
+  saved.value = `${form.name}, ${form.role}, ${form.plan}, ${form.tier}, ${form.legacyTier}, ${form.trialTier}, ${form.referral}, ${form.newsletter}`
   return 'Saved.'
 }
 </script>
@@ -38,6 +38,14 @@ function saveSettings () {
       aria-label="Trial tier"
       :disabled="!isAdmin"
     />
+    <div class="collapsed">
+      <label>Referral <input v-model="form.referral"></label>
+    </div>
+    <label>Newsletter <input
+      v-model="form.newsletter"
+      type="checkbox"
+      class="collapsed"
+    ></label>
     <button type="submit">
       Save
     </button>
@@ -46,3 +54,9 @@ function saveSettings () {
     </p>
   </form>
 </template>
+
+<style scoped>
+.collapsed {
+  display: none;
+}
+</style>

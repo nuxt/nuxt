@@ -181,6 +181,26 @@ describe('agent tool directive', () => {
     })
   })
 
+  it('does not require a field the user cannot see', async () => {
+    const state = reactive({ email: '', coupon: '' })
+    const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
+    const schema = {
+      '~standard': {
+        version: 1,
+        vendor: 'test',
+        validate: (value: unknown) => ({ value }),
+        jsonSchema: { input: () => ({ type: 'object', properties: { email: { type: 'string' }, coupon: { type: 'string' } }, required: ['email', 'coupon'] }) },
+      },
+    }
+    const { registry } = mount(directive => () => withDirectives(h('form', [
+      h('input', { 'data-agent-field': 'state.email' }),
+      withDirectives(h('input', { 'data-agent-field': 'state.coupon' }), [[vShow, false]]),
+    ]), [[directive, binding({ name: 'order', kind: 'form', schema: () => schema, fields: { email: field('email'), coupon: field('coupon') } })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema.required).toEqual(['email'])
+  })
+
   it('describes multiple selects and checkbox groups as arrays of their options', async () => {
     const state = reactive({ sizes: [] as string[], toppings: [] as string[] })
     const { registry } = mount(directive => () => withDirectives(h('form', [
@@ -423,7 +443,7 @@ describe('agent tool directive', () => {
       coupon: { type: 'string' },
       note: { type: 'string' },
     })
-    expect(await registry.call('order', { coupon: 'FREE', note: 'public' })).toEqual({ isError: true, content: [{ type: 'text', text: 'The form was not submitted. coupon: this field cannot be changed; note: this field cannot be changed' }] })
+    expect(await registry.call('order', { coupon: 'FREE', note: 'public' })).toEqual({ isError: true, content: [{ type: 'text', text: 'The form was not submitted. coupon: this field is not on the page; note: this field is not on the page' }] })
     expect(sent).not.toHaveBeenCalled()
 
     state.advanced = true
@@ -432,20 +452,49 @@ describe('agent tool directive', () => {
     expect(state).toMatchObject({ coupon: 'FREE', note: 'public' })
   })
 
-  it('treats a component whose native control is hidden with `v-show` as hidden', async () => {
-    const state = reactive({ code: 'STAFF50' })
-    const { registry } = mount(directive => () => withDirectives(h('form', [
-      h('div', { 'data-agent-field': 'state.code' }, [withDirectives(h('input'), [[vShow, false]])]),
-    ]), [[directive, binding({
-      name: 'redeem',
-      kind: 'form',
-      fields: { code: { source: 'state.code', get: () => state.code, set: (value) => { state.code = value as string } } },
-    })]]))
+  it('reads and fills in only the fields the browser reports as rendered', async () => {
+    const style = document.createElement('style')
+    style.textContent = '.gone { display: none } .faded { opacity: 0 } .invisible { visibility: hidden }'
+    document.head.append(style)
+    cleanups.push(() => style.remove())
+    const state = reactive({ sheet: 'a', faded: 'b', invisible: 'c', code: 'd', gift: true, picker: 'e' })
+    const sent = vi.fn()
+    const fields = Object.fromEntries(Object.keys(state).map(key => [key, {
+      source: `state.${key}`,
+      get: () => state[key as keyof typeof state],
+      set: (value: unknown) => { (state as Record<string, unknown>)[key] = value },
+    }]))
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('order', sent)
+      },
+    }, [
+      h('input', { 'class': 'gone', 'data-agent-field': 'state.sheet' }),
+      h('div', { class: 'faded' }, [h('input', { 'data-agent-field': 'state.faded' })]),
+      h('input', { 'class': 'invisible', 'data-agent-field': 'state.invisible' }),
+      h('label', ['Code ', h('input', { 'class': 'gone', 'data-agent-field': 'state.code' })]),
+      h('label', ['Gift ', h('input', { 'type': 'checkbox', 'class': 'gone', 'data-agent-field': 'state.gift' })]),
+      h('div', { 'aria-label': 'Picker', 'data-agent-field': 'state.picker' }, [h('input', { class: 'faded' })]),
+    ]), [[directive, binding({ name: 'order', kind: 'form', values: true, fields })]]))
     await nextTick()
 
-    expect(registry.list()[0]!.inputSchema.properties).toEqual({ code: { type: 'string' } })
-    expect(await registry.call('redeem', { code: 'FREE' })).toEqual({ isError: true, content: [{ type: 'text', text: 'The form was not submitted. code: this field cannot be changed' }] })
-    expect(state.code).toBe('STAFF50')
+    expect(registry.list()[0]!.inputSchema.properties).toEqual({
+      sheet: { type: 'string' },
+      faded: { type: 'string' },
+      invisible: { type: 'string' },
+      code: { type: 'string' },
+      gift: { type: 'boolean', description: 'Gift', default: true },
+      picker: { type: 'string', description: 'Picker', default: 'e' },
+    })
+    expect(await registry.call('order', { sheet: 'x', faded: 'x', invisible: 'x', code: 'x' })).toEqual({
+      isError: true,
+      content: [{ type: 'text', text: `The form was not submitted. ${['sheet', 'faded', 'invisible', 'code'].map(key => `${key}: this field is not on the page`).join('; ')}` }],
+    })
+    expect(sent).not.toHaveBeenCalled()
+
+    expect(await registry.call('order', { gift: false, picker: 'f' })).not.toHaveProperty('isError')
+    expect(state).toEqual({ sheet: 'a', faded: 'b', invisible: 'c', code: 'd', gift: false, picker: 'f' })
   })
 
   it('rejects input that changes a disabled, read-only or hidden field', async () => {
@@ -467,7 +516,7 @@ describe('agent tool directive', () => {
 
     expect(await registry.call('save', { email: 'sarah@example.com', plan: 'pro', account: 'b2', note: 'Hi' })).toEqual({
       isError: true,
-      content: [{ type: 'text', text: 'The form was not submitted. email: this field cannot be changed; plan: this field cannot be changed; account: this field cannot be changed' }],
+      content: [{ type: 'text', text: 'The form was not submitted. email: this field cannot be changed; plan: this field cannot be changed; account: this field is not on the page' }],
     })
     expect(sent).not.toHaveBeenCalled()
     expect(state).toEqual({ email: 'daniel@example.com', plan: 'free', account: 'a1', note: '' })
@@ -531,7 +580,7 @@ describe('agent tool directive', () => {
 
     expect(await registry.call('save', { plan: 'pro', size: 'm', color: 'blue', tier: 'plus', note: 'Hi', tag: 'x', open: 'b' })).toEqual({
       isError: true,
-      content: [{ type: 'text', text: `The form was not submitted. ${['plan', 'size', 'color', 'tier', 'note', 'tag'].map(key => `${key}: this field cannot be changed`).join('; ')}` }],
+      content: [{ type: 'text', text: `The form was not submitted. ${['plan', 'size', 'color', 'tier', 'note'].map(key => `${key}: this field cannot be changed`).join('; ')}; tag: this field is not on the page` }],
     })
     expect(sent).not.toHaveBeenCalled()
     expect(state).toEqual({ plan: 'free', size: 's', color: 'red', tier: 'basic', note: '', tag: '', open: 'a' })
