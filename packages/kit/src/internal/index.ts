@@ -22,7 +22,8 @@ export { docsBase, reporters as diagnosticReporters } from '../diagnostics/_shar
 
 export { reportPendingTemplates, trackPendingTemplate } from './pending-templates.ts'
 
-export { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from './jiti.ts'
+export { describeMissingPackage, describeNativeImportFailure, getMissingCjsGlobal, getMissingPackage, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from './jiti.ts'
+export { describeUnsupportedNode } from './node-support.ts'
 
 export { resolvePostcssPlugin, resolvePostcssPluginPath, resolvePostcssPlugins, sortPostcssPlugins } from './postcss.ts'
 

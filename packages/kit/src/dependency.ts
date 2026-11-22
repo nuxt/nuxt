@@ -11,6 +11,7 @@ import { useTerminal } from './terminal.ts'
 import { tryUseNuxt } from './context.ts'
 import { buildDiagnostics } from './diagnostics/build.ts'
 import { configDiagnostics } from './diagnostics/config.ts'
+import { describeMissingTypeStripping } from './internal/node-support.ts'
 
 const isStackblitz = provider === 'stackblitz'
 
@@ -71,7 +72,11 @@ export async function ensureDependencyInstalled (names: string | string[], optio
 
   const formattedNames = installable.map(n => `\`${n}\``).join(', ')
   const dev = options.dev ?? true
-  configDiagnostics.NUXT_B5010({ names: formattedNames, installCommand: await getAddDependencyCommand(installable, rootDir, { dev }) })
+  configDiagnostics.NUXT_B5010({
+    names: formattedNames,
+    installCommand: await getAddDependencyCommand(installable, rootDir, { dev }),
+    hint: installable.includes('jiti') ? describeMissingTypeStripping() : undefined,
+  })
 
   if (isCI) {
     return Array.isArray(names) ? missing : false
