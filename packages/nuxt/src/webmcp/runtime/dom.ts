@@ -177,7 +177,11 @@ function propertyAt (schema: JSONSchema, path: string[], create: boolean): { par
   return { parent: node, name: path.at(-1)! }
 }
 
-/** Whether `schema` marks the property at `path`, or an object that contains it, as `writeOnly`. */
+function hasWriteOnly (node: unknown): boolean {
+  return !!node && typeof node === 'object' && ((node as JSONSchema).writeOnly === true || Object.values(node).some(hasWriteOnly))
+}
+
+/** Whether `schema` marks the property at `path`, an object that contains it, or anything inside it, as `writeOnly`. */
 function isWriteOnly (schema: JSONSchema, path: string[]) {
   let node: JSONSchema | undefined = schema
   for (const segment of path) {
@@ -186,7 +190,7 @@ function isWriteOnly (schema: JSONSchema, path: string[]) {
       return !!node
     }
   }
-  return false
+  return hasWriteOnly(node)
 }
 
 /** JSON Schema for a form without a Standard Schema: types from the current values, refined by native controls. */

@@ -158,9 +158,10 @@ describe('agent tool directive', () => {
   })
 
   it('leaves the values of `writeOnly` properties out of the schema', async () => {
-    const state = reactive({ name: 'Daniel', token: 'existing-private-token', billing: { card: 'existing-private-card' } })
+    const state = reactive({ name: 'Daniel', token: 'existing-private-token', billing: { card: 'existing-private-card' }, address: { city: 'Edinburgh', pin: 'existing-private-pin' }, prefs: { theme: 'dark' } })
     const field = (key: 'name' | 'token') => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
     const card = { source: 'state.billing.card', get: () => state.billing.card, set: (value: unknown) => { state.billing.card = value as string } }
+    const group = (key: 'address' | 'prefs') => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { Object.assign(state[key], value) } })
     const schema = {
       '~standard': {
         version: 1,
@@ -172,6 +173,8 @@ describe('agent tool directive', () => {
             name: { type: 'string' },
             token: { type: 'string', writeOnly: true },
             billing: { type: 'object', writeOnly: true, properties: { card: { type: 'string' } } },
+            address: { type: 'object', properties: { city: { type: 'string' }, pin: { type: 'string', writeOnly: true } } },
+            prefs: { type: 'object', properties: { theme: { type: 'string' } } },
           },
           required: ['name', 'token'],
         }) },
@@ -181,7 +184,9 @@ describe('agent tool directive', () => {
       h('input', { 'data-agent-field': 'state.name' }),
       h('input', { 'data-agent-field': 'state.token' }),
       h('input', { 'data-agent-field': 'state.billing.card' }),
-    ]), [[directive, binding({ name: 'save', kind: 'form', confirm: true, values: true, schema: () => schema, fields: { 'name': field('name'), 'token': field('token'), 'billing.card': card } })]]))
+      h('div', { 'data-agent-field': 'state.address' }),
+      h('div', { 'data-agent-field': 'state.prefs' }),
+    ]), [[directive, binding({ name: 'save', kind: 'form', confirm: true, values: true, schema: () => schema, fields: { 'name': field('name'), 'token': field('token'), 'billing.card': card, 'address': group('address'), 'prefs': group('prefs') } })]]))
     await nextTick()
 
     expect(registry.list()[0]!.inputSchema).toEqual({
@@ -190,6 +195,8 @@ describe('agent tool directive', () => {
         name: { type: 'string', default: 'Daniel' },
         token: { type: 'string', writeOnly: true },
         billing: { type: 'object', writeOnly: true, properties: { card: { type: 'string' } } },
+        address: { type: 'object', properties: { city: { type: 'string' }, pin: { type: 'string', writeOnly: true } } },
+        prefs: { type: 'object', properties: { theme: { type: 'string' } }, default: { theme: 'dark' } },
       },
       required: [],
     })
