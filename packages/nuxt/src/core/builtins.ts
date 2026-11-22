@@ -185,6 +185,7 @@ export default defineNuxtPlugin({
 export function addBuiltinsAfterServer (nuxt: Nuxt) {
   if (nuxt.options.ssr !== false) {
     addAppPlugin(nuxt, 'revive-payload.client')
+    addAppPlugin(nuxt, 'app-config.server')
   }
 
   if (nuxt.options.experimental.payloadExtraction) {

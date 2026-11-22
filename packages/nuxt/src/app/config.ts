@@ -59,8 +59,61 @@ function deepAssign (obj: any, newObj: any) {
 
 export function useAppConfig (): AppConfig {
   const nuxtApp = useNuxtApp()
-  nuxtApp._appConfig ||= (import.meta.server ? klona(__appConfig) : reactive(__appConfig)) as AppConfig
+  nuxtApp._appConfig ||= (import.meta.server ? _getServerAppConfig(nuxtApp) : reactive(__appConfig)) as AppConfig
   return nuxtApp._appConfig
+}
+
+/**
+ * The app config for the current request: the build-time config with any changes made
+ * by server code (through the server layer's `useAppConfig`) applied.
+ * @internal
+ */
+export function _getServerAppConfig (nuxtApp: { ssrContext?: { appConfig?: Record<string, any> } }): AppConfig {
+  const eventConfig = nuxtApp.ssrContext?.appConfig
+  if (!eventConfig) {
+    return klona(__appConfig)
+  }
+  const config = klona(__appConfig)
+  deepAssign(config, eventConfig)
+  return config
+}
+
+/**
+ * A minimal diff of `current` against the build-time app config (or an explicit `reference`),
+ * carrying changes made during server rendering to the client through the payload.
+ * @internal
+ */
+export function _getAppConfigDiff (current: AppConfig, reference: AppConfig = __appConfig): DeepPartial<AppConfig> | undefined {
+  return configDiff(current, reference) as DeepPartial<AppConfig> | undefined
+}
+
+function configDiff (current: unknown, reference: unknown): unknown {
+  if (Array.isArray(current) && Array.isArray(reference)) {
+    if (current.length !== reference.length) { return current }
+    for (const [index, value] of current.entries()) {
+      if (configDiff(value, reference[index]) !== undefined) { return current }
+    }
+    return undefined
+  }
+  if (isPojoOrArray(current) && isPojoOrArray(reference)) {
+    // a change of container type is carried as a whole replacement
+    if (Array.isArray(current) !== Array.isArray(reference)) { return current }
+    let changed = false
+    const result: Record<string, unknown> = {}
+    const currentObject = current as Record<string, unknown>
+    const referenceObject = reference as Record<string, unknown>
+    for (const key in currentObject) {
+      const value = configDiff(currentObject[key], referenceObject[key])
+      if (value !== undefined) {
+        result[key] = value
+        changed = true
+      }
+    }
+    return changed ? result : undefined
+  }
+  // functions cannot be serialized into the payload, so they are not carried
+  if (typeof current === 'function') { return undefined }
+  return current === reference ? undefined : current
 }
 
 export function _replaceAppConfig (newConfig: AppConfig): void {

@@ -137,6 +137,12 @@ export interface NuxtPayload {
   error?: NuxtError | undefined
   _errors: Record<string, NuxtError | undefined>
   /**
+   * Changes made to the app config while server rendering this request, which the client
+   * applies to its app config on hydration.
+   * @internal
+   */
+  appConfig?: Record<string, any>
+  /**
    * Forwarded `<link rel="preload">` / `<link rel="modulepreload">` hints from the destination route, populated when `experimental.prefetchPreloadTags` is enabled.
    * @internal
    */
@@ -161,6 +167,11 @@ export interface NuxtSSRContext extends SSRContext {
   head: VueHeadClient<UseHeadInput, SSRHeadPayload>
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
+  /**
+   * The app config for this request, created when server code calls the server layer's `useAppConfig`.
+   * @internal
+   */
+  appConfig?: Record<string, any>
   teleports?: Record<string, string>
   islandContext?: NuxtIslandContext
   /** @internal */

@@ -3,7 +3,10 @@ import { joinURL, withQuery } from 'ufo'
 import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
 import { createError } from '../composables/error'
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { updateAppConfig } from '../config'
+import type { DeepPartial } from '../config'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
+import type { AppConfig } from 'nuxt/schema'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
 import { componentIslands } from '#build/nuxt.config.mjs'
@@ -82,6 +85,10 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       definePayloadReviver(reviver, fn)
     }
     Object.assign(nuxtApp.payload, await nuxtApp.runWithContext(getNuxtClientPayload))
+    // apply changes made to the app config while server rendering (#21630)
+    if (nuxtApp.payload.appConfig) {
+      updateAppConfig(nuxtApp.payload.appConfig as DeepPartial<AppConfig>)
+    }
     delete window.__NUXT__
   },
 })
