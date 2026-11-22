@@ -5,13 +5,17 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'pathe'
 import { exec } from 'tinyexec'
 import { afterEach, describe, expect, it } from 'vitest'
+import pkg from '../package.json' with { type: 'json' }
 
 const nuxtEntry = pathToFileURL(fileURLToPath(new URL('../src/index.ts', import.meta.url))).href
 const kitEntry = pathToFileURL(fileURLToPath(new URL('../../kit/src/index.ts', import.meta.url))).href
 
 // The schema module imports schema files natively, which the test runner's own module loader
 // would intercept, so projects are loaded in a plain node process.
-const PREPARE = `const { blockJiti, withoutModuleHooks } = JSON.parse(process.argv.at(-1))
+const PREPARE = `const { blockJiti, withoutModuleHooks, nodeVersion } = JSON.parse(process.argv.at(-1))
+if (nodeVersion) {
+  Object.defineProperty(process.versions, 'node', { value: nodeVersion })
+}
 const nodeModule = (await import('node:module')).default
 const jitiRequests = []
 if (blockJiti) {
@@ -55,7 +59,7 @@ async function createProject (files: Record<string, string>) {
   return rootDir
 }
 
-async function prepare (rootDir: string, options: { blockJiti?: boolean, withoutModuleHooks?: boolean } = {}) {
+async function prepare (rootDir: string, options: { blockJiti?: boolean, withoutModuleHooks?: boolean, nodeVersion?: string } = {}) {
   const { stdout, stderr } = await exec(process.execPath, ['--input-type=module', '-e', PREPARE, '--', JSON.stringify(options)], {
     nodeOptions: { cwd: rootDir },
   })
@@ -209,6 +213,15 @@ describe('nuxt.schema', () => {
 
       expect(result.schema.properties).toBeUndefined()
       expect(result.logs).toContain('NUXT_B5019')
+      expect(result.logs).not.toContain('Upgrade Node.js')
+    })
+
+    it('suggests upgrading an unsupported Node.js before installing jiti', async () => {
+      const rootDir = await createProject({ 'nuxt.schema.ts': annotatedSchema('root') })
+      const result = await prepare(rootDir, { blockJiti: true, withoutModuleHooks: true, nodeVersion: '22.12.0' })
+
+      expect(result.logs).toMatch(/NUXT_B5019.*\n.*fix: Upgrade Node\.js to a supported version \(`[^`]+`\)\. Alternatively, run `.*jiti` to load it/)
+      expect(result.logs).toContain(`(\`${pkg.engines.node}\`)`)
     })
   })
 })

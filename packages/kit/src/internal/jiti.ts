@@ -4,6 +4,7 @@ import { basename, dirname, join } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { directoryToURL } from './esm.ts'
 import { ensureDependencyInstalled } from '../dependency.ts'
+import { describeMissingTypeStripping } from './node-support.ts'
 
 export type Jiti = ReturnType<typeof import('jiti')['createJiti']>
 type JitiModule = typeof import('jiti')
@@ -59,6 +60,7 @@ export function getMissingCjsGlobal (error: unknown): string | undefined {
 }
 
 const MISSING_EXPORT_RE = /does not provide an export named\b/
+const TYPESCRIPT_EXTENSION_RE = /^Unknown file extension "\.[cm]?ts"/
 
 /**
  * Whether a failed `import()` failed to link because a module does not provide a named export.
@@ -84,6 +86,10 @@ export function describeNativeImportFailure (error: unknown): string {
   if (getMissingCjsGlobal(error)) {
     return CJS_GLOBALS_HINT
   }
+  const typeStrippingHint = isUnknownTypeScriptExtension(error) ? describeMissingTypeStripping() : undefined
+  if (typeStrippingHint) {
+    return typeStrippingHint
+  }
   if (isMissingExportError(error)) {
     return 'The runtime erases types without checking which imports refer to them, so types have to be imported with `import type`.'
   }
@@ -108,6 +114,11 @@ export function describeNativeImportFailure (error: unknown): string {
       return 'Check that the file and everything it imports can be loaded by the runtime directly.'
     }
   }
+}
+
+function isUnknownTypeScriptExtension (error: unknown): boolean {
+  const { code, message } = (error ?? {}) as { code?: unknown, message?: unknown }
+  return code === 'ERR_UNKNOWN_FILE_EXTENSION' && typeof message === 'string' && TYPESCRIPT_EXTENSION_RE.test(message)
 }
 
 const MISSING_EXTENSIONS = ['.ts', '.mts', '.mjs', '.js']

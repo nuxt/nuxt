@@ -5,7 +5,7 @@ import { join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
 import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, importModule } from '@nuxt/kit'
-import { configDiagnostics, describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from '@nuxt/kit/internal'
+import { configDiagnostics, describeNativeImportFailure, describeUnsupportedNode, getMissingCjsGlobal, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from '@nuxt/kit/internal'
 import type { Jiti } from 'jiti'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
@@ -67,7 +67,7 @@ export default defineNuxtModule({
       })
       if (!jiti) {
         if (!canImportSchema) {
-          configDiagnostics.NUXT_B5019({ filePath: displayPath, installCommand: await installCommand() })
+          configDiagnostics.NUXT_B5019({ filePath: displayPath, installCommand: await installCommand(), hint: describeUnsupportedNode() })
         } else if (jitiCanHelp) {
           configDiagnostics.NUXT_B5036(await failure())
         } else {

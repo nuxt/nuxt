@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { shouldReportJitiFallbackOnce } from '../src/internal/jiti.ts'
 import { createTempDir, writeFiles } from './utils.ts'
+import nuxt from '../../nuxt/package.json' with { type: 'json' }
 
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
 const kitEntry = pathToFileURL(join(repoRoot, 'packages/kit/src/index.ts')).href
@@ -37,8 +38,9 @@ try {
   console.log(JSON.stringify({ code: error.code, isLoaderError: isLoaderError(error), missingCjsGlobal: getMissingCjsGlobal(error) ?? null }))
 }`
 
-const LOAD = `const { hook, cwd, config, module: id, alias = {}, loads = 1 } = JSON.parse(process.argv.at(-1))
+const LOAD = `const { hook, cwd, config, module: id, alias = {}, loads = 1, nodeVersion } = JSON.parse(process.argv.at(-1))
 if (hook) { (await import('node:module')).register(hook) }
+if (nodeVersion) { Object.defineProperty(process.versions, 'node', { value: nodeVersion }) }
 const kit = await import(${JSON.stringify(kitEntry)})
 const result = { ok: true }
 try {
@@ -63,12 +65,14 @@ interface LoadOptions {
   module?: string
   alias?: Record<string, string>
   loads?: number
+  nodeVersion?: string
+  execArgv?: string[]
 }
 
 interface LoadResult { ok: boolean, value?: unknown, module?: string, code?: string, message?: string, fix?: string, logs: string }
 
-async function runNode (script: string, args: string[], cwd: string) {
-  const { stdout, stderr } = await exec(process.execPath, ['--input-type=module', '-e', script, '--', ...args], { nodeOptions: { cwd } })
+async function runNode (script: string, args: string[], cwd: string, execArgv: string[] = []) {
+  const { stdout, stderr } = await exec(process.execPath, [...execArgv, '--input-type=module', '-e', script, '--', ...args], { nodeOptions: { cwd } })
   const line = stdout.trim().split('\n').at(-1)
   if (!line) {
     throw new Error(`no output: ${stderr}`)
@@ -76,8 +80,8 @@ async function runNode (script: string, args: string[], cwd: string) {
   return { ...JSON.parse(line), logs: stdout + stderr }
 }
 
-function load (options: LoadOptions): Promise<LoadResult> {
-  return runNode(LOAD, [JSON.stringify(options)], options.cwd)
+function load ({ execArgv, ...options }: LoadOptions): Promise<LoadResult> {
+  return runNode(LOAD, [JSON.stringify(options)], options.cwd, execArgv)
 }
 
 const USES_DIRNAME = `export default { runtimeConfig: { value: __dirname ? 'ok' : 'no' } }\n`
@@ -287,6 +291,67 @@ describe('jiti fallback', { concurrent: false, timeout: 60_000 }, () => {
   })
 })
 
+describe('without type stripping', { concurrent: false, timeout: 60_000 }, () => {
+  let dir: string
+
+  const STRIP_REPO_SOURCES = `import { readFile } from 'node:fs/promises'
+import { stripTypeScriptTypes } from 'node:module'
+const repo = ${JSON.stringify(pathToFileURL(repoRoot).href)}
+export function resolve (specifier, context, next) {
+  if (specifier === 'jiti' || /[/\\\\]jiti[/\\\\]/.test(specifier)) { throw new Error('jiti is unavailable') }
+  return next(specifier, context)
+}
+export async function load (url, context, next) {
+  if (url.startsWith(repo) && !url.includes('/node_modules/') && /\\.m?ts$/.test(new URL(url).pathname)) {
+    return { format: 'module', source: stripTypeScriptTypes(await readFile(new URL(url), 'utf8')), shortCircuit: true }
+  }
+  return next(url, context)
+}`
+
+  beforeAll(async () => {
+    dir = await createTempDir('kit-no-type-stripping-')
+    await writeFiles(dir, {
+      'hook.mjs': STRIP_REPO_SOURCES,
+      'project/package.json': { name: 'no-type-stripping-fixture', private: true, type: 'module' },
+      'project/nuxt.config.ts': 'const value: string = \'typed\'\nexport default { runtimeConfig: { value } }\n',
+      'yaml-import/package.json': { name: 'yaml-import-fixture', private: true, type: 'module' },
+      'yaml-import/nuxt.config.mjs': 'import \'./data.yaml\'\nexport default {}\n',
+      'yaml-import/data.yaml': 'value: 1\n',
+    })
+  })
+
+  afterAll(() => rm(dir, { force: true, recursive: true }))
+
+  const loadConfig = (nodeVersion: string, project = 'project') => load({
+    cwd: join(dir, project),
+    config: true,
+    hook: pathToFileURL(join(dir, 'hook.mjs')).href,
+    nodeVersion,
+    execArgv: ['--no-experimental-strip-types'],
+  })
+
+  it('should suggest upgrading Node.js before installing jiti on an unsupported Node.js', async () => {
+    const result = await loadConfig('22.12.0')
+    expect(result).toMatchObject({ ok: false, code: 'NUXT_B5017' })
+    expect(result.message).toContain('Unknown file extension ".ts"')
+    expect(result.fix).toMatch(/^Upgrade Node\.js to a supported version \(`[^`]+`\)\. Alternatively, run `.*jiti` and Nuxt will load it through jiti instead\.$/)
+    expect(result.fix).toContain(`(\`${nuxt.engines.node}\`)`)
+  })
+
+  it('should suggest turning type stripping back on for a supported Node.js', async () => {
+    const result = await loadConfig('24.15.0')
+    expect(result).toMatchObject({ ok: false, code: 'NUXT_B5017' })
+    expect(result.fix).toMatch(/^Type stripping is turned off in this Node\.js process\. .* Alternatively, run `.*jiti` and Nuxt will load it through jiti instead\.$/)
+  })
+
+  it('should not suggest upgrading Node.js for a file type it cannot load either', async () => {
+    const result = await loadConfig('22.12.0', 'yaml-import')
+    expect(result).toMatchObject({ ok: false, code: 'NUXT_B5017' })
+    expect(result.message).toContain('Unknown file extension ".yaml"')
+    expect(result.fix).not.toContain('Node.js')
+  })
+})
+
 // `enum` is the cheapest syntax the runtime refuses to strip, so both the config and the module
 // in the fixture can only be loaded through jiti.
 describe('jiti resolution', { concurrent: false, timeout: 60_000 }, () => {
@@ -354,6 +419,7 @@ describe('jiti resolution', { concurrent: false, timeout: 60_000 }, () => {
     const result = await run(BLOCK_ALL)
     expect(result).toMatchObject({ ok: false, code: 'NUXT_B5017' })
     expect(result.message).toMatch(/could not be loaded/)
+    expect(result.fix).not.toContain('Node.js')
   })
 
   const INSTALL_DURING_LOOKUP = `const [hook, entry, target, destination] = process.argv.slice(-4)
