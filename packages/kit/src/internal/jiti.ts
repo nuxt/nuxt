@@ -87,7 +87,7 @@ export function getMissingPackage (error: unknown, aliases: Record<string, strin
   }
   if (Object.keys(aliases).some((alias) => {
     alias = alias.replace(/\/$/, '')
-    return name === alias || name.startsWith(`${alias}/`)
+    return name === alias || name.startsWith(`${alias}/`) || alias.startsWith(`${name}/`)
   })) {
     return
   }

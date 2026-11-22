@@ -375,6 +375,8 @@ describe('getMissingPackage', () => {
     expect(getMissingPackage(notFound('assets'), { 'assets/': '/project/assets/' })).toBeUndefined()
     expect(getMissingPackage(notFound('@alias/pkg'), { '@alias': '/project/alias' })).toBeUndefined()
     expect(getMissingPackage(notFound('@alias/pkg'), { '@alias/': '/project/alias/' })).toBeUndefined()
+    expect(getMissingPackage(notFound('utils'), { 'utils/helpers': '/project/helpers.ts' })).toBeUndefined()
+    expect(getMissingPackage(notFound('utils'), { 'utilities/helpers': '/project/helpers.ts' })).toMatchObject({ name: 'utils' })
   })
 
   it('should ignore a file that could not be found', () => {
