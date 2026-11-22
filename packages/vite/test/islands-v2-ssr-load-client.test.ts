@@ -42,6 +42,14 @@ describe('createSsrLoadClientTransform', () => {
     expect(code).toMatch(/_createVNode\(_islandClientBoundary, \{\s*is: _component_Pair,\s*props: null,\s*chunk: "\/components\/Pair\.client\.vue",\s*exportName: "default",\s*mount: true\s*\}\)/)
   })
 
+  it('passes `allSlots` for the `.slots` modifier, with a directive value, in both branches', () => {
+    const code = compile('<Wrapper><Foo v-load-client.slots="cond" /><Bar v-load-client /></Wrapper>', true)
+    expect(code).toMatch(/_islandRenderClient\(_component_Foo, null, null, _parent, \{\s*enabled: _ctx\.cond,\s*chunk: "\/components\/Foo\.vue",\s*exportName: "default",\s*allSlots: true\s*\}, _scopeId\)/)
+    expect(code).toMatch(/_createVNode\(_islandClientBoundary, \{\s*is: _component_Foo,\s*props: null,\s*enabled: _ctx\.cond,\s*chunk: "\/components\/Foo\.vue",\s*exportName: "default",\s*allSlots: true\s*\}\)/)
+    expect(code.match(/allSlots/g)).toHaveLength(2)
+    expect(compile('<div><Foo v-load-client.slots /></div>', false)).not.toContain('allSlots')
+  })
+
   it('emits empty options for unscanned targets', () => {
     const code = compile('<div><Missing v-load-client /></div>', true)
     expect(code).toContain('_islandRenderClient(_component_Missing, null, null, _parent, {})')

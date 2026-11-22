@@ -157,7 +157,7 @@ describe('slots the server render did not call', () => {
   })
 
   // Renders `slots` for a target, as the island root, so its own `<slot>`s become outlets.
-  async function render (target: object, slots: (rootSlots: any) => Record<string, SlotFn>, options: { mount?: boolean } = {}) {
+  async function render (target: object, slots: (rootSlots: any) => Record<string, SlotFn>, options: { mount?: boolean, allSlots?: boolean } = {}) {
     const context = islandContext()
     const errorHandler = vi.fn()
     const Root = defineComponent({
@@ -178,21 +178,51 @@ describe('slots the server render did not call', () => {
     return { html, context, nonce: context.islands.markers.nonce, slots: (readMarker(html, context.islands.markers.nonce) as unknown[])[3] }
   }
 
-  it('captures the slots of a mounted pair whose server half renders none, outside the page HTML', async () => {
+  it('leaves out the slots the target did not render, from the marker and the whole HTML', async () => {
+    const Gate = defineComponent({
+      name: 'Gate',
+      props: ['allowed'],
+      ssrRender (ctx: any, push: Push, parent: ComponentInternalInstance) {
+        if (ctx.allowed) { ssrRenderSlot(ctx.$slots, 'default', {}, null, push as any, parent) }
+        ssrRenderSlot(ctx.$slots, 'shown', {}, null, push as any, parent)
+      },
+    })
+    const context = islandContext()
+    const Root = defineComponent({
+      ssrRender (_ctx: unknown, push: Push, parent: ComponentInternalInstance) {
+        push(ssrRenderClientComponent(Gate, { allowed: false }, {
+          default: (_: unknown, slotPush: Push) => { slotPush('<b>SECRET</b>') },
+          shown: (_: unknown, slotPush: Push) => { slotPush('<i>shown</i>') },
+          _: 1,
+        } as any, parent, { chunk: CHUNK }))
+      },
+    })
+    const html = await renderToString(createSSRApp(Root), context)
+    expect(html).not.toContain('SECRET')
+    expect(readMarker(html, context.islands.markers.nonce)).toEqual([{ allowed: false }, CHUNK, 'default', { shown: '<i>shown</i>' }])
+
+    const { html: pairHtml, slots } = await render(Skeleton, () => ({
+      default: (_, push) => { push('<b>SECRET</b>') },
+    }), { mount: true })
+    expect(pairHtml).not.toContain('SECRET')
+    expect(slots).toEqual({})
+  })
+
+  it('captures the slots of a mounted pair whose server half renders none with `.slots`, outside the page HTML', async () => {
     const { html, nonce, slots } = await render(Skeleton, () => ({
       default: (_, push) => { push('<b>d</b>') },
       named: (_, push) => { push('<i>n</i>') },
-    }), { mount: true })
+    }), { mount: true, allSlots: true })
     expect(slots).toEqual({ default: '<b>d</b>', named: '<i>n</i>' })
     expect(html.replace(/<!--i:c:.*?-->/, '')).toBe(`<!--[--><p>skeleton</p><!--]--><!--/i:c:${nonce}-->`)
   })
 
-  it('captures a slot an ordinary target leaves closed, rendering each slot once', async () => {
+  it('captures a slot an ordinary target leaves closed with `.slots`, rendering each slot once', async () => {
     const calls: string[] = []
     const { html, slots } = await render(Child, () => ({
       default: (_, push) => { calls.push('default'); push('<b>d</b>') },
       closed: (_, push) => { calls.push('closed'); push('<i>c</i>') },
-    }))
+    }), { allSlots: true })
     expect(slots).toEqual({ default: '<b>d</b>', closed: '<i>c</i>' })
     expect(calls).toEqual(['default', 'closed'])
     expect(html.replace(/<!--i:c:.*?-->/, '')).not.toContain('<i>c</i>')
@@ -202,7 +232,7 @@ describe('slots the server render did not call', () => {
     const { slots } = await render(Skeleton, () => ({
       default: (_, push) => { push('<b>d</b>') },
       row: (props, push) => { push(`<b>${props.item.name}</b>`) },
-    }))
+    }), { allSlots: true })
     expect(slots).toEqual({ default: '<b>d</b>' })
   })
 
@@ -214,7 +244,7 @@ describe('slots the server render did not call', () => {
     const { slots } = await render(Skeleton, () => ({
       default: (_, push) => { push('<b>d</b>') },
       row: (props, push, parent) => { push(ssrRenderComponent(Failing, { item: props.item }, null, parent)) },
-    }))
+    }), { allSlots: true })
     expect(slots).toEqual({ default: '<b>d</b>' })
   })
 
@@ -231,7 +261,7 @@ describe('slots the server render did not call', () => {
         islandSsrRenderSlot(rootSlots, 'page', {}, null, push as any, parent)
         push(ssrRenderComponent(Async, null, null, parent))
       },
-    }))
+    }), { allSlots: true })
     expect((slots as Record<string, string>).default).toBe([
       `<!--i:c:${nonce}${encodeMarker([{ msg: 'in' }, CHUNK, 'default'])}--><span>in</span><!--[--><!--]--><!--/i:c:${nonce}-->`,
       `<!--i:s:${nonce}${encodeMarker(['page', {}, null, ''])}--><!--/i:s:${nonce}-->`,

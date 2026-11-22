@@ -32,6 +32,11 @@ interface PendingBoundary {
   node: ElementNode & { ssrCodegenNode?: CallExpression }
   enabled: ExpressionNode | undefined
   target: ReturnType<ClientTargetLookup>
+  /**
+   * Whether the directive has the `.slots` modifier, e.g. `<Foo v-load-client.slots />`, which also
+   * sends the client the slots the component does not render on the server.
+   */
+  allSlots: boolean
 }
 
 /**
@@ -45,6 +50,7 @@ const RENDER_IDENTIFIER = '_islandRenderClient'
 const RENDER_VNODE_IDENTIFIER = '_islandRenderClientVNode'
 const BOUNDARY_MODULE = '#app/components/islands-v2/server'
 const DIRECTIVE_NAME = 'load-client'
+const ALL_SLOTS_MODIFIER = 'slots'
 
 /**
  * Pending `v-load-client` components of each compile root; a slot's vnode branch has its own root.
@@ -79,6 +85,7 @@ export function createSsrLoadClientTransform (lookup: ClientTargetLookup): NodeT
       node,
       enabled: directive.exp,
       target: lookup(normalize(context.filename), node.tag),
+      allSlots: directive.modifiers.some(modifier => modifier.content === ALL_SLOTS_MODIFIER),
     })
   }
 }
@@ -113,11 +120,11 @@ function finishRoot (pending: PendingBoundary[], context: TransformContext): voi
   }
 }
 
-function wrapSsrCall ({ node, enabled, target }: PendingBoundary): boolean {
-  const call = node.ssrCodegenNode
+function wrapSsrCall (entry: PendingBoundary): boolean {
+  const call = entry.node.ssrCodegenNode
   if (!call || call.type !== NodeTypes.JS_CALL_EXPRESSION) { return false }
   const callee = typeof call.callee === 'symbol' ? helperNameMap[call.callee] : call.callee
-  const options = createObjectExpression(boundaryOptions(enabled, target))
+  const options = createObjectExpression(boundaryOptions(entry))
   // `_ssrRenderComponent(comp, props, slots, _parent)` becomes the helper call plus its options.
   if (callee === 'ssrRenderComponent') {
     call.callee = RENDER_IDENTIFIER
@@ -140,13 +147,13 @@ function wrapSsrCall ({ node, enabled, target }: PendingBoundary): boolean {
  * Vnode branch of a slot: `_createVNode(comp, props, slots, patchFlag, dynamicProps)` becomes
  * `_createVNode(_islandClientBoundary, { is: comp, props, ...options }, slots)`.
  */
-function wrapVNodeCall ({ node, enabled, target }: PendingBoundary): boolean {
-  const call = node.codegenNode as VNodeCall | undefined
+function wrapVNodeCall (entry: PendingBoundary): boolean {
+  const call = entry.node.codegenNode as VNodeCall | undefined
   if (!call || call.type !== NodeTypes.VNODE_CALL) { return false }
   call.props = createObjectExpression([
     createObjectProperty('is', asNode(call.tag as JSChildNode | string)),
     createObjectProperty('props', asNode(call.props ?? 'null')),
-    ...boundaryOptions(enabled, target),
+    ...boundaryOptions(entry),
   ])
   call.tag = BOUNDARY_IDENTIFIER
   call.patchFlag = undefined
@@ -155,9 +162,9 @@ function wrapVNodeCall ({ node, enabled, target }: PendingBoundary): boolean {
 }
 
 /**
- * `enabled`, `chunk`, `exportName` and `mount` properties, each only when present.
+ * `enabled`, `chunk`, `exportName`, `mount` and `allSlots` properties, each only when present.
  */
-function boundaryOptions (enabled: ExpressionNode | undefined, target: PendingBoundary['target']): Property[] {
+function boundaryOptions ({ enabled, target, allSlots }: PendingBoundary): Property[] {
   const properties: Property[] = []
   if (enabled) { properties.push(createObjectProperty('enabled', enabled)) }
   if (target) {
@@ -166,6 +173,7 @@ function boundaryOptions (enabled: ExpressionNode | undefined, target: PendingBo
       createObjectProperty('exportName', createSimpleExpression(genString(target.exportName), false)),
     )
     if (target.mount) { properties.push(createObjectProperty('mount', createSimpleExpression('true', false))) }
+    if (allSlots) { properties.push(createObjectProperty('allSlots', createSimpleExpression('true', false))) }
   }
   return properties
 }

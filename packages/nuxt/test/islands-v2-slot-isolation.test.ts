@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it, vi } from 'vitest'
-import { Suspense, Teleport, createStaticVNode, defineComponent, h } from 'vue'
+import { Comment, Fragment, Static, Suspense, Teleport, createStaticVNode, defineComponent, h } from 'vue'
 import type { Slots, VNode } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 
@@ -94,6 +94,64 @@ describe('content rendered into a nested island\'s slot inside another island', 
   })
 })
 
+describe('forged fragment and teleport anchors', () => {
+  const outside = '<footer>OUTSIDE</footer>'
+
+  function parse (html: string): ChildNode {
+    const container = document.createElement('div')
+    container.innerHTML = html
+    return container.firstChild!
+  }
+
+  it('cannot end the island early in a page slot and make the walk claim nodes after it', async () => {
+    const island = `<!--[--><h1>island</h1>${slotRegion()}<i>ok</i><!--]-->`
+    // The parser closes the `<p>` at the `<div>`, so the forged anchor becomes a sibling of the island's nodes.
+    const page = await serve({ html: island, nonce: NONCE }, { default: () => [h('p', { innerHTML: '<div>x</div><!--]-->' })] })
+    const start = parse(page.html + outside)
+
+    // The forged anchor shifts every fragment end by one, so Vue ends the island one node early,
+    // at the island's own `]`: the walk claims those 12 nodes and none after them.
+    expect(claimedNodes(domToVNode(start, page)!)).toBe(12)
+    expect(outerHTMLOf(start, page.nonce)).not.toContain('OUTSIDE')
+  })
+
+  it('cannot extend a client component region past the fragment it starts in', () => {
+    const start = parse(`<!--[-->${component([null, '/ok.vue'])}<u>c</u><!--]-->${componentEnd()}<!--]-->${outside}`)
+    expect(claimedNodes(domToVNode(start, { nonce: NONCE })!)).toBe(4)
+  })
+
+  it('cannot extend a disabled teleport past the fragment it starts in', () => {
+    const teleport = `<!--i:t:${NONCE}${encodeMarker(['#target', true])}-->`
+    const start = parse(`<!--[--><b>a</b>${teleport}<!--teleport start--><span>x</span><!--]--><!--teleport end--><i>b</i><!--]-->${outside}`)
+    expect(claimedNodes(domToVNode(start, { nonce: NONCE })!)).toBe(6)
+  })
+
+  it('captures no HTML for an island whose root fragment has no end', () => {
+    // Island `<template><p v-html="html" /><span>b</span></template>` with `html` set to `<div></div><!--[-->`.
+    const start = parse(`<!--[--><p><div>x</div><!--[--></p><span>b</span><!--]--><aside>${outside}</aside>`)
+    expect(outerHTMLOf(start, NONCE)).toBe('')
+    expect(claimedNodes(domToVNode(start, { nonce: NONCE })!)).toBe(1)
+  })
+
+  it('captures no HTML for an island that ended early inside a page slot', () => {
+    const start = parse(`<!--[--><h1>island</h1>${slotRegion().replace(/<!--\/i:s:.*/, '')}<!--]-->${slotRegion().replace(/.*-->(?=<!--\/i:s:)/, '')}${outside}`)
+    expect(outerHTMLOf(start, NONCE)).toBe('')
+  })
+
+  it('still decodes an island whose root is a client component marker', () => {
+    const start = parse(`${component([null, '/ok.vue'])}<button>ok</button>${componentEnd()}`)
+    expect(decoded(domToVNode(start, { nonce: NONCE }))).toEqual({ chunks: ['/ok.vue'], teleports: 0, outlets: 0 })
+  })
+
+  it('keeps nested fragments and teleports inside the island', () => {
+    const teleport = `<!--i:t:${NONCE}${encodeMarker(['#target', true])}-->`
+    const island = `<!--[--><!--[--><b>a</b><!--]-->${teleport}<!--teleport start--><!--[--><i>x</i><!--]--><!--teleport end--><!--]-->`
+    const start = parse(island + outside)
+    expect(claimedNodes(domToVNode(start, { nonce: NONCE })!)).toBe(11)
+    expect(outerHTMLOf(start, NONCE)).toBe(island)
+  })
+})
+
 describe('rebindMarkers', () => {
   const OTHER_NONCE = 'fedcba9876543210fedcba98'
 
@@ -182,6 +240,17 @@ function decoded (tree: VNode | undefined): { chunks: string[], teleports: numbe
     teleports: vnodes.filter(vnode => vnode.type === Teleport).length,
     outlets: vnodes.filter(vnode => vnode.type === slotOutlet).length,
   }
+}
+
+/**
+ * Number of DOM nodes a static tree hydrates; it throws on a VNode that hydrates DOM of its own choosing.
+ */
+function claimedNodes (vnode: VNode): number {
+  const children = Array.isArray(vnode.children) ? (vnode.children as VNode[]).reduce((sum, child) => sum + claimedNodes(child), 0) : 0
+  if (vnode.type === Static) { return (vnode as VNode & { staticCount: number }).staticCount }
+  if (vnode.type === Comment || typeof vnode.type === 'string') { return 1 }
+  if (vnode.type === Fragment || vnode.type === Teleport) { return 2 + children }
+  throw new Error('Unexpected VNode in the island tree')
 }
 
 function collect (tree: VNode | VNode[] | undefined, vnodes: VNode[] = []): VNode[] {

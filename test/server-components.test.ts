@@ -349,6 +349,28 @@ describe.skipIf(!oncePerBuild)('server components/islands', () => {
     }
   })
 
+  it.skipIf(!islandsV2)('renders identical islands on a page once and hydrates each of them', async () => {
+    // Each island render has its own nonces, so a single nonce in the page means a single render.
+    const html = await $fetch<string>('/island-twins')
+    expect(new Set([...html.matchAll(/i:s:([a-z0-9]+)\[/g)].map(match => match[1])).size).toBe(1)
+
+    const { page, consoleLogs } = await renderPage('/island-twins')
+    try {
+      for (const twin of ['first', 'second']) {
+        const island = page.locator(`#${twin}-twin`)
+        await island.locator('.slot-echo-inc').click()
+        await expect.poll(() => island.locator('.slot-echo-inc').innerText()).toContain('echo 1')
+      }
+      await page.locator('#second-twin .twin-inc').click()
+      await expect.poll(() => page.locator('#first-twin .twin-inc').innerText()).toContain('first 1')
+      expect(await page.locator('#second-twin .twin-in-client').innerText()).toContain('in client 1')
+      expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
+      expect(consoleLogs.filter(l => l.text.includes('Hydration'))).toEqual([])
+    } finally {
+      await page.close()
+    }
+  })
+
   // https://github.com/nuxt/nuxt/issues/31510
   it.skipIf(isWebpack)('applies scoped styles to server component slots', async () => {
     const { page } = await renderPage('/slotted-styles')
@@ -425,7 +447,7 @@ describe('component islands', () => {
     expect(await page.locator('#paired-load-client').count()).toBe(1)
     expect(await page.locator('#paired-load-client').innerText()).not.toContain('PAIRED_LOAD_CLIENT_SERVER_SENTINEL')
     expect(await page.locator('#solo-load-client').innerText()).toContain('SOLO_LOAD_CLIENT_SERVER_SENTINEL')
-    // The `.server` half renders no slot, so the slot is captured for the client half only.
+    // The `.server` half renders no slot, so `.slots` captures it for the client half only.
     await page.locator('#paired-load-client #paired-slot').getByText('PAIRED_SLOT').waitFor()
     expect(consoleLogs.filter(l => l.text.includes('Hydration'))).toEqual([])
     expect(consoleLogs.filter(l => l.type === 'error')).toEqual([])
@@ -433,7 +455,13 @@ describe('component islands', () => {
     await page.close()
   })
 
-  it.skipIf(!oncePerBuild || !islandsV2)('shows `v-load-client` slot content closed on the server, again after hiding it', async () => {
+  it.skipIf(!oncePerBuild || !islandsV2)('does not send a `v-load-client` slot the server did not render without `.slots`', async () => {
+    const html = await $fetch<string>('/load-client-targets')
+    expect(html).toContain('TOGGLE_SLOT')
+    expect(html).not.toContain('UNSENT_SLOT_CONTENT')
+  })
+
+  it.skipIf(!oncePerBuild || !islandsV2)('shows `v-load-client.slots` slot content closed on the server, again after hiding it', async () => {
     const { page, consoleLogs, pageErrors } = await renderPage('/load-client-targets')
     const toggle = page.locator('#toggle-slot')
     await page.locator('#toggle-slot[data-ready="true"]').waitFor()

@@ -133,8 +133,11 @@ let STATIC_RUN_ID = 0
  * Build a VNode tree that hydrates the island's server-rendered DOM, starting at its root node.
  */
 export function domToVNode (start: Node, options: DomToVNodeOptions): VNode | undefined {
-  const context = createWalkContext(start, options)
-  return wrapRoot(walkNode(start as ChildNode, context).vnodes)
+  // An island whose root is a marker, such as a lone `v-load-client` component, has no fragment
+  // anchors around its nodes, so its walk runs to the end of the parent.
+  const end = isFragmentStart(start) || start.nodeType === ELEMENT_NODE ? rootEnd(start) ?? start : null
+  const context = createWalkContext(start, end, options)
+  return wrapRoot(walkNode(start as ChildNode, context, end?.nextSibling ?? null).vnodes)
 }
 
 /**
@@ -145,7 +148,7 @@ export function htmlToVNode (html: string, options: DomToVNodeOptions): VNode | 
   const { content } = parseHtml(html)
   if (!content.firstChild) { return }
   const context = createWalkContextForScope(content, content, { ...options, adopt: false })
-  if (content.childNodes.length === 1) { return wrapRoot(walkNode(content.firstChild, context).vnodes) }
+  if (content.childNodes.length === 1) { return wrapRoot(walkNode(content.firstChild, context, null).vnodes) }
   const children = walkSiblings(content.firstChild, null, context)
   if (children.length === 1 && children[0]?.type === Fragment) { return children[0] }
   return createElementVNode(Fragment, null, children)
@@ -168,13 +171,17 @@ export function htmlToVNodes (html: string, options: DomToVNodeOptions): VNode[]
  * what the page rendered there is not part of the island, and a later render fills them again.
  */
 export function outerHTMLOf (start: Node, nonce: string): string {
-  const end = isFragmentStart(start) ? findFragmentEnd(start) : start
+  // Without its end, the island's extent is unknown.
+  // Empty HTML makes the next mount fetch the island again.
+  const end = rootEnd(start)
+  if (!end) { return '' }
   const copy = (start.ownerDocument ?? document).createDocumentFragment()
   for (let current: Node | null = start; current; current = current.nextSibling) {
     copy.append(current.cloneNode(true))
     if (current === end) { break }
   }
-  emptySlotRegions(copy, createMarkerSet(nonce))
+  // An outlet without its closing comment means the island ended early, so its HTML is incomplete.
+  if (emptySlotRegions(copy, createMarkerSet(nonce))) { return '' }
   let html = ''
   for (const node of copy.childNodes) { html += serializeNode(node) }
   return html
@@ -213,14 +220,13 @@ function parseHtml (html: string): HTMLTemplateElement {
   return template
 }
 
-function createWalkContext (start: Node, options: DomToVNodeOptions): WalkContext {
-  if (isFragmentStart(start)) {
-    const parent = start.parentNode
-    return createWalkContextForScope(parent ?? start, parent ?? null, options)
+function createWalkContext (start: Node, end: Node | null, options: DomToVNodeOptions): WalkContext {
+  const context = createEmptyWalkContext(options)
+  for (let current: Node | null = start; current; current = current.nextSibling) {
+    collectMarkerAncestors(current, start.parentNode, context)
+    if (current === end) { break }
   }
-
-  const scope = start.nodeType === ELEMENT_NODE ? start : (start.parentNode ?? start)
-  return createWalkContextForScope(scope, start.parentNode, options)
+  return context
 }
 
 function createWalkContextForScope (
@@ -228,7 +234,13 @@ function createWalkContextForScope (
   islandParent: Node | null,
   options: DomToVNodeOptions,
 ): WalkContext {
-  const context: WalkContext = {
+  const context = createEmptyWalkContext(options)
+  collectMarkerAncestors(scopeRoot, islandParent, context)
+  return context
+}
+
+function createEmptyWalkContext (options: DomToVNodeOptions): WalkContext {
+  return {
     adopt: options.adopt ?? true,
     decoded: new WeakMap(),
     markerAncestors: new Set(),
@@ -237,8 +249,6 @@ function createWalkContextForScope (
     previousRuns:
       options.adopt === false && options.previous ? collectStaticRuns(options.previous) : undefined,
   }
-  collectMarkerAncestors(scopeRoot, islandParent, context)
-  return context
 }
 
 function collectMarkerAncestors (
@@ -261,11 +271,12 @@ function collectMarkerAncestors (
 }
 
 /**
- * Walk one node into its VNodes and return the sibling to continue from.
+ * Walk one node into its VNodes and return the sibling to continue from, never past `stop`:
+ * a region whose end lies at or after `stop` reads as a plain comment.
  */
-function walkNode (node: ChildNode, context: WalkContext): WalkResult {
+function walkNode (node: ChildNode, context: WalkContext, stop: Node | null): WalkResult {
   // Fragment anchors carry no nonce; one without a matching end (e.g. from raw HTML) stays a comment.
-  const fragmentEnd = isFragmentStart(node) ? findFragmentEnd(node) : undefined
+  const fragmentEnd = isFragmentStart(node) ? findFragmentEnd(node, stop) : undefined
   if (fragmentEnd) {
     const children = walkSiblings(node.nextSibling, fragmentEnd, context)
     return {
@@ -276,7 +287,7 @@ function walkNode (node: ChildNode, context: WalkContext): WalkResult {
 
   if (node.nodeType === COMMENT_NODE) {
     const marker = readMarker(node as Comment, context)
-    const result = marker && handleMarkerComment(node as Comment, marker, context)
+    const result = marker && handleMarkerComment(node as Comment, marker, context, stop)
     return (
       result || { next: node.nextSibling, vnodes: [createCommentVNode((node as Comment).data)] }
     )
@@ -313,7 +324,7 @@ function walkSiblings (first: ChildNode | null, stop: Node | null, context: Walk
       vnodes.push(...createStaticRun(staticRun, context))
       staticRun.length = 0
     }
-    const result = walkNode(current, context)
+    const result = walkNode(current, context, stop)
     vnodes.push(...result.vnodes)
     current = result.next
   }
@@ -329,13 +340,14 @@ function handleMarkerComment (
   comment: Comment,
   marker: DecodedMarker,
   context: WalkContext,
+  stop: Node | null,
 ): WalkResult | undefined {
   if (marker.kind === 'slot') {
-    return handleSlotMarker(comment, marker, context)
+    return handleSlotMarker(comment, marker, context, stop)
   }
 
   if (marker.kind === 'component') {
-    const closing = findClosingMarker(comment, marker, context)
+    const closing = findClosingMarker(comment, marker, context, stop)
     if (!closing) { return }
     return {
       next: closing.nextSibling,
@@ -348,8 +360,8 @@ function handleMarkerComment (
   }
 
   const start = comment.nextSibling
-  if (!start || start.nodeType !== COMMENT_NODE || (start as Comment).data !== TELEPORT_START) { return }
-  const end = findAnchorEnd(start, TELEPORT_START, TELEPORT_END)
+  if (!start || start === stop || start.nodeType !== COMMENT_NODE || (start as Comment).data !== TELEPORT_START) { return }
+  const end = findAnchorEnd(start, TELEPORT_START, TELEPORT_END, stop)
   if (!end) { return }
   const [to, disabled, html] = marker.tuple
   // Disabled content sits inline. Enabled content was rendered into the target,
@@ -371,8 +383,9 @@ function handleSlotMarker (
   comment: Comment,
   marker: Extract<DecodedMarker, { kind: 'slot' }>,
   context: WalkContext,
+  stop: Node | null,
 ): WalkResult | undefined {
-  const closing = findClosingMarker(comment, marker, context)
+  const closing = findClosingMarker(comment, marker, context, stop)
   if (!closing) { return }
   const [name, props, slotScopeId, fallback] = marker.tuple
   return {
@@ -436,9 +449,9 @@ function decodeMarkerComment (data: string, markerSets: MarkerSet[], remote: Rem
  * Find the closing comment of a component or slot marker. Only valid opening markers
  * of the same kind and nonce count as nested regions.
  */
-function findClosingMarker (start: Comment, open: DecodedMarker, context: WalkContext): Comment | undefined {
+function findClosingMarker (start: Comment, open: DecodedMarker, context: WalkContext, stop: Node | null): Comment | undefined {
   const end = open.kind === 'slot' ? open.markers.slotEnd : open.markers.componentEnd
-  return findRegionEnd(siblingsAfter(start), (node) => {
+  return findRegionEnd(siblingsAfter(start, stop), (node) => {
     if (node.nodeType !== COMMENT_NODE) { return }
     if ((node as Comment).data === end) { return 'close' }
     const marker = readMarker(node as Comment, context)
@@ -460,7 +473,7 @@ function emptySlotRegions (parent: Node, markers: MarkerSet): boolean {
   for (let current = parent.firstChild; current; current = current.nextSibling) {
     // Without a closing comment, slot markup broke out of this parent,
     // so nothing after the outlet belongs to the island.
-    const end = tokenOf(current) === 'open' ? findRegionEnd(siblingsAfter(current), tokenOf) ?? null : undefined
+    const end = tokenOf(current) === 'open' ? findRegionEnd(siblingsAfter(current, null), tokenOf) ?? null : undefined
     if (end === undefined && !emptySlotRegions(current, markers)) { continue }
     while (current.nextSibling !== (end ?? null)) { current.nextSibling!.remove() }
     if (!end) { return true }
@@ -469,12 +482,12 @@ function emptySlotRegions (parent: Node, markers: MarkerSet): boolean {
   return false
 }
 
-function findFragmentEnd (start: Node): Comment | undefined {
-  return findAnchorEnd(start, FRAGMENT_START, FRAGMENT_END)
+function findFragmentEnd (start: Node, stop: Node | null): Comment | undefined {
+  return findAnchorEnd(start, FRAGMENT_START, FRAGMENT_END, stop)
 }
 
-function findAnchorEnd (start: Node, open: string, close: string): Comment | undefined {
-  return findRegionEnd(siblingsAfter(start), node => anchorToken(node, open, close)) as Comment | undefined
+function findAnchorEnd (start: Node, open: string, close: string, stop: Node | null): Comment | undefined {
+  return findRegionEnd(siblingsAfter(start, stop), node => anchorToken(node, open, close)) as Comment | undefined
 }
 
 function anchorToken (node: Node, open: string, close: string): RegionToken {
@@ -483,8 +496,8 @@ function anchorToken (node: Node, open: string, close: string): RegionToken {
   return data === open ? 'open' : data === close ? 'close' : undefined
 }
 
-function* siblingsAfter (node: Node): Generator<ChildNode> {
-  for (let current = node.nextSibling; current; current = current.nextSibling) { yield current }
+function* siblingsAfter (node: Node, stop: Node | null): Generator<ChildNode> {
+  for (let current = node.nextSibling; current && current !== stop; current = current.nextSibling) { yield current }
 }
 
 function collectStaticRuns (previous: VNode): Map<string, VNode[]> {
@@ -583,6 +596,12 @@ function readAttributes (element: Element): Record<string, string> | undefined {
   return props
 }
 
+// Last node of the island starting at `start`, found as Vue's hydration finds it,
+// or `undefined` for a fragment without its end.
+function rootEnd (start: Node): Node | undefined {
+  return isFragmentStart(start) ? findFragmentEnd(start, null) : start
+}
+
 function isFragmentStart (node: Node): boolean {
   return node.nodeType === COMMENT_NODE && (node as Comment).data === FRAGMENT_START
 }
@@ -603,9 +622,9 @@ function wrapRoot (vnodes: VNode[]): VNode | undefined {
  */
 function mountFallback (open: Comment, closing: Comment, tuple: IslandComponentMarker, context: WalkContext): VNode | undefined {
   const start = open.nextSibling
-  if (tuple[4] !== 1 || !start || !isFragmentStart(start) || findFragmentEnd(start)?.nextSibling !== closing) { return }
+  if (tuple[4] !== 1 || !start || !isFragmentStart(start) || findFragmentEnd(start, closing)?.nextSibling !== closing) { return }
   // Markers inside belong to the server half's HTML; the client half gets its slots from the marker data.
-  return walkNode(start, { ...context, markerAncestors: new Set(), plain: true, previousRuns: undefined }).vnodes[0]
+  return walkNode(start, { ...context, markerAncestors: new Set(), plain: true, previousRuns: undefined }, closing).vnodes[0]
 }
 
 /**

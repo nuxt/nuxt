@@ -65,6 +65,11 @@ interface ClientBoundaryProps {
    * Used when `is` comes from `Foo.server.vue` and the chunk from `Foo.client.vue`.
    */
   mount?: boolean
+  /**
+   * Also renders the slots the component did not render on the server, so the client gets them.
+   * Set by the `.slots` modifier of `v-load-client`.
+   */
+  allSlots?: boolean
 }
 
 /**
@@ -104,7 +109,7 @@ export function ssrRenderClientComponent (
   props: Record<string, any> | null | undefined,
   slots: SSRSlots | null | undefined,
   parent: ComponentInternalInstance,
-  { enabled, chunk, exportName = 'default', mount }: ClientRenderOptions = {},
+  { enabled, chunk, exportName = 'default', mount, allSlots }: ClientRenderOptions = {},
   slotScopeId?: string,
 ): SSRBuffer | Promise<SSRBuffer> {
   if (typeof is === 'string') {
@@ -136,7 +141,8 @@ export function ssrRenderClientComponent (
   ssrRenderVNode(item => buffer.push(item), vnode, parent, slotScopeId)
 
   return chain(unroll(buffer), html =>
-    chain(captureUnrenderedSlots(slots, captured, vnode.component ?? parent, is), unrendered =>
+    // Slots the component did not render could hold content it hides, so they are sent only on request.
+    chain(allSlots ? captureUnrenderedSlots(slots, captured, vnode.component ?? parent, is) : undefined, unrendered =>
       chain(unrollRecord(captured), (rendered): SSRBuffer => {
         const slotHtml = rendered || unrendered ? { ...unrendered, ...rendered } : undefined
         const tuple: IslandComponentMarker = [markerProps(props), chunk, exportName]
@@ -262,14 +268,14 @@ export function ssrRenderSlot (
  */
 export const IslandClientBoundary = /* @__PURE__ */ defineComponent({
   name: 'IslandClientBoundary',
-  props: ['is', 'props', 'enabled', 'chunk', 'exportName', 'mount'],
+  props: ['is', 'props', 'enabled', 'chunk', 'exportName', 'mount', 'allSlots'],
   ssrRender (
     _ctx: unknown,
     push: PushFn,
     instance: ComponentInternalInstance,
     attrs: Record<string, unknown> | undefined,
   ) {
-    const { is, props, enabled, chunk, exportName, mount } = instance.props as unknown as ClientBoundaryProps
+    const { is, props, enabled, chunk, exportName, mount, allSlots } = instance.props as unknown as ClientBoundaryProps
     // Every real prop is declared, so `attrs` only holds scope ids: this vnode's own, which belongs
     // on the child's root, and slot scope ids, which Vue applies to the whole subtree.
     const rootScopeId = instance.vnode.scopeId
@@ -286,7 +292,7 @@ export const IslandClientBoundary = /* @__PURE__ */ defineComponent({
           props,
           instance.slots as SSRSlots,
           instance,
-          { enabled, chunk, exportName, mount },
+          { enabled, chunk, exportName, mount, allSlots },
           slotScopeIds || undefined,
         ),
       )

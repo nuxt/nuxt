@@ -81,6 +81,8 @@ const NuxtIsland = defineComponent({
       props,
       uid: id,
       emit,
+      // Instances that rendered separately would each get their own nonces, but the payload keeps one set.
+      shareServerFetch: true,
       toPayload: ({ html, chunks, ...rest }) => {
         // Chunk paths are only kept for a remote island allowed to load its client components.
         const data: Partial<NuxtIslandResponse> = chunks && remoteOf(props, { chunks })?.chunks ? { ...rest, chunks } : rest

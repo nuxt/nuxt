@@ -36,6 +36,8 @@ export interface IslandFetchOptions {
   emit: (event: 'error', error: unknown) => void
   toPayload: (result: NuxtIslandResponse) => IslandPayload
   apply: (result: NuxtIslandResponse) => void | Promise<void>
+  /** Makes the instances with the same island key share one fetch, and so one response, during a server render. */
+  shareServerFetch?: boolean
 }
 
 export interface IslandFetch {
@@ -47,6 +49,7 @@ export interface IslandFetch {
 }
 
 const PROMISES_KEY = '_islandPromises'
+const SHARED_PREFIX = 'shared:'
 
 let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
@@ -140,9 +143,12 @@ export function useIslandFetch (options: IslandFetchOptions): IslandFetch {
 
   function fetchComponent (force = false): Promise<void> {
     const promises = nuxtApp[PROMISES_KEY] ||= {}
-    const id = uid.value
+    // A shared server fetch stays cached for the whole render, as the payload keeps no HTML to reuse.
+    const shared = import.meta.server && !!options.shareServerFetch
+    const id = shared ? `${SHARED_PREFIX}${islandKey.value}` : uid.value
+    if (shared && force) { delete promises[id] }
     const pending: Promise<NuxtIslandResponse> = promises[id] ||= _fetchComponent(force).finally(() => {
-      delete promises[id]
+      if (!shared) { delete promises[id] }
     })
     return guard(async () => {
       const res = await pending
