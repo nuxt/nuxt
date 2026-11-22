@@ -467,6 +467,23 @@ describe('tsConfig generation', () => {
     expect(sharedTsConfig.compilerOptions?.noPropertyAccessFromIndexSignature).toBe(false)
   })
 
+  it('should propagate decorator options to non-app tsconfigs', async () => {
+    const { nodeTsConfig, sharedTsConfig, serverTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        tsConfig: {
+          compilerOptions: {
+            experimentalDecorators: true,
+            emitDecoratorMetadata: true,
+          },
+        },
+      },
+    }))
+    for (const config of [nodeTsConfig, sharedTsConfig, serverTsConfig]) {
+      expect(config.compilerOptions?.experimentalDecorators).toBe(true)
+      expect(config.compilerOptions?.emitDecoratorMetadata).toBe(true)
+    }
+  })
+
   it('should not propagate global include, exclude or vueCompilerOptions to node and shared tsconfigs', async () => {
     const { nodeTsConfig, sharedTsConfig } = await _generateTypes(mockNuxtWithOptions({
       typescript: {

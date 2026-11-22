@@ -578,7 +578,7 @@ export async function _generateTypes (nuxt: Nuxt): Promise<GenerateTypesReturn> 
   // Nuxt's defaults. The `node` and `shared` environments load `nuxt.config` and modules, so
   // they inherit that baseline minus the app-only (DOM/Vue) options, and always emit nothing,
   // scan no ambient types, and start from empty `paths` (filled in below).
-  const appOnlyCompilerOptions = ['lib', 'libReplacement', 'jsx', 'jsxImportSource', 'noUncheckedSideEffectImports', 'experimentalDecorators'] as const
+  const appOnlyCompilerOptions = ['lib', 'libReplacement', 'jsx', 'jsxImportSource', 'noUncheckedSideEffectImports'] as const
   const nonAppCompilerOptions = (configName: string): NonNullable<TSConfig['compilerOptions']> => {
     const compilerOptions = { tsBuildInfoFile: tsBuildInfoFile(configName), ...baseTsConfig.compilerOptions }
     for (const key of appOnlyCompilerOptions) {
