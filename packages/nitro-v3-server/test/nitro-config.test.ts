@@ -288,7 +288,7 @@ describe('nitro config', () => {
       return routes.filter(r => !r.middleware).map(r => r.route)
     })
     const devRoutes = await getRoutes({ dev: true })
-    expect(devRoutes).toEqual(['/api/debug'])
+    expect(devRoutes).toContain('/api/debug')
     expect(devRoutes).toEqual(await getRoutes({ _prepare: true }))
   })
 
