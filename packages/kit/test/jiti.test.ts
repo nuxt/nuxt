@@ -22,8 +22,12 @@ const BLOCK_ALL = pathToFileURL(join(repoRoot, 'test/no-jiti/block-jiti-loader.m
  * path, standing in for a layout where `jiti` is present in the project but not linked as a peer
  * dependency of `@nuxt/kit`.
  */
-const BLOCK_BARE = `export function resolve (specifier, context, next) {
-  if (specifier === 'jiti') { throw new Error('jiti is unavailable') }
+const BLOCK_BARE = `let lookups = 0
+export function resolve (specifier, context, next) {
+  if (specifier === 'jiti') {
+    if (++lookups > 1) { console.error('jiti was looked for more than once') }
+    throw new Error('jiti is unavailable')
+  }
   return next(specifier, context)
 }`
 

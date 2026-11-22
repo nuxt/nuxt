@@ -59,9 +59,9 @@ async function createProject (files: Record<string, string>) {
   return rootDir
 }
 
-async function prepare (rootDir: string, options: { blockJiti?: boolean, withoutModuleHooks?: boolean, nodeVersion?: string } = {}) {
+async function prepare (rootDir: string, { env, ...options }: { blockJiti?: boolean, withoutModuleHooks?: boolean, nodeVersion?: string, env?: Record<string, string> } = {}) {
   const { stdout, stderr } = await exec(process.execPath, ['--input-type=module', '-e', PREPARE, '--', JSON.stringify(options)], {
-    nodeOptions: { cwd: rootDir },
+    nodeOptions: { cwd: rootDir, env: env && { ...process.env, ...env } },
   })
   const line = stdout.trim().split('\n').at(-1)
   if (!line?.startsWith('{')) {
@@ -206,6 +206,21 @@ describe('nuxt.schema', () => {
       expect(result.logs).not.toContain('NUXT_B5005')
       expect(result.logs).toMatch(/NUXT_B5036.*\n.*fix: `@undeclared\/package` is not installed as a dependency of your project\. Run `.* -D @undeclared\/package` to add it\.\n/)
       expect(result.logs.split('\n').filter(line => !line.startsWith('{')).join('\n')).not.toContain('jiti')
+    })
+
+    it('warns about a package that only jiti can find, even in a project that depends on jiti', async () => {
+      const rootDir = await createProject({
+        'package.json': JSON.stringify({ private: true, type: 'module', name: 'fixture-nuxt-schema', devDependencies: { jiti: '^2.7.0' } }),
+        'phantom/node_modules/@phantom/package/package.json': JSON.stringify({ name: '@phantom/package', version: '1.0.0', main: 'index.js' }),
+        'phantom/node_modules/@phantom/package/index.js': `exports.value = 'phantom'`,
+        'nuxt.schema.ts': `import { value } from '@phantom/package'\nexport default defineNuxtSchema({ appConfig: { phantom: { $default: value } } })`,
+      })
+      const result = await prepare(rootDir, { env: { NODE_PATH: join(rootDir, 'phantom/node_modules') } })
+
+      expect(result.schema.properties.appConfig.properties.phantom).toMatchObject({ default: 'phantom' })
+      expect(result.logs).toContain('NUXT_B5037')
+      expect(result.logs).toMatch(/fix: `@phantom\/package` is not installed as a dependency of your project\. Run `.* -D @phantom\/package` to add it\.\n/)
+      expect(result.logs).not.toMatch(/keep loading it through jiti/)
     })
   })
 

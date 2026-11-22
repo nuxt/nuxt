@@ -64,9 +64,8 @@ const MISSING_PACKAGE_RE = /^Cannot find package '([^']+)' imported from (.+)$/m
 
 /** A package that a failed `import()` could not find. */
 export interface MissingPackage {
-  /** Name of the package. */
   name: string
-  /** Path of the file that imports it. */
+  /** Path of the file that imports the package. */
   importer: string
 }
 
@@ -127,9 +126,9 @@ export function isMissingExportError (error: unknown): boolean {
 const CJS_GLOBALS_HINT = 'The file was loaded as native ESM, which does not provide the CommonJS globals `__dirname`, `__filename`, `require`, `module` or `exports`. Use `import.meta.url`, `import.meta.dirname` and `createRequire(import.meta.url)` from `node:module` instead.'
 
 /**
- * Explain a failed native import in terms of what the author can change. The runtime supports
- * TypeScript, so the fix is never "stop using TypeScript": it is the specific thing the runtime
- * will not do.
+ * Explain a failed native import in terms of what the author can change. The fix is never "stop
+ * using TypeScript": it is the specific thing the runtime will not do, or a runtime that strips
+ * types.
  *
  * @param error the error the failed `import()` rejected with
  */
