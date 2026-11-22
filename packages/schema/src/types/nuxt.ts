@@ -345,12 +345,12 @@ export interface Nuxt {
   '_asyncLocalStorageModule'?: AsyncLocalStorage<NuxtModule>
 
   /**
-   * The Node HTTP(S) server the dev server is listening on, captured from the
+   * The Node HTTP, HTTPS or HTTP/2 server the dev server is listening on, captured from the
    * `listen` hook. Builders use it to attach their HMR websocket to the same
    * server (and therefore the same port and certificate) as the app.
    * @internal
    */
-  '_devServerListener'?: import('node:http').Server | import('node:https').Server
+  '_devServerListener'?: import('node:http').Server | import('node:https').Server | import('node:http2').Http2SecureServer
   /**
    * Names of the bundler environments that build the app for the server, beyond `ssr`.
    * Plugins registered with `addVitePlugin()` apply to these too, so that an environment a

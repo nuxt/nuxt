@@ -1,4 +1,5 @@
 import type { Server as HttpServer } from 'node:http'
+import type { Http2SecureServer } from 'node:http2'
 import type { Server as HttpsServer } from 'node:https'
 import type { TSConfig } from 'pkg-types'
 import type { ViteDevServer } from 'vite'
@@ -506,11 +507,11 @@ export interface NuxtHooks {
   'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig, nodeTsConfig: TSConfig, nodeReferences: TSReference[], sharedTsConfig: TSConfig, sharedReferences: TSReference[], serverTsConfig: TSConfig, serverReferences: TSReference[] }) => HookResult
   /**
    * Called when the dev server is loading.
-   * @param listenerServer The HTTP/HTTPS server object
+   * @param listenerServer The HTTP, HTTPS or HTTP/2 server object
    * @param listener The server's listener object
    * @returns Promise
    */
-  'listen': (listenerServer: HttpServer | HttpsServer, listener: any) => HookResult
+  'listen': (listenerServer: HttpServer | HttpsServer | Http2SecureServer, listener: any) => HookResult
 
   // Schema
   /**
