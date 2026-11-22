@@ -907,6 +907,19 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   })
 
   addVitePlugin({
+    name: 'nuxt:nitro:shared-external',
+    configEnvironment (name, config) {
+      if (name !== 'ssr') { return }
+      config.build ||= {}
+      config.build.rolldownOptions ||= {}
+      const external = config.build.rolldownOptions.external ||= []
+      if (Array.isArray(external)) {
+        external.push(new RegExp('^' + escapeRE(sharedDir)))
+      }
+    },
+  })
+
+  addVitePlugin({
     name: 'nuxt:nitro:config',
     configEnvironment (name) {
       if (name === 'client') {
