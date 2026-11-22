@@ -554,10 +554,10 @@ describe('agent tool directive', () => {
 
   it('reads and fills in only the fields the browser reports as rendered', async () => {
     const style = document.createElement('style')
-    style.textContent = '.gone { display: none } .faded { opacity: 0 } .invisible { visibility: hidden }'
+    style.textContent = '.gone { display: none } .faded { opacity: 0 } .invisible { visibility: hidden } .contents { display: contents }'
     document.head.append(style)
     cleanups.push(() => style.remove())
-    const state = reactive({ sheet: 'a', faded: 'b', invisible: 'c', code: 'd', gift: true, picker: 'e' })
+    const state = reactive({ sheet: 'a', faded: 'b', invisible: 'c', code: 'd', boxless: 'g', gift: true, picker: 'e', grid: 'h' })
     const sent = vi.fn()
     const fields = Object.fromEntries(Object.keys(state).map(key => [key, {
       source: `state.${key}`,
@@ -574,8 +574,10 @@ describe('agent tool directive', () => {
       h('div', { class: 'faded' }, [h('input', { 'data-agent-field': 'state.faded' })]),
       h('input', { 'class': 'invisible', 'data-agent-field': 'state.invisible' }),
       h('label', ['Code ', h('input', { 'class': 'gone', 'data-agent-field': 'state.code' })]),
+      h('div', { 'class': 'contents', 'data-agent-field': 'state.boxless' }, [h('input', { class: 'gone' })]),
       h('label', ['Gift ', h('input', { 'type': 'checkbox', 'class': 'gone', 'data-agent-field': 'state.gift' })]),
       h('div', { 'aria-label': 'Picker', 'data-agent-field': 'state.picker' }, [h('input', { class: 'faded' })]),
+      h('div', { 'class': 'contents', 'aria-label': 'Grid', 'data-agent-field': 'state.grid' }, [h('input')]),
     ]), [[directive, binding({ name: 'order', kind: 'form', values: true, fields })]]))
     await nextTick()
 
@@ -584,17 +586,19 @@ describe('agent tool directive', () => {
       faded: { type: 'string' },
       invisible: { type: 'string' },
       code: { type: 'string' },
+      boxless: { type: 'string' },
       gift: { type: 'boolean', description: 'Gift', default: true },
       picker: { type: 'string', description: 'Picker', default: 'e' },
+      grid: { type: 'string', description: 'Grid', default: 'h' },
     })
-    expect(await registry.call('order', { sheet: 'x', faded: 'x', invisible: 'x', code: 'x' })).toEqual({
+    expect(await registry.call('order', { sheet: 'x', faded: 'x', invisible: 'x', code: 'x', boxless: 'x' })).toEqual({
       isError: true,
-      content: [{ type: 'text', text: `The form was not submitted. ${['sheet', 'faded', 'invisible', 'code'].map(key => `${key}: this field is not on the page`).join('; ')}` }],
+      content: [{ type: 'text', text: `The form was not submitted. ${['sheet', 'faded', 'invisible', 'code', 'boxless'].map(key => `${key}: this field is not on the page`).join('; ')}` }],
     })
     expect(sent).not.toHaveBeenCalled()
 
-    expect(await registry.call('order', { gift: false, picker: 'f' })).not.toHaveProperty('isError')
-    expect(state).toEqual({ sheet: 'a', faded: 'b', invisible: 'c', code: 'd', gift: false, picker: 'f' })
+    expect(await registry.call('order', { gift: false, picker: 'f', grid: 'i' })).not.toHaveProperty('isError')
+    expect(state).toEqual({ sheet: 'a', faded: 'b', invisible: 'c', code: 'd', boxless: 'g', gift: false, picker: 'f', grid: 'i' })
   })
 
   it('rejects input that changes a disabled, read-only or hidden field', async () => {

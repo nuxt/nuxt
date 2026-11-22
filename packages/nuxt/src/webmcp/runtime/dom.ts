@@ -206,9 +206,18 @@ export function formSchema (fields: FormFields, form: Element, values?: boolean)
 
 const VISIBILITY = { opacityProperty: true, visibilityProperty: true }
 
-/** Whether the browser reports `el` as rendered: it is displayed, visible and not fully transparent. */
-function isRendered (el: Element) {
-  return !el.closest('[hidden]') && (el.checkVisibility ? el.checkVisibility(VISIBILITY) : el.getClientRects().length > 0)
+/**
+ * Whether the browser reports `el` as rendered: it is displayed, visible and not fully transparent.
+ * An element with `display: contents` has no box of its own, so it is rendered when an element inside it is.
+ */
+function isRendered (el: Element): boolean {
+  if (el.closest('[hidden]')) {
+    return false
+  }
+  if (getComputedStyle(el).display === 'contents') {
+    return [...el.children].some(isRendered)
+  }
+  return el.checkVisibility ? el.checkVisibility(VISIBILITY) : el.getClientRects().length > 0
 }
 
 /**

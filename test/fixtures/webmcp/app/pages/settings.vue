@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const form = reactive({ name: 'Daniel', password: 'hunter2', role: 'member', plan: 'free', tier: 'basic', legacyTier: 'basic', trialTier: 'basic', referral: 'friend', newsletter: false })
+const form = reactive({ name: 'Daniel', password: 'hunter2', role: 'member', plan: 'free', tier: 'basic', legacyTier: 'basic', trialTier: 'basic', referral: 'friend', newsletter: false, nickname: 'dan' })
 const isAdmin = ref(false)
 const saved = ref<string>()
 
@@ -8,7 +8,7 @@ const saved = ref<string>()
  * @tool values
  */
 function saveSettings () {
-  saved.value = `${form.name}, ${form.role}, ${form.plan}, ${form.tier}, ${form.legacyTier}, ${form.trialTier}, ${form.referral}, ${form.newsletter}`
+  saved.value = `${form.name}, ${form.role}, ${form.plan}, ${form.tier}, ${form.legacyTier}, ${form.trialTier}, ${form.referral}, ${form.newsletter}, ${form.nickname}`
   return 'Saved.'
 }
 </script>
@@ -46,6 +46,7 @@ function saveSettings () {
       type="checkbox"
       class="collapsed"
     ></label>
+    <GridField v-model="form.nickname" />
     <button type="submit">
       Save
     </button>

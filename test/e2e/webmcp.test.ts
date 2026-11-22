@@ -142,6 +142,7 @@ test('only fills in fields the user could edit', async ({ page, goto }) => {
     trialTier: { type: 'string', description: 'Trial tier', default: 'basic' },
     referral: { type: 'string' },
     newsletter: { type: 'boolean', description: 'Newsletter', default: false },
+    nickname: { type: 'string', description: 'Nickname', default: 'dan' },
   })
 
   expect(await call(page, 'save_settings', { role: 'admin', plan: 'pro', legacyTier: 'plus', trialTier: 'plus', referral: 'agent' })).toEqual({
@@ -150,8 +151,8 @@ test('only fills in fields the user could edit', async ({ page, goto }) => {
   })
   await expect(page.getByTestId('saved')).toHaveText('')
 
-  expect(await call(page, 'save_settings', { name: 'Sarah', tier: 'plus', newsletter: true })).toEqual({ text: 'Saved.', isError: false })
-  await expect(page.getByTestId('saved')).toHaveText('Sarah, member, free, plus, basic, basic, friend, true')
+  expect(await call(page, 'save_settings', { name: 'Sarah', tier: 'plus', newsletter: true, nickname: 'sdras' })).toEqual({ text: 'Saved.', isError: false })
+  await expect(page.getByTestId('saved')).toHaveText('Sarah, member, free, plus, basic, basic, friend, true, sdras')
   await expect(page).toHaveNoErrorsOrWarnings()
 })
 
