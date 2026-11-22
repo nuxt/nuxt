@@ -60,7 +60,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5017: {
       why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` could not be loaded: ${p.error}`,
-      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      fix: (p: { hint: string, installCommand?: string }) => p.installCommand ? `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.` : p.hint,
       docs: false,
     },
     NUXT_B5018: {
@@ -85,7 +85,7 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5023: {
       why: (p: { filePath: string, error: string }) => `The config file \`${p.filePath}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
-      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.`,
+      fix: (p: { hint: string, installCommand?: string }) => p.installCommand ? `${p.hint} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.` : p.hint,
       docs: false,
     },
     NUXT_B5024: {
@@ -138,12 +138,12 @@ export const configDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B5036: {
       why: (p: { filePath: string, error: string }) => `The Nuxt schema in \`${p.filePath}\` was skipped because the runtime could not load it: ${p.error}`,
-      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      fix: (p: { hint: string, installCommand?: string }) => p.installCommand ? `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.` : p.hint,
       docs: false,
     },
     NUXT_B5037: {
       why: (p: { filePath: string, error: string }) => `The Nuxt schema in \`${p.filePath}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
-      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.`,
+      fix: (p: { hint: string, installCommand?: string }) => p.installCommand ? `${p.hint} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.` : p.hint,
       docs: false,
     },
     NUXT_B5038: {

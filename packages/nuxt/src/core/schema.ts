@@ -5,7 +5,7 @@ import { join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
 import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, importModule } from '@nuxt/kit'
-import { configDiagnostics, describeNativeImportFailure, describeUnsupportedNode, getMissingCjsGlobal, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from '@nuxt/kit/internal'
+import { configDiagnostics, describeMissingPackage, describeNativeImportFailure, describeUnsupportedNode, getMissingCjsGlobal, getMissingPackage, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from '@nuxt/kit/internal'
 import type { Jiti } from 'jiti'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
@@ -55,20 +55,22 @@ export default defineNuxtModule({
         }
       }
 
+      const missingPackage = getMissingPackage(nativeError, nuxt.options.alias)
       // Whether jiti is the answer, or the file simply has a bug that a second loader will repeat.
-      // Only the former is worth offering to install jiti for.
-      const jitiCanHelp = !canImportSchema || isLoaderError(nativeError) || !!getMissingCjsGlobal(nativeError) || isMissingExportError(nativeError)
+      // Only the former is worth offering to install jiti for. jiti may find a package the project
+      // does not depend on, which only hides the problem.
+      const jitiCanHelp = !canImportSchema || (!missingPackage && (isLoaderError(nativeError) || !!getMissingCjsGlobal(nativeError) || isMissingExportError(nativeError)))
       const jiti = await getSchemaJiti(jitiCanHelp)
       const failure = async () => ({
         filePath: displayPath,
         error: nativeError instanceof Error ? nativeError.message : String(nativeError),
-        hint: describeNativeImportFailure(nativeError),
-        installCommand: await installCommand(),
+        hint: missingPackage ? await describeMissingPackage(missingPackage, nuxt.options.rootDir) : describeNativeImportFailure(nativeError),
+        installCommand: missingPackage ? undefined : await installCommand(),
       })
       if (!jiti) {
         if (!canImportSchema) {
           configDiagnostics.NUXT_B5019({ filePath: displayPath, installCommand: await installCommand(), hint: describeUnsupportedNode() })
-        } else if (jitiCanHelp) {
+        } else if (jitiCanHelp || missingPackage) {
           configDiagnostics.NUXT_B5036(await failure())
         } else {
           configDiagnostics.NUXT_B5005({ filePath: displayPath, cause: nativeError })
@@ -81,10 +83,14 @@ export default defineNuxtModule({
         // TODO: fix type for second argument of `import`
         loaded = await jiti.import(filePath, { default: true }) as SchemaDefinition
       } catch (jitiError) {
-        configDiagnostics.NUXT_B5005({ filePath: displayPath, cause: jitiCanHelp ? jitiError : nativeError })
+        if (missingPackage) {
+          configDiagnostics.NUXT_B5036(await failure())
+        } else {
+          configDiagnostics.NUXT_B5005({ filePath: displayPath, cause: jitiCanHelp ? jitiError : nativeError })
+        }
         return
       }
-      if (canImportSchema && shouldReportJitiFallbackOnce(filePath, nuxt.options.rootDir, nuxt.options.future.compatibilityVersion)) {
+      if (canImportSchema && shouldReportJitiFallbackOnce(filePath, nuxt.options.rootDir, nuxt.options.future.compatibilityVersion, !!missingPackage)) {
         configDiagnostics.NUXT_B5037(await failure())
       }
       return loaded

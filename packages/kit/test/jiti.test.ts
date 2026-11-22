@@ -6,7 +6,7 @@ import { join } from 'pathe'
 import { exec } from 'tinyexec'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { shouldReportJitiFallbackOnce } from '../src/internal/jiti.ts'
+import { describeMissingPackage, getMissingPackage, shouldReportJitiFallbackOnce } from '../src/internal/jiti.ts'
 import { createTempDir, writeFiles } from './utils.ts'
 import nuxt from '../../nuxt/package.json' with { type: 'json' }
 
@@ -67,12 +67,13 @@ interface LoadOptions {
   loads?: number
   nodeVersion?: string
   execArgv?: string[]
+  env?: Record<string, string>
 }
 
 interface LoadResult { ok: boolean, value?: unknown, module?: string, code?: string, message?: string, fix?: string, logs: string }
 
-async function runNode (script: string, args: string[], cwd: string, execArgv: string[] = []) {
-  const { stdout, stderr } = await exec(process.execPath, [...execArgv, '--input-type=module', '-e', script, '--', ...args], { nodeOptions: { cwd } })
+async function runNode (script: string, args: string[], cwd: string, { execArgv = [], env }: { execArgv?: string[], env?: Record<string, string> } = {}) {
+  const { stdout, stderr } = await exec(process.execPath, [...execArgv, '--input-type=module', '-e', script, '--', ...args], { nodeOptions: { cwd, env: env && { ...process.env, ...env } } })
   const line = stdout.trim().split('\n').at(-1)
   if (!line) {
     throw new Error(`no output: ${stderr}`)
@@ -80,8 +81,8 @@ async function runNode (script: string, args: string[], cwd: string, execArgv: s
   return { ...JSON.parse(line), logs: stdout + stderr }
 }
 
-function load ({ execArgv, ...options }: LoadOptions): Promise<LoadResult> {
-  return runNode(LOAD, [JSON.stringify(options)], options.cwd, execArgv)
+function load ({ execArgv, env, ...options }: LoadOptions): Promise<LoadResult> {
+  return runNode(LOAD, [JSON.stringify(options)], options.cwd, { execArgv, env })
 }
 
 const USES_DIRNAME = `export default { runtimeConfig: { value: __dirname ? 'ok' : 'no' } }\n`
@@ -111,6 +112,7 @@ describe('jiti fallback', { concurrent: false, timeout: 60_000 }, () => {
       'requires.ts': 'const pkg = require(\'./package.json\')\nexport default () => pkg\n',
       'unrelated-reference.ts': 'export default () => 1\nmy__dirname\n',
       'alias-import.ts': 'import { nested } from \'#shared/nested.ts\'\nexport default () => nested\n',
+      'missing-package.ts': 'import { value } from \'@undeclared/package\'\nexport default () => value\n',
       'node_modules/ts-module/package.json': { name: 'ts-module', type: 'module' },
       'node_modules/ts-module/index.ts': 'const value: number = 1\nexport default () => value\n',
     })
@@ -120,14 +122,14 @@ describe('jiti fallback', { concurrent: false, timeout: 60_000 }, () => {
 
   const loadModule = (file: string, options: Omit<LoadOptions, 'cwd' | 'module'> = {}) => load({ cwd: dir, module: join(dir, file), ...options })
 
-  async function loadConfig (name: string, source: string, { pkg = {}, nuxtDependencies, hook }: { pkg?: Record<string, unknown>, nuxtDependencies?: Record<string, string>, hook?: string } = {}) {
+  async function loadConfig (name: string, source: string, { pkg = {}, nuxtDependencies, hook, env }: { pkg?: Record<string, unknown>, nuxtDependencies?: Record<string, string>, hook?: string, env?: Record<string, string> } = {}) {
     const cwd = join(dir, 'configs', name)
     await writeFiles(cwd, {
       'package.json': { name: `config-${name}`, private: true, type: 'module', ...pkg },
       'nuxt.config.ts': source,
       ...nuxtDependencies && { 'node_modules/nuxt/package.json': { name: 'nuxt', version: '4.0.0', dependencies: nuxtDependencies } },
     })
-    return { cwd, ...await load({ cwd, config: true, hook }) }
+    return { cwd, ...await load({ cwd, config: true, hook, env }) }
   }
 
   it.each([
@@ -187,6 +189,65 @@ describe('jiti fallback', { concurrent: false, timeout: 60_000 }, () => {
     const result = await loadModule('throws.ts')
     expect(result).toMatchObject({ ok: false, code: 'NUXT_B8018' })
     expect(result.message).toMatch(/boom/)
+  })
+
+  it.each([
+    ['without jiti', true],
+    ['with jiti', false],
+  ])('should name a package that is not installed rather than offering jiti for a module (%s)', async (_, blockJiti) => {
+    const result = await loadModule('missing-package.ts', blockJiti ? { hook: blockBare } : {})
+    expect(result).toMatchObject({ ok: false, code: 'NUXT_B8020' })
+    expect(result.fix).toMatch(/^`@undeclared\/package` is not installed as a dependency of your project\. Run `.* -D @undeclared\/package` to add it\.$/)
+    expect(result.logs).not.toContain('jiti')
+  })
+
+  it('should name a package that is not installed rather than offering jiti for a config file', async () => {
+    const result = await loadConfig('missing-package', 'import { value } from \'@undeclared/package\'\nexport default { runtimeConfig: { value } }\n', { hook: blockBare })
+    expect(result).toMatchObject({ ok: false, code: 'NUXT_B5017' })
+    expect(result.fix).toMatch(/^`@undeclared\/package` is not installed as a dependency of your project\. Run `.* -D @undeclared\/package` to add it\.$/)
+    expect(result.logs).not.toContain('jiti')
+  })
+
+  it('should warn about a package that only jiti can find, even in a project that depends on jiti', async () => {
+    await writeFiles(join(dir, 'node-path'), {
+      'node_modules/@phantom/package/package.json': { name: '@phantom/package', version: '1.0.0', main: 'index.js' },
+      'node_modules/@phantom/package/index.js': 'exports.value = \'phantom\'\n',
+    })
+    // `require.resolve`, which jiti falls back to, reads `NODE_PATH`. `import()` does not.
+    await writeFiles(join(dir, 'configs/phantom-package/layer'), {
+      'nuxt.config.ts': 'import { value } from \'@phantom/package\'\nexport default { runtimeConfig: { layer: value } }\n',
+    })
+    const result = await loadConfig('phantom-package', 'import { value } from \'@phantom/package\'\nexport default { extends: [\'./layer\'], runtimeConfig: { value } }\n', {
+      pkg: { devDependencies: { jiti: '^2.7.0' } },
+      env: { NODE_PATH: join(dir, 'node-path/node_modules') },
+    })
+    expect(result).toMatchObject({ ok: true, value: 'phantom' })
+    expect(result.logs.match(/NUXT_B5023/g)).toHaveLength(2)
+    expect(result.logs).toMatch(/fix: `@phantom\/package` is not installed as a dependency of your project\. Run `.* -D @phantom\/package` to add it\.\n/)
+    expect(result.logs).not.toMatch(/keep loading it through jiti/)
+  })
+
+  it('should point at the author of a module importing a package that only jiti can find', async () => {
+    await writeFiles(join(dir, 'node-path'), {
+      'node_modules/@phantom/module-dependency/package.json': { name: '@phantom/module-dependency', version: '1.0.0', main: 'index.js' },
+      'node_modules/@phantom/module-dependency/index.js': 'exports.value = () => {}\n',
+    })
+    await writeFiles(dir, {
+      'node_modules/phantom-module/package.json': { name: 'phantom-module', type: 'module' },
+      'node_modules/phantom-module/index.mjs': 'import { value } from \'@phantom/module-dependency\'\nexport default value\n',
+    })
+    const result = await loadModule('node_modules/phantom-module/index.mjs', { env: { NODE_PATH: join(dir, 'node-path/node_modules') } })
+    expect(result).toMatchObject({ ok: true, module: 'function' })
+    expect(result.logs).toContain('NUXT_B8023')
+    expect(result.logs).toMatch(/fix: `@phantom\/module-dependency` is not a dependency of `phantom-module`, which imports it\. Report it to the author of `phantom-module`, and until then run `.* -D @phantom\/module-dependency` to add it to your project\.\n/)
+    expect(result.logs).not.toMatch(/keep loading it through jiti/)
+  })
+
+  it('should name a package that jiti cannot find either', async () => {
+    const result = await loadConfig('missing-package-with-jiti', 'import { value } from \'@undeclared/package\'\nexport default { runtimeConfig: { value } }\n')
+    expect(result).toMatchObject({ ok: false, code: 'NUXT_B5017' })
+    expect(result.fix).toContain('`@undeclared/package` is not installed as a dependency of your project.')
+    expect(result.fix).not.toContain('jiti')
   })
 
   it('should explain a missing CJS global when jiti cannot be loaded', async () => {
@@ -288,6 +349,39 @@ describe('jiti fallback', { concurrent: false, timeout: 60_000 }, () => {
     expect(result).toMatchObject({ ok: true, value: 'helper' })
     expect(result.logs).not.toContain('NUXT_B5040')
     expect(result.logs).toContain('MODULE_TYPELESS_PACKAGE_JSON')
+  })
+})
+
+describe('getMissingPackage', () => {
+  const notFound = (specifier: string, importer = '/project/nuxt.config.ts') => Object.assign(
+    new Error(`Cannot find package '${specifier}' imported from ${importer}\nDid you mean to import "${specifier}/dist/index.mjs"?`),
+    { code: 'ERR_MODULE_NOT_FOUND' },
+  )
+
+  it.each(['@rolldown/pluginutils', 'lodash'])('should find the package in %s', (name) => {
+    expect(getMissingPackage(notFound(name))).toStrictEqual({ name, importer: '/project/nuxt.config.ts' })
+  })
+
+  it.each(['~', '@/foo', '#build'])('should not treat %s as a package', (specifier) => {
+    expect(getMissingPackage(notFound(specifier))).toBeUndefined()
+  })
+
+  it('should not treat an alias as a package', () => {
+    expect(getMissingPackage(notFound('assets'), { assets: '/project/assets' })).toBeUndefined()
+    expect(getMissingPackage(notFound('assets'), { 'assets/': '/project/assets/' })).toBeUndefined()
+    expect(getMissingPackage(notFound('@alias/pkg'), { '@alias': '/project/alias' })).toBeUndefined()
+    expect(getMissingPackage(notFound('@alias/pkg'), { '@alias/': '/project/alias/' })).toBeUndefined()
+  })
+
+  it('should ignore a file that could not be found', () => {
+    const error = Object.assign(new Error('Cannot find module \'/project/nested\' imported from /project/nuxt.config.ts'), { code: 'ERR_MODULE_NOT_FOUND' })
+    expect(getMissingPackage(error)).toBeUndefined()
+  })
+
+  it('should point at the author of an installed package that imports it', async () => {
+    const missing = getMissingPackage(notFound('undeclared', '/project/node_modules/@scope/module/dist/module.mjs'))!
+    const hint = await describeMissingPackage(missing, repoRoot)
+    expect(hint).toMatch(/^`undeclared` is not a dependency of `@scope\/module`, which imports it\. Report it to the author of `@scope\/module`, and until then run `.* -D undeclared` to add it to your project\.$/)
   })
 })
 

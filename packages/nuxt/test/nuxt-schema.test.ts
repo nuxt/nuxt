@@ -196,6 +196,17 @@ describe('nuxt.schema', () => {
       expect(withoutJiti.logs).toContain('NUXT_B5036')
       expect(withoutJiti.logs).toContain('imported with `import type`')
     })
+
+    it.each([true, false])('names a package that is not installed rather than offering jiti (jiti blocked: %s)', async (blockJiti) => {
+      const rootDir = await createProject({
+        'nuxt.schema.ts': `import { value } from '@undeclared/package'\nexport default defineNuxtSchema({ appConfig: { value } })`,
+      })
+      const result = await prepare(rootDir, { blockJiti })
+
+      expect(result.logs).not.toContain('NUXT_B5005')
+      expect(result.logs).toMatch(/NUXT_B5036.*\n.*fix: `@undeclared\/package` is not installed as a dependency of your project\. Run `.* -D @undeclared\/package` to add it\.\n/)
+      expect(result.logs.split('\n').filter(line => !line.startsWith('{')).join('\n')).not.toContain('jiti')
+    })
   })
 
   describe('on a runtime without synchronous module hooks', () => {

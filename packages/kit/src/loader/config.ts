@@ -13,7 +13,7 @@ import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm.ts'
-import { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
+import { describeMissingPackage, describeNativeImportFailure, getMissingCjsGlobal, getMissingPackage, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { configDiagnostics } from '../diagnostics/config.ts'
 import { extractRuntimeConfigSchemas, mergeRuntimeConfigSchemas, restoreRuntimeConfigSchemaNulls } from '../internal/runtime-config.ts'
@@ -350,7 +350,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   let jitiImporter: ((id: string) => Promise<unknown>) | undefined
   // Reported once `future.compatibilityVersion` is known, since that is part of deciding whether
   // loading through jiti is worth mentioning at all
-  const jitiFallbacks: Array<{ filePath: string, error: string, hint: string }> = []
+  const jitiFallbacks: Array<{ filePath: string, error: string, hint: string, missingPackage: boolean }> = []
 
   const importConfigFile = async (id: string) => {
     if (jitiImporter) {
@@ -365,11 +365,22 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       return await import(url.href).finally(restoreWarnings)
     } catch (error) {
       const missingGlobal = getMissingCjsGlobal(error)
-      // Whether jiti is the answer, or the file simply has a bug that a second loader will repeat
-      const jitiCanHelp = isLoaderError(error) || !!missingGlobal
+      const missingPackage = getMissingPackage(error)
+      // Whether jiti is the answer, or the file simply has a bug that a second loader will repeat.
+      // jiti may find a package the project does not depend on, which only hides the problem.
+      const jitiCanHelp = !missingPackage && (isLoaderError(error) || !!missingGlobal)
+      const missingPackageError = async (missing: NonNullable<typeof missingPackage>) => configDiagnostics.NUXT_B5017({
+        filePath: id,
+        error: error instanceof Error ? error.message : String(error),
+        hint: await describeMissingPackage(missing, rootCwd),
+        cause: error,
+      }, { method: 'error' })
       // A config file is evaluated for its default export, so any failure is worth a second attempt
       const jiti = await getJiti(jitiCanHelp)
       if (!jiti) {
+        if (missingPackage) {
+          throw await missingPackageError(missingPackage)
+        }
         if (!jitiCanHelp) {
           throw error
         }
@@ -387,6 +398,9 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       try {
         loaded = await jiti.import(id)
       } catch (jitiError) {
+        if (missingPackage) {
+          throw await missingPackageError(missingPackage)
+        }
         // jiti's error is only the better one where jiti was expected to get further; a repeat of
         // the same failure keeps the native error and its untransformed stack
         const repeated = missingGlobal && getMissingCjsGlobal(jitiError) === missingGlobal
@@ -396,9 +410,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       jitiFallbacks.push({
         filePath: id,
         error: error instanceof Error ? error.message : String(error),
-        hint: describeNativeImportFailure(error),
+        hint: missingPackage ? await describeMissingPackage(missingPackage, rootCwd) : describeNativeImportFailure(error),
+        missingPackage: !!missingPackage,
       })
-      if (isLoaderError(error)) {
+      if (!missingPackage && isLoaderError(error)) {
         jitiImporter = id => jiti.import(id)
       }
       return loaded
@@ -617,9 +632,9 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     restoreRuntimeConfigSchemaNulls(nitroRuntimeConfig, runtimeConfigSchemas.config, runtimeConfigSchemas.entries)
   }
 
-  for (const fallback of jitiFallbacks) {
-    if (shouldReportJitiFallbackOnce(fallback.filePath, options.rootDir, options.future.compatibilityVersion)) {
-      configDiagnostics.NUXT_B5023({ ...fallback, installCommand: await getAddDependencyCommand('jiti', rootCwd, { dev: true }) })
+  for (const { missingPackage, ...fallback } of jitiFallbacks) {
+    if (shouldReportJitiFallbackOnce(fallback.filePath, options.rootDir, options.future.compatibilityVersion, missingPackage)) {
+      configDiagnostics.NUXT_B5023({ ...fallback, installCommand: missingPackage ? undefined : await getAddDependencyCommand('jiti', rootCwd, { dev: true }) })
     }
   }
 
