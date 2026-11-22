@@ -79,7 +79,15 @@ export function debounceTick<ArgumentsT extends unknown[], ReturnT> (
           active = false
           const flushArgs = trailingArgs ?? args
           trailingArgs = undefined
-          const promise = options.leading ? leadingValue : applyFn(this, flushArgs)
+          let promise: PromiseLike<ReturnT> | ReturnT
+          if (options.leading) {
+            promise = leadingValue
+          } else if (currentPromise && (options.waitForPending?.(...flushArgs) ?? true)) {
+            trailingArgs = flushArgs
+            promise = currentPromise
+          } else {
+            promise = applyFn(this, flushArgs)
+          }
           for (const _resolve of resolveList) {
             _resolve(promise)
           }

@@ -147,6 +147,30 @@ describe('debounceTick', () => {
     expect(settled).toEqual([1, 3, 4])
   })
 
+  it('waits for a pending call when a call that waits follows one that does not in the same flush', async () => {
+    const { fn, settled, resolveNext } = createControllableFn()
+    const debounced = debounceTick(fn, { waitForPending: value => value % 2 === 0 })
+
+    const first = debounced(1)
+    await flushPromises()
+    expect(fn).toHaveBeenCalledTimes(1)
+
+    const second = debounced(3)
+    const third = debounced(4)
+    await flushPromises()
+    expect(fn).toHaveBeenCalledTimes(1)
+
+    resolveNext()
+    await flushPromises()
+    expect(fn).toHaveBeenCalledTimes(2)
+    expect(fn).toHaveBeenLastCalledWith(4)
+
+    resolveNext()
+    await flushPromises()
+    expect(await Promise.all([first, second, third])).toEqual([1, 1, 1])
+    expect(settled).toEqual([1, 4])
+  })
+
   it('`this` is preserved', async () => {
     class Fixture {
       _foo = 'fixture'

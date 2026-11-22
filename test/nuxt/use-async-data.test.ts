@@ -707,6 +707,42 @@ describe('useAsyncData', () => {
     expect(c.text()).toBe('/b')
   })
 
+  it('should refresh after a pending request when a defer watcher shares a flush with a cancel watcher', async () => {
+    const a = ref('a0')
+    const b = ref('b0')
+    const pending: Record<string, (value: string) => void> = {}
+    const promiseFn = vi.fn(() => {
+      const value = `${a.value}:${b.value}`
+      return new Promise<string>(resolve => (pending[value] = resolve))
+    })
+    const component = defineComponent({
+      setup () {
+        const { data } = useAsyncData(uniqueKey, promiseFn, { watch: [a], dedupe: 'cancel', immediate: false })
+        useAsyncData(uniqueKey, promiseFn, { watch: [b], dedupe: 'defer', immediate: false })
+        return () => h('div', [data.value])
+      },
+    })
+
+    const c = await mountSuspended(component)
+
+    a.value = 'a1'
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    a.value = 'a2'
+    b.value = 'b2'
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+
+    pending['a1:b0']!('a1:b0')
+    await flushPromises()
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+
+    pending['a2:b2']!('a2:b2')
+    await flushPromises()
+    expect(c.text()).toBe('a2:b2')
+  })
+
   it('should await the replacement when a watched request changes during an async transform', async () => {
     const route = ref('/a')
     const pending: Record<string, (value: string) => void> = {}
