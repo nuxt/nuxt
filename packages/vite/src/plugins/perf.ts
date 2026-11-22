@@ -6,13 +6,12 @@ const HOOKS_TO_TRACK = ['transform', 'resolveId', 'load'] as const
 
 export function PerfPlugin (nuxt: Nuxt): Plugin {
   const tracing = isBundlerTracingEnabled(nuxt)
-  const wrapped = new WeakSet<Plugin>()
+  const timedHandlers = new WeakSet<(...args: any[]) => any>()
   const wrapPlugins = (plugins: readonly Plugin[]) => {
     for (const plugin of plugins) {
-      if (plugin.name === 'nuxt:perf' || wrapped.has(plugin)) { continue }
-      wrapped.add(plugin)
+      if (plugin.name === 'nuxt:perf') { continue }
       for (const hookName of HOOKS_TO_TRACK) {
-        wrapPluginHook(plugin, plugin.name, hookName, nuxt, tracing)
+        wrapPluginHook(plugin, plugin.name, hookName, nuxt, tracing, timedHandlers)
       }
     }
   }
@@ -62,15 +61,23 @@ function traceFetchModule (environment: DevEnvironment): void {
   }
 }
 
-function wrapPluginHook (plugin: Plugin, pluginName: string, hookName: typeof HOOKS_TO_TRACK[number], nuxt: Nuxt, tracing: boolean): void {
+function wrapPluginHook (plugin: Plugin, pluginName: string, hookName: typeof HOOKS_TO_TRACK[number], nuxt: Nuxt, tracing: boolean, timedHandlers: WeakSet<(...args: any[]) => any>): void {
   const hook = plugin[hookName]
   const handler = typeof hook === 'function' ? hook : hook?.handler
-  if (typeof handler !== 'function') { return }
+  if (!hook || typeof handler !== 'function' || timedHandlers.has(handler)) { return }
   const timed = function (this: any, ...args: any[]) {
     return timedCall(handler as (...a: any[]) => any, this, args, pluginName, hookName, nuxt, tracing)
   }
+  timedHandlers.add(timed)
   // frozen plugins are left untimed rather than throwing
-  Reflect.set(plugin, hookName, typeof hook === 'function' ? timed : { ...hook, handler: timed })
+  if (typeof hook === 'function') {
+    Reflect.set(plugin, hookName, timed)
+    return
+  }
+  // timed in place so later changes to the hook object (such as to `filter`) still apply
+  if (!Reflect.set(hook, 'handler', timed)) {
+    Reflect.set(plugin, hookName, { ...hook, handler: timed })
+  }
 }
 
 function timedCall (fn: (...a: any[]) => any, ctx: any, args: any[], pluginName: string, hookName: typeof HOOKS_TO_TRACK[number], nuxt: Nuxt, tracing: boolean): any {
