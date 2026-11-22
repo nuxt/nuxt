@@ -183,7 +183,7 @@ describe('agent tool transform', () => {
     <button v-for="variant in product.variants" :key="variant.id" @click="addToCart(variant.id)">Add</button>
   </section>
 </template>`)
-    expect(code).toContain('target: [(product.sku), (variant.id)].join(\'/\'), invoke:')
+    expect(code).toContain('target: [(product.sku), (variant.id)], invoke:')
 
     const { findings } = compile(`${script}
 <template>

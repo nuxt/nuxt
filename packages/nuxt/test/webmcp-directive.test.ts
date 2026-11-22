@@ -818,6 +818,20 @@ describe('agent tool directive', () => {
     expect(document.activeElement).toBe(container.querySelector('#clear'))
   })
 
+  it('gives items in nested loops different targets when their keys contain the separator', async () => {
+    const picked = vi.fn()
+    const items = [['docs', 'intro'], ['docs/guide', 'intro'], ['docs', 'guide/intro'], ['50%', 'off']]
+    const { registry } = mount(directive => () => h('ul', items.map(keys => withDirectives(h('li', keys.join(' ')), [[directive, binding({ name: 'open', target: keys, invoke: () => picked(keys) })]]))))
+    await nextTick()
+
+    const targets = registry.targets('open').open!.map(item => item.target)
+    expect(targets).toEqual(['docs/intro', 'docs%2Fguide/intro', 'docs/guide%2Fintro', '50%25/off'])
+    for (const target of targets) {
+      await registry.call('open', { target })
+    }
+    expect(picked.mock.calls.map(([keys]) => keys)).toEqual(items)
+  })
+
   it('registers every binding of an element and keeps each one current', async () => {
     const calls: string[] = []
     const suffix = ref('1')

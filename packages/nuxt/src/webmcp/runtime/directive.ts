@@ -13,6 +13,7 @@ export interface AgentToolBinding {
   readonly: boolean
   consequential: boolean
   confirm: boolean
+  /** The `:key` of the `v-for` item, or the keys of every keyed `v-for` around it, outermost first. */
   target?: unknown
   invoke: (event: unknown) => unknown
   enabled?: () => boolean
@@ -63,6 +64,11 @@ export function createSubmitCapture () {
 }
 
 export type SubmitCapture = ReturnType<typeof createSubmitCapture>
+
+/** The target an agent passes for an item: its key, or its keys joined with `/`, with `/` and `%` inside a key percent-encoded. */
+function targetKey (target: unknown) {
+  return Array.isArray(target) ? target.map(key => String(key).replace(/[%/]/g, char => encodeURIComponent(char))).join('/') : String(target)
+}
 
 export function createAgentToolDirective (registry: AgentToolRegistry, submits: SubmitCapture): ObjectDirective<HTMLElement, AgentToolBinding | AgentToolBinding[]> {
   const definitions = new Map<string, AgentToolDefinition>()
@@ -156,7 +162,7 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
     current.dispose = registry.activate(definition, {
       enabled: () => el.isConnected && (current.binding.enabled?.() ?? true) && !isDisabled(el),
       targets: 'target' in value
-        ? () => el.isConnected ? [{ key: String(current.binding.target), label: itemLabel(el), element: el }] : []
+        ? () => el.isConnected ? [{ key: targetKey(current.binding.target), label: itemLabel(el), element: el }] : []
         : undefined,
       element: () => el,
       prepare: isForm ? (input, ctx) => fill(current.binding, el, input as Record<string, unknown>, ctx.signal, definition.inputSchema) : undefined,

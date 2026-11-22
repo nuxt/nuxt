@@ -389,7 +389,7 @@ function visitElement (el: ElementNode, state: WalkState) {
       `readonly: ${meta.readonly}`,
       `consequential: ${meta.consequential}`,
       `confirm: ${meta.confirm}`,
-      ...target ? [`target: ${keyed.length > 1 ? `[${keyed.map(f => `(${f.key})`).join(', ')}].join('/')` : `(${target.key})`}`] : [],
+      ...target ? [`target: ${keyed.length > 1 ? `[${keyed.map(f => `(${f.key})`).join(', ')}]` : `(${target.key})`}`] : [],
       ...disabled ? [`enabled: ${'dynamic' in disabled ? `() => !(${disabled.dynamic})` : '() => false'}`] : [],
       `invoke: ($event) => (${result.call})`,
     ]
