@@ -26,7 +26,7 @@ const visuallyHidden = {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export function defineAnnouncerComponent (name: string, className: string, atomic: boolean, useAnnouncer: (opts: NuxtAnnouncerOpts) => Omit<NuxtAnnouncer, '_cleanup'>): DefineSetupFnComponent<AnnouncerProps, {}, AnnouncerSlots> {
+export function defineAnnouncerComponent (name: string, className: string, atomic: boolean, useAnnouncer: (opts: NuxtAnnouncerOpts) => Omit<NuxtAnnouncer, '_cleanup'>, dualRegions = false): DefineSetupFnComponent<AnnouncerProps, {}, AnnouncerSlots> {
   return defineComponent({
     name,
     props: {
@@ -40,7 +40,7 @@ export function defineAnnouncerComponent (name: string, className: string, atomi
       },
     },
     setup (props, { slots, expose }) {
-      const { set, polite, assertive, message, politeness } = useAnnouncer({ politeness: props.politeness })
+      const { set, polite, assertive, message, politeMessage, assertiveMessage, politeness } = useAnnouncer({ politeness: props.politeness })
 
       const role = computed(() => {
         if (politeness.value === 'assertive') {
@@ -54,17 +54,41 @@ export function defineAnnouncerComponent (name: string, className: string, atomi
 
       expose({ set, polite, assertive, message, politeness })
 
+      if (!dualRegions) {
+        return () => h('span', {
+          class: className,
+          style: {
+            position: 'absolute',
+          },
+        }, h('span', {
+          'role': role.value,
+          'aria-live': politeness.value,
+          'aria-atomic': props.atomic,
+          'style': visuallyHidden,
+        }, slots.default ? slots.default({ message: message.value }) : message.value))
+      }
+
+      // two fixed live regions (WAI-ARIA roles are not meant to change over time):
+      // one polite, one assertive, so messages of different urgency never overwrite each other
       return () => h('span', {
         class: className,
         style: {
           position: 'absolute',
         },
-      }, h('span', {
-        'role': role.value,
-        'aria-live': politeness.value,
-        'aria-atomic': props.atomic,
-        'style': visuallyHidden,
-      }, slots.default ? slots.default({ message: message.value }) : message.value))
+      }, [
+        h('span', {
+          'role': 'status',
+          'aria-live': 'polite',
+          'aria-atomic': props.atomic,
+          'style': visuallyHidden,
+        }, slots.default && politeness.value !== 'assertive' ? slots.default({ message: message.value }) : politeMessage.value),
+        h('span', {
+          'role': 'alert',
+          'aria-live': 'assertive',
+          'aria-atomic': props.atomic,
+          'style': visuallyHidden,
+        }, slots.default && politeness.value === 'assertive' ? slots.default({ message: message.value }) : assertiveMessage.value),
+      ])
     },
   }) as unknown as DefineSetupFnComponent<AnnouncerProps, {}, AnnouncerSlots>
 }

@@ -11,6 +11,16 @@ export type NuxtAnnouncerOpts = {
 
 export type NuxtAnnouncer = {
   message: Ref<string>
+  /**
+   * message rendered in the polite live region
+   * @internal
+   */
+  politeMessage: Ref<string>
+  /**
+   * message rendered in the assertive live region
+   * @internal
+   */
+  assertiveMessage: Ref<string>
   politeness: Ref<AnnouncerPoliteness>
   set: (message: string, politeness?: AnnouncerPoliteness) => void
   polite: (message: string) => void
@@ -18,41 +28,68 @@ export type NuxtAnnouncer = {
   _cleanup: () => void
 }
 
+type AnnouncerRegion = 'message' | 'polite' | 'assertive'
+
 /** @internal */
 export function createAnnouncer (opts: NuxtAnnouncerOpts = {}): NuxtAnnouncer {
   const message = shallowRef('')
+  const politeMessage = shallowRef('')
+  const assertiveMessage = shallowRef('')
   const politeness = shallowRef<AnnouncerPoliteness>(opts.politeness || 'polite')
-  let restore: ReturnType<typeof setTimeout> | undefined
-  let pendingMessage: string | undefined
+  const restoreTimers: Partial<Record<AnnouncerRegion, ReturnType<typeof setTimeout>>> = {}
+  const pendingMessages: Partial<Record<AnnouncerRegion, string | undefined>> = {}
 
-  function set (messageValue: string = '', politenessSetting: AnnouncerPoliteness = 'polite') {
-    clearTimeout(restore)
-    politeness.value = politenessSetting
-    // a live region is only announced when its content changes
-    if (import.meta.client && messageValue && (message.value === messageValue || (message.value === '' && pendingMessage === messageValue))) {
-      pendingMessage = messageValue
-      message.value = ''
-      restore = setTimeout(() => {
-        restore = undefined
-        pendingMessage = undefined
-        message.value = messageValue
+  // a live region is only announced when its content changes
+  function write (ref: Ref<string>, region: AnnouncerRegion, messageValue: string) {
+    if (restoreTimers[region]) {
+      clearTimeout(restoreTimers[region])
+      restoreTimers[region] = undefined
+    }
+    if (import.meta.client && messageValue && (ref.value === messageValue || (ref.value === '' && pendingMessages[region] === messageValue))) {
+      pendingMessages[region] = messageValue
+      ref.value = ''
+      restoreTimers[region] = setTimeout(() => {
+        restoreTimers[region] = undefined
+        pendingMessages[region] = undefined
+        ref.value = messageValue
       }, 100)
       return
     }
-    pendingMessage = undefined
-    message.value = messageValue
+    pendingMessages[region] = undefined
+    ref.value = messageValue
+  }
+
+  function set (messageValue: string = '', politenessSetting: AnnouncerPoliteness = 'polite') {
+    politeness.value = politenessSetting
+    // `message` mirrors the most recent announcement regardless of its urgency
+    write(message, 'message', messageValue)
+    // each urgency has its own fixed live region so messages never overwrite each other
+    if (politenessSetting === 'polite') {
+      write(politeMessage, 'polite', messageValue)
+    } else if (politenessSetting === 'assertive') {
+      write(assertiveMessage, 'assertive', messageValue)
+    }
   }
 
   return {
     message,
+    politeMessage,
+    assertiveMessage,
     politeness,
     set,
     polite: msg => set(msg, 'polite'),
     assertive: msg => set(msg, 'assertive'),
     _cleanup () {
-      clearTimeout(restore)
-      pendingMessage = undefined
+      for (const timer of Object.values(restoreTimers)) {
+        if (timer) {
+          clearTimeout(timer)
+        }
+      }
+      restoreTimers.message = restoreTimers.polite = restoreTimers.assertive = undefined
+      pendingMessages.message = pendingMessages.polite = pendingMessages.assertive = undefined
       message.value = ''
+      politeMessage.value = ''
+      assertiveMessage.value = ''
       politeness.value = opts.politeness || 'polite'
     },
   }

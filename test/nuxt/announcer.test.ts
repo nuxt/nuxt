@@ -169,6 +169,63 @@ describe('NuxtRouteAnnouncer', () => {
     el.unmount()
   })
 
+  it('`useAnnouncer` should keep polite and assertive messages in separate regions', async () => {
+    const el = await mountSuspended({
+      setup () {
+        const { polite, assertive } = useAnnouncer()
+        return () => h('div', [
+          h(NuxtAnnouncer),
+          h('button', { 'data-testid': 'announce-button', 'onClick': () => {
+            polite('Draft saved')
+            assertive('Upload failed')
+          } }),
+        ])
+      },
+    })
+
+    await el.get('[data-testid="announce-button"]').trigger('click')
+    await flushPromises()
+
+    const status = el.get('[role="status"]')
+    expect(status.attributes('role')).toBe('status')
+    expect(status.attributes('aria-live')).toBe('polite')
+    expect(status.text()).toBe('Draft saved')
+
+    const alert = el.get('[role="alert"]')
+    expect(alert.attributes('role')).toBe('alert')
+    expect(alert.attributes('aria-live')).toBe('assertive')
+    expect(alert.text()).toBe('Upload failed')
+
+    el.unmount()
+  })
+
+  it('`useAnnouncer` should keep an earlier polite message when an assertive message follows', async () => {
+    const el = await mountSuspended({
+      setup () {
+        const { polite, assertive } = useAnnouncer()
+        return () => h('div', [
+          h(NuxtAnnouncer),
+          h('button', { 'data-testid': 'polite-button', 'onClick': () => polite('Draft saved') }),
+          h('button', { 'data-testid': 'assertive-button', 'onClick': () => assertive('Upload failed') }),
+        ])
+      },
+    })
+
+    await el.get('[data-testid="polite-button"]').trigger('click')
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Draft saved')
+
+    await el.get('[data-testid="assertive-button"]').trigger('click')
+    await flushPromises()
+
+    expect(el.get('[role="status"]').text()).toBe('Draft saved')
+    expect(el.get('[role="status"]').attributes('aria-live')).toBe('polite')
+    expect(el.get('[role="alert"]').text()).toBe('Upload failed')
+    expect(el.get('[role="alert"]').attributes('aria-live')).toBe('assertive')
+
+    el.unmount()
+  })
+
   it('`useAnnouncer` should re-announce an identical consecutive message', async () => {
     const messages: string[] = []
     const el = await mountSuspended({
