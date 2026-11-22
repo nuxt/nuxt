@@ -177,9 +177,9 @@ export function formSchema (fields: FormFields, form: Element): JSONSchema {
   return describeSchema(schema, fields, form)
 }
 
-/** Whether the bound element of the field `el`, or an element around it, has an inline `display: none`, which is how `v-show` hides. */
+/** Whether the field `el`, or an element around it, has an inline `display: none`, which is how `v-show` hides. */
 function isUndisplayed (el: Element) {
-  for (let node = el.closest('[data-agent-field]') ?? el as Element | null; node; node = node.parentElement) {
+  for (let node: Element | null = el; node; node = node.parentElement) {
     if ((node as HTMLElement).style?.display === 'none') {
       return true
     }

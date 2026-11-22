@@ -414,6 +414,22 @@ describe('agent tool directive', () => {
     expect(state).toMatchObject({ coupon: 'FREE', note: 'public' })
   })
 
+  it('treats a component whose native control is hidden with `v-show` as hidden', async () => {
+    const state = reactive({ code: 'STAFF50' })
+    const { registry } = mount(directive => () => withDirectives(h('form', [
+      h('div', { 'data-agent-field': 'state.code' }, [withDirectives(h('input'), [[vShow, false]])]),
+    ]), [[directive, binding({
+      name: 'redeem',
+      kind: 'form',
+      fields: { code: { source: 'state.code', get: () => state.code, set: (value) => { state.code = value as string } } },
+    })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema.properties).toEqual({ code: { type: 'string' } })
+    expect(await registry.call('redeem', { code: 'FREE' })).toEqual({ isError: true, content: [{ type: 'text', text: 'The form was not submitted. code: this field cannot be changed' }] })
+    expect(state.code).toBe('STAFF50')
+  })
+
   it('rejects input that changes a disabled, read-only or hidden field', async () => {
     const state = reactive({ email: 'daniel@example.com', plan: 'free', account: 'a1', note: '' })
     const field = (key: keyof typeof state) => ({ source: `state.${key}`, get: () => state[key], set: (value: unknown) => { state[key] = value as string } })
